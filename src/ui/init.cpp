@@ -1,16 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/*
- * File:   main.cpp
- * Author: topisani
- *
- * Created on February 20, 2017, 11:39 PM
- */
-
 #include <gtk/gtk.h>
 #include "ui/drawing/colour.h"
 #include <gdk/gdkkeysyms.h>
@@ -56,7 +43,7 @@ static void do_drawing(cairo_t *cr, GtkWidget *widget)
 }
 
 
-int main (int argc, char *argv[])
+int init(int argc, char *argv[])
 {
   GtkWidget *window;
   GtkWidget *darea;

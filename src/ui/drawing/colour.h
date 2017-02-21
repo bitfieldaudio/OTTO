@@ -14,51 +14,56 @@ namespace ui {
         double b;
       };
 
-      // Colours
-
-      Colour BLACK = {0, 0, 0};
-      Colour WHITE = {1, 1, 1};
-      Colour RED   = {1, 0, 0};
-      Colour GREEN = {0, 1, 0};
-      Colour BLUE  = {0, 0, 1};
-      Colour OPT1  = BLUE;
-      Colour OPT2  = WHITE;
-      Colour OPT3  = GREEN;
-      Colour OPT4  = RED;
-
       // Consts
-      int STROKE_WIDTH = 2;
+      // Colours
+      const Colour BLACK = {0, 0, 0};
+      const Colour WHITE = {1, 1, 1};
+      const Colour RED   = {1, 0, 0};
+      const Colour GREEN = {0, 1, 0};
+      const Colour BLUE  = {0, 0, 1};
+      const Colour OPT1  = BLUE;
+      const Colour OPT2  = WHITE;
+      const Colour OPT3  = GREEN;
+      const Colour OPT4  = RED;
+
+      const int STROKE_WIDTH = 2;
 
       // Funcs
-      static inline void set_colour(cairo_t *cr, Colour c) {
+      inline void set_colour(cairo_t *cr, Colour c) {
         cairo_set_source_rgb(cr, c.r, c.g, c.b);
       };
 
       // Shapes
-      static inline void circle(cairo_t *cr, int x, int y, double r) {
+      inline void circle(cairo_t *cr, double x, double y, double r) {
         cairo_arc(cr, x, y, r, 0, 2 * M_PI);
       };
 
-      static inline void rectangle(cairo_t *cr, int x, int y, int width, int height) {
+      inline void rectangle(cairo_t *cr, double x, double y, double width, double height) {
         cairo_rectangle(cr, x, y, width, height);
       }
 
-      static inline void fill(cairo_t *cr, Colour c) {
+      inline void line(cairo_t *cr, double fx, double fy, double tx, double ty) {
+        cairo_move_to(cr, fx, fy);
+        cairo_line_to(cr, tx, ty);
+      }
+
+      // Style
+      inline void fill(cairo_t *cr, Colour c) {
         set_colour(cr, c);
         cairo_fill(cr);
       }
 
-      static inline void stroke(cairo_t *cr, Colour c) {
+      inline void stroke(cairo_t *cr, Colour c) {
         set_colour(cr, c);
         cairo_stroke(cr);
       }
 
-      static inline void fill_p(cairo_t *cr, Colour c) {
+      inline void fill_p(cairo_t *cr, Colour c) {
         set_colour(cr, c);
         cairo_fill_preserve(cr);
       }
 
-      static inline void stroke_p(cairo_t *cr, Colour c) {
+      inline void stroke_p(cairo_t *cr, Colour c) {
         set_colour(cr, c);
         cairo_stroke_preserve(cr);
       }
