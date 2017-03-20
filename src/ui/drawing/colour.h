@@ -1,7 +1,7 @@
 #ifndef UI_DRAWING_COLOURS_H
 #define UI_DRAWING_COLOURS_H
 
-#include <cairo.h>
+#include <cairo/cairo.h>
 #include <math.h>
 
 namespace ui {
