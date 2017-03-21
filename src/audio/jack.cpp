@@ -1,6 +1,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <string>
+#include <vector>
 #include <cstring>
 #include <cerrno>
 #include <csignal>
@@ -21,12 +22,13 @@ namespace audio {
 
     struct ThreadInfo {
       jack_client_t *client;
+      jack_status_t status;
       Project *project;
       struct Ports {
-        const static int32_t count = 4;
         jack_port_t *outL;
         jack_port_t *outR;
         jack_port_t *out[2] = {outL, outR};
+        const static int32_t nin = 4;
         jack_port_t *in[4];
       } ports;
       jack_nframes_t rbSize = 16384;
@@ -49,11 +51,11 @@ namespace audio {
     }
 
     void setupPorts(ThreadInfo *info) {
-      size_t in_size = info->ports.count * sizeof(jack_default_audio_sample_t*);
-      auto in = (jack_default_audio_sample_t **) malloc(in_size);
+      // size_t in_size = info->ports.count * sizeof(jack_default_audio_sample_t*);
+      // auto in = (jack_default_audio_sample_t **) malloc(in_size);
 
-      ringBuf = jack_ringbuffer_create(
-        info->ports.count * SAMPLE_SIZE * info->rbSize);
+      // ringBuf = jack_ringbuffer_create(
+      //   info->ports.count * SAMPLE_SIZE * info->rbSize);
 
       /* Note from JACK sample capture_client.cpp:
        * When JACK is running realtime, jack_activate() will have
@@ -63,11 +65,11 @@ namespace audio {
        * create a delay that would force JACK to shut us down.
        * TODO: Understand the above words
        */
-      memset(ringBuf->buf, 0, ringBuf->size);
-      memset(in, 0, in_size);
+      // memset(ringBuf->buf, 0, ringBuf->size);
+      // memset(in, 0, in_size);
 
       // Register input ports
-      for (int i = 0; i < info->ports.count; i++) {
+      for (int i = 0; i < info->ports.nin; i++) {
         //TODO: replace std::string here
         std::string name = "input";
         name += std::to_string(i + 1);
@@ -78,6 +80,8 @@ namespace audio {
           JACK_DEFAULT_AUDIO_TYPE,
           JackPortIsInput,
           0);
+        if (info->ports.in[i] == NULL)
+          LOGE << "Couldn't register port '" << name << "'";
       }
 
       // function to register outputs
@@ -90,15 +94,15 @@ namespace audio {
           0);
       };
       // register output ports
-      info->ports.outL = registerOutput("OutLeft");
-      info->ports.outR = registerOutput("OutRight");
+      info->ports.outL = registerOutput("outLeft");
+      info->ports.outR = registerOutput("outRight");
 
       // Find physical capture ports
-      auto findPorts = [&](auto criteria)-> const char ** {
+      auto findPorts = [&](auto criteria, const char * type = "audio") {
         const char **ports = jack_get_ports(
           info->client,
           NULL,
-          NULL,
+          type,
           criteria);
         if (ports == NULL) {
           LOGF << "No ports found matching " << std::to_string(criteria);
@@ -109,50 +113,63 @@ namespace audio {
       };
 
       // Helper function for connections
-      auto connectPort = [&](jack_port_t *src, const char *dest_name) {
-        if (jack_connect(info->client, dest_name, jack_port_name(src))) {
-          LOGF << "Cannot connect port '" << jack_port_name(src)
+      auto connectPort = [&](const char *src_name, const char *dest_name) {
+        if (jack_connect(info->client, dest_name, src_name)) {
+          LOGF << "Cannot connect port '" << src_name
           << "' to '" << dest_name << "'";
+          LOGD << "src type: '" << jack_port_type(
+            jack_port_by_name(client, src_name)) << "'";
+          LOGD << "dest type: '" << jack_port_type(
+            jack_port_by_name(client, dest_name)) << "'";
         }
       };
 
-      const char **inputs  = findPorts(JackPortIsPhysical | JackPortIsInput);
-      const char **outputs = findPorts(JackPortIsPhysical | JackPortIsOutput);
+      const char **inputs  = findPorts(JackPortIsPhysical | JackPortIsOutput);
+      const char **outputs = findPorts(JackPortIsPhysical | JackPortIsInput);
 
       unsigned int ninputs = 0;
-      for (; inputs[ninputs] != NULL; ninputs++);
+      while (inputs[ninputs] != NULL) ninputs++;
       unsigned int noutputs = 0;
-      for (; outputs[noutputs] != NULL; noutputs++);
+      while (outputs[noutputs] != NULL) noutputs++;
 
-      for (int i = 0; i < info->ports.count; i++) {
-        connectPort(info->ports.in[i], inputs[i % ninputs]);
+      for (int i = 0; i < info->ports.nin; i++) {
+        connectPort(jack_port_name(info->ports.in[i]), inputs[i % ninputs]);
       }
 
-      connectPort(info->ports.outL, outputs[0 % noutputs]);
-      connectPort(info->ports.outR, outputs[1 % noutputs]);
+      connectPort(outputs[0 % noutputs], jack_port_name(info->ports.outL));
+      connectPort(outputs[1 % noutputs], jack_port_name(info->ports.outR));
+
+      LOGI << "Connected ports, enabling canProcess";
 
       info->canProcess = 1;
     }
 
     int init (int argc, char *argv[]) {
-      ThreadInfo jack_info;
-      memset(&jack_info, 0, sizeof(jack_info));
+      ThreadInfo info;
+      memset(&info, 0, sizeof(info));
 
-      if ((client = jack_client_open(CLIENT_NAME, JackNullOption, NULL)) == 0) {
+      client = jack_client_open(CLIENT_NAME, JackNullOption, &info.status);
+
+      if (!(info.status & JackServerStarted)) {
         LOGF << "JACK server not running";
         exit(1);
       }
 
-      jack_info.client = client;
-      jack_info.canProcess = 0;
+      LOGI << "JACK server started";
+      LOGD << "JACK client status: " << info.status;
 
-      jack_set_process_callback(client, process, &jack_info);
+      info.client = client;
+      info.canProcess = 0;
 
-      LOGE_IF(jack_activate(client)) << "Cannot activate JACK client";
+      //jack_set_process_callback(client, process, &info);
 
-      setupPorts(&jack_info);
+      if (jack_activate(client)) LOGF << "Cannot activate JACK client";
+      jack_activate(client);
 
-      sleep(10);
+      setupPorts(&info);
+
+      for(;;)
+        sleep(10);
 
       jack_client_close(client);
 
