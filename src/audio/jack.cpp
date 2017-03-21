@@ -13,6 +13,13 @@
 #include <plog/Log.h>
 
 namespace audio {
+
+  typedef jack_default_audio_sample_t AudioSample;
+  const size_t SAMPLE_SIZE = sizeof(AudioSample);
+
+  namespace disk {
+  }
+
   namespace jack {
 
     struct Project {
@@ -24,19 +31,35 @@ namespace audio {
       jack_client_t *client;
       jack_status_t status;
       Project *project;
+      const static uint nout = 2;
+      const static uint nin = 4;
       struct Ports {
-        jack_port_t *outL;
-        jack_port_t *outR;
-        jack_port_t *out[2] = {outL, outR};
-        const static int32_t nin = 4;
-        jack_port_t *in[4];
+        union { // In theory this allows to ways to access the outputs.
+          struct {
+            jack_port_t *outL;
+            jack_port_t *outR;
+          };
+          jack_port_t *out[nout];
+        };
+        jack_port_t *in[nin];
       } ports;
+
       jack_nframes_t rbSize = 16384;
-      volatile int canProcess;
+
+      struct Data {
+        union { // Theres probably a better way to do it though
+          struct {
+            AudioSample *outL;
+            AudioSample *outR;
+          };
+          AudioSample *out[2];
+        };
+      } data;
+
+      volatile bool doProcess;
     };
 
     const char *CLIENT_NAME = "tapedeck";
-    const size_t SAMPLE_SIZE = sizeof(jack_default_audio_sample_t);
 
     jack_client_t *client;
     jack_ringbuffer_t *ringBuf;
@@ -47,15 +70,27 @@ namespace audio {
     }
 
     int process(jack_nframes_t nframes, void *arg) {
-      auto *jackInfo = (ThreadInfo *) arg;
+      auto *info = (ThreadInfo *) arg;
+
+      if (!info->doProcess) return 0;
+
+      for (uint i = 0; i < info->nout; i++)
+        info->data.out[i] = (AudioSample *) jack_port_get_buffer(
+          info->ports.out[i], nframes);
+
+      // Play silence for now
+      for (auto data: info->data.out)
+        memset(data, 0, SAMPLE_SIZE);
+
+      return 0;
     }
 
     void setupPorts(ThreadInfo *info) {
-      // size_t in_size = info->ports.count * sizeof(jack_default_audio_sample_t*);
-      // auto in = (jack_default_audio_sample_t **) malloc(in_size);
+      size_t in_size = info->nin * sizeof(AudioSample*);
+      auto in = (AudioSample **) malloc(in_size);
 
-      // ringBuf = jack_ringbuffer_create(
-      //   info->ports.count * SAMPLE_SIZE * info->rbSize);
+      ringBuf = jack_ringbuffer_create(
+        info->nin * SAMPLE_SIZE * info->rbSize);
 
       /* Note from JACK sample capture_client.cpp:
        * When JACK is running realtime, jack_activate() will have
@@ -63,13 +98,12 @@ namespace audio {
        * still need to touch any newly allocated pages before
        * process() starts using them.  Otherwise, a page fault could
        * create a delay that would force JACK to shut us down.
-       * TODO: Understand the above words
        */
-      // memset(ringBuf->buf, 0, ringBuf->size);
-      // memset(in, 0, in_size);
+      memset(ringBuf->buf, 0, ringBuf->size);
+      memset(in, 0, in_size);
 
       // Register input ports
-      for (int i = 0; i < info->ports.nin; i++) {
+      for (uint i = 0; i < info->nin; i++) {
         //TODO: replace std::string here
         std::string name = "input";
         name += std::to_string(i + 1);
@@ -127,21 +161,21 @@ namespace audio {
       const char **inputs  = findPorts(JackPortIsPhysical | JackPortIsOutput);
       const char **outputs = findPorts(JackPortIsPhysical | JackPortIsInput);
 
-      unsigned int ninputs = 0;
+      uint ninputs = 0;
       while (inputs[ninputs] != NULL) ninputs++;
-      unsigned int noutputs = 0;
+      uint noutputs = 0;
       while (outputs[noutputs] != NULL) noutputs++;
 
-      for (int i = 0; i < info->ports.nin; i++) {
+      for (uint i = 0; i < info->nin; i++) {
         connectPort(jack_port_name(info->ports.in[i]), inputs[i % ninputs]);
       }
-
-      connectPort(outputs[0 % noutputs], jack_port_name(info->ports.outL));
-      connectPort(outputs[1 % noutputs], jack_port_name(info->ports.outR));
+      for (uint i = 0; i < info->nout; i++) {
+        connectPort(outputs[i % noutputs], jack_port_name(info->ports.out[i]));
+      }
 
       LOGI << "Connected ports, enabling canProcess";
 
-      info->canProcess = 1;
+      info->doProcess = 1;
     }
 
     int init (int argc, char *argv[]) {
@@ -159,16 +193,16 @@ namespace audio {
       LOGD << "JACK client status: " << info.status;
 
       info.client = client;
-      info.canProcess = 0;
+      info.doProcess = 0;
 
-      //jack_set_process_callback(client, process, &info);
+      jack_set_process_callback(client, process, &info);
 
       if (jack_activate(client)) LOGF << "Cannot activate JACK client";
       jack_activate(client);
 
       setupPorts(&info);
 
-      for(;;)
+      while (1)
         sleep(10);
 
       jack_client_close(client);
