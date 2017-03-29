@@ -1,3 +1,4 @@
+#ifdef NOT_DEFINED_PLEASE
 /*
   Copyright (C) 2001 Paul Davis
   Copyright (C) 2003 Jack O'Quin
@@ -325,3 +326,5 @@ namespace audio {
     }
   }
 }
+
+#endif

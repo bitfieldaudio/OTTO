@@ -16,9 +16,6 @@
 #include "../events.h"
 
 namespace audio {
-namespace disk {
-
-}
 
 namespace jack {
 
@@ -40,7 +37,7 @@ int process(jack_nframes_t nframes, void *arg) {
     info->data.out[i] = (AudioSample *) jack_port_get_buffer(
       info->ports.out[i], nframes);
 
-  for (uint i = 0; i < info->nTracks; i++)
+  for (uint i = 0; i < info->nIn; i++)
     info->data.in[i] = (AudioSample *) jack_port_get_buffer(
       info->ports.in[i], nframes);
 
@@ -65,21 +62,6 @@ int srateCallback(jack_nframes_t nframes, void *arg) {
 }
 
 void setupPorts(ThreadInfo *info) {
-  size_t in_size = info->nIn * sizeof(AudioSample*);
-  auto in = (AudioSample **) malloc(in_size);
-
-  info->ringBuf = jack_ringbuffer_create(
-    info->nIn * SAMPLE_SIZE * info->rbSize);
-
-  /* Note from JACK sample capture_client.cpp:
-   * When JACK is running realtime, jack_activate() will have
-   * called mlockall() to lock our pages into memory.  But, we
-   * still need to touch any newly allocated pages before
-   * process() starts using them.  Otherwise, a page fault could
-   * create a delay that would force JACK to shut us down.
-   */
-  memset(info->ringBuf->buf, 0, info->ringBuf->size);
-  memset(in, 0, in_size);
 
   // Register input ports
   for (uint i = 0; i < info->nIn; i++) {

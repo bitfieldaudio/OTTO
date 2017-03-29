@@ -1,6 +1,6 @@
-#include "audio/jack.h"
 #include <plog/Log.h>
 #include <plog/Appenders/ConsoleAppender.h>
+#include "audio/jack.h"
 
 int main(int argc, char *argv[]) {
   static plog::ConsoleAppender<plog::TxtFormatter> consoleAppender;

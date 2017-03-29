@@ -1,5 +1,4 @@
-#ifndef AUDIO_JACK_H
-#define AUDIO_JACK_H
+#pragma once
 
 #include <cstdlib>
 #include <string>
@@ -27,14 +26,13 @@ struct Project {
 struct ThreadInfo {
   // Number of ports
   const static uint nOut = 2;
-  const static uint nIn = 4;
-  const static uint nTracks = 4;
+  const static uint nIn = 2;
 
   Project *project;
   jack_client_t *client;
   jack_status_t jackStatus;
 
-  struct Ports {
+  struct {
     union { // In theory this allows to ways to access the outputs.
       struct {
         jack_port_t *outL;
@@ -45,13 +43,9 @@ struct ThreadInfo {
     jack_port_t *in[nIn];
   } ports;
 
-  jack_nframes_t rbSize = 16384;
-  jack_ringbuffer_t *ringBuf;
   jack_nframes_t samplerate;
 
-  SNDFILE *sndFile;
-
-  struct Data {
+  struct {
     union { // Theres probably a better way to do it though
       struct {
         AudioSample *outL;
@@ -59,18 +53,14 @@ struct ThreadInfo {
       };
       AudioSample *out[2];
     };
-    AudioSample *in[nTracks];
+    AudioSample *in[nIn];
   } data;
 
   volatile bool doProcess;
   volatile int status;
-
-  struct Disk {
-    pthread_t *thread;
-  } disk;
 };
 
-struct _Events {
+struct {
   Dispatcher<ThreadInfo*> preInit;
   Dispatcher<ThreadInfo*> postInit;
   Dispatcher<ThreadInfo*> preExit;
@@ -82,5 +72,3 @@ struct _Events {
 } events;
 }
 }
-
-#endif

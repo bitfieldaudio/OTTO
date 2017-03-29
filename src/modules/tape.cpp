@@ -1,5 +1,5 @@
-#include "tape.h";
-#include "../audio/jack.h";
+#include "tape.h"
+#include "../audio/jack.h"
 #include <plog/Log.h>
 
 using namespace audio::jack;
@@ -9,11 +9,11 @@ const int BITRATE = SF_FORMAT_PCM_32;
 
 pthread_mutex_t diskLock = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t dataReady = PTHREAD_COND_INITIALIZER;
-uint bytesPrFrame = ThreadInfo::nTracks * SAMPLE_SIZE;
+uint bytesPrFrame = TapeModule::nTracks * SAMPLE_SIZE;
 
 // Run by the disk thread
 void * diskRoutine(void *arg) {
-  auto *info = (jack::ThreadInfo *) arg;
+  auto self = (TapeModule *) arg;
 
   char *framebuf = (char*) malloc(bytesPrFrame);
 
@@ -22,16 +22,15 @@ void * diskRoutine(void *arg) {
 
   while(1) {
 
-    while (jack_ringbuffer_read_space(info->ringBuf) >= bytesPrFrame) {
-      jack_ringbuffer_read(info->ringBuf, framebuf, bytesPrFrame);
+    while (jack_ringbuffer_read_space(self->ringBuf) >= bytesPrFrame) {
+      jack_ringbuffer_read(self->ringBuf, framebuf, bytesPrFrame);
 
-      if (sf_writef_float(info->sndFile, (AudioSample*) framebuf, 1) != 1) {
+      if (sf_writef_float(self->sndFile, (AudioSample*) framebuf, 1) != 1) {
         // Error
         char errstr[256];
         sf_error_str (0, errstr, sizeof (errstr) - 1);
 
         LOGE << "Cannot write sndfile (" << errstr << ")";
-        info->status = EIO;
         goto done;
       }
     }
@@ -45,10 +44,10 @@ done:
   return 0;
 }
 
-void process(jack_nframes_t nframes, jack::ThreadInfo *info) {
+void process(jack_nframes_t nframes, jack::ThreadInfo *info, TapeModule *self) {
   for (uint i = 0; i < nframes; i++) {
-    for (uint chn = 0; chn < info->nTracks; chn++) {
-      if (jack_ringbuffer_write(info->ringBuf, (char *) info->data.in[chn],
+    for (uint chn = 0; chn < self->nTracks; chn++) {
+      if (jack_ringbuffer_write(self->ringBuf, (char *) info->data.in[chn],
       SAMPLE_SIZE)) {
         LOGE << "overrun";
       }
@@ -66,18 +65,34 @@ void process(jack_nframes_t nframes, jack::ThreadInfo *info) {
   }
 }
 
-void exitThread(jack::ThreadInfo *info) {
-  pthread_join(*info->disk.thread, (void **) NULL);
-  sf_close(info->sndFile);
+void exitThread(jack::ThreadInfo *info, TapeModule *self) {
+  pthread_join(self->thread, (void **) NULL);
+  sf_close(self->sndFile);
 }
 
-void initThread(jack::ThreadInfo *info) {
+void initThread(jack::ThreadInfo *info, TapeModule *self) {
+  size_t in_size = info->nIn * sizeof(AudioSample*);
+  auto in = (AudioSample **) malloc(in_size);
+
+  self->ringBuf = jack_ringbuffer_create(
+    info->nIn * SAMPLE_SIZE * self->rbSize);
+
+  /* Note from JACK sample capture_client.cpp:
+   * When JACK is running realtime, jack_activate() will have
+   * called mlockall() to lock our pages into memory.  But, we
+   * still need to touch any newly allocated pages before
+   * process() starts using them.  Otherwise, a page fault could
+   * create a delay that would force JACK to shut us down.
+   */
+  memset(self->ringBuf->buf, 0, self->ringBuf->size);
+  memset(in, 0, in_size);
+
   SF_INFO sfInfo;
   sfInfo.samplerate = info->samplerate;
-  sfInfo.channels = info->nTracks;
+  sfInfo.channels = self->nTracks;
   sfInfo.format = SF_FORMAT_WAV | BITRATE;
 
-  if ((info->sndFile = sf_open(info->project->path.c_str(),
+  if ((self->sndFile = sf_open(info->project->path.c_str(),
   SFM_RDWR, &sfInfo)) == NULL) {
 
     // Error
@@ -90,11 +105,12 @@ void initThread(jack::ThreadInfo *info) {
     jack_client_close(info->client);
     exit(1);
   }
-  pthread_create(info->disk.thread, NULL, diskRoutine, info);
+  pthread_create(&self->thread, NULL, diskRoutine, self);
 }
 
 void TapeModule::init() {
-  events.postInit.add(initThread);
-  events.preExit.add(exitThread);
-  events.jackProcess.add(process);
+  events.postInit.add<TapeModule>(this, initThread);
+  events.preExit.add<TapeModule>(this, exitThread);
+  events.postProcess.add<TapeModule>(this, process);
 }
+
