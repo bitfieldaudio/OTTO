@@ -6,7 +6,7 @@
 
 #include <jack/jack.h>
 #include <jack/ringbuffer.h>
-#include <sndfile.hh>
+#include <sndfile.h>
 #include <pthread.h>
 
 #include "../events.h"
@@ -75,7 +75,10 @@ struct _Events {
   Dispatcher<ThreadInfo*> postInit;
   Dispatcher<ThreadInfo*> preExit;
   Dispatcher<ThreadInfo*> postExit;
-  Dispatcher<jack_nframes_t, ThreadInfo*> jackProcess;
+  Dispatcher<jack_nframes_t, ThreadInfo*> preProcess; // IDK
+  Dispatcher<jack_nframes_t, ThreadInfo*> process1;   // Synths
+  Dispatcher<jack_nframes_t, ThreadInfo*> process2;   // Effects
+  Dispatcher<jack_nframes_t, ThreadInfo*> postProcess;// Read only
 } events;
 }
 }

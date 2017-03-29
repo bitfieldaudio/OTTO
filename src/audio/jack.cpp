@@ -48,7 +48,10 @@ int process(jack_nframes_t nframes, void *arg) {
   for (auto data: info->data.out)
     memset(data, 0, SAMPLE_SIZE);
 
-  events.jackProcess(nframes, info);
+  events.preProcess(nframes, info); // IDK, Read only
+  events.process1(nframes, info);   // Synth
+  events.process2(nframes, info);   // Effects
+  events.postProcess(nframes, info);// Output, Read only
 
   return 0;
 }
