@@ -9,6 +9,8 @@
 #include "../module.h"
 
 class TapeModule : public Module {
+private:
+  TapeModule() {};
 public:
   pthread_t thread;
   const static uint nTracks = 4;
@@ -17,5 +19,10 @@ public:
   jack_ringbuffer_t *ringBuf;
   SNDFILE *sndFile;
 
-  void init();
+  static TapeModule *getInstance() {
+    static TapeModule instance;
+    return &instance;
+  };
+
+  static void init();
 };

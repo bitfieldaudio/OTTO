@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <plog/Log.h>
 #include "module.h"
 
 template<typename...Args>
@@ -15,7 +16,7 @@ public:
   }
 
   void operator()(Args... args) {
-    owner->*handler(args..., owner);
+    handler(args..., owner);
   }
 };
 
@@ -27,7 +28,10 @@ public:
   Dispatcher() {};
 
   unsigned int add(Module *owner, void (*handler)(Args..., Module*)) {
-    handlers.push_back(EventHandler<Args...>(owner, handler));
+    LOGD << "Adding an event";
+    auto h = EventHandler< Args...>(owner, handler);
+    this->handlers.push_back(h);
+    LOGD << &handlers.front();
     return handlers.size() - 1;
   }
 
@@ -36,6 +40,7 @@ public:
   }
 
   void runAll(Args... args) {
+    LOGD << "Running event handlers";
     for (auto handler: this->handlers)  {
       handler(args...);
     }

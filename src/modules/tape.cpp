@@ -40,11 +40,15 @@ void * diskRoutine(void *arg) {
 
 done:
   pthread_mutex_unlock(&diskLock);
-  free(framebuf);
+  free(framebuf)
+
+;
   return 0;
 }
 
-void process(jack_nframes_t nframes, jack::ThreadInfo *info, TapeModule *self) {
+void process(jack_nframes_t nframes, jack::ThreadInfo *info, Module *arg) {
+  auto *self = (TapeModule *) arg;
+
   for (uint i = 0; i < nframes; i++) {
     for (uint chn = 0; chn < self->nTracks; chn++) {
       if (jack_ringbuffer_write(self->ringBuf, (char *) info->data.in[chn],
@@ -65,12 +69,15 @@ void process(jack_nframes_t nframes, jack::ThreadInfo *info, TapeModule *self) {
   }
 }
 
-void exitThread(jack::ThreadInfo *info, TapeModule *self) {
+void exitThread(jack::ThreadInfo *info, Module *arg) {
+  auto *self = (TapeModule *) arg;
   pthread_join(self->thread, (void **) NULL);
   sf_close(self->sndFile);
 }
 
-void initThread(jack::ThreadInfo *info, TapeModule *self) {
+void initThread(jack::ThreadInfo *info, Module *arg) {
+  LOGD << "Registered TapeModule";
+  auto *self = (TapeModule *) arg;
   size_t in_size = info->nIn * sizeof(AudioSample*);
   auto in = (AudioSample **) malloc(in_size);
 
@@ -109,8 +116,8 @@ void initThread(jack::ThreadInfo *info, TapeModule *self) {
 }
 
 void TapeModule::init() {
-  events.postInit.add<TapeModule>(this, initThread);
-  events.preExit.add<TapeModule>(this, exitThread);
-  events.postProcess.add<TapeModule>(this, process);
+  events.postInit.add(getInstance(), initThread);
+  events.preExit.add(getInstance(), exitThread);
+  events.postProcess.add(getInstance(), process);
 }
 
