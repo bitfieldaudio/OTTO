@@ -1,5 +1,6 @@
 #include "tape.h"
 #include "../audio/jack.h"
+#include "../globals.h"
 #include <plog/Log.h>
 
 using namespace audio::jack;
@@ -46,12 +47,12 @@ done:
   return 0;
 }
 
-void process(jack_nframes_t nframes, jack::ThreadInfo *info, Module *arg) {
+void process(jack_nframes_t nframes, Module *arg) {
   auto *self = (TapeModule *) arg;
 
   for (uint i = 0; i < nframes; i++) {
     for (uint chn = 0; chn < self->nTracks; chn++) {
-      if (jack_ringbuffer_write(self->ringBuf, (char *) info->data.in[chn],
+      if (jack_ringbuffer_write(self->ringBuf, (char *) GLOB.data.in[chn],
       SAMPLE_SIZE)) {
         LOGE << "overrun";
       }
@@ -69,20 +70,20 @@ void process(jack_nframes_t nframes, jack::ThreadInfo *info, Module *arg) {
   }
 }
 
-void exitThread(jack::ThreadInfo *info, Module *arg) {
+void exitThread(Module *arg) {
   auto *self = (TapeModule *) arg;
   pthread_join(self->thread, (void **) NULL);
   sf_close(self->sndFile);
 }
 
-void initThread(jack::ThreadInfo *info, Module *arg) {
+void initThread(Module *arg) {
   LOGD << "Registered TapeModule";
   auto *self = (TapeModule *) arg;
-  size_t in_size = info->nIn * sizeof(AudioSample*);
+  size_t in_size = GLOB.nIn * sizeof(AudioSample*);
   auto in = (AudioSample **) malloc(in_size);
 
   self->ringBuf = jack_ringbuffer_create(
-    info->nIn * SAMPLE_SIZE * self->rbSize);
+    GLOB.nIn * SAMPLE_SIZE * self->rbSize);
 
   /* Note from JACK sample capture_client.cpp:
    * When JACK is running realtime, jack_activate() will have
@@ -95,29 +96,29 @@ void initThread(jack::ThreadInfo *info, Module *arg) {
   memset(in, 0, in_size);
 
   SF_INFO sfInfo;
-  sfInfo.samplerate = info->samplerate;
+  sfInfo.samplerate = GLOB.samplerate;
   sfInfo.channels = self->nTracks;
   sfInfo.format = SF_FORMAT_WAV | BITRATE;
 
-  if ((self->sndFile = sf_open(info->project->path.c_str(),
+  if ((self->sndFile = sf_open(GLOB.project->path.c_str(),
   SFM_RDWR, &sfInfo)) == NULL) {
 
     // Error
     char errstr[256];
-    sf_error_str (0, errstr, sizeof (errstr) - 1);
+    sf_error_str (NULL, errstr, sizeof (errstr) - 1);
 
     LOGE << "Cannot open sndfile '" <<
-      info->project->path << "' for output (" << errstr << ")";
+      GLOB.project->path.c_str() << "' for output (" << errstr << ")";
 
-    jack_client_close(info->client);
+    jack_client_close(GLOB.client);
     exit(1);
   }
   pthread_create(&self->thread, NULL, diskRoutine, self);
 }
 
 void TapeModule::init() {
-  events.postInit.add(getInstance(), initThread);
-  events.preExit.add(getInstance(), exitThread);
-  events.postProcess.add(getInstance(), process);
+  GLOB.events.postInit.add(getInstance(), initThread);
+  GLOB.events.preExit.add(getInstance(), exitThread);
+  GLOB.events.postProcess.add(getInstance(), process);
 }
 

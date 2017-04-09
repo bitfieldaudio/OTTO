@@ -12,6 +12,7 @@
 #include <jack/ringbuffer.h>
 #include <plog/Log.h>
 
+#include "../globals.h"
 #include "jack.h"
 #include "../events.h"
 
@@ -29,79 +30,76 @@ void shutdown(void *arg) {
 }
 
 int process(jack_nframes_t nframes, void *arg) {
-  auto *info = (ThreadInfo *) arg;
+  if (!GLOB.doProcess) return 0;
 
-  if (!info->doProcess) return 0;
+  for (uint i = 0; i < GLOB.nOut; i++)
+    GLOB.data.out[i] = (AudioSample *) jack_port_get_buffer(
+      GLOB.ports.out[i], nframes);
 
-  for (uint i = 0; i < info->nOut; i++)
-    info->data.out[i] = (AudioSample *) jack_port_get_buffer(
-      info->ports.out[i], nframes);
-
-  for (uint i = 0; i < info->nIn; i++)
-    info->data.in[i] = (AudioSample *) jack_port_get_buffer(
-      info->ports.in[i], nframes);
+  for (uint i = 0; i < GLOB.nIn; i++)
+    GLOB.data.in[i] = (AudioSample *) jack_port_get_buffer(
+      GLOB.ports.in[i], nframes);
 
   // Play silence for now
-  for (auto data: info->data.out)
+  for (auto data: GLOB.data.out)
     memset(data, 0, SAMPLE_SIZE);
 
-  events.preProcess(nframes, info); // IDK, Read only
-  events.process1(nframes, info);   // Synth
-  events.process2(nframes, info);   // Effects
-  events.postProcess(nframes, info);// Output, Read only
+  GLOB.events.preProcess(nframes); // IDK, Read only
+  GLOB.events.process1(nframes);   // Synth
+  GLOB.events.process2(nframes);   // Effects
+  GLOB.events.postProcess(nframes);// Output, Read only
 
   return 0;
 }
 
 // Callback for samplerate change
 int srateCallback(jack_nframes_t nframes, void *arg) {
-  auto *info = (ThreadInfo *) arg;
-  info->samplerate = nframes;
+  GLOB.samplerate = nframes;
   LOGI << "New sample rate: " << nframes;
   return 0;
 }
 
-void setupPorts(ThreadInfo *info) {
+void setupPorts() {
 
   // Register input ports
-  for (uint i = 0; i < info->nIn; i++) {
+  for (uint i = 0; i < GLOB.nIn; i++) {
     //TODO: replace std::string here
     std::string name = "input";
     name += std::to_string(i + 1);
 
-    info->ports.in[i] = jack_port_register(
-      info->client,
+    GLOB.ports.in[i] = jack_port_register(
+      GLOB.client,
       name.c_str(),
       JACK_DEFAULT_AUDIO_TYPE,
       JackPortIsInput,
       0);
-    if (info->ports.in[i] == NULL)
+    if (GLOB.ports.in[i] == NULL)
       LOGE << "Couldn't register port '" << name << "'";
   }
 
   // function to register outputs
   auto registerOutput = [&](const char *name) {
     return jack_port_register(
-      info->client,
+      GLOB.client,
       name,
       JACK_DEFAULT_AUDIO_TYPE,
       JackPortIsOutput,
       0);
   };
   // register output ports
-  info->ports.outL = registerOutput("outLeft");
-  info->ports.outR = registerOutput("outRight");
+  GLOB.ports.outL = registerOutput("outLeft");
+  GLOB.ports.outR = registerOutput("outRight");
 
   // Find physical capture ports
   auto findPorts = [&](auto criteria, const char * type = "audio") {
     const char **ports = jack_get_ports(
-      info->client,
+      GLOB.client,
       NULL,
       type,
       criteria);
     if (ports == NULL) {
       LOGF << "No ports found matching " << std::to_string(criteria);
-      jack_client_close(info->client);
+      jack_client_close(GLOB.client);
       exit(1);
     }
     return ports;
@@ -109,7 +107,7 @@ void setupPorts(ThreadInfo *info) {
 
   // Helper function for connections
   auto connectPort = [&](const char *src_name, const char *dest_name) {
-    if (jack_connect(info->client, dest_name, src_name)) {
+    if (jack_connect(GLOB.client, dest_name, src_name)) {
       LOGF << "Cannot connect port '" << src_name
       << "' to '" << dest_name << "'";
       LOGD << "src type: '" << jack_port_type(
@@ -127,55 +125,55 @@ void setupPorts(ThreadInfo *info) {
   uint noutputs = 0;
   while (outputs[noutputs] != NULL) noutputs++;
 
-  for (uint i = 0; i < info->nIn; i++) {
-    connectPort(jack_port_name(info->ports.in[i]), inputs[i % ninputs]);
+  for (uint i = 0; i < GLOB.nIn; i++) {
+    connectPort(jack_port_name(GLOB.ports.in[i]), inputs[i % ninputs]);
   }
-  for (uint i = 0; i < info->nOut; i++) {
-    connectPort(outputs[i % noutputs], jack_port_name(info->ports.out[i]));
+  for (uint i = 0; i < GLOB.nOut; i++) {
+    connectPort(outputs[i % noutputs], jack_port_name(GLOB.ports.out[i]));
   }
 
   LOGI << "Connected ports, enabling canProcess";
 
-  info->doProcess = 1;
+  GLOB.doProcess = 1;
 }
 
 int init (int argc, char *argv[]) {
-  ThreadInfo info;
-  memset(&info, 0, sizeof(info));
 
-  client = jack_client_open(CLIENT_NAME, JackNullOption, &info.jackStatus);
-  info.client = client;
+  client = jack_client_open(CLIENT_NAME, JackNullOption, &GLOB.jackStatus);
+  GLOB.client = client;
 
-  events.preInit(&info);
+  GLOB.events.preInit();
 
-  if (!(info.jackStatus & JackServerStarted)) {
+  if (!(GLOB.jackStatus & JackServerStarted)) {
     LOGF << "JACK server not running";
     exit(1);
   }
 
   LOGI << "JACK server started";
-  LOGD << "JACK client status: " << info.jackStatus;
+  LOGD << "JACK client status: " << GLOB.jackStatus;
 
-  info.doProcess = 0;
+  GLOB.doProcess = 0;
 
-  jack_set_process_callback(client, process, &info);
-  jack_set_sample_rate_callback(client, srateCallback, &info);
+  jack_set_process_callback(client, process, NULL);
+  jack_set_sample_rate_callback(client, srateCallback, NULL);
 
   if (jack_activate(client)) LOGF << "Cannot activate JACK client";
   jack_activate(client);
 
-  setupPorts(&info);
+  GLOB.samplerate = jack_get_sample_rate(client);
 
-  events.postInit(&info);
+  setupPorts();
+
+  GLOB.events.postInit();
 
   while (1)
     sleep(10);
 
-  events.preExit(&info);
+  GLOB.events.preExit();
 
   jack_client_close(client);
 
-  events.postExit(&info);
+  GLOB.events.postExit();
 
   exit(0);
 }

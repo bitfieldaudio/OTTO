@@ -25,14 +25,16 @@ template<typename ...Args>
 private:
   std::vector<EventHandler<Args...>> handlers;
 public:
-  Dispatcher() {};
+  Dispatcher() {
+    LOGD << "new dispatcher";
+  };
 
   unsigned int add(Module *owner, void (*handler)(Args..., Module*)) {
     LOGD << "Adding an event";
-    auto h = EventHandler< Args...>(owner, handler);
-    this->handlers.push_back(h);
+    EventHandler< Args...> *h = new EventHandler< Args...>(owner, handler);
+    this->handlers.push_back(*h);
     LOGD << &handlers.front();
-    return handlers.size() - 1;
+    return this->handlers.size() - 1;
   }
 
   void remove(unsigned int i){
@@ -40,8 +42,8 @@ public:
   }
 
   void runAll(Args... args) {
-    LOGD << "Running event handlers";
     for (auto handler: this->handlers)  {
+      LOGD << "Running event handlers";
       handler(args...);
     }
   }
