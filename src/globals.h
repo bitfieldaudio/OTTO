@@ -22,7 +22,7 @@ struct Project {
 struct __Globals_t {
   // Number of ports
   const static uint nOut = 2;
-  const static uint nIn = 2;
+  const static uint nIn = 1;
 
   Project *project;
   jack_client_t *client;

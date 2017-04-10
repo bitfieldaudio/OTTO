@@ -41,7 +41,7 @@ int process(jack_nframes_t nframes, void *arg) {
       GLOB.ports.in[i], nframes);
 
   // Play silence for now
-  for (auto data: GLOB.data.out)
+  for (auto data: GLOB.data.in)
     memset(data, 0, SAMPLE_SIZE);
 
   GLOB.events.preProcess(nframes); // IDK, Read only
@@ -166,8 +166,9 @@ int init (int argc, char *argv[]) {
 
   GLOB.events.postInit();
 
-  while (1)
-    sleep(10);
+  sleep(10);
+
+  LOGI << "Exiting";
 
   GLOB.events.preExit();
 

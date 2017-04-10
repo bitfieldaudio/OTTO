@@ -43,7 +43,7 @@ public:
 
   void runAll(Args... args) {
     for (auto handler: this->handlers)  {
-      LOGD << "Running event handlers";
+      //LOGD << "Running event handlers";
       handler(args...);
     }
   }

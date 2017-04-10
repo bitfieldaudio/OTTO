@@ -2,7 +2,7 @@
 
 #include <jack/jack.h>
 #include <jack/ringbuffer.h>
-#include <sndfile.h>
+#include <sndfile.hh>
 #include <pthread.h>
 
 #include "../audio/jack.h"
@@ -15,9 +15,11 @@ public:
   pthread_t thread;
   const static uint nTracks = 4;
 
+  uint recording = 1; // 0: Not recording, !0: track number;
+
   jack_nframes_t rbSize = 16384;
   jack_ringbuffer_t *ringBuf;
-  SNDFILE *sndFile;
+  SndfileHandle sndfile;
 
   static TapeModule *getInstance() {
     static TapeModule instance;

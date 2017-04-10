@@ -2,6 +2,8 @@
 #include "../audio/jack.h"
 #include "../globals.h"
 #include <plog/Log.h>
+#include <sndfile.hh>
+
 
 using namespace audio::jack;
 using namespace audio;
@@ -16,6 +18,8 @@ uint bytesPrFrame = TapeModule::nTracks * SAMPLE_SIZE;
 void * diskRoutine(void *arg) {
   auto self = (TapeModule *) arg;
 
+  if(!self->recording) return 0;
+
   char *framebuf = (char*) malloc(bytesPrFrame);
 
   pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
@@ -23,15 +27,16 @@ void * diskRoutine(void *arg) {
 
   while(1) {
 
-    while (jack_ringbuffer_read_space(self->ringBuf) >= bytesPrFrame) {
-      jack_ringbuffer_read(self->ringBuf, framebuf, bytesPrFrame);
+    while (jack_ringbuffer_read_space(self->ringBuf) >= SAMPLE_SIZE) {
 
-      if (sf_writef_float(self->sndFile, (AudioSample*) framebuf, 1) != 1) {
-        // Error
-        char errstr[256];
-        sf_error_str (0, errstr, sizeof (errstr) - 1);
+      self->sndfile.readf((AudioSample*) framebuf, 1);
 
-        LOGE << "Cannot write sndfile (" << errstr << ")";
+      uint pos = SAMPLE_SIZE * (self->recording - 1);
+      jack_ringbuffer_read(self->ringBuf, framebuf + pos, SAMPLE_SIZE);
+
+      if (self->sndfile.writef((AudioSample*) framebuf, 1) != 1) {
+        LOGE << "Cannot write sndfile:";
+        LOGE << self->sndfile.strError();
         goto done;
       }
     }
@@ -41,20 +46,20 @@ void * diskRoutine(void *arg) {
 
 done:
   pthread_mutex_unlock(&diskLock);
-  free(framebuf)
-
-;
+  free(framebuf) ;
   return 0;
 }
 
 void process(jack_nframes_t nframes, Module *arg) {
   auto *self = (TapeModule *) arg;
 
+  if (!self->recording) return;
+
   for (uint i = 0; i < nframes; i++) {
-    for (uint chn = 0; chn < self->nTracks; chn++) {
-      if (jack_ringbuffer_write(self->ringBuf, (char *) GLOB.data.in[chn],
-      SAMPLE_SIZE)) {
-        LOGE << "overrun";
+    for (uint chn = 0; chn < GLOB.nIn; chn++) {
+      if (jack_ringbuffer_write(self->ringBuf, (char *) GLOB.data.in[chn]+i,
+      SAMPLE_SIZE) < SAMPLE_SIZE) {
+        LOGE << "TapeModule overrun";
       }
     }
   }
@@ -72,15 +77,14 @@ void process(jack_nframes_t nframes, Module *arg) {
 
 void exitThread(Module *arg) {
   auto *self = (TapeModule *) arg;
-  pthread_join(self->thread, (void **) NULL);
-  sf_close(self->sndFile);
+  self->recording = 0;
+  sf_close(self->sndfile.rawHandle());
 }
 
 void initThread(Module *arg) {
   LOGD << "Registered TapeModule";
   auto *self = (TapeModule *) arg;
   size_t in_size = GLOB.nIn * sizeof(AudioSample*);
-  auto in = (AudioSample **) malloc(in_size);
 
   self->ringBuf = jack_ringbuffer_create(
     GLOB.nIn * SAMPLE_SIZE * self->rbSize);
@@ -93,26 +97,25 @@ void initThread(Module *arg) {
    * create a delay that would force JACK to shut us down.
    */
   memset(self->ringBuf->buf, 0, self->ringBuf->size);
-  memset(in, 0, in_size);
+  memset(GLOB.data.in, 0, in_size);
 
-  SF_INFO sfInfo;
-  sfInfo.samplerate = GLOB.samplerate;
-  sfInfo.channels = self->nTracks;
-  sfInfo.format = SF_FORMAT_WAV | BITRATE;
+  int samplerate = GLOB.samplerate;
+  int channels = self->nTracks;
+  int format = SF_FORMAT_WAV | BITRATE;
 
-  if ((self->sndFile = sf_open(GLOB.project->path.c_str(),
-  SFM_RDWR, &sfInfo)) == NULL) {
+  self->sndfile =
+    SndfileHandle(GLOB.project->path, SFM_RDWR, format, channels, samplerate);
 
+  if (self->sndfile.error()) {
     // Error
-    char errstr[256];
-    sf_error_str (NULL, errstr, sizeof (errstr) - 1);
-
     LOGE << "Cannot open sndfile '" <<
-      GLOB.project->path.c_str() << "' for output (" << errstr << ")";
+      GLOB.project->path.c_str() << "' for output:";
+    LOGE << self->sndfile.strError() << ")";
 
     jack_client_close(GLOB.client);
     exit(1);
   }
+
   pthread_create(&self->thread, NULL, diskRoutine, self);
 }
 
@@ -121,4 +124,5 @@ void TapeModule::init() {
   GLOB.events.preExit.add(getInstance(), exitThread);
   GLOB.events.postProcess.add(getInstance(), process);
 }
+
 
