@@ -2,6 +2,7 @@
 #include <plog/Appenders/ConsoleAppender.h>
 #include "audio/jack.h"
 #include "modules/tape.h"
+#include "modules/testsynth.h"
 #include "globals.h"
 
 int main(int argc, char *argv[]) {
@@ -12,6 +13,7 @@ int main(int argc, char *argv[]) {
   GLOB.project = new Project();
 
   TapeModule::init();
+  TestSynth::init();
   audio::jack::init(argc, argv);
   return 0;
 }

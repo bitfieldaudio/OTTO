@@ -18,8 +18,6 @@ uint bytesPrFrame = TapeModule::nTracks * SAMPLE_SIZE;
 void * diskRoutine(void *arg) {
   auto self = (TapeModule *) arg;
 
-  if(!self->recording) return 0;
-
   char *framebuf = (char*) malloc(bytesPrFrame);
 
   pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
@@ -27,9 +25,11 @@ void * diskRoutine(void *arg) {
 
   while(1) {
 
-    while (jack_ringbuffer_read_space(self->ringBuf) >= SAMPLE_SIZE) {
+      while (self->recording &&
+        jack_ringbuffer_read_space(self->ringBuf) >= SAMPLE_SIZE) {
 
-      self->sndfile.readf((AudioSample*) framebuf, 1);
+      //self->sndfile.readf((AudioSample*) framebuf, 1);
+      memset(framebuf, 0, bytesPrFrame);
 
       uint pos = SAMPLE_SIZE * (self->recording - 1);
       jack_ringbuffer_read(self->ringBuf, framebuf + pos, SAMPLE_SIZE);

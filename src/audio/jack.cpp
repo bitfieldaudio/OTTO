@@ -40,10 +40,6 @@ int process(jack_nframes_t nframes, void *arg) {
     GLOB.data.in[i] = (AudioSample *) jack_port_get_buffer(
       GLOB.ports.in[i], nframes);
 
-  // Play silence for now
-  for (auto data: GLOB.data.in)
-    memset(data, 0, SAMPLE_SIZE);
-
   GLOB.events.preProcess(nframes); // IDK, Read only
   GLOB.events.process1(nframes);   // Synth
   GLOB.events.process2(nframes);   // Effects
