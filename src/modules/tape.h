@@ -16,6 +16,7 @@ public:
   const static uint nTracks = 4;
 
   uint recording = 1; // 0: Not recording, !0: track number;
+  bool monitor = 1; // 0: Not recording, !0: track number;
 
   jack_nframes_t rbSize = 16384;
   jack_ringbuffer_t *ringBuf;

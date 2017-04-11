@@ -36,9 +36,8 @@ int process(jack_nframes_t nframes, void *arg) {
     GLOB.data.out[i] = (AudioSample *) jack_port_get_buffer(
       GLOB.ports.out[i], nframes);
 
-  for (uint i = 0; i < GLOB.nIn; i++)
-    GLOB.data.in[i] = (AudioSample *) jack_port_get_buffer(
-      GLOB.ports.in[i], nframes);
+  GLOB.data.in[0] = (AudioSample *) jack_port_get_buffer(
+    GLOB.ports.in[0], nframes);
 
   GLOB.events.preProcess(nframes); // IDK, Read only
   GLOB.events.process1(nframes);   // Synth
@@ -154,7 +153,6 @@ int init (int argc, char *argv[]) {
   jack_set_sample_rate_callback(client, srateCallback, NULL);
 
   if (jack_activate(client)) LOGF << "Cannot activate JACK client";
-  jack_activate(client);
 
   GLOB.samplerate = jack_get_sample_rate(client);
 

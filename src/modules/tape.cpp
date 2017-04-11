@@ -53,25 +53,26 @@ done:
 void process(jack_nframes_t nframes, Module *arg) {
   auto *self = (TapeModule *) arg;
 
-  if (!self->recording) return;
+  if (self->recording) {
+    if (jack_ringbuffer_write(self->ringBuf, (char *) GLOB.data.in[0],
+      SAMPLE_SIZE * nframes) < SAMPLE_SIZE * nframes) {
+      LOGE << "TapeModule overrun";
+    }
 
-  for (uint i = 0; i < nframes; i++) {
-    for (uint chn = 0; chn < GLOB.nIn; chn++) {
-      if (jack_ringbuffer_write(self->ringBuf, (char *) GLOB.data.in[chn]+i,
-      SAMPLE_SIZE) < SAMPLE_SIZE) {
-        LOGE << "TapeModule overrun";
-      }
+    /* Tell the disk thread there is work to do.  If it is already
+     * running, the lock will not be available.  We can't wait
+     * here in the process() thread, but we don't need to signal
+     * in that case, because the disk thread will read all the
+     * data queued before waiting again. */
+    if (pthread_mutex_trylock (&diskLock) == 0) {
+      pthread_cond_signal (&dataReady);
+      pthread_mutex_unlock (&diskLock);
     }
   }
 
-  /* Tell the disk thread there is work to do.  If it is already
-   * running, the lock will not be available.  We can't wait
-   * here in the process() thread, but we don't need to signal
-   * in that case, because the disk thread will read all the
-   * data queued before waiting again. */
-  if (pthread_mutex_trylock (&diskLock) == 0) {
-    pthread_cond_signal (&dataReady);
-    pthread_mutex_unlock (&diskLock);
+  if (self->monitor) {
+    for (uint i = 0; i < GLOB.nOut; i++)
+      memcpy(GLOB.data.out[i], GLOB.data.in[0], SAMPLE_SIZE * nframes);
   }
 }
 
