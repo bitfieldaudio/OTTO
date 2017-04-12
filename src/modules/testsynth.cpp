@@ -11,11 +11,9 @@ float sine[TABLE_SIZE];
 int phase;
 
 static void process1(jack_nframes_t nframes, Module *arg) {
-  auto *self = (TestSynth *) arg;
-
   for(uint i=0; i<nframes; i++ ) {
-    GLOB.data.in[0][i] = sine[phase];  /* left */
-    phase += 1;
+    GLOB.data.proc[i] = sine[phase];
+    phase += 3;
     if( phase >= TABLE_SIZE ) phase -= TABLE_SIZE;
   }
 }

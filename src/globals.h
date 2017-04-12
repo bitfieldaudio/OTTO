@@ -40,6 +40,7 @@ struct __Globals_t {
   } ports;
 
   jack_nframes_t samplerate;
+  jack_nframes_t buffersize;
 
   struct {
     union { // Theres probably a better way to do it though
@@ -47,9 +48,11 @@ struct __Globals_t {
         audio::AudioSample *outL;
         audio::AudioSample *outR;
       };
-      audio::AudioSample *out[2];
+      audio::AudioSample **out;
     };
-    audio::AudioSample *in[nIn];
+    audio::AudioSample **in;
+    // the sound that is generated, monitored and recorded
+    audio::AudioSample *proc;
   } data;
 
   volatile bool doProcess;

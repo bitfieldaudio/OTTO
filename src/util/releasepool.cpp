@@ -9,7 +9,7 @@
 // #############################################
 
 void Timer::runTimerCallback(Timer *self) {
-  while (self->exit) {
+  while (1) {
     self->timerCallback();
     if (self->mutex.try_lock_for(std::chrono::seconds(self->time))) {
       self->mutex.unlock();
@@ -26,7 +26,6 @@ void Timer::startTimer(uint newTime) {
 }
 
 void Timer::stopTimer() {
-  exit = 0;
   mutex.unlock();
   thread.join();
 }

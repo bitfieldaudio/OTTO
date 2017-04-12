@@ -17,14 +17,12 @@ class Timer {
 public:
   uint time;
 
-  Timer() : exit(0) {};
   void startTimer(uint time);
   void stopTimer();
 protected:
   virtual void timerCallback();
   std::thread thread;
 private:
-  std::atomic_bool exit;
   std::timed_mutex mutex;
   static void runTimerCallback(Timer *self);
 };
@@ -34,7 +32,7 @@ private:
  */
 class ReleasePool : private Timer {
 public:
-  ReleasePool() { startTimer(1000); }
+  ReleasePool() { startTimer(1); }
   ~ReleasePool() { stopTimer(); }
 
   template<typename T> void add (const std::shared_ptr<T>& object);

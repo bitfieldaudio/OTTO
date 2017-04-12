@@ -3,93 +3,134 @@
 #include "../globals.h"
 #include <plog/Log.h>
 #include <sndfile.hh>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
 
-
-using namespace audio::jack;
 using namespace audio;
+using namespace audio::jack;
 
 const int BITRATE = SF_FORMAT_PCM_32;
 
-pthread_mutex_t diskLock = PTHREAD_MUTEX_INITIALIZER;
-pthread_cond_t dataReady = PTHREAD_COND_INITIALIZER;
-uint bytesPrFrame = TapeModule::nTracks * SAMPLE_SIZE;
-
-// Run by the disk thread
-void * diskRoutine(void *arg) {
+void *TapeModule::diskRoutine(void *arg) {
   auto self = (TapeModule *) arg;
 
-  char *framebuf = (char*) malloc(bytesPrFrame);
+  char *framebuf = (char*) malloc(rbSize);
 
-  pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
-  pthread_mutex_lock(&diskLock);
+  while (1) {
+    while (self->playing || self->recording) {
+      if (self->playing) {
+        auto space = jack_ringbuffer_write_space(self->playBuf);
 
-  while(1) {
+        if (space >= SAMPLE_SIZE) {
+          uint nframes = space / SAMPLE_SIZE;
+          uint size = SAMPLE_SIZE * nframes * nTracks;
+          // Clear the framebuffer
+          memset(framebuf, 0, size);
 
-      while (self->recording &&
-        jack_ringbuffer_read_space(self->ringBuf) >= SAMPLE_SIZE) {
+          auto read = self->sndfile.readf((AudioSample*) framebuf, nframes);
 
-      //self->sndfile.readf((AudioSample*) framebuf, 1);
-      memset(framebuf, 0, bytesPrFrame);
+          if (read < nframes) {
+            LOGD << "Playing past end of file in " << read << " frames";
+          }
 
-      uint pos = SAMPLE_SIZE * (self->recording - 1);
-      jack_ringbuffer_read(self->ringBuf, framebuf + pos, SAMPLE_SIZE);
-
-      if (self->sndfile.writef((AudioSample*) framebuf, 1) != 1) {
-        LOGE << "Cannot write sndfile:";
-        LOGE << self->sndfile.strError();
-        goto done;
+          jack_ringbuffer_write(self->playBuf, framebuf, size);
+        }
       }
-    }
 
-    pthread_cond_wait(&dataReady, &diskLock);
+      if (self->recording) {
+        auto space = jack_ringbuffer_read_space(self->recBuf);
+
+        if (space >= SAMPLE_SIZE) {
+          uint nframes = space / SAMPLE_SIZE;
+          uint size = SAMPLE_SIZE * nframes * nTracks;
+
+          memset(framebuf, 0, size);
+
+          jack_ringbuffer_read(self->recBuf, framebuf, size);
+
+          if (self->sndfile.writef((AudioSample*) framebuf, nframes) != nframes) {
+            LOGF << "Cannot write sndfile:";
+            LOGF << self->sndfile.strError();
+            goto done;
+          }
+        }
+      }
+      LOGE_IF(self->overruns) << "Overruns: " << self->overruns;
+    }
   }
 
 done:
-  pthread_mutex_unlock(&diskLock);
-  free(framebuf) ;
+  free(framebuf);
   return 0;
 }
 
-void process(jack_nframes_t nframes, Module *arg) {
+void TapeModule::process(jack_nframes_t nframes, Module *arg) {
   auto *self = (TapeModule *) arg;
 
-  if (self->recording) {
-    if (jack_ringbuffer_write(self->ringBuf, (char *) GLOB.data.in[0],
-      SAMPLE_SIZE * nframes) < SAMPLE_SIZE * nframes) {
-      LOGE << "TapeModule overrun";
+  if (self->recording || self->playing) {
+    uint bs = nTracks * SAMPLE_SIZE * nframes;
+    if (self->playing) {
+      if (jack_ringbuffer_read(self->playBuf, (char *) self->buffer, bs) < bs) {
+        self->overruns++;
+      };
+    } else {
+      memset(self->buffer, 0, bs);
     }
-
-    /* Tell the disk thread there is work to do.  If it is already
-     * running, the lock will not be available.  We can't wait
-     * here in the process() thread, but we don't need to signal
-     * in that case, because the disk thread will read all the
-     * data queued before waiting again. */
-    if (pthread_mutex_trylock (&diskLock) == 0) {
-      pthread_cond_signal (&dataReady);
-      pthread_mutex_unlock (&diskLock);
+    for (uint f = 0; f < nframes; f++) {
+      self->buffer[f * nTracks + self->recording - 1]
+        = GLOB.data.proc[f];
+    }
+    if (self->recording) {
+      if (jack_ringbuffer_write(self->recBuf, (char *) self->buffer, bs) < bs) {
+        self->overruns++;
+      }
     }
   }
 
-  if (self->monitor) {
-    for (uint i = 0; i < GLOB.nOut; i++)
-      memcpy(GLOB.data.out[i], GLOB.data.in[0], SAMPLE_SIZE * nframes);
+  self->mixOut(nframes);
+}
+
+// Thanks: http://www.vttoth.com/CMS/index.php/technical-notes/68
+static inline AudioSample mix(AudioSample A, AudioSample B) {
+  return 2 * (A + B) - 2 * A * B - 1;
+}
+
+void TapeModule::mixOut(jack_nframes_t nframes) {
+  if (playing) { // mix the tracks
+    // TODO: Configurable and all that
+    AudioSample mixed;
+    for (uint f = 0; f < nframes; f++) {
+      mixed = buffer[f * nTracks];
+      for (uint t = 1; t < nTracks ; t++) {
+        mixed = mix(mixed, buffer[f * nTracks + t]);
+      }
+      GLOB.data.outL[f] = GLOB.data.outR[f] = mixed;
+    }
+  } else { // Just monitor the proc
+    memcpy(GLOB.data.outL, GLOB.data.proc, nframes * SAMPLE_SIZE);
+    memcpy(GLOB.data.outR, GLOB.data.proc, nframes * SAMPLE_SIZE);
   }
 }
 
-void exitThread(Module *arg) {
+void TapeModule::exitThread(Module *arg) {
   auto *self = (TapeModule *) arg;
   self->recording = 0;
   sf_close(self->sndfile.rawHandle());
 }
 
-void initThread(Module *arg) {
+void TapeModule::initThread(Module *arg) {
   LOGD << "Registered TapeModule";
   auto *self = (TapeModule *) arg;
-  size_t in_size = GLOB.nIn * sizeof(AudioSample*);
 
-  self->ringBuf = jack_ringbuffer_create(
-    GLOB.nIn * SAMPLE_SIZE * self->rbSize);
+  self->recBuf = jack_ringbuffer_create(
+    self->rbSize);
 
+  self->playBuf = jack_ringbuffer_create(
+    self->rbSize);
+
+  self->bufferSize = audio::SAMPLE_SIZE * GLOB.buffersize * nTracks;
+  self->buffer = (audio::AudioSample *) malloc(self->bufferSize),
   /* Note from JACK sample capture_client.cpp:
    * When JACK is running realtime, jack_activate() will have
    * called mlockall() to lock our pages into memory.  But, we
@@ -97,8 +138,9 @@ void initThread(Module *arg) {
    * process() starts using them.  Otherwise, a page fault could
    * create a delay that would force JACK to shut us down.
    */
-  memset(self->ringBuf->buf, 0, self->ringBuf->size);
-  memset(GLOB.data.in, 0, in_size);
+  memset(self->recBuf->buf, 0, self->recBuf->size);
+  memset(self->playBuf->buf, 0, self->playBuf->size);
+  memset(self->buffer, 0, self->bufferSize);
 
   int samplerate = GLOB.samplerate;
   int channels = self->nTracks;
@@ -108,7 +150,6 @@ void initThread(Module *arg) {
     SndfileHandle(GLOB.project->path, SFM_RDWR, format, channels, samplerate);
 
   if (self->sndfile.error()) {
-    // Error
     LOGE << "Cannot open sndfile '" <<
       GLOB.project->path.c_str() << "' for output:";
     LOGE << self->sndfile.strError() << ")";
@@ -116,8 +157,7 @@ void initThread(Module *arg) {
     jack_client_close(GLOB.client);
     exit(1);
   }
-
-  pthread_create(&self->thread, NULL, diskRoutine, self);
+  self->diskThread = std::thread(TapeModule::diskRoutine, self);
 }
 
 void TapeModule::init() {

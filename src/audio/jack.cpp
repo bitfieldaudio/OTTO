@@ -36,10 +36,13 @@ int process(jack_nframes_t nframes, void *arg) {
     GLOB.data.out[i] = (AudioSample *) jack_port_get_buffer(
       GLOB.ports.out[i], nframes);
 
-  GLOB.data.in[0] = (AudioSample *) jack_port_get_buffer(
-    GLOB.ports.in[0], nframes);
+  for (uint i = 0; i < GLOB.nIn; i++)
+    GLOB.data.in[i] = (AudioSample *) jack_port_get_buffer(
+      GLOB.ports.in[i], nframes);
 
-  GLOB.events.preProcess(nframes); // IDK, Read only
+  memset(GLOB.data.proc, 0, SAMPLE_SIZE * nframes);
+
+  GLOB.events.preProcess(nframes); // Mic/Line input, Read only
   GLOB.events.process1(nframes);   // Synth
   GLOB.events.process2(nframes);   // Effects
   GLOB.events.postProcess(nframes);// Output, Read only
@@ -51,6 +54,13 @@ int process(jack_nframes_t nframes, void *arg) {
 int srateCallback(jack_nframes_t nframes, void *arg) {
   GLOB.samplerate = nframes;
   LOGI << "New sample rate: " << nframes;
+  return 0;
+}
+
+// Callback for buffersize change
+int bufsizeCallback(jack_nframes_t nframes, void *arg) {
+  GLOB.buffersize = nframes;
+  LOGI << "New buffer size: " << nframes;
   return 0;
 }
 
@@ -151,16 +161,27 @@ int init (int argc, char *argv[]) {
 
   jack_set_process_callback(client, process, NULL);
   jack_set_sample_rate_callback(client, srateCallback, NULL);
+  jack_set_buffer_size_callback(client, bufsizeCallback, NULL);
 
   if (jack_activate(client)) LOGF << "Cannot activate JACK client";
 
   GLOB.samplerate = jack_get_sample_rate(client);
+  GLOB.buffersize = jack_get_buffer_size(client);
 
   setupPorts();
 
+  GLOB.data.in = (AudioSample **)
+    malloc(SAMPLE_SIZE * GLOB.buffersize * GLOB.nIn);
+
+  GLOB.data.out = (AudioSample **)
+    malloc(SAMPLE_SIZE * GLOB.buffersize * GLOB.nOut);
+
+  GLOB.data.proc = (AudioSample *) malloc(SAMPLE_SIZE * GLOB.buffersize);
+
   GLOB.events.postInit();
 
-  sleep(10);
+  // while(1)
+    sleep(10);
 
   LOGI << "Exiting";
 

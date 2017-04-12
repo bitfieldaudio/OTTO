@@ -3,24 +3,41 @@
 #include <jack/jack.h>
 #include <jack/ringbuffer.h>
 #include <sndfile.hh>
-#include <pthread.h>
+#include <thread>
+#include <atomic>
 
 #include "../audio/jack.h"
 #include "../module.h"
+#include "../globals.h"
 
 class TapeModule : public Module {
-private:
-  TapeModule() {};
+  TapeModule() :
+    recording (3),
+    playing (0)
+  {};
+
+  static void * diskRoutine(void *arg);
+  static void initThread(Module *arg);
+  static void exitThread(Module *arg);
+  static void process(jack_nframes_t nframes, Module *arg);
+
+  uint bufferSize;
+  audio::AudioSample *buffer;
+
+  void mixOut(jack_nframes_t nframes);
 public:
-  pthread_t thread;
+  std::thread diskThread;
   const static uint nTracks = 4;
 
-  uint recording = 1; // 0: Not recording, !0: track number;
-  bool monitor = 1; // 0: Not recording, !0: track number;
+  std::atomic_uint recording; // 0: Not recording, !0: track number;
+  std::atomic_bool playing;
 
-  jack_nframes_t rbSize = 16384;
-  jack_ringbuffer_t *ringBuf;
+  const static jack_nframes_t rbSize = 16384;
+  jack_ringbuffer_t *recBuf;
+  jack_ringbuffer_t *playBuf;
   SndfileHandle sndfile;
+
+  uint overruns = 0;
 
   static TapeModule *getInstance() {
     static TapeModule instance;
