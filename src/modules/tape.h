@@ -12,11 +12,11 @@
 
 class TapeModule : public Module {
   TapeModule() :
-    recording (3),
-    playing (0)
+    recording (1),
+    playing (1)
   {};
 
-  static void * diskRoutine(void *arg);
+  static void *diskRoutine(void *arg);
   static void initThread(Module *arg);
   static void exitThread(Module *arg);
   static void process(jack_nframes_t nframes, Module *arg);
@@ -32,7 +32,7 @@ public:
   std::atomic_uint recording; // 0: Not recording, !0: track number;
   std::atomic_bool playing;
 
-  const static jack_nframes_t rbSize = 16384;
+  const static jack_nframes_t rbSize = 16384 * 4;
   jack_ringbuffer_t *recBuf;
   jack_ringbuffer_t *playBuf;
   SndfileHandle sndfile;

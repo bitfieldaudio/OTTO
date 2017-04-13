@@ -163,18 +163,20 @@ int init (int argc, char *argv[]) {
   jack_set_sample_rate_callback(client, srateCallback, NULL);
   jack_set_buffer_size_callback(client, bufsizeCallback, NULL);
 
-  if (jack_activate(client)) LOGF << "Cannot activate JACK client";
-
   GLOB.samplerate = jack_get_sample_rate(client);
   GLOB.buffersize = jack_get_buffer_size(client);
 
+  if (jack_activate(client)) LOGF << "Cannot activate JACK client";
+
   setupPorts();
 
-  GLOB.data.in = (AudioSample **)
-    malloc(SAMPLE_SIZE * GLOB.buffersize * GLOB.nIn);
+  for (uint i = 0; i < GLOB.nIn; i++)
+    GLOB.data.in[i] = (AudioSample *)
+      malloc(SAMPLE_SIZE * GLOB.buffersize);
 
-  GLOB.data.out = (AudioSample **)
-    malloc(SAMPLE_SIZE * GLOB.buffersize * GLOB.nOut);
+  for (uint i = 0; i < GLOB.nOut; i++)
+    GLOB.data.out[i] = (AudioSample *)
+      malloc(SAMPLE_SIZE * GLOB.buffersize);
 
   GLOB.data.proc = (AudioSample *) malloc(SAMPLE_SIZE * GLOB.buffersize);
 

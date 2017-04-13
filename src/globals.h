@@ -48,9 +48,9 @@ struct __Globals_t {
         audio::AudioSample *outL;
         audio::AudioSample *outR;
       };
-      audio::AudioSample **out;
+      audio::AudioSample *out[nOut];
     };
-    audio::AudioSample **in;
+    audio::AudioSample *in[nIn];
     // the sound that is generated, monitored and recorded
     audio::AudioSample *proc;
   } data;

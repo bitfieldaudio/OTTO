@@ -17,13 +17,15 @@ void *TapeModule::diskRoutine(void *arg) {
 
   char *framebuf = (char*) malloc(rbSize);
 
+  LOGI << "Position: " << self->sndfile.seek(0, SEEK_SET);
+
   while (1) {
     while (self->playing || self->recording) {
       if (self->playing) {
         auto space = jack_ringbuffer_write_space(self->playBuf);
 
-        if (space >= SAMPLE_SIZE) {
-          uint nframes = space / SAMPLE_SIZE;
+        if (space >= SAMPLE_SIZE * nTracks) {
+          uint nframes = space / (SAMPLE_SIZE * nTracks);
           uint size = SAMPLE_SIZE * nframes * nTracks;
           // Clear the framebuffer
           memset(framebuf, 0, size);
@@ -34,20 +36,24 @@ void *TapeModule::diskRoutine(void *arg) {
             LOGD << "Playing past end of file in " << read << " frames";
           }
 
-          jack_ringbuffer_write(self->playBuf, framebuf, size);
+          if (jack_ringbuffer_write(self->playBuf, framebuf, size) < size) {
+            self->overruns++;
+          }
         }
       }
 
       if (self->recording) {
         auto space = jack_ringbuffer_read_space(self->recBuf);
 
-        if (space >= SAMPLE_SIZE) {
-          uint nframes = space / SAMPLE_SIZE;
+        if (space >= (SAMPLE_SIZE * nTracks)) {
+          uint nframes = space / (SAMPLE_SIZE * nTracks);
           uint size = SAMPLE_SIZE * nframes * nTracks;
 
           memset(framebuf, 0, size);
 
-          jack_ringbuffer_read(self->recBuf, framebuf, size);
+          if (jack_ringbuffer_read(self->recBuf, framebuf, size) < size) {
+            self->overruns++;
+          };
 
           if (self->sndfile.writef((AudioSample*) framebuf, nframes) != nframes) {
             LOGF << "Cannot write sndfile:";
@@ -61,27 +67,46 @@ void *TapeModule::diskRoutine(void *arg) {
   }
 
 done:
-  free(framebuf);
   return 0;
+}
+
+// placeholder, need a better mixing function
+static inline AudioSample mix(AudioSample A, AudioSample B) {
+  return (A < 0 && B < 0) ? ((A+1)*(B+1))/2 : (A+B - A*B + 1)/2;
 }
 
 void TapeModule::process(jack_nframes_t nframes, Module *arg) {
   auto *self = (TapeModule *) arg;
 
+  if (self == NULL) {
+    LOGE << "Invalid reference to self";
+    exit (1);
+  }
+
   if (self->recording || self->playing) {
     uint bs = nTracks * SAMPLE_SIZE * nframes;
+    if (bs > self->bufferSize) {
+      LOGE << "Buffer too small: " << self->bufferSize << " of " << bs;
+      exit(1);
+    }
     if (self->playing) {
+      if (jack_ringbuffer_read_space(self->playBuf) < bs) {
+        // Wait for the disk thread to catch up
+        // This is not a problem, since it only delays playback slightly
+        // TODO: load even if there is no running playback
+        return;
+      }
       if (jack_ringbuffer_read(self->playBuf, (char *) self->buffer, bs) < bs) {
+        // Shouldnt be possible at all because of the above check
         self->overruns++;
       };
     } else {
       memset(self->buffer, 0, bs);
     }
-    for (uint f = 0; f < nframes; f++) {
-      self->buffer[f * nTracks + self->recording - 1]
-        = GLOB.data.proc[f];
-    }
-    if (self->recording) {
+    if (self->recording != 0) {
+      for (uint f = 0; f < nframes; f++) {
+        self->buffer[f * nTracks + self->recording - 1] = GLOB.data.proc[f];
+      }
       if (jack_ringbuffer_write(self->recBuf, (char *) self->buffer, bs) < bs) {
         self->overruns++;
       }
@@ -89,11 +114,6 @@ void TapeModule::process(jack_nframes_t nframes, Module *arg) {
   }
 
   self->mixOut(nframes);
-}
-
-// Thanks: http://www.vttoth.com/CMS/index.php/technical-notes/68
-static inline AudioSample mix(AudioSample A, AudioSample B) {
-  return 2 * (A + B) - 2 * A * B - 1;
 }
 
 void TapeModule::mixOut(jack_nframes_t nframes) {
@@ -130,7 +150,8 @@ void TapeModule::initThread(Module *arg) {
     self->rbSize);
 
   self->bufferSize = audio::SAMPLE_SIZE * GLOB.buffersize * nTracks;
-  self->buffer = (audio::AudioSample *) malloc(self->bufferSize),
+  self->buffer = (audio::AudioSample *) malloc(self->bufferSize);
+  LOGD << "Allocated " << self->bufferSize << " bytes for the buffer";
   /* Note from JACK sample capture_client.cpp:
    * When JACK is running realtime, jack_activate() will have
    * called mlockall() to lock our pages into memory.  But, we
