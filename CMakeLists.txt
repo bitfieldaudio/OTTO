@@ -1,6 +1,7 @@
 cmake_minimum_required (VERSION 3.1)
 set (CMAKE_CXX_STANDARD 14)
 set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 project (Tapedeck)
 set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/bin)
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
@@ -51,3 +52,8 @@ endfunction()
 enable_cxx_compiler_flag_if_supported("-Wall")
 enable_cxx_compiler_flag_if_supported("-Wextra")
 # enable_cxx_compiler_flag_if_supported("-pedantic")
+
+add_custom_command(TARGET tapedeck
+  PRE_BUILD
+  COMMAND "./compile-faust.sh"
+  WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")

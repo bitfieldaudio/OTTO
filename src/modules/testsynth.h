@@ -2,23 +2,25 @@
 
 #include "../module.h"
 #include "../globals.h"
-
+#include "../faust.h"
 /**
  * Generates a square wave
  */
 class TestSynth : public Module {
 private:
   TestSynth() {};
+  TestSynth(TestSynth &s) = delete;
 public:
 
-  int wavelength = 400;
-  audio::AudioSample amplitude = 1;
+  float *frequency;
+
+  FaustWrapper faust;
 
   int cur;
 
-  static TestSynth *getInstance() {
+  static TestSynth &getInstance() {
     static TestSynth instance;
-    return &instance;
+    return instance;
   };
 
   static void init();

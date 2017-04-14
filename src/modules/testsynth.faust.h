@@ -114,6 +114,7 @@ class testsynth : public dsp {
 	float fRec1[2];
 	float fConst0;
 	float fConst1;
+	FAUSTFLOAT fVslider0;
 	float fConst2;
 	
  public:
@@ -185,6 +186,7 @@ class testsynth : public dsp {
 	}
 	
 	virtual void instanceResetUserInterface() {
+		fVslider0 = FAUSTFLOAT(440.0f);
 		
 	}
 	
@@ -220,17 +222,19 @@ class testsynth : public dsp {
 	
 	virtual void buildUserInterface(UI* ui_interface) {
 		ui_interface->openVerticalBox("0x00");
+		ui_interface->addVerticalSlider("FREQ", &fVslider0, 440.0f, 60.0f, 900.0f, 9.99999975e-05f);
 		ui_interface->closeBox();
 		
 	}
 	
 	virtual void compute(int count, FAUSTFLOAT** inputs, FAUSTFLOAT** outputs) {
 		FAUSTFLOAT* output0 = outputs[0];
+		float fSlow0 = float(fVslider0);
 		for (int i = 0; (i < count); i = (i + 1)) {
 			fRec2[0] = (fConst2 + (fRec2[1] - floorf((fConst2 + fRec2[1]))));
 			float fTemp0 = (65536.0f * fRec2[0]);
 			int iTemp1 = int(fTemp0);
-			float fTemp2 = (fRec1[1] + (fConst1 * ((200.0f * (ftbl0testsynthSIG0[iTemp1] + ((fTemp0 - floorf(fTemp0)) * (ftbl0testsynthSIG0[(iTemp1 + 1)] - ftbl0testsynthSIG0[iTemp1])))) + 440.0f)));
+			float fTemp2 = (fRec1[1] + (fConst1 * (fSlow0 + (200.0f * (ftbl0testsynthSIG0[iTemp1] + ((fTemp0 - floorf(fTemp0)) * (ftbl0testsynthSIG0[(iTemp1 + 1)] - ftbl0testsynthSIG0[iTemp1])))))));
 			fRec1[0] = (fTemp2 - floorf(fTemp2));
 			float fTemp3 = (65536.0f * fRec1[0]);
 			int iTemp4 = int(fTemp3);

@@ -136,15 +136,12 @@ void setupPorts() {
   for (uint i = 0; i < GLOB.nOut; i++) {
     connectPort(outputs[i % noutputs], jack_port_name(GLOB.ports.out[i]));
   }
-
-  LOGI << "Connected ports, enabling canProcess";
-
-  GLOB.doProcess = 1;
 }
 
 int init (int argc, char *argv[]) {
 
   client = jack_client_open(CLIENT_NAME, JackNullOption, &GLOB.jackStatus);
+
   GLOB.client = client;
 
   GLOB.events.preInit();
@@ -181,6 +178,10 @@ int init (int argc, char *argv[]) {
   GLOB.data.proc = (AudioSample *) malloc(SAMPLE_SIZE * GLOB.buffersize);
 
   GLOB.events.postInit();
+
+  LOGI << "Completed initialization, enabling canProcess";
+
+  GLOB.doProcess = 1;
 
   // while(1)
     sleep(10);

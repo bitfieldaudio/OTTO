@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 function compile {
     ARCH_DIR="./faust"
     ARCH_FILE="template.h"
@@ -13,4 +12,12 @@ function compile {
 }
 
 export -f compile
+
+echo "================================="
+echo "===== Compiling Faust files ====="
+echo "================================="
+echo ""
 find . -name "*.dsp" -type f -exec bash -c "compile '{}'" \;
+
+echo ""
+echo "===== Faust Compilation done ===="
