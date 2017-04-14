@@ -70,9 +70,14 @@ done:
   return 0;
 }
 
-// placeholder, need a better mixing function
-static inline AudioSample mix(AudioSample A, AudioSample B) {
-  return (A < 0 && B < 0) ? ((A+1)*(B+1))/2 : (A+B - A*B + 1)/2;
+/**
+ * Mixes two signals.
+ * @param A Signal A
+ * @param B Signal B
+ * @param ratio B:A, amount of B to mix into signal A.
+ */
+static inline AudioSample mix(AudioSample A, AudioSample B, float ratio = 0.5) {
+  return A + (B - A) * ratio;
 }
 
 void TapeModule::process(jack_nframes_t nframes, Module *arg) {

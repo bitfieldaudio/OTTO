@@ -8,7 +8,9 @@
  */
 class TestSynth : public Module {
 private:
-  TestSynth() {};
+  TestSynth() {
+    frequency = (float *) malloc(sizeof(float*));
+  };
   TestSynth(TestSynth &s) = delete;
 public:
 
