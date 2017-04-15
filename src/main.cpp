@@ -1,6 +1,7 @@
 #include <plog/Log.h>
 #include <plog/Appenders/ConsoleAppender.h>
 #include "audio/jack.h"
+#include "ui.h"
 #include "modules/tape.h"
 #include "modules/testsynth.h"
 #include "globals.h"
@@ -14,6 +15,8 @@ int main(int argc, char *argv[]) {
 
   TapeModule::init();
   TestSynth::init();
-  audio::jack::init(argc, argv);
+  audio::jack::init();
+  MainUI::init();
+  audio::jack::exit();
   return 0;
 }

@@ -26,7 +26,6 @@ jack_client_t *client;
 
 void shutdown(void *arg) {
   LOGI << "JACK shut down, exiting";
-  exit(1);
 }
 
 int process(jack_nframes_t nframes, void *arg) {
@@ -105,7 +104,6 @@ void setupPorts() {
     if (ports == NULL) {
       LOGF << "No ports found matching " << std::to_string(criteria);
       jack_client_close(GLOB.client);
-      exit(1);
     }
     return ports;
   };
@@ -138,7 +136,7 @@ void setupPorts() {
   }
 }
 
-int init (int argc, char *argv[]) {
+void init() {
 
   client = jack_client_open(CLIENT_NAME, JackNullOption, &GLOB.jackStatus);
 
@@ -148,7 +146,6 @@ int init (int argc, char *argv[]) {
 
   if (!(GLOB.jackStatus & JackServerStarted)) {
     LOGF << "JACK server not running";
-    exit(1);
   }
 
   LOGI << "JACK server started";
@@ -182,9 +179,9 @@ int init (int argc, char *argv[]) {
   LOGI << "Completed initialization, enabling canProcess";
 
   GLOB.doProcess = 1;
+}
 
-  // while(1)
-    sleep(10);
+void exit() {
 
   LOGI << "Exiting";
 
@@ -193,8 +190,6 @@ int init (int argc, char *argv[]) {
   jack_client_close(client);
 
   GLOB.events.postExit();
-
-  exit(0);
 }
 }
 }

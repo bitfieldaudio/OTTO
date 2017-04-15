@@ -16,6 +16,7 @@ typedef jack_default_audio_sample_t AudioSample;
 const size_t SAMPLE_SIZE = sizeof(AudioSample);
 
 namespace jack {
-int init (int argc, char *argv[]);
+void init();
+void exit();
 }
 }

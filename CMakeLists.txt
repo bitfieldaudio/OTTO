@@ -31,10 +31,12 @@ function(target_add_lib name)
   target_compile_options(tapedeck PUBLIC ${${name}_CFLAGS_OTHER})
 endfunction(target_add_lib)
 
+# DEPENDENCIES
+
 target_add_lib(jack)
-target_add_lib(gtk+-3.0)
-target_add_lib(cairo)
 target_add_lib(sndfile)
+target_add_lib(gtkmm-3.0)
+target_add_lib(cairomm-1.0)
 
 include(CheckCXXCompilerFlag)
 
