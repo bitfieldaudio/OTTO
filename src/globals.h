@@ -1,12 +1,12 @@
 #pragma once
 
-#include <cstdlib>
 #include <string>
 
 #include <jack/jack.h>
 #include <jack/ringbuffer.h>
 #include <sndfile.h>
 #include <pthread.h>
+#include <atomic>
 
 #include "events.h"
 
@@ -57,6 +57,8 @@ struct __Globals_t {
 
   volatile bool doProcess;
   volatile int status;
+
+  std::atomic_bool running;
 
   struct {
     Dispatcher<> preInit;

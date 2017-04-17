@@ -1,7 +1,7 @@
 #include <plog/Log.h>
 #include <plog/Appenders/ConsoleAppender.h>
 #include "audio/jack.h"
-#include "ui.h"
+#include "ui/mainui.h"
 #include "modules/tape.h"
 #include "modules/testsynth.h"
 #include "globals.h"

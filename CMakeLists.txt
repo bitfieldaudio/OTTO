@@ -35,8 +35,9 @@ endfunction(target_add_lib)
 
 target_add_lib(jack)
 target_add_lib(sndfile)
-target_add_lib(gtkmm-3.0)
 target_add_lib(cairomm-1.0)
+target_add_lib(pangomm-1.4)
+target_add_lib(x11)
 
 include(CheckCXXCompilerFlag)
 
