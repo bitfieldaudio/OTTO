@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdlib>
 #include <string>
 
 #include <jack/jack.h>
@@ -9,6 +10,8 @@
 #include <atomic>
 
 #include "events.h"
+#include "module.h"
+#include "modules/tape.h"
 
 namespace audio {
 typedef jack_default_audio_sample_t AudioSample;
@@ -70,6 +73,13 @@ struct __Globals_t {
     Dispatcher<jack_nframes_t> process2;   // Effects
     Dispatcher<jack_nframes_t> postProcess;// Read only
   } events;
+
+  SynthModuleDispatcher synth;
+  EffectModuleDispatcher effect1;
+  EffectModuleDispatcher effect2;
+  EffectModuleDispatcher effect3;
+  EffectModuleDispatcher effect4;
+  TapeModule *tapedeck;
 };
 
 extern __Globals_t GLOB;

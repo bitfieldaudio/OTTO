@@ -1,8 +1,9 @@
 #pragma once
 
 #include <cairomm/cairomm.h>
-
 #include <thread>
+
+#include "../module.h"
 
 namespace ui {
 
@@ -57,6 +58,7 @@ public:
 
   Widget *parent;
 
+  Widget() {};
   Widget(Widget *_parent) :
     parent (_parent) {}
 
@@ -64,29 +66,39 @@ public:
    * Draw this widget to the context.
    * Called from the parent's draw method.
    * @param cr the Cairo context to draw to.
-   * @return whether the drawing was successful.
    */
-  virtual bool draw(const ContextPtr& cr) = 0;
+  virtual void draw(const ContextPtr& cr) = 0;
 
 };
 
 
-/**
- * A specific view/window.
- * Each module will probably have at least one
- */
 class Screen : public Widget {
 public:
 
   Screen() : Widget(NULL) {}
-
   /**
    * Run by MainUI when a key is pressed
    * @param key the pressed key
    * @return true if the key was used.
    */
-  virtual bool keypress(Key key) = 0;
+  virtual bool keypress(Key key) {};
+};
 
+/**
+ * A specific view/window.
+ * Each module will probably have at least one
+ */
+template<class M>
+class ModuleScreen : public Screen {
+protected:
+  M *module;
+
+public:
+
+  ModuleScreen() : Screen() {}
+  ModuleScreen(M *module)
+    : Screen(),
+    module (module) {}
 };
 
 
@@ -95,9 +107,7 @@ public:
  */
 class DefaultScreen : public Screen {
 public:
-  DefaultScreen() {}
-public:
-  bool draw(const ContextPtr& cr) override;
+  void draw(const ContextPtr& cr) override;
   bool keypress(Key key) override;
 };
 

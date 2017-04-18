@@ -15,13 +15,13 @@ void MainUI::init() {
   self.uiThread.join();
 }
 
-bool MainUI::draw(const ui::ContextPtr& cr) {
+void MainUI::draw(const ui::ContextPtr& cr) {
   using namespace drawing;
 
   cr->rectangle(0, 0, WIDTH, HEIGHT);
-  cr->set_source(COLOUR_BLACK);
+  cr->set_source(COLOR_BLACK);
   cr->fill();
-  return getInstance().currentScreen->draw(cr);
+  currentScreen->draw(cr);
 }
 
 bool MainUI::keypress(ui::Key key) {
@@ -30,10 +30,14 @@ bool MainUI::keypress(ui::Key key) {
   return globKeyPost(key);
 }
 
+bool MainUI::globKeyPost(ui::Key key) {
+  return false;
+}
+
 bool MainUI::globKeyPre(ui::Key key) {
   using namespace ui;
   switch (key) {
-  case QUIT:
+  case K_QUIT:
     GLOB.running = false;
     break;
   default:

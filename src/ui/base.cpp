@@ -6,7 +6,7 @@
 
 namespace ui {
 
-bool DefaultScreen::draw(const ContextPtr& cr) {
+void DefaultScreen::draw(const ContextPtr& cr) {
   using namespace drawing;
 
   auto text1 = Pango::Layout::create(cr);
@@ -21,14 +21,13 @@ bool DefaultScreen::draw(const ContextPtr& cr) {
   int tw2, th2;
   text2->get_pixel_size(tw2, th2);
 
-  cr->set_source(COLOUR_WHITE);
+  cr->set_source(COLOR_WHITE);
 
   cr->move_to((WIDTH - tw1) / 2, (HEIGHT - th1 - th2) / 2);
   text1->show_in_cairo_context(cr);
 
   cr->move_to((WIDTH - tw2) / 2, (HEIGHT - th2 + th1) / 2);
   text2->show_in_cairo_context(cr);
-  return true;
 }
 
 bool DefaultScreen::keypress(Key key) {

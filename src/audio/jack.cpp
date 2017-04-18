@@ -41,10 +41,12 @@ int process(jack_nframes_t nframes, void *arg) {
 
   memset(GLOB.data.proc, 0, SAMPLE_SIZE * nframes);
 
-  GLOB.events.preProcess(nframes); // Mic/Line input, Read only
-  GLOB.events.process1(nframes);   // Synth
-  GLOB.events.process2(nframes);   // Effects
-  GLOB.events.postProcess(nframes);// Output, Read only
+  GLOB.synth.process(nframes);
+  GLOB.effect1.process(nframes);
+  GLOB.effect2.process(nframes);
+  GLOB.effect3.process(nframes);
+  GLOB.effect4.process(nframes);
+  GLOB.tapedeck->process(nframes);
 
   return 0;
 }

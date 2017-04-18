@@ -3,27 +3,35 @@
 #include "../module.h"
 #include "../globals.h"
 #include "../faust.h"
+#include "../ui.h"
 /**
  * Generates a square wave
  */
-class TestSynth : public Module {
-private:
-  TestSynth() {
-    frequency = (float *) malloc(sizeof(float*));
-  };
-  TestSynth(TestSynth &s) = delete;
-public:
+class TestSynth : public SynthModule {
 
-  float *frequency;
+  ui::ModuleScreen<TestSynth> *screen;
 
   FaustWrapper faust;
 
+public:
+  TestSynth();
+  ~TestSynth();
+
+  float *frequency;
   int cur;
 
-  static TestSynth &getInstance() {
-    static TestSynth instance;
-    return instance;
-  };
+  void process(uint nframes) override {
+    faust.process(nframes);
+  }
+};
 
-  static void init();
+class TestSynthScreen : public ui::ModuleScreen<TestSynth> {
+private:
+  virtual void draw(const ui::ContextPtr& cr) override;
+
+  virtual bool keypress(ui::Key key) override;
+
+public:
+
+  TestSynthScreen(TestSynth *module) : ui::ModuleScreen<TestSynth>(module) {}
 };

@@ -100,7 +100,8 @@ public:
 // Possibly this should extend Module
 class FaustWrapper {
 
-  dsp *fDSP;
+protected:
+
   FaustOptions opts;
 
   FAUSTFLOAT **inBuffer;
@@ -108,11 +109,15 @@ class FaustWrapper {
 
 public:
 
+  dsp *fDSP;
+
   FaustWrapper() {};
 
-  FaustWrapper(dsp * DSP, std::map<const char*, FAUSTFLOAT**> optMap) :
-    fDSP (DSP),
-    opts (optMap)
+  ~FaustWrapper() {};
+
+  FaustWrapper(dsp *DSP, std::map<const char*, FAUSTFLOAT**> optMap) :
+    opts (optMap),
+    fDSP (DSP)
   {
     fDSP->init(GLOB.samplerate);
     fDSP->buildUserInterface(&opts);
@@ -124,7 +129,7 @@ public:
     LOGD << "Constructed a FaustWrapper";
   }
 
-  virtual void processAudio(jack_nframes_t nframes) {
+  virtual void process(uint nframes) {
     prepBuffers(nframes);
     fDSP->
       compute(nframes, inBuffer, outBuffer);
@@ -134,10 +139,10 @@ public:
 protected:
 
   virtual void initBuffers() {
-    for (uint i = 0; i < fDSP->getNumInputs(); i++) {
+    for (int i = 0; i < fDSP->getNumInputs(); i++) {
       inBuffer[0] = (FAUSTFLOAT *) malloc(sizeof(FAUSTFLOAT) * GLOB.buffersize);
     }
-    for (uint i = 0; i < fDSP->getNumOutputs(); i++) {
+    for (int i = 0; i < fDSP->getNumOutputs(); i++) {
       *outBuffer = (FAUSTFLOAT *) malloc(sizeof(FAUSTFLOAT) * GLOB.buffersize);
     }
   }
@@ -145,7 +150,7 @@ protected:
   /**
    * Copy the relevant data into inBuffer
    */
-  virtual void prepBuffers(jack_nframes_t nframes) {
+  virtual void prepBuffers(uint nframes) {
     if (fDSP->getNumInputs() > 0)
       inBuffer[0] = GLOB.data.proc;
   }
@@ -153,7 +158,7 @@ protected:
   /**
    * Put the data back into the chain
    */
-  virtual void postBuffers(jack_nframes_t nframes) {
+  virtual void postBuffers(uint nframes) {
     GLOB.data.proc = *outBuffer;
   }
 };

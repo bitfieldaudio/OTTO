@@ -12,9 +12,7 @@ using namespace audio::jack;
 
 const int BITRATE = SF_FORMAT_PCM_32;
 
-void *TapeModule::diskRoutine(void *arg) {
-  auto self = (TapeModule *) arg;
-
+void TapeModule::diskRoutine(TapeModule *self) {
   char *framebuf = (char*) malloc(rbSize);
 
   LOGI << "Position: " << self->sndfile.seek(0, SEEK_SET);
@@ -58,16 +56,13 @@ void *TapeModule::diskRoutine(void *arg) {
           if (self->sndfile.writef((AudioSample*) framebuf, nframes) != nframes) {
             LOGF << "Cannot write sndfile:";
             LOGF << self->sndfile.strError();
-            goto done;
+            return;
           }
         }
       }
       LOGE_IF(self->overruns) << "Overruns: " << self->overruns;
     }
   }
-
-done:
-  return 0;
 }
 
 /**
@@ -80,45 +75,38 @@ static inline AudioSample mix(AudioSample A, AudioSample B, float ratio = 0.5) {
   return A + (B - A) * ratio;
 }
 
-void TapeModule::process(jack_nframes_t nframes, Module *arg) {
-  auto *self = (TapeModule *) arg;
-
-  if (self == NULL) {
-    LOGE << "Invalid reference to self";
-    exit (1);
-  }
-
-  if (self->recording || self->playing) {
+void TapeModule::process(uint nframes) {
+  if (recording || playing) {
     uint bs = nTracks * SAMPLE_SIZE * nframes;
-    if (bs > self->bufferSize) {
-      LOGE << "Buffer too small: " << self->bufferSize << " of " << bs;
+    if (bs > bufferSize) {
+      LOGE << "Buffer too small: " << bufferSize << " of " << bs;
       exit(1);
     }
-    if (self->playing) {
-      if (jack_ringbuffer_read_space(self->playBuf) < bs) {
+    if (playing) {
+      if (jack_ringbuffer_read_space(playBuf) < bs) {
         // Wait for the disk thread to catch up
         // This is not a problem, since it only delays playback slightly
         // TODO: load even if there is no running playback
         return;
       }
-      if (jack_ringbuffer_read(self->playBuf, (char *) self->buffer, bs) < bs) {
+      if (jack_ringbuffer_read(playBuf, (char *) buffer, bs) < bs) {
         // Shouldnt be possible at all because of the above check
-        self->overruns++;
+        overruns++;
       };
     } else {
-      memset(self->buffer, 0, bs);
+      memset(buffer, 0, bs);
     }
-    if (self->recording != 0) {
+    if (recording != 0) {
       for (uint f = 0; f < nframes; f++) {
-        self->buffer[f * nTracks + self->recording - 1] = GLOB.data.proc[f];
+        buffer[f * nTracks + recording - 1] = GLOB.data.proc[f];
       }
-      if (jack_ringbuffer_write(self->recBuf, (char *) self->buffer, bs) < bs) {
-        self->overruns++;
+      if (jack_ringbuffer_write(recBuf, (char *) buffer, bs) < bs) {
+        overruns++;
       }
     }
   }
 
-  self->mixOut(nframes);
+  mixOut(nframes);
 }
 
 void TapeModule::mixOut(jack_nframes_t nframes) {
@@ -186,10 +174,9 @@ void TapeModule::initThread(Module *arg) {
   self->diskThread = std::thread(TapeModule::diskRoutine, self);
 }
 
-void TapeModule::init() {
-  GLOB.events.postInit.add(getInstance(), initThread);
-  GLOB.events.preExit.add(getInstance(), exitThread);
-  GLOB.events.postProcess.add(getInstance(), process);
+TapeModule::TapeModule() : recording (1), playing (1) {
+  GLOB.events.postInit.add(this, TapeModule::initThread);
+  GLOB.events.preExit.add(this, TapeModule::exitThread);
 }
 
 

@@ -13,10 +13,12 @@ int main(int argc, char *argv[]) {
 
   GLOB.project = new Project();
 
-  TapeModule::init();
-  TestSynth::init();
+  GLOB.tapedeck = new TapeModule();
   audio::jack::init();
+  GLOB.synth.registerModule(new TestSynth());
   MainUI::init();
   audio::jack::exit();
+
+  delete GLOB.tapedeck;
   return 0;
 }

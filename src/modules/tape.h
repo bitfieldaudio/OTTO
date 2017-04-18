@@ -8,24 +8,20 @@
 
 #include "../audio/jack.h"
 #include "../module.h"
-#include "../globals.h"
 
 class TapeModule : public Module {
-  TapeModule() :
-    recording (1),
-    playing (1)
-  {};
-
-  static void *diskRoutine(void *arg);
+  static void diskRoutine(TapeModule *self);
   static void initThread(Module *arg);
   static void exitThread(Module *arg);
-  static void process(jack_nframes_t nframes, Module *arg);
 
   uint bufferSize;
   audio::AudioSample *buffer;
 
   void mixOut(jack_nframes_t nframes);
 public:
+
+  TapeModule();
+
   std::thread diskThread;
   const static uint nTracks = 4;
 
@@ -39,10 +35,5 @@ public:
 
   uint overruns = 0;
 
-  static TapeModule *getInstance() {
-    static TapeModule instance;
-    return &instance;
-  };
-
-  static void init();
+  void process(uint nframes);
 };

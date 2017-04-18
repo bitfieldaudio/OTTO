@@ -21,7 +21,7 @@ public:
 };
 
 template<typename ...Args>
-  class Dispatcher {
+class Dispatcher {
 private:
   std::vector<EventHandler<Args...>> handlers;
 public:

@@ -20,7 +20,7 @@ public:
   Cairo::RefPtr<Cairo::Surface> surface;
   std::thread uiThread;
 
-  bool draw(const ui::ContextPtr& cr) override;
+  void draw(const ui::ContextPtr& cr) override;
   bool keypress(ui::Key key) override;
 
   static void init();

@@ -5,6 +5,7 @@
 
 #include <X11/Xlib.h>
 #include <X11/keysym.h>
+#include <X11/XKBlib.h>
 
 #include <cairomm/xlib_surface.h>
 
@@ -35,18 +36,18 @@ static ui::Key keyboardKey(int xKey) {
   switch (xKey) {
 
     // Rotaries
-  case XK_Q:     return K_RED_UP;
-  case XK_A:     return K_RED_DOWN;
-  case XK_W:     return K_BLUE_UP;
-  case XK_S:     return K_BLUE_DOWN;
-  case XK_E:     return K_WHITE_UP;
-  case XK_D:     return K_WHITE_DOWN;
-  case XK_R:     return K_GREEN_UP;
-  case XK_F:     return K_GREEN_DOWN;
+  case XK_q:     return K_RED_UP;
+  case XK_a:     return K_RED_DOWN;
+  case XK_w:     return K_BLUE_UP;
+  case XK_s:     return K_BLUE_DOWN;
+  case XK_e:     return K_WHITE_UP;
+  case XK_d:     return K_WHITE_DOWN;
+  case XK_r:     return K_GREEN_UP;
+  case XK_f:     return K_GREEN_DOWN;
 
     // Tapedeck
   case XK_space: return K_PLAY;
-  case XK_Z:     return K_REC;
+  case XK_z:     return K_REC;
   case XK_F1:    return K_TRACK_1;
   case XK_F2:    return K_TRACK_2;
   case XK_F3:    return K_TRACK_3;
@@ -78,15 +79,23 @@ static void event_routine(Display *display) {
     ui::Key key;
     switch (e.type) {
     case KeyPress:
-      key = keyboardKey(e.xkey.keycode);
+      int keysym = XkbKeycodeToKeysym(
+        display,
+        e.xkey.keycode,
+        0,
+        e.xkey.state & ShiftMask ? 1 : 0);
+
+      key = keyboardKey(keysym);
+      LOGD << keysym << " -> " << key;
       if (key) self.keypress(key);
-    case ClientMessage:
-      GLOB.running = false;
+      //case ClientMessage:
+      //GLOB.running = false;
     }
   }
 }
 
 void MainUI::mainRoutine() {
+  GLOB.running = true;
   auto& self = getInstance();
 
   auto *display = XOpenDisplay(NULL);
