@@ -4,7 +4,7 @@ A conceptual (and sometimes direct) clone of the Teenage Enginering OP-1, runnin
 
 UI example: 4 track tape recorder:
 
-![TOP-1 Tapedeck](doc/img/tapedeck.png)
+![TOP-1 Tapedeck](doc/images/tapedeck.png)
 
 More info to follow
 
