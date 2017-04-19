@@ -5,18 +5,18 @@
 #include "../ui/mainui.h"
 #include <string>
 
-TestSynth::TestSynth()
-  : screen (new TestSynthScreen(this)) {
-  frequency = (float *) malloc(sizeof(float*));
-  faust = FaustWrapper(new testsynth(), {
+TestSynth::TestSynth() :
+  FaustSynthModule(new testsynth(), {
     {"FREQ", &frequency}
-  });
-  MainUI::getInstance().currentScreen = screen;
+  }),
+  screen (new TestSynthScreen(this))
+{
+  //MainUI::getInstance().currentScreen = screen;
 }
 
 TestSynth::~TestSynth() {
-  delete faust.fDSP;
-  LOGD << "Destroying the testsynth";
+  delete fDSP;
+  delete screen;
 }
 
 void TestSynthScreen::draw(const ui::ContextPtr& cr) {
@@ -38,10 +38,10 @@ void TestSynthScreen::draw(const ui::ContextPtr& cr) {
 bool TestSynthScreen::keypress(ui::Key key) {
   switch (key) {
   case ui::K_RED_UP:
-    *module->frequency += 1;
+    *module->frequency += 10;
     return true;
   case ui::K_RED_DOWN:
-    *module->frequency -= 1;
+    *module->frequency -= 10;
     return true;
   default:
     return false;

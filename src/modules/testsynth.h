@@ -2,27 +2,19 @@
 
 #include "../module.h"
 #include "../globals.h"
-#include "../faust.h"
+#include "../faust-module.h"
 #include "../ui.h"
+
 /**
  * Generates a square wave
  */
-class TestSynth : public SynthModule {
-
+class TestSynth : public FaustSynthModule {
   ui::ModuleScreen<TestSynth> *screen;
-
-  FaustWrapper faust;
-
 public:
+  float *frequency;
+
   TestSynth();
   ~TestSynth();
-
-  float *frequency;
-  int cur;
-
-  void process(uint nframes) override {
-    faust.process(nframes);
-  }
 };
 
 class TestSynthScreen : public ui::ModuleScreen<TestSynth> {

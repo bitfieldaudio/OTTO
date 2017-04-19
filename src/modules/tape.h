@@ -8,14 +8,17 @@
 
 #include "../audio/jack.h"
 #include "../module.h"
+#include "../ui/base.h"
 
 class TapeModule : public Module {
-  static void diskRoutine(TapeModule *self);
-  static void initThread(Module *arg);
-  static void exitThread(Module *arg);
 
   uint bufferSize;
   audio::AudioSample *buffer;
+  ui::ModuleScreen<TapeModule> *tapeScreen;
+
+  static void diskRoutine(TapeModule *self);
+  static void initThread(Module *arg);
+  static void exitThread(Module *arg);
 
   void mixOut(jack_nframes_t nframes);
 public:
@@ -25,7 +28,9 @@ public:
   std::thread diskThread;
   const static uint nTracks = 4;
 
-  std::atomic_uint recording; // 0: Not recording, !0: track number;
+  std::atomic_uint track;
+
+  std::atomic_bool recording; // 0: Not recording, !0: track number;
   std::atomic_bool playing;
 
   const static jack_nframes_t rbSize = 16384 * 4;
@@ -36,4 +41,15 @@ public:
   uint overruns = 0;
 
   void process(uint nframes);
+};
+
+class TapeScreen : public ui::ModuleScreen<TapeModule> {
+private:
+  virtual void draw(const ui::ContextPtr& cr) override;
+
+  virtual bool keypress(ui::Key key) override;
+
+public:
+
+  TapeScreen(TapeModule *module) : ui::ModuleScreen<TapeModule>(module) {}
 };

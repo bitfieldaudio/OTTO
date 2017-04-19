@@ -4,6 +4,7 @@
 #include <cstdlib>
 
 class Module {
+protected:
 
   virtual void preInit() {};
 

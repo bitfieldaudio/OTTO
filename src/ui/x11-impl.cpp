@@ -86,7 +86,6 @@ static void event_routine(Display *display) {
         e.xkey.state & ShiftMask ? 1 : 0);
 
       key = keyboardKey(keysym);
-      LOGD << keysym << " -> " << key;
       if (key) self.keypress(key);
       //case ClientMessage:
       //GLOB.running = false;
@@ -95,9 +94,9 @@ static void event_routine(Display *display) {
 }
 
 void MainUI::mainRoutine() {
-  GLOB.running = true;
   auto& self = getInstance();
 
+  XInitThreads();
   auto *display = XOpenDisplay(NULL);
 
   if (display == NULL) {
@@ -129,6 +128,7 @@ void MainUI::mainRoutine() {
 
   self.cairo = Cairo::Context::create(self.surface);
 
+  GLOB.running = true;
   std::thread renderThread = std::thread(render_routine);
   std::thread eventThread  = std::thread(event_routine, display);
 

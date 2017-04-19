@@ -110,12 +110,9 @@ class testsynth : public dsp {
  private:
 	
 	int fSamplingFreq;
-	float fRec2[2];
 	float fRec1[2];
 	float fConst0;
-	float fConst1;
 	FAUSTFLOAT fVslider0;
-	float fConst2;
 	
  public:
 	
@@ -179,9 +176,7 @@ class testsynth : public dsp {
 	
 	virtual void instanceConstants(int samplingFreq) {
 		fSamplingFreq = samplingFreq;
-		fConst0 = min(192000.0f, max(1.0f, float(fSamplingFreq)));
-		fConst1 = (1.0f / fConst0);
-		fConst2 = (0.100000001f / fConst0);
+		fConst0 = (1.0f / min(192000.0f, max(1.0f, float(fSamplingFreq))));
 		
 	}
 	
@@ -192,11 +187,7 @@ class testsynth : public dsp {
 	
 	virtual void instanceClear() {
 		for (int l1 = 0; (l1 < 2); l1 = (l1 + 1)) {
-			fRec2[l1] = 0.0f;
-			
-		}
-		for (int l2 = 0; (l2 < 2); l2 = (l2 + 1)) {
-			fRec1[l2] = 0.0f;
+			fRec1[l1] = 0.0f;
 			
 		}
 		
@@ -229,17 +220,12 @@ class testsynth : public dsp {
 	
 	virtual void compute(int count, FAUSTFLOAT** inputs, FAUSTFLOAT** outputs) {
 		FAUSTFLOAT* output0 = outputs[0];
-		float fSlow0 = float(fVslider0);
+		float fSlow0 = (fConst0 * float(fVslider0));
 		for (int i = 0; (i < count); i = (i + 1)) {
-			fRec2[0] = (fConst2 + (fRec2[1] - floorf((fConst2 + fRec2[1]))));
-			float fTemp0 = (65536.0f * fRec2[0]);
+			fRec1[0] = (fSlow0 + (fRec1[1] - floorf((fSlow0 + fRec1[1]))));
+			float fTemp0 = (65536.0f * fRec1[0]);
 			int iTemp1 = int(fTemp0);
-			float fTemp2 = (fRec1[1] + (fConst1 * (fSlow0 + (200.0f * (ftbl0testsynthSIG0[iTemp1] + ((fTemp0 - floorf(fTemp0)) * (ftbl0testsynthSIG0[(iTemp1 + 1)] - ftbl0testsynthSIG0[iTemp1])))))));
-			fRec1[0] = (fTemp2 - floorf(fTemp2));
-			float fTemp3 = (65536.0f * fRec1[0]);
-			int iTemp4 = int(fTemp3);
-			output0[i] = FAUSTFLOAT((ftbl0testsynthSIG0[iTemp4] + ((fTemp3 - floorf(fTemp3)) * (ftbl0testsynthSIG0[(iTemp4 + 1)] - ftbl0testsynthSIG0[iTemp4]))));
-			fRec2[1] = fRec2[0];
+			output0[i] = FAUSTFLOAT((ftbl0testsynthSIG0[iTemp1] + ((fTemp0 - floorf(fTemp0)) * (ftbl0testsynthSIG0[(iTemp1 + 1)] - ftbl0testsynthSIG0[iTemp1]))));
 			fRec1[1] = fRec1[0];
 			
 		}

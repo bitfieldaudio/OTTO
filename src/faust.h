@@ -18,7 +18,7 @@ enum OPTTYPE {
 class FaustOptions : public UI {
 public:
 
-  // TODO: this should be atomic
+  // TODO: should this be atomic?
   std::map<const char*, FAUSTFLOAT**> optMap;
 
   FaustOptions() {};

@@ -8,6 +8,7 @@
 namespace ui {
 
 typedef Cairo::RefPtr<Cairo::Context> ContextPtr;
+typedef Cairo::RefPtr<Cairo::Pattern> PatternPtr;
 
 /**
  * Used for keypresses
@@ -71,7 +72,10 @@ public:
 
 };
 
-
+/**
+ * A specific view/window.
+ * If it belongs to a module, use ModuleScreen.
+ */
 class Screen : public Widget {
 public:
 
@@ -81,12 +85,13 @@ public:
    * @param key the pressed key
    * @return true if the key was used.
    */
-  virtual bool keypress(Key key) {};
+  virtual bool keypress(Key key) {
+    return false;
+  };
 };
 
 /**
- * A specific view/window.
- * Each module will probably have at least one
+ * A screen that belongs to a module of type M
  */
 template<class M>
 class ModuleScreen : public Screen {
@@ -94,11 +99,14 @@ protected:
   M *module;
 
 public:
+  ModuleScreen() :
+    Screen() {}
 
-  ModuleScreen() : Screen() {}
   ModuleScreen(M *module)
-    : Screen(),
-    module (module) {}
+    : module (module),
+    Screen () {}
+
+  virtual ~ModuleScreen() {}
 };
 
 
