@@ -1,8 +1,8 @@
 #!/bin/bash
 
 function compile {
-    ARCH_DIR="./faust"
-    ARCH_FILE="template.h"
+    ARCH_DIR="./"
+    ARCH_FILE="faust-template.h"
     echo "Compiling $1"
     bn=$(basename $1)
     bn=${bn%.*}
