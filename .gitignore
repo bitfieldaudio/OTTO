@@ -11,3 +11,4 @@ CTestTestfile.cmake
 /tapedeck.log
 /unnamed.wav
 /log.txt
+/compile_commands.json
