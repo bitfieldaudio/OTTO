@@ -1,6 +1,8 @@
 #include "tapebuffer.h"
 
 #include <cmath>
+#include <sndfile.hh>
+#include "../globals.h"
 
 /*******************************************/
 /*  TapeBuffer Implementation              */
@@ -16,7 +18,65 @@ TapeBuffer::TapeBuffer() : playPoint (0) {
 void TapeBuffer::threadRoutine() {
   std::unique_lock<std::mutex> lock (threadLock);
 
-  while(1) {
+  int samplerate = GLOB.samplerate;
+  int format = SF_FORMAT_WAV | SF_FORMAT_PCM_32;
+
+  SndfileHandle snd (GLOB.project->path, SFM_RDWR, format, nTracks, samplerate);
+  float *framebuf = (float *) malloc(sizeof(float) * nTracks * buffer.SIZE / 2);
+
+  if (snd.error()) {
+    LOGE << "Cannot open sndfile '" <<
+      GLOB.project->path.c_str() << "' for output:";
+    LOGE << snd.strError();
+
+    GLOB.running = false;
+  }
+
+  while(GLOB.running) {
+
+    int desLength = buffer.SIZE / 2 - 16;
+
+    if (buffer.lengthFW < desLength) {
+      uint startIdx = buffer.playIdx + buffer.lengthFW; 
+      snd.seek(buffer.posAt0 + startIdx, SEEK_SET);
+      uint nframes = desLength - buffer.lengthFW;
+      memset(framebuf, 0, nframes * nTracks * sizeof(float));
+      uint read = snd.readf(framebuf, nframes);
+      for (uint i = 0; i < nframes; i++) {
+        buffer[startIdx + i] = AudioFrame{{
+          framebuf[nTracks * i],
+          framebuf[nTracks * i + 1],
+          framebuf[nTracks * i + 2],
+          framebuf[nTracks * i + 3],
+        }};
+      }
+      buffer.lengthFW += nframes;
+      int overflow = buffer.lengthFW + buffer.lengthBW - buffer.SIZE;
+      if (overflow > 0) {
+        buffer.lengthBW -= overflow;
+      }
+    }
+
+    if (buffer.lengthBW < desLength) {
+      uint nframes = desLength - buffer.lengthBW;
+      int startIdx = buffer.playIdx - buffer.lengthBW - nframes; 
+      snd.seek(buffer.posAt0 + startIdx, SEEK_SET);
+      memset(framebuf, 0, nframes * nTracks * sizeof(float));
+      uint read = snd.readf(framebuf, nframes);
+      for (uint i = 0; i < nframes; i++) {
+        buffer[startIdx + i] = AudioFrame{{
+            framebuf[nTracks * i],
+            framebuf[nTracks * i + 1],
+            framebuf[nTracks * i + 2],
+            framebuf[nTracks * i + 3],
+          }};
+      }
+      buffer.lengthBW += nframes;
+      int overflow = buffer.lengthFW + buffer.lengthBW - buffer.SIZE;
+      if (overflow > 0) {
+        buffer.lengthFW -= overflow;
+      }
+    }
 
     readData.wait(lock);
   }
@@ -31,18 +91,24 @@ void TapeBuffer::movePlaypointAbs(uint newPos) {
   int diff = newPos - oldPos;
   if (diff <= buffer.lengthFW && diff >= -buffer.lengthBW) {
     // The new position is within the loaded section, so keep that data
+    // TOD: This should probably also happen if the new position is just
+    //   slightly outside the section.
+    //   That could be fixed with setting negative lenghts
     buffer.playIdx = buffer.wrapIdx(newPos - buffer.posAt0);
     buffer.lengthBW += diff;
     buffer.lengthFW -= diff;
   } else {
+    // just discard the data
     buffer.lengthBW = 0;
     buffer.lengthFW = 0;
   }
   if (buffer.notWritten) {
-    // shit
+    // shit, we need to change posAt0 but then this will be written to the
+    // wrong place in file
     // TODO: handle this
   }
   buffer.posAt0 = newPos - buffer.playIdx;
+  readData.notify_all();
 }
 
 

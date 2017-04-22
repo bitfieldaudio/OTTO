@@ -47,7 +47,7 @@ protected:
     uint posAt0;
 
     AudioFrame& operator[](int i) {
-      return data[i];
+      return data[wrapIdx(i)];
     }
 
     uint capacityFW();
