@@ -7,6 +7,16 @@
 #include <thread>
 #include <mutex>
 #include <condition_variable>
+#include <fmt/format.h>
+
+/** One frame of nTracks samples */
+struct AudioFrame {
+  float data[4];
+
+  float& operator[](uint i) {
+    return data[i];
+  }
+};
 
 /**
  * A Wrapper for ringbuffers, used for the tapemodule.
@@ -14,19 +24,9 @@
 class TapeBuffer {
 protected:
 
-  const static uint nTracks = 4;
-
   /** The current position on the tape, counted in frames from the beginning*/
   std::atomic_uint playPoint;
 
-  /** One frame of nTracks samples */
-  struct AudioFrame {
-    float data[nTracks];
-
-    float& operator[](uint i) {
-      return data[i];
-    }
-  };
 
   struct Section {
     uint inIdx;
@@ -71,6 +71,8 @@ protected:
 
 public:
 
+  const static uint nTracks = 4;
+
   TapeBuffer();
 
   /**
@@ -80,6 +82,7 @@ public:
    * @return a vector of length nframes with the data.
    */
   std::vector<float> readFW(uint nframes, uint track);
+  std::vector<AudioFrame> readAllFW(uint nframes);
 
   /**
    * Reads backwards along the tape, moving the playPoint.
@@ -89,6 +92,7 @@ public:
    *        read order, meaning reverse.
    */
   std::vector<float> readBW(uint nframes, uint track);
+  std::vector<AudioFrame> readAllBW(uint nframes);
 
   /**
    * Write data to the tape.
@@ -118,5 +122,11 @@ public:
 
   uint position() {
     return playPoint;
+  }
+
+  std::string timeStr() {
+    double seconds = playPoint/(1.0 * 44100);
+    double minutes = seconds / 60.0;
+    return fmt::format("{:0>2}:{:0>5.2f}", (int) minutes, fmod(seconds, 60.0));
   }
 };

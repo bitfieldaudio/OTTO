@@ -13,9 +13,11 @@ int main(int argc, char *argv[]) {
 
   GLOB.project = new Project();
 
-  GLOB.tapedeck = new TapeModule();
+  GLOB.running = true;
+
   audio::jack::init();
-  GLOB.synth.registerModule(new TestSynth());
+  GLOB.tapedeck = new TapeModule();
+  //GLOB.synth.registerModule(new TestSynth());
   MainUI::init();
   audio::jack::exit();
 

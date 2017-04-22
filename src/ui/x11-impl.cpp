@@ -128,7 +128,6 @@ void MainUI::mainRoutine() {
 
   self.cairo = Cairo::Context::create(self.surface);
 
-  GLOB.running = true;
   std::thread renderThread = std::thread(render_routine);
   std::thread eventThread  = std::thread(event_routine, display);
 

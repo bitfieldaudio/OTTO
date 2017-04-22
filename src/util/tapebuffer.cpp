@@ -18,6 +18,8 @@ TapeBuffer::TapeBuffer() : playPoint (0) {
 void TapeBuffer::threadRoutine() {
   std::unique_lock<std::mutex> lock (threadLock);
 
+  movePlaypointAbs(0);
+
   int samplerate = GLOB.samplerate;
   int format = SF_FORMAT_WAV | SF_FORMAT_PCM_32;
 
@@ -33,7 +35,6 @@ void TapeBuffer::threadRoutine() {
   }
 
   while(GLOB.running) {
-
     int desLength = buffer.SIZE / 2 - 16;
 
     if (buffer.lengthFW < desLength) {
@@ -108,6 +109,7 @@ void TapeBuffer::movePlaypointAbs(uint newPos) {
     // TODO: handle this
   }
   buffer.posAt0 = newPos - buffer.playIdx;
+  playPoint = newPos;
   readData.notify_all();
 }
 
@@ -121,6 +123,20 @@ std::vector<float> TapeBuffer::readFW(uint nframes, uint track) {
 
   for (uint i = 0; i < n; i++) {
    ret.push_back(buffer[i][track - 1]);
+  }
+
+  movePlaypointRel(n);
+
+  return ret;
+}
+
+std::vector<AudioFrame> TapeBuffer::readAllFW(uint nframes) {
+  uint n = (nframes > buffer.lengthFW) ? buffer.lengthFW : nframes;
+
+  auto ret = std::vector<AudioFrame>(n);
+
+  for (uint i = 0; i < n; i++) {
+    ret.push_back(buffer[i]);
   }
 
   movePlaypointRel(n);
@@ -142,21 +158,37 @@ std::vector<float> TapeBuffer::readBW(uint nframes, uint track) {
   return rev;
 }
 
-uint TapeBuffer::writeFW(std::vector<float> data, uint track) {
-  uint n = (data.size() > buffer.capacityFW()) ? buffer.capacityFW() : data.size();
+std::vector<AudioFrame> TapeBuffer::readAllBW(uint nframes) {
+  uint n = (nframes > buffer.lengthBW) ? buffer.lengthBW : nframes;
+
+  auto ret = std::vector<AudioFrame>(n);
+
   for (uint i = 0; i < n; i++) {
-    buffer[i][track-1] = data[i];
+    ret.push_back(buffer[-i]);
   }
-  return data.size() - n;
+
+  movePlaypointRel(-n);
+
+  return ret;
+}
+
+uint TapeBuffer::writeFW(std::vector<float> data, uint track) {
+  // uint n = (data.size() > buffer.capacityFW()) ? buffer.capacityFW() : data.size();
+  // for (uint i = 0; i < n; i++) {
+  //   buffer[i][track-1] = data[i];
+  // }
+  // return data.size() - n;
+  return 0;
 }
 
 uint TapeBuffer::writeBW(std::vector<float> data, uint track) {
-  uint n = (data.size() > buffer.capacityBW())
-    ? buffer.capacityBW() : data.size();
-  for (uint i = 0; i < n; i++) {
-    buffer[n-i][track-1] = data[i];
-  }
-  return data.size() - n;
+  // uint n = (data.size() > buffer.capacityBW())
+  //   ? buffer.capacityBW() : data.size();
+  // for (uint i = 0; i < n; i++) {
+  //   buffer[n-i][track-1] = data[i];
+  // }
+  // return data.size() - n;
+  return 0;
 }
 
 void TapeBuffer::goTo(uint pos) {

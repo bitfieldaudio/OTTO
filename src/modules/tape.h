@@ -9,38 +9,35 @@
 #include "../audio/jack.h"
 #include "../module.h"
 #include "../ui/base.h"
+#include "../util/tapebuffer.h"
 
 class TapeModule : public Module {
 
-  uint bufferSize;
-  audio::AudioSample *buffer;
+  std::array<AudioFrame, 256> buffer;
   ui::ModuleScreen<TapeModule> *tapeScreen;
 
-  static void diskRoutine(TapeModule *self);
-  static void initThread(Module *arg);
-  static void exitThread(Module *arg);
-
   void mixOut(jack_nframes_t nframes);
+
+  float nextSpeed;
 public:
 
-  TapeModule();
+  TapeBuffer tapeBuffer;
 
-  std::thread diskThread;
-  const static uint nTracks = 4;
+  const static uint nTracks = TapeBuffer::nTracks;
+
+  TapeModule();
 
   std::atomic_uint track;
 
   std::atomic_bool recording; // 0: Not recording, !0: track number;
-  std::atomic_bool playing;
-
-  const static jack_nframes_t rbSize = 16384 * 4;
-  jack_ringbuffer_t *recBuf;
-  jack_ringbuffer_t *playBuf;
-  SndfileHandle sndfile;
+  std::atomic<float> playing;
 
   uint overruns = 0;
 
   void process(uint nframes);
+
+  void play(float speed);
+  void stop();
 };
 
 class TapeScreen : public ui::ModuleScreen<TapeModule> {

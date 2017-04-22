@@ -5,6 +5,7 @@
 #include <sndfile.hh>
 #include <thread>
 #include <cmath>
+#include <algorithm>
 #include <mutex>
 #include <condition_variable>
 
@@ -14,59 +15,12 @@
 using namespace audio;
 using namespace audio::jack;
 
-const int BITRATE = SF_FORMAT_PCM_32;
+void TapeModule::play(float speed) {
+  nextSpeed = speed;
+}
 
-void TapeModule::diskRoutine(TapeModule *self) {
-  char *framebuf = (char*) malloc(rbSize);
-
-  LOGI << "Position: " << self->sndfile.seek(0, SEEK_SET);
-
-  while (1) {
-    while (self->playing || self->recording) {
-      if (self->playing) {
-        auto space = jack_ringbuffer_write_space(self->playBuf);
-
-        if (space >= SAMPLE_SIZE * nTracks) {
-          uint nframes = space / (SAMPLE_SIZE * nTracks);
-          uint size = SAMPLE_SIZE * nframes * nTracks;
-          // Clear the framebuffer
-          memset(framebuf, 0, size);
-
-          auto read = self->sndfile.readf((AudioSample*) framebuf, nframes);
-
-          if (read < nframes && !self->recording) {
-            self->playing = false;
-          }
-
-          if (jack_ringbuffer_write(self->playBuf, framebuf, size) < size) {
-            self->overruns++;
-          }
-        }
-      }
-
-      if (self->recording) {
-        auto space = jack_ringbuffer_read_space(self->recBuf);
-
-        if (space >= (SAMPLE_SIZE * nTracks)) {
-          uint nframes = space / (SAMPLE_SIZE * nTracks);
-          uint size = SAMPLE_SIZE * nframes * nTracks;
-
-          memset(framebuf, 0, size);
-
-          if (jack_ringbuffer_read(self->recBuf, framebuf, size) < size) {
-            self->overruns++;
-          };
-
-          if (self->sndfile.writef((AudioSample*) framebuf, nframes) != nframes) {
-            LOGF << "Cannot write sndfile:";
-            LOGF << self->sndfile.strError();
-            return;
-          }
-        }
-      }
-      LOGE_IF(self->overruns) << "Overruns: " << self->overruns;
-    }
-  }
+void TapeModule::stop() {
+  nextSpeed = 0;
 }
 
 /**
@@ -80,32 +34,23 @@ static inline AudioSample mix(AudioSample A, AudioSample B, float ratio = 0.5) {
 }
 
 void TapeModule::process(uint nframes) {
-  if (recording || playing) {
-    uint bs = nTracks * SAMPLE_SIZE * nframes;
-    if (bs > bufferSize) {
-      LOGE << "Buffer too small: " << bufferSize << " of " << bs;
-      exit(1);
-    }
-    if (playing) {
-      if (jack_ringbuffer_read_space(playBuf) < bs) {
-        // Wait for the disk thread to catch up
-        // This is not a problem, since it only delays playback slightly
-        // TODO: load even if there is no running playback
-        return;
-      }
-      if (jack_ringbuffer_read(playBuf, (char *) buffer, bs) < bs) {
-        // Shouldnt be possible at all because of the above check
-        overruns++;
-      };
-    } else {
-      memset(buffer, 0, bs);
-    }
-    if (recording) {
-      for (uint f = 0; f < nframes; f++) {
-        buffer[f * nTracks + track - 1] = GLOB.data.proc[f];
-      }
-      if (jack_ringbuffer_write(recBuf, (char *) buffer, bs) < bs) {
-        overruns++;
+  // TODO: Linear speed changes are for pussies
+  const float diff = nextSpeed - playing;
+  if (diff > 0) {
+    playing = playing + std::min(0.01f, diff);
+  }
+  if (diff < 0) {
+    playing = playing - std::min(0.01f, -diff);
+  }
+
+  memset(buffer.data(), 0, sizeof(AudioFrame) * buffer.size());
+  if (playing) {
+    auto data = tapeBuffer.readAllFW(nframes * playing);
+    if (data.size() != 0) {
+      if (data.size() < nframes * playing)
+        LOGD << "tape too slow";
+      for (uint i = 0; i < nframes; i++) {
+        buffer[i] = data[(int)i * (float)data.size()/((float)nframes)];
       }
     }
   }
@@ -114,95 +59,36 @@ void TapeModule::process(uint nframes) {
 }
 
 void TapeModule::mixOut(jack_nframes_t nframes) {
-  if (playing) { // mix the tracks
-    // TODO: Configurable and all that
-    AudioSample mixed;
-    for (uint f = 0; f < nframes; f++) {
-      mixed = buffer[f * nTracks];
-      for (uint t = 1; t < nTracks ; t++) {
-        mixed = mix(mixed, buffer[f * nTracks + t]);
-      }
-      GLOB.data.outL[f] = GLOB.data.outR[f] = mixed;
+  // TODO: Configurable and all that
+  AudioSample mixed;
+  for (uint f = 0; f < nframes; f++) {
+    mixed = buffer[f][0];
+    for (uint t = 1; t < nTracks ; t++) {
+      mixed = mix(mixed, buffer[f][t]);
     }
-  } else { // Just monitor the proc
-    memcpy(GLOB.data.outL, GLOB.data.proc, nframes * SAMPLE_SIZE);
-    memcpy(GLOB.data.outR, GLOB.data.proc, nframes * SAMPLE_SIZE);
+    GLOB.data.outL[f] = GLOB.data.outR[f] = mixed;
   }
 }
 
-void TapeModule::exitThread(Module *arg) {
-  auto *self = (TapeModule *) arg;
-  self->recording = false;
-  sf_close(self->sndfile.rawHandle());
-}
-
-void TapeModule::initThread(Module *arg) {
-  LOGD << "Registered TapeModule";
-  auto *self = (TapeModule *) arg;
-
-  self->recBuf = jack_ringbuffer_create(
-    self->rbSize);
-
-  self->playBuf = jack_ringbuffer_create(
-    self->rbSize);
-
-  self->bufferSize = audio::SAMPLE_SIZE * GLOB.buffersize * nTracks;
-  self->buffer = (audio::AudioSample *) malloc(self->bufferSize);
-  LOGD << "Allocated " << self->bufferSize << " bytes for the buffer";
-  /* Note from JACK sample capture_client.cpp:
-   * When JACK is running realtime, jack_activate() will have
-   * called mlockall() to lock our pages into memory.  But, we
-   * still need to touch any newly allocated pages before
-   * process() starts using them.  Otherwise, a page fault could
-   * create a delay that would force JACK to shut us down.
-   */
-  memset(self->recBuf->buf, 0, self->recBuf->size);
-  memset(self->playBuf->buf, 0, self->playBuf->size);
-  memset(self->buffer, 0, self->bufferSize);
-
-  int samplerate = GLOB.samplerate;
-  int channels = self->nTracks;
-  int format = SF_FORMAT_WAV | BITRATE;
-
-  self->sndfile =
-    SndfileHandle(GLOB.project->path, SFM_RDWR, format, channels, samplerate);
-
-  if (self->sndfile.error()) {
-    LOGE << "Cannot open sndfile '" <<
-      GLOB.project->path.c_str() << "' for output:";
-    LOGE << self->sndfile.strError() << ")";
-
-    jack_client_close(GLOB.client);
-    exit(1);
-  }
-  self->diskThread = std::thread(TapeModule::diskRoutine, self);
-
-  MainUI::getInstance().currentScreen = self->tapeScreen;
-}
-
-TapeModule::TapeModule() : recording (false), playing (false), track (1),
-                           tapeScreen (new TapeScreen(this))
+TapeModule::TapeModule() :
+  tapeScreen (new TapeScreen(this)),
+  track (1),
+  recording (false),
+  playing (0)
 {
-  GLOB.events.postInit.add(this, TapeModule::initThread);
-  GLOB.events.preExit.add(this, TapeModule::exitThread);
+  MainUI::getInstance().currentScreen = tapeScreen;
 }
 
 bool TapeScreen::keypress(ui::Key key) {
   switch (key) {
   case ui::K_REC:
-    if (module->recording) {
-      module->recording = false;
-    } else {
-      module->recording = true;
-      module->playing = true;
-    }
+    module->recording = !module->recording;
     return true;
   case ui::K_PLAY:
     if (module->playing) {
-      module->playing = false;
-      module->recording = false;
+      module->stop();
     } else {
-      module->playing = true;
+      module->play(1);
     }
     return true;
   case ui::K_TRACK_1:
@@ -547,11 +433,7 @@ cr->stroke_preserve();
 void TapeScreen::draw(const ui::ContextPtr& cr) {
   using namespace drawing;
 
-  static double rotation = 0;
-  if (module->playing) {
-    rotation += 2*M_PI/(6*60);
-    if (rotation > 2*M_PI) rotation = 0;
-  }
+  double rotation = (module->tapeBuffer.position()/44100.0);
 
   auto recColor = (module->recording) ? COLOR_RED : COLOR_WHITE;
 
@@ -584,4 +466,13 @@ void TapeScreen::draw(const ui::ContextPtr& cr) {
   cr->move_to(15 + (30 - tw) / 2, 14 + (30 - th) / 2);
   text1->show_in_cairo_context(cr);
 
+  auto text2 = Pango::Layout::create(cr);
+  text2->set_text(module->tapeBuffer.timeStr());
+  text2->set_font_description(FONT_BIG_NUM);
+  text2->get_pixel_size(tw, th);
+
+  cr->set_source(COLOR_WHITE);
+
+  cr->move_to((WIDTH - tw) / 2, 14 + (30 - th) / 2);
+  text2->show_in_cairo_context(cr);
 }
