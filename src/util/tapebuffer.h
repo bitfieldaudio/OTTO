@@ -30,11 +30,15 @@ protected:
 
 
   struct Section {
-    uint inIdx;
-    uint outIdx;
+    int inIdx = 0;
+    int outIdx = 0;
 
     operator bool() {
       return inIdx != outIdx;
+    }
+
+    int size() {
+      return outIdx - inIdx;
     }
   };
 
@@ -42,10 +46,10 @@ protected:
     const static uint SIZE = 262144; // 2^18
     std::array<AudioFrame, SIZE> data;
     Section notWritten;
-    int lengthFW;
-    int lengthBW;
-    uint playIdx;
-    uint posAt0;
+    int lengthFW = 0;
+    int lengthBW = 0;
+    uint playIdx = 0;
+    uint posAt0 = 0;
 
     AudioFrame& operator[](int i) {
       return data[wrapIdx(i)];

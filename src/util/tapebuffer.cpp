@@ -40,6 +40,18 @@ void TapeBuffer::threadRoutine() {
     // Keep some space in the middle to avoid overlap fights
     int desLength = buffer.SIZE / 2 - sizeof(AudioFrame);
 
+    if (buffer.notWritten) {
+      // TODO: theres gonna be a pesky data race!
+      int startIdx = buffer.notWritten.inIdx; 
+      int startTime = buffer.posAt0 + startIdx;
+      if (startTime >= 0) {
+        snd.seek(startTime, SEEK_SET);
+        snd.writef(
+          (float *) (buffer.data.data() + startIdx), buffer.notWritten.size());
+        buffer.notWritten.inIdx = buffer.notWritten.outIdx = 0;
+      }
+    }
+
     if (buffer.lengthFW < desLength - MIN_READ_SIZE) {
       uint startIdx = buffer.playIdx + buffer.lengthFW; 
       snd.seek(buffer.posAt0 + startIdx, SEEK_SET);
@@ -47,6 +59,7 @@ void TapeBuffer::threadRoutine() {
       memset(framebuf, 0, nframes * nTracks * sizeof(float));
       uint read = snd.readf(framebuf, nframes);
       for (uint i = 0; i < nframes; i++) {
+        // TODO: Read directly into buffer
         buffer[startIdx + i] = AudioFrame{{
           framebuf[nTracks * i],
           framebuf[nTracks * i + 1],
@@ -114,7 +127,12 @@ void TapeBuffer::movePlaypointAbs(int newPos) {
     // wrong place in file
     // TODO: handle this
   }
-  buffer.posAt0 = newPos - buffer.playIdx;
+  uint newTime = newPos - buffer.playIdx;
+  if (newTime != buffer.posAt0) {
+    buffer.notWritten.inIdx += buffer.posAt0 - newTime;
+    buffer.notWritten.outIdx += buffer.posAt0 - newTime;
+    buffer.posAt0 = newTime;
+  }
   playPoint = newPos;
   readData.notify_all();
 }
@@ -123,7 +141,7 @@ void TapeBuffer::movePlaypointAbs(int newPos) {
 // Fancy wrapper methods!
 
 std::vector<float> TapeBuffer::readFW(uint nframes, uint track) {
-  uint n = std::min(buffer.lengthFW, (int) nframes);
+  uint n = std::min<int>(buffer.lengthFW, nframes);
 
   std::vector<float> ret;
 
@@ -137,7 +155,7 @@ std::vector<float> TapeBuffer::readFW(uint nframes, uint track) {
 }
 
 std::vector<AudioFrame> TapeBuffer::readAllFW(uint nframes) {
-  uint n = (nframes > buffer.lengthFW) ? buffer.lengthFW : nframes;
+  uint n = std::min<int>(nframes, buffer.lengthFW);
 
   std::vector<AudioFrame> ret;
 
@@ -151,7 +169,7 @@ std::vector<AudioFrame> TapeBuffer::readAllFW(uint nframes) {
 }
 
 std::vector<float> TapeBuffer::readBW(uint nframes, uint track) {
-  uint n = (nframes > buffer.lengthBW) ? buffer.lengthBW : nframes;
+  uint n = std::min<int>(nframes, buffer.lengthBW);
 
   std::vector<float> ret;
 
@@ -165,7 +183,7 @@ std::vector<float> TapeBuffer::readBW(uint nframes, uint track) {
 }
 
 std::vector<AudioFrame> TapeBuffer::readAllBW(uint nframes) {
-  uint n = (nframes > buffer.lengthBW) ? buffer.lengthBW : nframes;
+  uint n = std::min<int>(nframes, buffer.lengthBW);
 
   std::vector<AudioFrame> ret;
 
@@ -178,23 +196,53 @@ std::vector<AudioFrame> TapeBuffer::readAllBW(uint nframes) {
   return ret;
 }
 
+template<class T>
+  static bool between(T small, T middle, T big) {
+  return small <= middle && middle >= big;
+}
+
 uint TapeBuffer::writeFW(std::vector<float> data, uint track) {
-  // uint n = (data.size() > buffer.capacityFW()) ? buffer.capacityFW() : data.size();
-  // for (uint i = 0; i < n; i++) {
-  //   buffer[i][track-1] = data[i];
-  // }
-  // return data.size() - n;
-  return 0;
+  uint n = std::min<int>(data.size(), buffer.SIZE - buffer.lengthFW);
+
+  int beginPos = buffer.playIdx - n;
+
+  for (uint i = 0; i < n; i++) {
+    buffer[beginPos + i][track - 1] = data[i];
+  }
+
+  buffer.notWritten.inIdx =
+    std::min<int>(buffer.notWritten.inIdx, beginPos);
+  buffer.notWritten.outIdx =
+    std::max<int>(buffer.notWritten.outIdx, buffer.playIdx);
+
+  buffer.lengthBW =
+    std::max<int>(data.size(), buffer.lengthBW);
+  buffer.lengthFW =
+    std::min<int>(buffer.lengthFW, buffer.SIZE - buffer.lengthBW);
+
+  return data.size() - n;
 }
 
 uint TapeBuffer::writeBW(std::vector<float> data, uint track) {
-  // uint n = (data.size() > buffer.capacityBW())
-  //   ? buffer.capacityBW() : data.size();
-  // for (uint i = 0; i < n; i++) {
-  //   buffer[n-i][track-1] = data[i];
-  // }
-  // return data.size() - n;
-  return 0;
+  uint n = std::min<int>(data.size(), buffer.SIZE - buffer.lengthBW);
+
+  int endPos = buffer.playIdx + n;
+
+  for (uint i = 0; i < n; i++) {
+    buffer[endPos - i][track - 1] = data[i];
+  }
+
+  buffer.notWritten.inIdx =
+    std::min<int>(buffer.notWritten.inIdx, buffer.playIdx);
+  buffer.notWritten.outIdx =
+    std::max<int>(buffer.notWritten.outIdx, endPos);
+
+  buffer.lengthFW =
+    std::max<int>(data.size(), buffer.lengthFW);
+  buffer.lengthBW =
+    std::min<int>(buffer.lengthBW, buffer.SIZE - buffer.lengthFW);
+
+  return data.size() - n;
 }
 
 void TapeBuffer::goTo(uint pos) {

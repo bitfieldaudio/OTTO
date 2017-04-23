@@ -53,6 +53,13 @@ void TapeModule::process(uint nframes) {
         buffer[i] = data[(int)i * (float)data.size()/((float)nframes)];
       }
     }
+    if (recording) {
+      std::vector<float> buf;
+      for (uint i = 0; i < nframes; i++) {
+        buf.push_back(mix(buffer[i][track - 1], GLOB.data.in[0][i]));
+      }
+      tapeBuffer.writeFW(buf, track);
+    }
   }
   if (playing < 0) {
     float speed = -playing;
@@ -63,6 +70,13 @@ void TapeModule::process(uint nframes) {
       for (uint i = 0; i < nframes; i++) {
         buffer[i] = data[(int)i * (float)data.size()/((float)nframes)];
       }
+    }
+    if (recording) {
+      std::vector<float> buf;
+      for (uint i = 0; i < nframes; i++) {
+        buf.push_back(mix(buffer[i][track - 1], GLOB.data.in[0][i]));
+      }
+      tapeBuffer.writeBW(buf, track);
     }
   }
 
