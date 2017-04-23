@@ -23,6 +23,7 @@ struct AudioFrame {
  */
 class TapeBuffer {
 protected:
+  const static int MIN_READ_SIZE = 2048;
 
   /** The current position on the tape, counted in frames from the beginning*/
   std::atomic_uint playPoint;
@@ -67,7 +68,7 @@ protected:
 
   void movePlaypointRel(int time);
 
-  void movePlaypointAbs(uint pos);
+  void movePlaypointAbs(int pos);
 
 public:
 

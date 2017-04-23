@@ -45,6 +45,7 @@ private:
   virtual void draw(const ui::ContextPtr& cr) override;
 
   virtual bool keypress(ui::Key key) override;
+  virtual bool keyrelease(ui::Key key) override;
 
 public:
 

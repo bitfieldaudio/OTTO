@@ -44,10 +44,21 @@ void TapeModule::process(uint nframes) {
   }
 
   memset(buffer.data(), 0, sizeof(AudioFrame) * buffer.size());
-  if (playing) {
+  if (playing > 0) {
     auto data = tapeBuffer.readAllFW(nframes * playing);
     if (data.size() != 0) {
       if (data.size() < nframes * playing)
+        LOGD << "tape too slow";
+      for (uint i = 0; i < nframes; i++) {
+        buffer[i] = data[(int)i * (float)data.size()/((float)nframes)];
+      }
+    }
+  }
+  if (playing < 0) {
+    float speed = -playing;
+    auto data = tapeBuffer.readAllBW(nframes * speed);
+    if (data.size() != 0) {
+      if (data.size() < nframes * speed)
         LOGD << "tape too slow";
       for (uint i = 0; i < nframes; i++) {
         buffer[i] = data[(int)i * (float)data.size()/((float)nframes)];
@@ -82,7 +93,7 @@ TapeModule::TapeModule() :
 bool TapeScreen::keypress(ui::Key key) {
   switch (key) {
   case ui::K_REC:
-    module->recording = !module->recording;
+    module->recording = true;
     return true;
   case ui::K_PLAY:
     if (module->playing) {
@@ -103,7 +114,29 @@ bool TapeScreen::keypress(ui::Key key) {
   case ui::K_TRACK_4:
     module->track = 4;
     return true;
+  case ui::K_LEFT:
+    module->play(-4);
+    return true;
+  case ui::K_RIGHT:
+    LOGD << "start";
+    module->play(4);
+    return true;
   }
+  return false;
+}
+
+bool TapeScreen::keyrelease(ui::Key key) {
+  switch (key) {
+  case ui::K_REC:
+    module->recording = false;
+    return true;
+  case ui::K_LEFT:
+  case ui::K_RIGHT:
+    LOGD << "stop";
+    module->stop();
+    return true;
+  }
+  return false;
 }
 
 auto COLOR_REEL_BACKGROUND = Cairo::SolidPattern::create_rgba(0, 0, 0, 1);

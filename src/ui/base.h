@@ -25,6 +25,9 @@ enum Key {
   K_GREEN_UP,
   K_GREEN_DOWN,
 
+  K_LEFT,
+  K_RIGHT,
+
   // Tapedeck
   K_PLAY,
   K_REC,
@@ -86,6 +89,14 @@ public:
    * @return true if the key was used.
    */
   virtual bool keypress(Key key) {
+    return false;
+  };
+  /**
+   * Run by MainUI when a key is released
+   * @param key the released key
+   * @return true if the key was used.
+   */
+  virtual bool keyrelease(Key key) {
     return false;
   };
 };

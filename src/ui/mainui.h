@@ -22,6 +22,7 @@ public:
 
   void draw(const ui::ContextPtr& cr) override;
   bool keypress(ui::Key key) override;
+  bool keyrelease(ui::Key key) override;
 
   static void init();
 

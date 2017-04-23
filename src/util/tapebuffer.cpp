@@ -1,6 +1,7 @@
 #include "tapebuffer.h"
 
 #include <cmath>
+#include <algorithm>
 #include <sndfile.hh>
 #include "../globals.h"
 
@@ -35,9 +36,11 @@ void TapeBuffer::threadRoutine() {
   }
 
   while(GLOB.running) {
-    int desLength = buffer.SIZE / 2 - 16;
 
-    if (buffer.lengthFW < desLength) {
+    // Keep some space in the middle to avoid overlap fights
+    int desLength = buffer.SIZE / 2 - sizeof(AudioFrame);
+
+    if (buffer.lengthFW < desLength - MIN_READ_SIZE) {
       uint startIdx = buffer.playIdx + buffer.lengthFW; 
       snd.seek(buffer.posAt0 + startIdx, SEEK_SET);
       uint nframes = desLength - buffer.lengthFW;
@@ -58,7 +61,7 @@ void TapeBuffer::threadRoutine() {
       }
     }
 
-    if (buffer.lengthBW < desLength) {
+    if (buffer.lengthBW < desLength - MIN_READ_SIZE) {
       uint nframes = desLength - buffer.lengthBW;
       int startIdx = buffer.playIdx - buffer.lengthBW - nframes; 
       snd.seek(buffer.posAt0 + startIdx, SEEK_SET);
@@ -87,7 +90,10 @@ void TapeBuffer::movePlaypointRel(int time) {
   movePlaypointAbs(playPoint + time);
 }
 
-void TapeBuffer::movePlaypointAbs(uint newPos) {
+void TapeBuffer::movePlaypointAbs(int newPos) {
+  if (newPos < 0) {
+    newPos = 0;
+  }
   uint oldPos = playPoint;
   int diff = newPos - oldPos;
   if (diff <= buffer.lengthFW && diff >= -buffer.lengthBW) {
@@ -117,12 +123,12 @@ void TapeBuffer::movePlaypointAbs(uint newPos) {
 // Fancy wrapper methods!
 
 std::vector<float> TapeBuffer::readFW(uint nframes, uint track) {
-  uint n = (nframes > buffer.lengthFW) ? buffer.lengthFW : nframes;
+  uint n = std::min(buffer.lengthFW, (int) nframes);
 
-  auto ret = std::vector<float>(n);
+  std::vector<float> ret;
 
   for (uint i = 0; i < n; i++) {
-   ret.push_back(buffer[i][track - 1]);
+   ret.push_back(buffer[buffer.playIdx + i][track - 1]);
   }
 
   movePlaypointRel(n);
@@ -133,10 +139,10 @@ std::vector<float> TapeBuffer::readFW(uint nframes, uint track) {
 std::vector<AudioFrame> TapeBuffer::readAllFW(uint nframes) {
   uint n = (nframes > buffer.lengthFW) ? buffer.lengthFW : nframes;
 
-  auto ret = std::vector<AudioFrame>(n);
+  std::vector<AudioFrame> ret;
 
   for (uint i = 0; i < n; i++) {
-    ret.push_back(buffer[i]);
+    ret.push_back(buffer[buffer.playIdx + i]);
   }
 
   movePlaypointRel(n);
@@ -147,24 +153,24 @@ std::vector<AudioFrame> TapeBuffer::readAllFW(uint nframes) {
 std::vector<float> TapeBuffer::readBW(uint nframes, uint track) {
   uint n = (nframes > buffer.lengthBW) ? buffer.lengthBW : nframes;
 
-  std::vector<float> rev (n);
+  std::vector<float> ret;
 
   for (uint i = 0; i < n; i++) {
-    rev.push_back(buffer[-i][track - 1]);
+    ret.push_back(buffer[buffer.playIdx - i][track - 1]);
   }
 
   movePlaypointRel(-n);
 
-  return rev;
+  return ret;
 }
 
 std::vector<AudioFrame> TapeBuffer::readAllBW(uint nframes) {
   uint n = (nframes > buffer.lengthBW) ? buffer.lengthBW : nframes;
 
-  auto ret = std::vector<AudioFrame>(n);
+  std::vector<AudioFrame> ret;
 
   for (uint i = 0; i < n; i++) {
-    ret.push_back(buffer[-i]);
+    ret.push_back(buffer[buffer.playIdx - i]);
   }
 
   movePlaypointRel(-n);

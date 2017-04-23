@@ -45,6 +45,9 @@ static ui::Key keyboardKey(int xKey) {
   case XK_r:     return K_GREEN_UP;
   case XK_f:     return K_GREEN_DOWN;
 
+  case XK_Left:  return K_LEFT;
+  case XK_Right:  return K_RIGHT;
+
     // Tapedeck
   case XK_space: return K_PLAY;
   case XK_z:     return K_REC;
@@ -77,9 +80,11 @@ static void event_routine(Display *display) {
     XNextEvent(display, &e);
 
     ui::Key key;
+    Atom wm_del = XInternAtom(display, "WM_DELETE_WINDOW", false);
+    int keysym;
     switch (e.type) {
     case KeyPress:
-      int keysym = XkbKeycodeToKeysym(
+      keysym = XkbKeycodeToKeysym(
         display,
         e.xkey.keycode,
         0,
@@ -87,9 +92,34 @@ static void event_routine(Display *display) {
 
       key = keyboardKey(keysym);
       if (key) self.keypress(key);
-      //case ClientMessage:
-      //GLOB.running = false;
+      break;
+    case ClientMessage:
+      if((Atom) e.xclient.data.l[0] == wm_del) {
+        GLOB.running = false;
+      }
+      break;
+    case KeyRelease:
+      if (XEventsQueued(display, QueuedAfterReading)) {
+        XEvent nev;
+        XPeekEvent(display, &nev);
+
+        if (nev.type == KeyPress && nev.xkey.time == e.xkey.time &&
+        nev.xkey.keycode == e.xkey.keycode) {
+          XNextEvent(display, &e);
+          break;
+        }
+      }
+      keysym = XkbKeycodeToKeysym(
+        display,
+        e.xkey.keycode,
+        0,
+        e.xkey.state & ShiftMask ? 1 : 0);
+
+      key = keyboardKey(keysym);
+      if (key) self.keyrelease(key);
+      break;
     }
+
   }
 }
 

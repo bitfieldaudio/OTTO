@@ -30,6 +30,10 @@ bool MainUI::keypress(ui::Key key) {
   return globKeyPost(key);
 }
 
+bool MainUI::keyrelease(ui::Key key) {
+  return currentScreen->keyrelease(key);
+}
+
 bool MainUI::globKeyPost(ui::Key key) {
   return false;
 }
