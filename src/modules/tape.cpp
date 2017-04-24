@@ -47,8 +47,8 @@ void TapeModule::process(uint nframes) {
   if (playing > 0) {
     auto data = tapeBuffer.readAllFW(nframes * playing);
     if (data.size() != 0) {
-      if (data.size() < nframes * playing)
-        LOGD << "tape too slow";
+      if (data.size() < uint( nframes * playing))
+        LOGD << "tape too slow: " << data.size() << " of " << nframes * playing;
       for (uint i = 0; i < nframes; i++) {
         buffer[i] = data[(int)i * (float)data.size()/((float)nframes)];
       }
@@ -65,8 +65,8 @@ void TapeModule::process(uint nframes) {
     float speed = -playing;
     auto data = tapeBuffer.readAllBW(nframes * speed);
     if (data.size() != 0) {
-      // if (data.size() < nframes * speed)
-      //   LOGD << "tape too slow";
+      if (data.size() < uint (nframes * speed))
+        LOGD << "tape too slow: " << data.size() << " of " << nframes * speed;
       for (uint i = 0; i < nframes; i++) {
         buffer[i] = data[(int)i * (float)data.size()/((float)nframes)];
       }
