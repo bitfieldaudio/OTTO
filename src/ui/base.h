@@ -1,14 +1,11 @@
 #pragma once
 
-#include <cairomm/cairomm.h>
+#include <nanovg/nanovg.h>
 #include <thread>
 
 #include "../module.h"
 
 namespace ui {
-
-typedef Cairo::RefPtr<Cairo::Context> ContextPtr;
-typedef Cairo::RefPtr<Cairo::Pattern> PatternPtr;
 
 /**
  * Used for keypresses
@@ -71,7 +68,7 @@ public:
    * Called from the parent's draw method.
    * @param cr the Cairo context to draw to.
    */
-  virtual void draw(const ContextPtr& cr) = 0;
+  virtual void draw(NVGcontext* context) = 0;
 
 };
 
@@ -126,7 +123,7 @@ public:
  */
 class DefaultScreen : public Screen {
 public:
-  void draw(const ContextPtr& cr) override;
+  void draw(NVGcontext* context) override;
   bool keypress(Key key) override;
 };
 

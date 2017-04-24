@@ -16,7 +16,6 @@ find_package(Threads REQUIRED)
 
 file(GLOB_RECURSE TAPEDECK_SRC
   "src/*.cpp"
-  "lib/*.cc"
 )
 
 add_executable(tapedeck ${TAPEDECK_SRC})
@@ -24,6 +23,7 @@ add_executable(tapedeck ${TAPEDECK_SRC})
 target_link_libraries(tapedeck pthread)
 target_link_libraries(tapedeck dl)
 include_directories("include")
+link_libraries("lib")
 
 function(target_add_lib name)
   pkg_check_modules(${name} REQUIRED ${name})
@@ -36,9 +36,8 @@ endfunction(target_add_lib)
 
 target_add_lib(jack)
 target_add_lib(sndfile)
-target_add_lib(cairomm-1.0)
-target_add_lib(pangomm-1.4)
-target_add_lib(x11)
+target_add_lib(glfw3)
+target_add_lib(gl)
 
 include(CheckCXXCompilerFlag)
 

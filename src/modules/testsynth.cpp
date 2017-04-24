@@ -19,20 +19,9 @@ TestSynth::~TestSynth() {
   delete screen;
 }
 
-void TestSynthScreen::draw(const ui::ContextPtr& cr) {
+void TestSynthScreen::draw(NVGcontext *context) {
   using namespace ui;
   using namespace drawing;
-
-  auto text1 = Pango::Layout::create(cr);
-  text1->set_text(std::to_string(*module->frequency));
-  text1->set_font_description(FONT_BIG_NUM);
-  int tw, th;
-  text1->get_pixel_size(tw, th);
-
-  cr->set_source(COLOR_RED);
-
-  cr->move_to((WIDTH - tw) / 2, (HEIGHT - th) / 2);
-  text1->show_in_cairo_context(cr);
 }
 
 bool TestSynthScreen::keypress(ui::Key key) {

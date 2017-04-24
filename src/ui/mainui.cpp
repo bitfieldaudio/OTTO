@@ -2,26 +2,25 @@
 #include "mainui.h"
 #include "utils.h"
 #include "../globals.h"
-#include <pangomm/init.h>
 
 #include <thread>
 
 void MainUI::init() {
   auto& self = getInstance();
 
-  Pango::init();
-
   self.uiThread = std::thread(MainUI::mainRoutine);
   self.uiThread.join();
 }
 
-void MainUI::draw(const ui::ContextPtr& cr) {
+void MainUI::draw(NVGcontext *context) {
   using namespace drawing;
 
-  cr->rectangle(0, 0, WIDTH, HEIGHT);
-  cr->set_source(COLOR_BLACK);
-  cr->fill();
-  currentScreen->draw(cr);
+  nvgBeginPath(context);
+  nvgRect(context, 0, 0, WIDTH, HEIGHT);
+  nvgFillColor(context, COLOR_BLACK);
+  nvgFill(context);
+
+  currentScreen->draw(context);
 }
 
 bool MainUI::keypress(ui::Key key) {

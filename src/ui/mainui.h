@@ -16,11 +16,9 @@ public:
 
   ui::Screen *currentScreen;
 
-  ui::ContextPtr cairo;
-  Cairo::RefPtr<Cairo::Surface> surface;
   std::thread uiThread;
 
-  void draw(const ui::ContextPtr& cr) override;
+  void draw(NVGcontext *context) override;
   bool keypress(ui::Key key) override;
   bool keyrelease(ui::Key key) override;
 

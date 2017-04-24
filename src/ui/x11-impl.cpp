@@ -1,3 +1,4 @@
+#if 0
 #include "base.h"
 #include "mainui.h"
 #include "utils.h"
@@ -167,3 +168,4 @@ void MainUI::mainRoutine() {
   }
 
 }
+#endif
