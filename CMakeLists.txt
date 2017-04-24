@@ -16,6 +16,9 @@ find_package(Threads REQUIRED)
 
 file(GLOB_RECURSE TAPEDECK_SRC
   "src/*.cpp"
+  "lib/*.cpp"
+  "lib/*.c"
+  "lib/*.cc"
 )
 
 add_executable(tapedeck ${TAPEDECK_SRC})
@@ -23,7 +26,6 @@ add_executable(tapedeck ${TAPEDECK_SRC})
 target_link_libraries(tapedeck pthread)
 target_link_libraries(tapedeck dl)
 include_directories("include")
-link_libraries("lib")
 
 function(target_add_lib name)
   pkg_check_modules(${name} REQUIRED ${name})

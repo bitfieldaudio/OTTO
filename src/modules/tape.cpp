@@ -231,56 +231,20 @@ static inline void drawTapeReel(NVGcontext *context, NVGcolor recCol) {
 }
 
 static void drawStaticBackground(NVGcontext *context, NVGcolor recCol) {
+  // Group start: LeftReel
   nvgBeginPath(context);
-  nvgMoveTo(context, 265.0, 121.0);
-  nvgMoveTo(context, 230.0, 174.00004);
-  nvgBezierTo(context, 228.65465, 176.06538, 226.59901, 176.83983, 224.95828, 176.56317);
-  nvgLineTo(context, 189, 170.50004);
-  nvgLineTo(context, 160.0, 170.50004);
-  nvgLineTo(context, 131.0, 170.50004);
-  nvgBezierTo(context, 131.0, 170.50004, 95.606328, 176.60931, 94.157836, 176.56317);
-  nvgBezierTo(context, 92.709345, 176.51707, 91.091326, 176.86715, 89.0, 174.50004);
-  nvgLineTo(context, 53.748322, 134.47819);
-  nvgStrokeColor(context, nvgRGBA(102, 102, 102, 255));
-  nvgLineCap(context, NVG_ROUND);
-  nvgLineJoin(context, NVG_ROUND);
-  nvgMiterLimit(context, 4);
-  nvgStrokeWidth(context, 2);
-  nvgStroke(context);
-  nvgBeginPath(context);
-  nvgCircle(context, 82.5, 106, 41.536888);
-  nvgFillColor(context, nvgRGBA(102, 102, 102, 255));
-  nvgFill(context);
-  nvgBeginPath(context);
-  nvgCircle(context, 237.5, 106.00002, 32.554844);
-  nvgFillColor(context, nvgRGBA(102, 102, 102, 255));
-  nvgFill(context);
-  nvgBeginPath(context);
-  nvgCircle(context, 237.5, 106.00002, 20.726049);
-  nvgFillColor(context, nvgRGBA(0, 0, 0, 255));
-  nvgFill(context);
-  nvgBeginPath(context);
-  nvgEllipse(context, 93.5, 171.50002, 4.545455, 4.5454545);
-  nvgStrokeColor(context, nvgRGBA(255, 255, 255, 255));
-  nvgMiterLimit(context, 4);
-  nvgStrokeWidth(context, 1);
-  nvgStroke(context);
-  nvgBeginPath(context);
-  nvgEllipse(context, 225.5, 171.50002, 4.545455, 4.5454545);
-  nvgStrokeColor(context, nvgRGBA(255, 255, 255, 255));
-  nvgMiterLimit(context, 4);
-  nvgStrokeWidth(context, 1);
-  nvgStroke(context);
-  nvgBeginPath(context);
-  nvgMoveTo(context, 130.49609, 160.49609);
-  nvgMoveTo(context, 134.49609, 180.50394);
-  nvgMoveTo(context, 185.50391, 180.50394);
-  nvgMoveTo(context, 189.50391, 160.49609);
-  nvgClosePath(context);
+  nvgMoveTo(context, 82.5, 54.50195);
+  nvgMoveTo(context, 82.5, 61.11719);
   nvgPathWinding(context, NVG_HOLE);
-  nvgMoveTo(context, 160, 181.25584);
-  nvgLineTo(context, 160.0, 212.00004);
-  nvgClosePath(context);
+  nvgMoveTo(context, 82.5, 88.88086);
+  nvgPathWinding(context, NVG_HOLE);
+  nvgMoveTo(context, 82.5, 92.39648);
+  nvgPathWinding(context, NVG_HOLE);
+  nvgMoveTo(context, 82.5, 103.55469);
+  nvgPathWinding(context, NVG_HOLE);
+  nvgMoveTo(context, 109.83008, 114.92383);
+  nvgPathWinding(context, NVG_HOLE);
+  nvgMoveTo(context, 54.451172, 114.92583);
   nvgPathWinding(context, NVG_HOLE);
   nvgFillColor(context, nvgRGBA(0, 0, 0, 255));
   nvgFill(context);
@@ -288,13 +252,10 @@ static void drawStaticBackground(NVGcontext *context, NVGcolor recCol) {
   nvgLineCap(context, NVG_ROUND);
   nvgLineJoin(context, NVG_ROUND);
   nvgMiterLimit(context, 4);
-  nvgStrokeWidth(context, 1.70305741);
+  nvgStrokeWidth(context, 1);
   nvgStroke(context);
   nvgBeginPath(context);
-  nvgCircle(context, 82.5, 106, 24.104982);
-  nvgFillColor(context, nvgRGBA(0, 0, 0, 255));
-  nvgFill(context);
-  // Group end: StaticBackground
+  // Group end: LeftReel
 }
 
 void TapeScreen::draw(NVGcontext *context) {
@@ -306,5 +267,5 @@ void TapeScreen::draw(NVGcontext *context) {
 
   drawStaticBackground(context, recColor);
 
-  drawTapeReel(context, recColor);
+  //drawTapeReel(context, recColor);
 }
