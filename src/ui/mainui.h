@@ -18,7 +18,7 @@ public:
 
   std::thread uiThread;
 
-  void draw(NVGcontext *context) override;
+  void draw(NanoCanvas::Canvas& ctx) override;
   bool keypress(ui::Key key) override;
   bool keyrelease(ui::Key key) override;
 

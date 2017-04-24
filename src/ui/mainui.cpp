@@ -12,15 +12,9 @@ void MainUI::init() {
   self.uiThread.join();
 }
 
-void MainUI::draw(NVGcontext *context) {
+void MainUI::draw(NanoCanvas::Canvas& ctx) {
   using namespace drawing;
-
-  nvgBeginPath(context);
-  nvgRect(context, 0, 0, WIDTH, HEIGHT);
-  nvgFillColor(context, COLOR_BLACK);
-  nvgFill(context);
-
-  currentScreen->draw(context);
+  currentScreen->draw(ctx);
 }
 
 bool MainUI::keypress(ui::Key key) {

@@ -19,7 +19,7 @@ public:
 
 class TestSynthScreen : public ui::ModuleScreen<TestSynth> {
 private:
-  virtual void draw(NVGcontext *context) override;
+  virtual void draw(NanoCanvas::Canvas& ctx) override;
 
   virtual bool keypress(ui::Key key) override;
 

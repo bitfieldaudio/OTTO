@@ -4,7 +4,7 @@
 
 namespace ui {
 
-void DefaultScreen::draw(NVGcontext *context) {
+void DefaultScreen::draw(NanoCanvas::Canvas& ctx) {
   using namespace drawing;
 
 }

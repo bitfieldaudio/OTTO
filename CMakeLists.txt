@@ -25,6 +25,8 @@ add_executable(tapedeck ${TAPEDECK_SRC})
 
 target_link_libraries(tapedeck pthread)
 target_link_libraries(tapedeck dl)
+include_directories("include/nanovg")
+include_directories("include/nanocanvas")
 include_directories("include")
 
 function(target_add_lib name)
@@ -54,8 +56,8 @@ function(enable_cxx_compiler_flag_if_supported flag)
 endfunction()
 
 # example usage
-enable_cxx_compiler_flag_if_supported("-Wall")
-enable_cxx_compiler_flag_if_supported("-Wextra")
+#enable_cxx_compiler_flag_if_supported("-Wall")
+#enable_cxx_compiler_flag_if_supported("-Wextra")
 # enable_cxx_compiler_flag_if_supported("-pedantic")
 
 add_custom_command(TARGET tapedeck

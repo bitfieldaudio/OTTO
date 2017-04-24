@@ -1,6 +1,7 @@
 #pragma once
 
-#include <nanovg/nanovg.h>
+#include <nanocanvas/NanoCanvas.h>
+
 #include <thread>
 
 #include "../module.h"
@@ -68,7 +69,7 @@ public:
    * Called from the parent's draw method.
    * @param cr the Cairo context to draw to.
    */
-  virtual void draw(NVGcontext* context) = 0;
+  virtual void draw(NanoCanvas::Canvas& ctx) = 0;
 
 };
 
@@ -123,7 +124,7 @@ public:
  */
 class DefaultScreen : public Screen {
 public:
-  void draw(NVGcontext* context) override;
+  void draw(NanoCanvas::Canvas& ctx) override;
   bool keypress(Key key) override;
 };
 
