@@ -93,6 +93,9 @@ static void render_routine() {
 		return;
 	}
 
+  glfwSetWindowAspectRatio(window, 4, 3);
+  glfwSetWindowSizeLimits(window, 320, 240, GLFW_DONT_CARE, GLFW_DONT_CARE);
+
 	glfwSetKeyCallback(window, key);
 
 	glfwMakeContextCurrent(window);
@@ -107,6 +110,9 @@ static void render_routine() {
 
 	glfwSetTime(0);
 	prevt = glfwGetTime();
+
+  NanoCanvas::Canvas canvas(vg, drawing::WIDTH, drawing::HEIGHT);
+  drawing::initUtils(canvas);
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -126,8 +132,7 @@ static void render_routine() {
 		// Calculate pixel ration for hi-dpi devices.
 		pxRatio = (float)fbWidth / (float)winWidth;
     scale = std::min((float)winWidth/(float)drawing::WIDTH, (float)winHeight/(float)drawing::HEIGHT);
-    NanoCanvas::Canvas canvas(vg, winWidth, winHeight);
-    drawing::initUtils(canvas);
+    canvas.setSize(winWidth, winHeight);
 
 		// Update and render
 		glViewport(0, 0, fbWidth, fbHeight);
@@ -152,9 +157,9 @@ static void render_routine() {
 
 		glfwSwapBuffers(window);
 
-    spent = glfwGetTime() - t;
-
 		glfwPollEvents();
+
+    spent = glfwGetTime() - t;
 
     std::this_thread::sleep_for(
       std::chrono::milliseconds(int(100/6 - spent*1000)));

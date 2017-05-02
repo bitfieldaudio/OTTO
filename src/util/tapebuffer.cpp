@@ -122,11 +122,6 @@ void TapeBuffer::movePlaypointAbs(int newPos) {
     buffer.lengthBW = 0;
     buffer.lengthFW = 0;
   }
-  if (buffer.notWritten) {
-    // shit, we need to change posAt0 but then this will be written to the
-    // wrong place in file
-    // TODO: handle this
-  }
   uint newTime = newPos - buffer.playIdx;
   if (newTime != buffer.posAt0) {
     buffer.notWritten.inIdx += buffer.posAt0 - newTime;

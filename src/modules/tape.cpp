@@ -508,112 +508,61 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
 
   auto recColor = (module->recording) ? COLOR_RED : COLOR_WHITE;
 
+  int timeLength = 5 * 44100;
+  int startTime = module->tapeBuffer.position() - timeLength/2;
+  int endTime = module->tapeBuffer.position() + timeLength/2;
+
+  int startCoord = 40;
+  int endCoord = 280;
+  int coordWidth = endCoord - startCoord;
+
+  float lengthRatio = (float)coordWidth/(float)timeLength;
+  auto timeToCoord = [=](int time) -> float {
+    if (time >= startTime && time <= endTime){
+      time -= startTime;
+      float coord = startCoord + time * lengthRatio;
+      return coord;
+    }
+    return NAN;
+  };
+
   ctx.save();
-  // #BarMarkers
+
+  ctx.lineJoin(Canvas::LineJoin::ROUND);
+  ctx.lineCap(Canvas::LineCap::ROUND);
+  ctx.miterLimit(4);
+  ctx.lineWidth(2);
+
+  // TODO: Real value
+  int BPM = 120;
+  float FPB = 44100.0 * 60.0/((float)BPM);
+
+  // Bar Markers
   {
-    // #path6608
+    int count = startTime/FPB;
+    int timeFirst = std::max(count, 0) * FPB;
+    for (int bm = timeFirst; bm <= endTime; bm += FPB) {
+      int x = timeToCoord(bm);
+      ctx.beginPath();
+      ctx.strokeStyle(COLOR_BAR_MARKER);
+      ctx.moveTo(x, 185);
+      ctx.lineTo(x, 195);
+      ctx.stroke();
+    }
+  }
+
+  // Tracks
+  for(uint t = 0; t < 4; t++) {
+    int s = (startTime < 0) ? startCoord - startTime * lengthRatio : startCoord;
     ctx.beginPath();
-    ctx.lineJoin(Canvas::LineJoin::MITER);
-    ctx.strokeStyle(COLOR_BAR_MARKER);
-    ctx.lineCap(Canvas::LineCap::ROUND);
-    ctx.miterLimit(4);
-    ctx.lineWidth(2.093291);
-    ctx.moveTo(219.000100, 186.111040);
-    ctx.lineTo(219.000100, 194.888940);
-    ctx.stroke();
-  
-    // #path6606
-    ctx.beginPath();
-    ctx.lineJoin(Canvas::LineJoin::MITER);
-    ctx.strokeStyle(COLOR_BAR_MARKER);
-    ctx.lineCap(Canvas::LineCap::ROUND);
-    ctx.miterLimit(4);
-    ctx.lineWidth(2.093291);
-    ctx.moveTo(277.000100, 186.111040);
-    ctx.lineTo(277.000100, 194.888940);
-    ctx.stroke();
-  
-    // #path6610
-    ctx.beginPath();
-    ctx.lineJoin(Canvas::LineJoin::MITER);
-    ctx.strokeStyle(COLOR_BAR_MARKER);
-    ctx.lineCap(Canvas::LineCap::ROUND);
-    ctx.miterLimit(4);
-    ctx.lineWidth(2.093291);
-    ctx.moveTo(103.000100, 186.111040);
-    ctx.lineTo(103.000100, 194.888940);
-    ctx.stroke();
-  
-    // #path4309
-    ctx.beginPath();
-    ctx.lineJoin(Canvas::LineJoin::MITER);
-    ctx.strokeStyle(COLOR_BAR_MARKER);
-    ctx.lineCap(Canvas::LineCap::ROUND);
-    ctx.miterLimit(4);
-    ctx.lineWidth(2.093291);
-    ctx.moveTo(43.000100, 186.111040);
-    ctx.lineTo(43.000100, 194.888940);
+    ctx.strokeStyle((t + 1 == module->track) ? COLOR_CURRENT_TRACK : COLOR_OTHER_TRACK);
+    ctx.moveTo(startCoord + (startTime < 0 ? -startTime : 0) * lengthRatio, 195 + 5 * t);
+    ctx.lineTo(endCoord, 195 + 5 * t);
     ctx.stroke();
   }
 
-    // #Tracks
   {
-    // #path4334
-    ctx.beginPath();
-    ctx.lineJoin(Canvas::LineJoin::ROUND);
-    ctx.strokeStyle(COLOR_OTHER_TRACK);
-    ctx.lineCap(Canvas::LineCap::ROUND);
-    ctx.miterLimit(4);
-    ctx.lineWidth(2.000000);
-    ctx.moveTo(40.535943, 195.434740);
-    ctx.lineTo(279.464060, 195.434740);
-    ctx.stroke();
-  
-    // #path4346
-    ctx.beginPath();
-    ctx.lineJoin(Canvas::LineJoin::ROUND);
-    ctx.strokeStyle(COLOR_OTHER_TRACK);
-    ctx.lineCap(Canvas::LineCap::ROUND);
-    ctx.miterLimit(4);
-    ctx.lineWidth(2.000000);
-    ctx.moveTo(40.535943, 207.434740);
-    ctx.lineTo(279.464060, 207.434740);
-    ctx.stroke();
-  
-    // #path4344
-    ctx.beginPath();
-    ctx.lineJoin(Canvas::LineJoin::ROUND);
-    ctx.strokeStyle(COLOR_CURRENT_TRACK);
-    ctx.lineCap(Canvas::LineCap::ROUND);
-    ctx.miterLimit(4);
-    ctx.lineWidth(2.000000);
-    ctx.moveTo(40.535943, 203.434740);
-    ctx.lineTo(279.464060, 203.434740);
-    ctx.stroke();
-  
-    // #path4342
-    ctx.beginPath();
-    ctx.lineJoin(Canvas::LineJoin::ROUND);
-    ctx.strokeStyle(COLOR_OTHER_TRACK);
-    ctx.lineCap(Canvas::LineCap::ROUND);
-    ctx.miterLimit(4);
-    ctx.lineWidth(2.000000);
-    ctx.moveTo(40.535943, 199.434740);
-    ctx.lineTo(279.464060, 199.434740);
-    ctx.stroke();
-  
-    // #path4317
-    ctx.beginPath();
-    ctx.lineJoin(Canvas::LineJoin::ROUND);
-    ctx.strokeStyle(COLOR_LOOP_MARKER);
-    ctx.lineCap(Canvas::LineCap::ROUND);
-    ctx.miterLimit(4);
-    ctx.lineWidth(2.949137);
-    ctx.moveTo(160.051650, 189.625040);
-    ctx.lineTo(277.016870, 189.625040);
-    ctx.stroke();
-  
-    // #LoopArrow
+    // LoopArrow
     ctx.beginPath();
     ctx.globalAlpha(1.0);
     ctx.strokeStyle(COLOR_WHITE);
@@ -648,8 +597,7 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
     ctx.fill();
   }
 
-
-  // #StaticBackground
+  // StaticBackground
   {
     // #path4251
     ctx.beginPath();
@@ -750,6 +698,38 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
     ctx.fill();
   }
 
+  // Loop Marker
+  {
+    int in = 10 * FPB;
+    int out = 14 * FPB;
+
+    bool draw = false;
+
+    ctx.strokeStyle(COLOR_LOOP_MARKER);
+    ctx.fillStyle(COLOR_LOOP_MARKER);
+
+    if (in >= startTime && in <= endTime) {
+      ctx.beginPath();
+      ctx.circle(timeToCoord(in), 190, 3);
+      ctx.fill();
+      draw = true;
+    }
+    if (out >= startTime && out <= endTime) {
+      ctx.beginPath();
+      ctx.circle(timeToCoord(out), 190, 3);
+      ctx.fill();
+      draw = true;
+    }
+    if (draw) {
+      ctx.beginPath();
+      ctx.strokeStyle(COLOR_LOOP_MARKER);
+      ctx.lineWidth(3);
+      ctx.moveTo(timeToCoord(std::max<float>(startTime, in)), 190);
+      ctx.lineTo(timeToCoord(std::min<float>(endTime, out)), 190);
+      ctx.stroke();
+    }
+  }
+
   ctx.restore();
 
   // #LeftReel
@@ -779,13 +759,14 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
   ctx.restore();
 
   // #text4304
-	ctx.lineJoin(Canvas::LineJoin::MITER);
-	ctx.lineCap(Canvas::LineCap::BUTT);
-	ctx.lineWidth(1.000000);
-	ctx.fillStyle(recColor);
-	ctx.font(FONT_LIGHT);
-  ctx.font(40);
-  ctx.textAlign(HorizontalAlign::Center, VerticalAlign::Middle);
+  TextStyle style;
+  style.size = 30;
+  style.face = FONT_LIGHT.face;
+  style.color = COLOR_WHITE;
+  style.hAlign = HorizontalAlign::Center;
+  style.vAlign = VerticalAlign::Middle;
+	ctx.fillStyle(style);
+  ctx.beginPath();
 	ctx.fillText(module->tapeBuffer.timeStr(), 160, 30);
 
   // #rect4292
@@ -798,13 +779,9 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
 	ctx.stroke();
 	
   // #text4294
-	ctx.lineJoin(Canvas::LineJoin::MITER);
-	ctx.lineCap(Canvas::LineCap::BUTT);
-	ctx.lineWidth(1.000000);
-	ctx.fillStyle(recColor);
-	ctx.font(FONT_LIGHT);
-  ctx.font(40);
-  ctx.textAlign(HorizontalAlign::Center, VerticalAlign::Middle);
-	ctx.fillText(std::to_string(module->track), 30, 30);
+	ctx.fillStyle(style);
+  ctx.font(36.0f);
+  ctx.beginPath();
+  ctx.fillText(std::to_string(module->track), 30, 30);
 	
 }

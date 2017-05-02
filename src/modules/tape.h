@@ -18,7 +18,7 @@ class TapeModule : public Module {
 
   void mixOut(jack_nframes_t nframes);
 
-  float nextSpeed;
+  float nextSpeed = 0;
 public:
 
   TapeBuffer tapeBuffer;

@@ -3,8 +3,7 @@
 
 namespace NanoCanvas
 {
-
-bool isnan(float d) {return false;}
+using std::isnan;
 
     NVGcolor nvgColor(const Color& color)
     {

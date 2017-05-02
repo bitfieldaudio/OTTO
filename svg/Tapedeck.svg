@@ -35,17 +35,17 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1196"
-     inkscape:window-height="790"
+     inkscape:window-width="1600"
+     inkscape:window-height="879"
      id="namedview53"
      showgrid="false"
      borderlayer="true"
      inkscape:showpageshadow="false"
-     inkscape:zoom="1.60625"
-     inkscape:cx="146.43202"
-     inkscape:cy="118.0505"
+     inkscape:zoom="4.5431611"
+     inkscape:cx="176.68457"
+     inkscape:cy="95.658449"
      inkscape:window-x="0"
-     inkscape:window-y="0"
+     inkscape:window-y="21"
      inkscape:window-maximized="0"
      inkscape:current-layer="svg2" />
   <defs
@@ -349,9 +349,22 @@
        x="160.14905"
        y="37.803123"
        style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:26.25px;font-family:Lato;-inkscape-font-specification:'Lato Light';text-align:center;text-anchor:middle;fill:#ffffff">02:40.20</tspan></text>
-  <path
-     inkscape:connector-curvature="0"
-     style="opacity:1;fill:none;stroke:#ffffff;stroke-width:1.38689375;stroke-linecap:round;stroke-miterlimit:2;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker4507)"
-     d="m 154.39846,132.39929 -1.55317,0 c -3.29365,0 -5.96359,2.66993 -5.96359,5.96357 0,3.29365 2.66994,5.9636 5.96359,5.9636 l 13.95736,0 c 3.29365,0 5.96358,-2.66995 5.96358,-5.9636 0,-3.29364 -2.66993,-5.96357 -5.96358,-5.96357 l -4.42955,0"
-     id="path4214" />
+  <g
+     id="Loop_Arrow"
+     inkscape:label="">
+    <path
+       sodipodi:nodetypes="ccccc"
+       inkscape:label="#path4214"
+       id="LoopArrow"
+       d="m 163.42111,132.39955 0,3.78792 -7.57697,-3.78847 7.57697,-3.78847 0,3.78902"
+       style="opacity:1;fill:#ffffff;stroke:#ffffff;stroke-width:0.76837748;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:2;stroke-dasharray:none;stroke-opacity:1"
+       inkscape:connector-curvature="0" />
+    <path
+       inkscape:connector-curvature="0"
+       style="opacity:1;fill:none;stroke:#ffffff;stroke-width:1.38699996;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:2;stroke-dasharray:none;stroke-opacity:1"
+       d="m 150.39846,132.39929 -1.55317,0 c -3.29365,0 -5.96359,2.66993 -5.96359,5.96357 0,3.29365 2.66994,5.9636 5.96359,5.9636 l 17.95736,0 c 3.29365,0 5.96358,-2.66995 5.96358,-5.9636 0,-3.29364 -2.66993,-5.96357 -5.96358,-5.96357 l -4.42965,0"
+       id="path4670"
+       inkscape:label="#path4214"
+       sodipodi:nodetypes="cssssssc" />
+  </g>
 </svg>
