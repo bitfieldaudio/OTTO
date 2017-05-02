@@ -42,6 +42,18 @@ protected:
     }
   };
 
+  std::thread diskThread;
+  std::mutex threadLock;
+  std::condition_variable readData;
+
+  void threadRoutine();
+
+  void movePlaypointRel(int time);
+
+  void movePlaypointAbs(int pos);
+
+public:
+
   struct RingBuffer {
     const static uint SIZE = 262144; // 2^18
     std::array<AudioFrame, SIZE> data;
@@ -63,18 +75,6 @@ protected:
     }
 
   } buffer;
-
-  std::thread diskThread;
-  std::mutex threadLock;
-  std::condition_variable readData;
-
-  void threadRoutine();
-
-  void movePlaypointRel(int time);
-
-  void movePlaypointAbs(int pos);
-
-public:
 
   const static uint nTracks = 4;
 

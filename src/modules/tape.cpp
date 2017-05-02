@@ -700,8 +700,9 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
 
   // Loop Marker
   {
-    int in = 10 * FPB;
-    int out = 14 * FPB;
+    // TODO: For debugging i'm displaying the notWritten section instead
+    int in = module->tapeBuffer.buffer.posAt0 + module->tapeBuffer.buffer.notWritten.inIdx;
+    int out = module->tapeBuffer.buffer.posAt0 + module->tapeBuffer.buffer.notWritten.outIdx;
 
     bool draw = false;
 

@@ -42,14 +42,19 @@ void TapeBuffer::threadRoutine() {
 
     if (buffer.notWritten) {
       // TODO: theres gonna be a pesky data race!
-      int startIdx = buffer.notWritten.inIdx; 
-      int startTime = buffer.posAt0 + startIdx;
-      if (startTime >= 0) {
-        snd.seek(startTime, SEEK_SET);
-        snd.writef(
-          (float *) (buffer.data.data() + startIdx), buffer.notWritten.size());
-        buffer.notWritten.inIdx = buffer.notWritten.outIdx = 0;
+      int startIdx = buffer.notWritten.inIdx;
+      int startTime = buffer.posAt0 + buffer.notWritten.inIdx;
+      if (startTime < 0) {
+        startIdx = buffer.notWritten.inIdx -= startTime;
+        startTime = buffer.posAt0 + buffer.notWritten.inIdx;
       }
+      snd.seek(startTime, SEEK_SET);
+      // TODO: This really should be done more than a sample at a time
+      for (int i = 0; i < buffer.notWritten.size(); i++) {
+        snd.writef(
+          (float *) (buffer.data.data() + buffer.wrapIdx(startIdx + i)), 1);
+      }
+      buffer.notWritten.inIdx = buffer.notWritten.outIdx = buffer.playIdx;
     }
 
     if (buffer.lengthFW < desLength - MIN_READ_SIZE) {
@@ -205,10 +210,15 @@ uint TapeBuffer::writeFW(std::vector<float> data, uint track) {
     buffer[beginPos + i][track - 1] = data[i];
   }
 
-  buffer.notWritten.inIdx =
-    std::min<int>(buffer.notWritten.inIdx, beginPos);
-  buffer.notWritten.outIdx =
-    std::max<int>(buffer.notWritten.outIdx, buffer.playIdx);
+  if (buffer.notWritten) {
+    buffer.notWritten.inIdx =
+      std::min<int>(buffer.notWritten.inIdx, beginPos);
+    buffer.notWritten.outIdx =
+      std::max<int>(buffer.notWritten.outIdx, buffer.playIdx);
+  } else {
+    buffer.notWritten.inIdx = beginPos;
+    buffer.notWritten.outIdx = buffer.playIdx;
+  }
 
   buffer.lengthBW =
     std::max<int>(data.size(), buffer.lengthBW);
@@ -227,10 +237,15 @@ uint TapeBuffer::writeBW(std::vector<float> data, uint track) {
     buffer[endPos - i][track - 1] = data[i];
   }
 
-  buffer.notWritten.inIdx =
-    std::min<int>(buffer.notWritten.inIdx, buffer.playIdx);
-  buffer.notWritten.outIdx =
-    std::max<int>(buffer.notWritten.outIdx, endPos);
+  if (buffer.notWritten) {
+    buffer.notWritten.inIdx =
+      std::min<int>(buffer.notWritten.inIdx, buffer.playIdx);
+    buffer.notWritten.outIdx =
+      std::max<int>(buffer.notWritten.outIdx, endPos);
+  } else {
+    buffer.notWritten.inIdx = buffer.playIdx;
+    buffer.notWritten.outIdx = endPos;
+  }
 
   buffer.lengthFW =
     std::max<int>(data.size(), buffer.lengthFW);
