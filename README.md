@@ -3,9 +3,9 @@
 
 A conceptual (and in some cases direct) clone of the Teenage Enginering OP-1, running on a Raspberry Pi.
 
-UI example: 4 track tape recorder:
-
+Screenshots:
 ![TOP-1 Tapedeck](doc/images/tapedeck.png)
+![TOP-1 Mixer](doc/images/mixer.png)
 
 More info to follow
 
