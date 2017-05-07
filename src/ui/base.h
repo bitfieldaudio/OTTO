@@ -16,15 +16,20 @@ enum Key {
 
   K_RED_UP,
   K_RED_DOWN,
+  K_RED_CLICK,
   K_BLUE_UP,
   K_BLUE_DOWN,
+  K_BLUE_CLICK,
   K_WHITE_UP,
   K_WHITE_DOWN,
+  K_WHITE_CLICK,
   K_GREEN_UP,
   K_GREEN_DOWN,
+  K_GREEN_CLICK,
 
   K_LEFT,
   K_RIGHT,
+  K_SHIFT,
 
   // Tapedeck
   K_PLAY,
@@ -48,6 +53,9 @@ enum Key {
   K_8,
   K_9,
   K_0,
+
+  K_MIXER,
+  K_TAPE,
 };
 
 
@@ -86,7 +94,7 @@ public:
    * @param key the pressed key
    * @return true if the key was used.
    */
-  virtual bool keypress(Key key) {
+  virtual bool keypress(Key key, bool shift) {
     return false;
   };
   /**
@@ -94,7 +102,7 @@ public:
    * @param key the released key
    * @return true if the key was used.
    */
-  virtual bool keyrelease(Key key) {
+  virtual bool keyrelease(Key key, bool shift) {
     return false;
   };
 };
@@ -125,7 +133,7 @@ public:
 class DefaultScreen : public Screen {
 public:
   void draw(NanoCanvas::Canvas& ctx) override;
-  bool keypress(Key key) override;
+  bool keypress(Key key, bool shift) override;
 };
 
 }

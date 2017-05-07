@@ -8,16 +8,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <fmt/format.h>
-
-/** One frame of nTracks samples */
-struct AudioFrame {
-  float data[4];
-
-  float& operator[](uint i) {
-    return data[i];
-  }
-};
-
+#include "../utils.h"
 /**
  * A Wrapper for ringbuffers, used for the tapemodule.
  */
@@ -28,19 +19,6 @@ protected:
   /** The current position on the tape, counted in frames from the beginning*/
   std::atomic_uint playPoint;
 
-
-  struct Section {
-    int inIdx = 0;
-    int outIdx = 0;
-
-    operator bool() {
-      return inIdx != outIdx;
-    }
-
-    int size() {
-      return outIdx - inIdx;
-    }
-  };
 
   std::thread diskThread;
   std::mutex threadLock;
@@ -57,7 +35,7 @@ public:
   struct RingBuffer {
     const static uint SIZE = 262144; // 2^18
     std::array<AudioFrame, SIZE> data;
-    Section notWritten;
+    Section<int> notWritten;
     int lengthFW = 0;
     int lengthBW = 0;
     uint playIdx = 0;

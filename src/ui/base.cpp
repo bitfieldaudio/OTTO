@@ -9,7 +9,7 @@ void DefaultScreen::draw(NanoCanvas::Canvas& ctx) {
 
 }
 
-bool DefaultScreen::keypress(Key key) {
+bool DefaultScreen::keypress(Key key, bool shift) {
   return false;
 }
 

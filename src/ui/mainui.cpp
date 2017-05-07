@@ -17,14 +17,14 @@ void MainUI::draw(NanoCanvas::Canvas& ctx) {
   currentScreen->draw(ctx);
 }
 
-bool MainUI::keypress(ui::Key key) {
+bool MainUI::keypress(ui::Key key, bool shift) {
   if (globKeyPre(key)) return true;
-  if (currentScreen->keypress(key)) return true;
+  if (currentScreen->keypress(key, shift)) return true;
   return globKeyPost(key);
 }
 
-bool MainUI::keyrelease(ui::Key key) {
-  return currentScreen->keyrelease(key);
+bool MainUI::keyrelease(ui::Key key, bool shift) {
+  return currentScreen->keyrelease(key, shift);
 }
 
 bool MainUI::globKeyPost(ui::Key key) {
@@ -36,6 +36,12 @@ bool MainUI::globKeyPre(ui::Key key) {
   switch (key) {
   case K_QUIT:
     GLOB.running = false;
+    break;
+  case K_TAPE:
+    currentScreen = GLOB.tapedeck->tapeScreen;
+    break;
+  case K_MIXER:
+    currentScreen = GLOB.mixer->screen;
     break;
   default:
     return false;

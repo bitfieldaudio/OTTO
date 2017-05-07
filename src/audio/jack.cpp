@@ -47,6 +47,7 @@ int process(jack_nframes_t nframes, void *arg) {
   GLOB.effect3.process(nframes);
   GLOB.effect4.process(nframes);
   GLOB.tapedeck->process(nframes);
+  GLOB.mixer->process(nframes);
 
   return 0;
 }

@@ -19,22 +19,38 @@
 #include <algorithm>
 
 
-static ui::Key keyboardKey(int xKey) {
+static ui::Key keyboardKey(int xKey, int mods) {
   using namespace ui;
   switch (xKey) {
 
     // Rotaries
-  case GLFW_KEY_Q:     return K_RED_UP;
-  case GLFW_KEY_A:     return K_RED_DOWN;
-  case GLFW_KEY_W:     return K_BLUE_UP;
-  case GLFW_KEY_S:     return K_BLUE_DOWN;
-  case GLFW_KEY_E:     return K_WHITE_UP;
-  case GLFW_KEY_D:     return K_WHITE_DOWN;
-  case GLFW_KEY_R:     return K_GREEN_UP;
-  case GLFW_KEY_F:     return K_GREEN_DOWN;
+  case GLFW_KEY_Q:
+    if (mods & GLFW_MOD_CONTROL) return K_RED_CLICK;
+    return K_RED_UP;
+  case GLFW_KEY_A:
+    if (mods & GLFW_MOD_CONTROL) return K_RED_CLICK;
+    return K_RED_DOWN;
+  case GLFW_KEY_W:
+    if (mods & GLFW_MOD_CONTROL) return K_BLUE_CLICK;
+    return K_BLUE_UP;
+  case GLFW_KEY_S:
+    if (mods & GLFW_MOD_CONTROL) return K_BLUE_CLICK;
+    return K_BLUE_DOWN;
+  case GLFW_KEY_E:
+    if (mods & GLFW_MOD_CONTROL) return K_WHITE_CLICK;
+    return K_WHITE_UP;
+  case GLFW_KEY_D:
+    if (mods & GLFW_MOD_CONTROL) return K_WHITE_CLICK;
+    return K_WHITE_DOWN;
+  case GLFW_KEY_R:
+    if (mods & GLFW_MOD_CONTROL) return K_GREEN_CLICK;
+    return K_GREEN_UP;
+  case GLFW_KEY_F:
+    if (mods & GLFW_MOD_CONTROL) return K_GREEN_CLICK;
+    return K_GREEN_DOWN;
 
   case GLFW_KEY_LEFT:  return K_LEFT;
-  case GLFW_KEY_RIGHT:  return K_RIGHT;
+  case GLFW_KEY_RIGHT: return K_RIGHT;
 
     // Tapedeck
   case GLFW_KEY_SPACE: return K_PLAY;
@@ -56,17 +72,25 @@ static ui::Key keyboardKey(int xKey) {
   case GLFW_KEY_9:     return K_9;
   case GLFW_KEY_0:     return K_0;
 
-  default:       return K_NONE;
+  case GLFW_KEY_M:     if (mods & GLFW_MOD_CONTROL) return K_MIXER;
+  case GLFW_KEY_T:     if (mods & GLFW_MOD_CONTROL) return K_TAPE;
+
+  case GLFW_KEY_LEFT_SHIFT:
+  case GLFW_KEY_RIGHT_SHIFT:
+    return K_SHIFT;
+
+  default:             return K_NONE;
   }
 }
 
 
 static void key(GLFWwindow* window, int key, int scancode, int action, int mods) {
   MainUI& self = MainUI::getInstance();
+  ui::Key k = keyboardKey(key, mods);
   if (action == GLFW_PRESS) {
-    self.keypress(keyboardKey(key));
+    self.keypress(k, mods & GLFW_MOD_SHIFT);
   } else if (action == GLFW_RELEASE) {
-    self.keyrelease(keyboardKey(key));
+    self.keyrelease(k, mods & GLFW_MOD_SHIFT);
   }
 }
 
@@ -78,7 +102,7 @@ static void render_routine() {
 	double prevt = 0;
 
 	if (!glfwInit()) {
-		printf("Failed to init GLFW.");
+		LOGE << ("Failed to init GLFW.");
 	}
 
 	//glfwSetErrorCallback(errorcb);

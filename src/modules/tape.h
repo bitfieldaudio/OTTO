@@ -13,13 +13,14 @@
 
 class TapeModule : public Module {
 
-  std::array<AudioFrame, 256> buffer;
-  ui::ModuleScreen<TapeModule> *tapeScreen;
-
   void mixOut(jack_nframes_t nframes);
 
   float nextSpeed = 0;
 public:
+
+  std::array<AudioFrame, 256> trackBuffer;
+
+  ui::ModuleScreen<TapeModule> *tapeScreen;
 
   TapeBuffer tapeBuffer;
 
@@ -44,8 +45,8 @@ class TapeScreen : public ui::ModuleScreen<TapeModule> {
 private:
   virtual void draw(NanoCanvas::Canvas& ctx) override;
 
-  virtual bool keypress(ui::Key key) override;
-  virtual bool keyrelease(ui::Key key) override;
+  virtual bool keypress(ui::Key key, bool shift) override;
+  virtual bool keyrelease(ui::Key key, bool shift) override;
 
 public:
 

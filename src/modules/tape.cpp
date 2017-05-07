@@ -23,16 +23,6 @@ void TapeModule::stop() {
   nextSpeed = 0;
 }
 
-/**
- * Mixes two signals.
- * @param A Signal A
- * @param B Signal B
- * @param ratio B:A, amount of B to mix into signal A.
- */
-static inline AudioSample mix(AudioSample A, AudioSample B, float ratio = 0.5) {
-  return A + (B - A) * ratio;
-}
-
 void TapeModule::process(uint nframes) {
   // TODO: Linear speed changes are for pussies
   const float diff = nextSpeed - playing;
@@ -43,20 +33,20 @@ void TapeModule::process(uint nframes) {
     playing = playing - std::min(0.01f, -diff);
   }
 
-  memset(buffer.data(), 0, sizeof(AudioFrame) * buffer.size());
+  memset(trackBuffer.data(), 0, sizeof(AudioFrame) * trackBuffer.size());
   if (playing > 0) {
     auto data = tapeBuffer.readAllFW(nframes * playing);
     if (data.size() != 0) {
       if (data.size() < uint( nframes * playing))
         LOGD << "tape too slow: " << data.size() << " of " << nframes * playing;
       for (uint i = 0; i < nframes; i++) {
-        buffer[i] = data[(int)i * (float)data.size()/((float)nframes)];
+        trackBuffer[i] = data[(int)i * (float)data.size()/((float)nframes)];
       }
     }
     if (recording) {
       std::vector<float> buf;
       for (uint i = 0; i < nframes; i++) {
-        buf.push_back(mix(buffer[i][track - 1], GLOB.data.in[0][i]));
+        buf.push_back(top::audio::mix(trackBuffer[i][track - 1], GLOB.data.in[0][i]));
       }
       tapeBuffer.writeFW(buf, track);
     }
@@ -68,30 +58,16 @@ void TapeModule::process(uint nframes) {
       if (data.size() < uint (nframes * speed))
         LOGD << "tape too slow: " << data.size() << " of " << nframes * speed;
       for (uint i = 0; i < nframes; i++) {
-        buffer[i] = data[(int)i * (float)data.size()/((float)nframes)];
+        trackBuffer[i] = data[(int)i * (float)data.size()/((float)nframes)];
       }
     }
     if (recording) {
       std::vector<float> buf;
       for (uint i = 0; i < nframes; i++) {
-        buf.push_back(mix(buffer[i][track - 1], GLOB.data.in[0][i]));
+        buf.push_back(top::audio::mix(trackBuffer[i][track - 1], GLOB.data.in[0][i]));
       }
       tapeBuffer.writeBW(buf, track);
     }
-  }
-
-  mixOut(nframes);
-}
-
-void TapeModule::mixOut(jack_nframes_t nframes) {
-  // TODO: Configurable and all that
-  AudioSample mixed;
-  for (uint f = 0; f < nframes; f++) {
-    mixed = buffer[f][0];
-    for (uint t = 1; t < nTracks ; t++) {
-      mixed = mix(mixed, buffer[f][t]);
-    }
-    GLOB.data.outL[f] = GLOB.data.outR[f] = mixed;
   }
 }
 
@@ -104,7 +80,7 @@ TapeModule::TapeModule() :
   MainUI::getInstance().currentScreen = tapeScreen;
 }
 
-bool TapeScreen::keypress(ui::Key key) {
+bool TapeScreen::keypress(ui::Key key, bool shift) {
   switch (key) {
   case ui::K_REC:
     module->recording = true;
@@ -132,21 +108,19 @@ bool TapeScreen::keypress(ui::Key key) {
     module->play(-4);
     return true;
   case ui::K_RIGHT:
-    LOGD << "start";
     module->play(4);
     return true;
   }
   return false;
 }
 
-bool TapeScreen::keyrelease(ui::Key key) {
+bool TapeScreen::keyrelease(ui::Key key, bool shift) {
   switch (key) {
   case ui::K_REC:
     module->recording = false;
     return true;
   case ui::K_LEFT:
   case ui::K_RIGHT:
-    LOGD << "stop";
     module->stop();
     return true;
   }
@@ -488,8 +462,8 @@ static void drawReel(NanoCanvas::Canvas& ctx, NanoCanvas::Color& recColor) {
   ctx.pathWinding(Canvas::Winding::CW);
 	ctx.fill();
 	ctx.stroke();
-	
-// #Circle
+
+  // #Circle
 	ctx.beginPath();
 	ctx.globalAlpha(1.0);
 	ctx.strokeStyle(recColor);
@@ -509,17 +483,19 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
   auto recColor = (module->recording) ? COLOR_RED : COLOR_WHITE;
 
   int timeLength = 5 * 44100;
-  int startTime = module->tapeBuffer.position() - timeLength/2;
-  int endTime = module->tapeBuffer.position() + timeLength/2;
+
+  Section<int> inView;
+  inView.in = module->tapeBuffer.position() - timeLength/2;
+  inView.out = module->tapeBuffer.position() + timeLength/2;
 
   int startCoord = 40;
   int endCoord = 280;
   int coordWidth = endCoord - startCoord;
 
   float lengthRatio = (float)coordWidth/(float)timeLength;
-  auto timeToCoord = [=](int time) -> float {
-    if (time >= startTime && time <= endTime){
-      time -= startTime;
+  auto timeToCoord = [&](int time) -> float {
+    if (inView.contains(time)){
+      time -= inView.in;
       float coord = startCoord + time * lengthRatio;
       return coord;
     }
@@ -539,13 +515,14 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
 
   // Bar Markers
   {
-    int count = startTime/FPB;
-    int timeFirst = std::max(count, 0) * FPB;
-    for (int bm = timeFirst; bm <= endTime; bm += FPB) {
-      int x = timeToCoord(bm);
+    int timeSig = GLOB.project->timeSig.top;
+    int numFirst = std::max<int>(std::ceil(inView.in/FPB), 0);
+    float x;
+    for (int bn = numFirst; !std::isnan(x = timeToCoord(bn * FPB)); bn++) {
+      float y = (bn % timeSig) == 0 ? 185.0 : 190.0;
       ctx.beginPath();
       ctx.strokeStyle(COLOR_BAR_MARKER);
-      ctx.moveTo(x, 185);
+      ctx.moveTo(x, y);
       ctx.lineTo(x, 195);
       ctx.stroke();
     }
@@ -553,10 +530,10 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
 
   // Tracks
   for(uint t = 0; t < 4; t++) {
-    int s = (startTime < 0) ? startCoord - startTime * lengthRatio : startCoord;
+    float s = inView.contains(0) ? timeToCoord(0) : startCoord;
     ctx.beginPath();
     ctx.strokeStyle((t + 1 == module->track) ? COLOR_CURRENT_TRACK : COLOR_OTHER_TRACK);
-    ctx.moveTo(startCoord + (startTime < 0 ? -startTime : 0) * lengthRatio, 195 + 5 * t);
+    ctx.moveTo(s, 195 + 5 * t);
     ctx.lineTo(endCoord, 195 + 5 * t);
     ctx.stroke();
   }
@@ -701,32 +678,29 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
   // Loop Marker
   {
     // TODO: For debugging i'm displaying the notWritten section instead
-    int in = module->tapeBuffer.buffer.posAt0 + module->tapeBuffer.buffer.notWritten.inIdx;
-    int out = module->tapeBuffer.buffer.posAt0 + module->tapeBuffer.buffer.notWritten.outIdx;
-
-    bool draw = false;
+    Section<int> loopSect;
+    loopSect.in = module->tapeBuffer.buffer.posAt0 + module->tapeBuffer.buffer.notWritten.in;
+    loopSect.out = module->tapeBuffer.buffer.posAt0 + module->tapeBuffer.buffer.notWritten.out;
 
     ctx.strokeStyle(COLOR_LOOP_MARKER);
     ctx.fillStyle(COLOR_LOOP_MARKER);
 
-    if (in >= startTime && in <= endTime) {
+    if (inView.contains(loopSect.in)) {
       ctx.beginPath();
-      ctx.circle(timeToCoord(in), 190, 3);
+      ctx.circle(timeToCoord(loopSect.in), 190, 3);
       ctx.fill();
-      draw = true;
     }
-    if (out >= startTime && out <= endTime) {
+    if (inView.contains(loopSect.out)) {
       ctx.beginPath();
-      ctx.circle(timeToCoord(out), 190, 3);
+      ctx.circle(timeToCoord(loopSect.out), 190, 3);
       ctx.fill();
-      draw = true;
     }
-    if (draw) {
+    if (inView.overlaps(loopSect)) {
       ctx.beginPath();
       ctx.strokeStyle(COLOR_LOOP_MARKER);
       ctx.lineWidth(3);
-      ctx.moveTo(timeToCoord(std::max<float>(startTime, in)), 190);
-      ctx.lineTo(timeToCoord(std::min<float>(endTime, out)), 190);
+      ctx.moveTo(timeToCoord(std::max<float>(inView.in, loopSect.in)), 190);
+      ctx.lineTo(timeToCoord(std::min<float>(inView.out, loopSect.out)), 190);
       ctx.stroke();
     }
   }

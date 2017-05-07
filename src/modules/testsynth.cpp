@@ -24,7 +24,7 @@ void TestSynthScreen::draw(NanoCanvas::Canvas& ctx) {
   using namespace drawing;
 }
 
-bool TestSynthScreen::keypress(ui::Key key) {
+bool TestSynthScreen::keypress(ui::Key key, bool shift) {
   switch (key) {
   case ui::K_RED_UP:
     *module->frequency += 10;

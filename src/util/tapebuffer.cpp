@@ -42,11 +42,11 @@ void TapeBuffer::threadRoutine() {
 
     if (buffer.notWritten) {
       // TODO: theres gonna be a pesky data race!
-      int startIdx = buffer.notWritten.inIdx;
-      int startTime = buffer.posAt0 + buffer.notWritten.inIdx;
+      int startIdx = buffer.notWritten.in;
+      int startTime = buffer.posAt0 + buffer.notWritten.in;
       if (startTime < 0) {
-        startIdx = buffer.notWritten.inIdx -= startTime;
-        startTime = buffer.posAt0 + buffer.notWritten.inIdx;
+        startIdx = buffer.notWritten.in -= startTime;
+        startTime = buffer.posAt0 + buffer.notWritten.in;
       }
       snd.seek(startTime, SEEK_SET);
       // TODO: This really should be done more than a sample at a time
@@ -54,7 +54,7 @@ void TapeBuffer::threadRoutine() {
         snd.writef(
           (float *) (buffer.data.data() + buffer.wrapIdx(startIdx + i)), 1);
       }
-      buffer.notWritten.inIdx = buffer.notWritten.outIdx = buffer.playIdx;
+      buffer.notWritten.in = buffer.notWritten.out = buffer.playIdx;
     }
 
     if (buffer.lengthFW < desLength - MIN_READ_SIZE) {
@@ -129,8 +129,8 @@ void TapeBuffer::movePlaypointAbs(int newPos) {
   }
   uint newTime = newPos - buffer.playIdx;
   if (newTime != buffer.posAt0) {
-    buffer.notWritten.inIdx += buffer.posAt0 - newTime;
-    buffer.notWritten.outIdx += buffer.posAt0 - newTime;
+    buffer.notWritten.in += buffer.posAt0 - newTime;
+    buffer.notWritten.out += buffer.posAt0 - newTime;
     buffer.posAt0 = newTime;
   }
   playPoint = newPos;
@@ -211,13 +211,13 @@ uint TapeBuffer::writeFW(std::vector<float> data, uint track) {
   }
 
   if (buffer.notWritten) {
-    buffer.notWritten.inIdx =
-      std::min<int>(buffer.notWritten.inIdx, beginPos);
-    buffer.notWritten.outIdx =
-      std::max<int>(buffer.notWritten.outIdx, buffer.playIdx);
+    buffer.notWritten.in =
+      std::min<int>(buffer.notWritten.in, beginPos);
+    buffer.notWritten.out =
+      std::max<int>(buffer.notWritten.out, buffer.playIdx);
   } else {
-    buffer.notWritten.inIdx = beginPos;
-    buffer.notWritten.outIdx = buffer.playIdx;
+    buffer.notWritten.in = beginPos;
+    buffer.notWritten.out = buffer.playIdx;
   }
 
   buffer.lengthBW =
@@ -238,13 +238,13 @@ uint TapeBuffer::writeBW(std::vector<float> data, uint track) {
   }
 
   if (buffer.notWritten) {
-    buffer.notWritten.inIdx =
-      std::min<int>(buffer.notWritten.inIdx, buffer.playIdx);
-    buffer.notWritten.outIdx =
-      std::max<int>(buffer.notWritten.outIdx, endPos);
+    buffer.notWritten.in =
+      std::min<int>(buffer.notWritten.in, buffer.playIdx);
+    buffer.notWritten.out =
+      std::max<int>(buffer.notWritten.out, endPos);
   } else {
-    buffer.notWritten.inIdx = buffer.playIdx;
-    buffer.notWritten.outIdx = endPos;
+    buffer.notWritten.in = buffer.playIdx;
+    buffer.notWritten.out = endPos;
   }
 
   buffer.lengthFW =

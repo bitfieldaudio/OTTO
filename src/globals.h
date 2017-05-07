@@ -12,6 +12,7 @@
 #include "events.h"
 #include "module.h"
 #include "modules/tape.h"
+#include "modules/mixer.h"
 
 namespace audio {
 typedef jack_default_audio_sample_t AudioSample;
@@ -20,6 +21,13 @@ typedef jack_default_audio_sample_t AudioSample;
 struct Project {
   std::string name = "Unnamed";
   std::string path = "unnamed.wav";
+
+  struct {
+    uint top = 4;
+    uint bot = 4;
+  } timeSig;
+
+  int bpm = 120;
 };
 
 struct __Globals_t {
@@ -80,6 +88,7 @@ struct __Globals_t {
   EffectModuleDispatcher effect3;
   EffectModuleDispatcher effect4;
   TapeModule *tapedeck;
+  MixerModule *mixer;
 };
 
 extern __Globals_t GLOB;

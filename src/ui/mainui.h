@@ -19,8 +19,8 @@ public:
   std::thread uiThread;
 
   void draw(NanoCanvas::Canvas& ctx) override;
-  bool keypress(ui::Key key) override;
-  bool keyrelease(ui::Key key) override;
+  bool keypress(ui::Key key, bool shift) override;
+  bool keyrelease(ui::Key key, bool shift) override;
 
   static void init();
 
