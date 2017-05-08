@@ -127,10 +127,10 @@ void TapeModule::process(uint nframes) {
   memset(trackBuffer.data(), 0, sizeof(AudioFrame) * trackBuffer.size());
   if (playing > 0) {
     auto data = tapeBuffer.readAllFW(nframes * playing);
+    TapeTime pos = tapeBuffer.position();
+    int diff = loopSect.out - pos;
     if (looping) {
       //TODO: Probably has some one-off errors
-      TapeTime pos = tapeBuffer.position();
-      int diff = loopSect.out - pos;
       if (diff > 0 && diff <= nframes * playing) {
         goToLoopIn();
         auto data2 = tapeBuffer.readAllFW(nframes * playing - diff);
@@ -148,10 +148,27 @@ void TapeModule::process(uint nframes) {
     }
     if (recording) {
       std::vector<float> buf;
-      for (uint i = 0; i < nframes; i++) {
-        buf.push_back(top::audio::mix(trackBuffer[i][track - 1], GLOB.data.in[0][i]));
+      //TODO: Probably has some one-off errors
+      if (looping && diff > 0 && diff <= nframes * playing) {
+        for (int i = 0; i < diff; i++) {
+          buf.push_back(top::audio::mix(
+            trackBuffer[i][track - 1], GLOB.data.in[0][i]));
+        }
+        tapeBuffer.writeFW(buf, track);
+        tapeBuffer.goTo(loopSect.in + (nframes * playing - diff));
+        buf.clear();
+        for (uint i = 0; i < nframes * playing - diff; i++) {
+          buf.push_back(top::audio::mix(
+            trackBuffer[i][track - 1], GLOB.data.in[0][diff + i]));
+        }
+        tapeBuffer.writeFW(buf, track);
+      } else {
+        for (uint i = 0; i < nframes; i++) {
+          buf.push_back(top::audio::mix(
+            trackBuffer[i][track - 1], GLOB.data.in[0][i]));
+        }
+        tapeBuffer.writeFW(buf, track);
       }
-      tapeBuffer.writeFW(buf, track);
     }
   }
   if (playing < 0) {
@@ -178,10 +195,29 @@ void TapeModule::process(uint nframes) {
     }
     if (recording) {
       std::vector<float> buf;
-      for (uint i = 0; i < nframes; i++) {
-        buf.push_back(top::audio::mix(trackBuffer[i][track - 1], GLOB.data.in[0][i]));
+      //TODO: Probably has some one-off errors
+      TapeTime pos = tapeBuffer.position();
+      int diff = pos - loopSect.in;
+      if (looping && diff > 0 && diff <= nframes * speed) {
+        for (uint i = 0; i < diff; i++) {
+          buf.push_back(top::audio::mix(
+            trackBuffer[i][track - 1], GLOB.data.in[0][i]));
+        }
+        tapeBuffer.writeBW(buf, track);
+        tapeBuffer.goTo(loopSect.out - (nframes * speed - diff));
+        buf.clear();
+        for (uint i = 0; i < nframes * speed - diff; i++) {
+          buf.push_back(top::audio::mix(
+            trackBuffer[i][track - 1], GLOB.data.in[0][diff + i]));
+        }
+        tapeBuffer.writeBW(buf, track);
+      } else {
+        for (uint i = 0; i < nframes; i++) {
+          buf.push_back(top::audio::mix(
+            trackBuffer[i][track - 1], GLOB.data.in[0][i]));
+        }
+        tapeBuffer.writeBW(buf, track);
       }
-      tapeBuffer.writeBW(buf, track);
     }
   }
 }
