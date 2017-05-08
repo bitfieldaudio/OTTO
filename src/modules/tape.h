@@ -44,6 +44,8 @@ public:
 
   void play(float speed);
   void stop();
+  void record();
+  void stopRecord();
 
   TapeTime getBarTime(BarPos bar);
   TapeTime getBarTimeRel(BarPos bar);

@@ -42,6 +42,15 @@ void TapeModule::stop() {
   nextSpeed = 0;
 }
 
+void TapeModule::record() {
+  recording = true;
+  tapeBuffer.cutTape(track);
+}
+
+void TapeModule::stopRecord() {
+  recording = false;
+}
+
 // Spooling and jumping
 BarPos TapeModule::closestBar(TapeTime time) {
   double fpb = (GLOB.samplerate)*60/(double)GLOB.project->bpm;
@@ -229,7 +238,7 @@ void TapeModule::process(uint nframes) {
 bool TapeScreen::keypress(ui::Key key, bool shift) {
   switch (key) {
   case ui::K_REC:
-    module->recording = true;
+    module->record();
     return true;
   case ui::K_TRACK_1:
     module->track = 1;
@@ -269,7 +278,7 @@ bool TapeScreen::keypress(ui::Key key, bool shift) {
 bool TapeScreen::keyrelease(ui::Key key, bool shift) {
   switch (key) {
   case ui::K_REC:
-    module->recording = false;
+    module->stopRecord();
     return true;
   case ui::K_LEFT:
   case ui::K_RIGHT:
@@ -681,12 +690,23 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
 
   // Tracks
   for(uint t = 0; t < 4; t++) {
-    float s = inView.contains(0) ? timeToCoord(0) : startCoord;
-    ctx.beginPath();
-    ctx.strokeStyle((t + 1 == module->track) ? COLOR_CURRENT_TRACK : COLOR_OTHER_TRACK);
-    ctx.moveTo(s, 195 + 5 * t);
-    ctx.lineTo(endCoord, 195 + 5 * t);
-    ctx.stroke();
+    auto slices = module->tapeBuffer.slicesIn(inView, t + 1);
+    auto tCol = t +1 == module->track ? COLOR_CURRENT_TRACK : COLOR_OTHER_TRACK;
+    for (auto slice : slices) {
+      auto col = (slice == module->tapeBuffer.currentSlice(t+1)) ?
+        COLOR_CURRENT_SLICE : tCol;
+      if (slice.size() >= 0 && slice.in >= 0 && slice.out >= 0) {
+        ctx.strokeStyle(COLOR_LOOP_MARKER);
+        ctx.fillStyle(COLOR_LOOP_MARKER);
+        if (inView.overlaps(slice)) {
+          ctx.beginPath();
+          ctx.strokeStyle(col);
+          ctx.moveTo(timeToCoord(std::max<float>(inView.in, slice.in)), 195 + 5*t);
+          ctx.lineTo(timeToCoord(std::min<float>(inView.out, slice.out)), 195 + 5*t);
+          ctx.stroke();
+        }
+      }
+    }
   }
 
   // LoopArrow

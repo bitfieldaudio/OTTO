@@ -46,9 +46,13 @@ struct AudioFrame {
 };
 
 template<class T = int>
-  struct Section {
+struct Section {
+public:
   T in = 0;
   T out = 0;
+
+  Section<T>() {};
+  Section<T>(T in, T out) : in (in), out (out) {}
 
   operator bool() const {
     return in != out;

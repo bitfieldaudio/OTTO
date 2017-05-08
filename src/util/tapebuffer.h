@@ -4,6 +4,8 @@
 #include <atomic>
 #include <vector>
 #include <array>
+#include <set>
+#include <map>
 #include <thread>
 #include <mutex>
 #include <condition_variable>
@@ -16,6 +18,33 @@ typedef int TapeTime;
  * A Wrapper for ringbuffers, used for the tapemodule.
  */
 class TapeBuffer {
+public:
+  struct TapeSlice : public Section<TapeTime> {
+    int track;
+
+    TapeSlice() {};
+
+    TapeSlice(TapeTime in, TapeTime out, int track) :
+      Section<TapeTime> (in, out), track (track) {};
+  };
+
+  enum TapeCutType {
+    CUT_IN,
+    CUT_OUT,
+    CUT_SPLIT,
+  };
+
+  struct TapeCut {
+    TapeCutType type;
+    TapeTime pos;
+
+    bool operator<  (TapeCut other) {return pos <  other.pos;}
+    bool operator>  (TapeCut other) {return pos >  other.pos;}
+    bool operator<= (TapeCut other) {return pos <= other.pos;}
+    bool operator>= (TapeCut other) {return pos >= other.pos;}
+  };
+
+  typedef std::map<TapeTime, TapeCutType> TapeCutSet;
 protected:
   const static int MIN_READ_SIZE = 2048;
 
@@ -26,6 +55,19 @@ protected:
   std::thread diskThread;
   std::mutex threadLock;
   std::condition_variable readData;
+
+  TapeCutSet cuts[4] = {{
+      {44100, CUT_IN},
+      {88200, CUT_OUT},
+      {3*44100, CUT_IN},
+      {3*88200, CUT_OUT},
+    }, {
+      {54100, CUT_IN},
+      {78200, CUT_OUT},
+      {2.3*44100, CUT_IN},
+      {3.2*88200, CUT_OUT},
+    }, {}};
+  std::atomic_bool newCuts;
 
   void threadRoutine();
 
@@ -112,4 +154,17 @@ public:
     double minutes = seconds / 60.0;
     return fmt::format("{:0>2}:{:0>5.2f}", (int) minutes, fmod(seconds, 60.0));
   }
+
+  // Tape Slices
+
+  bool inSlice(int track);
+
+  TapeSlice currentSlice(int track);
+
+  std::vector<TapeSlice> slicesIn(Section<TapeTime> area, int track);
+
+  TapeCutSet cutsIn(Section<TapeTime> area, int track);
+
+  void cutTape(int track);
+
 };
