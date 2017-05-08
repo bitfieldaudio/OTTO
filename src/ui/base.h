@@ -56,6 +56,10 @@ enum Key {
 
   K_MIXER,
   K_TAPE,
+
+  K_LOOP,
+  K_LOOP_IN,
+  K_LOOP_OUT,
 };
 
 

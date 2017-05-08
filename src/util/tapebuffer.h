@@ -9,6 +9,9 @@
 #include <condition_variable>
 #include <fmt/format.h>
 #include "../utils.h"
+
+typedef int TapeTime;
+
 /**
  * A Wrapper for ringbuffers, used for the tapemodule.
  */
@@ -44,9 +47,6 @@ public:
     AudioFrame& operator[](int i) {
       return data[wrapIdx(i)];
     }
-
-    uint capacityFW();
-    uint capacityBW();
 
     uint wrapIdx(int index) {
       return ((index %= SIZE) < 0) ? SIZE + index : index;
@@ -101,9 +101,9 @@ public:
    * Jumps to another position in the tape
    * @param tapePos position to jump to
    */
-  void goTo(uint tapePos);
+  void goTo(TapeTime tapePos);
 
-  uint position() {
+  TapeTime position() {
     return playPoint;
   }
 

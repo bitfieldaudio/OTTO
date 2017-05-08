@@ -28,6 +28,15 @@ bool MainUI::keyrelease(ui::Key key, bool shift) {
 }
 
 bool MainUI::globKeyPost(ui::Key key) {
+  switch (key) {
+  case ui::K_PLAY:
+    if (GLOB.tapedeck->playing) {
+      GLOB.tapedeck->stop();
+    } else {
+      GLOB.tapedeck->play(1);
+    }
+    return true;
+  }
   return false;
 }
 

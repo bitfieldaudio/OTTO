@@ -22,11 +22,6 @@ struct Project {
   std::string name = "Unnamed";
   std::string path = "unnamed.wav";
 
-  struct {
-    uint top = 4;
-    uint bot = 4;
-  } timeSig;
-
   int bpm = 120;
 };
 
@@ -50,7 +45,7 @@ struct __Globals_t {
     jack_port_t *in[nIn];
   } ports;
 
-  jack_nframes_t samplerate;
+  jack_nframes_t samplerate = 44100;
   jack_nframes_t buffersize;
 
   struct {

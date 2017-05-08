@@ -255,6 +255,6 @@ uint TapeBuffer::writeBW(std::vector<float> data, uint track) {
   return data.size() - n;
 }
 
-void TapeBuffer::goTo(uint pos) {
+void TapeBuffer::goTo(TapeTime pos) {
   movePlaypointAbs(pos);
 }

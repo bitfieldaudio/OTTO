@@ -15,13 +15,104 @@
 using namespace audio;
 using namespace audio::jack;
 
+/************************************************/
+/* TapeModule Implementation                    */
+/************************************************/
+
+TapeModule::TapeModule() :
+  tapeScreen (new TapeScreen(this)),
+  track (1),
+  recording (false),
+  playing (0)
+{
+  MainUI::getInstance().currentScreen = tapeScreen;
+}
+
+// Playback control
+
 void TapeModule::play(float speed) {
   nextSpeed = speed;
+  if (recording) {
+    playing = speed;
+  }
 }
 
 void TapeModule::stop() {
+  recording = false;
   nextSpeed = 0;
 }
+
+// Spooling and jumping
+BarPos TapeModule::closestBar(TapeTime time) {
+  double fpb = (GLOB.samplerate)*60/(double)GLOB.project->bpm;
+  BarPos prevBar = time/fpb;
+  TapeTime prevBarTime = getBarTime(prevBar);
+  if (time - prevBarTime > fpb/2) {
+    return prevBar + 1;
+  }
+  return prevBar;
+}
+
+TapeTime TapeModule::getBarTime(BarPos bar) {
+  double fpb = (GLOB.samplerate)*60/(double)GLOB.project->bpm;
+  return bar * fpb;
+}
+
+TapeTime TapeModule::getBarTimeRel(BarPos bar) {
+  return getBarTime(closestBar(tapeBuffer.position()) + bar);
+}
+
+void TapeModule::goToBar(BarPos bar) {
+  if (recording) return;
+  tapeBuffer.goTo(getBarTime(bar));
+}
+
+void TapeModule::goToBarRel(BarPos bars) {
+  if (recording) return;
+  tapeBuffer.goTo(getBarTimeRel(bars));
+}
+
+// Looping
+
+void TapeModule::loopInHere() {
+  loopSect.in = tapeBuffer.position();
+  if (loopSect.in == loopSect.out) {
+    loopSect.in = -1;
+    loopSect.out = -1;
+  }
+  if (loopSect.in > loopSect.out) {
+    loopSect.out = loopSect.in;
+  }
+}
+
+void TapeModule::loopOutHere() {
+  loopSect.out = tapeBuffer.position();
+  if (loopSect.in == loopSect.out) {
+    loopSect.in = -1;
+    loopSect.out = -1;
+  }
+  if (loopSect.in > loopSect.out) {
+    loopSect.in = loopSect.out;
+  }
+  if (loopSect.in < 0) {
+    loopSect.in = loopSect.out;
+  }
+}
+
+void TapeModule::goToLoopIn() {
+  if (recording) return;
+  if (loopSect.in < 0) return;
+  tapeBuffer.goTo(loopSect.in);
+}
+
+void TapeModule::goToLoopOut() {
+  if (recording) return;
+  if (loopSect.out < 0) return;
+  tapeBuffer.goTo(loopSect.out);
+}
+
+
+// Audio Processing
 
 void TapeModule::process(uint nframes) {
   // TODO: Linear speed changes are for pussies
@@ -36,6 +127,18 @@ void TapeModule::process(uint nframes) {
   memset(trackBuffer.data(), 0, sizeof(AudioFrame) * trackBuffer.size());
   if (playing > 0) {
     auto data = tapeBuffer.readAllFW(nframes * playing);
+    if (looping) {
+      //TODO: Probably has some one-off errors
+      TapeTime pos = tapeBuffer.position();
+      int diff = loopSect.out - pos;
+      if (diff > 0 && diff <= nframes * playing) {
+        goToLoopIn();
+        auto data2 = tapeBuffer.readAllFW(nframes * playing - diff);
+        for (uint i = 0; i < data2.size(); i++) {
+          data[diff + i] = data2[i];
+        }
+      }
+    }
     if (data.size() != 0) {
       if (data.size() < uint( nframes * playing))
         LOGD << "tape too slow: " << data.size() << " of " << nframes * playing;
@@ -54,6 +157,18 @@ void TapeModule::process(uint nframes) {
   if (playing < 0) {
     float speed = -playing;
     auto data = tapeBuffer.readAllBW(nframes * speed);
+    if (looping) {
+      //TODO: Probably has some one-off errors
+      TapeTime pos = tapeBuffer.position();
+      int diff = pos - loopSect.in;
+      if (diff > 0 && diff <= nframes * speed) {
+        goToLoopOut();
+        auto data2 = tapeBuffer.readAllBW(nframes * speed - diff);
+        for (uint i = 0; i < data2.size(); i++) {
+          data[diff + i] = data2[i];
+        }
+      }
+    }
     if (data.size() != 0) {
       if (data.size() < uint (nframes * speed))
         LOGD << "tape too slow: " << data.size() << " of " << nframes * speed;
@@ -71,26 +186,14 @@ void TapeModule::process(uint nframes) {
   }
 }
 
-TapeModule::TapeModule() :
-  tapeScreen (new TapeScreen(this)),
-  track (1),
-  recording (false),
-  playing (0)
-{
-  MainUI::getInstance().currentScreen = tapeScreen;
-}
+/************************************************/
+/* TapeScreen Implementation                    */
+/************************************************/
 
 bool TapeScreen::keypress(ui::Key key, bool shift) {
   switch (key) {
   case ui::K_REC:
     module->recording = true;
-    return true;
-  case ui::K_PLAY:
-    if (module->playing) {
-      module->stop();
-    } else {
-      module->play(1);
-    }
     return true;
   case ui::K_TRACK_1:
     module->track = 1;
@@ -105,10 +208,23 @@ bool TapeScreen::keypress(ui::Key key, bool shift) {
     module->track = 4;
     return true;
   case ui::K_LEFT:
-    module->play(-4);
+    if (shift) module->goToBarRel(-1);
+    else module->play(-4);
     return true;
   case ui::K_RIGHT:
-    module->play(4);
+    if (shift) module->goToBarRel(1);
+    else module->play(4);
+    return true;
+  case ui::K_LOOP:
+    module->looping = !module->looping;
+    return true;
+  case ui::K_LOOP_IN:
+    if (shift) module->loopInHere();
+    else module->goToLoopIn();
+    return true;
+  case ui::K_LOOP_OUT:
+    if (shift) module->loopOutHere();
+    else module->goToLoopOut();
     return true;
   }
   return false;
@@ -510,16 +626,15 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
   ctx.lineWidth(2);
 
   // TODO: Real value
-  int BPM = 120;
+  int BPM = GLOB.project->bpm;
   float FPB = 44100.0 * 60.0/((float)BPM);
 
   // Bar Markers
   {
-    int timeSig = GLOB.project->timeSig.top;
     int numFirst = std::max<int>(std::ceil(inView.in/FPB), 0);
     float x;
     for (int bn = numFirst; !std::isnan(x = timeToCoord(bn * FPB)); bn++) {
-      float y = (bn % timeSig) == 0 ? 185.0 : 190.0;
+      float y = 190.0;
       ctx.beginPath();
       ctx.strokeStyle(COLOR_BAR_MARKER);
       ctx.moveTo(x, y);
@@ -538,8 +653,8 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
     ctx.stroke();
   }
 
-  {
-    // LoopArrow
+  // LoopArrow
+  if (module->looping) {
     ctx.beginPath();
     ctx.globalAlpha(1.0);
     ctx.strokeStyle(COLOR_WHITE);
@@ -677,31 +792,29 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
 
   // Loop Marker
   {
-    // TODO: For debugging i'm displaying the notWritten section instead
-    Section<int> loopSect;
-    loopSect.in = module->tapeBuffer.buffer.posAt0 + module->tapeBuffer.buffer.notWritten.in;
-    loopSect.out = module->tapeBuffer.buffer.posAt0 + module->tapeBuffer.buffer.notWritten.out;
-
-    ctx.strokeStyle(COLOR_LOOP_MARKER);
-    ctx.fillStyle(COLOR_LOOP_MARKER);
-
-    if (inView.contains(loopSect.in)) {
-      ctx.beginPath();
-      ctx.circle(timeToCoord(loopSect.in), 190, 3);
-      ctx.fill();
-    }
-    if (inView.contains(loopSect.out)) {
-      ctx.beginPath();
-      ctx.circle(timeToCoord(loopSect.out), 190, 3);
-      ctx.fill();
-    }
-    if (inView.overlaps(loopSect)) {
-      ctx.beginPath();
+    Section<int> &loopSect = module->loopSect;
+    if (loopSect.size() >= 0 && loopSect.in > 0 && loopSect.out > 0) {
       ctx.strokeStyle(COLOR_LOOP_MARKER);
-      ctx.lineWidth(3);
-      ctx.moveTo(timeToCoord(std::max<float>(inView.in, loopSect.in)), 190);
-      ctx.lineTo(timeToCoord(std::min<float>(inView.out, loopSect.out)), 190);
-      ctx.stroke();
+      ctx.fillStyle(COLOR_LOOP_MARKER);
+
+      if (inView.contains(loopSect.in)) {
+        ctx.beginPath();
+        ctx.circle(timeToCoord(loopSect.in), 190, 3);
+        ctx.fill();
+      }
+      if (inView.contains(loopSect.out)) {
+        ctx.beginPath();
+        ctx.circle(timeToCoord(loopSect.out), 190, 3);
+        ctx.fill();
+      }
+      if (inView.overlaps(loopSect)) {
+        ctx.beginPath();
+        ctx.strokeStyle(COLOR_LOOP_MARKER);
+        ctx.lineWidth(3);
+        ctx.moveTo(timeToCoord(std::max<float>(inView.in, loopSect.in)), 190);
+        ctx.lineTo(timeToCoord(std::min<float>(inView.out, loopSect.out)), 190);
+        ctx.stroke();
+      }
     }
   }
 
