@@ -121,12 +121,12 @@ void TapeBuffer::threadRoutine() {
         auto tc = cuts[track];
         for (auto cut : tc) {
           char c1 = std::to_string(track).at(0);
-          char c2 = (cut.second == CUT_IN) ? 'I'
-            : (cut.second == CUT_OUT) ? 'O'
+          char c2 = (cut.type == TapeCut::IN) ? 'I'
+            : (cut.type == TapeCut::OUT) ? 'O'
             : 'S';
           auto cp = SF_CUES::SF_CUE_POINT {
             cues.cue_count - 1,
-            (uint32_t) cut.first,
+            (uint32_t) cut.pos,
             0, 0, 0, 0,
             {c1, c2},
           };
@@ -233,12 +233,12 @@ std::vector<AudioFrame> TapeBuffer::readAllBW(uint nframes) {
   return ret;
 }
 
-uint TapeBuffer::writeFW(std::vector<float> data, uint track) {
-  uint n = std::min<int>(data.size(), buffer.SIZE - buffer.lengthFW);
+uint TapeBuffer::writeFW(std::vector<float> data, uint track, TapeBuffer::TapeSlice &slice) {
+  int n = std::min<int>(data.size(), buffer.SIZE - buffer.lengthFW);
 
   int beginPos = buffer.playIdx - n;
 
-  for (uint i = 0; i < n; i++) {
+  for (int i = 0; i < n; i++) {
     buffer[beginPos + i][track - 1] = data[i];
   }
 
@@ -253,13 +253,7 @@ uint TapeBuffer::writeFW(std::vector<float> data, uint track) {
   }
 
   auto tc = cuts[track-1];
-  auto first = tc.lower_bound(position());
-  auto last = tc.upper_bound(position() + n);
-
-  tc.erase(first, last);
-  ++last;
-  auto type = last->second != CUT_IN ? CUT_SPLIT : CUT_OUT;
-  tc[position() + n] = type;
+  tc.addSlice(slice);
   newCuts = true;
 
   buffer.lengthBW =
@@ -270,12 +264,12 @@ uint TapeBuffer::writeFW(std::vector<float> data, uint track) {
   return data.size() - n;
 }
 
-uint TapeBuffer::writeBW(std::vector<float> data, uint track) {
-  uint n = std::min<int>(data.size(), buffer.SIZE - buffer.lengthBW);
+uint TapeBuffer::writeBW(std::vector<float> data, uint track, TapeBuffer::TapeSlice &slice) {
+  int n = std::min<int>(data.size(), buffer.SIZE - buffer.lengthBW);
 
   int endPos = buffer.playIdx + n;
 
-  for (uint i = 0; i < n; i++) {
+  for (int i = 0; i < n; i++) {
     buffer[endPos - i][track - 1] = data[i];
   }
 
@@ -288,6 +282,10 @@ uint TapeBuffer::writeBW(std::vector<float> data, uint track) {
     buffer.notWritten.in = buffer.playIdx;
     buffer.notWritten.out = endPos;
   }
+
+  auto tc = cuts[track-1];
+  tc.addSlice(slice);
+  newCuts = true;
 
   buffer.lengthFW =
     std::max<int>(data.size(), buffer.lengthFW);
@@ -303,66 +301,144 @@ void TapeBuffer::goTo(TapeTime pos) {
 
 // Cuts & Slices
 
-TapeBuffer::TapeCutSet::iterator findClosest(
-  TapeBuffer::TapeCutSet &data, TapeTime pos) {
-  auto upper = data.lower_bound(pos);
-  if (upper == data.begin() || upper->first == pos)
-    return upper;
-  auto lower = upper;
-  --lower;
-  if (upper == data.end() || (pos - lower->first) < (upper->first - pos))
-    return lower;
-  return upper;
-}
-
 void TapeBuffer::cutTape(int track) {
-  TapeCutType type = inSlice(track) ? CUT_SPLIT : CUT_IN;
-  cuts[track-1][position()] = type;
+  TapeCuts tc = cuts[track - 1];
+  if (tc.inSlice(position())) {
+    tc.cut({position(), TapeCut::SPLIT});
+  }
 }
 
-TapeBuffer::TapeCutSet TapeBuffer::cutsIn(Section<TapeTime> area, int track) {
-  TapeCutSet xs;
-  TapeCutSet tc = cuts[track-1];
-  for (auto it = tc.lower_bound(area.in);
-       it->first < tc.upper_bound(area.out)->first; ++it) {
-    xs[it->first] = it->second;
-  }
-  return xs;
+std::vector<TapeBuffer::TapeCut> TapeBuffer::cutsIn(Section<TapeTime> area, int track) {
+  return cuts[track-1].cutsIn(area);
 }
 
 bool TapeBuffer::inSlice(int track) {
-  auto closest = *findClosest(cuts[track-1], position());
-  return ((closest.first >= position() && closest.second != CUT_IN)
-       || (closest.first <= position() && closest.second != CUT_OUT));
+  return cuts[track-1].inSlice(position());
 }
 
 TapeBuffer::TapeSlice TapeBuffer::currentSlice(int track) {
-  if (!inSlice(track)) return {0, 0, 0};
-  TapeCutSet tc = cuts[track - 1];
-  TapeTime pos = position();
-  return {tc.upper_bound(pos)->first, tc.lower_bound(pos)->first, track};
+  return cuts[track-1].current(position());
 }
 
 std::vector<TapeBuffer::TapeSlice> TapeBuffer::slicesIn(Section<TapeTime> area, int track) {
+  return cuts[track-1].slicesIn(area);
+}
+
+// TapeCuts
+
+void TapeBuffer::TapeCuts::reCache() {
+  cache.clear();
+  for (auto cut = data.begin(); cut != data.end(); ++cut) {
+    if (cut->type == TapeCut::IN) {
+      TapeTime in = cut->pos;
+      ++cut;
+      while (cut->type == TapeCut::SPLIT) {
+        cache.insert({in, cut->pos});
+        in = cut->pos;
+        ++cut;
+      }
+      if (cut->type == TapeCut::OUT) {
+        cache.insert({in, cut->pos});
+      } else {
+        LOGE << fmt::format("Expected OUT cut at {}. Got {}", cut->pos,
+        cut->type == TapeCut::IN ? "IN" : "SPLIT");
+        break;
+      }
+    } else {
+      LOGE << fmt::format("Expected IN cut at {}. Got {}", cut->pos,
+      cut->type == TapeCut::OUT ? "OUT" : "SPLIT");
+      break;
+    }
+  }
+}
+
+std::vector<TapeBuffer::TapeSlice>
+  TapeBuffer::TapeCuts::slicesIn(Section<TapeTime> area) {
   std::vector<TapeBuffer::TapeSlice> xs;
-  TapeCutSet tc = cuts[track-1];
-
-  if (tc.size() == 0) return xs;
-
-  auto first = tc.upper_bound(area.in);
-  auto last  = tc.lower_bound(area.out);
-  if (last == tc.end()) --last;
-  if (first == tc.end()) first = tc.begin();
-
-  for (auto it = first;
-       it != tc.end() && it->first < last->first; ++it) {
-    if (it->second != CUT_OUT) {
-      TapeTime in = it->first;
-      ++it;
-      TapeSlice ts = {in, it->first, track};
-      if (ts.overlaps(area)) xs.push_back(ts);
-      if (it->second == CUT_SPLIT) --it;
+  auto it = cache.upper_bound(area);
+  if (!it->overlaps(area)) it++;
+  for (; it != cache.end(); it++) {
+    if (area.overlaps(*it)) {
+      xs.push_back(*it);
+    } else {
+      break;
     }
   }
   return xs;
+}
+
+std::vector<TapeBuffer::TapeCut>
+  TapeBuffer::TapeCuts::cutsIn(Section<TapeTime> area) {
+  std::vector<TapeBuffer::TapeCut> xs;
+  auto it = data.lower_bound({area.in, TapeCut::NONE});
+  for (; it != data.end(); it++) {
+    if (area.contains(it->pos)) {
+      xs.push_back(*it);
+    } else {
+      break;
+    }
+  }
+  return xs;
+}
+
+bool TapeBuffer::TapeCuts::inSlice(TapeTime time) {
+  if (cache.size() == 0) return false;
+  auto it = cache.upper_bound({time, time});
+  if (it == cache.end()) {
+    it = cache.begin();
+  }
+  if (it->contains(time)) {
+    return true;
+  } else {
+    it++;
+    return it->contains(time);
+  }
+}
+
+TapeBuffer::TapeSlice TapeBuffer::TapeCuts::current(TapeTime time) {
+  auto it = cache.upper_bound({time, time});
+  if (it->contains(time)) {
+    return *it;
+  } else {
+    it++;
+    if (it->contains(time))
+      return *it;
+    return {0, 0};
+  }
+}
+
+TapeBuffer::TapeCut TapeBuffer::TapeCuts::nearest(TapeTime time) {
+  auto prev = data.upper_bound({time, TapeCut::NONE});
+  auto next = data.lower_bound({time, TapeCut::NONE});
+  if (prev != data.end()) {
+    if (next == data.end()) {
+      return *prev;
+    }
+    if ((time - prev->pos) > (next->pos - time)) {
+      return *next;
+    }
+    return *prev;
+  }
+  return {0, TapeCut::NONE};
+}
+
+void TapeBuffer::TapeCuts::cut(TapeBuffer::TapeCut cut) {
+  data.insert(cut);
+  reCache();
+}
+
+void TapeBuffer::TapeCuts::addSlice(TapeBuffer::TapeSlice slice) {
+  auto typeI = inSlice(slice.in) ? TapeCut::SPLIT : TapeCut::IN;
+  auto typeO = inSlice(slice.out) ? TapeCut::SPLIT : TapeCut::OUT;
+  for (auto cut : cutsIn(slice)) {
+    data.erase(cut);
+  }
+  data.insert({slice.in, typeI});
+  data.insert({slice.out, typeO});
+  reCache();
+}
+
+void TapeBuffer::TapeCuts::glue(TapeTime time) {
+  data.erase(data.find({time, TapeCut::NONE}));
+  reCache();
 }

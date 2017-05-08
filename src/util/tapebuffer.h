@@ -5,7 +5,7 @@
 #include <vector>
 #include <array>
 #include <set>
-#include <map>
+#include <iterator>
 #include <thread>
 #include <mutex>
 #include <condition_variable>
@@ -19,24 +19,26 @@ typedef int TapeTime;
  */
 class TapeBuffer {
 public:
-  struct TapeSlice : public Section<TapeTime> {
-    int track;
-
-    TapeSlice() {};
-
-    TapeSlice(TapeTime in, TapeTime out, int track) :
-      Section<TapeTime> (in, out), track (track) {};
+  typedef Section<TapeTime> TapeSlice;
+  class CompareTapeSlice {
+  public:
+    bool operator()(TapeSlice e1, TapeSlice e2) {return e1.in < e2.in;}
   };
 
-  enum TapeCutType {
-    CUT_IN,
-    CUT_OUT,
-    CUT_SPLIT,
-  };
 
   struct TapeCut {
-    TapeCutType type;
+    class Compare {
+    public:
+      bool operator()(TapeCut e1, TapeCut e2) {return e1.pos < e2.pos;}
+    };
+    enum TapeCutType {
+      NONE = 0,
+      IN,
+      OUT,
+      SPLIT,
+    };
     TapeTime pos;
+    TapeCutType type;
 
     bool operator<  (TapeCut other) {return pos <  other.pos;}
     bool operator>  (TapeCut other) {return pos >  other.pos;}
@@ -44,7 +46,28 @@ public:
     bool operator>= (TapeCut other) {return pos >= other.pos;}
   };
 
-  typedef std::map<TapeTime, TapeCutType> TapeCutSet;
+  class TapeCuts {
+    std::set<TapeCut, TapeCut::Compare> data;
+    std::set<TapeSlice, CompareTapeSlice> cache;
+  public:
+
+    void reCache();
+    std::vector<TapeSlice> slicesIn(Section<TapeTime> area);
+    std::vector<TapeCut> cutsIn(Section<TapeTime> area);
+
+    bool inSlice(TapeTime time);
+    TapeSlice current(TapeTime time);
+    TapeCut nearest(TapeTime time);
+
+    void cut(TapeCut cut);
+    void glue(TapeTime time);
+
+    void addSlice(TapeSlice slice);
+
+    // Iteration
+    auto begin() { return data.begin(); }
+    auto end() { return data.end(); }
+  };
 protected:
   const static int MIN_READ_SIZE = 2048;
 
@@ -56,17 +79,8 @@ protected:
   std::mutex threadLock;
   std::condition_variable readData;
 
-  TapeCutSet cuts[4] = {{
-      {44100, CUT_IN},
-      {88200, CUT_OUT},
-      {3*44100, CUT_IN},
-      {3*88200, CUT_OUT},
-    }, {
-      {54100, CUT_IN},
-      {78200, CUT_OUT},
-      {2.3*44100, CUT_IN},
-      {3.2*88200, CUT_OUT},
-    }, {}};
+  TapeCuts cuts[4];
+
   std::atomic_bool newCuts;
 
   void threadRoutine();
@@ -125,9 +139,10 @@ public:
    * the data will be written at the current playPoint.
    * @param data the data to write. data.back() will be at playPoint - 1
    * @param track the track to write to
+   * @param slice this slice will be extended by this recorded data
    * @return the amount of unwritten frames
    */
-  uint writeFW(std::vector<float> data, uint track);
+  uint writeFW(std::vector<float> data, uint track, TapeSlice &slice);
 
   /**
    * Write data to the tape.
@@ -135,9 +150,10 @@ public:
    * @param data the data to write, in reverse order. data.back() will be at
    *          playPoint, data.front() will be at playPoint + data.size();
    * @param track the track to write to
+   * @param slice this slice will be extended by this recorded data
    * @return the amount of unwritten frames
    */
-  uint writeBW(std::vector<float> data, uint track);
+  uint writeBW(std::vector<float> data, uint track, TapeSlice &slice);
 
   /**
    * Jumps to another position in the tape
@@ -163,8 +179,10 @@ public:
 
   std::vector<TapeSlice> slicesIn(Section<TapeTime> area, int track);
 
-  TapeCutSet cutsIn(Section<TapeTime> area, int track);
+  std::vector<TapeCut> cutsIn(Section<TapeTime> area, int track);
 
   void cutTape(int track);
+
+  void addSlice(TapeSlice slice, int track) { cuts[track-1].addSlice(slice); }
 
 };

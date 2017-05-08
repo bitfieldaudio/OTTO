@@ -78,7 +78,7 @@ public:
     CONTAINS_OUT,
   };
 
-  OverlapType overlaps(const Section<T> &other) {
+  OverlapType overlaps(const Section<T> &other) const {
     if (contains(other)) return CONTAINS;
     if (other.contains(*this)) return CONTAINED;
     if (contains(other.in)) return CONTAINS_IN;
