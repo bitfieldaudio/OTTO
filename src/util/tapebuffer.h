@@ -29,6 +29,7 @@ public:
   class TapeSliceSet {
     std::set<TapeSlice, CompareTapeSlice> slices;
   public:
+    bool changed;
     TapeSliceSet() {
       LOGD << "TSS";
     }

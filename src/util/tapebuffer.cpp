@@ -50,6 +50,29 @@ void TapeBuffer::threadRoutine() {
     GLOB.running = false;
   }
 
+  {
+    SF_CUES cues;
+    snd.command(0x10CE, &cues, sizeof(cues));
+    TapeTime inTimeTrack[4];
+    for (int i = 0; i < cues.cue_count; i++) {
+      auto cp = cues.cue_points[i];
+      int track;
+      switch (cp.name[0]) {
+      case '1': track = 0; break;
+      case '2': track = 1; break;
+      case '3': track = 2; break;
+      case '4': track = 3; break;
+      default: LOGE << "Unexpected marker";
+      }
+      if (cp.name[2] == 'I') {
+        inTimeTrack[track] = cp.position;
+      }
+      if (cp.name[2] == 'O') {
+        trackSlices[track].addSlice({inTimeTrack[track], TapeTime(cp.position)});
+      }
+    }
+  }
+
   while(GLOB.running) {
 
     // Keep some space in the middle to avoid overlap fights
@@ -115,33 +138,36 @@ void TapeBuffer::threadRoutine() {
       }
     }
 
-    if (false) {
-      SF_CUES cues {0};
-      for (int track = 0;track < 4; track++) {
-        char tchar = std::to_string(track + 1).at(0);
-        auto ts = trackSlices[track];
-        for (auto slice : ts) {
-          auto cpin = SF_CUES::SF_CUE_POINT {
-            cues.cue_count - 1,
-            (uint32_t) slice.in,
-            0, 0, 0, 0,
-            {tchar, 'I'},
-          };
-          cues.cue_count++;
-          cues.cue_points[cues.cue_count] = cpin;
-          auto cpout = SF_CUES::SF_CUE_POINT {
-            cues.cue_count - 1,
-            (uint32_t) slice.out,
-            0, 0, 0, 0,
-            {tchar, 'O'},
-          };
-          cues.cue_count++;
-          cues.cue_points[cues.cue_count] = cpout;
+    for (auto tss : trackSlices) {
+      if (tss.changed) {
+        SF_CUES cues {0, {}};
+        for (int track = 0;track < 4; track++) {
+          char tchar = std::to_string(track + 1).at(0);
+          auto ts = trackSlices[track];
+          for (auto slice : ts) {
+            auto cpin = SF_CUES::SF_CUE_POINT {
+              cues.cue_count - 1,
+              (uint32_t) slice.in,
+              0, 0, 0, 0,
+              {tchar, 'I'},
+            };
+            cues.cue_count++;
+            cues.cue_points[cues.cue_count] = cpin;
+            auto cpout = SF_CUES::SF_CUE_POINT {
+              cues.cue_count - 1,
+              (uint32_t) slice.out,
+              0, 0, 0, 0,
+              {tchar, 'O'},
+            };
+            cues.cue_count++;
+            cues.cue_points[cues.cue_count] = cpout;
+          }
+          ts.changed = false;
         }
+        snd.command(0x10CF, &cues, sizeof(cues));
+        break;
       }
-      snd.command(0x10CF, &cues, sizeof(cues));
     }
-
     readData.wait(lock);
   }
 }
@@ -373,7 +399,7 @@ void TapeBuffer::TapeSliceSet::addSlice(TapeBuffer::TapeSlice slice) {
     }
   }
   slices.emplace(slice.in, slice.out);
-  LOGD << slices.size();
+  changed = true;
 }
 
 void TapeBuffer::TapeSliceSet::cut(TapeTime time) {

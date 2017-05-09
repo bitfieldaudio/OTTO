@@ -664,8 +664,8 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
   inView.in = module->tapeBuffer.position() - timeLength/2;
   inView.out = module->tapeBuffer.position() + timeLength/2;
 
-  int startCoord = 40;
-  int endCoord = 280;
+  int startCoord = 35;
+  int endCoord = 285;
   int coordWidth = endCoord - startCoord;
 
   float lengthRatio = (float)coordWidth/(float)timeLength;
@@ -909,6 +909,15 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
     }
   }
 
+  // Tape ends
+  {
+    ctx.fillStyle(COLOR_BLACK);
+    ctx.beginPath();
+    ctx.rect(startCoord - 5, 185, 10, 40);
+    ctx.rect(endCoord - 5, 185, 10, 40);
+    ctx.fill();
+  }
+
   ctx.restore();
 
   // #LeftReel
@@ -951,9 +960,9 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
   // #rect4292
 	ctx.beginPath();
 	ctx.globalAlpha(1.0);
-	ctx.strokeStyle(recColor);
-	ctx.miterLimit(4);
-	ctx.lineWidth(2);
+  ctx.lineJoin(Canvas::LineJoin::ROUND);
+	ctx.strokeStyle(COLOR_WHITE);
+	ctx.lineWidth(1.5);
 	ctx.rect(15, 15, 30, 30);
 	ctx.stroke();
 	
@@ -961,6 +970,6 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
 	ctx.fillStyle(style);
   ctx.font(36.0f);
   ctx.beginPath();
-  ctx.fillText(std::to_string(module->track), 30, 30);
+  ctx.fillText(std::to_string(module->track), 30, 29);
 	
 }
