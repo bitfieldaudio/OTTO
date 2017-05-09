@@ -11,6 +11,7 @@
 #include <condition_variable>
 #include <fmt/format.h>
 #include "../utils.h"
+#include <plog/Log.h>
 
 typedef int TapeTime;
 
@@ -22,51 +23,28 @@ public:
   typedef Section<TapeTime> TapeSlice;
   class CompareTapeSlice {
   public:
-    bool operator()(TapeSlice e1, TapeSlice e2) {return e1.in < e2.in;}
+    bool operator()(const TapeSlice &e1, const TapeSlice &e2) const {return e1.in < e2.in;}
   };
 
-
-  struct TapeCut {
-    class Compare {
-    public:
-      bool operator()(TapeCut e1, TapeCut e2) {return e1.pos < e2.pos;}
-    };
-    enum TapeCutType {
-      NONE = 0,
-      IN,
-      OUT,
-      SPLIT,
-    };
-    TapeTime pos;
-    TapeCutType type;
-
-    bool operator<  (TapeCut other) {return pos <  other.pos;}
-    bool operator>  (TapeCut other) {return pos >  other.pos;}
-    bool operator<= (TapeCut other) {return pos <= other.pos;}
-    bool operator>= (TapeCut other) {return pos >= other.pos;}
-  };
-
-  class TapeCuts {
-    std::set<TapeCut, TapeCut::Compare> data;
-    std::set<TapeSlice, CompareTapeSlice> cache;
+  class TapeSliceSet {
+    std::set<TapeSlice, CompareTapeSlice> slices;
   public:
+    TapeSliceSet() {
+      LOGD << "TSS";
+    }
+    std::vector<TapeSlice> slicesIn(Section<TapeTime> area) const;
 
-    void reCache();
-    std::vector<TapeSlice> slicesIn(Section<TapeTime> area);
-    std::vector<TapeCut> cutsIn(Section<TapeTime> area);
+    bool inSlice(TapeTime time) const;
+    TapeSlice current(TapeTime time) const;
 
-    bool inSlice(TapeTime time);
-    TapeSlice current(TapeTime time);
-    TapeCut nearest(TapeTime time);
-
-    void cut(TapeCut cut);
+    void cut(TapeTime time);
     void glue(TapeTime time);
 
     void addSlice(TapeSlice slice);
 
     // Iteration
-    auto begin() { return data.begin(); }
-    auto end() { return data.end(); }
+    auto begin() { return slices.begin(); }
+    auto end() { return slices.end(); }
   };
 protected:
   const static int MIN_READ_SIZE = 2048;
@@ -78,8 +56,6 @@ protected:
   std::thread diskThread;
   std::mutex threadLock;
   std::condition_variable readData;
-
-  TapeCuts cuts[4];
 
   std::atomic_bool newCuts;
 
@@ -109,6 +85,8 @@ public:
     }
 
   } buffer;
+
+  TapeSliceSet trackSlices[4] = {{}, {}, {}, {}};
 
   const static uint nTracks = 4;
 
@@ -170,19 +148,5 @@ public:
     double minutes = seconds / 60.0;
     return fmt::format("{:0>2}:{:0>5.2f}", (int) minutes, fmod(seconds, 60.0));
   }
-
-  // Tape Slices
-
-  bool inSlice(int track);
-
-  TapeSlice currentSlice(int track);
-
-  std::vector<TapeSlice> slicesIn(Section<TapeTime> area, int track);
-
-  std::vector<TapeCut> cutsIn(Section<TapeTime> area, int track);
-
-  void cutTape(int track);
-
-  void addSlice(TapeSlice slice, int track) { cuts[track-1].addSlice(slice); }
 
 };

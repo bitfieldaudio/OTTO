@@ -44,7 +44,6 @@ void TapeModule::stop() {
 
 void TapeModule::record() {
   recording = true;
-  tapeBuffer.cutTape(track);
 }
 
 void TapeModule::stopRecord() {
@@ -134,7 +133,7 @@ void TapeModule::process(uint nframes) {
   }
 
   static bool recLast = false;
-  TapeBuffer::TapeSlice slice;
+  static TapeBuffer::TapeSlice slice;
 
   memset(trackBuffer.data(), 0, sizeof(AudioFrame) * trackBuffer.size());
   if (playing > 0) {
@@ -165,9 +164,6 @@ void TapeModule::process(uint nframes) {
       if (looping && diff > 0 && diff <= rframes) {
         if (!recLast) {
           slice = {pos, pos + diff};
-          tapeBuffer.addSlice(slice, track);
-        } else {
-          slice = tapeBuffer.currentSlice(track);
         }
         for (int i = 0; i < diff; i++) {
           buf.push_back(top::audio::mix(
@@ -178,9 +174,6 @@ void TapeModule::process(uint nframes) {
         buf.clear();
         if (!recLast) {
           slice = {loopSect.in, loopSect.in + rframes - diff};
-          tapeBuffer.addSlice(slice, track);
-        } else {
-          slice = tapeBuffer.currentSlice(track);
         }
         for (uint i = 0; i < rframes - diff; i++) {
           buf.push_back(top::audio::mix(
@@ -190,9 +183,7 @@ void TapeModule::process(uint nframes) {
       } else {
         if (!recLast) {
           slice = {pos, pos + rframes};
-          tapeBuffer.addSlice(slice, track);
-        } else {
-          slice = tapeBuffer.currentSlice(track);
+          LOGD << "Started recording";
         }
         for (uint i = 0; i < nframes; i++) {
           buf.push_back(top::audio::mix(
@@ -201,6 +192,7 @@ void TapeModule::process(uint nframes) {
         tapeBuffer.writeFW(buf, track, slice);
       }
     }
+    recLast = recording;
   }
   if (playing < 0) {
     float speed = -playing;
@@ -250,8 +242,8 @@ void TapeModule::process(uint nframes) {
         tapeBuffer.writeBW(buf, track, slice);
       }
     }
+    recLast = recording;
   }
-  recLast = recording;
 }
 
 /************************************************/
@@ -713,18 +705,25 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
 
   // Tracks
   for(uint t = 0; t < 4; t++) {
-    auto slices = module->tapeBuffer.slicesIn(inView, t + 1);
+    auto slices = module->tapeBuffer.trackSlices[t].slicesIn(inView);
+    TapeBuffer::TapeSlice current;
     for (auto slice : slices) {
       Color col;
       if (t + 1 == module->track) {
-        if (slice.contains(module->tapeBuffer.position()))
-          col = COLOR_CURRENT_SLICE;
-        else
+        if (slice.contains(module->tapeBuffer.position())) {
+          if (!current) {
+            current = slice;
+            continue;
+          } else {
+            LOGE << "TapeSlice overlap at current position";
+          }
+        } else {
           col = COLOR_CURRENT_TRACK;
+        }
       } else {
         col = COLOR_OTHER_TRACK;
       }
-      if (slice.size() >= 0 && slice.in >= 0 && slice.out >= 0) {
+      if (slice.size() > 0 && slice.in >= 0 && slice.out >= 0) {
         if (inView.overlaps(slice)) {
           ctx.beginPath();
           ctx.strokeStyle(col);
@@ -732,6 +731,15 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
           ctx.lineTo(timeToCoord(std::min<float>(inView.out, slice.out)), 195 + 5*t);
           ctx.stroke();
         }
+      }
+    }
+    if (current) {
+      if (inView.overlaps(current)) {
+        ctx.beginPath();
+        ctx.strokeStyle(COLOR_CURRENT_SLICE);
+        ctx.moveTo(timeToCoord(std::max<float>(inView.in, current.in)), 195 + 5*t);
+        ctx.lineTo(timeToCoord(std::min<float>(inView.out, current.out)), 195 + 5*t);
+        ctx.stroke();
       }
     }
   }
