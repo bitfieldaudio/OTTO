@@ -7,7 +7,7 @@ struct ReadException : public std::exception {
 
   const char * what () const throw () {
     return message.c_str();
-   }
+  }
 
   ReadException() {};
   ReadException(std::string message) : message (message) {};
@@ -63,14 +63,14 @@ void TOP1File::fseek(uint pos) {
 }
 
 bool TOP1File::skipChunkR(TOP1File::Chunk chunk) {
-uint newPos = chunk.offset + 4 + 4 + chunk.size;
-if (fileStream.tellg() != newPos) {
-  // LOGD << fmt::format("From {:#x} to {:#x}", fileStream.tellg(), newPos);
-  fseek(newPos);
-  if (fileStream.eof()) throw ReadException("EOF");
-  return true;
-}
-return false;
+  uint newPos = chunk.offset + 4 + 4 + chunk.size;
+  if (fileStream.tellg() != newPos) {
+    // LOGD << fmt::format("From {:#x} to {:#x}", fileStream.tellg(), newPos);
+    fseek(newPos);
+    if (fileStream.eof()) throw ReadException("EOF");
+    return true;
+  }
+  return false;
 }
 
 bool TOP1File::skipChunkW(TOP1File::Chunk chunk) {
@@ -96,52 +96,52 @@ TOP1File::Chunk TOP1File::readChunk<TOP1File::Chunk>() {
 
 template<>
 TOP1File::HeaderChunk TOP1File::readChunk<TOP1File::HeaderChunk>(Chunk chunk) {
-if (chunk.id == header.id) {
-  HeaderChunk hc = chunk;
-  readBytes(hc.version);
-  readBytes(hc.tracks);
-  readBytes(hc.samplerate);
-  readBytes(hc.samplesize);
-  if (skipChunkR(hc)) {
-    LOGW << "Unexpected header size";
+  if (chunk.id == header.id) {
+    HeaderChunk hc = chunk;
+    readBytes(hc.version);
+    readBytes(hc.tracks);
+    readBytes(hc.samplerate);
+    readBytes(hc.samplesize);
+    if (skipChunkR(hc)) {
+      LOGW << "Unexpected header size";
+    }
+    return hc;
+  } else {
+    throw ReadException();
   }
-  return hc;
-} else {
-  throw ReadException();
-}
 }
 
 template<>
 TOP1File::TrackSlicesChunk TOP1File::readChunk<TOP1File::TrackSlicesChunk>(Chunk chunk) {
-TrackSlicesChunk stc;
-if (chunk.id == stc.id) {
-  stc = chunk;
-  readBytes(stc.trackNum);
-  readBytes(stc.count);
-  readBytes((byte*) stc.slices, 2048 * sizeof(SliceChunk));
-  if (skipChunkR(stc)) {
-    LOGW << "Unexpected chunk size";
+  TrackSlicesChunk stc;
+  if (chunk.id == stc.id) {
+    stc = chunk;
+    readBytes(stc.trackNum);
+    readBytes(stc.count);
+    readBytes((byte*) stc.slices, 2048 * sizeof(SliceChunk));
+    if (skipChunkR(stc)) {
+      LOGW << "Unexpected chunk size";
+    }
+    return stc;
+  } else {
+    throw ReadException();
   }
-  return stc;
-} else {
-  throw ReadException();
-}
 }
 
 template<>
 TOP1File::SlicesChunk TOP1File::readChunk<TOP1File::SlicesChunk>(Chunk chunk) {
-if (chunk.id == slices.id) {
-  SlicesChunk sc = chunk;
-  for (int i = 0; i < 4; i++) {
-    sc.tracks[i] = readChunk<TrackSlicesChunk>();
+  if (chunk.id == slices.id) {
+    SlicesChunk sc = chunk;
+    for (int i = 0; i < 4; i++) {
+      sc.tracks[i] = readChunk<TrackSlicesChunk>();
+    }
+    if (skipChunkR(sc)) {
+      LOGW << "Unexpected chunk size";
+    }
+    return sc;
+  } else {
+    throw ReadException();
   }
-  if (skipChunkR(sc)) {
-    LOGW << "Unexpected chunk size";
-  }
-  return sc;
-} else {
-  throw ReadException();
-}
 }
 
 template<>
@@ -194,7 +194,7 @@ void TOP1File::writeChunk<TOP1File::TrackSlicesChunk>(TOP1File::TrackSlicesChunk
 }
 
 template<>
-  void TOP1File::writeChunk<TOP1File::SlicesChunk>(TOP1File::SlicesChunk &chunk) {
+void TOP1File::writeChunk<TOP1File::SlicesChunk>(TOP1File::SlicesChunk &chunk) {
   writeChunk<Chunk>(chunk);
   for (int i = 0; i < 4; i++) {
     writeChunk<TrackSlicesChunk>(chunk.tracks[i]);
@@ -224,7 +224,7 @@ void TOP1File::open(std::string path) {
     fileStream.open(path, std::ios::trunc | std::ios::out | std::ios::binary);
     fileStream.close();
     fileStream.open(path, std::ios::in | std::ios::out | std::ios::binary);
-    createFile();
+    writeFile();
   }
   try {
     header = readChunk<HeaderChunk>();
@@ -259,7 +259,7 @@ void TOP1File::flush() {
   fileStream.flush();
 }
 
-void TOP1File::createFile() {
+void TOP1File::writeFile() {
   writeChunk<HeaderChunk>(header);
   writeChunk<SlicesChunk>(slices);
   writeChunk<AudioChunk>(audioChunk);
@@ -288,6 +288,11 @@ void TOP1File::seek(int pos) {
 uint TOP1File::write(AudioFrame *data, uint nframes) {
   //LOGD << fmt::format("Writing {} frames at {:#x}", nframes, fileStream.tellp());
   fileStream.write((byte*) data, nframes * sizeof(float) * header.tracks);
+  uint csiz = uint(fileStream.tellp()) - 8 - audioChunk.offset ;
+  if (csiz > audioChunk.size) {
+    audioChunk.size = csiz;
+    writeChunk<AudioChunk>(audioChunk);
+  }
   return nframes;
 }
 

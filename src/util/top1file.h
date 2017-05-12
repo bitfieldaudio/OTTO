@@ -118,8 +118,6 @@ private:
   template<class CT>
   void writeChunk(CT &chunk);
 
-  void createFile();
-
 public:
   struct Error {
     enum {
@@ -146,6 +144,8 @@ public:
   void open(std::string path);
   void close();
   void flush();
+
+  void writeFile();
 
   void readSlices();
   void writeSlices();
