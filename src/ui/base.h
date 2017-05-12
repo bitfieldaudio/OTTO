@@ -60,6 +60,10 @@ enum Key {
   K_LOOP,
   K_LOOP_IN,
   K_LOOP_OUT,
+
+  K_LIFT,
+  K_DROP,
+  K_CUT,
 };
 
 

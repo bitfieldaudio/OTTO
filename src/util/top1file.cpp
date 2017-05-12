@@ -225,6 +225,7 @@ void TOP1File::open(std::string path) {
     fileStream.close();
     fileStream.open(path, std::ios::in | std::ios::out | std::ios::binary);
     writeFile();
+    fileStream.flush();
   }
   try {
     header = readChunk<HeaderChunk>();

@@ -36,10 +36,11 @@ public:
     bool inSlice(TapeTime time) const;
     TapeSlice current(TapeTime time) const;
 
-    void cut(TapeTime time);
-    void glue(TapeTime time);
-
     void addSlice(TapeSlice slice);
+    void erase(TapeSlice slice);
+
+    void cut(TapeTime time);
+    void glue(TapeSlice s1, TapeSlice s2);
 
     // Iteration
     auto begin() { return slices.begin(); }
@@ -64,6 +65,16 @@ protected:
   void movePlaypointRel(int time);
 
   void movePlaypointAbs(int pos);
+
+  struct {
+    std::vector<float> data;
+    uint fromTrack = 0;
+    TapeSlice fromSlice = {-1, -2};
+    uint toTrack = 0;
+    TapeTime toTime = -1;
+    std::mutex lock;
+    std::condition_variable done;
+  } clipboard;
 
 public:
 
@@ -142,6 +153,9 @@ public:
   TapeTime position() {
     return playPoint;
   }
+
+  void lift(uint track);
+  void drop(uint track);
 
   std::string timeStr() {
     double seconds = playPoint/(1.0 * 44100);

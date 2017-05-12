@@ -286,6 +286,15 @@ bool TapeScreen::keypress(ui::Key key, bool shift) {
     if (shift) module->loopOutHere();
     else module->goToLoopOut();
     return true;
+  case ui::K_CUT:
+    if (!module->playing) module->tapeBuffer.trackSlices[module->track-1].cut(module->tapeBuffer.position());
+    return true;
+  case ui::K_LIFT:
+    if (!module->playing) module->tapeBuffer.lift(module->track);
+    return true;
+  case ui::K_DROP:
+    if (!module->playing) module->tapeBuffer.drop(module->track);
+    return true;
   }
   return false;
 }

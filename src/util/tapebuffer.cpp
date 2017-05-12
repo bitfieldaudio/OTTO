@@ -2,8 +2,6 @@
 
 #include <cmath>
 #include <algorithm>
-#include <sndfile/sndfile.h>
-#include <sndfile/sndfile.hh>
 #include "../globals.h"
 #include "top1file.h"
 
@@ -24,7 +22,8 @@ void TapeBuffer::threadRoutine() {
   movePlaypointAbs(0);
 
   TOP1File file (GLOB.project->path);
-  AudioFrame *framebuf = (AudioFrame *) malloc(sizeof(AudioFrame) * buffer.SIZE / 2);
+  const static uint FRAMEBUF_SIZE = sizeof(AudioFrame) * buffer.SIZE / 2;
+  AudioFrame *framebuf = (AudioFrame *) malloc(FRAMEBUF_SIZE);
 
   if (file.error.log()) GLOB.running = false;
 
@@ -113,6 +112,62 @@ void TapeBuffer::threadRoutine() {
     }
     file.writeSlices();
     file.flush();
+
+    {
+      if (clipboard.fromSlice.size() > 0) {
+        LOGD << "Lifting " << clipboard.fromSlice.size() << " frames from "
+             << clipboard.fromSlice.in;
+        std::unique_lock<std::mutex> clipboardLock (clipboard.lock);
+        TapeSlice readSlice = {
+          clipboard.fromSlice.in,
+          clipboard.fromSlice.in
+        };
+        clipboard.data.clear();
+        memset(framebuf, 0, FRAMEBUF_SIZE);
+        while(readSlice.out < clipboard.fromSlice.out) {
+          readSlice.out = std::min<int>(
+            readSlice.in + FRAMEBUF_SIZE / 4,
+            clipboard.fromSlice.out);
+          file.seek(readSlice.in);
+          file.read(framebuf, readSlice.size());
+          for (uint i = 0; i < readSlice.size(); i++) {
+            clipboard.data.push_back(framebuf[i][clipboard.fromTrack]);
+          }
+          memset(framebuf, 0, FRAMEBUF_SIZE);
+          file.seek(readSlice.in);
+          file.write(framebuf, readSlice.size());
+          readSlice.in = readSlice.out + 1;
+        }
+        buffer.lengthFW = buffer.lengthBW = 0;
+        clipboard.fromSlice = {0,0};
+      }
+
+      if (clipboard.toTime >= 0 && !clipboard.data.empty()) {
+        LOGD << "Dropping " << clipboard.data.size() << " frames at " << clipboard.toTime;
+        std::unique_lock<std::mutex> clipboardLock (clipboard.lock);
+        TapeSlice writeSlice = {
+          clipboard.toTime,
+          clipboard.toTime
+        };
+        while(writeSlice.size() < clipboard.data.size()) {
+          writeSlice.out = writeSlice.in + std::min<int>(
+            FRAMEBUF_SIZE / 4, clipboard.data.size());
+          memset(framebuf, 0, FRAMEBUF_SIZE);
+          file.seek(writeSlice.in);
+          file.read(framebuf, writeSlice.size());
+          uint startIdx = writeSlice.in - clipboard.toTime;
+          for (uint i = 0; i < writeSlice.size(); i++) {
+            framebuf[startIdx + i][clipboard.toTrack] = clipboard.data[i];
+          }
+          file.seek(writeSlice.in);
+          file.write(framebuf, writeSlice.size());
+          writeSlice.in = writeSlice.out + 1;
+        }
+        buffer.lengthFW = buffer.lengthBW = 0;
+        clipboard.toTime = -1;
+      }
+      clipboard.done.notify_all();
+    }
     readData.wait(lock);
   }
 }
@@ -296,8 +351,8 @@ TapeBuffer::TapeSliceSet::slicesIn(Section<TapeTime> area) const {
 bool TapeBuffer::TapeSliceSet::inSlice(TapeTime time) const {
   if (slices.size() == 0) return false;
   auto it = slices.upper_bound({time, time});
-  if (it == slices.end()) {
-    it = slices.begin();
+  if (it != slices.begin()) {
+    it--;
   }
   if (it->contains(time)) {
     return true;
@@ -309,6 +364,9 @@ bool TapeBuffer::TapeSliceSet::inSlice(TapeTime time) const {
 
 TapeBuffer::TapeSlice TapeBuffer::TapeSliceSet::current(TapeTime time) const {
   auto it = slices.upper_bound({time, time});
+  if (it != slices.begin()) {
+    it--;
+  }
   if (it->contains(time)) {
     return *it;
   } else {
@@ -319,7 +377,7 @@ TapeBuffer::TapeSlice TapeBuffer::TapeSliceSet::current(TapeTime time) const {
   }
 }
 
-void TapeBuffer::TapeSliceSet::addSlice(TapeBuffer::TapeSlice slice) {
+void TapeBuffer::TapeSliceSet::erase(TapeBuffer::TapeSlice slice) {
   if (slice.size() < 1) return;
   for (auto &s : slicesIn(slice)) {
     switch (slice.overlaps(s)) {
@@ -335,22 +393,58 @@ void TapeBuffer::TapeSliceSet::addSlice(TapeBuffer::TapeSlice slice) {
       break;
     case Section<>::CONTAINS_IN:
       slices.erase(s);
-      slices.emplace(slice.out + 1, s.out); // TODO: Is the + 1 necessary?
+      slices.emplace(slice.out + 1, s.out);
       break;
     case Section<>::CONTAINS_OUT:
       slices.erase(s);
-      slices.emplace(s.in, slice.in - 1); // TODO: Is the - 1 necessary?
+      slices.emplace(s.in, slice.in - 1);
       break;
     }
   }
+  changed = true;
+}
+
+void TapeBuffer::TapeSliceSet::addSlice(TapeBuffer::TapeSlice slice) {
+  erase(slice);
   slices.emplace(slice.in, slice.out);
   changed = true;
 }
 
 void TapeBuffer::TapeSliceSet::cut(TapeTime time) {
-  //TODO
+  if (!inSlice(time)) return;
+  TapeSlice slice = current(time);
+  addSlice({slice.in, time - 1});
+  addSlice({time, slice.out});
 }
 
-void TapeBuffer::TapeSliceSet::glue(TapeTime time) {
-  // TODO
+void TapeBuffer::TapeSliceSet::glue(TapeSlice s1, TapeSlice s2) {
+  addSlice({std::min(s1.in, s2.in), std::max(s1.out, s2.out)});
+}
+
+void TapeBuffer::lift(uint track) {
+  TapeSliceSet &tss = trackSlices[track - 1];
+  if (!tss.inSlice(position())) {
+    LOGD << "No slice to lift";
+    return;
+  }
+  TapeSlice slice = tss.current(position());
+  std::unique_lock<std::mutex> lock(clipboard.lock);
+  clipboard.fromTrack = track;
+  clipboard.fromSlice = slice;
+  readData.notify_all();
+  clipboard.done.wait(lock);
+  tss.erase(slice);
+}
+
+void TapeBuffer::drop(uint track) {
+  std::unique_lock<std::mutex> lock(clipboard.lock);
+  clipboard.toTrack = track;
+  clipboard.toTime = position();
+  TapeSlice slice = {
+    clipboard.toTime,
+    clipboard.toTime + (int)clipboard.data.size()
+  };
+  readData.notify_all();
+  clipboard.done.wait(lock);
+  trackSlices[track - 1].addSlice(slice);
 }

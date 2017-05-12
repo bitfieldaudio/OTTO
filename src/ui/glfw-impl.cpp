@@ -79,6 +79,10 @@ static ui::Key keyboardKey(int xKey, int mods) {
   case GLFW_KEY_I:     return K_LOOP_IN;
   case GLFW_KEY_O:     return K_LOOP_OUT;
 
+  case GLFW_KEY_X:     return K_CUT;
+  case GLFW_KEY_C:     if (mods & GLFW_MOD_CONTROL) return K_LIFT;
+  case GLFW_KEY_V:     if (mods & GLFW_MOD_CONTROL) return K_DROP;
+
   case GLFW_KEY_LEFT_SHIFT:
   case GLFW_KEY_RIGHT_SHIFT:
     return K_SHIFT;
