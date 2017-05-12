@@ -2,23 +2,10 @@
 
 #include <cmath>
 #include <algorithm>
-#include <sndfile.hh>
+#include <sndfile/sndfile.h>
+#include <sndfile/sndfile.hh>
 #include "../globals.h"
-
-//typedef SF_CUES_VAR (2048) SF_CUES ;
-typedef struct
-{	int cue_count ;
-
-  struct SF_CUE_POINT
-  {	int32_t   indx ;
-    uint32_t  position ;
-    int32_t   fcc_chunk ;
-    int32_t   chunk_start ;
-    int32_t   block_start ;
-    uint32_t  sample_offset ;
-    char name [256] ;
-  } cue_points [2048] ;
-} SF_CUES ;
+#include "top1file.h"
 
 /*******************************************/
 /*  TapeBuffer Implementation              */
@@ -36,41 +23,18 @@ void TapeBuffer::threadRoutine() {
 
   movePlaypointAbs(0);
 
-  int samplerate = GLOB.samplerate;
-  int format = SF_FORMAT_WAV | SF_FORMAT_PCM_32;
+  TOP1File file (GLOB.project->path);
+  AudioFrame *framebuf = (AudioFrame *) malloc(sizeof(AudioFrame) * buffer.SIZE / 2);
 
-  SndfileHandle snd (GLOB.project->path, SFM_RDWR, format, nTracks, samplerate);
-  float *framebuf = (float *) malloc(sizeof(float) * nTracks * buffer.SIZE / 2);
+  if (file.error.log()) GLOB.running = false;
 
-  if (snd.error()) {
-    LOGE << "Cannot open sndfile '" <<
-      GLOB.project->path.c_str() << "' for output:";
-    LOGE << snd.strError();
-
-    GLOB.running = false;
-  }
-
-  {
-    SF_CUES cues;
-    snd.command(0x10CE, &cues, sizeof(cues));
-    TapeTime inTimeTrack[4];
-    for (int i = 0; i < cues.cue_count; i++) {
-      auto cp = cues.cue_points[i];
-      int track;
-      switch (cp.name[0]) {
-      case '1': track = 0; break;
-      case '2': track = 1; break;
-      case '3': track = 2; break;
-      case '4': track = 3; break;
-      default: LOGE << "Unexpected marker";
-      }
-      if (cp.name[2] == 'I') {
-        inTimeTrack[track] = cp.position;
-      }
-      if (cp.name[2] == 'O') {
-        trackSlices[track].addSlice({inTimeTrack[track], TapeTime(cp.position)});
-      }
+  for (uint t = 0; t < 4; t++) {
+    auto &slices = file.slices.tracks[t];
+    for (uint i = 0; i < slices.count; i++) {
+      auto &slice = slices.slices[i];
+      trackSlices[t].addSlice({(int)slice.inPos, (int)slice.outPos});
     }
+    trackSlices[t].changed = false;
   }
 
   while(GLOB.running) {
@@ -86,29 +50,24 @@ void TapeBuffer::threadRoutine() {
         startIdx = buffer.notWritten.in -= startTime;
         startTime = buffer.posAt0 + buffer.notWritten.in;
       }
-      snd.seek(startTime, SEEK_SET);
-      // TODO: This really should be done more than a sample at a time
-      for (int i = 0; i < buffer.notWritten.size(); i++) {
-        snd.writef(
-          (float *) (buffer.data.data() + buffer.wrapIdx(startIdx + i)), 1);
-      }
+      file.seek(startTime);
+      file.write(
+        buffer.data.data() + buffer.wrapIdx(startIdx),
+        buffer.notWritten.size());
+      file.error.log();
       buffer.notWritten.in = buffer.notWritten.out = buffer.playIdx;
     }
 
     if (buffer.lengthFW < desLength - MIN_READ_SIZE) {
       uint startIdx = buffer.playIdx + buffer.lengthFW; 
-      snd.seek(buffer.posAt0 + startIdx, SEEK_SET);
+      file.seek(buffer.posAt0 + startIdx);
       uint nframes = desLength - buffer.lengthFW;
       memset(framebuf, 0, nframes * nTracks * sizeof(float));
-      uint read = snd.readf(framebuf, nframes);
+      file.read(framebuf, nframes);
+      file.error.log();
       for (uint i = 0; i < nframes; i++) {
         // TODO: Read directly into buffer
-        buffer[startIdx + i] = AudioFrame{{
-          framebuf[nTracks * i],
-          framebuf[nTracks * i + 1],
-          framebuf[nTracks * i + 2],
-          framebuf[nTracks * i + 3],
-        }};
+        buffer[startIdx + i] = framebuf[i];
       }
       buffer.lengthFW += nframes;
       int overflow = buffer.lengthFW + buffer.lengthBW - buffer.SIZE;
@@ -120,16 +79,12 @@ void TapeBuffer::threadRoutine() {
     if (buffer.lengthBW < desLength - MIN_READ_SIZE) {
       uint nframes = desLength - buffer.lengthBW;
       int startIdx = buffer.playIdx - buffer.lengthBW - nframes; 
-      snd.seek(buffer.posAt0 + startIdx, SEEK_SET);
+      file.seek(buffer.posAt0 + startIdx);
       memset(framebuf, 0, nframes * nTracks * sizeof(float));
-      uint read = snd.readf(framebuf, nframes);
+      file.read(framebuf, nframes);
+      file.error.log();
       for (uint i = 0; i < nframes; i++) {
-        buffer[startIdx + i] = AudioFrame{{
-            framebuf[nTracks * i],
-            framebuf[nTracks * i + 1],
-            framebuf[nTracks * i + 2],
-            framebuf[nTracks * i + 3],
-          }};
+        buffer[startIdx + i] = framebuf[i];
       }
       buffer.lengthBW += nframes;
       int overflow = buffer.lengthFW + buffer.lengthBW - buffer.SIZE;
@@ -140,34 +95,24 @@ void TapeBuffer::threadRoutine() {
 
     for (auto tss : trackSlices) {
       if (tss.changed) {
-        SF_CUES cues {0, {}};
-        for (int track = 0;track < 4; track++) {
-          char tchar = std::to_string(track + 1).at(0);
-          auto ts = trackSlices[track];
+        for (uint i = 0; i < 4; i++) {
+          auto &tsc = file.slices.tracks[i];
+          auto &ts  = trackSlices[i];
+          tsc.count = 0;
           for (auto slice : ts) {
-            auto cpin = SF_CUES::SF_CUE_POINT {
-              cues.cue_count - 1,
-              (uint32_t) slice.in,
-              0, 0, 0, 0,
-              {tchar, 'I'},
+            tsc.slices[tsc.count] = {
+              (TOP1File::u4b)slice.in,
+              (TOP1File::u4b)slice.out
             };
-            cues.cue_count++;
-            cues.cue_points[cues.cue_count] = cpin;
-            auto cpout = SF_CUES::SF_CUE_POINT {
-              cues.cue_count - 1,
-              (uint32_t) slice.out,
-              0, 0, 0, 0,
-              {tchar, 'O'},
-            };
-            cues.cue_count++;
-            cues.cue_points[cues.cue_count] = cpout;
+            tsc.count++;
           }
           ts.changed = false;
         }
-        snd.command(0x10CF, &cues, sizeof(cues));
         break;
       }
     }
+    file.writeSlices();
+    file.flush();
     readData.wait(lock);
   }
 }

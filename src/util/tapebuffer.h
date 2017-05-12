@@ -29,10 +29,8 @@ public:
   class TapeSliceSet {
     std::set<TapeSlice, CompareTapeSlice> slices;
   public:
-    bool changed;
-    TapeSliceSet() {
-      LOGD << "TSS";
-    }
+    bool changed = false;
+    TapeSliceSet() {}
     std::vector<TapeSlice> slicesIn(Section<TapeTime> area) const;
 
     bool inSlice(TapeTime time) const;
@@ -46,6 +44,7 @@ public:
     // Iteration
     auto begin() { return slices.begin(); }
     auto end() { return slices.end(); }
+    auto size() { return slices.size(); }
   };
 protected:
   const static int MIN_READ_SIZE = 2048;

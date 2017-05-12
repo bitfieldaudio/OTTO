@@ -20,7 +20,7 @@ typedef jack_default_audio_sample_t AudioSample;
 
 struct Project {
   std::string name = "Unnamed";
-  std::string path = "unnamed.wav";
+  std::string path = "unnamed.top1";
 
   int bpm = 120;
 };
