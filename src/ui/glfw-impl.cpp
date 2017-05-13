@@ -93,7 +93,7 @@ static ui::Key keyboardKey(int xKey, int mods) {
 
 
 static void key(GLFWwindow* window, int key, int scancode, int action, int mods) {
-  MainUI& self = MainUI::getInstance();
+  MainUI& self = GLOB.mainUI;
   ui::Key k = keyboardKey(key, mods);
   if (action == GLFW_PRESS) {
     self.keypress(k, mods & GLFW_MOD_SHIFT);
@@ -102,9 +102,8 @@ static void key(GLFWwindow* window, int key, int scancode, int action, int mods)
   }
 }
 
-static void render_routine() {
-  MainUI& self = MainUI::getInstance();
-
+void MainUI::mainRoutine() {
+  MainUI& self = GLOB.mainUI;
   GLFWwindow* window;
 	NVGcontext* vg = NULL;
 	double prevt = 0;
@@ -146,7 +145,7 @@ static void render_routine() {
   NanoCanvas::Canvas canvas(vg, drawing::WIDTH, drawing::HEIGHT);
   drawing::initUtils(canvas);
 
-	while (!glfwWindowShouldClose(window))
+	while (!glfwWindowShouldClose(window) && GLOB.running)
 	{
 		double mx, my, t, dt, spent;
 		int winWidth, winHeight;
@@ -203,11 +202,4 @@ static void render_routine() {
 	glfwTerminate();
 
   GLOB.running = false;
-}
-
-void MainUI::mainRoutine() {
-  std::thread renderThread = std::thread(render_routine);
-
-  while (GLOB.running);
-  renderThread.join();
 }

@@ -15,15 +15,17 @@ int main(int argc, char *argv[]) {
   GLOB.project = new Project();
 
   GLOB.running = true;
+  GLOB.jackAudio.init();
+  GLOB.tapedeck.init();
+  GLOB.mixer.init();
+  GLOB.mainUI.init();
+  while(GLOB.running == true);
 
-  audio::jack::init();
-  GLOB.tapedeck = new TapeModule();
-  GLOB.mixer = new MixerModule();
-  //GLOB.synth.registerModule(new TestSynth());
-  MainUI::init();
-  audio::jack::exit();
+  LOGI << "Exitting";
 
-  delete GLOB.tapedeck;
-  delete GLOB.mixer;
+  GLOB.mainUI.exit();
+  GLOB.mixer.exit();
+  GLOB.tapedeck.exit();
+  GLOB.jackAudio.exit();
   return 0;
 }

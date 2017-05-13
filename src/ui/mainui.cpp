@@ -5,11 +5,16 @@
 
 #include <thread>
 
-void MainUI::init() {
-  auto& self = getInstance();
+void MainUI::display(ui::Screen *screen) {
+  currentScreen = screen;
+}
 
-  self.uiThread = std::thread(MainUI::mainRoutine);
-  self.uiThread.join();
+void MainUI::init() {
+  uiThread = std::thread(MainUI::mainRoutine);
+}
+
+void MainUI::exit() {
+  uiThread.join();
 }
 
 void MainUI::draw(NanoCanvas::Canvas& ctx) {
@@ -30,10 +35,10 @@ bool MainUI::keyrelease(ui::Key key, bool shift) {
 bool MainUI::globKeyPost(ui::Key key) {
   switch (key) {
   case ui::K_PLAY:
-    if (GLOB.tapedeck->playing) {
-      GLOB.tapedeck->stop();
+    if (GLOB.tapedeck.playing) {
+      GLOB.tapedeck.stop();
     } else {
-      GLOB.tapedeck->play(1);
+      GLOB.tapedeck.play(1);
     }
     return true;
   }
@@ -47,10 +52,10 @@ bool MainUI::globKeyPre(ui::Key key) {
     GLOB.running = false;
     break;
   case K_TAPE:
-    currentScreen = GLOB.tapedeck->tapeScreen;
+    GLOB.tapedeck.display();
     break;
   case K_MIXER:
-    currentScreen = GLOB.mixer->screen;
+    GLOB.mixer.display();
     break;
   default:
     return false;

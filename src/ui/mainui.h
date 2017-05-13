@@ -4,9 +4,6 @@
 
 class MainUI : public ui::Screen {
 
-  MainUI() :
-    currentScreen (new ui::DefaultScreen){}
-
   static void mainRoutine();
 
   bool globKeyPre(ui::Key key);
@@ -14,18 +11,22 @@ class MainUI : public ui::Screen {
 
 public:
 
+  MainUI() :
+    currentScreen (new ui::DefaultScreen){}
+
+  MainUI(MainUI&) = delete;
+  MainUI(MainUI&&) = delete;
+
+  void init();
+  void exit();
+
   ui::Screen *currentScreen;
 
   std::thread uiThread;
 
+  void display(ui::Screen *screen);
+
   void draw(NanoCanvas::Canvas& ctx) override;
   bool keypress(ui::Key key, bool shift) override;
   bool keyrelease(ui::Key key, bool shift) override;
-
-  static void init();
-
-  static MainUI& getInstance() {
-    static MainUI instance;
-    return instance;
-  }
 };

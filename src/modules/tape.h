@@ -15,20 +15,23 @@ typedef int BarPos;
 
 class TapeModule : public Module {
 
-  void mixOut(jack_nframes_t nframes);
-
   float nextSpeed = 0;
+
+  ui::ModuleScreen<TapeModule> *tapeScreen;
 public:
 
   std::array<AudioFrame, 256> trackBuffer;
-
-  ui::ModuleScreen<TapeModule> *tapeScreen;
 
   TapeBuffer tapeBuffer;
 
   const static uint nTracks = TapeBuffer::nTracks;
 
   TapeModule();
+  TapeModule(TapeModule&) = delete;
+  TapeModule(TapeModule&&) = delete;
+
+  void init() override;
+  void exit() override;
 
   std::atomic_uint track;
 
@@ -59,6 +62,7 @@ public:
 
   BarPos closestBar(TapeTime time);
 
+  void display();
 };
 
 class TapeScreen : public ui::ModuleScreen<TapeModule> {

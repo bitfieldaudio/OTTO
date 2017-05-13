@@ -13,11 +13,13 @@ class MixerModule : public Module {
     bool muted = false;
   } trackInfo[4];
 
+  ui::ModuleScreen<MixerModule> *screen;
+
 public:
 
   MixerModule();
 
-  ui::ModuleScreen<MixerModule> *screen;
+  void display();
 
   void process(uint nframes);
 

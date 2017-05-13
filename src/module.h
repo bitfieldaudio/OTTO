@@ -4,12 +4,9 @@
 #include <cstdlib>
 
 class Module {
-protected:
-
-  virtual void preInit() {};
-
-  virtual void postInit() {};
-
+public:
+  virtual void init() {}
+  virtual void exit() {}
 };
 
 class SynthModule : public Module {

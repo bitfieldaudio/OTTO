@@ -140,10 +140,10 @@ protected:
 
   virtual void initBuffers() {
     for (int i = 0; i < fDSP->getNumInputs(); i++) {
-      inBuffer[0] = (FAUSTFLOAT *) malloc(sizeof(FAUSTFLOAT) * GLOB.buffersize);
+      inBuffer[0] = (FAUSTFLOAT *) malloc(sizeof(FAUSTFLOAT) * GLOB.jackAudio.bufferSize);
     }
     for (int i = 0; i < fDSP->getNumOutputs(); i++) {
-      *outBuffer = (FAUSTFLOAT *) malloc(sizeof(FAUSTFLOAT) * GLOB.buffersize);
+      *outBuffer = (FAUSTFLOAT *) malloc(sizeof(FAUSTFLOAT) * GLOB.jackAudio.bufferSize);
     }
   }
 
@@ -152,13 +152,13 @@ protected:
    */
   virtual void prepBuffers(uint nframes) {
     if (fDSP->getNumInputs() > 0)
-      inBuffer[0] = GLOB.data.proc;
+      inBuffer[0] = GLOB.audioData.proc;
   }
 
   /**
    * Put the data back into the chain
    */
   virtual void postBuffers(uint nframes) {
-    GLOB.data.proc = *outBuffer;
+    GLOB.audioData.proc = *outBuffer;
   }
 };

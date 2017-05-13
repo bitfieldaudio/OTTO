@@ -2,21 +2,53 @@
 
 #include <cstdlib>
 #include <string>
+#include <atomic>
 
 #include <jack/jack.h>
-#include <jack/ringbuffer.h>
-#include <sndfile.h>
-#include <pthread.h>
+#include <string>
 
 #include "../events.h"
 
-namespace audio {
+class JackAudio {
+  struct {
+    jack_port_t *outL;
+    jack_port_t *outR;
+    jack_port_t *input;
+  } ports;
 
-typedef jack_default_audio_sample_t AudioSample;
-const size_t SAMPLE_SIZE = sizeof(AudioSample);
+  jack_client_t *client;
+  jack_status_t jackStatus;
 
-namespace jack {
-void init();
-void exit();
-}
-}
+  std::atomic_bool processing = {false};
+private:
+
+  enum class PortType {
+    AUDIO,
+    MIDI
+  };
+
+  void setupPorts();
+
+  std::vector<std::string> findPorts(
+    int criteria, PortType type = PortType::AUDIO);
+
+  bool connectPorts(std::string src, std::string dest);
+
+  // Callbacks
+  void process(uint nframes);
+  void shutdownCallback();
+  void samplerateCallback(uint nframes);
+  void buffersizeCallback(uint nframes);
+public:
+
+  uint bufferSize;
+  typedef jack_default_audio_sample_t AudioSample;
+  const size_t SAMPLE_SIZE = sizeof(AudioSample);
+  const std::string CLIENT_NAME = "tapedeck";
+
+  JackAudio() {}
+
+  void init();
+  void exit();
+
+};

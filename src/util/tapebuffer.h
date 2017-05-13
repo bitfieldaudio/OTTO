@@ -82,10 +82,10 @@ public:
     const static uint SIZE = 262144; // 2^18
     std::array<AudioFrame, SIZE> data;
     Section<int> notWritten;
-    int lengthFW = 0;
-    int lengthBW = 0;
-    uint playIdx = 0;
-    uint posAt0 = 0;
+    std::atomic_int lengthFW = {0};
+    std::atomic_int lengthBW = {0};
+    std::atomic_uint playIdx = {0};
+    std::atomic_uint posAt0 = {0};
 
     AudioFrame& operator[](int i) {
       return data[wrapIdx(i)];
@@ -102,6 +102,9 @@ public:
   const static uint nTracks = 4;
 
   TapeBuffer();
+
+  void init();
+  void exit();
 
   /**
    * Reads forwards along the tape, moving the playPoint.

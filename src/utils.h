@@ -41,6 +41,17 @@ static inline float mix(float A, float B, float ratio = 0.5) {
 struct AudioFrame {
   float data[4];
 
+  AudioFrame(float f) {
+    data[0] = f;
+    data[1] = f;
+    data[2] = f;
+    data[3] = f;
+  }
+
+  AudioFrame() {
+    AudioFrame(0);
+  }
+
   float& operator[](uint i) {
     return data[i];
   }

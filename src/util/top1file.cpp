@@ -228,6 +228,7 @@ void TOP1File::open(std::string path) {
     fileStream.flush();
   }
   try {
+    fseek(0);
     header = readChunk<HeaderChunk>();
   } catch(ReadException e) {
     error = {Error::ERROR, "Invalid file. Header not found"};
@@ -253,10 +254,12 @@ void TOP1File::open(std::string path) {
 }
 
 void TOP1File::close() {
+  writeFile();
   fileStream.close();
 }
 
 void TOP1File::flush() {
+  writeFile();
   fileStream.flush();
 }
 

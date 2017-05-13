@@ -11,6 +11,10 @@ MixerModule::MixerModule() :
   screen (new MixerScreen(this))
 {}
 
+void MixerModule::display() {
+  GLOB.mainUI.display(screen);
+}
+
 // Getters & Setters
 
 bool MixerModule::trackMuted(int track) const {
@@ -39,7 +43,7 @@ float MixerModule::trackLevel(int track, float newVal) {
 // Mixing!
 
 void MixerModule::process(uint nframes) {
-  auto &trackBuffer = GLOB.tapedeck->trackBuffer;
+  auto &trackBuffer = GLOB.tapedeck.trackBuffer;
   // TODO: Configurable and all that
   for (uint f = 0; f < nframes; f++) {
     float lMix = 0, rMix = 0;
@@ -49,8 +53,8 @@ void MixerModule::process(uint nframes) {
         rMix += trackBuffer[f][t] * trackInfo[t].level * (1+trackInfo[t].pan) / 2;
       }
     }
-    GLOB.data.outL[f] = lMix;
-    GLOB.data.outR[f] = rMix;
+    GLOB.audioData.outL[f] = lMix;
+    GLOB.audioData.outR[f] = rMix;
   }
 }
 
