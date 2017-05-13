@@ -55,8 +55,8 @@ protected:
 
 
   std::thread diskThread;
-  std::mutex threadLock;
-  std::condition_variable readData;
+  std::recursive_mutex threadLock;
+  std::condition_variable_any readData;
 
   std::atomic_bool newCuts;
 

@@ -123,7 +123,7 @@ void JackAudio::setupPorts() {
   s = connectPorts(outputs[0 % outputs.size()], jack_port_name(ports.outL));
   if (!s) {GLOB.running = false; return;}
 
-  s = connectPorts(outputs[0 % outputs.size()], jack_port_name(ports.outR));
+  s = connectPorts(outputs[1 % outputs.size()], jack_port_name(ports.outR));
   if (!s) {GLOB.running = false; return;}
 
 }

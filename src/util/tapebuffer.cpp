@@ -23,8 +23,6 @@ void TapeBuffer::exit() {
 // Disk handling:
 
 void TapeBuffer::threadRoutine() {
-  std::unique_lock<std::mutex> lock (threadLock);
-
   movePlaypointAbs(0);
 
   TOP1File file (GLOB.project->path);
@@ -47,25 +45,22 @@ void TapeBuffer::threadRoutine() {
 
 waitData:
   while(GLOB.running) {
+    std::unique_lock<std::recursive_mutex> lock (threadLock);
 
     // Keep some space in the middle to avoid overlap fights
     int desLength = buffer.SIZE / 2 - sizeof(AudioFrame);
 
-    // Copy for thread safety!
-    // TODO: this is not nearly enough, all of this is a data race farm!
-    auto notWritten = buffer.notWritten;
-
-    if (notWritten) {
-      int startIdx = notWritten.in;
+    if (buffer.notWritten) {
+      int startIdx = buffer.notWritten.in;
       int startTime = buffer.posAt0 + startIdx;
       if (startTime < 0) {
-        startIdx = notWritten.in -= startTime;
-        startTime = buffer.posAt0 + notWritten.in;
+        startIdx = buffer.notWritten.in -= startTime;
+        startTime = buffer.posAt0 + buffer.notWritten.in;
       }
       file.seek(startTime);
       file.write(
         buffer.data.data() + buffer.wrapIdx(startIdx),
-        notWritten.size());
+        buffer.notWritten.size());
       file.error.log();
       buffer.notWritten.in = buffer.notWritten.out = buffer.playIdx;
     }
@@ -106,6 +101,7 @@ waitData:
     }
 
     {
+      // Lift frames
       if (clipboard.fromSlice.size() > 0) {
         LOGD << "Lifting " << clipboard.fromSlice.size() << " frames from "
              << clipboard.fromSlice.in;
@@ -118,11 +114,11 @@ waitData:
         framebuf.fill(0);
         while(readSlice.out < clipboard.fromSlice.out) {
           readSlice.out = std::min<int>(
-            readSlice.in + FRAMEBUF_SIZE / 4,
+            readSlice.in + FRAMEBUF_SIZE,
             clipboard.fromSlice.out);
           file.seek(readSlice.in);
           file.read(framebuf.data(), readSlice.size());
-          for (uint i = 0; i < readSlice.size(); i++) {
+          for (int i = 0; i < readSlice.size(); i++) {
             clipboard.data.push_back(framebuf[i][clipboard.fromTrack]);
             framebuf[i][clipboard.fromTrack] = 0;
           }
@@ -135,6 +131,7 @@ waitData:
         clipboard.fromSlice = {0,0};
       }
 
+      // Drop frames
       if (clipboard.toTime >= 0 && !clipboard.data.empty()) {
         std::unique_lock<std::mutex> clipboardLock (clipboard.lock);
         LOGD << "Dropping " << clipboard.data.size() << " frames at " << clipboard.toTime;
@@ -144,7 +141,7 @@ waitData:
         };
         while(true) {
           writeSlice.out = writeSlice.in + std::min<int>(
-            FRAMEBUF_SIZE / 4, clipboard.data.size() - writeSlice.in + clipboard.toTime);
+            FRAMEBUF_SIZE, clipboard.data.size() - writeSlice.in + clipboard.toTime);
 
           if (!((ulong)writeSlice.size() <= clipboard.data.size())) break;
           if (writeSlice.size() == 0) break;
@@ -160,7 +157,7 @@ waitData:
           LOGD << i;
           file.seek(writeSlice.in);
           file.write(framebuf.data(), writeSlice.size());
-          writeSlice.in = writeSlice.out + 1;
+          writeSlice.in = writeSlice.out;
         }
         file.flush();
         buffer.lengthFW = buffer.lengthBW = 0;
@@ -196,6 +193,7 @@ void TapeBuffer::movePlaypointRel(int time) {
 }
 
 void TapeBuffer::movePlaypointAbs(int newPos) {
+  std::unique_lock<std::recursive_mutex> lock (threadLock);
   if (newPos < 0) {
     newPos = 0;
   }
@@ -203,9 +201,10 @@ void TapeBuffer::movePlaypointAbs(int newPos) {
   int diff = newPos - oldPos;
   if (diff <= buffer.lengthFW && diff >= -buffer.lengthBW) {
     // The new position is within the loaded section, so keep that data
-    // TOD: This should probably also happen if the new position is just
-    //   slightly outside the but idk what to tell ya, section.
-    //   That could be fixed with setting negative lenghts
+    // TODO: This should probably also happen if the new position is just
+    //   slightly outside the section.
+    //   That could be fixed with setting negative FW/BW lenghts
+    // NOTE: Section::overlaps has the correct algorithm for this
     buffer.playIdx = buffer.wrapIdx(newPos - buffer.posAt0);
     buffer.lengthBW += diff;
     buffer.lengthFW -= diff;
@@ -283,6 +282,7 @@ std::vector<AudioFrame> TapeBuffer::readAllBW(uint nframes) {
 }
 
 uint TapeBuffer::writeFW(std::vector<float> data, uint track, TapeBuffer::TapeSlice &slice) {
+  std::unique_lock<std::recursive_mutex> lock (threadLock);
   int n = std::min<int>(data.size(), buffer.SIZE - buffer.lengthFW);
 
   int beginPos = buffer.playIdx - n;
@@ -313,6 +313,7 @@ uint TapeBuffer::writeFW(std::vector<float> data, uint track, TapeBuffer::TapeSl
 }
 
 uint TapeBuffer::writeBW(std::vector<float> data, uint track, TapeBuffer::TapeSlice &slice) {
+  std::unique_lock<std::recursive_mutex> lock (threadLock);
   int n = std::min<int>(data.size(), buffer.SIZE - buffer.lengthBW);
 
   int endPos = buffer.playIdx + n;
