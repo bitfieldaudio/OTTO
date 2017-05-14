@@ -24,7 +24,7 @@ void TestSynthScreen::draw(NanoCanvas::Canvas& ctx) {
   using namespace drawing;
 }
 
-bool TestSynthScreen::keypress(ui::Key key, bool shift) {
+bool TestSynthScreen::keypress(ui::Key key) {
   switch (key) {
   default:
     return false;

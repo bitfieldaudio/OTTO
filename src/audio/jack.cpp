@@ -193,6 +193,8 @@ void JackAudio::process(uint nframes) {
   GLOB.audioData.outR = (float *) jack_port_get_buffer(ports.outR, nframes);
   GLOB.audioData.input = (float *) jack_port_get_buffer(ports.input, nframes);
 
+  memset(GLOB.audioData.outL, 0, sizeof(float) * nframes);
+  memset(GLOB.audioData.outR, 0, sizeof(float) * nframes);
   memset(GLOB.audioData.proc, 0, sizeof(float) * nframes);
 
   // Midi events

@@ -66,6 +66,7 @@ enum Key {
   K_CUT,
 };
 
+typedef bool PressedKeys[256];
 
 /**
  * Anything that can be drawn on screen.
@@ -102,7 +103,7 @@ public:
    * @param key the pressed key
    * @return true if the key was used.
    */
-  virtual bool keypress(Key key, bool shift) {
+  virtual bool keypress(Key key) {
     return false;
   };
   /**
@@ -110,7 +111,7 @@ public:
    * @param key the released key
    * @return true if the key was used.
    */
-  virtual bool keyrelease(Key key, bool shift) {
+  virtual bool keyrelease(Key key) {
     return false;
   };
 };
@@ -141,7 +142,7 @@ public:
 class DefaultScreen : public Screen {
 public:
   void draw(NanoCanvas::Canvas& ctx) override;
-  bool keypress(Key key, bool shift) override;
+  bool keypress(Key key) override;
 };
 
 }

@@ -22,13 +22,13 @@ int main(int argc, char *argv[]) {
   GLOB.jackAudio.init();
   GLOB.tapedeck.init();
   GLOB.mixer.init();
-  GLOB.mainUI.init();
+  GLOB.ui.init();
   GLOB.synth.registerModule(new TestSynth());
   while(GLOB.running == true);
 
   LOGI << "Exitting";
 
-  GLOB.mainUI.exit();
+  GLOB.ui.exit();
   GLOB.mixer.exit();
   GLOB.tapedeck.exit();
   GLOB.jackAudio.exit();

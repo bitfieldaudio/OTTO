@@ -22,14 +22,16 @@ void MainUI::draw(NanoCanvas::Canvas& ctx) {
   currentScreen->draw(ctx);
 }
 
-bool MainUI::keypress(ui::Key key, bool shift) {
+bool MainUI::keypress(ui::Key key) {
+  keys[key] = true;
   if (globKeyPre(key)) return true;
-  if (currentScreen->keypress(key, shift)) return true;
+  if (currentScreen->keypress(key)) return true;
   return globKeyPost(key);
 }
 
-bool MainUI::keyrelease(ui::Key key, bool shift) {
-  return currentScreen->keyrelease(key, shift);
+bool MainUI::keyrelease(ui::Key key) {
+  keys[key] = false;
+  return currentScreen->keyrelease(key);
 }
 
 bool MainUI::globKeyPost(ui::Key key) {

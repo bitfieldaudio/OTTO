@@ -93,17 +93,17 @@ static ui::Key keyboardKey(int xKey, int mods) {
 
 
 static void key(GLFWwindow* window, int key, int scancode, int action, int mods) {
-  MainUI& self = GLOB.mainUI;
+  MainUI& self = GLOB.ui;
   ui::Key k = keyboardKey(key, mods);
   if (action == GLFW_PRESS) {
-    self.keypress(k, mods & GLFW_MOD_SHIFT);
+    self.keypress(k);
   } else if (action == GLFW_RELEASE) {
-    self.keyrelease(k, mods & GLFW_MOD_SHIFT);
+    self.keyrelease(k);
   }
 }
 
 void MainUI::mainRoutine() {
-  MainUI& self = GLOB.mainUI;
+  MainUI& self = GLOB.ui;
   GLFWwindow* window;
 	NVGcontext* vg = NULL;
 	double prevt = 0;

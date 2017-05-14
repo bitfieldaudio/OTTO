@@ -11,6 +11,8 @@ class MainUI : public ui::Screen {
 
 public:
 
+  ui::PressedKeys keys;
+
   MainUI() :
     currentScreen (new ui::DefaultScreen){}
 
@@ -27,6 +29,6 @@ public:
   void display(ui::Screen *screen);
 
   void draw(NanoCanvas::Canvas& ctx) override;
-  bool keypress(ui::Key key, bool shift) override;
-  bool keyrelease(ui::Key key, bool shift) override;
+  bool keypress(ui::Key key) override;
+  bool keyrelease(ui::Key key) override;
 };

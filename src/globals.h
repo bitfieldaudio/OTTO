@@ -33,7 +33,7 @@ struct __Globals_t {
   uint samplerate = 44100;
 
   JackAudio jackAudio;
-  MainUI mainUI;
+  MainUI ui;
 
   struct {
     float *outL;

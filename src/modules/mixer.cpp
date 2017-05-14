@@ -12,7 +12,7 @@ MixerModule::MixerModule() :
 {}
 
 void MixerModule::display() {
-  GLOB.mainUI.display(screen);
+  GLOB.ui.display(screen);
 }
 
 // Getters & Setters
@@ -73,8 +73,9 @@ void MixerScreen::draw(NanoCanvas::Canvas& ctx) {
 
 }
 
-bool MixerScreen::keypress(ui::Key key, bool shift) {
+bool MixerScreen::keypress(ui::Key key) {
   using namespace ui;
+  bool shift = GLOB.ui.keys[K_SHIFT];
   switch (key) {
   case K_RED_UP:
     if (shift) module->panRight(1);
@@ -115,21 +116,12 @@ bool MixerScreen::keypress(ui::Key key, bool shift) {
     else module->levelDown(4);
     return true;
   case K_GREEN_CLICK: module->toggleMute(4); return true;
-
-  case K_SHIFT:
-    numDisplay = PAN;
-    return true;
   }
   return false;
 }
 
-bool MixerScreen::keyrelease(ui::Key key, bool shift) {
+bool MixerScreen::keyrelease(ui::Key key) {
   using namespace ui;
-  switch (key) {
-  case K_SHIFT:
-    numDisplay = LEVEL;
-    return true;
-  }
   return false;
 }
 
@@ -223,7 +215,7 @@ void MixerScreen::drawMixerSegment(
   ctx.font(60);
   ctx.textAlign(TextAlign::Right, TextAlign::Baseline);
   std::string txt;
-  if (numDisplay == LEVEL) {
+  if (!GLOB.ui.keys[ui::K_SHIFT]) {
     txt = fmt::format("{:0>2.0f}", mix * 100);
   } else {
     if (int(pan * 10) == 0)

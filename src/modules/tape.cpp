@@ -32,7 +32,7 @@ void TapeModule::exit() {
 }
 
 void TapeModule::display() {
-  GLOB.mainUI.display(tapeScreen);
+  GLOB.ui.display(tapeScreen);
 }
 
 // Playback control
@@ -257,11 +257,17 @@ void TapeModule::process(uint nframes) {
 /* TapeScreen Implementation                    */
 /************************************************/
 
-bool TapeScreen::keypress(ui::Key key, bool shift) {
+bool TapeScreen::keypress(ui::Key key) {
+  bool shift = GLOB.ui.keys[ui::K_SHIFT];
   switch (key) {
   case ui::K_REC:
     module->record();
     return true;
+  case ui::K_PLAY:
+    if (GLOB.ui.keys[ui::K_REC]) {
+      stopRecOnRelease = false;
+    }
+    return false;
   case ui::K_TRACK_1:
     module->track = 1;
     return true;
@@ -306,11 +312,16 @@ bool TapeScreen::keypress(ui::Key key, bool shift) {
   return false;
 }
 
-bool TapeScreen::keyrelease(ui::Key key, bool shift) {
+bool TapeScreen::keyrelease(ui::Key key) {
   switch (key) {
   case ui::K_REC:
-    module->stopRecord();
-    return true;
+    if (stopRecOnRelease) {
+      module->stopRecord();
+      return true;
+    } else {
+      stopRecOnRelease = true;
+      return true;
+    }
   case ui::K_LEFT:
   case ui::K_RIGHT:
     module->stop();
@@ -739,7 +750,7 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
       } else {
         col = COLOR_OTHER_TRACK;
       }
-      if (slice.size() > 0 && slice.in >= 0 && slice.out >= 0) {
+      if (slice.size() >= 0 && slice.in >= 0 && slice.out >= 0) {
         if (inView.overlaps(slice)) {
           ctx.beginPath();
           ctx.strokeStyle(col);

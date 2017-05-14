@@ -52,8 +52,8 @@ class MixerScreen : public ui::ModuleScreen<MixerModule> {
 
   virtual void draw(NanoCanvas::Canvas& ctx) override;
 
-  virtual bool keypress(ui::Key key, bool shift) override;
-  virtual bool keyrelease(ui::Key key, bool shift) override;
+  virtual bool keypress(ui::Key key) override;
+  virtual bool keyrelease(ui::Key key) override;
 
   void drawMixerSegment(NanoCanvas::Canvas& ctx, int track, float x, float y);
 
