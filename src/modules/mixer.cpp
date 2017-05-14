@@ -53,8 +53,8 @@ void MixerModule::process(uint nframes) {
         rMix += trackBuffer[f][t] * trackInfo[t].level * (1+trackInfo[t].pan) / 2;
       }
     }
-    GLOB.audioData.outL[f] = lMix;
-    GLOB.audioData.outR[f] = rMix;
+    GLOB.audioData.outL[f] = top::audio::mix(lMix, GLOB.audioData.proc[f]);
+    GLOB.audioData.outR[f] = top::audio::mix(rMix, GLOB.audioData.proc[f]);
   }
 }
 

@@ -174,7 +174,7 @@ void TapeModule::process(uint nframes) {
         }
         for (int i = 0; i < diff; i++) {
           buf.push_back(top::audio::mix(
-            trackBuffer[i][track - 1], GLOB.audioData.input[i]));
+            trackBuffer[i][track - 1], GLOB.audioData.proc[i]));
         }
         tapeBuffer.writeFW(buf, track, slice);
         tapeBuffer.goTo(loopSect.in + (rframes - diff));
@@ -184,7 +184,7 @@ void TapeModule::process(uint nframes) {
         }
         for (uint i = 0; i < rframes - diff; i++) {
           buf.push_back(top::audio::mix(
-            trackBuffer[i][track - 1], GLOB.audioData.input[diff + i]));
+            trackBuffer[i][track - 1], GLOB.audioData.proc[diff + i]));
         }
         tapeBuffer.writeFW(buf, track, slice);
       } else {
@@ -194,7 +194,7 @@ void TapeModule::process(uint nframes) {
         }
         for (uint i = 0; i < nframes; i++) {
           buf.push_back(top::audio::mix(
-            trackBuffer[i][track - 1], GLOB.audioData.input[i]));
+            trackBuffer[i][track - 1], GLOB.audioData.proc[i]));
         }
         tapeBuffer.writeFW(buf, track, slice);
       }
@@ -231,20 +231,20 @@ void TapeModule::process(uint nframes) {
       if (looping && diff > 0 && diff <= nframes * speed) {
         for (uint i = 0; i < diff; i++) {
           buf.push_back(top::audio::mix(
-            trackBuffer[i][track - 1], GLOB.audioData.input[i]));
+            trackBuffer[i][track - 1], GLOB.audioData.proc[i]));
         }
         tapeBuffer.writeBW(buf, track, slice);
         tapeBuffer.goTo(loopSect.out - (nframes * speed - diff));
         buf.clear();
         for (uint i = 0; i < nframes * speed - diff; i++) {
           buf.push_back(top::audio::mix(
-            trackBuffer[i][track - 1], GLOB.audioData.input[diff + i]));
+            trackBuffer[i][track - 1], GLOB.audioData.proc[diff + i]));
         }
         tapeBuffer.writeBW(buf, track, slice);
       } else {
         for (uint i = 0; i < nframes; i++) {
           buf.push_back(top::audio::mix(
-            trackBuffer[i][track - 1], GLOB.audioData.input[i]));
+            trackBuffer[i][track - 1], GLOB.audioData.proc[i]));
         }
         tapeBuffer.writeBW(buf, track, slice);
       }

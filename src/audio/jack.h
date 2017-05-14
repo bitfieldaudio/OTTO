@@ -14,6 +14,8 @@ class JackAudio {
     jack_port_t *outL;
     jack_port_t *outR;
     jack_port_t *input;
+    jack_port_t *midiIn;
+    jack_port_t *midiOut;
   } ports;
 
   jack_client_t *client;

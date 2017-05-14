@@ -11,8 +11,6 @@
 class TestSynth : public FaustSynthModule {
   ui::ModuleScreen<TestSynth> *screen;
 public:
-  float *frequency;
-
   TestSynth();
   ~TestSynth();
 };

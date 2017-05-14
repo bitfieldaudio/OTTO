@@ -5,17 +5,13 @@
 #include <array>
 #include <atomic>
 
-#include <jack/jack.h>
-
 #include "events.h"
 #include "module.h"
 #include "ui/mainui.h"
 #include "modules/tape.h"
 #include "modules/mixer.h"
-
-namespace audio {
-typedef jack_default_audio_sample_t AudioSample;
-}
+#include "audio/jack.h"
+#include "audio/midi.h"
 
 struct Project {
   std::string name = "Tape1";
@@ -46,6 +42,8 @@ struct __Globals_t {
     // The sound that is passed between modules
     float *proc;
   } audioData;
+
+  std::vector<MidiEvent*> midiEvents;
 
   volatile bool doProcess;
   volatile int status;
