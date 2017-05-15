@@ -6,7 +6,7 @@
 #include <string>
 
 TestSynth::TestSynth() :
-  FaustSynthModule(new testsynth(), {
+  FaustSynthModule(new faust_testsynth(), {
     {"FREQ", &frequency}
   }),
   screen (new TestSynthScreen(this))

@@ -3,8 +3,8 @@ name: "TestSynth"
 Code generated with Faust 2.0.a64 (http://faust.grame.fr)
 ------------------------------------------------------------ */
 
-#ifndef  __testsynth_H__
-#define  __testsynth_H__
+#ifndef  __faust_testsynth_H__
+#define  __faust_testsynth_H__
 
 #include <math.h>
 #include <algorithm>
@@ -32,7 +32,7 @@ using std::min;
 #include <math.h>
 
 
-class testsynthSIG0 {
+class faust_testsynthSIG0 {
 	
   private:
 	
@@ -40,15 +40,15 @@ class testsynthSIG0 {
 	
   public:
 	
-	int getNumInputstestsynthSIG0() {
+	int getNumInputsfaust_testsynthSIG0() {
 		return 0;
 		
 	}
-	int getNumOutputstestsynthSIG0() {
+	int getNumOutputsfaust_testsynthSIG0() {
 		return 1;
 		
 	}
-	int getInputRatetestsynthSIG0(int channel) {
+	int getInputRatefaust_testsynthSIG0(int channel) {
 		int rate;
 		switch (channel) {
 			default: {
@@ -60,7 +60,7 @@ class testsynthSIG0 {
 		return rate;
 		
 	}
-	int getOutputRatetestsynthSIG0(int channel) {
+	int getOutputRatefaust_testsynthSIG0(int channel) {
 		int rate;
 		switch (channel) {
 			case 0: {
@@ -77,7 +77,7 @@ class testsynthSIG0 {
 		
 	}
 	
-	void instanceInittestsynthSIG0(int samplingFreq) {
+	void instanceInitfaust_testsynthSIG0(int samplingFreq) {
 		for (int l0 = 0; (l0 < 2); l0 = (l0 + 1)) {
 			iRec0[l0] = 0;
 			
@@ -85,7 +85,7 @@ class testsynthSIG0 {
 		
 	}
 	
-	void filltestsynthSIG0(int count, float* output) {
+	void fillfaust_testsynthSIG0(int count, float* output) {
 		for (int i = 0; (i < count); i = (i + 1)) {
 			iRec0[0] = (iRec0[1] + 1);
 			output[i] = sinf((9.58738019e-05f * float((iRec0[0] + -1))));
@@ -96,16 +96,16 @@ class testsynthSIG0 {
 	}
 };
 
-testsynthSIG0* newtestsynthSIG0() { return (testsynthSIG0*)new testsynthSIG0(); }
-void deletetestsynthSIG0(testsynthSIG0* dsp) { delete dsp; }
+faust_testsynthSIG0* newfaust_testsynthSIG0() { return (faust_testsynthSIG0*)new faust_testsynthSIG0(); }
+void deletefaust_testsynthSIG0(faust_testsynthSIG0* dsp) { delete dsp; }
 
-static float ftbl0testsynthSIG0[65537];
+static float ftbl0faust_testsynthSIG0[65537];
 
 #ifndef FAUSTCLASS 
-#define FAUSTCLASS testsynth
+#define FAUSTCLASS faust_testsynth
 #endif
 
-class testsynth : public dsp {
+class faust_testsynth : public dsp {
 	
  private:
 	
@@ -167,10 +167,10 @@ class testsynth : public dsp {
 	}
 	
 	static void classInit(int samplingFreq) {
-		testsynthSIG0* sig0 = newtestsynthSIG0();
-		sig0->instanceInittestsynthSIG0(samplingFreq);
-		sig0->filltestsynthSIG0(65537, ftbl0testsynthSIG0);
-		deletetestsynthSIG0(sig0);
+		faust_testsynthSIG0* sig0 = newfaust_testsynthSIG0();
+		sig0->instanceInitfaust_testsynthSIG0(samplingFreq);
+		sig0->fillfaust_testsynthSIG0(65537, ftbl0faust_testsynthSIG0);
+		deletefaust_testsynthSIG0(sig0);
 		
 	}
 	
@@ -203,8 +203,8 @@ class testsynth : public dsp {
 		instanceClear();
 	}
 	
-	virtual testsynth* clone() {
-		return new testsynth();
+	virtual faust_testsynth* clone() {
+		return new faust_testsynth();
 	}
 	
 	virtual int getSampleRate() {
@@ -225,7 +225,7 @@ class testsynth : public dsp {
 			fRec1[0] = (fSlow0 + (fRec1[1] - floorf((fSlow0 + fRec1[1]))));
 			float fTemp0 = (65536.0f * fRec1[0]);
 			int iTemp1 = int(fTemp0);
-			output0[i] = FAUSTFLOAT((ftbl0testsynthSIG0[iTemp1] + ((fTemp0 - floorf(fTemp0)) * (ftbl0testsynthSIG0[(iTemp1 + 1)] - ftbl0testsynthSIG0[iTemp1]))));
+			output0[i] = FAUSTFLOAT((ftbl0faust_testsynthSIG0[iTemp1] + ((fTemp0 - floorf(fTemp0)) * (ftbl0faust_testsynthSIG0[(iTemp1 + 1)] - ftbl0faust_testsynthSIG0[iTemp1]))));
 			fRec1[1] = fRec1[0];
 			
 		}

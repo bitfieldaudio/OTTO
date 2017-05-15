@@ -7,8 +7,9 @@ function compile {
     bn=$(basename $1)
     bn=${bn%.*}
     dir=$(dirname $1)
+    classname=faust_${bn//-/_}
 
-    faust $1 -o "${dir}/${bn}.faust.h" -cn $bn -A $ARCH_DIR -a $ARCH_FILE
+    faust $1 -o "${dir}/${bn}.faust.h" -cn $classname -A $ARCH_DIR -a $ARCH_FILE
 }
 
 export -f compile

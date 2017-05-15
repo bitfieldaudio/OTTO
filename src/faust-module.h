@@ -9,7 +9,7 @@ protected:
   bool trigger;
 public:
 
-  FaustSynthModule(dsp *fDSP, std::map<const char*, FAUSTFLOAT**> opts) :
+  FaustSynthModule(dsp *fDSP, std::map<std::string, FAUSTFLOAT**> opts) :
     FaustWrapper (fDSP, opts) {}
 
   void process(uint nframes) override {
