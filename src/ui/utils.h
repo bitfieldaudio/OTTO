@@ -17,7 +17,7 @@ const auto COLOR_RED = Color(255, 42, 42);
 const auto COLOR_BLUE = Color(10, 124, 255);
 const auto COLOR_GREEN = Color(94, 207, 62);
 
-const auto COLOR_GRAY60 = Color(0.6f, 0.6f, 0.6f);
+const auto COLOR_GRAY60 = Color(60, 60, 71);
 const auto COLOR_GRAY70 = Color(0.7f, 0.7f, 0.7f);
 
 const auto COLOR_CURRENT_TRACK = Color(255, 74, 74);

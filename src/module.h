@@ -7,6 +7,7 @@ class Module {
 public:
   virtual void init() {}
   virtual void exit() {}
+  virtual void display() {};
 };
 
 class SynthModule : public Module {
@@ -27,6 +28,10 @@ protected:
   uint currentModule;
 
 public:
+
+  void display() {
+    modules[currentModule]->display();
+  }
 
   M *getCurrent() {
     return modules[currentModule];

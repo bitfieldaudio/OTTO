@@ -7,6 +7,7 @@
 #include "modules/tape.h"
 #include "modules/mixer.h"
 #include "modules/testsynth.h"
+#include "modules/simple-drums.h"
 #include "globals.h"
 
 int main(int argc, char *argv[]) {
@@ -23,7 +24,7 @@ int main(int argc, char *argv[]) {
   GLOB.tapedeck.init();
   GLOB.mixer.init();
   GLOB.ui.init();
-  GLOB.synth.registerModule(new TestSynth());
+  GLOB.synth.registerModule(new SimpleDrumsModule());
   while(GLOB.running == true);
 
   LOGI << "Exitting";

@@ -24,7 +24,6 @@ class FaustOptions : public UI {
 public:
 
   std::map<std::string, FAUSTFLOAT**> optMap;
-  std::vector<FAUSTFLOAT*> resets;
 
   FaustOptions() {}
   FaustOptions(std::map<std::string, FAUSTFLOAT**> optMap) : optMap (optMap) {}
@@ -42,7 +41,15 @@ public:
       boxPrefix.append(label).append("/");
   }
   void closeBox() override {
-    boxPrefix.erase(boxPrefix.begin() + boxPrefix.find_last_of("/"), boxPrefix.end());
+    uint last = 0;
+    uint secLast = 0;
+    std::string::size_type found = 0;
+    while (found != std::string::npos) {
+      secLast = last;
+      last = found;
+      found = boxPrefix.find("/", last + 1);
+    }
+    boxPrefix.erase(boxPrefix.begin() + secLast, boxPrefix.end());
   }
   void addHorizontalBargraph(
     const char* label, FAUSTFLOAT* zone,
@@ -57,7 +64,7 @@ public:
   }
 
   void addButton(const char* label, FAUSTFLOAT* zone) override {
-    this->registerOption(label, zone, 0, 0, 1, 1, BOOL, true);
+    this->registerOption(label, zone, 0, 0, 1, 1, BOOL);
   }
 
   void addCheckButton(const char* label, FAUSTFLOAT* zone) override {
@@ -101,8 +108,7 @@ public:
     FAUSTFLOAT min,
     FAUSTFLOAT max,
     FAUSTFLOAT step,
-    OPTTYPE type,
-    bool reset = false) {
+    OPTTYPE type) {
 
     // TODO: do something with the rest of this stuff
     bool matched = 0;
@@ -117,14 +123,7 @@ public:
     if (!matched) {
       LOGF << "Unmatched option " << fullLabel;
     }
-    if (reset) resets.push_back(ptr);
   }
-
-  void resetOptions() {
-    for (auto &opt : resets) {
-      *opt = 0;
-    }
-  };
 };
 
 // Possibly this should extend Module
@@ -165,7 +164,6 @@ public:
     prepBuffers(nframes);
     fDSP->
       compute(nframes, inBuffer, outBuffer);
-    opts.resetOptions();
     postBuffers(nframes);
   }
 
@@ -184,6 +182,9 @@ protected:
    * Copy the relevant data into inBuffer
    */
   virtual void prepBuffers(uint nframes) {
+    if (fDSP == nullptr) {
+      return;
+    }
     if (fDSP->getNumInputs() > 0)
       inBuffer[0] = GLOB.audioData.proc;
   }
@@ -192,6 +193,11 @@ protected:
    * Put the data back into the chain
    */
   virtual void postBuffers(uint nframes) {
-    GLOB.audioData.proc = *outBuffer;
+    if (fDSP->getNumInputs() > 0)
+      GLOB.audioData.proc = *outBuffer;
+    else
+      for (uint i = 0; i < nframes; i++) {
+        GLOB.audioData.proc[i] += outBuffer[0][i];
+      }
   }
 };

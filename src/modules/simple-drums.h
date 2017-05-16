@@ -35,7 +35,7 @@ class SimpleDrumsModule : public SynthModule {
 public:
   std::array<SimpleDrumVoice, 24> voices;
 
-  uint currentVoiceIdx;
+  uint currentVoiceIdx = 0 ;
 
   ui::ModuleScreen<SimpleDrumsModule> *screen;
 
@@ -43,13 +43,19 @@ public:
   ~SimpleDrumsModule();
 
   void process(uint nframes) override;
+
+  void display() override {
+    GLOB.ui.display(screen);
+  }
 };
 
 class SimpleDrumsScreen : public ui::ModuleScreen<SimpleDrumsModule> {
+  void drawOsc(NanoCanvas::Canvas& ctx, SimpleDrumVoice::Osc &osc);
+  void drawKbd(NanoCanvas::Canvas& ctx);
 private:
-  virtual void draw(NanoCanvas::Canvas& ctx) override;
+  void draw(NanoCanvas::Canvas& ctx) override;
 
-  virtual bool keypress(ui::Key key) override;
+  bool keypress(ui::Key key) override;
 
 public:
 

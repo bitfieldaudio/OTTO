@@ -59,6 +59,9 @@ bool MainUI::globKeyPre(ui::Key key) {
   case K_MIXER:
     GLOB.mixer.display();
     break;
+  case K_SYNTH:
+    GLOB.synth.display();
+    break;
   default:
     return false;
   }

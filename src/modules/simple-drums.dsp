@@ -9,7 +9,7 @@ import("filters.lib");
 
 // ENVELOPE
 att = vslider("/h:ENVELOPE/ATTACK", 0, 0, 2, 0.02);
-sus = vslider("/h:ENVELOPE/SUSTAIN", 1, 0, 2, 0.01);
+sus = vslider("/h:ENVELOPE/SUSTAIN", 1, 0, 2, 0.02);
 rel = vslider("/h:ENVELOPE/RELEASE", 0.2, 0, 2, 0.02);
 gate = button("/TRIGGER");
 
@@ -30,4 +30,4 @@ drumOsc = (dOsc + n)  <: resonlp(cutoff,resonance, 1) * filterOn, _ * (1-filterO
     dOsc = square((freqMod) * freq) * (1 - noiseLVL);
     n = noise * noiseLVL;
   };
-process = hgroup("ENVELOPE", env) * (vgroup("D1", drumOsc) + vgroup("D2", drumOsc) )<: *(1), *(1);
+process = hgroup("ENVELOPE", env) * (vgroup("D1", drumOsc) + vgroup("D2", drumOsc) );

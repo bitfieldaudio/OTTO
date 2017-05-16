@@ -113,7 +113,7 @@ class faust_simple_drums : public dsp {
 		
 	}
 	virtual int getNumOutputs() {
-		return 2;
+		return 1;
 		
 	}
 	virtual int getInputRate(int channel) {
@@ -132,10 +132,6 @@ class faust_simple_drums : public dsp {
 		int rate;
 		switch (channel) {
 			case 0: {
-				rate = 1;
-				break;
-			}
-			case 1: {
 				rate = 1;
 				break;
 			}
@@ -283,7 +279,7 @@ class faust_simple_drums : public dsp {
 		ui_interface->openHorizontalBox("ENVELOPE");
 		ui_interface->addVerticalSlider("ATTACK", &fVslider2, 0.0f, 0.0f, 2.0f, 0.0199999996f);
 		ui_interface->addVerticalSlider("RELEASE", &fVslider1, 0.200000003f, 0.0f, 2.0f, 0.0199999996f);
-		ui_interface->addVerticalSlider("SUSTAIN", &fVslider0, 1.0f, 0.0f, 2.0f, 0.00999999978f);
+		ui_interface->addVerticalSlider("SUSTAIN", &fVslider0, 1.0f, 0.0f, 2.0f, 0.0199999996f);
 		ui_interface->closeBox();
 		ui_interface->addButton("TRIGGER",&fButton0);
 		ui_interface->closeBox();
@@ -292,7 +288,6 @@ class faust_simple_drums : public dsp {
 	
 	virtual void compute(int count, FAUSTFLOAT** inputs, FAUSTFLOAT** outputs) {
 		FAUSTFLOAT* output0 = outputs[0];
-		FAUSTFLOAT* output1 = outputs[1];
 		float fSlow0 = float(fVslider0);
 		float fSlow1 = float(fButton0);
 		float fSlow2 = float(fVslider1);
@@ -375,9 +370,7 @@ class faust_simple_drums : public dsp {
 			float fTemp20 = floorf(fTemp18);
 			float fTemp21 = ((fSlow28 * float(iRec2[0])) + (fSlow29 * (fTemp17 - ((fVec5[((IOTA - iTemp19) & 4095)] * (fTemp20 + (1.0f - fTemp18))) + ((fTemp18 - fTemp20) * fVec5[((IOTA - (iTemp19 + 1)) & 4095)])))));
 			fRec7[0] = (fTemp21 - (fSlow40 * ((fSlow41 * fRec7[2]) + (fSlow42 * fRec7[1]))));
-			float fTemp22 = (fSlow0 * ((iTemp1?((fRec0[0] < 0.0f)?0.0f:(iTemp1?(fSlow8 * fRec0[0]):1.0f)):((fRec0[0] < fSlow4)?((fSlow7 * (fSlow6 - fRec0[0])) + 1.0f):0.0f)) * ((fSlow13 * (fRec1[0] + (fRec1[2] + (2.0f * fRec1[1])))) + ((fSlow26 * fTemp21) + ((fSlow35 * fTemp11) + (fSlow39 * (fRec7[0] + (fRec7[2] + (2.0f * fRec7[1])))))))));
-			output0[i] = FAUSTFLOAT(fTemp22);
-			output1[i] = FAUSTFLOAT(fTemp22);
+			output0[i] = FAUSTFLOAT((fSlow0 * ((iTemp1?((fRec0[0] < 0.0f)?0.0f:(iTemp1?(fSlow8 * fRec0[0]):1.0f)):((fRec0[0] < fSlow4)?((fSlow7 * (fSlow6 - fRec0[0])) + 1.0f):0.0f)) * ((fSlow13 * (fRec1[0] + (fRec1[2] + (2.0f * fRec1[1])))) + ((fSlow26 * fTemp21) + ((fSlow35 * fTemp11) + (fSlow39 * (fRec7[0] + (fRec7[2] + (2.0f * fRec7[1]))))))))));
 			fVec0[1] = fVec0[0];
 			iVec1[1] = iVec1[0];
 			fRec0[1] = fRec0[0];
