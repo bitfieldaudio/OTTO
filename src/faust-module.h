@@ -1,7 +1,7 @@
 #include "faust.h"
 #include "module.h"
 
-class FaustSynthModule : public SynthModule, public FaustWrapper {
+class FaustSynthModule : public module::SynthModule, public FaustWrapper {
   bool lastTrig;
 protected:
   float *frequency;
@@ -9,7 +9,7 @@ protected:
   bool trigger;
 public:
 
-  FaustSynthModule(dsp *fDSP, std::map<std::string, FAUSTFLOAT**> opts) :
+  FaustSynthModule(dsp *fDSP, std::shared_ptr<module::Data> opts) :
     FaustWrapper (fDSP, opts) {}
 
   void process(uint nframes) override {

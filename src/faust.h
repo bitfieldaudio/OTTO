@@ -23,10 +23,10 @@ class FaustOptions : public UI {
 
 public:
 
-  std::map<std::string, FAUSTFLOAT**> optMap;
+  std::shared_ptr<module::Data> data;
 
   FaustOptions() {}
-  FaustOptions(std::map<std::string, FAUSTFLOAT**> optMap) : optMap (optMap) {}
+  FaustOptions(std::shared_ptr<module::Data> data) : data (data) {}
 
   void openTabBox(const char* label) override {
     if (strcmp(label, "0x00") != 0)
@@ -113,9 +113,9 @@ public:
     // TODO: do something with the rest of this stuff
     bool matched = 0;
     std::string fullLabel = boxPrefix + label;
-    for (auto &opt : optMap) {
+    for (auto &opt : data->fields) {
       if (opt.first == fullLabel) {
-        *opt.second = ptr;
+        opt.second->dataPtr = ptr;
         matched = 1;
         break;
       }
@@ -146,12 +146,14 @@ public:
     delete fDSP;
   };
 
-  FaustWrapper(dsp *DSP, std::map<std::string, FAUSTFLOAT**> optMap) :
-    opts (optMap),
+  FaustWrapper(dsp *DSP, std::shared_ptr<module::Data> data) :
+    opts (data),
     fDSP (DSP)
   {
-    fDSP->init(GLOB.samplerate);
-    fDSP->buildUserInterface(&opts);
+    GLOB.events.preInit.add([&]() {
+      fDSP->init(GLOB.samplerate);
+      fDSP->buildUserInterface(&opts);
+    });
     inBuffer =
       (FAUSTFLOAT **) malloc(sizeof(FAUSTFLOAT **) * fDSP->getNumInputs());
     outBuffer =

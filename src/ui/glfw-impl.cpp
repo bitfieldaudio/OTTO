@@ -94,10 +94,26 @@ static ui::Key keyboardKey(int xKey, int mods) {
 
 
 static void key(GLFWwindow* window, int key, int scancode, int action, int mods) {
+  using namespace ui;
   MainUI& self = GLOB.ui;
-  ui::Key k = keyboardKey(key, mods);
+  Key k = keyboardKey(key, mods);
   if (action == GLFW_PRESS) {
     self.keypress(k);
+  } else if (action == GLFW_REPEAT) {
+    switch (k) {
+    case K_RED_UP:
+    case K_RED_DOWN:
+    case K_BLUE_UP:
+    case K_BLUE_DOWN:
+    case K_WHITE_UP:
+    case K_WHITE_DOWN:
+    case K_GREEN_UP:
+    case K_GREEN_DOWN:
+    case K_LEFT:
+    case K_RIGHT:
+      self.keypress(k);
+    default: break;
+    }
   } else if (action == GLFW_RELEASE) {
     self.keyrelease(k);
   }

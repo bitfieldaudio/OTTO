@@ -1,39 +1,21 @@
 #pragma once
 
 #include <vector>
+#include <functional>
 #include <plog/Log.h>
 #include "module.h"
-
-template<typename...Args>
-  class EventHandler {
-public:
-  Module *owner;
-  void (*handler)(Args..., Module*);
-
-  EventHandler(Module *owner, void (*handler)(Args..., Module*)) {
-    this->owner = owner;
-    this->handler = handler;
-  }
-
-  void operator()(Args... args) {
-    handler(args..., owner);
-  }
-};
 
 template<typename ...Args>
 class Dispatcher {
 private:
-  std::vector<EventHandler<Args...>> handlers;
+  std::vector<std::function<void(Args...)>> handlers;
 public:
   Dispatcher() {
     LOGD << "new dispatcher";
   };
 
-  unsigned int add(Module *owner, void (*handler)(Args..., Module*)) {
-    LOGD << "Adding an event";
-    EventHandler< Args...> *h = new EventHandler< Args...>(owner, handler);
-    this->handlers.push_back(*h);
-    LOGD << &handlers.front();
+  unsigned int add(std::function<void(Args...)> handler) {
+    handlers.push_back(handler);
     return this->handlers.size() - 1;
   }
 
@@ -43,7 +25,6 @@ public:
 
   void runAll(Args... args) {
     for (auto handler: this->handlers)  {
-      //LOGD << "Running event handlers";
       handler(args...);
     }
   }

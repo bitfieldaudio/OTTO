@@ -5,7 +5,7 @@
 #include "../util/tapebuffer.h"
 
 
-class MixerModule : public Module {
+class MixerModule : public module::Module {
 
   struct {
     float level = 0.5;

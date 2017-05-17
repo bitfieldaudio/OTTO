@@ -223,17 +223,14 @@ void JackAudio::process(uint nframes) {
       case MidiEvent::NOTE_OFF:
         mEvent.type = MidiEvent::NOTE_OFF;
         GLOB.midiEvents.push_back(new NoteOffEvent(mEvent));
-        LOGD << "Recieved NOTE_OFF event";
         break;
       case MidiEvent::NOTE_ON:
         mEvent.type = MidiEvent::NOTE_ON;
         GLOB.midiEvents.push_back(new NoteOnEvent(mEvent));
-        LOGD << "Recieved NOTE_ON event";
         break;
       case MidiEvent::CONTROL_CHANGE:
         mEvent.type = MidiEvent::CONTROL_CHANGE;
         GLOB.midiEvents.push_back(new ControlChangeEvent(mEvent));
-        LOGD << "Recieved CONTROL_CHANGE event";
         break;
       }
     }

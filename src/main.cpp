@@ -20,18 +20,21 @@ int main(int argc, char *argv[]) {
   midi::generateFreqTable(440);
 
   GLOB.running = true;
+  GLOB.synth.registerModule(new SimpleDrumsModule());
+  GLOB.events.preInit();
   GLOB.jackAudio.init();
   GLOB.tapedeck.init();
   GLOB.mixer.init();
   GLOB.ui.init();
-  GLOB.synth.registerModule(new SimpleDrumsModule());
+  GLOB.events.postInit();
   while(GLOB.running == true);
 
   LOGI << "Exitting";
-
+  GLOB.events.preExit();
   GLOB.ui.exit();
   GLOB.mixer.exit();
   GLOB.tapedeck.exit();
   GLOB.jackAudio.exit();
+  GLOB.events.preExit();
   return 0;
 }

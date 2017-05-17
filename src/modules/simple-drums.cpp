@@ -4,28 +4,7 @@
 #include "../ui/utils.h"
 
 SimpleDrumVoice::SimpleDrumVoice() : FaustWrapper(
-  new faust_simple_drums(), {
-
-    {"D1/FREQ",          &D1.freq},
-    {"D1/NOISE",         &D1.noiseLvL},
-    {"D1/TONE_DECAY",    &D1.toneDecay},
-    {"D1/CUTOFF",        &D1.cutoff},
-    {"D1/FILTER_SWITCH", &D1.filterSwitch},
-    {"D1/DECAY_GRAPH",   &D1.decayGraph},
-
-    {"D2/FREQ",          &D2.freq},
-    {"D2/NOISE",         &D2.noiseLvL},
-    {"D2/TONE_DECAY",    &D2.toneDecay},
-    {"D2/CUTOFF",        &D2.cutoff},
-    {"D2/FILTER_SWITCH", &D2.filterSwitch},
-    {"D2/DECAY_GRAPH",   &D2.decayGraph},
-
-    {"ENVELOPE/ATTACK",  &envelope.attack},
-    {"ENVELOPE/RELEASE", &envelope.attack},
-    {"ENVELOPE/SUSTAIN", &envelope.attack},
-
-    {"TRIGGER",          &trigger},
-  }) {
+  new faust_simple_drums(), std::shared_ptr<Data>(&data)) {
   LOGD << "SimpleDrumVoice";
 }
 
@@ -42,11 +21,11 @@ void SimpleDrumsModule::process(uint nframes) {
     if (nEvent->type == MidiEvent::NOTE_ON) {
       NoteOnEvent *event = dynamic_cast<NoteOnEvent*>(nEvent);
       currentVoiceIdx = event->key % 24;
-      *voices[currentVoiceIdx].trigger = 1;
+      voices[currentVoiceIdx].data.trigger = 1;
     }
     if (nEvent->type == MidiEvent::NOTE_OFF) {
       NoteOffEvent *event = dynamic_cast<NoteOffEvent*>(nEvent);
-      *voices[event->key % 24].trigger = 0;
+      voices[event->key % 24].data.trigger = 0;
     }
   };
   for (auto &voice : voices) {
@@ -57,26 +36,26 @@ void SimpleDrumsModule::process(uint nframes) {
 bool SimpleDrumsScreen::keypress(ui::Key key) {
   using namespace ui;
   auto &voice = module->voices[module->currentVoiceIdx];
-  auto &osc = GLOB.ui.keys[K_SHIFT] ? voice.D2 : voice.D1;
+  auto &osc = GLOB.ui.keys[K_SHIFT] ? voice.data.D2 : voice.data.D1;
   switch (key) {
   case K_RED_UP:
-    *osc.freq = top::withBounds(10, 500, *osc.freq + 4.9); break;
+    osc.freq.inc(); break;
   case K_RED_DOWN:
-    *osc.freq = top::withBounds(10, 500, *osc.freq - 4.9); break;
+    osc.freq.dec(); break;
   case K_BLUE_UP:
-    *osc.toneDecay = top::withBounds(-1, 1, *osc.toneDecay + 0.02); break;
+    osc.toneDecay.inc(); break;
   case K_BLUE_DOWN:
-    *osc.toneDecay = top::withBounds(-1, 1, *osc.toneDecay - 0.02); break;
+    osc.toneDecay.dec(); break;
   case K_WHITE_UP:
-    *osc.noiseLvL = top::withBounds(0, 1, *osc.noiseLvL + 0.01); break;
+    osc.noiseLvl.inc(); break;
   case K_WHITE_DOWN:
-    *osc.noiseLvL = top::withBounds(0, 1, *osc.noiseLvL - 0.01); break;
+    osc.noiseLvl.dec(); break;
   case K_GREEN_UP:
-    *osc.cutoff = top::withBounds(5, 5000, *osc.cutoff * 1.3); break;
+    osc.cutoff.inc(); break;
   case K_GREEN_DOWN:
-    *osc.cutoff = top::withBounds(5, 5000, *osc.cutoff / 1.3); break;
+    osc.cutoff.dec(); break;
   case K_GREEN_CLICK:
-    *osc.filterSwitch = !*osc.filterSwitch; break;
+    osc.filterSwitch.toggle(); break;
   }
 }
 
@@ -84,15 +63,15 @@ void SimpleDrumsScreen::draw(NanoCanvas::Canvas &ctx) {
   using namespace drawing;
   auto &voice = (module->voices[module->currentVoiceIdx]);
   ctx.save();
-  drawOsc(ctx, voice.D1);
+  drawOsc(ctx, voice.data.D1);
   ctx.translate(0, 75);
-  drawOsc(ctx, voice.D2);
+  drawOsc(ctx, voice.data.D2);
   ctx.restore();
 
   drawKbd(ctx);
 }
 
-void SimpleDrumsScreen::drawOsc(NanoCanvas::Canvas &ctx, SimpleDrumVoice::Osc &osc) {
+void SimpleDrumsScreen::drawOsc(NanoCanvas::Canvas &ctx, SimpleDrumVoice::Data::Osc &osc) {
   using namespace drawing;
 
 	ctx.globalAlpha(1.0);
@@ -173,7 +152,7 @@ void SimpleDrumsScreen::drawOsc(NanoCanvas::Canvas &ctx, SimpleDrumVoice::Osc &o
 	ctx.lineWidth(2.000000);
   ctx.save();
   ctx.translate(47.5, 47.5);
-  ctx.rotate(-0.75 * M_PI + 1.5 * M_PI * (*osc.freq - 10) / 500);
+  ctx.rotate(-0.75 * M_PI + 1.5 * M_PI * osc.freq.normalized());
 	ctx.moveTo(0, 0);
 	ctx.lineTo(0, -10.5);
   ctx.restore();
@@ -210,10 +189,10 @@ void SimpleDrumsScreen::drawOsc(NanoCanvas::Canvas &ctx, SimpleDrumVoice::Osc &o
 	ctx.strokeStyle(COLOR_GRAY70);
 	ctx.lineWidth(2.000000);
 	ctx.moveTo(95, 75);
-  if (*osc.decayGraph > 0)
-    ctx.bezierCurveTo(95, 75 - *osc.decayGraph * 65, 150 - *osc.decayGraph * 65, 20, 150, 20);
+  if (osc.decayGraph() > 0)
+    ctx.bezierCurveTo(95, 75 - osc.decayGraph() * 65, 150 - osc.decayGraph() * 65, 20, 150, 20);
   else
-    ctx.bezierCurveTo(95 - *osc.decayGraph * 65, 75, 150, 20 - *osc.decayGraph * 65, 150, 20);
+    ctx.bezierCurveTo(95 - osc.decayGraph() * 65, 75, 150, 20 - osc.decayGraph() * 65, 150, 20);
 	ctx.stroke();
 
 // #DECAY_SETTING
@@ -221,10 +200,10 @@ void SimpleDrumsScreen::drawOsc(NanoCanvas::Canvas &ctx, SimpleDrumVoice::Osc &o
 	ctx.strokeStyle(COLOR_BLUE);
 	ctx.lineWidth(2.000000);
 	ctx.moveTo(95, 75);
-  if (*osc.toneDecay > 0)
-    ctx.bezierCurveTo(95, 75 - *osc.toneDecay * 65, 150 - *osc.toneDecay * 65, 20, 150, 20);
+  if (osc.toneDecay() > 0)
+    ctx.bezierCurveTo(95, 75 - osc.toneDecay() * 65, 150 - osc.toneDecay() * 65, 20, 150, 20);
   else
-    ctx.bezierCurveTo(95 - *osc.toneDecay * 65, 75, 150, 20 - *osc.toneDecay * 65, 150, 20);
+    ctx.bezierCurveTo(95 - osc.toneDecay() * 65, 75, 150, 20 - osc.toneDecay() * 65, 150, 20);
 	ctx.stroke();
 
 // #NOISE_G
@@ -287,7 +266,7 @@ void SimpleDrumsScreen::drawOsc(NanoCanvas::Canvas &ctx, SimpleDrumVoice::Osc &o
 	ctx.lineWidth(2.000000);
   ctx.save();
 	ctx.translate(197.5, 47.5);
-  ctx.rotate(-0.75 * M_PI + 1.5 * M_PI * (*osc.noiseLvL));
+  ctx.rotate(-0.75 * M_PI + 1.5 * M_PI * osc.noiseLvl.normalized());
 	ctx.moveTo(0, 0);
 	ctx.lineTo(0, -10.5);
   ctx.restore();
@@ -350,7 +329,7 @@ void SimpleDrumsScreen::drawOsc(NanoCanvas::Canvas &ctx, SimpleDrumVoice::Osc &o
 	ctx.save();
 	ctx.beginPath();
 	ctx.transform(-0.707180, 0.707033, -0.707180, -0.707033, 0.000000, 0.000000);
-	ctx.strokeStyle(*osc.filterSwitch ? COLOR_GRAY70 : COLOR_GRAY60);
+	ctx.strokeStyle(osc.filterSwitch() ? COLOR_GRAY70 : COLOR_GRAY60);
 	ctx.miterLimit(4);
 	ctx.lineWidth(1.000000);
 	ctx.moveTo(-136.735470, -232.384740);
@@ -388,9 +367,9 @@ void SimpleDrumsScreen::drawOsc(NanoCanvas::Canvas &ctx, SimpleDrumVoice::Osc &o
 // #FILTER_MARKER
   ctx.save();
 	ctx.beginPath();
-	ctx.fillStyle(*osc.filterSwitch ? COLOR_GREEN : COLOR_GRAY60);
+	ctx.fillStyle(osc.filterSwitch() ? COLOR_GREEN : COLOR_GRAY60);
 	ctx.translate(272.5, 47.5);
-  ctx.rotate(-0.75 * M_PI + 1.5 * M_PI * (*osc.cutoff - 5) / 5000);
+  ctx.rotate(-0.75 * M_PI + 1.5 * M_PI * osc.cutoff.normalized());
   ctx.circle(0, -22.5, 3);
 	ctx.fill();
   ctx.restore();
@@ -415,7 +394,7 @@ void SimpleDrumsScreen::drawKbd(NanoCanvas::Canvas &ctx) {
 
   ctx.strokeStyle(COLOR_GRAY60);
   ctx.lineJoin(Canvas::LineJoin::ROUND);
-  ctx.lineWidth(1);
+  ctx.lineWidth(1.5);
 
   // WHITE KEYS
   {

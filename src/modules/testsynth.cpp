@@ -5,14 +5,14 @@
 #include "../ui/mainui.h"
 #include <string>
 
-TestSynth::TestSynth() :
-  FaustSynthModule(new faust_testsynth(), {
-    {"FREQ", &frequency}
-  }),
-  screen (new TestSynthScreen(this))
-{
-  //MainUI::getInstance().currentScreen = screen;
-}
+// TestSynth::TestSynth() :
+//   FaustSynthModule(new faust_testsynth(), {
+//     {"FREQ", &frequency}
+//   }),
+//   screen (new TestSynthScreen(this))
+// {
+//   //MainUI::getInstance().currentScreen = screen;
+// }
 
 TestSynth::~TestSynth() {
   delete fDSP;

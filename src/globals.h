@@ -50,11 +50,11 @@ struct __Globals_t {
 
   std::atomic_bool running;
 
-  SynthModuleDispatcher synth;
-  EffectModuleDispatcher effect1;
-  EffectModuleDispatcher effect2;
-  EffectModuleDispatcher effect3;
-  EffectModuleDispatcher effect4;
+  module::SynthModuleDispatcher synth;
+  module::EffectModuleDispatcher effect1;
+  module::EffectModuleDispatcher effect2;
+  module::EffectModuleDispatcher effect3;
+  module::EffectModuleDispatcher effect4;
   TapeModule tapedeck;
   MixerModule mixer;
 };

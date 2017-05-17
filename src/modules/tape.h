@@ -13,7 +13,7 @@
 
 typedef int BarPos;
 
-class TapeModule : public Module {
+class TapeModule : public module::Module {
 
   float nextSpeed = 0;
 
