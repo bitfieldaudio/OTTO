@@ -14,12 +14,14 @@ public:
   class Field {
   public:
     float *dataPtr;
+    bool preserve = true;
 
     Field() {}
-    Field(float *dataPtr) : dataPtr(dataPtr) {}
+    Field(float *dataPtr, bool preserve = true) :
+      dataPtr(dataPtr), preserve(preserve) {}
 
-    virtual std::vector<char> serialize() {}
-    virtual void deserialize(std::vector<char> data) {}
+    virtual std::vector<char> serialize();
+    virtual void deserialize(std::vector<char> data);
   };
 
   std::map<std::string, std::shared_ptr<Field>> fields;
@@ -33,8 +35,9 @@ public:
   void addField(std::string name, std::shared_ptr<Field> field) {
     fields[name] = field;
   };
-  virtual std::vector<char> serialize() {}
-  virtual void deserialize(std::vector<char> data) {}
+  virtual std::vector<char> serialize();
+  virtual void deserialize(std::vector<char> data);
+
 };
 
 template<class T>
@@ -62,8 +65,9 @@ public:
     float min = 0,
     float max = 1,
     float step = 0.01,
-    float *dataPtr = new float) :
-    init (init), min(min), max(max), step(step), Field(dataPtr) {
+    bool preserve = false,
+    float *dataPtr = new float):
+    Field(dataPtr, preserve), init (init), min(min), max(max), step(step) {
     data->addField(name, std::shared_ptr<Opt<float>>(this));
   };
 
@@ -102,8 +106,9 @@ public:
   Opt(Data *data,
     std::string name,
     bool init = false,
+    bool preserve = false,
     float *dataPtr = new float) :
-    init (init), Field(dataPtr) {
+    Field(dataPtr, preserve), init (init) {
     data->addField(name, std::shared_ptr<Field>(this));
   };
   virtual bool toggle() {
@@ -151,8 +156,8 @@ template<class M>
 class ModuleDispatcher {
 protected:
 
-  std::vector<M*> modules;
-  uint currentModule;
+  std::map<std::string, std::shared_ptr<M>> modules;
+  std::string currentModule;
 
 public:
 
@@ -160,13 +165,17 @@ public:
     modules[currentModule]->display();
   }
 
-  M *getCurrent() {
+  std::shared_ptr<M> getCurrent() {
     return modules[currentModule];
   }
 
-  uint registerModule(M *module) {
-    modules.push_back(module);
-    return modules.size() - 1;
+  void registerModule(std::string name, M *module) {
+    registerModule(name, std::shared_ptr<M>(module));
+  }
+
+  void registerModule(std::string name, std::shared_ptr<M> module) {
+    modules[name] = module;
+    currentModule = name;
   }
 
 };

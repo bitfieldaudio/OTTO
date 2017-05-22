@@ -12,6 +12,8 @@
 #include "../ui/mainui.h"
 #include "../ui/utils.h"
 
+using namespace top1;
+
 /************************************************/
 /* TapeModule Implementation                    */
 /************************************************/
@@ -129,7 +131,7 @@ void TapeModule::goToLoopOut() {
 
 // Audio Processing
 
-void TapeModule::process(uint nframes) {
+void TapeModule::preProcess(uint nframes) {
   // TODO: Linear speed changes are for pussies
   const float diff = nextSpeed - playing;
   if (diff > 0) {
@@ -138,11 +140,15 @@ void TapeModule::process(uint nframes) {
   if (diff < 0) {
     playing = playing - std::min(0.01f, -diff);
   }
-
-  static bool recLast = false;
-  static TapeBuffer::TapeSlice slice;
-
   memset(trackBuffer.data(), 0, sizeof(AudioFrame) * trackBuffer.size());
+  if (playing != 0) {
+    for (auto event : GLOB.midiEvents) {
+      if (event->type == MidiEvent::NOTE_ON) {
+        recording = true;
+        break;
+      }
+    }
+  }
   if (playing > 0) {
     int rframes = nframes * playing;
     auto data = tapeBuffer.readAllFW(rframes);
@@ -165,41 +171,6 @@ void TapeModule::process(uint nframes) {
         trackBuffer[i] = data[(int)i * (float)data.size()/((float)nframes)];
       }
     }
-    if (recording) {
-      std::vector<float> buf;
-      //TODO: Probably has some one-off errors
-      if (looping && diff > 0 && diff <= rframes) {
-        if (!recLast) {
-          slice = {pos, pos + diff};
-        }
-        for (int i = 0; i < diff; i++) {
-          buf.push_back(top::audio::mix(
-            trackBuffer[i][track - 1], GLOB.audioData.proc[i]));
-        }
-        tapeBuffer.writeFW(buf, track, slice);
-        tapeBuffer.goTo(loopSect.in + (rframes - diff));
-        buf.clear();
-        if (!recLast) {
-          slice = {loopSect.in, loopSect.in + rframes - diff};
-        }
-        for (uint i = 0; i < rframes - diff; i++) {
-          buf.push_back(top::audio::mix(
-            trackBuffer[i][track - 1], GLOB.audioData.proc[diff + i]));
-        }
-        tapeBuffer.writeFW(buf, track, slice);
-      } else {
-        if (!recLast) {
-          slice = {pos - rframes, pos};
-          LOGD << "Started recording";
-        }
-        for (uint i = 0; i < nframes; i++) {
-          buf.push_back(top::audio::mix(
-            trackBuffer[i][track - 1], GLOB.audioData.proc[i]));
-        }
-        tapeBuffer.writeFW(buf, track, slice);
-      }
-    }
-    recLast = recording;
   }
   if (playing < 0) {
     float speed = -playing;
@@ -223,6 +194,53 @@ void TapeModule::process(uint nframes) {
         trackBuffer[i] = data[(int)i * (float)data.size()/((float)nframes)];
       }
     }
+  }
+}
+
+void TapeModule::postProcess(uint nframes) {
+  static bool recLast = false;
+  static TapeBuffer::TapeSlice slice;
+
+  memset(trackBuffer.data(), 0, sizeof(AudioFrame) * trackBuffer.size());
+  if (playing > 0) {
+    int rframes = nframes * playing;
+    TapeTime pos = tapeBuffer.position();
+    int diff = loopSect.out - pos;
+    if (recording) {
+      std::vector<float> buf;
+      //TODO: Probably has some one-off errors
+      if (looping && diff > 0 && diff <= rframes) {
+        if (!recLast) {
+          slice = {pos, pos + diff};
+        }
+        for (int i = 0; i < diff; i++) {
+          buf.push_back(trackBuffer[i][track - 1] + GLOB.audioData.proc[i]);
+        }
+        tapeBuffer.writeFW(buf, track, slice);
+        tapeBuffer.goTo(loopSect.in + (rframes - diff));
+        buf.clear();
+        if (!recLast) {
+          slice = {loopSect.in, loopSect.in + rframes - diff};
+        }
+        for (uint i = 0; i < rframes - diff; i++) {
+          buf.push_back(trackBuffer[i][track - 1] + GLOB.audioData.proc[diff+i]);
+        }
+        tapeBuffer.writeFW(buf, track, slice);
+      } else {
+        if (!recLast) {
+          slice = {pos - rframes, pos};
+          LOGD << "Started recording";
+        }
+        for (uint i = 0; i < nframes; i++) {
+          buf.push_back(trackBuffer[i][track - 1] + GLOB.audioData.proc[i]);
+        }
+        tapeBuffer.writeFW(buf, track, slice);
+      }
+    }
+    recLast = recording;
+  }
+  if (playing < 0) {
+    float speed = -playing;
     if (recording) {
       std::vector<float> buf;
       //TODO: Probably has some one-off errors
@@ -230,27 +248,25 @@ void TapeModule::process(uint nframes) {
       int diff = pos - loopSect.in;
       if (looping && diff > 0 && diff <= nframes * speed) {
         for (uint i = 0; i < diff; i++) {
-          buf.push_back(top::audio::mix(
-            trackBuffer[i][track - 1], GLOB.audioData.proc[i]));
+          buf.push_back(trackBuffer[i][track - 1] + GLOB.audioData.proc[i]);
         }
         tapeBuffer.writeBW(buf, track, slice);
         tapeBuffer.goTo(loopSect.out - (nframes * speed - diff));
         buf.clear();
         for (uint i = 0; i < nframes * speed - diff; i++) {
-          buf.push_back(top::audio::mix(
-            trackBuffer[i][track - 1], GLOB.audioData.proc[diff + i]));
+          buf.push_back(trackBuffer[i][track - 1]+ GLOB.audioData.proc[diff+i]);
         }
         tapeBuffer.writeBW(buf, track, slice);
       } else {
         for (uint i = 0; i < nframes; i++) {
-          buf.push_back(top::audio::mix(
-            trackBuffer[i][track - 1], GLOB.audioData.proc[i]));
+          buf.push_back(trackBuffer[i][track - 1] + GLOB.audioData.proc[i]);
         }
         tapeBuffer.writeBW(buf, track, slice);
       }
     }
     recLast = recording;
   }
+
 }
 
 /************************************************/

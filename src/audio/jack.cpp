@@ -64,8 +64,10 @@ void JackAudio::init() {
   GLOB.audioData.input = (float *) malloc(bufferSize * sizeof(float));
   GLOB.audioData.proc  = (float *) malloc(bufferSize * sizeof(float));
 
-  LOGI << "Initialized JackAudio. Beginning processing";
+  LOGI << "Initialized JackAudio";
+}
 
+void JackAudio::startProcess() {
   processing = true;
 }
 
@@ -236,11 +238,12 @@ void JackAudio::process(uint nframes) {
     }
   }
 
+  GLOB.tapedeck.preProcess(nframes);
   GLOB.synth.process(nframes);
   GLOB.effect1.process(nframes);
   GLOB.effect2.process(nframes);
   GLOB.effect3.process(nframes);
   GLOB.effect4.process(nframes);
-  GLOB.tapedeck.process(nframes);
+  GLOB.tapedeck.postProcess(nframes);
   GLOB.mixer.process(nframes);
 }

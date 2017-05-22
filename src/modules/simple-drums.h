@@ -16,7 +16,7 @@ public:
       module::Opt<float> toneDecay   = {this, "TONE_DECAY", 0, -1, 1, 0.02};
       module::Opt<float> cutoff      = {this, "CUTOFF", 0, 10, 7000, 1.2};
       module::Opt<bool> filterSwitch = {this, "FILTER_SWITCH", true};
-      module::Opt<float> decayGraph  = {this, "DECAY_GRAPH", 0, -1, 1};
+      module::Opt<float> decayGraph  = {this, "DECAY_GRAPH", 0, -1, 1, 0,false};
     } D1, D2;
 
     struct : module::Data {
@@ -25,7 +25,7 @@ public:
       module::Opt<float> release     = {this, "RELEASE", 0.2, 0, 2, 0.02};
     } envelope;
 
-    module::Opt<bool> trigger = {this, "TRIGGER", false};
+    module::Opt<bool> trigger = {this, "TRIGGER", false, false};
 
     Data() {
       subGroup("D1", D1);

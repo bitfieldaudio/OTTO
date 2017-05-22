@@ -22,9 +22,9 @@ public:
 
   std::array<AudioFrame, 256> trackBuffer;
 
-  TapeBuffer tapeBuffer;
+  top1::TapeBuffer tapeBuffer;
 
-  const static uint nTracks = TapeBuffer::nTracks;
+  const static uint nTracks = top1::TapeBuffer::nTracks;
 
   TapeModule();
   TapeModule(TapeModule&) = delete;
@@ -39,19 +39,20 @@ public:
   std::atomic<float> playing;
   std::atomic_bool looping;
 
-  Section<TapeTime> loopSect;
+  Section<top1::TapeTime> loopSect;
 
   uint overruns = 0;
 
-  void process(uint nframes);
+  void preProcess(uint nframes);
+  void postProcess(uint nframes);
 
   void play(float speed);
   void stop();
   void record();
   void stopRecord();
 
-  TapeTime getBarTime(BarPos bar);
-  TapeTime getBarTimeRel(BarPos bar);
+  top1::TapeTime getBarTime(BarPos bar);
+  top1::TapeTime getBarTimeRel(BarPos bar);
   void goToBar(BarPos bar);
   void goToBarRel(BarPos bars);
 
@@ -60,7 +61,7 @@ public:
   void goToLoopIn();
   void goToLoopOut();
 
-  BarPos closestBar(TapeTime time);
+  BarPos closestBar(top1::TapeTime time);
 
   void display();
 };

@@ -13,6 +13,7 @@
 #include "../utils.h"
 #include <plog/Log.h>
 
+namespace top1 {
 typedef int TapeTime;
 
 /**
@@ -167,3 +168,4 @@ public:
   }
 
 };
+}

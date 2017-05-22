@@ -3,122 +3,127 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <memory>
 #include <cstdlib>
 #include <cinttypes>
 #include <plog/Log.h>
 
 #include "../utils.h"
+#include "serialization.h"
 
-class TOP1File {
+namespace top1 {
+
+typedef char byte;
+typedef uint32_t u4b;
+typedef uint16_t u2b;
+
+struct ReadException : public std::exception {
+  enum Type {
+    END_OF_FILE,
+    UNEXPECTED_CHUNK,
+    INVALID_SIZE,
+    POSITION_MISMATCH,
+  } type;
+
+  std::string message = "No error message";
+
+  const char * what () const throw () {
+    return message.c_str();
+  }
+
+  ReadException() {};
+  ReadException(std::string message) : message (message) {};
+  ReadException(Type type) : type (type) {};
+  ReadException(Type type, std::string message) :
+    type (type),
+    message (message) {};
+};
+
+class File {
 public:
-  typedef char byte;
-  typedef uint32_t u4b;
-  typedef uint16_t u2b;
+
+  std::string path;
+
+  struct Field {
+    virtual size_t size() const = 0;
+    virtual void read(File *file) = 0;
+    virtual void write(File *file) = 0;
+  };
 
   struct ChunkFCC {
     u4b name;
 
     ChunkFCC() {};
+    ChunkFCC(u4b name) : name(name) {};
     ChunkFCC(const char *str) {
       name = *((u4b *)str);
     }
 
-    bool operator==(ChunkFCC other) {
+    bool operator==(const ChunkFCC &other) const {
       return name == other.name;
     }
-    bool operator!=(ChunkFCC other) {
+    bool operator!=(const ChunkFCC &other) const {
       return name != other.name;
     }
 
-    std::string str() {
+    std::string str() const {
       return std::string((char *) &name, 4);
     }
   };
 
-  struct Chunk {
-    ChunkFCC id;
-    u4b  size = 0;
-
+  class Chunk {
+  protected:
+    std::vector<Field*> fields;
+  public:
+    const ChunkFCC id;
+    u4b size = 0;
     int offset = -1;
 
     Chunk() {};
-    Chunk(ChunkFCC id, u4b size) : id (id), size (size) {};
+    Chunk(ChunkFCC id) : id ( id) {};
+
+    template<class T>
+    void addField(T &field);
+
+    void subChunk(Chunk &subChunk);
+
+    virtual void read(File *file);
+    virtual void write(File *file);
   };
-
-  struct HeaderChunk : public Chunk {
-    u2b  version = 1;
-    u2b  tracks   = 4;
-    u4b  samplerate = 44100;
-    u2b  samplesize = 32;
-
-    const static ChunkFCC fcc;
-
-    HeaderChunk() : Chunk(fcc, 10){};
-    HeaderChunk(Chunk chunk) : Chunk(chunk) {}
-  } header;
-
-  struct SliceChunk {
-    u4b  inPos;
-    u4b  outPos;
-  };
-
-  struct TrackSlicesChunk : public Chunk {
-    u4b  trackNum;
-    u4b  count = 0;
-    SliceChunk slices[2048];
-
-    const static ChunkFCC fcc;
-    const static uint chunkSize = 4 + 4 + sizeof(SliceChunk) * 2048;
-
-    TrackSlicesChunk(u4b track) : trackNum(track), Chunk(fcc, chunkSize) {};
-    TrackSlicesChunk() : Chunk(fcc, chunkSize) {};
-    TrackSlicesChunk(Chunk chunk) : Chunk(chunk) {}
-  };
-
-  struct SlicesChunk : public Chunk {
-    TrackSlicesChunk tracks[4] {{0}, {1}, {2}, {4}};
-
-    const static ChunkFCC fcc;
-
-    SlicesChunk() : Chunk(fcc, 4 * 8 + 4 * TrackSlicesChunk::chunkSize) {};
-    SlicesChunk(Chunk chunk) : Chunk(chunk) {}
-  } slices;
-
-  struct AudioChunk : public Chunk {
-    const static ChunkFCC fcc;
-
-    AudioChunk() : Chunk(fcc, 0) {};
-    AudioChunk(Chunk chunk) : Chunk(chunk) {}
-  } audioChunk;
-
-private:
+protected:
   std::fstream fileStream;
+  std::vector<Chunk *> chunks;
 
-  void readBytes(byte *bytes, int length);
-  void readBytes(ChunkFCC &bytes);
-  void readBytes(u4b &bytes);
-  void readBytes(u2b &bytes);
-
-  void writeBytes(byte *bytes, int length);
-  void writeBytes(ChunkFCC &bytes);
-  void writeBytes(u4b &bytes);
-  void writeBytes(u2b &bytes);
-
-  void fseek(uint pos);
-
-  bool skipChunkR(Chunk chunk);
-  bool skipChunkW(Chunk chunk);
-
-  template<class CT>
-  CT readChunk();
-
-  template<class CT>
-  CT readChunk(Chunk chunk);
-
-  template<class CT>
-  void writeChunk(CT &chunk);
+  void addChunk(Chunk &chunk);
 
 public:
+
+  template<class T>
+  void readBytes(T *ptr, int length);
+  template<class T>
+  void readBytes(T &bytes);
+
+  template<class T>
+  T readBytes();
+
+  template<class T>
+  void writeBytes(T *ptr, int length);
+  template<class T>
+  void writeBytes(T &bytes);
+
+  void fseek(uint pos);
+  uint rpos() {return fileStream.tellg(); }
+  uint wpos() {return fileStream.tellp(); }
+
+  bool skipChunkR(Chunk &chunk);
+  bool skipChunkW(Chunk &chunk);
+
+  Chunk getChunk();
+
+  void writeChunks();
+
+  void readChunks();
+
   struct Error {
     enum {
       NONE,
@@ -137,23 +142,76 @@ public:
     }
   } error;
 
-  TOP1File(std::string path) {
+  File() {}
+  File(std::string path) {
     open(path);
   }
+
+  virtual ~File() {};
 
   void open(std::string path);
   void close();
   void flush();
 
-  void writeFile();
-
-  void readSlices();
-  void writeSlices();
-
-  void seek(int pos);
-
-  uint write(AudioFrame* data, uint nframes);
-
-  uint read(AudioFrame* data, uint nframes);
-
+  virtual void writeFile();
+  virtual void readFile();
 };
+
+template<class T>
+struct TypedField : public File::Field {
+  T *data;
+
+  TypedField(T *data) : data (data) {}
+
+  size_t size() const override {
+    return sizeof(T);
+  }
+
+  void read(File *file) override {
+    *data = file->readBytes<T>();
+  }
+  void write(File *file) override {
+    file->writeBytes<T>(*data);
+  }
+};
+
+template<class T>
+void File::Chunk::addField(T &field) {
+  Field *tField = new TypedField<T>(&field);
+  fields.push_back(tField);
+  size += tField->size();
+}
+
+template<class T>
+void File::readBytes(T *ptr, int length) {
+  fileStream.read((char *)ptr, sizeof(T) * length);
+  if (fileStream.eof())
+    throw ReadException(ReadException::END_OF_FILE, "readBytes: EOF");
+}
+
+template<class T>
+void File::readBytes(T &bytes) {
+  fileStream.read((char*) &bytes, sizeof(bytes));
+  if (fileStream.eof())
+    throw ReadException(ReadException::END_OF_FILE, "readBytes: EOF");
+}
+
+template<class T>
+T File::readBytes() {
+  T bytes;
+  readBytes<T>(bytes);
+  return bytes;
+}
+
+template<class T>
+void File::writeBytes(T *ptr, int length) {
+  fileStream.write((char *) ptr, sizeof(T) * length);
+}
+
+template<class T>
+void File::writeBytes(T &bytes) {
+  // LOGD << bytes.str();
+  fileStream.write((char*) &bytes, sizeof(bytes));
+}
+
+}

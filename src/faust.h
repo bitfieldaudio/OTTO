@@ -151,15 +151,16 @@ public:
     fDSP (DSP)
   {
     GLOB.events.preInit.add([&]() {
-      fDSP->init(GLOB.samplerate);
-      fDSP->buildUserInterface(&opts);
-    });
-    inBuffer =
-      (FAUSTFLOAT **) malloc(sizeof(FAUSTFLOAT **) * fDSP->getNumInputs());
-    outBuffer =
-      (FAUSTFLOAT **) malloc(sizeof(FAUSTFLOAT **) * fDSP->getNumOutputs());
-    initBuffers();
-    LOGD << "Constructed a FaustWrapper";
+       fDSP->init(GLOB.samplerate);
+       fDSP->buildUserInterface(&opts);
+     });
+    GLOB.events.postInit.add([&]() {
+       inBuffer =
+         (FAUSTFLOAT **) malloc(sizeof(FAUSTFLOAT **) * fDSP->getNumInputs());
+       outBuffer =
+         (FAUSTFLOAT **) malloc(sizeof(FAUSTFLOAT **) * fDSP->getNumOutputs());
+       initBuffers();
+     });
   }
 
   virtual void process(uint nframes) {

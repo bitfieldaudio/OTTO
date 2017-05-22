@@ -3,7 +3,9 @@
 #include <cmath>
 #include <algorithm>
 #include "../globals.h"
-#include "top1file.h"
+#include "tapefile.h"
+
+namespace top1 {
 
 /*******************************************/
 /*  TapeBuffer Implementation              */
@@ -25,7 +27,7 @@ void TapeBuffer::exit() {
 void TapeBuffer::threadRoutine() {
   movePlaypointAbs(0);
 
-  TOP1File file (GLOB.project->path);
+  TapeFile file (GLOB.project->path);
   const static uint FRAMEBUF_SIZE = RingBuffer::SIZE / 2;
   std::array<AudioFrame, FRAMEBUF_SIZE> framebuf;
 
@@ -177,8 +179,8 @@ writeFileMetadata:
     tsc.count = 0;
     for (auto slice : ts) {
       tsc.slices[tsc.count] = {
-        (TOP1File::u4b)slice.in,
-        (TOP1File::u4b)slice.out
+        (u4b)slice.in,
+        (u4b)slice.out
       };
       tsc.count++;
     }
@@ -467,4 +469,5 @@ void TapeBuffer::drop(uint track) {
   readData.notify_all();
   clipboard.done.wait(lock);
   trackSlices[track - 1].addSlice(slice);
+}
 }
