@@ -14,7 +14,7 @@ public:
       module::Opt<float> freq        = {this, "FREQ", 80, 5, 500, 4.95};
       module::Opt<float> noiseLvl    = {this, "NOISE", 0.5, 0, 1, 0.01};
       module::Opt<float> toneDecay   = {this, "TONE_DECAY", 0, -1, 1, 0.02};
-      module::Opt<float> cutoff      = {this, "CUTOFF", 0, 10, 7000, 1.2};
+      module::Opt<float> cutoff      = {this, "CUTOFF", 7000, 10, 7000, 1.3};
       module::Opt<bool> filterSwitch = {this, "FILTER_SWITCH", true};
       module::Opt<float> decayGraph  = {this, "DECAY_GRAPH", 0, -1, 1, 0,false};
     } D1, D2;

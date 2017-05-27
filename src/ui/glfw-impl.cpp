@@ -162,7 +162,7 @@ void MainUI::mainRoutine() {
   NanoCanvas::Canvas canvas(vg, drawing::WIDTH, drawing::HEIGHT);
   drawing::initUtils(canvas);
 
-	while (!glfwWindowShouldClose(window) && GLOB.running)
+	while (!glfwWindowShouldClose(window) && GLOB.running())
 	{
 		double mx, my, t, dt, spent;
 		int winWidth, winHeight;
@@ -218,5 +218,5 @@ void MainUI::mainRoutine() {
 
 	glfwTerminate();
 
-  GLOB.running = false;
+  GLOB.exit();
 }

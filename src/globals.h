@@ -4,6 +4,7 @@
 #include <string>
 #include <array>
 #include <atomic>
+#include <condition_variable>
 
 #include "events.h"
 #include "module.h"
@@ -20,7 +21,11 @@ struct Project {
   int bpm = 120;
 };
 
-struct __Globals_t {
+class __Globals_t {
+private:
+  std::atomic_bool isRunning = {true};
+public:
+  std::condition_variable notifyExit;
 
   struct {
     Dispatcher<> preInit;
@@ -48,8 +53,6 @@ struct __Globals_t {
   volatile bool doProcess;
   volatile int status;
 
-  std::atomic_bool running;
-
   module::SynthModuleDispatcher synth;
   module::EffectModuleDispatcher effect1;
   module::EffectModuleDispatcher effect2;
@@ -57,6 +60,16 @@ struct __Globals_t {
   module::EffectModuleDispatcher effect4;
   TapeModule tapedeck;
   MixerModule mixer;
+
+  //TODO: status codes etc
+  void exit() {
+    isRunning = false;
+    notifyExit.notify_all();
+  }
+
+  bool running() const {
+    return isRunning;
+  }
 };
 
 extern __Globals_t GLOB;

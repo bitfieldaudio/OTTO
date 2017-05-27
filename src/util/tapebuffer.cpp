@@ -31,7 +31,7 @@ void TapeBuffer::threadRoutine() {
   const static uint FRAMEBUF_SIZE = RingBuffer::SIZE / 2;
   std::array<AudioFrame, FRAMEBUF_SIZE> framebuf;
 
-  if (file.error.log()) GLOB.running = false;
+  if (file.error.log()) GLOB.exit();
 
   for (uint t = 0; t < 4; t++) {
     auto &slices = file.slices.tracks[t];
@@ -46,7 +46,7 @@ void TapeBuffer::threadRoutine() {
 
 
 waitData:
-  while(GLOB.running) {
+  while(GLOB.running()) {
     std::unique_lock<std::recursive_mutex> lock (threadLock);
 
     // Keep some space in the middle to avoid overlap fights
@@ -186,7 +186,7 @@ writeFileMetadata:
     }
     ts.changed = false;
   }
-  if (GLOB.running) goto waitData;
+  if (GLOB.running()) goto waitData;
   file.close();
 }
 
@@ -226,22 +226,7 @@ void TapeBuffer::movePlaypointAbs(int newPos) {
 }
 
 // Fancy wrapper methods!
-
-std::vector<float> TapeBuffer::readFW(uint nframes, uint track) {
-  uint n = std::min<int>(buffer.lengthFW, nframes);
-
-  std::vector<float> ret;
-
-  for (uint i = 0; i < n; i++) {
-   ret.push_back(buffer[buffer.playIdx + i][track - 1]);
-  }
-
-  movePlaypointRel(n);
-
-  return ret;
-}
-
-std::vector<AudioFrame> TapeBuffer::readAllFW(uint nframes) {
+std::vector<AudioFrame> TapeBuffer::readFW(uint nframes) {
   uint n = std::min<int>(nframes, buffer.lengthFW);
 
   std::vector<AudioFrame> ret;
@@ -255,21 +240,7 @@ std::vector<AudioFrame> TapeBuffer::readAllFW(uint nframes) {
   return ret;
 }
 
-std::vector<float> TapeBuffer::readBW(uint nframes, uint track) {
-  uint n = std::min<int>(nframes, buffer.lengthBW);
-
-  std::vector<float> ret;
-
-  for (uint i = 0; i < n; i++) {
-    ret.push_back(buffer[buffer.playIdx - i][track - 1]);
-  }
-
-  movePlaypointRel(-n);
-
-  return ret;
-}
-
-std::vector<AudioFrame> TapeBuffer::readAllBW(uint nframes) {
+std::vector<AudioFrame> TapeBuffer::readBW(uint nframes) {
   uint n = std::min<int>(nframes, buffer.lengthBW);
 
   std::vector<AudioFrame> ret;
@@ -283,14 +254,18 @@ std::vector<AudioFrame> TapeBuffer::readAllBW(uint nframes) {
   return ret;
 }
 
-uint TapeBuffer::writeFW(std::vector<float> data, uint track, TapeBuffer::TapeSlice &slice) {
+uint TapeBuffer::writeFW(
+  std::vector<AudioFrame> data,
+  uint offset,
+  std::function<AudioFrame(AudioFrame, AudioFrame)> writeFunc)
+{
   std::unique_lock<std::recursive_mutex> lock (threadLock);
   int n = std::min<int>(data.size(), buffer.SIZE - buffer.lengthFW);
 
-  int beginPos = buffer.playIdx - n;
+  int beginPos = buffer.playIdx - n - offset;
 
   for (int i = 0; i < n; i++) {
-    buffer[beginPos + i][track - 1] = data[i];
+    buffer[beginPos + i] = writeFunc(buffer[beginPos + i], data[i]);
   }
 
   if (buffer.notWritten) {
@@ -303,9 +278,6 @@ uint TapeBuffer::writeFW(std::vector<float> data, uint track, TapeBuffer::TapeSl
     buffer.notWritten.out = buffer.playIdx;
   }
 
-  slice.out = playPoint;
-  trackSlices[track-1].addSlice(slice);
-
   buffer.lengthBW =
     std::max<int>(data.size(), buffer.lengthBW);
   buffer.lengthFW =
@@ -314,14 +286,18 @@ uint TapeBuffer::writeFW(std::vector<float> data, uint track, TapeBuffer::TapeSl
   return data.size() - n;
 }
 
-uint TapeBuffer::writeBW(std::vector<float> data, uint track, TapeBuffer::TapeSlice &slice) {
+uint TapeBuffer::writeBW(
+  std::vector<AudioFrame> data,
+  uint offset,
+  std::function<AudioFrame(AudioFrame, AudioFrame)> writeFunc)
+{
   std::unique_lock<std::recursive_mutex> lock (threadLock);
   int n = std::min<int>(data.size(), buffer.SIZE - buffer.lengthBW);
 
-  int endPos = buffer.playIdx + n;
+  int endPos = buffer.playIdx + n + offset;
 
   for (int i = 0; i < n; i++) {
-    buffer[endPos - i][track - 1] = data[i];
+    buffer[endPos - i]= writeFunc(buffer[endPos - i], data[i]);
   }
 
   if (buffer.notWritten) {
@@ -333,9 +309,6 @@ uint TapeBuffer::writeBW(std::vector<float> data, uint track, TapeBuffer::TapeSl
     buffer.notWritten.in = buffer.playIdx;
     buffer.notWritten.out = endPos;
   }
-
-  slice.in = playPoint;
-  trackSlices[track-1].addSlice(slice);
 
   buffer.lengthFW =
     std::max<int>(data.size(), buffer.lengthFW);

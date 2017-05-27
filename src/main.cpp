@@ -1,3 +1,4 @@
+#include <mutex>
 #include <plog/Log.h>
 #include <plog/Appenders/ConsoleAppender.h>
 
@@ -18,8 +19,9 @@ int main(int argc, char *argv[]) {
   GLOB.project = new Project();
 
   midi::generateFreqTable(440);
+  std::mutex mut;
+  std::unique_lock<std::mutex> lock (mut);
 
-  GLOB.running = true;
   GLOB.synth.registerModule("SIMPLE_DRUMS", new SimpleDrumsModule());
   GLOB.events.preInit();
   GLOB.jackAudio.init();
@@ -28,7 +30,8 @@ int main(int argc, char *argv[]) {
   GLOB.ui.init();
   GLOB.events.postInit();
   GLOB.jackAudio.startProcess();
-  while(GLOB.running == true);
+
+  GLOB.notifyExit.wait(lock);
 
   LOGI << "Exitting";
   GLOB.events.preExit();

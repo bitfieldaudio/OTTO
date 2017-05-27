@@ -9,6 +9,7 @@
 #include <thread>
 #include <mutex>
 #include <condition_variable>
+#include <functional>
 #include <fmt/format.h>
 #include "../utils.h"
 #include <plog/Log.h>
@@ -110,43 +111,45 @@ public:
   /**
    * Reads forwards along the tape, moving the playPoint.
    * @param nframes number of frames to read.
-   * @param track track to read from
    * @return a vector of length nframes with the data.
    */
-  std::vector<float> readFW(uint nframes, uint track);
-  std::vector<AudioFrame> readAllFW(uint nframes);
+  std::vector<AudioFrame> readFW(uint nframes);
 
   /**
    * Reads backwards along the tape, moving the playPoint.
    * @param nframes number of frames to read.
-   * @param track track to read from
    * @return a vector of length nframes with the data. The data will be in the
    *        read order, meaning reverse.
    */
-  std::vector<float> readBW(uint nframes, uint track);
-  std::vector<AudioFrame> readAllBW(uint nframes);
+  std::vector<AudioFrame> readBW(uint nframes);
 
   /**
    * Write data to the tape.
-   * NB: The data will be written at playPoint - data.size(), meaning the end of
-   * the data will be written at the current playPoint.
-   * @param data the data to write. data.back() will be at playPoint - 1
-   * @param track the track to write to
-   * @param slice this slice will be extended by this recorded data
+   * @param data the data to write.
+   * @param offset the end of the data will be at playPoint - offset
+   * @param writeFunc the function used to write the data. Run for each frame,
+   *   recieves the original and the new data as arguments.
    * @return the amount of unwritten frames
    */
-  uint writeFW(std::vector<float> data, uint track, TapeSlice &slice);
+  uint writeFW(
+    std::vector<AudioFrame> data,
+    uint offset = 0,
+    std::function<AudioFrame(AudioFrame, AudioFrame)> writeFunc
+      = [](AudioFrame o, AudioFrame n) { return n; });
 
   /**
    * Write data to the tape.
-   * NB: The data will be written beginning at playPoint
-   * @param data the data to write, in reverse order. data.back() will be at
-   *          playPoint, data.front() will be at playPoint + data.size();
-   * @param track the track to write to
-   * @param slice this slice will be extended by this recorded data
+   * @param data the data to write. Will be written in reverse order.
+   * @param offset the end of the data will be at playPoint + offset
+   * @param writeFunc the function used to write the data. Run for each frame,
+   *   recieves the original and the new data as arguments.
    * @return the amount of unwritten frames
    */
-  uint writeBW(std::vector<float> data, uint track, TapeSlice &slice);
+  uint writeBW(
+    std::vector<AudioFrame> data,
+    uint offset = 0,
+    std::function<AudioFrame(AudioFrame, AudioFrame)> writeFunc
+    = [](AudioFrame o, AudioFrame n) { return n; });
 
   /**
    * Jumps to another position in the tape

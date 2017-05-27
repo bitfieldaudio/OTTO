@@ -21,7 +21,7 @@ void JackAudio::init() {
 
   if (!jackStatus & JackServerStarted) {
     LOGF << "Failed to start jack server";
-    GLOB.running = false;
+    GLOB.exit();
     return;
   }
 
@@ -53,7 +53,7 @@ void JackAudio::init() {
 
   if (jack_activate(client)) {
     LOGF << "Cannot activate JACK client";
-    GLOB.running = false;
+    GLOB.exit();
     return;
   }
 
@@ -74,13 +74,13 @@ void JackAudio::startProcess() {
 void JackAudio::exit() {
   LOGI << "Closing Jack client";
   jack_client_close(client);
-  GLOB.running = false;
+  GLOB.exit();
 }
 
 void JackAudio::samplerateCallback(uint srate) {
   if (srate != GLOB.samplerate) {
     LOGF << "Jack changed the sample rate!";
-    GLOB.running = false;
+    GLOB.exit();
   }
 }
 
@@ -96,7 +96,7 @@ void JackAudio::setupPorts() {
 
   if (ports.input == NULL) {
     LOGF << "Couldn't register input port";
-    GLOB.running = false;
+    GLOB.exit();
     return;
   }
 
@@ -110,25 +110,25 @@ void JackAudio::setupPorts() {
 
   if (inputs.empty()) {
     LOGF << "Couldn't find physical input port";
-    GLOB.running = false;
+    GLOB.exit();
     return;
   }
   if (outputs.empty()) {
     LOGF << "Couldn't find physical output ports";
-    GLOB.running = false;
+    GLOB.exit();
     return;
   }
 
   bool s;
 
   s = connectPorts(jack_port_name(ports.input), inputs[0]);
-  if (!s) {GLOB.running = false; return;}
+  if (!s) {GLOB.exit(); return;}
 
   s = connectPorts(outputs[0 % outputs.size()], jack_port_name(ports.outL));
-  if (!s) {GLOB.running = false; return;}
+  if (!s) {GLOB.exit(); return;}
 
   s = connectPorts(outputs[1 % outputs.size()], jack_port_name(ports.outR));
-  if (!s) {GLOB.running = false; return;}
+  if (!s) {GLOB.exit(); return;}
 
 
   // Midi ports
@@ -137,7 +137,7 @@ void JackAudio::setupPorts() {
 
   if (ports.midiIn == NULL) {
     LOGF << "Couldn't register midi_in port";
-    GLOB.running = false;
+    GLOB.exit();
     return;
   }
 
@@ -190,7 +190,7 @@ void shutdown(void *arg) {
 }
 
 void JackAudio::process(uint nframes) {
-  if ( not (processing && GLOB.running)) return;
+  if ( not (processing && GLOB.running())) return;
   GLOB.audioData.outL = (float *) jack_port_get_buffer(ports.outL, nframes);
   GLOB.audioData.outR = (float *) jack_port_get_buffer(ports.outR, nframes);
   GLOB.audioData.input = (float *) jack_port_get_buffer(ports.input, nframes);
@@ -236,6 +236,10 @@ void JackAudio::process(uint nframes) {
         break;
       }
     }
+  }
+
+  for (uint i = 0; i < nframes; i ++) {
+    GLOB.audioData.proc[i] = GLOB.audioData.input[i];
   }
 
   GLOB.tapedeck.preProcess(nframes);
