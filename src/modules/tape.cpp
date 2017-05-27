@@ -17,41 +17,72 @@ using namespace top1;
 /************************************************/
 /* TapeModule::State Implementation             */
 /************************************************/
-const TapeModule::State::Do TapeModule::States::STOPPED  = {
-  .id            = 'STOP',
-  .switchTracks  = true,
-  .tapeOps       = true,
-  .playAudio     = false,
-  .easeIn        = true,
-  .startRec      = true,
-  .spool         = true,
-  .loop          = false,
-};
-const TapeModule::State::Do TapeModule::States::SPOOLING = {
-  .id            = 'SPOL',
-  .switchTracks  = true,
-  .tapeOps       = false,
-  .playAudio     = true,
-  .easeIn        = true,
-  .startRec      = false,
-  .spool         = true,
-  .loop          = false,
-};
-const TapeModule::State::Do TapeModule::States::PLAYING = {
-  .id            = 'PLAY',
-  .switchTracks  = true,
-  .tapeOps       = false,
-  .playAudio     = true,
-  .easeIn        = true,
-  .startRec      = true,
-  .spool         = true,
-  .loop          = true,
-};
 
-bool TapeModule::State::playing() const { return *this == States::PLAYING; }
-bool TapeModule::State::spooling() const { return *this == States::SPOOLING; }
-bool TapeModule::State::stopped() const { return *this == States::STOPPED; }
-bool TapeModule::State::recording() const { return readyToRec && playing(); }
+bool TapeModule::State::doSwitchTracks() const {
+  return !recording();
+}
+bool TapeModule::State::doTapeOps() const {
+  return stopped();
+}
+bool TapeModule::State::doPlayAudio() const {
+  return playSpeed != 0;
+}
+bool TapeModule::State::doEaseIn() const {
+  return !recording();
+}
+bool TapeModule::State::doStartRec() const {
+  return !spooling() && !recording();
+}
+bool TapeModule::State::doStartSpool() const {
+  return !recording();
+}
+bool TapeModule::State::doLoop() const {
+  return playing();
+}
+bool TapeModule::State::doJumps() const {
+  return stopped();
+}
+
+bool TapeModule::State::playing() const {
+  return playType == PLAYING;
+}
+bool TapeModule::State::spooling() const {
+  return playType == SPOOLING;
+}
+bool TapeModule::State::stopped() const {
+  return playType == STOPPED;
+}
+bool TapeModule::State::recording() const {
+  return readyToRec && playing();
+}
+
+// Playback control
+
+void TapeModule::State::play(float speed) {
+  playType = PLAYING;
+  nextSpeed = speed;
+}
+
+void TapeModule::State::spool(float speed) {
+  if (!doStartSpool()) return;
+  playType = SPOOLING;
+  nextSpeed = speed;
+}
+
+void TapeModule::State::stop() {
+  stopRecord();
+  playType = STOPPED;
+  nextSpeed = 0;
+}
+
+void TapeModule::State::startRecord() {
+  if (!doStartRec()) return;
+  readyToRec = true;
+}
+
+void TapeModule::State::stopRecord() {
+  readyToRec = false;
+}
 
 /************************************************/
 /* TapeModule Implementation                    */
@@ -71,26 +102,6 @@ void TapeModule::exit() {
 
 void TapeModule::display() {
   GLOB.ui.display(tapeScreen);
-}
-
-// Playback control
-
-void TapeModule::play(float speed) {
-  state = States::PLAYING;
-  state.nextSpeed = speed;
-}
-
-void TapeModule::stop() {
-  state = States::STOPPED;
-  state.nextSpeed = 0;
-}
-
-void TapeModule::record() {
-  state.readyToRec = true;
-}
-
-void TapeModule::stopRecord() {
-  state.readyToRec = false;
 }
 
 // Spooling and jumping
@@ -114,13 +125,11 @@ TapeTime TapeModule::getBarTimeRel(BarPos bar) {
 }
 
 void TapeModule::goToBar(BarPos bar) {
-  if (state.recording()) return;
-  tapeBuffer.goTo(getBarTime(bar));
+  if (state.doJumps()) tapeBuffer.goTo(getBarTime(bar));
 }
 
 void TapeModule::goToBarRel(BarPos bars) {
-  if (state.recording())
-  tapeBuffer.goTo(getBarTimeRel(bars));
+  if (state.doJumps()) tapeBuffer.goTo(getBarTimeRel(bars));
 }
 
 // Looping
@@ -166,46 +175,53 @@ void TapeModule::goToLoopOut() {
 // Audio Processing
 void TapeModule::preProcess(uint nframes) {
   // TODO: some sort of sigma shape
-  const float diff = state.nextSpeed - state.playSpeed;
-  if (diff > 0) {
-    state.playSpeed = state.playSpeed + std::min(0.01f, diff);
-  }
-  if (diff < 0) {
-    state.playSpeed = state.playSpeed - std::min(0.01f, -diff);
+  if (state.doEaseIn()) {
+    const float diff = state.nextSpeed - state.playSpeed;
+    if (diff > 0) {
+      state.playSpeed = state.playSpeed + std::min(0.01f, diff);
+    }
+    if (diff < 0) {
+      state.playSpeed = state.playSpeed - std::min(0.01f, -diff);
+      if (tapeBuffer.position() <= 0) {
+        state.playSpeed = 0;
+      }
+    }
+  } else {
+    state.playSpeed = state.nextSpeed;
   }
   memset(trackBuffer.data(), 0, sizeof(AudioFrame) * trackBuffer.size());
 
   auto playAudio = [this](uint at, uint nframes) {
     state.forPlayDir<void>([&] {
-        uint readSize = nframes * state.playSpeed;
-        auto data = tapeBuffer.readFW(readSize);
-        if (readSize == 0) data.emplace_back(0);
-        for (uint i = 0; i < nframes; i++) {
-          trackBuffer[at + i] = data[i * state.playSpeed];
-        }
-      }, [&] {
-        uint readSize = nframes * -state.playSpeed;
-        auto data = tapeBuffer.readBW(readSize);
-        if (readSize == 0) data.emplace_back(0);
-        for (uint i = 0; i < nframes; i++) {
-          trackBuffer[at + i] = data[i * -state.playSpeed];
-        }
-      });
+       uint readSize = nframes * state.playSpeed;
+       auto data = tapeBuffer.readFW(readSize);
+       if (readSize == 0) data.emplace_back(0);
+       for (uint i = 0; i < nframes; i++) {
+         trackBuffer[at + i] = data[i * state.playSpeed];
+       }
+     }, [&] {
+       uint readSize = nframes * -state.playSpeed;
+       auto data = tapeBuffer.readBW(readSize);
+       if (readSize == 0) data.emplace_back(0);
+       for (uint i = 0; i < nframes; i++) {
+         trackBuffer[at + i] = data[i * -state.playSpeed];
+       }
+     });
   };
 
   // Start recording by pressing a key
-  if (!state.recording() && state.DO.startRec && state.readyToRec) {
+  if (!state.recording() && state.doStartRec() && state.readyToRec) {
     for (auto event : GLOB.midiEvents) {
       if (event->type == MidiEvent::NOTE_ON) {
-        play(1);
+        state.play(1);
         break;
       }
     }
   }
 
-  if (state.DO.playAudio) {
+  if (state.doPlayAudio()) {
     TapeTime pos = tapeBuffer.position();
-    if (state.DO.loop && state.looping) {
+    if (state.doLoop() && state.looping) {
       TapeTime leftTillOut = state.forPlayDir<TapeTime>(
         [&] {return loopSect.out - pos;},
         [&] {return pos - loopSect.in;});
@@ -225,8 +241,10 @@ void TapeModule::preProcess(uint nframes) {
 }
 
 void TapeModule::postProcess(uint nframes) {
-  static bool recLast = false;
   TapeTime pos = tapeBuffer.position();
+  if (!state.recording() && state.recLast) {
+    recSect = {0,0};
+  }
   auto recAudio = [&](uint from, uint recFrames) {
     std::vector<AudioFrame> buf;
     state.forPlayDir<void>([&] {
@@ -264,7 +282,7 @@ void TapeModule::postProcess(uint nframes) {
   };
 
   if (state.recording()) {
-    if (state.DO.loop && state.looping) {
+    if (state.doLoop() && state.looping) {
       TapeTime leftTillOut = state.forPlayDir<TapeTime>(
         [&] {return loopSect.out - pos;},
         [&] {return pos - loopSect.in;});
@@ -273,6 +291,7 @@ void TapeModule::postProcess(uint nframes) {
         state.forPlayDir<void>(
           [&] {tapeBuffer.goTo(loopSect.in);},
           [&] {tapeBuffer.goTo(loopSect.out);});
+        recSect = {0,0};
         recAudio(leftTillOut, nframes - leftTillOut);
       } else {
         recAudio(0, nframes);
@@ -280,9 +299,6 @@ void TapeModule::postProcess(uint nframes) {
     } else {
       recAudio(0, nframes);
     }
-  }
-  if (!state.recording() && state.recLast) {
-    recSect = {-1,-1};
   }
   state.recLast = state.recording();
 }
@@ -295,7 +311,7 @@ bool TapeScreen::keypress(ui::Key key) {
   bool shift = GLOB.ui.keys[ui::K_SHIFT];
   switch (key) {
   case ui::K_REC:
-    module->record();
+    module->state.startRecord();
     return true;
   case ui::K_PLAY:
     if (GLOB.ui.keys[ui::K_REC]) {
@@ -316,11 +332,11 @@ bool TapeScreen::keypress(ui::Key key) {
     return true;
   case ui::K_LEFT:
     if (shift) module->goToBarRel(-1);
-    else module->play(-4);
+    else module->state.spool(-5);
     return true;
   case ui::K_RIGHT:
     if (shift) module->goToBarRel(1);
-    else module->play(4);
+    else module->state.spool(5);
     return true;
   case ui::K_LOOP:
     module->state.looping = !module->state.looping;
@@ -334,16 +350,16 @@ bool TapeScreen::keypress(ui::Key key) {
     else module->goToLoopOut();
     return true;
   case ui::K_CUT:
-    if (module->state.DO.tapeOps)
+    if (module->state.doTapeOps())
       module->tapeBuffer.trackSlices[module->state.track-1].cut(
         module->tapeBuffer.position());
     return true;
   case ui::K_LIFT:
-    if (module->state.DO.tapeOps)
+    if (module->state.doTapeOps())
       module->tapeBuffer.lift(module->state.track);
     return true;
   case ui::K_DROP:
-    if (module->state.DO.tapeOps)
+    if (module->state.doTapeOps())
       module->tapeBuffer.drop(module->state.track);
     return true;
   }
@@ -354,7 +370,7 @@ bool TapeScreen::keyrelease(ui::Key key) {
   switch (key) {
   case ui::K_REC:
     if (stopRecOnRelease) {
-      module->stopRecord();
+      module->state.stopRecord();
       return true;
     } else {
       stopRecOnRelease = true;
@@ -362,7 +378,7 @@ bool TapeScreen::keyrelease(ui::Key key) {
     }
   case ui::K_LEFT:
   case ui::K_RIGHT:
-    module->stop();
+    module->state.stop();
     return true;
   }
   return false;
@@ -800,6 +816,9 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
           ctx.stroke();
         }
       }
+    }
+    if (module->state.recording() && module->state.track-1== t) {
+      current = module->recSect;
     }
     if (current) {
       if (inView.overlaps(current)) {

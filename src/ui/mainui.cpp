@@ -37,10 +37,10 @@ bool MainUI::keyrelease(ui::Key key) {
 bool MainUI::globKeyPost(ui::Key key) {
   switch (key) {
   case ui::K_PLAY:
-    if (GLOB.tapedeck.state == TapeModule::States::PLAYING) {
-      GLOB.tapedeck.stop();
+    if (GLOB.tapedeck.state.playing()) {
+      GLOB.tapedeck.state.stop();
     } else {
-      GLOB.tapedeck.play(1);
+      GLOB.tapedeck.state.play();
     }
     return true;
   }

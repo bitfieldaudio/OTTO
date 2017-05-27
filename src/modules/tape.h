@@ -16,21 +16,20 @@ class TapeModule : public module::Module {
 public:
 
   struct State {
-    struct Do {
-      uint id           = 0;
-      bool switchTracks = true;
-      bool tapeOps      = true;
-      bool playAudio    = true;
-      bool easeIn       = true;
-      bool startRec     = true;
-      bool spool        = true;
-      bool loop         = true;
+    enum PlayType {
+      STOPPED = 0,
+      PLAYING,
+      SPOOLING
+    } playType;
 
-      bool operator == (const Do &other) const {return id == other.id; }
-      bool operator != (const Do &other) const {return id != other.id; }
-    };
-
-    Do DO;
+    bool doSwitchTracks() const;
+    bool doTapeOps() const;
+    bool doPlayAudio() const;
+    bool doEaseIn() const;
+    bool doStartRec() const;
+    bool doStartSpool() const;
+    bool doLoop() const;
+    bool doJumps() const;
 
     bool readyToRec = false;
     bool recLast    = false;
@@ -38,10 +37,6 @@ public:
     float nextSpeed = 0;
     uint track = 1;
     bool looping = false;
-
-    Do &operator = (const Do &newState) { DO = newState; return DO; }
-    bool operator == (const Do &other) const { return DO == other; }
-    bool operator != (const Do &other) const { return DO != other; }
 
     template<class T>
     T forPlayDir(std::function<T ()> forward, std::function<T ()> reverse) {
@@ -54,13 +49,13 @@ public:
     bool spooling() const;
     bool stopped() const;
 
-  } state;
+    void play(float speed = 1);
+    void spool(float speed = 5);
+    void stop();
+    void startRecord();
+    void stopRecord();
 
-  struct States {
-    const static State::Do STOPPED;
-    const static State::Do SPOOLING;
-    const static State::Do PLAYING;
-  };
+  } state;
 
   std::array<AudioFrame, 256> trackBuffer;
 
@@ -82,11 +77,6 @@ public:
 
   void preProcess(uint nframes);
   void postProcess(uint nframes);
-
-  void play(float speed);
-  void stop();
-  void record();
-  void stopRecord();
 
   top1::TapeTime getBarTime(BarPos bar);
   top1::TapeTime getBarTimeRel(BarPos bar);

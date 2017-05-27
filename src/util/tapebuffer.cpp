@@ -383,8 +383,10 @@ void TapeBuffer::TapeSliceSet::erase(TapeBuffer::TapeSlice slice) {
       break;
     case Section<>::CONTAINED:
       slices.erase(s);
-      slices.emplace(s.in, slice.in - 1);
-      slices.emplace(slice.out + 1, s.out);
+      if (s.in != slice.in)
+        slices.emplace(s.in, slice.in - 1);
+      if (s.out != slice.out)
+        slices.emplace(slice.out + 1, s.out);
       break;
     case Section<>::CONTAINS_IN:
       slices.erase(s);

@@ -94,5 +94,4 @@ inline void File::readBytes<std::array<TapeFile::SliceData, 2048>>(
     readBytes<u4b>(slice.outPos);
   }
 }
-
 }
