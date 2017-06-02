@@ -8,36 +8,13 @@
 /**************************************************/
 
 MixerModule::MixerModule() :
+  Module(&data),
   screen (new MixerScreen(this))
-{}
+{
+}
 
 void MixerModule::display() {
   GLOB.ui.display(screen);
-}
-
-// Getters & Setters
-
-bool MixerModule::trackMuted(int track) const {
-  return trackInfo[track-1].muted;
-}
-bool MixerModule::trackMuted(int track, bool newVal) {
-  return trackInfo[track-1].muted = newVal;
-}
-
-float MixerModule::trackPan(int track) const {
-  return trackInfo[track-1].pan;
-}
-float MixerModule::trackPan(int track, float newVal) {
-  return trackInfo[track-1].pan
-    = top::withBounds(-0.9, 0.9, top::round(newVal, 1));
-}
-
-float MixerModule::trackLevel(int track) const {
-  return trackInfo[track-1].level;
-}
-float MixerModule::trackLevel(int track, float newVal) {
-  return trackInfo[track-1].level
-    = top::withBounds(0, 0.99, top::round(newVal, 2));
 }
 
 // Mixing!
@@ -48,13 +25,13 @@ void MixerModule::process(uint nframes) {
   for (uint f = 0; f < nframes; f++) {
     float lMix = 0, rMix = 0;
     for (uint t = 0; t < 4 ; t++) {
-      if (!trackInfo[t].muted) {
-        lMix += trackBuffer[f][t] * trackInfo[t].level * (1-trackInfo[t].pan) / 2;
-        rMix += trackBuffer[f][t] * trackInfo[t].level * (1+trackInfo[t].pan) / 2;
+      if (!data.track[t].muted) {
+        lMix += trackBuffer[f][t] * data.track[t].level * (1-data.track[t].pan);
+        rMix += trackBuffer[f][t] * data.track[t].level * (1+data.track[t].pan);
       }
     }
-    GLOB.audioData.outL[f] = top::audio::mix(lMix, GLOB.audioData.proc[f]);
-    GLOB.audioData.outR[f] = top::audio::mix(rMix, GLOB.audioData.proc[f]);
+    GLOB.audioData.outL[f] = lMix + GLOB.audioData.proc[f];
+    GLOB.audioData.outR[f] = rMix + GLOB.audioData.proc[f];
   }
 }
 
@@ -78,44 +55,49 @@ bool MixerScreen::keypress(ui::Key key) {
   bool shift = GLOB.ui.keys[K_SHIFT];
   switch (key) {
   case K_RED_UP:
-    if (shift) module->panRight(1);
-    else module->levelUp(1);
+    if (shift) module->data.track[0].pan++;
+    else module->data.track[0].level++;
     return true;
   case K_RED_DOWN:
-    if (shift) module->panLeft(1);
-    else module->levelDown(1);
+    if (shift) module->data.track[0].pan--;
+    else module->data.track[0].level--;
     return true;
-  case K_RED_CLICK: module->toggleMute(1); return true;
-
+  case K_RED_CLICK:
+    module->data.track[0].muted.toggle();
+    return true;
   case K_BLUE_UP:
-    if (shift) module->panRight(2);
-    else module->levelUp(2);
+    if (shift) module->data.track[1].pan++;
+    else module->data.track[1].level++;
     return true;
   case K_BLUE_DOWN:
-    if (shift) module->panLeft(2);
-    else module->levelDown(2);
+    if (shift) module->data.track[1].pan--;
+    else module->data.track[1].level--;
     return true;
-  case K_BLUE_CLICK: module->toggleMute(2); return true;
-
+  case K_BLUE_CLICK:
+    module->data.track[1].muted.toggle();
+    return true;
   case K_WHITE_UP:
-    if (shift) module->panRight(3);
-    else module->levelUp(3);
+    if (shift) module->data.track[2].pan++;
+    else module->data.track[2].level++;
     return true;
   case K_WHITE_DOWN:
-    if (shift) module->panLeft(3);
-    else module->levelDown(3);
+    if (shift) module->data.track[2].pan--;
+    else module->data.track[2].level--;
     return true;
-  case K_WHITE_CLICK: module->toggleMute(3); return true;
-
+  case K_WHITE_CLICK:
+    module->data.track[2].muted.toggle();
+    return true;
   case K_GREEN_UP:
-    if (shift) module->panRight(4);
-    else module->levelUp(4);
+    if (shift) module->data.track[3].pan++;
+    else module->data.track[3].level++;
     return true;
   case K_GREEN_DOWN:
-    if (shift) module->panLeft(4);
-    else module->levelDown(4);
+    if (shift) module->data.track[3].pan--;
+    else module->data.track[3].level--;
     return true;
-  case K_GREEN_CLICK: module->toggleMute(4); return true;
+  case K_GREEN_CLICK:
+    module->data.track[3].muted.toggle();
+    return true;
   }
   return false;
 }
@@ -138,9 +120,9 @@ void MixerScreen::drawMixerSegment(
   case 3: trackCol = COLOR_WHITE; break;
   case 4: trackCol = COLOR_GREEN; break;
   }
-  Color muteCol = (module->trackMuted(track)) ? COLOR_RED : COLOR_GRAY60;
-  float mix = module->trackLevel(track);
-  float pan = module->trackPan(track);
+  Color muteCol = (module->data.track[track-1].muted) ? COLOR_RED : COLOR_GRAY60;
+  float mix = module->data.track[track-1].level;
+  float pan = module->data.track[track-1].pan;
 
   ctx.save();
   ctx.translate(x, y);

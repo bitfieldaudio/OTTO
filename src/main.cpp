@@ -22,8 +22,9 @@ int main(int argc, char *argv[]) {
   std::mutex mut;
   std::unique_lock<std::mutex> lock (mut);
 
-  GLOB.synth.registerModule("SIMPLE_DRUMS", new SimpleDrumsModule());
+  GLOB.synth.registerModule('SDRM', new SimpleDrumsModule());
   GLOB.events.preInit();
+  GLOB.dataFile.open("data.top1");
   GLOB.jackAudio.init();
   GLOB.tapedeck.init();
   GLOB.mixer.init();

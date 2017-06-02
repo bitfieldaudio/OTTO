@@ -6,41 +6,29 @@
 
 
 class MixerModule : public module::Module {
-
-  struct {
-    float level = 0.5;
-    float pan = 0;
-    bool muted = false;
-  } trackInfo[4];
-
   ui::ModuleScreen<MixerModule> *screen;
-
 public:
+
+  struct Data : module::Data {
+    struct TrackInfo : module::Data {
+      module::Opt<float> level = {this, "LEVEL", 0.5, 0, 0.99, 0.01};
+      module::Opt<float> pan = {this, "PAN", 0, -0.9, 0.9, 0.1};
+      module::Opt<bool> muted = {this, "MUTE", false};
+    } track[4];
+
+    Data() {
+      subGroup("TRACK1", track[0]);
+      subGroup("TRACK2", track[1]);
+      subGroup("TRACK3", track[2]);
+      subGroup("TRACK4", track[3]);
+    }
+  } data;
 
   MixerModule();
 
   void display();
 
   void process(uint nframes);
-
-  bool trackMuted(int track) const;
-  bool trackMuted(int track, bool newVal);
-
-  float trackPan(int track) const;
-  float trackPan(int track, float newVal);
-
-  float trackLevel(int track) const;
-  float trackLevel(int track, float newVal);
-
-  void mute(int track) { trackMuted(track, true); }
-  void unmute(int track) { trackMuted(track, false); }
-  void toggleMute(int track) { trackMuted(track, !trackMuted(track)); }
-
-  void levelUp(int track) { trackLevel(track, trackLevel(track) + 0.01); }
-  void levelDown(int track) { trackLevel(track, trackLevel(track) - 0.01); }
-
-  void panLeft(int track) { trackPan(track, trackPan(track) - 0.1); }
-  void panRight(int track) { trackPan(track, trackPan(track) + 0.1); }
 };
 
 class MixerScreen : public ui::ModuleScreen<MixerModule> {

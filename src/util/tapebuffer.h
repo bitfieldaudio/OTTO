@@ -7,12 +7,13 @@
 #include <set>
 #include <iterator>
 #include <thread>
-#include <mutex>
 #include <condition_variable>
 #include <functional>
 #include <fmt/format.h>
-#include "../utils.h"
 #include <plog/Log.h>
+
+#include "../utils.h"
+#include "tapefile.h"
 
 namespace top1 {
 typedef int TapeTime;
@@ -57,7 +58,6 @@ protected:
 
 
   std::thread diskThread;
-  std::recursive_mutex threadLock;
   std::condition_variable_any readData;
 
   std::atomic_bool newCuts;
@@ -70,15 +70,16 @@ protected:
 
   struct {
     std::vector<float> data;
-    uint fromTrack = 0;
+    Track fromTrack;
     TapeSlice fromSlice = {-1, -2};
-    uint toTrack = 0;
+    Track toTrack;
     TapeTime toTime = -1;
     std::mutex lock;
     std::condition_variable done;
   } clipboard;
 
 public:
+  TapeFile file;
 
   struct RingBuffer {
     const static uint SIZE = 262144; // 2^18
@@ -100,8 +101,6 @@ public:
   } buffer;
 
   TapeSliceSet trackSlices[4] = {{}, {}, {}, {}};
-
-  const static uint nTracks = 4;
 
   TapeBuffer();
 
@@ -161,8 +160,8 @@ public:
     return playPoint;
   }
 
-  void lift(uint track);
-  void drop(uint track);
+  void lift(Track track);
+  void drop(Track track);
 
   std::string timeStr() {
     double seconds = playPoint/(1.0 * 44100);
