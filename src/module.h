@@ -5,8 +5,11 @@
 #include <string>
 #include <memory>
 #include <cstdlib>
+#include <plog/Log.h>
 
 #include "utils.h"
+#include "util/tree.h"
+#include "util/serialization.h"
 
 namespace module {
 class Data {
@@ -20,11 +23,11 @@ public:
     Field(float *dataPtr, bool preserve = true) :
       dataPtr(dataPtr), preserve(preserve) {}
 
-    virtual std::vector<char> serialize();
-    virtual void deserialize(std::vector<char> data);
+    virtual top1::TreeNode serialize();
+    virtual void deserialize(top1::TreeNode);
   };
 
-  std::map<std::string, std::shared_ptr<Field>> fields;
+  std::map<std::string, Field*> fields;
 
   void subGroup(std::string name, Data &subgroup) {
     for (auto field : subgroup.fields) {
@@ -32,12 +35,11 @@ public:
     }
   }
 
-  void addField(std::string name, std::shared_ptr<Field> field) {
+  void addField(std::string name, Field *field) {
     fields[name] = field;
   };
-  virtual std::vector<char> serialize();
-  virtual void deserialize(std::vector<char> data);
-
+  virtual top1::TreeBranch serialize();
+  virtual void deserialize(top1::TreeBranch);
 };
 
 template<class T>
@@ -65,10 +67,10 @@ public:
     float min = 0,
     float max = 1,
     float step = 0.01,
-    bool preserve = false,
+    bool preserve = true,
     float *dataPtr = new float):
     Field(dataPtr, preserve), init (init), min(min), max(max), step(step) {
-    data->addField(name, std::shared_ptr<Opt<float>>(this));
+    data->addField(name, this);
   };
 
   virtual float inc() {
@@ -78,7 +80,7 @@ public:
     return set(*dataPtr - step);
   }
   virtual float set(float newVal) {
-    return *dataPtr = top::withBounds(min, max, newVal);
+    return *dataPtr = top1::withBounds(min, max, newVal);
   }
   virtual float get() const {
     return *dataPtr;
@@ -92,9 +94,12 @@ public:
   }
 
   float operator++() { return inc(); };
+  float operator++(int) { return inc(); };
   float operator--() { return dec(); };
+  float operator--(int) { return dec(); };
   float operator = (float newVal) { return set(newVal); };
-  float operator()() {return get(); }
+  float operator()() const { return get(); }
+  operator float() const { return get(); }
 };
 
 template<>
@@ -106,10 +111,10 @@ public:
   Opt(Data *data,
     std::string name,
     bool init = false,
-    bool preserve = false,
+    bool preserve = true,
     float *dataPtr = new float) :
     Field(dataPtr, preserve), init (init) {
-    data->addField(name, std::shared_ptr<Field>(this));
+    data->addField(name, this);
   };
   virtual bool toggle() {
     return *dataPtr = !*dataPtr;
@@ -117,7 +122,7 @@ public:
   virtual bool set(bool newVal) {
     return *dataPtr = newVal;
   }
-  virtual bool get() {
+  virtual bool get() const {
     return *dataPtr;
   }
   virtual void reset() {
@@ -125,7 +130,8 @@ public:
   }
 
   bool operator = (bool newVal) { return set(newVal); };
-  bool operator()() {return get(); }
+  bool operator()() const {return get(); }
+  operator bool() const { return get(); }
 };
 
 class ExpOpt : public Opt<float> {
@@ -149,9 +155,20 @@ public:
 
 class Module {
 public:
+  Data *data;
+  Module(Data *data) : data (data) {}
+  Module() {}
   virtual void init() {}
   virtual void exit() {}
   virtual void display() {};
+
+  virtual top1::TreeBranch serialize() {
+    if (data != nullptr) return data->serialize();
+    return top1::TreeBranch();
+  }
+  virtual void deserialize(top1::TreeBranch node) {
+    if (data != nullptr) data->deserialize(node);
+  }
 };
 
 class SynthModule : public Module {
@@ -165,15 +182,15 @@ public:
 };
 
 template<class M>
-class ModuleDispatcher {
+class ModuleDispatcher : public Module {
 protected:
 
-  std::map<std::string, std::shared_ptr<M>> modules;
-  std::string currentModule;
+  std::map<top1::fourCC, std::shared_ptr<M>> modules;
+  top1::fourCC currentModule;
 
 public:
 
-  void display() {
+  void display() override {
     modules[currentModule]->display();
   }
 
@@ -181,15 +198,45 @@ public:
     return modules[currentModule];
   }
 
-  void registerModule(std::string name, M *module) {
+  void registerModule(top1::fourCC name, M *module) {
     registerModule(name, std::shared_ptr<M>(module));
   }
 
-  void registerModule(std::string name, std::shared_ptr<M> module) {
+  void registerModule(top1::fourCC name, std::shared_ptr<M> module) {
     modules[name] = module;
     currentModule = name;
   }
 
+  top1::TreeBranch serialize() override {
+    std::vector<char> xs;
+    for (auto m : modules) {
+      auto md = m.second->serialize();
+      top1::serialize<top1::fourCC>(m.first, xs.end());
+      top1::serialize<uint>(md.size(), xs.end());
+      xs.reserve(xs.size() + md.size());
+      xs.insert(xs.end(), md.begin(), md.end());
+    }
+  }
+
+  void deserialize(top1::TreeBranch node) override {
+    node.visit([&](top1::TreeNode &node) {
+       if () {
+         n.
+       }
+     });
+    auto it = bytes.begin();
+    while (it < bytes.end()) {
+      uint name = top1::deserialize<uint>(it);
+      uint size = top1::deserialize<uint>(it);
+      auto m = modules.find(name);
+      if (m != modules.end()) {
+        m.second->deserialize(std::vector<char>(it, it + size));
+      } else {
+        it += size;
+        LOGE << "Unrecognized module";
+      }
+    }
+  }
 };
 
 class SynthModuleDispatcher : public ModuleDispatcher<SynthModule> {

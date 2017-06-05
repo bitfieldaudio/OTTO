@@ -6,6 +6,7 @@
 #include <memory>
 #include <cstdlib>
 #include <cinttypes>
+#include <mutex>
 #include <plog/Log.h>
 
 #include "../utils.h"
@@ -41,6 +42,12 @@ struct ReadException : public std::exception {
 
 class File {
 public:
+
+  /**
+   * Provided here for when accessing the file.
+   * This class will never lock the mutex itself.
+   */
+  std::recursive_mutex mutex;
 
   std::string path;
 

@@ -247,10 +247,7 @@ void JackAudio::process(uint nframes) {
 
   GLOB.tapedeck.preProcess(nframes);
   GLOB.synth.process(nframes);
-  GLOB.effect1.process(nframes);
-  GLOB.effect2.process(nframes);
-  GLOB.effect3.process(nframes);
-  GLOB.effect4.process(nframes);
+  GLOB.effect.process(nframes);
   GLOB.tapedeck.postProcess(nframes);
   GLOB.mixer.process(nframes);
 }

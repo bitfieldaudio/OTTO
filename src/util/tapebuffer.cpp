@@ -27,27 +27,27 @@ void TapeBuffer::exit() {
 void TapeBuffer::threadRoutine() {
   movePlaypointAbs(0);
 
-  TapeFile file (GLOB.project->path);
+  file.open(GLOB.project->path);
   const static uint FRAMEBUF_SIZE = RingBuffer::SIZE / 2;
   std::array<AudioFrame, FRAMEBUF_SIZE> framebuf;
 
   if (file.error.log()) GLOB.exit();
 
-  for (uint t = 0; t < 4; t++) {
-    auto &slices = file.slices.tracks[t];
-    for (uint i = 0; i < slices.count; i++) {
-      auto &slice = slices.slices[i];
-      trackSlices[t].addSlice({(int)slice.inPos, (int)slice.outPos});
-    }
-    trackSlices[t].changed = false;
-  }
+  Track::foreach([&](Track t) {
+     auto &slices = file.slices.tracks[t.idx];
+     for (uint i = 0; i < slices.count; i++) {
+       auto &slice = slices.slices[i];
+       trackSlices[t.idx].addSlice({(int)slice.inPos, (int)slice.outPos});
+     }
+     trackSlices[t.idx].changed = false;
+   });
 
   bool runAgain = false;
 
 
 waitData:
   while(GLOB.running()) {
-    std::unique_lock<std::recursive_mutex> lock (threadLock);
+    std::unique_lock<std::recursive_mutex> lock (file.mutex);
 
     // Keep some space in the middle to avoid overlap fights
     int desLength = buffer.SIZE / 2 - sizeof(AudioFrame);
@@ -121,8 +121,8 @@ waitData:
           file.seek(readSlice.in);
           file.read(framebuf.data(), readSlice.size());
           for (int i = 0; i < readSlice.size(); i++) {
-            clipboard.data.push_back(framebuf[i][clipboard.fromTrack]);
-            framebuf[i][clipboard.fromTrack] = 0;
+            clipboard.data.push_back(framebuf[i][clipboard.fromTrack.idx]);
+            framebuf[i][clipboard.fromTrack.idx] = 0;
           }
           file.seek(readSlice.in);
           file.write(framebuf.data(), readSlice.size());
@@ -142,19 +142,20 @@ waitData:
           clipboard.toTime
         };
         while(true) {
+          uint startIdx = writeSlice.in - clipboard.toTime;
           writeSlice.out = writeSlice.in + std::min<int>(
-            FRAMEBUF_SIZE, clipboard.data.size() - writeSlice.in + clipboard.toTime);
+            FRAMEBUF_SIZE,
+            clipboard.data.size() - startIdx);
 
-          if (!((ulong)writeSlice.size() <= clipboard.data.size())) break;
+          if ((ulong)writeSlice.size() > clipboard.data.size()) break;
           if (writeSlice.size() == 0) break;
 
           framebuf.fill(0);
           file.seek(writeSlice.in);
           file.read(framebuf.data(), writeSlice.size());
-          uint startIdx = writeSlice.in - clipboard.toTime;
           int i;
           for (i = 0; i < writeSlice.size(); i++) {
-            framebuf[i][clipboard.toTrack] = clipboard.data[startIdx + i];
+            framebuf[i][clipboard.toTrack.idx] = clipboard.data[startIdx + i];
           }
           LOGD << i;
           file.seek(writeSlice.in);
@@ -168,24 +169,26 @@ waitData:
       }
       clipboard.done.notify_all();
     }
+    // Write metadata
+    Track::foreach([&](Track t) {
+       auto &tsc = file.slices.tracks[t.idx];
+       auto &ts  = trackSlices[t.idx];
+       tsc.count = 0;
+       for (auto slice : ts) {
+         tsc.slices[tsc.count] = {
+           (u4b)slice.in,
+           (u4b)slice.out
+         };
+         tsc.count++;
+       }
+       ts.changed = false;
+     });
+    file.writeFile();
+
     if (runAgain) runAgain = false;
     else readData.wait(lock);
   }
 
-writeFileMetadata:
-  for (uint i = 0; i < 4; i++) {
-    auto &tsc = file.slices.tracks[i];
-    auto &ts  = trackSlices[i];
-    tsc.count = 0;
-    for (auto slice : ts) {
-      tsc.slices[tsc.count] = {
-        (u4b)slice.in,
-        (u4b)slice.out
-      };
-      tsc.count++;
-    }
-    ts.changed = false;
-  }
   if (GLOB.running()) goto waitData;
   file.close();
 }
@@ -195,7 +198,7 @@ void TapeBuffer::movePlaypointRel(int time) {
 }
 
 void TapeBuffer::movePlaypointAbs(int newPos) {
-  std::unique_lock<std::recursive_mutex> lock (threadLock);
+  std::unique_lock<std::recursive_mutex> lock (file.mutex);
   if (newPos < 0) {
     newPos = 0;
   }
@@ -259,7 +262,7 @@ uint TapeBuffer::writeFW(
   uint offset,
   std::function<AudioFrame(AudioFrame, AudioFrame)> writeFunc)
 {
-  std::unique_lock<std::recursive_mutex> lock (threadLock);
+  std::unique_lock<std::recursive_mutex> lock (file.mutex);
   int n = std::min<int>(data.size(), buffer.SIZE - buffer.lengthFW);
 
   int beginPos = buffer.playIdx - n - offset;
@@ -291,7 +294,7 @@ uint TapeBuffer::writeBW(
   uint offset,
   std::function<AudioFrame(AudioFrame, AudioFrame)> writeFunc)
 {
-  std::unique_lock<std::recursive_mutex> lock (threadLock);
+  std::unique_lock<std::recursive_mutex> lock (file.mutex);
   int n = std::min<int>(data.size(), buffer.SIZE - buffer.lengthBW);
 
   int endPos = buffer.playIdx + n + offset;
@@ -418,24 +421,24 @@ void TapeBuffer::TapeSliceSet::glue(TapeSlice s1, TapeSlice s2) {
   addSlice({std::min(s1.in, s2.in), std::max(s1.out, s2.out)});
 }
 
-void TapeBuffer::lift(uint track) {
-  TapeSliceSet &tss = trackSlices[track - 1];
+void TapeBuffer::lift(Track track) {
+  TapeSliceSet &tss = trackSlices[track.idx];
   if (!tss.inSlice(position())) {
     LOGD << "No slice to lift";
     return;
   }
   TapeSlice slice = tss.current(position());
   std::unique_lock<std::mutex> lock(clipboard.lock);
-  clipboard.fromTrack = track - 1;
+  clipboard.fromTrack = track;
   clipboard.fromSlice = slice;
   readData.notify_all();
   clipboard.done.wait(lock);
   tss.erase(slice);
 }
 
-void TapeBuffer::drop(uint track) {
+void TapeBuffer::drop(Track track) {
   std::unique_lock<std::mutex> lock(clipboard.lock);
-  clipboard.toTrack = track - 1;
+  clipboard.toTrack = track;
   clipboard.toTime = position();
   TapeSlice slice = {
     clipboard.toTime,
@@ -443,6 +446,6 @@ void TapeBuffer::drop(uint track) {
   };
   readData.notify_all();
   clipboard.done.wait(lock);
-  trackSlices[track - 1].addSlice(slice);
+  trackSlices[track.idx].addSlice(slice);
 }
 }

@@ -2,7 +2,6 @@
 #include "../audio/jack.h"
 #include "../globals.h"
 #include <plog/Log.h>
-#include <sndfile.hh>
 #include <thread>
 #include <cmath>
 #include <algorithm>
@@ -182,9 +181,7 @@ void TapeModule::preProcess(uint nframes) {
     }
     if (diff < 0) {
       state.playSpeed = state.playSpeed - std::min(0.01f, -diff);
-      if (tapeBuffer.position() <= 0) {
-        state.playSpeed = 0;
-      }
+      if (tapeBuffer.position() == 0) state.playSpeed = state.nextSpeed;
     }
   } else {
     state.playSpeed = state.nextSpeed;
@@ -196,13 +193,20 @@ void TapeModule::preProcess(uint nframes) {
        uint readSize = nframes * state.playSpeed;
        auto data = tapeBuffer.readFW(readSize);
        if (readSize == 0) data.emplace_back(0);
+       // TODO: This is bad, its an overflow, fix it goddammit!
+       // Happens every time a loop is longer than the tapebuffer
+       while (data.size() < readSize) data.emplace_back(0);
        for (uint i = 0; i < nframes; i++) {
          trackBuffer[at + i] = data[i * state.playSpeed];
        }
      }, [&] {
        uint readSize = nframes * -state.playSpeed;
+       if (tapeBuffer.position() == 0) readSize = 0;
        auto data = tapeBuffer.readBW(readSize);
        if (readSize == 0) data.emplace_back(0);
+       // TODO: This is bad, its an overflow, fix it goddammit!
+       // Happens every time a loop is longer than the tapebuffer
+       while (data.size() < readSize) data.emplace_back(0);
        for (uint i = 0; i < nframes; i++) {
          trackBuffer[at + i] = data[i * -state.playSpeed];
        }
@@ -255,7 +259,7 @@ void TapeModule::postProcess(uint nframes) {
        tapeBuffer.writeFW(buf,
         (nframes - from) * state.playSpeed - writeSize,
         [this](AudioFrame o, AudioFrame n) {
-          o[state.track - 1] += n[state.track - 1];
+          o[state.track.idx] += n[state.track.idx];
           return o;
         });
        if (recSect.size() < 1) {
@@ -270,7 +274,7 @@ void TapeModule::postProcess(uint nframes) {
        tapeBuffer.writeBW(buf,
         (nframes - from) * state.playSpeed - writeSize,
         [this](AudioFrame o, AudioFrame n) {
-          o[state.track - 1] += n[state.track - 1];
+          o[state.track.idx] += n[state.track.idx];
           return o;
         });
        if (recSect.size() < 1) {
@@ -278,7 +282,7 @@ void TapeModule::postProcess(uint nframes) {
        }
        recSect.in = pos + (nframes - from) * state.playSpeed + writeSize;
      });
-    tapeBuffer.trackSlices[state.track-1].addSlice(recSect);
+    tapeBuffer.trackSlices[state.track.idx].addSlice(recSect);
   };
 
   if (state.recording()) {
@@ -319,16 +323,16 @@ bool TapeScreen::keypress(ui::Key key) {
     }
     return false;
   case ui::K_TRACK_1:
-    module->state.track = 1;
+    module->state.track = Track::newName(1);
     return true;
   case ui::K_TRACK_2:
-    module->state.track = 2;
+    module->state.track = Track::newName(2);
     return true;
   case ui::K_TRACK_3:
-    module->state.track = 3;
+    module->state.track = Track::newName(3);
     return true;
   case ui::K_TRACK_4:
-    module->state.track = 4;
+    module->state.track = Track::newName(4);
     return true;
   case ui::K_LEFT:
     if (shift) module->goToBarRel(-1);
@@ -351,7 +355,7 @@ bool TapeScreen::keypress(ui::Key key) {
     return true;
   case ui::K_CUT:
     if (module->state.doTapeOps())
-      module->tapeBuffer.trackSlices[module->state.track-1].cut(
+      module->tapeBuffer.trackSlices[module->state.track.idx].cut(
         module->tapeBuffer.position());
     return true;
   case ui::K_LIFT:
@@ -786,13 +790,13 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
   }
 
   // Tracks
-  for(uint t = 0; t < 4; t++) {
-    auto slices = module->tapeBuffer.trackSlices[t].slicesIn(inView);
+  Track::foreach([&](Track t){
+    auto slices = module->tapeBuffer.trackSlices[t.idx].slicesIn(inView);
     TapeBuffer::TapeSlice current;
     float lW = 3;
     for (auto slice : slices) {
       Color col;
-      if (t + 1 == module->state.track) {
+      if (t == module->state.track) {
         if (slice.contains(module->tapeBuffer.position())) {
           if (!current) {
             current = slice;
@@ -811,13 +815,13 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
           ctx.beginPath();
           ctx.strokeStyle(col);
           ctx.lineWidth(lW);
-          ctx.moveTo(timeToCoord(std::max<float>(inView.in, slice.in)), 195 + 5*t);
-          ctx.lineTo(timeToCoord(std::min<float>(inView.out, slice.out)), 195 + 5*t);
+          ctx.moveTo(timeToCoord(std::max<float>(inView.in, slice.in)), 195 + 5*t.idx);
+          ctx.lineTo(timeToCoord(std::min<float>(inView.out, slice.out)), 195 + 5*t.idx);
           ctx.stroke();
         }
       }
     }
-    if (module->state.recording() && module->state.track-1== t) {
+    if (module->state.recording() && module->state.track == t) {
       current = module->recSect;
     }
     if (current) {
@@ -825,12 +829,12 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
         ctx.beginPath();
         ctx.strokeStyle(COLOR_CURRENT_SLICE);
         ctx.lineWidth(lW);
-        ctx.moveTo(timeToCoord(std::max<float>(inView.in, current.in)), 195 + 5*t);
-        ctx.lineTo(timeToCoord(std::min<float>(inView.out, current.out)), 195 + 5*t);
+        ctx.moveTo(timeToCoord(std::max<float>(inView.in, current.in)), 195 + 5*t.idx);
+        ctx.lineTo(timeToCoord(std::min<float>(inView.out, current.out)), 195 + 5*t.idx);
         ctx.stroke();
       }
     }
-  }
+   });
 
   // LoopArrow
   if (module->state.looping) {
@@ -1058,6 +1062,6 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
 	ctx.fillStyle(style);
   ctx.font(36.0f);
   ctx.beginPath();
-  ctx.fillText(std::to_string(module->state.track), 30, 29);
+  ctx.fillText(module->state.track.str(), 30, 29);
 	
 }

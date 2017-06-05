@@ -13,6 +13,7 @@
 #include "modules/mixer.h"
 #include "audio/jack.h"
 #include "audio/midi.h"
+#include "util/datafile.h"
 
 struct Project {
   std::string name = "Tape1";
@@ -35,6 +36,7 @@ public:
   } events;
 
   Project *project;
+  top1::DataFile dataFile;
   uint samplerate = 44100;
 
   JackAudio jackAudio;
@@ -50,14 +52,8 @@ public:
 
   std::vector<MidiEvent*> midiEvents;
 
-  volatile bool doProcess;
-  volatile int status;
-
   module::SynthModuleDispatcher synth;
-  module::EffectModuleDispatcher effect1;
-  module::EffectModuleDispatcher effect2;
-  module::EffectModuleDispatcher effect3;
-  module::EffectModuleDispatcher effect4;
+  module::EffectModuleDispatcher effect;
   TapeModule tapedeck;
   MixerModule mixer;
 

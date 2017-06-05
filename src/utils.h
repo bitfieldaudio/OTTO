@@ -1,8 +1,11 @@
 #pragma once
 #include <cstdlib>
 #include <cmath>
+#include <functional>
+#include <algorithm>
+#include <string>
 
-namespace top {
+namespace top1 {
 
 inline bool between(float min, float max, float el) {
   return (el <= max && el >= min);
@@ -31,10 +34,31 @@ namespace audio {
  * @param B Signal B
  * @param ratio B:A, amount of B to mix into signal A.
  */
-static inline float mix(float A, float B, float ratio = 0.5) {
+inline float mix(float A, float B, float ratio = 0.5) {
   return A + (B - A) * ratio;
 }
 }
+
+struct Track {
+  uint idx;
+  uint name() const { return idx + 1; }
+  std::string str() const { return std::to_string(name()); }
+
+  Track() {};
+
+  bool operator == (Track &other) const { return idx == other.idx; }
+  bool operator != (Track &other) const { return idx != other.idx; }
+
+  static void foreach(std::function<void(Track)> f) {
+    for (uint i = 0; i < 4; i++) f(newIdx(i));
+  }
+
+  static Track newIdx(uint idx) { return Track(idx); }
+  static Track newName(uint name) { return Track(name-1); }
+private:
+  Track(uint idx) : idx (idx) {}
+};
+
 }
 
 /** One frame of nTracks samples */
@@ -99,3 +123,4 @@ public:
   }
 
 };
+

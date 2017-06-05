@@ -35,7 +35,7 @@ public:
     bool recLast    = false;
     float playSpeed = 0;
     float nextSpeed = 0;
-    uint track = 1;
+    top1::Track track = top1::Track::newName(1);
     bool looping = false;
 
     template<class T>
@@ -60,8 +60,6 @@ public:
   std::array<AudioFrame, 256> trackBuffer;
 
   top1::TapeBuffer tapeBuffer;
-
-  const static uint nTracks = top1::TapeBuffer::nTracks;
 
   TapeModule();
   TapeModule(TapeModule&) = delete;
