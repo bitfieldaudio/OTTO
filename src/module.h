@@ -129,6 +129,18 @@ public:
 };
 
 class ExpOpt : public Opt<float> {
+public:
+  ExpOpt() {};
+  ExpOpt(Data *data,
+   std::string name,
+   float init = 0,
+   float min = 0,
+   float max = 1,
+   float step = 0.01,
+   bool preserve = false,
+   float *dataPtr = new float):
+    Opt<float>(data, name, init, min, max, step, preserve, dataPtr) {};
+ 
   float inc() override {return set(*dataPtr * step);}
   float dec() override {return set(*dataPtr / step);}
 };

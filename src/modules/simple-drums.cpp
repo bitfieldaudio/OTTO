@@ -22,15 +22,19 @@ void SimpleDrumsModule::process(uint nframes) {
       NoteOnEvent *event = dynamic_cast<NoteOnEvent*>(nEvent);
       currentVoiceIdx = event->key % 24;
       voices[currentVoiceIdx].data.trigger = 1;
+      voices[currentVoiceIdx].data.envelope.sustain = float(event->velocity)/128.f;
     }
+  };
+  for (auto &voice : voices) {
+    voice.process(nframes);
+    voice.data.trigger = 0;
+  }
+  for (auto nEvent : GLOB.midiEvents) {
     if (nEvent->type == MidiEvent::NOTE_OFF) {
       NoteOffEvent *event = dynamic_cast<NoteOffEvent*>(nEvent);
       voices[event->key % 24].data.trigger = 0;
     }
   };
-  for (auto &voice : voices) {
-    voice.process(nframes);
-  }
 }
 
 bool SimpleDrumsScreen::keypress(ui::Key key) {

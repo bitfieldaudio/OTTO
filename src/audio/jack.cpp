@@ -223,14 +223,17 @@ void JackAudio::process(uint nframes) {
       byte type = event.buffer[0] >> 4;
       switch (type) {
       case MidiEvent::NOTE_OFF:
+        // LOGD << "NOTE_OFF";
         mEvent.type = MidiEvent::NOTE_OFF;
         GLOB.midiEvents.push_back(new NoteOffEvent(mEvent));
         break;
       case MidiEvent::NOTE_ON:
+        // LOGD << "NOTE_ON";
         mEvent.type = MidiEvent::NOTE_ON;
         GLOB.midiEvents.push_back(new NoteOnEvent(mEvent));
         break;
       case MidiEvent::CONTROL_CHANGE:
+        // LOGD << "CONTROL_CHANGE";
         mEvent.type = MidiEvent::CONTROL_CHANGE;
         GLOB.midiEvents.push_back(new ControlChangeEvent(mEvent));
         break;
@@ -239,7 +242,7 @@ void JackAudio::process(uint nframes) {
   }
 
   for (uint i = 0; i < nframes; i ++) {
-    GLOB.audioData.proc[i] = GLOB.audioData.input[i];
+    GLOB.audioData.proc[i] = 0;//GLOB.audioData.input[i];
   }
 
   GLOB.tapedeck.preProcess(nframes);
