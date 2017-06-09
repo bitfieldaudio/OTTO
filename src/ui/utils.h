@@ -14,6 +14,7 @@ const uint HEIGHT = 240;
 const auto COLOR_BLACK = Color(0,0,0);
 const auto COLOR_WHITE = Color(255, 255, 255);
 const auto COLOR_RED = Color(255, 42, 42);
+const auto COLOR_RED_DIMMED = Color(160, 12, 12);
 const auto COLOR_BLUE = Color(10, 124, 255);
 const auto COLOR_GREEN = Color(94, 207, 62);
 

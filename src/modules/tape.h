@@ -61,6 +61,8 @@ public:
     module::Opt<float> procGain = {this, "PROC_GAIN", 0.5, 0, 1, 0.01};
   } data;
 
+  top1::AudioAverage procGraph;
+
   std::array<AudioFrame, 256> trackBuffer;
 
   top1::TapeBuffer tapeBuffer;

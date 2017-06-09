@@ -306,6 +306,10 @@ void TapeModule::postProcess(uint nframes) {
     }
   }
   state.recLast = state.recording();
+
+  for (uint i = 0; i < nframes; i++) {
+    procGraph.add(GLOB.audioData.proc[i] * data.procGain);
+  }
 }
 
 /************************************************/
@@ -366,6 +370,12 @@ bool TapeScreen::keypress(ui::Key key) {
   case ui::K_DROP:
     if (module->state.doTapeOps())
       module->tapeBuffer.drop(module->state.track);
+    return true;
+  case ui::K_RED_UP:
+    module->data.procGain.inc();
+    return true;
+  case ui::K_RED_DOWN:
+    module->data.procGain.dec();
     return true;
   }
   return false;
@@ -1008,6 +1018,27 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
     ctx.beginPath();
     ctx.rect(startCoord - 5, 185, 10, 40);
     ctx.rect(endCoord - 5, 185, 10, 40);
+    ctx.fill();
+  }
+
+  // Proc Graph
+  {
+    float y = 240 - 81.5 - module->procGraph * 105;
+    module->procGraph.clear();
+    ctx.strokeStyle(COLOR_RED_DIMMED);
+    ctx.lineCap(Canvas::LineCap::ROUND);
+    ctx.beginPath();
+    ctx.moveTo(305, 240 - 81.5 - 105);
+    ctx.lineTo(305, y);
+    ctx.stroke();
+    ctx.strokeStyle(COLOR_RED);
+    ctx.beginPath();
+    ctx.moveTo(305, y);
+    ctx.lineTo(305, 240 - 81.5);
+    ctx.stroke();
+    ctx.fillStyle(COLOR_RED);
+    ctx.beginPath();
+    ctx.circle(305, 240 - 81.5 - module->data.procGain.normalized() * 105, 3);
     ctx.fill();
   }
 

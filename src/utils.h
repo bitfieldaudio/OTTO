@@ -59,6 +59,27 @@ private:
   Track(uint idx) : idx (idx) {}
 };
 
+struct AudioAverage {
+  float sum = 0;
+  uint nsamples = 0;
+  float average = 0;
+
+  void add(float sample) {
+    ++nsamples;
+    sum += std::abs(sample);
+    average = sum/nsamples;
+  }
+  void clear() {
+    sum = 0;
+    nsamples = 0;
+    average = 0;
+  }
+
+  operator float() {
+    return average;
+  }
+};
+
 }
 
 /** One frame of nTracks samples */
