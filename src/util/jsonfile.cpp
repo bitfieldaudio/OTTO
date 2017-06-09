@@ -59,7 +59,6 @@ tree::Node jsonToTree(const json &j) {
     for (auto it = j.begin(); it != j.end(); ++it) {
       m[it.key()] = jsonToTree(it.value());
     }
-    LOGD << m.values.size();
     return m;
   }
   LOGE << "Unexpected json type";

@@ -333,7 +333,7 @@ TapeBuffer::TapeSliceSet::slicesIn(Section<TapeTime> area) const {
     return xs;
   }
   auto it = slices.upper_bound(area);
-  --it;
+  if (it != slices.begin()) --it;
   if (it == slices.end()) it = slices.begin();
   if (!it->overlaps(area)) it++;
   for (; it != slices.end(); it++) {
