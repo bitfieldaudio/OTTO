@@ -1,49 +1,28 @@
 #include <plog/Log.h>
 
 #include "module.h"
-#include "util/serialization.h"
 
 namespace module {
 
-std::vector<char> Data::Field::serialize() {
-  return top1::serialize<float>(*dataPtr);
-}
-
-void Data::Field::deserialize(std::vector<char>  data) {
-  *dataPtr = top1::deserialize<float>(data);
-}
-
-std::vector<char> Data::serialize() {
-  std::vector<char> xs;
+top1::tree::Node Data::serialize() {
+  top1::tree::Map node;
   for (auto field : fields) {
     if (field.second->preserve) {
-      std::vector<char> name = top1::serialize(field.first);
-      std::vector<char> nameSize = top1::serialize<uint32_t>(name.size());
-      std::vector<char> data = field.second->serialize();
-      std::vector<char> dataSize = top1::serialize<uint32_t>(data.size());
-      xs.insert(xs.end(), nameSize.begin(), nameSize.end());
-      xs.insert(xs.end(), name.begin(), name.end());
-      xs.insert(xs.end(), dataSize.begin(), dataSize.end());
-      xs.insert(xs.end(), data.begin(), data.end());
+      node[field.first] = field.second->serialize();
     }
   }
-  return xs;
+  return node;
 }
 
-void Data::deserialize(std::vector<char>  data) {
-  for (uint i = 0; i < data.size(); i++) {
-    uint nameSize = top1::deserialize<uint32_t>(
-      std::vector<char>(data.begin() + i, data.begin() + i += 4));
-    std::string name = top1::deserialize<std::string>(
-      std::vector<char>(data.begin() + i, data.begin() + i += nameSize ));
-    if (fields[name] != NULL) {
-      uint dataSize = top1::deserialize<uint32_t>(
-        std::vector<char>(data.begin() + i, data.begin() + i += 4 ));
-      fields[name]->deserialize(
-        std::vector<char>(data.begin() + i, data.begin() + i += dataSize));
-    } else {
-      LOGE << "Unrecognized field: " << name;
-    }
-  }
+void Data::deserialize(top1::tree::Node node) {
+  node.match([&] (top1::tree::Map node) {
+     for (auto &f : node) {
+       if (fields.find(f.first) != fields.end()) {
+         fields[f.first]->deserialize(f.second);
+       } else {
+         LOGE << "Unrecognized field: " << f.first;
+       }
+     }
+   }, [] (auto) {});
 }
 }

@@ -16,14 +16,14 @@
 #include "tapefile.h"
 
 namespace top1 {
-typedef int TapeTime;
+using TapeTime = int;
 
 /**
  * A Wrapper for ringbuffers, used for the tapemodule.
  */
 class TapeBuffer {
 public:
-  typedef Section<TapeTime> TapeSlice;
+  using TapeSlice = Section<TapeTime>;
   class CompareTapeSlice {
   public:
     bool operator()(const TapeSlice &e1, const TapeSlice &e2) const {return e1.in < e2.in;}

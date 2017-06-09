@@ -37,6 +37,23 @@ void SimpleDrumsModule::process(uint nframes) {
   };
 }
 
+top1::tree::Node SimpleDrumsModule::serialize() {
+  top1::tree::Array ar;
+  for (auto &v : voices) {
+    ar.values.push_back(v.data.serialize());
+  }
+  return ar;
+}
+
+void SimpleDrumsModule::deserialize(top1::tree::Node n) {
+  n.match(
+    [&] (top1::tree::Array &ar) {
+      for (uint i = 0; i < ar.values.size(); ++i) {
+        voices[i].data.deserialize(ar[i]);
+      }
+    }, [] (auto) {});
+}
+
 bool SimpleDrumsScreen::keypress(ui::Key key) {
   using namespace ui;
   auto &voice = module->voices[module->currentVoiceIdx];

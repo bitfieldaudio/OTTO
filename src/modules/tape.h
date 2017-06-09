@@ -9,7 +9,7 @@
 #include "../ui/base.h"
 #include "../util/tapebuffer.h"
 
-typedef int BarPos;
+using BarPos = int;
 
 class TapeModule : public module::Module {
   ui::ModuleScreen<TapeModule> *tapeScreen;
@@ -56,6 +56,10 @@ public:
     void stopRecord();
 
   } state;
+
+  struct Data : module::Data {
+    module::Opt<float> procGain = {this, "PROC_GAIN", 0.5, 0, 1, 0.01};
+  } data;
 
   std::array<AudioFrame, 256> trackBuffer;
 

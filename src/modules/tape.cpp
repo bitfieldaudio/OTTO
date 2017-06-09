@@ -88,6 +88,7 @@ void TapeModule::State::stopRecord() {
 /************************************************/
 
 TapeModule::TapeModule() :
+  Module(&data),
   tapeScreen (new TapeScreen(this)) {}
 
 void TapeModule::init() {

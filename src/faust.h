@@ -10,7 +10,7 @@
 
 #include "globals.h"
 
-typedef dsp FaustDSP;
+using FaustDSP = dsp;
 
 enum OPTTYPE {
   FLOAT,

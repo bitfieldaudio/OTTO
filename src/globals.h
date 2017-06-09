@@ -36,7 +36,7 @@ public:
   } events;
 
   Project *project;
-  top1::DataFile dataFile;
+  DataFile dataFile;
   uint samplerate = 44100;
 
   JackAudio jackAudio;

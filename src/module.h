@@ -9,7 +9,6 @@
 
 #include "utils.h"
 #include "util/tree.h"
-#include "util/serialization.h"
 
 namespace module {
 class Data {
@@ -23,9 +22,15 @@ public:
     Field(float *dataPtr, bool preserve = true) :
       dataPtr(dataPtr), preserve(preserve) {}
 
-    virtual top1::TreeNode serialize();
-    virtual void deserialize(top1::TreeNode);
+    virtual top1::tree::Node serialize() {
+      return top1::tree::Float{*dataPtr};
+    }
+
+    virtual void deserialize(top1::tree::Node n) {
+      n.match([&] (top1::tree::Float f) { *dataPtr = f.value; }, [] (auto) {});
+    }
   };
+
 
   std::map<std::string, Field*> fields;
 
@@ -38,8 +43,8 @@ public:
   void addField(std::string name, Field *field) {
     fields[name] = field;
   };
-  virtual top1::TreeBranch serialize();
-  virtual void deserialize(top1::TreeBranch);
+  virtual top1::tree::Node serialize();
+  virtual void deserialize(top1::tree::Node);
 };
 
 template<class T>
@@ -100,6 +105,14 @@ public:
   float operator = (float newVal) { return set(newVal); };
   float operator()() const { return get(); }
   operator float() const { return get(); }
+
+  virtual top1::tree::Node serialize() {
+    return top1::tree::Float{*dataPtr};
+  }
+
+  virtual void deserialize(top1::tree::Node n) {
+    n.match([&] (top1::tree::Float f) { *dataPtr = f.value; }, [] (auto) {});
+  }
 };
 
 template<>
@@ -132,6 +145,14 @@ public:
   bool operator = (bool newVal) { return set(newVal); };
   bool operator()() const {return get(); }
   operator bool() const { return get(); }
+
+  virtual top1::tree::Node serialize() {
+    return top1::tree::Bool{bool(*dataPtr)};
+  }
+
+  virtual void deserialize(top1::tree::Node n) {
+    n.match([&] (top1::tree::Bool b) { *dataPtr = b.value; }, [] (auto) {});
+  }
 };
 
 class ExpOpt : public Opt<float> {
@@ -162,11 +183,11 @@ public:
   virtual void exit() {}
   virtual void display() {};
 
-  virtual top1::TreeBranch serialize() {
+  virtual top1::tree::Node serialize() {
     if (data != nullptr) return data->serialize();
-    return top1::TreeBranch();
+    return top1::tree::Null();
   }
-  virtual void deserialize(top1::TreeBranch node) {
+  virtual void deserialize(top1::tree::Node node) {
     if (data != nullptr) data->deserialize(node);
   }
 };
@@ -185,8 +206,8 @@ template<class M>
 class ModuleDispatcher : public Module {
 protected:
 
-  std::map<top1::fourCC, std::shared_ptr<M>> modules;
-  top1::fourCC currentModule;
+  std::map<std::string, std::shared_ptr<M>> modules;
+  std::string currentModule;
 
 public:
 
@@ -198,44 +219,33 @@ public:
     return modules[currentModule];
   }
 
-  void registerModule(top1::fourCC name, M *module) {
+  void registerModule(std::string name, M *module) {
     registerModule(name, std::shared_ptr<M>(module));
   }
 
-  void registerModule(top1::fourCC name, std::shared_ptr<M> module) {
+  void registerModule(std::string name, std::shared_ptr<M> module) {
     modules[name] = module;
     currentModule = name;
   }
 
-  top1::TreeBranch serialize() override {
-    std::vector<char> xs;
+  top1::tree::Node serialize() override {
+    top1::tree::Map node;
     for (auto m : modules) {
-      auto md = m.second->serialize();
-      top1::serialize<top1::fourCC>(m.first, xs.end());
-      top1::serialize<uint>(md.size(), xs.end());
-      xs.reserve(xs.size() + md.size());
-      xs.insert(xs.end(), md.begin(), md.end());
+      node[m.first] = m.second->serialize();
     }
+    return node;
   }
 
-  void deserialize(top1::TreeBranch node) override {
-    node.visit([&](top1::TreeNode &node) {
-       if () {
-         n.
+  void deserialize(top1::tree::Node node) override {
+    node.match([&] (top1::tree::Map n) {
+       for (auto &m : n.values) {
+         if (modules.find(m.first) != modules.end()) {
+           modules[m.first]->deserialize(m.second);
+         } else {
+           LOGE << "Unrecognized module";
+         }
        }
-     });
-    auto it = bytes.begin();
-    while (it < bytes.end()) {
-      uint name = top1::deserialize<uint>(it);
-      uint size = top1::deserialize<uint>(it);
-      auto m = modules.find(name);
-      if (m != modules.end()) {
-        m.second->deserialize(std::vector<char>(it, it + size));
-      } else {
-        it += size;
-        LOGE << "Unrecognized module";
-      }
-    }
+     }, [] (auto) {});
   }
 };
 

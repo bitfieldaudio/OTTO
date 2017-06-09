@@ -14,7 +14,7 @@
 #include "jack.h"
 #include "../events.h"
 
-typedef unsigned char byte;
+using byte = unsigned char;
 
 void JackAudio::init() {
   client = jack_client_open(CLIENT_NAME.c_str(), JackNullOption, &jackStatus);

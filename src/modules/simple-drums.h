@@ -57,6 +57,9 @@ public:
   void display() override {
     GLOB.ui.display(screen);
   }
+
+  top1::tree::Node serialize() override;
+  void deserialize(top1::tree::Node) override;
 };
 
 class SimpleDrumsScreen : public ui::ModuleScreen<SimpleDrumsModule> {

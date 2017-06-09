@@ -2,55 +2,47 @@
 
 #include <functional>
 #include <vector>
+#include <unordered_map>
+#include <mapbox/variant.hpp>
 #include <memory>
 
 namespace top1 {
+namespace tree {
 
-class TreeNode {
-public:
-  virtual void visit(std::function<void(TreeNode&)> visitor) {
-    visitor(*this);
-  };
+struct String { std::string value; };
+struct Int { int value; };
+struct Float { float value; };
+struct Bool   { bool value; };
+struct Null   { };
+
+// Forward declarations only
+struct Array;
+struct Map;
+
+using Node = mapbox::util::variant<
+    Float,
+    String,
+    Int,
+    Bool,
+    Null,
+    mapbox::util::recursive_wrapper<Array>,
+    mapbox::util::recursive_wrapper<Map>>;
+
+struct Array {
+  std::vector<Node> values;
+
+  auto &operator[](uint i) { return values[i];}
+  auto begin() { return values.begin(); }
+  auto end() { return values.end(); }
 };
 
-class NamedTreeNode : public TreeNode {
-  std::string name;
-  TreeNode node;
+struct Map {
+  std::unordered_map<std::string, Node> values;
+
+  auto &operator[](std::string k) { return values[k];}
+  auto begin() { return values.begin(); }
+  auto end() { return values.end(); }
 };
 
-template<class T> cC
-class TreeLeaf : TreeNode {
-  T value;
-};
-
-class TreeBranch : public TreeNode {
-
-  std::vector<std::shared_ptr<TreeNode>> children;
-
-public:
-
-  void visit(std::function<void(TreeNode&)> visitor) override {
-    for (auto &child : children) {
-      child->visit(visitor);
-    }
-  }
-
-  virtual bool hasChildren() const {
-    return !children.empty();
-  }
-
-  virtual void addChild(std::shared_ptr<TreeNode> child) {
-    children.push_back(child);
-  }
-
-  TreeNode &operator[](uint i) {
-    return children[i];
-  }
-
-  TreeNode &operator+=(TreeNode child) {
-    addChild(child);
-    return *this;
-  }
-};
 }
-Sofie
+}

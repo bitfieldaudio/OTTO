@@ -44,7 +44,7 @@ private:
 public:
 
   uint bufferSize;
-  typedef jack_default_audio_sample_t AudioSample;
+  using AudioSample = jack_default_audio_sample_t;
   const size_t SAMPLE_SIZE = sizeof(AudioSample);
   const std::string CLIENT_NAME = "TOP-1";
 

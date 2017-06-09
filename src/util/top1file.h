@@ -10,13 +10,12 @@
 #include <plog/Log.h>
 
 #include "../utils.h"
-#include "serialization.h"
 
 namespace top1 {
 
-typedef char byte;
-typedef uint32_t u4b;
-typedef uint16_t u2b;
+using byte = char;
+using u4b = uint32_t;
+using u2b = uint16_t;
 
 struct ReadException : public std::exception {
   enum Type {

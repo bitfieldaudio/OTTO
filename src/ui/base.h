@@ -67,7 +67,7 @@ enum Key {
   K_CUT,
 };
 
-typedef bool PressedKeys[256];
+using PressedKeys = bool[256];
 
 /**
  * Anything that can be drawn on screen.

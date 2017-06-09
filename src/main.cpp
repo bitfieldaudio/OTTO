@@ -22,9 +22,10 @@ int main(int argc, char *argv[]) {
   std::mutex mut;
   std::unique_lock<std::mutex> lock (mut);
 
-  GLOB.synth.registerModule('SDRM', new SimpleDrumsModule());
+  GLOB.synth.registerModule("SimpleDrums", new SimpleDrumsModule());
   GLOB.events.preInit();
-  GLOB.dataFile.open("data.top1");
+  GLOB.dataFile.path = "data.json";
+  GLOB.dataFile.read();
   GLOB.jackAudio.init();
   GLOB.tapedeck.init();
   GLOB.mixer.init();
@@ -40,6 +41,7 @@ int main(int argc, char *argv[]) {
   GLOB.mixer.exit();
   GLOB.tapedeck.exit();
   GLOB.jackAudio.exit();
-  GLOB.events.preExit();
+  GLOB.dataFile.write();
+  GLOB.events.postExit();
   return 0;
 }

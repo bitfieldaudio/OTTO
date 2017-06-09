@@ -1,28 +1,9 @@
 #pragma once
 
-#include "top1file.h"
+#include "jsonfile.h"
 
-namespace top1 {
-
-class DataFile : public File {
-  std::vector<Chunk> moduleChunks;
+class DataFile : public top1::JsonFile {
 public:
-  struct HeaderChunk : public Chunk {
-    u2b version = 1;
-
-    HeaderChunk() : Chunk("TP1D") {
-      addField(version);
-    };
-  } header;
-
-  DataFile();
-
-  DataFile(std::string path) : DataFile() {
-    open(path);
-  }
-
-  DataFile(DataFile&) = delete;
-  DataFile(DataFile&&) = delete;
-
+  void write() override;
+  void read() override;
 };
-}
