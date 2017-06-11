@@ -3,10 +3,10 @@
 
 A conceptual (and in some cases direct) clone of the Teenage Enginering OP-1, running on a Raspberry Pi.
 
-Screenshots:  
+## Screenshots:  
 
-![TOP-1 Tapedeck](doc/images/tapedeck.png)
-![TOP-1 Mixer](doc/images/mixer.png)
+<img src="doc/images/tapedeck.png" width="45%" alt="Tapedeck"> <img src="doc/images/mixer.png" width="45%" alt="Mixer">
+<img src="doc/images/metronome.gif" width="45%" alt="Metronome"> <img src="doc/images/simple-drums.png" width="45%" alt="Drum Synt">
 
 More info to follow
 
