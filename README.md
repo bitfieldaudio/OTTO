@@ -1,6 +1,6 @@
 # TOP-1: **T**otally **O**riginal **P**roject-**1**
 
-Ah, who doesnt love the [op-1](teenage.engineering/products/op-1)? Its a magical beast of modern technology! Everything you need to play around with electronic music, in one self-contained device. Its pretty close to perfect, but not quite - its simplicity is its power, but it's also the source of its shortcomings. And then of course, it's not open source.
+Ah, who doesnt love the [op-1](http://teenage.engineering/products/op-1)? Its a magical beast of modern technology! Everything you need to play around with electronic music, in one self-contained device. Its pretty close to perfect, but not quite - its simplicity is its power, but it's also the source of its shortcomings. And then of course, it's not open source.
 
 Come chat with me at my [discord server](https://discord.gg/4cV9Ucz) if you're interested in the project.
 
