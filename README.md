@@ -36,6 +36,8 @@ and of course, the coding itself, with areas like
  - Hardware bridging
  - Distro setup - a custom distro for the Pi might be necessary
 
+If you are interested, come chat with me at my [discord server](https://discord.gg/4cV9Ucz).
+
 ## Credits
  - Audio Framework: [jack](http://jackaudio.org/)
  - DSP Framework: [faust](http://faust.grame.fr/)
