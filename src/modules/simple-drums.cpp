@@ -4,8 +4,7 @@
 #include "../ui/utils.h"
 
 SimpleDrumVoice::SimpleDrumVoice() : FaustWrapper(
-  new faust_simple_drums(), std::shared_ptr<Data>(&data)) {
-  LOGD << "SimpleDrumVoice";
+  new FAUSTCLASS(), &data) {
 }
 
 SimpleDrumsModule::SimpleDrumsModule() {

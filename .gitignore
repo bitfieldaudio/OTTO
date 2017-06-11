@@ -12,3 +12,6 @@ CTestTestfile.cmake
 /unnamed.wav
 /log.txt
 /compile_commands.json
+/data.json
+/tape1.tape
+/playground

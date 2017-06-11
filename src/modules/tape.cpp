@@ -104,34 +104,6 @@ void TapeModule::display() {
   GLOB.ui.display(tapeScreen);
 }
 
-// Spooling and jumping
-BarPos TapeModule::closestBar(TapeTime time) {
-  double fpb = (GLOB.samplerate)*60/(double)GLOB.project->bpm;
-  BarPos prevBar = time/fpb;
-  TapeTime prevBarTime = getBarTime(prevBar);
-  if (time - prevBarTime > fpb/2) {
-    return prevBar + 1;
-  }
-  return prevBar;
-}
-
-TapeTime TapeModule::getBarTime(BarPos bar) {
-  double fpb = (GLOB.samplerate)*60/(double)GLOB.project->bpm;
-  return bar * fpb;
-}
-
-TapeTime TapeModule::getBarTimeRel(BarPos bar) {
-  return getBarTime(closestBar(tapeBuffer.position()) + bar);
-}
-
-void TapeModule::goToBar(BarPos bar) {
-  if (state.doJumps()) tapeBuffer.goTo(getBarTime(bar));
-}
-
-void TapeModule::goToBarRel(BarPos bars) {
-  if (state.doJumps()) tapeBuffer.goTo(getBarTimeRel(bars));
-}
-
 // Looping
 
 void TapeModule::loopInHere() {
@@ -172,8 +144,19 @@ void TapeModule::goToLoopOut() {
 }
 
 
+void TapeModule::goToBar(BeatPos bar) {
+  if (state.doJumps()) tapeBuffer.goTo(GLOB.metronome.getBarTime(bar));
+}
+
+void TapeModule::goToBarRel(BeatPos bars) {
+  if (state.doJumps()) tapeBuffer.goTo(GLOB.metronome.getBarTimeRel(bars));
+}
+
 // Audio Processing
 void TapeModule::preProcess(uint nframes) {
+
+  tapePosition = tapeBuffer.position();
+
   // TODO: some sort of sigma shape
   if (state.doEaseIn()) {
     const float diff = state.nextSpeed - state.playSpeed;
@@ -782,7 +765,7 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
   ctx.lineWidth(2);
 
   // TODO: Real value
-  int BPM = GLOB.project->bpm;
+  int BPM = GLOB.metronome.data.bpm;
   float FPB = 44100.0 * 60.0/((float)BPM);
 
   // Bar Markers

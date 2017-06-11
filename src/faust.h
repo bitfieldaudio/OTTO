@@ -3,12 +3,16 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <cstring>
+#include <memory>
 
 #include <faust/gui/UI.h>
 #include <faust/gui/meta.h>
 #include <faust/dsp/dsp.h>
 
-#include "globals.h"
+#include <plog/Log.h>
+
+#include "module.h"
 
 using FaustDSP = dsp;
 
@@ -23,10 +27,10 @@ class FaustOptions : public UI {
 
 public:
 
-  std::shared_ptr<module::Data> data;
+  module::Data *data;
 
   FaustOptions() {}
-  FaustOptions(std::shared_ptr<module::Data> data) : data (data) {}
+  FaustOptions(module::Data *data) : data (data) {}
 
   void openTabBox(const char* label) override {
     if (strcmp(label, "0x00") != 0)
@@ -146,22 +150,7 @@ public:
     delete fDSP;
   };
 
-  FaustWrapper(dsp *DSP, std::shared_ptr<module::Data> data) :
-    opts (data),
-    fDSP (DSP)
-  {
-    GLOB.events.preInit.add([&]() {
-       fDSP->init(GLOB.samplerate);
-       fDSP->buildUserInterface(&opts);
-     });
-    GLOB.events.postInit.add([&]() {
-       inBuffer =
-         (FAUSTFLOAT **) malloc(sizeof(FAUSTFLOAT **) * fDSP->getNumInputs());
-       outBuffer =
-         (FAUSTFLOAT **) malloc(sizeof(FAUSTFLOAT **) * fDSP->getNumOutputs());
-       initBuffers();
-     });
-  }
+  FaustWrapper(dsp *DSP, module::Data *data);
 
   virtual void process(uint nframes) {
     prepBuffers(nframes);
@@ -172,35 +161,15 @@ public:
 
 protected:
 
-  virtual void initBuffers() {
-    for (int i = 0; i < fDSP->getNumInputs(); i++) {
-      inBuffer[0] = (FAUSTFLOAT *) malloc(sizeof(FAUSTFLOAT) * GLOB.jackAudio.bufferSize);
-    }
-    for (int i = 0; i < fDSP->getNumOutputs(); i++) {
-      *outBuffer = (FAUSTFLOAT *) malloc(sizeof(FAUSTFLOAT) * GLOB.jackAudio.bufferSize);
-    }
-  }
+  virtual void initBuffers();
 
   /**
    * Copy the relevant data into inBuffer
    */
-  virtual void prepBuffers(uint nframes) {
-    if (fDSP == nullptr) {
-      return;
-    }
-    if (fDSP->getNumInputs() > 0)
-      inBuffer[0] = GLOB.audioData.proc;
-  }
+  virtual void prepBuffers(uint nframes);
 
   /**
    * Put the data back into the chain
    */
-  virtual void postBuffers(uint nframes) {
-    if (fDSP->getNumInputs() > 0)
-      GLOB.audioData.proc = *outBuffer;
-    else
-      for (uint i = 0; i < nframes; i++) {
-        GLOB.audioData.proc[i] += outBuffer[0][i];
-      }
-  }
+  virtual void postBuffers(uint nframes);
 };

@@ -20,7 +20,7 @@ drumOsc = (dOsc + n)  <: resonlp(cutoff,resonance, 1) * filterOn, _ * (1-filterO
     freq = hslider("FREQ", 500, 10, 500, 2.9);
     toneDec = hslider("TONE_DECAY",0.5, -1, 1, 0.01);
     noiseLVL = hslider("NOISE", 0.2, 0, 1, 0.01);
-    cutoff = hslider("CUTOFF", 10000, 5, 10000, 0.001);
+    cutoff = hslider("CUTOFF", 1000, 5, 10000, 0.001);
     filterOn = checkbox("FILTER_SWITCH");
     // SETTINGS
     resonance = 3;

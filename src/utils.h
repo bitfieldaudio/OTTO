@@ -75,6 +75,10 @@ struct AudioAverage {
     average = 0;
   }
 
+  float clip() const {
+    return std::min<float>(average, 1);
+  }
+
   operator float() {
     return average;
   }

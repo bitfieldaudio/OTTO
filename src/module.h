@@ -22,6 +22,8 @@ public:
     Field(float *dataPtr, bool preserve = true) :
       dataPtr(dataPtr), preserve(preserve) {}
 
+    virtual void reset() { *dataPtr = 0; }
+
     virtual top1::tree::Node serialize() {
       return top1::tree::Float{*dataPtr};
     }
@@ -90,7 +92,7 @@ public:
   virtual float get() const {
     return *dataPtr;
   }
-  virtual void reset() {
+  void reset() override {
     *dataPtr = init;
   }
 
@@ -138,7 +140,7 @@ public:
   virtual bool get() const {
     return *dataPtr;
   }
-  virtual void reset() {
+  void reset() override {
     *dataPtr = init;
   }
 

@@ -167,7 +167,7 @@ class faust_simple_drums : public dsp {
 		fVslider1 = FAUSTFLOAT(0.20000000000000001f);
 		fVslider2 = FAUSTFLOAT(0.0f);
 		fCheckbox0 = FAUSTFLOAT(0.0f);
-		fHslider0 = FAUSTFLOAT(10000.0f);
+		fHslider0 = FAUSTFLOAT(1000.0f);
 		fHslider1 = FAUSTFLOAT(0.20000000000000001f);
 		fHslider2 = FAUSTFLOAT(500.0f);
 		fHslider3 = FAUSTFLOAT(0.5f);
@@ -175,7 +175,7 @@ class faust_simple_drums : public dsp {
 		fHslider4 = FAUSTFLOAT(0.20000000000000001f);
 		fHslider5 = FAUSTFLOAT(500.0f);
 		fHslider6 = FAUSTFLOAT(0.5f);
-		fHslider7 = FAUSTFLOAT(10000.0f);
+		fHslider7 = FAUSTFLOAT(1000.0f);
 		
 	}
 	
@@ -261,7 +261,7 @@ class faust_simple_drums : public dsp {
 	virtual void buildUserInterface(UI* ui_interface) {
 		ui_interface->openVerticalBox("0x00");
 		ui_interface->openVerticalBox("D1");
-		ui_interface->addHorizontalSlider("CUTOFF", &fHslider7, 10000.0f, 5.0f, 10000.0f, 0.00100000005f);
+		ui_interface->addHorizontalSlider("CUTOFF", &fHslider7, 1000.0f, 5.0f, 10000.0f, 0.00100000005f);
 		ui_interface->addHorizontalBargraph("DECAY_GRAPH", &fHbargraph1, -1.0f, 1.0f);
 		ui_interface->addCheckButton("FILTER_SWITCH",&fCheckbox1);
 		ui_interface->addHorizontalSlider("FREQ", &fHslider5, 500.0f, 10.0f, 500.0f, 2.9000001f);
@@ -269,7 +269,7 @@ class faust_simple_drums : public dsp {
 		ui_interface->addHorizontalSlider("TONE_DECAY", &fHslider6, 0.5f, -1.0f, 1.0f, 0.00999999978f);
 		ui_interface->closeBox();
 		ui_interface->openVerticalBox("D2");
-		ui_interface->addHorizontalSlider("CUTOFF", &fHslider0, 10000.0f, 5.0f, 10000.0f, 0.00100000005f);
+		ui_interface->addHorizontalSlider("CUTOFF", &fHslider0, 1000.0f, 5.0f, 10000.0f, 0.00100000005f);
 		ui_interface->addHorizontalBargraph("DECAY_GRAPH", &fHbargraph0, -1.0f, 1.0f);
 		ui_interface->addCheckButton("FILTER_SWITCH",&fCheckbox0);
 		ui_interface->addHorizontalSlider("FREQ", &fHslider2, 500.0f, 10.0f, 500.0f, 2.9000001f);

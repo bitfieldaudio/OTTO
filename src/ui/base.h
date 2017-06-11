@@ -54,8 +54,9 @@ enum Key {
   K_9,
   K_0,
 
-  K_MIXER,
   K_TAPE,
+  K_MIXER,
+  K_METRONOME,
   K_SYNTH,
 
   K_LOOP,

@@ -9,10 +9,12 @@
 #include "../ui/base.h"
 #include "../util/tapebuffer.h"
 
-using BarPos = int;
+#include "metronome.h"
 
 class TapeModule : public module::Module {
   ui::ModuleScreen<TapeModule> *tapeScreen;
+
+  top1::TapeTime tapePosition; // Read from here instead of the tapebuffer
 public:
 
   struct State {
@@ -22,6 +24,7 @@ public:
       SPOOLING
     } playType;
 
+    // whether these features are active in this state
     bool doSwitchTracks() const;
     bool doTapeOps() const;
     bool doPlayAudio() const;
@@ -82,19 +85,17 @@ public:
   void preProcess(uint nframes);
   void postProcess(uint nframes);
 
-  top1::TapeTime getBarTime(BarPos bar);
-  top1::TapeTime getBarTimeRel(BarPos bar);
-  void goToBar(BarPos bar);
-  void goToBarRel(BarPos bars);
+  top1::TapeTime position() const { return tapePosition; }
 
   void loopInHere();
   void loopOutHere();
   void goToLoopIn();
   void goToLoopOut();
 
-  BarPos closestBar(top1::TapeTime time);
+  void goToBar(BeatPos bar);
+  void goToBarRel(BeatPos bars);
 
-  void display();
+  void display() override;
 };
 
 class TapeScreen : public ui::ModuleScreen<TapeModule> {

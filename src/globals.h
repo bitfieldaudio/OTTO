@@ -11,6 +11,7 @@
 #include "ui/mainui.h"
 #include "modules/tape.h"
 #include "modules/mixer.h"
+#include "modules/metronome.h"
 #include "audio/jack.h"
 #include "audio/midi.h"
 #include "util/datafile.h"
@@ -56,6 +57,7 @@ public:
   module::EffectModuleDispatcher effect;
   TapeModule tapedeck;
   MixerModule mixer;
+  module::Metronome metronome;
 
   //TODO: status codes etc
   void exit() {

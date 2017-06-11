@@ -250,4 +250,5 @@ void JackAudio::process(uint nframes) {
   GLOB.effect.process(nframes);
   GLOB.tapedeck.postProcess(nframes);
   GLOB.mixer.process(nframes);
+  GLOB.metronome.process(nframes);
 }
