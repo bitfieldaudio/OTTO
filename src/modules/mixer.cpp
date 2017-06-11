@@ -29,6 +29,7 @@ void MixerModule::process(uint nframes) {
         lMix += trackBuffer[f][t] * data.track[t].level * (1-data.track[t].pan);
         rMix += trackBuffer[f][t] * data.track[t].level * (1+data.track[t].pan);
       }
+      trackGraph[t].add(trackBuffer[f][t] * data.track[t].level);
     }
     GLOB.audioData.outL[f] =
       lMix + GLOB.audioData.proc[f] * GLOB.tapedeck.data.procGain;
@@ -124,6 +125,8 @@ void MixerScreen::drawMixerSegment(
   }
   Color muteCol = (module->data.track[track-1].muted) ? COLOR_RED : COLOR_GRAY60;
   float mix = module->data.track[track-1].level;
+  float graph = module->trackGraph[track-1].clip();
+  module->trackGraph[track-1].clear();
   float pan = module->data.track[track-1].pan;
 
   ctx.save();
@@ -149,7 +152,7 @@ void MixerScreen::drawMixerSegment(
   ctx.circle(30, 35, 5);
   ctx.fill();
 
-  float angle = (mix - 1) * M_PI;
+  float angle = (graph - 1) * M_PI;
   ctx.strokeStyle(COLOR_WHITE);
   ctx.lineWidth(2);
   ctx.beginPath();

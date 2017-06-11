@@ -201,10 +201,6 @@ void JackAudio::process(uint nframes) {
 
   // Midi events
   {
-    // Clear old events
-    for (auto evt : GLOB.midiEvents) {
-      delete evt;
-    }
     GLOB.midiEvents.clear();
 
     // Get new ones
@@ -214,7 +210,7 @@ void JackAudio::process(uint nframes) {
     jack_midi_event_t event;
     for (uint i = 0; i < nevents; i++) {
       jack_midi_event_get(&event, midiBuf, i);
-      MidiEvent mEvent;
+      BaseMidiEvent mEvent;
 
       mEvent.channel = event.buffer[0] & 0b00001111;
       mEvent.data = event.buffer + 1;
@@ -222,20 +218,20 @@ void JackAudio::process(uint nframes) {
 
       byte type = event.buffer[0] >> 4;
       switch (type) {
-      case MidiEvent::NOTE_OFF:
+      case BaseMidiEvent::NOTE_OFF:
         // LOGD << "NOTE_OFF";
-        mEvent.type = MidiEvent::NOTE_OFF;
-        GLOB.midiEvents.push_back(new NoteOffEvent(mEvent));
+        mEvent.type = BaseMidiEvent::NOTE_OFF;
+        GLOB.midiEvents.emplace_back(NoteOffEvent(mEvent));
         break;
-      case MidiEvent::NOTE_ON:
+      case BaseMidiEvent::NOTE_ON:
         // LOGD << "NOTE_ON";
-        mEvent.type = MidiEvent::NOTE_ON;
-        GLOB.midiEvents.push_back(new NoteOnEvent(mEvent));
+        mEvent.type = BaseMidiEvent::NOTE_ON;
+        GLOB.midiEvents.emplace_back(NoteOnEvent(mEvent));
         break;
-      case MidiEvent::CONTROL_CHANGE:
+      case BaseMidiEvent::CONTROL_CHANGE:
         // LOGD << "CONTROL_CHANGE";
-        mEvent.type = MidiEvent::CONTROL_CHANGE;
-        GLOB.midiEvents.push_back(new ControlChangeEvent(mEvent));
+        mEvent.type = BaseMidiEvent::CONTROL_CHANGE;
+        GLOB.midiEvents.emplace_back(ControlChangeEvent(mEvent));
         break;
       }
     }

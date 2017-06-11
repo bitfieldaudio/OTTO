@@ -1,10 +1,12 @@
 #pragma once
 
-struct MidiEvent {
+#include <mapbox/variant.hpp>
+
+struct BaseMidiEvent {
 
   typedef unsigned char byte;
 
-  virtual ~MidiEvent() {}
+  virtual ~BaseMidiEvent() {}
 
   enum EventType {
     NOTE_OFF = 0b1000,
@@ -20,26 +22,33 @@ struct MidiEvent {
 
 };
 
-struct NoteOnEvent : public MidiEvent {
+
+struct NoteOnEvent : public BaseMidiEvent {
   byte key = data[0];
   byte velocity = data[1];
 
-  NoteOnEvent(MidiEvent event) : MidiEvent(event) {};
+  NoteOnEvent(BaseMidiEvent event) : BaseMidiEvent(event) {};
 };
 
-struct NoteOffEvent : public MidiEvent {
+struct NoteOffEvent : public BaseMidiEvent {
   byte key = data[0];
   byte velocity = data[1];
 
-  NoteOffEvent(MidiEvent event) : MidiEvent(event) {};
+  NoteOffEvent(BaseMidiEvent event) : BaseMidiEvent(event) {};
 };
 
-struct ControlChangeEvent : public MidiEvent {
-  byte controller = data[0];
+struct ControlChangeEvent : public BaseMidiEvent {
+  byte controler = data[0];
   byte value = data[1];
 
-  ControlChangeEvent(MidiEvent event) : MidiEvent(event) {};
+  ControlChangeEvent(BaseMidiEvent event) : BaseMidiEvent(event) {};
 };
+
+using MidiEvent = mapbox::util::variant<
+    NoteOnEvent,
+    NoteOffEvent,
+    ControlChangeEvent,
+    BaseMidiEvent>;
 
 namespace midi {
 void generateFreqTable(float tuning = 440.0);

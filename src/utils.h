@@ -70,9 +70,9 @@ struct AudioAverage {
     average = sum/nsamples;
   }
   void clear() {
-    sum = 0;
-    nsamples = 0;
-    average = 0;
+    sum /= 4.0;
+    nsamples /= 4;
+    average = sum/nsamples;
   }
 
   float clip() const {

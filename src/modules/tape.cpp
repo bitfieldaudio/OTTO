@@ -152,6 +152,26 @@ void TapeModule::goToBarRel(BeatPos bars) {
   if (state.doJumps()) tapeBuffer.goTo(GLOB.metronome.getBarTimeRel(bars));
 }
 
+int TapeModule::timeUntil(TapeTime tt) {
+  TapeTime ttUntil = state.forPlayDir<TapeTime>(
+    [&] {return tt - position();},
+    [&] {return position() - tt;});
+  if (state.doLoop() && state.looping) {
+    TapeTime leftTillOut = state.forPlayDir<TapeTime>(
+      [&] {return loopSect.out - position();},
+      [&] {return position() - loopSect.in;});
+    if (leftTillOut >= 0 && leftTillOut < ttUntil) {
+      return state.forPlayDir<int>(
+        [&] { return (leftTillOut + (tt - loopSect.out)) ;},
+        [&] { return (leftTillOut + (loopSect.in - tt)) ;})/state.playSpeed;
+    } else {
+      return ttUntil/state.playSpeed;
+    }
+  } else {
+    return ttUntil/state.playSpeed;
+  }
+}
+
 // Audio Processing
 void TapeModule::preProcess(uint nframes) {
 
@@ -200,7 +220,7 @@ void TapeModule::preProcess(uint nframes) {
   // Start recording by pressing a key
   if (!state.recording() && state.doStartRec() && state.readyToRec) {
     for (auto event : GLOB.midiEvents) {
-      if (event->type == MidiEvent::NOTE_ON) {
+      if (event.is<NoteOnEvent>()) {
         state.play(1);
         break;
       }

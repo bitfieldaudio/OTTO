@@ -196,11 +196,13 @@ public:
 
 class SynthModule : public Module {
 public:
+  using Module::Module;
   virtual void process(uint nframes) = 0;
 };
 
 class EffectModule : public Module {
 public:
+  using Module::Module;
   virtual void process(uint nframes) = 0;
 };
 

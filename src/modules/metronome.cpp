@@ -23,7 +23,9 @@ void Metronome::process(uint nframes) {
   float beat = GLOB.tapedeck.position() * BPsample;
   uint framesTillNext = std::fmod(beat, 1)/BPsample * GLOB.tapedeck.state.playSpeed;
 
-  if (framesTillNext < nframes && GLOB.tapedeck.state.playing()) {
+  if (framesTillNext < nframes
+   && GLOB.tapedeck.state.playing()
+   && GLOB.tapedeck.state.playSpeed/BPsample > 1) {
     FaustWrapper::process(framesTillNext);
     data.trigger = true;
     FaustWrapper::process(nframes - framesTillNext);
@@ -63,7 +65,19 @@ TapeTime Metronome::getBarTime(BeatPos bar) {
 }
 
 TapeTime Metronome::getBarTimeRel(BeatPos bar) {
-  return getBarTime(closestBar(GLOB.tapedeck.position()) + bar);
+  if (bar == 0) return closestBar(GLOB.tapedeck.position());
+  double fpb = (GLOB.samplerate)*60/(double)data.bpm;
+  BeatPos curBar = GLOB.tapedeck.position()/fpb;
+  TapeTime curBarTime = getBarTime(curBar);
+  TapeTime diff = GLOB.tapedeck.position() - curBarTime;
+  LOGD << diff;
+  if (diff > fpb/2) {
+    curBar += 1;
+    if (bar > 0) bar -= 1;
+  } else if (diff > 0) {
+    if (bar < 0) bar += 1;
+  }
+  return getBarTime(curBar + bar);
 }
 
 bool MetronomeScreen::keypress(ui::Key key) {

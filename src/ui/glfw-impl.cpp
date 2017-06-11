@@ -72,17 +72,17 @@ static ui::Key keyboardKey(int xKey, int mods) {
   case GLFW_KEY_9:     return K_9;
   case GLFW_KEY_0:     return K_0;
 
-  case GLFW_KEY_T:     if (mods & GLFW_MOD_CONTROL) return K_TAPE;
-  case GLFW_KEY_Y:     if (mods & GLFW_MOD_CONTROL) return K_MIXER;
-  case GLFW_KEY_U:     if (mods & GLFW_MOD_CONTROL) return K_SYNTH;
-  case GLFW_KEY_G:     if (mods & GLFW_MOD_CONTROL) return K_METRONOME;
+  case GLFW_KEY_T:     if (mods & GLFW_MOD_CONTROL) return K_TAPE; else break;
+  case GLFW_KEY_Y:     if (mods & GLFW_MOD_CONTROL) return K_MIXER; else break;
+  case GLFW_KEY_U:     if (mods & GLFW_MOD_CONTROL) return K_SYNTH; else break;
+  case GLFW_KEY_G:     if (mods & GLFW_MOD_CONTROL) return K_METRONOME; else break;
 
   case GLFW_KEY_L:     return K_LOOP;
   case GLFW_KEY_I:     return K_LOOP_IN;
   case GLFW_KEY_O:     return K_LOOP_OUT;
 
   case GLFW_KEY_X:     return K_CUT;
-  case GLFW_KEY_C:     if (mods & GLFW_MOD_CONTROL) return K_LIFT;
+  case GLFW_KEY_C:     if (mods & GLFW_MOD_CONTROL) return K_LIFT; else break;
   case GLFW_KEY_V:     if (mods & GLFW_MOD_CONTROL) return K_DROP;
 
   case GLFW_KEY_LEFT_SHIFT:
@@ -91,6 +91,7 @@ static ui::Key keyboardKey(int xKey, int mods) {
 
   default:             return K_NONE;
   }
+  return K_NONE;
 }
 
 

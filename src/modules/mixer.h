@@ -24,6 +24,8 @@ public:
     }
   } data;
 
+  top1::AudioAverage trackGraph[4];
+
   MixerModule();
 
   void display();

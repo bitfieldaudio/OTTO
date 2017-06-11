@@ -83,7 +83,9 @@ public:
   uint overruns = 0;
 
   void preProcess(uint nframes);
-  void postProcess(uint nframes);
+  void postProcess(uint nframes); 
+  void display() override;
+
 
   top1::TapeTime position() const { return tapePosition; }
 
@@ -95,7 +97,7 @@ public:
   void goToBar(BeatPos bar);
   void goToBarRel(BeatPos bars);
 
-  void display() override;
+  int timeUntil(top1::TapeTime tt);
 };
 
 class TapeScreen : public ui::ModuleScreen<TapeModule> {
