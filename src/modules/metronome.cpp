@@ -220,10 +220,6 @@ void MetronomeScreen::drawMetronome(NanoCanvas::Canvas &ctx) {
   {
     ctx.save();
 
-    auto smoothMotion = [] (float x, float a) -> float {
-      return x * (2*a + x) / (2*a + 1); // section of a parabola from x = a
-    };
-
     float BPsample(module->data.bpm/60.0/(float)GLOB.samplerate);
     float beat(GLOB.tapedeck.position() * BPsample);
     float factor((std::fmod(beat, 2)));
@@ -277,7 +273,7 @@ void MetronomeScreen::drawMetronome(NanoCanvas::Canvas &ctx) {
   ctx.font(FONT_LIGHT);
   ctx.font(32);
   ctx.textAlign(TextAlign::Center, TextAlign::Middle);
-  ctx.fillText(std::to_string((int)module->data.bpm.get()), 50, 120);
+  ctx.fillText(std::to_string((int)module->data.bpm), 50, 120);
 
 }
 

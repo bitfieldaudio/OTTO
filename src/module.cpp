@@ -4,6 +4,43 @@
 
 namespace module {
 
+Opt<bool>::Opt(Data *data,
+ std::string name,
+ bool init,
+ bool preserve) :
+  TypedField<bool>(preserve), init (init) {
+  data->addField(name, this);
+};
+
+Opt<float>::Opt(Data *data,
+ std::string name,
+ float init,
+ float min,
+ float max,
+ float step,
+ bool preserve)
+  : TypedField<float>(preserve),
+    init (init), min(min),
+    max(max),
+    step(step) {
+  data->addField(name, this);
+};
+
+Opt<int>::Opt(Data *data,
+ std::string name,
+ int init,
+ int min,
+ int max,
+ int step,
+ bool preserve)
+  : TypedField<int>(preserve),
+    init (init), min(min),
+    max(max),
+    step(step) {
+  data->addField(name, this);
+};
+
+
 top1::tree::Node Data::serialize() {
   top1::tree::Map node;
   for (auto field : fields) {

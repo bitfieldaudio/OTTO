@@ -11,21 +11,22 @@
 #include <faust/dsp/dsp.h>
 
 #include <plog/Log.h>
+#include <match.h>
 
 #include "module.h"
 
 using FaustDSP = dsp;
-
-enum OPTTYPE {
-  FLOAT,
-  BOOL
-};
 
 class FaustOptions : public UI {
 
   std::string boxPrefix;
 
 public:
+
+  enum OPTTYPE {
+    FLOAT,
+    BOOL
+  };
 
   module::Data *data;
 
@@ -119,7 +120,23 @@ public:
     std::string fullLabel = boxPrefix + label;
     for (auto &opt : data->fields) {
       if (opt.first == fullLabel) {
-        opt.second->dataPtr = ptr;
+        opt.second.match(
+          [&] (module::Opt<bool> *f) {
+           assert(type == BOOL);
+           f->addChangeHandler([ptr] (auto *f) { *ptr = f->get(); });
+          },
+          [&] (module::Opt<float> *f) {
+            assert(type == FLOAT);
+            f->addChangeHandler([ptr] (auto *f) { *ptr = f->get(); });
+          },
+          [&] (module::Opt<int> *f) {
+            assert(type == FLOAT);
+            f->addChangeHandler([ptr] (auto *f) { *ptr = f->get(); });
+          },
+          [&] (auto *) {
+            LOGE << "Unrecognized Opt type";
+          }
+        );
         matched = 1;
         break;
       }

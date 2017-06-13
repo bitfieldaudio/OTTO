@@ -4,63 +4,78 @@
 #include <map>
 #include <string>
 #include <memory>
+#include <functional>
 #include <cstdlib>
+#include <type_traits>
+#include <limits>
 #include <plog/Log.h>
 
 #include "utils.h"
 #include "util/tree.h"
+#include "util/poly-ptr.h"
 
 namespace module {
-class Data {
+
+template<class T> struct isValidFieldType { static constexpr bool value = false; };
+template<> struct isValidFieldType<float> { static constexpr bool value = true; };
+template<> struct isValidFieldType<bool> { static constexpr bool value = true; };
+template<> struct isValidFieldType<int> { static constexpr bool value = true; };
+
+class Field {
 public:
-  class Field {
-  public:
-    float *dataPtr;
-    bool preserve = true;
+  bool preserve = true;
 
-    Field() {}
-    Field(float *dataPtr, bool preserve = true) :
-      dataPtr(dataPtr), preserve(preserve) {}
+  Field(bool preserve = true) :
+    preserve(preserve) {}
 
-    virtual void reset() { *dataPtr = 0; }
+  virtual void reset() {}
 
-    virtual top1::tree::Node serialize() {
-      return top1::tree::Float{*dataPtr};
-    }
+  virtual top1::tree::Node serialize() { return top1::tree::Null(); };
 
-    virtual void deserialize(top1::tree::Node n) {
-      n.match([&] (top1::tree::Float f) { *dataPtr = f.value; }, [] (auto) {});
-    }
-  };
+  virtual void deserialize(top1::tree::Node) {}
+};
 
+template<class T, typename = std::enable_if_t<isValidFieldType<T>::value>>
+class TypedField : public Field {
+protected:
+  T value;
+  std::vector<std::function<void(TypedField<T>*)>> onChange;
+public:
 
-  std::map<std::string, Field*> fields;
+  using Field::Field;
 
-  void subGroup(std::string name, Data &subgroup) {
-    for (auto field : subgroup.fields) {
-      fields[name + "/" + field.first] = field.second;
+  void changed() {
+    for (auto h : onChange) {
+      h(this);
     }
   }
 
-  void addField(std::string name, Field *field) {
-    fields[name] = field;
-  };
-  virtual top1::tree::Node serialize();
-  virtual void deserialize(top1::tree::Node);
+  void addChangeHandler(std::function<void(TypedField<T>*)> f) {
+    onChange.push_back(f);
+  }
+
+  virtual T set(T newVal) {
+    value = newVal;
+    changed();
+    return value;
+  }
+  virtual T get() const {
+    return value;
+  }
+
+  T operator = (T newVal) { return set(newVal); };
+  T operator()() const { return get(); }
+  operator T() const { return get(); }
 };
 
-template<class T>
-class Opt : public Data::Field {
-public:
-  Opt() {};
-  Opt(Data *data);
 
-  virtual void set(T value);
-  virtual T get();
-};
+// Forward Declarations
+class Data;
+
+template<class T> class Opt;
 
 template<>
-class Opt<float> : public Data::Field {
+class Opt<float> : public TypedField<float> {
 public:
   float init;
   float min;
@@ -74,51 +89,98 @@ public:
     float min = 0,
     float max = 1,
     float step = 0.01,
-    bool preserve = true,
-    float *dataPtr = new float):
-    Field(dataPtr, preserve), init (init), min(min), max(max), step(step) {
-    data->addField(name, this);
-  };
+    bool preserve = true);
 
   virtual float inc() {
-    return set(*dataPtr + step);
+    return set(value + step);
   }
   virtual float dec() {
-    return set(*dataPtr - step);
+    return set(value - step);
   }
-  virtual float set(float newVal) {
-    return *dataPtr = top1::withBounds(min, max, newVal);
-  }
-  virtual float get() const {
-    return *dataPtr;
+  float set(float newVal) override {
+    value = top1::withBounds(min, max, newVal);
+    changed();
+    return value;
   }
   void reset() override {
-    *dataPtr = init;
+    value = init;
   }
 
   virtual float normalized() const {
-    return (*dataPtr - min) / max;
+    return (value - min) / max;
   }
 
   float operator++() { return inc(); };
   float operator++(int) { return inc(); };
   float operator--() { return dec(); };
   float operator--(int) { return dec(); };
-  float operator = (float newVal) { return set(newVal); };
-  float operator()() const { return get(); }
-  operator float() const { return get(); }
 
-  virtual top1::tree::Node serialize() {
-    return top1::tree::Float{*dataPtr};
+  using TypedField::operator=;
+  using TypedField::operator float;
+
+  top1::tree::Node serialize() override {
+    return top1::tree::Float{value};
   }
 
-  virtual void deserialize(top1::tree::Node n) {
-    n.match([&] (top1::tree::Float f) { *dataPtr = f.value; }, [] (auto) {});
+  void deserialize(top1::tree::Node n) override {
+    n.match([&] (top1::tree::Float f) { value = f.value; }, [] (auto) {});
   }
 };
 
 template<>
-class Opt<bool> : public Data::Field {
+class Opt<int> : public TypedField<int> {
+public:
+  int init;
+  int min;
+  int max;
+  int step;
+
+  Opt() {};
+  Opt(Data *data,
+    std::string name,
+    int init = 0,
+    int min = std::numeric_limits<int>::min(),
+    int max = std::numeric_limits<int>::max(),
+    int step = 1,
+    bool preserve = true);
+
+  virtual int inc() {
+    return set(value + step);
+  }
+  virtual int dec() {
+    return set(value - step);
+  }
+  int set(int newVal) override {
+    value = top1::withBounds(min, max, newVal);
+    changed();
+    return value;
+  }
+  void reset() override {
+    set(init);
+  }
+
+  virtual int normalized() const {
+    return (value - min) / max;
+  }
+
+  int operator++() { return inc(); };
+  int operator++(int) { return inc(); };
+  int operator--() { return dec(); };
+  int operator--(int) { return dec(); };
+  using TypedField::operator=;
+  using TypedField::operator int;
+
+  top1::tree::Node serialize() override {
+    return top1::tree::Int{value};
+  }
+
+  void deserialize(top1::tree::Node n) override {
+    n.match([&] (top1::tree::Int f) { value = f.value; }, [] (auto) {});
+  }
+};
+
+template<>
+class Opt<bool> : public TypedField<bool> {
 public:
   bool init;
 
@@ -126,55 +188,60 @@ public:
   Opt(Data *data,
     std::string name,
     bool init = false,
-    bool preserve = true,
-    float *dataPtr = new float) :
-    Field(dataPtr, preserve), init (init) {
-    data->addField(name, this);
-  };
+    bool preserve = true);
+
   virtual bool toggle() {
-    return *dataPtr = !*dataPtr;
+    return value = !value;
   }
-  virtual bool set(bool newVal) {
-    return *dataPtr = newVal;
-  }
-  virtual bool get() const {
-    return *dataPtr;
-  }
+
   void reset() override {
-    *dataPtr = init;
+    set(init);
   }
 
-  bool operator = (bool newVal) { return set(newVal); };
-  bool operator()() const {return get(); }
-  operator bool() const { return get(); }
+  using TypedField::operator=;
+  using TypedField::operator bool;
 
-  virtual top1::tree::Node serialize() {
-    return top1::tree::Bool{bool(*dataPtr)};
+  top1::tree::Node serialize() override {
+    return top1::tree::Bool{bool(value)};
   }
 
-  virtual void deserialize(top1::tree::Node n) {
-    n.match([&] (top1::tree::Bool b) { *dataPtr = b.value; }, [] (auto) {});
+  void deserialize(top1::tree::Node n) override {
+    n.match([&] (top1::tree::Bool b) { value = b.value; }, [] (auto) {});
   }
 };
 
 class ExpOpt : public Opt<float> {
 public:
-  ExpOpt() {};
-  ExpOpt(Data *data,
-   std::string name,
-   float init = 0,
-   float min = 0,
-   float max = 1,
-   float step = 0.01,
-   bool preserve = false,
-   float *dataPtr = new float):
-    Opt<float>(data, name, init, min, max, step, preserve, dataPtr) {};
- 
-  float inc() override {return set(*dataPtr * step);}
-  float dec() override {return set(*dataPtr / step);}
+
+  using Opt<float>::Opt;
+
+  float inc() override {return set(value * step);}
+  float dec() override {return set(value / step);}
 };
 
 
+using FieldPtr = top1::PolyPtr<Field, Opt<bool>, Opt<float>, Opt<int>>;
+
+
+class Data {
+public:
+
+  std::map<std::string, FieldPtr> fields;
+
+  void subGroup(std::string name, Data &subgroup) {
+    for (auto field : subgroup.fields) {
+      fields[name + "/" + field.first] = field.second;
+    }
+  }
+
+  template<typename T>
+  void addField(std::string name, T *field) {
+    fields[name] = field;
+  };
+
+  virtual top1::tree::Node serialize();
+  virtual void deserialize(top1::tree::Node);
+};
 
 class Module {
 public:
