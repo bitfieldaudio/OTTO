@@ -23,6 +23,19 @@ The tapedeck is completed, with a few bugs left to iron out, and with the additi
  - [ ] Modulation - LFO mainly
 And from there its just modules, modules, modules
 
+## Installation
+Currently in progress. Using docker to create a consistent development environment
+
+```bash
+cd TOP-1
+docker build . -t top-1/topisani
+docker run -it --rm --privileged=true\
+	--device=/dev/snd:/dev/snd\
+	--volume /tmp/.X11-unix:/tmp.X11-unix\
+	--volume /opt/TOP-1:/top-1 tdball/top-1\
+	bash
+
+
 # Getting Involved
 If you're up for it, I'd love some help, for a lot of different things, like
  - Software testing
