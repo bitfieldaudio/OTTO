@@ -148,11 +148,11 @@ void JackAudio::setupPorts() {
   auto midiOut = findPorts(JackPortIsPhysical | JackPortIsInput, PortType::MIDI);
 
   if (midiIn.empty()) {
-    LOGF << "Couldn't find physical midi input port";
+    LOGE << "Couldn't find physical midi input port";
     return;
   }
   if (midiOut.empty()) {
-    LOGF << "Couldn't find physical midi output port";
+    LOGE << "Couldn't find physical midi output port";
     return;
   }
 
@@ -174,7 +174,8 @@ std::vector<std::string> JackAudio::findPorts(int criteria, PortType type) {
     (type == PortType::AUDIO) ? "audio" : "midi",
     criteria);
   std::vector<std::string> ret;
-  for (int i = 0; ports[i] != 0; i++) {
+  if (ports == nullptr) return ret;
+  for (int i = 0; ports[i] != nullptr; i++) {
     ret.push_back(ports[i]);
   }
   return ret;
