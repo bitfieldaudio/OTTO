@@ -144,7 +144,7 @@ class BasicPolyPtr {
   };
 
   TypeIndex typeIndex;
-  PtrType data = (Base*)malloc(sizeof(Base*));
+  PtrType data;
 
 
 public:
@@ -173,10 +173,10 @@ public:
   T *get() {
     TypeIndex req = getTypeIndex<T>::index;
     if (typeIndex == req) {
-      return (T *)(Base *)data;
+      return (T *)(Base *) data;
     }
-    if (typeIndex == getTypeIndex<T>::index) {
-      return (T *)(Base *)data;
+    if (req == baseType) {
+      return (T *)(Base *) data;
     } else {
       throw Exception(__PRETTY_FUNCTION__);
     }
@@ -213,9 +213,34 @@ public:
   }
 };
 
+namespace detail {
+
+template<typename T>
+struct smart_poly_storage {
+  std::unique_ptr<T> data;
+
+  smart_poly_storage() {}
+  smart_poly_storage(smart_poly_storage &o) {
+    data.swap(o.data);
+  }
+  smart_poly_storage(smart_poly_storage &&o) {
+    data.swap(o.data);
+  }
+  smart_poly_storage(T* p) {
+    data = p;
+  }
+
+  operator T*() {
+    return data.get();
+  }
+
+  decltype(auto) operator=(T *ptr) { return data.reset(ptr); }
+};
+};
+
 template<typename Base, typename ...Types>
 using PolyPtr = BasicPolyPtr<Base *, Base, Types...>;
 
 template<typename Base, typename ...Types>
-using SmartPolyPtr = BasicPolyPtr<std::unique_ptr<Base>, Base, Types...>;
+using SmartPolyPtr = BasicPolyPtr<detail::smart_poly_storage<Base>, Base, Types...>;
 }

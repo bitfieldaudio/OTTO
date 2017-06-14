@@ -210,7 +210,7 @@ void JackAudio::process(uint nframes) {
     jack_midi_event_t event;
     for (uint i = 0; i < nevents; i++) {
       jack_midi_event_get(&event, midiBuf, i);
-      BaseMidiEvent mEvent;
+      MidiEvent mEvent;
 
       mEvent.channel = event.buffer[0] & 0b00001111;
       mEvent.data = event.buffer + 1;
@@ -218,20 +218,20 @@ void JackAudio::process(uint nframes) {
 
       byte type = event.buffer[0] >> 4;
       switch (type) {
-      case BaseMidiEvent::NOTE_OFF:
+      case MidiEvent::NOTE_OFF:
         // LOGD << "NOTE_OFF";
-        mEvent.type = BaseMidiEvent::NOTE_OFF;
-        GLOB.midiEvents.emplace_back(NoteOffEvent(mEvent));
+        mEvent.type = MidiEvent::NOTE_OFF;
+        GLOB.midiEvents.emplace_back(new NoteOffEvent(mEvent));
         break;
-      case BaseMidiEvent::NOTE_ON:
+      case MidiEvent::NOTE_ON:
         // LOGD << "NOTE_ON";
-        mEvent.type = BaseMidiEvent::NOTE_ON;
-        GLOB.midiEvents.emplace_back(NoteOnEvent(mEvent));
+        mEvent.type = MidiEvent::NOTE_ON;
+        GLOB.midiEvents.emplace_back(new NoteOnEvent(mEvent));
         break;
-      case BaseMidiEvent::CONTROL_CHANGE:
+      case MidiEvent::CONTROL_CHANGE:
         // LOGD << "CONTROL_CHANGE";
-        mEvent.type = BaseMidiEvent::CONTROL_CHANGE;
-        GLOB.midiEvents.emplace_back(ControlChangeEvent(mEvent));
+        mEvent.type = MidiEvent::CONTROL_CHANGE;
+        GLOB.midiEvents.emplace_back(new ControlChangeEvent(mEvent));
         break;
       }
     }

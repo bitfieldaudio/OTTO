@@ -16,21 +16,21 @@ SimpleDrumsModule::~SimpleDrumsModule() {
 }
 
 void SimpleDrumsModule::process(uint nframes) {
-  for (auto nEvent : GLOB.midiEvents) {
-    nEvent.match([&] (NoteOnEvent &e) {
-       currentVoiceIdx = e.key % 24;
+  for (auto &&nEvent : GLOB.midiEvents) {
+    nEvent.match([&] (NoteOnEvent *e) {
+       currentVoiceIdx = e->key % 24;
        voices[currentVoiceIdx].data.trigger = 1;
-       voices[currentVoiceIdx].data.envelope.sustain = float(e.velocity)/128.f;
-     }, [] (BaseMidiEvent) {});
+       voices[currentVoiceIdx].data.envelope.sustain = float(e->velocity)/128.f;
+     }, [] (MidiEvent *) {});
   };
-  for (auto &voice : voices) {
+  for (auto &&voice : voices) {
     voice.process(nframes);
     voice.data.trigger = 0;
   }
-  for (auto nEvent : GLOB.midiEvents) {
-    nEvent.match([&] (NoteOffEvent &e) {
-       voices[e.key % 24].data.trigger = 0;
-     }, [] (BaseMidiEvent) {});
+  for (auto &&nEvent : GLOB.midiEvents) {
+    nEvent.match([&] (NoteOffEvent *e) {
+       voices[e->key % 24].data.trigger = 0;
+     }, [] (MidiEvent *) {});
   };
 }
 

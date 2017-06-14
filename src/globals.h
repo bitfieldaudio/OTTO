@@ -51,7 +51,7 @@ public:
     float *proc;
   } audioData;
 
-  std::vector<MidiEvent> midiEvents;
+  std::vector<MidiEventPtr> midiEvents;
 
   module::SynthModuleDispatcher synth;
   module::EffectModuleDispatcher effect;

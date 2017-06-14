@@ -1,12 +1,12 @@
 #pragma once
 
-#include <mapbox/variant.hpp>
+#include "util/poly-ptr.h"
 
-struct BaseMidiEvent {
+struct MidiEvent {
 
   typedef unsigned char byte;
 
-  virtual ~BaseMidiEvent() {}
+  virtual ~MidiEvent() {}
 
   enum EventType {
     NOTE_OFF = 0b1000,
@@ -23,32 +23,31 @@ struct BaseMidiEvent {
 };
 
 
-struct NoteOnEvent : public BaseMidiEvent {
+struct NoteOnEvent : public MidiEvent {
   byte key = data[0];
   byte velocity = data[1];
 
-  NoteOnEvent(BaseMidiEvent event) : BaseMidiEvent(event) {};
+  NoteOnEvent(MidiEvent event) : MidiEvent(event) {};
 };
 
-struct NoteOffEvent : public BaseMidiEvent {
+struct NoteOffEvent : public MidiEvent {
   byte key = data[0];
   byte velocity = data[1];
 
-  NoteOffEvent(BaseMidiEvent event) : BaseMidiEvent(event) {};
+  NoteOffEvent(MidiEvent event) : MidiEvent(event) {};
 };
 
-struct ControlChangeEvent : public BaseMidiEvent {
+struct ControlChangeEvent : public MidiEvent {
   byte controler = data[0];
   byte value = data[1];
 
-  ControlChangeEvent(BaseMidiEvent event) : BaseMidiEvent(event) {};
+  ControlChangeEvent(MidiEvent event) : MidiEvent(event) {};
 };
 
-using MidiEvent = mapbox::util::variant<
+using MidiEventPtr = top1::SmartPolyPtr<MidiEvent,
     NoteOnEvent,
     NoteOffEvent,
-    ControlChangeEvent,
-    BaseMidiEvent>;
+    ControlChangeEvent>;
 
 namespace midi {
 void generateFreqTable(float tuning = 440.0);

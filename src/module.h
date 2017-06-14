@@ -123,7 +123,7 @@ public:
   }
 
   void deserialize(top1::tree::Node n) override {
-    n.match([&] (top1::tree::Float f) { value = f.value; }, [] (auto) {});
+    n.match([&] (top1::tree::Float f) { set(f.value); }, [] (auto) {});
   }
 };
 
@@ -175,7 +175,7 @@ public:
   }
 
   void deserialize(top1::tree::Node n) override {
-    n.match([&] (top1::tree::Int f) { value = f.value; }, [] (auto) {});
+    n.match([&] (top1::tree::Int i) { set(i.value); }, [] (auto) {});
   }
 };
 
@@ -206,7 +206,7 @@ public:
   }
 
   void deserialize(top1::tree::Node n) override {
-    n.match([&] (top1::tree::Bool b) { value = b.value; }, [] (auto) {});
+    n.match([&] (top1::tree::Bool b) { set(b.value); }, [] (auto) {});
   }
 };
 
@@ -229,7 +229,7 @@ public:
   std::map<std::string, FieldPtr> fields;
 
   void subGroup(std::string name, Data &subgroup) {
-    for (auto field : subgroup.fields) {
+    for (auto &&field : subgroup.fields) {
       fields[name + "/" + field.first] = field.second;
     }
   }
