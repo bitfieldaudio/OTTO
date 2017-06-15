@@ -29,12 +29,18 @@ Currently in progress. Using docker to create a consistent development environme
 ```bash
 cd TOP-1
 docker build . -t top-1/topisani
-docker run -it --rm --privileged=true\
-	--device=/dev/snd:/dev/snd\
-	--volume /tmp/.X11-unix:/tmp.X11-unix\
-	--volume /opt/TOP-1:/top-1 tdball/top-1\
-	bash
-
+```
+Then you will be able to run it using
+```bash
+sh dockerrun.sh
+```
+This will build the source, and run TOP-1, patchage and jack-keyboard.  
+### Pulseaudio
+If you are using pulseaudio, you may have to pause it while running the docker container. This means you won't hear any sound from other applications.
+To automatically suspend pulseaudio and restart it when TOP-1 closes, run the container like this:
+```bash
+pasuspender -- sh dockerrun.sh
+```
 
 # Getting Involved
 If you're up for it, I'd love some help, for a lot of different things, like
