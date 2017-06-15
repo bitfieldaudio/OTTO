@@ -33,7 +33,7 @@ apt install jackd\
     pkg-config\
     libglfw3-dev\
     libedit-dev\
-    libjack-jack2-dev\
+    libjack-jackd2-dev\
     libgles2-mesa-dev -y
 ```
 I recommend also installing `patchage` and `jack-keyboard`, but they are in no way required.
