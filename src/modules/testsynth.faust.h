@@ -1,6 +1,6 @@
 /* ------------------------------------------------------------
 name: "TestSynth"
-Code generated with Faust 2.0.a64 (http://faust.grame.fr)
+Code generated with Faust 2.0.a73 (http://faust.grame.fr)
 ------------------------------------------------------------ */
 
 #ifndef  __faust_testsynth_H__
@@ -110,9 +110,9 @@ class faust_testsynth : public dsp {
  private:
 	
 	int fSamplingFreq;
-	float fRec1[2];
 	float fConst0;
 	FAUSTFLOAT fVslider0;
+	float fRec1[2];
 	
  public:
 	
@@ -176,7 +176,7 @@ class faust_testsynth : public dsp {
 	
 	virtual void instanceConstants(int samplingFreq) {
 		fSamplingFreq = samplingFreq;
-		fConst0 = (1.0f / min(192000.0f, max(1.0f, float(fSamplingFreq))));
+		fConst0 = (1.0f / min(192000.0f, max(1000.0f, float(fSamplingFreq))));
 		
 	}
 	
@@ -212,7 +212,7 @@ class faust_testsynth : public dsp {
 	}
 	
 	virtual void buildUserInterface(UI* ui_interface) {
-		ui_interface->openVerticalBox("0x00");
+		ui_interface->openVerticalBox("TestSynth");
 		ui_interface->addVerticalSlider("FREQ", &fVslider0, 440.0f, 60.0f, 900.0f, 9.99999975e-05f);
 		ui_interface->closeBox();
 		

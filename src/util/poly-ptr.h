@@ -94,27 +94,6 @@ class BasicPolyPtr {
   using checkType = std::enable_if_t<
     getTypeIndex<T>::index != invalidType>;
 
-  template<typename ...Cases>
-  struct visitor;
-
-  template<typename Case>
-  struct visitor<Case> : Case {
-
-    using Case::operator();
-
-    visitor(Case _case) : Case(_case) {};
-  };
-
-  template<typename Case, typename ...Cases>
-  struct visitor<Case, Cases...> : Case, visitor<Cases...> {
-
-    using Case::operator();
-    using visitor<Cases...>::operator();
-
-    visitor(Case _case, Cases ...cases)
-      : Case(_case), visitor<Cases...>(cases...) {};
-  };
-
   template<typename F, typename R, typename ...Ts>
   struct dispatcher;
 
@@ -148,6 +127,32 @@ class BasicPolyPtr {
 
 
 public:
+
+  template<typename ...Cases>
+  struct visitor;
+
+  template<typename Case>
+  struct visitor<Case> : Case {
+
+    using Case::operator();
+
+    visitor(Case _case) : Case(_case) {};
+  };
+
+  template<typename Case, typename ...Cases>
+  struct visitor<Case, Cases...> : Case, visitor<Cases...> {
+
+    using Case::operator();
+    using visitor<Cases...>::operator();
+
+    visitor(Case _case, Cases ...cases)
+      : Case(_case), visitor<Cases...>(cases...) {};
+  };
+
+  template<typename ...Cases>
+  static visitor<Cases...> makeVisitor(Cases ...cases) {
+    return visitor<Cases...>(cases...);
+  }
 
   using first_type = std::tuple_element_t<0, std::tuple<Types...>>;
 
@@ -205,11 +210,9 @@ public:
     return dispatcher<V, R, first_type, Types...>::apply(this, std::forward<V>(v));
   }
 
-  // Magic
-
   template<typename ...Cases>
   decltype(auto) match(Cases ...cases) {
-    return visit(visitor<Cases...>(cases...));
+    return visit(makeVisitor(cases...));
   }
 };
 

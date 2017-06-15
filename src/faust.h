@@ -19,6 +19,7 @@ using FaustDSP = dsp;
 class FaustOptions : public UI {
 
   std::string boxPrefix;
+  bool atRoot = true;
 
 public:
 
@@ -33,16 +34,25 @@ public:
   FaustOptions(module::Data *data) : data (data) {}
 
   void openTabBox(const char* label) override {
-    if (strcmp(label, "0x00") != 0)
+    if (atRoot) {
+      atRoot = false;
+    } else {
       boxPrefix.append(label).append("/");
+    }
   }
   void openHorizontalBox(const char* label) override {
-    if (strcmp(label, "0x00") != 0)
+    if (atRoot) {
+      atRoot = false;
+    } else {
       boxPrefix.append(label).append("/");
+    }
   }
   void openVerticalBox(const char* label) override {
-    if (strcmp(label, "0x00") != 0)
+    if (atRoot) {
+      atRoot = false;
+    } else {
       boxPrefix.append(label).append("/");
+    }
   }
   void closeBox() override {
     uint last = 0;
@@ -114,30 +124,31 @@ public:
     FAUSTFLOAT step,
     OPTTYPE type) {
 
-    // TODO: do something with the rest of this stuff
-    bool matched = 0;
+    bool matched = false;
     std::string fullLabel = boxPrefix + label;
-    for (auto &opt : data->fields) {
+    for (auto &&opt : data->fields) {
+      auto visitor = module::FieldPtr::makeVisitor(
+        [&] (module::Opt<bool> *f) {
+          assert(type == BOOL);
+          f->addChangeHandler([ptr] (auto *f) { *ptr = f->get(); });
+        },
+        [&] (module::Opt<float> *f) {
+          assert(type == FLOAT);
+          f->addChangeHandler([ptr] (auto *f) { *ptr = f->get(); });
+        },
+        [&] (module::Opt<int> *f) {
+          assert(type == FLOAT);
+          f->addChangeHandler([ptr] (auto *f) { *ptr = f->get(); });
+        },
+        [&] (auto *) {
+          LOGE << "Unrecognized Opt type";
+        });
       if (opt.first == fullLabel) {
-        opt.second.match(
-          [&] (module::Opt<bool> *f) {
-           assert(type == BOOL);
-           f->addChangeHandler([ptr] (auto *f) { *ptr = f->get(); });
-          },
-          [&] (module::Opt<float> *f) {
-            assert(type == FLOAT);
-            f->addChangeHandler([ptr] (auto *f) { *ptr = f->get(); });
-          },
-          [&] (module::Opt<int> *f) {
-            assert(type == FLOAT);
-            f->addChangeHandler([ptr] (auto *f) { *ptr = f->get(); });
-          },
-          [&] (auto *) {
-            LOGE << "Unrecognized Opt type";
-          }
-        );
-        matched = 1;
+        opt.second.visit(visitor);
+        matched = true;
         break;
+      } else {
+        // TODO: Traverse the module data as a tree
       }
     }
     if (!matched) {
