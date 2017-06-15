@@ -14,6 +14,39 @@ To be fair, the TOP-1 is an op-1 clone. But i like to think it's a bit more than
 # Current Progress  
 The tapedeck is completed, with a few bugs left to iron out, and with the addition of the metronome, mixer, and input selector, the software is just about ready to be used for recording with external synthesizers. It runs in an OpenGLFW window, and the buttons and rotaries are emulated with keyboard shortcuts.
 
+# Keybindings
+
+| Key                 | Action              |
+|-------------------------------------------|
+| Ctrl                | (mod) Encoder Click |
+| Q                   | +Red Encoder        |
+| A                   | -Red Encoder        |
+| W                   | +Blue Encoder       |
+| S                   | -Blue Encoder       |
+| E                   | +White Encoder      |
+| D                   | -White Encoder      |
+| R                   | +Green Encoder      |
+| F                   | -Green Encoder      |
+| Left Arrow          | Rewind              |
+| Shift + Left Arrow  | Skip Rewind         |
+| Right Arrow         | Forward             |
+| Shift + Right Arrow | Skip Forward        |
+| Space               | Play                |
+| F1                  | Track 1             |
+| F2                  | Track 2             |
+| F3                  | Track 3             |
+| F4                  | Track 4             |
+| Ctrl + T            | Tape                |
+| Ctrl + Y            | Mixer               |
+| Ctrl + U            | Synth               |
+| Ctrl + G            | Metronome           |
+| L                   | Enable Loop         |
+| I                   | Set Loop In         |
+| O                   | Set Loop Out        |
+| X                   | Cut Tape Selection  |
+| C                   | Lift Tape Selection |
+| V                   | Drop Tape Selection |
+
 # Future Plans
  - [ ] Input selection screen - select external audio, internal audio, or the mixer output
  - [ ] Sequencers - A few basic ones are planned
@@ -24,7 +57,7 @@ The tapedeck is completed, with a few bugs left to iron out, and with the additi
 And from there its just modules, modules, modules
 
 # Installation  
-Install the dependencies. For debian/ubuntu, this should do the trick
+Install the dependencies. For Debian 9+/Ubuntu 16.10+, this should do the trick
 ```bash
 apt install jackd\
     cmake\
