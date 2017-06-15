@@ -60,7 +60,7 @@ endfunction()
 #enable_cxx_compiler_flag_if_supported("-Wextra")
 #enable_cxx_compiler_flag_if_supported("-pedantic")
 
-add_custom_command(TARGET tapedeck
-  PRE_BUILD
-  COMMAND "./compile-faust.sh"
-  WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
+# add_custom_command(TARGET tapedeck
+#   PRE_BUILD
+#   COMMAND "./compile-faust.sh"
+#   WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")

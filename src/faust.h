@@ -11,7 +11,6 @@
 #include <faust/dsp/dsp.h>
 
 #include <plog/Log.h>
-#include <match.h>
 
 #include "module.h"
 
