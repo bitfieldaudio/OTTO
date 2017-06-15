@@ -17,7 +17,7 @@ The tapedeck is completed, with a few bugs left to iron out, and with the additi
 # Keybindings
 
 | Key                 | Action              |
-|-------------------------------------------|
+|---------------------|---------------------|
 | Ctrl                | (mod) Encoder Click |
 | Q                   | +Red Encoder        |
 | A                   | -Red Encoder        |
