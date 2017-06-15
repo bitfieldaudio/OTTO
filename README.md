@@ -23,9 +23,49 @@ The tapedeck is completed, with a few bugs left to iron out, and with the additi
  - [ ] Modulation - LFO mainly
 And from there its just modules, modules, modules
 
-## Installation
-Currently in progress. Using docker to create a consistent development environment
+# Installation  
+Install the dependencies. For debian/ubuntu, this should do the trick
+```bash
+apt install jackd\
+    cmake\
+    gcc\
+    g++\
+    pkg-config\
+    libglfw3-dev\
+    libedit-dev\
+    libjack-jack2-dev\
+    libgles2-mesa-dev -y
+```
+I recommend also installing `patchage` and `jack-keyboard`, but they are in no way required.
 
+With this set up, you can build & run the TOP-1 with
+```
+cmake .
+make -j4
+bin/tapedeck
+```
+or with the provided `install.sh` script.
+
+It should be possible to get the TOP-1 running on Windows/Mac too, but for now you are on your own with that. If you do succeed in doing it, we'd apreciate a guide added to this README
+
+## Faust
+Most of the DSP is done using [faust](http://faust.grame.fr), which you will need if you want to change the `.dsp` files.  
+It is important to note that `faust2` is required. There are a few ways to install it, so check [this](https://github.com/grame-cncm/faust/tree/faust2) out
+Once you have faust installed, verify that the `faust` command uses the correct version. You should see something like this:
+```bash
+$ faust --version
+FAUST : DSP to C, C++, JAVA, JavaScript, ASM JavaScript, WebAssembly (wast/wasm), LLVM IR, Interpreter, Version 2.0.a73
+Copyright (C) 2002-2017, GRAME - Centre National de Creation Musicale. All rights reserved. 
+```
+Any version `2.x.x` should work.
+
+Then, make the apropriate changes in the `.dsp` files, and compile them by running
+```
+sh compile-faust.sh
+```
+
+# Docker
+Another way to run the TOP-1 is using the docker image. It should be noted that the docker image will only work on linux.
 ```bash
 cd TOP-1
 docker build . -t top-1/topisani
@@ -34,8 +74,10 @@ Then you will be able to run it using
 ```bash
 sh dockerrun.sh
 ```
-This will build the source, and run TOP-1, patchage and jack-keyboard.  
-### Pulseaudio
+This will build the source, and run TOP-1, patchage and jack-keyboard.
+The source will be mounted into docker from the current directory, so the image will not need to be rebuilt when the source is updated.
+
+## Pulseaudio
 If you are using pulseaudio, you may have to pause it while running the docker container. This means you won't hear any sound from other applications.
 To automatically suspend pulseaudio and restart it when TOP-1 closes, run the container like this:
 ```bash
