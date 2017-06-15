@@ -7,14 +7,14 @@ Come chat with me at my [discord server](https://discord.gg/4cV9Ucz) if you're i
 ### Introducing the TOP-1!  
 To be fair, the TOP-1 is an op-1 clone. But i like to think it's a bit more than that. Some differences will be subtle, and some differences will be big. Especially the non-core modules will differ greatly, as most of them are designed fully independently. The UI too varies, from the tapedeck, which is practically the same, to the metronome, which is very different (see both below).
 
-## Screenshots:  
+# Screenshots:  
 <img src="doc/images/tapedeck.png" width="45%" alt="Tapedeck"> <img src="doc/images/mixer.png" width="45%" alt="Mixer">
 <img src="doc/images/metronome.gif" width="45%" alt="Metronome"> <img src="doc/images/simple-drums.png" width="45%" alt="Drum Synth">
 
-## Current Progress  
+# Current Progress  
 The tapedeck is completed, with a few bugs left to iron out, and with the addition of the metronome, mixer, and input selector, the software is just about ready to be used for recording with external synthesizers. It runs in an OpenGLFW window, and the buttons and rotaries are emulated with keyboard shortcuts.
 
-## Future Plans
+# Future Plans
  - [ ] Input selection screen - select external audio, internal audio, or the mixer output
  - [ ] Sequencers - A few basic ones are planned
  - [ ] Synthesizers - One or two simple synths
@@ -99,7 +99,7 @@ and of course, the coding itself, with areas like
 
 If you are interested, come chat with me at my [discord server](https://discord.gg/4cV9Ucz).
 
-## Credits
+# Credits
  - Audio Framework: [jack](http://jackaudio.org/)
  - DSP Framework: [faust](http://faust.grame.fr/)
  - Vector Graphics: [NanoVG](https://github.com/memononen/nanovg) with [NanoCanvas](https://github.com/Geequlim/NanoCanvas)
