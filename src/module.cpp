@@ -5,39 +5,42 @@
 namespace module {
 
 Opt<bool>::Opt(Data *data,
- std::string name,
- bool init,
- bool preserve) :
-  TypedField<bool>(preserve), init (init) {
+  std::string name,
+  bool init,
+  bool preserve)
+  : TypedField<bool>(preserve, init) {
   data->addField(name, this);
+  reset();
 };
 
 Opt<float>::Opt(Data *data,
- std::string name,
- float init,
- float min,
- float max,
- float step,
- bool preserve)
-  : TypedField<float>(preserve),
-    init (init), min(min),
-    max(max),
-    step(step) {
+  std::string name,
+  float init,
+  float min,
+  float max,
+  float step,
+  bool preserve)
+  : TypedField<float>(preserve, init),
+  min(min),
+  max(max),
+  step(step) {
   data->addField(name, this);
+  reset();
 };
 
 Opt<int>::Opt(Data *data,
- std::string name,
- int init,
- int min,
- int max,
- int step,
- bool preserve)
-  : TypedField<int>(preserve),
-    init (init), min(min),
-    max(max),
-    step(step) {
+  std::string name,
+  int init,
+  int min,
+  int max,
+  int step,
+  bool preserve)
+  : TypedField<int>(preserve, init),
+  min(min),
+  max(max),
+  step(step) {
   data->addField(name, this);
+  reset();
 };
 
 
@@ -53,13 +56,13 @@ top1::tree::Node Data::serialize() {
 
 void Data::deserialize(top1::tree::Node node) {
   node.match([&] (top1::tree::Map node) {
-     for (auto &f : node) {
-       if (fields.find(f.first) != fields.end()) {
-         fields[f.first]->deserialize(f.second);
-       } else {
-         LOGE << "Unrecognized field: " << f.first;
-       }
-     }
-   }, [] (auto) {});
+      for (auto &f : node) {
+        if (fields.find(f.first) != fields.end()) {
+          fields[f.first]->deserialize(f.second);
+        } else {
+          LOGE << "Unrecognized field: " << f.first;
+        }
+      }
+    }, [] (auto) {});
 }
 }

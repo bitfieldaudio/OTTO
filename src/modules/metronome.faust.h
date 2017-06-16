@@ -69,11 +69,6 @@ class faust_metronome : public dsp {
 	void metadata(Meta* m) { 
 		m->declare("basics.lib/name", "Faust Basic Element Library");
 		m->declare("basics.lib/version", "0.0");
-		m->declare("envelopes.lib/author", "GRAME");
-		m->declare("envelopes.lib/copyright", "GRAME");
-		m->declare("envelopes.lib/license", "LGPL with exception");
-		m->declare("envelopes.lib/name", "Faust Envelope Library");
-		m->declare("envelopes.lib/version", "0.0");
 		m->declare("maths.lib/author", "GRAME");
 		m->declare("maths.lib/copyright", "GRAME");
 		m->declare("maths.lib/license", "LGPL with exception");
@@ -215,7 +210,6 @@ class faust_metronome : public dsp {
 		float fSlow9 = (fSlow5 - fSlow6);
 		int iSlow10 = (iSlow8 + 1);
 		float fSlow11 = float(fButton0);
-		float fSlow12 = (fConst7 * fSlow11);
 		for (int i = 0; (i < count); i = (i + 1)) {
 			iVec0[0] = 1;
 			fRec0[0] = (fSlow4 + (fRec0[1] - floorf((fSlow4 + fRec0[1]))));
@@ -225,9 +219,8 @@ class faust_metronome : public dsp {
 			fVec2[(IOTA & 1023)] = fTemp1;
 			fVec3[0] = fSlow11;
 			fRec1[0] = ((((fSlow11 - fVec3[1]) == 1.0f) > 0)?0.0f:min(fConst4, (fRec1[1] + 1.0f)));
-			float fTemp2 = (fSlow11 * fRec1[0]);
-			int iTemp3 = (fTemp2 < fConst5);
-			output0[i] = FAUSTFLOAT((fSlow0 * ((fTemp1 - ((fSlow7 * fVec2[((IOTA - iSlow8) & 1023)]) + (fSlow9 * fVec2[((IOTA - iSlow10) & 1023)]))) * (iTemp3?((fTemp2 < 0.0f)?0.0f:(iTemp3?(fSlow12 * fRec1[0]):1.0f)):((fTemp2 < fConst4)?((fConst6 * (0.0f - (fTemp2 - fConst5))) + 1.0f):0.0f)))));
+			int iTemp2 = (fRec1[0] < fConst5);
+			output0[i] = FAUSTFLOAT((fSlow0 * ((fTemp1 - ((fSlow7 * fVec2[((IOTA - iSlow8) & 1023)]) + (fSlow9 * fVec2[((IOTA - iSlow10) & 1023)]))) * (iTemp2?((fRec1[0] < 0.0f)?0.0f:(iTemp2?(fConst7 * fRec1[0]):1.0f)):((fRec1[0] < fConst4)?((fConst6 * (0.0f - (fRec1[0] - fConst5))) + 1.0f):0.0f)))));
 			iVec0[1] = iVec0[0];
 			fRec0[1] = fRec0[0];
 			fVec1[1] = fVec1[0];

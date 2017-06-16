@@ -29,6 +29,7 @@ public:
     preserve(preserve) {}
 
   virtual void reset() {}
+  virtual void changed() {}
 
   virtual top1::tree::Node serialize() { return top1::tree::Null(); };
 
@@ -38,13 +39,23 @@ public:
 template<class T, typename = std::enable_if_t<isValidFieldType<T>::value>>
 class TypedField : public Field {
 protected:
+  T init;
   T value;
   std::vector<std::function<void(TypedField<T>*)>> onChange;
 public:
 
   using Field::Field;
 
-  void changed() {
+  TypedField() : Field() {};
+
+  TypedField(bool preserve, T init) : Field(preserve), init (init) {
+    reset();
+  }
+
+  void reset() override {
+    set(init);
+  }
+  void changed() override {
     for (auto h : onChange) {
       h(this);
     }
@@ -77,7 +88,6 @@ template<class T> class Opt;
 template<>
 class Opt<float> : public TypedField<float> {
 public:
-  float init;
   float min;
   float max;
   float step;
@@ -104,6 +114,7 @@ public:
   }
   void reset() override {
     value = init;
+    changed();
   }
 
   virtual float normalized() const {
@@ -130,7 +141,6 @@ public:
 template<>
 class Opt<int> : public TypedField<int> {
 public:
-  int init;
   int min;
   int max;
   int step;
@@ -182,8 +192,6 @@ public:
 template<>
 class Opt<bool> : public TypedField<bool> {
 public:
-  bool init;
-
   Opt() {};
   Opt(Data *data,
     std::string name,

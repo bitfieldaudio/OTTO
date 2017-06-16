@@ -4,8 +4,17 @@
 
 import("oscillators.lib");
 import("noises.lib");
-import("envelopes.lib");
 import("filters.lib");
+
+// Faust screwed this up, so i copied the old version in here
+ar(a,r,t) = ba.countup(attTime+relTime,on) : ba.bpf.start(0,0) :
+	ba.bpf.point(attTime,1) : ba.bpf.end(attTime+relTime,0)
+with{
+	on = (t-t')==1;
+	attTime = ma.SR*a;
+	relTime = ma.SR*r;
+};
+
 
 // ENVELOPE
 att = vslider("/h:ENVELOPE/ATTACK", 0, 0, 2, 0.02);

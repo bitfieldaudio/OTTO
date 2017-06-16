@@ -145,6 +145,7 @@ public:
         });
       if (opt.first == fullLabel) {
         opt.second.visit(visitor);
+        opt.second->changed();
         matched = true;
         break;
       } else {
