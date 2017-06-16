@@ -135,7 +135,7 @@ class faust_metronome : public dsp {
 	
 	virtual void instanceResetUserInterface() {
 		fHslider0 = FAUSTFLOAT(1.0f);
-		fHslider1 = FAUSTFLOAT(0.5f);
+		fHslider1 = FAUSTFLOAT(12.0f);
 		fButton0 = FAUSTFLOAT(0.0f);
 		
 	}
@@ -190,7 +190,7 @@ class faust_metronome : public dsp {
 	virtual void buildUserInterface(UI* ui_interface) {
 		ui_interface->openVerticalBox("metronome");
 		ui_interface->addHorizontalSlider("GAIN", &fHslider0, 1.0f, 0.0f, 1.0f, 0.00999999978f);
-		ui_interface->addHorizontalSlider("TONE", &fHslider1, 0.5f, 0.0f, 1.0f, 0.00999999978f);
+		ui_interface->addHorizontalSlider("TONE", &fHslider1, 12.0f, 0.0f, 24.0f, 1.0f);
 		ui_interface->addButton("TRIGGER", &fButton0);
 		ui_interface->closeBox();
 		
@@ -199,7 +199,7 @@ class faust_metronome : public dsp {
 	virtual void compute(int count, FAUSTFLOAT** inputs, FAUSTFLOAT** outputs) {
 		FAUSTFLOAT* output0 = outputs[0];
 		float fSlow0 = float(fHslider0);
-		float fSlow1 = max((110.0f * powf(2.0f, (2.0f * float(fHslider1)))), 23.4489498f);
+		float fSlow1 = max((110.0f * powf(2.0f, (0.0833333358f * float(fHslider1)))), 23.4489498f);
 		float fSlow2 = max(20.0f, fabsf(fSlow1));
 		float fSlow3 = (fConst1 / fSlow2);
 		float fSlow4 = (fConst2 * fSlow2);

@@ -70,7 +70,6 @@ TapeTime Metronome::getBarTimeRel(BeatPos bar) {
   BeatPos curBar = GLOB.tapedeck.position()/fpb;
   TapeTime curBarTime = getBarTime(curBar);
   TapeTime diff = GLOB.tapedeck.position() - curBarTime;
-  LOGD << diff;
   if (diff > fpb/2) {
     curBar += 1;
     if (bar > 0) bar -= 1;

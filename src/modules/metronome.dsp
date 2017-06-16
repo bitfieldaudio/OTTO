@@ -10,7 +10,7 @@ with{
 };
 
 gate = button("/TRIGGER");
-tone = hslider("/TONE", 0.5, 0, 1, 0.01);
+tone = hslider("/TONE", 12, 0, 24, 1);
 gain = hslider("/GAIN", 1, 0, 1, 0.01);
 
 // ENVELOPE
@@ -19,4 +19,4 @@ rel = 0.09;
 
 env = ar(att, rel, gate);
 
-process = square(110 * 2^(tone*2)) * env * gain;
+process = square(110 * 2^(tone/12)) * env * gain;

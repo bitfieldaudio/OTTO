@@ -15,7 +15,7 @@ public:
   struct Data : public module::Data {
     Opt<float> bpm    = {this, "BPM", 120, 40, 320, 1};
     Opt<float> gain   = {this, "GAIN", 0, 0, 1, 0.01};
-    Opt<float> tone   = {this, "TONE", 0, 0, 1, 0.01};
+    Opt<int> tone     = {this, "TONE", 12, 0, 24, 1};
     Opt<bool> trigger = {this, "TRIGGER", false, false};
   } data;
 

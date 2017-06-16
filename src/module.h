@@ -169,8 +169,8 @@ public:
     set(init);
   }
 
-  virtual int normalized() const {
-    return (value - min) / max;
+  virtual float normalized() const {
+    return (value - min) / (float)max;
   }
 
   int operator++() { return inc(); };
