@@ -17,24 +17,24 @@ The tapedeck is completed, with a few bugs left to iron out, and with the additi
 # Keybindings
 These are the keybindings currently emulating the hardware buttons:
 
-| Key                 | Action              | Key                 | Action              |
-|---------------------|---------------------|---------------------|---------------------|
-| Ctrl                | (mod) Encoder Click |
-| Q                   | +Red Encoder        | A                   | -Red Encoder        |
-| W                   | +Blue Encoder       | S                   | -Blue Encoder       |
-| E                   | +White Encoder      | D                   | -White Encoder      |
-| R                   | +Green Encoder      | F                   | -Green Encoder      |
-| Left Arrow          | Rewind              | Shift + Left Arrow  | Skip Rewind         |
-| Right Arrow         | Forward             | Shift + Right Arrow | Skip Forward        |
-| Space               | Play                | Z                   | Record              |
-| F1                  | Track 1             | F2                  | Track 2             |
-| F3                  | Track 3             | F4                  | Track 4             |
-| Ctrl + T            | Tape                | Ctrl + Y            | Mixer               |
-| Ctrl + U            | Synth               | Ctrl + G            | Metronome           |
-| I                   | Go to Loop In       | Shift + I           | Set Loop In         |
-| O                   | Go to Loop Out      | Shift + O           | Set Loop Out        |
-| L                   | Toggle Looping      | Ctrl + X            | Cut Tape Selection  | 
-| Ctrl + C            | Lift Tape Selection | Ctrl + V            | Drop Tape Selection |
+| Key         | Action              | Key                 | Action              |
+|-------------+---------------------+---------------------+---------------------|
+| Ctrl        | (mod) Encoder Click |                     |                     |
+| Q           | +Red Encoder        | A                   | -Red Encoder        |
+| W           | +Blue Encoder       | S                   | -Blue Encoder       |
+| E           | +White Encoder      | D                   | -White Encoder      |
+| R           | +Green Encoder      | F                   | -Green Encoder      |
+| Left Arrow  | Rewind              | Shift + Left Arrow  | Skip Rewind         |
+| Right Arrow | Forward             | Shift + Right Arrow | Skip Forward        |
+| Space       | Play                | Z                   | Record              |
+| F1          | Track 1             | F2                  | Track 2             |
+| F3          | Track 3             | F4                  | Track 4             |
+| Ctrl + T    | Tape                | Ctrl + Y            | Mixer               |
+| Ctrl + U    | Synth               | Ctrl + G            | Metronome           |
+| I           | Go to Loop In       | Shift + I           | Set Loop In         |
+| O           | Go to Loop Out      | Shift + O           | Set Loop Out        |
+| L           | Toggle Looping      | Ctrl + X            | Cut Tape Selection  |
+| Ctrl + C    | Lift Tape Selection | Ctrl + V            | Drop Tape Selection |
 
 # Future Plans
  - [ ] Input selection screen - select external audio, internal audio, or the mixer output
@@ -57,6 +57,13 @@ sh dockerrun.sh
 ```
 This will build the source, and run TOP-1, patchage and jack-keyboard.
 The source will be mounted into docker from the current directory, so the image will not need to be rebuilt when the source is updated.
+
+## Faust in docker
+Most of the DSP is done using [faust](http://faust.grame.fr), which is preinstalled in the docker image. If you change any of the `.dsp` files, you will need to compile them by running
+```bash
+sh dockerrun.sh ./compile-faust.sh
+```
+If you are'nt using the docker image, check the manual faust section bellow.
 
 ## Pulseaudio
 If you are using pulseaudio, you may have to pause it while running the docker container. This means you won't hear any sound from other applications.
@@ -91,8 +98,8 @@ or with the provided `install.sh` script.
 
 It should be possible to get the TOP-1 running on Windows/Mac too, but for now you are on your own with that. If you do succeed in doing it, we'd apreciate a guide added to this README
 
-## Faust
-Most of the DSP is done using [faust](http://faust.grame.fr), which you will need if you want to change the `.dsp` files.
+## Manual Faust
+If you change the `.dsp` files, you will need faust to compile them.
 It is very important that you use the correct version, which currently is `0.9.104`. To install that, run the following commands:
 ```bash
 git clone https://github.com/grame-cncm/faust
@@ -112,6 +119,7 @@ Then, make the apropriate changes in the `.dsp` files, and compile them by runni
 ```
 sh compile-faust.sh
 ```
+faust especially is a lot easier to use with the docker image, even if you are running everything else outside it.
 
 # Getting Involved
 If you're up for it, I'd love some help, for a lot of different things, like
