@@ -2,19 +2,10 @@
 /* The worlds simplest drum synthesizer */
 /****************************************/
 
-import("oscillators.lib");
-import("noises.lib");
-import("filters.lib");
-
-// Faust screwed this up, so i copied the old version in here
-ar(a,r,t) = ba.countup(attTime+relTime,on) : ba.bpf.start(0,0) :
-	ba.bpf.point(attTime,1) : ba.bpf.end(attTime+relTime,0)
-with{
-	on = (t-t')==1;
-	attTime = ma.SR*a;
-	relTime = ma.SR*r;
-};
-
+osc = library("oscillators.lib");
+no = library("noises.lib");
+fl = library("filters.lib");
+en = library("envelopes.lib");
 
 // ENVELOPE
 att = vslider("/h:ENVELOPE/ATTACK", 0, 0, 2, 0.02);
@@ -22,9 +13,9 @@ sus = vslider("/h:ENVELOPE/SUSTAIN", 1, 0, 2, 0.02);
 rel = vslider("/h:ENVELOPE/RELEASE", 0.2, 0, 2, 0.02);
 gate = button("/TRIGGER");
 
-env = sus * ar(0.001 + att, 0.001 + rel, gate);
+env = sus * en.ar(0.001 + att, 0.001 + rel, gate);
 
-drumOsc = (dOsc + n)  <: resonlp(cutoff,resonance, 1) * filterOn, _ * (1-filterOn) :> +
+drumOsc = (dOsc + n)  <: fl.resonlp(cutoff,resonance, 1) * filterOn, _ * (1-filterOn) :> +
   with {
     freq = hslider("FREQ", 500, 10, 500, 2.9);
     toneDec = hslider("TONE_DECAY",0.5, -1, 1, 0.01);
@@ -34,9 +25,9 @@ drumOsc = (dOsc + n)  <: resonlp(cutoff,resonance, 1) * filterOn, _ * (1-filterO
     // SETTINGS
     resonance = 3;
 
-    freqMod = 1 + (ar(0.0001, rel*abs(toneDec), gate) * toneDec : hbargraph("DECAY_GRAPH", -1, 1));
+    freqMod = 1 + (en.ar(0.0001, rel*abs(toneDec), gate) * toneDec : hbargraph("DECAY_GRAPH", -1, 1));
 
-    dOsc = square((freqMod) * freq) * (1 - noiseLVL);
-    n = noise * noiseLVL;
+    dOsc = osc.square((freqMod) * freq) * (1 - noiseLVL);
+    n = no.noise * noiseLVL;
   };
 process = hgroup("ENVELOPE", env) * (vgroup("D1", drumOsc) + vgroup("D2", drumOsc) );
