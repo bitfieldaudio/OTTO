@@ -70,8 +70,8 @@ struct AudioAverage {
     average = sum/nsamples;
   }
   void clear() {
-    sum /= 4.0;
-    nsamples /= 4;
+    sum /= 16.0;
+    nsamples /= 16;
     average = sum/nsamples;
   }
 

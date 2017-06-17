@@ -1026,7 +1026,7 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
 
   // Proc Graph
   {
-    float y = 240 - 81.5 - module->procGraph * 105;
+    float y = 240 - 81.5 - module->procGraph.clip() * 105;
     module->procGraph.clear();
     ctx.strokeStyle(COLOR_RED_DIMMED);
     ctx.lineCap(Canvas::LineCap::ROUND);
