@@ -18,7 +18,7 @@ The tapedeck is completed, with a few bugs left to iron out, and with the additi
 These are the keybindings currently emulating the hardware buttons:
 
 | Key         | Action              | Key                 | Action              |
-|-------------+---------------------+---------------------+---------------------|
+|-------------|---------------------|---------------------|---------------------|
 | Ctrl        | (mod) Encoder Click |                     |                     |
 | Q           | +Red Encoder        | A                   | -Red Encoder        |
 | W           | +Blue Encoder       | S                   | -Blue Encoder       |
