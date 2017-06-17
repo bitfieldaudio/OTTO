@@ -45,7 +45,26 @@ These are the keybindings currently emulating the hardware buttons:
  - [ ] Modulation - LFO mainly
 And from there its just modules, modules, modules
 
-# Installation  
+# Docker
+The recommended way to run and develop for the TOP-1 is using the docker image. It includes all the required tools and dependencies, and should work out of the box on any linux machine.
+```bash
+cd TOP-1
+docker build . -t top-1/topisani
+```
+Then to run the docker image
+```bash
+sh dockerrun.sh
+```
+This will build the source, and run TOP-1, patchage and jack-keyboard.
+The source will be mounted into docker from the current directory, so the image will not need to be rebuilt when the source is updated.
+
+## Pulseaudio
+If you are using pulseaudio, you may have to pause it while running the docker container. This means you won't hear any sound from other applications.
+To automatically suspend pulseaudio and restart it when TOP-1 closes, run the container like this:
+```bash
+pasuspender -- sh dockerrun.sh
+```
+# Manual Installation  
 Install the dependencies. For Debian 9+/Ubuntu 16.10+, this should do the trick
 ```bash
 apt install jackd\
@@ -58,6 +77,8 @@ apt install jackd\
     libjack-jackd2-dev\
     libgles2-mesa-dev -y
 ```
+**NOTE:** On Debian 8-/Ubuntu 16.04-, you will get errors about missing openGL files, and i have no idea why. Either use the docker image, upgrade your system, or try installing GLFW 3.2 from source.
+
 I recommend also installing `patchage` and `jack-keyboard`, but they are in no way required.
 
 With this set up, you can build & run the TOP-1 with
@@ -71,39 +92,25 @@ or with the provided `install.sh` script.
 It should be possible to get the TOP-1 running on Windows/Mac too, but for now you are on your own with that. If you do succeed in doing it, we'd apreciate a guide added to this README
 
 ## Faust
-Most of the DSP is done using [faust](http://faust.grame.fr), which you will need if you want to change the `.dsp` files.  
-It is important to note that `faust2` is required. There are a few ways to install it, so check [this](https://github.com/grame-cncm/faust/tree/faust2) out
+Most of the DSP is done using [faust](http://faust.grame.fr), which you will need if you want to change the `.dsp` files.
+It is very important that you use the correct version, which currently is `0.9.104`. To install that, run the following commands:
+```bash
+git clone https://github.com/grame-cncm/faust
+cd faust
+git checkout 24db8d98e63aa8a119ffc601bf6aeec3e33e7a86
+make
+sudo make install
+```
 Once you have faust installed, verify that the `faust` command uses the correct version. You should see something like this:
 ```bash
 $ faust --version
-FAUST : DSP to C, C++, JAVA, JavaScript, ASM JavaScript, WebAssembly (wast/wasm), LLVM IR, Interpreter, Version 2.0.a73
+FAUST, DSP to C++ compiler, Version 0.9.104
 Copyright (C) 2002-2017, GRAME - Centre National de Creation Musicale. All rights reserved. 
 ```
-Any version `2.x.x` should work.
 
 Then, make the apropriate changes in the `.dsp` files, and compile them by running
 ```
 sh compile-faust.sh
-```
-
-# Docker
-Another way to run the TOP-1 is using the docker image. It should be noted that the docker image will only work on linux.
-```bash
-cd TOP-1
-docker build . -t top-1/topisani
-```
-Then you will be able to run it using
-```bash
-sh dockerrun.sh
-```
-This will build the source, and run TOP-1, patchage and jack-keyboard.
-The source will be mounted into docker from the current directory, so the image will not need to be rebuilt when the source is updated.
-
-## Pulseaudio
-If you are using pulseaudio, you may have to pause it while running the docker container. This means you won't hear any sound from other applications.
-To automatically suspend pulseaudio and restart it when TOP-1 closes, run the container like this:
-```bash
-pasuspender -- sh dockerrun.sh
 ```
 
 # Getting Involved
