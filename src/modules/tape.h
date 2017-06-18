@@ -8,6 +8,7 @@
 #include "../module.h"
 #include "../ui/base.h"
 #include "../util/tapebuffer.h"
+#include "../utils.h"
 
 #include "metronome.h"
 
@@ -66,7 +67,7 @@ public:
 
   top1::AudioAverage procGraph;
 
-  std::array<AudioFrame, 256> trackBuffer;
+  AudioBuffer<AudioFrame> trackBuffer;
 
   top1::TapeBuffer tapeBuffer;
 

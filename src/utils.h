@@ -5,6 +5,8 @@
 #include <algorithm>
 #include <string>
 
+#include "util/dyn-array.h"
+
 namespace top1 {
 
 inline bool between(float min, float max, float el) {
@@ -105,6 +107,43 @@ struct AudioFrame {
     return data[i];
   }
 };
+
+namespace detail {
+
+// to avoid circular deps
+void registerAudioBufferResize(std::function<void(uint)>);
+
+}
+
+template<typename T>
+class AudioBuffer : public top1::DynArray<T> {
+public:
+
+  using typename top1::DynArray<T>::value_type;
+  using typename top1::DynArray<T>::size_type;
+  using typename top1::DynArray<T>::difference_type;
+  using typename top1::DynArray<T>::reference;
+  using typename top1::DynArray<T>::const_reference;
+  using typename top1::DynArray<T>::pointer;
+  using typename top1::DynArray<T>::iterator;
+  using typename top1::DynArray<T>::const_iterator;
+  using typename top1::DynArray<T>::reverse_iterator;
+  using typename top1::DynArray<T>::const_reverse_iterator;
+
+  AudioBuffer(size_type sizeFactor = 1)
+    : top1::DynArray<T>(0),
+    sFactor (sizeFactor) {
+    detail::registerAudioBufferResize([this] (uint newSize) {
+       this->resize(newSize * sFactor);
+     });
+  }
+
+  using top1::DynArray<T>::operator[];
+
+private:
+  size_type sFactor;
+};
+
 
 template<class T = int>
 struct Section {

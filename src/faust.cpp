@@ -6,15 +6,21 @@ FaustWrapper::FaustWrapper(dsp *DSP, module::Data *data) :
   opts (data),
   fDSP (DSP)
 {
+  inBuffer =
+    (FAUSTFLOAT **) malloc(sizeof(FAUSTFLOAT **) * fDSP->getNumInputs());
+  outBuffer =
+    (FAUSTFLOAT **) malloc(sizeof(FAUSTFLOAT **) * fDSP->getNumOutputs());
   GLOB.events.preInit.add([&]() {
      fDSP->init(GLOB.samplerate);
      fDSP->buildUserInterface(&opts);
    });
+  GLOB.events.samplerateChanged.add([&](uint sr) {
+     fDSP->instanceInit(sr);
+   });
+  GLOB.events.bufferSizeChanged.add([this](uint bs) {
+     initBuffers();
+   });
   GLOB.events.postInit.add([&]() {
-     inBuffer =
-       (FAUSTFLOAT **) malloc(sizeof(FAUSTFLOAT **) * fDSP->getNumInputs());
-     outBuffer =
-       (FAUSTFLOAT **) malloc(sizeof(FAUSTFLOAT **) * fDSP->getNumOutputs());
      initBuffers();
    });
 }
@@ -36,12 +42,12 @@ void FaustWrapper::prepBuffers(uint nframes) {
     return;
   }
   if (fDSP->getNumInputs() > 0)
-    inBuffer[0] = GLOB.audioData.proc;
+    inBuffer[0] = GLOB.audioData.proc.data();
 }
 
 void FaustWrapper::postBuffers(uint nframes) {
   if (fDSP->getNumInputs() > 0)
-    GLOB.audioData.proc = *outBuffer;
+    GLOB.audioData.proc.copyFrom(*outBuffer, nframes);
   else
     for (uint i = 0; i < nframes; i++) {
       GLOB.audioData.proc[i] += outBuffer[0][i];

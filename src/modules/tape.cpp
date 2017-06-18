@@ -757,7 +757,7 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
 
   auto recColor = (module->state.readyToRec) ? COLOR_RED : COLOR_WHITE;
 
-  int timeLength = 5 * 44100;
+  int timeLength = 5 * GLOB.samplerate;
 
   Section<int> inView;
   inView.in = module->tapeBuffer.position() - timeLength/2;
@@ -786,7 +786,7 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
 
   // TODO: Real value
   int BPM = GLOB.metronome.data.bpm;
-  float FPB = 44100.0 * 60.0/((float)BPM);
+  float FPB = float(GLOB.samplerate) * 60.0/((float)BPM);
 
   // Bar Markers
   {

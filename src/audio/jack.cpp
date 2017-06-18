@@ -59,11 +59,6 @@ void JackAudio::init() {
 
   setupPorts();
 
-  GLOB.audioData.outL  = (float *) malloc(bufferSize * sizeof(float));
-  GLOB.audioData.outR  = (float *) malloc(bufferSize * sizeof(float));
-  GLOB.audioData.input = (float *) malloc(bufferSize * sizeof(float));
-  GLOB.audioData.proc  = (float *) malloc(bufferSize * sizeof(float));
-
   LOGI << "Initialized JackAudio";
 }
 
@@ -79,13 +74,18 @@ void JackAudio::exit() {
 
 void JackAudio::samplerateCallback(uint srate) {
   if (srate != GLOB.samplerate) {
-    LOGF << "Jack changed the sample rate!";
-    GLOB.exit();
+    if (GLOB.samplerate != 0) {
+      LOGF << "Jack changed the sample rate!";
+      GLOB.samplerate = srate;
+      GLOB.events.samplerateChanged(srate);
+    }
   }
 }
 
 void JackAudio::buffersizeCallback(uint buffsize) {
-  //TODO
+  LOGF << "Jack changed the buffer size!";
+  bufferSize = buffsize;
+  GLOB.events.bufferSizeChanged(buffsize);
 }
 
 void JackAudio::setupPorts() {
@@ -192,13 +192,23 @@ void shutdown(void *arg) {
 
 void JackAudio::process(uint nframes) {
   if ( not (processing && GLOB.running())) return;
-  GLOB.audioData.outL = (float *) jack_port_get_buffer(ports.outL, nframes);
-  GLOB.audioData.outR = (float *) jack_port_get_buffer(ports.outR, nframes);
-  GLOB.audioData.input = (float *) jack_port_get_buffer(ports.input, nframes);
+  if ( nframes > bufferSize) {
+    LOGE << "Jack requested more frames than expected";
+    return;
+  }
 
-  memset(GLOB.audioData.outL, 0, sizeof(float) * nframes);
-  memset(GLOB.audioData.outR, 0, sizeof(float) * nframes);
-  memset(GLOB.audioData.proc, 0, sizeof(float) * nframes);
+  float *outLData = (float *) jack_port_get_buffer(ports.outL, nframes);
+  float *outRData = (float *) jack_port_get_buffer(ports.outR, nframes);
+  float *inData = (float *) jack_port_get_buffer(ports.input, nframes);
+
+  GLOB.audioData.outL.clear();
+  GLOB.audioData.outR.clear();
+  GLOB.audioData.input.clear();
+  GLOB.audioData.proc.clear();
+
+  for (uint i = 0; i < nframes; i++) {
+    GLOB.audioData.input[i] = inData[i];
+  }
 
   // Midi events
   {
@@ -238,14 +248,16 @@ void JackAudio::process(uint nframes) {
     }
   }
 
-  for (uint i = 0; i < nframes; i ++) {
-    GLOB.audioData.proc[i] = 0;//GLOB.audioData.input[i];
-  }
-
   GLOB.tapedeck.preProcess(nframes);
   GLOB.synth.process(nframes);
   GLOB.effect.process(nframes);
   GLOB.tapedeck.postProcess(nframes);
   GLOB.mixer.process(nframes);
   GLOB.metronome.process(nframes);
+
+  for (uint i = 0; i < nframes; i++) {
+    outLData[i] = GLOB.audioData.outL[i];
+    outRData[i] = GLOB.audioData.outR[i];
+  }
+
 }

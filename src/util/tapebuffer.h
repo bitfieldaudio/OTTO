@@ -134,7 +134,7 @@ public:
     std::vector<AudioFrame> data,
     uint offset = 0,
     std::function<AudioFrame(AudioFrame, AudioFrame)> writeFunc
-      = [](AudioFrame o, AudioFrame n) { return n; });
+      = [](AudioFrame, AudioFrame n) { return n; });
 
   /**
    * Write data to the tape.
@@ -148,7 +148,7 @@ public:
     std::vector<AudioFrame> data,
     uint offset = 0,
     std::function<AudioFrame(AudioFrame, AudioFrame)> writeFunc
-    = [](AudioFrame o, AudioFrame n) { return n; });
+    = [](AudioFrame, AudioFrame n) { return n; });
 
   /**
    * Jumps to another position in the tape
@@ -163,11 +163,7 @@ public:
   void lift(Track track);
   void drop(Track track);
 
-  std::string timeStr() {
-    double seconds = playPoint/(1.0 * 44100);
-    double minutes = seconds / 60.0;
-    return fmt::format("{:0>2}:{:0>5.2f}", (int) minutes, fmod(seconds, 60.0));
-  }
+  std::string timeStr();
 
 };
 }

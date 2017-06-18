@@ -28,6 +28,7 @@ void TapeBuffer::threadRoutine() {
   movePlaypointAbs(0);
 
   file.open(GLOB.project->path);
+  file.header.samplerate = GLOB.samplerate;
   const static uint FRAMEBUF_SIZE = RingBuffer::SIZE / 2;
   std::array<AudioFrame, FRAMEBUF_SIZE> framebuf;
 
@@ -448,4 +449,11 @@ void TapeBuffer::drop(Track track) {
   clipboard.done.wait(lock);
   trackSlices[track.idx].addSlice(slice);
 }
+
+std::string TapeBuffer::timeStr() {
+  double seconds = playPoint/(1.0 * GLOB.samplerate);
+  double minutes = seconds / 60.0;
+  return fmt::format("{:0>2}:{:0>5.2f}", (int) minutes, fmod(seconds, 60.0));
+}
+
 }

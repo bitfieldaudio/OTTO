@@ -15,6 +15,7 @@
 #include "audio/jack.h"
 #include "audio/midi.h"
 #include "util/datafile.h"
+#include "utils.h"
 
 struct Project {
   std::string name = "Tape1";
@@ -34,6 +35,8 @@ public:
     Dispatcher<> postInit;
     Dispatcher<> preExit;
     Dispatcher<> postExit;
+    Dispatcher<uint> bufferSizeChanged;
+    Dispatcher<uint> samplerateChanged;
   } events;
 
   Project *project;
@@ -44,11 +47,11 @@ public:
   MainUI ui;
 
   struct {
-    float *outL;
-    float *outR;
-    float *input;
+    AudioBuffer<float> outL;
+    AudioBuffer<float> outR;
+    AudioBuffer<float> input;
     // The sound that is passed between modules
-    float *proc;
+    AudioBuffer<float> proc;
   } audioData;
 
   std::vector<MidiEventPtr> midiEvents;
