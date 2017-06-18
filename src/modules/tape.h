@@ -39,6 +39,7 @@ public:
     bool recLast    = false;
     float playSpeed = 0;
     float nextSpeed = 0;
+    float prevSpeed = 0;
     top1::Track track = top1::Track::newName(1);
     bool looping = false;
 

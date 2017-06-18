@@ -176,21 +176,35 @@ int TapeModule::timeUntil(TapeTime tt) {
 void TapeModule::preProcess(uint nframes) {
 
   tapePosition = tapeBuffer.position();
-
-  // TODO: some sort of sigma shape
-  if (state.doEaseIn()) {
+  {
+    constexpr uint time = 200; // animation time from 0 to 1 in ms
+    static uint x;
+    static float nextSpeedLast = state.nextSpeed;
+    if (nextSpeedLast != state.nextSpeed) {
+        state.prevSpeed = state.playSpeed;
+        x = 0;
+    }
+    nextSpeedLast = state.nextSpeed;
     const float diff = state.nextSpeed - state.playSpeed;
-    if (diff > 0) {
-      state.playSpeed = state.playSpeed + std::min(0.01f, diff);
+    if (diff != 0) {
+      if (state.doEaseIn()) {
+        if (std::abs(diff) < 0.01f) {
+          state.playSpeed = state.nextSpeed;
+          x = 0;
+        } else {
+          float adjTime = time * (0.001 + std::abs(state.nextSpeed - state.prevSpeed));
+          state.playSpeed = state.prevSpeed + (state.nextSpeed - state.prevSpeed) *
+            (1 - std::cos((x / float(GLOB.samplerate) * 1000/(adjTime)) * M_PI)) * 0.5;
+        x += nframes;
+      }
+    } else {
+      state.playSpeed = state.nextSpeed;
+      x = 0;
+     }
     }
-    if (diff < 0) {
-      state.playSpeed = state.playSpeed - std::min(0.01f, -diff);
-      if (tapeBuffer.position() == 0) state.playSpeed = state.nextSpeed;
-    }
-  } else {
-    state.playSpeed = state.nextSpeed;
   }
-  memset(trackBuffer.data(), 0, sizeof(AudioFrame) * trackBuffer.size());
+
+  trackBuffer.clear();
 
   auto playAudio = [this](uint at, uint nframes) {
     state.forPlayDir<void>([&] {
