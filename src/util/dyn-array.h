@@ -62,6 +62,9 @@ public:
     iterator operator-(size_type rhs) {
       return iterator(ptr - rhs);
     }
+    difference_type operator-(const iterator &rhs) const {
+      return ptr - rhs.ptr;
+    }
     reference operator*() { return *ptr; }
     pointer operator->() { return ptr; }
 
@@ -105,6 +108,9 @@ public:
     }
     const_iterator operator-(size_type rhs) {
       return const_iterator(ptr - rhs);
+    }
+    difference_type operator-(const_iterator &rhs) const {
+      return ptr - rhs.ptr;
     }
 
     const reference operator*() { return *ptr; }
