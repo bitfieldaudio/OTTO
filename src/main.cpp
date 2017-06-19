@@ -2,6 +2,8 @@
 #include <plog/Log.h>
 #include <plog/Appenders/ConsoleAppender.h>
 
+using uint = unsigned int;
+
 #include "audio/jack.h"
 #include "audio/midi.h"
 #include "ui/mainui.h"
