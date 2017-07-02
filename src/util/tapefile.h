@@ -47,6 +47,32 @@ public:
     };
   } slices;
 
+  struct RiffHeader : public Chunk {
+    ChunkFCC format = "WAVE";
+
+    RiffHeader() : Chunk("RIFF") {
+      addField(format);
+    }
+  } riffHeader;
+
+  // Wav
+  struct FmtChunk : public Chunk {
+    u2b audioFormat = 1;
+    u2b numChannels = 4;
+    u4b sampleRate = 44100;
+    u2b bitsPerSample = 32;
+    u4b byteRate = sampleRate * numChannels * bitsPerSample/8;
+    u2b blockAlign = numChannels * bitsPerSample/8;
+    FmtChunk() : Chunk("fmt ") {
+      addField(audioFormat);
+      addField(numChannels);
+      addField(sampleRate);
+      addField(byteRate);
+      addField(blockAlign);
+      addField(bitsPerSample);
+    };
+  } fmt;
+
   struct AudioChunk : public Chunk {
 
     AudioChunk() : Chunk("data") {};
@@ -62,9 +88,11 @@ public:
   uint read(AudioFrame* data, uint nframes);
 
   TapeFile() : File() {
-    addChunk(header);
-    addChunk(slices);
-    addChunk(audioChunk);
+    riffHeader.subChunk(header);
+    riffHeader.subChunk(slices);
+    riffHeader.subChunk(fmt);
+    riffHeader.subChunk(audioChunk);
+    addChunk(riffHeader);
   }
 
   TapeFile(std::string path) : TapeFile() {
