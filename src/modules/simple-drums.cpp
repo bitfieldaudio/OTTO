@@ -22,7 +22,7 @@ void SimpleDrumsModule::process(uint nframes) {
        voices[currentVoiceIdx].data.trigger = 1;
        voices[currentVoiceIdx].data.envelope.sustain = float(e->velocity)/128.f;
      }, [] (MidiEvent *) {});
-  };
+  }
   for (auto &&voice : voices) {
     voice.process(nframes);
     voice.data.trigger = 0;
@@ -207,6 +207,7 @@ void SimpleDrumsScreen::drawOsc(NanoCanvas::Canvas &ctx, SimpleDrumVoice::Data::
 	ctx.strokeStyle(COLOR_GRAY70);
 	ctx.lineWidth(2.000000);
 	ctx.moveTo(95, 75);
+  osc.decayGraph.changed();
   if (osc.decayGraph() > 0)
     ctx.bezierCurveTo(95, 75 - osc.decayGraph() * 65, 150 - osc.decayGraph() * 65, 20, 150, 20);
   else

@@ -21,7 +21,6 @@ void MixerModule::display() {
 
 void MixerModule::process(uint nframes) {
   auto &trackBuffer = GLOB.tapedeck.trackBuffer;
-  // TODO: Configurable and all that
   for (uint f = 0; f < nframes; f++) {
     float lMix = 0, rMix = 0;
     for (uint t = 0; t < 4 ; t++) {

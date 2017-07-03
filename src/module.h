@@ -20,6 +20,7 @@ template<class T> struct isValidFieldType { static constexpr bool value = false;
 template<> struct isValidFieldType<float> { static constexpr bool value = true; };
 template<> struct isValidFieldType<bool> { static constexpr bool value = true; };
 template<> struct isValidFieldType<int> { static constexpr bool value = true; };
+template<> struct isValidFieldType<std::string> { static constexpr bool value = true; };
 
 class Field {
 public:
@@ -72,6 +73,10 @@ public:
   }
   virtual T get() const {
     return value;
+  }
+
+  virtual void setRaw(T newVal) {
+    value = newVal;
   }
 
   T operator = (T newVal) { return set(newVal); };
@@ -218,6 +223,36 @@ public:
   }
 };
 
+template<>
+class Opt<std::string> : public TypedField<std::string> {
+public:
+  Opt() {};
+  Opt(Data *data,
+   std::string name,
+   std::string init = "",
+   bool preserve = true);
+
+  std::size_t size() const {
+    return value.size();
+  }
+
+  void reset() override {
+    set(init);
+  }
+
+  using TypedField::operator=;
+  using TypedField::operator std::string;
+
+  top1::tree::Node serialize() override {
+    return top1::tree::String{value};
+  }
+
+  void deserialize(top1::tree::Node n) override {
+    n.match([&] (top1::tree::String s) { set(s.value); }, [] (auto) {});
+  }
+};
+
+
 class ExpOpt : public Opt<float> {
 public:
 
@@ -281,6 +316,12 @@ public:
   virtual void process(uint nframes) = 0;
 };
 
+class SequencerModule : public Module {
+public:
+  using Module::Module;
+  virtual void process(uint nframes) = 0;
+};
+
 template<class M>
 class ModuleDispatcher : public Module {
 protected:
@@ -338,6 +379,15 @@ public:
 };
 
 class EffectModuleDispatcher : public ModuleDispatcher<EffectModule> {
+public:
+
+  void process(uint nframes) {
+    if (modules.size() > 0)
+      modules[currentModule]->process(nframes);
+  }
+};
+
+class SequencerModuleDispatcher : public ModuleDispatcher<SequencerModule> {
 public:
 
   void process(uint nframes) {

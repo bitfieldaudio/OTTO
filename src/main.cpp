@@ -23,6 +23,7 @@ int main(int argc, char *argv[]) {
   std::unique_lock<std::mutex> lock (mut);
 
   GLOB.synth.registerModule("SimpleDrums", new SimpleDrumsModule());
+
   GLOB.events.preInit();
   GLOB.dataFile.path = "data.json";
   GLOB.dataFile.read();

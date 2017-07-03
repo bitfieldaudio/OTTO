@@ -68,7 +68,7 @@ public:
   void addHorizontalBargraph(
     const char* label, FAUSTFLOAT* zone,
     FAUSTFLOAT min, FAUSTFLOAT max) override {
-    registerOption(label, zone, 0, min, max, 0, FLOAT);
+    registerOption(label, zone, 0, min, max, 0, FLOAT, true);
   }
 
   void addVerticalBargraph(
@@ -122,7 +122,8 @@ public:
     FAUSTFLOAT min,
     FAUSTFLOAT max,
     FAUSTFLOAT step,
-    OPTTYPE type) {
+    OPTTYPE type,
+    bool output = false) {
 
     bool matched = false;
     std::string fullLabel = boxPrefix + label;
@@ -130,15 +131,20 @@ public:
       auto visitor = module::FieldPtr::makeVisitor(
         [&] (module::Opt<bool> *f) {
           assert(type == BOOL);
-          f->addChangeHandler([ptr] (auto *f) { *ptr = f->get(); });
+          if (output) f->addChangeHandler([ptr] (auto *f) { f->setRaw(*ptr); });
+          else f->addChangeHandler([ptr] (auto *f) { *ptr = f->get(); });
         },
         [&] (module::Opt<float> *f) {
           assert(type == FLOAT);
-          f->addChangeHandler([ptr] (auto *f) { *ptr = f->get(); });
+          if (output)
+            f->addChangeHandler([ptr] (auto *f) { f->setRaw(*ptr); });
+          else
+            f->addChangeHandler([ptr] (auto *f) { *ptr = f->get(); });
         },
         [&] (module::Opt<int> *f) {
           assert(type == FLOAT);
-          f->addChangeHandler([ptr] (auto *f) { *ptr = f->get(); });
+          if (output) f->addChangeHandler([ptr] (auto *f) { f->setRaw(*ptr); });
+          else f->addChangeHandler([ptr] (auto *f) { *ptr = f->get(); });
         },
         [&] (auto *) {
           LOGE << "Unrecognized Opt type";
@@ -158,7 +164,6 @@ public:
   }
 };
 
-// Possibly this should extend Module
 class FaustWrapper {
 
 protected:
