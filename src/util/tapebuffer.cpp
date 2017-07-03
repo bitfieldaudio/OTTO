@@ -28,7 +28,7 @@ void TapeBuffer::threadRoutine() {
   movePlaypointAbs(0);
 
   file.open(GLOB.project->path);
-  file.header.samplerate = GLOB.samplerate;
+  file.fmt.sampleRate = GLOB.samplerate;
   const static uint FRAMEBUF_SIZE = RingBuffer::SIZE / 2;
   std::array<AudioFrame, FRAMEBUF_SIZE> framebuf;
 

@@ -4,37 +4,17 @@
 
 namespace top1 {
 
-struct ChunkField : public File::Field {
-  File::Chunk *chunk;
-
-  ChunkField(File::Chunk *data) : chunk (data) {}
-
-  size_t size() const override {
-    return chunk->size;
-  }
-
-  void read(File *file) override {
-    chunk->read(file);
-  }
-  void write(File *file) override {
-    chunk->write(file);
-  }
-};
-
-void File::Chunk::subChunk(Chunk &subChunk) {
-  auto *field = new ChunkField(&subChunk);
-  fields.push_back(field);
-  size += field->size();
-}
-
 void File::Chunk::read(File *file) {
   if (offset < 0) {
     offset = file->rpos();
   }
   file->fseek(offset);
-  if (id.name != file->readBytes<u4b>()) {
+  ChunkFCC rName = file->readBytes<u4b>();
+  if (id.name != rName.name) {
     throw ReadException(
-      ReadException::UNEXPECTED_CHUNK, "UNEXPECTED_CHUNK");
+      ReadException::UNEXPECTED_CHUNK,
+      fmt::format("Unexpected chunk name at {:#x}: Got {:#x} expected {:#x}",
+       offset, rName.name, id.name));
   }
   uint fsize;
   if ((fsize = file->readBytes<u4b>()) < size) {

@@ -6,16 +6,10 @@ namespace top1 {
 class TapeFile : public File {
 public:
   struct HeaderChunk : public Chunk {
-    u2b version = 1;
-    u2b tracks   = 4;
-    u4b samplerate = 44100;
-    u2b samplesize = 32;
+    u4b version = 1;
 
     HeaderChunk() : Chunk("TOP1") {
       addField(version);
-      addField(tracks);
-      addField(samplerate);
-      addField(samplesize);
     };
   } header;
 

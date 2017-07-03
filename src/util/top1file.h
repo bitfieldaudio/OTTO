@@ -181,6 +181,28 @@ struct TypedField : public File::Field {
   }
 };
 
+template<>
+struct TypedField<File::Chunk> : public File::Field {
+  File::Chunk *chunk;
+
+  TypedField(File::Chunk *data) : chunk (data) {}
+
+  size_t size() const override {
+    return chunk->size;
+  }
+
+  void read(File *file) override {
+    chunk->read(file);
+  }
+  void write(File *file) override {
+    chunk->write(file);
+  }
+};
+
+inline void File::Chunk::subChunk(File::Chunk &chunk) {
+  addField<File::Chunk>(chunk);
+}
+
 template<class T>
 void File::Chunk::addField(T &field) {
   Field *tField = new TypedField<T>(&field);

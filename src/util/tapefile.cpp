@@ -15,7 +15,7 @@ void TapeFile::writeSlices() {
 }
 
 void TapeFile::seek(int pos) {
-  fseek(audioChunk.offset + 4 + pos * sizeof(AudioFrame));
+  fseek(audioChunk.offset + 8 + pos * sizeof(AudioFrame));
 }
 
 uint TapeFile::write(AudioFrame* data, uint nframes) {
@@ -25,8 +25,9 @@ uint TapeFile::write(AudioFrame* data, uint nframes) {
     //LOGD << e.message;
     return 0;
   }
-  uint newSize = wpos() - audioChunk.offset - 4;
+  uint newSize = wpos() - audioChunk.offset - 8;
   if (newSize > audioChunk.size) {
+    riffHeader.size += newSize - audioChunk.size;
     audioChunk.size = newSize;
   }
   return nframes;
