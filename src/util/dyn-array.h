@@ -129,6 +129,7 @@ public:
 
   DynArray(size_type size) : _size(size) {
     _data = _allocator.allocate(size);
+    clear();
   }
 
   virtual ~DynArray() {
@@ -139,12 +140,16 @@ public:
   pointer data() const { return _data; }
 
   reference operator[](size_type index) {
-    assert(index < _size);
+    if (index >= _size || index < 0) {
+      throw std::out_of_range("Out of DynArray bounds");
+    }
     return _data[index];
   }
 
   const reference operator[](size_type index) const {
-    assert(index < _size);
+    if (index >= _size || index < 0) {
+      throw std::out_of_range("Out of DynArray bounds");
+    }
     return _data[index];
   }
 
@@ -202,6 +207,7 @@ public:
     _allocator.deallocate(_data, _size);
     _size = size;
     _data = _allocator.allocate(size);
+    clear();
   }
 
   /**

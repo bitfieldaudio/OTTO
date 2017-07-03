@@ -1,6 +1,6 @@
 #pragma once
 
-#include "util/poly-ptr.h"
+#include "../util/poly-ptr.h"
 
 struct MidiEvent {
 
