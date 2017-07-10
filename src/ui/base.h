@@ -58,6 +58,8 @@ enum Key {
   K_MIXER,
   K_METRONOME,
   K_SYNTH,
+  K_SAMPLER,
+  K_LOOPER,
 
   K_LOOP,
   K_LOOP_IN,
@@ -74,21 +76,44 @@ using PressedKeys = bool[256];
  * Anything that can be drawn on screen.
  * Holds a pointer to its parent
  */
-class Widget {
+class Drawable {
 public:
 
-  Widget *parent;
-
-  Widget() {};
-  Widget(Widget *_parent) :
-    parent (_parent) {}
+  Drawable() {};
 
   /**
    * Draw this widget to the context.
    * Called from the parent's draw method.
-   * @param cr the Cairo context to draw to.
+   * @param ctx the canvas to draw on.
    */
   virtual void draw(NanoCanvas::Canvas& ctx) = 0;
+
+};
+
+class Widget : public Drawable {
+public:
+  float h, w;
+
+  Widget() {}
+  Widget(float w, float h) : w (w), h (h) {}
+
+  virtual void drawAt(NanoCanvas::Canvas &ctx,
+   float x, float y) {
+    ctx.save();
+    ctx.translate(x, y);
+    draw(ctx);
+    ctx.restore();
+  }
+
+  virtual void drawAt(NanoCanvas::Canvas &ctx,
+   float x, float y, float w, float h) {
+    this->h = h;
+    this->w = w;
+    ctx.save();
+    ctx.translate(x, y);
+    draw(ctx);
+    ctx.restore();
+  }
 
 };
 
@@ -96,16 +121,18 @@ public:
  * A specific view/window.
  * If it belongs to a module, use ModuleScreen.
  */
-class Screen : public Widget {
+class Screen : public Drawable {
 public:
 
-  Screen() : Widget(NULL) {}
+  using ptr = std::shared_ptr<Screen>;
+
+  Screen() : Drawable() {}
   /**
    * Run by MainUI when a key is pressed
    * @param key the pressed key
    * @return true if the key was used.
    */
-  virtual bool keypress(Key key) {
+  virtual bool keypress(Key) {
     return false;
   };
   /**
@@ -113,7 +140,7 @@ public:
    * @param key the released key
    * @return true if the key was used.
    */
-  virtual bool keyrelease(Key key) {
+  virtual bool keyrelease(Key) {
     return false;
   };
 };
@@ -127,6 +154,8 @@ protected:
   M *module;
 
 public:
+  using ptr = std::shared_ptr<ModuleScreen<M>>;
+
   ModuleScreen() :
     Screen() {}
 

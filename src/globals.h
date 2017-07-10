@@ -12,6 +12,7 @@
 #include "modules/tape.h"
 #include "modules/mixer.h"
 #include "modules/metronome.h"
+#include "modules/sampler.h"
 #include "audio/jack.h"
 #include "audio/midi.h"
 #include "util/datafile.h"
@@ -61,6 +62,7 @@ public:
   TapeModule tapedeck;
   MixerModule mixer;
   module::Metronome metronome;
+  module::Sampler sampler;
 
   //TODO: status codes etc
   void exit() {

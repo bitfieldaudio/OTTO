@@ -61,52 +61,52 @@ private:
 /* Waveform Implementation                                  */
 /************************************************************/
 
-Waveform::Waveform(float ratio, float scale) :
+inline Waveform::Waveform(float ratio, float scale) :
   ratio (ratio),
   scale (scale) {}
 
-void Waveform::addFrame(float f) {
+inline void Waveform::addFrame(float f) {
   _current.add(f);
   if (_current.count/ratio >= 0) {
-    _data.push_back(_current.average());
+    addPoint(_current.average());
     _current.clear();
   }
 }
 
-void Waveform::addPoint(float f) {
-  _data.push_back(f);
+inline void Waveform::addPoint(float f) {
+  _data.push_back(f * scale);
 }
 
-std::size_t Waveform::size() const {
+inline std::size_t Waveform::size() const {
   return _data.size();
 }
-std::size_t Waveform::timeSpan() const {
+inline std::size_t Waveform::timeSpan() const {
   return _data.size() * ratio;
 }
 
-float &Waveform::operator[](std::size_t idx) {
+inline float &Waveform::operator[](std::size_t idx) {
   return _data[idx];
 }
 
-const float &Waveform::operator[](std::size_t idx) const {
+inline const float &Waveform::operator[](std::size_t idx) const {
   return _data[idx];
 }
 
-Waveform::iterator Waveform::begin() {
+inline Waveform::iterator Waveform::begin() {
   return _data.begin();
 }
-Waveform::iterator Waveform::end() {
+inline Waveform::iterator Waveform::end() {
   return _data.end();
 }
-Waveform::const_iterator Waveform::begin() const {
+inline Waveform::const_iterator Waveform::begin() const {
   return _data.begin();
 }
-Waveform::const_iterator Waveform::end() const {
+inline Waveform::const_iterator Waveform::end() const {
   return _data.end();
 }
-Waveform::const_iterator Waveform::cbegin() const {
+inline Waveform::const_iterator Waveform::cbegin() const {
   return _data.cbegin();
 }
-Waveform::const_iterator Waveform::cend() const {
+inline Waveform::const_iterator Waveform::cend() const {
   return _data.cend();
 }

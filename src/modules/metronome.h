@@ -10,7 +10,7 @@ using BeatPos = int;
 namespace module {
 
 class Metronome : public Module, FaustWrapper {
-  std::shared_ptr<ui::ModuleScreen<Metronome>> screen;
+  ui::ModuleScreen<Metronome>::ptr screen;
 public:
   struct Data : public module::Data {
     Opt<float> bpm    = {this, "BPM", 120, 40, 320, 1};

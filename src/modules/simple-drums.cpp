@@ -7,13 +7,10 @@ SimpleDrumVoice::SimpleDrumVoice() : FaustWrapper(
   new FAUSTCLASS(), &data) {
 }
 
-SimpleDrumsModule::SimpleDrumsModule() {
-  screen = new SimpleDrumsScreen(this);
-}
+SimpleDrumsModule::SimpleDrumsModule() :
+  screen (new SimpleDrumsScreen(this)) {}
 
-SimpleDrumsModule::~SimpleDrumsModule() {
-  delete screen;
-}
+SimpleDrumsModule::~SimpleDrumsModule() {}
 
 void SimpleDrumsModule::process(uint nframes) {
   for (auto &&nEvent : GLOB.midiEvents) {

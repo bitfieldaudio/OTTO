@@ -22,11 +22,11 @@ public:
   void init();
   void exit();
 
-  ui::Screen *currentScreen;
+  ui::Screen::ptr currentScreen;
 
   std::thread uiThread;
 
-  void display(ui::Screen *screen);
+  void display(ui::Screen::ptr screen);
 
   void draw(NanoCanvas::Canvas& ctx) override;
   bool keypress(ui::Key key) override;

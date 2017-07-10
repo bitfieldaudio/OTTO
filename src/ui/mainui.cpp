@@ -5,7 +5,7 @@
 
 #include <thread>
 
-void MainUI::display(ui::Screen *screen) {
+void MainUI::display(ui::Screen::ptr screen) {
   currentScreen = screen;
 }
 
@@ -64,6 +64,9 @@ bool MainUI::globKeyPre(ui::Key key) {
     break;
   case K_METRONOME:
     GLOB.metronome.display();
+    break;
+  case K_SAMPLER:
+    GLOB.sampler.display();
     break;
   default:
     return false;

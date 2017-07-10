@@ -263,7 +263,13 @@ public:
 };
 
 
-using FieldPtr = top1::PolyPtr<Field, Opt<bool>, Opt<float>, Opt<int>>;
+using FieldPtr = top1::PolyPtr<
+    Field,
+    Opt<bool>,
+    Opt<float>,
+    Opt<int>,
+    Opt<std::string>
+  >;
 
 
 class Data {

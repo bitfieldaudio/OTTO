@@ -37,7 +37,7 @@ void Metronome::process(uint nframes) {
 }
 
 void Metronome::display() {
-  GLOB.ui.display(&*screen);
+  GLOB.ui.display(screen);
 }
 
 void Metronome::postBuffers(uint nframes) {

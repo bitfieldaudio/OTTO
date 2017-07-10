@@ -13,7 +13,7 @@
 #include "metronome.h"
 
 class TapeModule : public module::Module {
-  ui::ModuleScreen<TapeModule> *tapeScreen;
+  ui::ModuleScreen<TapeModule>::ptr tapeScreen;
 
   top1::TapeTime tapePosition; // Read from here instead of the tapebuffer
 public:

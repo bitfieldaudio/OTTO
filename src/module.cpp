@@ -43,6 +43,15 @@ Opt<int>::Opt(Data *data,
   reset();
 };
 
+Opt<std::string>::Opt(Data *data,
+ std::string name,
+ std::string init,
+ bool preserve)
+  : TypedField<std::string>(preserve, init) {
+  data->addField(name, this);
+  reset();
+};
+
 
 top1::tree::Node Data::serialize() {
   top1::tree::Map node;

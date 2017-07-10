@@ -6,7 +6,7 @@
 
 
 class MixerModule : public module::Module {
-  ui::ModuleScreen<MixerModule> *screen;
+  ui::ModuleScreen<MixerModule>::ptr screen;
 public:
 
   struct Data : module::Data {

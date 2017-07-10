@@ -47,7 +47,7 @@ public:
 
   uint currentVoiceIdx = 0 ;
 
-  ui::ModuleScreen<SimpleDrumsModule> *screen;
+  ui::ModuleScreen<SimpleDrumsModule>::ptr screen;
 
   SimpleDrumsModule();
   ~SimpleDrumsModule();
