@@ -155,9 +155,9 @@ public:
 
   virtual ~File() {};
 
-  void open(std::string path);
-  void close();
-  void flush();
+  virtual void open(std::string path);
+  virtual void close();
+  virtual void flush();
 
   virtual void writeFile();
   virtual void readFile();
