@@ -9,8 +9,6 @@
 #include <mutex>
 #include <plog/Log.h>
 
-#include "../utils.h"
-
 namespace top1 {
 
 using byte = char;

@@ -1,17 +1,18 @@
 #pragma once
-#include "top1file.h"
+#include "sndfile.h"
 
 namespace top1 {
 
-class TapeFile : public File {
+class TapeFile : public SndFile<4> {
 public:
-  struct HeaderChunk : public Chunk {
+  struct TOP1Chunk : public Chunk {
+    ChunkFCC type = "TAPE";
     u4b version = 1;
 
-    HeaderChunk() : Chunk("TOP1") {
+    TOP1Chunk() : Chunk("TOP1") {
       addField(version);
     };
-  } header;
+  };
 
   struct SliceData {
     u4b  inPos;
@@ -39,62 +40,26 @@ public:
       subChunk(tracks[2]);
       subChunk(tracks[3]);
     };
-  } slices;
+  };
 
-  struct RiffHeader : public Chunk {
-    ChunkFCC format = "WAVE";
-
-    RiffHeader() : Chunk("RIFF") {
-      addField(format);
-    }
-  } riffHeader;
-
-  // Wav
-  struct FmtChunk : public Chunk {
-    u2b audioFormat = 1;
-    u2b numChannels = 4;
-    u4b sampleRate = 44100;
-    u2b bitsPerSample = 32;
-    u4b byteRate = sampleRate * numChannels * bitsPerSample/8;
-    u2b blockAlign = numChannels * bitsPerSample/8;
-    FmtChunk() : Chunk("fmt ") {
-      addField(audioFormat);
-      addField(numChannels);
-      addField(sampleRate);
-      addField(byteRate);
-      addField(blockAlign);
-      addField(bitsPerSample);
-    };
-  } fmt;
-
-  struct AudioChunk : public Chunk {
-
-    AudioChunk() : Chunk("data") {};
-  } audioChunk;
+  TOP1Chunk top1Chunk;
+  SlicesChunk slices;
 
   void readSlices();
   void writeSlices();
 
-  void seek(int pos);
-
-  uint write(AudioFrame* data, uint nframes);
-
-  uint read(AudioFrame* data, uint nframes);
-
-  TapeFile() : File() {
-    riffHeader.subChunk(header);
-    riffHeader.subChunk(slices);
-    riffHeader.subChunk(fmt);
-    riffHeader.subChunk(audioChunk);
-    addChunk(riffHeader);
-  }
-
-  TapeFile(std::string path) : TapeFile() {
-    open(path);
-  }
+  TapeFile() : SndFile<4>() {};
+  TapeFile(std::string path) : SndFile<4>(path) {};
 
   TapeFile(TapeFile&) = delete;
   TapeFile(TapeFile&&) = delete;
+
+protected:
+
+  void setupChunks() override {
+    top1Chunk.subChunk(slices);
+    wavHeader.subChunk(top1Chunk);
+  }
 
 };
 

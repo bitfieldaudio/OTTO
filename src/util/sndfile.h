@@ -106,7 +106,7 @@ public:
         ++framesWritten;
       }
     } catch (ReadException e) {
-      LOGW << e.message;
+      if (e.type != e.END_OF_FILE) LOGE << e.message;
     }
     uint newSize = wpos() - audioChunk.offset - 8;
     if (newSize > audioChunk.size) {
@@ -126,7 +126,7 @@ public:
         ++framesRead;
       }
     } catch (ReadException e) {
-      LOGD << e.message;
+      if (e.type != e.END_OF_FILE) LOGE << e.message;
     }
     fseek(rpos());
     return framesRead;
@@ -144,6 +144,9 @@ protected:
   virtual void setupChunks() {}
 
 };
+
+template<uint channels>
+using SndFile = BasicSndFile<float, channels>;
 
 
 }

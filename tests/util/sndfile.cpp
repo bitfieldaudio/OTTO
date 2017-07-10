@@ -42,6 +42,7 @@ TEST_CASE("Persistance of sound data", "[SndFile]") {
   sf.write(audio.data(), audio.size());
 
   REQUIRE(sf.position() == 2048);
+  REQUIRE(sf.size() == 2048);
 
   REQUIRE_NOTHROW(sf.close());
 

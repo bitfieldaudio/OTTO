@@ -6,6 +6,7 @@
 #include <string>
 
 #include "util/dyn-array.h"
+#include "util/sndfile.h"
 
 namespace top1 {
 
@@ -88,25 +89,7 @@ struct AudioAverage {
 
 }
 
-/** One frame of nTracks samples */
-struct AudioFrame {
-  float data[4];
-
-  AudioFrame(float f) {
-    data[0] = f;
-    data[1] = f;
-    data[2] = f;
-    data[3] = f;
-  }
-
-  AudioFrame() {
-    AudioFrame(0);
-  }
-
-  float& operator[](uint i) {
-    return data[i];
-  }
-};
+using AudioFrame = top1::SndFile<4>::AudioFrame;
 
 namespace detail {
 
