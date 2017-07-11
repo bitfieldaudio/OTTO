@@ -65,9 +65,6 @@ bool MainUI::globKeyPre(ui::Key key) {
   case K_METRONOME:
     GLOB.metronome.display();
     break;
-  case K_SAMPLER:
-    GLOB.sampler.display();
-    break;
   default:
     return false;
   }

@@ -330,19 +330,47 @@ public:
 
 template<class M>
 class ModuleDispatcher : public Module {
+
+  struct Mstor {
+    std::string key;
+    std::shared_ptr<M> val;
+
+    bool operator==(const Mstor &other) const {
+      return key == other.key;
+    }
+    
+    bool operator==(const std::string &other) const {
+      return key == other;
+    }
+
+    decltype(auto) operator->() {
+      return val.operator->();
+    }
+  };
+
 protected:
 
-  std::map<std::string, std::shared_ptr<M>> modules;
-  std::string currentModule;
+  std::vector<Mstor> modules;
+  std::size_t currentModule = 0;
 
 public:
 
   void display() override {
-    modules[currentModule]->display();
+    modules[currentModule].val->display();
   }
 
-  std::shared_ptr<M> getCurrent() {
-    return modules[currentModule];
+  std::shared_ptr<M> current() {
+    return modules[currentModule].val;
+  }
+
+  void current(std::size_t cur) {
+    if (cur < modules.size()) {
+      modules[currentModule]->exit();
+      currentModule = cur;
+      modules[cur]->init();
+    } else {
+      throw std::out_of_range("Attempt to access module out of range");
+    }
   }
 
   void registerModule(std::string name, M *module) {
@@ -350,14 +378,13 @@ public:
   }
 
   void registerModule(std::string name, std::shared_ptr<M> module) {
-    modules[name] = module;
-    currentModule = name;
+    modules.push_back({name, module});
   }
 
   top1::tree::Node serialize() override {
     top1::tree::Map node;
     for (auto m : modules) {
-      node[m.first] = m.second->serialize();
+      node[m.key] = m.val->serialize();
     }
     return node;
   }
@@ -365,8 +392,9 @@ public:
   void deserialize(top1::tree::Node node) override {
     node.match([&] (top1::tree::Map n) {
        for (auto &m : n.values) {
-         if (modules.find(m.first) != modules.end()) {
-           modules[m.first]->deserialize(m.second);
+         auto &&md = std::find(modules.begin(), modules.end(), m.first);
+         if (md != modules.end()) {
+           md->val->deserialize(m.second);
          } else {
            LOGE << "Unrecognized module";
          }
@@ -380,7 +408,7 @@ public:
 
   void process(uint nframes) {
     if (modules.size() > 0)
-      modules[currentModule]->process(nframes);
+      modules[currentModule].val->process(nframes);
   }
 };
 
@@ -389,7 +417,7 @@ public:
 
   void process(uint nframes) {
     if (modules.size() > 0)
-      modules[currentModule]->process(nframes);
+      modules[currentModule].val->process(nframes);
   }
 };
 
@@ -398,7 +426,7 @@ public:
 
   void process(uint nframes) {
     if (modules.size() > 0)
-      modules[currentModule]->process(nframes);
+      modules[currentModule].val->process(nframes);
   }
 };
 

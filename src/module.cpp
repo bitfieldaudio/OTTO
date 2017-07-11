@@ -24,6 +24,10 @@ Opt<float>::Opt(Data *data,
   min(min),
   max(max),
   step(step) {
+  if (min > max) {
+    min = std::numeric_limits<float>::min();
+    max = std::numeric_limits<float>::max();
+  }
   data->addField(name, this);
   reset();
 };
@@ -39,6 +43,10 @@ Opt<int>::Opt(Data *data,
   min(min),
   max(max),
   step(step) {
+  if (min > max) {
+    min = std::numeric_limits<int>::min();
+    max = std::numeric_limits<int>::max();
+  }
   data->addField(name, this);
   reset();
 };
@@ -74,4 +82,5 @@ void Data::deserialize(top1::tree::Node node) {
       }
     }, [] (auto) {});
 }
+
 }

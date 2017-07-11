@@ -21,9 +21,36 @@ void File::Chunk::read(File *file) {
     throw ReadException(
       ReadException::INVALID_SIZE, "INVALID_CHUNK_SIZE");
   }
+  this->size = fsize;
   uint end = file->rpos() + fsize;
   for (auto field : fields) {
     field->read(file);
+  }
+  uint chunksStart = file->rpos();
+  for (auto chunk : chunks) {
+    if (chunk->offset < 0) {
+      file->fseek(chunksStart);
+      uint lastPos = file->rpos();
+      while (file->rpos() < end) {
+        try {
+          Chunk c = file->getChunk();
+          if (c.id == chunk->id) {
+            chunk->read(file);
+          } else if (c.id.name == 0) {
+            break;
+          } else {
+            file->skipChunkR(c);
+            if (file->rpos() == lastPos) break;
+            lastPos = file->rpos();
+          }
+        } catch (ReadException e) {
+          if (e.type != e.END_OF_FILE) LOGE << e.what();
+          break;
+        }
+      }
+    } else {
+      chunk->read(file);
+    }
   }
   file->fseek(end);
 }
@@ -37,8 +64,11 @@ void File::Chunk::write(File *file) {
   file->writeBytes(size);
 
   uint end = file->wpos() + size;
-  for (auto field : fields) {
+  for (auto &&field : fields) {
     field->write(file);
+  }
+  for (auto &&chunk : chunks) {
+    chunk->write(file);
   }
   if (end != file->wpos()) {
     // ERROR
@@ -66,14 +96,18 @@ void File::open(std::string path) {
 }
 
 void File::close() {
-  LOGI << "Closing TOP1File '" << path << "'";
-  writeFile();
-  fileStream.close();
+  if (fileStream.is_open()) {
+    LOGI << "Closing TOP1File '" << path << "'";
+    writeFile();
+    fileStream.close();
+  }
 }
 
 void File::flush() {
-  writeFile();
-  fileStream.flush();
+  if (fileStream.is_open()) {
+    writeFile();
+    fileStream.flush();
+  }
 }
 
 // Read/Write
@@ -139,7 +173,6 @@ void File::readChunks() {
           Chunk c = getChunk();
           if (c.id == chunk->id) {
             chunk->read(this);
-            break;
           } else if (c.id.name == 0) {
             break;
           } else {
@@ -148,10 +181,12 @@ void File::readChunks() {
             lastPos = rpos();
           }
         } catch (ReadException e) {
-          LOGE << e.what();
+          if (e.type != e.END_OF_FILE) LOGE << e.what();
           break;
         }
       }
+    } else {
+      chunk->read(this);
     }
   }
 }

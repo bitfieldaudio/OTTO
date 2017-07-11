@@ -98,11 +98,33 @@ public:
     return audioChunk.size / AudioFrame::size;
   }
 
+  uint read(AudioFrame* data, uint nframes) {
+    return read(reinterpret_cast<float *>(data), nframes);
+  }
+
   uint write(AudioFrame* data, uint nframes) {
+    return write(reinterpret_cast<float *>(data), nframes);
+  }
+
+  uint read(float* data, uint nframes) {
+    uint framesRead = 0;
+    try {
+      for (uint i = 0; i < nframes; ++i) {
+        readBytes(data + i * channels, channels);
+        ++framesRead;
+      }
+    } catch (ReadException e) {
+      if (e.type != e.END_OF_FILE) LOGE << e.message;
+    }
+    fseek(rpos());
+    return framesRead;
+  }
+
+  uint write(float* data, uint nframes) {
     uint framesWritten = 0;
     try {
       for (uint i = 0; i < nframes; ++i) {
-        writeBytes(data[i].data, channels);
+        writeBytes(data + i * channels, channels);
         ++framesWritten;
       }
     } catch (ReadException e) {
@@ -116,20 +138,6 @@ public:
     fseek(wpos());
     return framesWritten;
 
-  }
-
-  uint read(AudioFrame* data, uint nframes) {
-    uint framesRead = 0;
-    try {
-      for (uint i = 0; i < nframes; ++i) {
-        readBytes(data[i].data, channels);
-        ++framesRead;
-      }
-    } catch (ReadException e) {
-      if (e.type != e.END_OF_FILE) LOGE << e.message;
-    }
-    fseek(rpos());
-    return framesRead;
   }
 
   uint &samplerate = wavFmt.sampleRate;

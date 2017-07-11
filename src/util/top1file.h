@@ -78,6 +78,7 @@ public:
   class Chunk {
   protected:
     std::vector<Field*> fields;
+    std::vector<Chunk*> chunks;
   public:
     const ChunkFCC id;
     u4b size = 0;
@@ -151,7 +152,9 @@ public:
     open(path);
   }
 
-  virtual ~File() {};
+  virtual ~File() {
+    close();
+  };
 
   virtual void open(std::string path);
   virtual void close();
@@ -179,26 +182,9 @@ struct TypedField : public File::Field {
   }
 };
 
-template<>
-struct TypedField<File::Chunk> : public File::Field {
-  File::Chunk *chunk;
-
-  TypedField(File::Chunk *data) : chunk (data) {}
-
-  size_t size() const override {
-    return chunk->size;
-  }
-
-  void read(File *file) override {
-    chunk->read(file);
-  }
-  void write(File *file) override {
-    chunk->write(file);
-  }
-};
-
 inline void File::Chunk::subChunk(File::Chunk &chunk) {
-  addField<File::Chunk>(chunk);
+  chunks.push_back(&chunk);
+  size += chunk.size;
 }
 
 template<class T>

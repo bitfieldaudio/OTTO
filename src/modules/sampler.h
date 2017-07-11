@@ -12,9 +12,10 @@ namespace module {
 /**
  * Drum sampler for now
  */
-class Sampler : module::Module {
+class Sampler : public module::SynthModule {
 public:
 
+  size_t maxSampleSize = 0;
   top1::DynArray<float> sampleData;
 
   ui::ModuleScreen<Sampler>::ptr editScreen;
@@ -26,11 +27,18 @@ public:
     module::Opt<std::string> sampleName = {this, "sample name", ""};
 
     struct VoiceData : public module::Data {
-      module::Opt<int> in = {this, "in", 0, 0, -1, 1};
-      module::Opt<int> out = {this, "out", 0, 0, -1, 1};
-      module::Opt<int> loopIn = {this, "loopIn", 0, 0, -1, 1};
-      module::Opt<int> loopOut = {this, "loopOut", 0, 0, -1, 1};
-    } voiceData[nVoices];
+      module::Opt<int> in = {this, "in", 0};
+      module::Opt<int> out = {this, "out", 0};
+      module::Opt<int> mode = {this, "mode", 1, -2, 2, 1};
+
+      int playProgress = -1;
+      int length() const {
+        return out - in;
+      }
+      void play();
+    };
+
+    std::array<VoiceData, nVoices> voiceData;
 
     Data() {
       for (uint i = 0; i < nVoices; i++) {
@@ -38,13 +46,27 @@ public:
       }
     }
 
+    Data(Data&) = delete;
+    Data(Data&&) = delete;
+
   } data;
 
   Sampler();
 
-  void process(uint nframes);
+  void process(uint nframes) override;
 
   void display() override;
+
+  void load();
+
+  void init() override;
+
+  static std::string samplePath(std::string name) {
+    return "samples/" + name + ".wav";
+  }
+
+protected:
+  uint currentVoiceIdx = 0;
 };
 
 class SampleRecordScreen : public ui::ModuleScreen<Sampler> {

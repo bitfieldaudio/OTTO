@@ -62,7 +62,6 @@ public:
   TapeModule tapedeck;
   MixerModule mixer;
   module::Metronome metronome;
-  module::Sampler sampler;
 
   //TODO: status codes etc
   void exit() {

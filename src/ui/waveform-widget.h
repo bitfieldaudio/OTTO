@@ -22,7 +22,7 @@ private:
 };
 
 /************************************************************/
-/* WaveformWidget Implementation      >                      */
+/* WaveformWidget Implementation                            */
 /************************************************************/
 
 inline void WaveformWidget::draw(NanoCanvas::Canvas &ctx) {
@@ -31,9 +31,16 @@ inline void WaveformWidget::draw(NanoCanvas::Canvas &ctx) {
   const float pxPrPt = w / float(wf->size());
 
   ctx.beginPath();
-  ctx.moveTo(0, wf->operator[](0) * h);
-  for (int i = 1, wp = w/pxPrPt; i < wp; i++) {
-    ctx.lineTo(i * pxPrPt, wf->operator[](i) * h);
+  ctx.lineCap(Canvas::LineCap::ROUND);
+  ctx.lineJoin(Canvas::LineJoin::ROUND);
+  if (wf->size() == 0) {
+    ctx.moveTo(0, h - 0);
+    ctx.lineTo(w, h - 0);
+  } else {
+    ctx.moveTo(0, (1 - wf->operator[](0)) * h);
+    for (int i = 1, wp = w/pxPrPt; i < wp; i++) {
+      ctx.lineTo(i * pxPrPt, (1 - wf->operator[](i)) * h);
+    }
   }
   ctx.strokeStyle(lineCol);
   ctx.stroke();
