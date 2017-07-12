@@ -10,11 +10,13 @@
 
 namespace top1 {
 
-inline bool between(float min, float max, float el) {
+template<typename T>
+inline bool between(T min, T max, T el) {
   return (el <= max && el >= min);
 }
 
-inline float withBounds(float min, float max, float el) {
+template<typename T>
+inline T withBounds(T min, T max, T el) {
   if (el < min) {
     return min;
   }

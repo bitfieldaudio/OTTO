@@ -121,18 +121,18 @@ void MetronomeScreen::draw(NanoCanvas::Canvas &ctx) {
     ctx.save();
     float y = 180 - module->data.tone.normalized() * 140;
     float x = 40;
-    ctx.strokeStyle(COLOR_GREEN_DIMMED);
+    ctx.strokeStyle(Colours::Green.dimmed);
     ctx.lineCap(Canvas::LineCap::ROUND);
     ctx.beginPath();
     ctx.moveTo(x, 40);
     ctx.lineTo(x, y);
     ctx.stroke();
-    ctx.strokeStyle(COLOR_GREEN);
+    ctx.strokeStyle(Colours::Green);
     ctx.beginPath();
     ctx.moveTo(x, y);
     ctx.lineTo(x, 180);
     ctx.stroke();
-    ctx.fillStyle(COLOR_GREEN);
+    ctx.fillStyle(Colours::Green);
     ctx.beginPath();
     ctx.circle(x, y, 3);
     ctx.fill();
@@ -147,16 +147,16 @@ void MetronomeScreen::draw(NanoCanvas::Canvas &ctx) {
     module->graph.clear();
     ctx.beginPath();
     ctx.lineCap(Canvas::LineCap::ROUND);
-    ctx.strokeStyle(COLOR_RED_DIMMED);
+    ctx.strokeStyle(Colours::Red.dimmed);
     ctx.moveTo(x, 40);
     ctx.lineTo(x, y);
     ctx.stroke();
-    ctx.strokeStyle(COLOR_RED);
+    ctx.strokeStyle(Colours::Red);
     ctx.beginPath();
     ctx.moveTo(x, y);
     ctx.lineTo(x, 180);
     ctx.stroke();
-    ctx.fillStyle(COLOR_RED);
+    ctx.fillStyle(Colours::Red);
     ctx.beginPath();
     ctx.circle(x, 180 - module->data.gain.normalized() * 140, 3);
     ctx.fill();
@@ -168,21 +168,21 @@ void MetronomeScreen::draw(NanoCanvas::Canvas &ctx) {
 	ctx.font(FONT_LIGHT);
   ctx.font(25);
   ctx.textAlign(TextAlign::Left, TextAlign::Middle);
-  ctx.fillStyle(COLOR_GREEN);
+  ctx.fillStyle(Colours::Green);
 	ctx.fillText("TONE", 20, 210);
 
   ctx.beginPath();
 	ctx.font(FONT_LIGHT);
   ctx.font(25);
   ctx.textAlign(TextAlign::Center, TextAlign::Middle);
-  ctx.fillStyle(COLOR_BLUE);
+  ctx.fillStyle(Colours::Blue);
 	ctx.fillText("BPM", 160, 210);
 
   ctx.beginPath();
 	ctx.font(FONT_LIGHT);
   ctx.font(25);
   ctx.textAlign(TextAlign::Right, TextAlign::Middle);
-  ctx.fillStyle(COLOR_RED);
+  ctx.fillStyle(Colours::Red);
 	ctx.fillText("GAIN", 300, 210);
 
 }
@@ -194,7 +194,7 @@ void MetronomeScreen::drawMetronome(NanoCanvas::Canvas &ctx) {
 
     // #BG_BOX
     ctx.beginPath();
-    ctx.strokeStyle(COLOR_GRAY60);
+    ctx.strokeStyle(Colours::Gray60);
     ctx.lineWidth(2);
     ctx.moveTo(42, 100);
     ctx.lineTo(42, 5);
@@ -204,7 +204,7 @@ void MetronomeScreen::drawMetronome(NanoCanvas::Canvas &ctx) {
 
     // #Outline_Top
     ctx.beginPath();
-    ctx.strokeStyle(COLOR_GRAY70);
+    ctx.strokeStyle(Colours::Gray70);
     ctx.lineWidth(2);
     ctx.moveTo(10, 100);
     ctx.lineTo(35, 0);
@@ -233,7 +233,7 @@ void MetronomeScreen::drawMetronome(NanoCanvas::Canvas &ctx) {
     ctx.rotate(rotation);
     ctx.translate(-50, -105);
 
-    ctx.strokeStyle(COLOR_BLUE);
+    ctx.strokeStyle(Colours::Blue);
     ctx.lineWidth(2);
 
     // PENDULUM
@@ -255,8 +255,8 @@ void MetronomeScreen::drawMetronome(NanoCanvas::Canvas &ctx) {
 
   // Outline Bottom
   ctx.beginPath();
-  ctx.strokeStyle(COLOR_GRAY70);
-  ctx.fillStyle(COLOR_BLACK);
+  ctx.strokeStyle(Colours::Gray70);
+  ctx.fillStyle(Colours::Black);
   ctx.lineWidth(2);
   ctx.moveTo(10, 101);
   ctx.lineTo(90, 101);
@@ -268,7 +268,7 @@ void MetronomeScreen::drawMetronome(NanoCanvas::Canvas &ctx) {
 
   // BPM text
   ctx.beginPath();
-  ctx.fillStyle(COLOR_BLUE);
+  ctx.fillStyle(Colours::Blue);
   ctx.font(FONT_LIGHT);
   ctx.font(32);
   ctx.textAlign(TextAlign::Center, TextAlign::Middle);

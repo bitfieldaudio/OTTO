@@ -8,7 +8,7 @@
 
 class WaveformWidget : public ui::Widget {
 public:
-  drawing::Color lineCol;
+  drawing::Colour lineCol;
 
   WaveformWidget() {};
 
@@ -21,9 +21,9 @@ private:
   std::shared_ptr<Waveform> wf;
 };
 
-/************************************************************/
-/* WaveformWidget Implementation                            */
-/************************************************************/
+/****************************************/
+/* WaveformWidget Implementation        */
+/****************************************/
 
 inline void WaveformWidget::draw(NanoCanvas::Canvas &ctx) {
   using namespace drawing;

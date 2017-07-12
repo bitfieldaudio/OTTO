@@ -197,7 +197,7 @@ void MainUI::mainRoutine() {
 		glEnable(GL_CULL_FACE);
 		glDisable(GL_DEPTH_TEST);
 
-    canvas.clearColor(drawing::COLOR_BLACK);
+    canvas.clearColor(drawing::Colours::Black);
     canvas.begineFrame(winWidth, winHeight);
 
     canvas.scale(scale, scale);

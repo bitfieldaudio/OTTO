@@ -91,7 +91,7 @@ void SimpleDrumsScreen::drawOsc(NanoCanvas::Canvas &ctx, SimpleDrumVoice::Data::
 
 	ctx.globalAlpha(1.0);
 	ctx.lineJoin(Canvas::LineJoin::ROUND);
-	ctx.strokeStyle(COLOR_GRAY60);
+	ctx.strokeStyle(Colours::Gray60);
 	ctx.lineCap(Canvas::LineCap::ROUND);
 	ctx.miterLimit(4);
 // #FREQ_G
@@ -104,7 +104,7 @@ void SimpleDrumsScreen::drawOsc(NanoCanvas::Canvas &ctx, SimpleDrumVoice::Data::
 
   // FREQ_TXT
 	ctx.lineWidth(1.000000);
-	ctx.fillStyle(COLOR_GRAY60);
+	ctx.fillStyle(Colours::Gray60);
 	ctx.font(FONT_NORM);
 	ctx.font(15);
   ctx.textAlign(TextAlign::Center, TextAlign::Baseline);
@@ -112,7 +112,7 @@ void SimpleDrumsScreen::drawOsc(NanoCanvas::Canvas &ctx, SimpleDrumVoice::Data::
 
 // #FREQ_DIAL_BG
 	ctx.beginPath();
-	ctx.strokeStyle(COLOR_GRAY70);
+	ctx.strokeStyle(Colours::Gray70);
 	ctx.lineWidth(1.000000);
 	ctx.moveTo(30.876403, 64.114053);
 	ctx.lineTo(37.240364, 57.750093);
@@ -156,14 +156,14 @@ void SimpleDrumsScreen::drawOsc(NanoCanvas::Canvas &ctx, SimpleDrumVoice::Data::
 	
   // #FREQ_DIAL_RING
 	ctx.beginPath();
-	ctx.strokeStyle(COLOR_RED);
+	ctx.strokeStyle(Colours::Red);
 	ctx.lineWidth(2.000000);
 	ctx.arc(47.500000, 47.500000, 11.500000, 0.000000, 6.28318531, 1);
 	ctx.stroke();
 	
   // #FREQ_DIAL_MARKER
 	ctx.beginPath();
-	ctx.strokeStyle(COLOR_RED);
+	ctx.strokeStyle(Colours::Red);
 	ctx.lineWidth(2.000000);
   ctx.save();
   ctx.translate(47.5, 47.5);
@@ -177,7 +177,7 @@ void SimpleDrumsScreen::drawOsc(NanoCanvas::Canvas &ctx, SimpleDrumVoice::Data::
 	
 // #TONE_DECAY_BOX
 	ctx.beginPath();
-	ctx.strokeStyle(COLOR_GRAY60);
+	ctx.strokeStyle(Colours::Gray60);
 	ctx.lineWidth(2.000000);
 	ctx.rect(91.000000, 16.000000, 63.000000, 63.000000);
 	ctx.stroke();
@@ -185,7 +185,7 @@ void SimpleDrumsScreen::drawOsc(NanoCanvas::Canvas &ctx, SimpleDrumVoice::Data::
 	
 // #TXT_BG_TONE
 	ctx.lineWidth(1.000000);
-	ctx.fillStyle(COLOR_GRAY60);
+	ctx.fillStyle(Colours::Gray60);
 	ctx.font(FONT_NORM);
 	ctx.font(15);
   ctx.textAlign(TextAlign::Left, TextAlign::Baseline);
@@ -193,7 +193,7 @@ void SimpleDrumsScreen::drawOsc(NanoCanvas::Canvas &ctx, SimpleDrumVoice::Data::
 	
 // #TXT_BG_DELAY
 	ctx.lineWidth(1.000000);
-	ctx.fillStyle(COLOR_GRAY60);
+	ctx.fillStyle(Colours::Gray60);
 	ctx.font(FONT_NORM);
 	ctx.font(15);
   ctx.textAlign(TextAlign::Right, TextAlign::Baseline);
@@ -201,7 +201,7 @@ void SimpleDrumsScreen::drawOsc(NanoCanvas::Canvas &ctx, SimpleDrumVoice::Data::
 	
 // #DECAY_INDICATOR
 	ctx.beginPath();
-	ctx.strokeStyle(COLOR_GRAY70);
+	ctx.strokeStyle(Colours::Gray70);
 	ctx.lineWidth(2.000000);
 	ctx.moveTo(95, 75);
   osc.decayGraph.changed();
@@ -213,7 +213,7 @@ void SimpleDrumsScreen::drawOsc(NanoCanvas::Canvas &ctx, SimpleDrumVoice::Data::
 
 // #DECAY_SETTING
 	ctx.beginPath();
-	ctx.strokeStyle(COLOR_BLUE);
+	ctx.strokeStyle(Colours::Blue);
 	ctx.lineWidth(2.000000);
 	ctx.moveTo(95, 75);
   if (osc.toneDecay() > 0)
@@ -226,14 +226,14 @@ void SimpleDrumsScreen::drawOsc(NanoCanvas::Canvas &ctx, SimpleDrumVoice::Data::
 	
 // #NOISE_BOX
 	ctx.beginPath();
-	ctx.strokeStyle(COLOR_GRAY60);
+	ctx.strokeStyle(Colours::Gray60);
 	ctx.lineWidth(2.000000);
 	ctx.rect(166.000000, 16.000000, 63.000000, 63.000000);
 	ctx.stroke();
 	
 // #NOISE_WAVE
 	ctx.beginPath();
-	ctx.strokeStyle(COLOR_WHITE);
+	ctx.strokeStyle(Colours::White);
 	ctx.lineWidth(1.000000);
 	ctx.moveTo(204.897700, 71.868810);
 	ctx.lineTo(208.738620, 71.868810);
@@ -254,7 +254,7 @@ void SimpleDrumsScreen::drawOsc(NanoCanvas::Canvas &ctx, SimpleDrumVoice::Data::
 	
 // #SQUARE_WAVE
 	ctx.beginPath();
-	ctx.strokeStyle(COLOR_WHITE);
+	ctx.strokeStyle(Colours::White);
 	ctx.lineWidth(1.000000);
 	ctx.moveTo(172.000000, 72.000010);
 	ctx.lineTo(177.000000, 72.000010);
@@ -268,7 +268,7 @@ void SimpleDrumsScreen::drawOsc(NanoCanvas::Canvas &ctx, SimpleDrumVoice::Data::
 	
 // #NOISE_DIAL_RING
 	ctx.beginPath();
-	ctx.strokeStyle(COLOR_WHITE);
+	ctx.strokeStyle(Colours::White);
 	ctx.lineWidth(2.000000);
 	ctx.arc(197.500000, 47.500000, 11.500000, 0.000000, 6.28318531, 1);
 	ctx.stroke();
@@ -276,7 +276,7 @@ void SimpleDrumsScreen::drawOsc(NanoCanvas::Canvas &ctx, SimpleDrumVoice::Data::
 // #NOISE_DIAL_MARKER
 	ctx.beginPath();
 	ctx.lineJoin(Canvas::LineJoin::MITER);
-	ctx.strokeStyle(COLOR_WHITE);
+	ctx.strokeStyle(Colours::White);
 	ctx.lineCap(Canvas::LineCap::ROUND);
 	ctx.miterLimit(4);
 	ctx.lineWidth(2.000000);
@@ -290,7 +290,7 @@ void SimpleDrumsScreen::drawOsc(NanoCanvas::Canvas &ctx, SimpleDrumVoice::Data::
 	
 // #NOISE_DIAL_BG
 	ctx.beginPath();
-	ctx.strokeStyle(COLOR_GRAY70);
+	ctx.strokeStyle(Colours::Gray70);
 	ctx.lineWidth(1.000000);
 	ctx.moveTo(180.876400, 64.114053);
 	ctx.lineTo(187.240360, 57.750093);
@@ -336,7 +336,7 @@ void SimpleDrumsScreen::drawOsc(NanoCanvas::Canvas &ctx, SimpleDrumVoice::Data::
 	
 // #FILTER_BOX
 	ctx.beginPath();
-	ctx.strokeStyle(COLOR_GRAY60);
+	ctx.strokeStyle(Colours::Gray60);
 	ctx.lineWidth(2.000000);
 	ctx.rect(241.000000, 16.000000, 63.000000, 63.000000);
 	ctx.stroke();
@@ -345,7 +345,7 @@ void SimpleDrumsScreen::drawOsc(NanoCanvas::Canvas &ctx, SimpleDrumVoice::Data::
 	ctx.save();
 	ctx.beginPath();
 	ctx.transform(-0.707180, 0.707033, -0.707180, -0.707033, 0.000000, 0.000000);
-	ctx.strokeStyle(osc.filterSwitch() ? COLOR_GRAY70 : COLOR_GRAY60);
+	ctx.strokeStyle(osc.filterSwitch() ? Colours::Gray70 : Colours::Gray60);
 	ctx.miterLimit(4);
 	ctx.lineWidth(1.000000);
 	ctx.moveTo(-136.735470, -232.384740);
@@ -383,7 +383,7 @@ void SimpleDrumsScreen::drawOsc(NanoCanvas::Canvas &ctx, SimpleDrumVoice::Data::
 // #FILTER_MARKER
   ctx.save();
 	ctx.beginPath();
-	ctx.fillStyle(osc.filterSwitch() ? COLOR_GREEN : COLOR_GRAY60);
+	ctx.fillStyle(osc.filterSwitch() ? Colours::Green : Colours::Gray60);
 	ctx.translate(272.5, 47.5);
   ctx.rotate(-0.75 * M_PI + 1.5 * M_PI * osc.cutoff.normalized());
   ctx.circle(0, -22.5, 3);
@@ -392,7 +392,7 @@ void SimpleDrumsScreen::drawOsc(NanoCanvas::Canvas &ctx, SimpleDrumVoice::Data::
 	
 // #FILTER_BG_TXT
 	ctx.lineWidth(1.000000);
-  ctx.fillStyle(COLOR_GRAY60);
+  ctx.fillStyle(Colours::Gray60);
 	ctx.font(FONT_NORM);
 	ctx.font(15);
   ctx.textAlign(TextAlign::Center, TextAlign::Middle);
@@ -408,7 +408,7 @@ void SimpleDrumsScreen::drawKbd(NanoCanvas::Canvas &ctx) {
 
   uint ki = module->currentVoiceIdx;
 
-  ctx.strokeStyle(COLOR_GRAY60);
+  ctx.strokeStyle(Colours::Gray60);
   ctx.lineJoin(Canvas::LineJoin::ROUND);
   ctx.lineWidth(1.5);
 
@@ -417,7 +417,7 @@ void SimpleDrumsScreen::drawKbd(NanoCanvas::Canvas &ctx) {
     const static uint KEY_NUMS[14] = {0,2,4,5,7,9,11,12,14,16,17,19,21,23};
     for (uint i = 0; i < 14; i++) {
       ctx.beginPath();
-      ctx.fillStyle(ki == KEY_NUMS[i] ? COLOR_GRAY60 : COLOR_BLACK);
+      ctx.fillStyle(ki == KEY_NUMS[i] ? Colours::Gray60 : Colours::Black);
       ctx.rect(15.75 + 18 * i, 165.75, 18.5, 58.5);
       ctx.stroke();
       ctx.fill();
@@ -430,7 +430,7 @@ void SimpleDrumsScreen::drawKbd(NanoCanvas::Canvas &ctx) {
     const static uint KEY_NUMS[10] = {1,3,6,8,10,13,15,18,20,22};
     for (uint i = 0; i < 10; i++) {
       ctx.beginPath();
-      ctx.fillStyle(ki == KEY_NUMS[i] ? COLOR_GRAY60 : COLOR_BLACK);
+      ctx.fillStyle(ki == KEY_NUMS[i] ? Colours::Gray60 : Colours::Black);
       ctx.rect(29.75 + 18 * KEY_POS[i], 165.75, 8.5, 33.5);
       ctx.fill();
       ctx.stroke();

@@ -416,9 +416,20 @@ bool TapeScreen::keyrelease(ui::Key key) {
   return false;
 }
 
-auto COLOR_TAPE = NanoCanvas::Color(102, 102, 102);
+namespace drawing {
+namespace Colours {
 
-static void drawReel(NanoCanvas::Canvas& ctx, NanoCanvas::Color& recColor) {
+const Colour Tape = Colour(0.4, 0.4, 0.4);
+const Colour CurrentTrack = 0xFF4A4A;
+const Colour CurrentSlice = 0x4A4AFF;
+const Colour OtherTrack = 0x505050;
+const Colour LoopMarker = Green;
+const Colour BarMarker = Gray70;
+
+}
+}
+
+static void drawReel(NanoCanvas::Canvas& ctx, drawing::Colour recColor) {
   using namespace drawing;
   // #TapeReel
 	ctx.save();
@@ -431,7 +442,7 @@ static void drawReel(NanoCanvas::Canvas& ctx, NanoCanvas::Color& recColor) {
 	ctx.lineCap(Canvas::LineCap::ROUND);
 	ctx.miterLimit(4);
 	ctx.lineWidth(1.000000);
-	ctx.fillStyle(COLOR_BLACK);
+	ctx.fillStyle(Colours::Black);
 	ctx.moveTo(82.500000, 874.864110);
 	ctx.translate(82.499931, 926.362088);
 	ctx.rotate(0.000000);
@@ -765,11 +776,10 @@ static void drawReel(NanoCanvas::Canvas& ctx, NanoCanvas::Color& recColor) {
 
 void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
   using namespace drawing;
-  using namespace NanoCanvas;
 
   double rotation = (module->tapeBuffer.position()/double(GLOB.samplerate));
 
-  auto recColor = (module->state.readyToRec) ? COLOR_RED : COLOR_WHITE;
+  auto recColor = (module->state.readyToRec) ? Colours::Red : Colours::White;
 
   int timeLength = 5 * GLOB.samplerate;
 
@@ -809,7 +819,7 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
     for (int bn = numFirst; !std::isnan(x = timeToCoord(bn * FPB)); bn++) {
       float y = 190.0;
       ctx.beginPath();
-      ctx.strokeStyle(COLOR_BAR_MARKER);
+      ctx.strokeStyle(Colours::BarMarker);
       ctx.lineWidth(1);
       ctx.moveTo(x, y);
       ctx.lineTo(x, 195);
@@ -823,7 +833,7 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
     TapeBuffer::TapeSlice current;
     float lW = 3;
     for (auto slice : slices) {
-      Color col;
+      Colour col;
       if (t == module->state.track) {
         if (slice.contains(module->tapeBuffer.position())) {
           if (!current) {
@@ -833,10 +843,10 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
             LOGE << "TapeSlice overlap at current position";
           }
         } else {
-          col = COLOR_CURRENT_TRACK;
+          col = Colours::CurrentTrack;
         }
       } else {
-        col = COLOR_OTHER_TRACK;
+        col = Colours::OtherTrack;
       }
       if (slice.size() >= 0 && slice.in >= 0 && slice.out >= 0) {
         if (inView.overlaps(slice)) {
@@ -855,7 +865,7 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
     if (current) {
       if (inView.overlaps(current)) {
         ctx.beginPath();
-        ctx.strokeStyle(COLOR_CURRENT_SLICE);
+        ctx.strokeStyle(Colours::CurrentSlice);
         ctx.lineWidth(lW);
         ctx.moveTo(timeToCoord(std::max<float>(inView.in, current.in)), 195 + 5*t.idx);
         ctx.lineTo(timeToCoord(std::min<float>(inView.out, current.out)), 195 + 5*t.idx);
@@ -868,7 +878,7 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
   if (module->state.looping) {
     ctx.beginPath();
     ctx.globalAlpha(1.0);
-    ctx.strokeStyle(COLOR_WHITE);
+    ctx.strokeStyle(Colours::White);
     ctx.lineCap(Canvas::LineCap::ROUND);
     ctx.lineJoin(Canvas::LineJoin::ROUND);
     ctx.miterLimit(2);
@@ -885,8 +895,8 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
 
     ctx.beginPath();
     ctx.globalAlpha(1.0);
-    ctx.strokeStyle(COLOR_WHITE);
-    ctx.fillStyle(COLOR_WHITE);
+    ctx.strokeStyle(Colours::White);
+    ctx.fillStyle(Colours::White);
     ctx.lineCap(Canvas::LineCap::ROUND);
     ctx.lineJoin(Canvas::LineJoin::ROUND);
     ctx.miterLimit(2);
@@ -905,7 +915,7 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
     // #path4251
     ctx.beginPath();
     ctx.lineJoin(Canvas::LineJoin::ROUND);
-    ctx.strokeStyle(COLOR_TAPE);
+    ctx.strokeStyle(Colours::Tape);
     ctx.lineCap(Canvas::LineCap::ROUND);
     ctx.miterLimit(4);
     ctx.lineWidth(2.000000);
@@ -925,7 +935,7 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
     ctx.globalAlpha(1.0);
     ctx.miterLimit(4);
     ctx.lineWidth(2.004047);
-    ctx.fillStyle(COLOR_TAPE);
+    ctx.fillStyle(Colours::Tape);
     ctx.arc(82.500000, 106.000000, 41.536888, 0.000000, 6.28318531, 1);
     ctx.fill();
   
@@ -934,7 +944,7 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
     ctx.globalAlpha(1.0);
     ctx.miterLimit(4);
     ctx.lineWidth(1.291101);
-    ctx.fillStyle(COLOR_TAPE);
+    ctx.fillStyle(Colours::Tape);
     ctx.arc(237.500000, 106.000020, 32.554844, 0.000000, 6.28318531, 1);
     ctx.fill();
   
@@ -943,7 +953,7 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
     ctx.globalAlpha(1.0);
     ctx.miterLimit(4);
     ctx.lineWidth(1.291101);
-    ctx.fillStyle(COLOR_BLACK);
+    ctx.fillStyle(Colours::Black);
     ctx.arc(237.500000, 106.000020, 20.726049, 0.000000, 6.28318531, 1);
     ctx.fill();
   
@@ -980,7 +990,7 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
     ctx.lineCap(NanoCanvas::Canvas::LineCap::ROUND);
     ctx.miterLimit(4);
     ctx.lineWidth(1.703057);
-    ctx.fillStyle(COLOR_BLACK);
+    ctx.fillStyle(Colours::Black);
     ctx.moveTo(130.496090, 160.496090);
     ctx.lineTo(134.496090, 180.503940);
     ctx.lineTo(185.503910, 180.503940);
@@ -996,7 +1006,7 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
     ctx.globalAlpha(1.0);
     ctx.miterLimit(4);
     ctx.lineWidth(2.004047);
-    ctx.fillStyle(COLOR_BLACK);
+    ctx.fillStyle(Colours::Black);
     ctx.arc(82.500000, 106.000000, 24.104982, 0.000000, 6.28318531, 1);
     ctx.fill();
   }
@@ -1005,8 +1015,8 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
   {
     Section<int> &loopSect = module->loopSect;
     if (loopSect.size() >= 0 && loopSect.in > 0 && loopSect.out > 0) {
-      ctx.strokeStyle(COLOR_LOOP_MARKER);
-      ctx.fillStyle(COLOR_LOOP_MARKER);
+      ctx.strokeStyle(Colours::LoopMarker);
+      ctx.fillStyle(Colours::LoopMarker);
 
       if (inView.contains(loopSect.in)) {
         ctx.beginPath();
@@ -1020,7 +1030,7 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
       }
       if (inView.overlaps(loopSect)) {
         ctx.beginPath();
-        ctx.strokeStyle(COLOR_LOOP_MARKER);
+        ctx.strokeStyle(Colours::LoopMarker);
         ctx.lineWidth(3);
         ctx.moveTo(timeToCoord(std::max<float>(inView.in, loopSect.in)), 190);
         ctx.lineTo(timeToCoord(std::min<float>(inView.out, loopSect.out)), 190);
@@ -1031,7 +1041,7 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
 
   // Tape ends
   {
-    ctx.fillStyle(COLOR_BLACK);
+    ctx.fillStyle(Colours::Black);
     ctx.beginPath();
     ctx.rect(startCoord - 5, 185, 10, 40);
     ctx.rect(endCoord - 5, 185, 10, 40);
@@ -1042,18 +1052,18 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
   {
     float y = 240 - 81.5 - module->procGraph.clip() * 105;
     module->procGraph.clear();
-    ctx.strokeStyle(COLOR_RED_DIMMED);
+    ctx.strokeStyle(Colours::Red.dimmed);
     ctx.lineCap(Canvas::LineCap::ROUND);
     ctx.beginPath();
     ctx.moveTo(305, 240 - 81.5 - 105);
     ctx.lineTo(305, y);
     ctx.stroke();
-    ctx.strokeStyle(COLOR_RED);
+    ctx.strokeStyle(Colours::Red);
     ctx.beginPath();
     ctx.moveTo(305, y);
     ctx.lineTo(305, 240 - 81.5);
     ctx.stroke();
-    ctx.fillStyle(COLOR_RED);
+    ctx.fillStyle(Colours::Red);
     ctx.beginPath();
     ctx.circle(305, 240 - 81.5 - module->data.procGain.normalized() * 105, 3);
     ctx.fill();
@@ -1091,7 +1101,7 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
   TextStyle style;
   style.size = 30;
   style.face = FONT_LIGHT.face;
-  style.color = COLOR_WHITE;
+  style.color = Colours::White;
   style.hAlign = HorizontalAlign::Center;
   style.vAlign = VerticalAlign::Middle;
 	ctx.fillStyle(style);
@@ -1102,7 +1112,7 @@ void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
 	ctx.beginPath();
 	ctx.globalAlpha(1.0);
   ctx.lineJoin(Canvas::LineJoin::ROUND);
-	ctx.strokeStyle(COLOR_WHITE);
+	ctx.strokeStyle(Colours::White);
 	ctx.lineWidth(1.5);
 	ctx.rect(15, 15, 30, 30);
 	ctx.stroke();

@@ -9,6 +9,10 @@
 #include "../util/dyn-array.h"
 
 namespace module {
+
+// FWD
+class SampleEditScreen;
+class SampleRecordScreen;
 /**
  * Drum sampler for now
  */
@@ -18,8 +22,8 @@ public:
   size_t maxSampleSize = 0;
   top1::DynArray<float> sampleData;
 
-  ui::ModuleScreen<Sampler>::ptr editScreen;
-  ui::ModuleScreen<Sampler>::ptr recordScreen;
+  std::shared_ptr<SampleEditScreen> editScreen;
+  std::shared_ptr<SampleRecordScreen> recordScreen;
 
   static const uint nVoices = 24;
 

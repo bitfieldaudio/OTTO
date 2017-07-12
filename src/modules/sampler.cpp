@@ -88,7 +88,7 @@ void Sampler::load() {
   //   vd.out = (i + 1) * sampleData.size() / nVoices;
   // }
 
-  auto &wf = dynamic_cast<SampleEditScreen *>(editScreen.get())->topWF;
+  auto &wf = editScreen->topWF;
   wf->clear();
   for (auto &&s : sampleData) {
     wf->addFrame(s);
@@ -101,8 +101,6 @@ void Sampler::load() {
 void Sampler::init() {
   load();
 }
-
-
 
 /****************************************/
 /* SampleEditScreen                     */
@@ -127,7 +125,7 @@ SampleEditScreen::SampleEditScreen(Sampler *m) :
 
 void SampleEditScreen::draw(NanoCanvas::Canvas &ctx) {
   using namespace drawing;
-  topWFW.lineCol = COLOR_BLUE;
+  topWFW.lineCol = Colours::Blue;
   topWFW.drawAt(ctx, 10, 10);
 }
 

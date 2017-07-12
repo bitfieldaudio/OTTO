@@ -115,14 +115,14 @@ void MixerScreen::drawMixerSegment(
   float x,
   float y) {
 
-  Color trackCol;
+  Colour trackCol;
   switch (track) {
-  case 1: trackCol = COLOR_RED; break;
-  case 2: trackCol = COLOR_BLUE; break;
-  case 3: trackCol = COLOR_WHITE; break;
-  case 4: trackCol = COLOR_GREEN; break;
+  case 1: trackCol = Colours::Red; break;
+  case 2: trackCol = Colours::Blue; break;
+  case 3: trackCol = Colours::White; break;
+  case 4: trackCol = Colours::Green; break;
   }
-  Color muteCol = (module->data.track[track-1].muted) ? COLOR_RED : COLOR_GRAY60;
+  Colour muteCol = (module->data.track[track-1].muted) ? Colours::Red : Colours::Gray60;
   float mix = module->data.track[track-1].level;
   float graph = module->trackGraph[track-1].clip();
   module->trackGraph[track-1].clear();
@@ -136,7 +136,7 @@ void MixerScreen::drawMixerSegment(
   // #DialBG
   ctx.beginPath();
   ctx.globalAlpha(1.0);
-  ctx.strokeStyle(COLOR_GRAY60);
+  ctx.strokeStyle(Colours::Gray60);
   ctx.lineWidth(2.000000);
   ctx.moveTo(59.033168, 35.301881);
   ctx.bezierCurveTo(59.027768, 19.486571, 46.045611, 6.668541, 30.033168, 6.668541);
@@ -147,12 +147,12 @@ void MixerScreen::drawMixerSegment(
 
   // #DialHand
   ctx.beginPath();
-  ctx.fillStyle(COLOR_WHITE);
+  ctx.fillStyle(Colours::White);
   ctx.circle(30, 35, 5);
   ctx.fill();
 
   float angle = (graph - 1) * M_PI;
-  ctx.strokeStyle(COLOR_WHITE);
+  ctx.strokeStyle(Colours::White);
   ctx.lineWidth(2);
   ctx.beginPath();
   ctx.moveTo(30, 35);
@@ -170,7 +170,7 @@ void MixerScreen::drawMixerSegment(
 
   // #PanSep
   ctx.beginPath();
-  ctx.strokeStyle(COLOR_GRAY60);
+  ctx.strokeStyle(Colours::Gray60);
   ctx.lineWidth(2.000000);
   ctx.moveTo(30.000000, 120);
   ctx.lineTo(30.000000, 110);
@@ -178,7 +178,7 @@ void MixerScreen::drawMixerSegment(
 
   // #PanSliderBG
   ctx.beginPath();
-  ctx.strokeStyle(COLOR_GRAY60);
+  ctx.strokeStyle(Colours::Gray60);
   ctx.lineWidth(2);
   ctx.moveTo(02, 130);
   ctx.lineTo(58, 130);
@@ -187,8 +187,8 @@ void MixerScreen::drawMixerSegment(
   // #PanSlider
   ctx.beginPath();
   ctx.globalAlpha(1.0);
-  ctx.strokeStyle(COLOR_WHITE);
-  ctx.fillStyle(COLOR_GRAY60);
+  ctx.strokeStyle(Colours::White);
+  ctx.fillStyle(Colours::Gray60);
   ctx.lineWidth(2.000000);
   ctx.circle(30 + (28 * pan), 130, 3);
   ctx.fill();
