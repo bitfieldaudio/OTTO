@@ -11,7 +11,7 @@ namespace module {
 
 Sampler::Sampler() :
   SynthModule(&data),
-  maxSampleSize (6 * GLOB.samplerate),
+  maxSampleSize (16 * GLOB.samplerate),
   sampleData (maxSampleSize),
   editScreen (new SampleEditScreen(this)),
   recordScreen (new SampleRecordScreen(this)) {
@@ -32,7 +32,6 @@ void Sampler::process(uint nframes) {
       currentVoiceIdx = e->key % nVoices;
       auto &&voice = data.voiceData[currentVoiceIdx];
       voice.playProgress = (voice.mode > 0) ? 0 : voice.length() - 1;
-      LOGD << "playing sample";
     }, [] (MidiEvent *) {});
   }
 
@@ -82,12 +81,12 @@ void Sampler::load() {
   sf.read(sampleData.data(), rs);
 
   // Auto assign voices
-  for (uint i = 0; i < nVoices; ++i) {
-    auto &&vd = data.voiceData[i];
+  // for (uint i = 0; i < nVoices; ++i) {
+  //   auto &&vd = data.voiceData[i];
 
-    vd.in = i * (sampleData.size() / nVoices);
-    vd.out = (i + 1) * sampleData.size() / nVoices;
-  }
+  //   vd.in = i * (sampleData.size() / nVoices);
+  //   vd.out = (i + 1) * sampleData.size() / nVoices;
+  // }
 
   auto &wf = dynamic_cast<SampleEditScreen *>(editScreen.get())->topWF;
   wf->clear();
