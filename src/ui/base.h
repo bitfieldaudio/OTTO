@@ -1,10 +1,9 @@
 #pragma once
 
-#include <nanocanvas/NanoCanvas.h>
-
 #include <thread>
 
 #include "../module.h"
+#include "utils.h"
 
 namespace ui {
 
@@ -72,56 +71,19 @@ enum Key {
 
 using PressedKeys = bool[256];
 
-/**
- * Anything that can be drawn on screen.
- * Holds a pointer to its parent
- */
-class Drawable {
+class Widget : public drawing::Drawable {
 public:
-
-  Drawable() {};
-
-  /**
-   * Draw this widget to the context.
-   * Called from the parent's draw method.
-   * @param ctx the canvas to draw on.
-   */
-  virtual void draw(NanoCanvas::Canvas& ctx) = 0;
-
-};
-
-class Widget : public Drawable {
-public:
-  float h, w;
+  drawing::Size size;
 
   Widget() {}
-  Widget(float w, float h) : w (w), h (h) {}
-
-  virtual void drawAt(NanoCanvas::Canvas &ctx,
-   float x, float y) {
-    ctx.save();
-    ctx.translate(x, y);
-    draw(ctx);
-    ctx.restore();
-  }
-
-  virtual void drawAt(NanoCanvas::Canvas &ctx,
-   float x, float y, float w, float h) {
-    this->h = h;
-    this->w = w;
-    ctx.save();
-    ctx.translate(x, y);
-    draw(ctx);
-    ctx.restore();
-  }
+  Widget(drawing::Size size) : size (size) {}
 
 };
-
 /**
  * A specific view/window.
  * If it belongs to a module, use ModuleScreen.
  */
-class Screen : public Drawable {
+class Screen : public drawing::Drawable {
 public:
 
   using ptr = std::shared_ptr<Screen>;
@@ -143,6 +105,15 @@ public:
   virtual bool keyrelease(Key) {
     return false;
   };
+
+  /**
+   * Run by MainUI when switching to this screen
+   */
+  virtual void init() {}
+  /**
+   * Run by MainUI when switching to another screen
+   */
+  virtual void exit() {}
 };
 
 /**
@@ -172,7 +143,7 @@ public:
  */
 class DefaultScreen : public Screen {
 public:
-  void draw(NanoCanvas::Canvas& ctx) override;
+  void draw(drawing::Canvas& ctx) override;
   bool keypress(Key key) override;
 };
 

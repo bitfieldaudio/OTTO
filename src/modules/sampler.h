@@ -10,9 +10,7 @@
 
 namespace module {
 
-// FWD
-class SampleEditScreen;
-class SampleRecordScreen;
+class SampleEditScreen; // FWDCL
 /**
  * Drum sampler for now
  */
@@ -23,7 +21,6 @@ public:
   top1::DynArray<float> sampleData;
 
   std::shared_ptr<SampleEditScreen> editScreen;
-  std::shared_ptr<SampleRecordScreen> recordScreen;
 
   static const uint nVoices = 24;
 
@@ -31,8 +28,8 @@ public:
     module::Opt<std::string> sampleName = {this, "sample name", ""};
 
     struct VoiceData : public module::Data {
-      module::Opt<int> in = {this, "in", 0};
-      module::Opt<int> out = {this, "out", 0};
+      module::Opt<int> in = {this, "in", 0, 0, -1, 100};
+      module::Opt<int> out = {this, "out", 0, 0, -1, 100};
       module::Opt<int> mode = {this, "mode", 1, -2, 2, 1};
 
       int playProgress = -1;
@@ -55,6 +52,8 @@ public:
 
   } data;
 
+  uint currentVoiceIdx = 0;
+
   Sampler();
 
   void process(uint nframes) override;
@@ -68,28 +67,21 @@ public:
   static std::string samplePath(std::string name) {
     return "samples/" + name + ".wav";
   }
-
-protected:
-  uint currentVoiceIdx = 0;
-};
-
-class SampleRecordScreen : public ui::ModuleScreen<Sampler> {
-public:
-
-  using ui::ModuleScreen<Sampler>::ModuleScreen;
-
-  void draw(NanoCanvas::Canvas&) override {}
 };
 
 class SampleEditScreen : public ui::ModuleScreen<Sampler> {
 public:
 
   std::shared_ptr<Waveform> topWF;
-  WaveformWidget topWFW;
+  WaveformWidget<Waveform> topWFW;
+  std::shared_ptr<Waveform> mainWF;
+  WaveformWidget<Waveform> mainWFW;
 
   SampleEditScreen(Sampler *);
 
-  void draw(NanoCanvas::Canvas&) override;
+  void draw(drawing::Canvas&) override;
+
+  bool keypress(ui::Key) override;
 
 };
 

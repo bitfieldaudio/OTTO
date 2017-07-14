@@ -139,7 +139,8 @@ public:
   }
 
   void deserialize(top1::tree::Node n) override {
-    n.match([&] (top1::tree::Float f) { set(f.value); }, [] (auto) {});
+    n.match([&] (top1::tree::Float f) { value = f.value; }, [] (auto) {});
+    changed();
   }
 };
 
@@ -190,7 +191,8 @@ public:
   }
 
   void deserialize(top1::tree::Node n) override {
-    n.match([&] (top1::tree::Int i) { set(i.value); }, [] (auto) {});
+    n.match([&] (top1::tree::Int i) { value = i.value; }, [] (auto) {});
+    changed();
   }
 };
 

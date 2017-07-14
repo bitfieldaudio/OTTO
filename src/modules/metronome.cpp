@@ -105,7 +105,7 @@ bool MetronomeScreen::keypress(ui::Key key) {
   }
 }
 
-void MetronomeScreen::draw(NanoCanvas::Canvas &ctx) {
+void MetronomeScreen::draw(drawing::Canvas &ctx) {
   using namespace drawing;
 
 	ctx.lineJoin(Canvas::LineJoin::ROUND);
@@ -186,7 +186,7 @@ void MetronomeScreen::draw(NanoCanvas::Canvas &ctx) {
 	ctx.fillText("GAIN", 300, 210);
 
 }
-void MetronomeScreen::drawMetronome(NanoCanvas::Canvas &ctx) {
+void MetronomeScreen::drawMetronome(drawing::Canvas &ctx) {
   using namespace drawing;
   // Metronome Background
   {

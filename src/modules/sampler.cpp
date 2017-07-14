@@ -13,8 +13,7 @@ Sampler::Sampler() :
   SynthModule(&data),
   maxSampleSize (16 * GLOB.samplerate),
   sampleData (maxSampleSize),
-  editScreen (new SampleEditScreen(this)),
-  recordScreen (new SampleRecordScreen(this)) {
+  editScreen (new SampleEditScreen(this)) {
 
   for (uint i = 0; i < sampleData.size(); i++) {
     sampleData[i] = (i % 22050) / 22050.0;
@@ -88,10 +87,22 @@ void Sampler::load() {
   //   vd.out = (i + 1) * sampleData.size() / nVoices;
   // }
 
+  auto &mwf = editScreen->mainWF;
+  mwf->clear();
+  for (auto &&s : sampleData) {
+    mwf->addFrame(s);
+  }
+
   auto &wf = editScreen->topWF;
   wf->clear();
   for (auto &&s : sampleData) {
     wf->addFrame(s);
+  }
+  editScreen->topWFW.viewRange = {0, wf->size() - 1};
+
+  for (auto &&v : data.voiceData) {
+    v.in.max = sf.size();
+    v.out.max = sf.size();
   }
 
   if (sf.size() == 0) LOGD << "Empty sample file";
@@ -101,32 +112,93 @@ void Sampler::load() {
 void Sampler::init() {
   load();
 }
+}
 
 /****************************************/
 /* SampleEditScreen                     */
 /****************************************/
 
-const static float topWFwidth = 300;
-const static float topWFheight = 20;
+bool module::SampleEditScreen::keypress(ui::Key key) {
+  using namespace ui;
+  auto& voice = module->data.voiceData[module->currentVoiceIdx];
+  switch (key) {
+  case K_RED_UP: voice.in.inc(); return true;
+  case K_RED_DOWN: voice.in.dec(); return true;
+  case K_BLUE_UP: voice.out.inc(); return true;
+  case K_BLUE_DOWN: voice.out.dec(); return true;
 
-SampleEditScreen::SampleEditScreen(Sampler *m) :
+  }
+}
+
+namespace drawing {
+
+const static drawing::Size topWFsize = {300, 20};
+const static drawing::Point topWFpos = {10, 10};
+const static drawing::Size mainWFsize = {300, 190};
+const static drawing::Point mainWFpos = {10, 40};
+
+namespace Colours {
+
+const Colour TopWF = Blue;
+const Colour TopWFCur = Green;
+const Colour TopWFActive = White;
+}
+}
+
+module::SampleEditScreen::SampleEditScreen(Sampler *m) :
   ModuleScreen (m),
   topWF (new Waveform(
-     module->sampleData.size() / topWFwidth, 1.0)
-  ),
-  topWFW (topWF, topWFwidth, topWFheight)
-{
-  GLOB.events.postInit.add([&] () {
-     for (auto &&s : module->sampleData) {
-       topWF->addFrame(s);
-     }
-   });
-}
+     module->sampleData.size() / drawing::topWFsize.w / 4.0, 1.0)
+         ),
+  topWFW (topWF, drawing::topWFsize),
+  mainWF (new Waveform(100, 1.0)),
+  mainWFW (mainWF, drawing::mainWFsize) {}
 
-void SampleEditScreen::draw(NanoCanvas::Canvas &ctx) {
+void module::SampleEditScreen::draw(drawing::Canvas &ctx) {
   using namespace drawing;
-  topWFW.lineCol = Colours::Blue;
-  topWFW.drawAt(ctx, 10, 10);
-}
+  ctx.callAt([&] () {
+    topWFW.drawRange(ctx, topWFW.viewRange, Colours::TopWF);
+    for (uint i = 0; i < Sampler::nVoices; ++i) {
+      auto& voice = module->data.voiceData[i];
+      bool isActive = voice.playProgress >= 0;
+      bool isCurrent = i == module->currentVoiceIdx;
+      if (isActive && !isCurrent) {
+        Colour baseColour = Colours::TopWF;
+        float mix = voice.playProgress / float(voice.out - voice.in);
+
+        if (mix < 0) mix = 1;
+        if (voice.mode > 0) mix = 1 - mix; //voice is not reversed
+
+        Colour colour = baseColour.mix(Colours::TopWFActive, mix);
+        topWFW.drawRange(ctx, {
+           std::size_t(std::round(voice.in / topWF->ratio)),
+             std::size_t(std::round(voice.out / topWF->ratio))
+             }, colour);
+      }
+    }
+    {
+      auto& voice = module->data.voiceData[module->currentVoiceIdx];
+      Colour baseColour = Colours::TopWFCur;
+      float mix = voice.playProgress / float(voice.out - voice.in);
+
+      if (mix < 0) mix = 1;
+      if (voice.mode > 0) mix = 1 - mix; //voice is not reversed
+
+      Colour colour = baseColour.mix(Colours::TopWFActive, mix);
+      topWFW.drawRange(ctx, {
+          std::size_t(std::round(voice.in / topWF->ratio)),
+            std::size_t(std::round(voice.out / topWF->ratio))
+            }, colour);
+    }
+  }, topWFpos);
+
+  auto& voice = module->data.voiceData[module->currentVoiceIdx];
+
+  mainWFW.lineCol = Colours::White;
+  mainWFW.viewRange = {
+    std::size_t(std::round(voice.in / mainWF->ratio)),
+    std::size_t(std::round(voice.out / mainWF->ratio))};
+
+  ctx.drawAt(mainWFW, mainWFpos);
 
 }

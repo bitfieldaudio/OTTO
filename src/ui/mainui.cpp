@@ -6,7 +6,9 @@
 #include <thread>
 
 void MainUI::display(ui::Screen::ptr screen) {
+  currentScreen->exit();
   currentScreen = screen;
+  currentScreen->init();
 }
 
 void MainUI::init() {
@@ -17,8 +19,7 @@ void MainUI::exit() {
   uiThread.join();
 }
 
-void MainUI::draw(NanoCanvas::Canvas& ctx) {
-  using namespace drawing;
+void MainUI::draw(drawing::Canvas& ctx) {
   currentScreen->draw(ctx);
 }
 

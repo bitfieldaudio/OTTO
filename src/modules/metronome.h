@@ -37,12 +37,12 @@ public:
 
 class MetronomeScreen : public ui::ModuleScreen<Metronome> {
 
-  void drawMetronome(NanoCanvas::Canvas &);
+  void drawMetronome(drawing::Canvas&);
 
 public:
   bool keypress(ui::Key) override;
 
-  void draw(NanoCanvas::Canvas &) override;
+  void draw(drawing::Canvas&) override;
 
   using ui::ModuleScreen<Metronome>::ModuleScreen;
 };

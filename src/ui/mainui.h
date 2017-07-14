@@ -28,7 +28,7 @@ public:
 
   void display(ui::Screen::ptr screen);
 
-  void draw(NanoCanvas::Canvas& ctx) override;
+  void draw(drawing::Canvas& ctx) override;
   bool keypress(ui::Key key) override;
   bool keyrelease(ui::Key key) override;
 };

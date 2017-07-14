@@ -4,9 +4,10 @@
 #include "../ui/base.h"
 #include "../util/tapebuffer.h"
 
+class MixerScreen;
 
 class MixerModule : public module::Module {
-  ui::ModuleScreen<MixerModule>::ptr screen;
+  std::shared_ptr<MixerScreen> screen;
 public:
 
   struct Data : module::Data {
@@ -40,12 +41,12 @@ class MixerScreen : public ui::ModuleScreen<MixerModule> {
     LEVEL
   } numDisplay = LEVEL;
 
-  virtual void draw(NanoCanvas::Canvas& ctx) override;
+  virtual void draw(drawing::Canvas& ctx) override;
 
   virtual bool keypress(ui::Key key) override;
   virtual bool keyrelease(ui::Key key) override;
 
-  void drawMixerSegment(NanoCanvas::Canvas& ctx, int track, float x, float y);
+  void drawMixerSegment(drawing::Canvas& ctx, int track, float x, float y);
 
 public:
   MixerScreen(MixerModule *module) : ui::ModuleScreen<MixerModule>(module) {}

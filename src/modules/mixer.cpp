@@ -43,7 +43,7 @@ void MixerModule::process(uint nframes) {
 
 using namespace drawing;
 
-void MixerScreen::draw(NanoCanvas::Canvas& ctx) {
+void MixerScreen::draw(drawing::Canvas& ctx) {
 
   drawMixerSegment(ctx, 1, 18, 32.5);
   drawMixerSegment(ctx, 2, 93, 32.5);
@@ -110,7 +110,7 @@ bool MixerScreen::keyrelease(ui::Key key) {
 }
 
 void MixerScreen::drawMixerSegment(
-  NanoCanvas::Canvas& ctx,
+  drawing::Canvas& ctx,
   int track,
   float x,
   float y) {

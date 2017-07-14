@@ -163,7 +163,7 @@ void MainUI::mainRoutine() {
 	glfwSetTime(0);
 	prevt = glfwGetTime();
 
-  NanoCanvas::Canvas canvas(vg, drawing::WIDTH, drawing::HEIGHT);
+  drawing::Canvas canvas(vg, drawing::WIDTH, drawing::HEIGHT);
   drawing::initUtils(canvas);
 
 	while (!glfwWindowShouldClose(window) && GLOB.running())

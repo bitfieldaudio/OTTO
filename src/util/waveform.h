@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdlib>
+#include <cmath>
 #include <vector>
 
 #include "typedefs.h"
@@ -47,7 +48,7 @@ private:
     }
 
     void add(float f) {
-      sum += f;
+      sum += std::abs(f);
       ++count;
     }
 

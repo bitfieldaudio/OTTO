@@ -429,7 +429,7 @@ const Colour BarMarker = Gray70;
 }
 }
 
-static void drawReel(NanoCanvas::Canvas& ctx, drawing::Colour recColor) {
+static void drawReel(drawing::Canvas& ctx, drawing::Colour recColor) {
   using namespace drawing;
   // #TapeReel
 	ctx.save();
@@ -774,7 +774,7 @@ static void drawReel(NanoCanvas::Canvas& ctx, drawing::Colour recColor) {
 	ctx.restore();
 }
 
-void TapeScreen::draw(NanoCanvas::Canvas& ctx) {
+void TapeScreen::draw(drawing::Canvas& ctx) {
   using namespace drawing;
 
   double rotation = (module->tapeBuffer.position()/double(GLOB.samplerate));

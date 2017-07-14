@@ -63,10 +63,10 @@ public:
 };
 
 class SimpleDrumsScreen : public ui::ModuleScreen<SimpleDrumsModule> {
-  void drawOsc(NanoCanvas::Canvas& ctx, SimpleDrumVoice::Data::Osc &osc);
-  void drawKbd(NanoCanvas::Canvas& ctx);
+  void drawOsc(drawing::Canvas& ctx, SimpleDrumVoice::Data::Osc &osc);
+  void drawKbd(drawing::Canvas& ctx);
 private:
-  void draw(NanoCanvas::Canvas& ctx) override;
+  void draw(drawing::Canvas& ctx) override;
 
   bool keypress(ui::Key key) override;
 

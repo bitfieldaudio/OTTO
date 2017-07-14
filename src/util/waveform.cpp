@@ -11,7 +11,7 @@ Waveform::Waveform(float ratio, float scale) :
   scale (scale) {}
 
 void Waveform::addFrame(float f) {
-  _current.add(std::abs(f));
+  _current.add(f);
   if (_current.count/ratio >= 1) {
     addPoint(_current.average());
     _current.clear();

@@ -74,7 +74,7 @@ bool SimpleDrumsScreen::keypress(ui::Key key) {
   }
 }
 
-void SimpleDrumsScreen::draw(NanoCanvas::Canvas &ctx) {
+void SimpleDrumsScreen::draw(drawing::Canvas &ctx) {
   using namespace drawing;
   auto &voice = (module->voices[module->currentVoiceIdx]);
   ctx.save();
@@ -86,7 +86,7 @@ void SimpleDrumsScreen::draw(NanoCanvas::Canvas &ctx) {
   drawKbd(ctx);
 }
 
-void SimpleDrumsScreen::drawOsc(NanoCanvas::Canvas &ctx, SimpleDrumVoice::Data::Osc &osc) {
+void SimpleDrumsScreen::drawOsc(drawing::Canvas &ctx, SimpleDrumVoice::Data::Osc &osc) {
   using namespace drawing;
 
 	ctx.globalAlpha(1.0);
@@ -400,7 +400,7 @@ void SimpleDrumsScreen::drawOsc(NanoCanvas::Canvas &ctx, SimpleDrumVoice::Data::
 
 }
 
-void SimpleDrumsScreen::drawKbd(NanoCanvas::Canvas &ctx) {
+void SimpleDrumsScreen::drawKbd(drawing::Canvas &ctx) {
   using namespace drawing;
 // #KEYBOARD
 	ctx.save();

@@ -105,7 +105,7 @@ public:
 class TapeScreen : public ui::ModuleScreen<TapeModule> {
   bool stopRecOnRelease = true;
 private:
-  virtual void draw(NanoCanvas::Canvas& ctx) override;
+  virtual void draw(drawing::Canvas& ctx) override;
 
   virtual bool keypress(ui::Key key) override;
   virtual bool keyrelease(ui::Key key) override;

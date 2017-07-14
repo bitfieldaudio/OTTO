@@ -19,7 +19,7 @@ TestSynth::~TestSynth() {
   delete screen;
 }
 
-void TestSynthScreen::draw(NanoCanvas::Canvas& ctx) {
+void TestSynthScreen::draw(drawing::Canvas& ctx) {
   using namespace ui;
   using namespace drawing;
 }
