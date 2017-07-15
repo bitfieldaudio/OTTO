@@ -219,11 +219,16 @@ void module::SampleEditScreen::draw(drawing::Canvas &ctx) {
     ctx.stroke();
   }
 
-  mainWFW.lineCol = Colours::White;
+  mainWFW.minPx = 5;
   mainWFW.viewRange = {
     std::size_t(std::round(voice.in / mainWF->ratio)),
     std::size_t(std::round(voice.out / mainWF->ratio))};
 
-  ctx.drawAt(mainWFW, mainWFpos);
+  ctx.callAt([&] () {
+    ctx.beginPath();
+    ctx.strokeStyle(Colours::TopWF);
+    ctx.roundedCurve(mainWFW.begin(), mainWFW.end(), -1);
+    ctx.stroke();
+  }, mainWFpos);
 
 }

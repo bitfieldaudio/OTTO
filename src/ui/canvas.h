@@ -41,7 +41,7 @@ struct Point {
   }
 
   Point operator/(float s) const {
-    return {x * s, y * s};
+    return {x / s, y / s};
   }
 };
 
@@ -289,9 +289,7 @@ public:
     return *this;
   }
 
-  template<typename It,
-      typename = std::enable_if_t<
-          std::is_same<typename std::iterator_traits<It>::value_type, Point>::value>>
+  template<typename It>
   Canvas& bzCurve(It pointB, It pointE, float f = 0.5, float t = 1) {
 
     moveTo(*pointB);
@@ -315,6 +313,32 @@ public:
       d2.y = d2.x * m * t;
       bezierCurveTo(prev - d1, cur + d2, cur);
       d1 = d2;
+    }
+  }
+
+  template<typename It>
+  Canvas& roundedCurve(It pointB, It pointE, float maxR = -1) {
+
+    maxR = maxR < 0 ? std::numeric_limits<float>::max() : maxR;
+    moveTo(*pointB);
+
+    Point cur = *pointB;
+    Point nxt = cur;
+    auto it = pointB;
+    for (auto it = pointB; it != pointE; ++it) {
+      cur = nxt;
+      nxt = *it;
+      if (nxt == cur) continue;
+      float rx = std::abs(nxt.x - cur.x) / 2.0;
+      float ry = std::abs(nxt.y - cur.y) / 2.0;
+      float r = std::min(std::min(rx, ry), maxR);
+      Point md = (cur + nxt) / 2.0;
+      Point cp1 = {md.x, cur.y};
+      Point cp2 = md;
+      Point cp3 = {md.x, nxt.y};
+
+      arcTo(cp1, cp2, r);
+      arcTo(cp3, nxt, r);
     }
   }
 };
