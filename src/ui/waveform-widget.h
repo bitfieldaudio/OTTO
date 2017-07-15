@@ -60,16 +60,16 @@ inline void WaveformWidget<C>::drawRange(
   ctx.beginPath();
   ctx.lineCap(Canvas::LineCap::ROUND);
   ctx.lineJoin(Canvas::LineJoin::ROUND);
-  if (wf->size() == 0) {
+  if (range.size() < 3) {
     ctx.moveTo(range.in / pxPrPt, size.h);
     ctx.lineTo(range.out / pxPrPt, size.h - 0);
   } else {
     const int inc = std::max<int>(1, 1/pxPrPt);
-    ctx.moveTo(coord(range.in));
-    for (int i = 1, end = range.size() - 1; i < end; i += inc) {
-      ctx.lineTo(coord(range.in + i));
+    std::vector<Point> pts;
+    for (int i = 0, end = range.size(); i < end; i += inc) {
+      pts.push_back(coord(range.in + i));
     }
-    ctx.lineTo(coord(range.out));
+    ctx.bzCurve(pts.begin(), pts.end());
   }
   ctx.strokeStyle(colour);
   ctx.stroke();

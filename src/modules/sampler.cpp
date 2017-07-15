@@ -139,9 +139,10 @@ const static drawing::Point mainWFpos = {10, 40};
 
 namespace Colours {
 
-const Colour TopWF = Blue;
-const Colour TopWFCur = Green;
+const Colour TopWF = Blue.dim(0.2);
+const Colour TopWFCur = Blue.brighten(0.5);
 const Colour TopWFActive = White;
+const Colour WFGrid = 0x303040;
 }
 }
 
@@ -151,11 +152,12 @@ module::SampleEditScreen::SampleEditScreen(Sampler *m) :
      module->sampleData.size() / drawing::topWFsize.w / 4.0, 1.0)
          ),
   topWFW (topWF, drawing::topWFsize),
-  mainWF (new Waveform(100, 1.0)),
+  mainWF (new Waveform(50, 1.0)),
   mainWFW (mainWF, drawing::mainWFsize) {}
 
 void module::SampleEditScreen::draw(drawing::Canvas &ctx) {
   using namespace drawing;
+
   ctx.callAt([&] () {
     topWFW.drawRange(ctx, topWFW.viewRange, Colours::TopWF);
     for (uint i = 0; i < Sampler::nVoices; ++i) {
@@ -193,6 +195,29 @@ void module::SampleEditScreen::draw(drawing::Canvas &ctx) {
   }, topWFpos);
 
   auto& voice = module->data.voiceData[module->currentVoiceIdx];
+
+  // Grid
+  {
+    float zoomLvL = 8;
+    float hLines = ((voice.out - voice.in) / float(GLOB.samplerate)) * zoomLvL;
+    float lineSpace = mainWFsize.w / hLines;
+    float firstLine = std::fmod(
+      float(voice.in / float(GLOB.samplerate) * zoomLvL), 1) * lineSpace;
+    ctx.beginPath();
+    for (int i = 0; i < hLines; i++) {
+      float x = firstLine + lineSpace * i;
+      ctx.moveTo(mainWFpos + Point(x, 0.0));
+      ctx.lineTo(mainWFpos + Point(x, mainWFsize.h));
+    }
+    int vLines = 9;
+    for (int i = 1; i < vLines; i++) {
+      float y = i * mainWFsize.h / float(vLines);
+      ctx.moveTo(mainWFpos + Point(0, y));
+      ctx.lineTo(mainWFpos + Point(mainWFsize.w, y));
+    }
+    ctx.strokeStyle(Colours::WFGrid);
+    ctx.stroke();
+  }
 
   mainWFW.lineCol = Colours::White;
   mainWFW.viewRange = {

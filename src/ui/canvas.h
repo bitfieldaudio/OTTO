@@ -3,6 +3,7 @@
 #include "../util/typedefs.h"
 
 #include <functional>
+#include <type_traits>
 
 #include <nanovg.h>
 #include <nanocanvas/NanoCanvas.h>
@@ -17,10 +18,38 @@ using NanoCanvas::Font;
 
 struct Point {
   float x, y;
+
+  Point(float x, float y) : x (x), y (y) {};
+  Point() : Point(0, 0) {}
+
+  bool operator==(Point rhs) const {
+    return x == rhs.x && y == rhs.y;
+  }
+  bool operator!=(Point rhs) const {
+    return x != rhs.x && y != rhs.y;
+  }
+  Point operator+(Point rhs) const {
+    return {x + rhs.x, y + rhs.y};
+  }
+
+  Point operator-(Point rhs) const {
+    return {x - rhs.x, y - rhs.y};
+  }
+
+  Point operator*(float s) const {
+    return {x * s, y * s};
+  }
+
+  Point operator/(float s) const {
+    return {x * s, y * s};
+  }
 };
 
 struct Size {
   float w, h;
+
+  Size() : Size(0, 0) {}
+  Size(float w, float h) : w (w), h (h) {};
 };
 
 struct Colour {
@@ -258,6 +287,35 @@ public:
     f();
     restore();
     return *this;
+  }
+
+  template<typename It,
+      typename = std::enable_if_t<
+          std::is_same<typename std::iterator_traits<It>::value_type, Point>::value>>
+  Canvas& bzCurve(It pointB, It pointE, float f = 0.5, float t = 1) {
+
+    moveTo(*pointB);
+
+    float m = 0;
+    Point d1;
+
+    Point prev = *pointB;
+    Point cur = prev;
+    Point next = prev;
+    for (auto it = pointB; it != pointE; ++it) {
+      prev = cur;
+      cur = next;
+      next = *it;
+      if (cur == prev) continue;
+      m = (next.y - prev.y) / (next.x - prev.x);
+      Point d2 = {
+        (next.x - cur.x) * -f,
+        0
+      };
+      d2.y = d2.x * m * t;
+      bezierCurveTo(prev - d1, cur + d2, cur);
+      d1 = d2;
+    }
   }
 };
 
