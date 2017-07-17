@@ -22,27 +22,26 @@ struct Point {
   Point(float x, float y) : x (x), y (y) {};
   Point() : Point(0, 0) {}
 
-  bool operator==(Point rhs) const {
-    return x == rhs.x && y == rhs.y;
-  }
-  bool operator!=(Point rhs) const {
-    return x != rhs.x && y != rhs.y;
-  }
-  Point operator+(Point rhs) const {
-    return {x + rhs.x, y + rhs.y};
-  }
-
-  Point operator-(Point rhs) const {
-    return {x - rhs.x, y - rhs.y};
+  Point rotate(float rad) const {
+    float sn = std::sin(rad);
+    float cs = std::cos(rad);
+    return {
+      x * cs - y * sn,
+      x * sn + y * cs
+    };
   }
 
-  Point operator*(float s) const {
-    return {x * s, y * s};
-  }
+  Point swapXY() const {return {y, x};}
+  Point flipX() const {return {-x, y};}
+  Point flipY() const {return {x, -y};}
 
-  Point operator/(float s) const {
-    return {x / s, y / s};
-  }
+  bool operator==(Point rhs) const {return x == rhs.x && y == rhs.y;}
+  bool operator!=(Point rhs) const {return x != rhs.x && y != rhs.y;}
+  Point operator+(Point rhs) const {return {x + rhs.x, y + rhs.y};}
+  Point operator-(Point rhs) const {return {x - rhs.x, y - rhs.y};}
+  Point operator*(float s) const {return {x * s, y * s};}
+  Point operator/(float s) const {return {x / s, y / s};}
+  Point operator-() const {return {-x, -y};}
 };
 
 struct Size {
@@ -50,6 +49,12 @@ struct Size {
 
   Size() : Size(0, 0) {}
   Size(float w, float h) : w (w), h (h) {};
+
+  Size swapWH() const {return {h, w};}
+
+  Point center() const {
+    return {w / 2.f, h / 2.f};
+  }
 };
 
 struct Colour {
@@ -151,6 +156,16 @@ public:
    * @param ctx the canvas to draw on.
    */
   virtual void draw(Canvas& ctx) = 0;
+
+};
+
+class SizedDrawable : public Drawable {
+protected:
+public:
+  Size size;
+
+  SizedDrawable() {};
+  SizedDrawable(Size s) : size (s) {};
 
 };
 
@@ -261,6 +276,20 @@ public:
     return *this;
   }
 
+  using Super::fill;
+  Canvas& fill(const Colour& color) {
+    Super::fillStyle(color);
+    Super::fill();
+    return *this;
+  }
+
+  using Super::stroke;
+  Canvas& stroke(const Colour& color) {
+    Super::strokeStyle(color);
+    Super::stroke();
+    return *this;
+  }
+
 
   using Super::translate;
   Canvas& translate(Point p) {
@@ -268,12 +297,18 @@ public:
     return *this;
   }
 
+  Canvas& rotateAround(float r, Point p) {
+    translate(p);
+    rotate(r);
+    translate(-p);
+  }
+
   Canvas& draw(Drawable &d) {
     d.draw(*this);
     return *this;
   }
 
-  Canvas& drawAt(Drawable &d, Point p) {
+  Canvas& drawAt(Point p, Drawable &d) {
     save();
     translate(p);
     d.draw(*this);
@@ -281,7 +316,7 @@ public:
     return *this;
   }
 
-  Canvas& callAt(std::function<void(void)> f, Point p) {
+  Canvas& callAt(Point p, const std::function<void(void)>& f) {
     save();
     translate(p);
     f();
@@ -325,7 +360,7 @@ public:
     Point cur = *pointB;
     Point nxt = cur;
     auto it = pointB;
-    for (auto it = pointB; it != pointE; ++it) {
+    for (auto it = pointB; it < pointE; ++it) {
       cur = nxt;
       nxt = *it;
       if (nxt == cur) continue;

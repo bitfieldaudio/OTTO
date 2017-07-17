@@ -26,6 +26,17 @@ inline T withBounds(T min, T max, T el) {
   return el;
 }
 
+template<typename T>
+inline T clamp(T el, T min, T max) {
+  if (el < min) {
+    return min;
+  }
+  if (el > max) {
+    return max;
+  }
+  return el;
+}
+
 inline float round(float f, int places) {
   int i = std::pow(10, places);
   return std::round(f * i)/i;

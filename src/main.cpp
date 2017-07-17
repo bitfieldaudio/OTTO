@@ -9,6 +9,7 @@
 #include "modules/mixer.h"
 #include "modules/testsynth.h"
 #include "modules/simple-drums.h"
+#include "modules/sampler.h"
 #include "globals.h"
 
 int main(int argc, char *argv[]) {
@@ -21,7 +22,7 @@ int main(int argc, char *argv[]) {
   midi::generateFreqTable(440);
   std::mutex mut;
   std::unique_lock<std::mutex> lock (mut);
-
+  
   GLOB.synth.registerModule("Sampler", new module::Sampler());
   GLOB.synth.registerModule("SimpleDrums", new SimpleDrumsModule());
 

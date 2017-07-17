@@ -12,7 +12,6 @@
 #include "modules/tape.h"
 #include "modules/mixer.h"
 #include "modules/metronome.h"
-#include "modules/sampler.h"
 #include "audio/jack.h"
 #include "audio/midi.h"
 #include "util/datafile.h"

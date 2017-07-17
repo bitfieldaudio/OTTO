@@ -71,12 +71,10 @@ enum Key {
 
 using PressedKeys = bool[256];
 
-class Widget : public drawing::Drawable {
+class Widget : public drawing::SizedDrawable {
 public:
-  drawing::Size size;
-
   Widget() {}
-  Widget(drawing::Size size) : size (size) {}
+  Widget(drawing::Size size) : SizedDrawable (size) {}
 
 };
 /**

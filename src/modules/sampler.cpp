@@ -4,8 +4,10 @@
 
 #include "../utils.h"
 #include "../ui/utils.h"
+#include "../ui/icons.h"
 #include "../globals.h"
 #include "../util/sndfile.h"
+#include "../util/match.h"
 
 namespace module {
 
@@ -30,28 +32,49 @@ void Sampler::process(uint nframes) {
     nEvent.match([&] (NoteOnEvent *e) {
       currentVoiceIdx = e->key % nVoices;
       auto &&voice = data.voiceData[currentVoiceIdx];
-      voice.playProgress = (voice.mode > 0) ? 0 : voice.length() - 1;
+      voice.playProgress = (voice.fwd()) ? 0 : voice.length() - 1;
+      voice.trigger = true;
     }, [] (MidiEvent *) {});
   }
 
   for (auto &&voice : data.voiceData) {
 
     // Process audio
-    if (voice.playProgress >= 0 && voice.mode != 0) {
-      if (voice.mode > 0) {
-        int frms = std::min<int>(nframes, voice.length() - voice.playProgress);
-        for(int i = 0; i < frms; ++i) {
-          GLOB.audioData.proc[i] += sampleData[voice.in + voice.playProgress];
-          voice.playProgress += 1;
-        }
-        if (voice.playProgress >= voice.length()) {
-          voice.playProgress = -1;
+    if (voice.playProgress >= 0) {
+      if (voice.fwd()) {
+        if (voice.loop() && voice.trigger) {
+          for(int i = 0; i < nframes; ++i) {
+            GLOB.audioData.proc[i] += sampleData[voice.in + voice.playProgress];
+            voice.playProgress += 1;
+            if (voice.playProgress >= voice.length()) {
+              voice.playProgress = 0;
+            }
+          }
+        } else {
+          int frms = std::min<int>(nframes, voice.length() - voice.playProgress);
+          for(int i = 0; i < frms; ++i) {
+            GLOB.audioData.proc[i] += sampleData[voice.in + voice.playProgress];
+            voice.playProgress += 1;
+          }
+          if (voice.playProgress >= voice.length()) {
+            voice.playProgress = -1;
+          }
         }
       } else {
-        int frms = std::min<int>(nframes, voice.playProgress);
-        for(int i = 0; i < frms; ++i) {
-          GLOB.audioData.proc[i] += sampleData[voice.in + voice.playProgress];
-          voice.playProgress -= 1;
+        if (voice.loop() && voice.trigger) {
+          for(int i = 0; i < nframes; ++i) {
+            GLOB.audioData.proc[i] += sampleData[voice.in + voice.playProgress];
+            voice.playProgress -= 1;
+            if (voice.playProgress < 0) {
+              voice.playProgress = voice.length() -1;
+            }
+          }
+        } else {
+          int frms = std::min<int>(nframes, voice.playProgress);
+          for(int i = 0; i < frms; ++i) {
+            GLOB.audioData.proc[i] += sampleData[voice.in + voice.playProgress];
+            voice.playProgress -= 1;
+          }
         }
       }
     }
@@ -60,7 +83,8 @@ void Sampler::process(uint nframes) {
   for (auto &&nEvent : GLOB.midiEvents) {
     nEvent.match([&] (NoteOffEvent *e) {
       auto &&voice = data.voiceData[e->key % nVoices];
-      if (std::abs(voice.mode) == 2) {
+      voice.trigger = false;
+      if (voice.stop()) {
         voice.playProgress = -1;
       }
     }, [] (MidiEvent *) {});
@@ -122,20 +146,23 @@ bool module::SampleEditScreen::keypress(ui::Key key) {
   using namespace ui;
   auto& voice = module->data.voiceData[module->currentVoiceIdx];
   switch (key) {
-  case K_RED_UP: voice.in.inc(); return true;
-  case K_RED_DOWN: voice.in.dec(); return true;
+  case K_GREEN_UP: voice.in.inc(); return true;
+  case K_GREEN_DOWN: voice.in.dec(); return true;
   case K_BLUE_UP: voice.out.inc(); return true;
   case K_BLUE_DOWN: voice.out.dec(); return true;
-
+  case K_RED_UP: voice.mode.inc(); return true;
+  case K_RED_DOWN: voice.mode.dec(); return true;
   }
 }
 
 namespace drawing {
 
-const static drawing::Size topWFsize = {300, 20};
-const static drawing::Point topWFpos = {10, 10};
-const static drawing::Size mainWFsize = {300, 190};
-const static drawing::Point mainWFpos = {10, 40};
+const static drawing::Size topWFsize = {240, 20};
+const static drawing::Point topWFpos = {20, 20};
+const static drawing::Size arrowSize = {30, 20};
+const static drawing::Point arrowPos = {270, 20};
+const static drawing::Size mainWFsize = {280, 170};
+const static drawing::Point mainWFpos = {20, 50};
 
 namespace Colours {
 
@@ -158,7 +185,7 @@ module::SampleEditScreen::SampleEditScreen(Sampler *m) :
 void module::SampleEditScreen::draw(drawing::Canvas &ctx) {
   using namespace drawing;
 
-  ctx.callAt([&] () {
+  ctx.callAt(topWFpos, [&] () {
     topWFW.drawRange(ctx, topWFW.viewRange, Colours::TopWF);
     for (uint i = 0; i < Sampler::nVoices; ++i) {
       auto& voice = module->data.voiceData[i];
@@ -169,7 +196,7 @@ void module::SampleEditScreen::draw(drawing::Canvas &ctx) {
         float mix = voice.playProgress / float(voice.out - voice.in);
 
         if (mix < 0) mix = 1;
-        if (voice.mode > 0) mix = 1 - mix; //voice is not reversed
+        if (voice.fwd()) mix = 1 - mix; //voice is not reversed
 
         Colour colour = baseColour.mix(Colours::TopWFActive, mix);
         topWFW.drawRange(ctx, {
@@ -184,7 +211,7 @@ void module::SampleEditScreen::draw(drawing::Canvas &ctx) {
       float mix = voice.playProgress / float(voice.out - voice.in);
 
       if (mix < 0) mix = 1;
-      if (voice.mode > 0) mix = 1 - mix; //voice is not reversed
+      if (voice.fwd()) mix = 1 - mix; //voice is not reversed
 
       Colour colour = baseColour.mix(Colours::TopWFActive, mix);
       topWFW.drawRange(ctx, {
@@ -192,43 +219,56 @@ void module::SampleEditScreen::draw(drawing::Canvas &ctx) {
             std::size_t(std::round(voice.out / topWF->ratio))
             }, colour);
     }
-  }, topWFpos);
+  });
 
   auto& voice = module->data.voiceData[module->currentVoiceIdx];
 
-  // Grid
-  {
-    float zoomLvL = 8;
-    float hLines = ((voice.out - voice.in) / float(GLOB.samplerate)) * zoomLvL;
-    float lineSpace = mainWFsize.w / hLines;
-    float firstLine = std::fmod(
-      float(voice.in / float(GLOB.samplerate) * zoomLvL), 1) * lineSpace;
-    ctx.beginPath();
-    for (int i = 0; i < hLines; i++) {
-      float x = firstLine + lineSpace * i;
-      ctx.moveTo(mainWFpos + Point(x, 0.0));
-      ctx.lineTo(mainWFpos + Point(x, mainWFsize.h));
-    }
-    int vLines = 9;
-    for (int i = 1; i < vLines; i++) {
-      float y = i * mainWFsize.h / float(vLines);
-      ctx.moveTo(mainWFpos + Point(0, y));
-      ctx.lineTo(mainWFpos + Point(mainWFsize.w, y));
-    }
-    ctx.strokeStyle(Colours::WFGrid);
-    ctx.stroke();
+  icons::Arrow icon;
+
+  if (voice.fwd()) {
+    icon.dir = icons::Arrow::Right;
+  } else {
+    icon.dir = icons::Arrow::Left;
   }
 
-  mainWFW.minPx = 5;
-  mainWFW.viewRange = {
-    std::size_t(std::round(voice.in / mainWF->ratio)),
-    std::size_t(std::round(voice.out / mainWF->ratio))};
+  if (voice.stop()) {
+    icon.stopped = true;
+  }
 
-  ctx.callAt([&] () {
+  if (voice.loop()) {
+    icon.looping = true;
+  }
+
+  icon.size = arrowSize;
+  icon.colour = Colours::Red;
+  ctx.drawAt(arrowPos, icon);
+
+  ctx.callAt(mainWFpos, [&] () {
+
+    mainWFW.minPx = 5;
+    mainWFW.viewRange = {
+      std::size_t(std::round(voice.in / mainWF->ratio)),
+      std::size_t(std::round(voice.out / mainWF->ratio))};
+
     ctx.beginPath();
-    ctx.strokeStyle(Colours::TopWF);
     ctx.roundedCurve(mainWFW.begin(), mainWFW.end(), -1);
-    ctx.stroke();
-  }, mainWFpos);
+    ctx.stroke(Colours::TopWFCur);
+
+    ctx.beginPath();
+    ctx.circle(mainWFW.point(mainWFW.viewRange.in), 2);
+    ctx.fill(Colours::Blue);
+
+    ctx.beginPath();
+    ctx.circle(mainWFW.point(mainWFW.viewRange.in), 5);
+    ctx.stroke(Colours::Blue);
+
+    ctx.beginPath();
+    ctx.circle(mainWFW.point(mainWFW.viewRange.out), 2);
+    ctx.fill(Colours::Green);
+
+    ctx.beginPath();
+    ctx.circle(mainWFW.point(mainWFW.viewRange.out), 5);
+    ctx.stroke(Colours::Green);
+  });
 
 }

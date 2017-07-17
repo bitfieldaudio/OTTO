@@ -264,6 +264,23 @@ public:
   float dec() override {return set(value / step);}
 };
 
+template<typename T>
+class WrapOpt : public Opt<T> {
+public:
+  using Opt<T>::Opt;
+
+  T set(T v) override {
+    if (v > this->max) {
+      this->value = this->min;
+    } else if (v < this->min) {
+      this->value = this->max;
+    } else {
+      this->value = v;
+    }
+    return this->value;
+  }
+};
+
 
 using FieldPtr = top1::PolyPtr<
     Field,

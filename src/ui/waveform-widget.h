@@ -62,12 +62,12 @@ public:
       }
     }
 
-    bool operator==(iterator rhs) const {
-      return idx == rhs.idx;
-    }
-    bool operator!=(iterator rhs) const {
-      return idx != rhs.idx;
-    }
+    bool operator==(iterator rhs) const {return idx == rhs.idx;}
+    bool operator!=(iterator rhs) const {return idx != rhs.idx;}
+    bool operator>(iterator rhs) const {return idx > rhs.idx;}
+    bool operator<(iterator rhs) const {return idx < rhs.idx;}
+    bool operator>=(iterator rhs) const {return idx >= rhs.idx;}
+    bool operator<=(iterator rhs) const {return idx <= rhs.idx;}
   };
 
   Range viewRange;
@@ -147,7 +147,7 @@ template<typename C>
 inline typename WaveformWidget<C>::iterator WaveformWidget<C>::end(Range r) const {
   float pxPrPt = size.w / float(viewRange.size());
   float inc = std::round(std::max(1.0f, minPx/pxPrPt));
-  return iterator(*this,  r.out, inc, r);
+  return iterator(*this,  r.out + 1, inc, r);
 }
 
 template<typename C>

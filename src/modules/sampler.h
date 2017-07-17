@@ -28,11 +28,21 @@ public:
     module::Opt<std::string> sampleName = {this, "sample name", ""};
 
     struct VoiceData : public module::Data {
+      enum Mode {
+        Fwd = 0, FwdStop = 1, FwdLoop = 2,
+        Bwd = -1, BwdStop = -2, BwdLoop = -3
+      };
       module::Opt<int> in = {this, "in", 0, 0, -1, 100};
       module::Opt<int> out = {this, "out", 0, 0, -1, 100};
-      module::Opt<int> mode = {this, "mode", 1, -2, 2, 1};
+      module::WrapOpt<int> mode = {this, "mode", 0, -3, 2, 1};
+
+      bool fwd() const {return mode >= 0;}
+      bool bwd() const {return !fwd();}
+      bool stop() const {return mode == FwdStop || mode == BwdStop;}
+      bool loop() const {return mode == FwdLoop || mode == BwdLoop;}
 
       int playProgress = -1;
+      bool trigger;
       int length() const {
         return out - in;
       }
