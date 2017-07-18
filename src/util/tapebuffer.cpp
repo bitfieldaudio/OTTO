@@ -30,7 +30,7 @@ void TapeBuffer::threadRoutine() {
   file.open(GLOB.project->path);
   file.samplerate = GLOB.samplerate;
   const static uint FRAMEBUF_SIZE = RingBuffer::SIZE / 2;
-  std::array<AudioFrame, FRAMEBUF_SIZE> framebuf;
+  top1::DynArray<AudioFrame> framebuf (FRAMEBUF_SIZE);
 
   if (file.error.log()) GLOB.exit();
 
@@ -72,7 +72,7 @@ waitData:
       uint startIdx = buffer.playIdx + buffer.lengthFW; 
       file.seek(buffer.posAt0 + startIdx);
       uint nframes = desLength - buffer.lengthFW;
-      framebuf.fill(0);
+      framebuf.clear();
       file.read(framebuf.data(), nframes);
       file.error.log();
       for (uint i = 0; i < nframes; i++) {
@@ -90,7 +90,7 @@ waitData:
       uint nframes = desLength - buffer.lengthBW;
       int startIdx = buffer.playIdx - buffer.lengthBW - nframes; 
       file.seek(buffer.posAt0 + startIdx);
-      framebuf.fill(0);
+      framebuf.clear();
       file.read(framebuf.data(), nframes);
       file.error.log();
       for (uint i = 0; i < nframes; i++) {
@@ -114,7 +114,7 @@ waitData:
           clipboard.fromSlice.in
         };
         clipboard.data.clear();
-        framebuf.fill(0);
+        framebuf.clear();
         while(readSlice.out < clipboard.fromSlice.out) {
           readSlice.out = std::min<int>(
             readSlice.in + FRAMEBUF_SIZE,
@@ -151,7 +151,7 @@ waitData:
           if ((ulong)writeSlice.size() > clipboard.data.size()) break;
           if (writeSlice.size() == 0) break;
 
-          framebuf.fill(0);
+          framebuf.clear();
           file.seek(writeSlice.in);
           file.read(framebuf.data(), writeSlice.size());
           int i;

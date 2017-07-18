@@ -13,6 +13,7 @@
 #include <plog/Log.h>
 
 #include "../utils.h"
+#include "dyn-array.h"
 #include "tapefile.h"
 
 namespace top1 {
@@ -83,7 +84,7 @@ public:
 
   struct RingBuffer {
     const static uint SIZE = 262144; // 2^18
-    std::array<AudioFrame, SIZE> data;
+    DynArray<AudioFrame> data = DynArray<AudioFrame>(SIZE);
     Section<int> notWritten;
     std::atomic_int lengthFW = {0};
     std::atomic_int lengthBW = {0};

@@ -21,14 +21,18 @@ void MixerModule::display() {
 
 void MixerModule::process(uint nframes) {
   auto &trackBuffer = GLOB.tapedeck.trackBuffer;
+  float level[4] = {data.track[0].level, data.track[1].level,
+                    data.track[2].level, data.track[3].level};
+  float pan[4] = {data.track[0].pan, data.track[1].level,
+                  data.track[2].pan, data.track[3].pan};
   for (uint f = 0; f < nframes; f++) {
     float lMix = 0, rMix = 0;
     for (uint t = 0; t < 4 ; t++) {
       if (!data.track[t].muted) {
-        lMix += trackBuffer[f][t] * data.track[t].level * (1-data.track[t].pan);
-        rMix += trackBuffer[f][t] * data.track[t].level * (1+data.track[t].pan);
+        lMix += trackBuffer[f][t] * level[t] * (1-pan[t]);
+        rMix += trackBuffer[f][t] * level[t] * (1+pan[t]);
       }
-      trackGraph[t].add(trackBuffer[f][t] * data.track[t].level);
+      trackGraph[t].add(trackBuffer[f][t] * level[t]);
     }
     GLOB.audioData.outL[f] =
       lMix + GLOB.audioData.proc[f] * GLOB.tapedeck.data.procGain;

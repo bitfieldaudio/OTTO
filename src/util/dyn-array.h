@@ -4,6 +4,7 @@
 #include <iterator>
 #include <algorithm>
 #include <vector>
+#include <cstring>
 #include <type_traits>
 
 namespace top1 {
@@ -140,16 +141,16 @@ public:
   pointer data() const { return _data; }
 
   reference operator[](size_type index) {
-    if (index >= _size || index < 0) {
-      throw std::out_of_range("Out of DynArray bounds");
-    }
+    // if (index >= _size || index < 0) {
+    //   throw std::out_of_range("Out of DynArray bounds");
+    // }  // Killed for performance
     return _data[index];
   }
 
   const reference operator[](size_type index) const {
-    if (index >= _size || index < 0) {
-      throw std::out_of_range("Out of DynArray bounds");
-    }
+    // if (index >= _size || index < 0) {
+    //   throw std::out_of_range("Out of DynArray bounds");
+    // }  // Killed for performance
     return _data[index];
   }
 
@@ -204,29 +205,34 @@ public:
    * Discards all data.
    */
   void resize(size_type size) {
-    _allocator.deallocate(_data, _size);
-    _size = size;
-    _data = _allocator.allocate(size);
+    rawResize(size);
     clear();
   }
 
   /**
-   * Fills the array with default-constructed instances of value_type
+   * Fills the array with zeros
    */
   void clear() {
-    std::fill(begin(), end(), T());
+    std::memset(_data, 0, sizeof(value_type) * _size);
   }
 
   void copyFrom(pointer loc, size_type n) {
-    for (size_type i = 0; i < n; i++) {
-      (*this)[i] = loc[i];
+    if (!size() >= n) {
+      rawResize(n);
     }
+    std::memcpy(_data, loc, n * sizeof(value_type));
   }
 
 private:
   pointer _data;
   size_type _size;
   allocator_type _allocator;
+
+  void rawResize(size_type size) {
+    _allocator.deallocate(_data, _size);
+    _size = size;
+    _data = _allocator.allocate(size);
+  }
 };
 
 }

@@ -17,10 +17,6 @@ Sampler::Sampler() :
   sampleData (maxSampleSize),
   editScreen (new SampleEditScreen(this)) {
 
-  for (uint i = 0; i < sampleData.size(); i++) {
-    sampleData[i] = (i % 22050) / 22050.0;
-  }
-
   GLOB.events.samplerateChanged.add([&] (uint sr) {
     maxSampleSize = 6 * sr;
   });

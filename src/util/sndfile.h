@@ -52,11 +52,9 @@ public:
     const static uint size = sizeof(sample_type) * _channels;
     sample_type data[_channels];
 
-    AudioFrame(sample_type init = 0) {
-      for (uint i = 0; i < _channels; ++i) {
-        data[i] = init;
-      }
-    }
+    AudioFrame() : data {0} {}
+    AudioFrame(sample_type init) :
+      data {init} {}
 
     sample_type &operator[](uint i) {
       return data[i];
