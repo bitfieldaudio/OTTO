@@ -1,5 +1,4 @@
 #define GLFW_INCLUDE_ES3
-#define GLFW_INCLUDE_GLEXT
 #include <GLFW/glfw3.h>
 #include <nanocanvas/NanoCanvas.h>
 #define NANOVG_GLES3_IMPLEMENTATION
@@ -25,17 +24,17 @@ static ui::Key keyboardKey(int xKey, int mods) {
 
     // Rotaries
   case GLFW_KEY_Q:
-    if (mods & GLFW_MOD_CONTROL) return K_RED_CLICK;
-    return K_RED_UP;
-  case GLFW_KEY_A:
-    if (mods & GLFW_MOD_CONTROL) return K_RED_CLICK;
-    return K_RED_DOWN;
-  case GLFW_KEY_W:
     if (mods & GLFW_MOD_CONTROL) return K_BLUE_CLICK;
     return K_BLUE_UP;
-  case GLFW_KEY_S:
+  case GLFW_KEY_A:
     if (mods & GLFW_MOD_CONTROL) return K_BLUE_CLICK;
     return K_BLUE_DOWN;
+  case GLFW_KEY_W:
+    if (mods & GLFW_MOD_CONTROL) return K_GREEN_CLICK;
+    return K_GREEN_UP;
+  case GLFW_KEY_S:
+    if (mods & GLFW_MOD_CONTROL) return K_GREEN_CLICK;
+    return K_GREEN_DOWN;
   case GLFW_KEY_E:
     if (mods & GLFW_MOD_CONTROL) return K_WHITE_CLICK;
     return K_WHITE_UP;
@@ -43,11 +42,11 @@ static ui::Key keyboardKey(int xKey, int mods) {
     if (mods & GLFW_MOD_CONTROL) return K_WHITE_CLICK;
     return K_WHITE_DOWN;
   case GLFW_KEY_R:
-    if (mods & GLFW_MOD_CONTROL) return K_GREEN_CLICK;
-    return K_GREEN_UP;
+    if (mods & GLFW_MOD_CONTROL) return K_RED_CLICK;
+    return K_RED_UP;
   case GLFW_KEY_F:
-    if (mods & GLFW_MOD_CONTROL) return K_GREEN_CLICK;
-    return K_GREEN_DOWN;
+    if (mods & GLFW_MOD_CONTROL) return K_RED_CLICK;
+    return K_RED_DOWN;
 
   case GLFW_KEY_LEFT:  return K_LEFT;
   case GLFW_KEY_RIGHT: return K_RIGHT;
@@ -145,8 +144,8 @@ void MainUI::mainRoutine() {
 		return;
 	}
 
-  glfwSetWindowAspectRatio(window, 4, 3);
-  glfwSetWindowSizeLimits(window, 320, 240, GLFW_DONT_CARE, GLFW_DONT_CARE);
+  // glfwSetWindowAspectRatio(window, 4, 3);
+  // glfwSetWindowSizeLimits(window, 320, 240, GLFW_DONT_CARE, GLFW_DONT_CARE);
 
 	glfwSetKeyCallback(window, key);
 

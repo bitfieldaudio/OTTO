@@ -8,6 +8,7 @@ namespace icons {
 struct Icon : public SizedDrawable {
   Colour colour;
   float lineWidth = 2;
+
   virtual void draw(Canvas&) override {};
 };
 
@@ -20,9 +21,9 @@ struct Arrow : public Icon {
 
   Direction dir = Right;
   /// Add stop line ->|
-  bool stopped;
+  bool stopped = false;
   /// Loop arrow - CW for Up/Right, CCW for Down/Left
-  bool looping;
+  bool looping = false;
   /// headLength/arrowLength
   float headRatio = 0.25;
 

@@ -263,6 +263,7 @@ public:
     return *this;
   }
 
+  using Super::textAlign;
 
   using Super::fillStyle;
   Canvas& fillStyle(const Colour& color) {

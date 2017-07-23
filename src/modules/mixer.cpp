@@ -60,26 +60,26 @@ bool MixerScreen::keypress(ui::Key key) {
   using namespace ui;
   bool shift = GLOB.ui.keys[K_SHIFT];
   switch (key) {
-  case K_RED_UP:
+  case K_BLUE_UP:
     if (shift) module->data.track[0].pan++;
     else module->data.track[0].level++;
     return true;
-  case K_RED_DOWN:
+  case K_BLUE_DOWN:
     if (shift) module->data.track[0].pan--;
     else module->data.track[0].level--;
     return true;
-  case K_RED_CLICK:
+  case K_BLUE_CLICK:
     module->data.track[0].muted.toggle();
     return true;
-  case K_BLUE_UP:
+  case K_GREEN_UP:
     if (shift) module->data.track[1].pan++;
     else module->data.track[1].level++;
     return true;
-  case K_BLUE_DOWN:
+  case K_GREEN_DOWN:
     if (shift) module->data.track[1].pan--;
     else module->data.track[1].level--;
     return true;
-  case K_BLUE_CLICK:
+  case K_GREEN_CLICK:
     module->data.track[1].muted.toggle();
     return true;
   case K_WHITE_UP:
@@ -93,15 +93,15 @@ bool MixerScreen::keypress(ui::Key key) {
   case K_WHITE_CLICK:
     module->data.track[2].muted.toggle();
     return true;
-  case K_GREEN_UP:
+  case K_RED_UP:
     if (shift) module->data.track[3].pan++;
     else module->data.track[3].level++;
     return true;
-  case K_GREEN_DOWN:
+  case K_RED_DOWN:
     if (shift) module->data.track[3].pan--;
     else module->data.track[3].level--;
     return true;
-  case K_GREEN_CLICK:
+  case K_RED_CLICK:
     module->data.track[3].muted.toggle();
     return true;
   }
@@ -121,10 +121,10 @@ void MixerScreen::drawMixerSegment(
 
   Colour trackCol;
   switch (track) {
-  case 1: trackCol = Colours::Red; break;
-  case 2: trackCol = Colours::Blue; break;
+  case 1: trackCol = Colours::Blue; break;
+  case 2: trackCol = Colours::Green; break;
   case 3: trackCol = Colours::White; break;
-  case 4: trackCol = Colours::Green; break;
+  case 4: trackCol = Colours::Red; break;
   }
   Colour muteCol = (module->data.track[track-1].muted) ? Colours::Red : Colours::Gray60;
   float mix = module->data.track[track-1].level;

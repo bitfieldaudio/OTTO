@@ -24,6 +24,7 @@ public:
 
   std::size_t size() const;
   std::size_t timeSpan() const;
+  float max() const;         // Maximum value
 
   float &operator[](std::size_t);
   const float& operator[](std::size_t) const;
@@ -37,6 +38,7 @@ public:
 
 private:
   std::vector<float> _data;
+  float _max;
 
   struct Average {
     float sum;

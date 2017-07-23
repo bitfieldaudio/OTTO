@@ -20,6 +20,7 @@ void Waveform::addFrame(float f) {
 
 void Waveform::addPoint(float f) {
   _data.push_back(std::abs(f * scale));
+  _max = std::max(_max, f);
 }
 
 void Waveform::clear() {
@@ -31,6 +32,10 @@ std::size_t Waveform::size() const {
 }
 std::size_t Waveform::timeSpan() const {
   return _data.size() * ratio;
+}
+
+float Waveform::max() const {
+  return _max;
 }
 
 float &Waveform::operator[](std::size_t idx) {

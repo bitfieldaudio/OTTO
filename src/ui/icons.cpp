@@ -69,6 +69,65 @@ void Arrow::draw(Canvas& ctx) {
 
   } else {
 
+    // Draw looping arrow.
+
+    const float scale = std::min(size.w / 12, size.h / 6);
+    ctx.translate(size.w / 2 - 6 * scale, size.h / 2 - 3 * scale);
+
+    const float r   = 3 * scale;
+    Point cp1 = Point{5, 0} * scale;
+    const Point cp2 = Point{3, 0} * scale;
+    const Point ap1 = Point{0, 0} * scale;
+    const Point cp3 = Point{0, 3} * scale;
+    const Point ap2 = Point{0, 6} * scale;
+    const Point cp4 = Point{3, 6} * scale;
+    const Point cp5 = Point{9, 6} * scale;
+    const Point ap3 = Point{12, 6} * scale;
+    const Point cp6 = Point{12, 3} * scale;
+    const Point ap4 = Point{12, 0} * scale;
+    const Point cp7 = Point{9, 0} * scale;
+    Point cp8 = Point{7, 0} * scale;
+
+    Point hp1, hp2, hp3;
+    switch (dir) {
+    case Up:
+    case Right:
+      hp1 = cp1 + Point(1, 0) * scale;
+      hp2 = hp1 - Point(scale * 2, scale * 2 * M_SQRT2 / 2.f);
+      hp3 = hp1 - Point(scale * 2, -scale * 2 * M_SQRT2 / 2.f);
+      cp8 = Point{8, 0} * scale;
+      break;
+    case Down:
+    case Left:
+      hp1 = cp8 - Point(1, 0) * scale;
+      hp2 = hp1 + Point(scale * 2, scale * 2 * M_SQRT2 / 2.f);
+      hp3 = hp1 + Point(scale * 2, -scale * 2 * M_SQRT2 / 2.f);
+      cp1 = Point{4, 0} * scale;
+      break;
+    }
+
+    ctx.beginPath();
+    ctx.moveTo(cp1);
+    ctx.lineTo(cp2);
+    ctx.arcTo(ap1, cp3, r);
+    ctx.arcTo(ap2, cp4, r);
+    ctx.lineTo(cp5);
+    ctx.arcTo(ap3, cp6, r);
+    ctx.arcTo(ap4, cp7, r);
+    ctx.lineTo(cp8);
+
+    ctx.strokeStyle(colour);
+    ctx.stroke();
+
+    // Arrow head
+    ctx.beginPath();
+    ctx.moveTo(hp1);
+    ctx.lineTo(hp2);
+    ctx.lineTo(hp3);
+    ctx.lineTo(hp1);
+    ctx.fill(colour);
+    ctx.stroke(colour);
+
   }
 
   ctx.restore();

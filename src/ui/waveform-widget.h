@@ -73,6 +73,7 @@ public:
   Range viewRange;
   drawing::Colour lineCol;
   float minPx;
+  float scale = 1;
 
   WaveformWidget() {};
 
@@ -152,8 +153,14 @@ inline typename WaveformWidget<C>::iterator WaveformWidget<C>::end(Range r) cons
 
 template<typename C>
 inline drawing::Point WaveformWidget<C>::point(std::size_t idx) const {
+  if (idx < wf->size() && idx >= 0) {
+    return {
+      (idx - viewRange.in) / float(viewRange.size()) * size.w,
+      (1 - scale * (*wf)[idx]) * size.h
+    };
+  }
   return {
     (idx - viewRange.in) / float(viewRange.size()) * size.w,
-    (1 - (*wf)[idx]) * size.h
+    size.h
   };
 }

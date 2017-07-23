@@ -19,6 +19,8 @@ public:
 
   size_t maxSampleSize = 0;
   top1::DynArray<float> sampleData;
+  int sampleSampleRate = 44100;
+  float sampleSpeed = 1;
 
   std::shared_ptr<SampleEditScreen> editScreen;
 
@@ -34,6 +36,7 @@ public:
       };
       module::Opt<int> in = {this, "in", 0, 0, -1, 100};
       module::Opt<int> out = {this, "out", 0, 0, -1, 100};
+      module::Opt<float> speed = {this, "speed", 1, 0, 5, 0.01};
       module::WrapOpt<int> mode = {this, "mode", 0, -3, 2, 1};
 
       bool fwd() const {return mode >= 0;}
@@ -41,7 +44,7 @@ public:
       bool stop() const {return mode == FwdStop || mode == BwdStop;}
       bool loop() const {return mode == FwdLoop || mode == BwdLoop;}
 
-      int playProgress = -1;
+      float playProgress = -1;
       bool trigger;
       int length() const {
         return out - in;

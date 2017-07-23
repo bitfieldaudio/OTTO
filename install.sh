@@ -7,6 +7,6 @@ kbd() {
 }
 
 cmake . &&
-make -j4 &&
+make -j4
 kbd &
 bin/top-1
