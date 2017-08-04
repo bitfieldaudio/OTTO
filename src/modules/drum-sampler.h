@@ -10,11 +10,12 @@
 
 namespace module {
 
-class SampleEditScreen; // FWDCL
+class DrumSampleScreen; // FWDCL
+
 /**
  * Drum sampler for now
  */
-class Sampler : public module::SynthModule {
+class DrumSampler : public module::SynthModule {
 public:
 
   size_t maxSampleSize = 0;
@@ -22,7 +23,7 @@ public:
   int sampleSampleRate = 44100;
   float sampleSpeed = 1;
 
-  std::shared_ptr<SampleEditScreen> editScreen;
+  std::shared_ptr<DrumSampleScreen> editScreen;
 
   static const uint nVoices = 24;
 
@@ -67,7 +68,7 @@ public:
 
   uint currentVoiceIdx = 0;
 
-  Sampler();
+  DrumSampler();
 
   void process(uint nframes) override;
 
@@ -78,11 +79,11 @@ public:
   void init() override;
 
   static std::string samplePath(std::string name) {
-    return "samples/" + name + ".wav";
+    return "samples/drums/" + name + ".wav";
   }
 };
 
-class SampleEditScreen : public ui::ModuleScreen<Sampler> {
+class DrumSampleScreen : public ui::ModuleScreen<DrumSampler> {
 public:
 
   std::shared_ptr<Waveform> topWF;
@@ -90,7 +91,7 @@ public:
   std::shared_ptr<Waveform> mainWF;
   WaveformWidget<Waveform> mainWFW;
 
-  SampleEditScreen(Sampler *);
+  DrumSampleScreen(DrumSampler *);
 
   void draw(drawing::Canvas&) override;
 

@@ -9,7 +9,8 @@
 #include "modules/mixer.h"
 #include "modules/testsynth.h"
 #include "modules/simple-drums.h"
-#include "modules/sampler.h"
+#include "modules/drum-sampler.h"
+#include "modules/synth-sampler.h"
 #include "globals.h"
 
 int main(int argc, char *argv[]) {
@@ -23,9 +24,11 @@ int main(int argc, char *argv[]) {
   std::mutex mut;
   std::unique_lock<std::mutex> lock (mut);
 
-  GLOB.drums.registerModule("Sampler", new module::Sampler());
-  GLOB.drums.registerModule("SimpleDrums", new SimpleDrumsModule());
-  GLOB.synth.registerModule("TestSynth", new TestSynth());
+  GLOB.drums.registerModule("Sampler", new module::DrumSampler());
+  GLOB.drums.registerModule("Additive Drums", new SimpleDrumsModule());
+
+  GLOB.synth.registerModule("Test Synth", new TestSynth());
+  GLOB.synth.registerModule("Sampler", new module::SynthSampler());
 
   GLOB.events.preInit();
   GLOB.init();

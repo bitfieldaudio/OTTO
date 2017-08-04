@@ -1,4 +1,4 @@
-#include "sampler.h"
+#include "drum-sampler.h"
 
 #include <algorithm>
 
@@ -11,11 +11,11 @@
 
 namespace module {
 
-Sampler::Sampler() :
+DrumSampler::DrumSampler() :
   SynthModule(&data),
   maxSampleSize (16 * GLOB.samplerate),
   sampleData (maxSampleSize),
-  editScreen (new SampleEditScreen(this)) {
+  editScreen (new DrumSampleScreen(this)) {
 
   GLOB.events.samplerateChanged.add([&] (uint sr) {
     maxSampleSize = 16 * sr;
@@ -24,7 +24,7 @@ Sampler::Sampler() :
 
 }
 
-void Sampler::process(uint nframes) {
+void DrumSampler::process(uint nframes) {
   for (auto &&nEvent : GLOB.midiEvents) {
     nEvent.match([&] (NoteOnEvent *e) {
        if (e->channel == 1) {
@@ -94,11 +94,11 @@ void Sampler::process(uint nframes) {
   };
 }
 
-void Sampler::display() {
+void DrumSampler::display() {
   GLOB.ui.display(editScreen);
 }
 
-void Sampler::load() {
+void DrumSampler::load() {
   top1::SndFile<1> sf (samplePath(data.sampleName));
 
   size_t rs = std::min(maxSampleSize, sf.size());
@@ -140,7 +140,7 @@ void Sampler::load() {
   sf.close();
 }
 
-void Sampler::init() {
+void DrumSampler::init() {
   load();
 }
 }
@@ -149,7 +149,7 @@ void Sampler::init() {
 /* SampleEditScreen                     */
 /****************************************/
 
-bool module::SampleEditScreen::keypress(ui::Key key) {
+bool module::DrumSampleScreen::keypress(ui::Key key) {
   using namespace ui;
   auto& voice = module->data.voiceData[module->currentVoiceIdx];
   switch (key) {
@@ -185,7 +185,7 @@ const Colour WFGrid = 0x303040;
 }
 }
 
-module::SampleEditScreen::SampleEditScreen(Sampler *m) :
+module::DrumSampleScreen::DrumSampleScreen(DrumSampler *m) :
   ModuleScreen (m),
   topWF (new Waveform(
      module->sampleData.size() / drawing::topWFsize.w / 4.0, 1.0)
@@ -194,14 +194,14 @@ module::SampleEditScreen::SampleEditScreen(Sampler *m) :
   mainWF (new Waveform(50, 1.0)),
   mainWFW (mainWF, drawing::mainWFsize) {}
 
-void module::SampleEditScreen::draw(drawing::Canvas &ctx) {
+void module::DrumSampleScreen::draw(drawing::Canvas &ctx) {
   using namespace drawing;
 
   Colour colourCurrent;
 
   ctx.callAt(topWFpos, [&] () {
     topWFW.drawRange(ctx, topWFW.viewRange, Colours::TopWF);
-    for (uint i = 0; i < Sampler::nVoices; ++i) {
+    for (uint i = 0; i < DrumSampler::nVoices; ++i) {
       auto& voice = module->data.voiceData[i];
       bool isActive = voice.playProgress >= 0;
       bool isCurrent = i == module->currentVoiceIdx;
