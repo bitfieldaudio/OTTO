@@ -19,8 +19,8 @@ public:
   MainUI(MainUI&) = delete;
   MainUI(MainUI&&) = delete;
 
-  void init();
-  void exit();
+  void init() override;
+  void exit() override;
 
   ui::Screen::ptr currentScreen;
 

@@ -56,6 +56,11 @@ void JackAudio::init() {
   jack_set_error_function(jackError);
   jack_set_info_function(jackLogInfo);
 
+  jack_on_shutdown(client,
+   [] (void *arg) {
+     ((JackAudio*) arg)->exit();
+   }, this);
+
   bufferSize = jack_get_buffer_size(client);
 
   if (jack_activate(client)) {

@@ -8,6 +8,7 @@
 
 #include "events.h"
 #include "module.h"
+#include "module-dispatcher.h"
 #include "ui/mainui.h"
 #include "modules/tape.h"
 #include "modules/mixer.h"
