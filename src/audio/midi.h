@@ -14,7 +14,7 @@ struct MidiEvent {
     CONTROL_CHANGE = 0b1011,
   } type;
 
-  byte channel;
+  int channel;
 
   byte *data;
 
@@ -24,22 +24,22 @@ struct MidiEvent {
 
 
 struct NoteOnEvent : public MidiEvent {
-  byte key = data[0];
-  byte velocity = data[1];
+  int key = data[0];
+  int velocity = data[1];
 
   NoteOnEvent(MidiEvent event) : MidiEvent(event) {};
 };
 
 struct NoteOffEvent : public MidiEvent {
-  byte key = data[0];
-  byte velocity = data[1];
+  int key = data[0];
+  int velocity = data[1];
 
   NoteOffEvent(MidiEvent event) : MidiEvent(event) {};
 };
 
 struct ControlChangeEvent : public MidiEvent {
-  byte controler = data[0];
-  byte value = data[1];
+  int controler = data[0];
+  int value = data[1];
 
   ControlChangeEvent(MidiEvent event) : MidiEvent(event) {};
 };

@@ -27,10 +27,12 @@ Sampler::Sampler() :
 void Sampler::process(uint nframes) {
   for (auto &&nEvent : GLOB.midiEvents) {
     nEvent.match([&] (NoteOnEvent *e) {
-      currentVoiceIdx = e->key % nVoices;
-      auto &&voice = data.voiceData[currentVoiceIdx];
-      voice.playProgress = (voice.fwd()) ? 0 : voice.length() - 1;
-      voice.trigger = true;
+       if (e->channel == 1) {
+         currentVoiceIdx = e->key % nVoices;
+         auto &&voice = data.voiceData[currentVoiceIdx];
+         voice.playProgress = (voice.fwd()) ? 0 : voice.length() - 1;
+         voice.trigger = true;
+       }
     }, [] (MidiEvent *) {});
   }
 
@@ -81,11 +83,13 @@ void Sampler::process(uint nframes) {
 
   for (auto &&nEvent : GLOB.midiEvents) {
     nEvent.match([&] (NoteOffEvent *e) {
-      auto &&voice = data.voiceData[e->key % nVoices];
-      voice.trigger = false;
-      if (voice.stop()) {
-        voice.playProgress = -1;
-      }
+       if (e->channel == 1) {
+         auto &&voice = data.voiceData[e->key % nVoices];
+         voice.trigger = false;
+         if (voice.stop()) {
+           voice.playProgress = -1;
+         }
+       }
     }, [] (MidiEvent *) {});
   };
 }

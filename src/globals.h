@@ -57,10 +57,13 @@ public:
   std::vector<MidiEventPtr> midiEvents;
 
   module::SynthModuleDispatcher synth;
+  module::SynthModuleDispatcher drums;
   module::EffectModuleDispatcher effect;
   TapeModule tapedeck;
   MixerModule mixer;
   module::Metronome metronome;
+
+  void init();
 
   //TODO: status codes etc
   void exit() {

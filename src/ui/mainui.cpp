@@ -63,6 +63,9 @@ bool MainUI::globKeyPre(ui::Key key) {
   case K_SYNTH:
     GLOB.synth.display();
     break;
+  case K_DRUMS:
+    GLOB.drums.display();
+    break;
   case K_METRONOME:
     GLOB.metronome.display();
     break;

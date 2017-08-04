@@ -7,6 +7,8 @@ public:
   FaustSynthModule(dsp *fDSP, module::Data *opts) :
     FaustWrapper (fDSP, opts), module::SynthModule(opts) {}
 
-  using FaustWrapper::process;
+  void process(uint nframes) override {
+    FaustWrapper::process(nframes);
+  }
 
 };

@@ -22,19 +22,15 @@ int main(int argc, char *argv[]) {
   midi::generateFreqTable(440);
   std::mutex mut;
   std::unique_lock<std::mutex> lock (mut);
-  
-  GLOB.synth.registerModule("Sampler", new module::Sampler());
-  GLOB.synth.registerModule("SimpleDrums", new SimpleDrumsModule());
+
+  GLOB.drums.registerModule("Sampler", new module::Sampler());
+  GLOB.drums.registerModule("SimpleDrums", new SimpleDrumsModule());
+  GLOB.synth.registerModule("TestSynth", new TestSynth());
 
   GLOB.events.preInit();
-  GLOB.dataFile.path = "data.json";
-  GLOB.dataFile.read();
-  GLOB.jackAudio.init();
-  GLOB.tapedeck.init();
-  GLOB.mixer.init();
-  GLOB.synth.current()->init();
-  GLOB.ui.init();
+  GLOB.init();
   GLOB.events.postInit();
+
   GLOB.jackAudio.startProcess();
 
   GLOB.notifyExit.wait(lock);

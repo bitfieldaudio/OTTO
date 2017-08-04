@@ -14,9 +14,7 @@ using namespace top1;
 Metronome::Metronome() :
   Module(&data),
   FaustWrapper(new FAUSTCLASS, &data),
-  screen (new MetronomeScreen(this)) {
-
-}
+  screen (new MetronomeScreen(this)) {}
 
 void Metronome::process(uint nframes) {
   float BPsample = data.bpm/60.0/(float)GLOB.samplerate;

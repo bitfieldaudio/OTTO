@@ -57,6 +57,7 @@ enum Key {
   K_MIXER,
   K_METRONOME,
   K_SYNTH,
+  K_DRUMS,
   K_SAMPLER,
   K_LOOPER,
 

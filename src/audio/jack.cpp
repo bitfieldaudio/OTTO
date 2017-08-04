@@ -12,6 +12,14 @@
 
 using byte = unsigned char;
 
+static void jackError(const char* s) {
+  LOGE << "JACK: " << s;
+}
+
+static void jackLogInfo(const char* s) {
+  LOGI << "JACK: " << s;
+}
+
 void JackAudio::init() {
   client = jack_client_open(CLIENT_NAME.c_str(), JackNullOption, &jackStatus);
 
@@ -45,6 +53,9 @@ void JackAudio::init() {
       return 0;
     }, this);
 
+  jack_set_error_function(jackError);
+  jack_set_info_function(jackLogInfo);
+
   bufferSize = jack_get_buffer_size(client);
 
   if (jack_activate(client)) {
@@ -69,17 +80,13 @@ void JackAudio::exit() {
 }
 
 void JackAudio::samplerateCallback(uint srate) {
-  if (srate != GLOB.samplerate) {
-    if (GLOB.samplerate != 0) {
-      LOGF << "Jack changed the sample rate!";
-      GLOB.samplerate = srate;
-      GLOB.events.samplerateChanged(srate);
-    }
-  }
+  LOGI << fmt::format("Jack changed the sample rate to {}", srate);
+  GLOB.samplerate = srate;
+  GLOB.events.samplerateChanged(srate);
 }
 
 void JackAudio::buffersizeCallback(uint buffsize) {
-  LOGF << "Jack changed the buffer size!";
+  LOGI << fmt::format("Jack changed the buffer size to {}", buffsize);
   bufferSize = buffsize;
   GLOB.events.bufferSizeChanged(buffsize);
 }
@@ -129,7 +136,7 @@ void JackAudio::setupPorts() {
 
   // Midi ports
   ports.midiIn = jack_port_register(
-    client, "midi_in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
+    client, "midiIn", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
 
   if (ports.midiIn == NULL) {
     LOGF << "Couldn't register midi_in port";
@@ -138,7 +145,7 @@ void JackAudio::setupPorts() {
   }
 
   ports.midiOut = jack_port_register(
-    client, "midi_out", JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput, 0);
+    client, "midiOut", JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput, 0);
 
   auto midiIn  = findPorts(JackPortIsPhysical | JackPortIsOutput, PortType::MIDI);
   auto midiOut = findPorts(JackPortIsPhysical | JackPortIsInput, PortType::MIDI);
@@ -246,6 +253,7 @@ void JackAudio::process(uint nframes) {
 
   GLOB.tapedeck.preProcess(nframes);
   GLOB.synth.process(nframes);
+  GLOB.drums.process(nframes);
   GLOB.effect.process(nframes);
   GLOB.tapedeck.postProcess(nframes);
   GLOB.mixer.process(nframes);

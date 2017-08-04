@@ -76,7 +76,7 @@ static ui::Key keyboardKey(int xKey, int mods) {
   case GLFW_KEY_U:     if (mods & GLFW_MOD_CONTROL) return K_SYNTH; else break;
   case GLFW_KEY_G:     if (mods & GLFW_MOD_CONTROL) return K_METRONOME; else break;
   case GLFW_KEY_H:     if (mods & GLFW_MOD_CONTROL) return K_SAMPLER; else break;
-  case GLFW_KEY_J:     if (mods & GLFW_MOD_CONTROL) return K_LOOPER; else break;
+  case GLFW_KEY_J:     if (mods & GLFW_MOD_CONTROL) return K_DRUMS; else break;
 
   case GLFW_KEY_L:     return K_LOOP;
   case GLFW_KEY_I:     return K_LOOP_IN;
