@@ -358,6 +358,7 @@ public:
       bezierCurveTo(prev - d1, cur + d2, cur);
       d1 = d2;
     }
+    return *this;
   }
 
   template<typename It>
@@ -384,6 +385,16 @@ public:
       arcTo(cp1, cp2, r);
       arcTo(cp3, nxt, r);
     }
+    return *this;
+  }
+
+  // Debug
+
+  Canvas& debugDot(Point p, Colour c = 0xFFFF00) {
+    beginPath();
+    circle(p, 1);
+    fill(c);
+    return *this;
   }
 };
 
