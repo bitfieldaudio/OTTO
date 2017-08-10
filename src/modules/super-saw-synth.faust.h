@@ -1,5 +1,5 @@
 //----------------------------------------------------------
-// name: "TestSynth"
+// name: "super-saw-synth"
 //
 // Code generated with Faust 0.9.104 (http://faust.grame.fr)
 //----------------------------------------------------------
@@ -43,10 +43,10 @@ using std::min;
 
 
 #ifndef FAUSTCLASS 
-#define FAUSTCLASS faust_testsynth
+#define FAUSTCLASS faust_super_saw_synth
 #endif
 
-class faust_testsynth : public dsp {
+class faust_super_saw_synth : public dsp {
   private:
 	int 	iVec0[2];
 	FAUSTFLOAT 	fbutton0;
@@ -75,7 +75,7 @@ class faust_testsynth : public dsp {
 
   public:
 	virtual void metadata(Meta* m) { 
-		m->declare("name", "TestSynth");
+		m->declare("name", "super-saw-synth");
 		m->declare("envelopes.lib/name", "Faust Envelope Library");
 		m->declare("envelopes.lib/version", "0.0");
 		m->declare("envelopes.lib/author", "GRAME");
@@ -137,14 +137,14 @@ class faust_testsynth : public dsp {
 		instanceResetUserInterface();
 		instanceClear();
 	}
-	virtual faust_testsynth* clone() {
-		return new faust_testsynth();
+	virtual faust_super_saw_synth* clone() {
+		return new faust_super_saw_synth();
 	}
 	virtual int getSampleRate() {
 		return fSamplingFreq;
 	}
 	virtual void buildUserInterface(UI* ui_interface) {
-		ui_interface->openVerticalBox("TestSynth");
+		ui_interface->openVerticalBox("super-saw-synth");
 		ui_interface->openHorizontalBox("ENVELOPE");
 		ui_interface->addVerticalSlider("ATTACK", &fslider1, 0.0f, 0.0f, 2.0f, 0.02f);
 		ui_interface->addVerticalSlider("DECAY", &fslider2, 0.0f, 0.0f, 2.0f, 0.02f);

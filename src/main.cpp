@@ -7,7 +7,7 @@
 #include "ui/mainui.h"
 #include "modules/tape.h"
 #include "modules/mixer.h"
-#include "modules/testsynth.h"
+#include "modules/super-saw-synth.h"
 #include "modules/simple-drums.h"
 #include "modules/drum-sampler.h"
 #include "modules/synth-sampler.h"
@@ -27,7 +27,7 @@ int main(int argc, char *argv[]) {
   GLOB.drums.registerModule("Sampler", new module::DrumSampler());
   GLOB.drums.registerModule("Additive Drums", new SimpleDrumsModule());
 
-  GLOB.synth.registerModule("Test Synth", new TestSynth());
+  GLOB.synth.registerModule("Super Saw", new SuperSawSynth());
   GLOB.synth.registerModule("Sampler", new module::SynthSampler());
 
   GLOB.events.preInit();

@@ -8,8 +8,8 @@
 /**
  * Generates a square wave
  */
-class TestSynth : public FaustSynthModule {
-  ui::ModuleScreen<TestSynth>::ptr screen;
+class SuperSawSynth : public FaustSynthModule {
+  ui::ModuleScreen<SuperSawSynth>::ptr screen;
 public:
 
   struct Data : module::Data {
@@ -33,21 +33,9 @@ public:
     Data(Data&&) = delete;
   } data;
 
-  TestSynth();
-  ~TestSynth();
+  SuperSawSynth();
 
   void process(uint nframes) override;
 
   void display() override;
-};
-
-class TestSynthScreen : public ui::ModuleScreen<TestSynth> {
-private:
-  virtual void draw(drawing::Canvas& ctx) override;
-
-  virtual bool keypress(ui::Key key) override;
-
-public:
-
-  using ui::ModuleScreen<TestSynth>::ModuleScreen;
 };

@@ -1,5 +1,3 @@
-declare name "TestSynth";
-
 ba = library("basics.lib");
 osc = library("oscillators.lib");
 no = library("noises.lib");
@@ -22,6 +20,6 @@ env = en.adsr(att, dec, sus * 100, rel, gate);
 
 cutoff = 4000;
 
-voice = osc.square(freq) : fl.resonlp(freq * (1 + env * velocity), 8, 1);
+voice = osc.saw(freq) : fl.resonlp(freq * (1 + env * velocity), 8, 1);
 
 process = voice * hgroup("ENVELOPE", env);
