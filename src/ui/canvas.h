@@ -8,6 +8,8 @@
 #include <nanovg.h>
 #include <nanocanvas/NanoCanvas.h>
 
+#include "../util/vec.h"
+
 namespace drawing {
 
 using NanoCanvas::HorizontalAlign;
@@ -15,12 +17,14 @@ using NanoCanvas::VerticalAlign;
 namespace TextAlign = NanoCanvas::TextAlign;
 using NanoCanvas::TextStyle;
 using NanoCanvas::Font;
+using Winding = NanoCanvas::Canvas::Winding;
 
 struct Point {
   float x, y;
 
-  Point(float x, float y) : x (x), y (y) {};
   Point() : Point(0, 0) {}
+  Point(float x, float y) : x (x), y (y) {};
+  Point(top1::vec v) : x (v.x), y (v.y) {};
 
   Point rotate(float rad) const {
     float sn = std::sin(rad);
@@ -42,6 +46,8 @@ struct Point {
   Point operator*(float s) const {return {x * s, y * s};}
   Point operator/(float s) const {return {x / s, y / s};}
   Point operator-() const {return {-x, -y};}
+
+  operator top1::vec() const {return {x, y};}
 };
 
 struct Size {
@@ -49,12 +55,14 @@ struct Size {
 
   Size() : Size(0, 0) {}
   Size(float w, float h) : w (w), h (h) {};
+  Size(top1::vec v) : w (v.x), h (v.y) {};
 
   Size swapWH() const {return {h, w};}
 
   Point center() const {
     return {w / 2.f, h / 2.f};
   }
+  operator top1::vec() const {return {w, h};}
 };
 
 struct Colour {
@@ -122,7 +130,7 @@ struct MainColour : public Colour {
 
   MainColour(Colour basic) :
     Colour (basic),
-    dimmed (basic.dim(0.3)) {}
+    dimmed (basic.dim(0)) {}
 
   MainColour(Colour basic, Colour dimmed) :
     Colour (basic),
@@ -130,7 +138,7 @@ struct MainColour : public Colour {
 
   MainColour(uint32 basic) :
     Colour (basic),
-    dimmed (dim(0.3)) {}
+    dimmed (dim(0.1)) {}
 
   MainColour(uint32 basic, uint32 dimmed) :
     Colour (basic),
