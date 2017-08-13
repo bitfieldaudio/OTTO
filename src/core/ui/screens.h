@@ -61,7 +61,7 @@ void SelectorScreen<T>::draw(drawing::Canvas& ctx) {
     ctx.textAlign(TextAlign::Left, TextAlign::Middle);
     ctx.font(FONT_LIGHT);
     ctx.font(15.f);
-    ctx.fillText(items[idx].name, {45.f, (i + 0.5) * itemHeight});
+    ctx.fillText(items[idx].name, {45.f, (i + 0.5f) * itemHeight});
   }
 }
 
@@ -75,8 +75,9 @@ bool SelectorScreen<T>::keypress(ui::Key key) {
   case K_BLUE_DOWN:
     next();
     return true;
+  default:
+    return false;
   }
-  return false;
 }
 
 template<typename T>

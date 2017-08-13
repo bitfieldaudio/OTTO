@@ -1,7 +1,5 @@
 cmake_minimum_required (VERSION 3.1)
 project (TOP-1)
-set (CMAKE_CXX_STANDARD 14)
-set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/bin)
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
@@ -39,18 +37,26 @@ target_link_libraries(tests libtop-1)
 target_link_libraries(libtop-1 pthread)
 target_link_libraries(libtop-1 dl)
 
-include_directories("include/nanovg")
-include_directories("include/nanocanvas")
-include_directories("include")
+include_directories("src")
+include_directories(SYSTEM "include")
+include_directories(SYSTEM "include/nanovg")
+include_directories(SYSTEM "include/nanocanvas")
 
 add_library(external-libs STATIC ${TOP-1_LIBS})
+set_target_properties(external-libs PROPERTIES COMPILE_FLAGS "-Wno-everything -x c++ -std=c++1z")
 target_link_libraries(libtop-1 external-libs)
+
+# use c++17 for TOP-1
+set_target_properties(libtop-1 PROPERTIES COMPILE_FLAGS "-x c++ -std=c++1z")
+set_target_properties(top-1 PROPERTIES COMPILE_FLAGS "-x c++ -std=c++1z")
+set_target_properties(tests PROPERTIES COMPILE_FLAGS "-x c++ -std=c++1z")
+
 
 # pkg-config find libs
 function(target_add_lib name)
   pkg_check_modules(${name} REQUIRED ${name})
   target_link_libraries(libtop-1 ${${name}_LIBRARIES})
-  target_include_directories(libtop-1 PUBLIC ${${name}_INCLUDE_DIRS})
+  target_include_directories(libtop-1 SYSTEM PUBLIC ${${name}_INCLUDE_DIRS})
   target_compile_options(libtop-1 PUBLIC ${${name}_CFLAGS_OTHER})
 endfunction(target_add_lib)
 
@@ -71,13 +77,68 @@ function(enable_cxx_compiler_flag_if_supported flag)
         endif()
     endif()
 endfunction()
+enable_cxx_compiler_flag_if_supported("-Wall")
 
-# example usage
-#enable_cxx_compiler_flag_if_supported("-Wall")
-#enable_cxx_compiler_flag_if_supported("-Wextra")
-#enable_cxx_compiler_flag_if_supported("-pedantic")
 
-# add_custom_command(TARGET tapedeck
-#   PRE_BUILD
-#   COMMAND "./compile-faust.sh"
-#   WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
+# Generate documentation
+file(GLOB_RECURSE DOC_FILES
+  "src/*.cpp"
+  "src/*.hpp"
+  "src/*.h"
+)
+
+set(CLDOC "" CACHE STRING "User specified '/path/to/cldoc'")
+if(CLDOC STREQUAL "")
+	find_program(CLDOC cldoc)
+elseif(NOT EXISTS ${CLDOC})
+	message(FATAL_ERROR "CLDOC was set to '${CLDOC}' but does not exist")
+endif()
+
+if(NOT DOCS_OUTPUT_DIR)
+	set(DOCS_OUTPUT_DIR "docs" CACHE STRING "Generated documentation output directory" FORCE)
+endif()
+
+if(NOT DOCS_DIR)
+	set(DOCS_DIR "doc-src" CACHE STRING "Location of external documentation files to be merged in" FORCE)
+endif()
+
+if(NOT ${CLDOC} STREQUAL "CLDOC-NOTFOUND")
+  if(NOT ${DOCS_DIR} STREQUAL "")
+  	set(CLDOC_MERGE "--merge ${DOCS_DIR}")
+  else()
+  	set(CLDOC_MERGE "")
+  endif()
+
+  add_custom_target(docs COMMAND
+    ${CLDOC} generate
+    ${CMAKE_CXX_FLAGS}
+    "-x c++ -std=c++1z"
+    -I${PROJECT_SOURCE_DIR}/src
+    ${CLDOC_MERGE}
+    --output ${DOCS_OUTPUT_DIR}
+    --
+    ${DOC_FILES}
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+  )
+
+  set_target_properties(docs PROPERTIES
+    EXCLUDE_FROM_ALL 1
+    EXCLUDE_FROM_DEFAULT_BUILD 1
+  )
+
+  add_custom_target(serve_docs COMMAND
+    ${CLDOC} serve -- ${DOCS_OUTPUT_DIR}
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+  )
+
+  set_target_properties(docs PROPERTIES
+    EXCLUDE_FROM_ALL 1
+    EXCLUDE_FROM_DEFAULT_BUILD 1
+  )
+
+  add_dependencies(serve_docs docs)
+else()
+  message(STATUS
+    "Documentation will not be generated"
+  )
+endif()

@@ -8,8 +8,8 @@
 
 namespace drawing {
 
-const uint WIDTH = 320;
-const uint HEIGHT = 240;
+static const uint WIDTH = 320;
+static const uint HEIGHT = 240;
 
 namespace Colours {
 

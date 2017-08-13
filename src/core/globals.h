@@ -47,14 +47,6 @@ public:
   JackAudio jackAudio;
   MainUI ui;
 
-  struct {
-    AudioBuffer<float> outL;
-    AudioBuffer<float> outR;
-    AudioBuffer<float> input;
-    // The sound that is passed between modules
-    AudioBuffer<float> proc;
-  } audioData;
-
   std::vector<MidiEventPtr> midiEvents;
 
   module::SynthModuleDispatcher synth;
@@ -73,7 +65,7 @@ public:
   }
 
   bool running() const {
-    return isRunning;
+    return array isRunning;
   }
 };
 

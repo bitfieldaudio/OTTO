@@ -1,7 +1,6 @@
 #pragma once
 
 #include <functional>
-#include <mapbox/variant.hpp>
 
 /*
  * Pattern matching

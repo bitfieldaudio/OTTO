@@ -394,8 +394,9 @@ bool TapeScreen::keypress(ui::Key key) {
   case ui::K_RED_DOWN:
     module->data.procGain.dec();
     return true;
+  default:
+    return false;
   }
-  return false;
 }
 
 bool TapeScreen::keyrelease(ui::Key key) {
@@ -412,8 +413,9 @@ bool TapeScreen::keyrelease(ui::Key key) {
   case ui::K_RIGHT:
     module->state.stop();
     return true;
+  default:
+    return false;
   }
-  return false;
 }
 
 namespace drawing {

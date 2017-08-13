@@ -1,7 +1,9 @@
-#include "base.h"
+#include "util/typedefs.hpp"
+
+#include "core/ui/base.h"
 #include "mainui.h"
 #include "utils.h"
-#include "../globals.h"
+#include "core/globals.h"
 
 #include <thread>
 

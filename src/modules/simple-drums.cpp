@@ -22,7 +22,7 @@ void SimpleDrumsModule::process(uint nframes) {
   }
   for (auto &&voice : voices) {
     voice.process(nframes);
-    voice.data.trigger = 0;
+		voice.data.trigger = 0;
   }
   for (auto &&nEvent : GLOB.midiEvents) {
     nEvent.match([&] (NoteOffEvent *e) {
@@ -35,7 +35,7 @@ top1::tree::Node SimpleDrumsModule::serialize() {
   top1::tree::Array ar;
   for (auto &v : voices) {
     ar.values.push_back(v.data.serialize());
-  }
+	}
   return ar;
 }
 
@@ -54,23 +54,25 @@ bool SimpleDrumsScreen::keypress(ui::Key key) {
   auto &osc = GLOB.ui.keys[K_SHIFT] ? voice.data.D2 : voice.data.D1;
   switch (key) {
   case K_RED_UP:
-    osc.freq.inc(); break;
+    osc.freq.inc(); return true;
   case K_RED_DOWN:
-    osc.freq.dec(); break;
+    osc.freq.dec(); return true;
   case K_BLUE_UP:
-    osc.toneDecay.inc(); break;
+    osc.toneDecay.inc(); return true;
   case K_BLUE_DOWN:
-    osc.toneDecay.dec(); break;
+    osc.toneDecay.dec(); return true;
   case K_WHITE_UP:
-    osc.noiseLvl.inc(); break;
+    osc.noiseLvl.inc(); return true;
   case K_WHITE_DOWN:
-    osc.noiseLvl.dec(); break;
+    osc.noiseLvl.dec(); return true;
   case K_GREEN_UP:
-    osc.cutoff.inc(); break;
+    osc.cutoff.inc(); return true;
   case K_GREEN_DOWN:
-    osc.cutoff.dec(); break;
+    osc.cutoff.dec(); return true;
   case K_GREEN_CLICK:
-    osc.filterSwitch.toggle(); break;
+		osc.filterSwitch.toggle(); return true;
+	default:
+		return false;
   }
 }
 

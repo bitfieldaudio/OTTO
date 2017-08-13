@@ -5,34 +5,13 @@
 #include <tuple>
 #include <stdexcept>
 
+/*
+ * TODO: DOCUMENT EVERYTHING!
+ */
+
 namespace top1 {
 
 namespace detail {
-// Implementations of C++17 std::conjunction/std::disjunction
-template<typename...>
-struct conjunction : std::true_type {};
-
-template<typename B1>
-struct conjunction<B1> : B1 {};
-
-template<typename B1, typename B2>
-struct conjunction<B1, B2> : std::conditional<B1::value, B2, B1>::type {};
-
-template<typename B1, typename... Bs>
-struct conjunction<B1, Bs...> : std::conditional<B1::value, conjunction<Bs...>, B1>::type {};
-
-template<typename...>
-struct disjunction : std::false_type {};
-
-template<typename B1>
-struct disjunction<B1> : B1 {};
-
-template<typename B1, typename B2>
-struct disjunction<B1, B2> : std::conditional<B1::value, B1, B2>::type {};
-
-template<typename B1, typename... Bs>
-struct disjunction<B1, Bs...> : std::conditional<B1::value, B1, disjunction<Bs...>>::type {};
-
 
 template <typename R, typename... Args>
 struct FunctionArgsBase{
@@ -80,7 +59,7 @@ struct getTypeIndex<Base, T> {
 template<typename PtrType, typename Base, typename ...Types>
 class BasicPolyPtr {
 
-  static_assert(detail::conjunction<std::is_base_of<Base, Types>...>::value,
+  static_assert(std::conjunction<std::is_base_of<Base, Types>...>::value,
    "the first template parameter needs to be a common baseclass of \
     all the other template parameters");
 

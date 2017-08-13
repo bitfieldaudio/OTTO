@@ -3,6 +3,7 @@
 #include <functional>
 #include <vector>
 #include <unordered_map>
+// TODO: Use c++17 std::variant
 #include <mapbox/variant.hpp>
 #include <memory>
 

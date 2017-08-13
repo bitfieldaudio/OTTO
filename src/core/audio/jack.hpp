@@ -1,15 +1,17 @@
 #pragma once
 
-#include <cstdlib>
+#include "util/typedefs.hpp"
+
 #include <string>
 #include <atomic>
-
-#include <jack/jack.h>
 #include <string>
 
-#include "../events.h"
+#include <jack/jack.h>
+
+#include "core/events.h"
 
 class JackAudio {
+private:
   struct {
     jack_port_t *outL;
     jack_port_t *outR;
@@ -21,18 +23,17 @@ class JackAudio {
   jack_client_t *client;
   jack_status_t jackStatus;
 
-  std::atomic_bool processing = {false};
-private:
+  std::atomic_bool isProcessing = {false};
 
   enum class PortType {
-    AUDIO,
-    MIDI
+    Audio,
+    Midi
   };
 
   void setupPorts();
 
   std::vector<std::string> findPorts(
-    int criteria, PortType type = PortType::AUDIO);
+    int criteria, PortType type = PortType::Audio);
 
   bool connectPorts(std::string src, std::string dest);
 

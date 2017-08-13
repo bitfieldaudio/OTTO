@@ -4,7 +4,7 @@
 #include <string>
 #include <plog/Log.h>
 
-#include "tree.h"
+#include "tree.hpp"
 
 namespace top1 {
 

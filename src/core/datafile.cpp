@@ -1,5 +1,5 @@
-#include "datafile.h"
-#include "../globals.h"
+#include "core/datafile.hpp"
+#include "core/globals.hpp"
 
 using namespace top1;
 

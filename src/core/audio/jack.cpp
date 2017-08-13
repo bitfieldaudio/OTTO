@@ -1,3 +1,5 @@
+#include "jack.hpp"
+
 #include <cstdlib>
 #include <string>
 #include <vector>
@@ -6,11 +8,8 @@
 #include <jack/midiport.h>
 #include <plog/Log.h>
 
-#include "../globals.h"
-#include "jack.h"
-#include "../events.h"
-
-using byte = unsigned char;
+#include "core/globals.h"
+#include "core/events.h"
 
 static void jackError(const char* s) {
   LOGE << "JACK: " << s;
@@ -23,7 +22,7 @@ static void jackLogInfo(const char* s) {
 void JackAudio::init() {
   client = jack_client_open(CLIENT_NAME.c_str(), JackNullOption, &jackStatus);
 
-  if (!jackStatus & JackServerStarted) {
+  if ((!jackStatus) & JackServerStarted) {
     LOGF << "Failed to start jack server";
     GLOB.exit();
     return;
@@ -75,7 +74,7 @@ void JackAudio::init() {
 }
 
 void JackAudio::startProcess() {
-  processing = true;
+  isProcessing = true;
 }
 
 void JackAudio::exit() {
@@ -179,7 +178,7 @@ std::vector<std::string> JackAudio::findPorts(int criteria, PortType type) {
   const char **ports = jack_get_ports(
     client,
     NULL,
-    (type == PortType::AUDIO) ? "audio" : "midi",
+    (type == PortType::Audio) ? "audio" : "midi",
     criteria);
   std::vector<std::string> ret;
   if (ports == nullptr) return ret;
@@ -199,7 +198,7 @@ void shutdown(void *arg) {
 }
 
 void JackAudio::process(uint nframes) {
-  if ( not (processing && GLOB.running())) return;
+  if ( not (isProcessing && GLOB.running())) return;
   if ( nframes > bufferSize) {
     LOGE << "Jack requested more frames than expected";
     return;

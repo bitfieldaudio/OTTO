@@ -1,6 +1,6 @@
 #pragma once
 
-#include "jsonfile.h"
+#include "util/jsonfile.hpp"
 
 class DataFile : public top1::JsonFile {
 public:

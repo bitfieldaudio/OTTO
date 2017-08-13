@@ -88,7 +88,7 @@ public:
 };
 
 /****************************************/
-/* ModuleDispatcher Implementation       /
+/* ModuleDispatcher Implementation      */
 /****************************************/
 
 template<typename M>
@@ -132,7 +132,7 @@ void ModuleDispatcher<M>::registerModule(std::string name, M *module) {
 
 template<typename M>
 void ModuleDispatcher<M>::registerModule(std::string name, std::shared_ptr<M> module) {
-  selectorScreen->items.push_back({name, modules.size()});
+  selectorScreen->items.push_back({name, (int)modules.size()});
   modules.push_back({name, module});
 }
 

@@ -26,11 +26,11 @@ void SuperSawSynth::process(uint nframes) {
   FaustSynthModule::process(nframes);
   for (auto &&nEvent : GLOB.midiEvents) {
     nEvent.match([&] (NoteOffEvent *e) {
-       if (e->channel == 0) {
-         if (e->key == data.key) {
-           data.trigger = 0;
-         }
-       }
+      if (e->channel == 0) {
+        if (e->key == data.key) {
+          data.trigger = 0;
+        }
+      }
      }, [] (MidiEvent *) {});
   };
 }
@@ -56,7 +56,8 @@ public:
     ctx.beginPath();
     ctx.strokeStyle(BladeStroke);
     ctx.fillStyle(BladeFill);
-    ctx.moveTo(0, 37);
+    ctx.moveTo(145, 8);
+    ctx.lineTo(0, 37);
     ctx.lineTo(2, 48);
     { // Teeth
       const float length = 164;
@@ -75,8 +76,6 @@ public:
       ctx.lineTo(170, 48);
     }
     ctx.lineTo(172, 43);
-    ctx.lineTo(145, 8);
-    ctx.lineTo(0, 37);
     ctx.pathWinding(Winding::CW);
     ctx.moveTo(9 + 2, 42);
     ctx.arc(9, 42, 2, 0, 6.28318531, 1);
@@ -132,8 +131,7 @@ void SuperSawSynthScreen::draw(drawing::Canvas& ctx) {
   using namespace drawing;
   using top1::vec;
 
-
-  { // Log
+  { // Log and saws
     Point c1 = {70, 170}; // Front circle center
     Point c2 = {250, 110}; // Back circle center
     float radius = 40;
@@ -156,9 +154,15 @@ void SuperSawSynthScreen::draw(drawing::Canvas& ctx) {
     Point bc5 = c2 - cr;
     Point bc6 = q2 - cr;
 
+    auto [bcx, bcy] = bc4;
+
+    if (auto d = 2; d > bcx) {
+      bcy = 3;
+    }
+
     // Saw placement
-    static int nSaws = 4;
-    static int padding = 2; // Extra space added to ends of the log. unit: vbs
+    const int nSaws = 4;
+    const float padding = 2.5; // Extra space added to ends of the log. unit: vbs
     vec vbs = cc / (nSaws + 1 + 2 * padding); // vector between saws
 
     // Draw dark half of back circle
@@ -190,7 +194,7 @@ void SuperSawSynthScreen::draw(drawing::Canvas& ctx) {
 
       float sawPosAmount = 1 - i % 2;// 0 is at the handle, 1 is at tip of the blade
       float sawAngleAmount = i % 2; // 0 is minAngle, 1 is maxAngle
-      float sawOpacity = 1;
+      float sawOpacity = 0.7;
       float sawDim = 0.2 * i;
 
       static float sawVOffs = 4;

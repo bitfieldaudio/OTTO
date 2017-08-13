@@ -5,10 +5,11 @@
 #include <functional>
 #include <type_traits>
 
-#include <nanovg.h>
+#include <nanovg/nanovg.h>
 #include <nanocanvas/NanoCanvas.h>
 
 #include "../util/vec.h"
+#include "../utils.h"
 
 namespace drawing {
 
@@ -19,12 +20,13 @@ using NanoCanvas::TextStyle;
 using NanoCanvas::Font;
 using Winding = NanoCanvas::Canvas::Winding;
 
+// #Markdown `in` comment ´s´ _d_
 struct Point {
   float x, y;
 
   Point() : Point(0, 0) {}
-  Point(float x, float y) : x (x), y (y) {};
-  Point(top1::vec v) : x (v.x), y (v.y) {};
+  Point(float x, float y) : x (x), y (y) {}
+  Point(top1::vec v) : x (v.x), y (v.y) {}
 
   Point rotate(float rad) const {
     float sn = std::sin(rad);
@@ -173,7 +175,7 @@ public:
   Size size;
 
   SizedDrawable() {};
-  SizedDrawable(Size s) : size (s) {};
+  explicit SizedDrawable(Size s) : size (s) {};
 
 };
 
@@ -310,6 +312,7 @@ public:
     translate(p);
     rotate(r);
     translate(-p);
+    return *this;
   }
 
   Canvas& draw(Drawable &d) {

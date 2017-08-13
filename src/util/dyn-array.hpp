@@ -11,6 +11,7 @@ namespace top1 {
 
 /**
  * STL-compatible dynamic array.
+ *
  * Useful for buffers that only have to be resized when
  * jack changes the buffersize
  */

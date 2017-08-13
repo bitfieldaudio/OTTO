@@ -42,19 +42,6 @@ inline float round(float f, int places) {
   return std::round(f * i)/i;
 }
 
-namespace audio {
-
-/**
- * Mixes two signals.
- * @param A Signal A
- * @param B Signal B
- * @param ratio B:A, amount of B to mix into signal A.
- */
-inline float mix(float A, float B, float ratio = 0.5) {
-  return A + (B - A) * ratio;
-}
-}
-
 struct Track {
   uint idx;
   uint name() const { return idx + 1; }
@@ -75,70 +62,9 @@ private:
   Track(uint idx) : idx (idx) {}
 };
 
-struct AudioAverage {
-  float sum = 0;
-  uint nsamples = 0;
-  float average = 0;
-
-  void add(float sample) {
-    ++nsamples;
-    sum += std::abs(sample);
-    average = sum/nsamples;
-  }
-  void clear() {
-    sum /= 16.0;
-    nsamples /= 16;
-    average = sum/nsamples;
-  }
-
-  float clip() const {
-    return std::min<float>(average, 1);
-  }
-
-  operator float() {
-    return average;
-  }
-};
-
 }
 
 using AudioFrame = top1::SndFile<4>::AudioFrame;
-
-namespace detail {
-
-// to avoid circular deps
-void registerAudioBufferResize(std::function<void(uint)>);
-
-}
-
-template<typename T>
-class AudioBuffer : public top1::DynArray<T> {
-public:
-
-  using typename top1::DynArray<T>::value_type;
-  using typename top1::DynArray<T>::size_type;
-  using typename top1::DynArray<T>::difference_type;
-  using typename top1::DynArray<T>::reference;
-  using typename top1::DynArray<T>::const_reference;
-  using typename top1::DynArray<T>::pointer;
-  using typename top1::DynArray<T>::iterator;
-  using typename top1::DynArray<T>::const_iterator;
-  using typename top1::DynArray<T>::reverse_iterator;
-  using typename top1::DynArray<T>::const_reverse_iterator;
-
-  AudioBuffer(size_type sizeFactor = 1)
-    : top1::DynArray<T>(0),
-    sFactor (sizeFactor) {
-    detail::registerAudioBufferResize([this] (uint newSize) {
-       this->resize(newSize * sFactor);
-     });
-  }
-
-  using top1::DynArray<T>::operator[];
-
-private:
-  size_type sFactor;
-};
 
 
 template<class T = int>

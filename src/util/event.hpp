@@ -1,20 +1,26 @@
 #pragma once
 
+#include "util/typedefs.hpp"
+
 #include <vector>
 #include <functional>
 #include <plog/Log.h>
-#include "module.h"
 
+namespace top1 {
+
+/*
+ * An event registry and dispatcher
+ */
 template<typename ...Args>
-class Dispatcher {
-private:
-  std::vector<std::function<void(Args...)>> handlers;
+class EventDispatcher {
 public:
-  Dispatcher() {
+
+  using handler_type = std::function<void(Args...)>
+    Dispatcher() {
     LOGD << "new dispatcher";
   };
 
-  unsigned int add(std::function<void(Args...)> handler) {
+  uint add(handler_type handler) {
     handlers.push_back(handler);
     return this->handlers.size() - 1;
   }
@@ -29,7 +35,10 @@ public:
     }
   }
 
-  void operator()(Args... args) {
-    runAll(args...);
-  }
+  uint operator+=(const handler_type& h) { return add(h); }
+private:
+  std::vector<handler_type> handlers;
 };
+
+}
+
