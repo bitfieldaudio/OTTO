@@ -112,7 +112,7 @@ public:
 
     using Case::operator();
 
-    visitor(Case _case) : Case(_case) {};
+    explicit visitor(Case _case) : Case(_case) {};
   };
 
   template<typename Case, typename ...Cases>
@@ -133,6 +133,7 @@ public:
   using first_type = std::tuple_element_t<0, std::tuple<Types...>>;
 
   BasicPolyPtr() {};
+  // cppcheck-suppress noExplicitConstructor
   BasicPolyPtr(PtrType &&ptr) : data (ptr) {}
 
   template<typename T, typename = checkType<T>>
@@ -210,9 +211,9 @@ struct smart_poly_storage {
   smart_poly_storage(smart_poly_storage &&o) {
     data.swap(o.data);
   }
-  smart_poly_storage(T* p) {
-    data = p;
-  }
+
+  // cppcheck-suppress noExplicitConstructor
+  smart_poly_storage(T* p) : data (p) {}
 
   operator T*() {
     return data.get();
