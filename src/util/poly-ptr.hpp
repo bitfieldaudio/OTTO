@@ -3,7 +3,7 @@
 #include <type_traits>
 #include <memory>
 #include <tuple>
-#include <stdexcept>
+#include <optional>
 
 /*
  * TODO: DOCUMENT EVERYTHING!
@@ -98,10 +98,6 @@ class BasicPolyPtr {
     }
   };
 
-  struct Exception : std::runtime_error {
-    using std::runtime_error::runtime_error;
-  };
-
   TypeIndex typeIndex;
   PtrType data;
 
@@ -155,7 +151,7 @@ public:
   }
 
   template<typename T, typename = checkType<T>>
-  T *get() {
+  std::optional<T*> get() {
     TypeIndex req = getTypeIndex<T>::index;
     if (typeIndex == req) {
       return (T *)(Base *) data;
@@ -163,8 +159,13 @@ public:
     if (req == baseType) {
       return (T *)(Base *) data;
     } else {
-      throw Exception(__PRETTY_FUNCTION__);
+      std::nullopt_t;
     }
+  }
+
+  template<typename T, typename = checkType<T>>
+  T& get(const T& fallback) {
+    return this->get<T>().value_or(fallback);
   }
 
   template<typename T, typename = checkType<T>>
