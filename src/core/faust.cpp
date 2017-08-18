@@ -1,6 +1,8 @@
-#include "faust.h"
+#include "faust.hpp"
 
-#include "globals.h"
+#include "core/globals.hpp"
+
+namespace top1 {
 
 FaustWrapper::FaustWrapper(dsp *DSP, module::Data *data) :
   opts (data),
@@ -53,3 +55,5 @@ void FaustWrapper::postBuffers(uint nframes) {
       GLOB.audioData.proc[i] += outBuffer[0][i];
     }
 }
+
+} // top1

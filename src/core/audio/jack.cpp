@@ -8,8 +8,8 @@
 #include <jack/midiport.h>
 #include <plog/Log.h>
 
-#include "core/globals.h"
-#include "core/events.h"
+#include "core/globals.hpp"
+#include "util/event.hpp"
 
 static void jackError(const char* s) {
   LOGE << "JACK: " << s;
@@ -212,6 +212,8 @@ void JackAudio::process(uint nframes) {
   GLOB.audioData.outR.clear();
   GLOB.audioData.input.clear();
   GLOB.audioData.proc.clear();
+
+  GLOB.
 
   for (uint i = 0; i < nframes; i++) {
     GLOB.audioData.input[i] = inData[i];

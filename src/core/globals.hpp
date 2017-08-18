@@ -6,25 +6,16 @@
 #include <atomic>
 #include <condition_variable>
 
-#include "events.h"
-#include "module.h"
-#include "module-dispatcher.h"
-#include "ui/mainui.h"
-#include "modules/tape.h"
-#include "modules/mixer.h"
-#include "modules/metronome.h"
-#include "audio/jack.h"
-#include "audio/midi.h"
-#include "util/datafile.h"
-#include "utils.h"
+#include "util/event.hpp"
 
-struct Project {
-  std::string name = "Tape1";
-  std::string path = "tape1.tape";
+#include "core/datafile.hpp"
+#include "core/audio/jack.hpp"
+#include "core/audio/midi.hpp"
+#include "core/ui/mainui.hpp"
 
-  int bpm = 120;
-};
 
+namespace top1 {
+  
 class __Globals_t {
 private:
   std::atomic_bool isRunning = {true};
@@ -32,15 +23,14 @@ public:
   std::condition_variable notifyExit;
 
   struct {
-    Dispatcher<> preInit;
-    Dispatcher<> postInit;
-    Dispatcher<> preExit;
-    Dispatcher<> postExit;
-    Dispatcher<uint> bufferSizeChanged;
-    Dispatcher<uint> samplerateChanged;
+    top1::EventDispatcher<> preInit;
+    top1::EventDispatcher<> postInit;
+    top1::EventDispatcher<> preExit;
+    top1::EventDispatcher<> postExit;
+    top1::EventDispatcher<uint> bufferSizeChanged;
+    top1::EventDispatcher<uint> samplerateChanged;
   } events;
 
-  Project *project;
   DataFile dataFile;
   uint samplerate = 44100;
 
@@ -65,8 +55,22 @@ public:
   }
 
   bool running() const {
-    return array isRunning;
+    return isRunning;
   }
 };
 
-extern __Globals_t GLOB;
+static inline __Globals_t GLOB;
+
+void __Globals_t::init() {
+  dataFile.path = "data.json";
+  dataFile.read();
+  jackAudio.init();
+  tapedeck.init();
+  mixer.init();
+  synth.current()->init();
+  drums.current()->init();
+  ui.init();
+}
+
+
+}

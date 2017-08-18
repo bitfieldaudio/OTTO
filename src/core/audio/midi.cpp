@@ -1,4 +1,5 @@
-#include "midi.h"
+#include "midi.hpp"
+
 #include <cmath>
 
 namespace midi {

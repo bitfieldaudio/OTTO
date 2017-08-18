@@ -3,7 +3,8 @@
 
 namespace detail {
 
-void registerAudioBufferResize(std::function<void(uint)> eh) {
-  GLOB.events.bufferSizeChanged.add(eh);
-}
+  template<typename Callable, typename>
+  void registerAudioBufferResize(Callable) {
+    GLOB.events.bufferSizeChanged.add(eh);
+  }
 }

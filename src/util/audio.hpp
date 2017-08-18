@@ -128,7 +128,51 @@ struct ProcessData {
 
 namespace detail {
 // to avoid circular deps
-void registerAudioBufferResize(std::function<void(uint)>);
+template<typename Callable,
+         typename = std::enable_if_t<std::is_invocable_v<Callable, uint>>>
+void registerAudioBufferResize(Callable);
+}
+
+template<class T = int>
+struct Section {
+public:
+  T in = 0;
+  T out = 0;
+
+  Section<T>() {};
+  Section<T>(T in, T out) : in (in), out (out) {}
+
+  operator bool() const {
+    return in != out;
+  }
+
+  T size() const {
+    return out - in;
+  }
+
+  bool contains(const T element) const {
+    return (element >= in && element <= out);
+  }
+
+  bool contains(const Section<T> &other) const {
+    return (contains(other.in) && contains(other.out));
+  }
+
+  enum OverlapType {
+    NONE = 0,
+    CONTAINS,
+    CONTAINED,
+    CONTAINS_IN,
+    CONTAINS_OUT,
+  };
+
+  OverlapType overlaps(const Section<T> &other) const {
+    if (contains(other)) return CONTAINS;
+    if (other.contains(*this)) return CONTAINED;
+    if (contains(other.in)) return CONTAINS_IN;
+    if (contains(other.out)) return CONTAINS_OUT;
+    return NONE;
+  }
 }
 
 } // top1::audio

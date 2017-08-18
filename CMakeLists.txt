@@ -43,13 +43,13 @@ include_directories(SYSTEM "include/nanovg")
 include_directories(SYSTEM "include/nanocanvas")
 
 add_library(external-libs STATIC ${TOP-1_LIBS})
-set_target_properties(external-libs PROPERTIES COMPILE_FLAGS "-Wno-everything -x c++ -std=c++1z")
+set_target_properties(external-libs PROPERTIES COMPILE_FLAGS "-w -x c++ -std=c++1z")
 target_link_libraries(libtop-1 external-libs)
 
 # use c++17 for TOP-1
-set_target_properties(libtop-1 PROPERTIES COMPILE_FLAGS "-x c++ -std=c++1z")
-set_target_properties(top-1 PROPERTIES COMPILE_FLAGS "-x c++ -std=c++1z")
-set_target_properties(tests PROPERTIES COMPILE_FLAGS "-x c++ -std=c++1z")
+set_target_properties(libtop-1 PROPERTIES COMPILE_FLAGS "-x c++ -std=c++1z -Wno-c++14-compat-pedantic")
+set_target_properties(top-1 PROPERTIES COMPILE_FLAGS "-x c++ -std=c++1z -Wno-c++14-compat-pedantic")
+set_target_properties(tests PROPERTIES COMPILE_FLAGS "-x c++ -std=c++1z -Wno-c++14-compat-pedantic")
 
 
 # pkg-config find libs

@@ -2,8 +2,7 @@
 
 #include <thread>
 
-#include "../module.h"
-#include "utils.h"
+#include "core/ui/canvas.hpp"
 
 namespace ui {
 
@@ -30,7 +29,6 @@ enum Key {
   K_RIGHT,
   K_SHIFT,
 
-  // Tapedeck
   K_PLAY,
   K_REC,
   K_TRACK_1,
@@ -109,31 +107,10 @@ public:
    * Run by MainUI when switching to this screen
    */
   virtual void init() {}
-  /**
+  /*
    * Run by MainUI when switching to another screen
    */
   virtual void exit() {}
-};
-
-/**
- * A screen that belongs to a module of type M
- */
-template<class M>
-class ModuleScreen : public Screen {
-protected:
-  M *module;
-
-public:
-  using ptr = std::shared_ptr<ModuleScreen<M>>;
-
-  ModuleScreen() :
-    Screen() {}
-
-  ModuleScreen(M *module)
-    : module (module),
-    Screen () {}
-
-  virtual ~ModuleScreen() {}
 };
 
 

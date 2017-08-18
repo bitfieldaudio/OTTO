@@ -54,7 +54,7 @@ struct getTypeIndex<Base, T> {
     : invalidType;
 };
 
-}// detail
+} // detail
 
 template<typename PtrType, typename Base, typename ...Types>
 class BasicPolyPtr {
@@ -133,6 +133,7 @@ public:
   using first_type = std::tuple_element_t<0, std::tuple<Types...>>;
 
   BasicPolyPtr() {};
+
   // cppcheck-suppress noExplicitConstructor
   BasicPolyPtr(PtrType &&ptr) : data (ptr) {}
 
@@ -160,7 +161,7 @@ public:
     if (req == baseType) {
       return (T *)(Base *) data;
     } else {
-      std::nullopt_t;
+      return std::nullopt;
     }
   }
 

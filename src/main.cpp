@@ -2,9 +2,9 @@
 #include <plog/Log.h>
 #include <plog/Appenders/ConsoleAppender.h>
 
-#include "audio/jack.h"
-#include "audio/midi.h"
-#include "ui/mainui.h"
+#include "core/audio/jack.hpp"
+#include "core/audio/midi.hpp"
+#include "core/ui/mainui.hpp"
 #include "modules/tape.h"
 #include "modules/mixer.h"
 #include "modules/super-saw-synth.h"

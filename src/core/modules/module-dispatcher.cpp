@@ -5,6 +5,7 @@
 namespace module {
 namespace detail {
 bool isShiftPressed() {
+  GLOB.
   return GLOB.ui.keys[ui::K_SHIFT];
 }
 

@@ -15,10 +15,9 @@ template<typename ...Args>
 class EventDispatcher {
 public:
 
-  using handler_type = std::function<void(Args...)>
-    Dispatcher() {
-    LOGD << "new dispatcher";
-  };
+  using handler_type = std::function<void(Args...)>;
+
+  EventDispatcher() = default;
 
   uint add(handler_type handler) {
     handlers.push_back(handler);

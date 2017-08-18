@@ -12,7 +12,9 @@
 
 #include <plog/Log.h>
 
-#include "module.h"
+#include "core/modules/module.hpp"
+
+namespace top1 {
 
 using FaustDSP = dsp;
 
@@ -40,6 +42,7 @@ public:
       boxPrefix.append(label).append("/");
     }
   }
+
   void openHorizontalBox(const char* label) override {
     if (atRoot) {
       atRoot = false;
@@ -206,3 +209,5 @@ protected:
    */
   virtual void postBuffers(uint nframes);
 };
+
+} // top1

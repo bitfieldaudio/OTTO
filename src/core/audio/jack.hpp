@@ -8,7 +8,7 @@
 
 #include <jack/jack.h>
 
-#include "core/events.h"
+#include "util/event.hpp"
 
 class JackAudio {
 private:

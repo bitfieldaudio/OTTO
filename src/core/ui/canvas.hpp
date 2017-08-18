@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../util/typedefs.h"
+#include "util/typedefs.hpp"
 
 #include <functional>
 #include <type_traits>
@@ -8,10 +8,9 @@
 #include <nanovg/nanovg.h>
 #include <nanocanvas/NanoCanvas.h>
 
-#include "../util/vec.h"
-#include "../utils.h"
+#include "util/vec.hpp"
 
-namespace drawing {
+namespace ui::drawing {
 
 using NanoCanvas::HorizontalAlign;
 using NanoCanvas::VerticalAlign;
@@ -20,12 +19,13 @@ using NanoCanvas::TextStyle;
 using NanoCanvas::Font;
 using Winding = NanoCanvas::Canvas::Winding;
 
-// #Markdown `in` comment ´s´ _d_
 struct Point {
   float x, y;
 
   Point() : Point(0, 0) {}
   Point(float x, float y) : x (x), y (y) {}
+
+  // cppcheck-suppress noExplicitConstructor
   Point(top1::vec v) : x (v.x), y (v.y) {}
 
   Point rotate(float rad) const {
@@ -57,6 +57,8 @@ struct Size {
 
   Size() : Size(0, 0) {}
   Size(float w, float h) : w (w), h (h) {};
+
+  // cppcheck-suppress noExplicitConstructor
   Size(top1::vec v) : w (v.x), h (v.y) {};
 
   Size swapWH() const {return {h, w};}
@@ -69,18 +71,21 @@ struct Size {
 
 struct Colour {
 
-  byte r;
-  byte g;
-  byte b;
-  byte a = 0xFF;
+  uint8_t r;
+  uint8_t g;
+  uint8_t b;
+  uint8_t a = 0xFF;
 
   Colour(float, float, float, float a = 1);
+
+  // cppcheck-suppress noExplicitConstructor
   Colour(uint32 data) {
-    r = byte((data >> 16) & 0x0000FF);
-    g = byte((data >> 8) & 0x0000FF);
-    b = byte((data) & 0x0000FF);
+    r = uint8_t((data >> 16) & 0x0000FF);
+    g = uint8_t((data >> 8) & 0x0000FF);
+    b = uint8_t((data) & 0x0000FF);
     a = 0xFF;
   };
+
   Colour();
 
   Colour mix(Colour c, float ratio) const;
@@ -100,28 +105,28 @@ inline Colour::Colour() : Colour(244,0,0) {}
 
 inline Colour Colour::mix(Colour c, float ratio) const {
   Colour ret;
-  ret.r = top1::withBounds<byte>(0, 255, r + (c.r - r ) * ratio);
-  ret.g = top1::withBounds<byte>(0, 255, g + (c.g - g ) * ratio);
-  ret.b = top1::withBounds<byte>(0, 255, b + (c.b - b ) * ratio);
-  ret.a = top1::withBounds<byte>(0, 255, a + (c.a - a ) * ratio);
+  ret.r = std::clamp<uint8_t>(r + (c.r - r ) * ratio, 0x00, 0xFF);
+  ret.g = std::clamp<uint8_t>(g + (c.g - g ) * ratio, 0x00, 0xFF);
+  ret.b = std::clamp<uint8_t>(b + (c.b - b ) * ratio, 0x00, 0xFF);
+  ret.a = std::clamp<uint8_t>(a + (c.a - a ) * ratio, 0x00, 0xFF);
   return ret;
 }
 
 inline Colour Colour::dim(float amount) const {
   float dim = 1 - amount;
   Colour ret;
-  ret.r = top1::withBounds<byte>(0, 255, r * dim);
-  ret.g = top1::withBounds<byte>(0, 255, g * dim);
-  ret.b = top1::withBounds<byte>(0, 255, b * dim);
+  ret.r = std::clamp<uint8_t>(r * dim, 0x00, 0xFF);
+  ret.g = std::clamp<uint8_t>(g * dim, 0x00, 0xFF);
+  ret.b = std::clamp<uint8_t>(b * dim, 0x00, 0xFF);
   ret.a = a;
   return ret;
 }
 
 inline Colour Colour::brighten(float amount) const {
   Colour ret;
-  ret.r = top1::withBounds<byte>(0, 255, r + (255 - r) * amount);
-  ret.g = top1::withBounds<byte>(0, 255, g + (255 - g) * amount);
-  ret.b = top1::withBounds<byte>(0, 255, b + (255 - b) * amount);
+  ret.r = std::clamp<uint8_t>(r + (255 - r) * amount, 0x00, 0xFF);
+  ret.g = std::clamp<uint8_t>(g + (255 - g) * amount, 0x00, 0xFF);
+  ret.b = std::clamp<uint8_t>(b + (255 - b) * amount, 0x00, 0xFF);
   ret.a = a;
   return ret;
 }
@@ -130,6 +135,7 @@ struct MainColour : public Colour {
 
   const Colour dimmed;
 
+  // cppcheck-suppress noExplicitConstructor
   MainColour(Colour basic) :
     Colour (basic),
     dimmed (basic.dim(0)) {}
@@ -138,6 +144,7 @@ struct MainColour : public Colour {
     Colour (basic),
     dimmed (dimmed) {}
 
+  // cppcheck-suppress noExplicitConstructor
   MainColour(uint32 basic) :
     Colour (basic),
     dimmed (dim(0.1)) {}
@@ -401,4 +408,4 @@ public:
   }
 };
 
-}
+} // ui::drawing

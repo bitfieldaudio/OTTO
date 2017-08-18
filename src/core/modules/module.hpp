@@ -10,17 +10,16 @@
 #include <limits>
 #include <plog/Log.h>
 
-#include "utils.h"
-#include "util/tree.h"
-#include "util/poly-ptr.h"
+#include "util/tree.hpp"
+#include "util/poly-ptr.hpp"
 
 namespace module {
 
-template<class T> struct isValidFieldType { static constexpr bool value = false; };
-template<> struct isValidFieldType<float> { static constexpr bool value = true; };
-template<> struct isValidFieldType<bool> { static constexpr bool value = true; };
-template<> struct isValidFieldType<int> { static constexpr bool value = true; };
-template<> struct isValidFieldType<std::string> { static constexpr bool value = true; };
+  template<class T> struct isValidFieldType : std::true_type {};
+template<> struct isValidFieldType<float> {};
+template<> struct isValidFieldType<bool> {};
+template<> struct isValidFieldType<int> {};
+template<> struct isValidFieldType<std::string> {};
 
 class Field {
 public:
@@ -109,14 +108,17 @@ public:
   virtual float inc() {
     return set(value + step);
   }
+
   virtual float dec() {
     return set(value - step);
   }
+
   float set(float newVal) override {
-    value = top1::withBounds(min, max, newVal);
+    value = std::clamp(newVal, min, max);
     changed();
     return value;
   }
+
   void reset() override {
     value = init;
     changed();
@@ -167,7 +169,7 @@ public:
     return set(value - step);
   }
   int set(int newVal) override {
-    value = top1::withBounds(min, max, newVal);
+    value = std::clamp(newVal, min, max);
     changed();
     return value;
   }
