@@ -1,7 +1,7 @@
 #include "../testing.h"
 
-#include "util/sndfile.h"
-#include "util/dyn-array.h"
+#include "util/sndfile.hpp"
+#include "util/dyn-array.hpp"
 
 TEST_CASE("Persistance of SndFile header information", "[SndFile]") {
   using Sf = top1::BasicSndFile<float, 2>;

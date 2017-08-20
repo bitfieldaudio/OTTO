@@ -6,268 +6,254 @@
 
 #include <jack/jack.h>
 #include <jack/midiport.h>
+#include <fmt/format.h>
 #include <plog/Log.h>
 
 #include "core/globals.hpp"
 #include "util/event.hpp"
 
-static void jackError(const char* s) {
-  LOGE << "JACK: " << s;
-}
+namespace top1::audio {
 
-static void jackLogInfo(const char* s) {
-  LOGI << "JACK: " << s;
-}
+  static void jackError(const char* s) {
+    LOGE << "JACK: " << s;
+  }
 
-void JackAudio::init() {
-  client = jack_client_open(CLIENT_NAME.c_str(), JackNullOption, &jackStatus);
+  static void jackLogInfo(const char* s) {
+    LOGI << "JACK: " << s;
+  }
 
-  if ((!jackStatus) & JackServerStarted) {
-    LOGF << "Failed to start jack server";
+  void JackAudio::init() {
+    client = jack_client_open(clientName.c_str(), JackNullOption, &jackStatus);
+
+    if ((!jackStatus) & JackServerStarted) {
+      LOGF << "Failed to start jack server";
+      GLOB.exit();
+      return;
+    }
+
+    LOGI << "Jack server started";
+    LOGD << "Jack client status: " << jackStatus;
+
+    jack_set_process_callback(client,
+      [](jack_nframes_t nframes, void *arg) {
+        ((JackAudio*)arg)->process(nframes);
+        return 0;
+      }, this);
+
+    jack_set_sample_rate_callback(client,
+      [](jack_nframes_t nframes, void *arg) {
+        ((JackAudio*)arg)->samplerateCallback(nframes);
+        return 0;
+      }, this);
+
+    jack_set_buffer_size_callback(client,
+      [](jack_nframes_t nframes, void *arg) {
+        ((JackAudio*)arg)->buffersizeCallback(nframes);
+        return 0;
+      }, this);
+
+    jack_set_error_function(jackError);
+    jack_set_info_function(jackLogInfo);
+
+    jack_on_shutdown(client,
+      [] (void *arg) {
+        ((JackAudio*) arg)->exit();
+      }, this);
+
+    bufferSize = jack_get_buffer_size(client);
+
+    if (jack_activate(client)) {
+      LOGF << "Cannot activate JACK client";
+      GLOB.exit();
+      return;
+    }
+
+    setupPorts();
+
+    LOGI << "Initialized JackAudio";
+  }
+
+  void JackAudio::startProcess() {
+    isProcessing = true;
+  }
+
+  void JackAudio::exit() {
+    LOGI << "Closing Jack client";
+    jack_client_close(client);
     GLOB.exit();
-    return;
   }
 
-  LOGI << "Jack server started";
-  LOGD << "Jack client status: " << jackStatus;
-
-  jack_set_process_callback(
-    client,
-    [](jack_nframes_t nframes, void *arg) {
-      ((JackAudio*)arg)->process(nframes);
-      return 0;
-    }, this);
-
-  jack_set_sample_rate_callback(
-    client,
-    [](jack_nframes_t nframes, void *arg) {
-      ((JackAudio*)arg)->samplerateCallback(nframes);
-      return 0;
-    }, this);
-
-  jack_set_buffer_size_callback(
-    client,
-    [](jack_nframes_t nframes, void *arg) {
-      ((JackAudio*)arg)->buffersizeCallback(nframes);
-      return 0;
-    }, this);
-
-  jack_set_error_function(jackError);
-  jack_set_info_function(jackLogInfo);
-
-  jack_on_shutdown(client,
-   [] (void *arg) {
-     ((JackAudio*) arg)->exit();
-   }, this);
-
-  bufferSize = jack_get_buffer_size(client);
-
-  if (jack_activate(client)) {
-    LOGF << "Cannot activate JACK client";
-    GLOB.exit();
-    return;
+  void JackAudio::samplerateCallback(uint srate) {
+    LOGI << fmt::format("Jack changed the sample rate to {}", srate);
+    GLOB.samplerate = srate;
+    GLOB.events.samplerateChanged.runAll(srate);
   }
 
-  setupPorts();
-
-  LOGI << "Initialized JackAudio";
-}
-
-void JackAudio::startProcess() {
-  isProcessing = true;
-}
-
-void JackAudio::exit() {
-  LOGI << "Closing Jack client";
-  jack_client_close(client);
-  GLOB.exit();
-}
-
-void JackAudio::samplerateCallback(uint srate) {
-  LOGI << fmt::format("Jack changed the sample rate to {}", srate);
-  GLOB.samplerate = srate;
-  GLOB.events.samplerateChanged(srate);
-}
-
-void JackAudio::buffersizeCallback(uint buffsize) {
-  LOGI << fmt::format("Jack changed the buffer size to {}", buffsize);
-  bufferSize = buffsize;
-  GLOB.events.bufferSizeChanged(buffsize);
-}
-
-void JackAudio::setupPorts() {
-
-  // Audio ports
-  ports.input = jack_port_register(
-    client, "input", JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0);
-
-  if (ports.input == NULL) {
-    LOGF << "Couldn't register input port";
-    GLOB.exit();
-    return;
+  void JackAudio::buffersizeCallback(uint buffsize) {
+    LOGI << fmt::format("Jack changed the buffer size to {}", buffsize);
+    bufferSize = buffsize;
+    GLOB.events.bufferSizeChanged.runAll(buffsize);
   }
 
-  ports.outL = jack_port_register(
-    client, "outLeft", JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
-  ports.outR = jack_port_register(
-    client, "outRight", JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
+  void JackAudio::setupPorts() {
 
-  auto inputs  = findPorts(JackPortIsPhysical | JackPortIsOutput);
-  auto outputs = findPorts(JackPortIsPhysical | JackPortIsInput);
+    // Audio ports
+    ports.input = jack_port_register(
+      client, "input", JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0);
 
-  if (inputs.empty()) {
-    LOGF << "Couldn't find physical input port";
-    GLOB.exit();
-    return;
-  }
-  if (outputs.empty()) {
-    LOGF << "Couldn't find physical output ports";
-    GLOB.exit();
-    return;
-  }
+    if (ports.input == NULL) {
+      LOGF << "Couldn't register input port";
+      GLOB.exit();
+      return;
+    }
 
-  bool s;
+    ports.outL = jack_port_register(
+      client, "outLeft", JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
+    ports.outR = jack_port_register(
+      client, "outRight", JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
 
-  s = connectPorts(jack_port_name(ports.input), inputs[0]);
-  if (!s) {GLOB.exit(); return;}
+    auto inputs  = findPorts(JackPortIsPhysical | JackPortIsOutput);
+    auto outputs = findPorts(JackPortIsPhysical | JackPortIsInput);
 
-  s = connectPorts(outputs[0 % outputs.size()], jack_port_name(ports.outL));
-  if (!s) {GLOB.exit(); return;}
+    if (inputs.empty()) {
+      LOGF << "Couldn't find physical input port";
+      GLOB.exit();
+      return;
+    }
+    if (outputs.empty()) {
+      LOGF << "Couldn't find physical output ports";
+      GLOB.exit();
+      return;
+    }
 
-  s = connectPorts(outputs[1 % outputs.size()], jack_port_name(ports.outR));
-  if (!s) {GLOB.exit(); return;}
+    bool s;
+
+    s = connectPorts(jack_port_name(ports.input), inputs[0]);
+    if (!s) {GLOB.exit(); return;}
+
+    s = connectPorts(outputs[0 % outputs.size()], jack_port_name(ports.outL));
+    if (!s) {GLOB.exit(); return;}
+
+    s = connectPorts(outputs[1 % outputs.size()], jack_port_name(ports.outR));
+    if (!s) {GLOB.exit(); return;}
 
 
-  // Midi ports
-  ports.midiIn = jack_port_register(
-    client, "midiIn", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
+    // Midi ports
+    ports.midiIn = jack_port_register(
+      client, "midiIn", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
 
-  if (ports.midiIn == NULL) {
-    LOGF << "Couldn't register midi_in port";
-    GLOB.exit();
-    return;
-  }
+    if (ports.midiIn == NULL) {
+      LOGF << "Couldn't register midi_in port";
+      GLOB.exit();
+      return;
+    }
 
-  ports.midiOut = jack_port_register(
-    client, "midiOut", JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput, 0);
+    ports.midiOut = jack_port_register(
+      client, "midiOut", JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput, 0);
 
-  auto midiIn  = findPorts(JackPortIsPhysical | JackPortIsOutput, PortType::MIDI);
-  auto midiOut = findPorts(JackPortIsPhysical | JackPortIsInput, PortType::MIDI);
+    auto midiIn  = findPorts(JackPortIsPhysical | JackPortIsOutput, PortType::Midi);
+    auto midiOut = findPorts(JackPortIsPhysical | JackPortIsInput, PortType::Midi);
 
-  if (midiIn.empty()) {
-    LOGE << "Couldn't find physical midi input port";
-    return;
-  }
-  if (midiOut.empty()) {
-    LOGE << "Couldn't find physical midi output port";
-    return;
-  }
+    if (midiIn.empty()) {
+      LOGE << "Couldn't find physical midi input port";
+      return;
+    }
+    if (midiOut.empty()) {
+      LOGE << "Couldn't find physical midi output port";
+      return;
+    }
 
-  s = connectPorts(jack_port_name(ports.midiIn), midiIn[0]);
-  if (!s) {
-    LOGE << "Couldn't connect midi input";
-  }
+    s = connectPorts(jack_port_name(ports.midiIn), midiIn[0]);
+    LOGE_IF(!s) << "Couldn't connect midi input";
 
-  s = connectPorts(midiOut[0], jack_port_name(ports.midiOut));
-  if (!s) {
-    LOGE << "Couldn't connect midi output";
-  }
-}
-
-std::vector<std::string> JackAudio::findPorts(int criteria, PortType type) {
-  const char **ports = jack_get_ports(
-    client,
-    NULL,
-    (type == PortType::Audio) ? "audio" : "midi",
-    criteria);
-  std::vector<std::string> ret;
-  if (ports == nullptr) return ret;
-  for (int i = 0; ports[i] != nullptr; i++) {
-    ret.push_back(ports[i]);
-  }
-  return ret;
-};
-
-// Helper function for connections
-bool JackAudio::connectPorts(std::string src, std::string dest) {
-  return not jack_connect(client, dest.c_str(), src.c_str());
-}
-
-void shutdown(void *arg) {
-  LOGI << "JACK shut down, exiting";
-}
-
-void JackAudio::process(uint nframes) {
-  if ( not (isProcessing && GLOB.running())) return;
-  if ( nframes > bufferSize) {
-    LOGE << "Jack requested more frames than expected";
-    return;
+    s = connectPorts(midiOut[0], jack_port_name(ports.midiOut));
+    LOGE_IF(!s) << "Couldn't connect midi output";
   }
 
-  float *outLData = (float *) jack_port_get_buffer(ports.outL, nframes);
-  float *outRData = (float *) jack_port_get_buffer(ports.outR, nframes);
-  float *inData = (float *) jack_port_get_buffer(ports.input, nframes);
+  std::vector<std::string> JackAudio::findPorts(int criteria, PortType type) {
+    const char **ports = jack_get_ports(client, nullptr,
+      (type == PortType::Audio) ? "audio" : "midi", criteria);
+    std::vector<std::string> ret;
+    if (ports == nullptr) return ret;
+    for (int i = 0; ports[i] != nullptr; i++) {
+      ret.emplace_back(ports[i]);
+    }
+    return ret;
+  };
 
-  GLOB.audioData.outL.clear();
-  GLOB.audioData.outR.clear();
-  GLOB.audioData.input.clear();
-  GLOB.audioData.proc.clear();
-
-  GLOB.
-
-  for (uint i = 0; i < nframes; i++) {
-    GLOB.audioData.input[i] = inData[i];
+  // Helper function for connections
+  bool JackAudio::connectPorts(std::string src, std::string dest) {
+    return !jack_connect(client, dest.c_str(), src.c_str());
   }
 
-  // Midi events
-  {
-    GLOB.midiEvents.clear();
+  void shutdown(void *arg) {
+    LOGI << "JACK shut down, exiting";
+  }
 
-    // Get new ones
+  void JackAudio::process(uint nframes) {
+    if (!(isProcessing && GLOB.running())) return;
+    if (nframes > bufferSize) {
+      LOGE << "Jack requested more frames than expected";
+      return;
+    }
+
+    // Clear the old data
+    processData.clear();
+    processData.nframes = nframes;
+
+    float* outLData = (float*) jack_port_get_buffer(ports.outL, nframes);
+    float* outRData = (float*) jack_port_get_buffer(ports.outR, nframes);
+    float* inData = (float*) jack_port_get_buffer(ports.input, nframes);
+
+    // Read audio input into local buffer
+    // TODO: This shouldn't be necessary
+    std::copy(inData, inData + nframes, processData.audio.input.begin());
+
+    // Get new midi events
     void *midiBuf = jack_port_get_buffer(ports.midiIn, nframes);
     uint nevents = jack_midi_get_event_count(midiBuf);
 
     jack_midi_event_t event;
     for (uint i = 0; i < nevents; i++) {
+      using namespace midi;
+
       jack_midi_event_get(&event, midiBuf, i);
-      MidiEvent mEvent;
+      midi::MidiEvent mEvent;
 
       mEvent.channel = event.buffer[0] & 0b00001111;
       mEvent.data = event.buffer + 1;
       mEvent.time = event.time;
 
-      byte type = event.buffer[0] >> 4;
+      MidiEvent::byte type = event.buffer[0] >> 4;
       switch (type) {
       case MidiEvent::NOTE_OFF:
-        // LOGD << "NOTE_OFF";
         mEvent.type = MidiEvent::NOTE_OFF;
-        GLOB.midiEvents.emplace_back(new NoteOffEvent(mEvent));
+        processData.midi.emplace_back(new NoteOffEvent(mEvent));
         break;
       case MidiEvent::NOTE_ON:
-        // LOGD << "NOTE_ON";
         mEvent.type = MidiEvent::NOTE_ON;
-        GLOB.midiEvents.emplace_back(new NoteOnEvent(mEvent));
+        processData.midi.emplace_back(new NoteOnEvent(mEvent));
         break;
       case MidiEvent::CONTROL_CHANGE:
-        // LOGD << "CONTROL_CHANGE";
         mEvent.type = MidiEvent::CONTROL_CHANGE;
-        GLOB.midiEvents.emplace_back(new ControlChangeEvent(mEvent));
+        processData.midi.emplace_back(new ControlChangeEvent(mEvent));
         break;
       }
     }
+
+    GLOB.tapedeck.preProcess(processData);
+    GLOB.synth.process(processData);
+    GLOB.drums.process(processData);
+    GLOB.effect.process(processData);
+    GLOB.tapedeck.postProcess(processData);
+    GLOB.mixer.process(processData);
+    GLOB.metronome.process(processData);
+
+    for (uint i = 0; i < nframes; i++) {
+      outLData[i] = processData.audio.outL[i];
+      outRData[i] = processData.audio.outR[i];
+    }
+
   }
 
-  GLOB.tapedeck.preProcess(nframes);
-  GLOB.synth.process(nframes);
-  GLOB.drums.process(nframes);
-  GLOB.effect.process(nframes);
-  GLOB.tapedeck.postProcess(nframes);
-  GLOB.mixer.process(nframes);
-  GLOB.metronome.process(nframes);
-
-  for (uint i = 0; i < nframes; i++) {
-    outLData[i] = GLOB.audioData.outL[i];
-    outRData[i] = GLOB.audioData.outR[i];
-  }
-
-}
+} // top1::audio

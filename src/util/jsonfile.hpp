@@ -4,7 +4,7 @@
 #include <string>
 #include <plog/Log.h>
 
-#include "tree.hpp"
+#include "util/tree.hpp"
 
 namespace top1 {
 
@@ -17,8 +17,8 @@ public:
 
   JsonFile() {}
 
-  JsonFile(std::string path) : JsonFile() {
-    path = path;
+  JsonFile(const std::string& _path) : JsonFile() {
+    path = _path;
   }
 
   JsonFile(JsonFile&) = delete;

@@ -2,34 +2,37 @@
 
 #include "core/ui/base.hpp"
 
-class MainUI : public ui::Screen {
+namespace top1::ui {
 
-  static void mainRoutine();
-  ui::
+  class MainUI : public Screen {
 
-  bool globKeyPre(ui::Key key);
-  bool globKeyPost(ui::Key key);
+    static void mainRoutine();
 
-public:
+    bool globKeyPre(Key key);
+    bool globKeyPost(Key key);
 
-  ui::PressedKeys keys;
+  public:
 
-  MainUI() :
-    currentScreen (new ui::DefaultScreen){}
+    ui::PressedKeys keys;
 
-  MainUI(MainUI&) = delete;
-  MainUI(MainUI&&) = delete;
+    MainUI() :
+      currentScreen (new DefaultScreen){}
 
-  void init() override;
-  void exit() override;
+    MainUI(MainUI&) = delete;
+    MainUI(MainUI&&) = delete;
 
-  ui::Screen::ptr currentScreen;
+    void init() override;
+    void exit() override;
 
-  std::thread uiThread;
+    Screen::ptr currentScreen;
 
-  void display(ui::Screen::ptr screen);
+    std::thread uiThread;
 
-  void draw(drawing::Canvas& ctx) override;
-  bool keypress(ui::Key key) override;
-  bool keyrelease(ui::Key key) override;
-};
+    void display(Screen::ptr screen);
+
+    void draw(drawing::Canvas& ctx) override;
+    bool keypress(Key key) override;
+    bool keyrelease(Key key) override;
+  };
+
+} // top1::ui

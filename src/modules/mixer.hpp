@@ -1,53 +1,59 @@
 #pragma once
 
-#include "../module.h"
-#include "../ui/base.h"
-#include "../util/tapebuffer.h"
+#include "core/modules/module.hpp"
+#include "core/ui/canvas.hpp"
+#include "core/ui/module-ui.hpp"
 
-class MixerScreen;
+#include "util/audio.hpp"
 
-class MixerModule : public module::Module {
-  std::shared_ptr<MixerScreen> screen;
-public:
+namespace top1::module {
+  class MixerScreen;
 
-  struct Data : module::Data {
-    struct TrackInfo : module::Data {
-      module::Opt<float> level = {this, "LEVEL", 0.5, 0, 0.99, 0.01};
-      module::Opt<float> pan = {this, "PAN", 0, -0.9, 0.9, 0.1};
-      module::Opt<bool> muted = {this, "MUTE", false};
-    } track[4];
+  class MixerModule : public module::Module {
+    std::shared_ptr<MixerScreen> screen;
+  public:
 
-    Data() {
-      subGroup("TRACK1", track[0]);
-      subGroup("TRACK2", track[1]);
-      subGroup("TRACK3", track[2]);
-      subGroup("TRACK4", track[3]);
-    }
-  } data;
+    struct Data : module::Data {
+      struct TrackInfo : module::Data {
+        module::Opt<float> level = {this, "LEVEL", 0.5, 0, 0.99, 0.01};
+        module::Opt<float> pan = {this, "PAN", 0, -0.9, 0.9, 0.1};
+        module::Opt<bool> muted = {this, "MUTE", false};
+      } track[4];
 
-  top1::AudioAverage trackGraph[4];
+      Data() {
+        subGroup("TRACK1", track[0]);
+        subGroup("TRACK2", track[1]);
+        subGroup("TRACK3", track[2]);
+        subGroup("TRACK4", track[3]);
+      }
+    } data;
 
-  MixerModule();
+    audio::Graph trackGraph[4];
 
-  void display();
+    MixerModule();
 
-  void process(uint nframes);
-};
+    void display();
 
-class MixerScreen : public ui::ModuleScreen<MixerModule> {
+    void process(audio::ProcessData&);
+  };
 
-  enum {
-    PAN,
-    LEVEL
-  } numDisplay = LEVEL;
+  class MixerScreen : public ui::ModuleScreen<MixerModule> {
 
-  virtual void draw(drawing::Canvas& ctx) override;
+    enum {
+      Pan,
+      Level
+    } numDisplay = Level;
 
-  virtual bool keypress(ui::Key key) override;
-  virtual bool keyrelease(ui::Key key) override;
+    virtual void draw(ui::drawing::Canvas& ctx) override;
 
-  void drawMixerSegment(drawing::Canvas& ctx, int track, float x, float y);
+    virtual bool keypress(ui::Key key) override;
+    virtual bool keyrelease(ui::Key key) override;
 
-public:
-  MixerScreen(MixerModule *module) : ui::ModuleScreen<MixerModule>(module) {}
-};
+    // TODO: Convert to Widget
+    void drawMixerSegment(ui::drawing::Canvas& ctx, int track, float x, float y);
+
+  public:
+    MixerScreen(MixerModule *module) : ui::ModuleScreen<MixerModule>(module) {}
+  };
+
+} // top1::module

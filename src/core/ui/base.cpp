@@ -1,8 +1,7 @@
-#include "ui/base.h"
-#include "utils.h"
-#include "../globals.h"
+#include "core/ui/base.hpp"
+#include "core/ui/drawing.hpp"
 
-namespace ui {
+namespace top1::ui {
 
 void DefaultScreen::draw(drawing::Canvas& ctx) {
   using namespace drawing;

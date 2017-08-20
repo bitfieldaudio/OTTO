@@ -14,7 +14,7 @@
 
 #include "core/modules/module.hpp"
 
-namespace top1 {
+namespace top1::audio {
 
 using FaustDSP = dsp;
 
@@ -173,8 +173,9 @@ protected:
 
   FaustOptions opts;
 
-  FAUSTFLOAT **inBuffer;
-  FAUSTFLOAT **outBuffer;
+  // Raw faust buffers
+  FAUSTFLOAT** inBuffer;
+  FAUSTFLOAT** outBuffer;
 
 public:
 
@@ -188,11 +189,12 @@ public:
 
   FaustWrapper(dsp *DSP, module::Data *data);
 
-  virtual void process(uint nframes) {
-    prepBuffers(nframes);
-    fDSP->
-      compute(nframes, inBuffer, outBuffer);
-    postBuffers(nframes);
+  virtual void process(audio::ProcessData& data) {
+    prepBuffers(data);
+    // data.audio.proc cannot be used, as faust cannot do in place editing
+    // TODO: only copy the input buffer
+    fDSP-> compute(data.nframes, inBuffer, outBuffer);
+    postBuffers(data);
   }
 
 protected:
@@ -202,12 +204,12 @@ protected:
   /**
    * Copy the relevant data into inBuffer
    */
-  virtual void prepBuffers(uint nframes);
+  virtual void prepBuffers(audio::ProcessData&);
 
   /**
    * Put the data back into the chain
    */
-  virtual void postBuffers(uint nframes);
+  virtual void postBuffers(audio::ProcessData&);
 };
 
 } // top1

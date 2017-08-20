@@ -2,157 +2,141 @@
 
 #include <type_traits>
 
-#include "top1file.h"
+#include "util/top1file.hpp"
+#include "util/audio.hpp"
 
 namespace top1 {
 
-template<typename sample_type, uint _channels>
-class BasicSndFile : public File {
-protected:
+  template<typename sample_type, uint _channels>
+  class BasicSndFile : public File {
+  protected:
 
-  struct WavHeader : public Chunk {
-    ChunkFCC format = "WAVE";
+    struct WavHeader : public Chunk {
+      ChunkFCC format = "WAVE";
 
-    WavHeader() : Chunk("RIFF") {
-      addField(format);
-    }
-  };
-
-  struct WavFmt : public Chunk {
-    u2b audioFormat = 3; // Uncompressed floats
-    u2b numChannels = _channels;
-    u4b sampleRate = 44100;
-    u2b bitsPerSample = sizeof(sample_type) * 8;
-    u4b byteRate = sampleRate * numChannels * bitsPerSample/8;
-    u2b blockAlign = numChannels * bitsPerSample/8;
-    u4b cbSize = 0;
-    WavFmt() : Chunk("fmt ") {
-      addField(audioFormat);
-      addField(numChannels);
-      addField(sampleRate);
-      addField(byteRate);
-      addField(blockAlign);
-      addField(bitsPerSample);
-      addField(cbSize);
+      WavHeader() : Chunk("RIFF") {
+        addField(format);
+      }
     };
-  };
 
-  struct AudioChunk : public Chunk {
-    AudioChunk() : Chunk("data") {};
-  };
+    struct WavFmt : public Chunk {
+      u2b audioFormat = 3; // Uncompressed floats
+      u2b numChannels = _channels;
+      u4b sampleRate = 44100;
+      u2b bitsPerSample = sizeof(sample_type) * 8;
+      u4b byteRate = sampleRate * numChannels * bitsPerSample/8;
+      u2b blockAlign = numChannels * bitsPerSample/8;
+      u4b cbSize = 0;
+      WavFmt() : Chunk("fmt ") {
+        addField(audioFormat);
+        addField(numChannels);
+        addField(sampleRate);
+        addField(byteRate);
+        addField(blockAlign);
+        addField(bitsPerSample);
+        addField(cbSize);
+      };
+    };
 
-  WavHeader wavHeader;
-  WavFmt wavFmt;
-  AudioChunk audioChunk;
+    struct AudioChunk : public Chunk {
+      AudioChunk() : Chunk("data") {};
+    };
 
-public:
+    WavHeader wavHeader;
+    WavFmt wavFmt;
+    AudioChunk audioChunk;
 
-  struct AudioFrame {
+  public:
 
-    const static uint size = sizeof(sample_type) * _channels;
-    sample_type data[_channels];
+    using AudioFrame = audio::AudioFrame<_channels, sample_type>;
 
-    AudioFrame() : data {0} {}
-    AudioFrame(sample_type init) :
-      data {init} {}
+    const static uint channels = _channels;
 
-    sample_type &operator[](uint i) {
-      return data[i];
+    BasicSndFile() : File() {
+      setupChunks();
+      wavHeader.subChunk(wavFmt);
+      wavHeader.subChunk(audioChunk);
+      addChunk(wavHeader);
     }
 
-    const sample_type &operator[](uint i) const {
-      return data[i];
+    BasicSndFile(const std::string& path) : BasicSndFile() {
+      open(path);
     }
 
-  };
+    virtual ~BasicSndFile() {}
 
-  const static uint channels = _channels;
+    BasicSndFile(BasicSndFile&) = delete;
+    BasicSndFile(BasicSndFile&&) = delete;
 
-  BasicSndFile() : File() {
-    setupChunks();
-    wavHeader.subChunk(wavFmt);
-    wavHeader.subChunk(audioChunk);
-    addChunk(wavHeader);
-  }
+    void seek(uint pos) {
+      fseek(audioChunk.offset + 8 + pos * AudioFrame::size);
+    }
 
-  BasicSndFile(std::string path) : BasicSndFile() {
-    open(path);
-  }
+    std::size_t position() {
+      return (rpos() - audioChunk.offset - 8) / AudioFrame::size;
+    }
 
-  virtual ~BasicSndFile() {}
+    std::size_t size() const {
+      return audioChunk.size / AudioFrame::size;
+    }
 
-  BasicSndFile(BasicSndFile&) = delete;
-  BasicSndFile(BasicSndFile&&) = delete;
+    uint read(AudioFrame* data, uint nframes) {
+      return read(reinterpret_cast<float *>(data), nframes);
+    }
 
-  void seek(uint pos) {
-    fseek(audioChunk.offset + 8 + pos * AudioFrame::size);
-  }
+    uint write(AudioFrame* data, uint nframes) {
+      return write(reinterpret_cast<float *>(data), nframes);
+    }
 
-  std::size_t position() {
-    return (rpos() - audioChunk.offset - 8) / AudioFrame::size;
-  }
-
-  std::size_t size() const {
-    return audioChunk.size / AudioFrame::size;
-  }
-
-  uint read(AudioFrame* data, uint nframes) {
-    return read(reinterpret_cast<float *>(data), nframes);
-  }
-
-  uint write(AudioFrame* data, uint nframes) {
-    return write(reinterpret_cast<float *>(data), nframes);
-  }
-
-  uint read(float* data, uint nframes) {
-    uint framesRead = 0;
-    try {
-      for (uint i = 0; i < nframes; ++i) {
-        readBytes(data + i * channels, channels);
-        ++framesRead;
+    uint read(float* data, uint nframes) {
+      uint framesRead = 0;
+      try {
+        for (uint i = 0; i < nframes; ++i) {
+          readBytes(data + i * channels, channels);
+          ++framesRead;
+        }
+      } catch (ReadException e) {
+        if (e.type != e.END_OF_FILE) LOGE << e.message;
       }
-    } catch (ReadException e) {
-      if (e.type != e.END_OF_FILE) LOGE << e.message;
+      fseek(rpos());
+      return framesRead;
     }
-    fseek(rpos());
-    return framesRead;
-  }
 
-  uint write(float* data, uint nframes) {
-    uint framesWritten = 0;
-    try {
-      for (uint i = 0; i < nframes; ++i) {
-        writeBytes(data + i * channels, channels);
-        ++framesWritten;
+    uint write(float* data, uint nframes) {
+      uint framesWritten = 0;
+      try {
+        for (uint i = 0; i < nframes; ++i) {
+          writeBytes(data + i * channels, channels);
+          ++framesWritten;
+        }
+      } catch (ReadException e) {
+        if (e.type != e.END_OF_FILE) LOGE << e.message;
       }
-    } catch (ReadException e) {
-      if (e.type != e.END_OF_FILE) LOGE << e.message;
+      uint newSize = wpos() - audioChunk.offset - 8;
+      if (newSize > audioChunk.size) {
+        wavHeader.size += newSize - audioChunk.size;
+        audioChunk.size = newSize;
+      }
+      fseek(wpos());
+      return framesWritten;
+
     }
-    uint newSize = wpos() - audioChunk.offset - 8;
-    if (newSize > audioChunk.size) {
-      wavHeader.size += newSize - audioChunk.size;
-      audioChunk.size = newSize;
+
+    uint &samplerate = wavFmt.sampleRate;
+
+    void open(const std::string& path) override {
+      File::open(path);
+      seek(0);
     }
-    fseek(wpos());
-    return framesWritten;
 
-  }
+  protected:
 
-  uint &samplerate = wavFmt.sampleRate;
+    virtual void setupChunks() {}
 
-  void open(std::string path) override {
-    File::open(path);
-    seek(0);
-  }
+  };
 
-protected:
-
-  virtual void setupChunks() {}
-
-};
-
-template<uint channels>
-using SndFile = BasicSndFile<float, channels>;
+  template<uint channels>
+  using SndFile = BasicSndFile<float, channels>;
 
 
 }

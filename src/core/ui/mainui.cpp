@@ -1,78 +1,80 @@
-#include "util/typedefs.hpp"
+#include "mainui.hpp"
 
-#include "core/ui/base.h"
-#include "mainui.h"
-#include "utils.h"
-#include "core/globals.h"
+#include "core/globals.hpp"
 
 #include <thread>
 
-void MainUI::display(ui::Screen::ptr screen) {
-  currentScreen->exit();
-  currentScreen = screen;
-  currentScreen->init();
-}
+namespace top1::ui {
 
-void MainUI::init() {
-  uiThread = std::thread(MainUI::mainRoutine);
-}
+  void MainUI::display(ui::Screen::ptr screen) {
+    currentScreen->exit();
+    currentScreen = screen;
+    currentScreen->init();
+  }
 
-void MainUI::exit() {
-  uiThread.join();
-}
+  void MainUI::init() {
+    uiThread = std::thread(MainUI::mainRoutine);
+  }
 
-void MainUI::draw(drawing::Canvas& ctx) {
-  currentScreen->draw(ctx);
-}
+  void MainUI::exit() {
+    uiThread.join();
+  }
 
-bool MainUI::keypress(ui::Key key) {
-  keys[key] = true;
-  if (globKeyPre(key)) return true;
-  if (currentScreen->keypress(key)) return true;
-  return globKeyPost(key);
-}
+  void MainUI::draw(drawing::Canvas& ctx) {
+    currentScreen->draw(ctx);
+  }
 
-bool MainUI::keyrelease(ui::Key key) {
-  keys[key] = false;
-  return currentScreen->keyrelease(key);
-}
+  bool MainUI::keypress(ui::Key key) {
+    keys[key] = true;
+    if (globKeyPre(key)) return true;
+    if (currentScreen->keypress(key)) return true;
+    return globKeyPost(key);
+  }
 
-bool MainUI::globKeyPost(ui::Key key) {
-  switch (key) {
-  case ui::K_PLAY:
-    if (GLOB.tapedeck.state.playing()) {
-      GLOB.tapedeck.state.stop();
-    } else {
-      GLOB.tapedeck.state.play();
+  bool MainUI::keyrelease(ui::Key key) {
+    keys[key] = false;
+    return currentScreen->keyrelease(key);
+  }
+
+  bool MainUI::globKeyPost(ui::Key key) {
+    switch (key) {
+    case ui::K_PLAY:
+      if (GLOB.tapedeck.state.playing()) {
+        GLOB.tapedeck.state.stop();
+      } else {
+        GLOB.tapedeck.state.play();
+      }
+      return true;
+    default:
+      return false;
+    }
+  }
+
+  bool MainUI::globKeyPre(ui::Key key) {
+    using namespace ui;
+    switch (key) {
+    case K_QUIT:
+      GLOB.exit();
+      break;
+    case K_TAPE:
+      GLOB.tapedeck.display();
+      break;
+    case K_MIXER:
+      GLOB.mixer.display();
+      break;
+    case K_SYNTH:
+      GLOB.synth.display();
+      break;
+    case K_DRUMS:
+      GLOB.drums.display();
+      break;
+    case K_METRONOME:
+      GLOB.metronome.display();
+      break;
+    default:
+      return false;
     }
     return true;
   }
-  return false;
-}
 
-bool MainUI::globKeyPre(ui::Key key) {
-  using namespace ui;
-  switch (key) {
-  case K_QUIT:
-    GLOB.exit();
-    break;
-  case K_TAPE:
-    GLOB.tapedeck.display();
-    break;
-  case K_MIXER:
-    GLOB.mixer.display();
-    break;
-  case K_SYNTH:
-    GLOB.synth.display();
-    break;
-  case K_DRUMS:
-    GLOB.drums.display();
-    break;
-  case K_METRONOME:
-    GLOB.metronome.display();
-    break;
-  default:
-    return false;
-  }
-  return true;
-}
+} // top1::ui

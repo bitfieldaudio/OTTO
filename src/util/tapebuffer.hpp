@@ -46,7 +46,8 @@ namespace top1 {
    */
   class TapeBuffer {
   public:
-    using TapeSlice = Section<TapeTime>;
+    using TapeSlice = audio::Section<TapeTime>;
+    using AudioFrame = audio::AudioFrame<4, float>;
     class CompareTapeSlice {
     public:
       bool operator()(const TapeSlice &e1, const TapeSlice &e2) const {return e1.in < e2.in;}
@@ -57,7 +58,7 @@ namespace top1 {
     public:
       bool changed = false;
       TapeSliceSet() {}
-      std::vector<TapeSlice> slicesIn(Section<TapeTime> area) const;
+      std::vector<TapeSlice> slicesIn(audio::Section<TapeTime> area) const;
 
       bool inSlice(TapeTime time) const;
       TapeSlice current(TapeTime time) const;
@@ -107,7 +108,7 @@ namespace top1 {
     struct RingBuffer {
       const static uint SIZE = 262144; // 2^18
       DynArray<AudioFrame> data = DynArray<AudioFrame>(SIZE);
-      Section<int> notWritten;
+      audio::Section<int> notWritten;
       std::atomic_int lengthFW = {0};
       std::atomic_int lengthBW = {0};
       std::atomic_uint playIdx = {0};
@@ -126,6 +127,8 @@ namespace top1 {
     TapeSliceSet trackSlices[4] = {{}, {}, {}, {}};
 
     TapeBuffer();
+    TapeBuffer(TapeBuffer&) = delete;
+    TapeBuffer(TapeBuffer&&) = delete;
 
     void init();
     void exit();

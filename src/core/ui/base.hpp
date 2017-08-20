@@ -4,7 +4,7 @@
 
 #include "core/ui/canvas.hpp"
 
-namespace ui {
+namespace top1::ui {
 
 /**
  * Used for keypresses
@@ -77,8 +77,8 @@ public:
 
 };
 /**
- * A specific view/window.
- * If it belongs to a module, use ModuleScreen.
+ * Represents a view that covers the entire screen
+ * If it belongs to a module, use <ui::ModuleScreen>.
  */
 class Screen : public drawing::Drawable {
 public:

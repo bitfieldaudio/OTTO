@@ -1,49 +1,47 @@
 #pragma once
 
-#include "base.h"
+#include "core/ui/drawing.hpp"
 
-namespace drawing {
-namespace icons {
+namespace top1::ui::drawing::icons {
 
-struct Icon : public SizedDrawable {
-  Colour colour;
-  float lineWidth = 2;
+  struct Icon : public SizedDrawable {
+    Colour colour;
+    float lineWidth = 2;
 
-  virtual void draw(Canvas&) override {};
-};
-
-/// A simple arrow
-struct Arrow : public Icon {
-
-  enum Direction {
-    Up, Down, Left, Right
+    virtual void draw(Canvas&) override {};
   };
 
-  Direction dir = Right;
-  /// Add stop line ->|
-  bool stopped = false;
-  /// Loop arrow - CW for Up/Right, CCW for Down/Left
-  bool looping = false;
-  /// headLength/arrowLength
-  float headRatio = 0.25;
+  /// A simple arrow
+  struct Arrow : public Icon {
 
-  void draw(Canvas&) override;
+    enum Direction {
+      Up, Down, Left, Right
+    };
 
-};
+    Direction dir = Right;
+    /// Add stop line ->|
+    bool stopped = false;
+    /// Loop arrow - CW for Up/Right, CCW for Down/Left
+    bool looping = false;
+    /// headLength/arrowLength
+    float headRatio = 0.25;
 
-/// A musical note
-struct Note : public Icon {
+    void draw(Canvas&) override;
 
-  enum Direction {
-    Right, Left
   };
 
-  Direction dir;
-  /// Whether the head of the note is filled;
-  bool filled = true;
+  /// A musical note
+  struct Note : public Icon {
 
-  void draw(Canvas&) override;
-};
+    enum Direction {
+      Right, Left
+    };
 
-} // namespace icons
-} // namespace drawing
+    Direction dir;
+    /// Whether the head of the note is filled;
+    bool filled = true;
+
+    void draw(Canvas&) override;
+  };
+
+} // top1::ui::drawing::icons

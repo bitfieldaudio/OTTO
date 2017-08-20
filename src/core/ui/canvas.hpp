@@ -8,9 +8,9 @@
 #include <nanovg/nanovg.h>
 #include <nanocanvas/NanoCanvas.h>
 
-#include "util/vec.hpp"
+#include "util/math.hpp"
 
-namespace ui::drawing {
+namespace top1::ui::drawing {
 
 using NanoCanvas::HorizontalAlign;
 using NanoCanvas::VerticalAlign;
@@ -26,7 +26,7 @@ struct Point {
   Point(float x, float y) : x (x), y (y) {}
 
   // cppcheck-suppress noExplicitConstructor
-  Point(top1::vec v) : x (v.x), y (v.y) {}
+  Point(math::vec v) : x (v.x), y (v.y) {}
 
   Point rotate(float rad) const {
     float sn = std::sin(rad);
@@ -49,7 +49,7 @@ struct Point {
   Point operator/(float s) const {return {x / s, y / s};}
   Point operator-() const {return {-x, -y};}
 
-  operator top1::vec() const {return {x, y};}
+  operator math::vec() const {return {x, y};}
 };
 
 struct Size {
@@ -59,14 +59,14 @@ struct Size {
   Size(float w, float h) : w (w), h (h) {};
 
   // cppcheck-suppress noExplicitConstructor
-  Size(top1::vec v) : w (v.x), h (v.y) {};
+  Size(math::vec v) : w (v.x), h (v.y) {};
 
   Size swapWH() const {return {h, w};}
 
   Point center() const {
     return {w / 2.f, h / 2.f};
   }
-  operator top1::vec() const {return {w, h};}
+  operator math::vec() const {return {w, h};}
 };
 
 struct Colour {
@@ -187,8 +187,9 @@ public:
 };
 
 /**
- * Eventually we will get rid of NanoVG,
- * but we want to keep the canvas interface
+ * A modified NanoCanvas interface.
+ *
+ * Allows for usage of <Point> and <Size> classes
  */
 class Canvas : public NanoCanvas::Canvas {
 public:
@@ -398,7 +399,7 @@ public:
     return *this;
   }
 
-  // Debug
+  // Debuging
 
   Canvas& debugDot(Point p, Colour c = 0xFFFF00) {
     beginPath();
@@ -408,4 +409,4 @@ public:
   }
 };
 
-} // ui::drawing
+} // top1::ui::drawing

@@ -1,187 +1,60 @@
 #pragma once
 
-#include <functional>
+#include <cmath>
 
-/*
- * Pattern matching
- * Example:
- * std::string command;
- * int cmdId = match<int>(command)
- *   .c("help", 0)
- *   .c("list", [&] () {
- *     return getIdForArgs(args);
- *   })
- *   .c("add", 2)
- *   .d([&] () {
- *     error = "Unrecognized command"
- *     return 0;
- *   });
- *
- *
- */
+namespace top1::math {
 
-namespace top1 {
-
-template<typename T,
-    typename retType = void,
-    typename cmp = std::equal_to<T>>
-struct matcher {
-
-  const T& obj;
-  bool found = false;
-  retType retVal;
-
-  const cmp compare;
-
-  explicit matcher(const T& obj) : obj (obj), compare () {}
-
-  /// match a case with a lambda
-  matcher& c(const T&, const std::function<retType()>&);
-  matcher& c(const T&, const std::function<retType(const T&)>&);
-  /// match with an in-place expression
-  matcher& c(const T&, retType);
-  /// Default lambda
-  retType d(const std::function<retType()>&);
-  retType d(const std::function<retType(const T&)>&);
-  /// Default value
-  retType d(retType);
-  retType get();
-
-  operator retType() {
-    return get();
-  }
-};
-
-// Specialization for retType = void, since void doesn't have a value
-template<typename T, typename cmp>
-struct matcher<T, void, cmp> {
-
-  const T& obj;
-  bool found = false;
-
-  const cmp compare;
-
-  explicit matcher(const T& obj) : obj (obj), compare () {}
-
-  /// match a case with a lambda
-  matcher& c(const T&, const std::function<void()>&);
-  matcher& c(const T&, const std::function<void(const T&)>&);
-  /// Default lambda
-  void d(const std::function<void()>&);
-  void d(const std::function<void(const T&)>&);
-};
-}
-
-template<typename retType, typename T>
-inline top1::matcher<T, retType> match(const T &t) {
-  return top1::matcher<T, retType>(t);
-}
-
-template<typename T, typename retType, typename cmp>
-inline top1::matcher<T, retType, cmp>& top1::matcher<T, retType, cmp>::c(
-  const T& p, const std::function<retType()>& func) {
-  if (!found && compare(obj, p)) {
-    found = true;
-    retVal = func();
-  }
-  return *this;
-}
-
-template<typename T, typename retType, typename cmp>
-inline top1::matcher<T, retType, cmp>& top1::matcher<T, retType, cmp>::c(
-  const T& p, const std::function<retType(const T&)>& func) {
-  if (!found && compare(obj, p)) {
-    found = true;
-    retVal = func(obj);
-  }
-  return *this;
-}
-
-template<typename T, typename retType, typename cmp>
-inline top1::matcher<T, retType, cmp>& top1::matcher<T, retType, cmp>::c(
-  const T& p, retType r) {
-  if (!found && compare(obj, p)) {
-    found = true;
-    retVal = r;
-  }
-  return *this;
-}
-
-template<typename T, typename retType, typename cmp>
-inline retType top1::matcher<T, retType, cmp>::d(
-  const std::function<retType()>& func) {
-  if (!found) {
-    found = true;
-    retVal = func();
-  }
-  return get();
-}
-
-template<typename T, typename retType, typename cmp>
-inline retType top1::matcher<T, retType, cmp>::d(
-  const std::function<retType(const T&)>& func) {
-  if (!found) {
-    found = true;
-    retVal = func(obj);
-  }
-  return get();
-}
-
-template<typename T, typename retType, typename cmp>
-inline retType top1::matcher<T, retType, cmp>::d(retType r) {
-  if (!found) {
-    found = true;
-    retVal = r;
-  }
-  return get();
-}
-
-template<typename T, typename retType, typename cmp>
-inline retType top1::matcher<T, retType, cmp>::get() {
-  return retVal;
-}
-
-// Custom implementations for retType = void
 template<typename T>
-inline top1::matcher<T, void> match(const T &t) {
-  return top1::matcher<T, void>(t);
+inline bool between(T min, T max, T el) {
+  return (el <= max && el >= min);
 }
 
-template<typename T, typename cmp>
-inline top1::matcher<T, void, cmp>& top1::matcher<T, void, cmp>::c(
-  const T& p, const std::function<void()>& func) {
-  if (!found && compare(obj, p)) {
-    found = true;
-    func();
+inline float round(float f, int places) {
+  int i = std::pow(10, places);
+  return std::round(f * i)/i;
+}
+
+struct vec {
+  const float x, y;
+
+  vec() : vec(0, 0) {}
+  vec(float x, float y) : x (x), y (y) {}
+
+  vec rotate(float angle) const {
+    float s = std::sin(angle);
+    float c = std::cos(angle);
+
+    float nx = x * c - y * s;
+    float ny = x * s + y * c;
+
+    return {nx, ny};
   }
-  return *this;
-}
 
-template<typename T, typename cmp>
-inline top1::matcher<T, void, cmp>& top1::matcher<T, void, cmp>::c(
-  const T& p, const std::function<void(const T&)>& func) {
-  if (!found && compare(obj, p)) {
-    found = true;
-    func(obj);
+  float angle() const {
+    return std::atan(y/x);
   }
-  return *this;
-}
 
-template<typename T, typename cmp>
-inline void top1::matcher<T, void, cmp>::d(
-  const std::function<void()>& func) {
-  if (!found) {
-    found = true;
-    func();
+  float len() const {return std::sqrt(x * x + y * y);}
+  float dir() const {return y / x;}
+
+  vec hat() const {return {-y, x};}
+
+  vec swapXY() const {return {y, x};}
+  vec flipSignX() const {return {-x, y};}
+  vec flipSignY() const {return {x, -y};}
+
+  bool operator==(const vec& r) const {return x == r.x && y == r.y;}
+  bool operator!=(const vec& r) const {return x != r.x && y != r.y;}
+  vec operator-(const vec& r) const {return {x - r.x, y - r.y};}
+  vec operator+(const vec& r) const {return {x + r.x, y + r.y};}
+  vec operator*(float s) const {return {x * s, y * s};}
+  vec operator/(float s) const {return {x / s, y / s};}
+  vec operator-() const {return {-x, -y};}
+
+  // Factory methods
+  static vec angleAndLen(float a, float l) {
+    return vec(std::cos(a), std::sin(a)) * l;
   }
-}
+};
 
-template<typename T, typename cmp>
-inline void top1::matcher<T, void, cmp>::d(
-  const std::function<void(const T&)>& func) {
-  if (!found) {
-    found = true;
-    func(obj);
-  }
 }
-

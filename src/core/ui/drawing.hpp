@@ -7,7 +7,7 @@
 
 #include "core/ui/canvas.hpp"
 
-namespace ui::drawing {
+namespace top1::ui::drawing {
 
 static const uint WIDTH = 320;
 static const uint HEIGHT = 240;
@@ -30,7 +30,7 @@ inline static Font FONT_LIGHT;
 inline static Font FONT_NORM;
 inline static Font FONT_BOLD;
 
-void initUtils(Canvas &canvas) {
+inline void initUtils(Canvas &canvas) {
   FONT_LIGHT = Font(canvas, "Lato Light", "./fonts/Lato/Lato-Light.ttf");
   if (!FONT_LIGHT.valid()) {
     LOGE << "Invalid font: " << FONT_LIGHT.name;

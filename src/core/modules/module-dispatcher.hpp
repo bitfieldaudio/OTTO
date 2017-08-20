@@ -1,9 +1,10 @@
 #pragma once
 
-#include "module.h"
-#include "ui/screens.h"
+#include "core/modules/module.hpp"
+#include "core/ui/screens.hpp"
+#include "core/audio/processor.hpp"
 
-namespace module {
+namespace top1::module {
 
 namespace detail {
 
@@ -63,27 +64,27 @@ public:
 class SynthModuleDispatcher : public ModuleDispatcher<SynthModule> {
 public:
 
-  void process(uint nframes) {
+  void process(audio::ProcessData& data) {
     if (modules.size() > 0)
-      modules[currentModule].val->process(nframes);
+      modules[currentModule].val->process(data);
   }
 };
 
 class EffectModuleDispatcher : public ModuleDispatcher<EffectModule> {
 public:
 
-  void process(uint nframes) {
+  void process(audio::ProcessData& data) {
     if (modules.size() > 0)
-      modules[currentModule].val->process(nframes);
+      modules[currentModule].val->process(data);
   }
 };
 
 class SequencerModuleDispatcher : public ModuleDispatcher<SequencerModule> {
 public:
 
-  void process(uint nframes) {
+  void process(audio::ProcessData& data) {
     if (modules.size() > 0)
-      modules[currentModule].val->process(nframes);
+      modules[currentModule].val->process(data);
   }
 };
 
@@ -93,7 +94,7 @@ public:
 
 template<typename M>
 ModuleDispatcher<M>::ModuleDispatcher() :
-  selectorScreen (new ui::SelectorScreen<int>({}, drawing::Colours::Blue)) {
+  selectorScreen (new ui::SelectorScreen<int>({}, ui::drawing::Colours::Blue)) {
   selectorScreen->onSelect = [&]() {
     current(selectorScreen->selectedItem);
   };

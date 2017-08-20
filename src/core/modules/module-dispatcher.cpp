@@ -1,16 +1,15 @@
-#include "module-dispatcher.h"
+#include "core/modules/module-dispatcher.hpp"
 
-#include "globals.h"
+#include "core/globals.hpp"
 
-namespace module {
-namespace detail {
-bool isShiftPressed() {
-  GLOB.
-  return GLOB.ui.keys[ui::K_SHIFT];
-}
+namespace top1::module {
+  namespace detail {
+    bool isShiftPressed() {
+      return GLOB.ui.keys[ui::K_SHIFT];
+    }
 
-void displayScreen(ui::Screen::ptr ptr) {
-  GLOB.ui.display(ptr);
-}
-}
+    void displayScreen(ui::Screen::ptr ptr) {
+      GLOB.ui.display(ptr);
+    }
+  }
 }

@@ -1,50 +1,54 @@
 #pragma once
 
-#include "../module.h"
-#include "../ui/base.h"
-#include "../faust.h"
-#include "../util/tapebuffer.h"
+#include "core/modules/module.hpp"
+#include "core/ui/base.hpp"
+#include "core/ui/drawing.hpp"
+#include "core/ui/module-ui.hpp"
+#include "core/audio/faust.hpp"
+#include "util/tapebuffer.hpp"
+#include "util/audio.hpp"
 
-using BeatPos = int;
+namespace top1::module {
 
-namespace module {
+  using BeatPos = int;
 
-class Metronome : public Module, FaustWrapper {
-  ui::ModuleScreen<Metronome>::ptr screen;
-public:
-  struct Data : public module::Data {
-    Opt<float> bpm    = {this, "BPM", 120, 40, 320, 1};
-    Opt<float> gain   = {this, "GAIN", 0, 0, 1, 0.01};
-    Opt<int> tone     = {this, "TONE", 12, 0, 24, 1};
-    Opt<bool> trigger = {this, "TRIGGER", false, false};
-  } data;
+  class Metronome : public Module, audio::FaustWrapper {
+    ui::ModuleScreen<Metronome>::ptr screen;
+  public:
+    struct Data : public module::Data {
+      Opt<float> bpm    = {this, "BPM", 120, 40, 320, 1};
+      Opt<float> gain   = {this, "GAIN", 0, 0, 1, 0.01};
+      Opt<int> tone     = {this, "TONE", 12, 0, 24, 1};
+      Opt<bool> trigger = {this, "TRIGGER", false, false};
+    } data;
 
-  top1::AudioAverage graph;
+    audio::Graph graph;
 
-  Metronome();
+    Metronome();
 
-  void process(uint nframes) override;
-  void display() override;
+    void process(audio::ProcessData&) override;
+    void display() override;
 
-  void postBuffers(uint nframes) override;
+    void postBuffers(audio::ProcessData&) override;
 
-  // Formalities are over
+    // Formalities are over
 
-  top1::TapeTime getBarTime(BeatPos bar);
-  top1::TapeTime getBarTimeRel(BeatPos bar);
-  BeatPos closestBar(top1::TapeTime time);
-};
+    top1::TapeTime getBarTime(BeatPos bar);
+    top1::TapeTime getBarTimeRel(BeatPos bar);
+    BeatPos closestBar(top1::TapeTime time);
+  };
 
-class MetronomeScreen : public ui::ModuleScreen<Metronome> {
+  class MetronomeScreen : public ui::ModuleScreen<Metronome> {
 
-  void drawMetronome(drawing::Canvas&);
+    void drawMetronome(ui::drawing::Canvas&);
 
-public:
-  bool keypress(ui::Key) override;
+  public:
+    using ui::ModuleScreen<Metronome>::ModuleScreen;
 
-  void draw(drawing::Canvas&) override;
+    bool keypress(ui::Key) override;
 
-  using ui::ModuleScreen<Metronome>::ModuleScreen;
-};
+    void draw(ui::drawing::Canvas&) override;
+
+  };
 
 }

@@ -81,8 +81,8 @@ class BasicPolyPtr {
   struct dispatcher<F, R, T, Ts...> {
 
     static R apply(BasicPolyPtr *p, F&& f) {
-      if (p->template is<T>()) {
-        return f(p->get<T>());
+      if (p->is<T>()) {
+        return f(*(p->get<T>()));
       } else {
         static_assert(sizeof...(Ts) > 0, "Unmatched");
         return dispatcher<F, R, Ts...>::apply(p, std::forward<F>(f));
@@ -94,7 +94,7 @@ class BasicPolyPtr {
   struct dispatcher<F, R, T> {
 
     static void apply(BasicPolyPtr *p, F&& f) {
-      f(p->get<T>());
+      f(*p->get<T>());
     }
   };
 
