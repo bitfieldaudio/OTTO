@@ -22,11 +22,11 @@ namespace top1 {
 
   class Globals {
   private:
-    std::atomic_bool isRunning = {true};
+    static inline std::atomic_bool isRunning = {true};
   public:
-    std::condition_variable notifyExit;
+    static inline std::condition_variable notifyExit;
 
-    struct {
+    static inline struct {
       top1::EventDispatcher<> preInit;
       top1::EventDispatcher<> postInit;
       top1::EventDispatcher<> preExit;
@@ -35,43 +35,39 @@ namespace top1 {
       top1::EventDispatcher<uint> samplerateChanged;
     } events;
 
-    DataFile dataFile;
-    uint samplerate = 44100;
+    static inline DataFile dataFile;
+    static inline uint samplerate = 44100;
 
-    audio::JackAudio jackAudio;
-    ui::MainUI ui;
+    static inline audio::JackAudio jackAudio;
+    static inline ui::MainUI ui;
 
-    module::SynthModuleDispatcher synth;
-    module::SynthModuleDispatcher drums;
-    module::EffectModuleDispatcher effect;
-    module::TapeModule tapedeck;
-    module::MixerModule mixer;
-    module::Metronome metronome;
+    static inline module::SynthModuleDispatcher synth;
+    static inline module::SynthModuleDispatcher drums;
+    static inline module::EffectModuleDispatcher effect;
+    static inline module::TapeModule tapedeck;
+    static inline module::MixerModule mixer;
+    static inline module::Metronome metronome;
 
-    void init();
+    static inline void init() {
+      dataFile.path = "data.json";
+      dataFile.read();
+      jackAudio.init();
+      tapedeck.init();
+      mixer.init();
+      synth.current()->init();
+      drums.current()->init();
+      ui.init();
+    }
 
     //TODO: status codes etc
-    void exit() {
+    static inline void exit() {
       isRunning = false;
       notifyExit.notify_all();
     }
 
-    bool running() const {
+    static inline bool running() {
       return isRunning;
     }
   };
-
-  extern Globals GLOB;
-
-  inline void Globals::init() {
-    dataFile.path = "data.json";
-    dataFile.read();
-    jackAudio.init();
-    tapedeck.init();
-    mixer.init();
-    synth.current()->init();
-    drums.current()->init();
-    ui.init();
-  }
 
 }

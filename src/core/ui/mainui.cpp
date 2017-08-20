@@ -39,10 +39,10 @@ namespace top1::ui {
   bool MainUI::globKeyPost(ui::Key key) {
     switch (key) {
     case ui::K_PLAY:
-      if (GLOB.tapedeck.state.playing()) {
-        GLOB.tapedeck.state.stop();
+      if (Globals::tapedeck.state.playing()) {
+        Globals::tapedeck.state.stop();
       } else {
-        GLOB.tapedeck.state.play();
+        Globals::tapedeck.state.play();
       }
       return true;
     default:
@@ -54,22 +54,22 @@ namespace top1::ui {
     using namespace ui;
     switch (key) {
     case K_QUIT:
-      GLOB.exit();
+      Globals::exit();
       break;
     case K_TAPE:
-      GLOB.tapedeck.display();
+      Globals::tapedeck.display();
       break;
     case K_MIXER:
-      GLOB.mixer.display();
+      Globals::mixer.display();
       break;
     case K_SYNTH:
-      GLOB.synth.display();
+      Globals::synth.display();
       break;
     case K_DRUMS:
-      GLOB.drums.display();
+      Globals::drums.display();
       break;
     case K_METRONOME:
-      GLOB.metronome.display();
+      Globals::metronome.display();
       break;
     default:
       return false;

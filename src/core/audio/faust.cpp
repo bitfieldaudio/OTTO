@@ -12,27 +12,27 @@ namespace top1::audio {
                                       * fDSP->getNumInputs());
     outBuffer = (FAUSTFLOAT **) malloc(sizeof(FAUSTFLOAT **)
                                        * fDSP->getNumOutputs());
-    GLOB.events.preInit.add([&]() {
-        fDSP->init(GLOB.samplerate);
+    Globals::events.preInit.add([&]() {
+        fDSP->init(Globals::samplerate);
         fDSP->buildUserInterface(&opts);
       });
-    GLOB.events.samplerateChanged.add([&](uint sr) {
+    Globals::events.samplerateChanged.add([&](uint sr) {
         fDSP->instanceInit(sr);
       });
-    GLOB.events.bufferSizeChanged.add([this](uint bs) {
+    Globals::events.bufferSizeChanged.add([this](uint bs) {
         initBuffers();
       });
-    GLOB.events.postInit.add([&]() {
+    Globals::events.postInit.add([&]() {
         initBuffers();
       });
   }
 
   void FaustWrapper::initBuffers() {
     for (int i = 0; i < fDSP->getNumInputs(); i++) {
-      inBuffer[0] = (FAUSTFLOAT *) malloc(sizeof(FAUSTFLOAT) * GLOB.jackAudio.bufferSize);
+      inBuffer[0] = (FAUSTFLOAT *) malloc(sizeof(FAUSTFLOAT) * Globals::jackAudio.bufferSize);
     }
     for (int i = 0; i < fDSP->getNumOutputs(); i++) {
-      *outBuffer = (FAUSTFLOAT *) malloc(sizeof(FAUSTFLOAT) * GLOB.jackAudio.bufferSize);
+      *outBuffer = (FAUSTFLOAT *) malloc(sizeof(FAUSTFLOAT) * Globals::jackAudio.bufferSize);
     }
     for (auto f : opts.data->fields) {
       if (!f.second->preserve) f.second->reset();

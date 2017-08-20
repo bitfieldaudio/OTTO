@@ -15,13 +15,13 @@ namespace top1::module {
   }
 
   void MixerModule::display() {
-    GLOB.ui.display(screen);
+    Globals::ui.display(screen);
   }
 
   // Mixing!
 
   void MixerModule::process(audio::ProcessData& data) {
-    auto &trackBuffer = GLOB.tapedeck.trackBuffer;
+    auto &trackBuffer = Globals::tapedeck.trackBuffer;
     float level[4] = {this->data.track[0].level, this->data.track[1].level,
                       this->data.track[2].level, this->data.track[3].level};
     float pan[4] = {this->data.track[0].pan, this->data.track[1].level,
@@ -36,9 +36,9 @@ namespace top1::module {
         trackGraph[t].add(trackBuffer[f][t] * level[t]);
       }
       data.audio.outL[f] =
-        lMix + data.audio.proc[f] * GLOB.tapedeck.data.procGain;
+        lMix + data.audio.proc[f] * Globals::tapedeck.data.procGain;
       data.audio.outR[f] =
-        rMix + data.audio.proc[f] * GLOB.tapedeck.data.procGain;
+        rMix + data.audio.proc[f] * Globals::tapedeck.data.procGain;
     }
   }
 
@@ -59,7 +59,7 @@ namespace top1::module {
 
   bool MixerScreen::keypress(ui::Key key) {
     using namespace ui;
-    bool shift = GLOB.ui.keys[K_SHIFT];
+    bool shift = Globals::ui.keys[K_SHIFT];
     switch (key) {
     case K_BLUE_UP:
       if (shift) module->data.track[0].pan++;
@@ -206,7 +206,7 @@ namespace top1::module {
   ctx.font(60);
   ctx.textAlign(TextAlign::Right, TextAlign::Baseline);
   std::string txt;
-  if (!GLOB.ui.keys[ui::K_SHIFT]) {
+  if (!Globals::ui.keys[ui::K_SHIFT]) {
     txt = fmt::format("{:0>2.0f}", mix * 100);
   } else {
     if (int(pan * 10) == 0)

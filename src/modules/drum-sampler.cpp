@@ -33,11 +33,11 @@ namespace top1::module {
 
 DrumSampler::DrumSampler() :
   SynthModule(&data),
-  maxSampleSize (16 * GLOB.samplerate),
+  maxSampleSize (16 * Globals::samplerate),
   sampleData (maxSampleSize),
   editScreen (new DrumSampleScreen(this)) {
 
-  GLOB.events.samplerateChanged.add([&] (uint sr) {
+  Globals::events.samplerateChanged.add([&] (uint sr) {
     maxSampleSize = 16 * sr;
     sampleSpeed = sampleSampleRate / float(sr);
   });
@@ -115,7 +115,7 @@ DrumSampler::DrumSampler() :
 }
 
 void DrumSampler::display() {
-  GLOB.ui.display(editScreen);
+  Globals::ui.display(editScreen);
 }
 
 void DrumSampler::load() {
@@ -127,7 +127,7 @@ void DrumSampler::load() {
   sf.read(sampleData.data(), rs);
 
   sampleSampleRate = sf.samplerate;
-  sampleSpeed = sampleSampleRate / float(GLOB.samplerate);
+  sampleSpeed = sampleSampleRate / float(Globals::samplerate);
 
   for (auto &&v : data.voiceData) {
     v.in.max = rs;

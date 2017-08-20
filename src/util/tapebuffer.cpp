@@ -29,11 +29,11 @@ namespace top1 {
 
     // FIXME: Hardcoded
     file.open("tape.wav");
-    file.samplerate = GLOB.samplerate;
+    file.samplerate = Globals::samplerate;
     const static uint FRAMEBUF_SIZE = RingBuffer::SIZE / 2;
     top1::DynArray<AudioFrame> framebuf (FRAMEBUF_SIZE);
 
-    if (file.error.log()) GLOB.exit();
+    if (file.error.log()) Globals::exit();
 
     Track::foreach([&](Track t) {
         auto &slices = file.slices.tracks[t.idx];
@@ -48,7 +48,7 @@ namespace top1 {
 
 
   waitData:
-    while(GLOB.running()) {
+    while(Globals::running()) {
       std::unique_lock<std::recursive_mutex> lock (file.mutex);
 
       // Keep some space in the middle to avoid overlap fights
@@ -191,7 +191,7 @@ namespace top1 {
       else readData.wait(lock);
     }
 
-    if (GLOB.running()) goto waitData;
+    if (Globals::running()) goto waitData;
     file.close();
   }
 
@@ -450,7 +450,7 @@ namespace top1 {
   }
 
   std::string TapeBuffer::timeStr() {
-    double seconds = playPoint/(1.0 * GLOB.samplerate);
+    double seconds = playPoint/(1.0 * Globals::samplerate);
     double minutes = seconds / 60.0;
     return fmt::format("{:0>2}:{:0>5.2f}", (int) minutes, fmod(seconds, 60.0));
   }

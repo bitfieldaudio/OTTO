@@ -11,7 +11,7 @@
 namespace top1::module {
 
   void SuperSawSynth::display() {
-    GLOB.ui.display(screen);
+    Globals::ui.display(screen);
   }
 
   void SuperSawSynth::process(audio::ProcessData& data) {

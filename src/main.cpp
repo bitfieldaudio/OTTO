@@ -24,27 +24,27 @@ int main(int argc, char *argv[]) {
   std::mutex mut;
   std::unique_lock lock (mut);
 
-  GLOB.drums.registerModule("Sampler", new module::DrumSampler());
-  GLOB.drums.registerModule("Additive Drums", new module::SimpleDrumsModule());
+  Globals::drums.registerModule("Sampler", new module::DrumSampler());
+  Globals::drums.registerModule("Additive Drums", new module::SimpleDrumsModule());
 
-  GLOB.synth.registerModule("Super Saw", new module::SuperSawSynth());
-  GLOB.synth.registerModule("Sampler", new module::SynthSampler());
+  Globals::synth.registerModule("Super Saw", new module::SuperSawSynth());
+  Globals::synth.registerModule("Sampler", new module::SynthSampler());
 
-  GLOB.events.preInit.runAll();
-  GLOB.init();
-  GLOB.events.postInit.runAll();
+  Globals::events.preInit.runAll();
+  Globals::init();
+  Globals::events.postInit.runAll();
 
-  GLOB.jackAudio.startProcess();
+  Globals::jackAudio.startProcess();
 
-  GLOB.notifyExit.wait(lock);
+  Globals::notifyExit.wait(lock);
 
   LOGI << "Exitting";
-  GLOB.events.preExit.runAll();
-  GLOB.ui.exit();
-  GLOB.mixer.exit();
-  GLOB.tapedeck.exit();
-  GLOB.jackAudio.exit();
-  GLOB.dataFile.write();
-  GLOB.events.postExit.runAll();
+  Globals::events.preExit.runAll();
+  Globals::ui.exit();
+  Globals::mixer.exit();
+  Globals::tapedeck.exit();
+  Globals::jackAudio.exit();
+  Globals::dataFile.write();
+  Globals::events.postExit.runAll();
   return 0;
 }

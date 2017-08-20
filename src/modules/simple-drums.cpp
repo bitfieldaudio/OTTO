@@ -13,7 +13,7 @@ namespace top1::module {
   SimpleDrumsModule::~SimpleDrumsModule() {}
 
   void SimpleDrumsModule::display() {
-    GLOB.ui.display(screen);
+    Globals::ui.display(screen);
   }
 
   void SimpleDrumsModule::process(audio::ProcessData& data) {
@@ -55,7 +55,7 @@ namespace top1::module {
   bool SimpleDrumsScreen::keypress(ui::Key key) {
     using namespace ui;
     auto &voice = module->voices[module->currentVoiceIdx];
-    auto &osc = GLOB.ui.keys[K_SHIFT] ? voice.data.D2 : voice.data.D1;
+    auto &osc = Globals::ui.keys[K_SHIFT] ? voice.data.D2 : voice.data.D1;
     switch (key) {
     case K_RED_UP:
       osc.freq.inc(); return true;

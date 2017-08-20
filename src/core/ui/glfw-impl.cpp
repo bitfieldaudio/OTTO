@@ -97,7 +97,7 @@ namespace top1::ui {
 
   static void key(GLFWwindow* window, int key, int scancode, int action, int mods) {
     using namespace ui;
-    MainUI& self = GLOB.ui;
+    MainUI& self = Globals::ui;
     Key k = keyboardKey(key, mods);
     if (action == GLFW_PRESS) {
       self.keypress(k);
@@ -122,7 +122,7 @@ namespace top1::ui {
   }
 
   void MainUI::mainRoutine() {
-    MainUI& self = GLOB.ui;
+    MainUI& self = Globals::ui;
     GLFWwindow* window;
     NVGcontext* vg = NULL;
     double prevt = 0;
@@ -164,7 +164,7 @@ namespace top1::ui {
     drawing::Canvas canvas(vg, drawing::WIDTH, drawing::HEIGHT);
     drawing::initUtils(canvas);
 
-    while (!glfwWindowShouldClose(window) && GLOB.running())
+    while (!glfwWindowShouldClose(window) && Globals::running())
       {
         double mx, my, t, dt, spent;
         int winWidth, winHeight;
@@ -220,7 +220,7 @@ namespace top1::ui {
 
     glfwTerminate();
 
-    GLOB.exit();
+    Globals::exit();
   }
 
 } // top1::ui

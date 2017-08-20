@@ -12,11 +12,11 @@ namespace top1::module {
 
   SynthSampler::SynthSampler() :
     SynthModule(&data),
-    maxSampleSize (16 * GLOB.samplerate),
+    maxSampleSize (16 * Globals::samplerate),
     sampleData (maxSampleSize),
     editScreen (new SynthSampleScreen(this)) {
 
-    GLOB.events.samplerateChanged.add([&] (uint sr) {
+    Globals::events.samplerateChanged.add([&] (uint sr) {
         maxSampleSize = 16 * sr;
         sampleSpeed = sampleSampleRate / float(sr);
       });
@@ -88,7 +88,7 @@ namespace top1::module {
   }
 
   void SynthSampler::display() {
-    GLOB.ui.display(editScreen);
+    Globals::ui.display(editScreen);
   }
 
   void SynthSampler::load() {
@@ -100,7 +100,7 @@ namespace top1::module {
     sf.read(sampleData.data(), rs);
 
     sampleSampleRate = sf.samplerate;
-    sampleSpeed = sampleSampleRate / float(GLOB.samplerate);
+    sampleSpeed = sampleSampleRate / float(Globals::samplerate);
 
     data.in.max = rs;
     data.out.max = rs;

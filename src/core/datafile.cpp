@@ -6,11 +6,11 @@ namespace top1 {
   void DataFile::write() {
     tree::Map m;
 
-    m["TapeDeck"] = GLOB.tapedeck.serialize();
-    m["Mixer"] = GLOB.mixer.serialize();
-    m["Synth"] = GLOB.synth.serialize();
-    m["Drums"] = GLOB.drums.serialize();
-    m["Metronome"] = GLOB.metronome.serialize();
+    m["TapeDeck"] = Globals::tapedeck.serialize();
+    m["Mixer"] = Globals::mixer.serialize();
+    m["Synth"] = Globals::synth.serialize();
+    m["Drums"] = Globals::drums.serialize();
+    m["Metronome"] = Globals::metronome.serialize();
     data = m;
     JsonFile::write();
   }
@@ -19,11 +19,11 @@ namespace top1 {
     JsonFile::read();
 
     data.match([&] (tree::Map &m) {
-                 GLOB.tapedeck.deserialize(m["TapeDeck"]);
-                 GLOB.mixer.deserialize(m["Mixer"]);
-                 GLOB.synth.deserialize(m["Synth"]);
-                 GLOB.drums.deserialize(m["Drums"]);
-                 GLOB.metronome.deserialize(m["Metronome"]);
+                 Globals::tapedeck.deserialize(m["TapeDeck"]);
+                 Globals::mixer.deserialize(m["Mixer"]);
+                 Globals::synth.deserialize(m["Synth"]);
+                 Globals::drums.deserialize(m["Drums"]);
+                 Globals::metronome.deserialize(m["Metronome"]);
                },
                [&] (auto) {
                  LOGE << "Invalid Json - expected a map at root";

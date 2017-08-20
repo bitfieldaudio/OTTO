@@ -97,7 +97,7 @@ namespace top1::module {
   }
 
   void TapeModule::display() {
-    GLOB.ui.display(tapeScreen);
+    Globals::ui.display(tapeScreen);
   }
 
   // Looping
@@ -141,11 +141,11 @@ namespace top1::module {
 
 
   void TapeModule::goToBar(BeatPos bar) {
-    if (state.doJumps()) tapeBuffer.goTo(GLOB.metronome.getBarTime(bar));
+    if (state.doJumps()) tapeBuffer.goTo(Globals::metronome.getBarTime(bar));
   }
 
   void TapeModule::goToBarRel(BeatPos bars) {
-    if (state.doJumps()) tapeBuffer.goTo(GLOB.metronome.getBarTimeRel(bars));
+    if (state.doJumps()) tapeBuffer.goTo(Globals::metronome.getBarTimeRel(bars));
   }
 
   int TapeModule::timeUntil(TapeTime tt) {
@@ -187,7 +187,7 @@ namespace top1::module {
           } else {
             float adjTime = time * (0.001 + std::abs(state.nextSpeed - state.prevSpeed));
             state.playSpeed = state.prevSpeed + (state.nextSpeed - state.prevSpeed) *
-              (1 - std::cos((x / float(GLOB.samplerate) * 1000/(adjTime)) * M_PI)) * 0.5;
+              (1 - std::cos((x / float(Globals::samplerate) * 1000/(adjTime)) * M_PI)) * 0.5;
             x += data.nframes;
           }
         } else {
@@ -327,13 +327,13 @@ namespace top1::module {
   /************************************************/
 
   bool TapeScreen::keypress(ui::Key key) {
-    bool shift = GLOB.ui.keys[ui::K_SHIFT];
+    bool shift = Globals::ui.keys[ui::K_SHIFT];
     switch (key) {
     case ui::K_REC:
       module->state.startRecord();
       return true;
     case ui::K_PLAY:
-      if (GLOB.ui.keys[ui::K_REC]) {
+      if (Globals::ui.keys[ui::K_REC]) {
         stopRecOnRelease = false;
       }
       return false;
@@ -775,11 +775,11 @@ namespace top1::module {
   void TapeScreen::draw(ui::drawing::Canvas& ctx) {
     using namespace ui::drawing;
 
-    double rotation = (module->tapeBuffer.position()/double(GLOB.samplerate));
+    double rotation = (module->tapeBuffer.position()/double(Globals::samplerate));
 
     auto recColor = (module->state.readyToRec) ? Colours::Red : Colours::White;
 
-    int timeLength = 5 * GLOB.samplerate;
+    int timeLength = 5 * Globals::samplerate;
 
     audio::Section<int> inView;
     inView.in = module->tapeBuffer.position() - timeLength/2;
@@ -807,8 +807,8 @@ namespace top1::module {
     ctx.lineWidth(2);
 
     // TODO: Real value
-    int BPM = GLOB.metronome.data.bpm;
-    float FPB = float(GLOB.samplerate) * 60.0/((float)BPM);
+    int BPM = Globals::metronome.data.bpm;
+    float FPB = float(Globals::samplerate) * 60.0/((float)BPM);
 
     // Bar Markers
     {

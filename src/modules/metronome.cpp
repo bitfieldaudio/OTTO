@@ -14,13 +14,13 @@ namespace top1::module {
     screen (new MetronomeScreen(this)) {}
 
   void Metronome::process(audio::ProcessData& data) {
-    float BPsample = this->data.bpm/60.0/(float)GLOB.samplerate;
-    float beat = GLOB.tapedeck.position() * BPsample;
-    uint framesTillNext = std::fmod(beat, 1)/BPsample * GLOB.tapedeck.state.playSpeed;
+    float BPsample = this->data.bpm/60.0/(float)Globals::samplerate;
+    float beat = Globals::tapedeck.position() * BPsample;
+    uint framesTillNext = std::fmod(beat, 1)/BPsample * Globals::tapedeck.state.playSpeed;
 
     if (framesTillNext < data.nframes
-        && GLOB.tapedeck.state.playing()
-        && GLOB.tapedeck.state.playSpeed/BPsample > 1) {
+        && Globals::tapedeck.state.playing()
+        && Globals::tapedeck.state.playSpeed/BPsample > 1) {
       data.process([this](auto& d){FaustWrapper::process(d);},
                    framesTillNext);
       this->data.trigger = true;
@@ -33,7 +33,7 @@ namespace top1::module {
   }
 
   void Metronome::display() {
-    GLOB.ui.display(screen);
+    Globals::ui.display(screen);
   }
 
   void Metronome::postBuffers(audio::ProcessData& data) {
@@ -46,7 +46,7 @@ namespace top1::module {
 
   // Bars
   BeatPos Metronome::closestBar(TapeTime time) {
-    double fpb = (GLOB.samplerate)*60/(double)data.bpm;
+    double fpb = (Globals::samplerate)*60/(double)data.bpm;
     BeatPos prevBar = time/fpb;
     TapeTime prevBarTime = getBarTime(prevBar);
     if (time - prevBarTime > fpb/2) {
@@ -56,16 +56,16 @@ namespace top1::module {
   }
 
   TapeTime Metronome::getBarTime(BeatPos bar) {
-    double fpb = (GLOB.samplerate)*60/(double)data.bpm;
+    double fpb = (Globals::samplerate)*60/(double)data.bpm;
     return bar * fpb;
   }
 
   TapeTime Metronome::getBarTimeRel(BeatPos bar) {
-    if (bar == 0) return closestBar(GLOB.tapedeck.position());
-    double fpb = (GLOB.samplerate)*60/(double)data.bpm;
-    BeatPos curBar = GLOB.tapedeck.position()/fpb;
+    if (bar == 0) return closestBar(Globals::tapedeck.position());
+    double fpb = (Globals::samplerate)*60/(double)data.bpm;
+    BeatPos curBar = Globals::tapedeck.position()/fpb;
     TapeTime curBarTime = getBarTime(curBar);
-    TapeTime diff = GLOB.tapedeck.position() - curBarTime;
+    TapeTime diff = Globals::tapedeck.position() - curBarTime;
     if (diff > fpb/2) {
       curBar += 1;
       if (bar > 0) bar -= 1;
@@ -215,8 +215,8 @@ namespace top1::module {
     {
       ctx.save();
 
-      float BPsample(module->data.bpm/60.0/(float)GLOB.samplerate);
-      float beat(GLOB.tapedeck.position() * BPsample);
+      float BPsample(module->data.bpm/60.0/(float)Globals::samplerate);
+      float beat(Globals::tapedeck.position() * BPsample);
       float factor((std::fmod(beat, 2)));
       factor = factor < 1 ? (factor * 2 - 1) : ((1 - factor) * 2 + 1);
       factor = std::sin(factor * M_PI/2);
