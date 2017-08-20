@@ -1,42 +1,62 @@
-#include "drum-sampler.h"
-
 #include <algorithm>
 
-#include "../utils.h"
-#include "../ui/utils.h"
-#include "../ui/icons.h"
-#include "../globals.h"
-#include "../util/sndfile.h"
-#include "../util/match.h"
+#include "drum-sampler.hpp"
+#include "core/globals.hpp"
+#include "core/ui/module-ui.hpp"
+#include "core/ui/drawing.hpp"
+#include "core/ui/icons.hpp"
+#include "util/sndfile.hpp"
 
-namespace module {
+namespace top1::ui::drawing {
+
+  const static drawing::Size topWFsize = {210, 20};
+  const static drawing::Point topWFpos = {60, 20};
+  const static drawing::Size arrowSize = {20, 20};
+  const static drawing::Point arrowPos = {280, 20};
+  const static drawing::Size pitchSize = {30, 20};
+  const static drawing::Point pitchPos = {20, 40};
+  const static drawing::Size mainWFsize = {280, 170};
+  const static drawing::Point mainWFpos = {20, 50};
+
+  namespace Colours {
+
+    const Colour TopWF = Blue.dim(0.2);
+    const Colour TopWFCur = Blue.brighten(0.5);
+    const Colour TopWFActive = White;
+    const Colour WFGrid = 0x303040;
+  }
+
+} // top1::ui::drawing
+
+
+namespace top1::module {
 
 DrumSampler::DrumSampler() :
   SynthModule(&data),
-  maxSampleSize (16 * GLOB.samplerate),
+  maxSampleSize (16 * Globals::samplerate),
   sampleData (maxSampleSize),
   editScreen (new DrumSampleScreen(this)) {
 
-  GLOB.events.samplerateChanged.add([&] (uint sr) {
+  Globals::events.samplerateChanged.add([&] (uint sr) {
     maxSampleSize = 16 * sr;
     sampleSpeed = sampleSampleRate / float(sr);
   });
 
 }
 
-void DrumSampler::process(uint nframes) {
-  for (auto &&nEvent : GLOB.midiEvents) {
-    nEvent.match([&] (NoteOnEvent *e) {
+  void DrumSampler::process(audio::ProcessData& data) {
+  for (auto &&nEvent : data.midi) {
+    nEvent.match([&] (midi::NoteOnEvent* e) {
        if (e->channel == 1) {
          currentVoiceIdx = e->key % nVoices;
-         auto &&voice = data.voiceData[currentVoiceIdx];
+         auto &&voice = this->data.voiceData[currentVoiceIdx];
          voice.playProgress = (voice.fwd()) ? 0 : voice.length() - 1;
          voice.trigger = true;
        }
-    }, [] (MidiEvent *) {});
+    }, [] (auto*) {});
   }
 
-  for (auto &&voice : data.voiceData) {
+  for (auto &&voice : this->data.voiceData) {
 
     float playSpeed = voice.speed * sampleSpeed;
 
@@ -44,17 +64,17 @@ void DrumSampler::process(uint nframes) {
     if (voice.playProgress >= 0 && playSpeed > 0) {
       if (voice.fwd()) {
         if (voice.loop() && voice.trigger) {
-          for(int i = 0; i < nframes; ++i) {
-            GLOB.audioData.proc[i] += sampleData[voice.in + voice.playProgress];
+          for(int i = 0; i < data.nframes; ++i) {
+            data.audio.proc[i] += sampleData[voice.in + voice.playProgress];
             voice.playProgress += playSpeed;
             if (voice.playProgress >= voice.length()) {
               voice.playProgress = 0;
             }
           }
         } else {
-          int frms = std::min<int>(nframes, voice.length() - voice.playProgress);
+          int frms = std::min<int>(data.nframes, voice.length() - voice.playProgress);
           for(int i = 0; i < frms; ++i) {
-            GLOB.audioData.proc[i] += sampleData[voice.in + voice.playProgress];
+            data.audio.proc[i] += sampleData[voice.in + voice.playProgress];
             voice.playProgress += playSpeed;
           }
           if (voice.playProgress >= voice.length()) {
@@ -63,17 +83,17 @@ void DrumSampler::process(uint nframes) {
         }
       } else {
         if (voice.loop() && voice.trigger) {
-          for(int i = 0; i < nframes; ++i) {
-            GLOB.audioData.proc[i] += sampleData[voice.in + voice.playProgress];
+          for(int i = 0; i < data.nframes; ++i) {
+            data.audio.proc[i] += sampleData[voice.in + voice.playProgress];
             voice.playProgress -= playSpeed;
             if (voice.playProgress < 0) {
               voice.playProgress = voice.length() -1;
             }
           }
         } else {
-          int frms = std::min<int>(nframes, voice.playProgress);
+          int frms = std::min<int>(data.nframes, voice.playProgress);
           for(int i = 0; i < frms; ++i) {
-            GLOB.audioData.proc[i] += sampleData[voice.in + voice.playProgress];
+            data.audio.proc[i] += sampleData[voice.in + voice.playProgress];
             voice.playProgress -= playSpeed;
           }
         }
@@ -81,21 +101,21 @@ void DrumSampler::process(uint nframes) {
     }
   }
 
-  for (auto &&nEvent : GLOB.midiEvents) {
-    nEvent.match([&] (NoteOffEvent *e) {
+  for (auto &&nEvent : data.midi) {
+    nEvent.match([&] (midi::NoteOffEvent *e) {
        if (e->channel == 1) {
-         auto &&voice = data.voiceData[e->key % nVoices];
+         auto &&voice = this->data.voiceData[e->key % nVoices];
          voice.trigger = false;
          if (voice.stop()) {
            voice.playProgress = -1;
          }
        }
-    }, [] (MidiEvent *) {});
+      }, [] (midi::MidiEvent *) {});
   };
 }
 
 void DrumSampler::display() {
-  GLOB.ui.display(editScreen);
+  Globals::ui.display(editScreen);
 }
 
 void DrumSampler::load() {
@@ -107,7 +127,7 @@ void DrumSampler::load() {
   sf.read(sampleData.data(), rs);
 
   sampleSampleRate = sf.samplerate;
-  sampleSpeed = sampleSampleRate / float(GLOB.samplerate);
+  sampleSpeed = sampleSampleRate / float(Globals::samplerate);
 
   for (auto &&v : data.voiceData) {
     v.in.max = rs;
@@ -143,15 +163,14 @@ void DrumSampler::load() {
 void DrumSampler::init() {
   load();
 }
-}
 
 /****************************************/
 /* SampleEditScreen                     */
 /****************************************/
 
-bool module::DrumSampleScreen::keypress(ui::Key key) {
+bool DrumSampleScreen::keypress(ui::Key key) {
   using namespace ui;
-  auto& voice = module->data.voiceData[module->currentVoiceIdx];
+  auto& voice = module->data.voiceData[this->module->currentVoiceIdx];
   switch (key) {
   case K_BLUE_UP: voice.in.inc(); return true;
   case K_BLUE_DOWN: voice.in.dec(); return true;
@@ -162,70 +181,52 @@ bool module::DrumSampleScreen::keypress(ui::Key key) {
   case K_WHITE_CLICK: voice.speed.reset(); return true;
   case K_RED_UP: voice.mode.inc(); return true;
   case K_RED_DOWN: voice.mode.dec(); return true;
+  default:
+    return false;
   }
 }
 
-namespace drawing {
 
-const static drawing::Size topWFsize = {210, 20};
-const static drawing::Point topWFpos = {60, 20};
-const static drawing::Size arrowSize = {20, 20};
-const static drawing::Point arrowPos = {280, 20};
-const static drawing::Size pitchSize = {30, 20};
-const static drawing::Point pitchPos = {20, 40};
-const static drawing::Size mainWFsize = {280, 170};
-const static drawing::Point mainWFpos = {20, 50};
+DrumSampleScreen::DrumSampleScreen(DrumSampler *m) :
+  ui::ModuleScreen<DrumSampler> (m),
+  topWF (new audio::Waveform(
+           module->sampleData.size() / ui::drawing::topWFsize.w / 4.0, 1.0)),
+  topWFW (topWF, ui::drawing::topWFsize),
+  mainWF (new audio::Waveform(50, 1.0)),
+  mainWFW (mainWF, ui::drawing::mainWFsize) {}
 
-namespace Colours {
+  void module::DrumSampleScreen::draw(ui::drawing::Canvas &ctx) {
+    using namespace ui::drawing;
 
-const Colour TopWF = Blue.dim(0.2);
-const Colour TopWFCur = Blue.brighten(0.5);
-const Colour TopWFActive = White;
-const Colour WFGrid = 0x303040;
-}
-}
+    Colour colourCurrent;
 
-module::DrumSampleScreen::DrumSampleScreen(DrumSampler *m) :
-  ModuleScreen (m),
-  topWF (new Waveform(
-     module->sampleData.size() / drawing::topWFsize.w / 4.0, 1.0)
-         ),
-  topWFW (topWF, drawing::topWFsize),
-  mainWF (new Waveform(50, 1.0)),
-  mainWFW (mainWF, drawing::mainWFsize) {}
+    ctx.callAt(topWFpos, [&] () {
+        topWFW.drawRange(ctx, topWFW.viewRange, Colours::TopWF);
+        for (uint i = 0; i < DrumSampler::nVoices; ++i) {
+          auto& voice = module->data.voiceData[i];
+          bool isActive = voice.playProgress >= 0;
+          bool isCurrent = i == module->currentVoiceIdx;
+          if (isActive && !isCurrent) {
+            Colour baseColour = Colours::TopWF;
+            float mix = voice.playProgress / float(voice.out - voice.in);
 
-void module::DrumSampleScreen::draw(drawing::Canvas &ctx) {
-  using namespace drawing;
+            if (mix < 0) mix = 1;
+            if (voice.fwd()) mix = 1 - mix; //voice is not reversed
 
-  Colour colourCurrent;
+            Colour colour = baseColour.mix(Colours::TopWFActive, mix);
+            topWFW.drawRange(ctx, {
+                std::size_t(std::round(voice.in / topWF->ratio)),
+                  std::size_t(std::round(voice.out / topWF->ratio))
+                  }, colour);
+          }
+        }
+        {
+          auto& voice = module->data.voiceData[module->currentVoiceIdx];
+          Colour baseColour = Colours::TopWFCur;
+          float mix = voice.playProgress / float(voice.out - voice.in);
 
-  ctx.callAt(topWFpos, [&] () {
-    topWFW.drawRange(ctx, topWFW.viewRange, Colours::TopWF);
-    for (uint i = 0; i < DrumSampler::nVoices; ++i) {
-      auto& voice = module->data.voiceData[i];
-      bool isActive = voice.playProgress >= 0;
-      bool isCurrent = i == module->currentVoiceIdx;
-      if (isActive && !isCurrent) {
-        Colour baseColour = Colours::TopWF;
-        float mix = voice.playProgress / float(voice.out - voice.in);
-
-        if (mix < 0) mix = 1;
-        if (voice.fwd()) mix = 1 - mix; //voice is not reversed
-
-        Colour colour = baseColour.mix(Colours::TopWFActive, mix);
-        topWFW.drawRange(ctx, {
-           std::size_t(std::round(voice.in / topWF->ratio)),
-             std::size_t(std::round(voice.out / topWF->ratio))
-             }, colour);
-      }
-    }
-    {
-      auto& voice = module->data.voiceData[module->currentVoiceIdx];
-      Colour baseColour = Colours::TopWFCur;
-      float mix = voice.playProgress / float(voice.out - voice.in);
-
-      if (mix < 0) mix = 1;
-      if (voice.fwd()) mix = 1 - mix; //voice is not reversed
+          if (mix < 0) mix = 1;
+          if (voice.fwd()) mix = 1 - mix; //voice is not reversed
 
       colourCurrent = baseColour.mix(Colours::TopWFActive, mix);
       topWFW.drawRange(ctx, {
@@ -293,3 +294,5 @@ void module::DrumSampleScreen::draw(drawing::Canvas &ctx) {
   });
 
 }
+
+} // top1::module

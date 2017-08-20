@@ -2,49 +2,49 @@
 #include <plog/Log.h>
 #include <plog/Appenders/ConsoleAppender.h>
 
-#include "audio/jack.h"
-#include "audio/midi.h"
-#include "ui/mainui.h"
-#include "modules/tape.h"
-#include "modules/mixer.h"
-#include "modules/super-saw-synth.h"
-#include "modules/simple-drums.h"
-#include "modules/drum-sampler.h"
-#include "modules/synth-sampler.h"
-#include "globals.h"
+#include "core/audio/jack.hpp"
+#include "core/audio/midi.hpp"
+#include "core/ui/mainui.hpp"
+#include "modules/tapedeck.hpp"
+#include "modules/mixer.hpp"
+#include "modules/super-saw-synth.hpp"
+#include "modules/simple-drums.hpp"
+#include "modules/drum-sampler.hpp"
+#include "modules/synth-sampler.hpp"
+#include "core/globals.hpp"
 
 int main(int argc, char *argv[]) {
   static plog::ConsoleAppender<plog::TxtFormatter> consoleAppender;
   plog::init(plog::debug, "log.txt").addAppender(&consoleAppender);
   LOGI << "LOGGING NOW";
 
-  GLOB.project = new Project();
+  using namespace top1;
 
   midi::generateFreqTable(440);
   std::mutex mut;
-  std::unique_lock<std::mutex> lock (mut);
+  std::unique_lock lock (mut);
 
-  GLOB.drums.registerModule("Sampler", new module::DrumSampler());
-  GLOB.drums.registerModule("Additive Drums", new SimpleDrumsModule());
+  Globals::drums.registerModule("Sampler", new module::DrumSampler());
+  Globals::drums.registerModule("Additive Drums", new module::SimpleDrumsModule());
 
-  GLOB.synth.registerModule("Super Saw", new SuperSawSynth());
-  GLOB.synth.registerModule("Sampler", new module::SynthSampler());
+  Globals::synth.registerModule("Super Saw", new module::SuperSawSynth());
+  Globals::synth.registerModule("Sampler", new module::SynthSampler());
 
-  GLOB.events.preInit();
-  GLOB.init();
-  GLOB.events.postInit();
+  Globals::events.preInit.runAll();
+  Globals::init();
+  Globals::events.postInit.runAll();
 
-  GLOB.jackAudio.startProcess();
+  Globals::jackAudio.startProcess();
 
-  GLOB.notifyExit.wait(lock);
+  Globals::notifyExit.wait(lock);
 
   LOGI << "Exitting";
-  GLOB.events.preExit();
-  GLOB.ui.exit();
-  GLOB.mixer.exit();
-  GLOB.tapedeck.exit();
-  GLOB.jackAudio.exit();
-  GLOB.dataFile.write();
-  GLOB.events.postExit();
+  Globals::events.preExit.runAll();
+  Globals::ui.exit();
+  Globals::mixer.exit();
+  Globals::tapedeck.exit();
+  Globals::jackAudio.exit();
+  Globals::dataFile.write();
+  Globals::events.postExit.runAll();
   return 0;
 }

@@ -1,6 +1,6 @@
 #include "../testing.h"
 
-#include "util/dyn-array.h"
+#include "util/dyn-array.hpp"
 
 SCENARIO("DynArrays can be resized", "[DynArray]") {
 

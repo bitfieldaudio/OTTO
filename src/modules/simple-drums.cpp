@@ -1,117 +1,123 @@
-#include "simple-drums.h"
-#include "simple-drums.faust.h"
+#include "modules/simple-drums.hpp"
+#include "modules/simple-drums.faust.h"
 
-#include "../ui/utils.h"
+#include "core/ui/drawing.hpp"
+#include "core/globals.hpp"
 
-SimpleDrumVoice::SimpleDrumVoice() : FaustWrapper(
-  new FAUSTCLASS(), &data) {
-}
+namespace top1::module {
+  SimpleDrumVoice::SimpleDrumVoice() : FaustWrapper(new FAUSTCLASS(), &data) {}
 
-SimpleDrumsModule::SimpleDrumsModule() :
-  screen (new SimpleDrumsScreen(this)) {}
+  SimpleDrumsModule::SimpleDrumsModule() :
+    screen (new SimpleDrumsScreen(this)) {}
 
-SimpleDrumsModule::~SimpleDrumsModule() {}
+  SimpleDrumsModule::~SimpleDrumsModule() {}
 
-void SimpleDrumsModule::process(uint nframes) {
-  for (auto &&nEvent : GLOB.midiEvents) {
-    nEvent.match([&] (NoteOnEvent *e) {
-       currentVoiceIdx = e->key % 24;
-       voices[currentVoiceIdx].data.trigger = 1;
-       voices[currentVoiceIdx].data.envelope.sustain = float(e->velocity)/128.f;
-     }, [] (MidiEvent *) {});
+  void SimpleDrumsModule::display() {
+    Globals::ui.display(screen);
   }
-  for (auto &&voice : voices) {
-    voice.process(nframes);
-    voice.data.trigger = 0;
+
+  void SimpleDrumsModule::process(audio::ProcessData& data) {
+    for (auto &&nEvent : data.midi) {
+      nEvent.match([&] (midi::NoteOnEvent *e) {
+          currentVoiceIdx = e->key % 24;
+          voices[currentVoiceIdx].data.trigger = 1;
+          voices[currentVoiceIdx].data.envelope.sustain = float(e->velocity)/128.f;
+        }, [] (auto *) {});
+    }
+    for (auto &&voice : voices) {
+      voice.process(data);
+      voice.data.trigger = 0;
+    }
+    for (auto &&nEvent : data.midi) {
+      nEvent.match([&] (midi::NoteOffEvent *e) {
+          voices[e->key % 24].data.trigger = 0;
+        }, [] (auto) {});
+    };
   }
-  for (auto &&nEvent : GLOB.midiEvents) {
-    nEvent.match([&] (NoteOffEvent *e) {
-       voices[e->key % 24].data.trigger = 0;
-     }, [] (MidiEvent *) {});
-  };
-}
 
-top1::tree::Node SimpleDrumsModule::serialize() {
-  top1::tree::Array ar;
-  for (auto &v : voices) {
-    ar.values.push_back(v.data.serialize());
+  top1::tree::Node SimpleDrumsModule::serialize() {
+    top1::tree::Array ar;
+    for (auto &v : voices) {
+      ar.values.push_back(v.data.serialize());
+    }
+    return ar;
   }
-  return ar;
-}
 
-void SimpleDrumsModule::deserialize(top1::tree::Node n) {
-  n.match(
-    [&] (top1::tree::Array &ar) {
-      for (uint i = 0; i < ar.values.size(); ++i) {
-        voices[i].data.deserialize(ar[i]);
-      }
-    }, [] (auto) {});
-}
-
-bool SimpleDrumsScreen::keypress(ui::Key key) {
-  using namespace ui;
-  auto &voice = module->voices[module->currentVoiceIdx];
-  auto &osc = GLOB.ui.keys[K_SHIFT] ? voice.data.D2 : voice.data.D1;
-  switch (key) {
-  case K_RED_UP:
-    osc.freq.inc(); break;
-  case K_RED_DOWN:
-    osc.freq.dec(); break;
-  case K_BLUE_UP:
-    osc.toneDecay.inc(); break;
-  case K_BLUE_DOWN:
-    osc.toneDecay.dec(); break;
-  case K_WHITE_UP:
-    osc.noiseLvl.inc(); break;
-  case K_WHITE_DOWN:
-    osc.noiseLvl.dec(); break;
-  case K_GREEN_UP:
-    osc.cutoff.inc(); break;
-  case K_GREEN_DOWN:
-    osc.cutoff.dec(); break;
-  case K_GREEN_CLICK:
-    osc.filterSwitch.toggle(); break;
+  void SimpleDrumsModule::deserialize(top1::tree::Node n) {
+    n.match(
+            [&] (top1::tree::Array &ar) {
+              for (uint i = 0; i < ar.values.size(); ++i) {
+                voices[i].data.deserialize(ar[i]);
+              }
+            }, [] (auto) {});
   }
-}
 
-void SimpleDrumsScreen::draw(drawing::Canvas &ctx) {
-  using namespace drawing;
-  auto &voice = (module->voices[module->currentVoiceIdx]);
-  ctx.save();
-  drawOsc(ctx, voice.data.D1);
-  ctx.translate(0, 75);
-  drawOsc(ctx, voice.data.D2);
-  ctx.restore();
+  bool SimpleDrumsScreen::keypress(ui::Key key) {
+    using namespace ui;
+    auto &voice = module->voices[module->currentVoiceIdx];
+    auto &osc = Globals::ui.keys[K_SHIFT] ? voice.data.D2 : voice.data.D1;
+    switch (key) {
+    case K_RED_UP:
+      osc.freq.inc(); return true;
+    case K_RED_DOWN:
+      osc.freq.dec(); return true;
+    case K_BLUE_UP:
+      osc.toneDecay.inc(); return true;
+    case K_BLUE_DOWN:
+      osc.toneDecay.dec(); return true;
+    case K_WHITE_UP:
+      osc.noiseLvl.inc(); return true;
+    case K_WHITE_DOWN:
+      osc.noiseLvl.dec(); return true;
+    case K_GREEN_UP:
+      osc.cutoff.inc(); return true;
+    case K_GREEN_DOWN:
+      osc.cutoff.dec(); return true;
+    case K_GREEN_CLICK:
+      osc.filterSwitch.toggle(); return true;
+    default:
+      return false;
+    }
+  }
 
-  drawKbd(ctx);
-}
+  void SimpleDrumsScreen::draw(ui::drawing::Canvas &ctx) {
+    using namespace ui::drawing;
+    auto &voice = (module->voices[module->currentVoiceIdx]);
+    ctx.save();
+    drawOsc(ctx, voice.data.D1);
+    ctx.translate(0, 75);
+    drawOsc(ctx, voice.data.D2);
+    ctx.restore();
 
-void SimpleDrumsScreen::drawOsc(drawing::Canvas &ctx, SimpleDrumVoice::Data::Osc &osc) {
-  using namespace drawing;
+    drawKbd(ctx);
+  }
 
-	ctx.globalAlpha(1.0);
-	ctx.lineJoin(Canvas::LineJoin::ROUND);
-	ctx.strokeStyle(Colours::Gray60);
-	ctx.lineCap(Canvas::LineCap::ROUND);
-	ctx.miterLimit(4);
-// #FREQ_G
+  void SimpleDrumsScreen::drawOsc(ui::drawing::Canvas &ctx, SimpleDrumVoice::Data::Osc &osc) {
+    using namespace ui::drawing;
+
+    ctx.globalAlpha(1.0);
+    ctx.lineJoin(Canvas::LineJoin::ROUND);
+    ctx.strokeStyle(Colours::Gray60);
+    ctx.lineCap(Canvas::LineCap::ROUND);
+    ctx.miterLimit(4);
+    // #FREQ_G
 	
-// #FREQ_BOX
-	ctx.beginPath();
-	ctx.lineWidth(2.000000);
-	ctx.rect(16.000000, 16.000000, 63.000000, 63.000000);
-	ctx.stroke();
+    // #FREQ_BOX
+    ctx.beginPath();
+    ctx.lineWidth(2.000000);
+    ctx.rect(16.000000, 16.000000, 63.000000, 63.000000);
+    ctx.stroke();
 
-  // FREQ_TXT
-	ctx.lineWidth(1.000000);
-	ctx.fillStyle(Colours::Gray60);
-	ctx.font(FONT_NORM);
-	ctx.font(15);
-  ctx.textAlign(TextAlign::Center, TextAlign::Baseline);
-	ctx.fillText("PITCH", 47.5, 75);
+    // FREQ_TXT
+    ctx.lineWidth(1.000000);
+    ctx.fillStyle(Colours::Gray60);
+    ctx.font(FONT_NORM);
+    ctx.font(15);
+    ctx.textAlign(TextAlign::Center, TextAlign::Baseline);
+    ctx.fillText("PITCH", 47.5, 75);
 
-// #FREQ_DIAL_BG
-	ctx.beginPath();
+    // #FREQ_DIAL_BG
+    ctx.beginPath();
 	ctx.strokeStyle(Colours::Gray70);
 	ctx.lineWidth(1.000000);
 	ctx.moveTo(30.876403, 64.114053);
@@ -400,41 +406,43 @@ void SimpleDrumsScreen::drawOsc(drawing::Canvas &ctx, SimpleDrumVoice::Data::Osc
 
 }
 
-void SimpleDrumsScreen::drawKbd(drawing::Canvas &ctx) {
-  using namespace drawing;
-// #KEYBOARD
-	ctx.save();
-	ctx.transform(1.000000, 0.000000, 0.000000, 1.000000, 18.000000, 0.000000);
+  void SimpleDrumsScreen::drawKbd(ui::drawing::Canvas &ctx) {
+    using namespace ui::drawing;
+    // #KEYBOARD
+    ctx.save();
+    ctx.transform(1.000000, 0.000000, 0.000000, 1.000000, 18.000000, 0.000000);
 
-  uint ki = module->currentVoiceIdx;
+    uint ki = module->currentVoiceIdx;
 
-  ctx.strokeStyle(Colours::Gray60);
-  ctx.lineJoin(Canvas::LineJoin::ROUND);
-  ctx.lineWidth(1.5);
+    ctx.strokeStyle(Colours::Gray60);
+    ctx.lineJoin(Canvas::LineJoin::ROUND);
+    ctx.lineWidth(1.5);
 
-  // WHITE KEYS
-  {
-    const static uint KEY_NUMS[14] = {0,2,4,5,7,9,11,12,14,16,17,19,21,23};
-    for (uint i = 0; i < 14; i++) {
-      ctx.beginPath();
-      ctx.fillStyle(ki == KEY_NUMS[i] ? Colours::Gray60 : Colours::Black);
-      ctx.rect(15.75 + 18 * i, 165.75, 18.5, 58.5);
-      ctx.stroke();
-      ctx.fill();
+    // WHITE KEYS
+    {
+      const static uint KEY_NUMS[14] = {0,2,4,5,7,9,11,12,14,16,17,19,21,23};
+      for (uint i = 0; i < 14; i++) {
+        ctx.beginPath();
+        ctx.fillStyle(ki == KEY_NUMS[i] ? Colours::Gray60 : Colours::Black);
+        ctx.rect(15.75 + 18 * i, 165.75, 18.5, 58.5);
+        ctx.stroke();
+        ctx.fill();
+      }
     }
-  }
 
-  // BLACK KEYS
-  {
-    const static uint KEY_POS[10]  = {0,1,3,4, 5, 7, 8,10,11,12};
-    const static uint KEY_NUMS[10] = {1,3,6,8,10,13,15,18,20,22};
-    for (uint i = 0; i < 10; i++) {
-      ctx.beginPath();
-      ctx.fillStyle(ki == KEY_NUMS[i] ? Colours::Gray60 : Colours::Black);
-      ctx.rect(29.75 + 18 * KEY_POS[i], 165.75, 8.5, 33.5);
-      ctx.fill();
-      ctx.stroke();
+    // BLACK KEYS
+    {
+      const static uint KEY_POS[10]  = {0,1,3,4, 5, 7, 8,10,11,12};
+      const static uint KEY_NUMS[10] = {1,3,6,8,10,13,15,18,20,22};
+      for (uint i = 0; i < 10; i++) {
+        ctx.beginPath();
+        ctx.fillStyle(ki == KEY_NUMS[i] ? Colours::Gray60 : Colours::Black);
+        ctx.rect(29.75 + 18 * KEY_POS[i], 165.75, 8.5, 33.5);
+        ctx.fill();
+        ctx.stroke();
+      }
     }
-  }
 	ctx.restore();
+}
+
 }

@@ -1,6 +1,6 @@
 #include <exception>
 #include <fmt/format.h>
-#include "top1file.h"
+#include "top1file.hpp"
 
 namespace top1 {
 
@@ -43,7 +43,7 @@ void File::Chunk::read(File *file) {
             if (file->rpos() == lastPos) break;
             lastPos = file->rpos();
           }
-        } catch (ReadException e) {
+        } catch (const ReadException& e) {
           if (e.type != e.END_OF_FILE) LOGE << e.what();
           break;
         }
@@ -80,17 +80,17 @@ void File::Chunk::write(File *file) {
 /****************************************/
 
 // File handling
-void File::open(std::string path) {
-  fileStream.open(path, std::ios::in | std::ios::out | std::ios::binary);
-  if (!fileStream) {
-    LOGI << "Empty file, creating";
-    fileStream.open(path, std::ios::trunc | std::ios::out | std::ios::binary);
-    fileStream.close();
+  void File::open(const std::string& path) {
     fileStream.open(path, std::ios::in | std::ios::out | std::ios::binary);
-    writeFile();
-    fileStream.flush();
-  }
-  fseek(0);
+    if (!fileStream) {
+      LOGI << "Empty file, creating";
+      fileStream.open(path, std::ios::trunc | std::ios::out | std::ios::binary);
+      fileStream.close();
+      fileStream.open(path, std::ios::in | std::ios::out | std::ios::binary);
+      writeFile();
+      fileStream.flush();
+    }
+    fseek(0);
   readFile();
   this->path = path;
 }
@@ -180,7 +180,7 @@ void File::readChunks() {
             if (rpos() == lastPos) break;
             lastPos = rpos();
           }
-        } catch (ReadException e) {
+        } catch (const ReadException& e) {
           if (e.type != e.END_OF_FILE) LOGE << e.what();
           break;
         }
