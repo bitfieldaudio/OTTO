@@ -38,4 +38,4 @@ namespace top1::modules {
     void display() override;
   };
 
-} // top1::module
+} // top1::modules

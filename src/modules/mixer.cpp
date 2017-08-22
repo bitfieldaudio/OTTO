@@ -10,12 +10,10 @@ namespace top1::modules {
 
   MixerModule::MixerModule() :
     Module(&data),
-    screen (new MixerScreen(this))
-  {
-  }
+    screen (new MixerScreen(this)) {}
 
   void MixerModule::display() {
-    Globals::ui.display(screen);
+    Globals::ui.display(*screen);
   }
 
   // Mixing!

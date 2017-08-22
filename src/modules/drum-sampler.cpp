@@ -115,7 +115,7 @@ DrumSampler::DrumSampler() :
 }
 
 void DrumSampler::display() {
-  Globals::ui.display(editScreen);
+  Globals::ui.display(*editScreen);
 }
 
 void DrumSampler::load() {

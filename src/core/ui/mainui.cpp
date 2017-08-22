@@ -6,9 +6,9 @@
 
 namespace top1::ui {
 
-  void MainUI::display(ui::Screen::ptr screen) {
+  void MainUI::display(Screen& screen) {
     currentScreen->exit();
-    currentScreen = screen;
+    currentScreen = &screen;
     currentScreen->init();
   }
 

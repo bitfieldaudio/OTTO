@@ -10,7 +10,7 @@ namespace top1::modules {
   class MixerScreen;
 
   class MixerModule : public modules::Module {
-    std::shared_ptr<MixerScreen> screen;
+    std::unique_ptr<MixerScreen> screen;
   public:
 
     struct Data : modules::Data {

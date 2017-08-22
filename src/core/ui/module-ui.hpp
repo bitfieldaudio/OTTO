@@ -13,7 +13,7 @@ namespace top1::ui {
     M* module;
 
   public:
-    using ptr = std::shared_ptr<ModuleScreen<M>>;
+    using ptr = std::unique_ptr<ModuleScreen<M>>;
 
     ModuleScreen() : Screen(), module (nullptr){}
 

@@ -88,7 +88,7 @@ namespace top1::modules {
   }
 
   void SynthSampler::display() {
-    Globals::ui.display(editScreen);
+    Globals::ui.display(*editScreen);
   }
 
   void SynthSampler::load() {

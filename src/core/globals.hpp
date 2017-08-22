@@ -54,8 +54,8 @@ namespace top1 {
       jackAudio.init();
       tapedeck.init();
       mixer.init();
-      synth.current()->init();
-      drums.current()->init();
+      synth.current().init();
+      drums.current().init();
       ui.init();
     }
 

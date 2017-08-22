@@ -83,7 +83,7 @@ public:
 class Screen : public drawing::Drawable {
 public:
 
-  using ptr = std::shared_ptr<Screen>;
+  using ptr = std::unique_ptr<Screen>;
 
   Screen() : Drawable() {}
   /**

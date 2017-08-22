@@ -11,7 +11,7 @@
 namespace top1::modules {
 
   void SuperSawSynth::display() {
-    Globals::ui.display(screen);
+    Globals::ui.display(*screen);
   }
 
   void SuperSawSynth::process(audio::ProcessData& data) {
@@ -36,7 +36,7 @@ namespace top1::modules {
     };
   }
 
-} // top1::module
+} // top1::modules
 
   /****************************************/
   /* Screen drawing                       */
@@ -153,17 +153,6 @@ namespace top1::modules {
       Point bc2 = c2 + cr;
       Point bc3 = q2 + cr;
 
-      // Dark half
-      Point bc4 = q1 - cr;
-      Point bc5 = c2 - cr;
-      Point bc6 = q2 - cr;
-
-      auto [bcx, bcy] = bc4;
-
-      if (auto d = 2; d > bcx) {
-        bcy = 3;
-      }
-
       // Saw placement
       const int nSaws = 4;
       const float padding = 2.5; // Extra space added to ends of the log. unit: vbs
@@ -243,7 +232,7 @@ namespace top1::modules {
 
   }
 
-  // Testsynth Constructor, depends on SuperSawSynthScreen definition
+  // SuperSawSynth Constructor, depends on SuperSawSynthScreen definition
   SuperSawSynth::SuperSawSynth() :
     FaustSynthModule (new FAUSTCLASS(), &data),
     screen (new SuperSawSynthScreen(this)) {}

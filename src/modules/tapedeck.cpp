@@ -97,7 +97,7 @@ namespace top1::modules {
   }
 
   void TapeModule::display() {
-    Globals::ui.display(tapeScreen);
+    Globals::ui.display(*tapeScreen);
   }
 
   // Looping

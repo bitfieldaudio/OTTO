@@ -33,7 +33,7 @@ namespace top1::modules {
   }
 
   void Metronome::display() {
-    Globals::ui.display(screen);
+    Globals::ui.display(*screen);
   }
 
   void Metronome::postBuffers(audio::ProcessData& data) {

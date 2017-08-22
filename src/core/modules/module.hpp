@@ -290,8 +290,7 @@ namespace top1::modules {
     Opt<bool>,
     Opt<float>,
     Opt<int>,
-    Opt<std::string>
-    >;
+    Opt<std::string>>;
 
 
   class Data {
@@ -323,9 +322,9 @@ namespace top1::modules {
     virtual void exit() {}
     virtual void display() {};
 
-    virtual top1::tree::Node serialize() {
+    virtual tree::Node serialize() {
       if (data != nullptr) return data->serialize();
-      return top1::tree::Null();
+      return tree::Null();
     }
     virtual void deserialize(top1::tree::Node node) {
       if (data != nullptr) data->deserialize(node);

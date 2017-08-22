@@ -21,7 +21,7 @@ namespace top1::modules {
     int sampleSampleRate = 44100;
     float sampleSpeed = 1;
 
-    std::shared_ptr<SynthSampleScreen> editScreen;
+    std::unique_ptr<SynthSampleScreen> editScreen;
 
     static const uint nVoices = 24;
 

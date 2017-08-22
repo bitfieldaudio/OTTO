@@ -13,7 +13,7 @@ namespace top1::modules {
   SimpleDrumsModule::~SimpleDrumsModule() {}
 
   void SimpleDrumsModule::display() {
-    Globals::ui.display(screen);
+    Globals::ui.display(*screen);
   }
 
   void SimpleDrumsModule::process(audio::ProcessData& data) {

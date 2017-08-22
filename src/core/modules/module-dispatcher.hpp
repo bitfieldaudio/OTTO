@@ -11,18 +11,20 @@ namespace detail {
 // Required to move implementation of ModuleDispatcher::display into the .cpp
 // This is required as this function needs to check GLOB.ui.keys
 bool isShiftPressed();
-void displayScreen(ui::Screen::ptr);
+void displayScreen(ui::Screen&);
 
 }
 
 template<class M>
 class ModuleDispatcher : public Module {
 
-  std::shared_ptr<ui::SelectorScreen<int>> selectorScreen;
+  std::unique_ptr<ui::SelectorScreen<int>> selectorScreen;
 
   struct Mstor {
     std::string key;
-    std::shared_ptr<M> val;
+    std::unique_ptr<M> val;
+
+    Mstor(const std::string& key, std::unique_ptr<M>&& v) : key (key), val (std::move(v)) {}
 
     bool operator==(const Mstor &other) const {
       return key == other.key;
@@ -48,13 +50,13 @@ public:
 
   void display() override;
 
-  std::shared_ptr<M> current();
+  M& current();
 
   void current(std::size_t cur);
 
-  void registerModule(std::string name, M *module);
+  void registerModule(const std::string& name, M *module);
 
-  void registerModule(std::string name, std::shared_ptr<M> module);
+  void registerModule(const std::string& name, std::unique_ptr<M>&& module);
 
   top1::tree::Node serialize() override;
 
@@ -103,15 +105,15 @@ ModuleDispatcher<M>::ModuleDispatcher() :
 template<typename M>
 void ModuleDispatcher<M>::display() {
   if (detail::isShiftPressed()) {
-    detail::displayScreen(selectorScreen);
+    detail::displayScreen(*selectorScreen);
   } else {
     modules[currentModule].val->display();
   }
 }
 
 template<typename M>
-std::shared_ptr<M> ModuleDispatcher<M>::current() {
-  return modules[currentModule].val;
+M& ModuleDispatcher<M>::current() {
+  return *modules[currentModule].val;
 }
 
 template<typename M>
@@ -127,37 +129,37 @@ void ModuleDispatcher<M>::current(std::size_t cur) {
 }
 
 template<typename M>
-void ModuleDispatcher<M>::registerModule(std::string name, M *module) {
-  registerModule(name, std::shared_ptr<M>(module));
+void ModuleDispatcher<M>::registerModule(const std::string& name, M *module) {
+  registerModule(name, std::unique_ptr<M>(module));
 }
 
 template<typename M>
-void ModuleDispatcher<M>::registerModule(std::string name, std::shared_ptr<M> module) {
-  selectorScreen->items.push_back({name, (int)modules.size()});
-  modules.push_back({name, module});
+void ModuleDispatcher<M>::registerModule(const std::string& name, std::unique_ptr<M>&& module) {
+  selectorScreen->items.push_back({name, (int) modules.size()});
+  modules.emplace_back(name, std::move(module));
 }
 
-template<typename M>
-top1::tree::Node ModuleDispatcher<M>::serialize() {
-  top1::tree::Map node;
-  for (auto m : modules) {
-    node[m.key] = m.val->serialize();
+  template<typename M>
+  top1::tree::Node ModuleDispatcher<M>::serialize() {
+    top1::tree::Map node;
+    for (auto&& [k, v] : modules) {
+      node[k] = v->serialize();
+    }
+    return node;
   }
-  return node;
-}
 
-template<typename M>
-void ModuleDispatcher<M>::deserialize(top1::tree::Node node) {
-  node.match([&] (top1::tree::Map n) {
-     for (auto &m : n.values) {
-       auto &&md = std::find(modules.begin(), modules.end(), m.first);
-       if (md != modules.end()) {
-         md->val->deserialize(m.second);
-       } else {
-         LOGE << "Unrecognized module";
-       }
-     }
-   }, [] (auto) {});
-}
+  template<typename M>
+  void ModuleDispatcher<M>::deserialize(top1::tree::Node node) {
+    node.match([&] (top1::tree::Map n) {
+        for (auto &m : n.values) {
+          auto &&md = std::find(modules.begin(), modules.end(), m.first);
+          if (md != modules.end()) {
+            md->val->deserialize(m.second);
+          } else {
+            LOGE << "Unrecognized module";
+          }
+        }
+      }, [] (auto) {});
+  }
 
 }

@@ -8,7 +8,7 @@ namespace top1::modules {
       return Globals::ui.keys[ui::K_SHIFT];
     }
 
-    void displayScreen(ui::Screen::ptr ptr) {
+    void displayScreen(ui::Screen& ptr) {
       Globals::ui.display(ptr);
     }
   }

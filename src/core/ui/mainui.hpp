@@ -14,9 +14,10 @@ namespace top1::ui {
   public:
 
     ui::PressedKeys keys;
+    DefaultScreen defaultScreen;
 
     MainUI() :
-      currentScreen (new DefaultScreen){}
+      currentScreen (&defaultScreen){}
 
     MainUI(MainUI&) = delete;
     MainUI(MainUI&&) = delete;
@@ -24,11 +25,11 @@ namespace top1::ui {
     void init() override;
     void exit() override;
 
-    Screen::ptr currentScreen;
+    Screen* currentScreen;
 
     std::thread uiThread;
 
-    void display(Screen::ptr screen);
+    void display(Screen& screen);
 
     void draw(drawing::Canvas& ctx) override;
     bool keypress(Key key) override;
