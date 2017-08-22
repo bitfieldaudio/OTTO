@@ -2,7 +2,7 @@
 
 #include "core/modules/module.hpp"
 
-namespace top1::module {
+namespace top1::modules {
 
   Opt<bool>::Opt(Data *data,
                  std::string name,

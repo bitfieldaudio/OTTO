@@ -4,7 +4,7 @@
 #include "core/ui/drawing.hpp"
 #include "core/globals.hpp"
 
-namespace top1::module {
+namespace top1::modules {
   SimpleDrumVoice::SimpleDrumVoice() : FaustWrapper(new FAUSTCLASS(), &data) {}
 
   SimpleDrumsModule::SimpleDrumsModule() :

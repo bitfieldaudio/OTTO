@@ -2,7 +2,7 @@
 
 #include "core/globals.hpp"
 
-namespace top1::module {
+namespace top1::modules {
   namespace detail {
     bool isShiftPressed() {
       return Globals::ui.keys[ui::K_SHIFT];

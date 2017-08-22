@@ -8,7 +8,7 @@
 #include "core/globals.hpp"
 #include "util/sndfile.hpp"
 
-namespace top1::module {
+namespace top1::modules {
 
   SynthSampler::SynthSampler() :
     SynthModule(&data),
@@ -153,7 +153,7 @@ namespace top1::ui::drawing {
   }
 } // top1::ui::drawing
 
-namespace top1::module {
+namespace top1::modules {
 
   /****************************************/
   /* SampleEditScreen                     */
@@ -185,7 +185,7 @@ namespace top1::module {
     mainWF (new audio::Waveform(50, 1.0)),
     mainWFW (mainWF, ui::drawing::mainWFsize) {}
 
-  void module::SynthSampleScreen::draw(ui::drawing::Canvas &ctx) {
+  void modules::SynthSampleScreen::draw(ui::drawing::Canvas &ctx) {
     using namespace ui::drawing;
 
     Colour colourCurrent;

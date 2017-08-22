@@ -7,7 +7,7 @@
 #include "core/ui/drawing.hpp"
 #include "modules/tapedeck.hpp"
 
-namespace top1::module {
+namespace top1::modules {
 
   /************************************************/
   /* TapeModule::State Implementation             */
@@ -425,7 +425,7 @@ namespace top1::ui::drawing {
   }
 }
 
-namespace top1::module {
+namespace top1::modules {
 
   static void drawReel(ui::drawing::Canvas& ctx, ui::drawing::Colour recColor) {
     using namespace ui::drawing;

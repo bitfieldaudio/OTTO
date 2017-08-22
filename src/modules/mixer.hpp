@@ -6,18 +6,18 @@
 
 #include "util/audio.hpp"
 
-namespace top1::module {
+namespace top1::modules {
   class MixerScreen;
 
-  class MixerModule : public module::Module {
+  class MixerModule : public modules::Module {
     std::shared_ptr<MixerScreen> screen;
   public:
 
-    struct Data : module::Data {
-      struct TrackInfo : module::Data {
-        module::Opt<float> level = {this, "LEVEL", 0.5, 0, 0.99, 0.01};
-        module::Opt<float> pan = {this, "PAN", 0, -0.9, 0.9, 0.1};
-        module::Opt<bool> muted = {this, "MUTE", false};
+    struct Data : modules::Data {
+      struct TrackInfo : modules::Data {
+        modules::Opt<float> level = {this, "LEVEL", 0.5, 0, 0.99, 0.01};
+        modules::Opt<float> pan = {this, "PAN", 0, -0.9, 0.9, 0.1};
+        modules::Opt<bool> muted = {this, "MUTE", false};
       } track[4];
 
       Data() {

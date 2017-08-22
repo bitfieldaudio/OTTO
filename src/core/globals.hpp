@@ -41,12 +41,12 @@ namespace top1 {
     static inline audio::JackAudio jackAudio;
     static inline ui::MainUI ui;
 
-    static inline module::SynthModuleDispatcher synth;
-    static inline module::SynthModuleDispatcher drums;
-    static inline module::EffectModuleDispatcher effect;
-    static inline module::TapeModule tapedeck;
-    static inline module::MixerModule mixer;
-    static inline module::Metronome metronome;
+    static inline modules::SynthModuleDispatcher synth;
+    static inline modules::SynthModuleDispatcher drums;
+    static inline modules::EffectModuleDispatcher effect;
+    static inline modules::TapeModule tapedeck;
+    static inline modules::MixerModule mixer;
+    static inline modules::Metronome metronome;
 
     static inline void init() {
       dataFile.path = "data.json";

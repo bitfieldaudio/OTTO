@@ -24,11 +24,11 @@ int main(int argc, char *argv[]) {
   std::mutex mut;
   std::unique_lock lock (mut);
 
-  Globals::drums.registerModule("Sampler", new module::DrumSampler());
-  Globals::drums.registerModule("Additive Drums", new module::SimpleDrumsModule());
+  Globals::drums.registerModule("Sampler", new modules::DrumSampler());
+  Globals::drums.registerModule("Additive Drums", new modules::SimpleDrumsModule());
 
-  Globals::synth.registerModule("Super Saw", new module::SuperSawSynth());
-  Globals::synth.registerModule("Sampler", new module::SynthSampler());
+  Globals::synth.registerModule("Super Saw", new modules::SuperSawSynth());
+  Globals::synth.registerModule("Sampler", new modules::SynthSampler());
 
   Globals::events.preInit.runAll();
   Globals::init();

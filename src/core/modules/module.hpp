@@ -14,7 +14,7 @@
 #include "util/poly-ptr.hpp"
 #include "core/audio/processor.hpp"
 
-namespace top1::module {
+namespace top1::modules {
 
   template<class T> struct is_valid_field_type       : std::false_type {};
   template<> struct is_valid_field_type<float>       : std::true_type  {};

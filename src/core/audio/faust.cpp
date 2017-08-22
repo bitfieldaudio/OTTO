@@ -4,7 +4,7 @@
 
 namespace top1::audio {
 
-  FaustWrapper::FaustWrapper(dsp *DSP, module::Data *data) :
+  FaustWrapper::FaustWrapper(dsp *DSP, modules::Data *data) :
     opts (data),
     fDSP (DSP)
   {

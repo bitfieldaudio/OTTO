@@ -30,10 +30,10 @@ public:
     BOOL
   };
 
-  module::Data *data;
+  modules::Data *data;
 
   FaustOptions() {}
-  FaustOptions(module::Data *data) : data (data) {}
+  FaustOptions(modules::Data *data) : data (data) {}
 
   void openTabBox(const char* label) override {
     if (atRoot) {
@@ -131,20 +131,20 @@ public:
     bool matched = false;
     std::string fullLabel = boxPrefix + label;
     for (auto &&opt : data->fields) {
-      auto visitor = module::FieldPtr::makeVisitor(
-        [&] (module::Opt<bool> *f) {
+      auto visitor = modules::FieldPtr::makeVisitor(
+        [&] (modules::Opt<bool> *f) {
           assert(type == BOOL);
           if (output) f->addChangeHandler([ptr] (auto *f) { f->setRaw(*ptr); });
           else f->addChangeHandler([ptr] (auto *f) { *ptr = f->get(); });
         },
-        [&] (module::Opt<float> *f) {
+        [&] (modules::Opt<float> *f) {
           assert(type == FLOAT);
           if (output)
             f->addChangeHandler([ptr] (auto *f) { f->setRaw(*ptr); });
           else
             f->addChangeHandler([ptr] (auto *f) { *ptr = f->get(); });
         },
-        [&] (module::Opt<int> *f) {
+        [&] (modules::Opt<int> *f) {
           assert(type == FLOAT);
           if (output) f->addChangeHandler([ptr] (auto *f) { f->setRaw(*ptr); });
           else f->addChangeHandler([ptr] (auto *f) { *ptr = f->get(); });
@@ -187,7 +187,7 @@ public:
     delete fDSP;
   };
 
-  FaustWrapper(dsp *DSP, module::Data *data);
+  FaustWrapper(dsp *DSP, modules::Data *data);
 
   virtual void process(audio::ProcessData& data) {
     prepBuffers(data);

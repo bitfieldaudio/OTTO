@@ -17,8 +17,7 @@ namespace top1::ui {
 
     ModuleScreen() : Screen(), module (nullptr){}
 
-    ModuleScreen(M* module) : module (module),
-                              Screen () {}
+    ModuleScreen(M* module) : Screen (), module (module) {}
 
     virtual ~ModuleScreen() {}
   };

@@ -10,11 +10,11 @@
 #include "util/tapebuffer.hpp"
 
 
-namespace top1::module {
+namespace top1::modules {
 
   using BeatPos = int;
 
-  class TapeModule : public module::Module {
+  class TapeModule : public modules::Module {
     ui::ModuleScreen<TapeModule>::ptr tapeScreen;
 
     top1::TapeTime tapePosition; // Read from here instead of the tapebuffer
@@ -67,8 +67,8 @@ namespace top1::module {
 
     } state;
 
-    struct Data : module::Data {
-      module::Opt<float> procGain = {this, "PROC_GAIN", 0.5, 0, 1, 0.01};
+    struct Data : modules::Data {
+      modules::Opt<float> procGain = {this, "PROC_GAIN", 0.5, 0, 1, 0.01};
     } data;
 
     audio::Graph procGraph;

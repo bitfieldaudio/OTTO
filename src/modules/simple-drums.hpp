@@ -7,26 +7,26 @@
 #include "core/ui/canvas.hpp"
 #include "core/ui/module-ui.hpp"
 
-namespace top1::module {
+namespace top1::modules {
   class SimpleDrumVoice : public audio::FaustWrapper {
   public:
-    struct Data : public module::Data {
-      struct Osc : module::Data {
-        module::Opt<float> freq        = {this, "FREQ", 80, 5, 500, 4.95};
-        module::Opt<float> noiseLvl    = {this, "NOISE", 0.5, 0, 1, 0.01};
-        module::Opt<float> toneDecay   = {this, "TONE_DECAY", 0, -1, 1, 0.02};
-        module::ExpOpt cutoff          = {this, "CUTOFF", 7000, 10, 7000, 1.3};
-        module::Opt<bool> filterSwitch = {this, "FILTER_SWITCH", true};
-        module::Opt<float> decayGraph  = {this, "DECAY_GRAPH", 0, -1, 1, 0,false};
+    struct Data : public modules::Data {
+      struct Osc : modules::Data {
+        modules::Opt<float> freq        = {this, "FREQ", 80, 5, 500, 4.95};
+        modules::Opt<float> noiseLvl    = {this, "NOISE", 0.5, 0, 1, 0.01};
+        modules::Opt<float> toneDecay   = {this, "TONE_DECAY", 0, -1, 1, 0.02};
+        modules::ExpOpt cutoff          = {this, "CUTOFF", 7000, 10, 7000, 1.3};
+        modules::Opt<bool> filterSwitch = {this, "FILTER_SWITCH", true};
+        modules::Opt<float> decayGraph  = {this, "DECAY_GRAPH", 0, -1, 1, 0,false};
       } D1, D2;
 
-      struct : module::Data {
-        module::Opt<float> attack      = {this, "ATTACK", 0, 0, 2, 0.02};
-        module::Opt<float> sustain     = {this, "SUSTAIN", 1, 0, 2, 0.02};
-        module::Opt<float> release     = {this, "RELEASE", 0.2, 0, 2, 0.02};
+      struct : modules::Data {
+        modules::Opt<float> attack      = {this, "ATTACK", 0, 0, 2, 0.02};
+        modules::Opt<float> sustain     = {this, "SUSTAIN", 1, 0, 2, 0.02};
+        modules::Opt<float> release     = {this, "RELEASE", 0.2, 0, 2, 0.02};
       } envelope;
 
-      module::Opt<bool> trigger = {this, "TRIGGER", false, false};
+      modules::Opt<bool> trigger = {this, "TRIGGER", false, false};
 
       Data() {
         subGroup("D1", D1);
@@ -42,7 +42,7 @@ namespace top1::module {
   };
 
 
-  class SimpleDrumsModule : public module::SynthModule {
+  class SimpleDrumsModule : public modules::SynthModule {
   public:
     std::array<SimpleDrumVoice, 24> voices;
 

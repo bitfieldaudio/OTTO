@@ -8,7 +8,7 @@
 
 #include "util/math.hpp"
 
-namespace top1::module {
+namespace top1::modules {
 
   void SuperSawSynth::display() {
     Globals::ui.display(screen);
@@ -108,7 +108,7 @@ namespace top1::ui::drawing {
   };
 } // top1::ui::drawing
 
-namespace top1::module {
+namespace top1::modules {
   // SuperSawSynthScreen definition
   class SuperSawSynthScreen : public ui::ModuleScreen<SuperSawSynth> {
 

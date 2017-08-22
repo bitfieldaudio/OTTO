@@ -9,11 +9,11 @@
 
 #include "util/dyn-array.hpp"
 
-namespace top1::module {
+namespace top1::modules {
 
   class SynthSampleScreen; // FWDCL
 
-  class SynthSampler : public module::SynthModule {
+  class SynthSampler : public modules::SynthModule {
   public:
 
     size_t maxSampleSize = 0;
@@ -25,17 +25,17 @@ namespace top1::module {
 
     static const uint nVoices = 24;
 
-    struct Data : public module::Data {
-      module::Opt<std::string> sampleName = {this, "sample name", ""};
+    struct Data : public modules::Data {
+      modules::Opt<std::string> sampleName = {this, "sample name", ""};
 
       enum Mode {
         Fwd = 0, FwdStop = 1, FwdLoop = 2,
         Bwd = -1, BwdStop = -2, BwdLoop = -3
       };
-      module::Opt<int> in = {this, "in", 0, 0, -1, 100};
-      module::Opt<int> out = {this, "out", 0, 0, -1, 100};
-      module::Opt<float> speed = {this, "speed", 1, 0, 5, 0.01};
-      module::WrapOpt<int> mode = {this, "mode", 0, -3, 2, 1};
+      modules::Opt<int> in = {this, "in", 0, 0, -1, 100};
+      modules::Opt<int> out = {this, "out", 0, 0, -1, 100};
+      modules::Opt<float> speed = {this, "speed", 1, 0, 5, 0.01};
+      modules::WrapOpt<int> mode = {this, "mode", 0, -3, 2, 1};
 
       bool fwd() const {return mode >= 0;}
       bool bwd() const {return !fwd();}

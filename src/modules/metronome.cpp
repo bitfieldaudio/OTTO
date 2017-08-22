@@ -6,7 +6,7 @@
 
 #include "metronome.faust.h"
 
-namespace top1::module {
+namespace top1::modules {
 
   Metronome::Metronome() :
     Module(&data),

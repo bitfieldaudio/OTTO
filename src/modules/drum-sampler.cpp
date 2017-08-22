@@ -29,7 +29,7 @@ namespace top1::ui::drawing {
 } // top1::ui::drawing
 
 
-namespace top1::module {
+namespace top1::modules {
 
 DrumSampler::DrumSampler() :
   SynthModule(&data),
@@ -195,7 +195,7 @@ DrumSampleScreen::DrumSampleScreen(DrumSampler *m) :
   mainWF (new audio::Waveform(50, 1.0)),
   mainWFW (mainWF, ui::drawing::mainWFsize) {}
 
-  void module::DrumSampleScreen::draw(ui::drawing::Canvas &ctx) {
+  void modules::DrumSampleScreen::draw(ui::drawing::Canvas &ctx) {
     using namespace ui::drawing;
 
     Colour colourCurrent;
