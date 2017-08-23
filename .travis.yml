@@ -7,6 +7,7 @@ install:
 - sudo apt-get update
 - sudo apt-get install -yq --no-install-suggests --no-install-recommends --force-yes libglfw3-dev libgles2-mesa-dev
 - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 90
+- sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 90
 
 addons:
   apt:
