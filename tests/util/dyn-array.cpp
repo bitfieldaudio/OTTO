@@ -89,24 +89,6 @@ SCENARIO("DynArrays can be random-accessed", "[DynArray]") {
         REQUIRE(a[index] == newValue);
       }
     }
-
-    WHEN("The [] operator is called with an index < 0") {
-      THEN("std::out_of_range is thrown") {
-        REQUIRE_THROWS_AS(a[-1], std::out_of_range);
-      }
-    }
-
-    WHEN("The [] operator is called with an index == size") {
-      THEN("std::out_of_range is thrown") {
-        REQUIRE_THROWS_AS(a[size], std::out_of_range);
-      }
-    }
-
-    WHEN("The [] operator is called with an index > size") {
-      THEN("std::out_of_range is thrown") {
-        REQUIRE_THROWS_AS(a[size+1], std::out_of_range);
-      }
-    }
   }
 }
 
