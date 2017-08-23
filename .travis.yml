@@ -20,7 +20,7 @@ addons:
 compiler: clang
 
 before_install:
-    - eval "CXX=clang++-6.0 CC=clang-6.0"
+    - eval "export CXX=clang++-6.0 && export CC=clang-6.0"
 
 script:
 - cmake . -DCMAKE_BUILD_TYPE=Release
