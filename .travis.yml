@@ -1,11 +1,17 @@
 language: cpp
 
 dist: trusty
-sudo: false
+sudo: required
+
+install:
+- echo "deb http://ppa.launchpad.net/keithw/glfw3/ubuntu trusty main" | sudo tee -a /etc/apt/sources.list.d/fillwave_ext.list
+- sudo apt-get update
+- sudo apt-get install libglfw3-dev
 
 addons:
   apt:
     sources:
+    - trusty
     - llvm-toolchain-trusty
     packages:
     - cmake
