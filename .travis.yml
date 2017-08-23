@@ -5,6 +5,7 @@ install:
 - echo "deb http://ppa.launchpad.net/keithw/glfw3/ubuntu trusty main" | sudo tee -a /etc/apt/sources.list.d/fillwave_ext.list
 - sudo apt-get update
 - sudo apt-get install -yq --no-install-suggests --no-install-recommends --force-yes libglfw3-dev libgles2-mesa-dev
+- sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 90
 
 addons:
   apt:
@@ -14,6 +15,7 @@ addons:
     packages:
     - cmake
     - clang-6.0
+    - gcc-7
     - libc++-dev
     - libc++abi-dev
     - pkg-config
