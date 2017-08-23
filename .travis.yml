@@ -1,0 +1,22 @@
+language: cpp
+
+dist: trusty
+sudo: false
+
+addons:
+  apt:
+    sources:
+    - llvm-toolchain-trusty
+    packages:
+    - cmake
+    - clang-6.0
+    - pkg-config
+    - libglfw3-dev
+    - libjack-jackd2-dev
+    - libgles2-mesa-dev
+
+  script:
+  - cmake . -DCMAKE_BUILD_TYPE=Release
+  - make all
+  - bin/tests
+    
