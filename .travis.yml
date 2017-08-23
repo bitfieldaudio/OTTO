@@ -11,15 +11,18 @@ install:
 addons:
   apt:
     sources:
+    - ubuntu-toolchain-r-test
     - llvm-toolchain-trusty
     packages:
     - cmake
     - clang-6.0
     - pkg-config
     - libjack-jackd2-dev
+    
+compiler: clang
 
-  script:
-  - cmake . -DCMAKE_BUILD_TYPE=Release
-  - make all
-  - bin/tests
+script:
+- cmake . -DCMAKE_BUILD_TYPE=Release
+- make all
+- bin/tests
     
