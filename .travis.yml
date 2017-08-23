@@ -16,6 +16,7 @@ addons:
     packages:
     - cmake
     - clang-6.0
+    - gcc-7
     - pkg-config
     - libjack-jackd2-dev
     
