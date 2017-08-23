@@ -20,7 +20,7 @@ addons:
     - pkg-config
     - libjack-jackd2-dev
     
-compiler: clang
+compiler: clang-6.0
 
 script:
 - cmake . -DCMAKE_BUILD_TYPE=Release
