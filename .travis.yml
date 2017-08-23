@@ -14,7 +14,8 @@ addons:
     packages:
     - cmake
     - clang-6.0
-    - libstdc++-6-dev
+    - libc++-dev
+    - libc++abi-dev
     - pkg-config
     - libjack-jackd2-dev
     
@@ -26,7 +27,7 @@ before_script:
     - eval "export CXX=clang++-6.0 && export CC=clang-6.0"
 
 script:
-- cmake . -DCMAKE_BUILD_TYPE=Release
+- cmake . -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-stdlib=libc++"
 - make all
 - bin/tests
     
