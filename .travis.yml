@@ -21,6 +21,8 @@ compiler: clang
 
 before_install:
     - eval "export CXX=clang++-6.0 && export CC=clang-6.0"
+before_script:
+    - eval "export CXX=clang++-6.0 && export CC=clang-6.0"
 
 script:
 - cmake . -DCMAKE_BUILD_TYPE=Release
