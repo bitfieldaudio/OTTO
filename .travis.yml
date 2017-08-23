@@ -20,7 +20,9 @@ addons:
     - pkg-config
     - libjack-jackd2-dev
     
-env: CXX=clang++-6.0 CC=clang-6.0
+env:
+- CXX=clang++-6.0 
+- CC=clang-6.0
 
 script:
 - cmake . -DCMAKE_BUILD_TYPE=Release
