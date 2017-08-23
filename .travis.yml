@@ -1,5 +1,3 @@
-language: cpp
-
 dist: trusty
 sudo: required
 
@@ -16,13 +14,13 @@ addons:
     packages:
     - cmake
     - clang-6.0
-    - gcc-7
     - pkg-config
     - libjack-jackd2-dev
     
-env:
-- CXX=clang++-6.0 
-- CC=clang-6.0
+compiler: clang
+
+before_install:
+    - eval "CXX=clang++-6.0 CC=clang-6.0"
 
 script:
 - cmake . -DCMAKE_BUILD_TYPE=Release
