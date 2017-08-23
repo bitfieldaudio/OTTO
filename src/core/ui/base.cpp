@@ -3,13 +3,13 @@
 
 namespace top1::ui {
 
-void DefaultScreen::draw(drawing::Canvas& ctx) {
-  using namespace drawing;
+  void DefaultScreen::draw(drawing::Canvas& ctx) {
+    using namespace drawing;
 
-}
+  }
 
-bool DefaultScreen::keypress(Key key) {
-  return false;
-}
+  bool DefaultScreen::keypress(Key key) {
+    return false;
+  }
 
 }

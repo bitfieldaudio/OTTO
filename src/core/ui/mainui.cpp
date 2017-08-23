@@ -25,10 +25,30 @@ namespace top1::ui {
   }
 
   bool MainUI::keypress(ui::Key key) {
+    switch (key) {
+    case K_RED_UP:
+      currentScreen->rotary({Rotary::Red, 1}); break;
+    case K_RED_DOWN:
+      currentScreen->rotary({Rotary::Red, -1}); break;
+    case K_BLUE_UP:
+      currentScreen->rotary({Rotary::Blue, 1}); break;
+    case K_BLUE_DOWN:
+      currentScreen->rotary({Rotary::Blue, -1}); break;
+    case K_WHITE_UP:
+      currentScreen->rotary({Rotary::White, 1}); break;
+    case K_WHITE_DOWN:
+      currentScreen->rotary({Rotary::White, -1}); break;
+    case K_GREEN_UP:
+      currentScreen->rotary({Rotary::Green, 1}); break;
+    case K_GREEN_DOWN:
+      currentScreen->rotary({Rotary::Green, -1}); break;
+    }
+    // TODO: Don't run both events
     keys[key] = true;
     if (globKeyPre(key)) return true;
     if (currentScreen->keypress(key)) return true;
     return globKeyPost(key);
+    return true;
   }
 
   bool MainUI::keyrelease(ui::Key key) {

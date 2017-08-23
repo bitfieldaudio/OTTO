@@ -117,6 +117,7 @@ namespace top1::modules {
 
     virtual void draw(ui::drawing::Canvas& ctx) override;
     virtual bool keypress(ui::Key key) override;
+    virtual void rotary(ui::RotaryEvent e) override;
 
   public:
     using ui::ModuleScreen<SuperSawSynth>::ModuleScreen;
@@ -127,6 +128,10 @@ namespace top1::modules {
     default:
       return false;
     }
+  }
+
+  void SuperSawSynthScreen::rotary(ui::RotaryEvent e) {
+    
   }
 
   // Main drawing method
