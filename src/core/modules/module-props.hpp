@@ -40,7 +40,9 @@ namespace top1::modules {
     template<typename T>
     struct sized_step_mode {
 
-      sized_step_mode(T min, T max, T step = 1.0)
+      sized_step_mode(T min = std::numeric_limits<T>::min(),
+                      T max = std::numeric_limits<T>::max(),
+                      T step = 1.0)
         : min (min), max (max), stepSize (step) {}
 
       void step(T& value, int steps) {
@@ -125,19 +127,73 @@ namespace top1::modules {
     static_assert(is_mode_v<wrap_mode<uint>>);
   }
 
-
   struct PropertyBase {
     std::string name;
+    bool store;
+
+    PropertyBase(std::string name, bool store = true)
+      : name (name), store (store) {}
+
+    virtual tree::Node makeNode() {
+      return tree::Null();
+    }
   };
 
-  template<typename T, typename mode_tag = modes::default_tag,
+  class Properties : public PropertyBase {
+  public:
+
+    // Raw pointers, because lifetime should be managed elsewhere
+    using PropertyStorage = PropertyBase*;
+
+    Properties()
+      : PropertyBase{"", true} {}
+
+    Properties(Properties* p, std::string n, bool s = true)
+      : PropertyBase{n, s} {
+      p->add(this);
+    }
+
+    void add(PropertyBase* ptr) {
+      props.push_back(ptr);
+    }
+
+    void add(PropertyBase& ptr) {
+      props.push_back(&ptr);
+    }
+
+    auto size() const { return props.size(); }
+    auto begin() { return props.begin(); }
+    auto begin() const { return props.begin(); }
+    auto end() { return props.end(); }
+    auto end() const { return props.end(); }
+    PropertyBase& operator[](std::size_t idx) { return *props[idx]; }
+    PropertyBase& operator[](std::size_t idx) const { return *props[idx]; }
+
+    tree::Node makeNode() override {
+      std::unordered_map<std::string, tree::Node> map;
+      for (auto&& p : props) {
+        if (p->store) {
+          map[p->name] = p->makeNode();
+        }
+      }
+      return tree::Map{std::move(map)};
+    }
+
+  protected:
+    std::vector<PropertyStorage> props;
+  };
+
+    template<typename T, typename mode_tag = modes::default_tag,
+           bool _store = true,
            typename mode_type = typename modes::mode_for_tag<T, mode_tag>::mode>
-  struct Property : public PropertyBase {
+  struct Property final : public PropertyBase {
     using Value = T;
     using Mode = mode_type;
 
-    Property(const std::string& n, Value v, const Mode& mode = Mode())
-      : PropertyBase {name}, value(v), mode (mode) {}
+    Property(Properties* owner, const std::string& n, Value v = Value(), const Mode& mode = Mode())
+      : PropertyBase {n, _store}, value(v), mode (mode) {
+        owner->add(this);
+      }
 
     Property(Property&) = delete;
 
@@ -158,27 +214,14 @@ namespace top1::modules {
       return value;
     }
 
+    tree::Node makeNode() override {
+      return tree::makeNode(value);
+    }
+
     Value value;
     Mode mode;
   };
 
-  class Properties {
-  public:
-
-    // Raw pointers, because lifetime should be managed elsewhere
-    using PropertyStorage = PropertyBase*;
-
-    auto begin() { return props.begin(); }
-
-    auto begin() const { return props.begin(); }
-    auto end() { return props.end(); }
-    auto end() const { return props.end(); }
-    auto operator[](std::size_t idx) { return *props[idx]; }
-    auto operator[](std::size_t idx) const { return *props[idx]; }
-
-  protected:
-    std::vector<PropertyStorage> props;
-  };
 
   // Static tests
   static_assert(std::is_same<Property<float>::Mode,
@@ -188,4 +231,19 @@ namespace top1::modules {
   static_assert(std::is_same<Property<bool>::Mode, modes::toggle_mode>::value,
                 "Default mode of Property<bool> should be toggle_mode");
 
-}
+} // top1::modules
+
+namespace top1::tree {
+
+  template<>
+  Node makeNode<const modules::Properties&>(const modules::Properties& props) {
+    std::unordered_map<std::string, tree::Node> map;
+    for (auto&& p : props) {
+      if (p->store) {
+        map[p->name] = p->makeNode();
+      }
+    }
+    return tree::Map{std::move(map)};
+  }
+
+} // top1::tree

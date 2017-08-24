@@ -11,10 +11,24 @@
 
 namespace top1::tree {
 
-  struct String { std::string value; };
-  struct Int    { int value; };
-  struct Float  { float value; };
-  struct Bool   { bool value; };
+  struct String {
+
+    String(const std::string& s) : value (s) {}
+    String(std::string&& s) : value(std::move(s)) {}
+    std::string value;
+
+    operator std::string() {return value;}
+  };
+
+  struct Int    {
+    int value;
+  };
+  struct Float  {
+    float value;
+  };
+  struct Bool   {
+    bool value;
+  };
   struct Null   { };
 
   // Forward declarations only
@@ -40,7 +54,6 @@ namespace top1::tree {
 
   struct Map {
     std::unordered_map<std::string, Node> values;
-
     auto &operator[](std::string k) { return values[k];}
     auto begin() { return values.begin(); }
     auto end() { return values.end(); }
