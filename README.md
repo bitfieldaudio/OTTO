@@ -1,4 +1,5 @@
 # TOP-1: **T**otally **O**riginal **P**roject-**1**
+[![Build Status](https://travis-ci.org/topisani/TOP-1.svg?branch=master)](https://travis-ci.org/topisani/TOP-1)
 
 Ah, who doesnt love the [op-1](http://teenage.engineering/products/op-1)? Its a magical beast of modern technology! Everything you need to play around with electronic music, in one self-contained device. Its pretty close to perfect, but not quite - its simplicity is its power, but it's also the source of its shortcomings. And then of course, it's not open source.
 
@@ -44,6 +45,9 @@ These are the keybindings currently emulating the hardware buttons:
  - [ ] Sampler - This is the big one!
  - [ ] Modulation - LFO mainly
 And from there its just modules, modules, modules
+
+# Installation
+The bellow details are outdated, take a look at `.travis.yml` to see a way to install it. I will update these instructions soon™
 
 # Docker
 The recommended way to run and develop for the TOP-1 is using the docker image. It includes all the required tools and dependencies, and should work out of the box on any linux machine.

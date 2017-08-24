@@ -1,0 +1,30 @@
+language: cpp
+dist: trusty
+sudo: required
+
+install:
+- echo "deb http://ppa.launchpad.net/keithw/glfw3/ubuntu trusty main" | sudo tee -a /etc/apt/sources.list.d/fillwave_ext.list
+- sudo apt-get update
+- sudo apt-get install -yq --no-install-suggests --no-install-recommends --force-yes libglfw3-dev libgles2-mesa-dev
+- sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 90
+- sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 90
+
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    - llvm-toolchain-trusty
+    packages:
+    - cmake
+    - clang-6.0
+    - g++-7
+    - pkg-config
+    - libjack-jackd2-dev
+    
+compiler: gcc
+
+script:
+- cmake . -DCMAKE_BUILD_TYPE=Release
+- make all
+- bin/tests
+    
