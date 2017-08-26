@@ -4,8 +4,8 @@
 
 namespace top1::audio {
 
-  FaustWrapper::FaustWrapper(dsp *DSP, modules::Data *data) :
-    opts (data),
+  FaustWrapper::FaustWrapper(dsp *DSP, modules::Properties& props) :
+    opts (&props),
     fDSP (DSP)
   {
     inBuffer = (FAUSTFLOAT **) malloc(sizeof(FAUSTFLOAT **)
@@ -32,10 +32,10 @@ namespace top1::audio {
       inBuffer[0] = (FAUSTFLOAT *) malloc(sizeof(FAUSTFLOAT) * Globals::jackAudio.bufferSize);
     }
     for (int i = 0; i < fDSP->getNumOutputs(); i++) {
-      *outBuffer = (FAUSTFLOAT *) malloc(sizeof(FAUSTFLOAT) * Globals::jackAudio.bufferSize);
+      outBuffer[0] = (FAUSTFLOAT *) malloc(sizeof(FAUSTFLOAT) * Globals::jackAudio.bufferSize);
     }
-    for (auto f : opts.data->fields) {
-      if (!f.second->preserve) f.second->reset();
+    for (auto&& p : *opts.props) {
+      if (!p->store) p->reset();
     }
   }
 

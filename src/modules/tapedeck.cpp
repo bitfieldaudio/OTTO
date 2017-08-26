@@ -10,99 +10,99 @@
 namespace top1::modules {
 
   /************************************************/
-  /* TapeModule::State Implementation             */
+  /* Tapedeck::State Implementation             */
   /************************************************/
 
-  bool TapeModule::State::doSwitchTracks() const {
+  bool Tapedeck::State::doSwitchTracks() const {
     return !recording();
   }
-  bool TapeModule::State::doTapeOps() const {
+  bool Tapedeck::State::doTapeOps() const {
     return stopped();
   }
-  bool TapeModule::State::doPlayAudio() const {
+  bool Tapedeck::State::doPlayAudio() const {
     return playSpeed != 0;
   }
-  bool TapeModule::State::doEaseIn() const {
+  bool Tapedeck::State::doEaseIn() const {
     return !recording();
   }
-  bool TapeModule::State::doStartRec() const {
+  bool Tapedeck::State::doStartRec() const {
     return !spooling() && !recording();
   }
-  bool TapeModule::State::doStartSpool() const {
+  bool Tapedeck::State::doStartSpool() const {
     return !recording();
   }
-  bool TapeModule::State::doLoop() const {
+  bool Tapedeck::State::doLoop() const {
     return playing();
   }
-  bool TapeModule::State::doJumps() const {
+  bool Tapedeck::State::doJumps() const {
     return stopped();
   }
 
-  bool TapeModule::State::playing() const {
+  bool Tapedeck::State::playing() const {
     return playType == PLAYING;
   }
-  bool TapeModule::State::spooling() const {
+  bool Tapedeck::State::spooling() const {
     return playType == SPOOLING;
   }
-  bool TapeModule::State::stopped() const {
+  bool Tapedeck::State::stopped() const {
     return playType == STOPPED;
   }
-  bool TapeModule::State::recording() const {
+  bool Tapedeck::State::recording() const {
     return readyToRec && playing();
   }
 
   // Playback control
 
-  void TapeModule::State::play(float speed) {
+  void Tapedeck::State::play(float speed) {
     playType = PLAYING;
     nextSpeed = speed;
   }
 
-  void TapeModule::State::spool(float speed) {
+  void Tapedeck::State::spool(float speed) {
     if (!doStartSpool()) return;
     playType = SPOOLING;
     nextSpeed = speed;
   }
 
-  void TapeModule::State::stop() {
+  void Tapedeck::State::stop() {
     stopRecord();
     playType = STOPPED;
     nextSpeed = 0;
   }
 
-  void TapeModule::State::startRecord() {
+  void Tapedeck::State::startRecord() {
     if (!doStartRec()) return;
     readyToRec = true;
   }
 
-  void TapeModule::State::stopRecord() {
+  void Tapedeck::State::stopRecord() {
     readyToRec = false;
   }
 
   /************************************************/
-  /* TapeModule Implementation                    */
+  /* Tapedeck Implementation                    */
   /************************************************/
 
-  TapeModule::TapeModule() :
-    Module(&data),
+  Tapedeck::Tapedeck() :
+    Module(&props),
     tapeScreen (new TapeScreen(this)) {}
 
-  void TapeModule::init() {
+  void Tapedeck::init() {
     tapeBuffer.init();
     display();
   }
 
-  void TapeModule::exit() {
+  void Tapedeck::exit() {
     tapeBuffer.exit();
   }
 
-  void TapeModule::display() {
+  void Tapedeck::display() {
     Globals::ui.display(*tapeScreen);
   }
 
   // Looping
 
-  void TapeModule::loopInHere() {
+  void Tapedeck::loopInHere() {
     loopSect.in = tapeBuffer.position();
     if (loopSect.in == loopSect.out) {
       loopSect.in = -1;
@@ -113,7 +113,7 @@ namespace top1::modules {
     }
   }
 
-  void TapeModule::loopOutHere() {
+  void Tapedeck::loopOutHere() {
     loopSect.out = tapeBuffer.position();
     if (loopSect.in == loopSect.out) {
       loopSect.in = -1;
@@ -127,28 +127,28 @@ namespace top1::modules {
     }
   }
 
-  void TapeModule::goToLoopIn() {
+  void Tapedeck::goToLoopIn() {
     if (state.recording()) return;
     if (loopSect.in < 0) return;
     tapeBuffer.goTo(loopSect.in);
   }
 
-  void TapeModule::goToLoopOut() {
+  void Tapedeck::goToLoopOut() {
     if (state.recording()) return;
     if (loopSect.out < 0) return;
     tapeBuffer.goTo(loopSect.out);
   }
 
 
-  void TapeModule::goToBar(BeatPos bar) {
+  void Tapedeck::goToBar(BeatPos bar) {
     if (state.doJumps()) tapeBuffer.goTo(Globals::metronome.getBarTime(bar));
   }
 
-  void TapeModule::goToBarRel(BeatPos bars) {
+  void Tapedeck::goToBarRel(BeatPos bars) {
     if (state.doJumps()) tapeBuffer.goTo(Globals::metronome.getBarTimeRel(bars));
   }
 
-  int TapeModule::timeUntil(TapeTime tt) {
+  int Tapedeck::timeUntil(TapeTime tt) {
     TapeTime ttUntil = state.forPlayDir<TapeTime>([&] {return tt - position();},
                                                   [&] {return position() - tt;});
     if (state.doLoop() && state.looping) {
@@ -166,7 +166,7 @@ namespace top1::modules {
   }
 
   // Audio Processing
-  void TapeModule::preProcess(audio::ProcessData& data) {
+  void Tapedeck::preProcess(audio::ProcessData& data) {
 
     tapePosition = tapeBuffer.position();
     {
@@ -255,7 +255,7 @@ namespace top1::modules {
     }
   }
 
-  void TapeModule::postProcess(audio::ProcessData& data) {
+  void Tapedeck::postProcess(audio::ProcessData& data) {
     TapeTime pos = tapeBuffer.position();
     if (!state.recording() && state.recLast) {
       recSect = {0,0};
@@ -318,7 +318,7 @@ namespace top1::modules {
     state.recLast = state.recording();
 
     for (uint i = 0; i < data.nframes; i++) {
-      procGraph.add(data.audio.proc[i] * this->data.procGain);
+      procGraph.add(data.audio.proc[i] * props.gain);
     }
   }
 
@@ -381,14 +381,22 @@ namespace top1::modules {
       if (module->state.doTapeOps())
         module->tapeBuffer.drop(module->state.track);
       return true;
-    case ui::K_RED_UP:
-      module->data.procGain.inc();
-      return true;
-    case ui::K_RED_DOWN:
-      module->data.procGain.dec();
-      return true;
     default:
       return false;
+    }
+  }
+
+  void TapeScreen::rotary(ui::RotaryEvent e) {
+    switch (e.rotary) {
+    case ui::Rotary::Blue:
+      break;
+    case ui::Rotary::Green:
+      break;
+    case ui::Rotary::White:
+      break;
+    case ui::Rotary::Red:
+      module->props.gain.step(e.clicks);
+      break;
     }
   }
 
@@ -806,8 +814,7 @@ namespace top1::modules {
     ctx.miterLimit(4);
     ctx.lineWidth(2);
 
-    // TODO: Real value
-    int BPM = Globals::metronome.data.bpm;
+    int BPM = Globals::metronome.props.bpm;
     float FPB = float(Globals::samplerate) * 60.0/((float)BPM);
 
     // Bar Markers
@@ -1063,7 +1070,7 @@ namespace top1::modules {
       ctx.stroke();
       ctx.fillStyle(Colours::Red);
       ctx.beginPath();
-      ctx.circle(305, 240 - 81.5 - module->data.procGain.normalized() * 105, 3);
+      ctx.circle(305, 240 - 81.5 - module->props.gain.mode.normalize() * 105, 3);
       ctx.fill();
     }
 

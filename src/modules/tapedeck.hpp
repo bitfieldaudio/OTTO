@@ -14,8 +14,8 @@ namespace top1::modules {
 
   using BeatPos = int;
 
-  class TapeModule : public modules::Module {
-    ui::ModuleScreen<TapeModule>::ptr tapeScreen;
+  class Tapedeck final : public modules::Module {
+    ui::ModuleScreen<Tapedeck>::ptr tapeScreen;
 
     top1::TapeTime tapePosition; // Read from here instead of the tapebuffer
   public:
@@ -67,9 +67,9 @@ namespace top1::modules {
 
     } state;
 
-    struct Data : modules::Data {
-      modules::Opt<float> procGain = {this, "PROC_GAIN", 0.5, 0, 1, 0.01};
-    } data;
+    struct Props : Properties {
+      Property<float> gain = {this, "PROC_GAIN", 0.5, {0, 1, 0.01}};
+    } props;
 
     audio::Graph procGraph;
 
@@ -78,9 +78,9 @@ namespace top1::modules {
 
     top1::TapeBuffer tapeBuffer;
 
-    TapeModule();
-    TapeModule(TapeModule&) = delete;
-    TapeModule(TapeModule&&) = delete;
+    Tapedeck();
+    Tapedeck(Tapedeck&) = delete;
+    Tapedeck(Tapedeck&&) = delete;
 
     void init() override;
     void exit() override;
@@ -108,17 +108,18 @@ namespace top1::modules {
     int timeUntil(top1::TapeTime tt);
   };
 
-  class TapeScreen : public ui::ModuleScreen<TapeModule> {
+  class TapeScreen : public ui::ModuleScreen<Tapedeck> {
     bool stopRecOnRelease = true;
   private:
-    virtual void draw(ui::drawing::Canvas& ctx) override;
+    void draw(ui::drawing::Canvas& ctx) override;
 
-    virtual bool keypress(ui::Key key) override;
-    virtual bool keyrelease(ui::Key key) override;
+    bool keypress(ui::Key key) override;
+    void rotary(ui::RotaryEvent) override;
+
+    bool keyrelease(ui::Key key) override;
 
   public:
-
-    TapeScreen(TapeModule *module) : ui::ModuleScreen<TapeModule>(module) {}
+    using ui::ModuleScreen<Tapedeck>::ModuleScreen;
   };
 
 } // top1::module

@@ -5,6 +5,7 @@
 #include <string>
 #include <cstring>
 #include <memory>
+#include <algorithm>
 
 #include <faust/gui/UI.h>
 #include <faust/gui/meta.h>
@@ -12,7 +13,11 @@
 
 #include <plog/Log.h>
 
+#include "util/type_traits.hpp"
+#include "util/algorithm.hpp"
+
 #include "core/modules/module.hpp"
+#include "core/modules/module-props.hpp"
 
 namespace top1::audio {
 
@@ -20,7 +25,7 @@ using FaustDSP = dsp;
 
 class FaustOptions : public UI {
 
-  std::string boxPrefix;
+  std::vector<std::string> boxes;
   bool atRoot = true;
 
 public:
@@ -30,16 +35,16 @@ public:
     BOOL
   };
 
-  modules::Data *data;
+  modules::Properties *props;
 
   FaustOptions() {}
-  FaustOptions(modules::Data *data) : data (data) {}
+  FaustOptions(modules::Properties* props) : props (props) {}
 
   void openTabBox(const char* label) override {
     if (atRoot) {
       atRoot = false;
     } else {
-      boxPrefix.append(label).append("/");
+      boxes.push_back(label);
     }
   }
 
@@ -47,26 +52,18 @@ public:
     if (atRoot) {
       atRoot = false;
     } else {
-      boxPrefix.append(label).append("/");
+      boxes.push_back(label);
     }
   }
   void openVerticalBox(const char* label) override {
     if (atRoot) {
       atRoot = false;
     } else {
-      boxPrefix.append(label).append("/");
+      boxes.push_back(label);
     }
   }
   void closeBox() override {
-    uint last = 0;
-    uint secLast = 0;
-    std::string::size_type found = 0;
-    while (found != std::string::npos) {
-      secLast = last;
-      last = found;
-      found = boxPrefix.find("/", last + 1);
-    }
-    boxPrefix.erase(boxPrefix.begin() + secLast, boxPrefix.end());
+    if (!boxes.empty()) boxes.pop_back();
   }
   void addHorizontalBargraph(
     const char* label, FAUSTFLOAT* zone,
@@ -128,42 +125,33 @@ public:
     OPTTYPE type,
     bool output = false) {
 
-    bool matched = false;
-    std::string fullLabel = boxPrefix + label;
-    for (auto &&opt : data->fields) {
-      auto visitor = modules::FieldPtr::makeVisitor(
-        [&] (modules::Opt<bool> *f) {
-          assert(type == BOOL);
-          if (output) f->addChangeHandler([ptr] (auto *f) { f->setRaw(*ptr); });
-          else f->addChangeHandler([ptr] (auto *f) { *ptr = f->get(); });
-        },
-        [&] (modules::Opt<float> *f) {
-          assert(type == FLOAT);
-          if (output)
-            f->addChangeHandler([ptr] (auto *f) { f->setRaw(*ptr); });
-          else
-            f->addChangeHandler([ptr] (auto *f) { *ptr = f->get(); });
-        },
-        [&] (modules::Opt<int> *f) {
-          assert(type == FLOAT);
-          if (output) f->addChangeHandler([ptr] (auto *f) { f->setRaw(*ptr); });
-          else f->addChangeHandler([ptr] (auto *f) { *ptr = f->get(); });
-        },
-        [&] (auto *) {
-          LOGE << "Unrecognized Opt type";
-        });
-      if (opt.first == fullLabel) {
-        opt.second.visit(visitor);
-        opt.second->changed();
-        matched = true;
-        break;
+    boxes.emplace_back(label);
+
+    auto lookingFor = boxes.begin();
+    auto b = props->begin();
+    auto e = props->end();
+    while (true) {
+      auto it = std::find_if(b, e,
+                             [&](auto&& p) {
+                               return p->name == *lookingFor;
+                             });
+      if (it != e) {
+        if (++lookingFor == boxes.end()) { // Found
+          (*it)->linkToFaust(ptr, output);
+          break;
+        } else {
+          if (auto* p = dynamic_cast<modules::Properties*>(*it); p != nullptr) {
+            b = p->begin();
+            e = p->end();
+          }
+        }
       } else {
-        // TODO: Traverse the module data as a tree
+        LOGE << "Couldn't find property matching " << join_strings(boxes.begin(), boxes.end(), "/").c_str();
+        break;
       }
     }
-    if (!matched) {
-      LOGF << "Unmatched option " << fullLabel;
-    }
+
+    boxes.pop_back();
   }
 };
 
@@ -187,7 +175,7 @@ public:
     delete fDSP;
   };
 
-  FaustWrapper(dsp *DSP, modules::Data *data);
+  FaustWrapper(dsp *DSP, modules::Properties& data);
 
   virtual void process(audio::ProcessData& data) {
     prepBuffers(data);

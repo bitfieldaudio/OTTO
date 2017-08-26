@@ -18,9 +18,9 @@ namespace top1::modules {
     for (auto &&nEvent : data.midi) {
       nEvent.match([&] (midi::NoteOnEvent *e) {
           if (e->channel == 0) {
-            this->data.key = e->key;
-            this->data.trigger = 1;
-            this->data.velocity = float(e->velocity)/128.f;
+            props.key = e->key;
+            props.trigger = 1;
+            props.velocity = float(e->velocity)/128.f;
           }
         }, [] (auto) {});
     }
@@ -28,8 +28,8 @@ namespace top1::modules {
     for (auto &&nEvent : data.midi) {
       nEvent.match([&] (midi::NoteOffEvent *e) {
           if (e->channel == 0) {
-            if (e->key == this->data.key) {
-              this->data.trigger = 0;
+            if (e->key == props.key) {
+              props.trigger = 0;
             }
           }
         }, [] (auto) {});
@@ -239,7 +239,7 @@ namespace top1::modules {
 
   // SuperSawSynth Constructor, depends on SuperSawSynthScreen definition
   SuperSawSynth::SuperSawSynth() :
-    FaustSynthModule (new FAUSTCLASS(), &data),
+    FaustSynthModule (new FAUSTCLASS(), &props),
     screen (new SuperSawSynthScreen(this)) {}
 
 }

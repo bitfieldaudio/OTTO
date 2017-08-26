@@ -11,7 +11,7 @@
 namespace top1::modules {
 
   SynthSampler::SynthSampler() :
-    SynthModule(&data),
+    SynthModule(&props),
     maxSampleSize (16 * Globals::samplerate),
     sampleData (maxSampleSize),
     editScreen (new SynthSampleScreen(this)) {
@@ -27,49 +27,49 @@ namespace top1::modules {
     for (auto &&nEvent : data.midi) {
       nEvent.match([&] (midi::NoteOnEvent *e) {
           if (e->channel == 0) {
-            this->data.playProgress = (this->data.fwd()) ? 0 : this->data.length() - 1;
-            this->data.trigger = true;
+            props.playProgress = (props.fwd()) ? 0 : props.length() - 1;
+            props.trigger = true;
           }
         }, [] (auto) {});
     }
 
-    float playSpeed = this->data.speed * sampleSpeed;
+    float playSpeed = props.speed * sampleSpeed;
 
     // Process audio
-    if (this->data.playProgress >= 0 && playSpeed > 0) {
-      if (this->data.fwd()) {
-        if (this->data.loop() && this->data.trigger) {
+    if (props.playProgress >= 0 && playSpeed > 0) {
+      if (props.fwd()) {
+        if (props.loop() && props.trigger) {
           for(int i = 0; i < data.nframes; ++i) {
-            data.audio.proc[i] += sampleData[this->data.in + this->data.playProgress];
-            this->data.playProgress += playSpeed;
-            if (this->data.playProgress >= this->data.length()) {
-              this->data.playProgress = 0;
+            data.audio.proc[i] += sampleData[props.in + props.playProgress];
+            props.playProgress += playSpeed;
+            if (props.playProgress >= props.length()) {
+              props.playProgress = 0;
             }
           }
         } else {
-          int frms = std::min<int>(data.nframes, this->data.length() - this->data.playProgress);
+          int frms = std::min<int>(data.nframes, props.length() - props.playProgress);
           for(int i = 0; i < frms; ++i) {
-            data.audio.proc[i] += sampleData[this->data.in + this->data.playProgress];
-            this->data.playProgress += playSpeed;
+            data.audio.proc[i] += sampleData[props.in + props.playProgress];
+            props.playProgress += playSpeed;
           }
-          if (this->data.playProgress >= this->data.length()) {
-            this->data.playProgress = -1;
+          if (props.playProgress >= props.length()) {
+            props.playProgress = -1;
           }
         }
       } else {
-        if (this->data.loop() && this->data.trigger) {
+        if (props.loop() && props.trigger) {
           for(int i = 0; i < data.nframes; ++i) {
-            data.audio.proc[i] += sampleData[this->data.in + this->data.playProgress];
-            this->data.playProgress -= playSpeed;
-            if (this->data.playProgress < 0) {
-              this->data.playProgress = this->data.length() -1;
+            data.audio.proc[i] += sampleData[props.in + props.playProgress];
+            props.playProgress -= playSpeed;
+            if (props.playProgress < 0) {
+              props.playProgress = props.length() -1;
             }
           }
         } else {
-          int frms = std::min<int>(data.nframes, this->data.playProgress);
+          int frms = std::min<int>(data.nframes, props.playProgress);
           for(int i = 0; i < frms; ++i) {
-            data.audio.proc[i] += sampleData[this->data.in + this->data.playProgress];
-            this->data.playProgress -= playSpeed;
+            data.audio.proc[i] += sampleData[props.in + props.playProgress];
+            props.playProgress -= playSpeed;
           }
         }
       }
@@ -78,9 +78,9 @@ namespace top1::modules {
     for (auto &&nEvent : data.midi) {
       nEvent.match([&] (midi::NoteOffEvent *e) {
           if (e->channel == 0) {
-            this->data.trigger = false;
-            if (this->data.stop()) {
-              this->data.playProgress = -1;
+            props.trigger = false;
+            if (props.stop()) {
+              props.playProgress = -1;
             }
           }
         }, [] (auto) {});
@@ -92,7 +92,7 @@ namespace top1::modules {
   }
 
   void SynthSampler::load() {
-    SndFile<1> sf (samplePath(data.sampleName));
+    SndFile<1> sf (samplePath(props.sampleName));
 
     size_t rs = std::min(maxSampleSize, sf.size());
 
@@ -102,13 +102,13 @@ namespace top1::modules {
     sampleSampleRate = sf.samplerate;
     sampleSpeed = sampleSampleRate / float(Globals::samplerate);
 
-    data.in.max = rs;
-    data.out.max = rs;
+    props.in.mode.max = rs;
+    props.out.mode.max = rs;
 
     // Auto assign voices
-    if (data.in < 0 || data.out >= rs) {
-      data.in = 0;
-      data.out = rs;
+    if (props.in < 0 || props.out >= rs) {
+      props.in = 0;
+      props.out = rs;
     }
 
     auto &mwf = editScreen->mainWF;
@@ -159,23 +159,20 @@ namespace top1::modules {
   /* SampleEditScreen                     */
   /****************************************/
 
-  bool SynthSampleScreen::keypress(ui::Key key) {
-    using namespace ui;
-    auto& data = module->data;
-    switch (key) {
-    case K_BLUE_UP: data.in.inc(); return true;
-    case K_BLUE_DOWN: data.in.dec(); return true;
-    case K_GREEN_UP: data.out.inc(); return true;
-    case K_GREEN_DOWN: data.out.dec(); return true;
-    case K_WHITE_UP: data.speed.inc(); return true;
-    case K_WHITE_DOWN: data.speed.dec(); return true;
-    case K_WHITE_CLICK: data.speed.reset(); return true;
-    case K_RED_UP: data.mode.inc(); return true;
-    case K_RED_DOWN: data.mode.dec(); return true;
-    default: return false;
+  bool SynthSampleScreen::keypress(ui::Key key) { return false; }
+
+  void SynthSampleScreen::rotary(ui::RotaryEvent e) {
+    switch (e.rotary) {
+    case ui::Rotary::Blue:
+      module->props.in.step(e.clicks); break;
+    case ui::Rotary::Green:
+      module->props.out.step(e.clicks); break;
+    case ui::Rotary::White:
+      module->props.speed.step(e.clicks); break;
+    case ui::Rotary::Red:
+      module->props.mode.step(e.clicks); break;
     }
   }
-
 
   SynthSampleScreen::SynthSampleScreen(SynthSampler *m) :
     ui::ModuleScreen<SynthSampler> (m),
@@ -189,36 +186,36 @@ namespace top1::modules {
     using namespace ui::drawing;
 
     Colour colourCurrent;
-    auto& data = module->data;
+    auto& props = module->props;
 
     ctx.callAt(topWFpos, [&] () {
         topWFW.drawRange(ctx, topWFW.viewRange, Colours::TopWF);
         Colour baseColour = Colours::TopWFCur;
-        float mix = data.playProgress / float(data.out - data.in);
+        float mix = props.playProgress / float(props.out - props.in);
 
         if (mix < 0) mix = 1;
-        if (data.fwd()) mix = 1 - mix; //data is not reversed
+        if (props.fwd()) mix = 1 - mix; //data is not reversed
 
         colourCurrent = baseColour.mix(Colours::TopWFActive, mix);
         topWFW.drawRange(ctx, {
-            std::size_t(std::round(data.in / topWF->ratio)),
-              std::size_t(std::round(data.out / topWF->ratio))
+            std::size_t(std::round(props.in / topWF->ratio)),
+              std::size_t(std::round(props.out / topWF->ratio))
               }, colourCurrent);
       });
 
     icons::Arrow icon;
 
-    if (data.fwd()) {
+    if (props.fwd()) {
       icon.dir = icons::Arrow::Right;
     } else {
       icon.dir = icons::Arrow::Left;
     }
 
-    if (data.stop()) {
+    if (props.stop()) {
       icon.stopped = true;
     }
 
-    if (data.loop()) {
+    if (props.loop()) {
       icon.looping = true;
     }
 
@@ -231,7 +228,7 @@ namespace top1::modules {
     ctx.font(FONT_NORM);
     ctx.font(15);
     ctx.textAlign(TextAlign::Left, TextAlign::Baseline);
-    ctx.fillText(fmt::format("×{:.2F}", data.speed.get()), pitchPos);
+    ctx.fillText(fmt::format("×{:.2F}", props.speed), pitchPos);
 
     ctx.callAt(
                mainWFpos, [&] () {
@@ -239,8 +236,8 @@ namespace top1::modules {
                  mainWFW.lineCol = colourCurrent;
                  mainWFW.minPx = 5;
                  mainWFW.viewRange = {
-                   std::size_t(std::round(data.in / mainWF->ratio)),
-                   std::size_t(std::round(data.out / mainWF->ratio))};
+                   std::size_t(std::round(props.in / mainWF->ratio)),
+                   std::size_t(std::round(props.out / mainWF->ratio))};
 
                  mainWFW.draw(ctx);
 

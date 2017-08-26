@@ -7,12 +7,12 @@ namespace top1::modules {
   TEST_CASE ("Module Properties", "[modules]") {
 
     struct Props : public Properties {
-      Property<float> fProp                  = {this, "fProp", 5.2f, {0.f, 10.f, 0.1f}};
-      Property<float, modes::wrap> otherProp = {this, "otherProp", 16, {5, 32, 1}};
-      Property<bool> toggle                  = {this, "toggle", false};
+      Property<float> fProp           = {this, "fProp", 5.2f, {0.f, 10.f, 0.1f}};
+      Property<float, wrap> otherProp = {this, "otherProp", 16, {5, 32, 1}};
+      Property<bool> toggle           = {this, "toggle", false};
 
       struct SubProps : public Properties {
-        Property<int> anInt                  = {this, "anInt", 42};
+        Property<int> anInt           = {this, "anInt", 42};
         using Properties::Properties;
       } subProps {this, "subProps"};
 
@@ -64,7 +64,6 @@ namespace top1::modules {
 
     SECTION("Property to tree::Node conversions") {
 
-      // REQUIRE(props[0].makeNode() == props.fProp.makeNode());
       REQUIRE(props.fProp.makeNode().match([](const tree::Float& f) {
             return f.value == 5.2f;
           }, [] (auto) {return false;}));

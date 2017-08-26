@@ -42,12 +42,12 @@ namespace top1::ui {
       currentScreen->rotary({Rotary::Green, 1}); break;
     case K_GREEN_DOWN:
       currentScreen->rotary({Rotary::Green, -1}); break;
+    default:
+      keys[key] = true;
+      if (globKeyPre(key)) return true;
+      if (currentScreen->keypress(key)) return true;
+      return globKeyPost(key);
     }
-    // TODO: Don't run both events
-    keys[key] = true;
-    if (globKeyPre(key)) return true;
-    if (currentScreen->keypress(key)) return true;
-    return globKeyPost(key);
     return true;
   }
 

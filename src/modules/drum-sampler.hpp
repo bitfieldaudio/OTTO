@@ -7,6 +7,7 @@
 #include "core/ui/waveform-widget.hpp"
 #include "core/ui/canvas.hpp"
 
+#include "util/algorithm.hpp"
 #include "util/dyn-array.hpp"
 
 namespace top1::modules {
@@ -26,20 +27,20 @@ namespace top1::modules {
 
     std::unique_ptr<DrumSampleScreen> editScreen;
 
-    static const uint nVoices = 24;
+    static constexpr uint nVoices = 24;
 
-    struct Data : public modules::Data {
-      modules::Opt<std::string> sampleName = {this, "sample name", ""};
+    struct Props : public Properties {
+      Property<std::string> sampleName = {this, "sample name", ""};
 
-      struct VoiceData : public modules::Data {
+      struct VoiceData : public Properties {
         enum Mode {
-          Fwd = 0, FwdStop = 1, FwdLoop = 2,
+          Fwd = 0,  FwdStop = 1,  FwdLoop = 2,
           Bwd = -1, BwdStop = -2, BwdLoop = -3
         };
-        modules::Opt<int> in = {this, "in", 0, 0, -1, 100};
-        modules::Opt<int> out = {this, "out", 0, 0, -1, 100};
-        modules::Opt<float> speed = {this, "speed", 1, 0, 5, 0.01};
-        modules::WrapOpt<int> mode = {this, "mode", 0, -3, 2, 1};
+        Property<int>          in = {this, "in",    0, { 0, -1, 100}};
+        Property<int>         out = {this, "out",   0, { 0, -1, 100}};
+        Property<float>     speed = {this, "speed", 1, { 0,  5, 0.01}};
+        Property<int, wrap>  mode = {this, "mode",  0, {-3,  2, 1}};
 
         bool fwd() const {return mode >= 0;}
         bool bwd() const {return !fwd();}
@@ -52,20 +53,20 @@ namespace top1::modules {
           return out - in;
         }
         void play();
+        using Properties::Properties;
       };
 
-      std::array<VoiceData, nVoices> voiceData;
+      // Construct VoiceData's
+      std::array<VoiceData, nVoices> voiceData =
+        generate_sequence<nVoices>([this] (int n) {
+            return VoiceData((Properties*) this, fmt::format("Voice {}", n));
+          });
 
-      Data() {
-        for (uint i = 0; i < nVoices; i++) {
-          subGroup(fmt::format("Voice {}", i), voiceData[i]);
-        }
-      }
+      Props() = default;
+      Props(Props&) = delete;
+      Props(Props&&) = delete;
 
-      Data(Data&) = delete;
-      Data(Data&&) = delete;
-
-    } data;
+    } props;
 
     uint currentVoiceIdx = 0;
 
@@ -97,6 +98,7 @@ namespace top1::modules {
     void draw(ui::drawing::Canvas&) override;
 
     bool keypress(ui::Key) override;
+    void rotary(ui::RotaryEvent) override;
 
   };
 

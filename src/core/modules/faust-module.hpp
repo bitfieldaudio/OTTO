@@ -4,11 +4,11 @@
 
 namespace top1::modules {
 
-  class FaustSynthModule : public modules::SynthModule, public audio::FaustWrapper {
+  class FaustSynthModule : public audio::FaustWrapper, public SynthModule {
   public:
 
-    FaustSynthModule(dsp *fDSP, modules::Data *opts) :
-      FaustWrapper (fDSP, opts), modules::SynthModule(opts) {}
+    FaustSynthModule(dsp *fDSP, Properties *propsPtr) :
+      FaustWrapper(fDSP, *propsPtr), SynthModule(propsPtr) {}
 
     void process(audio::ProcessData& data) override {
       FaustWrapper::process(data);

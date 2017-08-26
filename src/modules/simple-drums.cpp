@@ -5,7 +5,8 @@
 #include "core/globals.hpp"
 
 namespace top1::modules {
-  SimpleDrumVoice::SimpleDrumVoice() : FaustWrapper(new FAUSTCLASS(), &data) {}
+
+  SimpleDrumVoice::SimpleDrumVoice() : FaustWrapper(new FAUSTCLASS(), props) {}
 
   SimpleDrumsModule::SimpleDrumsModule() :
     screen (new SimpleDrumsScreen(this)) {}
@@ -20,63 +21,61 @@ namespace top1::modules {
     for (auto &&nEvent : data.midi) {
       nEvent.match([&] (midi::NoteOnEvent *e) {
           currentVoiceIdx = e->key % 24;
-          voices[currentVoiceIdx].data.trigger = 1;
-          voices[currentVoiceIdx].data.envelope.sustain = float(e->velocity)/128.f;
+          voices[currentVoiceIdx].props.trigger = 1;
+          voices[currentVoiceIdx].props.envelope.sustain = float(e->velocity)/128.f;
         }, [] (auto *) {});
     }
     for (auto &&voice : voices) {
       voice.process(data);
-      voice.data.trigger = 0;
+      voice.props.trigger = 0;
     }
     for (auto &&nEvent : data.midi) {
       nEvent.match([&] (midi::NoteOffEvent *e) {
-          voices[e->key % 24].data.trigger = 0;
+          voices[e->key % 24].props.trigger = 0;
         }, [] (auto) {});
     };
   }
 
-  top1::tree::Node SimpleDrumsModule::serialize() {
+  top1::tree::Node SimpleDrumsModule::makeNode() {
     top1::tree::Array ar;
     for (auto &v : voices) {
-      ar.values.push_back(v.data.serialize());
+      ar.values.push_back(v.props.makeNode());
     }
     return ar;
   }
 
-  void SimpleDrumsModule::deserialize(top1::tree::Node n) {
-    n.match(
-            [&] (top1::tree::Array &ar) {
-              for (uint i = 0; i < ar.values.size(); ++i) {
-                voices[i].data.deserialize(ar[i]);
-              }
-            }, [] (auto) {});
+  void SimpleDrumsModule::readNode(top1::tree::Node n) {
+    n.match([&] (top1::tree::Array &ar) {
+        for (uint i = 0; i < ar.values.size(); ++i) {
+          voices[i].props.readNode(ar[i]);
+        }
+      }, [] (auto) {});
   }
 
   bool SimpleDrumsScreen::keypress(ui::Key key) {
     using namespace ui;
     auto &voice = module->voices[module->currentVoiceIdx];
-    auto &osc = Globals::ui.keys[K_SHIFT] ? voice.data.D2 : voice.data.D1;
+    auto &osc = Globals::ui.keys[K_SHIFT] ? voice.props.D2 : voice.props.D1;
     switch (key) {
-    case K_RED_UP:
-      osc.freq.inc(); return true;
-    case K_RED_DOWN:
-      osc.freq.dec(); return true;
-    case K_BLUE_UP:
-      osc.toneDecay.inc(); return true;
-    case K_BLUE_DOWN:
-      osc.toneDecay.dec(); return true;
-    case K_WHITE_UP:
-      osc.noiseLvl.inc(); return true;
-    case K_WHITE_DOWN:
-      osc.noiseLvl.dec(); return true;
-    case K_GREEN_UP:
-      osc.cutoff.inc(); return true;
-    case K_GREEN_DOWN:
-      osc.cutoff.dec(); return true;
     case K_GREEN_CLICK:
-      osc.filterSwitch.toggle(); return true;
+      osc.filterSwitch.step(); return true;
     default:
       return false;
+    }
+  }
+
+  void SimpleDrumsScreen::rotary(ui::RotaryEvent e) {
+    auto &voice = module->voices[module->currentVoiceIdx];
+    auto &osc = Globals::ui.keys[ui::K_SHIFT] ? voice.props.D2 : voice.props.D1;
+    switch (e.rotary) {
+    case ui::Rotary::Blue:
+      osc.freq.step(e.clicks);
+    case ui::Rotary::Green:
+      osc.toneDecay.step(e.clicks);
+    case ui::Rotary::White:
+      osc.noiseLvl.step(e.clicks);
+    case ui::Rotary::Red:
+      osc.cutoff.step(e.clicks);
     }
   }
 
@@ -84,15 +83,15 @@ namespace top1::modules {
     using namespace ui::drawing;
     auto &voice = (module->voices[module->currentVoiceIdx]);
     ctx.save();
-    drawOsc(ctx, voice.data.D1);
+    drawOsc(ctx, voice.props.D1);
     ctx.translate(0, 75);
-    drawOsc(ctx, voice.data.D2);
+    drawOsc(ctx, voice.props.D2);
     ctx.restore();
 
     drawKbd(ctx);
   }
 
-  void SimpleDrumsScreen::drawOsc(ui::drawing::Canvas &ctx, SimpleDrumVoice::Data::Osc &osc) {
+  void SimpleDrumsScreen::drawOsc(ui::drawing::Canvas &ctx, SimpleDrumVoice::Props::Osc &osc) {
     using namespace ui::drawing;
 
     ctx.globalAlpha(1.0);
@@ -101,7 +100,7 @@ namespace top1::modules {
     ctx.lineCap(Canvas::LineCap::ROUND);
     ctx.miterLimit(4);
     // #FREQ_G
-	
+
     // #FREQ_BOX
     ctx.beginPath();
     ctx.lineWidth(2.000000);
@@ -162,71 +161,70 @@ namespace top1::modules {
 	
   // #FREQ_DIAL_RING
 	ctx.beginPath();
-	ctx.strokeStyle(Colours::Red);
+	ctx.strokeStyle(Colours::Blue);
 	ctx.lineWidth(2.000000);
 	ctx.arc(47.500000, 47.500000, 11.500000, 0.000000, 6.28318531, 1);
 	ctx.stroke();
 	
   // #FREQ_DIAL_MARKER
 	ctx.beginPath();
-	ctx.strokeStyle(Colours::Red);
+	ctx.strokeStyle(Colours::Blue);
 	ctx.lineWidth(2.000000);
   ctx.save();
   ctx.translate(47.5, 47.5);
-  ctx.rotate(-0.75 * M_PI + 1.5 * M_PI * osc.freq.normalized());
-	ctx.moveTo(0, 0);
-	ctx.lineTo(0, -10.5);
+  ctx.rotate(-0.75 * M_PI + 1.5 * M_PI * osc.freq.mode.normalize());
+  ctx.moveTo(0, 0);
+  ctx.lineTo(0, -10.5);
   ctx.restore();
-	ctx.stroke();
+  ctx.stroke();
 	
-// #TONE_DECAY_G
+  // #TONE_DECAY_G
 	
-// #TONE_DECAY_BOX
-	ctx.beginPath();
-	ctx.strokeStyle(Colours::Gray60);
-	ctx.lineWidth(2.000000);
-	ctx.rect(91.000000, 16.000000, 63.000000, 63.000000);
-	ctx.stroke();
+  // #TONE_DECAY_BOX
+  ctx.beginPath();
+  ctx.strokeStyle(Colours::Gray60);
+  ctx.lineWidth(2.000000);
+  ctx.rect(91.000000, 16.000000, 63.000000, 63.000000);
+  ctx.stroke();
 	
 	
-// #TXT_BG_TONE
-	ctx.lineWidth(1.000000);
-	ctx.fillStyle(Colours::Gray60);
-	ctx.font(FONT_NORM);
-	ctx.font(15);
+  // #TXT_BG_TONE
+  ctx.lineWidth(1.000000);
+  ctx.fillStyle(Colours::Gray60);
+  ctx.font(FONT_NORM);
+  ctx.font(15);
   ctx.textAlign(TextAlign::Left, TextAlign::Baseline);
-	ctx.fillText("PITCH", 95, 30);
+  ctx.fillText("PITCH", 95, 30);
 	
-// #TXT_BG_DELAY
-	ctx.lineWidth(1.000000);
-	ctx.fillStyle(Colours::Gray60);
-	ctx.font(FONT_NORM);
-	ctx.font(15);
+  // #TXT_BG_DELAY
+  ctx.lineWidth(1.000000);
+  ctx.fillStyle(Colours::Gray60);
+  ctx.font(FONT_NORM);
+  ctx.font(15);
   ctx.textAlign(TextAlign::Right, TextAlign::Baseline);
-	ctx.fillText("DECAY", 150, 75);
+  ctx.fillText("DECAY", 150, 75);
 	
-// #DECAY_INDICATOR
-	ctx.beginPath();
-	ctx.strokeStyle(Colours::Gray70);
-	ctx.lineWidth(2.000000);
-	ctx.moveTo(95, 75);
-  osc.decayGraph.changed();
-  if (osc.decayGraph() > 0)
-    ctx.bezierCurveTo(95, 75 - osc.decayGraph() * 65, 150 - osc.decayGraph() * 65, 20, 150, 20);
+  // #DECAY_INDICATOR
+  ctx.beginPath();
+  ctx.strokeStyle(Colours::Gray70);
+  ctx.lineWidth(2.000000);
+  ctx.moveTo(95, 75);
+  if (osc.decayGraph > 0)
+    ctx.bezierCurveTo(95, 75 - osc.decayGraph * 65, 150 - osc.decayGraph * 65, 20, 150, 20);
   else
-    ctx.bezierCurveTo(95 - osc.decayGraph() * 65, 75, 150, 20 - osc.decayGraph() * 65, 150, 20);
-	ctx.stroke();
+    ctx.bezierCurveTo(95 - osc.decayGraph * 65, 75, 150, 20 - osc.decayGraph * 65, 150, 20);
+  ctx.stroke();
 
-// #DECAY_SETTING
-	ctx.beginPath();
-	ctx.strokeStyle(Colours::Blue);
-	ctx.lineWidth(2.000000);
-	ctx.moveTo(95, 75);
-  if (osc.toneDecay() > 0)
-    ctx.bezierCurveTo(95, 75 - osc.toneDecay() * 65, 150 - osc.toneDecay() * 65, 20, 150, 20);
+  // #DECAY_SETTING
+  ctx.beginPath();
+  ctx.strokeStyle(Colours::Green);
+  ctx.lineWidth(2.000000);
+  ctx.moveTo(95, 75);
+  if (osc.toneDecay > 0)
+    ctx.bezierCurveTo(95, 75 - osc.toneDecay * 65, 150 - osc.toneDecay * 65, 20, 150, 20);
   else
-    ctx.bezierCurveTo(95 - osc.toneDecay() * 65, 75, 150, 20 - osc.toneDecay() * 65, 150, 20);
-	ctx.stroke();
+    ctx.bezierCurveTo(95 - osc.toneDecay * 65, 75, 150, 20 - osc.toneDecay * 65, 150, 20);
+  ctx.stroke();
 
 // #NOISE_G
 	
@@ -288,7 +286,7 @@ namespace top1::modules {
 	ctx.lineWidth(2.000000);
   ctx.save();
 	ctx.translate(197.5, 47.5);
-  ctx.rotate(-0.75 * M_PI + 1.5 * M_PI * osc.noiseLvl.normalized());
+        ctx.rotate(-0.75 * M_PI + 1.5 * M_PI * osc.noiseLvl.mode.normalize());
 	ctx.moveTo(0, 0);
 	ctx.lineTo(0, -10.5);
   ctx.restore();
@@ -351,8 +349,8 @@ namespace top1::modules {
 	ctx.save();
 	ctx.beginPath();
 	ctx.transform(-0.707180, 0.707033, -0.707180, -0.707033, 0.000000, 0.000000);
-	ctx.strokeStyle(osc.filterSwitch() ? Colours::Gray70 : Colours::Gray60);
-	ctx.miterLimit(4);
+	ctx.strokeStyle(osc.filterSwitch ? Colours::Gray70 : Colours::Gray60);
+        ctx.miterLimit(4);
 	ctx.lineWidth(1.000000);
 	ctx.moveTo(-136.735470, -232.384740);
 	ctx.translate(-158.881791, -226.450656);
@@ -389,10 +387,10 @@ namespace top1::modules {
 // #FILTER_MARKER
   ctx.save();
 	ctx.beginPath();
-	ctx.fillStyle(osc.filterSwitch() ? Colours::Green : Colours::Gray60);
-	ctx.translate(272.5, 47.5);
-  ctx.rotate(-0.75 * M_PI + 1.5 * M_PI * osc.cutoff.normalized());
-  ctx.circle(0, -22.5, 3);
+	ctx.fillStyle(osc.filterSwitch ? Colours::Red : Colours::Gray60);
+        ctx.translate(272.5, 47.5);
+        ctx.rotate(-0.75 * M_PI + 1.5 * M_PI * osc.cutoff.mode.normalize());
+        ctx.circle(0, -22.5, 3);
 	ctx.fill();
   ctx.restore();
 	

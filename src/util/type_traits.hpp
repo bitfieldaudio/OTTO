@@ -1,6 +1,7 @@
 #pragma once
 
 #include <type_traits>
+#include <variant>
 
 namespace top1 {
 
@@ -15,4 +16,30 @@ namespace top1 {
 
   template<typename T>
   constexpr inline bool is_number_v = is_number<T>::value;
+
+  /// Overload lambdas
+  template<typename L1, typename... Ls>
+  struct overloaded : L1, overloaded<Ls...> {
+    overloaded(L1 l1, Ls... ls) : L1(l1), overloaded<Ls...>(ls...) {}
+    using L1::operator();
+    using overloaded<Ls...>::operator();
+  };
+
+  template<typename L1>
+  struct overloaded<L1> : L1 {
+    explicit overloaded(L1 l1) : L1(l1) {}
+    using L1::operator();
+  };
+
+  template<typename... Ls>
+  overloaded(Ls...) -> overloaded<Ls...>;
+
+  /// Matching for std::variant
+
+  template<class Var, class... Lambdas>
+  decltype(auto) match(Var&& v, Lambdas... ls) {
+    auto matcher = overloaded<Lambdas...>(ls...);
+    return matcher(v);
+  }
+
 }

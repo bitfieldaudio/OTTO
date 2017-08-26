@@ -6,11 +6,11 @@ namespace top1 {
   void DataFile::write() {
     tree::Map m;
 
-    m["TapeDeck"] = Globals::tapedeck.serialize();
-    m["Mixer"] = Globals::mixer.serialize();
-    m["Synth"] = Globals::synth.serialize();
-    m["Drums"] = Globals::drums.serialize();
-    m["Metronome"] = Globals::metronome.serialize();
+    m["TapeDeck"] = Globals::tapedeck.makeNode();
+    m["Mixer"] = Globals::mixer.makeNode();
+    m["Synth"] = Globals::synth.makeNode();
+    m["Drums"] = Globals::drums.makeNode();
+    m["Metronome"] = Globals::metronome.makeNode();
     data = m;
     JsonFile::write();
   }
@@ -19,15 +19,14 @@ namespace top1 {
     JsonFile::read();
 
     data.match([&] (tree::Map &m) {
-                 Globals::tapedeck.deserialize(m["TapeDeck"]);
-                 Globals::mixer.deserialize(m["Mixer"]);
-                 Globals::synth.deserialize(m["Synth"]);
-                 Globals::drums.deserialize(m["Drums"]);
-                 Globals::metronome.deserialize(m["Metronome"]);
-               },
-               [&] (auto) {
-                 LOGE << "Invalid Json - expected a map at root";
-               });
+        Globals::tapedeck.readNode(m["TapeDeck"]);
+        Globals::mixer.readNode(m["Mixer"]);
+        Globals::synth.readNode(m["Synth"]);
+        Globals::drums.readNode(m["Drums"]);
+        Globals::metronome.readNode(m["Metronome"]);
+      }, [&] (auto) {
+        LOGE << "Invalid Json - expected a map at root";
+      });
   }
 
 } // top1

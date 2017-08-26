@@ -5,6 +5,10 @@
 #include <memory>
 #include <algorithm>
 #include <cmath>
+#include <limits>
+#include <type_traits>
+
+#include <plog/Log.h>
 
 #include "util/type_traits.hpp"
 #include "util/math.hpp"
@@ -12,7 +16,8 @@
 
 namespace top1::modules {
 
-  namespace modes {
+  inline
+  namespace mode {
 
     // TODO: implement
     template<typename T>
@@ -26,9 +31,12 @@ namespace top1::modules {
     template<typename T, typename Tag, typename Enable = void>
     struct mode_for_tag {};
 
+    template<typename T, typename Tag, typename Enable = void>
+    using mode_for_tag_m = typename mode_for_tag<T, Tag, Enable>::mode;
+
     /// Pass to mode_for_tag, to get the default mode for a type
     /// Specialize `mode_for_tag` with at least this for each new type
-    struct default_tag {};
+    struct def {};
 
     /*
      * Modes:
@@ -45,15 +53,20 @@ namespace top1::modules {
                       T step = 1.0)
         : min (min), max (max), stepSize (step) {}
 
-      void step(T& value, int steps) {
-        value = std::clamp<T>(value + steps * stepSize, min, max);
+      void step(int steps) {
+        set(*value + steps * stepSize);
       }
 
-      void set(T& value, T v) {
-        value = std::clamp(v, min, max);
+      void set(T v) {
+        *value = std::clamp(v, min, max);
+      }
+
+      float normalize() const {
+        return (*value - min)/ float(max);
       }
 
       T min, max, stepSize;
+      T* value;
     };
 
     template<typename T>
@@ -72,28 +85,74 @@ namespace top1::modules {
       wrap_mode(T min, T max, T step = 1.0)
         : min (min), max (max), stepSize (step) {}
 
-      void step(T& value, int steps) {
-        value = min + math::modulo(value + steps * stepSize - min, max - min);
+      void step(int steps) {
+        *value = min + math::modulo(*value + steps * stepSize - min, max - min);
       }
 
-      void set(T& value, T v) {
-        value = std::clamp(v, min, max);
+      void set(T v) {
+        *value = std::clamp(v, min, max);
+      }
+
+      float normalize() const {
+        return (*value - min)/ float(max);
       }
 
       T min, max, stepSize;
+      T* value;
+    };
+
+    /// Like `sized_step`, But steps exponentially
+    struct exp {}; // Tag
+
+    template<typename T>
+    struct exp_mode {
+
+      exp_mode(T min, T max, T step = 1.0)
+        : min (min), max (max), stepSize (step) {}
+
+      void step(int steps) {
+        set(*value * std::pow(stepSize, steps));
+      }
+
+      void set(T v) {
+        *value = std::clamp(v, min, max);
+      }
+
+      float normalize() const {
+        return (*value - min)/ float(max);
+      }
+
+      T min, max, stepSize;
+      T* value;
     };
 
     /// Default mode for Bool
     struct toggle {};
 
     struct toggle_mode {
-      void step(bool& value, int steps) {
-        value = (steps & 0b1) xor value;
+      void step(int steps) {
+        *value = (steps & 0b1) xor *value;
       }
 
-      void set(bool& value, bool b) {
-        value = b;
+      void set(bool b) {
+        *value = b;
       }
+
+      bool* value;
+    };
+
+    /// Non-numeric
+    struct plain_set {};
+
+    template<typename T>
+    struct plain_set_mode {
+      void step(int steps) {};
+
+      void set(const T& v) {
+        *value = v;
+      }
+
+      T* value;
     };
 
     // Specializations of mode_for_tag
@@ -105,38 +164,69 @@ namespace top1::modules {
     };
 
     template<typename T>
-    struct mode_for_tag<T, default_tag,
+    struct mode_for_tag<T, def,
                         std::enable_if_t<top1::is_number_v<T>>> {
       using mode = sized_step_mode<T>;
     };
 
     template<>
-    struct mode_for_tag<bool, default_tag> {
+    struct mode_for_tag<bool, def> {
       using mode = toggle_mode;
+    };
+
+    template<>
+    struct mode_for_tag<std::string, def> {
+      using mode = plain_set_mode<std::string>;
     };
 
 
     // Check modes
     static_assert(is_mode_v<sized_step_mode<float>>);
     static_assert(is_mode_v<sized_step_mode<int>>);
-    static_assert(is_mode_v<sized_step_mode<double>>);
-    static_assert(is_mode_v<sized_step_mode<uint>>);
+    static_assert(is_mode_v<sized_step_mode<bool>>);
     static_assert(is_mode_v<wrap_mode<float>>);
     static_assert(is_mode_v<wrap_mode<int>>);
-    static_assert(is_mode_v<wrap_mode<double>>);
-    static_assert(is_mode_v<wrap_mode<uint>>);
-  }
+    static_assert(is_mode_v<wrap_mode<bool>>);
+    static_assert(is_mode_v<mode_for_tag_m<float, def>>);
+    static_assert(is_mode_v<mode_for_tag_m<int, def>>);
+    static_assert(is_mode_v<mode_for_tag_m<bool, def>>);
+  } // mode
 
   struct PropertyBase {
     std::string name;
     bool store;
+    struct FaustLink {
+      float* ptr;
+      enum Type {
+        None = 0, Input, Output
+      } type {None};
+    } faustLink;
 
     PropertyBase(std::string name, bool store = true)
-      : name (name), store (store) {}
+      : name (std::move(name)), store (store) {}
+
+    /// Link this property to a faust variable.
+    ///
+    /// Should only be used from `FaustWrapper`,
+    /// where it is handled automatically
+    virtual void linkToFaust(float* ptr, bool isOutput) {
+      faustLink = {ptr, isOutput ? FaustLink::Output : FaustLink::Input};
+    }
+
+    /// Update the linked faust variable.
+    ///
+    /// When the faust link uses this property as an input, call this from
+    /// `set`, `step` etc.
+    virtual void updateFaust() = 0;
+
+    /// Reset to inital value
+    virtual void reset() = 0;
 
     virtual tree::Node makeNode() {
       return tree::Null();
     }
+
+    virtual void readNode(const tree::Node& n) {}
   };
 
   class Properties : public PropertyBase {
@@ -148,7 +238,7 @@ namespace top1::modules {
     Properties()
       : PropertyBase{"", true} {}
 
-    Properties(Properties* p, std::string n, bool s = true)
+    Properties(Properties* p, const std::string& n, bool s = true)
       : PropertyBase{n, s} {
       p->add(this);
     }
@@ -169,6 +259,15 @@ namespace top1::modules {
     PropertyBase& operator[](std::size_t idx) { return *props[idx]; }
     PropertyBase& operator[](std::size_t idx) const { return *props[idx]; }
 
+    /// Reset all properties
+    void reset() override {
+      std::for_each(begin(), end(), [] (auto&& p) {p->reset();});
+    }
+
+    void updateFaust() override {
+      std::for_each(begin(), end(), [] (auto&& p) {p->updateFaust();});
+    }
+
     tree::Node makeNode() override {
       std::unordered_map<std::string, tree::Node> map;
       for (auto&& p : props) {
@@ -179,30 +278,74 @@ namespace top1::modules {
       return tree::Map{std::move(map)};
     }
 
+    void readNode(const tree::Node& n) override {
+      match(n, [this] (const tree::Map& m) {
+          for (auto&& pair : m.values) {
+            auto p = std::find_if(begin(), end(),
+                                  [&] (auto&& p) {return p->name == pair.first;});
+            if (p != end()) {
+              (*p)->readNode(pair.second);
+            }
+          }
+        }, [] (auto&&) {
+          LOGF << "Expected tree::Map";
+        });
+    }
+
   protected:
     std::vector<PropertyStorage> props;
   };
 
-    template<typename T, typename mode_tag = modes::default_tag,
+  template<typename T, typename mode_tag = mode::def,
            bool _store = true,
-           typename mode_type = typename modes::mode_for_tag<T, mode_tag>::mode>
+           typename mode_type = typename mode::mode_for_tag_m<T, mode_tag>>
   struct Property final : public PropertyBase {
     using Value = T;
     using Mode = mode_type;
+    using Watcher = std::function<void(const Value&)>;
 
-    Property(Properties* owner, const std::string& n, Value v = Value(), const Mode& mode = Mode())
-      : PropertyBase {n, _store}, value(v), mode (mode) {
+    Property(Properties* owner, const std::string& n, Value v = Value(), const Mode& _mode = Mode())
+      : PropertyBase {n, _store}, value(v), init(v), mode (_mode) {
+        mode.value = &value;
         owner->add(this);
       }
 
     Property(Property&) = delete;
 
     void step(int n = 1) {
-      mode.step(value, n);
+      mode.step(n);
     }
 
     void set(const Value& v) {
-      mode.set(value, v);
+      mode.set(v);
+    }
+
+    void reset() final {
+      value = init;
+    }
+
+    tree::Node makeNode() final {
+      return tree::makeNode(value);
+    }
+
+    void readNode(const tree::Node& n) final {
+      value = tree::readNode<Value>(n).value_or(value);
+    }
+
+    void updateFaust() final {
+      if (faustLink.type == FaustLink::Input) {
+        if constexpr (std::is_convertible_v<Value, float>) {
+            *faustLink.ptr = (float) value;
+          } else {
+          LOGF << "Attempt to update a faust link with an incompatible type";
+        }
+      } else if (faustLink.type == FaustLink::Input) {
+        if constexpr (std::is_convertible_v<float, Value>) {
+            set((Value) *faustLink.ptr);
+          } else {
+          LOGF << "Attempt to update a faust link with an incompatible type";
+        }
+      }
     }
 
     Property& operator=(const Value& v) {
@@ -210,40 +353,27 @@ namespace top1::modules {
       return *this;
     }
 
-    operator Value() {
+    operator Value&() {
       return value;
     }
 
-    tree::Node makeNode() override {
-      return tree::makeNode(value);
+    operator const Value&() const {
+      return value;
     }
 
     Value value;
+    Value init;
     Mode mode;
+  private:
   };
 
 
   // Static tests
-  static_assert(std::is_same<Property<float>::Mode,
-                modes::sized_step_mode<float>>::value,
+  static_assert(std::is_same_v<Property<float>::Mode,
+                mode::sized_step_mode<float>>,
                 "Default mode of Property<float> should be sized_step_mode");
 
-  static_assert(std::is_same<Property<bool>::Mode, modes::toggle_mode>::value,
+  static_assert(std::is_same_v<Property<bool>::Mode, mode::toggle_mode>,
                 "Default mode of Property<bool> should be toggle_mode");
 
 } // top1::modules
-
-namespace top1::tree {
-
-  template<>
-  Node makeNode<const modules::Properties&>(const modules::Properties& props) {
-    std::unordered_map<std::string, tree::Node> map;
-    for (auto&& p : props) {
-      if (p->store) {
-        map[p->name] = p->makeNode();
-      }
-    }
-    return tree::Map{std::move(map)};
-  }
-
-} // top1::tree

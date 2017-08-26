@@ -1,59 +1,56 @@
 #pragma once
 
+#include <fmt/format.h>
+
 #include "core/modules/module.hpp"
 #include "core/ui/canvas.hpp"
 #include "core/ui/module-ui.hpp"
 
+#include "util/algorithm.hpp"
 #include "util/audio.hpp"
 
 namespace top1::modules {
   class MixerScreen;
 
-  class MixerModule : public modules::Module {
+  class Mixer final : public modules::Module {
     std::unique_ptr<MixerScreen> screen;
   public:
 
-    struct Data : modules::Data {
-      struct TrackInfo : modules::Data {
-        modules::Opt<float> level = {this, "LEVEL", 0.5, 0, 0.99, 0.01};
-        modules::Opt<float> pan = {this, "PAN", 0, -0.9, 0.9, 0.1};
-        modules::Opt<bool> muted = {this, "MUTE", false};
-      } track[4];
+    struct Props : public Properties {
+      struct TrackInfo : public Properties {
+        Property<float> level = {this, "LEVEL", 0.5, {0, 0.99, 0.01}};
+        Property<float> pan = {this, "PAN", 0, {-0.9, 0.9, 0.1}};
+        Property<bool> muted = {this, "MUTE", false};
+        using Properties::Properties;
+      };
 
-      Data() {
-        subGroup("TRACK1", track[0]);
-        subGroup("TRACK2", track[1]);
-        subGroup("TRACK3", track[2]);
-        subGroup("TRACK4", track[3]);
-      }
-    } data;
+      std::array<TrackInfo, 4> tracks = generate_sequence<4>([this] (int n) -> TrackInfo {
+          return TrackInfo(this, fmt::format("Track {}", n + 1));
+        });
+    } props;
 
-    audio::Graph trackGraph[4];
+    std::array<audio::Graph, 4> graphs;
 
-    MixerModule();
+    Mixer();
 
     void display();
 
     void process(audio::ProcessData&);
   };
 
-  class MixerScreen : public ui::ModuleScreen<MixerModule> {
+  class MixerScreen : public ui::ModuleScreen<Mixer> {
 
-    enum {
-      Pan,
-      Level
-    } numDisplay = Level;
+    void draw(ui::drawing::Canvas& ctx) override;
 
-    virtual void draw(ui::drawing::Canvas& ctx) override;
-
-    virtual bool keypress(ui::Key key) override;
-    virtual bool keyrelease(ui::Key key) override;
+    bool keypress(ui::Key key) override;
+    bool keyrelease(ui::Key key) override;
+    void rotary(ui::RotaryEvent) override;
 
     // TODO: Convert to Widget
     void drawMixerSegment(ui::drawing::Canvas& ctx, int track, float x, float y);
 
   public:
-    MixerScreen(MixerModule *module) : ui::ModuleScreen<MixerModule>(module) {}
+    using ModuleScreen<Mixer>::ModuleScreen;
   };
 
-} // top1::module
+} // top1::modules

@@ -9,6 +9,8 @@
 #include <string>
 #include <type_traits>
 
+#include "util/type_traits.hpp"
+
 namespace top1::tree {
 
   struct String {
@@ -61,28 +63,60 @@ namespace top1::tree {
 
   // Specialize for things
   template<typename T>
-  inline tree::Node makeNode(T);
+  inline Node makeNode(T);
 
   // Default specializations
 
   template<>
-  inline tree::Node makeNode<float>(float f) {
+  inline Node makeNode<float>(float f) {
     return Float{f};
-  } 
+  }
 
   template<>
-  inline tree::Node makeNode<int>(int i) {
+  inline Node makeNode<int>(int i) {
     return Int{i};
-  } 
+  }
 
   template<>
-  inline tree::Node makeNode<bool>(bool b) {
+  inline Node makeNode<bool>(bool b) {
     return Bool{b};
   }
 
   template<>
-  inline tree::Node makeNode<const std::string&>(const std::string& s) {
-    return String{s};
+  inline Node makeNode<std::string>(std::string s) {
+    return String{std::move(s)};
+  }
+
+  // TODO: Add more, e.g. vector, array, map, etc.
+
+  // Specialize for things
+  template<typename T>
+  inline std::optional<T> readNode(Node);
+
+  // Default specializations
+
+  template<>
+  inline std::optional<float> readNode<float>(Node n) {
+    return match(n, [] (Float n) {return std::optional(n.value);},
+                 [] (auto&&) {return std::optional<float>();});
+  }
+
+  template<>
+  inline std::optional<int> readNode<int>(Node n) {
+    return match(n, [] (Int n) {return std::optional(n.value);},
+                 [] (auto&&) {return std::optional<int>();});
+  }
+
+  template<>
+  inline std::optional<bool> readNode<bool>(Node n) {
+    return match(n, [] (Bool n) {return std::optional(n.value);},
+                 [] (auto&&) {return std::optional<bool>();});
+  }
+
+  template<>
+  inline std::optional<std::string> readNode<std::string>(Node n) {
+    return match(n, [] (String n) {return std::optional(n.value);},
+                 [] (auto&&) {return std::optional<std::string>();});
   }
 
   // TODO: Add more, e.g. vector, array, map, etc.

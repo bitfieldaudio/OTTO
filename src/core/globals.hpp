@@ -44,8 +44,8 @@ namespace top1 {
     static inline modules::SynthModuleDispatcher synth;
     static inline modules::SynthModuleDispatcher drums;
     static inline modules::EffectModuleDispatcher effect;
-    static inline modules::TapeModule tapedeck;
-    static inline modules::MixerModule mixer;
+    static inline modules::Tapedeck tapedeck;
+    static inline modules::Mixer mixer;
     static inline modules::Metronome metronome;
 
     static inline void init() {

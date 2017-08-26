@@ -31,169 +31,176 @@ namespace top1::ui::drawing {
 
 namespace top1::modules {
 
-DrumSampler::DrumSampler() :
-  SynthModule(&data),
-  maxSampleSize (16 * Globals::samplerate),
-  sampleData (maxSampleSize),
-  editScreen (new DrumSampleScreen(this)) {
+  DrumSampler::DrumSampler() :
+    SynthModule(&props),
+    maxSampleSize (16 * Globals::samplerate),
+    sampleData (maxSampleSize),
+    editScreen (new DrumSampleScreen(this)) {
 
-  Globals::events.samplerateChanged.add([&] (uint sr) {
-    maxSampleSize = 16 * sr;
-    sampleSpeed = sampleSampleRate / float(sr);
-  });
+    Globals::events.samplerateChanged.add([&] (uint sr) {
+        maxSampleSize = 16 * sr;
+        sampleSpeed = sampleSampleRate / float(sr);
+      });
 
-}
-
-  void DrumSampler::process(audio::ProcessData& data) {
-  for (auto &&nEvent : data.midi) {
-    nEvent.match([&] (midi::NoteOnEvent* e) {
-       if (e->channel == 1) {
-         currentVoiceIdx = e->key % nVoices;
-         auto &&voice = this->data.voiceData[currentVoiceIdx];
-         voice.playProgress = (voice.fwd()) ? 0 : voice.length() - 1;
-         voice.trigger = true;
-       }
-    }, [] (auto*) {});
   }
 
-  for (auto &&voice : this->data.voiceData) {
+  void DrumSampler::process(audio::ProcessData& data) {
+    for (auto &&nEvent : data.midi) {
+      nEvent.match([&] (midi::NoteOnEvent* e) {
+          if (e->channel == 1) {
+            currentVoiceIdx = e->key % nVoices;
+            auto &&voice = props.voiceData[currentVoiceIdx];
+            voice.playProgress = (voice.fwd()) ? 0 : voice.length() - 1;
+            voice.trigger = true;
+          }
+        }, [] (auto*) {});
+    }
 
-    float playSpeed = voice.speed * sampleSpeed;
+    for (auto &&voice : props.voiceData) {
 
-    // Process audio
-    if (voice.playProgress >= 0 && playSpeed > 0) {
-      if (voice.fwd()) {
-        if (voice.loop() && voice.trigger) {
-          for(int i = 0; i < data.nframes; ++i) {
-            data.audio.proc[i] += sampleData[voice.in + voice.playProgress];
-            voice.playProgress += playSpeed;
+      float playSpeed = voice.speed * sampleSpeed;
+
+      // Process audio
+      if (voice.playProgress >= 0 && playSpeed > 0) {
+        if (voice.fwd()) {
+          if (voice.loop() && voice.trigger) {
+            for(int i = 0; i < data.nframes; ++i) {
+              data.audio.proc[i] += sampleData[voice.in + voice.playProgress];
+              voice.playProgress += playSpeed;
+              if (voice.playProgress >= voice.length()) {
+                voice.playProgress = 0;
+              }
+            }
+          } else {
+            int frms = std::min<int>(data.nframes, voice.length() - voice.playProgress);
+            for(int i = 0; i < frms; ++i) {
+              data.audio.proc[i] += sampleData[voice.in + voice.playProgress];
+              voice.playProgress += playSpeed;
+            }
             if (voice.playProgress >= voice.length()) {
-              voice.playProgress = 0;
+              voice.playProgress = -1;
             }
           }
         } else {
-          int frms = std::min<int>(data.nframes, voice.length() - voice.playProgress);
-          for(int i = 0; i < frms; ++i) {
-            data.audio.proc[i] += sampleData[voice.in + voice.playProgress];
-            voice.playProgress += playSpeed;
-          }
-          if (voice.playProgress >= voice.length()) {
-            voice.playProgress = -1;
-          }
-        }
-      } else {
-        if (voice.loop() && voice.trigger) {
-          for(int i = 0; i < data.nframes; ++i) {
-            data.audio.proc[i] += sampleData[voice.in + voice.playProgress];
-            voice.playProgress -= playSpeed;
-            if (voice.playProgress < 0) {
-              voice.playProgress = voice.length() -1;
+          if (voice.loop() && voice.trigger) {
+            for(int i = 0; i < data.nframes; ++i) {
+              data.audio.proc[i] += sampleData[voice.in + voice.playProgress];
+              voice.playProgress -= playSpeed;
+              if (voice.playProgress < 0) {
+                voice.playProgress = voice.length() -1;
+              }
             }
-          }
-        } else {
-          int frms = std::min<int>(data.nframes, voice.playProgress);
-          for(int i = 0; i < frms; ++i) {
-            data.audio.proc[i] += sampleData[voice.in + voice.playProgress];
-            voice.playProgress -= playSpeed;
+          } else {
+            int frms = std::min<int>(data.nframes, voice.playProgress);
+            for(int i = 0; i < frms; ++i) {
+              data.audio.proc[i] += sampleData[voice.in + voice.playProgress];
+              voice.playProgress -= playSpeed;
+            }
           }
         }
       }
     }
+
+    for (auto &&nEvent : data.midi) {
+      nEvent.match([&] (midi::NoteOffEvent *e) {
+          if (e->channel == 1) {
+            auto &&voice = props.voiceData[e->key % nVoices];
+            voice.trigger = false;
+            if (voice.stop()) {
+              voice.playProgress = -1;
+            }
+          }
+        }, [] (midi::MidiEvent *) {});
+    };
   }
 
-  for (auto &&nEvent : data.midi) {
-    nEvent.match([&] (midi::NoteOffEvent *e) {
-       if (e->channel == 1) {
-         auto &&voice = this->data.voiceData[e->key % nVoices];
-         voice.trigger = false;
-         if (voice.stop()) {
-           voice.playProgress = -1;
-         }
-       }
-      }, [] (midi::MidiEvent *) {});
-  };
-}
-
-void DrumSampler::display() {
-  Globals::ui.display(*editScreen);
-}
-
-void DrumSampler::load() {
-  top1::SndFile<1> sf (samplePath(data.sampleName));
-
-  size_t rs = std::min(maxSampleSize, sf.size());
-
-  sampleData.resize(rs);
-  sf.read(sampleData.data(), rs);
-
-  sampleSampleRate = sf.samplerate;
-  sampleSpeed = sampleSampleRate / float(Globals::samplerate);
-
-  for (auto &&v : data.voiceData) {
-    v.in.max = rs;
-    v.out.max = rs;
+  void DrumSampler::display() {
+    Globals::ui.display(*editScreen);
   }
 
-  // Auto assign voices
-  for (uint i = 0; i < nVoices; ++i) {
-    auto &&vd = data.voiceData[i];
-    if (vd.in < 0 || vd.out >= rs) {
-      vd.in = i * (rs / nVoices);
-      vd.out = (i + 1) * rs / nVoices;
+  void DrumSampler::load() {
+    top1::SndFile<1> sf (samplePath(props.sampleName));
+
+    size_t rs = std::min(maxSampleSize, sf.size());
+
+    sampleData.resize(rs);
+    sf.read(sampleData.data(), rs);
+
+    sampleSampleRate = sf.samplerate;
+    sampleSpeed = sampleSampleRate / float(Globals::samplerate);
+
+    for (auto &&v : props.voiceData) {
+      v.in.mode.max = rs;
+      v.out.mode.max = rs;
+    }
+
+    // Auto assign voices
+    for (uint i = 0; i < nVoices; ++i) {
+      auto &&vd = props.voiceData[i];
+      if (vd.in < 0 || vd.out >= rs) {
+        vd.in = i * (rs / nVoices);
+        vd.out = (i + 1) * rs / nVoices;
+      }
+    }
+
+    auto &mwf = editScreen->mainWF;
+    mwf->clear();
+    for (auto &&s : sampleData) {
+      mwf->addFrame(s);
+    }
+
+    auto &wf = editScreen->topWF;
+    wf->clear();
+    for (auto &&s : sampleData) {
+      wf->addFrame(s);
+    }
+    editScreen->topWFW.viewRange = {0, wf->size() - 1};
+
+    if (sf.size() == 0) LOGD << "Empty sample file";
+    sf.close();
+  }
+
+  void DrumSampler::init() {
+    load();
+  }
+
+  /****************************************/
+  /* SampleEditScreen                     */
+  /****************************************/
+
+  bool DrumSampleScreen::keypress(ui::Key key) {
+    using namespace ui;
+    auto& voice = module->props.voiceData[module->currentVoiceIdx];
+    switch (key) {
+    case K_WHITE_CLICK: voice.speed.reset(); return true;
+    default:
+      return false;
     }
   }
 
-  auto &mwf = editScreen->mainWF;
-  mwf->clear();
-  for (auto &&s : sampleData) {
-    mwf->addFrame(s);
+  void DrumSampleScreen::rotary(ui::RotaryEvent e) {
+    using namespace ui;
+    auto& voice = module->props.voiceData[module->currentVoiceIdx];
+    switch (e.rotary) {
+    case Rotary::Blue:
+      voice.in.step(e.clicks); break;
+    case Rotary::Green:
+      voice.out.step(e.clicks); break;
+    case Rotary::White:
+      voice.speed.step(e.clicks); break;
+    case Rotary::Red:
+      voice.mode.step(e.clicks); break;
+    }
   }
 
-  auto &wf = editScreen->topWF;
-  wf->clear();
-  for (auto &&s : sampleData) {
-    wf->addFrame(s);
-  }
-  editScreen->topWFW.viewRange = {0, wf->size() - 1};
 
-  if (sf.size() == 0) LOGD << "Empty sample file";
-  sf.close();
-}
-
-void DrumSampler::init() {
-  load();
-}
-
-/****************************************/
-/* SampleEditScreen                     */
-/****************************************/
-
-bool DrumSampleScreen::keypress(ui::Key key) {
-  using namespace ui;
-  auto& voice = module->data.voiceData[this->module->currentVoiceIdx];
-  switch (key) {
-  case K_BLUE_UP: voice.in.inc(); return true;
-  case K_BLUE_DOWN: voice.in.dec(); return true;
-  case K_GREEN_UP: voice.out.inc(); return true;
-  case K_GREEN_DOWN: voice.out.dec(); return true;
-  case K_WHITE_UP: voice.speed.inc(); return true;
-  case K_WHITE_DOWN: voice.speed.dec(); return true;
-  case K_WHITE_CLICK: voice.speed.reset(); return true;
-  case K_RED_UP: voice.mode.inc(); return true;
-  case K_RED_DOWN: voice.mode.dec(); return true;
-  default:
-    return false;
-  }
-}
-
-
-DrumSampleScreen::DrumSampleScreen(DrumSampler *m) :
-  ui::ModuleScreen<DrumSampler> (m),
-  topWF (new audio::Waveform(
-           module->sampleData.size() / ui::drawing::topWFsize.w / 4.0, 1.0)),
-  topWFW (topWF, ui::drawing::topWFsize),
-  mainWF (new audio::Waveform(50, 1.0)),
-  mainWFW (mainWF, ui::drawing::mainWFsize) {}
+  DrumSampleScreen::DrumSampleScreen(DrumSampler *m) :
+    ui::ModuleScreen<DrumSampler> (m),
+    topWF (new audio::Waveform(module->sampleData.size()
+                               / ui::drawing::topWFsize.w / 4.0, 1.0)),
+    topWFW (topWF, ui::drawing::topWFsize),
+    mainWF (new audio::Waveform(50, 1.0)),
+    mainWFW (mainWF, ui::drawing::mainWFsize) {}
 
   void modules::DrumSampleScreen::draw(ui::drawing::Canvas &ctx) {
     using namespace ui::drawing;
@@ -203,7 +210,7 @@ DrumSampleScreen::DrumSampleScreen(DrumSampler *m) :
     ctx.callAt(topWFpos, [&] () {
         topWFW.drawRange(ctx, topWFW.viewRange, Colours::TopWF);
         for (uint i = 0; i < DrumSampler::nVoices; ++i) {
-          auto& voice = module->data.voiceData[i];
+          auto& voice = module->props.voiceData[i];
           bool isActive = voice.playProgress >= 0;
           bool isCurrent = i == module->currentVoiceIdx;
           if (isActive && !isCurrent) {
@@ -221,78 +228,76 @@ DrumSampleScreen::DrumSampleScreen(DrumSampler *m) :
           }
         }
         {
-          auto& voice = module->data.voiceData[module->currentVoiceIdx];
+          auto& voice = module->props.voiceData[module->currentVoiceIdx];
           Colour baseColour = Colours::TopWFCur;
           float mix = voice.playProgress / float(voice.out - voice.in);
 
           if (mix < 0) mix = 1;
           if (voice.fwd()) mix = 1 - mix; //voice is not reversed
 
-      colourCurrent = baseColour.mix(Colours::TopWFActive, mix);
-      topWFW.drawRange(ctx, {
-          std::size_t(std::round(voice.in / topWF->ratio)),
-            std::size_t(std::round(voice.out / topWF->ratio))
-            }, colourCurrent);
+          colourCurrent = baseColour.mix(Colours::TopWFActive, mix);
+          topWFW.drawRange(ctx, {
+              std::size_t(std::round(voice.in / topWF->ratio)),
+                std::size_t(std::round(voice.out / topWF->ratio))
+                }, colourCurrent);
+        }
+      });
+
+    auto& voice = module->props.voiceData[module->currentVoiceIdx];
+
+    icons::Arrow icon;
+
+    if (voice.fwd()) {
+      icon.dir = icons::Arrow::Right;
+    } else {
+      icon.dir = icons::Arrow::Left;
     }
-  });
 
-  auto& voice = module->data.voiceData[module->currentVoiceIdx];
+    if (voice.stop()) {
+      icon.stopped = true;
+    }
 
-  icons::Arrow icon;
+    if (voice.loop()) {
+      icon.looping = true;
+    }
 
-  if (voice.fwd()) {
-    icon.dir = icons::Arrow::Right;
-  } else {
-    icon.dir = icons::Arrow::Left;
+    icon.size = arrowSize;
+    icon.colour = Colours::Red;
+    ctx.drawAt(arrowPos, icon);
+
+    ctx.beginPath();
+    ctx.fillStyle(Colours::White);
+    ctx.font(FONT_NORM);
+    ctx.font(15);
+    ctx.textAlign(TextAlign::Left, TextAlign::Baseline);
+    ctx.fillText(fmt::format("×{:.2F}", voice.speed.value), pitchPos);
+
+    ctx.callAt(mainWFpos, [&] () {
+        mainWFW.lineCol = colourCurrent;
+        mainWFW.minPx = 5;
+        mainWFW.viewRange = {
+          std::size_t(std::round(voice.in / mainWF->ratio)),
+          std::size_t(std::round(voice.out / mainWF->ratio))};
+
+        mainWFW.draw(ctx);
+
+        ctx.beginPath();
+        ctx.circle(mainWFW.point(mainWFW.viewRange.in), 2);
+        ctx.fill(Colours::Blue);
+
+        ctx.beginPath();
+        ctx.circle(mainWFW.point(mainWFW.viewRange.in), 5);
+        ctx.stroke(Colours::Blue);
+
+        ctx.beginPath();
+        ctx.circle(mainWFW.point(mainWFW.viewRange.out), 2);
+        ctx.fill(Colours::Green);
+
+        ctx.beginPath();
+        ctx.circle(mainWFW.point(mainWFW.viewRange.out), 5);
+        ctx.stroke(Colours::Green);
+      });
+
   }
-
-  if (voice.stop()) {
-    icon.stopped = true;
-  }
-
-  if (voice.loop()) {
-    icon.looping = true;
-  }
-
-  icon.size = arrowSize;
-  icon.colour = Colours::Red;
-  ctx.drawAt(arrowPos, icon);
-
-  ctx.beginPath();
-  ctx.fillStyle(Colours::White);
-  ctx.font(FONT_NORM);
-  ctx.font(15);
-  ctx.textAlign(TextAlign::Left, TextAlign::Baseline);
-  ctx.fillText(fmt::format("×{:.2F}", voice.speed.get()), pitchPos);
-
-  ctx.callAt(
-    mainWFpos, [&] () {
-
-    mainWFW.lineCol = colourCurrent;
-    mainWFW.minPx = 5;
-    mainWFW.viewRange = {
-      std::size_t(std::round(voice.in / mainWF->ratio)),
-      std::size_t(std::round(voice.out / mainWF->ratio))};
-
-    mainWFW.draw(ctx);
-
-    ctx.beginPath();
-    ctx.circle(mainWFW.point(mainWFW.viewRange.in), 2);
-    ctx.fill(Colours::Blue);
-
-    ctx.beginPath();
-    ctx.circle(mainWFW.point(mainWFW.viewRange.in), 5);
-    ctx.stroke(Colours::Blue);
-
-    ctx.beginPath();
-    ctx.circle(mainWFW.point(mainWFW.viewRange.out), 2);
-    ctx.fill(Colours::Green);
-
-    ctx.beginPath();
-    ctx.circle(mainWFW.point(mainWFW.viewRange.out), 5);
-    ctx.stroke(Colours::Green);
-  });
-
-}
 
 } // top1::module

@@ -15,12 +15,13 @@ namespace top1::modules {
   class Metronome : public Module, audio::FaustWrapper {
     ui::ModuleScreen<Metronome>::ptr screen;
   public:
-    struct Data : public modules::Data {
-      Opt<float> bpm    = {this, "BPM", 120, 40, 320, 1};
-      Opt<float> gain   = {this, "GAIN", 0, 0, 1, 0.01};
-      Opt<int> tone     = {this, "TONE", 12, 0, 24, 1};
-      Opt<bool> trigger = {this, "TRIGGER", false, false};
-    } data;
+    struct Props : public modules::Properties {
+      Property<float> bpm     = {this, "BPM", 120, {40, 320, 1}};
+      Property<float> gain    = {this, "GAIN", 0, {0, 1, 0.01}};
+      Property<int>   tone    = {this, "TONE", 12, {0, 24, 1}};
+      Property<bool, mode::def,
+               false> trigger = {this, "TRIGGER", false};
+    } props;
 
     audio::Graph graph;
 
@@ -45,7 +46,7 @@ namespace top1::modules {
   public:
     using ui::ModuleScreen<Metronome>::ModuleScreen;
 
-    bool keypress(ui::Key) override;
+    void rotary(ui::RotaryEvent) override;
 
     void draw(ui::drawing::Canvas&) override;
 

@@ -10,26 +10,20 @@ namespace top1::modules {
     ui::ModuleScreen<SuperSawSynth>::ptr screen;
   public:
 
-    struct Data : modules::Data {
+    struct Props : public Properties {
 
-      struct : modules::Data {
-        modules::Opt<float> attack      = {this, "ATTACK", 0, 0, 2, 0.02};
-        modules::Opt<float> decay       = {this, "DECAY", 0, 0, 2, 0.02};
-        modules::Opt<float> sustain     = {this, "SUSTAIN", 1, 0, 1, 0.02};
-        modules::Opt<float> release     = {this, "RELEASE", 0.2, 0, 2, 0.02};
-      } envelope;
+      struct : public Properties {
+        Property<float> attack      = {this, "ATTACK",  0,   {0, 2, 0.02}};
+        Property<float> decay       = {this, "DECAY",   0,   {0, 2, 0.02}};
+        Property<float> sustain     = {this, "SUSTAIN", 1,   {0, 1, 0.02}};
+        Property<float> release     = {this, "RELEASE", 0.2, {0, 2, 0.02}};
+        using Properties::Properties;
+      } envelope {this, "ENVELOPE"};
 
-      modules::Opt<int> key           = {this, "KEY", 69, 0, 127, 1, false};
-      modules::Opt<float> velocity    = {this, "VELOCITY", 1, 0, 1, 0.01, false};
-      modules::Opt<bool> trigger      = {this, "TRIGGER", false, false};
-
-      Data() {
-        subGroup("ENVELOPE", envelope);
-      }
-
-      Data(Data&) = delete;
-      Data(Data&&) = delete;
-    } data;
+      Property<int, def, false> key        = {this, "KEY", 69, {0, 127, 1}};
+      Property<float, def, false> velocity = {this, "VELOCITY", 1, {0, 1, 0.01}};
+      Property<bool, def, false> trigger   = {this, "TRIGGER", false};
+    } props;
 
     SuperSawSynth();
 

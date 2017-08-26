@@ -380,7 +380,6 @@ public:
 
     Point cur = *pointB;
     Point nxt = cur;
-    auto it = pointB;
     for (auto it = pointB; it < pointE; ++it) {
       cur = nxt;
       nxt = *it;

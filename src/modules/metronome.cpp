@@ -9,12 +9,12 @@
 namespace top1::modules {
 
   Metronome::Metronome() :
-    Module(&data),
-    audio::FaustWrapper(new FAUSTCLASS, &data),
+    Module(&props),
+    audio::FaustWrapper(new FAUSTCLASS, props),
     screen (new MetronomeScreen(this)) {}
 
   void Metronome::process(audio::ProcessData& data) {
-    float BPsample = this->data.bpm/60.0/(float)Globals::samplerate;
+    float BPsample = props.bpm/60.0/(float)Globals::samplerate;
     float beat = Globals::tapedeck.position() * BPsample;
     uint framesTillNext = std::fmod(beat, 1)/BPsample * Globals::tapedeck.state.playSpeed;
 
@@ -23,10 +23,10 @@ namespace top1::modules {
         && Globals::tapedeck.state.playSpeed/BPsample > 1) {
       data.process([this](auto& d){FaustWrapper::process(d);},
                    framesTillNext);
-      this->data.trigger = true;
+      props.trigger = true;
       data.process([this](audio::ProcessData& d){FaustWrapper::process(d);},
                    data.nframes - framesTillNext);
-      this->data.trigger = false;
+      props.trigger = false;
     } else {
       FaustWrapper::process(data);
     }
@@ -46,7 +46,7 @@ namespace top1::modules {
 
   // Bars
   BeatPos Metronome::closestBar(TapeTime time) {
-    double fpb = (Globals::samplerate)*60/(double)data.bpm;
+    double fpb = (Globals::samplerate)*60/(double)props.bpm;
     BeatPos prevBar = time/fpb;
     TapeTime prevBarTime = getBarTime(prevBar);
     if (time - prevBarTime > fpb/2) {
@@ -56,13 +56,13 @@ namespace top1::modules {
   }
 
   TapeTime Metronome::getBarTime(BeatPos bar) {
-    double fpb = (Globals::samplerate)*60/(double)data.bpm;
+    double fpb = (Globals::samplerate)*60/(double)props.bpm;
     return bar * fpb;
   }
 
   TapeTime Metronome::getBarTimeRel(BeatPos bar) {
     if (bar == 0) return closestBar(Globals::tapedeck.position());
-    double fpb = (Globals::samplerate)*60/(double)data.bpm;
+    double fpb = (Globals::samplerate)*60/(double)props.bpm;
     BeatPos curBar = Globals::tapedeck.position()/fpb;
     TapeTime curBarTime = getBarTime(curBar);
     TapeTime diff = Globals::tapedeck.position() - curBarTime;
@@ -75,29 +75,16 @@ namespace top1::modules {
     return getBarTime(curBar + bar);
   }
 
-  bool MetronomeScreen::keypress(ui::Key key) {
-    using namespace ui;
-    switch (key) {
-    case K_RED_UP:
-      module->data.gain.inc();
-      return true;
-    case K_RED_DOWN:
-      module->data.gain.dec();
-      return true;
-    case K_BLUE_UP:
-      module->data.bpm.inc();
-      return true;
-    case K_BLUE_DOWN:
-      module->data.bpm.dec();
-      return true;
-    case K_GREEN_UP:
-      module->data.tone.inc();
-      return true;
-    case K_GREEN_DOWN:
-      module->data.tone.dec();
-      return true;
-    default:
-      return false;
+  void MetronomeScreen::rotary(ui::RotaryEvent e) {
+    switch(e.rotary) {
+    case ui::Rotary::Red:
+      module->props.gain.step(e.clicks); break;
+    case ui::Rotary::Blue:
+      module->props.gain.step(e.clicks); break;
+    case ui::Rotary::Green:
+      module->props.tone.step(e.clicks); break;
+    case ui::Rotary::White:
+      break;
     }
   }
 
@@ -115,7 +102,7 @@ namespace top1::modules {
     {
       // Tone meter
       ctx.save();
-      float y = 180 - module->data.tone.normalized() * 140;
+      float y = 180 - module->props.tone.mode.normalize() * 140;
       float x = 40;
       ctx.strokeStyle(Colours::Green.dimmed);
       ctx.lineCap(Canvas::LineCap::ROUND);
@@ -154,7 +141,7 @@ namespace top1::modules {
       ctx.stroke();
       ctx.fillStyle(Colours::Red);
       ctx.beginPath();
-      ctx.circle(x, 180 - module->data.gain.normalized() * 140, 3);
+      ctx.circle(x, 180 - module->props.gain.mode.normalize() * 140, 3);
       ctx.fill();
       ctx.restore();
     }
@@ -215,12 +202,12 @@ namespace top1::modules {
     {
       ctx.save();
 
-      float BPsample(module->data.bpm/60.0/(float)Globals::samplerate);
+      float BPsample(module->props.bpm/60.0/(float)Globals::samplerate);
       float beat(Globals::tapedeck.position() * BPsample);
       float factor((std::fmod(beat, 2)));
       factor = factor < 1 ? (factor * 2 - 1) : ((1 - factor) * 2 + 1);
       factor = std::sin(factor * M_PI/2);
-      factor *= 0.2 + 0.8 * (1 - module->data.bpm.normalized());
+      factor *= 0.2 + 0.8 * (1 - module->props.bpm.mode.normalize());
       // float a(1);
       // factor(factor > 0 ? smoothMotion(factor, a) : -smoothMotion(-factor, a));
       float rotation(factor * M_PI/3);
@@ -233,7 +220,7 @@ namespace top1::modules {
       ctx.lineWidth(2);
 
       // PENDULUM
-      float y(75 * module->data.bpm.normalized());
+      float y(75 * module->props.bpm.mode.normalize());
       ctx.beginPath();
       ctx.moveTo(38, 15 + y);
       ctx.lineTo(62, 15 + y);
@@ -268,7 +255,7 @@ namespace top1::modules {
     ctx.font(FONT_LIGHT);
     ctx.font(32);
     ctx.textAlign(TextAlign::Center, TextAlign::Middle);
-    ctx.fillText(std::to_string((int)module->data.bpm), 50, 120);
+    ctx.fillText(std::to_string((int)module->props.bpm), 50, 120);
 
   }
 

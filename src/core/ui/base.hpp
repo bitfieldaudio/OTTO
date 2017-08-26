@@ -73,7 +73,7 @@ namespace top1::ui {
   class Widget : public drawing::SizedDrawable {
   public:
     Widget() {}
-    Widget(drawing::Size size) : SizedDrawable (size) {}
+    explicit Widget(drawing::Size size) : SizedDrawable (size) {}
 
   };
 
@@ -91,7 +91,9 @@ namespace top1::ui {
   struct RotaryEvent {
     /// The rotary at which the event occured
     Rotary rotary;
+
     /// The amount of steps the rotary was turned. Negative means CCW
+    // cppcheck-suppress unusedStructMember
     int clicks;
   };
 
