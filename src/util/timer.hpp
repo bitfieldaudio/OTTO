@@ -9,7 +9,6 @@
 #include <algorithm>
 #include <fstream>
 
-#include <plog/Log.h>
 #include <json.hpp>
 
 namespace top1::timer {
@@ -100,7 +99,6 @@ namespace top1::timer {
       nlohmann::json output = nlohmann::json::object();
       for (auto&& [n, t] : timers) {
         output[n] = t.jsonSerialize();
-        LOGD << "Timer: " << t.jsonSerialize().dump();
       }
       return output;
     }
