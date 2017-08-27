@@ -8,6 +8,7 @@
 #include <numeric>
 #include <algorithm>
 #include <fstream>
+#include <functional>
 
 #include <json.hpp>
 
@@ -34,7 +35,7 @@ namespace top1::timer {
 
     Duration calcAvg() const {
       Duration sum = std::accumulate(times.begin(), times.end(),
-                                     Duration(0), std::plus());
+                                     Duration(0), std::plus<Duration>());
       return sum / times.size();
     }
 
