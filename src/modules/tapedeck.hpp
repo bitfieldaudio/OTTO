@@ -45,13 +45,17 @@ namespace top1::modules {
       top1::Track track = Track::makeName(1);
       bool looping = false;
 
-      template<typename Ret, typename Callable1, typename Callable2,
-               typename = std::enable_if_t<std::is_invocable_r_v<Ret, Callable1> &&
-                                           std::is_invocable_r_v<Ret, Callable2>>>
+      template<typename Ret, typename Callable1, typename Callable2>
       Ret forPlayDir(Callable1 forward, Callable2 reverse) {
-        if (playSpeed > 0) return std::invoke(forward);
-        else if (playSpeed < 0) return std::invoke(reverse);
-        else return Ret();
+        if (playSpeed > 0) {
+          return std::invoke(forward);
+        } else if (playSpeed < 0) {
+          return std::invoke(reverse);
+        } else {
+          if constexpr (!std::is_void_v<Ret>) {
+              return Ret();
+            }
+          }
       }
 
       bool recording() const;

@@ -267,12 +267,9 @@ namespace top1::modules {
           for (uint i = 0; i < writeSize; i++) {
             buf.push_back(data.audio.proc[int(from + i / state.playSpeed)]);
           }
-          tapeBuffer.writeFW(buf,
-                             (data.nframes - from) * state.playSpeed - writeSize,
+          tapeBuffer.writeFW(buf, (data.nframes - from) * state.playSpeed - writeSize,
                              [this](AudioFrame o, AudioFrame n) {
-                               o[state.track.idx] += n[state.track.idx];
-                               return o;
-                             });
+                               return o[state.track.idx] + n[state.track.idx];});
           if (recSect.size() < 1) {
             recSect.in = pos - (data.nframes - from) * state.playSpeed;
           }
@@ -282,12 +279,9 @@ namespace top1::modules {
           for (uint i = 0; i < writeSize; i++) {
             buf.push_back(data.audio.proc[int(from + i / -state.playSpeed)]);
           }
-          tapeBuffer.writeBW(buf,
-                             (data.nframes - from) * state.playSpeed - writeSize,
+          tapeBuffer.writeBW(buf, (data.nframes - from) * state.playSpeed - writeSize,
                              [this](AudioFrame o, AudioFrame n) {
-                               o[state.track.idx] += n[state.track.idx];
-                               return o;
-                             });
+                               return o[state.track.idx] + n[state.track.idx];});
           if (recSect.size() < 1) {
             recSect.out = pos + (data.nframes - from) * -state.playSpeed;
           }

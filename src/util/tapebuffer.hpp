@@ -13,7 +13,7 @@
 #include <plog/Log.h>
 
 #include "util/dyn-array.hpp"
-#include "util/tapefile.hpp"
+#include "util/audio.hpp"
 
 namespace top1 {
 
@@ -36,10 +36,12 @@ namespace top1 {
     static Track makeIdx(uint idx) { return Track(idx); }
     static Track makeName(uint name) { return Track(name-1); }
   private:
-    Track(uint idx) : idx (idx) {}
+    explicit Track(uint idx) : idx (idx) {}
   };
 
   using TapeTime = int;
+
+  class TapeDiskThread;
 
   /**
    * A Wrapper for ringbuffers, used for the tapemodule.
@@ -75,13 +77,12 @@ namespace top1 {
       auto size() { return slices.size(); }
     };
   protected:
-    const static int MIN_READ_SIZE = 2048;
+    friend class TapeDiskThread;
+    std::unique_ptr<TapeDiskThread> diskThread;
 
     /** The current position on the tape, counted in frames from the beginning*/
     std::atomic_uint playPoint;
 
-
-    std::thread diskThread;
     std::condition_variable_any readData;
 
     std::atomic_bool newCuts;
@@ -103,11 +104,10 @@ namespace top1 {
     } clipboard;
 
   public:
-    TapeFile file;
 
     struct RingBuffer {
-      const static uint SIZE = 262144; // 2^18
-      DynArray<AudioFrame> data = DynArray<AudioFrame>(SIZE);
+      const static uint Size = 262144; // 2^18
+      DynArray<AudioFrame> data = DynArray<AudioFrame>(Size);
       audio::Section<int> notWritten;
       std::atomic_int lengthFW = {0};
       std::atomic_int lengthBW = {0};
@@ -119,7 +119,7 @@ namespace top1 {
       }
 
       uint wrapIdx(int index) {
-        return ((index %= SIZE) < 0) ? SIZE + index : index;
+        return ((index %= Size) < 0) ? Size + index : index;
       }
 
     } buffer;
@@ -129,6 +129,7 @@ namespace top1 {
     TapeBuffer();
     TapeBuffer(TapeBuffer&) = delete;
     TapeBuffer(TapeBuffer&&) = delete;
+    ~TapeBuffer();
 
     void init();
     void exit();
