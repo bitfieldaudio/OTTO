@@ -19,19 +19,53 @@ namespace top1::tree {
     String(std::string&& s) : value(std::move(s)) {}
     std::string value;
 
-    operator std::string() {return value;}
+    operator std::string() const {return value;}
+    bool operator==(const String& lhs) const {return value == lhs.value;}
+    bool operator!=(const String& lhs) const {return value != lhs.value;}
+    bool operator<(const String& lhs) const {return value < lhs.value;}
+    bool operator>(const String& lhs) const {return value > lhs.value;}
+    bool operator<=(const String& lhs) const {return value <= lhs.value;}
+    bool operator>=(const String& lhs) const {return value >= lhs.value;}
   };
 
   struct Int    {
     int value;
+    operator int() const {return value;}
+    bool operator==(const Int& lhs) const {return value == lhs.value;}
+    bool operator!=(const Int& lhs) const {return value != lhs.value;}
+    bool operator< (const Int& lhs) const {return value < lhs.value;}
+    bool operator> (const Int& lhs) const {return value > lhs.value;}
+    bool operator<=(const Int& lhs) const {return value <= lhs.value;}
+    bool operator>=(const Int& lhs) const {return value >= lhs.value;}
   };
   struct Float  {
     float value;
+    operator float() const {return value;}
+    bool operator==(const Float& lhs) const {return value == lhs.value;}
+    bool operator!=(const Float& lhs) const {return value != lhs.value;}
+    bool operator< (const Float& lhs) const {return value < lhs.value;}
+    bool operator> (const Float& lhs) const {return value > lhs.value;}
+    bool operator<=(const Float& lhs) const {return value <= lhs.value;}
+    bool operator>=(const Float& lhs) const {return value >= lhs.value;}
   };
   struct Bool   {
     bool value;
+    operator bool() const {return value;}
+    bool operator==(const Bool& lhs) const {return value == lhs.value;}
+    bool operator!=(const Bool& lhs) const {return value != lhs.value;}
+    bool operator< (const Bool& lhs) const {return value < lhs.value;}
+    bool operator> (const Bool& lhs) const {return value > lhs.value;}
+    bool operator<=(const Bool& lhs) const {return value <= lhs.value;}
+    bool operator>=(const Bool& lhs) const {return value >= lhs.value;}
   };
-  struct Null   { };
+  struct Null   {
+    bool operator==(const Null& lhs) const {return true;}
+    bool operator!=(const Null& lhs) const {return false;}
+    bool operator< (const Null& lhs) const {return false;}
+    bool operator> (const Null& lhs) const {return false;}
+    bool operator<=(const Null& lhs) const {return false;}
+    bool operator>=(const Null& lhs) const {return false;}
+  };
 
   // Forward declarations only
   struct Array;
@@ -52,13 +86,26 @@ namespace top1::tree {
     auto &operator[](uint i) { return values[i];}
     auto begin() { return values.begin(); }
     auto end() { return values.end(); }
+    auto begin() const { return values.begin(); }
+    auto end() const { return values.end(); }
+    bool operator==(const Array& lhs) const {
+      return std::is_permutation(begin(), end(), lhs.begin());
+    }
+    bool operator!=(const Array& lhs) const {return !(*this == lhs);}
   };
 
   struct Map {
     std::unordered_map<std::string, Node> values;
-    auto &operator[](std::string k) { return values[k];}
+    auto& operator[](std::string k) { return values[k];}
     auto begin() { return values.begin(); }
     auto end() { return values.end(); }
+    auto begin() const { return values.begin(); }
+    auto end() const { return values.end(); }
+
+    bool operator==(const Map& lhs) const {
+      return std::is_permutation(begin(), end(), lhs.begin());
+    }
+    bool operator!=(const Map& lhs) const {return !(*this == lhs);}
   };
 
   // Specialize for things
@@ -97,25 +144,25 @@ namespace top1::tree {
 
   template<>
   inline std::optional<float> readNode<float>(Node n) {
-    return match(n, [] (Float n) {return std::optional(n.value);},
+    return n.match([] (Float n) {return std::optional(n.value);},
                  [] (auto&&) {return std::optional<float>();});
   }
 
   template<>
   inline std::optional<int> readNode<int>(Node n) {
-    return match(n, [] (Int n) {return std::optional(n.value);},
+    return n.match([] (Int n) {return std::optional(n.value);},
                  [] (auto&&) {return std::optional<int>();});
   }
 
   template<>
   inline std::optional<bool> readNode<bool>(Node n) {
-    return match(n, [] (Bool n) {return std::optional(n.value);},
+    return n.match([] (Bool n) {return std::optional(n.value);},
                  [] (auto&&) {return std::optional<bool>();});
   }
 
   template<>
   inline std::optional<std::string> readNode<std::string>(Node n) {
-    return match(n, [] (String n) {return std::optional(n.value);},
+    return n.match([] (String n) {return std::optional(n.value);},
                  [] (auto&&) {return std::optional<std::string>();});
   }
 

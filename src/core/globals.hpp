@@ -22,7 +22,7 @@ namespace top1 {
 
   class Globals {
   private:
-    static inline std::atomic_bool isRunning = {true};
+    static inline std::atomic_bool isRunning {true};
   public:
     static inline std::condition_variable notifyExit;
 
@@ -49,7 +49,7 @@ namespace top1 {
     static inline modules::Metronome metronome;
 
     static inline void init() {
-      dataFile.path = "data.json";
+      dataFile.path = "data/modules.json";
       dataFile.read();
       jackAudio.init();
       tapedeck.init();

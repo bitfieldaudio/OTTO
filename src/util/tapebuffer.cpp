@@ -186,7 +186,7 @@ namespace top1 {
       tb.movePlaypointAbs(0);
 
       // FIXME: Hardcoded
-      file.open("tape.wav");
+      file.open("data/tape.wav");
       file.samplerate = Globals::samplerate;
 
       if (file.error.log()) Globals::exit();

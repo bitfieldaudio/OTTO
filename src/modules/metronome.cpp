@@ -80,7 +80,7 @@ namespace top1::modules {
     case ui::Rotary::Red:
       module->props.gain.step(e.clicks); break;
     case ui::Rotary::Blue:
-      module->props.gain.step(e.clicks); break;
+      module->props.bpm.step(e.clicks); break;
     case ui::Rotary::Green:
       module->props.tone.step(e.clicks); break;
     case ui::Rotary::White:

@@ -11,6 +11,7 @@
 
 #include "core/globals.hpp"
 #include "util/event.hpp"
+#include "util/timer.hpp"
 
 namespace top1::audio {
 
@@ -192,6 +193,10 @@ namespace top1::audio {
 
   void JackAudio::process(uint nframes) {
     if (!(isProcessing && Globals::running())) return;
+
+    timer::dispatcher.timers["Process Time"].stopTimer();
+    timer::dispatcher.timers["Process Time"].startTimer();
+
     if (nframes > bufferSize) {
       LOGE << "Jack requested more frames than expected";
       return;

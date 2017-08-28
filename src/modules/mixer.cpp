@@ -82,9 +82,9 @@ namespace top1::modules {
 
   void MixerScreen::rotary(ui::RotaryEvent e) {
     if (Globals::ui.keys[ui::K_SHIFT]) {
-      module->props.tracks[static_cast<int>(e.rotary)].level.step(e.clicks);
-    } else {
       module->props.tracks[static_cast<int>(e.rotary)].pan.step(e.clicks);
+    } else {
+      module->props.tracks[static_cast<int>(e.rotary)].level.step(e.clicks);
     }
   }
 

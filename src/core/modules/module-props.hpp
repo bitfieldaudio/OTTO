@@ -279,7 +279,7 @@ namespace top1::modules {
     }
 
     void readNode(const tree::Node& n) override {
-      match(n, [this] (const tree::Map& m) {
+      n.match([this] (const tree::Map& m) {
           for (auto&& pair : m.values) {
             auto p = std::find_if(begin(), end(),
                                   [&] (auto&& p) {return p->name == pair.first;});

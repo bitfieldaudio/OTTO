@@ -1,5 +1,7 @@
 #include "../../testing.h"
 
+#include <algorithm>
+
 #include "core/modules/module-props.hpp"
 
 namespace top1::modules {
@@ -76,6 +78,31 @@ namespace top1::modules {
                 {"anInt", tree::Int{42}}
               }}}
         }};
+
+      auto propsNode = props.makeNode();
+      REQUIRE(propsNode.is<tree::Map>());
+      REQUIRE(propsNode.get<tree::Map>() == node);
+
+    }
+
+    SECTION("tree::Node to Property conversions") {
+
+      props.fProp.readNode(tree::Float{8.f});
+      REQUIRE(props.fProp == 8.f);
+      
+      tree::Map node = {{
+          {"fProp", tree::Float{2.f}},
+          {"otherProp", tree::Float{31}},
+          {"toggle", tree::Bool{true}},
+          {"subProps", tree::Map{{
+                {"anInt", tree::Int{9}}
+              }}}
+        }};
+
+      props.readNode(node);
+      REQUIRE(props.fProp == 2.f);
+
+      REQUIRE(props.makeNode() == node);
     }
 
     SECTION("Properties work with range-based for loops") {

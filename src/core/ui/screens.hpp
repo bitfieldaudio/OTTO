@@ -26,6 +26,7 @@ namespace top1::ui {
 
     void draw(drawing::Canvas&) override;
     bool keypress(ui::Key) override;
+    void rotary(ui::RotaryEvent) override;
 
     void prev(int = 1);
     void next(int = 1);
@@ -68,17 +69,12 @@ namespace top1::ui {
 
   template<typename T>
   bool SelectorScreen<T>::keypress(ui::Key key) {
-    using namespace ui;
-    switch (key) {
-    case K_BLUE_UP:
-      prev();
-      return true;
-    case K_BLUE_DOWN:
-      next();
-      return true;
-    default:
-      return false;
-    }
+    return false;
+  }
+
+  template<typename T>
+  void SelectorScreen<T>::rotary(ui::RotaryEvent e) {
+    select(selectedItem - e.clicks);
   }
 
   template<typename T>
