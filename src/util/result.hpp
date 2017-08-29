@@ -22,7 +22,7 @@ namespace top1 {
 
     /// Returns `true` if the result is `Ok`
     bool is_ok() const {
-      return std::holds_alternative<Err>(data);
+      return std::holds_alternative<Ok>(data);
     }
 
     /// Returns `true` if the result is `Err`
@@ -56,7 +56,7 @@ namespace top1 {
       auto map(F&& op) const ->
       result<decltype(std::invoke(std::forward<F>(op), Ok())), Err> {
       if (is_ok()) {
-        return std::invoke(op, err());
+        return std::invoke(op, std::get<Ok>(data));
       }
       return *this;
     }
@@ -69,7 +69,7 @@ namespace top1 {
       auto map_err(F&& op) const ->
       result<Ok, decltype(std::invoke(std::forward<F>(op), Err()))> {
       if (is_err()) {
-        return std::invoke(op, err());
+        return std::invoke(op, std::get<Err>(data));
       }
       return *this;
     }
@@ -82,7 +82,7 @@ namespace top1 {
       if (is_ok()) {
         return r;
       } else {
-        return err();
+        return std::get<Err>(data);
       }
     }
 
@@ -94,7 +94,7 @@ namespace top1 {
       if (is_ok()) {
         return std::invoke(std::forward<F>(f), std::forward<Args>(args)...);
       } else {
-        return err();
+        return std::get<Err>(data);
       }
     }
 
@@ -106,7 +106,7 @@ namespace top1 {
       if (is_err()) {
         return r;
       } else {
-        return ok();
+        return std::get<Ok>(data);
       }
     }
 
@@ -118,13 +118,13 @@ namespace top1 {
       if (is_err()) {
         return std::invoke(std::forward<F>(f), std::forward<Args>(args)...);
       } else {
-        return ok();
+        return std::get<Ok>(data);
       }
     }
 
     /// Returns its own value if the result is `ok`,
     /// otherwise returns `def`
-    Ok get_or(const Ok& def) {
+    Ok get_or(const Ok& def) const {
       if (is_ok()) {
         return std::get<Ok>(data);
       } else {
@@ -134,7 +134,7 @@ namespace top1 {
 
     /// Returns its own value if the result is `ok`,
     /// otherwise returns `def`
-    Ok&& get_or(Ok&& def) {
+    Ok&& get_or(Ok&& def) const {
       if (is_ok()) {
         return std::get<Ok>(data);
       } else {
@@ -145,7 +145,7 @@ namespace top1 {
     /// Returns its own value if the result is `ok`,
     /// otherwise invokes `f` on `args`
     template<typename F, typename... Args>
-      auto get_or_else(F&& f, Args&&... args) -> std::enable_if_t<
+      auto get_or_else(F&& f, Args&&... args) const -> std::enable_if_t<
         std::is_invocable_r_v<Ok, F, Args...>,
         Ok> {
       if (is_ok()) {

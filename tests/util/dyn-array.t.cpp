@@ -1,4 +1,4 @@
-#include "../testing.h"
+#include "testing.t.hpp"
 
 #include "util/dyn-array.hpp"
 
