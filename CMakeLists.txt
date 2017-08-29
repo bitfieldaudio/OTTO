@@ -31,6 +31,8 @@ add_executable(tests ${TOP-1_TESTS})
 add_custom_target(check COMMAND tests)
 
 target_include_directories(tests PUBLIC ${CMAKE_SOURCE_DIR}/src)
+target_include_directories(tests PUBLIC ${CMAKE_SOURCE_DIR}/tests)
+
 target_link_libraries(top-1 libtop-1)
 target_link_libraries(tests libtop-1)
 
@@ -79,66 +81,3 @@ function(enable_cxx_compiler_flag_if_supported flag)
 endfunction()
 enable_cxx_compiler_flag_if_supported("-Wall")
 
-
-# Generate documentation
-file(GLOB_RECURSE DOC_FILES
-  "src/*.cpp"
-  "src/*.hpp"
-  "src/*.h"
-)
-
-set(CLDOC "" CACHE STRING "User specified '/path/to/cldoc'")
-if(CLDOC STREQUAL "")
-	find_program(CLDOC cldoc)
-elseif(NOT EXISTS ${CLDOC})
-	message(FATAL_ERROR "CLDOC was set to '${CLDOC}' but does not exist")
-endif()
-
-if(NOT DOCS_OUTPUT_DIR)
-	set(DOCS_OUTPUT_DIR "docs" CACHE STRING "Generated documentation output directory" FORCE)
-endif()
-
-if(NOT DOCS_DIR)
-	set(DOCS_DIR "doc-src" CACHE STRING "Location of external documentation files to be merged in" FORCE)
-endif()
-
-if(NOT ${CLDOC} STREQUAL "CLDOC-NOTFOUND")
-  if(NOT ${DOCS_DIR} STREQUAL "")
-  	set(CLDOC_MERGE "--merge ${DOCS_DIR}")
-  else()
-  	set(CLDOC_MERGE "")
-  endif()
-
-  add_custom_target(docs COMMAND
-    ${CLDOC} generate
-    ${CMAKE_CXX_FLAGS}
-    "-x c++ -std=c++1z"
-    -I${PROJECT_SOURCE_DIR}/src
-    ${CLDOC_MERGE}
-    --output ${DOCS_OUTPUT_DIR}
-    --
-    ${DOC_FILES}
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-  )
-
-  set_target_properties(docs PROPERTIES
-    EXCLUDE_FROM_ALL 1
-    EXCLUDE_FROM_DEFAULT_BUILD 1
-  )
-
-  add_custom_target(serve_docs COMMAND
-    ${CLDOC} serve -- ${DOCS_OUTPUT_DIR}
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-  )
-
-  set_target_properties(docs PROPERTIES
-    EXCLUDE_FROM_ALL 1
-    EXCLUDE_FROM_DEFAULT_BUILD 1
-  )
-
-  add_dependencies(serve_docs docs)
-else()
-  message(STATUS
-    "Documentation will not be generated"
-  )
-endif()
