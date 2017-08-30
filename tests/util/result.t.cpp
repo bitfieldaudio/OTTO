@@ -1,5 +1,7 @@
 #include "../testing.t.hpp"
 
+#include <string>
+
 #include "util/result.hpp"
 
 namespace top1 {

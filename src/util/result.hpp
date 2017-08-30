@@ -1,6 +1,7 @@
 #pragma once
 
-#include <variant>
+// Use this because of bugs in libstdc++ variant. Replace later
+#include <variant.hpp>
 #include <optional>
 #include <utility>
 #include <functional>
@@ -11,7 +12,7 @@ namespace top1 {
   /// Modelled closely after Rust's Result enum.
   template<typename Ok, typename Err>
   class [[nodiscard]] result {
-    std::variant<Ok, Err> data;
+    mpark::variant<Ok, Err> data;
   public:
 
     result(const Ok& ok) : data (ok) {}
@@ -22,18 +23,18 @@ namespace top1 {
 
     /// Returns `true` if the result is `Ok`
     bool is_ok() const {
-      return std::holds_alternative<Ok>(data);
+      return mpark::holds_alternative<Ok>(data);
     }
 
     /// Returns `true` if the result is `Err`
     bool is_err() const {
-      return std::holds_alternative<Err>(data);
+      return mpark::holds_alternative<Err>(data);
     }
 
     /// Convert into a `std::optional<Ok>`, discarding the error, if any
     std::optional<Ok> ok() const {
       if (is_ok()) {
-        return std::optional<Ok>(std::get<Ok>(data));
+        return std::optional<Ok>(mpark::get<Ok>(data));
       } else {
         return std::optional<Ok>();
       }
@@ -42,7 +43,7 @@ namespace top1 {
     /// Convert into a `std::optional<Err>`, discarding the ok value, if any
     std::optional<Err> err() const {
       if (is_err()) {
-        return std::optional<Err>(std::get<Err>(data));
+        return std::optional<Err>(mpark::get<Err>(data));
       } else {
         return std::optional<Err>();
       }
@@ -56,7 +57,7 @@ namespace top1 {
       auto map(F&& op) const ->
       result<decltype(std::invoke(std::forward<F>(op), Ok())), Err> {
       if (is_ok()) {
-        return std::invoke(op, std::get<Ok>(data));
+        return std::invoke(op, mpark::get<Ok>(data));
       }
       return *this;
     }
@@ -69,7 +70,7 @@ namespace top1 {
       auto map_err(F&& op) const ->
       result<Ok, decltype(std::invoke(std::forward<F>(op), Err()))> {
       if (is_err()) {
-        return std::invoke(op, std::get<Err>(data));
+        return std::invoke(op, mpark::get<Err>(data));
       }
       return *this;
     }
@@ -82,7 +83,7 @@ namespace top1 {
       if (is_ok()) {
         return r;
       } else {
-        return std::get<Err>(data);
+        return mpark::get<Err>(data);
       }
     }
 
@@ -94,7 +95,7 @@ namespace top1 {
       if (is_ok()) {
         return std::invoke(std::forward<F>(f), std::forward<Args>(args)...);
       } else {
-        return std::get<Err>(data);
+        return mpark::get<Err>(data);
       }
     }
 
@@ -106,7 +107,7 @@ namespace top1 {
       if (is_err()) {
         return r;
       } else {
-        return std::get<Ok>(data);
+        return mpark::get<Ok>(data);
       }
     }
 
@@ -118,7 +119,7 @@ namespace top1 {
       if (is_err()) {
         return std::invoke(std::forward<F>(f), std::forward<Args>(args)...);
       } else {
-        return std::get<Ok>(data);
+        return mpark::get<Ok>(data);
       }
     }
 
@@ -126,7 +127,7 @@ namespace top1 {
     /// otherwise returns `def`
     Ok get_or(const Ok& def) const {
       if (is_ok()) {
-        return std::get<Ok>(data);
+        return mpark::get<Ok>(data);
       } else {
         return def;
       }
@@ -136,7 +137,7 @@ namespace top1 {
     /// otherwise returns `def`
     Ok&& get_or(Ok&& def) const {
       if (is_ok()) {
-        return std::get<Ok>(data);
+        return mpark::get<Ok>(data);
       } else {
         return std::move(def);
       }
@@ -146,10 +147,10 @@ namespace top1 {
     /// otherwise invokes `f` on `args`
     template<typename F, typename... Args>
       auto get_or_else(F&& f, Args&&... args) const -> std::enable_if_t<
-        std::is_invocable_r_v<Ok, F, Args...>,
+        std::is_invocable<F, Args...>::value,
         Ok> {
       if (is_ok()) {
-        return std::get<Ok>(data);
+        return mpark::get<Ok>(data);
       } else {
         return std::invoke(std::forward<F>(f), std::forward<Args>(args)...);
       }
