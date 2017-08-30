@@ -59,7 +59,7 @@ namespace top1 {
       if (is_ok()) {
         return std::invoke(op, mpark::get<Ok>(data));
       }
-      return *this;
+      return mpark::get<Err>(data);
     }
 
     /// Map `result<O, E>` to `result<O, F>` by invoking `op` on a contained
@@ -72,7 +72,7 @@ namespace top1 {
       if (is_err()) {
         return std::invoke(op, mpark::get<Err>(data));
       }
-      return *this;
+      return mpark::get<Ok>(data);
     }
 
     /// Returns `r` if the result is `Ok`, otherwise returns its own `Err` value
@@ -125,7 +125,7 @@ namespace top1 {
 
     /// Returns its own value if the result is `ok`,
     /// otherwise returns `def`
-    Ok get_or(const Ok& def) const {
+    Ok ok_or(const Ok& def) const {
       if (is_ok()) {
         return mpark::get<Ok>(data);
       } else {
@@ -135,9 +135,29 @@ namespace top1 {
 
     /// Returns its own value if the result is `ok`,
     /// otherwise returns `def`
-    Ok&& get_or(Ok&& def) const {
+    Ok&& ok_or(Ok&& def) const {
       if (is_ok()) {
         return mpark::get<Ok>(data);
+      } else {
+        return std::move(def);
+      }
+    }
+
+    /// Returns its own value if the result is `err`,
+    /// otherwise returns `def`
+    Err err_or(const Err& def) const {
+      if (is_err()) {
+        return mpark::get<Err>(data);
+      } else {
+        return def;
+      }
+    }
+
+    /// Returns its own value if the result is `err`,
+    /// otherwise returns `def`
+    Err&& err_or(Err&& def) const {
+      if (is_err()) {
+        return mpark::get<Err>(data);
       } else {
         return std::move(def);
       }
