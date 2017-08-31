@@ -28,3 +28,5 @@ script:
 - make all
 - bin/tests
     
+notifications:
+  email: false
