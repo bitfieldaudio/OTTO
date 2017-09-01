@@ -3,7 +3,7 @@ dist: trusty
 sudo: required
 
 install:
-- sudo add-apt-repository ppa:keithw/glfw3
+- sudo add-apt-repository ppa:keithw/glfw3 -y
 - sudo apt-get update
 - sudo apt-get install -yq --no-install-suggests --no-install-recommends --force-yes libglfw3-dev libgles2-mesa-dev python2.7
 - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 90
