@@ -2,7 +2,7 @@
 
 #include <type_traits>
 
-#include "util/bytefile.hpp"
+#include "util/top1file.hpp"
 #include "util/audio.hpp"
 
 namespace top1 {

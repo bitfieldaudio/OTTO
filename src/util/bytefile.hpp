@@ -2,7 +2,7 @@
 
 #include <string>
 // TODO: Replace with c++17 once implementations have it
-#include <experimental/filesystem>
+// #include <experimental/filesystem>
 #include <iterator>
 #include <utility>
 #include <fstream>
@@ -12,7 +12,7 @@
 
 namespace top1 {
 
-  namespace filesystem = std::experimental::filesystem;
+  // namespace filesystem = std::experimental::filesystem;
 
   /// TODO: Documentation
   class ByteFile {
@@ -29,7 +29,7 @@ namespace top1 {
     };
 
     using Position = int;
-    using Path = filesystem::path;
+    using Path = std::string;
 
     template<typename Ok, typename Err = Error>
     using result = result<Ok, Err>;

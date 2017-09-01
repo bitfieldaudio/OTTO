@@ -1,4 +1,4 @@
-#include "wavefile.hpp"
+#include "util/bytefile.hpp"
 
 namespace top1 {
 
@@ -53,6 +53,10 @@ namespace top1 {
     return {};
   }
 
+  bool ByteFile::is_open() const {
+    return fstream.is_open();
+  }
+
   ByteFile::result<ByteFile::Position> ByteFile::seek(Position p) {
     if (!is_open()) {return {Error::Type::FileNotOpen};}
     try {
@@ -74,7 +78,7 @@ namespace top1 {
     auto p = fstream.tellg();
     auto end = fstream.seekg(0, std::fstream::end).tellg();
     fstream.seekg(p);
-    return Position(p);
+    return Position(end);
   }
 
 } // top1

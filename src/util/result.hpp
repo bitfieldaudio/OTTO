@@ -79,7 +79,7 @@ namespace top1 {
     /// Can be used to compose the result of two functions
     template<typename F>
       auto map(F&& op) const noexcept ->
-      result<decltype(std::invoke(std::forward<F>(op), Ok())), Err> {
+      result<std::invoke_result_t<F, Ok>, Err> {
       if (is_ok()) {
         return std::invoke(op, mpark::get<Ok>(data));
       }
@@ -92,7 +92,7 @@ namespace top1 {
     /// Can be used to pass through a successful result while handling the error
     template<typename F>
       auto map_err(F&& op) const noexcept ->
-      result<Ok, decltype(std::invoke(std::forward<F>(op), Err()))> {
+      result<Ok, std::invoke_result_t<F, Err>> {
       if (is_err()) {
         return std::invoke(op, mpark::get<Err>(data));
       }
@@ -240,7 +240,7 @@ namespace top1 {
     /// Evil, but useful
     Ok may_throw() {
       if (is_ok()) {
-        return ok;
+        return mpark::get<Ok>(data);
       } else {
         throw result_except{mpark::get<Err>(data)};
       }
