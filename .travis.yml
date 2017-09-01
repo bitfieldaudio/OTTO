@@ -34,16 +34,18 @@ compiler: gcc
 
 script:
 - cmake . -DCMAKE_BUILD_TYPE=Release
-- make all
-- bin/tests
-# Generate docs
-- ./deploy-docs
+# - make all
+# - bin/tests
+- make docs
 
 # For pushing documentation
-env:
-  global:
-  - ENCRYPTION_LABEL: "388c738922bf"
-  - COMMIT_AUTHOR_EMAIL: "topisani@hamsterpoison.com"
+deploy:
+  provider: pages
+  skip_cleanup: true
+  github_token: $GITHUB_TOKEN # Set in travis-ci.org dashboard
+  local_dir: docs
+  on:
+    branch: master
 
 notifications:
   email: false
