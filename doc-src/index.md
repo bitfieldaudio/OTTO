@@ -8,7 +8,10 @@ Ah, who doesnt love the [op-1](http://teenage.engineering/products/op-1)? Its a 
 Come chat with me at my [discord server](https://discord.gg/4cV9Ucz) if you're interested in the project.
 
 ### Introducing the TOP-1!  
-To be fair, the TOP-1 is an op-1 clone. But i like to think it's a bit more than that. Some differences will be subtle, and some differences will be big. Especially the non-core modules will differ greatly, as most of them are designed fully independently. The UI too varies, from the tapedeck, which is practically the same, to the metronome, which is very different.
+To be fair, the TOP-1 is an op-1 clone. But i like to think it's a bit more than that. Some differences will be subtle, and some differences will be big. Especially the non-core modules will differ greatly, as most of them are designed fully independently. The UI too varies, from the tapedeck, which is practically the same, to the metronome, which is very different (see both below);
+
+<img src="images/tapedeck.png" width="300px" alt="Tapedeck"> <img src="images/mixer.png" width="300px" alt="Mixer">
+<img src="images/metronome.gif" width="300px" alt="Metronome"> <img src="images/simple-drums.png" width="300px" alt="Drum Synth">
 
 # Current Progress  
 The tapedeck is completed, with a few bugs left to iron out, and with the addition of the metronome, mixer, and input selector, the software is just about ready to be used for recording with external synthesizers. It runs in an OpenGLFW window, and the buttons and rotaries are emulated with keyboard shortcuts.
