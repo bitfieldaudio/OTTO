@@ -15,6 +15,7 @@ install:
 - sudo npm install -g coffee-script
 - python setup.py generate
 - sudo python setup.py install
+- cd ..
 
 addons:
   apt:
