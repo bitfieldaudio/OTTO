@@ -5,7 +5,7 @@ sudo: required
 install:
 - sudo add-apt-repository ppa:keithw/glfw3
 - sudo apt-get update
-- sudo apt-get install -yq --no-install-suggests --no-install-recommends --force-yes libglfw3-dev libgles2-mesa-dev python2
+- sudo apt-get install -yq --no-install-suggests --no-install-recommends --force-yes libglfw3-dev libgles2-mesa-dev python2.7
 - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 90
 - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 90
 - git clone "https://github.com/topisani/cldoc"
