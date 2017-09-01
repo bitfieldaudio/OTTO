@@ -5,9 +5,10 @@ sudo: required
 install:
 - sudo add-apt-repository ppa:keithw/glfw3 -y
 - sudo apt-get update
-- sudo apt-get install -yq --no-install-suggests --no-install-recommends --force-yes libglfw3-dev libgles2-mesa-dev python2.7 sass
+- sudo apt-get install -yq --no-install-suggests --no-install-recommends --force-yes libglfw3-dev libgles2-mesa-dev python2.7 sass libclang-6.0-dev
 - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 90
 - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 90
+- sudo ln -s /usr/lib/x86_64-linux-gnu/libclang-6.0.so.1 /usr/lib/x86_64-linux-gnu/libclang.so
 - git clone "https://github.com/topisani/cldoc"
 - cd cldoc
 - npm install
@@ -19,10 +20,9 @@ addons:
   apt:
     sources:
     - ubuntu-toolchain-r-test
-    #- llvm-toolchain-trusty
+    - llvm-toolchain-trusty
     packages:
     - cmake
-    #- clang-6.0
     - g++-7
     - pkg-config
     - libjack-jackd2-dev
