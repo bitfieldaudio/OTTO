@@ -5,13 +5,12 @@ sudo: required
 install:
 - sudo add-apt-repository ppa:keithw/glfw3 -y
 - sudo apt-get update
-- sudo apt-get install -yq --no-install-suggests --no-install-recommends --force-yes libglfw3-dev libgles2-mesa-dev python2.7
+- sudo apt-get install -yq --no-install-suggests --no-install-recommends --force-yes libglfw3-dev libgles2-mesa-dev python2.7 sass
 - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 90
 - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 90
 - git clone "https://github.com/topisani/cldoc"
 - cd cldoc
 - npm install
-- sudo gem install sass
 - sudo npm install -g coffee-script
 - python setup.py generate
 - sudo python setup.py install
