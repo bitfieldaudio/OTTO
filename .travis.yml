@@ -5,9 +5,16 @@ sudo: required
 install:
 - echo "deb http://ppa.launchpad.net/keithw/glfw3/ubuntu trusty main" | sudo tee -a /etc/apt/sources.list.d/fillwave_ext.list
 - sudo apt-get update
-- sudo apt-get install -yq --no-install-suggests --no-install-recommends --force-yes libglfw3-dev libgles2-mesa-dev
+- sudo apt-get install -yq --no-install-suggests --no-install-recommends --force-yes libglfw3-dev libgles2-mesa-dev python2
 - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 90
 - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 90
+- git clone "https://github.com/topisani/cldoc"
+- cd cldoc
+- npm install
+- sudo gem install sass
+- sudo npm install -g coffee-script
+- python setup.py generate
+- sudo python setup.py install
 
 addons:
   apt:
@@ -20,13 +27,19 @@ addons:
     - g++-7
     - pkg-config
     - libjack-jackd2-dev
-    
+
 compiler: gcc
 
 script:
 - cmake . -DCMAKE_BUILD_TYPE=Release
 - make all
 - bin/tests
-    
+- ./deploy-docs
+
+env:
+  global:
+  - ENCRYPTION_LABEL: "388c738922bf"
+  - COMMIT_AUTHOR_EMAIL: "topisani@hamsterpoison.com"
+
 notifications:
   email: false

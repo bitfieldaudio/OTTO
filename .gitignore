@@ -15,3 +15,5 @@ CTestTestfile.cmake
 /data.json
 /tape1.tape
 /playground
+
+deploy_key
