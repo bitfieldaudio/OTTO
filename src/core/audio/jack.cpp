@@ -194,8 +194,9 @@ namespace top1::audio {
   void JackAudio::process(uint nframes) {
     if (!(isProcessing && Globals::running())) return;
 
-    timer::dispatcher.timers["Process Time"].stopTimer();
-    timer::dispatcher.timers["Process Time"].startTimer();
+    static auto& timer = timer::dispatcher.timers["Audio Frame time"];
+    if (timer.running) timer.stopTimer();
+    timer.startTimer();
 
     if (nframes > bufferSize) {
       LOGE << "Jack requested more frames than expected";

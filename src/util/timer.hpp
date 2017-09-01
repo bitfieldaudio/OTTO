@@ -19,6 +19,11 @@ namespace top1::timer {
     using Clock = std::chrono::steady_clock;
     using TimePoint = std::chrono::time_point<Clock, Duration>;
 
+    static double numSecs(Duration d) {
+      return std::chrono::duration<double>(d).count();
+    }
+
+    bool running;
     std::vector<Duration> times;
     TimePoint start;
 
@@ -26,17 +31,26 @@ namespace top1::timer {
     Timer(Timer&&) noexcept = default;
 
     void startTimer() {
+      running = true;
       start = Clock::now();
     }
 
     void stopTimer() {
       times.push_back(Clock::now() - start);
+      running = false;
     }
 
     Duration calcAvg() const {
       Duration sum = std::accumulate(times.begin(), times.end(),
                                      Duration(0), std::plus<Duration>());
       return sum / times.size();
+    }
+
+    Duration calcMed() const {
+      auto vec = times;
+      auto iter = vec.begin() + vec.size() / 2;
+      std::nth_element(vec.begin(), vec.end(), iter);
+      return *iter;
     }
 
     Duration calcMin() const {
@@ -50,14 +64,15 @@ namespace top1::timer {
     nlohmann::json jsonSerialize() const {
       auto ret = nlohmann::json::object();
       ret["count"] = times.size();
-      ret["avg"] = calcAvg().count();
-      ret["min"] = calcMin().count();
-      ret["max"] = calcMax().count();
-      auto tms = nlohmann::json::array();
-      for (auto&& t : times) {
-        tms.push_back(t.count());
-      }
-      ret["measurements"] = tms;
+      ret["Average"] = numSecs(calcAvg());
+      ret["Median"] = numSecs(calcMed());
+      ret["min"] = numSecs(calcMin());
+      ret["max"] = numSecs(calcMax());
+      // auto tms = nlohmann::json::array();
+      // for (auto&& t : times) {
+      //   tms.push_back(t.count());
+      // }
+      // ret["measurements"] = tms;
       return ret;
     }
   };

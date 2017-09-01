@@ -6,6 +6,8 @@
 
 #include "metronome.faust.h"
 
+#include "util/timer.hpp"
+
 namespace top1::modules {
 
   Metronome::Metronome() :
@@ -14,6 +16,7 @@ namespace top1::modules {
     screen (new MetronomeScreen(this)) {}
 
   void Metronome::process(audio::ProcessData& data) {
+    TIME_SCOPE("Metronome::process");
     float BPsample = props.bpm/60.0/(float)Globals::samplerate;
     float beat = Globals::tapedeck.position() * BPsample;
     uint framesTillNext = std::fmod(beat, 1)/BPsample * Globals::tapedeck.state.playSpeed;

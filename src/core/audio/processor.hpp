@@ -7,24 +7,23 @@
 #include "util/dyn-array.hpp"
 #include "util/audio.hpp"
 
-/*
-* Audio Processors are anything that can process audio/midi.
-* They run on the audio thread, and are called by the audio system (Jack).
-* Formally, an audio processor is defined as having a method matching
-* this signature:
-*
-* ```
-* void process(ProcessData&);
-* ```
-*
-* This method _must_ not be called from anywhere other than the main
-* audio system and it's deligates.
-*
-* If another thread needs access to any of this data, e.g. the audio/midi data,
-* They need an audio processor to read it and store it. It is up to the module
-* in question to handle thread safety.
-*/
+/**
+Audio Processors are anything that can process audio/midi.
+They run on the audio thread, and are called by the audio system (Jack).
+Formally, an audio processor is defined as having a method matching
+this signature:
 
+```
+void process(ProcessData&);
+```
+
+This method _must_ not be called from anywhere other than the main
+audio system and it's deligates.
+
+If another thread needs access to any of this data, e.g. the audio/midi data,
+They need an audio processor to read it and store it. It is up to the module
+in question to handle thread safety.
+*/
 namespace top1::audio {
 
   /*
