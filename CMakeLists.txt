@@ -90,7 +90,7 @@ set(CLDOC /usr/local/bin/cldoc)
 if(CLDOC STREQUAL "")
 	find_program(CLDOC cldoc)
 elseif(NOT EXISTS ${CLDOC})
-	message(FATAL_ERROR "CLDOC was set to '${CLDOC}' but does not exist")
+	message(ERROR "CLDOC was set to '${CLDOC}' but does not exist")
 endif()
 
 if(NOT DOCS_OUTPUT_DIR)
@@ -99,11 +99,12 @@ endif()
 
 if(NOT DOCS_DIR)
 	set(DOCS_DIR "doc-src" CACHE STRING "Location of external documentation files to be merged in" FORCE)
+        set(DOCS_DIR "doc-src")
 endif()
 
 if(NOT ${CLDOC} STREQUAL "CLDOC-NOTFOUND")
   if(NOT ${DOCS_DIR} STREQUAL "")
-  	set(CLDOC_MERGE "--merge ${DOCS_DIR}")
+  	set(CLDOC_MERGE "--merge=${DOCS_DIR}")
   else()
   	set(CLDOC_MERGE "")
   endif()
@@ -115,6 +116,7 @@ if(NOT ${CLDOC} STREQUAL "CLDOC-NOTFOUND")
     -I ./include -I ./include/nanovg
     -I${PROJECT_SOURCE_DIR}/src
     --
+    ${CLDOC_MERGE}
     --output=${DOCS_OUTPUT_DIR}
     ${DOC_FILES}
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
