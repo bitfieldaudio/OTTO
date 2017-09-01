@@ -36,16 +36,14 @@ script:
 - cmake . -DCMAKE_BUILD_TYPE=Release
 # - make all
 # - bin/tests
-- make docs
+# Generate docs
+- ./deploy-docs
 
 # For pushing documentation
-deploy:
-  provider: pages
-  skip_cleanup: true
-  github_token: $GITHUB_TOKEN # Set in travis-ci.org dashboard
-  local_dir: docs
-  on:
-    branch: master
+env:
+  global:
+  - ENCRYPTION_LABEL: "388c738922bf"
+  - COMMIT_AUTHOR_EMAIL: "topisani@hamsterpoison.com"
 
 notifications:
   email: false
