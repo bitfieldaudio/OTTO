@@ -35,6 +35,7 @@ compiler: gcc
 script:
 - cmake . -DCMAKE_BUILD_TYPE=Release
 - make all
+- mkdir testdata
 - bin/tests
 
 # Generate docs

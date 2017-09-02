@@ -123,6 +123,7 @@ namespace top1 {
         file.write_bytes(size);
         write_fields();
 
+        // Update size if changed
         if (std::size_t rs = file.position() - offset - 8; rs > size.as_u()) {
           size.as_u() = rs;
           file.seek(offset + 4);
