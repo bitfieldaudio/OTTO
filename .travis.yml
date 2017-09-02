@@ -34,9 +34,11 @@ compiler: gcc
 
 script:
 - cmake . -DCMAKE_BUILD_TYPE=Release
-# - make all
-# - bin/tests
+- make all
+- bin/tests
+
 # Generate docs
+after_success:
 - ./deploy-docs
 
 # For pushing documentation
