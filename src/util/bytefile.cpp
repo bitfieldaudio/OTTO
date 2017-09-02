@@ -33,13 +33,13 @@ namespace top1 {
   }
 
   void ByteFile::open(const Path& p) {
+    path = p;
     fstream.open(p, std::ios::in | std::ios::out | std::ios::binary);
     if (!fstream) {
       // File didnt exist, create it
-      fstream.open(p, std::ios::trunc | std::ios::out | std::ios::binary);
-      fstream.close();
-      fstream.open(p, std::ios::in | std::ios::out | std::ios::binary);
+      create_file();
     }
+    seek(0);
   }
 
   void ByteFile::close() {
@@ -48,6 +48,12 @@ namespace top1 {
 
   void ByteFile::flush() {
     fstream.flush();
+  }
+
+  void ByteFile::create_file() {
+    fstream.open(path, std::ios::trunc | std::ios::out | std::ios::binary);
+    fstream.close();
+    fstream.open(path, std::ios::in | std::ios::out | std::ios::binary);
   }
 
   bool ByteFile::is_open() const {

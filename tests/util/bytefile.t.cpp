@@ -9,13 +9,12 @@ namespace top1 {
 
   using Chunk = ByteFile::Chunk;
   using Path = ByteFile::Path;
-
-  template<int N>
-  using bytes = ByteFile::bytes<N>;
+  using Error = ByteFile::Error;
 
   TEST_CASE("Bytefile", "[util]") {
 
     Path somePath = "testdata/test1.bytes";
+    test::truncateFile(somePath);
 
     ByteFile f;
 
@@ -40,8 +39,12 @@ namespace top1 {
 
       REQUIRE_NOTHROW(f.open(somePath));
       REQUIRE_NOTHROW(f.position() == 0);
+      REQUIRE(f.size() == 0);
 
-      REQUIRE_NOTHROW(f.seek(somePos) == somePos);
+      SECTION ("Seeking past the end") {
+        REQUIRE_NOTHROW(f.seek(somePos) == somePos);
+        REQUIRE(f.position() == somePos);
+      }
     }
 
     SECTION("Write / Read bytes") {
@@ -66,6 +69,8 @@ namespace top1 {
 
       // Compare arrays
       REQUIRE(std::equal(readBytes.begin(), readBytes.end(), bytes.begin()));
+
+      REQUIRE_THROWS_AS(f.read_bytes(readBytes.begin(), 10), Error);
     }
 
     SECTION("Chunks") {
@@ -77,15 +82,15 @@ namespace top1 {
         bytes<4> field1;
         bytes<12> field2;
 
-        SomeChunk(ByteFile& f) : Chunk(f, "Chu1") {}
+        SomeChunk() : Chunk("Chu1") {}
         SomeChunk(Chunk& c) : Chunk(c) {}
 
-        void write_fields() override {
+        void write_fields(ByteFile& file) override {
           file.write_bytes(field1);
           file.write_bytes(field2);
         }
 
-        void read_fields() override {
+        void read_fields(ByteFile& file) override {
           file.read_bytes(field1);
           file.read_bytes(field2);
         }
@@ -95,15 +100,15 @@ namespace top1 {
         bytes<4> field1;
         std::vector<std::byte> dynField;
 
-        SomeOtherChunk(ByteFile& f) : Chunk(f, "Chu2") {}
+        SomeOtherChunk() : Chunk("Chu2") {}
         SomeOtherChunk(Chunk& c) : Chunk(c) {}
 
-        void write_fields() override {
+        void write_fields(ByteFile& file) override {
           file.write_bytes(field1);
           file.write_bytes(dynField.begin(), dynField.end());
         }
 
-        void read_fields() override {
+        void read_fields(ByteFile& file) override {
           file.read_bytes(field1);
           file.read_bytes(std::back_inserter(dynField), size.as_u() - 4);
         }
@@ -112,8 +117,8 @@ namespace top1 {
       f.open(somePath2);
       REQUIRE(f.is_open());
 
-      SomeChunk sc(f);
-      SomeOtherChunk soc(f);
+      SomeChunk sc;
+      SomeOtherChunk soc;
 
       sc.field1.as_u() = 0x52F93DAA;
       sc.field2 = {0xFF, 0x25, 0x54, 0x20, 0x99, 0xD3,
@@ -125,8 +130,8 @@ namespace top1 {
           return std::byte(std::rand());
         });
 
-      sc.write();
-      soc.write();
+      sc.write(f);
+      soc.write(f);
 
       f.close();
       REQUIRE(!f.is_open());
@@ -134,23 +139,30 @@ namespace top1 {
       f.open(somePath2);
       REQUIRE(f.is_open());
 
-      REQUIRE_NOTHROW(f.for_chunks_in_range(0, f.size(),
-          [&] (auto&& c) {
-            if (c.id == "Chu1") {
-              SomeChunk rsc(c);
-              rsc.read();
-              if (rsc.field1 != sc.field1) throw "Chunk mismatch";
-              if (rsc.field2 != sc.field2) throw "Chunk mismatch";
-            } else if (c.id == "Chu2") {
-              SomeOtherChunk rsoc(c);
-              rsoc.read();
-              if (rsoc.field1 != soc.field1) throw "Chunk mismatch";
-              if (!std::equal(soc.dynField.begin(), soc.dynField.end(),
-                  rsoc.dynField.begin())) throw "Chunk mismatch";
-            }
-          }));
+      SECTION ("for_chunks_in_range") {
 
-      f.close();
+        REQUIRE_NOTHROW(f.for_chunks_in_range(0, f.size(),
+            [&] (auto&& c) {
+              if (c.id == "Chu1") {
+                SomeChunk rsc(c);
+                rsc.read(f);
+                if (rsc.field1 != sc.field1) throw "Chunk mismatch";
+                if (rsc.field2 != sc.field2) throw "Chunk mismatch";
+              } else if (c.id == "Chu2") {
+                SomeOtherChunk rsoc(c);
+                rsoc.read(f);
+                if (rsoc.field1 != soc.field1) throw "Chunk mismatch";
+                if (!std::equal(soc.dynField.begin(), soc.dynField.end(),
+                    rsoc.dynField.begin())) throw "Chunk mismatch";
+              }
+            }));
+
+        // out of bounds
+
+        REQUIRE_NOTHROW(f.for_chunks_in_range(0, f.size() + 4,
+            [&] (auto&& c) {}));
+
+      }
     }
   }
 
