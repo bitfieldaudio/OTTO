@@ -9,11 +9,17 @@ namespace top1 {
   ByteFile::ByteFile() {}
 
   ByteFile::ByteFile(const Path& p) {
-    open(p).may_throw();
+    open(p);
   }
 
   ByteFile::ByteFile(ByteFile&&) {
     // TODO: Do moves
+  }
+
+  ByteFile::~ByteFile() {
+    if (is_open()) {
+      close();
+    }
   }
 
   ByteFile& ByteFile::operator=(ByteFile other) {
@@ -26,55 +32,42 @@ namespace top1 {
     // TODO: Do swaps;
   }
 
-  ByteFile::result<void> ByteFile::open(const Path& p) {
-    try {
-      fstream.open(p.c_str());
-    } catch (...) {
-      return Error{Error::Type::ExceptionThrown};
-    }
-    return {};
-  }
-
-  ByteFile::result<void> ByteFile::close() {
-    try {
+  void ByteFile::open(const Path& p) {
+    fstream.open(p, std::ios::in | std::ios::out | std::ios::binary);
+    if (!fstream) {
+      // File didnt exist, create it
+      fstream.open(p, std::ios::trunc | std::ios::out | std::ios::binary);
       fstream.close();
-    } catch (...) {
-      return Error{Error::Type::ExceptionThrown};
+      fstream.open(p, std::ios::in | std::ios::out | std::ios::binary);
     }
-    return {};
   }
 
-  ByteFile::result<void> ByteFile::flush() {
-    try {
-      fstream.flush();
-    } catch (...) {
-      return Error{Error::Type::ExceptionThrown};
-    }
-    return {};
+  void ByteFile::close() {
+    fstream.close();
+  }
+
+  void ByteFile::flush() {
+    fstream.flush();
   }
 
   bool ByteFile::is_open() const {
     return fstream.is_open();
   }
 
-  ByteFile::result<ByteFile::Position> ByteFile::seek(Position p) {
-    if (!is_open()) {return {Error::Type::FileNotOpen};}
-    try {
-      fstream.seekg(p);
-      fstream.seekp(p);
-      return p;
-    } catch (...) {
-      return {Error::Type::ExceptionThrown};
-    }
+  ByteFile::Position ByteFile::seek(Position p, std::ios::seekdir d) {
+    if (!is_open()) throw Error(Error::Type::FileNotOpen);
+    fstream.seekg(p, d);
+    fstream.seekp(p, d);
+    return p;
   }
 
-  ByteFile::result<ByteFile::Position> ByteFile::position() {
-    if (!is_open()) {return {Error::Type::FileNotOpen};}
-    return {fstream.seekp(fstream.tellg()).tellp()};
+  ByteFile::Position ByteFile::position() {
+    if (!is_open()) throw Error(Error::Type::FileNotOpen);
+    return fstream.seekp(fstream.tellg()).tellp();
   }
 
-  ByteFile::result<ByteFile::Position> ByteFile::size() {
-    if (!is_open()) {return {Error::Type::FileNotOpen};}
+  ByteFile::Position ByteFile::size() {
+    if (!is_open()) throw Error(Error::Type::FileNotOpen);
     auto p = fstream.tellg();
     auto end = fstream.seekg(0, std::fstream::end).tellg();
     fstream.seekg(p);

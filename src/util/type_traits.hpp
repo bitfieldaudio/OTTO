@@ -73,7 +73,7 @@ namespace top1 {
   template<typename iter,
            typename type,
            typename category,
-           typename Enable = void>
+    typename Enable = void>
   struct is_iterator : std::false_type {};
 
   template<typename iter, typename type, typename category>
@@ -91,4 +91,43 @@ namespace top1 {
   /// Checks `std::iterator_traits`
   template<typename iter, typename type, typename category>
   constexpr bool is_iterator_v = is_iterator<iter, type, category>::value;
+
+
+
+  /// Get an integer with `N` bytes
+  ///
+  /// If possible, has member types `type` and `utype`,
+  /// Corresponding to the signed and unsigned ints of size `N`
+  template<int N>
+  struct int_n_bytes;
+
+  template<>
+  struct int_n_bytes<1> {
+    using type = std::int8_t;
+    using utype = std::uint8_t;
+  };
+
+  template<>
+  struct int_n_bytes<2> {
+    using type = std::int16_t;
+    using utype = std::uint16_t;
+  };
+
+  template<>
+  struct int_n_bytes<4> {
+    using type = std::int32_t;
+    using utype = std::uint32_t;
+  };
+
+  template<>
+  struct int_n_bytes<8> {
+    using type = std::int64_t;
+    using utype = std::uint64_t;
+  };
+
+  template<int N>
+  using int_n_bytes_t = typename int_n_bytes<N>::type;
+
+  template<int N>
+  using int_n_bytes_u_t = typename int_n_bytes<N>::utype;
 }

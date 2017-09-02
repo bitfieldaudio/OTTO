@@ -31,8 +31,95 @@ namespace top1 {
     using Position = int;
     using Path = std::string;
 
-    template<typename Ok, typename Err = Error>
-    using result = result<Ok, Err>;
+    template<std::size_t len>
+    struct bytes {
+      std::byte data[len];
+
+      bytes() = default;
+
+      bytes(bytes& o) {
+        std::copy(o.begin(), o.end(), data);
+      }
+
+      bytes(const std::initializer_list<std::byte> bs) {
+        data = bs;
+      }
+
+      template<typename Num = int_n_bytes_u_t<len>&>
+      bytes (int_n_bytes_u_t<len> d) {
+        cast<Num>() = d;
+      }
+      
+      std::byte* begin() {return data;}
+      std::byte* end() {return data + len;}
+
+      bool operator==(const bytes& rhs) const {
+        std::equal(begin(), end(), rhs.begin());
+      }
+
+      bool operator==(const char* rhs) const {
+        std::equal(begin(), end(), rhs);
+      }
+
+      template<typename T>
+      T& cast() {
+        return *reinterpret_cast<T*>(data);
+      }
+
+      int_n_bytes_t<len>& as_i() {
+        return cast<int_n_bytes_t<len>>();
+      }
+
+      int_n_bytes_u_t<len>& as_u() {
+        return cast<int_n_bytes_u_t<len>>();
+      }
+
+      operator int_n_bytes_u_t<len>() {
+        return as_u();
+      }
+
+      explicit operator char*() const {
+        return (char*) data;
+      }
+      
+    };
+    
+    struct Chunk {
+      ByteFile& file;
+      Position offset;
+
+      bytes<4> id;
+      bytes<4> size;
+
+      Chunk(ByteFile& file) : file (file) {}
+      Chunk(Chunk& o) : file (o.file), id (o.id), size (o.size) {}
+
+      void seek_to() {
+        file.seek(size.cast<std::uint32_t>());
+      }
+
+      void seek_past() {
+        file.seek(offset + size.cast<std::uint32_t>());
+      }
+
+      void write() {
+        offset = file.position();
+        file.write_bytes(id);
+        file.write_bytes(size);
+        write_fields();
+      }
+
+      virtual void write_fields() {}
+
+      void read() {
+        offset = file.position();
+        file.read_bytes(id);
+        file.read_bytes(size);
+        read_fields();
+      }
+
+      virtual void read_fields() {}
+    };
 
     // Initialization
 
@@ -41,44 +128,51 @@ namespace top1 {
 
     ByteFile(ByteFile&) = delete;
     ByteFile(ByteFile&&);
+    virtual ~ByteFile();
 
     ByteFile& operator=(ByteFile);
     friend void swap(ByteFile&, ByteFile&);
 
     // Interface
 
-    result<void> open(const Path&);
-    result<void> close();
-    result<void> flush();
+    void open(const Path&);
+    void close();
+    void flush();
     bool is_open() const;
 
-    result<void> read_file();
-    result<void> write_file();
-
-    result<Position> seek(Position);
-    result<Position> position();
-    result<Position> size();
+    Position seek(Position, std::ios::seekdir = std::ios::beg);
+    Position position();
+    Position size();
 
     template<typename OutIter,
       typename = std::enable_if<is_iterator_v<OutIter, std::byte,
                                   std::output_iterator_tag>>>
-    result<void> read_bytes(OutIter&&, OutIter&&);
+    void read_bytes(OutIter, OutIter);
 
     template<typename OutIter,
       typename = std::enable_if<is_iterator_v<OutIter, std::byte,
                                   std::output_iterator_tag>>>
-    result<void> read_bytes(OutIter&&, int);
+    void read_bytes(OutIter, int);
 
-
-    template<typename InIter,
-      typename = std::enable_if<is_iterator_v<InIter, std::byte,
-                                  std::input_iterator_tag>>>
-    result<void> write_bytes(InIter&&, InIter&&);
+    template<std::size_t N>
+    void read_bytes(bytes<N>&);
 
     template<typename InIter,
       typename = std::enable_if<is_iterator_v<InIter, std::byte,
                                   std::input_iterator_tag>>>
-    result<void> write_bytes(InIter&&, int);
+    void write_bytes(InIter, InIter);
+
+    template<typename InIter,
+      typename = std::enable_if<is_iterator_v<InIter, std::byte,
+                                  std::input_iterator_tag>>>
+    void write_bytes(InIter, int);
+
+    template<std::size_t N>
+    void write_bytes(const bytes<N>&);
+
+    template<typename F>
+    auto for_chunks_in_range(Position, Position, F&& f) ->
+    std::enable_if_t<std::is_invocable_v<F, Chunk&>, void>;
 
     // Data
   protected:
@@ -90,50 +184,80 @@ namespace top1 {
    */
 
   template<typename OutIter, typename>
-  ByteFile::result<void> ByteFile::read_bytes(OutIter&& f, OutIter&& l) {
-    if (!is_open()) {return {Error::Type::FileNotOpen};}
+  void ByteFile::read_bytes(OutIter f, OutIter l) {
+    if (!is_open()) throw Error(Error::Type::FileNotOpen);
     // If OutIter is a pointer, copy everything at once
     if constexpr (std::is_pointer_v<OutIter>) {
-      fstream.read(f, l - f);
-    } else {
-      std::for_each(f, l, [&] (auto& b) {fstream.read(&b, 1);});
+        fstream.read((char*) f, l - f);
+      } else {
+      std::for_each(f, l, [&, ptr = (char*) nullptr] (auto& b) {
+          fstream.read(ptr, 1);
+          *b = *ptr;
+        });
     }
   }
 
   template<typename OutIter, typename>
-  ByteFile::result<void> ByteFile::read_bytes(OutIter&& iter, int n) {
-    if (!is_open()) {return {Error::Type::FileNotOpen};}
+  void ByteFile::read_bytes(OutIter iter, int n) {
+    if (!is_open()) throw Error(Error::Type::FileNotOpen);
     // If OutIter is a pointer, copy everything at once
     if constexpr (std::is_pointer_v<OutIter>) {
-      fstream.read(iter, n);
-    } else {
+        fstream.read((char*) iter, n);
+      } else {
+      char* ptr;
       for (int i = 0; i < n; i++, iter++) {
-        fstream.read(&(*iter), 1);
+        fstream.read(ptr, 1);
+        *iter = std::byte(*ptr);
       }
     }
   }
 
+  template<std::size_t N>
+  void ByteFile::read_bytes(bytes<N>& bs) {
+    fstream.read((char*)bs, N);
+  }
+
   template<typename InIter, typename>
-  ByteFile::result<void> ByteFile::write_bytes(InIter&& f, InIter&& l) {
-    if (!is_open()) {return {Error::Type::FileNotOpen};}
+  void ByteFile::write_bytes(InIter f, InIter l) {
+    if (!is_open()) throw Error(Error::Type::FileNotOpen);
     // If InIter is a pointer, copy everything at once
     if constexpr (std::is_pointer_v<InIter>) {
-      fstream.write(f, l - f);
-    } else {
-      std::for_each(f, l, [&] (auto& b) {fstream.write(&b, 1);});
+        fstream.write((char*)f, l - f);
+      } else {
+      std::for_each((char*)f, l, [&] (auto& b) {fstream.write((char*)&b, 1);});
     }
   }
 
   template<typename InIter, typename>
-  ByteFile::result<void> ByteFile::write_bytes(InIter&& iter, int n) {
-    if (!is_open()) {return {Error::Type::FileNotOpen};}
+  void ByteFile::write_bytes(InIter iter, int n) {
+    if (!is_open()) throw Error(Error::Type::FileNotOpen);
     // If InIter is a pointer, copy everything at once
     if constexpr (std::is_pointer_v<InIter>) {
-      fstream.write(iter, n);
-    } else {
+        fstream.write((char*)iter, n);
+      } else {
       for (int i = 0; i < n; i++, iter++) {
-        fstream.write(&(*iter), 1);
+        fstream.write((char*)&(*iter), 1);
       }
+    }
+  }
+
+  template<std::size_t N>
+  void ByteFile::write_bytes(const bytes<N>& bs) {
+    fstream.write((char*)bs, N);
+  }
+
+  template<typename F>
+  auto ByteFile::for_chunks_in_range(Position i, Position o, F &&f) ->
+  std::enable_if_t<std::is_invocable_v<F, Chunk&>, void> {
+    seek(i);
+    while (position() < o) {
+      Chunk chunk(*this);
+      chunk.read();
+      chunk.seek_to();
+
+      std::invoke(std::forward<F>(f), chunk);
+
+      chunk.seek_past();
     }
   }
 }
