@@ -99,6 +99,7 @@ namespace top1::ui {
 
   /**
    * Represents a view that covers the entire screen
+   *
    * If it belongs to a module, use <ui::ModuleScreen>.
    */
   class Screen : public drawing::Drawable {
@@ -107,9 +108,11 @@ namespace top1::ui {
     using ptr = std::unique_ptr<Screen>;
 
     Screen() : Drawable() {}
+    virtual ~Screen() {}
     /**
      * Run by MainUI when a key is pressed
-     * @param key the pressed key
+     *
+     * @key the pressed key
      * @return true if the key was used.
      */
     virtual bool keypress(Key) {
@@ -117,7 +120,8 @@ namespace top1::ui {
     }
     /**
      * Run by MainUI when a key is released
-     * @param key the released key
+     *
+     * @key the released key
      * @return true if the key was used.
      */
     virtual bool keyrelease(Key) {

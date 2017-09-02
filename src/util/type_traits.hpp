@@ -99,7 +99,7 @@ namespace top1 {
   /// If possible, has member types `type` and `utype`,
   /// Corresponding to the signed and unsigned ints of size `N`
   template<int N>
-  struct int_n_bytes;
+  struct int_n_bytes {};
 
   template<>
   struct int_n_bytes<1> {

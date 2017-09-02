@@ -45,37 +45,50 @@ namespace top1 {
         data = bs;
       }
 
-      template<typename Num = int_n_bytes_u_t<len>&>
-      bytes (int_n_bytes_u_t<len> d) {
+      bytes(const std::initializer_list<unsigned char> bs) {
+        std::transform(bs.begin(), bs.end(), begin(),
+          [] (auto uc) {return std::byte(uc);});
+      }
+
+      bytes(const char str[len + 1]) {
+        std::copy(str, str + len + 1,
+          reinterpret_cast<char*>(data));
+      }
+
+      template<std::size_t N = len, typename Num = int_n_bytes_u_t<N>>
+      bytes (Num d) {
         cast<Num>() = d;
       }
       
       std::byte* begin() {return data;}
       std::byte* end() {return data + len;}
+      const std::byte* begin() const {return data;}
+      const std::byte* end() const {return data + len;}
 
       bool operator==(const bytes& rhs) const {
-        std::equal(begin(), end(), rhs.begin());
+        return std::equal(begin(), end(), rhs.begin());
       }
 
       bool operator==(const char* rhs) const {
-        std::equal(begin(), end(), rhs);
+        return std::equal(begin(), end(), reinterpret_cast<const std::byte*>(rhs));
       }
+
+      bool operator!=(const bytes& rhs) const {return !(*this == rhs);}
+      bool operator!=(const char* rhs) const {return !(*this == rhs);}
 
       template<typename T>
       T& cast() {
-        return *reinterpret_cast<T*>(data);
+        return *reinterpret_cast<std::decay_t<T>*>(data);
       }
 
-      int_n_bytes_t<len>& as_i() {
-        return cast<int_n_bytes_t<len>>();
+      template<std::size_t N = len, typename Num = int_n_bytes_t<N>>
+      Num& as_i() {
+        return cast<Num>();
       }
 
-      int_n_bytes_u_t<len>& as_u() {
-        return cast<int_n_bytes_u_t<len>>();
-      }
-
-      operator int_n_bytes_u_t<len>() {
-        return as_u();
+      template<std::size_t N = len, typename Num = int_n_bytes_u_t<N>>
+      Num& as_u() {
+        return cast<Num>();
       }
 
       explicit operator char*() const {
@@ -86,20 +99,22 @@ namespace top1 {
     
     struct Chunk {
       ByteFile& file;
-      Position offset;
 
       bytes<4> id;
       bytes<4> size;
 
-      Chunk(ByteFile& file) : file (file) {}
+      Position offset;
+
+      Chunk(ByteFile& file, bytes<4> id = "") : file (file), id (id) {}
       Chunk(Chunk& o) : file (o.file), id (o.id), size (o.size) {}
+      virtual ~Chunk() = default;
 
       void seek_to() {
-        file.seek(size.cast<std::uint32_t>());
+        file.seek(offset);
       }
 
       void seek_past() {
-        file.seek(offset + size.cast<std::uint32_t>());
+        file.seek(offset + 8 + size.as_u());
       }
 
       void write() {
@@ -107,6 +122,13 @@ namespace top1 {
         file.write_bytes(id);
         file.write_bytes(size);
         write_fields();
+
+        if (std::size_t rs = file.position() - offset - 8; rs > size.as_u()) {
+          size.as_u() = rs;
+          file.seek(offset + 4);
+          file.write_bytes(size);
+          seek_past();
+        }
       }
 
       virtual void write_fields() {}
@@ -204,10 +226,10 @@ namespace top1 {
     if constexpr (std::is_pointer_v<OutIter>) {
         fstream.read((char*) iter, n);
       } else {
-      char* ptr;
+      char buf;
       for (int i = 0; i < n; i++, iter++) {
-        fstream.read(ptr, 1);
-        *iter = std::byte(*ptr);
+        fstream.read(&buf, 1);
+        *iter = std::byte(buf);
       }
     }
   }
@@ -224,7 +246,7 @@ namespace top1 {
     if constexpr (std::is_pointer_v<InIter>) {
         fstream.write((char*)f, l - f);
       } else {
-      std::for_each((char*)f, l, [&] (auto& b) {fstream.write((char*)&b, 1);});
+      std::for_each(f, l, [&] (auto& b) {fstream.write((char*)&b, 1);});
     }
   }
 
@@ -236,7 +258,7 @@ namespace top1 {
         fstream.write((char*)iter, n);
       } else {
       for (int i = 0; i < n; i++, iter++) {
-        fstream.write((char*)&(*iter), 1);
+        fstream.write(&(*iter), 1);
       }
     }
   }

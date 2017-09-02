@@ -65,10 +65,10 @@ namespace top1 {
     WAVE_data(Chunk& c) : Chunk(c) {}
 
     // TODO: I probably dont want the entire file in memory
-    std::vector<SoundFile::Sample> data;
+    std::vector<std::byte> data;
 
     void read_fields() override {
-      file.read_bytes(std::back_inserter(data), size);
+      file.read_bytes(std::back_inserter(data), size.as_u());
     }
 
     void write_fields() override {
@@ -101,26 +101,24 @@ namespace top1 {
           WAVE_fmt* fmt = new WAVE_fmt(*chunk);
           fmt->read();
 
-          if (fmt->audioFormat != 3) {
+          if (fmt->audioFormat.as_u() != 3) {
             throw "Unsupported audio format. \
                Currently only float is supported";
           }
 
-          info.channels = fmt->numChannels;
-          info.samplerate = fmt->sampleRate;
+          info.channels = fmt->numChannels.as_u();
+          info.samplerate = fmt->sampleRate.as_u();
 
-          if (fmt->bitsPerSample != 32) {
+          if (fmt->bitsPerSample.as_u() != 32) {
             throw "Unsupported sample size. \
               Currently only 32bit float is supported";
           }
 
-          chunk = std::make_unique<Chunk>(fmt);
+          chunk = std::unique_ptr<Chunk>(fmt);
         }
       } break;
     case Info::Type::AIFF:
-      for (auto&& chunk : header.chunks) {
-        throw "Unsupported file type. Currently only wav is supported";
-      } break;
+      throw "Unsupported file type. Currently only wav is supported";
     }
   }
 }
