@@ -1,8 +1,8 @@
 #include <string>
 
-#include "core/ui/drawing.hpp"
 #include "modules/super-saw-synth.hpp"
 #include "modules/super-saw-synth.faust.h"
+#include "core/ui/drawing.hpp"
 
 #include "core/globals.hpp"
 

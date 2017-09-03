@@ -1,0 +1,5 @@
+#!/bin/sed -f
+s/ = \(.*\);/(\1);/
+s/"rgb(\(.*\))"/Colour::bytes(\1)/g
+s/lineCap("\(.*\)")/lineCap(Canvas::LineCap::\U\1)/
+s/lineJoin("\(.*\)")/lineJoin(Canvas::LineJoin::\U\1)/

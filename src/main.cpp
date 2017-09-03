@@ -11,6 +11,7 @@
 #include "modules/simple-drums.hpp"
 #include "modules/drum-sampler.hpp"
 #include "modules/synth-sampler.hpp"
+#include "modules/nuke.hpp"
 #include "core/globals.hpp"
 
 int main(int argc, char *argv[]) {
@@ -27,6 +28,7 @@ int main(int argc, char *argv[]) {
   Globals::drums.registerModule("Sampler", new modules::DrumSampler());
   Globals::drums.registerModule("Additive Drums", new modules::SimpleDrumsModule());
 
+  Globals::synth.registerModule("Nuke", new modules::NukeSynth());
   Globals::synth.registerModule("Super Saw", new modules::SuperSawSynth());
   Globals::synth.registerModule("Sampler", new modules::SynthSampler());
 

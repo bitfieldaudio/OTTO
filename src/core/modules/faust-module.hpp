@@ -1,3 +1,5 @@
+#pragma once
+
 #include "core/audio/faust.hpp"
 #include "core/modules/module.hpp"
 #include "core/audio/processor.hpp"
