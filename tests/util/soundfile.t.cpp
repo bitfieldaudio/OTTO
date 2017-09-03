@@ -4,12 +4,12 @@
 
 namespace top1 {
 
-  SoundFile file;
-  ByteFile::Path somePath = "testdata/test1.wav";
+  filesystem::path somePath = "testdata/test1.wav";
   using Sample = SoundFile::Sample;
 
   TEST_CASE("Persistance of SndFile header information", "[SoundFile] [util]") {
-    test::truncateFile(somePath);
+    SoundFile file;
+    somePath.remove_file();
     REQUIRE_NOTHROW(file.open(somePath));
 
     REQUIRE(file.position() == 0);
@@ -20,21 +20,17 @@ namespace top1 {
     REQUIRE_NOTHROW(file.open(somePath));
 
     REQUIRE(file.info.samplerate == 32013);
-
   }
 
   TEST_CASE("Persistance of sound data", "[SoundFile] [util]") {
-    test::truncateFile(somePath);
-
+    SoundFile file;
+    somePath.remove_file();
     REQUIRE_NOTHROW(file.open(somePath));
 
     std::vector<Sample> audio;
 
-    for (uint i = 0; i < 2048; i++) {
-      Sample s;
-      s = test::fRand(-1.0, 1.0);
-      audio.push_back(s);
-    }
+    std::generate_n(std::back_inserter(audio), 2048,
+      []{return test::fRand(-1.0, 1.0);});
 
     REQUIRE_NOTHROW(file.write_samples(audio.begin(), audio.end()));
 
@@ -43,9 +39,9 @@ namespace top1 {
 
     REQUIRE_NOTHROW(file.close());
 
-    file.open(somePath);
-
     SECTION("Read all of the data") {
+      SoundFile file;
+      file.open(somePath);
 
       std::vector<Sample> rAudio;
       rAudio.reserve(2048);
@@ -59,6 +55,8 @@ namespace top1 {
     }
 
     SECTION("Read half of the data") {
+      SoundFile file;
+      file.open(somePath);
       file.seek(1024);
 
       REQUIRE(file.position() == 1024);
@@ -74,6 +72,8 @@ namespace top1 {
     }
 
     SECTION("Read data in two turns") {
+      SoundFile file;
+      file.open(somePath);
       std::vector<Sample> rAudio;
       rAudio.reserve(1024);
 

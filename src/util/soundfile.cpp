@@ -1,4 +1,5 @@
 #include "util/soundfile.hpp"
+#include <plog/Log.h>
 
 namespace top1 {
 
@@ -14,7 +15,7 @@ namespace top1 {
 
     void read_fields(ByteFile& file) override {
       file.read_bytes(format);
-      file.for_chunks_in_range(offset, offset + size.as_u(),
+      file.for_chunks_in_range(offset + 12, offset + 8 + size.as_u(),
         [&](Chunk& c) {
           chunks.emplace_back(new Chunk(c));
         });
@@ -68,7 +69,7 @@ namespace top1 {
       audioFormat.as_u() = 3;
       numChannels.as_u() = sf.info.channels;
       sampleRate.as_u() = sf.info.samplerate;
-      bitsPerSample.as_u() = sf.sample_size;
+      bitsPerSample.as_u() = sf.sample_size * 8;
       byteRate.as_u() =
         sampleRate.as_u() * numChannels.as_u() * bitsPerSample.as_u() / 8;
       blockAlign.as_u() = numChannels.as_u() * bitsPerSample.as_u() / 8;
@@ -102,8 +103,8 @@ namespace top1 {
 
   SoundFile::SoundFile() {}
 
-  void SoundFile::open(const Path& p) {
-    ByteFile::open(p);
+  void SoundFile::read_file() {
+    ByteFile::seek(0);
     Header header;
     header.read(*this);
 
@@ -120,15 +121,10 @@ namespace top1 {
     switch (info.type) {
     case Info::Type::WAVE:
       for (auto&& chunk : header.chunks) {
-        switch (chunk->id.as_u()) {
-        case 'fmt ':
-          chunk = std::unique_ptr<Chunk>(new WAVE_fmt()); break;
-        case 'data':
-          chunk = std::unique_ptr<Chunk>(new WAVE_data()); break;
-        default:
-          // Unknown chunk, skip it
-          break;
-        }
+        if (chunk->id == "fmt ")
+          chunk = std::unique_ptr<Chunk>(new WAVE_fmt(*chunk));
+        if (chunk->id == "data")
+          chunk = std::unique_ptr<Chunk>(new WAVE_data(*chunk));
         // re-read the chunk as the new type
         chunk->seek_to(*this);
         chunk->read(*this);
@@ -136,21 +132,11 @@ namespace top1 {
     case Info::Type::AIFF:
       throw "Unsupported file type. Currently only wav is supported";
     }
-
     seek(0);
   }
 
-  void SoundFile::close() {
-    ByteFile::close();
-  }
-
-  void SoundFile::flush() {
-    ByteFile::flush();
-  }
-
-  void SoundFile::create_file() {
-    ByteFile::create_file();
-
+  void SoundFile::write_file() {
+    ByteFile::seek(0);
     Header header;
 
     switch (info.type) {
@@ -172,7 +158,12 @@ namespace top1 {
   }
 
   Position SoundFile::position() {
-    return (ByteFile::position() - audioOffset) / sample_size;
+    Position r = (ByteFile::position() - audioOffset) / sample_size;
+    if (r < 0) {
+      seek(0);
+      return 0;
+    }
+    return r;
   }
 
   Position SoundFile::length() {

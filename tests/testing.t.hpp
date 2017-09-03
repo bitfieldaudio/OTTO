@@ -7,6 +7,8 @@
 #include <cstdlib>
 #include <fstream>
 
+#include <filesystem/path.h>
+
 namespace test {
 
   // good for basic randomness
@@ -18,9 +20,9 @@ namespace test {
     return (std::rand() / double(RAND_MAX)) * (max - min) + min;
   }
 
-  inline void truncateFile(std::string p) {
+  inline void truncateFile(const filesystem::path& p) {
     std::fstream fstream;
-    fstream.open(p, std::ios::trunc | std::ios::out | std::ios::binary);
+    fstream.open(p.str(), std::ios::trunc | std::ios::out | std::ios::binary);
     fstream.close();
   }
 

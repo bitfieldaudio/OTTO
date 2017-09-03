@@ -30,10 +30,13 @@ namespace top1 {
 
     SoundFile();
 
-    void open(const Path&);
-    void close();
-    void flush();
-    void create_file() override;
+    using ByteFile::open;
+    using ByteFile::close;
+    using ByteFile::flush;
+    using ByteFile::is_open;
+
+    void write_file() override;
+    void read_file() override;
 
     Position seek(Position);
     Position position();
@@ -42,29 +45,30 @@ namespace top1 {
     template<typename OutIter,
       typename = std::enable_if<
         is_iterator_v<OutIter, Sample, std::output_iterator_tag>>>
-    void read_samples(OutIter, OutIter);
+      void read_samples(OutIter, OutIter);
 
     template<typename OutIter,
       typename = std::enable_if<
         is_iterator_v<OutIter, Sample, std::output_iterator_tag>>>
-    void read_samples(OutIter&&, int);
+      void read_samples(OutIter&&, int);
 
     template<typename InIter,
       typename = std::enable_if<
         is_iterator_v<InIter, Sample, std::input_iterator_tag>>>
-    void write_samples(InIter, InIter);
+      void write_samples(InIter, InIter);
 
     template<typename InIter,
       typename = std::enable_if<
         is_iterator_v<InIter, Sample, std::input_iterator_tag>>>
-    void write_samples(InIter&&, int);
+      void write_samples(InIter&&, int);
 
-  protected:
+    protected:
 
-    ByteFile::Position audioOffset;
     friend struct Header; 
     friend struct WAVE_fmt;
     friend struct WAVE_data;
+
+    ByteFile::Position audioOffset;
 
     Sample bytes_to_sample(bytes<sample_size> bytes) {
       return bytes.cast<Sample>();

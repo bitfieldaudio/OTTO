@@ -14,7 +14,7 @@ namespace top1 {
   TEST_CASE("Bytefile", "[util]") {
 
     Path somePath = "testdata/test1.bytes";
-    test::truncateFile(somePath);
+    somePath.remove_file();
 
     ByteFile f;
 

@@ -5,7 +5,7 @@
 #include "core/ui/module-ui.hpp"
 #include "core/ui/drawing.hpp"
 #include "core/ui/icons.hpp"
-#include "util/sndfile.hpp"
+#include "util/soundfile.hpp"
 
 namespace top1::ui::drawing {
 
@@ -119,15 +119,23 @@ namespace top1::modules {
   }
 
   void DrumSampler::load() {
-    top1::SndFile<1> sf (samplePath(props.sampleName));
 
-    size_t rs = std::min(maxSampleSize, sf.size());
+    auto path = samplePath(props.sampleName);
+    std::size_t rs = 0;
+    if (!(path.empty() || props.sampleName.value.empty())) {
+      SoundFile sf;
+        sf.open(path);
+      rs = std::min<int>(maxSampleSize, sf.length());
+      sampleData.resize(rs);
+      sf.read_samples(sampleData.data(), rs);
 
-    sampleData.resize(rs);
-    sf.read(sampleData.data(), rs);
-
-    sampleSampleRate = sf.samplerate;
-    sampleSpeed = sampleSampleRate / float(Globals::samplerate);
+      sampleSampleRate = sf.info.samplerate;
+      sampleSpeed = sampleSampleRate / float(Globals::samplerate);
+      if (sf.length() == 0) LOGD << "Empty sample file";
+    } else {
+      sampleData.resize(0);
+      LOGI << "Empty sampleName";
+    }
 
     for (auto &&v : props.voiceData) {
       v.in.mode.max = rs;
@@ -135,6 +143,7 @@ namespace top1::modules {
     }
 
     // Auto assign voices
+
     for (uint i = 0; i < nVoices; ++i) {
       auto &&vd = props.voiceData[i];
       if (vd.in < 0 || vd.out >= rs) {
@@ -155,9 +164,6 @@ namespace top1::modules {
       wf->addFrame(s);
     }
     editScreen->topWFW.viewRange = {0, wf->size() - 1};
-
-    if (sf.size() == 0) LOGD << "Empty sample file";
-    sf.close();
   }
 
   void DrumSampler::init() {

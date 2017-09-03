@@ -6,6 +6,7 @@
 #include <iterator>
 #include <utility>
 #include <fstream>
+#include <filesystem/path.h>
 
 #include "util/result.hpp"
 #include "util/type_traits.hpp"
@@ -82,18 +83,38 @@ namespace top1 {
   class ByteFile {
   public:
 
-    struct Error {
+    struct Error : std::exception {
       enum class Type {
         FileNotOpen,
         ExceptionThrown,
         PastEnd,
       } type;
 
-      Error(Type t) : type (t) {}
+      std::string message;
+
+      Error(Type t, std::string m = "") :
+        std::exception(),
+        type (t),
+        message (enumString(type) + '\n' + m) {}
+
+      static std::string enumString(Type t) {
+        switch(t) {
+        case Type::FileNotOpen:
+          return "File not open"; break;
+        case Type::ExceptionThrown:
+          return "Exception thrown"; break;
+        case Type::PastEnd:
+          return "Past the end of the file"; break;
+        }
+      }
+
+      const char* what() const noexcept override {
+        return message.c_str();
+      }
     };
 
     using Position = int;
-    using Path = std::string;
+    using Path = filesystem::path;
 
     struct Chunk {
       bytes<4> id;
@@ -102,7 +123,7 @@ namespace top1 {
       Position offset;
 
       Chunk(bytes<4> id = {0,0,0,0}) : id (id) {}
-      Chunk(Chunk& o) : id (o.id), size (o.size) {}
+      Chunk(Chunk& o) : id (o.id), size (o.size), offset (o.offset) {}
       virtual ~Chunk() = default;
 
       void seek_to(ByteFile& file) {
@@ -163,6 +184,8 @@ namespace top1 {
     void flush();
     bool is_open() const;
     virtual void create_file();
+    virtual void read_file();
+    virtual void write_file();
 
     Position seek(Position, std::ios::seekdir = std::ios::beg);
     Position position();
