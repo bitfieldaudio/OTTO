@@ -9,40 +9,42 @@
 
 namespace top1::ui::drawing {
 
-static const uint WIDTH = 320;
-static const uint HEIGHT = 240;
+  const uint WIDTH = 320;
+  const uint HEIGHT = 240;
 
-namespace Colours {
+  namespace Colours {
 
-static const Colour Black     = Colour(0x000000);
+    const Colour Black     = Colour(0x000000);
 
-static const MainColour White = {0xFFFFFF, 0x646464};
-static const MainColour Red   = {0xFF2A2A, 0x6E0C0C};
-static const MainColour Green = {0x5ECF3E, 0x0C6E0C};
-static const MainColour Blue  = {0x0A7CFF, 0x0C0C6E};
+    const MainColour White = {0xFFFFFF, 0x646464};
+    const MainColour Red   = {0xFF2A2A, 0x6E0C0C};
+    const MainColour Green = {0x5ECF3E, 0x0C6E0C};
+    const MainColour Blue  = {0x0A7CFF, 0x0C0C6E};
 
-static const Colour Gray60    = 0x999999;
-static const Colour Gray70    = 0xB2B2B2;
+    const Colour Gray60    = 0x999999;
+    const Colour Gray70    = 0xB2B2B2;
 
-} // Colours
+  } // Colours
 
-inline static Font FONT_LIGHT;
-inline static Font FONT_NORM;
-inline static Font FONT_BOLD;
-
-inline void initUtils(Canvas &canvas) {
-  FONT_LIGHT = Font(canvas, "Lato Light", "./fonts/Lato/Lato-Light.ttf");
-  if (!FONT_LIGHT.valid()) {
-    LOGE << "Invalid font: " << FONT_LIGHT.name;
+  namespace Fonts {
+    inline Font Light;
+    inline Font Norm;
+    inline Font Bold;
   }
-  FONT_NORM = Font(canvas, "Lato Regular", "./fonts/Lato/Lato-Regular.ttf");
-  if (!FONT_NORM.valid()) {
-    LOGE << "Invalid font: " << FONT_NORM.name;
+
+  inline void initUtils(Canvas &canvas) {
+    Fonts::Light = Font(canvas, "Lato Light", "./fonts/Lato/Lato-Light.ttf");
+    if (!Fonts::Light.valid()) {
+      LOGE << "Invalid font: " << Fonts::Light.name;
+    }
+    Fonts::Norm = Font(canvas, "Lato Regular", "./fonts/Lato/Lato-Regular.ttf");
+    if (!Fonts::Norm.valid()) {
+      LOGE << "Invalid font: " << Fonts::Norm.name;
+    }
+    Fonts::Bold = Font(canvas, "Lato Heavy", "./fonts/Lato/Lato-Heavy.ttf");
+    if (!Fonts::Bold.valid()) {
+      LOGE << "Invalid font: " << Fonts::Bold.name;
+    }
   }
-  FONT_BOLD = Font(canvas, "Lato Bold", "./fonts/Lato/Lato-Bold.ttf");
-  if (!FONT_BOLD.valid()) {
-    LOGE << "Invalid font: " << FONT_BOLD.name;
-  }
-}
 
 } // ui::drawing

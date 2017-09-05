@@ -137,7 +137,7 @@ namespace top1::modules {
 
       // #PanTxt
       ctx.lineWidth(1.000000);
-      ctx.font(FONT_NORM);
+      ctx.font(Fonts::Norm);
       ctx.font(20);
       ctx.textAlign(TextAlign::Left, TextAlign::Baseline);
       ctx.fillText("L", 5, 120);
@@ -173,9 +173,9 @@ namespace top1::modules {
       // #DialNum
       ctx.lineWidth(1);
       ctx.fillStyle(trackCol);
-      ctx.font(FONT_LIGHT);
+      ctx.font(Fonts::Light);
       ctx.font(60);
-      ctx.textAlign(TextAlign::Right, TextAlign::Baseline);
+      ctx.textAlign(TextAlign::Center, TextAlign::Baseline);
       std::string txt;
       if (!Globals::ui.keys[ui::K_SHIFT]) {
         txt = fmt::format("{:0>2.0f}", mix * 100);
@@ -187,7 +187,7 @@ namespace top1::modules {
         else if (pan > 0)
           txt = fmt::format("{:.0f}R", pan * 10);
       }
-      ctx.fillText(txt, 60, 90);
+      ctx.fillText(txt, 30, 90);
 
       // #MuteBG
       ctx.beginPath();
@@ -200,7 +200,7 @@ namespace top1::modules {
       // #MuteTxt
       ctx.lineWidth(1.000000);
       ctx.fillStyle(muteCol);
-      ctx.font(FONT_NORM);
+      ctx.font(Fonts::Norm);
       ctx.font(20);
       ctx.textAlign(TextAlign::Center, TextAlign::Middle);
       ctx.fillText("MUTE", 30, 162.5);

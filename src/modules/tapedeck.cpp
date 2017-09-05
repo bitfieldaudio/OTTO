@@ -1099,7 +1099,7 @@ namespace top1::modules {
     // #text4304
     TextStyle style;
     style.size = 30;
-    style.face = FONT_LIGHT.face;
+    style.face = Fonts::Light.face;
     style.color = Colours::White;
     style.hAlign = HorizontalAlign::Center;
     style.vAlign = VerticalAlign::Middle;

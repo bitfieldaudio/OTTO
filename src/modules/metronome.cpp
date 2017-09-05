@@ -151,21 +151,21 @@ namespace top1::modules {
 
     // Labels
     ctx.beginPath();
-    ctx.font(FONT_LIGHT);
+    ctx.font(Fonts::Light);
     ctx.font(25);
     ctx.textAlign(TextAlign::Left, TextAlign::Middle);
     ctx.fillStyle(Colours::Green);
     ctx.fillText("TONE", 20, 210);
 
     ctx.beginPath();
-    ctx.font(FONT_LIGHT);
+    ctx.font(Fonts::Light);
     ctx.font(25);
     ctx.textAlign(TextAlign::Center, TextAlign::Middle);
     ctx.fillStyle(Colours::Blue);
     ctx.fillText("BPM", 160, 210);
 
     ctx.beginPath();
-    ctx.font(FONT_LIGHT);
+    ctx.font(Fonts::Light);
     ctx.font(25);
     ctx.textAlign(TextAlign::Right, TextAlign::Middle);
     ctx.fillStyle(Colours::Red);
@@ -255,7 +255,7 @@ namespace top1::modules {
     // BPM text
     ctx.beginPath();
     ctx.fillStyle(Colours::Blue);
-    ctx.font(FONT_LIGHT);
+    ctx.font(Fonts::Light);
     ctx.font(32);
     ctx.textAlign(TextAlign::Center, TextAlign::Middle);
     ctx.fillText(std::to_string((int)module->props.bpm), 50, 120);

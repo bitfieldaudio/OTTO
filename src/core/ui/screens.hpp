@@ -61,7 +61,7 @@ namespace top1::ui {
       }
       ctx.beginPath();
       ctx.textAlign(TextAlign::Left, TextAlign::Middle);
-      ctx.font(FONT_LIGHT);
+      ctx.font(Fonts::Light);
       ctx.font(15.f);
       ctx.fillText(items[idx].name, {45.f, (i + 0.5f) * itemHeight});
     }

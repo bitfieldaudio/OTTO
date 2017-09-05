@@ -273,7 +273,7 @@ namespace top1::modules {
 
     ctx.beginPath();
     ctx.fillStyle(Colours::White);
-    ctx.font(FONT_NORM);
+    ctx.font(Fonts::Norm);
     ctx.font(15);
     ctx.textAlign(TextAlign::Left, TextAlign::Baseline);
     ctx.fillText(fmt::format("×{:.2F}", voice.speed.value), pitchPos);
