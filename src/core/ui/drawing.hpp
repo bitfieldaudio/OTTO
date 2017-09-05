@@ -33,7 +33,7 @@ namespace top1::ui::drawing {
   }
 
   inline void initUtils(Canvas &canvas) {
-    Fonts::Light = Font(canvas, "TOP-1 Light", "./fonts/TOP-1/TOP-1.ttf.ttf");
+    Fonts::Light = Font(canvas, "TOP-1 Light", "./fonts/TOP-1/TOP-1.ttf");
     if (!Fonts::Light.valid()) {
       LOGE << "Invalid font: " << Fonts::Light.name;
     }
