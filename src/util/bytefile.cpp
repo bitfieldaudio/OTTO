@@ -1,6 +1,7 @@
 #include "util/bytefile.hpp"
 
 #include <plog/Log.h>
+#include <fmt/format.h>
 
 namespace top1 {
 
@@ -81,14 +82,14 @@ namespace top1 {
   }
 
   ByteFile::Position ByteFile::seek(Position p, std::ios::seekdir d) {
-    if (!is_open()) throw Error(Error::Type::FileNotOpen, "seek(p, d)");
+    if (!is_open()) throw Error(Error::Type::FileNotOpen, "ByteFile::seek(p, d)");
     fstream.seekg(p, d);
     fstream.seekp(p, d);
     return p;
   }
 
   ByteFile::Position ByteFile::position() {
-    if (!is_open()) throw Error(Error::Type::FileNotOpen, "position()");
+    if (!is_open()) throw Error(Error::Type::FileNotOpen, "ByteFile::position()");
     auto r = fstream.seekp(fstream.tellg()).tellp();
     if (fstream.eof()) {
       fstream.clear();
@@ -96,7 +97,8 @@ namespace top1 {
     }
     if (!fstream.good()) {
       fstream.clear();
-      throw Error(Error::Type::ExceptionThrown);
+      throw Error(Error::Type::ExceptionThrown,
+        fmt::format("ByteFile::position() = {}", r));
     }
     if (r < 0) {
       LOGE << "got negative position from file";
@@ -105,7 +107,7 @@ namespace top1 {
   }
 
   ByteFile::Position ByteFile::size() {
-    if (!is_open()) throw Error(Error::Type::FileNotOpen, "size()");
+    if (!is_open()) throw Error(Error::Type::FileNotOpen, "ByteFile::size()");
     auto p = fstream.tellg();
     auto end = fstream.seekg(0, std::fstream::end).tellg();
     fstream.seekg(p);
