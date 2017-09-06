@@ -17,22 +17,22 @@ namespace top1::modules {
     Globals::ui.display(*screen);
   }
 
-  void SimpleDrumsModule::process(audio::ProcessData& data) {
+  void SimpleDrumsModule::process(const audio::ProcessData& data) {
     for (auto &&nEvent : data.midi) {
-      nEvent.match([&] (midi::NoteOnEvent *e) {
-          currentVoiceIdx = e->key % 24;
+      nEvent.match([&] (midi::NoteOnEvent& e) {
+          currentVoiceIdx = e.key % 24;
           voices[currentVoiceIdx].props.trigger = 1;
-          voices[currentVoiceIdx].props.envelope.sustain = float(e->velocity)/128.f;
-        }, [] (auto *) {});
+          voices[currentVoiceIdx].props.envelope.sustain = float(e.velocity)/128.f;
+        }, [] (auto&&) {});
     }
     for (auto &&voice : voices) {
       voice.process(data);
       voice.props.trigger = 0;
     }
     for (auto &&nEvent : data.midi) {
-      nEvent.match([&] (midi::NoteOffEvent *e) {
-          voices[e->key % 24].props.trigger = 0;
-        }, [] (auto) {});
+      nEvent.match([&] (midi::NoteOffEvent& e) {
+          voices[e.key % 24].props.trigger = 0;
+        }, [] (auto&&) {});
     };
   }
 

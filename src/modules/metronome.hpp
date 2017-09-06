@@ -12,7 +12,7 @@ namespace top1::modules {
 
   using BeatPos = int;
 
-  class Metronome : public Module, audio::FaustWrapper {
+  class Metronome : public Module, public audio::FaustWrapper {
     ui::ModuleScreen<Metronome>::ptr screen;
   public:
     struct Props : public modules::Properties {
@@ -27,10 +27,10 @@ namespace top1::modules {
 
     Metronome();
 
-    void process(audio::ProcessData&) override;
+    void process(const audio::ProcessData&) override;
     void display() override;
 
-    void postBuffers(audio::ProcessData&) override;
+    void postBuffers(const audio::ProcessData&) override;
 
     // Formalities are over
 

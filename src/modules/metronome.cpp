@@ -15,20 +15,18 @@ namespace top1::modules {
     audio::FaustWrapper(new FAUSTCLASS, props),
     screen (new MetronomeScreen(this)) {}
 
-  void Metronome::process(audio::ProcessData& data) {
+  void Metronome::process(const audio::ProcessData& data) {
     TIME_SCOPE("Metronome::process");
     float BPsample = props.bpm/60.0/(float)Globals::samplerate;
     float beat = Globals::tapedeck.position() * BPsample;
-    uint framesTillNext = std::fmod(beat, 1)/BPsample * Globals::tapedeck.state.playSpeed;
+    int framesTillNext = std::fmod(beat, 1)/BPsample * Globals::tapedeck.state.playSpeed;
 
     if (framesTillNext < data.nframes
         && Globals::tapedeck.state.playing()
         && Globals::tapedeck.state.playSpeed/BPsample > 1) {
-      data.process([this](auto& d){FaustWrapper::process(d);},
-                   framesTillNext);
+      FaustWrapper::process(data.slice({framesTillNext, data.nframes}));
       props.trigger = true;
-      data.process([this](audio::ProcessData& d){FaustWrapper::process(d);},
-                   data.nframes - framesTillNext);
+      FaustWrapper::process(data.slice({data.nframes - framesTillNext, data.nframes}));
       props.trigger = false;
     } else {
       FaustWrapper::process(data);
@@ -39,7 +37,7 @@ namespace top1::modules {
     Globals::ui.display(*screen);
   }
 
-  void Metronome::postBuffers(audio::ProcessData& data) {
+  void Metronome::postBuffers(const audio::ProcessData& data) {
     for (uint i = 0; i < data.nframes; i++) {
       graph.add(outBuffer[0][i]);
       data.audio.outL[i] += outBuffer[0][i];

@@ -166,7 +166,7 @@ namespace top1::modules {
   }
 
   // Audio Processing
-  void Tapedeck::preProcess(audio::ProcessData& data) {
+  void Tapedeck::preProcess(const audio::ProcessData& data) {
 
     tapePosition = tapeBuffer.position();
     {
@@ -255,7 +255,7 @@ namespace top1::modules {
     }
   }
 
-  void Tapedeck::postProcess(audio::ProcessData& data) {
+  void Tapedeck::postProcess(const audio::ProcessData& data) {
     TapeTime pos = tapeBuffer.position();
     if (!state.recording() && state.recLast) {
       recSect = {0,0};

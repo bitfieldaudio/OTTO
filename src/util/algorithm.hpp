@@ -64,16 +64,10 @@ namespace top1 {
   /// @f Must be invocable with arguments `value_type`, `std::size_t`
   /// @return The number of iterations performed
   template<typename InputIt, typename F>
-    auto indexed_for(InputIt&& first, InputIt&& last, F&& f) ->
-    std::enable_if_t<
-      is_iterator_v<InputIt, typename std::iterator_traits<InputIt>::value_type,
-        std::input_iterator_tag>
-      && std::is_invocable_v<F,
-        const typename std::iterator_traits<InputIt>::reference, std::size_t>,
-      std::size_t> {
+    InputIt indexed_for(InputIt&& first, InputIt&& last, F&& f) {
     std::size_t i;
     std::for_each(std::forward<InputIt>(first), std::forward<InputIt>(last),
-        [&] (auto&& a) {
+      [&] (auto&& a) {
           std::invoke(std::forward<F>(f), a, i);
           i++;
         });
@@ -92,13 +86,9 @@ namespace top1 {
   /// @f Must be invocable with arguments `value_type`, `std::size_t`
   /// @return An iterator one past the last one visited
   template<class InputIt, class Size, class F>
-    auto indexed_for_n(InputIt&& first, Size&& n, F&& f) ->
-    std::enable_if_t<
-      is_iterator_v<InputIt, typename std::iterator_traits<InputIt>::value_type,
-        std::input_iterator_tag>
-      && std::is_invocable_v<F,
-        const typename std::iterator_traits<InputIt>::reference>, InputIt> {
-    for (Size i = 0; i < n; ++first, (void) ++i) {
+    InputIt indexed_for_n(InputIt&& first, Size&& n, F&& f) {
+    using SizeT = std::remove_const_t<std::remove_reference_t<Size>>;
+    for (SizeT i = 0; i < n; ++first, (void) ++i) {
       std::invoke(std::forward<F>(f), *first, i);
     }
     return first;

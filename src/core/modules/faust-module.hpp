@@ -12,7 +12,7 @@ namespace top1::modules {
     FaustSynthModule(dsp *fDSP, Properties *propsPtr) :
       FaustWrapper(fDSP, *propsPtr), SynthModule(propsPtr) {}
 
-    void process(audio::ProcessData& data) override {
+    void process(const audio::ProcessData& data) override {
       FaustWrapper::process(data);
     }
 

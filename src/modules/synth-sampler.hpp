@@ -53,7 +53,7 @@ namespace top1::modules {
 
     SynthSampler();
 
-    void process(audio::ProcessData&) override;
+    void process(const audio::ProcessData&) override;
 
     void display() override;
 

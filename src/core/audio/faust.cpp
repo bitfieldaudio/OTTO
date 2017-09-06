@@ -39,7 +39,7 @@ namespace top1::audio {
     }
   }
 
-  void FaustWrapper::prepBuffers(ProcessData& data) {
+  void FaustWrapper::prepBuffers(const ProcessData& data) {
     if (fDSP == nullptr) {
       return;
     }
@@ -49,6 +49,10 @@ namespace top1::audio {
     outBuffer[0] = data.audio.proc.data();
   }
 
-  void FaustWrapper::postBuffers(ProcessData& data) {}
+  void FaustWrapper::postBuffers(const ProcessData& data) {
+    indexed_for_n(outBuffer[0], data.nframes, [&,data] (float f, int i) {
+        data.audio.proc[i] += f;
+      });
+  }
 
 } // top1::audio

@@ -66,7 +66,7 @@ namespace top1::modules {
   class SynthModuleDispatcher : public ModuleDispatcher<SynthModule> {
   public:
 
-    void process(audio::ProcessData& data) {
+    void process(const audio::ProcessData& data) {
       if (modules.size() > 0)
         modules[currentModule].val->process(data);
     }
@@ -75,7 +75,7 @@ namespace top1::modules {
   class EffectModuleDispatcher : public ModuleDispatcher<EffectModule> {
   public:
 
-    void process(audio::ProcessData& data) {
+    void process(const audio::ProcessData& data) {
       if (modules.size() > 0)
         modules[currentModule].val->process(data);
     }
@@ -84,7 +84,7 @@ namespace top1::modules {
   class SequencerModuleDispatcher : public ModuleDispatcher<SequencerModule> {
   public:
 
-    void process(audio::ProcessData& data) {
+    void process(const audio::ProcessData& data) {
       if (modules.size() > 0)
         modules[currentModule].val->process(data);
     }

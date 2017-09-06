@@ -23,7 +23,7 @@ namespace top1::modules {
 
   }
 
-  void SynthSampler::process(audio::ProcessData& data) {
+  void SynthSampler::process(const audio::ProcessData& data) {
     for (auto &&nEvent : data.midi) {
       nEvent.match([&] (midi::NoteOnEvent *e) {
           if (e->channel == 0) {

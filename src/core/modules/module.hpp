@@ -39,19 +39,19 @@ namespace top1::modules {
   class SynthModule : public Module {
   public:
     using Module::Module;
-    virtual void process(audio::ProcessData&) = 0;
+    virtual void process(const audio::ProcessData&) = 0;
   };
 
   class EffectModule : public Module {
   public:
     using Module::Module;
-    virtual void process(audio::ProcessData&) = 0;
+    virtual void process(const audio::ProcessData&) = 0;
   };
 
   class SequencerModule : public Module {
   public:
     using Module::Module;
-    virtual void process(audio::ProcessData&) = 0;
+    virtual void process(const audio::ProcessData&) = 0;
   };
 
 } // top1::module

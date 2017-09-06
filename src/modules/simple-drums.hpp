@@ -48,7 +48,7 @@ namespace top1::modules {
     SimpleDrumsModule();
     ~SimpleDrumsModule();
 
-    void process(audio::ProcessData&) override;
+    void process(const audio::ProcessData&) override;
 
     void display() override;
 

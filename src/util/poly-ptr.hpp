@@ -1,232 +1,461 @@
 #pragma once
 
-#include <type_traits>
 #include <memory>
-#include <tuple>
-#include <optional>
-
-/*
- * TODO: DOCUMENT EVERYTHING!
- */
+#include <type_traits>
+#include "util/algorithm.hpp"
+#include "util/type_traits.hpp"
 
 namespace top1 {
 
-namespace detail {
+  namespace detail {
 
-template <typename R, typename... Args>
-struct FunctionArgsBase{
-  using args  = std::tuple<Args...>;
-  using arity = std::integral_constant<unsigned, sizeof...(Args)>;
-  using result = R;
-};
+    using TypeIndex = std::size_t;
 
-template <typename T>
-struct FunctionArgs;
+    static constexpr TypeIndex base_index = -1;
+    static constexpr TypeIndex invalid_index = -2;
 
-template <typename R, typename... Args>
-struct FunctionArgs<R(*)(Args...)> : FunctionArgsBase<R, Args...> {};
-template <typename R, typename... Args>
-struct FunctionArgs<R(Args...)> : FunctionArgsBase<R, Args...> {};
-template <typename R, typename C, typename... Args>
-struct FunctionArgs<R(C::*)(Args...)> : FunctionArgsBase<R, Args...> {};
-template <typename R, typename C, typename... Args>
-struct FunctionArgs<R(C::*)(Args...) const> : FunctionArgsBase<R, Args...> {};
+    template<typename Base, typename T, TypeIndex I, typename... Ts>
+    struct type_index_impl;
 
-using TypeIndex = unsigned int;
+    template<typename Base, typename T, TypeIndex I,
+      typename T1, typename... Ts>
+    struct type_index_impl<Base, T, I, T1, Ts...> {
+      static constexpr TypeIndex value = std::is_same_v<T, T1> ?
+        I - 1 - sizeof...(Ts) : type_index_impl<Base, T, I, Ts...>::value;
+    };
 
-static constexpr TypeIndex baseType = -1;
-static constexpr TypeIndex invalidType = -2;
+    template<typename Base, typename T, TypeIndex I>
+    struct type_index_impl<Base, T, I> {
+      static constexpr TypeIndex value = std::is_same_v<T, Base> ?
+        base_index : invalid_index;
+    };
 
-template<class Base, class T, class... Ts>
-struct getTypeIndex;
+    template<typename Base, typename T, typename... Ts>
+    using type_index = type_index_impl<Base, T, sizeof...(Ts), Ts...>;
 
-template<class Base, class T, class T1, class... Ts>
-struct getTypeIndex<Base, T, T1, Ts...> {
-  static constexpr TypeIndex index = std::is_same<T, T1>::value
-    ? sizeof...(Ts)
-    : getTypeIndex<Base, T, Ts...>::index;
-};
+    template<typename Base, typename T, typename... Ts>
+    constexpr TypeIndex type_index_v = type_index<Base, T, Ts...>::value;
 
-template<class Base, class T>
-struct getTypeIndex<Base, T> {
-  static constexpr TypeIndex index = std::is_same<T, Base>::value
-    ? baseType
-    : invalidType;
-};
+    template<typename Base, TypeIndex I, typename... Ts>
+    struct type_for_index {
+      using type = typename std::tuple_element_t<I, std::tuple<Ts...>>;
+    };
 
-} // detail
+    template<typename Base, typename... Ts>
+    struct type_for_index<Base, base_index, Ts...> {
+      using type = Base;
+    };
 
-template<typename PtrType, typename Base, typename ...Types>
-class BasicPolyPtr {
+    template<typename Base, typename... Ts>
+    struct type_for_index<Base, invalid_index, Ts...> {};
 
-  static_assert(std::conjunction<std::is_base_of<Base, Types>...>::value,
-   "the first template parameter needs to be a common baseclass of \
-    all the other template parameters");
+    template<typename Base, TypeIndex I, typename... Ts>
+    using type_for_index_t = typename type_for_index<Base, I, Ts...>::type;
+  }
 
-  using TypeIndex = detail::TypeIndex;
-  static constexpr TypeIndex baseType = detail::baseType;
-  static constexpr TypeIndex invalidType = detail::invalidType;
+  /**
+   * A pointer type to help with polymorphism
+   *
+   * A `poly_ptr` is instantiatetd with a base type, and a list of types
+   * that inherit from the base. It is then implicitly convertable to the
+   * base class, and explicitly convertible to the child type that currently
+   * stored. In this sense, it behaves a bit like a `std::variant`, with the
+   * added difference of not providing storage for the enclosed type.
+   *
+   * Two partial specializations, <top1::poly_ptr> and <top1::unique_poly_ptr>
+   * are provided. <top1::poly_ptr> uses raw pointers for storage, and as such
+   * ownership should be managed elsewhere. <top1::unique_poly_ptr> uses
+   * `std::unique_ptr`, and therefore owns its elements.
+   *
+   * This is especially useful for storing a predefined set of types,
+   * that all inherit from the same base class, in a container.
+   * In the TOP-1 it's used for midi events, to be able to store the
+   * events in a vector, and only access the subtypes when necessary.
+   *
+   * You should use either `top1::poly_ptr` or `top1::unique_poly_ptr`
+   * in nearly all cases.
+   *
+   * @Storage The underlying pointer to use for storage.
+   *         Must be pointer-like (TODO: define)
+   * @Base The base class.
+   * @Types All of the possible types. Must all inherit from <Base>.
+   */
+  template<typename Storage, typename Base, typename... Types>
+  class basic_poly_ptr {
+    static_assert(std::conjunction_v<std::is_base_of<Base, Types>...>,
+      "Base must be a base of all Types...");
+    //static_assert(std::is_polymorphic_v<Base>, "Base must be polymorphic");
 
+    /// Used for <match>
+    ///
+    /// invokes the visitor with the correct derived conversion
+    /// @Ret the return type of the visit. Compute using std::common_type
+    /// @Ts the types left to check in recursion
+    template<typename Visitor, typename Ret, typename... Ts>
+    struct visitor_dispatch;
+
+    template<typename Visitor, typename Ret, typename T1, typename... Ts>
+    struct visitor_dispatch<Visitor, Ret, T1, Ts...> {
+      static Ret apply(basic_poly_ptr* p, Visitor&& v) {
+        if constexpr (sizeof...(Ts) > 0) {
+            if (p->is<T1>()) {
+              if constexpr (std::is_void_v<Ret>) {
+                  std::invoke(std::forward<Visitor>(v), p->get<T1>());
+                } else {
+                return std::invoke(std::forward<Visitor>(v), p->get<T1>());
+              }
+            } else {
+              return visitor_dispatch<Visitor, Ret, Ts...>::apply(
+                p, std::forward<Visitor>(v));
+            }
+          } else {
+          if constexpr (std::is_void_v<Ret>) {
+              std::invoke(std::forward<Visitor>(v), p->get<T1>());
+            } else {
+            return std::invoke(std::forward<Visitor>(v), p->get<T1>());
+          }
+        }
+      }
+    };
+
+    public:
+      // Type traits
+
+    static constexpr detail::TypeIndex invalid_index = detail::invalid_index;
+    static constexpr detail::TypeIndex base_index = detail::base_index;
+
+    /// Shorthand for `get_index<T>::value`
+    template<typename T>
+    static constexpr detail::TypeIndex get_index_v =
+      detail::type_index<Base, T, Types...>::value;
+
+    template<detail::TypeIndex I>
+    using get_type_t = typename detail::type_for_index<Base, I, Types...>::type;
+
+    /// Member `value` is `true` if `T` is 
+    template<typename T>
+    using is_valid_type = std::integral_constant<bool,
+      get_index_v<T> != invalid_index>;
+
+    /// Shorthand for `is_valid_type<T>::value`
+    template<typename T>
+    static constexpr bool is_valid_type_v = is_valid_type<T>::value;
+
+    // Member types
+
+    /// Index
+    using index_type = detail::TypeIndex;
+    /// The underlying storage.
+    ///
+    /// Alias for <Storage>
+    using storage_type = Storage;
+    /// The base type. Alias for <Base>
+    using base_type = Base;
+
+    /// Default constructor. Stores a nullptr
+    basic_poly_ptr();
+
+    /// Construct from storage type
+    basic_poly_ptr(const storage_type&);
+    /// Move storage into this
+    basic_poly_ptr(storage_type&&);
+
+    /// Construct from a pointer to `T`
+    ///
+    /// @T Must be a valid type.
+    /// @t Will be stored. Must have a lifetime at least as long as this object.
+    ///    It will be passed to the storage type, which decides what to do with
+    ///    it. In the case of a `unique_poly_ptr`, this means <t> will be
+    ///    destroyed with this object. With a non-owning `poly_ptr`, the
+    ///    lifetime will not be affected.
+    template<typename T, typename = is_valid_type<T>>
+    basic_poly_ptr(T* t);
+
+    basic_poly_ptr(const basic_poly_ptr&);
+    basic_poly_ptr(basic_poly_ptr&&);
+
+    basic_poly_ptr& operator=(basic_poly_ptr);
+
+    /// Check if the `poly_ptr` currently holds a value of type <T>
+    ///
+    /// @T Must be a valid type.
+    /// @return `true` if the currently stored type is `T`,
+    ///         or if `T` is <Base>
+    template<typename T>
+    auto is() const -> std::enable_if_t<is_valid_type_v<T>, bool>;
+
+    /// Check if the `poly_ptr` currently holds a value of type <T>
+    ///
+    /// @I Must be in range `[-2, sizeof...(Types...))`
+    /// @return `true` if the currently stored type is `T`,
+    ///         or if `T` is <Base>
+    template<index_type I>
+    auto is() const -> std::enable_if_t<is_valid_type_v<get_type_t<I>>, bool>;
+
+    /// Get the value of type `T`
+    ///
+    /// @T Must be a valid type.
+    /// @return A reference to the stored value, if the `poly_ptr` is holding a
+    ///         type `T`, which is not null. If the `poly_ptr` is holding any
+    ///         other type, it will throw `std::bad_cast`
+    template<typename T>
+    auto get() -> std::enable_if_t<is_valid_type_v<T>, T&>;
+
+    /// Get the value of type with index T
+    ///
+    /// @I Must be in range `[-2, sizeof...(Types...))`
+    /// @return A reference to the stored value, if the `poly_ptr` is holding a
+    ///         type `T`, which is not null. If the `poly_ptr` is holding any
+    ///         other type, it will throw `std::bad_cast`
+    template<index_type I>
+    auto get() -> std::enable_if_t<is_valid_type_v<get_type_t<I>>,
+      get_type_t<I>&>;
+
+    /// Update the stored value and type
+    ///
+    /// @T Must be a valid type.
+    /// @t Will be stored. It must have a lifetime at least as long as this
+    ///    object. It will be passed to the storage type, which decides what to
+    ///    do with it. In the case of a `unique_poly_ptr`, this means <t> will
+    ///    be destroyed with this object. With a non-owning `poly_ptr`, the
+    ///    lifetime will not be affected.
+    template<typename T>
+    auto operator=(T* t) -> std::enable_if_t<is_valid_type_v<T>,
+      basic_poly_ptr&>;
+
+    /// Update the stored value and type
+    ///
+    /// @T Must be a valid type.
+    /// @t Will be stored. It must have a lifetime at least as long as this
+    ///    object. It will be passed to the storage type, which decides what to
+    ///    do with it. In the case of a `unique_poly_ptr`, this means <t> will
+    ///    be destroyed with this object. With a non-owning `poly_ptr`, the
+    ///    lifetime will not be affected.
+    template<typename T>
+    auto operator=(T& t) -> std::enable_if_t<is_valid_type_v<T>,
+      basic_poly_ptr&>;
+
+    /// Dereference the stored value as the base class
+    ///
+    /// This method is what differentiates the `poly_ptr` from a variant of
+    /// pointers. In any non-null state, the value can be accessed as a <Base>.
+    ///
+    /// Invoking this method while the `poly_ptr` is storing null, is undefined
+    /// behaviour.
+    ///
+    /// @return a reference to the stored base.
+    base_type& base();
+
+    /// Dereference the internal pointer as <Base>
+    ///
+    /// An alias to <base()>
+    base_type& operator*();
+
+    /// Access the stored value as <Base>*
+    base_type* operator->();
+
+    /// Implicitly convert to <Base>*
+    operator base_type*();
+
+    /// Pattern matching with lambdas
+    ///
+    /// TODO: Document
+    template<typename... Funcs>
+    auto match(Funcs&&... f) -> std::common_type_t<
+      std::invoke_result_t<overloaded<Funcs...>, base_type&>,
+      std::invoke_result_t<overloaded<Funcs...>, Types&>...>;
+
+    protected:
+
+    index_type index;
+    storage_type store;
+  };
+
+  /*
+   * Helper classes
+   */
+  namespace detail {
+
+    /// Storage type for `unique_poly_ptr`
+    ///
+    /// poly_ptr needs some operations that are not supported by
+    /// `std::unique_ptr`.
+    template<typename T>
+    struct unique_poly_storage {
+
+      std::unique_ptr<T> ptr;
+
+      unique_poly_storage(T* ptr = nullptr) : ptr (ptr) {}
+      unique_poly_storage(unique_poly_storage& o)
+        : ptr (o.ptr) {}
+      unique_poly_storage(unique_poly_storage&& o)
+        : ptr (std::move(o.ptr)) {}
+
+      unique_poly_storage& operator=(unique_poly_storage o) {
+        ptr.swap(o.ptr);
+        return *this;
+      }
+
+      operator T*() const {return ptr.get();}
+      T* operator->() const {return ptr.get();}
+      T& operator*() {return *ptr;}
+
+      bool operator==(T* o) const {return ptr == o;}
+      bool operator!=(T* o) const {return ptr != o;}
+      bool operator<(T* o) const {return ptr < o;}
+      bool operator>(T* o) const {return ptr > o;}
+      bool operator<=(T* o) const {return ptr <= o;}
+      bool operator>=(T* o) const {return ptr >= o;}
+    };
+
+  }
+
+  /*
+   * Aliases
+   */
+
+  template<typename Base, typename... Ts>
+  using poly_ptr = basic_poly_ptr<Base*, Base, Ts...>;
+
+  template<typename Base, typename... Ts>
+  using unique_poly_ptr = basic_poly_ptr<
+    detail::unique_poly_storage<Base>, Base, Ts...>;
+
+
+  /*
+   * Implementation
+   */
+
+  template<typename S, typename B, typename... Ts>
+  basic_poly_ptr<S, B, Ts...>::basic_poly_ptr()
+    : index (base_index), store (nullptr) {}
+
+  template<typename S, typename B, typename... Ts>
+  basic_poly_ptr<S, B, Ts...>::basic_poly_ptr(const storage_type& ptr)
+    : index (base_index), store (ptr) {}
+
+  template<typename S, typename B, typename... Ts>
+  basic_poly_ptr<S, B, Ts...>::basic_poly_ptr(storage_type&& ptr)
+    : index (base_index), store (std::move(ptr)) {}
+
+  template<typename S, typename B, typename... Ts>
+  template<typename T, typename E>
+  basic_poly_ptr<S, B, Ts...>::basic_poly_ptr(T* t)
+    : index (get_index_v<T>), store (t) {}
+
+  template<typename S, typename B, typename... Ts>
+  basic_poly_ptr<S, B, Ts...>::basic_poly_ptr(const basic_poly_ptr& o)
+    : index (o.index), store (o.store)  {}
+
+  template<typename S, typename B, typename... Ts>
+  basic_poly_ptr<S, B, Ts...>::basic_poly_ptr(basic_poly_ptr&& o)
+    : index (std::move(o.index)), store (std::move(o.store))  {}
+
+  template<typename S, typename B, typename... Ts>
+  basic_poly_ptr<S, B, Ts...>&
+  basic_poly_ptr<S, B, Ts...>::operator=(basic_poly_ptr o) {
+    std::swap(store, o.store);
+    std::swap(index, o.index);
+  }
+
+  template<typename S, typename B, typename... Ts>
   template<typename T>
-  using getTypeIndex = detail::getTypeIndex<Base, T, Types...>;
+  auto basic_poly_ptr<S, B, Ts...>::is() const ->
+  std::enable_if_t<is_valid_type_v<T>, bool> {
+    return index == get_index_v<T>;
+  }
 
+  template<typename S, typename B, typename... Ts>
+  template<detail::TypeIndex I>
+  auto basic_poly_ptr<S, B, Ts...>::is() const ->
+  std::enable_if_t<is_valid_type_v<get_type_t<I>>, bool> {
+    return index == I;
+  }
+
+  template<typename S, typename B, typename... Ts>
   template<typename T>
-  using checkType = std::enable_if_t<
-    getTypeIndex<T>::index != invalidType>;
-
-  template<typename F, typename R, typename ...Ts>
-  struct dispatcher;
-
-  template<typename F, typename R, typename T, typename ...Ts>
-  struct dispatcher<F, R, T, Ts...> {
-
-    static R apply(BasicPolyPtr *p, F&& f) {
-      if (p->is<T>()) {
-        return f(*(p->get<T>()));
+  auto basic_poly_ptr<S, B, Ts...>::get() ->
+  std::enable_if_t<is_valid_type_v<T>, T&> {
+    if constexpr (std::is_same_v<T, base_type>) {
+        return static_cast<T&>(*store);
       } else {
-        static_assert(sizeof...(Ts) > 0, "Unmatched");
-        return dispatcher<F, R, Ts...>::apply(p, std::forward<F>(f));
+      if (is<T>()) {
+        return static_cast<T&>(*store);
+      } else {
+        throw std::bad_cast();
       }
     }
-  };
-
-  template<typename F, typename R, typename T>
-  struct dispatcher<F, R, T> {
-
-    static void apply(BasicPolyPtr *p, F&& f) {
-      f(*p->get<T>());
-    }
-  };
-
-  TypeIndex typeIndex;
-  PtrType data;
-
-
-public:
-
-  template<typename ...Cases>
-  struct visitor;
-
-  template<typename Case>
-  struct visitor<Case> : Case {
-
-    using Case::operator();
-
-    explicit visitor(Case _case) : Case(_case) {};
-  };
-
-  template<typename Case, typename ...Cases>
-  struct visitor<Case, Cases...> : Case, visitor<Cases...> {
-
-    using Case::operator();
-    using visitor<Cases...>::operator();
-
-    visitor(Case _case, Cases ...cases)
-      : Case(_case), visitor<Cases...>(cases...) {};
-  };
-
-  template<typename ...Cases>
-  static visitor<Cases...> makeVisitor(Cases ...cases) {
-    return visitor<Cases...>(cases...);
   }
 
-  using first_type = std::tuple_element_t<0, std::tuple<Types...>>;
-
-  BasicPolyPtr() {};
-
-  // cppcheck-suppress noExplicitConstructor
-  BasicPolyPtr(PtrType &&ptr) : data (ptr) {}
-
-  template<typename T, typename = checkType<T>>
-  BasicPolyPtr(T *t) {
-    set(t);
-  }
-
-  bool valid() const {
-    return typeIndex != invalidType;
-  }
-
-  template<typename T, typename = checkType<T>>
-  bool is() const {
-    if (getTypeIndex<T>::index == baseType) return true;
-    return typeIndex == getTypeIndex<T>::index;
-  }
-
-  template<typename T, typename = checkType<T>>
-  std::optional<T*> get() {
-    TypeIndex req = getTypeIndex<T>::index;
-    if (typeIndex == req) {
-      return (T *)(Base *) data;
-    }
-    if (req == baseType) {
-      return (T *)(Base *) data;
-    } else {
-      return std::nullopt;
+  template<typename S, typename B, typename... Ts>
+  template<detail::TypeIndex I>
+  auto basic_poly_ptr<S, B, Ts...>::get() ->
+  std::enable_if_t<is_valid_type_v<get_type_t<I>>, get_type_t<I>&> {
+    if constexpr (I == base_index) {
+        return static_cast<base_type&>(*store);
+      } else {
+      if (is<I>()) {
+        return static_cast<get_type_t<I>>(*store);
+      } else {
+        throw std::bad_cast();
+      }
     }
   }
 
-  template<typename T, typename = checkType<T>>
-  T& get(const T& fallback) {
-    return this->get<T>().value_or(fallback);
+  template<typename S, typename B, typename... Ts>
+  template<typename T>
+  auto basic_poly_ptr<S, B, Ts...>::operator=(T* t) ->
+  std::enable_if_t<is_valid_type_v<T>, basic_poly_ptr&> {
+    store = storage_type(t);
+    index = get_index_v<T>;
+    return *this;
   }
 
-  template<typename T, typename = checkType<T>>
-  void set(T *t) {
-    data = t;
-    typeIndex = getTypeIndex<T>::index;
+  template<typename S, typename B, typename... Ts>
+  template<typename T>
+  auto basic_poly_ptr<S, B, Ts...>::operator=(T& t) ->
+  std::enable_if_t<is_valid_type_v<T>, basic_poly_ptr&> {
+    store = storage_type(&t);
+    index = get_index_v<T>;
+    return *this;
   }
 
-  Base *base() const { return data; }
-
-  Base *operator->() const { return base(); }
-  operator Base *() const { return base(); }
-
-  template<typename T, typename = checkType<T>>
-  auto operator=(T *t) { set(t); return *this; }
-
-  bool operator==(const BasicPolyPtr&& other) const { base() == other.base(); }
-  bool operator!=(const BasicPolyPtr&& other) const { base() != other.base(); }
-
-  template<typename V>
-  decltype(auto) visit(V v) {
-    using R = std::result_of_t<V(first_type *)>;
-    return dispatcher<V, R, first_type, Types...>::apply(this, std::forward<V>(v));
+  template<typename S, typename B, typename... Ts>
+  auto basic_poly_ptr<S, B, Ts...>::base() -> base_type& {
+    return static_cast<base_type&>(*store);
   }
 
-  template<typename ...Cases>
-  decltype(auto) match(Cases ...cases) {
-    return visit(makeVisitor(cases...));
-  }
-};
-
-namespace detail {
-
-template<typename T>
-struct smart_poly_storage {
-  std::unique_ptr<T> data;
-
-  smart_poly_storage() {}
-  smart_poly_storage(smart_poly_storage &o) {
-    data.swap(o.data);
-  }
-  smart_poly_storage(smart_poly_storage &&o) {
-    data.swap(o.data);
+  template<typename S, typename B, typename... Ts>
+  auto basic_poly_ptr<S, B, Ts...>::operator*() -> base_type& {
+    return base();
   }
 
-  // cppcheck-suppress noExplicitConstructor
-  smart_poly_storage(T* p) : data (p) {}
-
-  operator T*() {
-    return data.get();
+  template<typename S, typename B, typename... Ts>
+  auto basic_poly_ptr<S, B, Ts...>::operator->() -> base_type* {
+    return store;
   }
 
-  decltype(auto) operator=(T *ptr) { return data.reset(ptr); }
-};
-};
+  template<typename S, typename B, typename... Ts>
+  basic_poly_ptr<S, B, Ts...>::operator base_type*() {
+    return static_cast<base_type*>(store);
+  }
 
-template<typename Base, typename ...Types>
-using PolyPtr = BasicPolyPtr<Base *, Base, Types...>;
+  template<typename S, typename B, typename... Ts>
+  template<typename... Funcs>
+  auto basic_poly_ptr<S, B, Ts...>::match(Funcs&&... f) ->
+  std::common_type_t<std::invoke_result_t<overloaded<Funcs...>, base_type&>,
+    std::invoke_result_t<overloaded<Funcs...>, Ts&>...> {
+    using Visitor = overloaded<Funcs...>;
+    using R = std::common_type_t<
+      std::invoke_result_t<Visitor, base_type&>,
+      std::invoke_result_t<Visitor, Ts&>...>;
 
-template<typename Base, typename ...Types>
-using SmartPolyPtr = BasicPolyPtr<detail::smart_poly_storage<Base>, Base, Types...>;
+    if constexpr (std::is_void_v<R>) {
+        visitor_dispatch<Visitor, R, Ts..., B>::apply(this,
+          Visitor(std::forward<Funcs>(f)...));
+      } else {
+      return visitor_dispatch<Visitor, R, Ts..., B>::apply(this,
+        Visitor(std::forward<Funcs>(f)...));
+    }
+  }
 }

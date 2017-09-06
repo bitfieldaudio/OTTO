@@ -78,10 +78,12 @@ namespace top1 {
 
   template<typename iter, typename type, typename category>
   struct is_iterator<iter, type, category,
-    std::enable_if_t<std::is_same_v<type,
-                       std::iterator_traits<iter>::value_type>
-      && std::is_base_of_v<category,
-                       std::iterator_traits<iter>::iterator_category>
+    std::enable_if_t<std::is_same_v<std::remove_reference_t<iter>,
+                       std::iterator_traits<
+                         std::remove_reference_t<iter>>::value_type>
+      && std::is_base_of_v<std::remove_reference_t<iter>,
+                       std::iterator_traits<
+                         std::remove_reference_t<iter>>::iterator_category>
       >>: std::true_type {};
 
 

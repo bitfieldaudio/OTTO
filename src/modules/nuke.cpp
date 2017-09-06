@@ -65,7 +65,7 @@ namespace top1::modules {
     Globals::ui.display(*screen);
   }
 
-  void NukeSynth::process(audio::ProcessData& data) {}
+  void NukeSynth::process(const audio::ProcessData& data) {}
 
   /*
    * NukeSynthScreen

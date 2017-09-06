@@ -26,7 +26,7 @@ namespace top1::modules {
 
     SuperSawSynth();
 
-    void process(audio::ProcessData&) override;
+    void process(const audio::ProcessData&) override;
 
     void display() override;
   };

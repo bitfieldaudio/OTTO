@@ -177,11 +177,11 @@ public:
 
   FaustWrapper(dsp *DSP, modules::Properties& data);
 
-  virtual void process(audio::ProcessData& data) {
+  virtual void process(const audio::ProcessData& data) {
     prepBuffers(data);
     // data.audio.proc cannot be used, as faust cannot do in place editing
     // TODO: only copy the input buffer
-    fDSP-> compute(data.nframes, inBuffer, outBuffer);
+    fDSP->compute(data.nframes, inBuffer, outBuffer);
     postBuffers(data);
   }
 
@@ -192,12 +192,12 @@ protected:
   /**
    * Copy the relevant data into inBuffer
    */
-  virtual void prepBuffers(audio::ProcessData&);
+  virtual void prepBuffers(const audio::ProcessData&);
 
   /**
    * Put the data back into the chain
    */
-  virtual void postBuffers(audio::ProcessData&);
+  virtual void postBuffers(const audio::ProcessData&);
 };
 
 } // top1

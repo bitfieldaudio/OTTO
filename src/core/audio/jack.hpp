@@ -14,7 +14,6 @@
 namespace top1::audio {
 
   class JackAudio {
-  private:
     struct {
       jack_port_t *outL;
       jack_port_t *outR;
@@ -23,12 +22,12 @@ namespace top1::audio {
       jack_port_t *midiOut;
     } ports;
 
-    ProcessData processData;
+    RTBuffer<float> procBuf;
 
     jack_client_t *client;
     jack_status_t jackStatus;
 
-    std::atomic_bool isProcessing = {false};
+    std::atomic_bool isProcessing {false};
 
     enum class PortType {
       Audio,
@@ -38,7 +37,7 @@ namespace top1::audio {
     void setupPorts();
 
     std::vector<std::string> findPorts(int criteria,
-                                       PortType type = PortType::Audio);
+      PortType type = PortType::Audio);
 
     bool connectPorts(std::string src, std::string dest);
 
@@ -47,7 +46,7 @@ namespace top1::audio {
     void shutdownCallback();
     void samplerateCallback(uint nframes);
     void buffersizeCallback(uint nframes);
-  public:
+    public:
 
     uint bufferSize;
     using AudioSample = jack_default_audio_sample_t;

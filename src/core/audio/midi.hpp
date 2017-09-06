@@ -44,12 +44,10 @@ namespace top1::midi {
   };
 
   // TODO: Replace with variant AnyMidiEvent
-  using MidiEventPtr = top1::SmartPolyPtr<MidiEvent,
-                                          NoteOnEvent,
-                                          NoteOffEvent,
-                                          ControlChangeEvent>;
+  using MidiEventPtr = top1::unique_poly_ptr<MidiEvent,
+    NoteOnEvent, NoteOffEvent, ControlChangeEvent>;
 
-  static inline float freqTable[128];
+  inline float freqTable[128];
 
   constexpr void generateFreqTable(float tuning = 440) {
     for (int i = 0; i < 128; i++) {
