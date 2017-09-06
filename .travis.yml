@@ -34,13 +34,9 @@ compiler: gcc
 
 script:
 - cmake . -DCMAKE_BUILD_TYPE=Release
-- make all
+- make all && ./deploy-docs
 - mkdir testdata
 - bin/tests
-
-# Generate docs
-after_success:
-- ./deploy-docs
 
 # For pushing documentation
 env:
