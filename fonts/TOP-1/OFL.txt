@@ -1,5 +1,6 @@
-Copyright (c) 2010-2015, Łukasz Dziedzic (dziedzic@typoland.com),
-with Reserved Font Name Lato.
+Copyright (c) 2017, Albert Smit (http://diskus.studio|albert@diskus.studio),
+with Reserved Font Name TOP-1.
+
 
 This Font Software is licensed under the SIL Open Font License, Version 1.1.
 This license is copied below, and is also available with a FAQ at:
