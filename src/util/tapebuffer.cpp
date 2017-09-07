@@ -183,6 +183,8 @@ namespace top1 {
 
     void main() {
 
+      // TODO: figure out why this is needed for GDB to not crash
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
       tb.movePlaypointAbs(0);
 
       // FIXME: Hardcoded

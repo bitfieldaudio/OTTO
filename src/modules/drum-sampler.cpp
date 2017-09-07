@@ -122,7 +122,7 @@ namespace top1::modules {
 
     auto path = samplePath(props.sampleName);
     std::size_t rs = 0;
-    if (!(path.empty() || props.sampleName.value.empty())) {
+    if (!(path.empty() || props.sampleName.get().empty())) {
       SoundFile sf;
         sf.open(path);
       rs = std::min<int>(maxSampleSize, sf.length());
@@ -276,7 +276,7 @@ namespace top1::modules {
     ctx.font(Fonts::Norm);
     ctx.font(15);
     ctx.textAlign(TextAlign::Left, TextAlign::Baseline);
-    ctx.fillText(fmt::format("×{:.2F}", voice.speed.value), pitchPos);
+    ctx.fillText(fmt::format("×{:.2F}", voice.speed), pitchPos);
 
     ctx.callAt(mainWFpos, [&] () {
         mainWFW.lineCol = colourCurrent;

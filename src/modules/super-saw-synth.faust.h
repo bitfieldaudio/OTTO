@@ -98,7 +98,7 @@ class faust_super_saw_synth : public dsp {
 	}
 
 	virtual int getNumInputs() { return 0; }
-	virtual int getNumOutputs() { return 2; }
+	virtual int getNumOutputs() { return 1; }
 	static void classInit(int samplingFreq) {
 	}
 	virtual void instanceConstants(int samplingFreq) {
@@ -211,7 +211,6 @@ class faust_super_saw_synth : public dsp {
 		float 	fSlow42 = (1 - (fConst3 / fSlow40));
 		float 	fSlow43 = ((int((fSlow26 > 1)))?1:((int((fSlow26 < 0)))?0:fSlow26));
 		FAUSTFLOAT* output0 = output[0];
-		FAUSTFLOAT* output1 = output[1];
 		for (int i=0; i<count; i++) {
 			fRec1[0] = ((iSlow6)?0:min(fSlow5, (fRec1[1] + 1)));
 			int iTemp0 = int((fRec1[0] < fSlow3));
@@ -241,9 +240,7 @@ class faust_super_saw_synth : public dsp {
 			fRec13[0] = ((iTemp12)?fTemp11:fTemp10);
 			float 	fRec14 = ((iTemp12)?fTemp11:(fSlow41 + (fRec13[1] + (fSlow42 * fTemp10))));
 			fRec12[0] = ((2 * fRec14) + (-1 - (fSlow21 * ((fSlow20 * fRec12[2]) + (fSlow17 * fRec12[1])))));
-			float fTemp13 = (fSlow21 * (((((fSlow43 * (fRec12[2] + (fRec12[0] + (2.0f * fRec12[1])))) + (fSlow39 * (fRec9[2] + (fRec9[0] + (2.0f * fRec9[1]))))) + (fSlow34 * (fRec6[2] + (fRec6[0] + (2.0f * fRec6[1]))))) + (fSlow28 * (fRec3[2] + (fRec3[0] + (2.0f * fRec3[1]))))) * ((int((fRec2[0] < 0)))?fRec0[0]:((int((fRec2[0] < fSlow12)))?(fRec0[0] + (fSlow14 * (fRec2[0] * (0 - fRec0[0])))):0))));
-			output0[i] = (FAUSTFLOAT)fTemp13;
-			output1[i] = (FAUSTFLOAT)fTemp13;
+			output0[i] = (FAUSTFLOAT)(fSlow21 * (((((fSlow43 * (fRec12[2] + (fRec12[0] + (2.0f * fRec12[1])))) + (fSlow39 * (fRec9[2] + (fRec9[0] + (2.0f * fRec9[1]))))) + (fSlow34 * (fRec6[2] + (fRec6[0] + (2.0f * fRec6[1]))))) + (fSlow28 * (fRec3[2] + (fRec3[0] + (2.0f * fRec3[1]))))) * ((int((fRec2[0] < 0)))?fRec0[0]:((int((fRec2[0] < fSlow12)))?(fRec0[0] + (fSlow14 * (fRec2[0] * (0 - fRec0[0])))):0))));
 			// post processing
 			fRec12[2] = fRec12[1]; fRec12[1] = fRec12[0];
 			fRec13[1] = fRec13[0];

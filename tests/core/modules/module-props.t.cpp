@@ -22,7 +22,7 @@ namespace top1::modules {
 
     SECTION("Property modes") {
 
-      REQUIRE(props.fProp.value == 5.2f);
+      REQUIRE(props.fProp.get() == 5.2f);
       props.fProp.step(300);
       REQUIRE(props.fProp == 10.f);
       props.fProp.step(-20);
@@ -36,9 +36,9 @@ namespace top1::modules {
       props.otherProp.step(9);
       REQUIRE(props.otherProp == 25);
       props.otherProp.step(15);
-      REQUIRE(props.otherProp.value == 13);
+      REQUIRE(props.otherProp.get() == 13);
       props.otherProp.step(-10);
-      REQUIRE(props.otherProp.value == 30);
+      REQUIRE(props.otherProp.get() == 30);
 
       REQUIRE(props.toggle == false);
       props.toggle.step();

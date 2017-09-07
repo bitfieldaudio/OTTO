@@ -24,7 +24,9 @@ namespace top1::modules {
           }
         }, [] (auto&&) {});
     }
-    FaustSynthModule::process(data);
+    FaustSynthModule::process({buf.data(), data.nframes});
+    for_both(buf.begin(), buf.end(), data.audio.proc.begin(),
+      data.audio.proc.end(), [] (auto in, auto& out) {out += in;});
     for (auto &&nEvent : data.midi) {
       nEvent.match([&] (midi::NoteOffEvent& e) {
           if (e.channel == 0) {
@@ -239,7 +241,7 @@ namespace top1::modules {
 
   // SuperSawSynth Constructor, depends on SuperSawSynthScreen definition
   SuperSawSynth::SuperSawSynth() :
-    FaustSynthModule (new FAUSTCLASS(), &props),
-    screen (new SuperSawSynthScreen(this)) {}
+    FaustSynthModule (std::make_unique<FAUSTCLASS>(), &props),
+      screen (new SuperSawSynthScreen(this)) {}
 
 }

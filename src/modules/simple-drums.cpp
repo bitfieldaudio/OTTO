@@ -6,7 +6,8 @@
 
 namespace top1::modules {
 
-  SimpleDrumVoice::SimpleDrumVoice() : FaustWrapper(new FAUSTCLASS(), props) {}
+  SimpleDrumVoice::SimpleDrumVoice() :
+    FaustWrapper(std::make_unique<FAUSTCLASS>(), props) {}
 
   SimpleDrumsModule::SimpleDrumsModule() :
     screen (new SimpleDrumsScreen(this)) {}
@@ -26,8 +27,12 @@ namespace top1::modules {
         }, [] (auto&&) {});
     }
     for (auto &&voice : voices) {
-      voice.process(data);
+      voice.process({buf.data(), data.nframes});
       voice.props.trigger = 0;
+      for_both(buf.begin(), buf.end(), data.audio.proc.begin(),
+        data.audio.proc.end(), [] (auto in, auto& out) {
+          out += in;
+        });
     }
     for (auto &&nEvent : data.midi) {
       nEvent.match([&] (midi::NoteOffEvent& e) {

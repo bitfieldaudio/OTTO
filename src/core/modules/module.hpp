@@ -43,13 +43,13 @@ namespace top1::modules {
   };
 
   class EffectModule : public Module {
-  public:
+    public:
     using Module::Module;
     virtual void process(const audio::ProcessData&) = 0;
   };
 
   class SequencerModule : public Module {
-  public:
+    public:
     using Module::Module;
     virtual void process(const audio::ProcessData&) = 0;
   };

@@ -6,7 +6,6 @@ namespace top1 {
 
   struct Base {
     int base_field = 4;
-    virtual ~Base() {}
   };
 
   struct A : Base {
@@ -121,7 +120,7 @@ namespace top1 {
   }
 
   // Test to make sure `top1::audio::ProcessData` works
-    TEST_CASE("Oddly specific Poly Pointer test", "[util] [poly-ptr]") {
+  TEST_CASE("Oddly specific Poly Pointer test", "[util] [poly-ptr]") {
 
     struct S {
       mutable std::vector<PP> vec;

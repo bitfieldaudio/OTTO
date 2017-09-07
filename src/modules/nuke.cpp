@@ -58,7 +58,7 @@ namespace top1::modules {
    */
 
   NukeSynth::NukeSynth() :
-    FaustSynthModule (new FAUSTCLASS(), &props),
+    FaustSynthModule (std::make_unique<FAUSTCLASS>(), &props),
       screen (new NukeSynthScreen(this)) {}
 
   void NukeSynth::display() {
