@@ -274,9 +274,9 @@ namespace top1::modules {
     ctx.beginPath();
     ctx.fillStyle(Colours::White);
     ctx.font(Fonts::Norm);
-    ctx.font(15);
+    ctx.font(18);
     ctx.textAlign(TextAlign::Left, TextAlign::Baseline);
-    ctx.fillText(fmt::format("×{:.2F}", voice.speed), pitchPos);
+    ctx.fillText(fmt::format("×{:.2F}", voice.speed.get()), pitchPos);
 
     ctx.callAt(mainWFpos, [&] () {
         mainWFW.lineCol = colourCurrent;

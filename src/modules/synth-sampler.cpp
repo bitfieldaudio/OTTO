@@ -6,7 +6,7 @@
 #include "core/ui/drawing.hpp"
 #include "core/ui/icons.hpp"
 #include "core/globals.hpp"
-#include "util/sndfile.hpp"
+#include "util/soundfile.hpp"
 
 namespace top1::modules {
 
@@ -25,8 +25,8 @@ namespace top1::modules {
 
   void SynthSampler::process(const audio::ProcessData& data) {
     for (auto &&nEvent : data.midi) {
-      nEvent.match([&] (midi::NoteOnEvent *e) {
-          if (e->channel == 0) {
+      nEvent.match([&] (midi::NoteOnEvent& e) {
+          if (e.channel == 0) {
             props.playProgress = (props.fwd()) ? 0 : props.length() - 1;
             props.trigger = true;
           }
@@ -76,8 +76,8 @@ namespace top1::modules {
     }
 
     for (auto &&nEvent : data.midi) {
-      nEvent.match([&] (midi::NoteOffEvent *e) {
-          if (e->channel == 0) {
+      nEvent.match([&] (midi::NoteOffEvent& e) {
+          if (e.channel == 0) {
             props.trigger = false;
             if (props.stop()) {
               props.playProgress = -1;
@@ -92,15 +92,23 @@ namespace top1::modules {
   }
 
   void SynthSampler::load() {
-    SndFile<1> sf (samplePath(props.sampleName));
 
-    size_t rs = std::min(maxSampleSize, sf.size());
+    auto path = samplePath(props.sampleName);
+    std::size_t rs = 0;
+    if (!(path.empty() || props.sampleName.get().empty())) {
+      SoundFile sf;
+      sf.open(path);
+      rs = std::min<int>(maxSampleSize, sf.length());
+      sampleData.resize(rs);
+      sf.read_samples(sampleData.data(), rs);
 
-    sampleData.resize(rs);
-    sf.read(sampleData.data(), rs);
-
-    sampleSampleRate = sf.samplerate;
-    sampleSpeed = sampleSampleRate / float(Globals::samplerate);
+      sampleSampleRate = sf.info.samplerate;
+      sampleSpeed = sampleSampleRate / float(Globals::samplerate);
+      if (sf.length() == 0) LOGD << "Empty sample file";
+    } else {
+      sampleData.resize(0);
+      LOGI << "Empty sampleName";
+    }
 
     props.in.mode.max = rs;
     props.out.mode.max = rs;
@@ -123,9 +131,6 @@ namespace top1::modules {
       wf->addFrame(s);
     }
     editScreen->topWFW.viewRange = {0, wf->size() - 1};
-
-    if (sf.size() == 0) LOGI << "Empty sample file";
-    sf.close();
   }
 
   void SynthSampler::init() {
@@ -228,35 +233,35 @@ namespace top1::modules {
     ctx.font(Fonts::Norm);
     ctx.font(15);
     ctx.textAlign(TextAlign::Left, TextAlign::Baseline);
-    ctx.fillText(fmt::format("×{:.2F}", props.speed), pitchPos);
+    ctx.fillText(fmt::format("×{:.2F}", props.speed.get()), pitchPos);
 
     ctx.callAt(
-               mainWFpos, [&] () {
+      mainWFpos, [&] () {
 
-                 mainWFW.lineCol = colourCurrent;
-                 mainWFW.minPx = 5;
-                 mainWFW.viewRange = {
-                   std::size_t(std::round(props.in / mainWF->ratio)),
-                   std::size_t(std::round(props.out / mainWF->ratio))};
+        mainWFW.lineCol = colourCurrent;
+        mainWFW.minPx = 5;
+        mainWFW.viewRange = {
+          std::size_t(std::round(props.in / mainWF->ratio)),
+          std::size_t(std::round(props.out / mainWF->ratio))};
 
-                 mainWFW.draw(ctx);
+        mainWFW.draw(ctx);
 
-                 ctx.beginPath();
-                 ctx.circle(mainWFW.point(mainWFW.viewRange.in), 2);
-                 ctx.fill(Colours::Blue);
+        ctx.beginPath();
+        ctx.circle(mainWFW.point(mainWFW.viewRange.in), 2);
+        ctx.fill(Colours::Blue);
 
-                 ctx.beginPath();
-                 ctx.circle(mainWFW.point(mainWFW.viewRange.in), 5);
-                 ctx.stroke(Colours::Blue);
+        ctx.beginPath();
+        ctx.circle(mainWFW.point(mainWFW.viewRange.in), 5);
+        ctx.stroke(Colours::Blue);
 
-                 ctx.beginPath();
-                 ctx.circle(mainWFW.point(mainWFW.viewRange.out), 2);
-                 ctx.fill(Colours::Green);
+        ctx.beginPath();
+        ctx.circle(mainWFW.point(mainWFW.viewRange.out), 2);
+        ctx.fill(Colours::Green);
 
-                 ctx.beginPath();
-                 ctx.circle(mainWFW.point(mainWFW.viewRange.out), 5);
-                 ctx.stroke(Colours::Green);
-               });
+        ctx.beginPath();
+        ctx.circle(mainWFW.point(mainWFW.viewRange.out), 5);
+        ctx.stroke(Colours::Green);
+      });
 
   }
 } // top1::module

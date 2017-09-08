@@ -286,13 +286,16 @@ namespace top1 {
       std::unique_ptr<T> ptr;
 
       unique_poly_storage(T* ptr = nullptr) : ptr (ptr) {}
-      unique_poly_storage(unique_poly_storage& o)
-        : ptr (o.ptr) {}
-      unique_poly_storage(unique_poly_storage&& o)
-        : ptr (std::move(o.ptr)) {}
+      unique_poly_storage(unique_poly_storage& o) = delete;
+      unique_poly_storage(unique_poly_storage&& o) : ptr (std::move(o.ptr)) {}
 
-      unique_poly_storage& operator=(unique_poly_storage o) {
-        ptr.swap(o.ptr);
+      unique_poly_storage& operator=(unique_poly_storage&& o) {
+        ptr = std::move(o.ptr);
+        return *this;
+      }
+
+      unique_poly_storage& operator=(T* o) {
+        ptr.reset(o);
         return *this;
       }
 

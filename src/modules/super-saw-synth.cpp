@@ -24,6 +24,7 @@ namespace top1::modules {
           }
         }, [] (auto&&) {});
     }
+    buf.clear();
     FaustSynthModule::process({buf.data(), data.nframes});
     for_both(buf.begin(), buf.end(), data.audio.proc.begin(),
       data.audio.proc.end(), [] (auto in, auto& out) {out += in;});

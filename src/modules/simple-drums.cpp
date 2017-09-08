@@ -22,13 +22,13 @@ namespace top1::modules {
     for (auto &&nEvent : data.midi) {
       nEvent.match([&] (midi::NoteOnEvent& e) {
           currentVoiceIdx = e.key % 24;
-          voices[currentVoiceIdx].props.trigger = 1;
+          voices[currentVoiceIdx].props.trigger = true;
           voices[currentVoiceIdx].props.envelope.sustain = float(e.velocity)/128.f;
         }, [] (auto&&) {});
     }
     for (auto &&voice : voices) {
+      buf.clear();
       voice.process({buf.data(), data.nframes});
-      voice.props.trigger = 0;
       for_both(buf.begin(), buf.end(), data.audio.proc.begin(),
         data.audio.proc.end(), [] (auto in, auto& out) {
           out += in;
@@ -36,7 +36,7 @@ namespace top1::modules {
     }
     for (auto &&nEvent : data.midi) {
       nEvent.match([&] (midi::NoteOffEvent& e) {
-          voices[e.key % 24].props.trigger = 0;
+          voices[e.key % 24].props.trigger = false;
         }, [] (auto&&) {});
     };
   }

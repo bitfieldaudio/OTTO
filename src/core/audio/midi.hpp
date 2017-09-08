@@ -44,7 +44,7 @@ namespace top1::midi {
   };
 
   // TODO: Replace with variant AnyMidiEvent
-  using MidiEventPtr = top1::unique_poly_ptr<MidiEvent,
+  using MidiEventPtr = top1::poly_ptr<MidiEvent,
     NoteOnEvent, NoteOffEvent, ControlChangeEvent>;
 
   inline float freqTable[128];

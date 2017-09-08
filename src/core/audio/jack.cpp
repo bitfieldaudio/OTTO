@@ -206,6 +206,7 @@ namespace top1::audio {
     // Clear the old data
     ProcessData processData;
     processData.nframes = nframes;
+    procBuf.clear();
 
     float* outLData = (float*) jack_port_get_buffer(ports.outL, nframes);
     float* outRData = (float*) jack_port_get_buffer(ports.outR, nframes);
@@ -256,6 +257,10 @@ namespace top1::audio {
     Globals::mixer.process(processData);
     Globals::metronome.process(processData);
 
+    // TODO: fix or replace poly_ptr so it works with smart pointers
+    for (auto&& e : processData.midi) {
+      delete e;
+    }
   }
 
 } // top1::audio

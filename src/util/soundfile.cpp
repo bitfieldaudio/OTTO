@@ -120,6 +120,10 @@ namespace top1 {
 
     switch (info.type) {
     case Info::Type::WAVE:
+      LOGD << "Reading Wave file: ";
+      LOGD << path;
+      LOGD << "-------------------";
+
       for (auto&& chunk : header.chunks) {
         if (chunk->id == "fmt ")
           chunk = std::unique_ptr<Chunk>(new WAVE_fmt(*chunk));
@@ -128,6 +132,11 @@ namespace top1 {
         // re-read the chunk as the new type
         chunk->seek_to(*this);
         chunk->read(*this);
+
+        LOGD << " Chunk:  " << std::string((char*)chunk->id.data, 4);
+        LOGD << " Offset: " << chunk->offset;
+        LOGD << " Size:   " << chunk->size.as_u();
+        LOGD << "-------------------";
       } break;
     case Info::Type::AIFF:
       throw "Unsupported file type. Currently only wav is supported";
@@ -145,7 +154,7 @@ namespace top1 {
       header.format = "WAVE";
       header.chunks.push_back(std::unique_ptr<Chunk>(new WAVE_fmt()));
       header.chunks.push_back(std::unique_ptr<Chunk>(new WAVE_data()));
-      header.write(*this);
+      //      header.write(*this);
       break;
     case Info::Type::AIFF:
       throw "Unsupported type. Currently only wav is supported";
