@@ -5,8 +5,8 @@
 #include <functional>
 #include <type_traits>
 
-#include <nanovg/nanovg.h>
-#include <nanocanvas/NanoCanvas.h>
+#include <nanovg.h>
+#include <NanoCanvas.h>
 
 #include "util/math.hpp"
 

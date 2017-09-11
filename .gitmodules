@@ -1,0 +1,15 @@
+[submodule "external/GSL"]
+	path = external/GSL
+	url = https://github.com/Microsoft/GSL
+[submodule "external/nanovg"]
+	path = external/nanovg
+	url = https://github.com/memononen/nanovg
+[submodule "external/fmt"]
+	path = external/fmt
+	url = https://github.com/fmtlib/fmt
+[submodule "external/NanoCanvas"]
+	path = external/NanoCanvas
+	url = https://github.com/topisani/NanoCanvas
+[submodule "external/glfw"]
+	path = external/glfw
+	url = https://github.com/glfw/glfw
