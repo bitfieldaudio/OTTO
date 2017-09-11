@@ -121,7 +121,7 @@ namespace top1 {
     switch (info.type) {
     case Info::Type::WAVE:
       LOGD << "Reading Wave file: ";
-      LOGD << path;
+      LOGD << path.c_str();
       LOGD << "-------------------";
 
       for (auto&& chunk : header.chunks) {
@@ -156,7 +156,7 @@ namespace top1 {
     switch (info.type) {
     case Info::Type::WAVE:
       LOGD << "Writing Wave file: ";
-      LOGD << path;
+      LOGD << path.c_str();
       LOGD << "-------------------";
 
       header.id = "RIFF";

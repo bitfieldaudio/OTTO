@@ -14,7 +14,6 @@ namespace top1 {
   TEST_CASE("Bytefile", "[util]") {
 
     Path somePath = test::dir / "test1.bytes";
-    fs::remove(somePath);
 
     ByteFile f;
 

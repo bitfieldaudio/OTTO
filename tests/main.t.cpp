@@ -11,9 +11,11 @@ int main( int argc, char* argv[] )
   static plog::ConsoleAppender<plog::TxtFormatter> consoleAppender;
   plog::init(plog::debug, (test::dir / "test-log.txt").c_str()).addAppender(&consoleAppender);
 
-  if (!fs::is_directory(test::dir)) {
-    fs::create_directories(test::dir);
+  if (fs::exists(test::dir)) {
+    fs::remove_all(test::dir);
   }
+
+  fs::create_directories(test::dir);
 
   int result = Catch::Session().run( argc, argv );
 

@@ -38,6 +38,7 @@ target_link_libraries(tests libtop-1)
 
 target_link_libraries(libtop-1 pthread)
 target_link_libraries(libtop-1 dl)
+target_link_libraries(libtop-1 stdc++fs)
 
 include_directories("src")
 include_directories(SYSTEM "include")

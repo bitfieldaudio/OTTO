@@ -9,7 +9,6 @@ namespace top1 {
 
   TEST_CASE("Persistance of SndFile header information", "[SoundFile] [util]") {
     SoundFile file;
-    fs::remove(somePath);
     REQUIRE_NOTHROW(file.open(somePath));
 
     REQUIRE(file.position() == 0);
@@ -24,7 +23,6 @@ namespace top1 {
 
   TEST_CASE("Persistance of sound data", "[SoundFile] [util]") {
     SoundFile file;
-    fs::remove(somePath);
     REQUIRE_NOTHROW(file.open(somePath));
 
     std::vector<Sample> audio;

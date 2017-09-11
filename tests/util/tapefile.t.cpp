@@ -11,7 +11,7 @@ namespace top1 {
   TapeFile f {};
 
   TEST_CASE("Slices", "[TapeFile] [util]") {
-    std::string somePath = "testdata/test1.tape";
+    fs::path somePath = test::dir / "test1.tape";
 
     f.open(somePath);
 

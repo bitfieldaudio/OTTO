@@ -13,7 +13,7 @@ namespace fs = filesystem;
 
 namespace test {
 
-  fs::path dir;
+  inline fs::path dir = fs::current_path() / "testdir";
 
   inline void truncateFile(const filesystem::path& p) {
     std::fstream fstream;
