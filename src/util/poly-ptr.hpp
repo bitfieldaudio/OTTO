@@ -319,7 +319,7 @@ namespace top1 {
 
   template<typename Base, typename... Ts>
   using poly_ptr = basic_poly_ptr<Base*, Base, Ts...>;
-
+  
   template<typename Base, typename... Ts>
   using unique_poly_ptr = basic_poly_ptr<
     detail::unique_poly_storage<Base>, Base, Ts...>;

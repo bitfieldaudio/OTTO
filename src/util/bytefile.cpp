@@ -83,6 +83,9 @@ namespace top1 {
 
   ByteFile::Position ByteFile::seek(Position p, std::ios::seekdir d) {
     if (!is_open()) throw Error(Error::Type::FileNotOpen, "ByteFile::seek(p, d)");
+    if (p < 0 && d == std::ios::beg) {
+      p = 0;
+    }
     fstream.seekg(p, d);
     fstream.seekp(p, d);
     return p;
@@ -90,6 +93,7 @@ namespace top1 {
 
   ByteFile::Position ByteFile::position() {
     if (!is_open()) throw Error(Error::Type::FileNotOpen, "ByteFile::position()");
+    LOGD << fstream.tellg();
     auto r = fstream.seekp(fstream.tellg()).tellp();
     if (fstream.eof()) {
       fstream.clear();
@@ -98,7 +102,7 @@ namespace top1 {
     if (!fstream.good()) {
       fstream.clear();
       throw Error(Error::Type::ExceptionThrown,
-        fmt::format("ByteFile::position() = {}", r));
+        std::strerror(errno));
     }
     if (r < 0) {
       LOGE << "got negative position from file";

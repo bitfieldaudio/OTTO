@@ -7,7 +7,6 @@
 #include "util/type_traits.hpp"
 
 namespace top1 {
-  /** cldoc:begin-category(algorithms) */
 
   /// Joins a sequence of strings, separating them using `js`
   template<class StrIterator> // Models InputIterator<std::string>
@@ -103,5 +102,4 @@ namespace top1 {
     }
   }
 
-  /** cldoc:end-category() */
 }

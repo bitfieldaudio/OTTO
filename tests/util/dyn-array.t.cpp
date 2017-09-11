@@ -15,7 +15,7 @@ SCENARIO("DynArrays can be resized", "[DynArray]") {
 
     WHEN("It is resized to a greater number") {
 
-      int newSize = test::rand(10, 30);
+      int newSize = Random::get(10, 30);
       CAPTURE(newSize);
       a.resize(newSize);
 
@@ -32,7 +32,7 @@ SCENARIO("DynArrays can be resized", "[DynArray]") {
 
     WHEN("It is resized to a smaller number") {
 
-      int newSize = test::rand(1, 10);
+      int newSize = Random::get(1, 10);
       CAPTURE(newSize);
       a.resize(newSize);
 
@@ -59,7 +59,7 @@ SCENARIO("DynArrays can be resized", "[DynArray]") {
 
 SCENARIO("DynArrays can be random-accessed", "[DynArray]") {
   GIVEN("A DynArray of floats with a size greater than 0") {
-    const int size = test::rand(10, 30);
+    const int size = Random::get(10, 30);
     top1::DynArray<float> a(size);
     CAPTURE(size);
 
@@ -78,9 +78,9 @@ SCENARIO("DynArrays can be random-accessed", "[DynArray]") {
 
     WHEN("An element is changed using the [] operator") {
 
-      const int index = test::rand(0, size);
+      const int index = Random::get(0, size);
       CAPTURE(index);
-      const float newValue = test::rand(0.0, std::numeric_limits<float>::max());
+      const float newValue = Random::get<float>(0.0, std::numeric_limits<float>::max());
       CAPTURE(newValue);
 
       a[index] = newValue;
@@ -95,14 +95,14 @@ SCENARIO("DynArrays can be random-accessed", "[DynArray]") {
 SCENARIO("DynArrays can be cleared", "DynArray") {
 
   GIVEN("A DynArray of floats with a size greater than 0") {
-    const int size = test::rand(10, 30);
+    const int size = Random::get(10, 30);
     top1::DynArray<float> a(size);
     CAPTURE(size);
 
     WHEN("All values are initialized with random values") {
       for (int i = 0; i < size; i++) {
-        a[i] = test::rand(
-          std::numeric_limits<float>::min(), std::numeric_limits<float>::max());
+        a[i] = Random::get(std::numeric_limits<float>::min(),
+          std::numeric_limits<float>::max());
       }
     }
 

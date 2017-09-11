@@ -4,21 +4,14 @@
 
 #include <plog/Log.h>
 #include <fmt/format.h>
-#include <cstdlib>
+#include <random.hpp>
 #include <fstream>
 
 #include <filesystem/path.h>
 
+using Random = effolkronium::random_static;
+
 namespace test {
-
-  // good for basic randomness
-  inline int rand(int min, int max) {
-    return std::rand() % (max - min + 1) + min;
-  }
-
-  inline double fRand(double min, double max) {
-    return (std::rand() / double(RAND_MAX)) * (max - min) + min;
-  }
 
   inline void truncateFile(const filesystem::path& p) {
     std::fstream fstream;

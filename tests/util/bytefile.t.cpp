@@ -62,7 +62,7 @@ namespace top1 {
 
       std::array<std::byte, someSize> readBytes;
       REQUIRE_NOTHROW(f.open(somePath));
-      REQUIRE_NOTHROW(f.read_bytes(readBytes.begin(), readBytes.end()));
+      REQUIRE(f.read_bytes(readBytes.begin(), readBytes.end()).is_ok());
 
       REQUIRE_NOTHROW(f.position() == someSize);
       REQUIRE_NOTHROW(f.size() == someSize);
@@ -70,7 +70,7 @@ namespace top1 {
       // Compare arrays
       REQUIRE(std::equal(readBytes.begin(), readBytes.end(), bytes.begin()));
 
-      REQUIRE_THROWS_AS(f.read_bytes(readBytes.begin(), 10), Error);
+      REQUIRE(f.read_bytes(readBytes.begin(), 10).is_err());
     }
 
     SECTION("Chunks") {
@@ -91,8 +91,8 @@ namespace top1 {
         }
 
         void read_fields(ByteFile& file) override {
-          file.read_bytes(field1);
-          file.read_bytes(field2);
+          REQUIRE(file.read_bytes(field1).is_ok());
+          REQUIRE(file.read_bytes(field2).is_ok());
         }
       };
 
@@ -109,8 +109,8 @@ namespace top1 {
         }
 
         void read_fields(ByteFile& file) override {
-          file.read_bytes(field1);
-          file.read_bytes(std::back_inserter(dynField), size.as_u() - 4);
+          file.read_bytes(field1).unwrap_ok();
+          file.read_bytes(std::back_inserter(dynField), size.as_u() - 4).unwrap_ok();
         }
       };
 
@@ -127,7 +127,7 @@ namespace top1 {
       soc.field1.as_u() = 0x852B2C3;
       std::generate_n(std::back_inserter(soc.dynField), someLength,
         [&] () {
-          return std::byte(std::rand());
+          return std::byte(Random::get<unsigned char>());
         });
 
       sc.write(f);

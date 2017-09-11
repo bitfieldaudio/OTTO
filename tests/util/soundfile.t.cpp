@@ -30,7 +30,7 @@ namespace top1 {
     std::vector<Sample> audio;
 
     std::generate_n(std::back_inserter(audio), 2048,
-      []{return test::fRand(-1.0, 1.0);});
+      []{return Random::get<float>(-1.0, 1.0);});
 
     REQUIRE_NOTHROW(file.write_samples(audio.begin(), audio.end()));
 

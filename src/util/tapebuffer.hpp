@@ -106,22 +106,52 @@ namespace top1 {
   public:
 
     struct RingBuffer {
-      const static uint Size = 262144; // 2^18
-      DynArray<AudioFrame> data = DynArray<AudioFrame>(Size);
+      const static uint Size = 1U << 18; // must be power of two
+      const static uint mask = Size - 1;
+      struct iterator {
+        AudioFrame* data;
+        uint index;
+
+        bool operator==(const iterator& r) {
+          return data == r.data && index == r.index;
+        }
+        bool operator!=(const iterator& r) {
+          return data != r.data || index != r.index;
+        }
+        iterator& operator++() {
+          index = (index + 1) & mask;
+          return *this;
+        }
+        iterator& operator--() {
+          index = (index - 1) & mask;
+          return *this;
+        }
+        iterator operator+(int i) {
+          return {data, (index + i) & mask};
+        }
+        iterator operator-(int i) {
+          return {data, (index - i) & mask};
+        }
+        int operator-(const iterator& r) {
+          return r.index - index;
+        }
+        AudioFrame& operator*() {
+          return data[index];
+        }
+      };
+
+      std::array<AudioFrame, Size> data;
       audio::Section<int> notWritten;
-      std::atomic_int lengthFW = {0};
-      std::atomic_int lengthBW = {0};
-      std::atomic_uint playIdx = {0};
-      std::atomic_uint posAt0 = {0};
+      std::atomic_int lengthFW {0};
+      std::atomic_int lengthBW {0};
+      std::atomic_uint playIdx {0};
+      std::atomic_uint posAt0  {0};
 
-      AudioFrame& operator[](int i) {
-        return data[wrapIdx(i)];
-      }
+      AudioFrame& operator[](int i) {return data[wrapIdx(i)];}
+      uint wrapIdx(int index) {return index & mask;}
 
-      uint wrapIdx(int index) {
-        return ((index %= Size) < 0) ? Size + index : index;
-      }
-
+      iterator begin() { return {data.data(), 0}; }
+      iterator end() { return {data.data(), Size - 1}; }
     } buffer;
 
     TapeSliceSet trackSlices[4] = {{}, {}, {}, {}};
@@ -179,7 +209,7 @@ namespace top1 {
 
     /**
      * Jumps to another position in the tape
-     * @param tapePos position to jump to
+     * @tapePos position to jump to
      */
     void goTo(TapeTime tapePos);
 
@@ -192,5 +222,16 @@ namespace top1 {
 
     std::string timeStr();
 
+  };
+}
+
+namespace std {
+
+  template<>
+  struct iterator_traits<top1::TapeBuffer::RingBuffer::iterator> {
+    using difference_type = int;
+    using value_type = top1::TapeBuffer::AudioFrame;
+    using pointer = top1::TapeBuffer::AudioFrame*;
+    using reference = top1::TapeBuffer::AudioFrame&;
   };
 }

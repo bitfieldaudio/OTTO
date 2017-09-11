@@ -7,8 +7,8 @@
 
 namespace top1 {
 
-  class SoundFile : protected ByteFile {
-  public:
+  class SoundFile : public ByteFile {
+    public:
     using Position = int;
     using Sample = float;
     using Chunk = ByteFile::Chunk;
@@ -64,7 +64,20 @@ namespace top1 {
 
     protected:
 
-    friend struct Header; 
+    /// When extending <SoundFile>, override this function.
+    ///
+    /// It should push back any custom metadata chunks to `v`
+    virtual void add_custom_chunks(std::vector<std::unique_ptr<Chunk>>& v) {}
+
+    /// When extending <SoundFile>, override this function.
+    ///
+    /// It should check the id of `ptr`, and if it matches,
+    /// swap it with an instance of the correct class.
+    /// If the chunk is unknown, leave it alone. After this,
+    /// <Chunk::read> will be invoked on `ptr`.
+    virtual void replace_custom_chunk(std::unique_ptr<Chunk>& ptr) {}
+
+    friend struct Header;
     friend struct WAVE_fmt;
     friend struct WAVE_data;
 
@@ -87,29 +100,45 @@ namespace top1 {
    */
 
   template<typename OutIter, typename>
-  void SoundFile::read_samples(OutIter f, OutIter l) {
+    void SoundFile::read_samples(OutIter f, OutIter l) {
     if constexpr (std::is_pointer_v<OutIter>) {
-      ByteFile::read_bytes(reinterpret_cast<std::byte*>(f),
-                           reinterpret_cast<std::byte*>(l));
-    } else {
+        auto r = ByteFile::read_bytes(reinterpret_cast<std::byte*>(f),
+          reinterpret_cast<std::byte*>(l));
+        r.if_err([&] (auto&& e) {
+            std::generate(e, l, [] { return 0; });
+          });
+      } else {
       bytes<sample_size> buf;
-      std::for_each(f, l, [&] (Sample& s) {
-          ByteFile::read_bytes(buf);
-          s = bytes_to_sample(buf);
-        });
+      uint i = 0;
+      for (auto iter = f; iter != l; iter++, i++) {
+        if (ByteFile::read_bytes(buf).is_err()) {
+          std::generate(iter, l, [] { return 0; });
+          break;
+        }
+        *iter = bytes_to_sample(buf);
+      }
     }
   }
 
   template<typename OutIter, typename>
-  void SoundFile::read_samples(OutIter&& i, int n) {
+    void SoundFile::read_samples(OutIter&& iter, int n) {
     if constexpr (std::is_pointer_v<OutIter>) {
-      ByteFile::read_bytes(reinterpret_cast<std::byte*>(i), n);
-    } else {
+        ByteFile::read_bytes(reinterpret_cast<std::byte*>(iter),
+          n * sample_size).if_err(
+            [&] (auto&& e) {
+              std::generate_n(iter + e, n - e, [] { return 0; });
+            });
+      } else {
       bytes<sample_size> buf;
-      std::generate_n(std::forward<OutIter>(i), n, [&] () {
-          ByteFile::read_bytes(buf);
-          return bytes_to_sample(buf);
-        });
+      uint i = 0;
+      for (auto cur = iter; i < n; iter++, i++) {
+        auto r = ByteFile::read_bytes(buf);
+        if (r.is_err()) {
+          std::generate_n(cur, n - r.unwrap_err(), [] { return 0; });
+          break;
+        }
+        *cur = bytes_to_sample(buf);
+      }
     }
   }
 
