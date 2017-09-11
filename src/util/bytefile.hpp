@@ -19,7 +19,7 @@ namespace top1 {
 
     bytes() = default;
 
-    bytes(bytes& o) {
+    bytes(const bytes& o) {
       std::copy(o.begin(), o.end(), data);
     }
 
@@ -138,7 +138,7 @@ namespace top1 {
       Position offset;
 
       Chunk(bytes<4> id = {0,0,0,0}) : id (id) {}
-      Chunk(Chunk& o) : id (o.id), size (o.size), offset (o.offset) {}
+      Chunk(const Chunk& o) : id (o.id), size (o.size), offset (o.offset) {}
       virtual ~Chunk() = default;
 
       void seek_to(ByteFile& file) {

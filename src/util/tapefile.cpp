@@ -8,7 +8,7 @@ namespace top1 {
   struct TRCKChunk : Chunk {
     uint16_t index = 0;
     TRCKChunk(uint16_t idx) : Chunk("TRCK"), index (idx) {}
-    TRCKChunk(Chunk& c) : Chunk(c) {}
+    TRCKChunk(const Chunk& c) : Chunk(c) {}
 
     void write_fields(ByteFile& f) override {
       auto& tf = dynamic_cast<TapeFile&>(f);
@@ -31,7 +31,7 @@ namespace top1 {
   };
 
   struct TAPEChunk : Chunk {
-    TAPEChunk(Chunk& c) : Chunk(c) {}
+    TAPEChunk(const Chunk& c) : Chunk(c) {}
     TAPEChunk() : Chunk("TAPE") {}
     bytes<4> version = {1,0,0,0};
 
