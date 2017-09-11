@@ -6,7 +6,7 @@
 #include <iterator>
 #include <utility>
 #include <fstream>
-#include <filesystem/path.h>
+#include <filesystem.hpp>
 
 #include "util/result.hpp"
 #include "util/type_traits.hpp"

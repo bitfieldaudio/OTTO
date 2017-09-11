@@ -81,16 +81,17 @@ namespace top1 {
      */
 
     /// Construct an iterator, pointing to `ptr`
-    float_step_iterator(ptr_type ptr, float step = 1.f) :
-      ptr {ptr}, step {step}
+    float_step_iterator(ptr_type ptr, float step = 1.f,
+      Dereference d = Dereference {}) :
+      ptr {ptr}, step {step}, dereference {d}
     {}
 
-    /// Copy constructor
-    float_step_iterator(self_type& r) :
-      ptr {r.ptr},
-      step {r.step},
-      _error {r._error},
-      dereference {r.dereference}
+      /// Copy constructor
+      float_step_iterator(self_type& r) :
+        ptr {r.ptr},
+        step {r.step},
+        _error {r._error},
+        dereference {r.dereference}
     {}
 
     /// Move constructor

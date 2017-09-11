@@ -4,12 +4,12 @@
 
 namespace top1 {
 
-  filesystem::path somePath = "testdata/test1.wav";
+  fs::path somePath = test::dir / "test1.wav";
   using Sample = SoundFile::Sample;
 
   TEST_CASE("Persistance of SndFile header information", "[SoundFile] [util]") {
     SoundFile file;
-    somePath.remove_file();
+    fs::remove(somePath);
     REQUIRE_NOTHROW(file.open(somePath));
 
     REQUIRE(file.position() == 0);
@@ -24,7 +24,7 @@ namespace top1 {
 
   TEST_CASE("Persistance of sound data", "[SoundFile] [util]") {
     SoundFile file;
-    somePath.remove_file();
+    fs::remove(somePath);
     REQUIRE_NOTHROW(file.open(somePath));
 
     std::vector<Sample> audio;

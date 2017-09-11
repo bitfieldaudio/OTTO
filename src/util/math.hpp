@@ -21,6 +21,11 @@ namespace top1::math {
     return result >= 0 ? result : result + b;
   }
 
+  /// Compile time log2
+  constexpr size_t log2(size_t n)
+  {
+    return ( (n<2) ? 1 : 1+log2(n/2));
+  }
 
   struct vec {
     const float x, y;

@@ -40,7 +40,7 @@ namespace top1 {
       throw "File already open";
     }
     path = p;
-    fstream.open(p.str(), std::ios::in | std::ios::out | std::ios::binary);
+    fstream.open(p, std::ios::in | std::ios::out | std::ios::binary);
     if (!fstream) {
       // File didnt exist, create it
       create_file();
@@ -64,9 +64,9 @@ namespace top1 {
 
   void ByteFile::create_file() {
     close();
-    fstream.open(path.str(), std::ios::trunc | std::ios::out | std::ios::binary);
+    fstream.open(path, std::ios::trunc | std::ios::out | std::ios::binary);
     fstream.close();
-    fstream.open(path.str(), std::ios::in | std::ios::out | std::ios::binary);
+    fstream.open(path, std::ios::in | std::ios::out | std::ios::binary);
     write_file();
   }
 
