@@ -34,7 +34,7 @@ namespace top1 {
     ///
     /// Holds an instance of the `result` it was thrown from
     struct result_except {
-      result result;
+      result res;
     };
 
     template<typename = std::enable_if_t<std::is_default_constructible_v<Ok>>>
