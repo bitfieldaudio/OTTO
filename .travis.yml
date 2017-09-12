@@ -3,6 +3,10 @@ dist: trusty
 sudo: required
 
 install:
+- sudo apt remove cmake
+- wget https://cmake.org/files/v3.9/cmake-3.9.2-Linux-x86_64.sh
+- chmod +x cmake-3.9.2-Linux-x86_64.sh
+- ./cmake-3.9.2-Linux-x86_64.sh --prefix=/usr/local --exclude-subdir
 - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 90
 - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 90
 
@@ -11,7 +15,6 @@ addons:
     sources:
     - ubuntu-toolchain-r-test
     packages:
-    - cmake
     - g++-7
     - libjack-jackd2-dev
     - libgles2-mesa-dev
