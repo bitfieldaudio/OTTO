@@ -10,3 +10,4 @@ set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 include(external/external.cmake)
 
 add_subdirectory(src)
+add_subdirectory(test)

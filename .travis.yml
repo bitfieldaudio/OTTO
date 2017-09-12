@@ -34,7 +34,7 @@ compiler: gcc
 script:
 - cmake . -DCMAKE_BUILD_TYPE=Release
 - make all
-- bin/tests
+- bin/test
 
 # For pushing documentation
 env:
