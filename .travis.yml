@@ -14,10 +14,16 @@ addons:
   apt:
     sources:
     - ubuntu-toolchain-r-test
+    - kubuntu-backports
     packages:
     - g++-7
     - libjack-jackd2-dev
     - libgles2-mesa-dev
+    # For GLFW
+    - libxrandr-dev
+    - libxinerama-dev
+    - libxcursor-dev
+    - libxi-dev
 
 cache:
   directories:
