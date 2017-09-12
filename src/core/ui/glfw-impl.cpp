@@ -143,8 +143,8 @@ namespace top1::ui {
       return;
     }
 
-    // glfwSetWindowAspectRatio(window, 4, 3);
-    // glfwSetWindowSizeLimits(window, 320, 240, GLFW_DONT_CARE, GLFW_DONT_CARE);
+    glfwSetWindowAspectRatio(window, 4, 3);
+    glfwSetWindowSizeLimits(window, 320, 240, GLFW_DONT_CARE, GLFW_DONT_CARE);
 
     glfwSetKeyCallback(window, key);
 

@@ -19,7 +19,7 @@ namespace top1::timer {
     return Approx(time).margin(calcMargin());
   }
 
-  TEST_CASE("Timers", "[timer]"){
+  TEST_CASE("Timers", "[timer]") {
 
     TimerDispatcher dispatcher;
 

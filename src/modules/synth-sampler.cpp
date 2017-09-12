@@ -23,6 +23,14 @@ namespace top1::modules {
 
   }
 
+  fs::path SynthSampler::samplePath(std::string name) {
+    auto wav_path = Globals::data_dir / "samples" / "synth" / (name + ".wav");
+    if (!fs::exists(wav_path)) {
+      return Globals::data_dir / "samples" / "synth" / (name + ".aiff");
+    }
+    return wav_path;
+  }
+
   void SynthSampler::process(const audio::ProcessData& data) {
     for (auto &&nEvent : data.midi) {
       nEvent.match([&] (midi::NoteOnEvent& e) {

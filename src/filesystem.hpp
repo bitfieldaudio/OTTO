@@ -1,3 +1,4 @@
+// Use the c++17 filesystem, with the TS as fallback
 #if __has_include(<filesystem>)
 
 #include <filesystem>
@@ -13,3 +14,7 @@ namespace filesystem = std::experimental::filesystem;
 #error "stdlib has no filesystem implementation"
 
 #endif
+
+namespace top1 {
+  namespace fs = filesystem;
+}

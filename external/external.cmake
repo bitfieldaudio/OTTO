@@ -36,7 +36,8 @@ execute_process(COMMAND git submodule update --init -- external/GSL
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/GSL)
 
 # GLFW
-message("GLFW3 not found on system, cloning")
+set(GLFW_BUILD_EXAMPLES OFF)
+set(GLFW_BUILD_TESTS OFF)
 execute_process(COMMAND git submodule update --init -- external/glfw
 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/glfw)
