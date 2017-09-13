@@ -2,29 +2,10 @@
 
 #include <iterator>
 #include <cmath>
-#include <functional>
+#include <iterator>
 #include <type_traits>
 
 namespace top1 {
-
-  namespace detail {
-
-    /// A function object used to call `operator*()`
-    struct dereference {
-
-      /// @return `*iter`
-      template<typename Iter>
-      decltype(auto) operator()(Iter&& iter) const {
-        return *iter;
-      }
-
-      /// @return `*iter`
-      template<typename Iter>
-      decltype(auto) operator()(const Iter&& iter) const {
-        return *iter;
-      }
-    };
-  }
 
   /// An iterator wrapper to iterate with a non-integer ratio
   ///
@@ -50,16 +31,10 @@ namespace top1 {
   /// but should not be used as such. It does however model a
   /// Bidirectional iterator.
   ///
-  /// @I Not required to be an iterator. It may be any
-  ///    incrementable type, such as an integer. If it is an iterator
-  ///    however, it is required to be random access.
-  ///
-  /// @Dereference The type of the function object used to
-  ///    "dereference" the iterator. By default it is a wrapper around
-  ///    `operator*()`, and can therefore be left untouched for
-  ///    wrapping iterators or pointers.
-  template<typename I, typename Dereference = detail::dereference,
-    typename = std::enable_if_t<std::is_invocable_v<Dereference, I>>>
+  /// @I A random access iterator that will be wrapped.
+  /// @V The value type.
+  template<typename I,
+    typename V = typename std::iterator_traits<I>::value_type>
   class float_step_iterator {
 
     /*
@@ -71,7 +46,7 @@ namespace top1 {
 
     // for `std::iterator_traits`
     using difference_type = float;
-    using value_type = std::invoke_result_t<Dereference, I>;
+    using value_type = V;
     using pointer = value_type*;
     using reference = value_type&;
     using iterator_category = std::bidirectional_iterator_tag;
@@ -81,25 +56,22 @@ namespace top1 {
      */
 
     /// Construct an iterator, pointing to `ptr`
-    float_step_iterator(ptr_type ptr, float step = 1.f,
-      Dereference d = Dereference {}) :
-      ptr {ptr}, step {step}, dereference {d}
+    float_step_iterator(ptr_type ptr, float step = 1.f)
+      : ptr {ptr}, step {step}
     {}
 
-      /// Copy constructor
-      float_step_iterator(self_type& r) :
-        ptr {r.ptr},
+    /// Copy constructor
+    float_step_iterator(self_type& r)
+      : ptr {r.ptr},
         step {r.step},
-        _error {r._error},
-        dereference {r.dereference}
+        _error {r._error}
     {}
 
     /// Move constructor
-    float_step_iterator(self_type&& r) :
-      ptr {std::move(r.ptr)},
-      step {std::move(r.step)},
-      _error {std::move(r._error)},
-      dereference {std::move(r.dereference)}
+    float_step_iterator(self_type&& r)
+      : ptr {std::move(r.ptr)},
+        step {std::move(r.step)},
+        _error {std::move(r._error)}
     {}
 
     // Default assignment operator
@@ -114,17 +86,18 @@ namespace top1 {
 
     /// Dereference the iterator
     ///
-    /// Invokes the function object <dereference> on the underlying
-    /// pointer.
+    /// Propagates to the dereference operator of <ptr>
     value_type& operator*()
     {
-      return std::invoke(dereference, ptr);
+      return *ptr;
     }
 
     /// Dereference the iterator
+    ///
+    /// Propagates to the dereference operator of <ptr>
     const value_type& operator*() const
     {
-      return std::invoke(dereference, ptr);
+      return *ptr;
     }
 
     /// Compare equal
@@ -190,7 +163,7 @@ namespace top1 {
     self_type operator++()
     {
       self_type old = *this;
-      *this += 1;
+      ++*this;
       return old;
     }
 
@@ -217,7 +190,7 @@ namespace top1 {
     self_type operator--()
     {
       self_type old = *this;
-      *this -= 1;
+      --*this;
       return old;
     }
 
@@ -242,7 +215,7 @@ namespace top1 {
     self_type operator+(int n) const
     {
       self_type ret {*this};
-      return std::move(ret += n);
+      return ret += n;
     }
 
     /// Get a copy of this, decremented by `n`
@@ -253,7 +226,7 @@ namespace top1 {
     self_type operator-(int n) const
     {
       self_type ret {*this};
-      return std::move(ret -= n);
+      return ret -= n;
     }
 
     /// Get the real difference between this and `o`
@@ -333,9 +306,265 @@ namespace top1 {
     ///
     /// For public, read only access, use <data>
     ptr_type ptr;
+  };
 
-    /// Instance of the function object used to dereference <ptr>
-    Dereference dereference {};
+  namespace detail {
+
+    // Difference type
+
+    template<typename Impl, typename T = typename Impl::difference_type>
+    struct difference_type {using type = T;};
+
+    template<typename Impl>
+    struct difference_type<Impl,
+    typename std::iterator_traits<Impl>::difference_type> {
+      using type = typename std::iterator_traits<Impl>::difference_type;
+    };
+
+    template<typename Impl>
+    struct difference_type<Impl, std::ptrdiff_t> {using type = std::ptrdiff_t;};
+
+    // Value type
+
+    template<typename Impl, typename T = typename Impl::value_type>
+    struct value_type {using type = T;};
+
+    template<typename Impl>
+    struct value_type<Impl, typename std::iterator_traits<Impl>::value_type> {
+      using type = typename std::iterator_traits<Impl>::value_type;
+    };
+
+    // Pointer type
+
+    template<typename Impl, typename T = typename Impl::pointer>
+    struct pointer {using type = T;};
+
+    template<typename Impl>
+    struct pointer<Impl, typename std::iterator_traits<Impl>::pointer> {
+      using type = typename std::iterator_traits<Impl>::pointer;
+    };
+
+    template<typename Impl>
+    struct pointer<Impl, value_type<Impl>*> {using type = value_type<Impl>*;};
+
+    // Reference type
+
+    template<typename Impl, typename T = typename Impl::reference>
+    struct reference {using type = T;};
+
+    template<typename Impl>
+    struct reference<Impl, typename std::iterator_traits<Impl>::reference> {
+      using type = typename std::iterator_traits<Impl>::reference;
+    };
+
+    template<typename Impl>
+    struct reference<Impl, value_type<Impl>&> {using type = value_type<Impl>&;};
+
+    // Iterator category
+
+    template<typename Impl, typename T = typename Impl::iterator_category>
+    struct iterator_category {using type = T;};
+
+    template<typename Impl>
+    struct iterator_category<Impl,
+    typename std::iterator_traits<Impl>::iterator_category> {
+      using type = typename std::iterator_traits<Impl>::iterator_category;
+    };
+  }
+
+
+  /*
+   * Iterator Adaptor
+   */
+
+  ///
+  /// Zero overhead wrapper to create iterators
+  ///
+  /// @Impl must define the following member functions:
+  /// ```
+  /// void advance(difference_type);
+  /// reference dereference();
+  /// int compare(const Impl&);
+  /// ```
+  /// Other than those, it must define a copy constructor, and either the member
+  /// types `iterator_category` and `value_type`, or a specialization of
+  /// `std::iterator_traits`. Any other of the five `iterator_traits` types will
+  /// also be read used from `Impl` if avaliable
+  ///
+  template<typename Impl>
+  class iterator_adaptor : public Impl {
+
+    // For std::type_traits
+    using difference_type = typename detail::difference_type<Impl>::type;
+    using value_type = typename detail::value_type<Impl>::value_type;
+    using pointer = typename detail::pointer<Impl>::type;
+    using reference = typename detail::reference<Impl>::type;
+    using iterator_category = typename detail::iterator_category<Impl>::type;
+
+    /* Helper constants */
+    static constexpr bool is_input =
+      std::is_base_of_v<std::input_iterator_tag, iterator_category>;
+
+    static constexpr bool is_output =
+      std::is_base_of_v<std::output_iterator_tag, iterator_category>;
+
+    static constexpr bool is_forward =
+      std::is_base_of_v<std::forward_iterator_tag, iterator_category>;
+
+    static constexpr bool is_bidirectional =
+      std::is_base_of_v<std::bidirectional_iterator_tag, iterator_category>;
+
+    static constexpr bool is_random_access =
+      std::is_base_of_v<std::random_access_iterator_tag, iterator_category>;
+
+    /* Initialization */
+
+    template<typename... Args>
+    iterator_adaptor(Args&&... args)
+      : Impl {std::forward<Args>(args)...} {}
+
+    using Impl::operator=;
+
+    /* Operators */
+
+    // Increment (Any)
+
+    iterator_adaptor& operator++()
+    {
+      auto old = *this;
+      Impl::advance(1);
+      return old;
+    }
+
+    iterator_adaptor& operator++(int)
+    {
+      Impl::advance(1);
+      return *this;
+    }
+
+    // Dereference (Any)
+    decltype(auto) operator*()
+    {
+      return Impl::dereference();
+    }
+
+    decltype(auto) operator*() const
+    {
+      return Impl::dereference();
+    }
+
+    decltype(auto) operator->()
+    {
+      return Impl::dereference();
+    }
+
+    decltype(auto) operator->() const
+    {
+      return Impl::dereference();
+    }
+
+    // Comparison (Any)
+    bool operator==(const iterator_adaptor& r)
+    {
+      return Impl::compare(r);
+    }
+
+    bool operator!=(const iterator_adaptor& r)
+    {
+      return !Impl::compare(r);
+    }
+
+    // Decrement (Bidirectional)
+
+    std::enable_if_t<is_bidirectional,
+    iterator_adaptor&> operator--()
+    {
+      auto old = *this;
+      Impl::advance(-1);
+      return old;
+    }
+
+    std::enable_if_t<is_bidirectional,
+    iterator_adaptor&> operator--(int)
+    {
+      Impl::advance(-1);
+      return *this;
+    }
+
+    // Arithmetics (Random access)
+
+    std::enable_if_t<is_random_access,
+    iterator_adaptor> operator+(difference_type d) const
+    {
+      iterator_adaptor res {*this};
+      res.Impl::advance(d);
+      return res;
+    }
+
+    std::enable_if_t<is_random_access,
+    iterator_adaptor> operator-(difference_type d) const
+    {
+      iterator_adaptor res {*this};
+      res.Impl::advance(-d);
+      return res;
+    }
+
+    std::enable_if_t<is_random_access,
+    difference_type> operator-(const iterator_adaptor& d) const
+    {
+      return Impl::distance(d);
+    }
+
+    // Inequality (Random access)
+
+    std::enable_if_t<is_random_access,
+    bool> operator<(const iterator_adaptor& d) const
+    {
+      return Impl::compare(d) < 0;
+    }
+
+    std::enable_if_t<is_random_access,
+    bool> operator>(const iterator_adaptor& d) const
+    {
+      return Impl::compare(d) > 0;
+    }
+
+    std::enable_if_t<is_random_access,
+    bool> operator<=(const iterator_adaptor& d) const
+    {
+      return Impl::compare(d) <= 0;
+    }
+
+    std::enable_if_t<is_random_access,
+    bool> operator>=(const iterator_adaptor& d) const
+    {
+      return Impl::compare(d) >= 0;
+    }
+
+    // Compound assignment (Random access)
+
+    std::enable_if_t<is_random_access,
+    iterator_adaptor&> operator+=(difference_type d)
+    {
+      Impl::advance(d);
+      return *this;
+    }
+
+    std::enable_if_t<is_random_access,
+    iterator_adaptor&> operator-=(difference_type d)
+    {
+      Impl::advance(-d);
+      return *this;
+    }
+
+    // Offset dereference (Random access)
+
+    std::enable_if_t<is_random_access,
+    reference> operator[](difference_type d)
+    {
+      return *(*this + d);
+    }
 
   };
+
 }
