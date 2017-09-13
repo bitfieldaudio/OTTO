@@ -1,11 +1,7 @@
 dist: trusty
 
 install:
-- wget https://cmake.org/files/v3.9/cmake-3.9.2-Linux-x86_64.sh
-- chmod +x cmake-3.9.2-Linux-x86_64.sh
-- mkdir -p cmake
-- ./cmake-3.9.2-Linux-x86_64.sh --prefix=./cmake --exclude-subdir
-- export CMAKE=cmake/bin/cmake
+- source scripts/travis-install-cmake.sh
 - export CC=/usr/bin/gcc-7
 - export CXX=/usr/bin/g++-7
 
