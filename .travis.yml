@@ -27,6 +27,7 @@ addons:
 cache:
   directories:
     - external
+    - cmake
 
 script:
 - $CMAKE . -DCMAKE_BUILD_TYPE=Release
