@@ -54,9 +54,13 @@ namespace top1::modules {
 
     void current(std::size_t cur);
 
-    void registerModule(const std::string& name, M *module);
-
-    void registerModule(const std::string& name, std::unique_ptr<M>&& module);
+    template<typename T, typename... Args>
+    std::enable_if_t<std::is_convertible_v<T*, M*>, void>
+    registerModule(std::string name, Args&&... args) {
+      selectorScreen->items.push_back({name, (int)modules.size()});
+      modules.emplace_back(std::move(name),
+        std::make_unique<T>(std::forward<Args>(args)...));
+    }
 
     tree::Node makeNode() override;
 
@@ -126,12 +130,6 @@ namespace top1::modules {
     } else {
       throw std::out_of_range("Attempt to access module out of range");
     }
-  }
-
-  template<typename M>
-  void ModuleDispatcher<M>::registerModule(const std::string& name, M* module) {
-    selectorScreen->items.push_back({name, (int) modules.size()});
-    modules.emplace_back(name, std::unique_ptr<M>(module));
   }
 
   template<typename M>
