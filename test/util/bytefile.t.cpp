@@ -25,8 +25,8 @@ namespace top1 {
       REQUIRE_NOTHROW(f.close());
 
       REQUIRE(!f.is_open());
-      // REQUIRE(filesystem::exists(somePath));
-      // REQUIRE(filesystem::is_regular_file(somePath));
+      REQUIRE(fs::exists(somePath));
+      REQUIRE(fs::is_regular_file(somePath));
     }
 
     SECTION("seek") {
@@ -74,7 +74,7 @@ namespace top1 {
 
     SECTION("Chunks") {
 
-      Path somePath2 = "testdata/test2.bytes";
+      Path somePath2 = test::dir / "test2.bytes";
       int someLength = 4096;
 
       struct SomeChunk : Chunk {
