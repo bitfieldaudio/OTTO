@@ -7,7 +7,6 @@
 
 #include "util/iterator.hpp"
 #include "util/algorithm.hpp"
-#include "util/local_array.hpp"
 #include "util/math.hpp"
 
 namespace top1 {
@@ -22,7 +21,7 @@ namespace top1 {
 
     /* Constants */
 
-    using value_type = local_array<float, 4>;
+    using value_type = std::array<float, 4>;
     static constexpr std::size_t buffer_size = 1 << 18;
     static constexpr std::size_t max_length = 8 * 60 * 44100;
 

@@ -6,7 +6,6 @@
 #include <cmath>
 
 #include "util/dyn-array.hpp"
-#include "util/local_array.hpp"
 
 namespace top1::audio {
 
@@ -25,7 +24,7 @@ namespace top1::audio {
    * A frame of audio, with nChannels channels
    */
   template<int nChannels = 4, typename SampleType = float>
-  using AudioFrame = local_array<SampleType, nChannels>;
+  using AudioFrame = std::array<SampleType, nChannels>;
 
   /*
    * A simple average, used to get a 1-dimensional graph of audio
