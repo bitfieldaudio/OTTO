@@ -168,10 +168,13 @@ namespace top1::modules {
     }
   }
 
-  // Audio Processing
-  void Tapedeck::preProcess(const audio::ProcessData& data) {
+  /*
+   * Audio Processing
+   */
 
-    {
+  void Tapedeck::process(const audio::ProcessData& data) {
+
+    { // Animate the tape speed
       constexpr int time = 200; // animation time from 0 to 1 in ms
       static int x;
       static float nextSpeedLast = state.nextSpeed;
@@ -205,103 +208,40 @@ namespace top1::modules {
       }
     }
 
-    std::fill(std::begin(trackBuffer), std::end(trackBuffer), AudioFrame{0});
-
-    auto playAudio = [this](uint at, uint nframes) {
-      auto iter = tapeBuffer->citer(state.playSpeed);
-      std::copy_n(iter, nframes, trackBuffer.begin() + at);
-    };
+    std::fill(std::begin(trackBuffer), std::end(trackBuffer), AudioFrame{0,0,0,0});
 
     // Start recording by pressing a key
     if (!state.recording() && state.doStartRec() && state.readyToRec) {
-      for (auto event : data.midi) {
-        if (event.is<midi::NoteOnEvent>()) {
-          state.play(1);
-          break;
-        }
+      if (std::any_of(std::begin(data.midi), std::end(data.midi),
+          [] (auto&& e) {return e.template is<midi::NoteOnEvent>();})) {
+        state.play(1);
       }
     }
+
+    // Function object that reads from tape.
+    auto read = [&] (const AudioFrame& tape, AudioFrame& trkbf) {
+      trkbf = tape;
+    };
+    // Function object that writes to tape.
+    auto write = [&] (AudioFrame& tape, const AudioFrame& trkbf) {
+      tape = trkbf;
+    };
 
     if (state.doPlayAudio()) {
-      TapeTime pos = tapeBuffer->position();
-      if (state.doLoop() && state.looping) {
-        int leftTillOut =
-          state.forPlayDir<int>([&] {return loopSect.out - pos;},
-                                     [&] {return pos - loopSect.in;});
-        if (leftTillOut >= 0 && leftTillOut < (int)data.nframes) {
-          playAudio(0, leftTillOut);
-          state.forPlayDir<void>(
-            [&] {tapeBuffer->jump_to(loopSect.in);},
-            [&] {tapeBuffer->jump_to(loopSect.out);});
-          playAudio(leftTillOut, data.nframes - leftTillOut);
-        } else {
-          playAudio(0, data.nframes);
-        }
+      auto trkbf = std::begin(trackBuffer);
+      if (state.recording()) {
+        auto tape = tapeBuffer->write(state.playSpeed);
+        for (int i = 0; i < data.nframes; ++i, ++trkbf, ++tape) {
+          read(*tape, *trkbf);
+          write(*tape, *trkbf);
+        };
       } else {
-        playAudio(0, data.nframes);
+        auto tape = tapeBuffer->read(state.playSpeed);
+        for (int i = 0; i < data.nframes; ++i, ++trkbf, ++tape) {
+          read(*tape, *trkbf);
+        };
       }
     }
-  }
-
-  void Tapedeck::postProcess(const audio::ProcessData& data) {
-    // TapeTime pos = tapeBuffer.position();
-    // if (!state.recording() && state.recLast) {
-    //   recSect = {0,0};
-    // }
-    // auto recAudio = [&](uint from, uint recFrames) {
-    //   std::vector<AudioFrame> buf;
-    //   state.forPlayDir<void>([&] {
-    //       uint writeSize = recFrames * state.playSpeed;
-    //       for (uint i = 0; i < writeSize; i++) {
-    //         buf.push_back(data.audio.proc[int(from + i / state.playSpeed)]);
-    //       }
-    //       tapeBuffer.writeFW(buf, (data.nframes - from) * state.playSpeed - writeSize,
-    //                          [this](AudioFrame o, AudioFrame n) {
-    //                            return o[state.track.idx] + n[state.track.idx];});
-    //       if (recSect.size() < 1) {
-    //         recSect.in = pos - (data.nframes - from) * state.playSpeed;
-    //       }
-    //       recSect.out = pos - (data.nframes - from) * state.playSpeed + writeSize;
-    //     }, [&] {
-    //       uint writeSize = recFrames * -state.playSpeed;
-    //       for (uint i = 0; i < writeSize; i++) {
-    //         buf.push_back(data.audio.proc[int(from + i / -state.playSpeed)]);
-    //       }
-    //       tapeBuffer.writeBW(buf, (data.nframes - from) * state.playSpeed - writeSize,
-    //                          [this](AudioFrame o, AudioFrame n) {
-    //                            return o[state.track.idx] + n[state.track.idx];});
-    //       if (recSect.size() < 1) {
-    //         recSect.out = pos + (data.nframes - from) * -state.playSpeed;
-    //       }
-    //       recSect.in = pos + (data.nframes - from) * state.playSpeed + writeSize;
-    //     });
-    //   tapeBuffer.trackSlices[state.track.idx].addSlice(recSect);
-    // };
-
-    // if (state.recording()) {
-    //   if (state.doLoop() && state.looping) {
-    //     TapeTime leftTillOut = state.forPlayDir<TapeTime>(
-    //                                                       [&] {return loopSect.out - pos;},
-    //                                                       [&] {return pos - loopSect.in;});
-    //     if (leftTillOut >= 0 && leftTillOut < (int)data.nframes) {
-    //       recAudio(0, leftTillOut);
-    //       state.forPlayDir<void>(
-    //                              [&] {tapeBuffer.goTo(loopSect.in);},
-    //                              [&] {tapeBuffer.goTo(loopSect.out);});
-    //       recSect = {0,0};
-    //       recAudio(leftTillOut, data.nframes - leftTillOut);
-    //     } else {
-    //       recAudio(0, data.nframes);
-    //     }
-    //   } else {
-    //     recAudio(0, data.nframes);
-    //   }
-    // }
-    // state.recLast = state.recording();
-
-    // for (uint i = 0; i < data.nframes; i++) {
-    //   procGraph.add(data.audio.proc[i] * props.gain);
-    // }
   }
 
   /************************************************/

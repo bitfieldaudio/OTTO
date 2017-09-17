@@ -28,26 +28,26 @@ namespace top1 {
     /// Specification for iterator
     ///
     /// Take a look at <iterator_adaptor>
-    struct IteratorImpl {
+    struct WriteIteratorImpl {
       using value_type        = value_type;
       using iterator_category = std::bidirectional_iterator_tag;
 
-      IteratorImpl(tape_buffer& owner)
+      WriteIteratorImpl(tape_buffer& owner)
         : owner (owner)
       {}
 
-      IteratorImpl(const IteratorImpl& o)
+      WriteIteratorImpl(const WriteIteratorImpl& o)
         : owner (o.owner)
       {}
 
 
       void advance(int n)
       {
-        owner.advance(n);
+        owner.advance_write(n);
         value = &owner.cur_value();
       }
 
-      bool compare(const IteratorImpl& r) const
+      bool compare(const WriteIteratorImpl& r) const
       {
         return value == r.value;
       }
@@ -61,27 +61,27 @@ namespace top1 {
     /// Specification for iterator
     ///
     /// Take a look at <iterator_adaptor>
-    struct ConstIteratorImpl {
+    struct ReadIteratorImpl {
       using value_type        = value_type;
       using iterator_category = std::bidirectional_iterator_tag;
       using reference         = value_type;
 
-      ConstIteratorImpl(tape_buffer& owner)
+      ReadIteratorImpl(tape_buffer& owner)
         : owner (owner)
       {}
 
-      ConstIteratorImpl(const IteratorImpl& o)
+      ReadIteratorImpl(const WriteIteratorImpl& o)
         : owner (o.owner)
       {}
 
 
       void advance(int n)
       {
-        owner.advance_const(n);
+        owner.advance_read(n);
         value = &owner.cur_value();
       }
 
-      bool compare(const IteratorImpl& r) const
+      bool compare(const WriteIteratorImpl& r) const
       {
         return value == r.value;
       }
@@ -92,8 +92,8 @@ namespace top1 {
       const value_type* value;
     };
 
-    using iterator = typename top1::float_step_iterator<iterator_adaptor<IteratorImpl>>;
-    using const_iterator = typename top1::float_step_iterator<iterator_adaptor<ConstIteratorImpl>>;
+    using iterator = typename top1::float_step_iterator<iterator_adaptor<WriteIteratorImpl>>;
+    using const_iterator = typename top1::float_step_iterator<iterator_adaptor<ReadIteratorImpl>>;
 
     /* Initialization */
 
@@ -106,13 +106,13 @@ namespace top1 {
     /* Member functions */
 
     /// Get an iterator that moves forward, at speed `speed`
-    iterator iter(float speed = 1.f)
+    iterator write(float speed = 1.f)
     {
       return iterator({*this}, speed);
     }
 
     /// Get an iterator that moves forward, at speed `speed`
-    const_iterator citer(float speed = 1.f)
+    const_iterator read(float speed = 1.f)
     {
       return const_iterator({*this}, speed);
     }
@@ -124,11 +124,11 @@ namespace top1 {
 
     /// Move the point `n` forward. `n` can be negative
     /// Updates `write_head` and `write_tail`
-    void advance(int n = 1);
+    void advance_write(int n = 1);
 
     /// Move the point `n` forward. `n` can be negative
     /// Does not mark section for writing
-    void advance_const(int n = 1);
+    void advance_read(int n = 1);
 
     /// Get a refference to the value at point
     value_type& cur_value();

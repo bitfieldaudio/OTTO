@@ -126,13 +126,13 @@ namespace top1 {
     }
   };
 
-  void tape_buffer::advance(int n)
+  void tape_buffer::advance_write(int n)
   {
     current_position = std::clamp((int) current_position + n, 0, (int) max_length);
     producer->waiting.notify_all();
   }
 
-  void tape_buffer::advance_const(int n)
+  void tape_buffer::advance_read(int n)
   {
     current_position = std::clamp((int) current_position + n, 0, (int) max_length);
     producer->waiting.notify_all();

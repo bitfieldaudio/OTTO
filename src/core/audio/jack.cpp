@@ -249,11 +249,10 @@ namespace top1::audio {
       }
     }
 
-    Globals::tapedeck.preProcess(processData);
     Globals::synth.process(processData);
     Globals::drums.process(processData);
     Globals::effect.process(processData);
-    Globals::tapedeck.postProcess(processData);
+    Globals::tapedeck.process(processData);
     Globals::mixer.process(processData);
     Globals::metronome.process(processData);
 

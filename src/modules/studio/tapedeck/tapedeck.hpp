@@ -90,8 +90,7 @@ namespace top1::modules {
 
     int overruns = 0;
 
-    void preProcess(const audio::ProcessData&);
-    void postProcess(const audio::ProcessData&); 
+    void process(const audio::ProcessData&);
     void display() override;
 
 
