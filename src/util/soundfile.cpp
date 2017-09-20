@@ -132,7 +132,7 @@ namespace top1 {
         replace_custom_chunk(chunk);
 
         // re-read the chunk as the new type
-        chunk->seek_to(*this);
+        ByteFile::seek(chunk->beginning());
         chunk->read(*this);
 
         LOGD << " Chunk:  " << std::string((char*)chunk->id.data, 4);

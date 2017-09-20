@@ -87,25 +87,16 @@ namespace top1 {
       p = 0;
     }
     fstream.seekg(p, d);
-    fstream.seekp(p, d);
     return p;
   }
 
   ByteFile::Position ByteFile::position() {
     if (!is_open()) throw Error(Error::Type::FileNotOpen, "ByteFile::position()");
-    LOGD << fstream.tellg();
-    auto r = fstream.seekp(fstream.tellg()).tellp();
-    if (fstream.eof()) {
-      fstream.clear();
-      throw Error(Error::Type::PastEnd);
-    }
+    auto r = fstream.tellg();
     if (!fstream.good()) {
       fstream.clear();
       throw Error(Error::Type::ExceptionThrown,
         std::strerror(errno));
-    }
-    if (r < 0) {
-      LOGE << "got negative position from file";
     }
     return r;
   }

@@ -9,7 +9,7 @@ namespace fs = std::experimental::filesystem;
 int main( int argc, char* argv[] )
 {
   static plog::ConsoleAppender<plog::TxtFormatter> consoleAppender;
-  plog::init(plog::debug, (test::dir / "test-log.txt").c_str()).addAppender(&consoleAppender);
+  plog::init(plog::info, (test::dir / "test-log.txt").c_str()).addAppender(&consoleAppender);
 
   if (fs::exists(test::dir)) {
     fs::remove_all(test::dir);

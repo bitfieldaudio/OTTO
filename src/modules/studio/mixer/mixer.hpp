@@ -19,7 +19,7 @@ namespace top1::modules {
     struct Props : public Properties {
       struct TrackInfo : public Properties {
         Property<float> level = {this, "LEVEL", 0.5, {0, 1, 0.01}};
-        Property<float> pan = {this, "PAN", 0, {-0.9, 0.9, 0.1}};
+        Property<float> pan = {this, "PAN", 0, {-1, 1, 0.1}};
         Property<bool> muted = {this, "MUTE", false};
         using Properties::Properties;
       };

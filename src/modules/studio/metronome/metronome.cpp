@@ -90,6 +90,18 @@ namespace top1::modules {
     return getBarTime(curBar + bar);
   }
 
+  float Metronome::bar_for_time(std::size_t time) const
+  {
+    float fpb = (Globals::samplerate)*60/(float)props.bpm;
+    return time / fpb;
+  }
+
+  std::size_t Metronome::time_for_bar(float bar) const
+  {
+    float fpb = (Globals::samplerate)*60/(float)props.bpm;
+    return bar * fpb;
+  }
+
   void MetronomeScreen::rotary(ui::RotaryEvent e) {
     switch(e.rotary) {
     case ui::Rotary::Red:

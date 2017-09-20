@@ -553,6 +553,10 @@ namespace top1 {
     {
       float intPart = 0;
       _error = std::modf(_error + step * n, &intPart);
+      if (_error < 0) {
+        intPart -= 1;
+        _error += 1;
+      }
       ptr += std::size_t(intPart);
       return *this;
     }
@@ -564,9 +568,7 @@ namespace top1 {
     /// @return `*this`
     self_type& operator-=(int n)
     {
-      float intPart = 0;
-      _error = std::modf(ptr + _error - step * n, &intPart);
-      ptr += std::size_t(intPart);
+      *this += (-n);
       return *this;
     }
 

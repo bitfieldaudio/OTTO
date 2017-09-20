@@ -38,12 +38,12 @@ namespace top1::audio {
     void add(float sample) {
       ++nsamples;
       sum += std::abs(sample);
-      average = sum/nsamples;
+      average = nsamples == 0 ? 0 : sum/nsamples;
     }
     void clear() {
       sum /= 16.0;
       nsamples /= 16;
-      average = sum/nsamples;
+      average = nsamples == 0 ? 0 : sum/nsamples;
     }
 
     float clip() const {

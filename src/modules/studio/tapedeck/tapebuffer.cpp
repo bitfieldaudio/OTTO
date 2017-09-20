@@ -128,24 +128,30 @@ namespace top1 {
 
   void tape_buffer::advance_write(int n)
   {
-    current_position = std::clamp((int) current_position + n, 0, (int) max_length);
+    write_position = std::clamp((int) write_position + n, 0, (int) max_length);
     producer->waiting.notify_all();
   }
 
   void tape_buffer::advance_read(int n)
   {
-    current_position = std::clamp((int) current_position + n, 0, (int) max_length);
+    read_position = std::clamp((int) read_position + n, 0, (int) max_length);
     producer->waiting.notify_all();
   }
 
-  value_type& tape_buffer::cur_value()
+  value_type& tape_buffer::read_value()
   {
-    return buffer[wrap(current_position)];
+    return buffer[wrap(read_position)];
+  }
+
+  value_type& tape_buffer::write_value()
+  {
+    return buffer[wrap(write_position)];
   }
 
   void tape_buffer::jump_to(std::size_t position)
   {
-    current_position = position;
+    read_position = position;
+    write_position = position;
     producer->waiting.notify_all();
   }
 

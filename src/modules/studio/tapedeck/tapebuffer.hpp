@@ -44,7 +44,7 @@ namespace top1 {
       void advance(int n)
       {
         owner.advance_write(n);
-        value = &owner.cur_value();
+        value = &owner.write_value();
       }
 
       bool compare(const WriteIteratorImpl& r) const
@@ -78,7 +78,7 @@ namespace top1 {
       void advance(int n)
       {
         owner.advance_read(n);
-        value = &owner.cur_value();
+        value = &owner.read_value();
       }
 
       bool compare(const WriteIteratorImpl& r) const
@@ -92,8 +92,8 @@ namespace top1 {
       const value_type* value;
     };
 
-    using iterator = typename top1::float_step_iterator<iterator_adaptor<WriteIteratorImpl>>;
-    using const_iterator = typename top1::float_step_iterator<iterator_adaptor<ReadIteratorImpl>>;
+    using write_iterator = typename top1::float_step_iterator<iterator_adaptor<WriteIteratorImpl>>;
+    using read_iterator = typename top1::float_step_iterator<iterator_adaptor<ReadIteratorImpl>>;
 
     /* Initialization */
 
@@ -106,20 +106,21 @@ namespace top1 {
     /* Member functions */
 
     /// Get an iterator that moves forward, at speed `speed`
-    iterator write(float speed = 1.f)
+    write_iterator write(std::size_t position, float speed = 1.f)
     {
-      return iterator({*this}, speed);
+      write_position = position;
+      return write_iterator({*this}, speed);
     }
 
     /// Get an iterator that moves forward, at speed `speed`
-    const_iterator read(float speed = 1.f)
+    read_iterator read(float speed = 1.f)
     {
-      return const_iterator({*this}, speed);
+      return read_iterator({*this}, speed);
     }
 
     std::size_t position() const
     {
-      return current_position;
+      return read_position;
     }
 
     /// Move the point `n` forward. `n` can be negative
@@ -131,7 +132,8 @@ namespace top1 {
     void advance_read(int n = 1);
 
     /// Get a refference to the value at point
-    value_type& cur_value();
+    value_type& write_value();
+    value_type& read_value();
 
     void jump_to(std::size_t);
 
@@ -144,7 +146,8 @@ namespace top1 {
     /// The current file position
     /// This variable should only be modified by the consumer - to everyone else
     /// it is read only!
-    std::atomic_size_t current_position = 0;
+    std::atomic_size_t read_position = 0;
+    std::atomic_size_t write_position = 0;
 
     // Beginning/end of loaded section. File position, *not* buffer index
     // These variables should only be modified by the producer

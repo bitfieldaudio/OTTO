@@ -24,6 +24,8 @@ namespace top1::modules {
         SPOOLING
       } playType;
 
+      static constexpr float max_speed = 5;
+
       // whether these features are active in this state
       bool doSwitchTracks() const;
       bool doTapeOps() const;
@@ -105,21 +107,6 @@ namespace top1::modules {
     void goToBarRel(int bars);
 
     int timeUntil(std::size_t tt);
-  };
-
-  class TapeScreen : public ui::ModuleScreen<Tapedeck> {
-    bool stopRecOnRelease = true;
-  private:
-    void draw(ui::drawing::Canvas& ctx) override;
-
-    bool keypress(ui::Key key) override;
-    void rotary(ui::RotaryEvent) override;
-
-    bool keyrelease(ui::Key key) override;
-
-    std::string timeStr();
-  public:
-    using ui::ModuleScreen<Tapedeck>::ModuleScreen;
   };
 
 } // top1::module

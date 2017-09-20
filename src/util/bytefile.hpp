@@ -1,8 +1,6 @@
 #pragma once
 
 #include <string>
-// TODO: Replace with c++17 once implementations have it
-// #include <experimental/filesystem>
 #include <iterator>
 #include <utility>
 #include <fstream>
@@ -14,7 +12,7 @@
 namespace top1 {
 
   template<std::size_t len>
-    struct bytes {
+  struct bytes {
     std::byte data[len];
 
     bytes() = default;
@@ -141,12 +139,14 @@ namespace top1 {
       Chunk(const Chunk& o) : id (o.id), size (o.size), offset (o.offset) {}
       virtual ~Chunk() = default;
 
-      void seek_to(ByteFile& file) {
-        file.seek(offset);
+      Position beginning()
+      {
+        return offset;
       }
 
-      void seek_past(ByteFile& file) {
-        file.seek(offset + 8 + size.as_u());
+      Position past_end()
+      {
+        return offset + 8 + size.as_u();
       }
 
       void write(ByteFile& file) {
@@ -160,7 +160,7 @@ namespace top1 {
           size.as_u() = rs;
           file.seek(offset + 4);
           file.write_bytes(size);
-          seek_past(file);
+          file.seek(past_end());
         }
       }
 
@@ -269,7 +269,6 @@ namespace top1 {
         **iter = *ptr;
       }
     }
-    seek(fstream.tellg());
     return res;
   }
 
@@ -288,21 +287,18 @@ namespace top1 {
     }
     if (fstream.eof()) {
       fstream.clear();
-      return {seek(fstream.tellg())};
+      return {fstream.tellg()};
     }
-    seek(fstream.tellg());
     return {};
   }
 
   template<std::size_t N>
   result<void, std::streamsize> ByteFile::read_bytes(bytes<N>& bs) {
     fstream.read((char*)bs, N);
-    seek(fstream.tellg());
     if (fstream.eof()) {
       fstream.clear();
-      return {seek(fstream.tellg())};
+      return {fstream.tellg()};
     }
-    seek(fstream.tellg());
     return {};
   }
 
@@ -315,7 +311,6 @@ namespace top1 {
       } else {
       std::for_each(f, l, [&] (auto& b) {fstream.write((char*)&b, 1);});
     }
-    seek(fstream.tellp());
   }
 
   template<typename InIter, typename>
@@ -329,13 +324,11 @@ namespace top1 {
         fstream.write(&(*iter), 1);
       }
     }
-    seek(fstream.tellp());
   }
 
   template<std::size_t N>
   void ByteFile::write_bytes(const bytes<N>& bs) {
-    fstream.write((char*)bs, N);
-    seek(fstream.tellp());
+    fstream.write((char*)bs.data, N);
   }
 
   template<typename F>
@@ -348,11 +341,11 @@ namespace top1 {
     while (position() < o) {
       Chunk chunk;
       chunk.read(*this);
-      chunk.seek_to(*this);
+      seek(chunk.beginning());
 
       std::invoke(std::forward<F>(f), chunk);
 
-      chunk.seek_past(*this);
+      seek(chunk.past_end());
     }
   }
 }

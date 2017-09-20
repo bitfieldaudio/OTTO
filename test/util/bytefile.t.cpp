@@ -48,28 +48,48 @@ namespace top1 {
 
     SECTION("Write / Read bytes") {
 
-      constexpr std::size_t someSize = 2048;
+      SECTION("Using iterators") {
+        constexpr std::size_t someSize = 2048;
 
-      REQUIRE_NOTHROW(f.open(somePath));
+        REQUIRE_NOTHROW(f.open(somePath));
 
-      std::array<std::byte, someSize> bytes;
+        std::array<std::byte, someSize> bytes;
 
-      REQUIRE_NOTHROW(f.write_bytes(bytes.begin(), bytes.end()));
-      REQUIRE_NOTHROW(f.position() == someSize);
-      REQUIRE_NOTHROW(f.size() == someSize);
-      REQUIRE_NOTHROW(f.close());
+        REQUIRE_NOTHROW(f.write_bytes(bytes.begin(), bytes.end()));
+        REQUIRE(f.position() == someSize);
+        REQUIRE(f.size() == someSize);
+        REQUIRE_NOTHROW(f.close());
 
-      std::array<std::byte, someSize> readBytes;
-      REQUIRE_NOTHROW(f.open(somePath));
-      REQUIRE(f.read_bytes(readBytes.begin(), readBytes.end()).is_ok());
+        std::array<std::byte, someSize> readBytes;
+        REQUIRE_NOTHROW(f.open(somePath));
+        REQUIRE(f.read_bytes(readBytes.begin(), readBytes.end()).is_ok());
 
-      REQUIRE_NOTHROW(f.position() == someSize);
-      REQUIRE_NOTHROW(f.size() == someSize);
+        REQUIRE(f.position() == someSize);
+        REQUIRE(f.size() == someSize);
 
-      // Compare arrays
-      REQUIRE(std::equal(readBytes.begin(), readBytes.end(), bytes.begin()));
+        // Compare arrays
+        REQUIRE(std::equal(readBytes.begin(), readBytes.end(), bytes.begin()));
 
-      REQUIRE(f.read_bytes(readBytes.begin(), 10).is_err());
+        REQUIRE(f.read_bytes(readBytes.begin(), 10).is_err());
+      }
+
+      SECTION("Using top1::bytes") {
+        REQUIRE_NOTHROW(f.open(somePath));
+
+        REQUIRE(f.position() == 0);
+
+        top1::bytes<4> data {1, 2, 3, 4};
+
+        f.write_bytes(data);
+        REQUIRE(f.position() == 4);
+
+        f.seek(0);
+        top1::bytes<4> actual;
+        REQUIRE(f.read_bytes(actual).is_ok());
+        REQUIRE(f.position() == 4);
+
+        REQUIRE(data == actual);
+      }
     }
 
     SECTION("Chunks") {

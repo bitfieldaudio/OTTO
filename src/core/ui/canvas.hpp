@@ -22,13 +22,13 @@ namespace top1::ui::drawing {
   struct Point {
     float x, y;
 
-    Point() : Point(0, 0) {}
-    Point(float x, float y) : x (x), y (y) {}
+    constexpr Point() : Point(0, 0) {}
+    constexpr Point(float x, float y) : x (x), y (y) {}
 
     // cppcheck-suppress noExplicitConstructor
-    Point(math::vec v) : x (v.x), y (v.y) {}
+    constexpr Point(math::vec v) : x (v.x), y (v.y) {}
 
-    Point rotate(float rad) const {
+    constexpr Point rotate(float rad) const {
       float sn = std::sin(rad);
       float cs = std::cos(rad);
       return {
@@ -37,36 +37,36 @@ namespace top1::ui::drawing {
           };
     }
 
-    Point swapXY() const {return {y, x};}
-    Point flipX() const {return {-x, y};}
-    Point flipY() const {return {x, -y};}
+    constexpr Point swapXY() const {return {y, x};}
+    constexpr Point flipX() const {return {-x, y};}
+    constexpr Point flipY() const {return {x, -y};}
 
-    bool operator==(Point rhs) const {return x == rhs.x && y == rhs.y;}
-    bool operator!=(Point rhs) const {return x != rhs.x && y != rhs.y;}
-    Point operator+(Point rhs) const {return {x + rhs.x, y + rhs.y};}
-    Point operator-(Point rhs) const {return {x - rhs.x, y - rhs.y};}
-    Point operator*(float s) const {return {x * s, y * s};}
-    Point operator/(float s) const {return {x / s, y / s};}
-    Point operator-() const {return {-x, -y};}
+    constexpr bool operator==(Point rhs) const {return x == rhs.x && y == rhs.y;}
+    constexpr bool operator!=(Point rhs) const {return x != rhs.x && y != rhs.y;}
+    constexpr Point operator+(Point rhs) const {return {x + rhs.x, y + rhs.y};}
+    constexpr Point operator-(Point rhs) const {return {x - rhs.x, y - rhs.y};}
+    constexpr Point operator*(float s) const {return {x * s, y * s};}
+    constexpr Point operator/(float s) const {return {x / s, y / s};}
+    constexpr Point operator-() const {return {-x, -y};}
 
-    operator math::vec() const {return {x, y};}
+    constexpr operator math::vec() const {return {x, y};}
   };
 
   struct Size {
     float w, h;
 
-    Size() : Size(0, 0) {}
-    Size(float w, float h) : w (w), h (h) {};
+    constexpr Size() : Size(0, 0) {}
+    constexpr Size(float w, float h) : w (w), h (h) {};
 
     // cppcheck-suppress noExplicitConstructor
-    Size(math::vec v) : w (v.x), h (v.y) {};
+    constexpr Size(math::vec v) : w (v.x), h (v.y) {};
 
-    Size swapWH() const {return {h, w};}
+    constexpr Size swapWH() const {return {h, w};}
 
-    Point center() const {
+    constexpr Point center() const {
       return {w / 2.f, h / 2.f};
     }
-    operator math::vec() const {return {w, h};}
+    constexpr operator math::vec() const {return {w, h};}
   };
 
   struct Colour {

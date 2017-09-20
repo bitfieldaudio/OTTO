@@ -15,15 +15,16 @@ namespace top1::ui::drawing {
 
   namespace Colours {
 
-    const Colour Black     = Colour(0x000000);
+    const Colour Black      = Colour(0x000000);
 
-    const MainColour White = {0xFFFFFF, 0x646464};
-    const MainColour Red   = {0xFF2A2A, 0x6E0C0C};
-    const MainColour Green = {0x5ECF3E, 0x0C6E0C};
-    const MainColour Blue  = {0x0A7CFF, 0x0C0C6E};
+    const MainColour White  = {0xFFFFFF, 0x646464};
+    const MainColour Yellow = {0xFAB700, 0x646464};
+    const MainColour Red    = {0xE6332A, 0x6E0C0C};
+    const MainColour Green  = {0x5ECF3E, 0x0C6E0C};
+    const MainColour Blue   = {0x009EE3, 0x0C0C6E};
 
-    const Colour Gray60    = 0x999999;
-    const Colour Gray70    = 0xB2B2B2;
+    const Colour Gray60     = 0x999999;
+    const Colour Gray70     = 0xB2B2B2;
 
   } // Colours
 
