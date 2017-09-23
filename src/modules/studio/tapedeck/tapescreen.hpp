@@ -121,7 +121,12 @@ namespace top1::modules {
 
     std::string timeStr() const
     {
-      double seconds = module->position()/(1.0 * Globals::samplerate);
+      return timeStr(module->position());
+    }
+
+    std::string timeStr(std::size_t position) const
+    {
+      double seconds = position/(1.0 * Globals::samplerate);
       double minutes = seconds / 60.0;
       return fmt::format("{:0>2}:{:0>5.2f}", (int) minutes, fmod(seconds, 60.0));
     }
@@ -136,6 +141,16 @@ namespace top1::modules {
       draw_text(ctx);
       draw_speed_indicator(ctx);
       draw_sliders(ctx);
+
+      ctx.beginPath();
+      ctx.font(Fonts::Light);
+      ctx.font(10);
+      ctx.fillStyle(Colours::Yellow);
+      auto str = fmt::format("[{}, {}]", timeStr(module->tapeBuffer->tail), timeStr(module->tapeBuffer->head));
+      ctx.fillText(str, 10, 20);
+      ctx.fillStyle(Colours::Red);
+      str = fmt::format("[{}, {}]", timeStr(module->tapeBuffer->write_sect.load().in), timeStr(module->tapeBuffer->write_sect.load().out));
+      ctx.fillText(str, 10, 40);
     }
 
     void draw_static_backround(Canvas& ctx)

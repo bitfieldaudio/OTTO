@@ -39,14 +39,9 @@ namespace top1 {
 
 
   template<typename InputIt, typename Size, typename F>
-  constexpr auto for_each_n(InputIt&& first, Size n, F&& f) ->
-    std::enable_if_t<
-      is_iterator_v<InputIt, typename std::iterator_traits<InputIt>::value_type,
-        std::input_iterator_tag>
-      && std::is_invocable_v<F,
-        const typename std::iterator_traits<InputIt>::reference>, InputIt> {
+  constexpr InputIt for_each_n(InputIt&& first, Size n, F&& f) {
     for (Size i = 0; i < n; ++first, (void) ++i) {
-      std::invoke(std::forward<F>(f), *first, i);
+      std::invoke(std::forward<F>(f), *first);
     }
     return first;
   }

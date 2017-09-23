@@ -18,7 +18,12 @@ namespace top1 {
 
     std::array<SliceArray, 4> slices;
 
-    TapeFile() = default;
+    TapeFile()
+    {
+      info.channels = 4;
+    }
+
+    virtual ~TapeFile() = default;
 
   protected:
 

@@ -40,6 +40,8 @@ public:
 
     iterator(pointer ptr) : ptr (ptr) {}
 
+    iterator(const iterator& o) : ptr (o.ptr) {}
+
     iterator operator++() {
       iterator i = *this;
       ptr++;
@@ -66,6 +68,14 @@ public:
     }
     difference_type operator-(const iterator &rhs) const {
       return ptr - rhs.ptr;
+    }
+    iterator& operator+=(size_type rhs) {
+      ptr += rhs;
+      return *this;
+    }
+    iterator& operator-=(size_type rhs) {
+      ptr -= rhs;
+      return *this;
     }
     reference operator*() { return *ptr; }
     pointer operator->() { return ptr; }

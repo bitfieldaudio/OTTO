@@ -2,7 +2,7 @@
 
 #include <iterator>
 #include <cmath>
-#include <iterator>
+#include <functional>
 #include <type_traits>
 
 namespace top1 {
@@ -103,7 +103,7 @@ namespace top1 {
 
     // Increment (Any)
 
-    iterator_adaptor_impl& operator++()
+    iterator_adaptor_impl operator++()
     {
       auto old = *this;
       Impl::advance(1);
@@ -617,5 +617,54 @@ namespace top1 {
     /// For public, read only access, use <data>
     ptr_type ptr;
   };
+
+  ///
+  /// Generating iterator
+  ///
+  template<typename Generator>
+  class GeneratingIterImpl {
+  public:
+    using value_type = std::invoke_result_t<Generator>;
+    using iterator_category = std::input_iterator_tag;
+
+    GeneratingIterImpl(Generator generator)
+      : generator {generator}
+    {}
+
+    void advance(int n)
+    {
+      for (int i = 0; i < n; i++) {
+        val = std::invoke(generator);
+      }
+    }
+
+    value_type& dereference()
+    {
+      return val;
+    }
+
+    bool compare(const value_type& o) const
+    {
+      return o.val == val;
+    }
+
+    value_type val;
+    Generator generator;
+  };
+
+
+  ///
+  /// Generating iterator
+  ///
+  /// Supplied with a generator function, this iterator will generate a value
+  /// each time its called.
+  template<typename Generator>
+  using generating_iterator = iterator_adaptor<GeneratingIterImpl<Generator>>;
+
+  /// Create a generating iterator
+  template<typename Generator>
+  generating_iterator<Generator> generator(Generator&& gen) {
+    return generating_iterator<Generator>(std::forward<Generator>(gen));
+  }
 
 }

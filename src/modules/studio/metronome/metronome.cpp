@@ -25,10 +25,12 @@ namespace top1::modules {
 
   };
 
-  Metronome::Metronome() :
-    Module(&props),
+  Metronome::Metronome()
+    : Module(&props),
       audio::FaustWrapper(std::make_unique<FAUSTCLASS>(), props),
-    screen (std::make_unique<MetronomeScreen>(this)) {}
+    screen (std::make_unique<MetronomeScreen>(this))
+  {
+  }
 
   Metronome::~Metronome() {}
 

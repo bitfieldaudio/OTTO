@@ -12,7 +12,7 @@ namespace top1 {
     using Position = int;
     using Sample = float;
     using Chunk = ByteFile::Chunk;
-    constexpr static std::size_t sample_size = 4;
+    constexpr static std::size_t sample_size = sizeof(Sample);
 
     enum class Error {
       UnrecognizedFileType,
@@ -29,6 +29,7 @@ namespace top1 {
     } info;
 
     SoundFile();
+    virtual ~SoundFile() = default;
 
     using ByteFile::open;
     using ByteFile::close;

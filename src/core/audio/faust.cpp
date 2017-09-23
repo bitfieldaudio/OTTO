@@ -17,6 +17,7 @@ namespace top1::audio {
       });
     Globals::events.samplerateChanged.add([&](uint sr) {
         fDSP->instanceInit(sr);
+        opts.props->updateFaust();
       });
   }
 } // top1::audio

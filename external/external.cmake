@@ -41,3 +41,9 @@ set(GLFW_BUILD_TESTS OFF)
 execute_process(COMMAND git submodule update --init -- external/glfw
 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/glfw)
+
+# Static math
+execute_process(COMMAND git submodule update --init -- external/constexpr
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+add_library(constexpr INTERFACE)
+target_include_directories(constexpr INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/external/constexpr/src/include)

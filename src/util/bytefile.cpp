@@ -20,9 +20,7 @@ namespace top1 {
   }
 
   ByteFile::~ByteFile() {
-    if (is_open()) {
-      close();
-    }
+    close();
   }
 
   ByteFile& ByteFile::operator=(ByteFile other) {

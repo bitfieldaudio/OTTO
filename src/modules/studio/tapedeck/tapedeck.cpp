@@ -219,29 +219,21 @@ namespace top1::modules {
       }
     }
 
-    // Function object that reads from tape.
-    auto read = [&] (const AudioFrame& tape, AudioFrame& trkbf) {
-      trkbf = tape;
-    };
-    // Function object that writes to tape.
-    auto write = [&] (AudioFrame& tape, const AudioFrame& trkbf) {
-      tape = trkbf;
-    };
-
+    // Read audio
     if (state.doPlayAudio()) {
       auto trkbf = std::begin(trackBuffer);
-      if (state.recording()) {
-        auto tape = tapeBuffer->write(state.playSpeed);
-        for (int i = 0; i < data.nframes; ++i, ++trkbf, ++tape) {
-          read(*tape, *trkbf);
-          write(*tape, *trkbf);
-        };
-      } else {
-        auto tape = tapeBuffer->read(state.playSpeed);
-        for (int i = 0; i < data.nframes; ++i, ++trkbf, ++tape) {
-          read(*tape, *trkbf);
-        };
-      }
+      auto tape = tapeBuffer->read(state.playSpeed);
+      std::copy_n(std::move(tape), data.nframes, std::move(trkbf));
+    }
+
+    // Write audio
+    if (state.recording()) {
+      auto proc = std::begin(data.audio.proc);
+      tapeBuffer->write_frames(data.nframes, state.playSpeed,
+        [&proc, track = state.track] (auto&& trk) {
+          trk[track] += *proc;
+          return trk;
+        } );
     }
   }
 
