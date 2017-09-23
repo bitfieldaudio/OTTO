@@ -19,10 +19,7 @@ namespace top1 {
   // `N` should be a power of two. Otherwise performance will be terrible!
   template<typename T, std::size_t N>
   struct wrapping_array {
-    using value_type = T;
     static constexpr std::size_t size = N;
-
-    std::array<value_type, size> storage;
 
     /// Get the buffer position corresponding to `position`
     static constexpr std::size_t wrap(std::size_t index)
@@ -34,7 +31,7 @@ namespace top1 {
     ///
     /// Take a look at <iterator_adaptor>
     struct IteratorImpl {
-      using value_type        = value_type;
+      using value_type        = T;
       using iterator_category = std::random_access_iterator_tag;
 
       IteratorImpl(value_type* begin, std::size_t index)
@@ -63,7 +60,7 @@ namespace top1 {
     ///
     /// Take a look at <iterator_adaptor>
     struct ConstIteratorImpl {
-      using value_type        = value_type;
+      using value_type        = T;
       using iterator_category = std::random_access_iterator_tag;
 
       ConstIteratorImpl(value_type* begin, std::size_t index)
@@ -91,6 +88,10 @@ namespace top1 {
     using iterator = iterator_adaptor<IteratorImpl>;
     using const_iterator = iterator_adaptor<ConstIteratorImpl>;
 
+    using value_type = T;
+    std::array<value_type, size> storage;
+
+
     iterator begin() {return {storage.data(), 0U};}
     const_iterator begin() const {return {storage.data(), 0U};}
     value_type* data() {return storage.data(); }
@@ -104,11 +105,11 @@ namespace top1 {
   /// single-consumer, single-producer, and provides a bidirectional, variable
   /// speed iterator for consuming.
   class tape_buffer {
+    using Value = std::array<float, 4>;
   public:
 
     /* Constants */
 
-    using value_type = std::array<float, 4>;
     static constexpr std::size_t buffer_size = 1 << 18;
     static constexpr std::size_t max_length = 8 * 60 * 44100;
 
@@ -116,7 +117,7 @@ namespace top1 {
     ///
     /// Take a look at <iterator_adaptor>
     struct IteratorImpl {
-      using value_type        = value_type;
+      using value_type        = Value;
       using iterator_category = std::bidirectional_iterator_tag;
       using reference         = value_type;
 
@@ -147,6 +148,7 @@ namespace top1 {
     };
 
     using iterator = typename top1::float_step_iterator<iterator_adaptor<IteratorImpl>>;
+    using value_type = Value;
 
     /* Initialization */
 
