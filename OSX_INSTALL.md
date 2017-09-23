@@ -15,7 +15,10 @@ Install lzip
 brew install lzip
 ```
 
-https://solarianprogrammer.com/2017/05/21/compiling-gcc-macos/
+Install git
+```
+brew install git
+```
 
 ### Download 
 
@@ -35,6 +38,8 @@ Save the downloads into a folder of your choosing.  We will use ```~/dev/tools``
     * https://cmake.org/files/v3.9/cmake-3.9.3-Darwin-x86_64.dmg
 1. Download jackOSX 0.92_b3
     * https://github.com/jackaudio/jackaudio.github.com/releases/download/1.9.11/JackOSX.0.92_b3.zip
+1. Download clang 5.0.0
+    * http://releases.llvm.org/5.0.0/clang+llvm-5.0.0-x86_64-apple-darwin.tar.xz
 
 ### Decompress
 
@@ -118,13 +123,51 @@ rm -rf ./build
 
 ```
 export PATH=/usr/local/gcc-7.2/bin:$PATH
+ln -s /usr/local/gcc-7.2/bin/g++-7.2 /usr/local/bin/g++-7.2
+ln -s /usr/local/gcc-7.2/bin/gcc-7.2 /usr/local/bin/gcc-7.2
+export CXX=g++-7.2
+export CC=gcc-7.2
 ```
 
 ### Install CMake
 
 Open ```cmake-3.9.3-Darwin-x86_64.dmg``` from Finder and follow installation instructions.
 
+From terminal:
+
+```
+sudo "/Applications/CMake.app/Contents/bin/cmake-gui" --install
+```
+
 ### Install JackOSX
 
 Decompress ```JackOSX.0.92_b3.zip``` from Finder, open the resulting package, and follow installation instructions.
 
+### Install Clang 5.0
+
+Decompress ```clang+llvm-5.0.0-x86_64-apple-darwin.tar.xz```
+
+```
+sudo mkdir /usr/local/clang
+sudo mv clang+llvm-5.0.0-x86_64-apple-darwin/* /usr/local/clang
+export CXX=/usr/local/clang/bin/clang++
+export CC=/usr/local/clang/bin/clang
+```
+
+
+### Clone TOP-1
+
+```
+git clone https://github.com/topisani/TOP-1.git
+```
+
+### Compile TOP-1
+
+```
+cd TOP-1
+cmake .
+
+
+### References
+1. Compile gcc 7 on MacOS
+    * https://solarianprogrammer.com/2017/05/21/compiling-gcc-macos/
