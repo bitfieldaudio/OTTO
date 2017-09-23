@@ -13,6 +13,3 @@
 [submodule "external/glfw"]
 	path = external/glfw
 	url = https://github.com/glfw/glfw
-[submodule "external/constexpr"]
-	path = external/constexpr
-	url = https://github.com/elbeno/constexpr

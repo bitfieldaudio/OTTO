@@ -15,7 +15,6 @@ target_link_libraries(top-1 PUBLIC glfw)
 target_link_libraries(top-1 PUBLIC jack)
 target_link_libraries(top-1 PUBLIC stdc++fs)
 target_link_libraries(top-1 PUBLIC atomic)
-target_link_libraries(top-1 PUBLIC constexpr)
 target_link_libraries(top-1 PUBLIC ${CMAKE_THREAD_LIBS_INIT})
 target_include_directories(top-1 PUBLIC ./)
 
