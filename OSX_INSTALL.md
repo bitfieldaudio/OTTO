@@ -19,6 +19,8 @@ https://solarianprogrammer.com/2017/05/21/compiling-gcc-macos/
 
 ### Download 
 
+Save the downloads into a folder of your choosing.  We will use ```~/dev/tools```
+
 1. Download GCC 7.2 from mirror of your choice: https://gcc.gnu.org/mirrors.html
     * http://mirrors.concertpass.com/gcc/releases/gcc-7.2.0/gcc-7.2.0.tar.xz
 1. Download mpc 1.0.3
@@ -33,6 +35,7 @@ https://solarianprogrammer.com/2017/05/21/compiling-gcc-macos/
 ### Decompress
 
 ```
+cd ~/dev/tools
 lzip -cd gmp-6.1.2.tar.lz | tar xopf -
 gunzip -c gcc-7.2.0.tar.gz | tar xopf -
 gunzip -c mpc-1.0.3.tar.gz | tar xopf -
@@ -40,10 +43,29 @@ gunzip -c mpfr-3.1.6.tar.gz | tar xopf -
 bunzip2 -cd isl-0.16.1.tar.bz2 | tar xopf -
 ```
 
-### Compile GMP
+You should now have a folder structure like this:
+
+```
+dev/
+└── tools/
+    ├── gcc-7.2.0/
+    ├── gmp-6.1.2/
+    ├── isl-0.16.1/
+    ├── mpc-1.0.3/
+    └── mpfr-3.1.6/
+```
+
+### Create /usr/local/gcc-7.2
+
+> This may not be necessary.
 
 ```
 sudo mkdir /usr/local/gcc-7.2
+```
+
+### Compile GMP
+
+```
 cd gmp* && mkdir build && cd build
 ../configure --prefix=/usr/local/gcc-7.2 --enable-cxx
 make -j 4 && sudo make install
@@ -75,7 +97,7 @@ make -j 4 && sudo make install
 
 ### Compile GCC
 
-> This will take a long time (hour+) and turn your computer into a heater.
+> This will take a long time (hour+) and turn your computer into a space heater.
 
 ```
 cd ../../ && cd gcc* && mkdir build && cd build
