@@ -5,7 +5,6 @@
 
 // For compiler compatibility
 
-using uint = unsigned int;
-using uint32 = uint32_t;
+using uint     = unsigned int;
 
-using std::byte;
+using byte [[deprecated]] = std::byte;

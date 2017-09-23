@@ -5,13 +5,12 @@
 #include "core/audio/jack.hpp"
 #include "core/audio/midi.hpp"
 #include "core/ui/mainui.hpp"
-#include "modules/tapedeck.hpp"
-#include "modules/mixer.hpp"
-#include "modules/super-saw-synth.hpp"
-#include "modules/simple-drums.hpp"
-#include "modules/drum-sampler.hpp"
-#include "modules/synth-sampler.hpp"
-#include "modules/nuke.hpp"
+#include "modules/studio/tapedeck/tapedeck.hpp"
+#include "modules/studio/mixer/mixer.hpp"
+#include "modules/drums/simple-drums/simple-drums.hpp"
+#include "modules/drums/drum-sampler/drum-sampler.hpp"
+#include "modules/synths/synth-sampler/synth-sampler.hpp"
+#include "modules/synths/nuke/nuke.hpp"
 #include "core/globals.hpp"
 
 int main(int argc, char *argv[]) {
@@ -32,7 +31,6 @@ int main(int argc, char *argv[]) {
     Globals::drums.registerModule<SimpleDrumsModule>("Additive Drums");
 
     Globals::synth.registerModule<NukeSynth>("Nuke");
-    Globals::synth.registerModule<SuperSawSynth>("Super Saw");
     Globals::synth.registerModule<SynthSampler>("Sampler");
 
     Globals::events.preInit.runAll();

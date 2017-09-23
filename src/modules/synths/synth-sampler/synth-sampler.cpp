@@ -1,4 +1,4 @@
-#include "modules/synth-sampler.hpp"
+#include "synth-sampler.hpp"
 
 #include <algorithm>
 

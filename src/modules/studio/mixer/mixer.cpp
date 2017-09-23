@@ -1,4 +1,4 @@
-#include "modules/mixer.hpp"
+#include "mixer.hpp"
 #include "core/ui/drawing.hpp"
 #include "core/globals.hpp"
 #include "util/timer.hpp"
@@ -24,19 +24,22 @@ namespace top1::modules {
     auto &trackBuffer = Globals::tapedeck.trackBuffer;
     auto level = generate_sequence<4>([this] (int n) { return props.tracks[n].level.get(); });
     auto pan = generate_sequence<4>([this] (int n) { return props.tracks[n].pan.get(); });
-    for (uint f = 0; f < data.nframes; f++) {
+    // Iterators
+    auto outL = std::begin(data.audio.outL);
+    auto outR = std::begin(data.audio.outR);
+    auto proc = std::begin(data.audio.proc);
+    auto trb = std::begin(trackBuffer);
+    for (int f = 0; f < data.nframes; ++f, ++outL, ++outR, ++proc, ++trb) {
       float lMix = 0, rMix = 0;
       for (uint t = 0; t < 4 ; t++) {
         if (!props.tracks[t].muted) {
-          lMix += trackBuffer[f][t] * level[t] * (1-pan[t]);
-          rMix += trackBuffer[f][t] * level[t] * (1+pan[t]);
+          lMix += (*trb)[t] * level[t] * (1-pan[t]);
+          rMix += (*trb)[t] * level[t] * (1+pan[t]);
         }
-        graphs[t].add(trackBuffer[f][t] * level[t]);
+        graphs[t].add((*trb)[t] * level[t]);
       }
-      data.audio.outL[f] =
-        lMix + data.audio.proc[f] * Globals::tapedeck.props.gain;
-      data.audio.outR[f] =
-        rMix + data.audio.proc[f] * Globals::tapedeck.props.gain;
+      *outL = lMix + *proc * Globals::tapedeck.props.gain;
+      *outR = rMix + *proc * Globals::tapedeck.props.gain;
     }
   }
 

@@ -14,9 +14,9 @@
 #include "core/ui/mainui.hpp"
 #include "core/modules/module-dispatcher.hpp"
 
-#include "modules/tapedeck.hpp"
-#include "modules/mixer.hpp"
-#include "modules/metronome.hpp"
+#include "modules/studio/tapedeck/tapedeck.hpp"
+#include "modules/studio/mixer/mixer.hpp"
+#include "modules/studio/metronome/metronome.hpp"
 
 
 namespace top1 {
@@ -34,12 +34,12 @@ namespace top1 {
       top1::EventDispatcher<> postInit;
       top1::EventDispatcher<> preExit;
       top1::EventDispatcher<> postExit;
-      top1::EventDispatcher<uint> bufferSizeChanged;
-      top1::EventDispatcher<uint> samplerateChanged;
+      top1::EventDispatcher<unsigned> bufferSizeChanged;
+      top1::EventDispatcher<unsigned> samplerateChanged;
     } events;
 
     static inline DataFile dataFile;
-    static inline uint samplerate = 44100;
+    static inline unsigned samplerate = 44100;
 
     static inline audio::JackAudio jackAudio;
     static inline ui::MainUI ui;

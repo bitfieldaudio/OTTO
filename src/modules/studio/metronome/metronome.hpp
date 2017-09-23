@@ -5,16 +5,17 @@
 #include "core/ui/drawing.hpp"
 #include "core/ui/module-ui.hpp"
 #include "core/audio/faust.hpp"
-#include "util/tapebuffer.hpp"
 #include "util/audio.hpp"
 
 namespace top1::modules {
 
   using BeatPos = int;
 
+  class MetronomeScreen; // FWDCL
+
   class Metronome : public Module, audio::FaustWrapper {
 
-    ui::ModuleScreen<Metronome>::ptr screen;
+    std::unique_ptr<MetronomeScreen> screen;
     audio::RTBuffer<float> buf;
 
     using audio::FaustWrapper::process;
@@ -31,28 +32,16 @@ namespace top1::modules {
     audio::Graph graph;
 
     Metronome();
+    ~Metronome();
 
     void process(const audio::ProcessData&);
     void display() override;
 
     // Formalities are over
 
-    top1::TapeTime getBarTime(BeatPos bar);
-    top1::TapeTime getBarTimeRel(BeatPos bar);
-    BeatPos closestBar(top1::TapeTime time);
-  };
-
-  class MetronomeScreen : public ui::ModuleScreen<Metronome> {
-
-    void drawMetronome(ui::drawing::Canvas&);
-
-  public:
-    using ui::ModuleScreen<Metronome>::ModuleScreen;
-
-    void rotary(ui::RotaryEvent) override;
-
-    void draw(ui::drawing::Canvas&) override;
-
+    unsigned getBarTime(BeatPos bar);
+    unsigned getBarTimeRel(BeatPos bar);
+    BeatPos closestBar(unsigned time);
   };
 
 }

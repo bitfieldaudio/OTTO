@@ -7,17 +7,14 @@
 #include "core/modules/module.hpp"
 #include "core/ui/canvas.hpp"
 #include "core/ui/module-ui.hpp"
-#include "util/tapebuffer.hpp"
+
+#include "tapebuffer.hpp"
 
 
 namespace top1::modules {
 
-  using BeatPos = int;
-
   class Tapedeck final : public modules::Module {
-    ui::ModuleScreen<Tapedeck>::ptr tapeScreen;
-
-    top1::TapeTime tapePosition; // Read from here instead of the tapebuffer
+    std::unique_ptr<ui::ModuleScreen<Tapedeck>> tapeScreen;
   public:
 
     struct State {
@@ -42,11 +39,11 @@ namespace top1::modules {
       float playSpeed = 0;
       float nextSpeed = 0;
       float prevSpeed = 0;
-      top1::Track track = Track::makeName(1);
-      bool looping = false;
+      int track       = 0;
+      bool looping    = false;
 
       template<typename Ret, typename Callable1, typename Callable2>
-      Ret forPlayDir(Callable1 forward, Callable2 reverse) {
+      Ret forPlayDir(Callable1&& forward, Callable2&& reverse) {
         if (playSpeed > 0) {
           return std::invoke(forward);
         } else if (playSpeed < 0) {
@@ -79,8 +76,7 @@ namespace top1::modules {
 
     using AudioFrame = audio::AudioFrame<4, float>;
     audio::RTBuffer<AudioFrame> trackBuffer;
-
-    top1::TapeBuffer tapeBuffer;
+    std::unique_ptr<tape_buffer> tapeBuffer;
 
     Tapedeck();
     Tapedeck(Tapedeck&) = delete;
@@ -89,27 +85,27 @@ namespace top1::modules {
     void init() override;
     void exit() override;
 
-    audio::Section<top1::TapeTime> loopSect;
-    audio::Section<top1::TapeTime> recSect;
+    audio::Section<int> loopSect;
+    audio::Section<std::size_t> recSect;
 
-    uint overruns = 0;
+    int overruns = 0;
 
     void preProcess(const audio::ProcessData&);
     void postProcess(const audio::ProcessData&); 
     void display() override;
 
 
-    top1::TapeTime position() const { return tapePosition; }
+    std::size_t position() const { return tapeBuffer->position(); }
 
     void loopInHere();
     void loopOutHere();
     void goToLoopIn();
     void goToLoopOut();
 
-    void goToBar(BeatPos bar);
-    void goToBarRel(BeatPos bars);
+    void goToBar(int bar);
+    void goToBarRel(int bars);
 
-    int timeUntil(top1::TapeTime tt);
+    int timeUntil(std::size_t tt);
   };
 
   class TapeScreen : public ui::ModuleScreen<Tapedeck> {
@@ -122,6 +118,7 @@ namespace top1::modules {
 
     bool keyrelease(ui::Key key) override;
 
+    std::string timeStr();
   public:
     using ui::ModuleScreen<Tapedeck>::ModuleScreen;
   };

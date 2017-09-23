@@ -11,6 +11,8 @@
 #include <functional>
 
 #include <json.hpp>
+#include "filesystem.hpp"
+#include "core/globals.hpp"
 
 namespace top1::timer {
 
@@ -93,7 +95,7 @@ namespace top1::timer {
 
   struct TimerDispatcher {
     std::unordered_map<std::string, Timer> timers;
-    std::string path = "data/timers.json";
+    fs::path path = Globals::data_dir / "timers.json";
 
     virtual ~TimerDispatcher() {}
 
@@ -141,6 +143,6 @@ namespace top1::timer {
 
   inline GlobalTimerDispatcher dispatcher {};
 
-#define TIME_SCOPE(name) auto timer = top1::timer::dispatcher.timeScope(name);
+#define TIME_SCOPE(name) auto timer = ::top1::timer::dispatcher.timeScope(name);
 
 } // top1::timer

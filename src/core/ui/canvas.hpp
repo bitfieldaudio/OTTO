@@ -71,18 +71,18 @@ namespace top1::ui::drawing {
 
   struct Colour {
 
-    uint8_t r;
-    uint8_t g;
-    uint8_t b;
-    uint8_t a = 0xFF;
+    std::uint8_t r;
+    std::uint8_t g;
+    std::uint8_t b;
+    std::uint8_t a = 0xFF;
 
     Colour(float, float, float, float a = 1.0);
 
     // cppcheck-suppress noExplicitConstructor
-    Colour(uint32 data) {
-      r = uint8_t((data >> 16) & 0x0000FF);
-      g = uint8_t((data >> 8) & 0x0000FF);
-      b = uint8_t((data) & 0x0000FF);
+    Colour(std::uint32_t data) {
+      r = std::uint8_t((data >> 16) & 0x0000FF);
+      g = std::uint8_t((data >> 8) & 0x0000FF);
+      b = std::uint8_t((data) & 0x0000FF);
       a = 0xFF;
     };
 
@@ -126,42 +126,46 @@ namespace top1::ui::drawing {
     float dim = 1 - amount;
     Colour ret;
     ret.r = std::clamp<uint8_t>(r * dim, 0x00, 0xFF);
-      ret.g = std::clamp<uint8_t>(g * dim, 0x00, 0xFF);
-      ret.b = std::clamp<uint8_t>(b * dim, 0x00, 0xFF);
-      ret.a = a;
-      return ret;
-    }
+    ret.g = std::clamp<uint8_t>(g * dim, 0x00, 0xFF);
+    ret.b = std::clamp<uint8_t>(b * dim, 0x00, 0xFF);
+    ret.a = a;
+    return ret;
+  }
 
-    inline Colour Colour::brighten(float amount) const {
-      Colour ret;
-      ret.r = std::clamp<uint8_t>(r + (255 - r) * amount, 0x00, 0xFF);
-      ret.g = std::clamp<uint8_t>(g + (255 - g) * amount, 0x00, 0xFF);
-      ret.b = std::clamp<uint8_t>(b + (255 - b) * amount, 0x00, 0xFF);
-      ret.a = a;
-      return ret;
-    }
+  inline Colour Colour::brighten(float amount) const {
+    Colour ret;
+    ret.r = std::clamp<uint8_t>(r + (255 - r) * amount, 0x00, 0xFF);
+    ret.g = std::clamp<uint8_t>(g + (255 - g) * amount, 0x00, 0xFF);
+    ret.b = std::clamp<uint8_t>(b + (255 - b) * amount, 0x00, 0xFF);
+    ret.a = a;
+    return ret;
+  }
 
-    struct MainColour : public Colour {
+  struct MainColour : public Colour {
 
     const Colour dimmed;
 
     // cppcheck-suppress noExplicitConstructor
-    MainColour(Colour basic) :
-      Colour (basic),
-        dimmed (basic.dim(0)) {}
+    MainColour(Colour basic)
+      : Colour (basic),
+        dimmed (basic.dim(0))
+    {}
 
-    MainColour(Colour basic, Colour dimmed) :
-      Colour (basic),
-        dimmed (dimmed) {}
+    MainColour(Colour basic, Colour dimmed)
+      : Colour (basic),
+        dimmed (dimmed)
+    {}
 
     // cppcheck-suppress noExplicitConstructor
-    MainColour(uint32 basic) :
-      Colour (basic),
-        dimmed (dim(0.1)) {}
+    MainColour(std::uint32_t basic)
+      : Colour (basic),
+        dimmed (dim(0.1))
+    {}
 
-    MainColour(uint32 basic, uint32 dimmed) :
-      Colour (basic),
-        dimmed (dimmed) {}
+    MainColour(std::uint32_t basic, std::uint32_t dimmed)
+      : Colour (basic),
+        dimmed (dimmed)
+    {}
 
     using Colour::operator NanoCanvas::Color;
   };

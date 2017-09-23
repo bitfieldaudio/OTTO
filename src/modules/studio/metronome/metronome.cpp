@@ -10,10 +10,27 @@
 
 namespace top1::modules {
 
+  using TapeTime = unsigned;
+
+  class MetronomeScreen : public ui::ModuleScreen<Metronome> {
+
+    void drawMetronome(ui::drawing::Canvas&);
+
+  public:
+    using ui::ModuleScreen<Metronome>::ModuleScreen;
+
+    void rotary(ui::RotaryEvent) override;
+
+    void draw(ui::drawing::Canvas&) override;
+
+  };
+
   Metronome::Metronome() :
     Module(&props),
       audio::FaustWrapper(std::make_unique<FAUSTCLASS>(), props),
-    screen (new MetronomeScreen(this)) {}
+    screen (std::make_unique<MetronomeScreen>(this)) {}
+
+  Metronome::~Metronome() {}
 
   void Metronome::process(const audio::ProcessData& data) {
     TIME_SCOPE("Metronome::process");
