@@ -57,5 +57,28 @@ cd ../../ && cd mpfr* && mkdir build && cd build
 make -j 4 && sudo make install
 ```
 
+### Compile MPC
 
+```
+cd ../../ && cd mpc* && mkdir build && cd build
+../configure --prefix=/usr/local/gcc-7.2 --with-gmp=/usr/local/gcc-7.2 --with-mpfr=/usr/local/gcc-7.2
+make -j 4 && sudo make install
+```
 
+### Compile Graphite Optimizations Lib
+
+```
+cd ../../ && cd isl* && mkdir build && cd build
+../configure --prefix=/usr/local/gcc-7.2 --with-gmp-prefix=/usr/local/gcc-7.2
+make -j 4 && sudo make install
+```
+
+### Compile GCC
+
+> This will take a long time (hour+) and turn your computer into a heater.
+
+```
+cd ../../ && cd gcc* && mkdir build && cd build
+../configure --prefix=/usr/local/gcc-7.2 --enable-checking=release --with-gmp=/usr/local/gcc-7.2 --with-mpfr=/usr/local/gcc-7.2 --with-mpc=/usr/local/gcc-7.2 --enable-languages=c,c++ --with-isl=/usr/local/gcc-7.2 --program-suffix=-7.2
+make -j 4 && sudo make install
+```
