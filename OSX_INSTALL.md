@@ -152,6 +152,7 @@ sudo mkdir /usr/local/clang
 sudo mv clang+llvm-5.0.0-x86_64-apple-darwin/* /usr/local/clang
 export CXX=/usr/local/clang/bin/clang++
 export CC=/usr/local/clang/bin/clang
+export CXXFLAGS="<i have no idea what to do here to make it work>
 ```
 
 
