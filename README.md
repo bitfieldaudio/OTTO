@@ -24,12 +24,12 @@ Each module has up to 4 settings, that can be controlled using 4 rotary encoders
 The software will be set up to run on a Raspberry Pi, with a small AMOLED screen, 4 rotary encoders, and around 20 buttons. This can then be built into any kind of enclosure, with or without a midi keyboard and other bells and whistles.
 
 # Current progress
-A lot of the main software backend is completed. The 4-track tapedeck is implemented, along with the mixer and the metronome. We are working hard on synths and drums, currently theres a proof of concept additive drum synthesizer, and drum and synth samplers.
+A lot of the main software backend is completed. The 4-track tapedeck is implemented, along with the mixer and the metronome. We are working hard on synths and drums, currently there's a proof of concept additive drum synthesizer, and drum and synth samplers.
 
-Currently, it runs in a window on your desktop, and uses [jack](http://jackaudio.org/) for audio. We have been considering using [portaudio](http://portaudio.com/) instead, as it is better for cross platform development. Currently the TOP-1 only runs on linux, but there are efforts to get it running on [OS X](https://github.com/topisani/TOP-1/issues/13) and windows.
+Currently, it runs in a window on your desktop, and uses [jack](http://jackaudio.org/) for audio. We have been considering using [portaudio](http://portaudio.com/) instead, as it is better for cross platform development. Currently the TOP-1 only runs on Linux, but there are efforts to get it running on [OS X](https://github.com/topisani/TOP-1/issues/13) and Windows.
 
-## Keybindings
-These are the keybindings currently emulating the hardware buttons:
+## Key bindings
+These are the key bindings currently emulating the hardware buttons:
 
 | Key         | Action              | Key                 | Action              |
 |-------------|---------------------|---------------------|---------------------|
@@ -51,21 +51,22 @@ These are the keybindings currently emulating the hardware buttons:
 | Ctrl + C    | Lift Tape Selection | Ctrl + V            | Drop Tape Selection |
 
 # Installation
-The TOP-1 is written in bleeding edge C++17, which gives some problems with dependencies. First of all, you need a up to date compiler, GCC-7 or clang 5.0 should work. The biggest problem is the standard library. Currently i think only `libstdc++ 7` has all that we need. This will probable change in a few months, as other implementations catch up.
+The TOP-1 is written in bleeding edge C++17, which gives some problems with dependencies. First of all, you need a up to date compiler: GCC-7 or clang 5.0 should work. The biggest problem is the standard library. Currently i think only `libstdc++ 7` has all that we need. This will probably change in a few months, as other implementations catch up.
 
-For Debian/Ubuntu, this should install most of the dependencies. If you dont have `g++-7`, google how to get it for your specific version.
+For Debian/Ubuntu, this should install most of the dependencies:
 ```bash
 apt install jackd\
     g++-7\
     libjack-jackd2-dev\
     libgles2-mesa-dev -y
 ```
+(If you don't have `g++-7`, google how to get it for your specific version)
 
 You will also need cmake 3.8 or above, get it [here](https://cmake.org/download/)
 
 I recommend also installing `patchage` and `jack-keyboard`, but they are in no way required.
 
-With this set up, you should be able to build & run the TOP-1 with
+With this set up, you should be able to build & run the TOP-1 with:
 ```
 cmake .
 make -j4
@@ -75,7 +76,7 @@ bin/top-1
 As previously mentioned, there are (currently unfruitful) efforts to run on [OS X](https://github.com/topisani/TOP-1/issues/13) and windows.
 
 ## Faust
-Nearly all DSP in the TOP-1 is written in [faust](http://faust.grame.fr/). Faust compiles to C++, and if you dont have plans to edit the `.dsp` files, you don't have to worry about faust. If you do want to do DSP work, it is very important that you use the correct faust version, which currently is `0.9.104`. To install that, run the following commands:
+Nearly all DSP in the TOP-1 is written in [faust](http://faust.grame.fr/). Faust compiles to C++, and if you don't have plans to edit the `.dsp` files, you don't have to worry about faust. If you do want to do DSP work, it is very important that you use the correct faust version, which currently is `0.9.104`. To install that, run the following commands:
 ```bash
 git clone https://github.com/grame-cncm/faust
 cd faust
@@ -95,9 +96,8 @@ Then, make the apropriate changes in the `.dsp` files, and compile them by runni
 sh scripts/compile-faust.sh
 ```
 
-# Getting Involved
+# Getting involved
 We are a small group of people who would really appreciate your help or just your interest in the project. If you do want to help, these are some areas you could help with:
-
  - Software testing
  - Writing documentation
  - Hardware design / testing
@@ -110,7 +110,7 @@ And of course, the coding itself, with areas like
  - Hardware bridging
  - Distro setup - a custom distro for the Pi might be necessary
 
-If you are interested, come chat with us at our [discord server](https://discord.gg/4cV9Ucz), its where all the magic happens!
+If you are interested, come chat with us at our [discord server](https://discord.gg/4cV9Ucz), it's where all the magic happens!
 
 # Credits
  - Audio Framework: [jack](http://jackaudio.org/)
