@@ -5,7 +5,6 @@
 
 #include "core/audio/midi.hpp"
 
-#include "util/dyn-array.hpp"
 #include "util/audio.hpp"
 
 namespace top1 {
@@ -48,32 +47,21 @@ namespace top1 {
      * the bufferSizeChanged event
      */
     template<typename T>
-      class RTBuffer : public top1::DynArray<T> {
-      public:
+    class RTBuffer : public dyn_array<T> {
+      std::size_t sFactor;
+    public:
 
-      using typename top1::DynArray<T>::value_type;
-      using typename top1::DynArray<T>::size_type;
-      using typename top1::DynArray<T>::difference_type;
-      using typename top1::DynArray<T>::reference;
-      using typename top1::DynArray<T>::const_reference;
-      using typename top1::DynArray<T>::pointer;
-      using typename top1::DynArray<T>::iterator;
-      using typename top1::DynArray<T>::const_iterator;
-      using typename top1::DynArray<T>::reverse_iterator;
-      using typename top1::DynArray<T>::const_reverse_iterator;
-
-      RTBuffer(size_type sizeFactor = 1)
-        : top1::DynArray<T>(0),
-        sFactor (sizeFactor) {
-        detail::registerAudioBufferResize([this] (uint newSize) {
-            this->resize(newSize * sFactor);
+      RTBuffer(std::size_t sizeFactor = 1)
+        : dyn_array<T>(0), sFactor (sizeFactor)
+      {
+        detail::registerAudioBufferResize([this] (std::size_t newSize) {
+            resize(newSize);
           });
       }
 
-      using top1::DynArray<T>::operator[];
-
-      private:
-      size_type sFactor;
+      void resize(std::size_t new_size) {
+        dyn_array<T>::resize(new_size * sFactor);
+      }
     };
 
     /*

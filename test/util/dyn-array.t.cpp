@@ -5,7 +5,7 @@
 SCENARIO("DynArrays can be resized", "[DynArray]") {
 
   GIVEN("A DynArray of ints, with initial size 0") {
-    top1::DynArray<int> a(0);
+    top1::dyn_array<int> a(0);
 
     WHEN("It is newly initialized") {
       THEN("the size is 0") {
@@ -60,7 +60,7 @@ SCENARIO("DynArrays can be resized", "[DynArray]") {
 SCENARIO("DynArrays can be random-accessed", "[DynArray]") {
   GIVEN("A DynArray of floats with a size greater than 0") {
     const int size = Random::get(10, 30);
-    top1::DynArray<float> a(size);
+    top1::dyn_array<float> a(size);
     CAPTURE(size);
 
     WHEN("It is newly initialized") {
@@ -96,7 +96,7 @@ SCENARIO("DynArrays can be cleared", "DynArray") {
 
   GIVEN("A DynArray of floats with a size greater than 0") {
     const int size = Random::get(10, 30);
-    top1::DynArray<float> a(size);
+    top1::dyn_array<float> a(size);
     CAPTURE(size);
 
     WHEN("All values are initialized with random values") {

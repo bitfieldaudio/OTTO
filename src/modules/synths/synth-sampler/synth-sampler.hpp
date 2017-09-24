@@ -18,7 +18,7 @@ namespace top1::modules {
   public:
 
     size_t maxSampleSize = 0;
-    top1::DynArray<float> sampleData;
+    top1::dyn_array<float> sampleData;
     int sampleSampleRate = 44100;
     float sampleSpeed = 1;
 
