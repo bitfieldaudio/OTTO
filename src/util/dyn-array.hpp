@@ -214,17 +214,10 @@ public:
    * Fills the array with zeros
    */
   void clear() {
-    std::memset(_data, 0, sizeof(value_type) * _size);
+    std::fill(begin(), end(), value_type{});
   }
 
-  void copyFrom(pointer loc, size_type n) {
-    if (!size() >= n) {
-      rawResize(n);
-    }
-    std::memcpy(_data, loc, n * sizeof(value_type));
-  }
-
-private:
+  private:
   pointer _data;
   size_type _size;
   allocator_type _allocator;

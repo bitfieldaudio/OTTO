@@ -5,6 +5,7 @@
 #include <array>
 #include <atomic>
 #include <condition_variable>
+#include <filesystem.hpp>
 
 #include "util/event.hpp"
 
@@ -24,6 +25,8 @@ namespace top1 {
   private:
     static inline std::atomic_bool isRunning {true};
   public:
+
+    static inline const filesystem::path data_dir {"data"};
     static inline std::condition_variable notifyExit;
 
     static inline struct {
@@ -49,7 +52,7 @@ namespace top1 {
     static inline modules::Metronome metronome;
 
     static inline void init() {
-      dataFile.path = "data/modules.json";
+      dataFile.path = data_dir / "modules.json";
       dataFile.read();
       jackAudio.init();
       tapedeck.init();

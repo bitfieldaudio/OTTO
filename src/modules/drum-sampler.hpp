@@ -2,6 +2,8 @@
 
 #include <fmt/format.h>
 
+#include "filesystem.hpp"
+
 #include "core/modules/module.hpp"
 #include "core/ui/module-ui.hpp"
 #include "core/ui/waveform-widget.hpp"
@@ -72,7 +74,7 @@ namespace top1::modules {
 
     DrumSampler();
 
-    void process(audio::ProcessData&) override;
+    void process(const audio::ProcessData&) override;
 
     void display() override;
 
@@ -80,9 +82,7 @@ namespace top1::modules {
 
     void init() override;
 
-    static std::string samplePath(std::string name) {
-      return "samples/drums/" + name + ".wav";
-    }
+    static fs::path samplePath(std::string name);
   };
 
   class DrumSampleScreen : public ui::ModuleScreen<DrumSampler> {

@@ -15,30 +15,45 @@
 #include "core/globals.hpp"
 
 int main(int argc, char *argv[]) {
-  static plog::ConsoleAppender<plog::TxtFormatter> consoleAppender;
-  plog::init(plog::debug, "log.txt").addAppender(&consoleAppender);
-  LOGI << "LOGGING NOW";
-
   using namespace top1;
+  try {
+    static plog::ConsoleAppender<plog::TxtFormatter> consoleAppender;
+    plog::init(plog::debug, (top1::Globals::data_dir / "log.txt").c_str())
+      .addAppender(&consoleAppender);
+    LOGI << "LOGGING NOW";
 
-  midi::generateFreqTable(440);
-  std::mutex mut;
-  std::unique_lock lock (mut);
+    midi::generateFreqTable(440);
+    std::mutex mut;
+    std::unique_lock lock (mut);
 
-  Globals::drums.registerModule("Sampler", new modules::DrumSampler());
-  Globals::drums.registerModule("Additive Drums", new modules::SimpleDrumsModule());
+    using namespace modules;
 
-  Globals::synth.registerModule("Nuke", new modules::NukeSynth());
-  Globals::synth.registerModule("Super Saw", new modules::SuperSawSynth());
-  Globals::synth.registerModule("Sampler", new modules::SynthSampler());
+    Globals::drums.registerModule<DrumSampler>("Sampler");
+    Globals::drums.registerModule<SimpleDrumsModule>("Additive Drums");
 
-  Globals::events.preInit.runAll();
-  Globals::init();
-  Globals::events.postInit.runAll();
+    Globals::synth.registerModule<NukeSynth>("Nuke");
+    Globals::synth.registerModule<SuperSawSynth>("Super Saw");
+    Globals::synth.registerModule<SynthSampler>("Sampler");
 
-  Globals::jackAudio.startProcess();
+    Globals::events.preInit.runAll();
+    Globals::init();
+    Globals::events.postInit.runAll();
 
-  Globals::notifyExit.wait(lock);
+    Globals::jackAudio.startProcess();
+
+    Globals::notifyExit.wait(lock);
+
+  } catch (const char* e) {
+    LOGF << e;
+    LOGI << "Exitting";
+    Globals::events.preExit.runAll();
+    Globals::ui.exit();
+    Globals::mixer.exit();
+    Globals::tapedeck.exit();
+    Globals::jackAudio.exit();
+    Globals::dataFile.write();
+    Globals::events.postExit.runAll();
+  }
 
   LOGI << "Exitting";
   Globals::events.preExit.runAll();

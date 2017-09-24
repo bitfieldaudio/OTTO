@@ -19,11 +19,11 @@ namespace top1::modules {
 
   // Mixing!
 
-  void Mixer::process(audio::ProcessData& data) {
+  void Mixer::process(const audio::ProcessData& data) {
     TIME_SCOPE("Mixer::Process");
     auto &trackBuffer = Globals::tapedeck.trackBuffer;
-    auto level = generate_sequence<4>([this] (int n) { return props.tracks[n].level.value; });
-    auto pan = generate_sequence<4>([this] (int n) { return props.tracks[n].pan.value; });
+    auto level = generate_sequence<4>([this] (int n) { return props.tracks[n].level.get(); });
+    auto pan = generate_sequence<4>([this] (int n) { return props.tracks[n].pan.get(); });
     for (uint f = 0; f < data.nframes; f++) {
       float lMix = 0, rMix = 0;
       for (uint t = 0; t < 4 ; t++) {

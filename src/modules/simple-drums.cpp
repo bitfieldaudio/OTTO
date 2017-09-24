@@ -6,7 +6,8 @@
 
 namespace top1::modules {
 
-  SimpleDrumVoice::SimpleDrumVoice() : FaustWrapper(new FAUSTCLASS(), props) {}
+  SimpleDrumVoice::SimpleDrumVoice() :
+    FaustWrapper(std::make_unique<FAUSTCLASS>(), props) {}
 
   SimpleDrumsModule::SimpleDrumsModule() :
     screen (new SimpleDrumsScreen(this)) {}
@@ -17,22 +18,26 @@ namespace top1::modules {
     Globals::ui.display(*screen);
   }
 
-  void SimpleDrumsModule::process(audio::ProcessData& data) {
+  void SimpleDrumsModule::process(const audio::ProcessData& data) {
     for (auto &&nEvent : data.midi) {
-      nEvent.match([&] (midi::NoteOnEvent *e) {
-          currentVoiceIdx = e->key % 24;
-          voices[currentVoiceIdx].props.trigger = 1;
-          voices[currentVoiceIdx].props.envelope.sustain = float(e->velocity)/128.f;
-        }, [] (auto *) {});
+      nEvent.match([&] (midi::NoteOnEvent& e) {
+          currentVoiceIdx = e.key % 24;
+          voices[currentVoiceIdx].props.trigger = true;
+          voices[currentVoiceIdx].props.envelope.sustain = float(e.velocity)/128.f;
+        }, [] (auto&&) {});
     }
     for (auto &&voice : voices) {
-      voice.process(data);
-      voice.props.trigger = 0;
+      buf.clear();
+      voice.process({buf.data(), data.nframes});
+      for_both(buf.begin(), buf.end(), data.audio.proc.begin(),
+        data.audio.proc.end(), [] (auto in, auto& out) {
+          out += in;
+        });
     }
     for (auto &&nEvent : data.midi) {
-      nEvent.match([&] (midi::NoteOffEvent *e) {
-          voices[e->key % 24].props.trigger = 0;
-        }, [] (auto) {});
+      nEvent.match([&] (midi::NoteOffEvent& e) {
+          voices[e.key % 24].props.trigger = false;
+        }, [] (auto&&) {});
     };
   }
 

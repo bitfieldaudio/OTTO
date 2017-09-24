@@ -14,25 +14,28 @@ namespace top1::modules {
     Globals::ui.display(*screen);
   }
 
-  void SuperSawSynth::process(audio::ProcessData& data) {
+  void SuperSawSynth::process(const audio::ProcessData& data) {
     for (auto &&nEvent : data.midi) {
-      nEvent.match([&] (midi::NoteOnEvent *e) {
-          if (e->channel == 0) {
-            props.key = e->key;
+      nEvent.match([&] (midi::NoteOnEvent& e) {
+          if (e.channel == 0) {
+            props.key = e.key;
             props.trigger = 1;
-            props.velocity = float(e->velocity)/128.f;
+            props.velocity = float(e.velocity)/128.f;
           }
-        }, [] (auto) {});
+        }, [] (auto&&) {});
     }
-    FaustSynthModule::process(data);
+    buf.clear();
+    FaustSynthModule::process({buf.data(), data.nframes});
+    for_both(buf.begin(), buf.end(), data.audio.proc.begin(),
+      data.audio.proc.end(), [] (auto in, auto& out) {out += in;});
     for (auto &&nEvent : data.midi) {
-      nEvent.match([&] (midi::NoteOffEvent *e) {
-          if (e->channel == 0) {
-            if (e->key == props.key) {
+      nEvent.match([&] (midi::NoteOffEvent& e) {
+          if (e.channel == 0) {
+            if (e.key == props.key) {
               props.trigger = 0;
             }
           }
-        }, [] (auto) {});
+        }, [] (auto&&) {});
     };
   }
 
@@ -239,7 +242,7 @@ namespace top1::modules {
 
   // SuperSawSynth Constructor, depends on SuperSawSynthScreen definition
   SuperSawSynth::SuperSawSynth() :
-    FaustSynthModule (new FAUSTCLASS(), &props),
-    screen (new SuperSawSynthScreen(this)) {}
+    FaustSynthModule (std::make_unique<FAUSTCLASS>(), &props),
+      screen (new SuperSawSynthScreen(this)) {}
 
 }

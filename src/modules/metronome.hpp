@@ -13,24 +13,27 @@ namespace top1::modules {
   using BeatPos = int;
 
   class Metronome : public Module, audio::FaustWrapper {
+
     ui::ModuleScreen<Metronome>::ptr screen;
+    audio::RTBuffer<float> buf;
+
+    using audio::FaustWrapper::process;
+
   public:
     struct Props : public modules::Properties {
       Property<float> bpm     = {this, "BPM", 120, {40, 320, 1}};
       Property<float> gain    = {this, "GAIN", 0, {0, 1, 0.01}};
       Property<int>   tone    = {this, "TONE", 12, {0, 24, 1}};
       Property<bool, mode::def,
-               false> trigger = {this, "TRIGGER", false};
+        false> trigger = {this, "TRIGGER", false};
     } props;
 
     audio::Graph graph;
 
     Metronome();
 
-    void process(audio::ProcessData&) override;
+    void process(const audio::ProcessData&);
     void display() override;
-
-    void postBuffers(audio::ProcessData&) override;
 
     // Formalities are over
 

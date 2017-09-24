@@ -314,14 +314,21 @@ namespace top1::modules {
 
     void step(int n = 1) {
       mode.step(n);
+      updateFaust();
     }
 
     void set(const Value& v) {
       mode.set(v);
+      updateFaust();
+    }
+
+    const Value& get() const {
+      return value;
     }
 
     void reset() final {
       value = init;
+      updateFaust();
     }
 
     tree::Node makeNode() final {
@@ -330,6 +337,7 @@ namespace top1::modules {
 
     void readNode(const tree::Node& n) final {
       value = tree::readNode<Value>(n).value_or(value);
+      updateFaust();
     }
 
     void updateFaust() final {
@@ -361,10 +369,11 @@ namespace top1::modules {
       return value;
     }
 
+  private:
     Value value;
+  public:
     Value init;
     Mode mode;
-  private:
   };
 
 

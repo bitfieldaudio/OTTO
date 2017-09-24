@@ -7,7 +7,6 @@
 #include "util/type_traits.hpp"
 
 namespace top1 {
-  /** cldoc:begin-category(algorithms) */
 
   /// Joins a sequence of strings, separating them using `js`
   template<class StrIterator> // Models InputIterator<std::string>
@@ -40,7 +39,7 @@ namespace top1 {
 
 
   template<typename InputIt, typename Size, typename F>
-    auto for_each_n(InputIt&& first, Size n, F&& f) ->
+  constexpr auto for_each_n(InputIt&& first, Size n, F&& f) ->
     std::enable_if_t<
       is_iterator_v<InputIt, typename std::iterator_traits<InputIt>::value_type,
         std::input_iterator_tag>
@@ -64,19 +63,13 @@ namespace top1 {
   /// @f Must be invocable with arguments `value_type`, `std::size_t`
   /// @return The number of iterations performed
   template<typename InputIt, typename F>
-    auto indexed_for(InputIt&& first, InputIt&& last, F&& f) ->
-    std::enable_if_t<
-      is_iterator_v<InputIt, typename std::iterator_traits<InputIt>::value_type,
-        std::input_iterator_tag>
-      && std::is_invocable_v<F,
-        const typename std::iterator_traits<InputIt>::reference, std::size_t>,
-      std::size_t> {
-    std::size_t i;
+  constexpr std::size_t indexed_for(InputIt&& first, InputIt&& last, F&& f) {
+    std::size_t i = 0;
     std::for_each(std::forward<InputIt>(first), std::forward<InputIt>(last),
-        [&] (auto&& a) {
-          std::invoke(std::forward<F>(f), a, i);
-          i++;
-        });
+      [&] (auto&& a) {
+        std::invoke(std::forward<F>(f), a, i);
+        i++;
+      });
     return i;
   }
 
@@ -92,17 +85,21 @@ namespace top1 {
   /// @f Must be invocable with arguments `value_type`, `std::size_t`
   /// @return An iterator one past the last one visited
   template<class InputIt, class Size, class F>
-    auto indexed_for_n(InputIt&& first, Size&& n, F&& f) ->
-    std::enable_if_t<
-      is_iterator_v<InputIt, typename std::iterator_traits<InputIt>::value_type,
-        std::input_iterator_tag>
-      && std::is_invocable_v<F,
-        const typename std::iterator_traits<InputIt>::reference>, InputIt> {
-    for (Size i = 0; i < n; ++first, (void) ++i) {
+  constexpr InputIt indexed_for_n(InputIt&& first, Size&& n, F&& f) {
+    using SizeT = std::remove_const_t<std::remove_reference_t<Size>>;
+    for (SizeT i = 0; i < n; ++first, (void) ++i) {
       std::invoke(std::forward<F>(f), *first, i);
     }
     return first;
   }
 
-  /** cldoc:end-category() */
+  template<typename Iter1, typename Iter2, typename F>
+  constexpr void for_both(Iter1&& f1, Iter1&& l1, Iter2&& f2, Iter2&& l2, F&& f) {
+    Iter1 i1 = f1;
+    Iter2 i2 = f2;
+    for (; i1 != l1 && i2 != l2; i1++, i2++) {
+      std::invoke(std::forward<F>(f), *i1, *i2);
+    }
+  }
+
 }

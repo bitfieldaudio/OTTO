@@ -29,7 +29,7 @@ namespace top1::modules {
 
     NukeSynth();
 
-    void process(audio::ProcessData&) override;
+    void process(const audio::ProcessData&) override;
 
     void display() override;
   };

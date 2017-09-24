@@ -204,16 +204,18 @@ namespace top1::audio {
     }
 
     // Clear the old data
-    processData.clear();
+    ProcessData processData;
     processData.nframes = nframes;
+    procBuf.clear();
 
     float* outLData = (float*) jack_port_get_buffer(ports.outL, nframes);
     float* outRData = (float*) jack_port_get_buffer(ports.outR, nframes);
     float* inData = (float*) jack_port_get_buffer(ports.input, nframes);
 
-    // Read audio input into local buffer
-    // TODO: This shouldn't be necessary
-    std::copy(inData, inData + nframes, processData.audio.input.begin());
+    processData.audio.outL  = {outLData, nframes};
+    processData.audio.outR  = {outRData, nframes};
+    processData.audio.input = {inData, nframes};
+    processData.audio.proc  = {procBuf.data(), nframes};
 
     // Get new midi events
     void *midiBuf = jack_port_get_buffer(ports.midiIn, nframes);
@@ -255,11 +257,10 @@ namespace top1::audio {
     Globals::mixer.process(processData);
     Globals::metronome.process(processData);
 
-    for (uint i = 0; i < nframes; i++) {
-      outLData[i] = processData.audio.outL[i];
-      outRData[i] = processData.audio.outR[i];
+    // TODO: fix or replace poly_ptr so it works with smart pointers
+    for (auto&& e : processData.midi) {
+      delete e;
     }
-
   }
 
 } // top1::audio

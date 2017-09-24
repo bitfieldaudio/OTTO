@@ -7,6 +7,7 @@
 namespace top1::modules {
   class SuperSawSynth : public FaustSynthModule {
     ui::ModuleScreen<SuperSawSynth>::ptr screen;
+    audio::RTBuffer<float> buf;
   public:
 
     struct Props : public Properties {
@@ -26,7 +27,7 @@ namespace top1::modules {
 
     SuperSawSynth();
 
-    void process(audio::ProcessData&) override;
+    void process(const audio::ProcessData&) override;
 
     void display() override;
   };

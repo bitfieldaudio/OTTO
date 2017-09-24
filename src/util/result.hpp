@@ -30,8 +30,11 @@ namespace top1 {
     using Ok = select_type_t<std::is_void_v<ok_t>, std::monostate, ok_t>;
     using Err = select_type_t<std::is_void_v<err_t>, std::monostate, err_t>;
 
+    /// Thrown from <unwrap_ok> and <unwrap_err>.
+    ///
+    /// Holds an instance of the `result` it was thrown from
     struct result_except {
-      Err error;
+      result res;
     };
 
     template<typename = std::enable_if_t<std::is_default_constructible_v<Ok>>>
@@ -235,10 +238,10 @@ namespace top1 {
       }
     }
 
-    /// Return ok, or throw a `result_except<Err>` holding the error value.
+    /// Return ok, or throw a `result_except<Err>` holding the result.
     ///
-    /// Evil, but useful
-    Ok may_throw() {
+    /// Should only be called when <is_err> or <is_ok> has been used to check.
+    Ok unwrap_ok() {
       if (is_ok()) {
         return mpark::get<Ok>(data);
       } else {
@@ -246,7 +249,18 @@ namespace top1 {
       }
     }
 
-  private:
+    /// Return err, or throw a `result_except<Err>` holding the result.
+    ///
+    /// Should only be called when <is_err> or <is_ok> has been used to check.
+    Err unwrap_err() {
+      if (is_err()) {
+        return mpark::get<Err>(data);
+      } else {
+        throw result_except{mpark::get<Ok>(data)};
+      }
+    }
+
+    private:
       mpark::variant<Ok, Err> data;
   };
 }

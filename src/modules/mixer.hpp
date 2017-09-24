@@ -35,7 +35,7 @@ namespace top1::modules {
 
     void display();
 
-    void process(audio::ProcessData&);
+    void process(const audio::ProcessData&);
   };
 
   class MixerScreen : public ui::ModuleScreen<Mixer> {

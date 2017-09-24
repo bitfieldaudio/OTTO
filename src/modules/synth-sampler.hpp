@@ -2,6 +2,7 @@
 
 #include <fmt/format.h>
 
+#include "filesystem.hpp"
 #include "core/modules/module.hpp"
 #include "core/ui/canvas.hpp"
 #include "core/ui/module-ui.hpp"
@@ -53,7 +54,7 @@ namespace top1::modules {
 
     SynthSampler();
 
-    void process(audio::ProcessData&) override;
+    void process(const audio::ProcessData&) override;
 
     void display() override;
 
@@ -61,9 +62,7 @@ namespace top1::modules {
 
     void init() override;
 
-    static std::string samplePath(std::string name) {
-      return "samples/synth/" + name + ".wav";
-    }
+    static fs::path samplePath(std::string name);
   };
 
   class SynthSampleScreen : public ui::ModuleScreen<SynthSampler> {

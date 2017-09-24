@@ -58,14 +58,14 @@ namespace top1::modules {
    */
 
   NukeSynth::NukeSynth() :
-    FaustSynthModule (new FAUSTCLASS(), &props),
+    FaustSynthModule (std::make_unique<FAUSTCLASS>(), &props),
       screen (new NukeSynthScreen(this)) {}
 
   void NukeSynth::display() {
     Globals::ui.display(*screen);
   }
 
-  void NukeSynth::process(audio::ProcessData& data) {}
+  void NukeSynth::process(const audio::ProcessData& data) {}
 
   /*
    * NukeSynthScreen

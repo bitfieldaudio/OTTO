@@ -1,9 +1,9 @@
 #define GLFW_INCLUDE_ES3
 #include <GLFW/glfw3.h>
-#include <nanocanvas/NanoCanvas.h>
+#include <NanoCanvas.h>
 #define NANOVG_GLES3_IMPLEMENTATION
-#include <nanovg/nanovg_gl.h>
-#include <nanovg/nanovg_gl_utils.h>
+#include <nanovg_gl.h>
+#include <nanovg_gl_utils.h>
 
 #include "core/ui/base.hpp"
 #include "core/ui/mainui.hpp"
@@ -143,8 +143,8 @@ namespace top1::ui {
       return;
     }
 
-    // glfwSetWindowAspectRatio(window, 4, 3);
-    // glfwSetWindowSizeLimits(window, 320, 240, GLFW_DONT_CARE, GLFW_DONT_CARE);
+    glfwSetWindowAspectRatio(window, 4, 3);
+    glfwSetWindowSizeLimits(window, 320, 240, GLFW_DONT_CARE, GLFW_DONT_CARE);
 
     glfwSetKeyCallback(window, key);
 

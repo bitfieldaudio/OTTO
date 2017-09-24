@@ -1,9 +1,10 @@
 #pragma once
 
-#include "util/typedefs.hpp"
-
 #include <fmt/format.h>
 #include <plog/Log.h>
+
+#include "util/typedefs.hpp"
+#include "filesystem.hpp"
 
 #include "core/ui/canvas.hpp"
 
@@ -30,18 +31,20 @@ namespace top1::ui::drawing {
     inline Font Light;
     inline Font Norm;
     inline Font Bold;
+
+    inline fs::path font_dir {"data/fonts"};
   }
 
   inline void initUtils(Canvas &canvas) {
-    Fonts::Light = Font(canvas, "TOP-1 Light", "./fonts/TOP-1/TOP-1.ttf");
+    Fonts::Light = Font(canvas, "TOP-1 Light", Fonts::font_dir / "TOP-1" / "TOP-1.ttf");
     if (!Fonts::Light.valid()) {
       LOGE << "Invalid font: " << Fonts::Light.name;
     }
-    Fonts::Norm = Font(canvas, "TOP-1 Regular", "./fonts/TOP-1/TOP-1.ttf");
+    Fonts::Norm = Font(canvas, "TOP-1 Regular", Fonts::font_dir / "TOP-1" / "TOP-1.ttf");
     if (!Fonts::Norm.valid()) {
       LOGE << "Invalid font: " << Fonts::Norm.name;
     }
-    Fonts::Bold = Font(canvas, "TOP-1 Bold", "./fonts/TOP-1/TOP-1.ttf");
+    Fonts::Bold = Font(canvas, "TOP-1 Bold", Fonts::font_dir / "TOP-1" / "TOP-1.ttf");
     if (!Fonts::Bold.valid()) {
       LOGE << "Invalid font: " << Fonts::Bold.name;
     }

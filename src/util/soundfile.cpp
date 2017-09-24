@@ -14,7 +14,7 @@ namespace top1 {
     std::vector<std::unique_ptr<Chunk>> chunks;
 
     void read_fields(ByteFile& file) override {
-      file.read_bytes(format);
+      file.read_bytes(format).unwrap_ok();
       file.for_chunks_in_range(offset + 12, offset + 8 + size.as_u(),
         [&](Chunk& c) {
           chunks.emplace_back(new Chunk(c));
@@ -43,12 +43,12 @@ namespace top1 {
     void read_fields(ByteFile& file) override {
       auto& sf = (SoundFile&)file;
 
-      file.read_bytes(audioFormat);
-      file.read_bytes(numChannels);
-      file.read_bytes(sampleRate);
-      file.read_bytes(byteRate);
-      file.read_bytes(blockAlign);
-      file.read_bytes(bitsPerSample);
+      file.read_bytes(audioFormat).unwrap_ok();
+      file.read_bytes(numChannels).unwrap_ok();
+      file.read_bytes(sampleRate).unwrap_ok();
+      file.read_bytes(byteRate).unwrap_ok();
+      file.read_bytes(blockAlign).unwrap_ok();
+      file.read_bytes(bitsPerSample).unwrap_ok();
 
       if (audioFormat.as_u() != 3) {
         throw "Unsupported audio format. \
@@ -120,15 +120,29 @@ namespace top1 {
 
     switch (info.type) {
     case Info::Type::WAVE:
+      LOGD << "Reading Wave file: ";
+      LOGD << path.c_str();
+      LOGD << "-------------------";
+
       for (auto&& chunk : header.chunks) {
         if (chunk->id == "fmt ")
-          chunk = std::unique_ptr<Chunk>(new WAVE_fmt(*chunk));
+          chunk = std::make_unique<WAVE_fmt>(*chunk);
         if (chunk->id == "data")
-          chunk = std::unique_ptr<Chunk>(new WAVE_data(*chunk));
+          chunk = std::make_unique<WAVE_data>(*chunk);
+        replace_custom_chunk(chunk);
+
         // re-read the chunk as the new type
         chunk->seek_to(*this);
         chunk->read(*this);
+
+        LOGD << " Chunk:  " << std::string((char*)chunk->id.data, 4);
+        LOGD << " Offset: " << chunk->offset;
+        LOGD << " Size:   " << chunk->size.as_u();
+        LOGD << "-------------------";
       } break;
+
+      LOGD << "Done reading file! ";
+      LOGD << "-------------------";
     case Info::Type::AIFF:
       throw "Unsupported file type. Currently only wav is supported";
     }
@@ -141,11 +155,21 @@ namespace top1 {
 
     switch (info.type) {
     case Info::Type::WAVE:
+      LOGD << "Writing Wave file: ";
+      LOGD << path.c_str();
+      LOGD << "-------------------";
+
       header.id = "RIFF";
       header.format = "WAVE";
-      header.chunks.push_back(std::unique_ptr<Chunk>(new WAVE_fmt()));
-      header.chunks.push_back(std::unique_ptr<Chunk>(new WAVE_data()));
+      header.chunks.push_back(std::make_unique<WAVE_fmt>());
+      add_custom_chunks(header.chunks);
+      header.chunks.push_back(std::make_unique<WAVE_data>());
+      header.chunks.back()->size = ByteFile::size() - audioOffset;
       header.write(*this);
+
+      LOGD << "Wrote " << header.chunks.size() << " chunks";
+      LOGE_IF(!fstream.good()) << "fstream errored";
+      LOGD << "-------------------";
       break;
     case Info::Type::AIFF:
       throw "Unsupported type. Currently only wav is supported";

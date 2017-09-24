@@ -36,4 +36,4 @@ v2 = clamp(voices - 1, 0, 1) * voice(1);
 v3 = clamp(voices - 2, 0, 1) * voice(2);
 v4 = clamp(voices - 3, 0, 1) * voice(3);
 
-process = (v1 + v2 + v3 + v4) * hgroup("ENVELOPE", env) <: _,_;
+process = (v1 + v2 + v3 + v4) * hgroup("ENVELOPE", env);

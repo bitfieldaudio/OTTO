@@ -44,16 +44,24 @@ namespace top1::modules {
 
   }
 
-  void DrumSampler::process(audio::ProcessData& data) {
+  fs::path DrumSampler::samplePath(std::string name) {
+    auto wav_path = Globals::data_dir / "samples" / "drums" / (name + ".wav");
+    if (!fs::exists(wav_path)) {
+      return Globals::data_dir / "samples" / "drums" / (name + ".aiff");
+    }
+    return wav_path;
+  }
+
+  void DrumSampler::process(const audio::ProcessData& data) {
     for (auto &&nEvent : data.midi) {
-      nEvent.match([&] (midi::NoteOnEvent* e) {
-          if (e->channel == 1) {
-            currentVoiceIdx = e->key % nVoices;
+      nEvent.match([&] (midi::NoteOnEvent& e) {
+          if (e.channel == 1) {
+            currentVoiceIdx = e.key % nVoices;
             auto &&voice = props.voiceData[currentVoiceIdx];
             voice.playProgress = (voice.fwd()) ? 0 : voice.length() - 1;
             voice.trigger = true;
           }
-        }, [] (auto*) {});
+        }, [] (auto&&) {});
     }
 
     for (auto &&voice : props.voiceData) {
@@ -102,15 +110,15 @@ namespace top1::modules {
     }
 
     for (auto &&nEvent : data.midi) {
-      nEvent.match([&] (midi::NoteOffEvent *e) {
-          if (e->channel == 1) {
-            auto &&voice = props.voiceData[e->key % nVoices];
+      nEvent.match([&] (midi::NoteOffEvent& e) {
+          if (e.channel == 1) {
+            auto &&voice = props.voiceData[e.key % nVoices];
             voice.trigger = false;
             if (voice.stop()) {
               voice.playProgress = -1;
             }
           }
-        }, [] (midi::MidiEvent *) {});
+        }, [] (auto&&) {});
     };
   }
 
@@ -122,7 +130,7 @@ namespace top1::modules {
 
     auto path = samplePath(props.sampleName);
     std::size_t rs = 0;
-    if (!(path.empty() || props.sampleName.value.empty())) {
+    if (!(path.empty() || props.sampleName.get().empty())) {
       SoundFile sf;
         sf.open(path);
       rs = std::min<int>(maxSampleSize, sf.length());
@@ -274,9 +282,9 @@ namespace top1::modules {
     ctx.beginPath();
     ctx.fillStyle(Colours::White);
     ctx.font(Fonts::Norm);
-    ctx.font(15);
+    ctx.font(18);
     ctx.textAlign(TextAlign::Left, TextAlign::Baseline);
-    ctx.fillText(fmt::format("×{:.2F}", voice.speed.value), pitchPos);
+    ctx.fillText(fmt::format("×{:.2F}", voice.speed.get()), pitchPos);
 
     ctx.callAt(mainWFpos, [&] () {
         mainWFW.lineCol = colourCurrent;

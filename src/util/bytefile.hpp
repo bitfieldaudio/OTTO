@@ -6,7 +6,7 @@
 #include <iterator>
 #include <utility>
 #include <fstream>
-#include <filesystem/path.h>
+#include <filesystem.hpp>
 
 #include "util/result.hpp"
 #include "util/type_traits.hpp"
@@ -19,7 +19,7 @@ namespace top1 {
 
     bytes() = default;
 
-    bytes(bytes& o) {
+    bytes(const bytes& o) {
       std::copy(o.begin(), o.end(), data);
     }
 
@@ -41,7 +41,7 @@ namespace top1 {
       bytes (Num d) {
       cast<Num>() = d;
     }
-      
+
     std::byte* begin() {return data;}
     std::byte* end() {return data + len;}
     const std::byte* begin() const {return data;}
@@ -75,6 +75,21 @@ namespace top1 {
 
     explicit operator char*() const {
       return (char*) data;
+    }
+
+    // Factories
+    template<std::size_t N = len, typename Num = int_n_bytes_u_t<N>>
+    static bytes from_u(Num n) {
+      bytes ret;
+      ret.as_u() = n;
+      return ret;
+    }
+
+    template<std::size_t N = len, typename Num = int_n_bytes_t<N>>
+    static bytes from_i(Num n) {
+      bytes ret;
+      ret.as_i() = n;
+      return ret;
     }
 
   };
@@ -123,7 +138,7 @@ namespace top1 {
       Position offset;
 
       Chunk(bytes<4> id = {0,0,0,0}) : id (id) {}
-      Chunk(Chunk& o) : id (o.id), size (o.size), offset (o.offset) {}
+      Chunk(const Chunk& o) : id (o.id), size (o.size), offset (o.offset) {}
       virtual ~Chunk() = default;
 
       void seek_to(ByteFile& file) {
@@ -153,8 +168,8 @@ namespace top1 {
 
       void read(ByteFile& file) {
         offset = file.position();
-        file.read_bytes(id);
-        file.read_bytes(size);
+        file.read_bytes(id).unwrap_ok();
+        file.read_bytes(size).unwrap_ok();
         read_fields(file);
       }
 
@@ -194,15 +209,15 @@ namespace top1 {
     template<typename OutIter,
       typename = std::enable_if<is_iterator_v<OutIter, std::byte,
                                   std::output_iterator_tag>>>
-      void read_bytes(OutIter, OutIter);
+    result<void, OutIter> read_bytes(OutIter, OutIter);
 
     template<typename OutIter,
       typename = std::enable_if<is_iterator_v<OutIter, std::byte,
                                   std::output_iterator_tag>>>
-    void read_bytes(OutIter, int);
+    result<void, std::streamsize> read_bytes(OutIter, int);
 
     template<std::size_t N>
-    void read_bytes(bytes<N>&);
+    result<void, std::streamsize> read_bytes(bytes<N>&);
 
     template<typename InIter,
       typename = std::enable_if<is_iterator_v<InIter, std::byte,
@@ -231,26 +246,35 @@ namespace top1 {
    */
 
   template<typename OutIter, typename>
-  void ByteFile::read_bytes(OutIter f, OutIter l) {
+  result<void, OutIter> ByteFile::read_bytes(OutIter f, OutIter l) {
     if (!is_open()) throw Error(Error::Type::FileNotOpen);
+    result<void, OutIter> res;
     // If OutIter is a pointer, copy everything at once
     if constexpr (std::is_pointer_v<OutIter>) {
-        fstream.read((char*) f, l - f);
-      } else {
-      std::for_each(f, l, [&, ptr = (char*) nullptr] (auto& b) {
-          fstream.read(ptr, 1);
-          *b = *ptr;
-        });
-    }
-    if (fstream.eof()) {
-      fstream.clear();
-      throw Error(Error::Type::PastEnd);
+      fstream.read((char*) f, l - f);
+      if (fstream.eof()) {
+        res = f + fstream.gcount() / sizeof(std::remove_pointer_t<OutIter>);
+        fstream.clear();
+      }
+    } else {
+      char* ptr;
+      std::streamsize i = 0;
+      for (OutIter iter = f; iter != l; iter++, i++) {
+        fstream.read(ptr, 1);
+        if (fstream.eof()) {
+          res = iter;
+          fstream.clear();
+          break;
+        }
+        **iter = *ptr;
+      }
     }
     seek(fstream.tellg());
+    return res;
   }
 
   template<typename OutIter, typename>
-  void ByteFile::read_bytes(OutIter iter, int n) {
+  result<void, std::streamsize> ByteFile::read_bytes(OutIter iter, int n) {
     if (!is_open()) throw Error(Error::Type::FileNotOpen);
     // If OutIter is a pointer, copy everything at once
     if constexpr (std::is_pointer_v<OutIter>) {
@@ -264,19 +288,22 @@ namespace top1 {
     }
     if (fstream.eof()) {
       fstream.clear();
-      throw Error(Error::Type::PastEnd);
+      return {seek(fstream.tellg())};
     }
     seek(fstream.tellg());
+    return {};
   }
 
   template<std::size_t N>
-  void ByteFile::read_bytes(bytes<N>& bs) {
+  result<void, std::streamsize> ByteFile::read_bytes(bytes<N>& bs) {
     fstream.read((char*)bs, N);
     seek(fstream.tellg());
     if (fstream.eof()) {
       fstream.clear();
-      throw Error(Error::Type::PastEnd);
+      return {seek(fstream.tellg())};
     }
+    seek(fstream.tellg());
+    return {};
   }
 
   template<typename InIter, typename>
@@ -287,10 +314,6 @@ namespace top1 {
         fstream.write((char*)f, l - f);
       } else {
       std::for_each(f, l, [&] (auto& b) {fstream.write((char*)&b, 1);});
-    }
-    if (fstream.eof()) {
-      fstream.clear();
-      throw Error(Error::Type::PastEnd);
     }
     seek(fstream.tellp());
   }
@@ -306,20 +329,12 @@ namespace top1 {
         fstream.write(&(*iter), 1);
       }
     }
-    if (fstream.eof()) {
-      fstream.clear();
-      throw Error(Error::Type::PastEnd);
-    }
     seek(fstream.tellp());
   }
 
   template<std::size_t N>
   void ByteFile::write_bytes(const bytes<N>& bs) {
     fstream.write((char*)bs, N);
-    if (fstream.eof()) {
-      fstream.clear();
-      throw Error(Error::Type::PastEnd);
-    }
     seek(fstream.tellp());
   }
 

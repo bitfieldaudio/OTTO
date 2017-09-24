@@ -1,46 +1,34 @@
-language: cpp
 dist: trusty
-sudo: required
 
 install:
-- sudo add-apt-repository ppa:keithw/glfw3 -y
-- sudo apt-get update
-- sudo apt-get install -yq --no-install-suggests --no-install-recommends --force-yes libglfw3-dev libgles2-mesa-dev
-- sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 90
-- sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 90
-# Below only required for documentation generation
-- sudo apt-get install -yq --no-install-suggests --no-install-recommends --force-yes python2.7 ruby-sass libclang-6.0-dev npm
-- sudo ln -s /usr/lib/x86_64-linux-gnu/libclang-6.0.so.1 /usr/lib/x86_64-linux-gnu/libclang.so
-- git clone "https://github.com/topisani/cldoc"
-- cd cldoc
-- npm install
-- sudo npm install -g coffee-script
-- python setup.py generate
-- sudo python setup.py install
-- cd ..
+- source scripts/travis-install-cmake.sh
+- export CC=/usr/bin/gcc-7
+- export CXX=/usr/bin/g++-7
 
 addons:
   apt:
     sources:
     - ubuntu-toolchain-r-test
-    - llvm-toolchain-trusty
+    - kubuntu-backports
     packages:
-    - cmake
     - g++-7
-    - pkg-config
     - libjack-jackd2-dev
+    - libgles2-mesa-dev
+    # For GLFW
+    - libxrandr-dev
+    - libxinerama-dev
+    - libxcursor-dev
+    - libxi-dev
 
-compiler: gcc
+cache:
+  directories:
+    - external
+    - cmake
 
 script:
-- cmake . -DCMAKE_BUILD_TYPE=Release
+- $CMAKE . -DCMAKE_BUILD_TYPE=Release
 - make all
-- mkdir testdata
-- bin/tests
-
-# Generate docs
-after_success:
-- ./deploy-docs
+- bin/test
 
 # For pushing documentation
 env:

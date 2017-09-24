@@ -1,84 +1,30 @@
-#pragma once
-#include "util/sndfile.hpp"
+#include "util/soundfile.hpp"
 
 namespace top1 {
 
-  class TapeFile : public SndFile<4> {
+  class TapeFile : public SoundFile {
   public:
-    struct TOP1Chunk : public Chunk {
-      File::ChunkFCC type = "TAPE";
-      u4b version = 1;
-
-      TOP1Chunk() : Chunk("TOP1") {
-        addField(version);
-      };
-    };
+    using SoundFile::Info;
 
     struct SliceData {
-      u4b  inPos;
-      u4b  outPos;
+      uint32_t in = 0;
+      uint32_t out = 0;
     };
 
-    struct TrackSlicesChunk : public Chunk {
-      u4b  trackNum;
-      u4b  count = 0;
-      std::array<SliceData, 2048> slices;
-
-      TrackSlicesChunk(u4b track) : Chunk("trak"), trackNum (track) {
-        addField(trackNum);
-        addField(count);
-        addField(slices);
-      };
+    struct SliceArray {
+      std::array<SliceData, 2048> array;
+      uint16_t count = 0;
     };
 
-    struct SlicesChunk : public Chunk {
-      TrackSlicesChunk tracks[4] {{0}, {1}, {2}, {4}};
+    std::array<SliceArray, 4> slices;
 
-      SlicesChunk() : Chunk("slic") {
-        subChunk(tracks[0]);
-        subChunk(tracks[1]);
-        subChunk(tracks[2]);
-        subChunk(tracks[3]);
-      };
-    };
-
-    TOP1Chunk top1Chunk;
-    SlicesChunk slices;
-
-    void readSlices();
-    void writeSlices();
-
-    TapeFile() : SndFile<4>() {};
-    TapeFile(const std::string& path) : SndFile<4>(path) {};
-
-    TapeFile(TapeFile&) = delete;
-    TapeFile(TapeFile&&) = delete;
+    TapeFile() = default;
 
   protected:
 
-    void setupChunks() override {
-      top1Chunk.subChunk(slices);
-      wavHeader.subChunk(top1Chunk);
-    }
+    void add_custom_chunks(std::vector<std::unique_ptr<Chunk>>& v) override;
+    void replace_custom_chunk(std::unique_ptr<Chunk>& ptr) override;
 
   };
 
-  // Custom readers/writers
-
-  template<>
-  inline void File::writeBytes<std::array<TapeFile::SliceData, 2048>>(
-                                                                      std::array<TapeFile::SliceData, 2048> &data) {
-    for (auto &slice : data) {
-      writeBytes(slice.inPos);
-      writeBytes(slice.outPos);
-    }
-  }
-  template<>
-  inline void File::readBytes<std::array<TapeFile::SliceData, 2048>>(
-                                                                     std::array<TapeFile::SliceData, 2048> &data) {
-    for (auto &slice : data) {
-      readBytes<u4b>(slice.inPos);
-      readBytes<u4b>(slice.outPos);
-    }
-  }
 }
