@@ -185,4 +185,30 @@ namespace top1 {
     }
   }
 
+  TEST_CASE("ByteFile Performance", "[util] [ByteFile]") {
+
+    std::size_t someSize = 10000;
+    fs::path somePath {test::dir / "perf.bytes"};
+    ByteFile f {somePath};
+
+    REQUIRE(f.is_open());
+
+    SECTION ("Write with pointers vs iterators") {
+
+      auto data = std::vector<std::byte>(someSize);
+      std::generate_n(std::begin(data), someSize, [] {return std::byte{0};});
+
+      auto iterTime = test::measure::execution([&] {
+          f.write_bytes(std::begin(data), someSize);
+        });
+
+      auto ptrTime = test::measure::execution([&] {
+          f.write_bytes(data.data(), someSize);
+        });
+
+      INFO(fmt::format("Iterators: {}ns", iterTime.count()));
+      INFO(fmt::format("Pointers:  {}ns", ptrTime.count()));
+    }
+  }
+
 }

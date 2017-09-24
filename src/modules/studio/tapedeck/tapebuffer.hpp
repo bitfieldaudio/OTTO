@@ -147,7 +147,7 @@ namespace top1 {
       const value_type* value;
     };
 
-    using iterator = typename top1::float_step_iterator<iterator_adaptor<IteratorImpl>>;
+    using iterator = iterator_adaptor<IteratorImpl>;
     using value_type = Value;
 
     /* Initialization */
@@ -163,7 +163,7 @@ namespace top1 {
     /// Get an iterator that moves forward, at speed `speed`
     iterator read(float speed = 1.f)
     {
-      return iterator({*this}, speed);
+      return iterator(*this);
     }
 
     std::size_t position() const
@@ -229,7 +229,7 @@ namespace top1 {
     /// The current file position
     /// This variable should only be modified by the consumer - to everyone else
     /// it is read only!
-    std::atomic_int current_position = 0;
+    std::atomic_int current_position {0};
 
     // Beginning/end of loaded section. File position, *not* buffer index
     // These variables should only be modified by the producer

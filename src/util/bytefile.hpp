@@ -321,7 +321,7 @@ namespace top1 {
         fstream.write((char*)iter, n);
       } else {
       for (int i = 0; i < n; i++, iter++) {
-        fstream.write(&(*iter), 1);
+        fstream.write(reinterpret_cast<char*>(&(*iter)), 1);
       }
     }
   }

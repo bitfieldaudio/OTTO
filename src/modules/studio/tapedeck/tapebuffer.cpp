@@ -71,7 +71,8 @@ namespace top1 {
         || (write_sect.in - owner.tail)  <= min_read_size * 2
         || (owner.head - write_sect.out) <= min_read_size * 2)
       {
-        write_wrapped(write_sect.in, write_sect.size());
+        // file.write_samples(std::begin(owner.buffer) + write_sect.in,
+        //   4 * write_sect.size());
 
         // Atomically update `write_sect`
         audio::Section<int> new_sect;
@@ -90,7 +91,8 @@ namespace top1 {
       if (auto diff = goal_length - (owner.head - index);
         diff > min_read_size)
       {
-        read_wrapped(owner.head, diff);
+        file.seek(owner.head * 4);
+        // file.read_samples(std::begin(owner.buffer) + owner.head, 4 * diff);
         owner.head = std::clamp(owner.head + diff, 0, (int) tape_buffer::max_length);
         if (auto dst = owner.head - owner.tail; dst > buffer_size) {
           // Get rid of overlap
@@ -101,40 +103,12 @@ namespace top1 {
         diff > min_read_size)
       {
         int read_pos = std::clamp(owner.tail - diff, 0, (int) tape_buffer::max_length);
-        read_wrapped(read_pos, diff);
+        // file.read_samples(std::begin(owner.buffer) + read_pos, 4 * diff);
         owner.tail = read_pos;
         if (auto dst = owner.head - owner.tail; dst > buffer_size) {
           // Get rid of overlap
           owner.tail -= std::max(0, dst - buffer_size + 2);
         }
-      }
-    }
-
-    /// Read `n` samples to `position`, splitting the operation into two reads if
-    /// wrapping is necessary
-    void read_wrapped(int position, int n)
-    {
-      // We dont have to worry about thread safety in here, everything is thread local
-      int wrap_pos = wrap(position);
-      int overflow = std::max(0, wrap_pos + n - buffer_size);
-      file.seek(4 * position);
-      file.read_samples((float*) (owner.buffer.data() + wrap_pos), 4 * (n - overflow));
-      if (overflow > 0) {
-        file.read_samples((float*) owner.buffer.data(), 4 * overflow);
-      }
-    }
-
-    /// Write `n` samples to `position`, splitting the operation into two writes if
-    /// wrapping is necessary
-    void write_wrapped(int position, int n)
-    {
-      // We dont have to worry about thread safety in here, everything is thread local
-      int wrap_pos = wrap(position);
-      int overflow = std::max(0, wrap_pos + n - buffer_size);
-      file.seek(4 * position);
-      file.write_samples((owner.buffer.data() + wrap_pos)->data(), 4 * (n - overflow));
-      if (overflow > 0) {
-        file.write_samples(owner.buffer.data()->data(), 4 * overflow);
       }
     }
   };

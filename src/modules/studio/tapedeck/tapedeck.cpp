@@ -209,7 +209,7 @@ namespace top1::modules {
       }
     }
 
-    std::fill(std::begin(trackBuffer), std::end(trackBuffer), AudioFrame{0,0,0,0});
+    std::fill(std::begin(trackBuffer), std::end(trackBuffer), AudioFrame{0.1f, 0.2f, 0.3f, 0.4f});
 
     // Start recording by pressing a key
     if (!state.recording() && state.doStartRec() && state.readyToRec) {
@@ -229,12 +229,12 @@ namespace top1::modules {
     // Write audio
     if (state.recording()) {
       auto proc = std::begin(data.audio.proc);
-      tapeBuffer->write_frames(data.nframes, state.playSpeed,
-        [&proc, track = state.track] (auto&& trk) {
-          trk[track] += *proc;
-          return trk;
-        } );
+      // tapeBuffer->write_frames(data.nframes, state.playSpeed,
+      //   [&proc, track = state.track] (auto&& trk) {
+      //     trk[track] += *proc;
+      //     return trk;
+      //   } );
     }
-  }
 
+  }
 } // top1::module
