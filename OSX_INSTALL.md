@@ -167,8 +167,15 @@ git clone https://github.com/topisani/TOP-1.git
 ```
 cd TOP-1
 cmake .
+```
 
 
 ### References
 1. Compile gcc 7 on MacOS
     * https://solarianprogrammer.com/2017/05/21/compiling-gcc-macos/
+1. Clang command line options
+    * https://clang.llvm.org/docs/ClangCommandLineReference.html#diagnostic-flags
+1. Getting Clang to find non-default libstdc++
+    * http://clang-developers.42468.n3.nabble.com/getting-clang-to-find-non-default-libstdc-td3945163.html
+1. Difference between -stdlib options
+    * https://stackoverflow.com/a/24419967
