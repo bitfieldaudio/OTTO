@@ -13,23 +13,23 @@ namespace top1 {
 
     SECTION("Step = 1") {
 
-      auto first = float_step_iterator(std::begin(iterData), 1);
-      auto last = float_step_iterator(std::end(iterData), 1);
+      auto first = float_step(std::begin(iterData), 1);
+      auto last = float_step(std::end(iterData), 1);
 
       REQUIRE(std::equal(std::begin(iterData), std::end(iterData), first, last));
     }
 
     SECTION("Step = -1") {
 
-      auto first = float_step_iterator(std::end(iterData)-1, -1);
-      auto last = float_step_iterator(std::begin(iterData)-1, -1);
+      auto first = float_step(std::end(iterData)-1, -1);
+      auto last = float_step(std::begin(iterData)-1, -1);
 
       REQUIRE(std::equal(std::rbegin(iterData), std::rend(iterData), first, last));
     }
 
     SECTION("Step = 0.5") {
 
-      auto first = float_step_iterator(std::begin(iterData), 0.5);
+      auto first = float_step(std::begin(iterData), 0.5);
 
       std::vector<int> expected;
       for (int i = 0; i < std::size_t(someSize/0.5); i++) {
@@ -43,7 +43,7 @@ namespace top1 {
 
     SECTION("Step = -0.5") {
 
-      auto first = float_step_iterator(std::end(iterData)-1, -0.5);
+      auto first = float_step(std::end(iterData)-1, -0.5);
 
       std::vector<int> expected;
       for (int i = 0; i < int((someSize - 1) / 0.5); i++) {
@@ -57,7 +57,7 @@ namespace top1 {
 
     SECTION("Step = 1.5") {
 
-      auto first = float_step_iterator(std::begin(iterData), 1.5);
+      auto first = float_step(std::begin(iterData), 1.5);
 
       std::vector<int> expected;
       for (int i = 0; i < std::size_t(someSize/1.5); i++) {
@@ -71,7 +71,7 @@ namespace top1 {
 
     SECTION("Step = -1.5") {
 
-      auto first = float_step_iterator(std::end(iterData)-1, -1.5);
+      auto first = float_step(std::end(iterData)-1, -1.5);
 
       std::vector<int> expected;
       for (int i = 0; i < int((someSize - 1) / 1.5); i++) {
@@ -90,7 +90,7 @@ namespace top1 {
 
     SECTION("Step = 1") {
 
-      auto first = float_step_iterator(std::begin(data), 1);
+      auto first = float_step(std::begin(data), 1);
 
       std::vector expected {0, 1, 2, 3, 2, 1, 2};
       std::vector<int> actual;
@@ -107,7 +107,7 @@ namespace top1 {
 
     SECTION("Step = -1") {
 
-      auto first = float_step_iterator(std::end(data) -1, -1);
+      auto first = float_step(std::end(data) -1, -1);
 
       std::vector expected {10, 9, 8, 7, 8, 9, 8};
       std::vector<int> actual;
@@ -124,7 +124,7 @@ namespace top1 {
 
     SECTION("Step = 0.5") {
 
-      auto first = float_step_iterator(std::begin(data), 0.5);
+      auto first = float_step(std::begin(data), 0.5);
 
       std::vector expected {0, 0, 1, 1, 1, 0, 1};
       std::vector<int> actual;
@@ -141,7 +141,7 @@ namespace top1 {
 
     SECTION("Step = -0.5") {
 
-      auto first = float_step_iterator(std::end(data)-1, -0.5);
+      auto first = float_step(std::end(data)-1, -0.5);
 
       std::vector expected {10, 9, 9, 8, 9, 9, 9};
       std::vector<int> actual;

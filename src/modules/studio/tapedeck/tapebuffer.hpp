@@ -45,9 +45,14 @@ namespace top1 {
         index = newIndex;
       }
 
-      bool compare(const IteratorImpl& r) const
+      bool equal(const IteratorImpl& r) const
       {
         return value == r.value;
+      }
+
+      std::ptrdiff_t difference(const IteratorImpl& r) const
+      {
+        return value - r.value;
       }
 
       value_type& dereference() { return *value; }
@@ -74,12 +79,17 @@ namespace top1 {
         index = newIndex;
       }
 
-      bool compare(const ConstIteratorImpl& r) const
+      value_type dereference() { return *value; }
+
+      int equal(const ConstIteratorImpl& r) const
       {
         return value == r.value;
       }
 
-      value_type dereference() { return *value; }
+      std::ptrdiff_t difference(const ConstIteratorImpl& r) const
+      {
+        return value - r.value;
+      }
 
       value_type* value;
       std::size_t index;
@@ -136,7 +146,7 @@ namespace top1 {
         value = &owner.cur_value();
       }
 
-      bool compare(const IteratorImpl& r) const
+      bool equal(const IteratorImpl& r) const
       {
         return value == r.value;
       }
@@ -147,7 +157,8 @@ namespace top1 {
       const value_type* value;
     };
 
-    using iterator = iterator_adaptor<IteratorImpl>;
+    using fwd_iterator = iterator_adaptor<IteratorImpl>;
+    using iterator = float_step_iterator<fwd_iterator>;
     using value_type = Value;
 
     /* Initialization */
@@ -163,7 +174,7 @@ namespace top1 {
     /// Get an iterator that moves forward, at speed `speed`
     iterator read(float speed = 1.f)
     {
-      return iterator(*this);
+      return iterator(fwd_iterator{*this}, speed);
     }
 
     std::size_t position() const
@@ -205,7 +216,7 @@ namespace top1 {
           return std::invoke(func, std::move(val));
         });
 
-      std::copy_n(gen, write_n, std::move(first));
+      std::copy_n(std::move(gen), write_n, std::move(first));
 
       // Atomically update `write_sect`
       audio::Section<int> new_sect;
@@ -213,6 +224,21 @@ namespace top1 {
       do {
         new_sect = expected_sect + written;
       } while (!write_sect.compare_exchange_weak(expected_sect, new_sect));
+    }
+
+    template<typename Iter>
+    void read_frames(int n, float speed, Iter&& first)
+    {
+      float error = 0.f;
+      auto dst = std::forward<Iter>(first);
+      auto src = std::begin(buffer) + current_position;
+      for (int i = 0; i < n; i++, dst++) {
+        float intpart = 0;
+        error = std::modf(speed + error, &intpart);
+        *dst = *src;
+        std::advance(src, intpart);
+      }
+      advance(n * speed);
     }
 
     /// Jumps the tape to absolute position `p`

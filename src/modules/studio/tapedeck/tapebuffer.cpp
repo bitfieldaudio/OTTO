@@ -71,8 +71,7 @@ namespace top1 {
         || (write_sect.in - owner.tail)  <= min_read_size * 2
         || (owner.head - write_sect.out) <= min_read_size * 2)
       {
-        // file.write_samples(std::begin(owner.buffer) + write_sect.in,
-        //   4 * write_sect.size());
+        write_wrapped(write_sect.in, write_sect.size());
 
         // Atomically update `write_sect`
         audio::Section<int> new_sect;
@@ -91,8 +90,7 @@ namespace top1 {
       if (auto diff = goal_length - (owner.head - index);
         diff > min_read_size)
       {
-        file.seek(owner.head * 4);
-        // file.read_samples(std::begin(owner.buffer) + owner.head, 4 * diff);
+        read_wrapped(owner.head, diff);
         owner.head = std::clamp(owner.head + diff, 0, (int) tape_buffer::max_length);
         if (auto dst = owner.head - owner.tail; dst > buffer_size) {
           // Get rid of overlap
@@ -103,12 +101,49 @@ namespace top1 {
         diff > min_read_size)
       {
         int read_pos = std::clamp(owner.tail - diff, 0, (int) tape_buffer::max_length);
-        // file.read_samples(std::begin(owner.buffer) + read_pos, 4 * diff);
+        read_wrapped(read_pos, diff);
         owner.tail = read_pos;
         if (auto dst = owner.head - owner.tail; dst > buffer_size) {
           // Get rid of overlap
           owner.tail -= std::max(0, dst - buffer_size + 2);
         }
+      }
+    }
+
+    /// Read `n` samples to `position`, splitting the operation into two reads if
+    /// wrapping is necessary
+    ///
+    /// This could have been done just using the wrapping array iterators, but
+    /// performance tests (see `test/util/bytefile.t.cpp`) say the pointer
+    /// optimization is around 50 times faster
+    void read_wrapped(int position, int n)
+    {
+      // We dont have to worry about thread safety in here, everything is thread local
+      int wrap_pos = wrap(position);
+      int overflow = std::max(0, wrap_pos + n - buffer_size);
+      file.seek(4 * position);
+      std::fill_n(std::begin(owner.buffer) + wrap_pos, n, std::array<float, 4>{0.f, 0.f, 0.f, 0.f});
+      file.read_samples((owner.buffer.data() + wrap_pos)->data(), 4 * (n - overflow));
+      if (overflow > 0) {
+        file.read_samples(owner.buffer.data()->data(), 4 * overflow);
+      }
+    }
+
+    /// Write `n` samples to `position`, splitting the operation into two writes if
+    /// wrapping is necessary
+    ///
+    /// This could have been done just using the wrapping array iterators, but
+    /// performance tests (see `test/util/bytefile.t.cpp`) say the pointer
+    /// optimization is around 50 times faster
+    void write_wrapped(int position, int n)
+    {
+      // We dont have to worry about thread safety in here, everything is thread local
+      int wrap_pos = wrap(position);
+      int overflow = std::max(0, wrap_pos + n - buffer_size);
+      file.seek(4 * position);
+      file.write_samples((owner.buffer.data() + wrap_pos)->data(), 4 * (n - overflow));
+      if (overflow > 0) {
+        file.write_samples(owner.buffer.data()->data(), 4 * overflow);
       }
     }
   };

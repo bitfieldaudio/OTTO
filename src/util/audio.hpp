@@ -1,11 +1,11 @@
 #pragma once
 
-#include "util/typedefs.hpp"
-
 #include <type_traits>
 #include <cmath>
+#include <gsl/span>
 
 #include "util/dyn-array.hpp"
+#include "util/iterator.hpp"
 
 namespace top1::audio {
 
@@ -28,29 +28,32 @@ namespace top1::audio {
 
   /*
    * A simple average, used to get a 1-dimensional graph of audio
-   *
    */
   struct Graph {
     float sum = 0;
     int nsamples = 0;
     float average = 0;
 
+    /// Add a sample to the graph
     void add(float sample) {
       ++nsamples;
       sum += std::abs(sample);
       average = nsamples == 0 ? 0 : sum/nsamples;
     }
+
+    /// Clear the values, starting a new average
     void clear() {
-      sum /= 16.0;
-      nsamples /= 16;
-      average = nsamples == 0 ? 0 : sum/nsamples;
+      sum = 0;
+      nsamples = 0;
+      average = 0;
     }
 
+    /// get `average` clamped to `[0, 1]`
     float clip() const {
-      return std::min<float>(average, 1);
+      return std::clamp(average, 0.f, 1.f);
     }
 
-    operator float() {
+    operator float() const {
       return average;
     }
   };
@@ -85,12 +88,12 @@ namespace top1::audio {
     }
 
     enum Overlap {
-      None,
-      Equal,
-      Contains,
-      Contained,
-      ContainsIn,
-      ContainsOut,
+      None        = 0b0000,
+      Equal       = 0b0001,
+      Contained   = 0b0010,
+      ContainsIn  = 0b0100,
+      ContainsOut = 0b1000,
+      Contains    = ContainsIn | ContainsOut,
     };
 
     Overlap overlaps(const Section<T> &other) const {
@@ -102,18 +105,40 @@ namespace top1::audio {
       return Overlap::None;
     }
 
+    /// Add `o` to this section
+    ///
+    /// Will, if needed, extend this section to span over both this and `o`
+    ///
+    /// If `o` has `size < 0`, no modifications are made
     Section& operator+=(Section o) {
       in = std::min(in, o.in);
       out = std::max(out, o.out);
       return *this;
     }
 
+    /// Add `o` to a copy of this section
+    ///
+    /// see <operator+=> for details
     Section operator+(Section o) const {
       Section res = *this;
       res += o;
       return res;
     }
 
+    /// Subtract `o` from this section.
+    ///
+    /// If the result cannot be expressed as a single section, no modifications
+    /// are made.
+    ///
+    ///  - If this contains `o`, no modifications are made.
+    ///  - If this is contained by or equal to `o`, it will be turned into a
+    ///    unspecified, zero-size section.
+    ///  - If the two sections partially overlap, the overlapping part will be
+    ///    removed.
+    ///
+    /// As such, it is guarantied that every part in this, but not in `o` will
+    /// be preserved. It is however not guarrantied that all of `o` will be
+    /// removed.
     Section& operator-=(Section o) {
       switch (overlaps(o)) {
       case ContainsIn:
@@ -129,6 +154,9 @@ namespace top1::audio {
       return *this;
     }
 
+    /// Subtract `o` from a copy of this.
+    ///
+    /// See <operator-=> for details
     Section operator-(Section o) const {
       Section res = *this;
       res -= o;
