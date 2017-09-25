@@ -31,23 +31,29 @@ namespace top1::ui::drawing {
     inline Font Light;
     inline Font Norm;
     inline Font Bold;
+    inline Font SemiBold;
+    inline Font Mono;
 
     inline fs::path font_dir {"data/fonts"};
+    inline void loadFont(Canvas& ctx, Font& font, const std::string& name)
+    {
+      auto path = Fonts::font_dir / (name + ".ttf");
+      font = Font(ctx, name, path);
+      if (!Fonts::Light.valid()) {
+        LOGE << "Invalid font: " << Fonts::Light.name << "";
+        if (!fs::exists(path)) {
+          LOGE << "Font file not found: " << path.c_str();
+        }
+      }
+    }
   }
 
-  inline void initUtils(Canvas &canvas) {
-    Fonts::Light = Font(canvas, "TOP-1 Light", Fonts::font_dir / "TOP-1" / "TOP-1.ttf");
-    if (!Fonts::Light.valid()) {
-      LOGE << "Invalid font: " << Fonts::Light.name;
-    }
-    Fonts::Norm = Font(canvas, "TOP-1 Regular", Fonts::font_dir / "TOP-1" / "TOP-1.ttf");
-    if (!Fonts::Norm.valid()) {
-      LOGE << "Invalid font: " << Fonts::Norm.name;
-    }
-    Fonts::Bold = Font(canvas, "TOP-1 Bold", Fonts::font_dir / "TOP-1" / "TOP-1.ttf");
-    if (!Fonts::Bold.valid()) {
-      LOGE << "Invalid font: " << Fonts::Bold.name;
-    }
+  inline void initUtils(Canvas& ctx) {
+    Fonts::loadFont(ctx, Fonts::Light, "TOP-1-Light");
+    Fonts::loadFont(ctx, Fonts::Norm, "TOP-1-Regular");
+    Fonts::loadFont(ctx, Fonts::Bold, "TOP-1-Bold");
+    Fonts::loadFont(ctx, Fonts::SemiBold, "TOP-1-SemiBold");
+    Fonts::loadFont(ctx, Fonts::Mono, "TOP-1-Mono-Regular");
   }
 
 } // ui::drawing
