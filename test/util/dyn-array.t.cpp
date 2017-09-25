@@ -24,9 +24,8 @@ SCENARIO("DynArrays can be resized", "[DynArray]") {
       }
 
       THEN("all elements are 0") {
-        for (int i = 0; i < newSize; i++) {
-          REQUIRE(a[i] == 0);
-        }
+        REQUIRE(std::all_of(std::begin(a), std::end(a),
+            [](auto&& a) {return a == 0;}));
       }
     }
 
@@ -41,9 +40,8 @@ SCENARIO("DynArrays can be resized", "[DynArray]") {
       }
 
       THEN("all elements are 0") {
-        for (int i = 0; i < newSize; i++) {
-          REQUIRE(a[i] == 0);
-        }
+        REQUIRE(std::all_of(std::begin(a), std::end(a),
+            [](auto&& a) {return a == 0;}));
       }
     }
 
@@ -70,9 +68,8 @@ SCENARIO("DynArrays can be random-accessed", "[DynArray]") {
       }
 
       THEN("all elements are 0") {
-        for (int i = 0; i < size; i++) {
-          REQUIRE(a[i] == 0);
-        }
+        REQUIRE(std::all_of(std::begin(a), std::end(a),
+            [](auto&& a) {return a == 0;}));
       }
     }
 
@@ -114,9 +111,8 @@ SCENARIO("DynArrays can be cleared", "DynArray") {
       }
 
       THEN("All elements are 0") {
-        for (int i = 0; i < size; i++) {
-          REQUIRE(a[i] == 0);
-        }
+        REQUIRE(std::all_of(std::begin(a), std::end(a),
+            [](auto&& a) {return a == 0;}));
       }
     }
   }

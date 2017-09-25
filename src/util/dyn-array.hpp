@@ -45,14 +45,14 @@ namespace top1 {
     void resize(std::size_t new_size)
     {
       _data = std::make_unique<T[]>(new_size);
-      clear();
       cur_size = new_size;
+      clear();
     }
 
     /// Fill the array with default initialized values
     void clear()
     {
-      std::fill(begin(), end(), T{});
+      if (cur_size != 0) std::fill(begin(), end(), T{});
     }
   };
 }
