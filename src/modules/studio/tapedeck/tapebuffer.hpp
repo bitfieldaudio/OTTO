@@ -123,42 +123,6 @@ namespace top1 {
     static constexpr std::size_t buffer_size = 1 << 18;
     static constexpr std::size_t max_length = 8 * 60 * 44100;
 
-    /// Specification for iterator
-    ///
-    /// Take a look at <iterator_adaptor>
-    struct IteratorImpl {
-      using value_type        = Value;
-      using iterator_category = std::bidirectional_iterator_tag;
-      using reference         = value_type;
-
-      IteratorImpl(tape_buffer& owner)
-        : owner (owner)
-      {}
-
-      IteratorImpl(const IteratorImpl& o)
-        : owner (o.owner)
-      {}
-
-
-      void advance(int n)
-      {
-        owner.advance(n);
-        value = &owner.cur_value();
-      }
-
-      bool equal(const IteratorImpl& r) const
-      {
-        return value == r.value;
-      }
-
-      value_type dereference() { return *value; }
-
-      tape_buffer& owner;
-      const value_type* value;
-    };
-
-    using fwd_iterator = iterator_adaptor<IteratorImpl>;
-    using iterator = float_step_iterator<fwd_iterator>;
     using value_type = Value;
 
     /* Initialization */
@@ -170,12 +134,6 @@ namespace top1 {
     tape_buffer(tape_buffer&&) = delete;
 
     /* Member functions */
-
-    /// Get an iterator that moves forward, at speed `speed`
-    iterator read(float speed = 1.f)
-    {
-      return iterator(fwd_iterator{*this}, speed);
-    }
 
     std::size_t position() const
     {

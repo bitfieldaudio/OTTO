@@ -105,7 +105,7 @@ namespace top1 {
         owner.tail = read_pos;
         if (auto dst = owner.head - owner.tail; dst > buffer_size) {
           // Get rid of overlap
-          owner.tail -= std::max(0, dst - buffer_size + 2);
+          owner.head -= std::max(0, dst - buffer_size + 2);
         }
       }
     }
