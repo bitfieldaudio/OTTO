@@ -221,18 +221,17 @@ namespace top1::modules {
 
     // Read audio
     if (state.doPlayAudio()) {
-      auto trkbf = std::begin(trackBuffer);
-      tapeBuffer->read_frames(data.nframes, state.playSpeed, trkbf);
+      tapeBuffer->read_frames(data.nframes, state.playSpeed, std::begin(trackBuffer));
     }
 
     // Write audio
     if (state.recording()) {
       auto proc = std::begin(data.audio.proc);
-      // tapeBuffer->write_frames(data.nframes, state.playSpeed,
-      //   [&proc, track = state.track] (auto&& trk) {
-      //     trk[track] += *proc;
-      //     return trk;
-      //   } );
+      tapeBuffer->write_frames(data.nframes, state.playSpeed,
+        [&proc, track = state.track] (auto&& trk) {
+          trk[track] += *proc;
+          return trk;
+        });
     }
 
   }

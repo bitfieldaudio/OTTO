@@ -143,14 +143,11 @@ namespace top1::modules {
       draw_sliders(ctx);
 
       ctx.beginPath();
-      ctx.font(Fonts::Light);
+      ctx.font(Fonts::Mono);
       ctx.font(10);
       ctx.fillStyle(Colours::Yellow);
       auto str = fmt::format("[{}, {}]", timeStr(module->tapeBuffer->tail), timeStr(module->tapeBuffer->head));
       ctx.fillText(str, 10, 20);
-      ctx.fillStyle(Colours::Red);
-      str = fmt::format("[{}, {}]", timeStr(module->tapeBuffer->write_sect.load().in), timeStr(module->tapeBuffer->write_sect.load().out));
-      ctx.fillText(str, 10, 40);
     }
 
     void draw_static_backround(Canvas& ctx)
@@ -453,7 +450,7 @@ namespace top1::modules {
       }
 
       // Loop section
-      auto ls = module->loopSect;
+      auto ls = module->tapeBuffer->write_sect.load();
       if (ls.size() > 0) {
         if (view_time.overlaps(ls)) {
           ctx.beginPath();

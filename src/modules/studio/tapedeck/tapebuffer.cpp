@@ -54,7 +54,7 @@ namespace top1 {
 
         std::size_t index = owner.current_position;
 
-        write_from_buffer();
+        // write_from_buffer();
         fill_buffer(index);
 
         waiting.wait(lock);
@@ -122,7 +122,6 @@ namespace top1 {
       int wrap_pos = wrap(position);
       int overflow = std::max(0, wrap_pos + n - buffer_size);
       file.seek(4 * position);
-      std::fill_n(std::begin(owner.buffer) + wrap_pos, n, std::array<float, 4>{0.f, 0.f, 0.f, 0.f});
       file.read_samples((owner.buffer.data() + wrap_pos)->data(), 4 * (n - overflow));
       if (overflow > 0) {
         file.read_samples(owner.buffer.data()->data(), 4 * overflow);
@@ -150,7 +149,7 @@ namespace top1 {
 
   void tape_buffer::advance(int n)
   {
-    current_position = std::clamp((int) current_position + n, 0, (int) max_length);
+    current_position = std::clamp(current_position + n, 0, (int) max_length);
     producer->waiting.notify_all();
   }
 

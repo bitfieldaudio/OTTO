@@ -12,6 +12,7 @@
 
 namespace top1 {
 
+  // FDCL - Defined in tapebuffer.cpp
   struct Producer;
 
   // A simple array wrapper that provides an iterator that wraps across to the
@@ -30,12 +31,13 @@ namespace top1 {
     /// Specification for iterator
     ///
     /// Take a look at <iterator_adaptor>
+    template<typename Val>
     struct IteratorImpl {
-      using value_type        = T;
+      using value_type        = Val;
       using iterator_category = std::random_access_iterator_tag;
 
       IteratorImpl(value_type* begin, std::size_t index)
-        : value (begin + wrap(index)), index (index)
+        : value (begin + wrap(index)), index (wrap(index))
       {}
 
       void advance(int n)
@@ -61,59 +63,28 @@ namespace top1 {
       std::size_t index;
     };
 
-    /// Specification for iterator
-    ///
-    /// Take a look at <iterator_adaptor>
-    struct ConstIteratorImpl {
-      using value_type        = T;
-      using iterator_category = std::random_access_iterator_tag;
-
-      ConstIteratorImpl(value_type* begin, std::size_t index)
-        : value (begin + wrap(index)), index (index)
-      {}
-
-      void advance(int n)
-      {
-        auto newIndex = wrap(index + n);
-        value += (newIndex - index);
-        index = newIndex;
-      }
-
-      value_type dereference() { return *value; }
-
-      int equal(const ConstIteratorImpl& r) const
-      {
-        return value == r.value;
-      }
-
-      std::ptrdiff_t difference(const ConstIteratorImpl& r) const
-      {
-        return value - r.value;
-      }
-
-      value_type* value;
-      std::size_t index;
-    };
-
-    using iterator = iterator_adaptor<IteratorImpl>;
-    using const_iterator = iterator_adaptor<ConstIteratorImpl>;
-
     using value_type = T;
     std::array<value_type, size> storage;
-
+    using iterator = iterator_adaptor<IteratorImpl<value_type>>;
+    using const_iterator = iterator_adaptor<IteratorImpl<const value_type>>;
 
     iterator begin() {return {storage.data(), 0U};}
     const_iterator begin() const {return {storage.data(), 0U};}
     value_type* data() {return storage.data(); }
+
+    iterator iter(std::size_t index) {return {storage.data(), index};}
+    const_iterator iter(std::size_t index) const {return {storage.data(), index};}
+    const_iterator citer(std::size_t index) const {return {storage.data(), index};}
 
     value_type& operator[](std::size_t idx) {
       return storage[wrap(idx)];
     }
   };
 
-  /// A ringbuffer which allows consuming in both directions. It's
-  /// single-consumer, single-producer, and provides a bidirectional, variable
-  /// speed iterator for consuming.
+  /// The buffer used for the tapedeck
+  ///
+  /// Provides reading from file, variable speed reading/writing in both
+  /// directions and access to tape metadata, such as slices.
   class tape_buffer {
     using Value = std::array<float, 4>;
   public:
@@ -157,39 +128,36 @@ namespace top1 {
     void write_frames(int n, float speed, UnaryFunc&& func)
     {
       audio::Section<int> written;
-      auto first = std::begin(buffer);
       int write_n;
       if (speed > 0) {
         write_n = n / speed;
-        first += current_position - write_n;
         written = {current_position - write_n, current_position - 1};
       } else if (speed < 0) {
         write_n = n / -speed;
-        first += current_position + 1;
         written = {current_position + 1, current_position + write_n};
       }
 
-      auto gen = generator([&, iter = first] () mutable {
-          value_type val = *iter; // Copy
-          return std::invoke(func, std::move(val));
+      for_each_n(buffer.iter(written.in), write_n,
+        [&] (auto& frm) {
+          std::invoke(func, frm);
         });
-
-      std::copy_n(std::move(gen), write_n, std::move(first));
 
       // Atomically update `write_sect`
       audio::Section<int> new_sect;
       auto expected_sect = write_sect.load();
       do {
-        new_sect = expected_sect + written;
+        new_sect = written;
+        if (expected_sect.size() != 0) {
+          new_sect += expected_sect;
+        }
       } while (!write_sect.compare_exchange_weak(expected_sect, new_sect));
     }
 
     template<typename Iter>
-    void read_frames(int n, float speed, Iter&& first)
+    void read_frames(int n, float speed, Iter dst)
     {
       float error = 0.f;
-      auto dst = std::forward<Iter>(first);
-      auto src = std::begin(buffer) + current_position;
+      auto src = buffer.citer(current_position);
       for (int i = 0; i < n; i++, dst++) {
         float intpart = 0;
         error = std::modf(speed + error, &intpart);
@@ -203,8 +171,6 @@ namespace top1 {
     ///
     /// Use sparingly - a jump clears the entire buffer
     void jump_to(std::size_t p);
-
-  // private:
 
     /* Member variables */
 

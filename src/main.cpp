@@ -51,6 +51,17 @@ int main(int argc, char *argv[]) {
     Globals::jackAudio.exit();
     Globals::dataFile.write();
     Globals::events.postExit.runAll();
+    return 1;
+  } catch (...) {
+    LOGI << "Exception thrown, exitting!";
+    Globals::events.preExit.runAll();
+    Globals::ui.exit();
+    Globals::mixer.exit();
+    Globals::tapedeck.exit();
+    Globals::jackAudio.exit();
+    Globals::dataFile.write();
+    Globals::events.postExit.runAll();
+    return 1;
   }
 
   LOGI << "Exitting";

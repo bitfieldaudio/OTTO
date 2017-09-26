@@ -40,8 +40,8 @@ namespace top1 {
 
   template<typename InputIt, typename Size, typename F>
   constexpr InputIt for_each_n(InputIt&& first, Size n, F&& f) {
-    for (Size i = 0; i < n; ++first, (void) ++i) {
-      std::invoke(std::forward<F>(f), *first);
+    for (Size i = 0; i < n; ++first, ++i) {
+      std::invoke(f, *first);
     }
     return first;
   }
@@ -62,7 +62,7 @@ namespace top1 {
     std::size_t i = 0;
     std::for_each(std::forward<InputIt>(first), std::forward<InputIt>(last),
       [&] (auto&& a) {
-        std::invoke(std::forward<F>(f), a, i);
+        std::invoke(f, a, i);
         i++;
       });
     return i;
