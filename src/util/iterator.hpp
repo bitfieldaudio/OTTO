@@ -93,9 +93,17 @@ namespace top1 {
 
     /* Initialization */
 
+    using Impl::Impl;
+
     template<typename... Args>
     iterator_adaptor_impl(Args&&... args)
       : Impl {std::forward<Args>(args)...} {}
+
+    iterator_adaptor_impl(const iterator_adaptor_impl& r)
+      : Impl {static_cast<Impl>(r)} {}
+
+    iterator_adaptor_impl(iterator_adaptor_impl&& r)
+      : Impl {static_cast<Impl>(std::move(r))} {}
 
     virtual ~iterator_adaptor_impl() = default;
 
@@ -168,6 +176,9 @@ namespace top1 {
     iterator_adaptor_impl(Args&&... args)
       : Super {std::forward<Args>(args)...} {}
 
+    iterator_adaptor_impl(const iterator_adaptor_impl&) = default;
+    iterator_adaptor_impl(iterator_adaptor_impl&&) = default;
+
     using Super::operator=;
 
     using Super::operator++;
@@ -207,6 +218,9 @@ namespace top1 {
     template<typename... Args>
     iterator_adaptor_impl(Args&&... args)
       : Super {std::forward<Args>(args)...} {}
+
+    iterator_adaptor_impl(const iterator_adaptor_impl&) = default;
+    iterator_adaptor_impl(iterator_adaptor_impl&&) = default;
 
     using Super::operator=;
 

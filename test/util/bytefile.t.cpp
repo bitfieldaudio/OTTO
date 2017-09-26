@@ -208,6 +208,7 @@ namespace top1 {
 
       INFO(fmt::format("Iterators: {}ns", iterTime.count()));
       INFO(fmt::format("Pointers:  {}ns", ptrTime.count()));
+      INFO(fmt::format("Pointers are {} times faster", iterTime.count() / ptrTime.count()));
     }
   }
 
