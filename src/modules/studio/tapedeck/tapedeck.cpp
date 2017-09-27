@@ -210,10 +210,6 @@ namespace top1::modules {
       }
     }
 
-    float realSpeed = props.baseSpeed * state.playSpeed;
-
-    std::fill(std::begin(trackBuffer), std::end(trackBuffer), AudioFrame{{0.f, 0.f, 0.f, 0.f}});
-
     // Start recording by pressing a key
     if (!state.recording() && state.doStartRec() && state.readyToRec) {
       if (std::any_of(std::begin(data.midi), std::end(data.midi),
@@ -222,14 +218,19 @@ namespace top1::modules {
       }
     }
 
-    // Read audio
-    if (state.doPlayAudio()) {
-      tapeBuffer->read_frames(data.nframes, realSpeed, std::begin(trackBuffer));
-    }
+    float realSpeed = props.baseSpeed * state.playSpeed;
+    auto pos = position();
+
+    std::fill(std::begin(trackBuffer), std::end(trackBuffer), AudioFrame{{0.f, 0.f, 0.f, 0.f}});
 
     // Just started recording
     if (state.recording() && !state.recLast) {
-      recSect = {position(), position()};
+      recSect = {pos, pos};
+    }
+
+    // Read audio
+    if (state.doPlayAudio()) {
+      tapeBuffer->read_frames(data.nframes, realSpeed, std::begin(trackBuffer));
     }
 
     if (state.recording()) {
@@ -247,6 +248,7 @@ namespace top1::modules {
       recSect = {-1, -2};
     }
 
+    // Save recording state
     state.recLast = state.recording();
 
     // Graph
