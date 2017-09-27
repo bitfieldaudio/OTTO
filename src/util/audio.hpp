@@ -43,9 +43,10 @@ namespace top1::audio {
 
     /// Clear the values, starting a new average
     void clear() {
-      sum = 0;
-      nsamples = 0;
-      average = 0;
+      int scale = 64;
+      sum /= scale;
+      nsamples /= scale;
+      average = nsamples == 0 ? 0 : sum/nsamples;
     }
 
     /// get `average` clamped to `[0, 1]`

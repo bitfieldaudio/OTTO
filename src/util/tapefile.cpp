@@ -24,8 +24,8 @@ namespace top1 {
       f.read_bytes(temp).unwrap_ok();
       index = temp.as_u();
       f.read_bytes(temp).unwrap_ok();
-      tf.slices.at(index).count = temp.as_u();
-      f.read_bytes((std::byte*) tf.slices.at(index).array.data(),
+      tf.slices[index].count = temp.as_u();
+      f.read_bytes((std::byte*) tf.slices[index].array.data(),
         2048 * sizeof(SliceData)).unwrap_ok();
     }
   };
@@ -40,14 +40,14 @@ namespace top1 {
     void write_fields(ByteFile& f) override {
       f.write_bytes(version);
       for (auto&& trck : tracks) {
-        trck.write_fields(f);
+        trck.write(f);
       }
     }
 
     void read_fields(ByteFile& f) override {
       f.read_bytes(version).unwrap_ok();
       for (auto&& trck : tracks) {
-        trck.read_fields(f);
+        trck.read(f);
       }
     }
   };

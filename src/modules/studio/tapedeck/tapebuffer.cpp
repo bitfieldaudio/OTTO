@@ -83,7 +83,7 @@ namespace top1 {
         || (write_sect.in - owner.tail)  <= min_read_size * 2
         || (owner.head - write_sect.out) <= min_read_size * 2)
       {
-        write_wrapped(write_sect.in, write_sect.size() + 1);
+        write_wrapped(write_sect.in, write_sect.size());
 
         // Atomically update `write_sect`
         audio::Section<int> new_sect;
@@ -161,13 +161,13 @@ namespace top1 {
     void read_slices()
     {
       for (int track = 0; track < 4; track++) {
-        auto file_slices = file.slices[track];
-        auto owner_slices = owner.slices[track];
+        auto& file_slices = file.slices[track];
+        auto& owner_slices = owner.slices[track];
         auto n = file_slices.count;
 
         owner_slices.clear();
         std::transform(std::begin(file_slices.array), std::begin(file_slices.array) + n,
-          std::back_inserter(owner_slices), [] (auto&& slice) {
+          std::back_inserter(owner_slices.slices), [] (auto&& slice) {
             return audio::Section<int>{
               gsl::narrow_cast<int>(slice.in),
               gsl::narrow_cast<int>(slice.out)};
@@ -178,9 +178,10 @@ namespace top1 {
     void write_slices()
     {
       for (int track = 0; track < 4; track++) {
-        auto file_slices = file.slices[track];
-        auto owner_slices = owner.slices[track];
+        auto& file_slices = file.slices[track];
+        auto& owner_slices = owner.slices[track];
         auto n = std::min(file_slices.array.size(), owner_slices.size());
+        file_slices.count = n;
 
         auto last = std::transform(
           std::begin(owner_slices),
@@ -191,8 +192,6 @@ namespace top1 {
               gsl::narrow_cast<std::uint32_t>(slice.in),
               gsl::narrow_cast<std::uint32_t>(slice.out)};
           });
-
-        std::fill(last, std::end(file_slices.array), TapeFile::SliceData{0,0});
       }
     }
   };
@@ -231,5 +230,55 @@ namespace top1 {
   {}
 
   tape_buffer::~tape_buffer() {}
+
+  /*
+   * TapeSliceSet
+   */
+
+  std::vector<tape_buffer::TapeSlice>
+  tape_buffer::TapeSliceSet::overlapping_slices(TapeSlice area) const {
+    std::vector<TapeSlice> xs;
+    std::copy_if(std::begin(slices), std::end(slices), std::back_inserter(xs),
+      [&] (auto&& slice) {
+        return slice.overlaps(area);
+      });
+    return xs;
+  }
+
+  bool tape_buffer::TapeSliceSet::in_slice(int time) const {
+    return std::any_of(std::begin(slices), std::end(slices),
+      [time] (auto&& slice) { return slice.contains(time); });
+  }
+
+  tape_buffer::TapeSlice tape_buffer::TapeSliceSet::current(int time) const {
+    for (auto&& slice : slices) {
+      if (slice.contains(time)) return slice;
+    }
+    return {-1, -1};
+  }
+
+  void tape_buffer::TapeSliceSet::erase(TapeSlice slice) {
+    for (auto&& sl : slices) {
+      sl -= slice;
+    }
+    std::remove_if(std::begin(slices), std::end(slices),
+      [] (auto&& in) { return in.size() == 0; });
+  }
+
+  void tape_buffer::TapeSliceSet::add(TapeSlice slice) {
+    erase(slice);
+    slices.push_back(slice);
+  }
+
+  void tape_buffer::TapeSliceSet::cut(int time) {
+    if (!in_slice(time)) return;
+    TapeSlice slice = current(time);
+    add({slice.in, time});
+    add({time + 1, slice.out});
+  }
+
+  void tape_buffer::TapeSliceSet::glue(TapeSlice s1, TapeSlice s2) {
+    add({std::min(s1.in, s2.in), std::max(s1.out, s2.out)});
+  }
 
 }

@@ -7,6 +7,7 @@
 #include "core/ui/drawing.hpp"
 #include "tapedeck.hpp"
 #include "tapescreen.hpp"
+#include "util/timer.hpp"
 
 namespace top1::modules {
 
@@ -174,7 +175,7 @@ namespace top1::modules {
    */
 
   void Tapedeck::process(const audio::ProcessData& data) {
-
+    TIME_SCOPE("Tapedeck::process");
     { // Animate the tape speed
       constexpr int time = 200; // animation time from 0 to 1 in ms
       static int x;
@@ -234,18 +235,25 @@ namespace top1::modules {
     if (state.recording()) {
       // Write audio
       auto sect = tapeBuffer->write_frames(std::begin(data.audio.proc), data.nframes,
-        realSpeed, [track = state.track] (auto&& src, auto& dst) {
-          dst[track] += src;
+        realSpeed, [&, track = state.track] (auto&& src, auto& dst) {
+          dst[track] += src * props.gain;
         });
       recSect += sect;
     }
 
     // Just stopped recording
     if (!state.recording() && state.recLast) {
-      tapeBuffer->slices[state.track].push_back(recSect);
+      tapeBuffer->slices[state.track].add(recSect);
       recSect = {-1, -2};
     }
 
     state.recLast = state.recording();
+
+    // Graph
+
+    procGraph.clear();
+    for (auto&& smpl : data.audio.proc) {
+      procGraph.add(smpl * props.gain);
+    }
   }
 } // top1::module

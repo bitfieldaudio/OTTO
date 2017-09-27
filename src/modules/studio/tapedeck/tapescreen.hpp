@@ -65,9 +65,14 @@ namespace top1::modules {
         else module->goToLoopOut();
         return true;
       case ui::K_CUT:
-        if (module->state.doTapeOps())
-          // TODO:
-          // module->tapeBuffer.trackSlices[module->state.track].cut(module->tapeBuffer.position());
+        if (module->state.doTapeOps()) {
+          if (shift) {
+            // TODO: Glue
+          } else {
+            module->tapeBuffer->slices[module->state.track]
+              .cut(module->position());
+          }
+        }
           return true;
       case ui::K_LIFT:
         if (module->state.doTapeOps())
@@ -140,8 +145,9 @@ namespace top1::modules {
       draw_timeline(ctx);
       draw_static_backround(ctx);
       draw_text(ctx);
+      draw_state_icon(ctx);
       draw_speed_indicator(ctx);
-      draw_sliders(ctx);
+      draw_slider(ctx);
     }
 
     void draw_static_backround(Canvas& ctx)
@@ -170,6 +176,7 @@ namespace top1::modules {
       ctx.bezierCurveTo(271.4, 156.6, 274.3, 153.7, 277.9, 153.7);
       ctx.bezierCurveTo(281.4, 153.7, 284.3, 156.6, 284.3, 160.2);
       ctx.closePath();
+      ctx.fill(Colours::Black);
       ctx.stroke();
 
       // tAPEDECK/CASETTEBORDERTOP
@@ -180,6 +187,14 @@ namespace top1::modules {
       ctx.lineTo(292.2, 19.1);
       ctx.bezierCurveTo(295.3, 19.1, 297.8, 21.6, 297.8, 24.7);
       ctx.lineTo(297.8, 36.4);
+      ctx.stroke();
+
+      // tAPEDECK/CASETTEBORDERLEFTBOT
+      ctx.beginPath();
+      ctx.moveTo(21.7, 36.4);
+      ctx.lineTo(21.7, 174.5);
+      ctx.bezierCurveTo(21.7, 177.6, 24.1, 180.0, 27.2, 180.0);
+      ctx.lineTo(49.2, 180.0);
       ctx.stroke();
 
       // tAPEDECK/CASETTEBORDERBOTMID
@@ -208,14 +223,6 @@ namespace top1::modules {
       ctx.lineTo(292.2, 180.0);
       ctx.bezierCurveTo(295.3, 180.0, 297.8, 177.6, 297.8, 174.5);
       ctx.lineTo(297.8, 155.0);
-      ctx.stroke();
-
-      // tAPEDECK/CASETTEBORDERLEFTBOT
-      ctx.beginPath();
-      ctx.moveTo(21.6, 155.0);
-      ctx.lineTo(21.6, 174.5);
-      ctx.bezierCurveTo(21.6, 177.6, 24.1, 180.0, 27.2, 180.0);
-      ctx.lineTo(49.2, 180.0);
       ctx.stroke();
 
       // tAPEDECK/CASETTEFELT
@@ -332,7 +339,7 @@ namespace top1::modules {
       ctx.font(Fonts::Norm);
       ctx.font(17.9);
       ctx.fillStyle(Colour::bytes(255, 255, 255));
-      ctx.fillText(fmt::format("{:.2f}", module->props.baseSpeed), 153.8, 96.3);
+      ctx.fillText(fmt::format("{:.1f}", module->props.baseSpeed), 153.8, 96.3);
 
       // tAPEDECK/TIMESTAMP
       ctx.fillText(timeStr(), 136.5, 54.8);
@@ -444,7 +451,7 @@ namespace top1::modules {
       }
 
       // Loop section
-      auto ls = module->tapeBuffer->write_sect.load();
+      auto ls = module->loopSect;
       if (ls.size() > 0) {
         if (view_time.overlaps(ls)) {
           ctx.beginPath();
@@ -457,30 +464,35 @@ namespace top1::modules {
 
       // tAPEDECK/TIMELINE
       ctx.restore();
-
-      ctx.strokeStyle(Colours::Tape);
       ctx.lineWidth(2.0);
 
-      for (int track = 0; track < 4; track++) {
+      auto draw_slice = [&] (auto slice, int track) {
+        if (slice.size() == 0) return;
         float y = 203 + 5 * track;
-        for (auto&& slice : module->tapeBuffer->slices[track]) {
-          if (slice.overlaps(view_time)) {
-            ctx.beginPath();
-            ctx.moveTo(std::max(left_edge,  time_to_coord(slice.in)), y);
-            ctx.lineTo(std::min(right_edge, time_to_coord(slice.out)), y);
-            ctx.stroke(Colours::Tape);
-          }
+        ctx.beginPath();
+        ctx.moveTo(std::max(left_edge,  time_to_coord(slice.in)), y);
+        ctx.lineTo(std::min(right_edge, time_to_coord(slice.out - 1)), y);
+        ctx.stroke();
+      };
+
+      ctx.strokeStyle(Colours::Tape);
+      for (int track = 0; track < 4; track++) {
+        for (auto&& slice : module->tapeBuffer->slices[track]
+               .overlapping_slices(view_time)) {
+          draw_slice(slice, track);
         }
       }
 
+      // Recording or selected
+      int cur_track = module->state.track;
       auto slice = module->recSect;
       if (slice.size() > 0 ) {
-        float y = 203 + 5 * module->state.track;
-        ctx.beginPath();
-        ctx.moveTo(std::max(left_edge,  time_to_coord(slice.in)), y);
-        ctx.lineTo(std::min(right_edge, time_to_coord(slice.out)), y);
-        ctx.stroke(Colours::Red);
+        ctx.strokeStyle(Colours::Red);
+      } else {
+        slice = module->tapeBuffer->slices[cur_track].current(module->position());
+        ctx.strokeStyle(Colours::Blue);
       }
+      draw_slice(slice, cur_track);
 
       // tAPEDECK/TIMELINE/TAPEINDICATORLEFT
       ctx.save();
@@ -580,10 +592,14 @@ namespace top1::modules {
       ctx.restore();
     }
 
-    void draw_sliders(Canvas& ctx)
+    void draw_slider(Canvas& ctx)
     {
-            // tAPEDECK/SYNTH
+      float graph = module->procGraph.clip();
+      float setting = module->props.gain.mode.normalize();
+      auto colour = (Colour::bytes(60, 60, 59).mix(Colours::Red,
+          std::min(1.f, graph / setting * 3.f)));
       ctx.save();
+      // tAPEDECK/SYNTH
       ctx.beginPath();
       ctx.moveTo(290.6, 138.4);
       ctx.lineTo(290.6, 142.1);
@@ -600,96 +616,144 @@ namespace top1::modules {
       ctx.bezierCurveTo(304.2, 133.0, 305.0, 133.8, 305.0, 134.8);
       ctx.lineTo(305.0, 138.4);
       ctx.lineWidth(2.0);
-      ctx.strokeStyle(Colour::bytes(60, 60, 59));
       ctx.lineCap(Canvas::LineCap::ROUND);
       ctx.lineJoin(Canvas::LineJoin::ROUND);
-      ctx.stroke();
-
-      // tAPEDECK/METERLEFT
-
-      // tAPEDECK/METERLEFT/METERLEFTSTATIC
-      ctx.save();
-      ctx.beginPath();
-      ctx.moveTo(21.6, 120.6);
-      ctx.lineTo(21.6, 42.4);
-      ctx.stroke();
-
-      // tAPEDECK/METERLEFT/METERLEFTLEVEL
-      ctx.beginPath();
-      ctx.moveTo(21.6, 120.6);
-      ctx.lineTo(21.6, 78.9);
-      ctx.strokeStyle(Colour::bytes(0, 158, 227));
-      ctx.stroke();
-
-      // tAPEDECK/METERRIGHT
-      ctx.restore();
+      ctx.stroke(colour);
 
       // tAPEDECK/METERRIGHT/METERRIGHTSTATIC
-      ctx.save();
       ctx.beginPath();
       ctx.moveTo(297.8, 120.6);
       ctx.lineTo(297.8, 42.4);
-      ctx.stroke();
+      ctx.stroke(Colour::bytes(60, 60, 59));
 
-      // tAPEDECK/METERRIGHT/METERRIGHTLEVEL
+      // Graph
+      if (graph > 0.005) {
+        ctx.beginPath();
+        ctx.moveTo(297.8, 120.6);
+        float y = 120.6 - (120.6 - 42.4) * graph;
+        ctx.lineTo(297.8, y);
+        ctx.stroke(Colours::Red);
+      }
+
+      // Setting
       ctx.beginPath();
-      ctx.moveTo(297.8, 120.6);
-      ctx.lineTo(297.8, 78.9);
-      ctx.strokeStyle(Colour::bytes(230, 51, 42));
-      ctx.stroke();
+      float y = 120.6 - (120.6 - 42.4) * setting;
+      ctx.circle(297.8, y, 2.f);
+      ctx.fill(Colours::Red);
 
-      // tAPEDECK/DRUMS
       ctx.restore();
+    }
 
-      // tAPEDECK/DRUMS/TOM
+    void draw_state_icon(Canvas& ctx)
+    {
+
+      auto& state = module->state;
       ctx.save();
-      ctx.beginPath();
-      ctx.moveTo(28.8, 138.1);
-      ctx.bezierCurveTo(28.8, 142.0, 25.6, 145.2, 21.7, 145.2);
-      ctx.bezierCurveTo(17.7, 145.2, 14.5, 142.0, 14.5, 138.1);
-      ctx.bezierCurveTo(14.5, 134.1, 17.7, 130.9, 21.7, 130.9);
-      ctx.bezierCurveTo(25.6, 130.9, 28.8, 134.1, 28.8, 138.1);
-      ctx.closePath();
-      ctx.stroke();
 
-      // tAPEDECK/DRUMS/STICK
-      ctx.beginPath();
-      ctx.moveTo(21.7, 138.1);
-      ctx.lineTo(21.7, 148.0);
-      ctx.stroke();
+      ctx.lineCap(Canvas::LineCap::ROUND);
+      ctx.lineJoin(Canvas::LineJoin::ROUND);
+      ctx.lineWidth(2.0);
+      // Correct for some export error
+      ctx.translate(-3.3, 0);
 
-      // tAPEDECK/DRUMS/HEAD
-      ctx.beginPath();
-      ctx.moveTo(23.6, 138.1);
-      ctx.bezierCurveTo(23.6, 139.1, 22.7, 140.0, 21.7, 140.0);
-      ctx.bezierCurveTo(20.6, 140.0, 19.7, 139.1, 19.7, 138.1);
-      ctx.bezierCurveTo(19.7, 137.0, 20.6, 136.1, 21.7, 136.1);
-      ctx.bezierCurveTo(22.7, 136.1, 23.6, 137.0, 23.6, 138.1);
-      ctx.closePath();
-      ctx.stroke();
+      if (state.readyToRec) {
+        ctx.strokeStyle(Colours::Red); // Red means recording
+        ctx.fillStyle(Colours::Red);
+      } else if (state.playing()) {
+        ctx.strokeStyle(Colours::Green);
+        ctx.fillStyle(Colours::Green);
+      } else {
+        ctx.strokeStyle(Colours::White);
+        ctx.fillStyle(Colours::White);
+      }
 
-      // tAPEDECK/LEFTLEVELCONTROL
-      ctx.restore();
-      ctx.beginPath();
-      ctx.moveTo(23.9, 61.8);
-      ctx.bezierCurveTo(23.9, 63.1, 22.8, 64.2, 21.4, 64.2);
-      ctx.bezierCurveTo(20.1, 64.2, 19.0, 63.1, 19.0, 61.8);
-      ctx.bezierCurveTo(19.0, 60.4, 20.1, 59.3, 21.4, 59.3);
-      ctx.bezierCurveTo(22.8, 59.3, 23.9, 60.4, 23.9, 61.8);
-      ctx.closePath();
-      ctx.fillStyle(Colour::bytes(0, 158, 227));
-      ctx.fill();
+      if (state.recording()){ // Record
+        ctx.beginPath();
+        ctx.moveTo(163.5, 134.5);
+        ctx.bezierCurveTo(160.3, 134.5, 157.8, 131.9, 157.8, 128.7);
+        ctx.bezierCurveTo(157.8, 125.6, 160.3, 123.0, 163.5, 123.0);
+        ctx.bezierCurveTo(166.7, 123.0, 169.3, 125.6, 169.3, 128.7);
+        ctx.bezierCurveTo(169.3, 131.9, 166.7, 134.5, 163.5, 134.5);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+      } else if (state.spooling() && state.playSpeed > 0) { // Spool FWD
+        // Arrow 2
+        ctx.beginPath();
+        ctx.moveTo(164.1, 122.9);
+        ctx.lineTo(164.0, 134.5);
+        ctx.lineTo(178.2, 128.6);
+        ctx.lineTo(164.1, 122.9);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
 
-      // tAPEDECK/RIGHTLEVELCONTROL
-      ctx.beginPath();
-      ctx.moveTo(300.2, 60.1);
-      ctx.bezierCurveTo(300.2, 61.5, 299.1, 62.6, 297.8, 62.6);
-      ctx.bezierCurveTo(296.4, 62.6, 295.3, 61.5, 295.3, 60.1);
-      ctx.bezierCurveTo(295.3, 58.7, 296.4, 57.6, 297.8, 57.6);
-      ctx.bezierCurveTo(299.1, 57.6, 300.2, 58.7, 300.2, 60.1);
-      ctx.closePath();
-      ctx.fillStyle(Colour::bytes(230, 51, 42));
-      ctx.fill();
+        // Arrow 1
+        ctx.beginPath();
+        ctx.moveTo(149.0, 122.9);
+        ctx.lineTo(149.0, 134.5);
+        ctx.lineTo(163.2, 128.6);
+        ctx.lineTo(149.0, 122.9);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+      } else if (state.spooling() && state.playSpeed < 0) { // Spool BWD
+        // Arrow 1
+        ctx.beginPath();
+        ctx.moveTo(163.1, 134.5);
+        ctx.lineTo(163.2, 122.9);
+        ctx.lineTo(149.0, 128.8);
+        ctx.lineTo(163.1, 134.5);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // Arrow 2
+        ctx.beginPath();
+        ctx.moveTo(178.2, 134.5);
+        ctx.lineTo(178.2, 122.9);
+        ctx.lineTo(164.0, 128.8);
+        ctx.lineTo(178.2, 134.5);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+      } else if (state.looping) { // Loop
+        ctx.beginPath();
+        ctx.moveTo(154.2, 123.0);
+        ctx.bezierCurveTo(151.0, 123.0, 148.5, 125.5, 148.5, 128.7);
+        ctx.bezierCurveTo(148.5, 131.8, 151.0, 134.4, 154.2, 134.4);
+        ctx.lineTo(173.0, 134.4);
+        ctx.bezierCurveTo(176.2, 134.4, 178.7, 131.8, 178.7, 128.7);
+        ctx.bezierCurveTo(178.7, 125.5, 176.2, 123.0, 173.0, 123.0);
+        ctx.lineTo(165.1, 123.0);
+        ctx.stroke();
+
+        // Arrow head
+        ctx.beginPath();
+        ctx.moveTo(165.8, 125.2);
+        ctx.lineTo(163.5, 123.0);
+        ctx.lineTo(165.8, 120.7);
+        ctx.stroke();
+      } else if (state.playing()) { // Play
+        ctx.beginPath();
+        ctx.moveTo(159.5, 122.9);
+        ctx.lineTo(159.5, 134.5);
+        ctx.lineTo(168.6, 128.6);
+        ctx.lineTo(159.5, 122.9);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+      } else { // Stop
+        // ctx.beginPath();
+        // ctx.moveTo(169.3, 134.5);
+        // ctx.lineTo(157.8, 134.5);
+        // ctx.lineTo(157.8, 123.0);
+        // ctx.lineTo(169.3, 123.0);
+        // ctx.lineTo(169.3, 134.5);
+        // ctx.closePath();
+        // ctx.stroke();
+      }
+
       ctx.restore();
     }
 
@@ -699,8 +763,8 @@ namespace top1::modules {
       Point r_center = {224.6, 90.1};
       Colour colour  = module->state.readyToRec ? Colour(Colours::Red) : Colour::bytes(112, 126, 133);
 
-      float min_r = 25;
-      float max_r = 45;
+      float min_r = 26;
+      float max_r = 42;
       float pos_amount = (module->position() / float(tape_buffer::max_length));
       float l_radius = min_r + pos_amount * (max_r - min_r);
       float r_radius = min_r + (1 - pos_amount) * (max_r - min_r);
@@ -720,6 +784,7 @@ namespace top1::modules {
       // p is a point outside circle C
       // Calculate point ip on C, for which a line between ip and p is tangent
       // to C
+      // TODO: Some of this could be done constexpr or simply by hand
       math::vec cp = p - c;
       float l = std::sqrt(cp.x*cp.x + cp.y*cp.y);
       float v = std::asin(r/l);
@@ -795,7 +860,6 @@ namespace top1::modules {
       ctx.translate(center - Point{26.5, 26.5});
 
       // rEELWHEEL/LEFTREEL/2
-      ctx.save();
       ctx.beginPath();
       ctx.moveTo(35.1, 31.5);
       ctx.lineTo(38.3, 33.3);
@@ -863,7 +927,6 @@ namespace top1::modules {
       ctx.moveTo(35.1, 21.4);
       ctx.lineTo(38.3, 19.6);
       ctx.stroke();
-      ctx.restore();
       ctx.restore();
     }
   };

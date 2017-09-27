@@ -4,6 +4,7 @@
 #include <cmath>
 #include <atomic>
 #include <memory>
+#include <set>
 
 #include "util/iterator.hpp"
 #include "util/algorithm.hpp"
@@ -89,6 +90,34 @@ namespace top1 {
     using Value = std::array<float, 4>;
   public:
 
+    using TapeSlice = audio::Section<int>;
+
+    struct TapeSliceSet {
+      std::vector<TapeSlice> slices;
+
+      TapeSliceSet() {}
+
+      std::vector<TapeSlice> overlapping_slices(audio::Section<int> area) const;
+
+      bool in_slice(int time) const;
+      TapeSlice current(int time) const;
+
+      void add(TapeSlice slice);
+      void erase(TapeSlice slice);
+
+      void cut(int time);
+      void glue(TapeSlice s1, TapeSlice s2);
+
+      // Iteration
+      decltype(auto) begin() { return slices.begin(); }
+      decltype(auto) end() { return slices.end(); }
+      decltype(auto) begin() const { return slices.begin(); }
+      decltype(auto) end() const { return slices.end(); }
+      decltype(auto) size() const { return slices.size(); }
+      decltype(auto) clear() { return slices.clear(); }
+    };
+
+
     /* Constants */
 
     static constexpr std::size_t buffer_size = 1 << 18;
@@ -96,7 +125,7 @@ namespace top1 {
 
     using value_type = Value;
     /// Tape slices for each of the 4 tracks
-    std::array<std::vector<audio::Section<int>>, 4> slices;
+    std::array<TapeSliceSet, 4> slices;
 
     /* Initialization */
 
@@ -143,11 +172,11 @@ namespace top1 {
       float inpt_speed;
       if (speed > 0) {
         write_n = n * speed;
-        written = {current_position - write_n, current_position - 1};
+        written = {current_position - write_n, current_position};
         inpt_speed = 1.f / speed;
       } else if (speed < 0) {
         write_n = n * -speed;
-        written = {current_position + 1, current_position + write_n};
+        written = {current_position + 1, current_position + write_n + 1};
         inpt_speed = 1.f / -speed;
       }
 
