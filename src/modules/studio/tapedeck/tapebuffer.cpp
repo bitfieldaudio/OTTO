@@ -3,9 +3,11 @@
 #include <thread>
 #include <mutex>
 #include <condition_variable>
-#include "util/tapefile.hpp"
-#include "core/globals.hpp"
 #include <plog/Log.h>
+
+#include "util/tapefile.hpp"
+#include "util/timer.hpp"
+#include "core/globals.hpp"
 
 namespace top1 {
 
@@ -57,12 +59,13 @@ namespace top1 {
 
       while (keepRunning) {
         std::unique_lock lock {mutex};
+        {
+          TIME_SCOPE("TapeBuffer read cycle");
+          std::size_t index = owner.current_position;
 
-        std::size_t index = owner.current_position;
-
-        write_from_buffer();
-        fill_buffer(index);
-
+          write_from_buffer();
+          fill_buffer(index);
+        }
         waiting.wait(lock);
       }
 
