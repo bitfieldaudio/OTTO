@@ -49,7 +49,7 @@ namespace top1::modules {
     bool keypress(ui::Key key) override;
     void rotary(ui::RotaryEvent e) override;
 
-    public:
+  public:
     using ui::ModuleScreen<NukeSynth>::ModuleScreen;
   };
 
@@ -59,13 +59,24 @@ namespace top1::modules {
 
   NukeSynth::NukeSynth() :
     FaustSynthModule (std::make_unique<FAUSTCLASS>(), &props),
-      screen (new NukeSynthScreen(this)) {}
+    screen (new NukeSynthScreen(this)) {}
 
   void NukeSynth::display() {
     Globals::ui.display(*screen);
   }
 
-  void NukeSynth::process(const audio::ProcessData& data) {}
+  void NukeSynth::process(const audio::ProcessData& data)
+  {
+    props.key = 60;
+    props.trigger = 1;
+    props.velocity = 1.f;
+    buf.clear();
+    FaustSynthModule::process({buf.data(), data.nframes});
+    for_each_n(std::begin(data.audio.proc), data.nframes,
+      [src = std::cbegin(buf)] (auto& dst) mutable {
+        dst = *src;
+      });
+  }
 
   /*
    * NukeSynthScreen

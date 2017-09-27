@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function compile {
-    ARCH_DIR="./"
+    ARCH_DIR="./scripts/"
     ARCH_FILE="faust-template.h"
     echo "Compiling $1"
     bn=$(basename $1)

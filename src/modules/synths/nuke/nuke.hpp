@@ -10,6 +10,7 @@ namespace top1::modules {
   class NukeSynth : public FaustSynthModule {
 
     ui::ModuleScreen<NukeSynth>::ptr screen;
+    audio::RTBuffer<float> buf;
 
   public:
 
