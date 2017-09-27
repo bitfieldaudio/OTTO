@@ -113,34 +113,46 @@ namespace top1 {
 
     /// Move the point `n` forward. `n` can be negative
     void advance(int n = 1);
+    void notify_update();
+    void invalidate();
 
     /// Get a refference to the value at point
     value_type& cur_value();
 
-    /// Write `n` frames from `iter`.
+    /// Write `n` frames from `iter` at speed `speed`, throug `func`
+    ///
+    /// for each frame in the tape, `func` will be called with arguments
+    /// `*iter, *tape`. It is expected that `func` modifies the `tape` argument.
     ///
     /// `iter` will be slowed down/sped up according to `speed`. If `speed` is
     /// positive, the frames will be written "behind" the cursor, as in, the
     /// last frame will be positioned at `cursor - 1`. If `speed` is negative,
     /// the first frame in the range will be positioned at `cursor + 1`.
     /// If `speed` is `0`, nothing will be written
-    template<typename UnaryFunc>
-    void write_frames(int n, float speed, UnaryFunc&& func)
+    template<typename Iter, typename BinaryFunc>
+    void write_frames(Iter iter, int n, float speed,
+      BinaryFunc&& func = [] (auto&& in, auto& tape) { tape = in; })
     {
+      if (speed == 0) return;
+
       audio::Section<int> written;
-      int write_n;
+      int write_n = 0;
+      float inpt_speed;
       if (speed > 0) {
-        write_n = n / speed;
+        write_n = n * speed;
         written = {current_position - write_n, current_position - 1};
+        inpt_speed = 1.f / speed;
       } else if (speed < 0) {
-        write_n = n / -speed;
+        write_n = n * -speed;
         written = {current_position + 1, current_position + write_n};
+        inpt_speed = 1.f / -speed;
       }
 
-      for_each_n(buffer.iter(written.in), write_n,
-        [&] (auto& frm) {
-          std::invoke(func, frm);
-        });
+      auto tape = buffer.iter(written.in);
+      auto inpt = float_step(std::move(iter), inpt_speed);
+      for (int i = 0; i < write_n; i++, tape++, inpt++) {
+        func(*inpt, *tape);
+      }
 
       // Atomically update `write_sect`
       audio::Section<int> new_sect;
@@ -151,19 +163,15 @@ namespace top1 {
           new_sect += expected_sect;
         }
       } while (!write_sect.compare_exchange_weak(expected_sect, new_sect));
+      notify_update();
     }
 
     template<typename Iter>
     void read_frames(int n, float speed, Iter dst)
     {
       float error = 0.f;
-      auto src = buffer.citer(current_position);
-      for (int i = 0; i < n; i++, dst++) {
-        float intpart = 0;
-        error = std::modf(speed + error, &intpart);
-        *dst = *src;
-        std::advance(src, intpart);
-      }
+      auto src = float_step(buffer.citer(current_position), speed);
+      std::copy_n(src, n, dst);
       advance(n * speed);
     }
 

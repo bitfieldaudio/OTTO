@@ -33,6 +33,7 @@ namespace top1 {
     tape_buffer& owner;
     std::mutex mutex;
     std::condition_variable waiting;
+    std::atomic_bool keepRunning {true};
 
     Producer(tape_buffer& owner)
       : owner {owner},
@@ -41,7 +42,10 @@ namespace top1 {
 
     ~Producer()
     {
+      keepRunning = false;
+      mutex.lock();
       waiting.notify_all();
+      mutex.unlock();
       thread.join();
     }
 
@@ -49,12 +53,12 @@ namespace top1 {
     {
       file.open(path);
 
-      while (Globals::running()) {
+      while (keepRunning) {
         std::unique_lock lock {mutex};
 
         std::size_t index = owner.current_position;
 
-        // write_from_buffer();
+        write_from_buffer();
         fill_buffer(index);
 
         waiting.wait(lock);
@@ -63,7 +67,7 @@ namespace top1 {
       file.close();
     }
 
-    /// Write everything between `owner.write_head` and `owner.write_tail`
+    /// Write everything in `owner.write_sect`
     void write_from_buffer()
     {
       auto write_sect = owner.write_sect.load();
@@ -71,7 +75,7 @@ namespace top1 {
         || (write_sect.in - owner.tail)  <= min_read_size * 2
         || (owner.head - write_sect.out) <= min_read_size * 2)
       {
-        write_wrapped(write_sect.in, write_sect.size());
+        write_wrapped(write_sect.in, write_sect.size() + 1);
 
         // Atomically update `write_sect`
         audio::Section<int> new_sect;
@@ -150,7 +154,19 @@ namespace top1 {
   void tape_buffer::advance(int n)
   {
     current_position = std::clamp(current_position + n, 0, (int) max_length);
+    notify_update();
+  }
+
+  void tape_buffer::notify_update()
+  {
     producer->waiting.notify_all();
+  }
+
+  void tape_buffer::invalidate()
+  {
+    tail.exchange(current_position);
+    head.exchange(current_position);
+    notify_update();
   }
 
   value_type& tape_buffer::cur_value()

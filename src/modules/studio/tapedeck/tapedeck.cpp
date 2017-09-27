@@ -209,6 +209,8 @@ namespace top1::modules {
       }
     }
 
+    float realSpeed = props.baseSpeed * state.playSpeed;
+
     std::fill(std::begin(trackBuffer), std::end(trackBuffer), AudioFrame{{0.f, 0.f, 0.f, 0.f}});
 
     // Start recording by pressing a key
@@ -221,16 +223,15 @@ namespace top1::modules {
 
     // Read audio
     if (state.doPlayAudio()) {
-      tapeBuffer->read_frames(data.nframes, state.playSpeed, std::begin(trackBuffer));
+      tapeBuffer->read_frames(data.nframes, realSpeed, std::begin(trackBuffer));
     }
 
     // Write audio
     if (state.recording()) {
       auto proc = std::begin(data.audio.proc);
-      tapeBuffer->write_frames(data.nframes, state.playSpeed,
-        [&proc, track = state.track] (auto&& trk) {
-          trk[track] += *proc;
-          return trk;
+      tapeBuffer->write_frames(proc, data.nframes, realSpeed,
+        [track = state.track] (auto&& src, auto& dst) {
+          dst[track] += src;
         });
     }
 

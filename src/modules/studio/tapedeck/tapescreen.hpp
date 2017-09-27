@@ -92,6 +92,7 @@ namespace top1::modules {
       case ui::Rotary::Green:
         break;
       case ui::Rotary::White:
+        module->props.baseSpeed.step(e.clicks);
         break;
       case ui::Rotary::Red:
         module->props.gain.step(e.clicks);
@@ -141,13 +142,6 @@ namespace top1::modules {
       draw_text(ctx);
       draw_speed_indicator(ctx);
       draw_sliders(ctx);
-
-      ctx.beginPath();
-      ctx.font(Fonts::Mono);
-      ctx.font(10);
-      ctx.fillStyle(Colours::Yellow);
-      auto str = fmt::format("[{}, {}]", timeStr(module->tapeBuffer->tail), timeStr(module->tapeBuffer->head));
-      ctx.fillText(str, 10, 20);
     }
 
     void draw_static_backround(Canvas& ctx)
@@ -338,7 +332,7 @@ namespace top1::modules {
       ctx.font(Fonts::Norm);
       ctx.font(17.9);
       ctx.fillStyle(Colour::bytes(255, 255, 255));
-      ctx.fillText("2:1", 153.8, 96.3);
+      ctx.fillText(fmt::format("{:.2f}", module->props.baseSpeed), 153.8, 96.3);
 
       // tAPEDECK/TIMESTAMP
       ctx.fillText(timeStr(), 136.5, 54.8);

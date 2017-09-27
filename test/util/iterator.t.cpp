@@ -16,6 +16,7 @@ namespace top1 {
       auto first = float_step(std::begin(iterData), 1);
       auto last = float_step(std::end(iterData), 1);
 
+      REQUIRE(last - first == iterData.size());
       REQUIRE(std::equal(std::begin(iterData), std::end(iterData), first, last));
     }
 
@@ -24,7 +25,15 @@ namespace top1 {
       auto first = float_step(std::end(iterData)-1, -1);
       auto last = float_step(std::begin(iterData)-1, -1);
 
-      REQUIRE(std::equal(std::rbegin(iterData), std::rend(iterData), first, last));
+      std::vector<int> expected;
+      std::reverse_copy(std::begin(iterData), std::end(iterData),
+        std::back_inserter(expected));
+
+      std::vector<int> actual;
+      std::copy_n(first, expected.size(), std::back_inserter(actual));
+
+      REQUIRE(last - first == expected.size());
+      REQUIRE_THAT(actual, Catch::Matchers::Equals(expected));
     }
 
     SECTION("Step = 0.5") {

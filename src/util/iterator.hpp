@@ -329,7 +329,6 @@ namespace top1 {
     using wrapped_type = I;
 
     // for `std::iterator_traits`
-    using difference_type = float;
     using value_type = V;
     using iterator_category = typename detail::iterator_category<I>::type;
 
@@ -384,9 +383,9 @@ namespace top1 {
     /// Get the real difference between this and `o`
     ///
     /// Takes the error values into account.
-    difference_type difference(const FloatStepIterImpl& o) const
+    std::ptrdiff_t difference(const FloatStepIterImpl& o) const
     {
-      return float(iter - o.iter) + (_error - o._error);
+      return (float(iter - o.iter) + (_error - o._error)) / step;
     }
 
     /// Increment this by `n`
@@ -394,13 +393,13 @@ namespace top1 {
     /// Guarrantied to be equal to calling <operator++> `n` times
     void advance(int n)
     {
-      float intPart = 0;
+      float intPart;
       _error = std::modf(_error + step * n, &intPart);
       if (_error < 0) {
         intPart -= 1;
         _error += 1;
       }
-      std::advance(iter, std::ptrdiff_t(intPart));
+      std::advance(iter, intPart);
     }
 
     /* Member functions */
@@ -479,11 +478,12 @@ namespace top1 {
   using float_step_iterator = iterator_adaptor<FloatStepIterImpl<I, V>>;
 
   /// Create a float_step_iterator
-  template<typename I, typename V = typename detail::value_type<I>::type>
-  float_step_iterator<std::remove_reference_t<I>, V>
-  float_step(I&& iter, float step = 1)
+  template<typename I, typename V =
+    typename detail::value_type<std::remove_reference_t<I>>::type>
+  auto float_step(I&& iter, float step = 1)
   {
-    return {std::forward<I>(iter), step};
+    return float_step_iterator<std::remove_reference_t<I>,
+      V>{std::forward<I>(iter), step};
   }
 
 

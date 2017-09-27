@@ -158,7 +158,7 @@ namespace top1 {
   template<typename InIter, typename>
   void SoundFile::write_samples(InIter&& i, int n) {
     if constexpr (std::is_pointer_v<InIter>) {
-      ByteFile::write_bytes(reinterpret_cast<std::byte*>(i), n);
+      ByteFile::write_bytes(reinterpret_cast<std::byte*>(i), n * sample_size);
     } else {
       for_each_n(std::forward<InIter>(i), n, [&] (Sample s) {
           ByteFile::write_bytes(sample_to_bytes(s));
