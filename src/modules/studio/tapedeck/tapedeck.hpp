@@ -89,7 +89,7 @@ namespace top1::modules {
     void exit() override;
 
     audio::Section<int> loopSect;
-    audio::Section<std::size_t> recSect;
+    audio::Section<int> recSect;
 
     int overruns = 0;
 
@@ -97,7 +97,7 @@ namespace top1::modules {
     void display() override;
 
 
-    std::size_t position() const { return tapeBuffer->position(); }
+    int position() const { return tapeBuffer->position(); }
 
     void loopInHere();
     void loopOutHere();

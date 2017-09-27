@@ -95,6 +95,8 @@ namespace top1 {
     static constexpr std::size_t max_length = 8 * 60 * 44100;
 
     using value_type = Value;
+    /// Tape slices for each of the 4 tracks
+    std::array<std::vector<audio::Section<int>>, 4> slices;
 
     /* Initialization */
 
@@ -129,13 +131,14 @@ namespace top1 {
     /// last frame will be positioned at `cursor - 1`. If `speed` is negative,
     /// the first frame in the range will be positioned at `cursor + 1`.
     /// If `speed` is `0`, nothing will be written
+    ///
+    /// @return the section of tape that was just written
     template<typename Iter, typename BinaryFunc>
-    void write_frames(Iter iter, int n, float speed,
+    audio::Section<int> write_frames(Iter iter, int n, float speed,
       BinaryFunc&& func = [] (auto&& in, auto& tape) { tape = in; })
     {
-      if (speed == 0) return;
-
-      audio::Section<int> written;
+      audio::Section<int> written {0,0};
+      if (speed == 0) return written;
       int write_n = 0;
       float inpt_speed;
       if (speed > 0) {
@@ -164,6 +167,8 @@ namespace top1 {
         }
       } while (!write_sect.compare_exchange_weak(expected_sect, new_sect));
       notify_update();
+
+      return written;
     }
 
     template<typename Iter>

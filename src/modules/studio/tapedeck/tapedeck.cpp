@@ -226,14 +226,26 @@ namespace top1::modules {
       tapeBuffer->read_frames(data.nframes, realSpeed, std::begin(trackBuffer));
     }
 
-    // Write audio
-    if (state.recording()) {
-      auto proc = std::begin(data.audio.proc);
-      tapeBuffer->write_frames(proc, data.nframes, realSpeed,
-        [track = state.track] (auto&& src, auto& dst) {
-          dst[track] += src;
-        });
+    // Just started recording
+    if (state.recording() && !state.recLast) {
+      recSect = {position(), position()};
     }
 
+    if (state.recording()) {
+      // Write audio
+      auto sect = tapeBuffer->write_frames(std::begin(data.audio.proc), data.nframes,
+        realSpeed, [track = state.track] (auto&& src, auto& dst) {
+          dst[track] += src;
+        });
+      recSect += sect;
+    }
+
+    // Just stopped recording
+    if (!state.recording() && state.recLast) {
+      tapeBuffer->slices[state.track].push_back(recSect);
+      recSect = {-1, -2};
+    }
+
+    state.recLast = state.recording();
   }
 } // top1::module

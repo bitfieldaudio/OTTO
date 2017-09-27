@@ -459,34 +459,28 @@ namespace top1::modules {
       ctx.restore();
 
       ctx.strokeStyle(Colours::Tape);
-
-      // tAPEDECK/TAPEBARS/BAR1
-      ctx.save();
-      ctx.beginPath();
-      ctx.moveTo(40.5, 203.0);
-      ctx.lineTo(70.5, 203.0);
       ctx.lineWidth(2.0);
-      ctx.stroke();
 
-      // tAPEDECK/TAPEBARS/BAR3
-      ctx.beginPath();
-      ctx.moveTo(40.5, 213.0);
-      ctx.lineTo(70.5, 213.0);
-      ctx.stroke();
+      for (int track = 0; track < 4; track++) {
+        float y = 203 + 5 * track;
+        for (auto&& slice : module->tapeBuffer->slices[track]) {
+          if (slice.overlaps(view_time)) {
+            ctx.beginPath();
+            ctx.moveTo(std::max(left_edge,  time_to_coord(slice.in)), y);
+            ctx.lineTo(std::min(right_edge, time_to_coord(slice.out)), y);
+            ctx.stroke(Colours::Tape);
+          }
+        }
+      }
 
-      // tAPEDECK/TAPEBARS/BAR2
-      ctx.beginPath();
-      ctx.moveTo(40.5, 208.3);
-      ctx.lineTo(70.5, 208.3);
-      ctx.stroke();
-
-      // tAPEDECK/TAPEBARS/BAR4
-      ctx.beginPath();
-      ctx.moveTo(40.5, 217.8);
-      ctx.lineTo(70.5, 217.8);
-      ctx.stroke();
-
-      ctx.restore();
+      auto slice = module->recSect;
+      if (slice.size() > 0 ) {
+        float y = 203 + 5 * module->state.track;
+        ctx.beginPath();
+        ctx.moveTo(std::max(left_edge,  time_to_coord(slice.in)), y);
+        ctx.lineTo(std::min(right_edge, time_to_coord(slice.out)), y);
+        ctx.stroke(Colours::Red);
+      }
 
       // tAPEDECK/TIMELINE/TAPEINDICATORLEFT
       ctx.save();

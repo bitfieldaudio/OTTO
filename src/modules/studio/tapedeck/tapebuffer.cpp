@@ -17,6 +17,7 @@ namespace top1 {
     return position % buffer_size;
   }
 
+  /// Handles all interactions with the tapefile. Works on its own thread
   struct Producer {
 
     /// The desired distance from the playpoint to the head, and vice versa for
@@ -52,6 +53,7 @@ namespace top1 {
     void main_routine()
     {
       file.open(path);
+      read_slices();
 
       while (keepRunning) {
         std::unique_lock lock {mutex};
@@ -64,14 +66,20 @@ namespace top1 {
         waiting.wait(lock);
       }
 
+      // Make sure everything is written
+      write_from_buffer<true>();
+      write_slices();
+
       file.close();
     }
 
     /// Write everything in `owner.write_sect`
+    template<bool unconditionally = false>
     void write_from_buffer()
     {
       auto write_sect = owner.write_sect.load();
-      if (write_sect.size() > min_write_size
+      if (unconditionally
+        || write_sect.size() > min_write_size
         || (write_sect.in - owner.tail)  <= min_read_size * 2
         || (owner.head - write_sect.out) <= min_read_size * 2)
       {
@@ -147,6 +155,44 @@ namespace top1 {
       file.write_samples((owner.buffer.data() + wrap_pos)->data(), 4 * (n - overflow));
       if (overflow > 0) {
         file.write_samples(owner.buffer.data()->data(), 4 * overflow);
+      }
+    }
+
+    void read_slices()
+    {
+      for (int track = 0; track < 4; track++) {
+        auto file_slices = file.slices[track];
+        auto owner_slices = owner.slices[track];
+        auto n = file_slices.count;
+
+        owner_slices.clear();
+        std::transform(std::begin(file_slices.array), std::begin(file_slices.array) + n,
+          std::back_inserter(owner_slices), [] (auto&& slice) {
+            return audio::Section<int>{
+              gsl::narrow_cast<int>(slice.in),
+              gsl::narrow_cast<int>(slice.out)};
+          });
+      }
+    }
+
+    void write_slices()
+    {
+      for (int track = 0; track < 4; track++) {
+        auto file_slices = file.slices[track];
+        auto owner_slices = owner.slices[track];
+        auto n = std::min(file_slices.array.size(), owner_slices.size());
+
+        auto last = std::transform(
+          std::begin(owner_slices),
+          std::begin(owner_slices) + n,
+          std::begin(file_slices.array),
+          [] (auto&& slice) {
+            return TapeFile::SliceData{
+              gsl::narrow_cast<std::uint32_t>(slice.in),
+              gsl::narrow_cast<std::uint32_t>(slice.out)};
+          });
+
+        std::fill(last, std::end(file_slices.array), TapeFile::SliceData{0,0});
       }
     }
   };
