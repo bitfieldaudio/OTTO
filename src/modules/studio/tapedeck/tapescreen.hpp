@@ -264,7 +264,7 @@ namespace top1::modules {
 
       // tAPEDECK/TOPONEPLACEHOLDER
       ctx.font(Fonts::Bold);
-      ctx.font(14.0);
+      ctx.font(18.0);
       ctx.fillStyle(Colour::bytes(60, 60, 59));
       ctx.fillText("TOP-ONE", 29.1, 36.4);
       ctx.fillText("TAPE", 231.2, 36.4);
@@ -334,15 +334,23 @@ namespace top1::modules {
 
     void draw_text(Canvas& ctx)
     {
+      ctx.save();
+
       // tAPEDECK/TIMESIGNATURE
-      ctx.restore();
-      ctx.font(Fonts::Norm);
-      ctx.font(17.9);
+      ctx.save();
+      ctx.font(Fonts::Mono);
+      ctx.font(14.9);
+      ctx.textAlign(TextAlign::Center, TextAlign::Baseline);
       ctx.fillStyle(Colour::bytes(255, 255, 255));
-      ctx.fillText(fmt::format("{:.1f}", module->props.baseSpeed), 153.8, 96.3);
+      ctx.fillText(fmt::format("{: .2f}", module->props.baseSpeed), 160.5, 96.3);
 
       // tAPEDECK/TIMESTAMP
-      ctx.fillText(timeStr(), 136.5, 54.8);
+      ctx.font(Fonts::Mono);
+      ctx.font(18);
+      ctx.textAlign(TextAlign::Center, TextAlign::Baseline);
+      ctx.fillStyle(Colour::bytes(255, 255, 255));
+      ctx.fillText(timeStr(), 160.5, 43);
+      ctx.restore();
 
       // tAPEDECK/TIMELINE
 
@@ -357,11 +365,10 @@ namespace top1::modules {
       ctx.stroke();
 
       // tAPEDECK/TAPENUMBERPLACEHOLDER
+      ctx.font(Fonts::Mono);
+      ctx.font(17.9);
       ctx.fillStyle(Colour::bytes(255, 255, 255));
       ctx.fillText("64", 270.1, 36.4);
-      ctx.restore();
-
-      ctx.save();
 
       // tAPEDECK/COLOURCODE/CODE/1
       ctx.beginPath();
@@ -400,9 +407,6 @@ namespace top1::modules {
     void draw_timeline(Canvas& ctx)
     {
       // tAPEDECK/TIMELINEMARKERS
-      ctx.save();
-
-      // tAPEDECK/TIMELINEMARKERS/MID
       ctx.save();
 
       // The amount of time to display on the timeline
@@ -463,7 +467,6 @@ namespace top1::modules {
       }
 
       // tAPEDECK/TIMELINE
-      ctx.restore();
       ctx.lineWidth(2.0);
 
       auto draw_slice = [&] (auto slice, int track) {
@@ -495,7 +498,6 @@ namespace top1::modules {
       draw_slice(slice, cur_track);
 
       // tAPEDECK/TIMELINE/TAPEINDICATORLEFT
-      ctx.save();
 
       auto indicator_colour = [&] (int track) {
         return (module->state.track == track) ?
@@ -503,7 +505,6 @@ namespace top1::modules {
       };
 
       // tAPEDECK/TIMELINE/TAPEINDICATORLEFT/1
-      ctx.save();
       ctx.beginPath();
       ctx.moveTo(23.2, 203.0);
       ctx.bezierCurveTo(23.2, 203.9, 22.5, 204.6, 21.6, 204.6);
@@ -544,10 +545,8 @@ namespace top1::modules {
       ctx.fill(indicator_colour(3));
 
       // tAPEDECK/TIMELINE/TAPEINDICATORRIGHT
-      ctx.restore();
 
       // tAPEDECK/TIMELINE/TAPEINDICATORRIGHT/2
-      ctx.save();
       ctx.beginPath();
       ctx.moveTo(299.4, 203.0);
       ctx.bezierCurveTo(299.4, 203.9, 298.7, 204.6, 297.8, 204.6);
@@ -587,8 +586,6 @@ namespace top1::modules {
       ctx.closePath();
       ctx.fill(indicator_colour(3));
 
-      ctx.restore();
-      ctx.restore();
       ctx.restore();
     }
 
@@ -653,8 +650,8 @@ namespace top1::modules {
       ctx.lineCap(Canvas::LineCap::ROUND);
       ctx.lineJoin(Canvas::LineJoin::ROUND);
       ctx.lineWidth(2.0);
-      // Correct for some export error
-      ctx.translate(-3.3, 0);
+
+      ctx.translate(148.65, 120);
 
       if (state.readyToRec) {
         ctx.strokeStyle(Colours::Red); // Red means recording
@@ -669,88 +666,129 @@ namespace top1::modules {
 
       if (state.recording()){ // Record
         ctx.beginPath();
-        ctx.moveTo(163.5, 134.5);
-        ctx.bezierCurveTo(160.3, 134.5, 157.8, 131.9, 157.8, 128.7);
-        ctx.bezierCurveTo(157.8, 125.6, 160.3, 123.0, 163.5, 123.0);
-        ctx.bezierCurveTo(166.7, 123.0, 169.3, 125.6, 169.3, 128.7);
-        ctx.bezierCurveTo(169.3, 131.9, 166.7, 134.5, 163.5, 134.5);
+        ctx.moveTo(17.4, 6.9);
+        ctx.bezierCurveTo(17.4, 9.9, 14.9, 12.4, 11.9, 12.4);
+        ctx.bezierCurveTo(8.8, 12.4, 6.3, 9.9, 6.3, 6.9);
+        ctx.bezierCurveTo(6.3, 3.8, 8.8, 1.4, 11.9, 1.4);
+        ctx.bezierCurveTo(14.9, 1.4, 17.4, 3.8, 17.4, 6.9);
         ctx.closePath();
         ctx.fill();
         ctx.stroke();
       } else if (state.spooling() && state.playSpeed > 0) { // Spool FWD
-        // Arrow 2
         ctx.beginPath();
-        ctx.moveTo(164.1, 122.9);
-        ctx.lineTo(164.0, 134.5);
-        ctx.lineTo(178.2, 128.6);
-        ctx.lineTo(164.1, 122.9);
+        ctx.moveTo(11.9, 2.0);
+        ctx.lineTo(22.0, 6.9);
+        ctx.lineTo(11.9, 11.7);
+        ctx.lineTo(11.9, 2.0);
         ctx.closePath();
         ctx.fill();
         ctx.stroke();
 
-        // Arrow 1
+        // icons/fforward/1
         ctx.beginPath();
-        ctx.moveTo(149.0, 122.9);
-        ctx.lineTo(149.0, 134.5);
-        ctx.lineTo(163.2, 128.6);
-        ctx.lineTo(149.0, 122.9);
+        ctx.moveTo(1.0, 2.0);
+        ctx.lineTo(11.1, 6.9);
+        ctx.lineTo(1.0, 11.7);
+        ctx.lineTo(1.0, 2.0);
         ctx.closePath();
         ctx.fill();
         ctx.stroke();
       } else if (state.spooling() && state.playSpeed < 0) { // Spool BWD
-        // Arrow 1
+        // icons/rewind/1
         ctx.beginPath();
-        ctx.moveTo(163.1, 134.5);
-        ctx.lineTo(163.2, 122.9);
-        ctx.lineTo(149.0, 128.8);
-        ctx.lineTo(163.1, 134.5);
+        ctx.moveTo(11.3, 11.7);
+        ctx.lineTo(1.1, 6.9);
+        ctx.lineTo(11.3, 2.0);
+        ctx.lineTo(11.3, 11.7);
         ctx.closePath();
         ctx.fill();
         ctx.stroke();
 
-        // Arrow 2
+        // icons/rewind/2
         ctx.beginPath();
-        ctx.moveTo(178.2, 134.5);
-        ctx.lineTo(178.2, 122.9);
-        ctx.lineTo(164.0, 128.8);
-        ctx.lineTo(178.2, 134.5);
+        ctx.moveTo(22.1, 11.7);
+        ctx.lineTo(12.0, 6.9);
+        ctx.lineTo(22.1, 2.0);
+        ctx.lineTo(22.1, 11.7);
         ctx.closePath();
         ctx.fill();
         ctx.stroke();
       } else if (state.looping) { // Loop
-        ctx.beginPath();
-        ctx.moveTo(154.2, 123.0);
-        ctx.bezierCurveTo(151.0, 123.0, 148.5, 125.5, 148.5, 128.7);
-        ctx.bezierCurveTo(148.5, 131.8, 151.0, 134.4, 154.2, 134.4);
-        ctx.lineTo(173.0, 134.4);
-        ctx.bezierCurveTo(176.2, 134.4, 178.7, 131.8, 178.7, 128.7);
-        ctx.bezierCurveTo(178.7, 125.5, 176.2, 123.0, 173.0, 123.0);
-        ctx.lineTo(165.1, 123.0);
-        ctx.stroke();
+        if (state.playSpeed > 0) {
+          // icons/loopforward/Pad
+          ctx.beginPath();
+          ctx.moveTo(9.3, 3.9);
+          ctx.lineTo(4.4, 3.9);
+          ctx.bezierCurveTo(2.5, 3.9, 1.0, 5.5, 1.0, 7.4);
+          ctx.lineTo(1.0, 8.1);
+          ctx.bezierCurveTo(1.0, 10.0, 2.5, 11.5, 4.4, 11.5);
+          ctx.lineTo(18.6, 11.5);
+          ctx.bezierCurveTo(20.5, 11.5, 22.0, 10.0, 22.0, 8.1);
+          ctx.lineTo(22.0, 7.4);
+          ctx.bezierCurveTo(22.0, 5.5, 20.5, 3.9, 18.6, 3.9);
+          ctx.lineTo(15.5, 3.9);
+          ctx.stroke();
 
-        // Arrow head
-        ctx.beginPath();
-        ctx.moveTo(165.8, 125.2);
-        ctx.lineTo(163.5, 123.0);
-        ctx.lineTo(165.8, 120.7);
-        ctx.stroke();
+          // icons/loopforward/Pad
+          ctx.beginPath();
+          ctx.moveTo(8.1, 6.9);
+          ctx.lineTo(11.1, 3.9);
+          ctx.lineTo(8.1, 1.0);
+          ctx.stroke();
+
+        } else {
+          ctx.beginPath();
+          ctx.moveTo(13.7, 3.9);
+          ctx.lineTo(18.6, 3.9);
+          ctx.bezierCurveTo(20.5, 3.9, 22.0, 5.5, 22.0, 7.4);
+          ctx.lineTo(22.0, 8.1);
+          ctx.bezierCurveTo(22.0, 10.0, 20.5, 11.5, 18.6, 11.5);
+          ctx.lineTo(4.4, 11.5);
+          ctx.bezierCurveTo(2.5, 11.5, 1.0, 10.0, 1.0, 8.1);
+          ctx.lineTo(1.0, 7.4);
+          ctx.bezierCurveTo(1.0, 5.5, 2.5, 3.9, 4.4, 3.9);
+          ctx.lineTo(7.5, 3.9);
+          ctx.stroke();
+
+          // icons/loopbackward/Pad
+          ctx.beginPath();
+          ctx.moveTo(14.9, 6.9);
+          ctx.lineTo(11.9, 3.9);
+          ctx.lineTo(14.9, 1.0);
+          ctx.stroke();
+        }
       } else if (state.playing()) { // Play
-        ctx.beginPath();
-        ctx.moveTo(159.5, 122.9);
-        ctx.lineTo(159.5, 134.5);
-        ctx.lineTo(168.6, 128.6);
-        ctx.lineTo(159.5, 122.9);
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
+        if (module->props.baseSpeed > 0) {
+          // icons/play
+          ctx.beginPath();
+          ctx.moveTo(7.7, 1.4);
+          ctx.lineTo(17.8, 6.9);
+          ctx.lineTo(7.7, 12.5);
+          ctx.lineTo(7.7, 1.4);
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+        } else {
+          // icons/playbackward
+          ctx.beginPath();
+          ctx.moveTo(16.2, 12.5);
+          ctx.lineTo(6.1, 6.9);
+          ctx.lineTo(16.2, 1.4);
+          ctx.lineTo(16.2, 12.5);
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+        }
       } else { // Stop
+        // icons/stop
         // ctx.beginPath();
-        // ctx.moveTo(169.3, 134.5);
-        // ctx.lineTo(157.8, 134.5);
-        // ctx.lineTo(157.8, 123.0);
-        // ctx.lineTo(169.3, 123.0);
-        // ctx.lineTo(169.3, 134.5);
+        // ctx.moveTo(16.5, 2.2);
+        // ctx.lineTo(7.2, 2.2);
+        // ctx.lineTo(7.2, 11.5);
+        // ctx.lineTo(16.5, 11.5);
+        // ctx.lineTo(16.5, 2.2);
         // ctx.closePath();
+        // ctx.fill();
         // ctx.stroke();
       }
 
@@ -819,7 +857,6 @@ namespace top1::modules {
       // tAPEDECK/LEFTREEL
 
       // tAPEDECK/LEFTREEL/OUTTERCIRCLE
-      ctx.save();
       ctx.beginPath();
       ctx.moveTo(119.0, 90.1);
       ctx.bezierCurveTo(119.0, 104.2, 107.7, 115.5, 93.6, 115.5);
@@ -830,11 +867,7 @@ namespace top1::modules {
       ctx.fill(Colours::Black);
       ctx.stroke();
 
-      // tAPEDECK/RIGHTREEL
-      ctx.restore();
-
       // tAPEDECK/RIGHTREEL/OUTTERCIRCLE
-      ctx.save();
       ctx.beginPath();
       ctx.moveTo(250.5, 90.3);
       ctx.bezierCurveTo(250.5, 104.4, 239.0, 115.9, 224.9, 115.9);
@@ -846,7 +879,6 @@ namespace top1::modules {
       ctx.stroke();
 
       // tAPEDECK/TIMELINE
-      ctx.restore();
       ctx.restore();
     }
 
@@ -927,6 +959,7 @@ namespace top1::modules {
       ctx.moveTo(35.1, 21.4);
       ctx.lineTo(38.3, 19.6);
       ctx.stroke();
+
       ctx.restore();
     }
   };
