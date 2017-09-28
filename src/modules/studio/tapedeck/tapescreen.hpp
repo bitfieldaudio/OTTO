@@ -656,9 +656,9 @@ namespace top1::modules {
       if (state.readyToRec) {
         ctx.strokeStyle(Colours::Red); // Red means recording
         ctx.fillStyle(Colours::Red);
-      } else if (state.playing()) {
-        ctx.strokeStyle(Colours::Green);
-        ctx.fillStyle(Colours::Green);
+        // } else if (state.playing()) {
+        //   ctx.strokeStyle(Colours::Green);
+        //   ctx.fillStyle(Colours::Green);
       } else {
         ctx.strokeStyle(Colours::White);
         ctx.fillStyle(Colours::White);
