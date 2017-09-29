@@ -29,14 +29,16 @@ namespace top1::modules {
     auto outR = std::begin(data.audio.outR);
     auto proc = std::begin(data.audio.proc);
     auto trb = std::begin(trackBuffer);
-    for (int f = 0; f < data.nframes; ++f, ++outL, ++outR, ++proc, ++trb) {
+
+    for (int f = 0; f < data.nframes; f++, ++outL, ++outR, ++proc, ++trb) {
       float lMix = 0, rMix = 0;
       for (uint t = 0; t < 4 ; t++) {
+        float audio = (*trb)[t] * level[t];
         if (!props.tracks[t].muted) {
-          lMix += (*trb)[t] * level[t] * (1-pan[t]);
-          rMix += (*trb)[t] * level[t] * (1+pan[t]);
+          lMix += audio * (1-pan[t]);
+          rMix += audio * (1+pan[t]);
         }
-        graphs[t].add((*trb)[t] * level[t]);
+        graphs[t].add(audio);
       }
       *outL = lMix + *proc * Globals::tapedeck.props.gain;
       *outR = rMix + *proc * Globals::tapedeck.props.gain;

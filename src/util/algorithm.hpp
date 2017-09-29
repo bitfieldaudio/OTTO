@@ -24,10 +24,7 @@ namespace top1 {
   namespace detail {
     template<class Func, int... ns>
     constexpr auto generate_sequence_impl(std::integer_sequence<int, ns...>&&, Func&& gen) {
-      #pragma clang diagnostic push
-      #pragma clang diagnostic ignored "-Wmissing-braces"
       return std::array{std::invoke(std::forward<Func>(gen), ns)...};
-      #pragma clang diagnostic pop
     }
   }
 

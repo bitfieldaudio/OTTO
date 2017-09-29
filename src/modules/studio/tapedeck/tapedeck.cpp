@@ -176,7 +176,9 @@ namespace top1::modules {
 
   void Tapedeck::process(const audio::ProcessData& data) {
     TIME_SCOPE("Tapedeck::process");
-    { // Animate the tape speed
+
+    // Animate the tape speed
+    {
       constexpr int time = 200; // animation time from 0 to 1 in ms
       static int x;
       static float nextSpeedLast = state.nextSpeed;
@@ -221,7 +223,9 @@ namespace top1::modules {
     float realSpeed = props.baseSpeed * state.playSpeed;
     auto pos = position();
 
-    std::fill(std::begin(trackBuffer), std::end(trackBuffer), AudioFrame{{0.f, 0.f, 0.f, 0.f}});
+    // Clear the buffer
+    std::fill(std::begin(trackBuffer), std::end(trackBuffer),
+      AudioFrame{{0.f, 0.f, 0.f, 0.f}});
 
     // Just started recording
     if (state.recording() && !state.recLast) {

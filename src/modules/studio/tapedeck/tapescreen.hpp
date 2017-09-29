@@ -648,7 +648,7 @@ namespace top1::modules {
       ctx.save();
 
       ctx.lineCap(Canvas::LineCap::ROUND);
-      ctx.lineJoin(Canvas::LineJoin::ROUND);
+      ctx.lineJoin(Canvas::LineJoin::MITER);
       ctx.lineWidth(2.0);
 
       ctx.translate(148.65, 120);
@@ -714,7 +714,7 @@ namespace top1::modules {
         ctx.fill();
         ctx.stroke();
       } else if (state.looping) { // Loop
-        if (state.playSpeed > 0) {
+        if (module->props.baseSpeed > 0) {
           // icons/loopforward/Pad
           ctx.beginPath();
           ctx.moveTo(9.3, 3.9);
@@ -891,34 +891,9 @@ namespace top1::modules {
       // Reel size = 53x53
       ctx.translate(center - Point{26.5, 26.5});
 
-      // rEELWHEEL/LEFTREEL/2
-      ctx.beginPath();
-      ctx.moveTo(35.1, 31.5);
-      ctx.lineTo(38.3, 33.3);
-      ctx.lineWidth(2.0);
-      ctx.strokeStyle(Colour::bytes(255, 255, 255));
-      ctx.lineCap(Canvas::LineCap::ROUND);
-      ctx.lineJoin(Canvas::LineJoin::ROUND);
-      ctx.stroke();
-
-      // rEELWHEEL/LEFTREEL/CIRCLE
-      ctx.beginPath();
-      ctx.moveTo(39.4, 26.4);
-      ctx.bezierCurveTo(39.4, 33.6, 33.6, 39.4, 26.4, 39.4);
-      ctx.bezierCurveTo(19.2, 39.4, 13.4, 33.6, 13.4, 26.4);
-      ctx.bezierCurveTo(13.4, 19.2, 19.2, 13.4, 26.4, 13.4);
-      ctx.bezierCurveTo(33.6, 13.4, 39.4, 19.2, 39.4, 26.4);
-      ctx.closePath();
-      ctx.stroke();
-
       // rEELWHEEL/LEFTREEL/OUTTERCIRCLE
       ctx.beginPath();
-      ctx.moveTo(51.8, 26.4);
-      ctx.bezierCurveTo(51.8, 40.4, 40.4, 51.8, 26.4, 51.8);
-      ctx.bezierCurveTo(12.4, 51.8, 1.0, 40.4, 1.0, 26.4);
-      ctx.bezierCurveTo(1.0, 12.4, 12.4, 1.0, 26.4, 1.0);
-      ctx.bezierCurveTo(40.4, 1.0, 51.8, 12.4, 51.8, 26.4);
-      ctx.closePath();
+      ctx.circle(26.5, 26.5, 25.5);
       ctx.strokeStyle(colour);
       ctx.stroke();
 
@@ -929,33 +904,31 @@ namespace top1::modules {
       ctx.strokeStyle(Colour::bytes(230, 51, 42));
       ctx.stroke();
 
-      // rEELWHEEL/LEFTREEL/6
+      // White parts
+      ctx.lineWidth(2.0);
+      ctx.strokeStyle(Colour::bytes(255, 255, 255));
+
+      // rEELWHEEL/LEFTREEL/2
       ctx.beginPath();
+      ctx.moveTo(35.1, 31.5);
+      ctx.lineTo(38.3, 33.3);
+      ctx.stroke();
+
+      // rEELWHEEL/LEFTREEL/CIRCLE
+      ctx.beginPath();
+      ctx.circle(26.5, 26.5, 13);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.strokeStyle(Colour::bytes(255, 255, 255));
       ctx.moveTo(26.4, 16.4);
       ctx.lineTo(26.4, 12.7);
-      ctx.strokeStyle(Colour::bytes(255, 255, 255));
-      ctx.stroke();
-
-      // rEELWHEEL/LEFTREEL/4
-      ctx.beginPath();
       ctx.moveTo(17.7, 31.5);
       ctx.lineTo(14.5, 33.3);
-      ctx.stroke();
-
-      // rEELWHEEL/LEFTREEL/3
-      ctx.beginPath();
       ctx.moveTo(26.4, 36.5);
       ctx.lineTo(26.4, 40.2);
-      ctx.stroke();
-
-      // rEELWHEEL/LEFTREEL/5
-      ctx.beginPath();
       ctx.moveTo(17.7, 21.4);
       ctx.lineTo(14.5, 19.6);
-      ctx.stroke();
-
-      // rEELWHEEL/LEFTREEL/1
-      ctx.beginPath();
       ctx.moveTo(35.1, 21.4);
       ctx.lineTo(38.3, 19.6);
       ctx.stroke();
