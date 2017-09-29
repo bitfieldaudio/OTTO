@@ -24,7 +24,7 @@ namespace top1::modules {
 
     std::unique_ptr<SynthSampleScreen> editScreen;
 
-    static const uint nVoices = 24;
+    static const int nVoices = 24;
 
     struct Props : public Properties {
       Property<std::string> sampleName = {this, "sample name"};

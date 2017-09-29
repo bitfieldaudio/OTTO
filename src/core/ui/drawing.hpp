@@ -3,15 +3,14 @@
 #include <fmt/format.h>
 #include <plog/Log.h>
 
-#include "util/typedefs.hpp"
 #include "filesystem.hpp"
 
 #include "core/ui/canvas.hpp"
 
 namespace top1::ui::drawing {
 
-  const uint WIDTH = 320;
-  const uint HEIGHT = 240;
+  const int WIDTH = 320;
+  const int HEIGHT = 240;
 
   namespace Colours {
 

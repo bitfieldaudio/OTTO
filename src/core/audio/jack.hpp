@@ -1,7 +1,5 @@
 #pragma once
 
-#include "util/typedefs.hpp"
-
 #include <string>
 #include <atomic>
 #include <string>
@@ -42,13 +40,13 @@ namespace top1::audio {
     bool connectPorts(std::string src, std::string dest);
 
     // Callbacks
-    void process(uint nframes);
+    void process(unsigned nframes);
     void shutdownCallback();
-    void samplerateCallback(uint nframes);
-    void buffersizeCallback(uint nframes);
+    void samplerateCallback(unsigned nframes);
+    void buffersizeCallback(unsigned nframes);
     public:
 
-    uint bufferSize;
+    std::size_t bufferSize;
     using AudioSample = jack_default_audio_sample_t;
     const size_t sampleSize = sizeof(AudioSample);
     const std::string clientName = "TOP-1";

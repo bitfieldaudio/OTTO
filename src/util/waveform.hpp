@@ -4,8 +4,6 @@
 #include <cmath>
 #include <vector>
 
-#include "util/typedefs.hpp"
-
 namespace top1::audio {
 
   class Waveform {
@@ -44,7 +42,7 @@ namespace top1::audio {
 
     struct Average {
       float sum;
-      uint count;
+      int count;
 
       float average() const {
         if (count == 0) return 0;

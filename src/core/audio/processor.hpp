@@ -36,7 +36,7 @@ namespace top1 {
 
     namespace detail {
       // No including "core/globals.hpp" in headers
-      void registerAudioBufferResize(std::function<void(uint)>);
+      void registerAudioBufferResize(std::function<void(int)>);
     }
 
     /*

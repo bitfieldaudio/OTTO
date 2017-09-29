@@ -1,7 +1,5 @@
 #pragma once
 
-#include "util/typedefs.hpp"
-
 #include <vector>
 #include <functional>
 #include <plog/Log.h>
@@ -19,7 +17,7 @@ public:
 
   EventDispatcher() = default;
 
-  uint add(handler_type handler) {
+  int add(handler_type handler) {
     handlers.push_back(handler);
     return this->handlers.size() - 1;
   }
@@ -34,7 +32,7 @@ public:
     }
   }
 
-  uint operator+=(const handler_type& h) { return add(h); }
+  int operator+=(const handler_type& h) { return add(h); }
 private:
   std::vector<handler_type> handlers;
 };

@@ -16,7 +16,7 @@ namespace top1::modules {
     sampleData (maxSampleSize),
     editScreen (new SynthSampleScreen(this)) {
 
-    Globals::events.samplerateChanged.add([&] (uint sr) {
+    Globals::events.samplerateChanged.add([&] (int sr) {
         maxSampleSize = 16 * sr;
         sampleSpeed = sampleSampleRate / float(sr);
       });

@@ -110,7 +110,7 @@ namespace top1 {
           });
       } else {
       bytes<sample_size> buf;
-      uint i = 0;
+      int i = 0;
       for (auto iter = f; iter != l; iter++, i++) {
         if (ByteFile::read_bytes(buf).is_err()) {
           std::generate(iter, l, [] { return 0; });
@@ -131,7 +131,7 @@ namespace top1 {
             });
       } else {
       bytes<sample_size> buf;
-      uint i = 0;
+      int i = 0;
       for (auto cur = iter; i < n; iter++, i++) {
         auto r = ByteFile::read_bytes(buf);
         if (r.is_err()) {

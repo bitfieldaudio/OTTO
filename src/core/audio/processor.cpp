@@ -5,7 +5,7 @@
 namespace top1::audio {
 namespace detail {
 
-  void registerAudioBufferResize(std::function<void(uint)> eventHandler) {
+  void registerAudioBufferResize(std::function<void(int)> eventHandler) {
     Globals::events.bufferSizeChanged.add(eventHandler);
   }
 

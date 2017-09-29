@@ -84,13 +84,13 @@ namespace top1::audio {
     Globals::exit();
   }
 
-  void JackAudio::samplerateCallback(uint srate) {
+  void JackAudio::samplerateCallback(unsigned srate) {
     LOGI << fmt::format("Jack changed the sample rate to {}", srate);
     Globals::samplerate = srate;
     Globals::events.samplerateChanged.runAll(srate);
   }
 
-  void JackAudio::buffersizeCallback(uint buffsize) {
+  void JackAudio::buffersizeCallback(unsigned buffsize) {
     LOGI << fmt::format("Jack changed the buffer size to {}", buffsize);
     bufferSize = buffsize;
     Globals::events.bufferSizeChanged.runAll(buffsize);
@@ -191,7 +191,7 @@ namespace top1::audio {
     LOGI << "JACK shut down, exiting";
   }
 
-  void JackAudio::process(uint nframes) {
+  void JackAudio::process(unsigned nframes) {
     if (!(isProcessing && Globals::running())) return;
 
     static auto& timer = timer::dispatcher.timers["Audio Frame time"];
@@ -219,10 +219,10 @@ namespace top1::audio {
 
     // Get new midi events
     void *midiBuf = jack_port_get_buffer(ports.midiIn, nframes);
-    uint nevents = jack_midi_get_event_count(midiBuf);
+    int nevents = jack_midi_get_event_count(midiBuf);
 
     jack_midi_event_t event;
-    for (uint i = 0; i < nevents; i++) {
+    for (int i = 0; i < nevents; i++) {
       using namespace midi;
 
       jack_midi_event_get(&event, midiBuf, i);

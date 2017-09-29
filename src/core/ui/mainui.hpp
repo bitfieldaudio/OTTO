@@ -6,12 +6,12 @@ namespace top1::ui {
 
   class MainUI : public Screen {
 
-    static void mainRoutine();
-
     bool globKeyPre(Key key);
     bool globKeyPost(Key key);
 
   public:
+
+    static void mainRoutine();
 
     ui::PressedKeys keys;
     DefaultScreen defaultScreen;
@@ -26,8 +26,6 @@ namespace top1::ui {
     void exit() override;
 
     Screen* currentScreen;
-
-    std::thread uiThread;
 
     void display(Screen& screen);
 

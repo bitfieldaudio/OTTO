@@ -1,13 +1,8 @@
 set(CMAKE_CXX_STANDARD 17)
 
-# General purpose externals
-file(GLOB_RECURSE external_src
-  "${CMAKE_CURRENT_SOURCE_DIR}/external/src/*.c"
-  "${CMAKE_CURRENT_SOURCE_DIR}/external/src/*.cpp"
-)
-add_library(external ${external_src})
-target_include_directories(external PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/external/include)
-set_target_properties(external PROPERTIES LINKER_LANGUAGE CXX)
+# General purpose externals (header only only)
+add_library(external INTERFACE)
+target_include_directories(external INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/external/include)
 
 # Nanovg
 execute_process(COMMAND git submodule update --init -- external/nanovg
@@ -15,7 +10,15 @@ WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 file(GLOB_RECURSE nanovg_src "${CMAKE_CURRENT_SOURCE_DIR}/external/nanovg/src/*.c")
 add_library(nanovg ${nanovg_src})
 target_include_directories(nanovg INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/external/nanovg/src)
-target_link_libraries(nanovg INTERFACE GLESv2)
+
+# Use GL3 on OSX, and GLES3 on linux
+if (APPLE)
+  find_package(OpenGL)
+  target_include_directories(nanovg INTERFACE ${OPENGL_INCLUDE_DIR})
+  target_link_libraries(nanovg INTERFACE ${OPENGL_LIBRARIES})
+else ()
+  target_link_libraries(nanovg INTERFACE GLESv2)
+endif()
 
 # NanoCanvas
 execute_process(COMMAND git submodule update --init -- external/NanoCanvas

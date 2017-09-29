@@ -37,7 +37,7 @@ namespace top1::modules {
     sampleData (maxSampleSize),
     editScreen (new DrumSampleScreen(this)) {
 
-    Globals::events.samplerateChanged.add([&] (uint sr) {
+    Globals::events.samplerateChanged.add([&] (int sr) {
         maxSampleSize = 16 * sr;
         sampleSpeed = sampleSampleRate / float(sr);
       });
@@ -152,7 +152,7 @@ namespace top1::modules {
 
     // Auto assign voices
 
-    for (uint i = 0; i < nVoices; ++i) {
+    for (int i = 0; i < nVoices; ++i) {
       auto &&vd = props.voiceData[i];
       if (vd.in < 0 || vd.out >= rs) {
         vd.in = i * (rs / nVoices);
@@ -223,7 +223,7 @@ namespace top1::modules {
 
     ctx.callAt(topWFpos, [&] () {
         topWFW.drawRange(ctx, topWFW.viewRange, Colours::TopWF);
-        for (uint i = 0; i < DrumSampler::nVoices; ++i) {
+        for (int i = 0; i < DrumSampler::nVoices; ++i) {
           auto& voice = module->props.voiceData[i];
           bool isActive = voice.playProgress >= 0;
           bool isCurrent = i == module->currentVoiceIdx;

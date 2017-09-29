@@ -15,7 +15,7 @@ namespace top1::audio {
         fDSP->init(Globals::samplerate);
         fDSP->buildUserInterface(&opts);
       });
-    Globals::events.samplerateChanged.add([&](uint sr) {
+    Globals::events.samplerateChanged.add([&](int sr) {
         fDSP->instanceInit(sr);
         opts.props->updateFaust();
       });

@@ -27,7 +27,6 @@ namespace top1 {
   public:
 
     static inline const filesystem::path data_dir {"data"};
-    static inline std::condition_variable notifyExit;
 
     static inline struct {
       top1::EventDispatcher<> preInit;
@@ -65,7 +64,6 @@ namespace top1 {
     //TODO: status codes etc
     static inline void exit() {
       isRunning = false;
-      notifyExit.notify_all();
     }
 
     static inline bool running() {

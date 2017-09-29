@@ -41,7 +41,7 @@ namespace top1::modules {
   public:
     std::array<SimpleDrumVoice, 24> voices;
 
-    uint currentVoiceIdx = 0 ;
+    int currentVoiceIdx = 0 ;
 
     ui::ModuleScreen<SimpleDrumsModule>::ptr screen;
 

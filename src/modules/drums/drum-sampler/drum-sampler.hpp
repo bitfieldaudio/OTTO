@@ -29,7 +29,7 @@ namespace top1::modules {
 
     std::unique_ptr<DrumSampleScreen> editScreen;
 
-    static constexpr uint nVoices = 24;
+    static constexpr int nVoices = 24;
 
     struct Props : public Properties {
       Property<std::string> sampleName = {this, "sample name", ""};
@@ -70,7 +70,7 @@ namespace top1::modules {
 
     } props;
 
-    uint currentVoiceIdx = 0;
+    int currentVoiceIdx = 0;
 
     DrumSampler();
 

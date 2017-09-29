@@ -18,11 +18,11 @@ namespace top1::ui {
 
     struct iterator {
       const WaveformWidget &w;
-      uint idx;
+      int idx;
       float inc;
       Range range;
 
-      iterator(const WaveformWidget &w, uint idx, float inc, Range r) :
+      iterator(const WaveformWidget &w, int idx, float inc, Range r) :
         w (w), idx (idx), inc (inc) , range (r) {}
 
       drawing::Point get() const {

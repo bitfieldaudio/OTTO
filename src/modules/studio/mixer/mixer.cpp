@@ -32,7 +32,7 @@ namespace top1::modules {
 
     for (int f = 0; f < data.nframes; f++, ++outL, ++outR, ++proc, ++trb) {
       float lMix = 0, rMix = 0;
-      for (uint t = 0; t < 4 ; t++) {
+      for (int t = 0; t < 4 ; t++) {
         float audio = (*trb)[t] * level[t];
         if (!props.tracks[t].muted) {
           lMix += audio * (1-pan[t]);

@@ -83,7 +83,7 @@ namespace top1::tree {
   struct Array {
     std::vector<Node> values;
 
-    auto &operator[](uint i) { return values[i];}
+    auto &operator[](int i) { return values[i];}
     auto begin() { return values.begin(); }
     auto end() { return values.end(); }
     auto begin() const { return values.begin(); }

@@ -51,7 +51,7 @@ namespace top1::modules {
 
   void SimpleDrumsModule::readNode(top1::tree::Node n) {
     n.match([&] (top1::tree::Array &ar) {
-        for (uint i = 0; i < ar.values.size(); ++i) {
+        for (int i = 0; i < ar.values.size(); ++i) {
           voices[i].props.readNode(ar[i]);
         }
       }, [] (auto) {});
@@ -415,7 +415,7 @@ namespace top1::modules {
     ctx.save();
     ctx.transform(1.000000, 0.000000, 0.000000, 1.000000, 18.000000, 0.000000);
 
-    uint ki = module->currentVoiceIdx;
+    int ki = module->currentVoiceIdx;
 
     ctx.strokeStyle(Colours::Gray60);
     ctx.lineJoin(Canvas::LineJoin::ROUND);
@@ -423,21 +423,21 @@ namespace top1::modules {
 
     // WHITE KEYS
     {
-      const static uint KEY_NUMS[14] = {0,2,4,5,7,9,11,12,14,16,17,19,21,23};
-      for (uint i = 0; i < 14; i++) {
+      const static int KEY_NUMS[14] = {0,2,4,5,7,9,11,12,14,16,17,19,21,23};
+      for (int i = 0; i < 14; i++) {
         ctx.beginPath();
         ctx.fillStyle(ki == KEY_NUMS[i] ? Colours::Gray60 : Colours::Black);
         ctx.rect(15.75 + 18 * i, 165.75, 18.5, 58.5);
-        ctx.stroke();
         ctx.fill();
+        ctx.stroke();
       }
     }
 
     // BLACK KEYS
     {
-      const static uint KEY_POS[10]  = {0,1,3,4, 5, 7, 8,10,11,12};
-      const static uint KEY_NUMS[10] = {1,3,6,8,10,13,15,18,20,22};
-      for (uint i = 0; i < 10; i++) {
+      const static int KEY_POS[10]  = {0,1,3,4, 5, 7, 8,10,11,12};
+      const static int KEY_NUMS[10] = {1,3,6,8,10,13,15,18,20,22};
+      for (int i = 0; i < 10; i++) {
         ctx.beginPath();
         ctx.fillStyle(ki == KEY_NUMS[i] ? Colours::Gray60 : Colours::Black);
         ctx.rect(29.75 + 18 * KEY_POS[i], 165.75, 8.5, 33.5);

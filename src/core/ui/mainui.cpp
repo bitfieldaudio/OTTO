@@ -13,11 +13,9 @@ namespace top1::ui {
   }
 
   void MainUI::init() {
-    uiThread = std::thread(MainUI::mainRoutine);
   }
 
   void MainUI::exit() {
-    uiThread.join();
   }
 
   void MainUI::draw(drawing::Canvas& ctx) {

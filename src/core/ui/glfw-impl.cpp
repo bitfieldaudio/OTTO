@@ -1,14 +1,3 @@
-#define GLFW_INCLUDE_ES3
-#include <GLFW/glfw3.h>
-#include <NanoCanvas.h>
-#define NANOVG_GLES3_IMPLEMENTATION
-#include <nanovg_gl.h>
-#include <nanovg_gl_utils.h>
-
-#include "core/ui/base.hpp"
-#include "core/ui/mainui.hpp"
-#include "core/globals.hpp"
-
 #include <thread>
 #include <mutex>
 #include <condition_variable>
@@ -16,109 +5,156 @@
 #include <string>
 #include <algorithm>
 
+#include <plog/Log.h>
+
+#include "core/ui/base.hpp"
+#include "core/ui/mainui.hpp"
+#include "core/globals.hpp"
+
+// Use GL3 on OSX, GLES3 on linux
+#ifdef __APPLE__
+
+#define GLFW_INCLUDE_GLCOREARB
+#define NANOVG_GL3_IMPLEMENTATION
+#define TOP1_NVG_CREATE nvgCreateGL3
+#define TOP1_NVG_DELETE nvgDeleteGL3
+#define TOP1_INSERT_GLFW_HINTS                                     \
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_ANY_PROFILE);    \
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);   \
+  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);             \
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);                   \
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+
+#else // ifdef __APPLE__
+
+#define GLFW_INCLUDE_ES3
+#define NANOVG_GLES3_IMPLEMENTATION
+#define TOP1_NVG_CREATE nvgCreateGLES3
+#define TOP1_NVG_DELETE nvgDeleteGLES3
+#define TOP1_INSERT_GLFW_HINTS                                     \
+  glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);             \
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);                   \
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+
+#endif // ifdef __APPLE__
+
+#include <NanoCanvas.h>
+
+// C APIs. Include last
+#include <GLFW/glfw3.h>
+#include <nanovg_gl.h>
+#include <nanovg_gl_utils.h>
+
 namespace top1::ui {
 
-  static Key keyboardKey(int xKey, int mods) {
-    switch (xKey) {
+  namespace {
 
-      // Rotaries
-    case GLFW_KEY_Q:
-      if (mods & GLFW_MOD_CONTROL) return K_BLUE_CLICK;
-      return K_BLUE_UP;
-    case GLFW_KEY_A:
-      if (mods & GLFW_MOD_CONTROL) return K_BLUE_CLICK;
-      return K_BLUE_DOWN;
-    case GLFW_KEY_W:
-      if (mods & GLFW_MOD_CONTROL) return K_GREEN_CLICK;
-      return K_GREEN_UP;
-    case GLFW_KEY_S:
-      if (mods & GLFW_MOD_CONTROL) return K_GREEN_CLICK;
-      return K_GREEN_DOWN;
-    case GLFW_KEY_E:
-      if (mods & GLFW_MOD_CONTROL) return K_WHITE_CLICK;
-      return K_WHITE_UP;
-    case GLFW_KEY_D:
-      if (mods & GLFW_MOD_CONTROL) return K_WHITE_CLICK;
-      return K_WHITE_DOWN;
-    case GLFW_KEY_R:
-      if (mods & GLFW_MOD_CONTROL) return K_RED_CLICK;
-      return K_RED_UP;
-    case GLFW_KEY_F:
-      if (mods & GLFW_MOD_CONTROL) return K_RED_CLICK;
-      return K_RED_DOWN;
+    Key keyboardKey(int xKey, int mods) {
+      switch (xKey) {
 
-    case GLFW_KEY_LEFT:  return K_LEFT;
-    case GLFW_KEY_RIGHT: return K_RIGHT;
+        // Rotaries
+      case GLFW_KEY_Q:
+        if (mods & GLFW_MOD_CONTROL) return K_BLUE_CLICK;
+        return K_BLUE_UP;
+      case GLFW_KEY_A:
+        if (mods & GLFW_MOD_CONTROL) return K_BLUE_CLICK;
+        return K_BLUE_DOWN;
+      case GLFW_KEY_W:
+        if (mods & GLFW_MOD_CONTROL) return K_GREEN_CLICK;
+        return K_GREEN_UP;
+      case GLFW_KEY_S:
+        if (mods & GLFW_MOD_CONTROL) return K_GREEN_CLICK;
+        return K_GREEN_DOWN;
+      case GLFW_KEY_E:
+        if (mods & GLFW_MOD_CONTROL) return K_WHITE_CLICK;
+        return K_WHITE_UP;
+      case GLFW_KEY_D:
+        if (mods & GLFW_MOD_CONTROL) return K_WHITE_CLICK;
+        return K_WHITE_DOWN;
+      case GLFW_KEY_R:
+        if (mods & GLFW_MOD_CONTROL) return K_RED_CLICK;
+        return K_RED_UP;
+      case GLFW_KEY_F:
+        if (mods & GLFW_MOD_CONTROL) return K_RED_CLICK;
+        return K_RED_DOWN;
 
-      // Tapedeck
-    case GLFW_KEY_SPACE: return K_PLAY;
-    case GLFW_KEY_Z:     return K_REC;
-    case GLFW_KEY_F1:    return K_TRACK_1;
-    case GLFW_KEY_F2:    return K_TRACK_2;
-    case GLFW_KEY_F3:    return K_TRACK_3;
-    case GLFW_KEY_F4:    return K_TRACK_4;
+      case GLFW_KEY_LEFT:  return K_LEFT;
+      case GLFW_KEY_RIGHT: return K_RIGHT;
 
-      // Numbers
-    case GLFW_KEY_1:     return K_1;
-    case GLFW_KEY_2:     return K_2;
-    case GLFW_KEY_3:     return K_3;
-    case GLFW_KEY_4:     return K_4;
-    case GLFW_KEY_5:     return K_5;
-    case GLFW_KEY_6:     return K_6;
-    case GLFW_KEY_7:     return K_7;
-    case GLFW_KEY_8:     return K_8;
-    case GLFW_KEY_9:     return K_9;
-    case GLFW_KEY_0:     return K_0;
+        // Tapedeck
+      case GLFW_KEY_SPACE: return K_PLAY;
+      case GLFW_KEY_Z:     return K_REC;
+      case GLFW_KEY_F1:    return K_TRACK_1;
+      case GLFW_KEY_F2:    return K_TRACK_2;
+      case GLFW_KEY_F3:    return K_TRACK_3;
+      case GLFW_KEY_F4:    return K_TRACK_4;
 
-    case GLFW_KEY_T:     if (mods & GLFW_MOD_CONTROL) return K_TAPE; else break;
-    case GLFW_KEY_Y:     if (mods & GLFW_MOD_CONTROL) return K_MIXER; else break;
-    case GLFW_KEY_U:     if (mods & GLFW_MOD_CONTROL) return K_SYNTH; else break;
-    case GLFW_KEY_G:     if (mods & GLFW_MOD_CONTROL) return K_METRONOME; else break;
-    case GLFW_KEY_H:     if (mods & GLFW_MOD_CONTROL) return K_SAMPLER; else break;
-    case GLFW_KEY_J:     if (mods & GLFW_MOD_CONTROL) return K_DRUMS; else break;
+        // Numbers
+      case GLFW_KEY_1:     return K_1;
+      case GLFW_KEY_2:     return K_2;
+      case GLFW_KEY_3:     return K_3;
+      case GLFW_KEY_4:     return K_4;
+      case GLFW_KEY_5:     return K_5;
+      case GLFW_KEY_6:     return K_6;
+      case GLFW_KEY_7:     return K_7;
+      case GLFW_KEY_8:     return K_8;
+      case GLFW_KEY_9:     return K_9;
+      case GLFW_KEY_0:     return K_0;
 
-    case GLFW_KEY_L:     return K_LOOP;
-    case GLFW_KEY_I:     return K_LOOP_IN;
-    case GLFW_KEY_O:     return K_LOOP_OUT;
+      case GLFW_KEY_T:     if (mods & GLFW_MOD_CONTROL) return K_TAPE; else break;
+      case GLFW_KEY_Y:     if (mods & GLFW_MOD_CONTROL) return K_MIXER; else break;
+      case GLFW_KEY_U:     if (mods & GLFW_MOD_CONTROL) return K_SYNTH; else break;
+      case GLFW_KEY_G:     if (mods & GLFW_MOD_CONTROL) return K_METRONOME; else break;
+      case GLFW_KEY_H:     if (mods & GLFW_MOD_CONTROL) return K_SAMPLER; else break;
+      case GLFW_KEY_J:     if (mods & GLFW_MOD_CONTROL) return K_DRUMS; else break;
 
-    case GLFW_KEY_X:     return K_CUT;
-    case GLFW_KEY_C:     if (mods & GLFW_MOD_CONTROL) return K_LIFT; else break;
-    case GLFW_KEY_V:     if (mods & GLFW_MOD_CONTROL) return K_DROP;
+      case GLFW_KEY_L:     return K_LOOP;
+      case GLFW_KEY_I:     return K_LOOP_IN;
+      case GLFW_KEY_O:     return K_LOOP_OUT;
 
-    case GLFW_KEY_LEFT_SHIFT:
-    case GLFW_KEY_RIGHT_SHIFT:
-      return K_SHIFT;
+      case GLFW_KEY_X:     return K_CUT;
+      case GLFW_KEY_C:     if (mods & GLFW_MOD_CONTROL) return K_LIFT; else break;
+      case GLFW_KEY_V:     if (mods & GLFW_MOD_CONTROL) return K_DROP;
 
-    default:             return K_NONE;
+      case GLFW_KEY_LEFT_SHIFT:
+      case GLFW_KEY_RIGHT_SHIFT:
+        return K_SHIFT;
+
+      default:             return K_NONE;
+      }
+      return K_NONE;
     }
-    return K_NONE;
+
+
+    void key(GLFWwindow* window, int key, int scancode, int action, int mods) {
+      using namespace ui;
+      MainUI& self = Globals::ui;
+      Key k = keyboardKey(key, mods);
+      if (action == GLFW_PRESS) {
+        self.keypress(k);
+      } else if (action == GLFW_REPEAT) {
+        switch (k) {
+        case K_RED_UP:
+        case K_RED_DOWN:
+        case K_BLUE_UP:
+        case K_BLUE_DOWN:
+        case K_WHITE_UP:
+        case K_WHITE_DOWN:
+        case K_GREEN_UP:
+        case K_GREEN_DOWN:
+        case K_LEFT:
+        case K_RIGHT:
+          self.keypress(k);
+        default: break;
+        }
+      } else if (action == GLFW_RELEASE) {
+        self.keyrelease(k);
+      }
+    }
   }
 
-
-  static void key(GLFWwindow* window, int key, int scancode, int action, int mods) {
-    using namespace ui;
-    MainUI& self = Globals::ui;
-    Key k = keyboardKey(key, mods);
-    if (action == GLFW_PRESS) {
-      self.keypress(k);
-    } else if (action == GLFW_REPEAT) {
-      switch (k) {
-      case K_RED_UP:
-      case K_RED_DOWN:
-      case K_BLUE_UP:
-      case K_BLUE_DOWN:
-      case K_WHITE_UP:
-      case K_WHITE_DOWN:
-      case K_GREEN_UP:
-      case K_GREEN_DOWN:
-      case K_LEFT:
-      case K_RIGHT:
-        self.keypress(k);
-      default: break;
-      }
-    } else if (action == GLFW_RELEASE) {
-      self.keyrelease(k);
-    }
+  void error_callback(int error, const char* description) {
+    LOGF << description;
   }
 
   void MainUI::mainRoutine() {
@@ -131,11 +167,9 @@ namespace top1::ui {
       LOGE << ("Failed to init GLFW.");
     }
 
-    //glfwSetErrorCallback(errorcb);
+    glfwSetErrorCallback(error_callback);
 
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+    TOP1_INSERT_GLFW_HINTS
 
     window = glfwCreateWindow(drawing::WIDTH, drawing::HEIGHT, "TOP-1", NULL, NULL);
     if (!window) {
@@ -150,7 +184,7 @@ namespace top1::ui {
 
     glfwMakeContextCurrent(window);
 
-    vg = nvgCreateGLES3(NVG_ANTIALIAS | NVG_STENCIL_STROKES | NVG_DEBUG);
+    vg = TOP1_NVG_CREATE(NVG_ANTIALIAS | NVG_STENCIL_STROKES | NVG_DEBUG);
     if (vg == NULL) {
       printf("Could not init nanovg.\n");
       return;
@@ -163,6 +197,8 @@ namespace top1::ui {
 
     drawing::Canvas canvas(vg, drawing::WIDTH, drawing::HEIGHT);
     drawing::initUtils(canvas);
+
+    LOGD << "Opening GLFW Window";
 
     while (!glfwWindowShouldClose(window) && Globals::running())
       {
@@ -216,7 +252,7 @@ namespace top1::ui {
 
       }
 
-    nvgDeleteGLES3(vg);
+    TOP1_NVG_DELETE(vg);
 
     glfwTerminate();
 

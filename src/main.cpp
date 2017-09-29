@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
 
     Globals::jackAudio.startProcess();
 
-    Globals::notifyExit.wait(lock);
+    Globals::ui.mainRoutine();
 
   } catch (const char* e) {
     LOGF << e;
