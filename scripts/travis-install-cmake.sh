@@ -11,4 +11,5 @@ if [[ ! -f $cmake_bin ]]; then
     $cmake_dir/install-cmake.sh --prefix=$cmake_dir --exclude-subdir
 fi
 
+export CMAKE_INSTALL_PREFIX=$cmake_dir
 export CMAKE=$cmake_bin
