@@ -39,8 +39,8 @@ execute_process(COMMAND git submodule update --init -- external/GSL
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/GSL)
 
 # GLFW
-set(GLFW_BUILD_EXAMPLES OFF)
-set(GLFW_BUILD_TESTS OFF)
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "Build GLFW examples")
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "Build GLFW tests")
 execute_process(COMMAND git submodule update --init -- external/glfw
 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/glfw)
@@ -48,4 +48,6 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/glfw)
 # Backward
 execute_process(COMMAND git submodule update --init -- external/backward-cpp
 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/backward-cpp)
+set(Backward_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/backward-cpp)
+add_subdirectory(${Backward_DIR})
+find_package(Backward)
