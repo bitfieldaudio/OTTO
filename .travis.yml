@@ -22,7 +22,6 @@ addons:
 
 cache:
   directories:
-    - external
     - cmake
 
 script:
