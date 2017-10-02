@@ -19,7 +19,7 @@ brew install llvm gcc cmake git
 
 ## Verify Installation (Optional)
 
-These following steps are not necessary but useful if you want to verify the above installation was successful.
+These not necessary but useful if you want to verify the above installation was successful.
 
 ```which clang``` should be ```/usr/local/opt/llvm/bin/clang```
 
@@ -40,3 +40,16 @@ Permanently add build tools to your environment
 ```
 echo 'export PATH="/usr/local/opt/llvm/bin:$PATH" && export CC=clang && export CXX=clang++' >> ~/.bash_profile
 ```
+
+## Set Build Flags
+
+```
+export CXXFLAGS=$(./flags.sh cxx) && export LDFLAGS=$(./flags.sh ld)
+```
+
+## Execute Build
+
+```
+./build.sh
+```
+ 
