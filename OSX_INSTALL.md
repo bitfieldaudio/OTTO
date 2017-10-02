@@ -1,11 +1,6 @@
-# Installation using HomeBrew on Mac OS Sierra (10.12)
+# Installation on Mac OS Sierra (10.12)
 
 ---
-
-Install **Xcode Tools** (if not already installed)
-```
-xcode-select --install
-```
 
 Install **Homebrew** (if not already installed)
 ```
@@ -45,6 +40,12 @@ echo 'export PATH="/usr/local/opt/llvm/bin:$PATH" && export CC=clang && export C
 
 ```
 export CXXFLAGS=$(./flags.sh cxx) && export LDFLAGS=$(./flags.sh ld)
+```
+
+## Checkout TOP1
+
+```
+git clone https://github.com/topisani/TOP-1.git && cd ./TOP-1
 ```
 
 ## Execute Build
