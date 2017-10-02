@@ -12,19 +12,9 @@ Install **Homebrew** (if not already installed)
 /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 ```
 
-Install build tools: **LLVM**, **GCC**, and **CMAKE**
+Install build tools: **LLVM**, **GCC**, **CMAKE**, and **GIT**
 ```
-brew install llvm gcc cmake
-```
-
-Temporarily add build tools to your path (for the current terminal session)
-```
-export PATH="/usr/local/opt/llvm/bin:/usr/local/Cellar/gcc/7.2.0/bin:$PATH"
-```
-
-Permanently add build tools to your path
-```
-echo 'export PATH="/usr/local/opt/llvm/bin:$PATH"' >> ~/.bash_profile
+brew install llvm gcc cmake git
 ```
 
 ## Verify Installation (Optional)
@@ -39,3 +29,14 @@ These following steps are not necessary but useful if you want to verify the abo
 
 ```which cmake``` should be ```/usr/local/bin/cmake```
 
+## Add Build Tools to Your Environment
+
+Temporarily add build tools to your environment (for the current terminal session)
+```
+export PATH="/usr/local/opt/llvm/bin:$PATH" && export CC=clang && export CXX=clang++
+```
+
+Permanently add build tools to your environment
+```
+echo 'export PATH="/usr/local/opt/llvm/bin:$PATH" && export CC=clang && export CXX=clang++' >> ~/.bash_profile
+```
