@@ -1,6 +1,6 @@
 # Installation on Mac OS Sierra (10.12)
 
----
+## NOTE!! Currently, these instructions do not result in a functional build.
 
 Install **Homebrew** (if not already installed)
 ```

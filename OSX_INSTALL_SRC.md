@@ -1,8 +1,6 @@
 # Installation from Source on Mac OS Sierra (10.12)
 
----
 ## NOTE!! Currently, these instructions do not result in a functional build.
----
 
 This document provides instructions on building TOP-1 and all dependencies from source.  This is a time consuming and laborious process.  Proceed only if you want or need.
 
