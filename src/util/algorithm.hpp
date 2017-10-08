@@ -5,14 +5,15 @@
 #include <initializer_list>
 #include <functional>
 #include <string>
+#include <string_view>
+
 #include "util/type_traits.hpp"
 
 namespace top1::util {
 
   /// Joins a sequence of strings, separating them using `js`
   template<class StrIterator> // Models InputIterator<std::string>
-  auto join_strings(StrIterator b, StrIterator e, std::string_view js = ", ") ->
-    std::string
+  std::string join_strings(StrIterator b, StrIterator e, std::string_view js = ", ")
   {
     std::string result;
     std::for_each(b, e, [&] (auto&& s) {
@@ -37,6 +38,10 @@ namespace top1::util {
     return detail::generate_sequence_impl(std::move(intseq), std::forward<Func>(gen));
   }
 
+
+  /*
+   * Range algorithms
+   */
 
   template<typename InputIt, typename Size, typename F>
   constexpr InputIt for_each_n(InputIt&& first, Size n, F&& f) {
@@ -75,10 +80,10 @@ namespace top1::util {
   /// and `i` is an incrementing value, starting at zero.
   /// Use this instead of raw indexed loops wherever possible.
   ///
-  /// @first Input iterator to the begining of the range
-  /// @n Number of iterations to go through
-  /// @f Must be invocable with arguments `value_type`, `std::size_t`
-  /// @return An iterator one past the last one visited
+  /// \param first Input iterator to the begining of the range
+  /// \param n Number of iterations to go through
+  /// \param f Must be invocable with arguments `value_type`, `std::size_t`
+  /// \return An iterator one past the last one visited
   template<class InputIt, class Size, class F>
   constexpr InputIt indexed_for_n(InputIt first, Size n, F&& f) {
     for (Size i = 0; i < n; ++first, ++i) {
@@ -120,7 +125,6 @@ namespace top1::util {
     using std::begin; using std::end;
     return std::accumulate(begin(cont), end(cont), std::forward<T>(init), std::forward<BinaryOperation>(op));
   }
-
 
   template<typename Cont, typename OutputIterator>
   decltype(auto) adjacent_difference(Cont&& cont, OutputIterator&& first) {
@@ -311,7 +315,7 @@ namespace top1::util {
   template<typename Cont, typename UniformRandomNumberGenerator>
   decltype(auto) shuffle(Cont&& cont, UniformRandomNumberGenerator&& g) {
     using std::begin; using std::end;
-    return std::shuffle(begin(cont), end(cont), std::forward<UniformRandomNumberGenerator>(f));
+    return std::shuffle(begin(cont), end(cont), std::forward<UniformRandomNumberGenerator>(g));
   }
 
   template<typename Cont>
@@ -432,6 +436,36 @@ namespace top1::util {
   decltype(auto) upper_bound(Cont&& cont, T&& value, Compare&& comp) {
     using std::begin; using std::end;
     return std::upper_bound(begin(cont), end(cont), std::forward<T>(value), std::forward<Compare>(comp));
+  }
+
+  template<typename Cont, typename T>
+  decltype(auto) fill(Cont&& cont, T&& value) {
+    using std::begin; using std::end;
+    return std::fill(begin(cont), end(cont), std::forward<T>(value));
+  }
+
+  template<typename Cont, typename T>
+  decltype(auto) fill_n(Cont&& cont, std::size_t n, T&& value) {
+    using std::begin; using std::end;
+    return std::fill_n(begin(cont), n, std::forward<T>(value));
+  }
+
+  template<typename Cont, typename UnaryPredicate>
+  decltype(auto) any_of(Cont&& cont, UnaryPredicate&& p) {
+    using std::begin; using std::end;
+    return std::any_of(begin(cont), end(cont), std::forward<UnaryPredicate>(p));
+  }
+
+  template<typename Cont, typename UnaryPredicate>
+  decltype(auto) all_of(Cont&& cont, UnaryPredicate&& p) {
+    using std::begin; using std::end;
+    return std::all_of(begin(cont), end(cont), std::forward<UnaryPredicate>(p));
+  }
+
+  template<typename Cont, typename UnaryPredicate>
+  decltype(auto) none_of(Cont&& cont, UnaryPredicate&& p) {
+    using std::begin; using std::end;
+    return std::none_of(begin(cont), end(cont), std::forward<UnaryPredicate>(p));
   }
 
 }
