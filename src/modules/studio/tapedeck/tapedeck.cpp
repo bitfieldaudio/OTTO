@@ -176,7 +176,7 @@ namespace top1::modules {
    */
 
   audio::ProcessData<4> Tapedeck::process_playback(audio::ProcessData<0> data) {
-    TIME_SCOPE("Tapedeck::process");
+    TIME_SCOPE("Tapedeck::process_playback");
 
     // Animate the tape speed
     {
@@ -235,6 +235,7 @@ namespace top1::modules {
   }
 
   audio::ProcessData<0> Tapedeck::process_record(audio::ProcessData<1> data) {
+    TIME_SCOPE("Tapedeck::process_record");
     float realSpeed = props.baseSpeed * state.playSpeed;
     auto pos = position();
 

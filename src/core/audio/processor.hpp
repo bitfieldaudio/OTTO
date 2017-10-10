@@ -84,15 +84,15 @@ namespace top1 {
       gsl::span<std::array<float, channels>> audio;
       gsl::span<midi::AnyMidiEvent> midi;
 
-      long nframes = audio.size();
+      long nframes;
 
       template<int outN = 0>
       ProcessData<outN> midi_only() {
-        return {{nullptr, nullptr}, midi};
+        return {{nullptr, nullptr}, midi, nframes};
       }
 
       ProcessData audio_only() {
-        return {audio, {nullptr, nullptr}};
+        return {audio, {nullptr, nullptr}, nframes};
       }
 
       template<typename T>
@@ -101,7 +101,7 @@ namespace top1 {
                                          decltype(buf[0])>>::value>
       {
         return ProcessData<audio_frame_channels<std::remove_reference_t<
-          decltype(buf[0])>>::value>{{buf.data(), nframes}, midi};
+          decltype(buf[0])>>::value>{{buf.data(), nframes}, midi, nframes};
       }
 
       /// Get only a slice of the audio.

@@ -50,7 +50,6 @@ namespace top1::audio {
     jack_client_t *client;
     jack_status_t jackStatus;
 
-    std::atomic_bool isProcessing {false};
     std::vector<midi::AnyMidiEvent> midi_buf;
 
     enum class PortType {
@@ -222,14 +221,9 @@ namespace top1::audio {
       Globals::events.bufferSizeChanged.runAll(buffsize);
     }
 
-    void startProcess()
-    {
-      isProcessing = true;
-    }
-
     void process(unsigned nframes)
     {
-      if (!(isProcessing && Globals::running())) return;
+      if (!(owner.do_process && Globals::running())) return;
 
       static auto& timer = util::timer::dispatcher.timers["Audio Frame time"];
       if (timer.running) timer.stopTimer();
@@ -279,7 +273,9 @@ namespace top1::audio {
       float* inData = (float*) jack_port_get_buffer(ports.input, nframes);
 
       auto out_data = owner.process({
-          {reinterpret_cast<util::audio::AudioFrame<1>*>(inData), nframes}, {midi_buf}});
+          {reinterpret_cast<util::audio::AudioFrame<1>*>(inData), nframes},
+          {midi_buf},
+            nframes});
 
       // Separate channels
       // TODO: Write an algorithm for this
