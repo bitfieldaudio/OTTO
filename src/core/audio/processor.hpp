@@ -35,9 +35,9 @@ namespace top1 {
     struct is_audio_processor {}; // TODO: Implementation
 
     template<typename T>
-    struct audio_frame_channels {};
+    struct audio_frame_channels;
 
-    template<int N>
+    template<std::size_t N>
     struct audio_frame_channels<std::array<float, N>> {
       static constexpr auto value = N;
     };
@@ -96,11 +96,9 @@ namespace top1 {
       }
 
       template<typename T>
-      auto redirect(T& buf) ->
-      ProcessData<audio_frame_channels<std::remove_reference_t<
-                                         decltype(buf[0])>>::value>
+      auto redirect(T& buf)
       {
-        return ProcessData<audio_frame_channels<std::remove_reference_t<
+        return ProcessData<audio_frame_channels<std::decay_t<
           decltype(buf[0])>>::value>{{buf.data(), nframes}, midi, nframes};
       }
 
