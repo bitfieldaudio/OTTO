@@ -277,16 +277,13 @@ namespace top1::audio {
           {midi_buf},
             nframes});
 
+      LOGW_IF(out_data.nframes != nframes) << "Frames went missing!";
+
       // Separate channels
-      // TODO: Write an algorithm for this
-      auto first = std::begin(out_data);
-      auto last = std::end(out_data);
-      auto l_data = outLData;
-      auto r_data = outRData;
-      for (; first != last; first++, l_data++, r_data++)
+      for (int i = 0; i < nframes; i++)
       {
-        *l_data = (*first)[0];
-        *r_data = (*first)[1];
+        outLData[i] = out_data.audio[i][0];
+        outRData[i] = out_data.audio[i][1];
       }
     }
 

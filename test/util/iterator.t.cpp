@@ -166,4 +166,25 @@ namespace top1::util {
     }
   }
 
+  TEST_CASE("Zipping iterators", "[iterator] [util]") {
+
+    std::size_t some_size = 1000;
+
+    SECTION("Referencing") {
+
+      std::vector<int> data;
+      data.reserve(some_size);
+      std::generate_n(std::back_inserter(data), some_size, [] {return Random::get<int>(); });
+
+      std::vector<int> new_data;
+      new_data.reserve(some_size);
+      std::generate_n(std::back_inserter(new_data), some_size, [] {return Random::get<int>(); });
+
+      for (auto&& [dst, src] : util::zip(data, new_data)) {
+        dst = src;
+      }
+
+      REQUIRE_THAT(data, Catch::Matchers::Equals(new_data));
+    }
+  }
 }

@@ -32,7 +32,7 @@ namespace top1::modules {
         float lMix = 0, rMix = 0;
         for (int t = 0; t < 4 ; t++) {
           float audio = in[t] * level[t];
-          if (muted[t]) {
+          if (!muted[t]) {
             lMix += audio * (1-pan[t]);
             rMix += audio * (1+pan[t]);
           }
