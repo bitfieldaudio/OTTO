@@ -10,10 +10,11 @@
 #include "util/event.hpp"
 
 #include "core/datafile.hpp"
-#include "core/audio/jack.hpp"
+#include "core/audio/main_audio.hpp"
 #include "core/ui/mainui.hpp"
 #include "core/modules/module-dispatcher.hpp"
 
+#include "modules/studio/input_selector/input_selector.hpp"
 #include "modules/studio/tapedeck/tapedeck.hpp"
 #include "modules/studio/mixer/mixer.hpp"
 #include "modules/studio/metronome/metronome.hpp"
@@ -29,18 +30,18 @@ namespace top1 {
     static inline const filesystem::path data_dir {"data"};
 
     static inline struct {
-      top1::EventDispatcher<> preInit;
-      top1::EventDispatcher<> postInit;
-      top1::EventDispatcher<> preExit;
-      top1::EventDispatcher<> postExit;
-      top1::EventDispatcher<unsigned> bufferSizeChanged;
-      top1::EventDispatcher<unsigned> samplerateChanged;
+      util::EventDispatcher<> preInit;
+      util::EventDispatcher<> postInit;
+      util::EventDispatcher<> preExit;
+      util::EventDispatcher<> postExit;
+      util::EventDispatcher<unsigned> bufferSizeChanged;
+      util::EventDispatcher<unsigned> samplerateChanged;
     } events;
 
     static inline DataFile dataFile;
     static inline unsigned samplerate = 44100;
 
-    static inline audio::JackAudio jackAudio;
+    static inline audio::MainAudio audio;
     static inline ui::MainUI ui;
 
     static inline modules::SynthModuleDispatcher synth;
@@ -49,11 +50,12 @@ namespace top1 {
     static inline modules::Tapedeck tapedeck;
     static inline modules::Mixer mixer;
     static inline modules::Metronome metronome;
+    static inline modules::InputSelector selector;
 
     static inline void init() {
       dataFile.path = data_dir / "modules.json";
       dataFile.read();
-      jackAudio.init();
+      audio.init();
       tapedeck.init();
       mixer.init();
       synth.current().init();

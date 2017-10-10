@@ -28,7 +28,9 @@ namespace top1::util {
   namespace detail {
     template<class Func, int... ns>
     constexpr auto generate_sequence_impl(std::integer_sequence<int, ns...>&&, Func&& gen) {
-      return std::array{std::invoke(gen, ns)...};
+      return std::array<std::remove_reference_t<
+        decltype(std::invoke(gen, std::declval<int>()))>,
+        sizeof...(ns)>{std::invoke(gen, ns)...};
     }
   }
 
@@ -116,7 +118,7 @@ namespace top1::util {
 
   template<typename Cont, typename T>
   decltype(auto) accumulate(Cont&& cont, T&& init) {
-    using std::begin; using std::end;
+    using std::begin, std::end;
     return std::accumulate(begin(cont), end(cont), std::forward<T>(init));
   }
 

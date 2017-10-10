@@ -19,30 +19,38 @@ namespace top1::modules {
 
   // Mixing!
 
-  void Mixer::process(const audio::ProcessData& data) {
-    TIME_SCOPE("Mixer::Process");
-    auto &trackBuffer = Globals::tapedeck.trackBuffer;
-    auto level = generate_sequence<4>([this] (int n) { return props.tracks[n].level.get(); });
-    auto pan = generate_sequence<4>([this] (int n) { return props.tracks[n].pan.get(); });
-    // Iterators
-    auto outL = std::begin(data.audio.outL);
-    auto outR = std::begin(data.audio.outR);
-    auto proc = std::begin(data.audio.proc);
-    auto trb = std::begin(trackBuffer);
+  audio::ProcessData<2> Mixer::process_tracks(audio::ProcessData<4> data)
+  {
+    auto level = util::generate_sequence<4>(
+      [this] (int n) { return props.tracks[n].level.get(); });
+    auto pan = util::generate_sequence<4>(
+      [this] (int n) { return props.tracks[n].pan.get(); });
+    auto muted = util::generate_sequence<4>(
+      [this] (int n) { return props.tracks[n].muted.get(); });
 
-    for (int f = 0; f < data.nframes; f++, ++outL, ++outR, ++proc, ++trb) {
-      float lMix = 0, rMix = 0;
-      for (int t = 0; t < 4 ; t++) {
-        float audio = (*trb)[t] * level[t];
-        if (!props.tracks[t].muted) {
-          lMix += audio * (1-pan[t]);
-          rMix += audio * (1+pan[t]);
+    for (auto&& [in, out] : util::zip(data.audio, proc_buf)) {
+        float lMix = 0, rMix = 0;
+        for (int t = 0; t < 4 ; t++) {
+          float audio = in[t] * level[t];
+          if (muted[t]) {
+            lMix += audio * (1-pan[t]);
+            rMix += audio * (1+pan[t]);
+          }
+          graphs[t].add(audio);
         }
-        graphs[t].add(audio);
-      }
-      *outL = lMix + *proc * Globals::tapedeck.props.gain;
-      *outR = rMix + *proc * Globals::tapedeck.props.gain;
+        out = {lMix, rMix};
     }
+
+    return data.redirect(proc_buf);
+  }
+
+  audio::ProcessData<2> Mixer::process_engine(audio::ProcessData<1> data)
+  {
+    for (auto&& [in, out] : util::zip(data.audio, proc_buf)) {
+      out[0] += in[0];
+      out[1] += in[0];
+    }
+    return data.redirect(proc_buf);
   }
 
   /**************************************************/
@@ -137,80 +145,80 @@ namespace top1::modules {
     ctx.lineWidth(2);
     ctx.beginPath();
     ctx.moveTo(30, 35);
-      ctx.lineTo(30 + std::cos(angle) * 30, 35 + std::sin(angle) * 30);
-      ctx.stroke();
+    ctx.lineTo(30 + std::cos(angle) * 30, 35 + std::sin(angle) * 30);
+    ctx.stroke();
 
-      // #PanTxt
-      ctx.lineWidth(1.000000);
-      ctx.font(Fonts::Norm);
-      ctx.font(20);
-      ctx.textAlign(TextAlign::Left, TextAlign::Baseline);
-      ctx.fillText("L", 5, 120);
-      ctx.textAlign(TextAlign::Right, TextAlign::Baseline);
-      ctx.fillText("R", 55, 120);
+    // #PanTxt
+    ctx.lineWidth(1.000000);
+    ctx.font(Fonts::Norm);
+    ctx.font(20);
+    ctx.textAlign(TextAlign::Left, TextAlign::Baseline);
+    ctx.fillText("L", 5, 120);
+    ctx.textAlign(TextAlign::Right, TextAlign::Baseline);
+    ctx.fillText("R", 55, 120);
 
-      // #PanSep
-      ctx.beginPath();
-      ctx.strokeStyle(Colours::Gray60);
-      ctx.lineWidth(2.000000);
-      ctx.moveTo(30.000000, 120);
-      ctx.lineTo(30.000000, 110);
-      ctx.stroke();
+    // #PanSep
+    ctx.beginPath();
+    ctx.strokeStyle(Colours::Gray60);
+    ctx.lineWidth(2.000000);
+    ctx.moveTo(30.000000, 120);
+    ctx.lineTo(30.000000, 110);
+    ctx.stroke();
 
-      // #PanSliderBG
-      ctx.beginPath();
-      ctx.strokeStyle(Colours::Gray60);
-      ctx.lineWidth(2);
-      ctx.moveTo( 2, 130);
-      ctx.lineTo(58, 130);
-      ctx.stroke();
+    // #PanSliderBG
+    ctx.beginPath();
+    ctx.strokeStyle(Colours::Gray60);
+    ctx.lineWidth(2);
+    ctx.moveTo( 2, 130);
+    ctx.lineTo(58, 130);
+    ctx.stroke();
 
-      // #PanSlider
-      ctx.beginPath();
-      ctx.globalAlpha(1.0);
-      ctx.strokeStyle(Colours::White);
-      ctx.fillStyle(Colours::Gray60);
-      ctx.lineWidth(2.000000);
-      ctx.circle(30 + (28 * pan), 130, 3);
-      ctx.fill();
-      ctx.stroke();
+    // #PanSlider
+    ctx.beginPath();
+    ctx.globalAlpha(1.0);
+    ctx.strokeStyle(Colours::White);
+    ctx.fillStyle(Colours::Gray60);
+    ctx.lineWidth(2.000000);
+    ctx.circle(30 + (28 * pan), 130, 3);
+    ctx.fill();
+    ctx.stroke();
 
-      // #DialNum
-      ctx.lineWidth(1);
-      ctx.fillStyle(trackCol);
-      ctx.font(Fonts::Light);
-      ctx.font(60);
-      ctx.textAlign(TextAlign::Center, TextAlign::Baseline);
-      std::string txt;
-      if (!Globals::ui.keys[ui::K_SHIFT]) {
-        txt = fmt::format("{:0>2.0f}", mix * 100);
-      } else {
-        if (int(pan * 10) == 0)
-          txt = "C";
-        else if (pan < 0)
-          txt = fmt::format("{:.0f}L", -pan * 10);
-        else if (pan > 0)
-          txt = fmt::format("{:.0f}R", pan * 10);
-      }
-      ctx.fillText(txt, 30, 90);
-
-      // #MuteBG
-      ctx.beginPath();
-      ctx.globalAlpha(1.0);
-      ctx.strokeStyle(muteCol);
-      ctx.lineWidth(2.000000);
-      ctx.rect(1, 150, 58, 25);
-      ctx.stroke();
-
-      // #MuteTxt
-      ctx.lineWidth(1.000000);
-      ctx.fillStyle(muteCol);
-      ctx.font(Fonts::Norm);
-      ctx.font(20);
-      ctx.textAlign(TextAlign::Center, TextAlign::Middle);
-      ctx.fillText("MUTE", 30, 162.5);
-
-      ctx.restore();
+    // #DialNum
+    ctx.lineWidth(1);
+    ctx.fillStyle(trackCol);
+    ctx.font(Fonts::Light);
+    ctx.font(60);
+    ctx.textAlign(TextAlign::Center, TextAlign::Baseline);
+    std::string txt;
+    if (!Globals::ui.keys[ui::K_SHIFT]) {
+      txt = fmt::format("{:0>2.0f}", mix * 100);
+    } else {
+      if (int(pan * 10) == 0)
+        txt = "C";
+      else if (pan < 0)
+        txt = fmt::format("{:.0f}L", -pan * 10);
+      else if (pan > 0)
+        txt = fmt::format("{:.0f}R", pan * 10);
     }
+    ctx.fillText(txt, 30, 90);
+
+    // #MuteBG
+    ctx.beginPath();
+    ctx.globalAlpha(1.0);
+    ctx.strokeStyle(muteCol);
+    ctx.lineWidth(2.000000);
+    ctx.rect(1, 150, 58, 25);
+    ctx.stroke();
+
+    // #MuteTxt
+    ctx.lineWidth(1.000000);
+    ctx.fillStyle(muteCol);
+    ctx.font(Fonts::Norm);
+    ctx.font(20);
+    ctx.textAlign(TextAlign::Center, TextAlign::Middle);
+    ctx.fillText("MUTE", 30, 162.5);
+
+    ctx.restore();
+  }
 
 }

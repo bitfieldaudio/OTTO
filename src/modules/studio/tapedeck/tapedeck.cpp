@@ -8,6 +8,7 @@
 #include "tapedeck.hpp"
 #include "tapescreen.hpp"
 #include "util/timer.hpp"
+#include "util/algorithm.hpp"
 
 namespace top1::modules {
 
@@ -174,7 +175,7 @@ namespace top1::modules {
    * Audio Processing
    */
 
-  void Tapedeck::process(const audio::ProcessData& data) {
+  audio::ProcessData<4> Tapedeck::process_playback(audio::ProcessData<0> data) {
     TIME_SCOPE("Tapedeck::process");
 
     // Animate the tape speed
@@ -214,34 +215,39 @@ namespace top1::modules {
 
     // Start recording by pressing a key
     if (!state.recording() && state.doStartRec() && state.readyToRec) {
-      if (std::any_of(std::begin(data.midi), std::end(data.midi),
-          [] (auto&& e) {return e.template is<midi::NoteOnEvent>();})) {
-        state.play(1);
+      for (auto&& e : data.midi) {
+        if (mpark::holds_alternative<midi::NoteOnEvent>(e))
+          state.play();
       }
     }
 
     float realSpeed = props.baseSpeed * state.playSpeed;
     auto pos = position();
 
-    // Clear the buffer
-    std::fill(std::begin(trackBuffer), std::end(trackBuffer),
-      AudioFrame{{0.f, 0.f, 0.f, 0.f}});
+    proc_buf.clear();
+
+    // Read audio
+    if (state.doPlayAudio()) {
+      tapeBuffer->read_frames(data.nframes, realSpeed, std::begin(proc_buf));
+    }
+
+    return data.redirect(proc_buf);
+  }
+
+  audio::ProcessData<0> Tapedeck::process_record(audio::ProcessData<1> data) {
+    float realSpeed = props.baseSpeed * state.playSpeed;
+    auto pos = position();
 
     // Just started recording
     if (state.recording() && !state.recLast) {
       recSect = {pos, pos};
     }
 
-    // Read audio
-    if (state.doPlayAudio()) {
-      tapeBuffer->read_frames(data.nframes, realSpeed, std::begin(trackBuffer));
-    }
-
     if (state.recording()) {
       // Write audio
-      auto sect = tapeBuffer->write_frames(std::begin(data.audio.proc), data.nframes,
+      auto sect = tapeBuffer->write_frames(std::begin(data.audio), data.nframes,
         realSpeed, [&, track = state.track] (auto&& src, auto& dst) {
-          dst[track] += src * props.gain;
+          dst[track] += src[0] * props.gain;
         });
       recSect += sect;
     }
@@ -258,8 +264,10 @@ namespace top1::modules {
     // Graph
 
     procGraph.clear();
-    for (auto&& smpl : data.audio.proc) {
-      procGraph.add(smpl * props.gain);
+    for (auto&& smpl : data.audio) {
+      procGraph.add(smpl[0] * props.gain);
     }
+
+    return data.midi_only();
   }
 } // top1::module

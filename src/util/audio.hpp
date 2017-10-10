@@ -7,7 +7,7 @@
 #include "util/dyn-array.hpp"
 #include "util/iterator.hpp"
 
-namespace top1::audio {
+namespace top1::util::audio {
 
   /*
    * Mixes two signals, and normalizes the result.
@@ -25,6 +25,14 @@ namespace top1::audio {
    */
   template<int nChannels = 4, typename SampleType = float>
   using AudioFrame = std::array<SampleType, nChannels>;
+
+  template<typename Rng1, typename Rng2>
+  void add_all(Rng1&& r1, Rng2&& r2)
+  {
+    for (auto&& [r1, r2] : util::zip(r1, r2)) {
+      r1 += r2;
+    }
+  }
 
   /*
    * A simple average, used to get a 1-dimensional graph of audio

@@ -15,6 +15,8 @@ namespace top1::modules {
 
   class Tapedeck final : public modules::Module {
     std::unique_ptr<ui::ModuleScreen<Tapedeck>> tapeScreen;
+
+    audio::ProcessBuffer<4> proc_buf;
   public:
 
     struct State {
@@ -75,10 +77,7 @@ namespace top1::modules {
       Property<float> baseSpeed = {this, "Tape Speed", 1, {-2.f, 2.f, 0.01}};
     } props;
 
-    audio::Graph procGraph;
-
-    using AudioFrame = audio::AudioFrame<4, float>;
-    audio::RTBuffer<AudioFrame> trackBuffer;
+    util::audio::Graph procGraph;
     std::unique_ptr<tape_buffer> tapeBuffer;
 
     Tapedeck();
@@ -88,12 +87,14 @@ namespace top1::modules {
     void init() override;
     void exit() override;
 
-    audio::Section<int> loopSect;
-    audio::Section<int> recSect;
+    util::audio::Section<int> loopSect;
+    util::audio::Section<int> recSect;
 
     int overruns = 0;
 
-    void process(const audio::ProcessData&);
+    audio::ProcessData<4> process_playback(audio::ProcessData<0>);
+    audio::ProcessData<0> process_record(audio::ProcessData<1>);
+
     void display() override;
 
 

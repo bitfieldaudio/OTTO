@@ -2,7 +2,6 @@
 #include <plog/Log.h>
 #include <plog/Appenders/ConsoleAppender.h>
 
-#include "core/audio/jack.hpp"
 #include "core/audio/midi.hpp"
 #include "core/ui/mainui.hpp"
 #include "modules/studio/tapedeck/tapedeck.hpp"
@@ -37,7 +36,7 @@ int main(int argc, char *argv[]) {
     Globals::init();
     Globals::events.postInit.runAll();
 
-    Globals::jackAudio.startProcess();
+    Globals::audio.start_processing();
 
     Globals::ui.mainRoutine();
 
@@ -48,7 +47,7 @@ int main(int argc, char *argv[]) {
     Globals::ui.exit();
     Globals::mixer.exit();
     Globals::tapedeck.exit();
-    Globals::jackAudio.exit();
+    Globals::audio.exit();
     Globals::dataFile.write();
     Globals::events.postExit.runAll();
     return 1;
@@ -58,7 +57,7 @@ int main(int argc, char *argv[]) {
     Globals::ui.exit();
     Globals::mixer.exit();
     Globals::tapedeck.exit();
-    Globals::jackAudio.exit();
+    Globals::audio.exit();
     Globals::dataFile.write();
     Globals::events.postExit.runAll();
     return 1;
@@ -69,7 +68,7 @@ int main(int argc, char *argv[]) {
   Globals::ui.exit();
   Globals::mixer.exit();
   Globals::tapedeck.exit();
-  Globals::jackAudio.exit();
+  Globals::audio.exit();
   Globals::dataFile.write();
   Globals::events.postExit.runAll();
   return 0;

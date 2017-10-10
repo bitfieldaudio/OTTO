@@ -31,9 +31,11 @@ namespace top1::modules {
     return wav_path;
   }
 
-  void SynthSampler::process(const audio::ProcessData& data) {
+  audio::ProcessData<1> SynthSampler::process(audio::ProcessData<0> data)
+  {
     for (auto &&nEvent : data.midi) {
-      nEvent.match([&] (midi::NoteOnEvent& e) {
+      util::match(nEvent,
+        [&] (midi::NoteOnEvent& e) {
           if (e.channel == 0) {
             props.playProgress = (props.fwd()) ? 0 : props.length() - 1;
             props.trigger = true;
@@ -48,7 +50,7 @@ namespace top1::modules {
       if (props.fwd()) {
         if (props.loop() && props.trigger) {
           for(int i = 0; i < data.nframes; ++i) {
-            data.audio.proc[i] += sampleData[props.in + props.playProgress];
+            proc_buf[i][0] += sampleData[props.in + props.playProgress];
             props.playProgress += playSpeed;
             if (props.playProgress >= props.length()) {
               props.playProgress = 0;
@@ -57,7 +59,7 @@ namespace top1::modules {
         } else {
           int frms = std::min<int>(data.nframes, props.length() - props.playProgress);
           for(int i = 0; i < frms; ++i) {
-            data.audio.proc[i] += sampleData[props.in + props.playProgress];
+            proc_buf[i][0] += sampleData[props.in + props.playProgress];
             props.playProgress += playSpeed;
           }
           if (props.playProgress >= props.length()) {
@@ -67,7 +69,7 @@ namespace top1::modules {
       } else {
         if (props.loop() && props.trigger) {
           for(int i = 0; i < data.nframes; ++i) {
-            data.audio.proc[i] += sampleData[props.in + props.playProgress];
+            proc_buf[i][0] += sampleData[props.in + props.playProgress];
             props.playProgress -= playSpeed;
             if (props.playProgress < 0) {
               props.playProgress = props.length() -1;
@@ -76,7 +78,7 @@ namespace top1::modules {
         } else {
           int frms = std::min<int>(data.nframes, props.playProgress);
           for(int i = 0; i < frms; ++i) {
-            data.audio.proc[i] += sampleData[props.in + props.playProgress];
+            proc_buf[i][0] += sampleData[props.in + props.playProgress];
             props.playProgress -= playSpeed;
           }
         }
@@ -84,7 +86,8 @@ namespace top1::modules {
     }
 
     for (auto &&nEvent : data.midi) {
-      nEvent.match([&] (midi::NoteOffEvent& e) {
+      util::match(nEvent,
+        [&] (midi::NoteOffEvent& e) {
           if (e.channel == 0) {
             props.trigger = false;
             if (props.stop()) {
@@ -92,7 +95,9 @@ namespace top1::modules {
             }
           }
         }, [] (auto) {});
-    };
+    }
+
+    return data.redirect(proc_buf);
   }
 
   void SynthSampler::display() {
@@ -104,7 +109,7 @@ namespace top1::modules {
     auto path = samplePath(props.sampleName);
     std::size_t rs = 0;
     if (!(path.empty() || props.sampleName.get().empty())) {
-      SoundFile sf;
+      util::SoundFile sf;
       sf.open(path);
       rs = std::min<int>(maxSampleSize, sf.length());
       sampleData.resize(rs);
@@ -189,10 +194,10 @@ namespace top1::modules {
 
   SynthSampleScreen::SynthSampleScreen(SynthSampler *m) :
     ui::ModuleScreen<SynthSampler> (m),
-    topWF (new audio::Waveform(module->sampleData.size() / ui::drawing::topWFsize.w / 4.0, 1.0)
+    topWF (new util::audio::Waveform(module->sampleData.size() / ui::drawing::topWFsize.w / 4.0, 1.0)
            ),
     topWFW (topWF, ui::drawing::topWFsize),
-    mainWF (new audio::Waveform(50, 1.0)),
+    mainWF (new util::audio::Waveform(50, 1.0)),
     mainWFW (mainWF, ui::drawing::mainWFsize) {}
 
   void modules::SynthSampleScreen::draw(ui::drawing::Canvas &ctx) {

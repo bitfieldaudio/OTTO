@@ -1,6 +1,6 @@
 #include "tapefile.hpp"
 
-namespace top1 {
+namespace top1::util {
 
   using Chunk = ByteFile::Chunk;
   using SliceData = TapeFile::SliceData;

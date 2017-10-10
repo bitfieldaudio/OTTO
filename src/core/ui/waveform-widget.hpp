@@ -14,7 +14,7 @@ namespace top1::ui {
   class WaveformWidget : public Widget {
   public:
 
-    using Range = audio::Section<std::size_t>;
+    using Range = util::audio::Section<std::size_t>;
 
     struct iterator {
       const WaveformWidget &w;

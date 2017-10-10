@@ -15,10 +15,11 @@ namespace top1::modules {
   class SynthSampleScreen; // FWDCL
 
   class SynthSampler : public modules::SynthModule {
+    audio::ProcessBuffer<1> proc_buf;
   public:
 
     size_t maxSampleSize = 0;
-    top1::dyn_array<float> sampleData;
+    util::dyn_array<float> sampleData;
     int sampleSampleRate = 44100;
     float sampleSpeed = 1;
 
@@ -54,7 +55,7 @@ namespace top1::modules {
 
     SynthSampler();
 
-    void process(const audio::ProcessData&) override;
+    audio::ProcessData<1> process(audio::ProcessData<0>) override;
 
     void display() override;
 
@@ -68,10 +69,10 @@ namespace top1::modules {
   class SynthSampleScreen : public ui::ModuleScreen<SynthSampler> {
   public:
 
-    std::shared_ptr<audio::Waveform> topWF;
-    ui::WaveformWidget<audio::Waveform> topWFW;
-    std::shared_ptr<audio::Waveform> mainWF;
-    ui::WaveformWidget<audio::Waveform> mainWFW;
+    std::shared_ptr<util::audio::Waveform> topWF;
+    ui::WaveformWidget<util::audio::Waveform> topWFW;
+    std::shared_ptr<util::audio::Waveform> mainWF;
+    ui::WaveformWidget<util::audio::Waveform> mainWFW;
 
     SynthSampleScreen(SynthSampler *);
 

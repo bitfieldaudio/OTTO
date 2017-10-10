@@ -5,7 +5,7 @@
 #include "util/algorithm.hpp"
 #include "util/type_traits.hpp"
 
-namespace top1 {
+namespace top1::util {
 
   namespace detail {
 

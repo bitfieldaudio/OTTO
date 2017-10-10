@@ -62,35 +62,38 @@ namespace top1::modules {
         std::make_unique<T>(std::forward<Args>(args)...));
     }
 
-    tree::Node makeNode() override;
+    util::tree::Node makeNode() override;
 
-    void readNode(top1::tree::Node node) override;
+    void readNode(util::tree::Node node) override;
   };
 
   class SynthModuleDispatcher : public ModuleDispatcher<SynthModule> {
   public:
 
-    void process(const audio::ProcessData& data) {
+    audio::ProcessData<1> process(audio::ProcessData<0> data) {
       if (modules.size() > 0)
-        modules[currentModule].val->process(data);
+        return modules[currentModule].val->process(data);
+      return {};
     }
   };
 
   class EffectModuleDispatcher : public ModuleDispatcher<EffectModule> {
   public:
 
-    void process(const audio::ProcessData& data) {
+    audio::ProcessData<1> process(audio::ProcessData<1> data) {
       if (modules.size() > 0)
-        modules[currentModule].val->process(data);
+        return modules[currentModule].val->process(data);
+      return {};
     }
   };
 
   class SequencerModuleDispatcher : public ModuleDispatcher<SequencerModule> {
   public:
 
-    void process(const audio::ProcessData& data) {
+    audio::ProcessData<0> process(audio::ProcessData<0> data) {
       if (modules.size() > 0)
-        modules[currentModule].val->process(data);
+        return modules[currentModule].val->process(data);
+      return {};
     }
   };
 
@@ -133,8 +136,8 @@ namespace top1::modules {
   }
 
   template<typename M>
-  top1::tree::Node ModuleDispatcher<M>::makeNode() {
-    top1::tree::Map node;
+  util::tree::Node ModuleDispatcher<M>::makeNode() {
+    util::tree::Map node;
     for ([[maybe_unused]] auto&& [k, v] : modules) {
       node[k] = v->makeNode();
     }
@@ -142,8 +145,8 @@ namespace top1::modules {
   }
 
   template<typename M>
-  void ModuleDispatcher<M>::readNode(top1::tree::Node node) {
-    node.match([&] (top1::tree::Map n) {
+  void ModuleDispatcher<M>::readNode(util::tree::Node node) {
+    node.match([&] (util::tree::Map n) {
         for (auto&& m : n.values) {
           auto&& md = std::find(modules.begin(), modules.end(), m.first);
           if (md != modules.end()) {

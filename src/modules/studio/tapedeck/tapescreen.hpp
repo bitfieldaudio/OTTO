@@ -413,7 +413,7 @@ namespace top1::modules {
       // TODO: Animate this?
       int timeline_time = 5 * Globals::samplerate;
 
-      audio::Section<int> view_time {
+      util::audio::Section<int> view_time {
         (int) module->position() - timeline_time/2,
         (int) module->position() + timeline_time/2};
 
@@ -823,7 +823,7 @@ namespace top1::modules {
       // Calculate point ip on C, for which a line between ip and p is tangent
       // to C
       // TODO: Some of this could be done constexpr or simply by hand
-      math::vec cp = p - c;
+      util::math::vec cp = p - c;
       float l = std::sqrt(cp.x*cp.x + cp.y*cp.y);
       float v = std::asin(r/l);
       float u = std::asin(std::abs(cp.x)/l);

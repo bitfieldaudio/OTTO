@@ -5,19 +5,16 @@
 
 namespace top1::audio {
 
-  FaustWrapper::FaustWrapper(std::unique_ptr<dsp>&& d,
-    modules::Properties& props) : opts (&props), fDSP (std::move(d))
-  {
-    if (fDSP->getNumInputs() > 1 || fDSP->getNumOutputs() > 1) {
-      throw std::runtime_error("FaustWrapper doesnt handle multiple channels");
+  namespace detail {
+    void register_faust_wrapper_events(dsp& _dsp, FaustOptions& opts) {
+      Globals::events.preInit.add([&]() {
+          _dsp.init(Globals::samplerate);
+          _dsp.buildUserInterface(&opts);
+        });
+      Globals::events.samplerateChanged.add([&](int sr) {
+          _dsp.instanceInit(sr);
+          opts.props->updateFaust();
+        });
     }
-    Globals::events.preInit.add([&]() {
-        fDSP->init(Globals::samplerate);
-        fDSP->buildUserInterface(&opts);
-      });
-    Globals::events.samplerateChanged.add([&](int sr) {
-        fDSP->instanceInit(sr);
-        opts.props->updateFaust();
-      });
   }
 } // top1::audio

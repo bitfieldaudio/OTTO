@@ -2,7 +2,7 @@
 
 #include <cmath>
 
-namespace top1::math {
+namespace top1::util::math {
 
   template<typename T>
   constexpr inline bool between(T min, T max, T el) {

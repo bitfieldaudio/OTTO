@@ -5,7 +5,7 @@
 #include <functional>
 #include <type_traits>
 
-namespace top1 {
+namespace top1::util {
 
   namespace detail {
 
@@ -472,8 +472,8 @@ namespace top1 {
   /// but should not be used as such. It does however model a
   /// Bidirectional iterator.
   ///
-  /// @I A random access iterator that will be wrapped.
-  /// @V The value type.
+  /// \tparam I A random access iterator that will be wrapped.
+  /// \tparam V The value type.
   template<typename I, typename V = typename detail::value_type<I>::type>
   using float_step_iterator = iterator_adaptor<FloatStepIterImpl<I, V>>;
 
@@ -512,7 +512,7 @@ namespace top1 {
       return val;
     }
 
-    bool equal(const value_type& o) const
+    bool equal(const GeneratingIterImpl& o) const
     {
       return o.val == val;
     }
@@ -527,13 +527,141 @@ namespace top1 {
   ///
   /// Supplied with a generator function, this iterator will generate a value
   /// each time its called.
+  /// 
   template<typename Generator>
   using generating_iterator = iterator_adaptor<GeneratingIterImpl<Generator>>;
 
+  ///
   /// Create a generating iterator
+  /// 
   template<typename Generator>
   generating_iterator<Generator> generator(Generator&& gen) {
     return generating_iterator<Generator>(std::forward<Generator>(gen));
   }
 
+
+  ///
+  /// Zipped iterator
+  ///
+  template<typename... Iterators>
+  class ZippedIteratorImpl {
+
+    template<std::size_t N, typename Tuple>
+    static bool tuple_equals_impl(const Tuple& t1, const Tuple& t2)
+    {
+      if constexpr (N < std::tuple_size_v<Tuple>) {
+        auto res = std::get<N>(t1) == std::get<N>(t2);
+        if (res) return true;
+        return tuple_equals_impl<N + 1>(t1, t2);
+      }
+      return false;
+    }
+
+    template<std::size_t N, typename Tuple>
+    static void tuple_advnc_impl(Tuple& t, int n)
+    {
+      if constexpr (N < std::tuple_size_v<Tuple>) {
+        std::advance(std::get<N>(t), n);
+        tuple_advnc_impl<N + 1>(t, n);
+      }
+    }
+
+    template<std::size_t N, typename Tuple, typename Tuple2 = std::tuple<>>
+    static auto tuple_deref_impl(const Tuple& iters, Tuple2&& t2 = {})
+    {
+      if constexpr (N < std::tuple_size_v<Tuple>) {
+        return tuple_deref_impl<N + 1>(iters,
+          std::tuple_cat(std::move(t2),
+            std::tuple<std::tuple_element_t<N, reference>>(*(std::get<N>(iters)))));
+      } else {
+        return t2;
+      }
+    }
+
+  public:
+    using value_type = std::tuple<
+      typename detail::value_type<Iterators>::type...>;
+    using reference = std::tuple<
+      typename detail::reference<Iterators>::type...>;
+    using iterator_category = std::common_type_t<
+      typename detail::iterator_category<Iterators>::type...>;
+
+    ZippedIteratorImpl(Iterators... iterators)
+      : iterators {iterators...}
+    {}
+
+    ZippedIteratorImpl(std::tuple<Iterators...> iterators)
+      : iterators {iterators}
+    {}
+
+    void advance(int n)
+    {
+      tuple_advnc_impl<0>(iterators, n);
+    }
+
+    reference dereference()
+    {
+      return tuple_deref_impl<0>(iterators);
+    }
+
+    bool equal(const ZippedIteratorImpl& o) const
+    {
+      return tuple_equals_impl<0>(iterators, o.iterators);
+    }
+
+    std::tuple<Iterators...> iterators;
+  };
+
+
+  ///
+  /// Zipped iterator
+  ///
+  /// Iterates over multiple iterators at the same time
+  ///
+  /// Its very useful with structured bindings and `for` loops. Using the helper
+  /// function [top1::util::zip], you can iterate over multiple ranges like
+  /// this:
+  /// ```
+  /// for (auto&& [r1, r2] : util::zip(range1, range2)) {
+  ///   ...
+  /// }
+  /// ```
+
+  template<typename... Iterators>
+  using zipped_iterator = iterator_adaptor<ZippedIteratorImpl<Iterators...>>;
+
+  /// Create a zipped iterator from iterators
+  template<typename... Iterators>
+  zipped_iterator<Iterators...> zip_iters(Iterators... iters) {
+    return zipped_iterator<Iterators...>(iters...);
+  }
+
+  template<typename... Ranges>
+  struct ZippedRange {
+
+    ZippedRange(Ranges&&... ranges)
+      : first  {std::begin(ranges)...},
+        last  {std::end(ranges)...}
+    {}
+
+    auto begin() { return first; }
+
+    auto begin() const { return first; }
+
+    auto end() { return last; }
+
+    auto end() const { return last; }
+
+    zipped_iterator<std::remove_reference_t<
+                      decltype(std::begin(std::declval<Ranges>()))>...> first;
+
+    zipped_iterator<std::remove_reference_t<
+                      decltype(std::end(std::declval<Ranges>()))>...> last;
+  };
+
+  /// Create a zipped range from ranges
+  template<typename... Ranges>
+  auto zip(Ranges&&... ranges) {
+    return ZippedRange<Ranges...>(std::forward<Ranges>(ranges)...);
+  }
 }

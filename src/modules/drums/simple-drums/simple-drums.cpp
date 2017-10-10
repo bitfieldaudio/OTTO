@@ -18,39 +18,40 @@ namespace top1::modules {
     Globals::ui.display(*screen);
   }
 
-  void SimpleDrumsModule::process(const audio::ProcessData& data) {
+  audio::ProcessData<1> SimpleDrumsModule::process(audio::ProcessData<0> data) {
     for (auto &&nEvent : data.midi) {
-      nEvent.match([&] (midi::NoteOnEvent& e) {
+      util::match(nEvent, [&] (midi::NoteOnEvent& e) {
           currentVoiceIdx = e.key % 24;
           voices[currentVoiceIdx].props.trigger = true;
           voices[currentVoiceIdx].props.envelope.sustain = float(e.velocity)/128.f;
         }, [] (auto&&) {});
     }
+    proc_buf.clear();
+    voice_buf.clear();
     for (auto &&voice : voices) {
-      buf.clear();
-      voice.process({buf.data(), data.nframes});
-      for_both(buf.begin(), buf.end(), data.audio.proc.begin(),
-        data.audio.proc.end(), [] (auto in, auto& out) {
-          out += in;
-        });
+      auto voice_data = voice.process(data.midi_only());
+      for (auto [vb, pb] : util::zip(voice_data, proc_buf)) {
+        util::audio::add_all(pb, vb);
+      }
     }
     for (auto &&nEvent : data.midi) {
-      nEvent.match([&] (midi::NoteOffEvent& e) {
+      util::match(nEvent, [&] (midi::NoteOffEvent& e) {
           voices[e.key % 24].props.trigger = false;
         }, [] (auto&&) {});
     };
+    return data.redirect(proc_buf);
   }
 
-  top1::tree::Node SimpleDrumsModule::makeNode() {
-    top1::tree::Array ar;
+  util::tree::Node SimpleDrumsModule::makeNode() {
+    util::tree::Array ar;
     for (auto &v : voices) {
       ar.values.push_back(v.props.makeNode());
     }
     return ar;
   }
 
-  void SimpleDrumsModule::readNode(top1::tree::Node n) {
-    n.match([&] (top1::tree::Array &ar) {
+  void SimpleDrumsModule::readNode(util::tree::Node n) {
+    n.match([&] (util::tree::Array &ar) {
         for (int i = 0; i < ar.values.size(); ++i) {
           voices[i].props.readNode(ar[i]);
         }

@@ -7,7 +7,7 @@
 #include <functional>
 #include "util/type_traits.hpp"
 
-namespace top1 {
+namespace top1::util {
 
   /// A sum type, holding either an Ok value, or an Err
   ///

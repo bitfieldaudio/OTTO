@@ -85,3 +85,47 @@ This might however be a lot more complicated to implement, and might for that re
 
 *** Verdict
 if i was writing this for a library, I would do it using pipes - however, lets keep simple tasks simple, and try to implement the first one.
+
+* Features
+** Studio
+- Tapedeck
+- Tape collection
+- Mixer
+- Tempo
+- Master FX
+- (Track editing)
+
+** Internal
+ - Synth
+ - Envelope
+ - 2x (4x) FX
+ - Sequencers
+ - Modulation
+
+** External
+ - External 
+** Utilities
+- Mixdown
+
+* Buttons
+| Button      | Function  | With shift   | Notes                     |
+|-------------+-----------+--------------+---------------------------|
+| Tape        |           | collection   |                           |
+| Mixer       |           |              |                           |
+| Tempo       |           |              |                           |
+| Synths      |           |              |                           |
+| Effects     |           |              |                           |
+| Utility     |           |              |                           |
+| Play        | play      |              | Global                    |
+| Stop        | stop      |              | Global                    |
+| Record      | record    |              |                           |
+| shift       |           | ¿ what ?     |                           |
+| left        | spool BW  | BW by a bar  |                           |
+| right       | spool FW  | FW by a bar  |                           |
+| lift        | Lift      | Drop         | tape mode mainly?         |
+| cut         | Cut       | Glue         | tape mode mainly?         |
+| loop in     | go to IN  | set IN here  | tape mode only            |
+| loop out    | go to OUT | set OUT here | tape mode only            |
+| loop toggle |           |              |                           |
+| T1-T4       |           |              |                           |
+| N preset    |           |              | Could double as loop keys |

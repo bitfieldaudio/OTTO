@@ -1,6 +1,6 @@
 #include "util/soundfile.hpp"
 
-namespace top1 {
+namespace top1::util {
 
   class TapeFile : public SoundFile {
   public:

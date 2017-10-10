@@ -52,9 +52,9 @@ namespace top1::modules {
     return wav_path;
   }
 
-  void DrumSampler::process(const audio::ProcessData& data) {
+  audio::ProcessData<1> DrumSampler::process(audio::ProcessData<0> data) {
     for (auto &&nEvent : data.midi) {
-      nEvent.match([&] (midi::NoteOnEvent& e) {
+      util::match(nEvent, [&] (midi::NoteOnEvent& e) {
           if (e.channel == 1) {
             currentVoiceIdx = e.key % nVoices;
             auto &&voice = props.voiceData[currentVoiceIdx];
@@ -63,6 +63,8 @@ namespace top1::modules {
           }
         }, [] (auto&&) {});
     }
+
+    proc_buf.clear();
 
     for (auto &&voice : props.voiceData) {
 
@@ -73,7 +75,7 @@ namespace top1::modules {
         if (voice.fwd()) {
           if (voice.loop() && voice.trigger) {
             for(int i = 0; i < data.nframes; ++i) {
-              data.audio.proc[i] += sampleData[voice.in + voice.playProgress];
+              proc_buf[i][0] += sampleData[voice.in + voice.playProgress];
               voice.playProgress += playSpeed;
               if (voice.playProgress >= voice.length()) {
                 voice.playProgress = 0;
@@ -82,7 +84,7 @@ namespace top1::modules {
           } else {
             int frms = std::min<int>(data.nframes, voice.length() - voice.playProgress);
             for(int i = 0; i < frms; ++i) {
-              data.audio.proc[i] += sampleData[voice.in + voice.playProgress];
+              proc_buf[i][0] += sampleData[voice.in + voice.playProgress];
               voice.playProgress += playSpeed;
             }
             if (voice.playProgress >= voice.length()) {
@@ -92,7 +94,7 @@ namespace top1::modules {
         } else {
           if (voice.loop() && voice.trigger) {
             for(int i = 0; i < data.nframes; ++i) {
-              data.audio.proc[i] += sampleData[voice.in + voice.playProgress];
+              proc_buf[i][0] += sampleData[voice.in + voice.playProgress];
               voice.playProgress -= playSpeed;
               if (voice.playProgress < 0) {
                 voice.playProgress = voice.length() -1;
@@ -101,7 +103,7 @@ namespace top1::modules {
           } else {
             int frms = std::min<int>(data.nframes, voice.playProgress);
             for(int i = 0; i < frms; ++i) {
-              data.audio.proc[i] += sampleData[voice.in + voice.playProgress];
+              proc_buf[i][0] += sampleData[voice.in + voice.playProgress];
               voice.playProgress -= playSpeed;
             }
           }
@@ -110,7 +112,8 @@ namespace top1::modules {
     }
 
     for (auto &&nEvent : data.midi) {
-      nEvent.match([&] (midi::NoteOffEvent& e) {
+      util::match(nEvent,
+        [&] (midi::NoteOffEvent& e) {
           if (e.channel == 1) {
             auto &&voice = props.voiceData[e.key % nVoices];
             voice.trigger = false;
@@ -120,6 +123,8 @@ namespace top1::modules {
           }
         }, [] (auto&&) {});
     };
+
+    return data.redirect(proc_buf);
   }
 
   void DrumSampler::display() {
@@ -131,7 +136,7 @@ namespace top1::modules {
     auto path = samplePath(props.sampleName);
     std::size_t rs = 0;
     if (!(path.empty() || props.sampleName.get().empty())) {
-      SoundFile sf;
+      util::SoundFile sf;
         sf.open(path);
       rs = std::min<int>(maxSampleSize, sf.length());
       sampleData.resize(rs);
@@ -210,10 +215,10 @@ namespace top1::modules {
 
   DrumSampleScreen::DrumSampleScreen(DrumSampler *m) :
     ui::ModuleScreen<DrumSampler> (m),
-    topWF (new audio::Waveform(module->sampleData.size()
+    topWF (new util::audio::Waveform(module->sampleData.size()
                                / ui::drawing::topWFsize.w / 4.0, 1.0)),
     topWFW (topWF, ui::drawing::topWFsize),
-    mainWF (new audio::Waveform(50, 1.0)),
+    mainWF (new util::audio::Waveform(50, 1.0)),
     mainWFW (mainWF, ui::drawing::mainWFsize) {}
 
   void modules::DrumSampleScreen::draw(ui::drawing::Canvas &ctx) {

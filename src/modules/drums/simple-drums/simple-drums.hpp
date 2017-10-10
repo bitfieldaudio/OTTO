@@ -9,7 +9,7 @@
 
 namespace top1::modules {
 
-  struct SimpleDrumVoice : audio::FaustWrapper {
+  struct SimpleDrumVoice : audio::FaustWrapper<0, 1> {
     struct Props : Properties {
       struct Osc : Properties {
         Property<float> freq        = {this, "FREQ", 80, {5, 500, 4.95}};
@@ -35,9 +35,9 @@ namespace top1::modules {
     SimpleDrumVoice();
   };
 
-
   class SimpleDrumsModule : public modules::SynthModule {
-    audio::RTBuffer<float> buf;
+    audio::ProcessBuffer<1> proc_buf;
+    audio::ProcessBuffer<1> voice_buf;
   public:
     std::array<SimpleDrumVoice, 24> voices;
 
@@ -48,12 +48,12 @@ namespace top1::modules {
     SimpleDrumsModule();
     ~SimpleDrumsModule();
 
-    void process(const audio::ProcessData&) override;
+    audio::ProcessData<1> process(audio::ProcessData<0>) override;
 
     void display() override;
 
-    top1::tree::Node makeNode() override;
-    void readNode(top1::tree::Node) override;
+    util::tree::Node makeNode() override;
+    void readNode(util::tree::Node) override;
   };
 
   class SimpleDrumsScreen : public ui::ModuleScreen<SimpleDrumsModule> {

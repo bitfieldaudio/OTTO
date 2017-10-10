@@ -27,34 +27,32 @@ namespace top1::modules {
 
   Metronome::Metronome()
     : Module(&props),
-      audio::FaustWrapper(std::make_unique<FAUSTCLASS>(), props),
+      audio::FaustWrapper<0, 1>(std::make_unique<FAUSTCLASS>(), props),
     screen (std::make_unique<MetronomeScreen>(this))
   {
   }
 
   Metronome::~Metronome() {}
 
-  void Metronome::process(const audio::ProcessData& data) {
+  audio::ProcessData<1> Metronome::process(audio::ProcessData<0> data) {
     TIME_SCOPE("Metronome::process");
-    float BPsample = props.bpm/60.0/(float)Globals::samplerate;
+
+    float BPsample = props.bpm / 60.0 / (float) Globals::samplerate;
     float beat = Globals::tapedeck.position() * BPsample;
     int framesTillNext = std::fmod(beat, 1)/BPsample * Globals::tapedeck.state.playSpeed;
 
     if (framesTillNext < data.nframes
       && Globals::tapedeck.state.playing()
       && Globals::tapedeck.state.playSpeed/BPsample > 1) {
-      FaustWrapper::process({buf.data(), framesTillNext});
+      FaustWrapper::process(data.slice(0, framesTillNext));
       props.trigger = true;
-      FaustWrapper::process({buf.data(), data.nframes - framesTillNext});
+      FaustWrapper::process(data.slice(framesTillNext));
       props.trigger = false;
     } else {
-      FaustWrapper::process({buf.data(), data.nframes});
+      FaustWrapper::process(data);
     }
-    indexed_for(buf.begin(), buf.end(), [&](float f, auto i) {
-        graph.add(f);
-        data.audio.outL[i] += f;
-        data.audio.outR[i] += f;
-      });
+
+    return data.redirect(FaustWrapper::proc_buf);
   }
 
   void Metronome::display() {

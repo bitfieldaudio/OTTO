@@ -24,7 +24,7 @@ namespace top1::ui::drawing {
     constexpr Point(float x, float y) : x (x), y (y) {}
 
     // cppcheck-suppress noExplicitConstructor
-    constexpr Point(math::vec v) : x (v.x), y (v.y) {}
+    constexpr Point(util::math::vec v) : x (v.x), y (v.y) {}
 
     constexpr Point rotate(float rad) const {
       float sn = std::sin(rad);
@@ -47,7 +47,7 @@ namespace top1::ui::drawing {
     constexpr Point operator/(float s) const {return {x / s, y / s};}
     constexpr Point operator-() const {return {-x, -y};}
 
-    constexpr operator math::vec() const {return {x, y};}
+    constexpr operator util::math::vec() const {return {x, y};}
   };
 
   struct Size {
@@ -57,14 +57,14 @@ namespace top1::ui::drawing {
     constexpr Size(float w, float h) : w (w), h (h) {};
 
     // cppcheck-suppress noExplicitConstructor
-    constexpr Size(math::vec v) : w (v.x), h (v.y) {};
+    constexpr Size(util::math::vec v) : w (v.x), h (v.y) {};
 
     constexpr Size swapWH() const {return {h, w};}
 
     constexpr Point center() const {
       return {w / 2.f, h / 2.f};
     }
-    constexpr operator math::vec() const {return {w, h};}
+    constexpr operator util::math::vec() const {return {w, h};}
   };
 
   struct Colour {

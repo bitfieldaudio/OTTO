@@ -2,7 +2,7 @@
 
 #include "util/poly-ptr.hpp"
 
-namespace top1 {
+namespace top1::util {
 
   struct Base {
     int base_field = 4;

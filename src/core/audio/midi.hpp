@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cmath>
+#include <variant.hpp>
 
 #include "util/poly-ptr.hpp"
 
@@ -8,16 +9,18 @@ namespace top1::midi {
 
   struct MidiEvent {
 
-    typedef unsigned char byte;
+    using byte = unsigned char;
 
-    enum EventType {
-      NOTE_OFF = 0b1000,
-      NOTE_ON = 0b1001,
-      CONTROL_CHANGE = 0b1011,
-    } type;
+    enum class Type {
+      NoteOff       = 0b1000,
+      NoteOn        = 0b1001,
+      ControlChange = 0b1011,
+    };
 
-    int channel;
+    Type type;
+
     byte *data;
+    int channel;
     int time;
 
   };
@@ -44,8 +47,7 @@ namespace top1::midi {
   };
 
   // TODO: Replace with variant AnyMidiEvent
-  using MidiEventPtr = top1::poly_ptr<MidiEvent,
-    NoteOnEvent, NoteOffEvent, ControlChangeEvent>;
+  using AnyMidiEvent = mpark::variant<NoteOnEvent, NoteOffEvent, ControlChangeEvent>;
 
   inline float freqTable[128];
 

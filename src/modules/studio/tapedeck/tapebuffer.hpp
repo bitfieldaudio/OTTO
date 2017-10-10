@@ -66,8 +66,8 @@ namespace top1 {
 
     using value_type = T;
     std::array<value_type, size> storage;
-    using iterator = iterator_adaptor<IteratorImpl<value_type>>;
-    using const_iterator = iterator_adaptor<IteratorImpl<const value_type>>;
+    using iterator = util::iterator_adaptor<IteratorImpl<value_type>>;
+    using const_iterator = util::iterator_adaptor<IteratorImpl<const value_type>>;
 
     iterator begin() {return {storage.data(), 0U};}
     const_iterator begin() const {return {storage.data(), 0U};}
@@ -90,14 +90,14 @@ namespace top1 {
     using Value = std::array<float, 4>;
   public:
 
-    using TapeSlice = audio::Section<int>;
+    using TapeSlice = util::audio::Section<int>;
 
     struct TapeSliceSet {
       std::vector<TapeSlice> slices;
 
       TapeSliceSet() {}
 
-      std::vector<TapeSlice> overlapping_slices(audio::Section<int> area) const;
+      std::vector<TapeSlice> overlapping_slices(util::audio::Section<int> area) const;
 
       bool in_slice(int time) const;
       TapeSlice current(int time) const;
@@ -163,10 +163,10 @@ namespace top1 {
     ///
     /// @return the section of tape that was just written
     template<typename Iter, typename BinaryFunc>
-    audio::Section<int> write_frames(Iter iter, int n, float speed,
+    util::audio::Section<int> write_frames(Iter iter, int n, float speed,
       BinaryFunc&& func = [] (auto&& in, auto& tape) { tape = in; })
     {
-      audio::Section<int> written {0,0};
+      util::audio::Section<int> written {0,0};
       if (speed == 0) return written;
       int write_n = 0;
       float inpt_speed;
@@ -181,13 +181,13 @@ namespace top1 {
       }
 
       auto tape = buffer.iter(written.in);
-      auto inpt = float_step(std::move(iter), inpt_speed);
+      auto inpt = util::float_step(std::move(iter), inpt_speed);
       for (int i = 0; i < write_n; i++, tape++, inpt++) {
         func(*inpt, *tape);
       }
 
       // Atomically update `write_sect`
-      audio::Section<int> new_sect;
+      util::audio::Section<int> new_sect;
       auto expected_sect = write_sect.load();
       do {
         new_sect = written;
@@ -204,7 +204,7 @@ namespace top1 {
     void read_frames(int n, float speed, Iter dst)
     {
       float error = 0.f;
-      auto src = float_step(buffer.citer(current_position), speed);
+      auto src = util::float_step(buffer.citer(current_position), speed);
       std::copy_n(src, n, dst);
       advance(n * speed);
     }
@@ -228,7 +228,7 @@ namespace top1 {
     std::atomic_int head {0};
     std::atomic_int tail {0};
 
-    std::atomic<audio::Section<int>> write_sect;
+    std::atomic<util::audio::Section<int>> write_sect;
 
     buffer_type buffer;
 

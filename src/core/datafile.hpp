@@ -3,8 +3,8 @@
 #include "util/jsonfile.hpp"
 
 namespace top1 {
-  class DataFile : public top1::JsonFile {
-    public:
+  class DataFile : public util::JsonFile {
+  public:
     void write() override;
     void read() override;
   };

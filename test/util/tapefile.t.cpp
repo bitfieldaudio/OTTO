@@ -2,7 +2,7 @@
 
 #include "util/tapefile.hpp"
 
-namespace top1 {
+namespace top1::util {
 
   bool operator==(const TapeFile::SliceData& l, const TapeFile::SliceData& r) {
     return l.in == r.in && l.out == r.out;

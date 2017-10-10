@@ -49,8 +49,8 @@ namespace top1::modules {
     struct sized_step_mode {
 
       sized_step_mode(T min = std::numeric_limits<T>::min(),
-                      T max = std::numeric_limits<T>::max(),
-                      T step = 1.0)
+        T max = std::numeric_limits<T>::max(),
+        T step = static_cast<T>(1))
         : min (min), max (max), stepSize (step) {}
 
       void step(int steps) {
@@ -71,7 +71,8 @@ namespace top1::modules {
 
     template<typename T>
     struct mode_for_tag<T, sized_step,
-                        std::enable_if_t<top1::is_number_v<T>>> {
+      std::enable_if_t<util::is_number_or_enum_v<T>>>
+    {
       using mode = sized_step_mode<T>;
     };
 
@@ -82,11 +83,11 @@ namespace top1::modules {
     template<typename T>
     struct wrap_mode {
 
-      wrap_mode(T min, T max, T step = 1.0)
+      wrap_mode(T min, T max, T step = static_cast<T>(1))
         : min (min), max (max), stepSize (step) {}
 
       void step(int steps) {
-        *value = min + math::modulo(*value + steps * stepSize - min, max - min);
+        *value = min + util::math::modulo(*value + steps * stepSize - min, max - min);
       }
 
       void set(T v) {
@@ -107,7 +108,7 @@ namespace top1::modules {
     template<typename T>
     struct exp_mode {
 
-      exp_mode(T min, T max, T step = 1.0)
+      exp_mode(T min, T max, T step = static_cast<T>(1))
         : min (min), max (max), stepSize (step) {}
 
       void step(int steps) {
@@ -159,13 +160,13 @@ namespace top1::modules {
 
     template<typename T>
     struct mode_for_tag<T, wrap,
-                        std::enable_if_t<top1::is_number_v<T>>> {
+                        std::enable_if_t<util::is_number_or_enum_v<T>>> {
       using mode = wrap_mode<T>;
     };
 
     template<typename T>
     struct mode_for_tag<T, def,
-                        std::enable_if_t<top1::is_number_v<T>>> {
+                        std::enable_if_t<util::is_number_or_enum_v<T>>> {
       using mode = sized_step_mode<T>;
     };
 
@@ -179,17 +180,6 @@ namespace top1::modules {
       using mode = plain_set_mode<std::string>;
     };
 
-
-    // Check modes
-    static_assert(is_mode_v<sized_step_mode<float>>);
-    static_assert(is_mode_v<sized_step_mode<int>>);
-    static_assert(is_mode_v<sized_step_mode<bool>>);
-    static_assert(is_mode_v<wrap_mode<float>>);
-    static_assert(is_mode_v<wrap_mode<int>>);
-    static_assert(is_mode_v<wrap_mode<bool>>);
-    static_assert(is_mode_v<mode_for_tag_m<float, def>>);
-    static_assert(is_mode_v<mode_for_tag_m<int, def>>);
-    static_assert(is_mode_v<mode_for_tag_m<bool, def>>);
   } // mode
 
   struct PropertyBase {
@@ -222,11 +212,11 @@ namespace top1::modules {
     /// Reset to inital value
     virtual void reset() = 0;
 
-    virtual tree::Node makeNode() {
-      return tree::Null();
+    virtual util::tree::Node makeNode() {
+      return util::tree::Null();
     }
 
-    virtual void readNode(const tree::Node& n) {}
+    virtual void readNode(const util::tree::Node& n) {}
   };
 
   class Properties : public PropertyBase {
@@ -268,18 +258,18 @@ namespace top1::modules {
       std::for_each(begin(), end(), [] (auto&& p) {p->updateFaust();});
     }
 
-    tree::Node makeNode() override {
-      std::unordered_map<std::string, tree::Node> map;
+    util::tree::Node makeNode() override {
+      std::unordered_map<std::string, util::tree::Node> map;
       for (auto&& p : props) {
         if (p->store) {
           map[p->name] = p->makeNode();
         }
       }
-      return tree::Map{std::move(map)};
+      return util::tree::Map{std::move(map)};
     }
 
-    void readNode(const tree::Node& n) override {
-      n.match([this] (const tree::Map& m) {
+    void readNode(const util::tree::Node& n) override {
+      n.match([this] (const util::tree::Map& m) {
           for (auto&& pair : m.values) {
             auto p = std::find_if(begin(), end(),
                                   [&] (auto&& p) {return p->name == pair.first;});
@@ -331,12 +321,12 @@ namespace top1::modules {
       updateFaust();
     }
 
-    tree::Node makeNode() final {
-      return tree::makeNode(value);
+    util::tree::Node makeNode() final {
+      return util::tree::makeNode(value);
     }
 
-    void readNode(const tree::Node& n) final {
-      value = tree::readNode<Value>(n).value_or(value);
+    void readNode(const util::tree::Node& n) final {
+      value = util::tree::readNode<Value>(n).value_or(value);
       updateFaust();
     }
 

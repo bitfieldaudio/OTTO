@@ -10,7 +10,6 @@ namespace top1::modules {
   class NukeSynth : public FaustSynthModule {
 
     ui::ModuleScreen<NukeSynth>::ptr screen;
-    audio::RTBuffer<float> buf;
 
   public:
 
@@ -30,7 +29,7 @@ namespace top1::modules {
 
     NukeSynth();
 
-    void process(const audio::ProcessData&) override;
+    audio::ProcessData<1> process(audio::ProcessData<0>) override;
 
     void display() override;
   };

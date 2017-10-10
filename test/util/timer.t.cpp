@@ -4,7 +4,7 @@
 
 #include "util/timer.hpp"
 
-namespace top1::timer {
+namespace top1::util::timer {
 
   int calcMargin() {
     Timer approxT;

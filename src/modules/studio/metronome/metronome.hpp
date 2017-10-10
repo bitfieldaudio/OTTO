@@ -14,12 +14,12 @@ namespace top1::modules {
 
   class MetronomeScreen; // FWDCL
 
-  class Metronome : public Module, audio::FaustWrapper {
+  class Metronome : public Module, audio::FaustWrapper<0, 1> {
 
     std::unique_ptr<MetronomeScreen> screen;
-    audio::RTBuffer<float> buf;
+    audio::ProcessBuffer<1> proc_buf;
 
-    using audio::FaustWrapper::process;
+    using audio::FaustWrapper<0, 1>::process;
 
   public:
     struct Props : public modules::Properties {
@@ -30,12 +30,12 @@ namespace top1::modules {
         false> trigger = {this, "TRIGGER", false};
     } props;
 
-    audio::Graph graph;
+    util::audio::Graph graph;
 
     Metronome();
     ~Metronome();
 
-    void process(const audio::ProcessData&);
+    audio::ProcessData<1> process(audio::ProcessData<0>);
     void display() override;
 
     // TODO: Move this into core
@@ -80,7 +80,7 @@ namespace top1::modules {
       value_type val;
     };
 
-    using iterator = iterator_adaptor<BarIterImpl>;
+    using iterator = util::iterator_adaptor<BarIterImpl>;
 
     iterator iter(std::size_t time) const
     {

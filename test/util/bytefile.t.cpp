@@ -5,7 +5,7 @@
 #include "util/bytefile.hpp"
 #include "util/algorithm.hpp"
 
-namespace top1 {
+namespace top1::util {
 
   using Chunk = ByteFile::Chunk;
   using Path = ByteFile::Path;
@@ -78,13 +78,13 @@ namespace top1 {
 
         REQUIRE(f.position() == 0);
 
-        top1::bytes<4> data {1, 2, 3, 4};
+        bytes<4> data {1, 2, 3, 4};
 
         f.write_bytes(data);
         REQUIRE(f.position() == 4);
 
         f.seek(0);
-        top1::bytes<4> actual;
+        bytes<4> actual;
         REQUIRE(f.read_bytes(actual).is_ok());
         REQUIRE(f.position() == 4);
 

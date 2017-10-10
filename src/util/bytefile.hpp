@@ -9,7 +9,7 @@
 #include "util/result.hpp"
 #include "util/type_traits.hpp"
 
-namespace top1 {
+namespace top1::util {
 
   template<std::size_t len>
   struct bytes {

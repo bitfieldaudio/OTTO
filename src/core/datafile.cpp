@@ -4,7 +4,7 @@
 namespace top1 {
 
   void DataFile::write() {
-    tree::Map m;
+    util::tree::Map m;
 
     m["TapeDeck"] = Globals::tapedeck.makeNode();
     m["Mixer"] = Globals::mixer.makeNode();
@@ -18,7 +18,7 @@ namespace top1 {
   void DataFile::read() {
     JsonFile::read();
 
-    data.match([&] (tree::Map &m) {
+    data.match([&] (util::tree::Map &m) {
         Globals::tapedeck.readNode(m["TapeDeck"]);
         Globals::mixer.readNode(m["Mixer"]);
         Globals::synth.readNode(m["Synth"]);

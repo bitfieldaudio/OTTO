@@ -4,7 +4,7 @@
 
 #include "util/result.hpp"
 
-namespace top1 {
+namespace top1::util {
 
   using namespace std::literals;
 

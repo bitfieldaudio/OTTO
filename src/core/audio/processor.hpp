@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <gsl/span>
+#include <exception>
 
 #include "core/audio/midi.hpp"
 
@@ -9,29 +10,37 @@
 
 namespace top1 {
   /**
-     Audio Processors are anything that can process audio/midi.
-     They run on the audio thread, and are called by the audio system (Jack).
-     Formally, an audio processor is defined as having a method matching
-     this signature:
-
-     ```
-     void process(const ProcessData&);
-     ```
-
-     This method _must_ not be called from anywhere other than the main
-     audio system and it's deligates.
-
-     If another thread needs access to any of this data, e.g. the audio/midi data,
-     They need an audio processor to read it and store it. It is up to the module
-     in question to handle thread safety.
-  */
+   * Audio Processors are anything that can process audio/midi.
+   * They run on the audio thread, and are called by the audio system (Jack).
+   * Formally, an audio processor is defined as having a method matching
+   * this signature:
+   *
+   * ```
+   * void process(const ProcessData&);
+   * ```
+   *
+   * This method _must_ not be called from anywhere other than the main
+   * audio system and it's deligates.
+   *
+   * If another thread needs access to any of this data, e.g. the audio/midi data,
+   * They need an audio processor to read it and store it. It is up to the module
+   * in question to handle thread safety.
+   */
   namespace audio {
 
-    /*
+    /**
      * Checks if a type qualifies as an <AudioProcessor>
      */
     template<typename...>
     struct is_audio_processor {}; // TODO: Implementation
+
+    template<typename T>
+    struct audio_frame_channels {};
+
+    template<int N>
+    struct audio_frame_channels<std::array<float, N>> {
+      static constexpr auto value = N;
+    };
 
 
     namespace detail {
@@ -39,73 +48,81 @@ namespace top1 {
       void registerAudioBufferResize(std::function<void(int)>);
     }
 
-    /*
+    /**
      * A DynArray that resizes to fit the RealTime bufferSize.
      *
      * This is the container used in AudioProcessors, and it should be used
      * in any place where the realtime data is copied out. It is resized on
      * the bufferSizeChanged event
      */
-    template<typename T>
-    class RTBuffer : public dyn_array<T> {
-      std::size_t sFactor;
+    template<typename T, std::size_t factor = 1>
+    class RTBuffer : public util::dyn_array<T> {
     public:
 
-      RTBuffer(std::size_t sizeFactor = 1)
-        : dyn_array<T>(0), sFactor (sizeFactor)
+      RTBuffer(std::size_t initial_size = 0)
+        : util::dyn_array<T>(initial_size * factor)
       {
         detail::registerAudioBufferResize([this] (std::size_t newSize) {
             resize(newSize);
           });
       }
 
-      void resize(std::size_t new_size) {
-        dyn_array<T>::resize(new_size * sFactor);
+      void resize(std::size_t new_size)
+      {
+        util::dyn_array<T>::resize(new_size * factor);
       }
     };
 
-    /*
-     * Package of data passed to audio processors
-     */
+    template<int N>
+    using ProcessBuffer = RTBuffer<std::array<float, N>, 1>;
+
+    /// Non-owning package of data passed to audio processors
+    template<int N>
     struct ProcessData {
-      struct Range {
-        int i;
-        int o;
-      };
-      struct AudioData {
-        /// Sound data to the physical output
-        gsl::span<float> outL;
-        /// Sound data to the physical output
-        gsl::span<float> outR;
-        /// Sound data from the physical input
-        gsl::span<float> input;
-        /// The sound that is passed between modules
-        gsl::span<float> proc;
-        /// The location of the spans relative to the audio buffer
-        ///
-        /// Will mostly be zero, but is set on `slice`
-        int offset;
-      } audio;
+      static constexpr int channels = N;
 
-      int nframes;
-      // ProcessData is passed by const&, so this needs mutable
-      // Maybe that is a bad idea?
-      mutable std::vector<midi::MidiEventPtr> midi;
+      gsl::span<std::array<float, channels>> audio;
+      gsl::span<midi::AnyMidiEvent> midi;
 
-      ProcessData slice(Range bounds) const {
-        int s = bounds.o - bounds.i;
-        if (bounds.i < 0 || s > nframes) {
-          throw "Illegal ProcessData slice";
-        }
-        ProcessData ret;
-        ret.audio.offset += bounds.i;
-        ret.nframes = s;
-        ret.audio.outL  = {audio.outL.data() + bounds.i, s};
-        ret.audio.outR  = {audio.outR.data() + bounds.i, s};
-        ret.audio.input = {audio.input.data() + bounds.i, s};
-        ret.audio.proc  = {audio.proc.data() + bounds.i, s};
-        return ret;
+      long nframes = audio.size();
+
+      template<int outN = 0>
+      ProcessData<outN> midi_only() {
+        return {{nullptr, nullptr}, midi};
       }
+
+      ProcessData audio_only() {
+        return {audio, {nullptr, nullptr}};
+      }
+
+      template<typename T>
+      auto redirect(T& buf) ->
+      ProcessData<audio_frame_channels<std::remove_reference_t<
+                                         decltype(buf[0])>>::value>
+      {
+        return ProcessData<audio_frame_channels<std::remove_reference_t<
+          decltype(buf[0])>>::value>{{buf.data(), nframes}, midi};
+      }
+
+      /// Get only a slice of the audio.
+      ///
+      /// \param first The index to start from
+      /// \param length The number of frames to keep in the slice
+      ///   If `length` is negative, `nframes - idx` will be used
+      /// \requires parameter `idx` shall be in the range `[0, nframes)`, and
+      /// `length` shall be in range `[0, nframes - idx]` 
+      ProcessData slice(int idx, int length = -1) {
+        auto res = *this;
+        length = length < 0 ? nframes - idx : length;
+        res.nframes = length;
+        res.audio = {audio.data() + idx, length};
+        return res;
+      }
+
+      decltype(auto) begin() { return audio.begin(); }
+      decltype(auto) end() { return audio.end(); }
+      decltype(auto) begin() const { return audio.begin(); }
+      decltype(auto) end() const { return audio.end(); }
     };
 
   } // audio

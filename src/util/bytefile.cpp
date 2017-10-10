@@ -3,7 +3,7 @@
 #include <plog/Log.h>
 #include <fmt/format.h>
 
-namespace top1 {
+namespace top1::util {
 
   /****************************************/
   /* ByteFile Implementation              */

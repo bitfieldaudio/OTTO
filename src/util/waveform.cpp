@@ -2,7 +2,7 @@
 
 #include <cmath>
 
-namespace top1::audio {
+namespace top1::util::audio {
 
   /************************************************************/
   /* Waveform Implementation                                  */

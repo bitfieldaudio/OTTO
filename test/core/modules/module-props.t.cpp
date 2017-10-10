@@ -64,6 +64,8 @@ namespace top1::modules {
 
     }
 
+    namespace tree = util::tree;
+
     SECTION("Property to tree::Node conversions") {
 
       REQUIRE(props.fProp.makeNode().match([](const tree::Float& f) {

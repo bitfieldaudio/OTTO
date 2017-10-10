@@ -27,11 +27,11 @@ namespace top1::modules {
     virtual void exit() {}
     virtual void display() {};
 
-    virtual tree::Node makeNode() {
+    virtual util::tree::Node makeNode() {
       if (propsPtr != nullptr) return propsPtr->makeNode();
-      return tree::Null();
+      return util::tree::Null();
     }
-    virtual void readNode(top1::tree::Node node) {
+    virtual void readNode(util::tree::Node node) {
       if (propsPtr != nullptr) propsPtr->readNode(node);
     }
   };
@@ -39,19 +39,19 @@ namespace top1::modules {
   class SynthModule : public Module {
   public:
     using Module::Module;
-    virtual void process(const audio::ProcessData&) = 0;
+    virtual audio::ProcessData<1> process(audio::ProcessData<0>) = 0;
   };
 
   class EffectModule : public Module {
     public:
     using Module::Module;
-    virtual void process(const audio::ProcessData&) = 0;
+    virtual audio::ProcessData<1> process(const audio::ProcessData<1>&) = 0;
   };
 
   class SequencerModule : public Module {
     public:
     using Module::Module;
-    virtual void process(const audio::ProcessData&) = 0;
+    virtual audio::ProcessData<0> process(const audio::ProcessData<0>&) = 0;
   };
 
 } // top1::module

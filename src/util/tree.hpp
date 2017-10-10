@@ -11,7 +11,7 @@
 
 #include "util/type_traits.hpp"
 
-namespace top1::tree {
+namespace top1::util::tree {
 
   struct String {
 
@@ -110,7 +110,11 @@ namespace top1::tree {
 
   // Specialize for things
   template<typename T>
-  inline Node makeNode(T);
+  inline Node makeNode(T v) {
+    if constexpr (std::is_enum_v<T>) {
+        return makeNode(static_cast<std::underlying_type_t<T>>(v));
+      }
+  }
 
   // Default specializations
 
@@ -138,7 +142,16 @@ namespace top1::tree {
 
   // Specialize for things
   template<typename T>
-  inline std::optional<T> readNode(Node);
+  inline std::optional<T> readNode(Node n)
+  {
+    if constexpr (std::is_enum_v<T>) {
+        auto val = readNode<std::underlying_type_t<T>>(n);
+        if (val.has_value()) {
+          return static_cast<T>(val.value());
+        }
+        return std::nullopt;
+      }
+  }
 
   // Default specializations
 

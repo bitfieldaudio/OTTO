@@ -65,17 +65,13 @@ namespace top1::modules {
     Globals::ui.display(*screen);
   }
 
-  void NukeSynth::process(const audio::ProcessData& data)
+  audio::ProcessData<1> NukeSynth::process(audio::ProcessData<0> data)
   {
     props.key = 60;
     props.trigger = 1;
     props.velocity = 1.f;
-    buf.clear();
-    FaustSynthModule::process({buf.data(), data.nframes});
-    for_each_n(std::begin(data.audio.proc), data.nframes,
-      [src = std::cbegin(buf)] (auto& dst) mutable {
-        dst = *src;
-      });
+    FaustSynthModule::process(data);
+    return data.redirect(proc_buf);
   }
 
   /*

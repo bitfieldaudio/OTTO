@@ -31,10 +31,10 @@ namespace top1 {
     const int min_write_size = tape_buffer::buffer_size >> 8;
 
     const fs::path path = Globals::data_dir / "tape.wav";
-    TapeFile file;
+    util::TapeFile file;
     std::thread thread;
     tape_buffer& owner;
-    std::mutex mutex;
+    std::mutex global_lock;
     std::condition_variable waiting;
     std::atomic_bool keepRunning {true};
 
@@ -46,9 +46,10 @@ namespace top1 {
     ~Producer()
     {
       keepRunning = false;
-      mutex.lock();
-      waiting.notify_all();
-      mutex.unlock();
+      {
+        std::unique_lock lock {global_lock};
+        waiting.notify_all();
+      }
       thread.join();
     }
 
@@ -58,7 +59,7 @@ namespace top1 {
       read_slices();
 
       while (keepRunning) {
-        std::unique_lock lock {mutex};
+        std::unique_lock lock {global_lock};
         {
           TIME_SCOPE("TapeBuffer read cycle");
           std::size_t index = owner.current_position;
@@ -89,7 +90,7 @@ namespace top1 {
         write_wrapped(write_sect.in, write_sect.size());
 
         // Atomically update `write_sect`
-        audio::Section<int> new_sect;
+        util::audio::Section<int> new_sect;
         auto expected_sect = owner.write_sect.load();
         do {
           new_sect = expected_sect - write_sect;
@@ -171,7 +172,7 @@ namespace top1 {
         owner_slices.clear();
         std::transform(std::begin(file_slices.array), std::begin(file_slices.array) + n,
           std::back_inserter(owner_slices.slices), [] (auto&& slice) {
-            return audio::Section<int>{
+            return util::audio::Section<int>{
               gsl::narrow_cast<int>(slice.in),
               gsl::narrow_cast<int>(slice.out)};
           });
@@ -191,7 +192,7 @@ namespace top1 {
           std::begin(owner_slices) + n,
           std::begin(file_slices.array),
           [] (auto&& slice) {
-            return TapeFile::SliceData{
+            return util::TapeFile::SliceData{
               gsl::narrow_cast<std::uint32_t>(slice.in),
               gsl::narrow_cast<std::uint32_t>(slice.out)};
           });

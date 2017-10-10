@@ -4,7 +4,7 @@
 #include <functional>
 #include <plog/Log.h>
 
-namespace top1 {
+namespace top1::util {
 
 /*
  * An event registry and dispatcher

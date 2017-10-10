@@ -4,7 +4,7 @@
 #include <cmath>
 #include <vector>
 
-namespace top1::audio {
+namespace top1::util::audio {
 
   class Waveform {
   public:

@@ -146,7 +146,7 @@ namespace top1::audio {
             }
           }
         } else {
-          LOGE << "Couldn't find property matching " << join_strings(boxes.begin(), boxes.end(), "/").c_str();
+          LOGE << "Couldn't find property matching " << util::join_strings(boxes.begin(), boxes.end(), "/").c_str();
           break;
         }
       }
@@ -155,12 +155,27 @@ namespace top1::audio {
     }
   };
 
+  namespace detail {
+    void register_faust_wrapper_events(dsp&, FaustOptions&);
+  }
 
+  ///
+  /// A Wrapper for faust scripts
+  /// All interactions with faust should go through this wrapper
+  ///
+  /// \tparam Cin The number of input audio channels.
+  /// Make sure this corresponds with the actually called faust script
+  ///
+  /// \tparam Cout The number of output audio channels
+  /// Make sure this corresponds with the actually called faust script
+  ///
+  template<int Cin, int Cout>
   class FaustWrapper {
-
-    float* inBufs;
-    float* outBufs;
+    // Needed to convert from faust's deinterleaved data to interleaved
+    audio::RTBuffer<float, std::max(Cin, Cout)> faustbuf;
   protected:
+
+    audio::ProcessBuffer<Cout> proc_buf;
 
     FaustOptions opts;
 
@@ -170,20 +185,44 @@ namespace top1::audio {
 
     FaustWrapper() {};
 
-    virtual ~FaustWrapper() {};
+    FaustWrapper(std::unique_ptr<dsp>&& d, modules::Properties& props)
+      : opts (&props), fDSP (std::move(d))
+    {
+      if (fDSP->getNumInputs() != Cin || fDSP->getNumOutputs() != Cout) {
+        throw std::runtime_error(
+          "A faustwrapper was instantiated with "
+          "a non-matching faust dsp instance");
+      }
 
-    FaustWrapper(std::unique_ptr<dsp>&&, modules::Properties& data);
-
-    void process(gsl::span<float> inBuffer, gsl::span<float> outBuffer) {
-      inBufs = inBuffer.data();
-      outBufs = outBuffer.data();
-      fDSP->compute(inBuffer.size(), &inBufs, &outBufs);
+      detail::register_faust_wrapper_events(*fDSP, opts);
     }
 
-    void process(gsl::span<float> buffer) {
-      inBufs = buffer.data();
-      outBufs = buffer.data();
-      fDSP->compute(buffer.size(), &inBufs, &outBufs);
+    virtual ~FaustWrapper() {}
+
+    audio::ProcessData<Cout> process(audio::ProcessData<Cin> data) {
+      // Convert interleaved to deinterleaved and back
+      auto size = data.nframes;
+      auto raw_pb = reinterpret_cast<float*>(proc_buf.data());
+      auto in_bufs = util::generate_sequence<Cin>(
+        [&] (int n) {
+          return raw_pb + n * size;
+        });
+      for (int i = 0; i < Cin; i++) {
+        for (int j = 0; j < size; j++) {
+          in_bufs[i][j] = data.audio[j][i];
+        }
+      }
+      auto out_bufs = util::generate_sequence<Cout>(
+        [&] (int n) {
+          return faustbuf.data() + n * size;
+        });
+      fDSP->compute(data.nframes, in_bufs.data(), out_bufs.data());
+      for (int i = 0; i < Cin; i++) {
+        for (int j = 0; j < size; j++) {
+          proc_buf[j][i] = out_bufs[i][j];
+        }
+      }
+      return data.redirect(proc_buf);
     }
 
   };
