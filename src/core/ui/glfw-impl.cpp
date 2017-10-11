@@ -167,7 +167,7 @@ namespace top1::ui {
     static void init()
     {
       #ifdef TOP1_DEBUG_UI
-      window = glfwCreateWindow(640, 480, "TOP-1 Debugging", NULL, NULL);
+      window = glfwCreateWindow(1280, 720, "TOP-1 Debugging", NULL, NULL);
       auto prev_ctx = glfwGetCurrentContext();
       glfwMakeContextCurrent(window);
       glfwSwapInterval(1);
@@ -236,7 +236,7 @@ namespace top1::ui {
 
       // Setup time step
       double current_time =  glfwGetTime();
-      io.DeltaTime = time > 0.0 ? (float)(current_time - time) : (float)(1.0f/debug::ui::FPS_limit);
+      io.DeltaTime = (float)(current_time - time);
       time = current_time;
 
       // Setup inputs
@@ -597,6 +597,30 @@ namespace top1::ui {
 
     LOGD << "Opening GLFW Window";
 
+    struct DbgInfo : debug::Info {
+
+      float FPS_limit = 60.f;
+      util::ringbuffer<std::pair<float, float>, 512> fps_history;
+
+      void draw() override {
+        ImGui::Begin("Graphics");
+        ImGui::Text("FPS limit");
+        ImGui::SliderFloat("", &FPS_limit, 0.f, 300.f);
+        auto fps = fps_history.front();
+        ImGui::Text("Average %.3f ms/frame (%.1f FPS)", 1000.0f / fps.first, fps.first);
+        ImGui::Text("FPS History");
+        ImGui::PlotLines("", [] (void* self, int n) {
+            return ((DbgInfo*)self)->fps_history[n].first;
+          }, this, fps_history.size(), 0, nullptr, 0, 120, ImVec2(0, 80));
+        ImGui::Text("Percentage of time used rendering");
+        ImGui::PlotLines("", [] (void* self, int n) {
+            auto&& el = ((DbgInfo*)self)->fps_history[n];
+            return el.first / el.second * 100.f;
+          }, this, fps_history.size(), 0, nullptr, 0, 0, ImVec2(0, 80));
+        ImGui::End();
+      }
+    } info;
+
     double mx, my, t, dt, spent;
     while (!glfwWindowShouldClose(window) && Globals::running())
     {
@@ -647,9 +671,9 @@ namespace top1::ui {
       spent = glfwGetTime() - t;
 
       std::this_thread::sleep_for(
-        std::chrono::milliseconds(int(1000 / debug::ui::FPS_limit - spent*1000)));
+        std::chrono::milliseconds(int(1000 / info.FPS_limit - spent*1000)));
 
-      debug::ui::fps_history.push({ImGui::GetIO().Framerate, 1.f / spent});
+      info.fps_history.push({ImGui::GetIO().Framerate, 1.f / spent});
     }
 
     TOP1_NVG_DELETE(vg);

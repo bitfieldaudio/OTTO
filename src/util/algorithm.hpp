@@ -75,6 +75,12 @@ namespace top1::util {
     return i;
   }
 
+  template<typename Rng, typename F>
+  constexpr std::size_t indexed_for(Rng&& rng, F&& f) {
+    return indexed_for(std::begin(rng), std::end(rng), std::forward<F>(f));
+  }
+
+
   /// `for_each_n` with access to an index value
   ///
   /// for `n` iterations, invoke `f` with args `*iter, i`
@@ -92,6 +98,11 @@ namespace top1::util {
       std::invoke(f, *first, i);
     }
     return first;
+  }
+
+  template<class Rng, class Size, class F>
+  constexpr std::size_t indexed_for_n(Rng&& rng, Size n, F&& f) {
+    return indexed_for_n(std::begin(rng), std::end(rng), n, std::forward<F>(f));
   }
 
   template<typename Iter1, typename Iter2, typename F>

@@ -1,5 +1,9 @@
 set(CMAKE_CXX_STANDARD 17)
 
+# Generate gl3w files
+include("${CMAKE_CURRENT_SOURCE_DIR}/external/gl3w_gen.cmake")
+gl3w_gen("${CMAKE_CURRENT_SOURCE_DIR}/external/")
+
 # General purpose externals (header only only)
 file(GLOB_RECURSE external_src
   "${CMAKE_CURRENT_SOURCE_DIR}/external/src/*.c"

@@ -1,29 +1,68 @@
 #pragma once
 
+#include <vector>
+#include <functional>
+
 #include <imgui.h>
 
 #include "util/ringbuffer.hpp"
+#include "util/algorithm.hpp"
 
-namespace top1::debug::ui {
+namespace top1::debug {
 
-  inline float FPS_limit = 60.f;
-  inline util::ringbuffer<std::pair<float, float>, 512> fps_history;
+  class Info {
+  public:
+    std::size_t index;
 
-  inline void draw() {
-    ImGui::Begin("Graphics");
-    ImGui::SliderFloat("FPS limit", &FPS_limit, 0.f, 300.f);
-    auto fps = fps_history.front();
-    ImGui::Text("Average %.3f ms/frame (%.1f FPS)", 1000.0f / fps.first, fps.first);
-    ImGui::Text("FPS History");
-    ImGui::PlotLines("", [] (void*, int n) {
-        return fps_history[n].first;
-      }, nullptr, fps_history.size(), 0, nullptr, 0, 120, ImVec2(0, 100));
-    ImGui::Text("Percentage of time used rendering");
-    ImGui::PlotLines("", [] (void*, int n) {
-        auto&& el = fps_history[n];
-        return el.first / el.second * 100.f;
-      }, nullptr, fps_history.size(), 0, nullptr, 0, 120, ImVec2(0, 100));
-    ImGui::End();
+    Info();
+    virtual ~Info();
+
+    virtual void draw() = 0;
+
+  protected:
+    template<typename T, std::size_t N>
+    static void plot(util::ringbuffer<T, N>& buf, float min, float max) {
+      ImGui::PlotLines("", [] (void* data, int n) {
+          return (*static_cast<util::ringbuffer<T, N>*>(data))[n];
+        }, &buf, buf.size(), 0, nullptr, min, max, ImVec2(0, 80));
+    }
+  };
+
+  namespace ui {
+
+    inline std::vector<Info*> info_ptrs;
+
+    inline std::size_t add_info(Info& new_info) {
+      for (std::size_t i = 0; i < info_ptrs.size(); i++) {
+        auto& info = info_ptrs[i];
+        if (info == nullptr) {
+          info = &new_info;
+          return i;
+        }
+      }
+      info_ptrs.push_back(&new_info);
+      return info_ptrs.size() - 1;
+    }
+
+    inline void draw() {
+      for (auto& info : info_ptrs) {
+        if (info != nullptr) {
+          info->draw();
+        }
+      }
+    }
+
   }
 
+  inline Info::Info() {
+    #ifdef TOP1_DEBUG_UI
+    index = ui::add_info(*this);
+    #endif
+  }
+
+  inline Info::~Info() {
+    #ifdef TOP1_DEBUG_UI
+    ui::info_ptrs[index] = nullptr;
+    #endif
+  }
 }
