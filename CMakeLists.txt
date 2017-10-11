@@ -7,6 +7,8 @@ set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_BUILD_TYPE Debug)
 
+set(TOP1_DEBUG_UI ON)
+
 include(external/external.cmake)
 
 add_subdirectory(src)

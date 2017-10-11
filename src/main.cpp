@@ -14,6 +14,17 @@
 
 int main(int argc, char *argv[]) {
   using namespace top1;
+
+  auto cleanup = [] {
+    Globals::events.preExit.runAll();
+    Globals::ui.exit();
+    Globals::mixer.exit();
+    Globals::tapedeck.exit();
+    Globals::audio.exit();
+    Globals::dataFile.write();
+    Globals::events.postExit.runAll();
+  };
+
   try {
     static plog::ConsoleAppender<plog::TxtFormatter> consoleAppender;
     plog::init(plog::debug, (top1::Globals::data_dir / "log.txt").c_str())
@@ -42,34 +53,21 @@ int main(int argc, char *argv[]) {
 
   } catch (const char* e) {
     LOGF << e;
-    LOGI << "Exitting";
-    Globals::events.preExit.runAll();
-    Globals::ui.exit();
-    Globals::mixer.exit();
-    Globals::tapedeck.exit();
-    Globals::audio.exit();
-    Globals::dataFile.write();
-    Globals::events.postExit.runAll();
+    LOGI << "Exception thrown, exitting!";
+    cleanup();
+    return 1;
+  } catch (std::exception& e) {
+    LOGF << e.what();
+    LOGI << "Exception thrown, exitting!";
+    cleanup();
     return 1;
   } catch (...) {
     LOGI << "Exception thrown, exitting!";
-    Globals::events.preExit.runAll();
-    Globals::ui.exit();
-    Globals::mixer.exit();
-    Globals::tapedeck.exit();
-    Globals::audio.exit();
-    Globals::dataFile.write();
-    Globals::events.postExit.runAll();
+    cleanup();
     return 1;
   }
 
   LOGI << "Exitting";
-  Globals::events.preExit.runAll();
-  Globals::ui.exit();
-  Globals::mixer.exit();
-  Globals::tapedeck.exit();
-  Globals::audio.exit();
-  Globals::dataFile.write();
-  Globals::events.postExit.runAll();
+  cleanup();
   return 0;
 }

@@ -1,8 +1,12 @@
 set(CMAKE_CXX_STANDARD 17)
 
 # General purpose externals (header only only)
-add_library(external INTERFACE)
-target_include_directories(external INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/external/include)
+file(GLOB_RECURSE external_src
+  "${CMAKE_CURRENT_SOURCE_DIR}/external/src/*.c"
+  "${CMAKE_CURRENT_SOURCE_DIR}/external/src/*.cpp"
+  )
+add_library(external ${external_src})
+target_include_directories(external PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/external/include)
 
 # Nanovg
 execute_process(COMMAND git submodule update --init -- external/nanovg
@@ -17,7 +21,6 @@ if (APPLE)
   target_include_directories(nanovg INTERFACE ${OPENGL_INCLUDE_DIR})
   target_link_libraries(nanovg INTERFACE ${OPENGL_LIBRARIES})
 else ()
-  target_link_libraries(nanovg INTERFACE GLESv2)
 endif()
 
 # NanoCanvas
@@ -29,12 +32,14 @@ target_link_libraries(nanocanvas nanovg)
 target_include_directories(nanocanvas INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/external/NanoCanvas/src)
 
 # Imgui
-if (DEBUG_UI)
-  execute_process(COMMAND git submodule update --init -- external/imgui
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-  add_library(imgui "${CMAKE_CURRENT_SOURCE_DIR}/external/imgui/imgui.cpp")
-  target_include_directories(imgui INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/external/imgui)
-endif()
+execute_process(COMMAND git submodule update --init -- external/imgui
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+file(GLOB imgui_src
+  "${CMAKE_CURRENT_SOURCE_DIR}/external/imgui/imgui.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/external/imgui/imgui_draw.cpp"
+  )
+add_library(imgui ${imgui_src})
+target_include_directories(imgui INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/external/imgui)
 
 # fmtlib
 execute_process(COMMAND git submodule update --init -- external/fmt

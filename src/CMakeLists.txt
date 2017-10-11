@@ -25,9 +25,8 @@ if (NOT APPLE)
   target_link_libraries(top-1 PUBLIC atomic)
 endif()
 
-if (DEBUG_UI)
-  target_link_libraries(top-1 PUBLIC imgui)
-endif()
+target_link_libraries(top-1 PUBLIC imgui)
+target_compile_definitions(top-1 PUBLIC TOP1_DEBUG_UI)
 
 # Executable
 add_executable(top-1_exec ${TOP-1_SOURCE_DIR}/src/main.cpp ${BACKWARD_ENABLE})
