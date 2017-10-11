@@ -16,3 +16,6 @@
 [submodule "external/backward-cpp"]
 	path = external/backward-cpp
 	url = https://github.com/bombela/backward-cpp
+[submodule "external/imgui"]
+	path = external/imgui
+	url = https://github.com/ocornut/imgui

@@ -28,6 +28,14 @@ add_library(nanocanvas ${nanocanvas_src})
 target_link_libraries(nanocanvas nanovg)
 target_include_directories(nanocanvas INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/external/NanoCanvas/src)
 
+# Imgui
+if (DEBUG_UI)
+  execute_process(COMMAND git submodule update --init -- external/imgui
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+  add_library(imgui "${CMAKE_CURRENT_SOURCE_DIR}/external/imgui/imgui.cpp")
+  target_include_directories(imgui INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/external/imgui)
+endif()
+
 # fmtlib
 execute_process(COMMAND git submodule update --init -- external/fmt
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
