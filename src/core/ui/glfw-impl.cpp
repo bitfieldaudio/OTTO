@@ -241,22 +241,15 @@ namespace top1::ui {
 
       // Setup inputs
       // (we already got mouse wheel, keyboard keys & characters from glfw callbacks polled in glfwPollEvents())
-      if (glfwGetWindowAttrib(window, GLFW_FOCUSED))
+      if (io.WantMoveMouse)
       {
-        if (io.WantMoveMouse)
-        {
-          glfwSetCursorPos(window, (double)io.MousePos.x, (double)io.MousePos.y);   // Set mouse position if requested by io.WantMoveMouse flag (used when io.NavMovesTrue is enabled by user and using directional navigation)
-        }
-        else
-        {
-          double mouse_x, mouse_y;
-          glfwGetCursorPos(window, &mouse_x, &mouse_y);
-          io.MousePos = ImVec2((float)mouse_x, (float)mouse_y);   // Get mouse position in screen coordinates (set to -1,-1 if no mouse / on another screen, etc.)
-        }
+        glfwSetCursorPos(window, (double)io.MousePos.x, (double)io.MousePos.y);   // Set mouse position if requested by io.WantMoveMouse flag (used when io.NavMovesTrue is enabled by user and using directional navigation)
       }
       else
       {
-        io.MousePos = ImVec2(-FLT_MAX,-FLT_MAX);
+        double mouse_x, mouse_y;
+        glfwGetCursorPos(window, &mouse_x, &mouse_y);
+        io.MousePos = ImVec2((float)mouse_x, (float)mouse_y);   // Get mouse position in screen coordinates (set to -1,-1 if no mouse / on another screen, etc.)
       }
 
       for (int i = 0; i < 3; i++)
