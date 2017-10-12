@@ -4,16 +4,6 @@
 
 namespace top1::audio {
 
-  // ProcessData<2> Mixer::process_tracks(ProcessData<4>);
-  // ProcessData<2> Mixer::process_engine(ProcessData<1>);
-  // ProcessData<4> Tapedeck::playback(ProcessData<0>);
-  // ProcessData<0> Tapedeck::record(ProcessData<1>);
-  // ProcessData<1> Synth::process(ProcessData<0>);
-  // ProcessData<1> Effect::process(ProcessData<1>);
-  // ProcessData<0> Sequencer::process(ProcessData<0>);
-  // ProcessData<0> Modulation::process(ProcessData<0>);
-  // ProcessData<2> MasterEffect::process(ProcessData<2>);
-
   ProcessData<2> MainAudio::process(ProcessData<1> external_in)
   {
     using Selection = modules::InputSelector::Selection;
@@ -55,7 +45,25 @@ namespace top1::audio {
 
     Globals::tapedeck.process_record(record_in);
 
+    IF_DEBUG({
+        float max;
+        for (auto& frm : mixer_out) {
+            float sum = frm[0] + frm[1];
+            if (std::abs(sum - max) > 0) {
+              max = sum;
+            }
+        }
+        dbg_info.audio_graph.push(max / 2.f);
+      });
+
     return mixer_out;
+  }
+
+  void MainAudio::DbgInfo::draw()
+  {
+    ImGui::Begin("Audio");
+    plot(audio_graph, -1, 1);
+    ImGui::End();
   }
 
 }

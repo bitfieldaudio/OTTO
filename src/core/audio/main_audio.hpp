@@ -4,6 +4,7 @@
 #include <atomic>
 
 #include "core/audio/processor.hpp"
+#include "debug/ui.hpp"
 
 namespace top1::audio {
 
@@ -15,6 +16,14 @@ namespace top1::audio {
     class Impl;
     std::unique_ptr<Impl> impl;
     std::atomic_bool do_process {false};
+
+    struct DbgInfo : debug::Info {
+      util::ringbuffer<float, 1 << 12> audio_graph;
+
+      void draw() override;
+    };
+
+    IF_DEBUG(DbgInfo dbg_info);
 
   public:
 
