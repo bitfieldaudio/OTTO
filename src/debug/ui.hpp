@@ -66,3 +66,22 @@ namespace top1::debug {
     #endif
   }
 }
+
+/*
+ * Macros
+ */
+
+#ifdef TOP1_DEBUG_UI
+
+#define IF_DEBUG(...)                       \
+    __VA_ARGS__;                             \
+
+#define CALL_IF_DEBUG(lambda)                   \
+  lambda();
+
+#else // TOP1_DEBUG_UI
+
+#define CALL_IF_DEBUG(lambda)
+#define IF_DEBUG(...)
+
+#endif // TOP1_DEBUG_UI
