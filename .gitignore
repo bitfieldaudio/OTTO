@@ -17,3 +17,8 @@ CTestTestfile.cmake
 /playground
 
 deploy_key
+/external/src/gl3w.c
+/external/include/GL
+/data/tape.wav
+/data/log.txt
+/testdir
