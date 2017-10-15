@@ -2,7 +2,7 @@
 
 #include "util/soundfile.hpp"
 
-namespace top1::util {
+namespace otto::util {
 
   fs::path somePath = test::dir / "test1.wav";
   using Sample = SoundFile::Sample;

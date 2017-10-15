@@ -15,7 +15,7 @@
 #include "core/audio/processor.hpp"
 #include "core/modules/module-props.hpp"
 
-namespace top1::modules {
+namespace otto::modules {
 
   class Module {
   public:
@@ -54,4 +54,4 @@ namespace top1::modules {
     virtual audio::ProcessData<0> process(const audio::ProcessData<0>&) = 0;
   };
 
-} // top1::module
+} // otto::module

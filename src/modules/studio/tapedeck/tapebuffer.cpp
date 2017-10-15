@@ -9,7 +9,7 @@
 #include "util/timer.hpp"
 #include "core/globals.hpp"
 
-namespace top1 {
+namespace otto {
 
   using value_type = tape_buffer::value_type;
   constexpr int buffer_size = tape_buffer::buffer_size;

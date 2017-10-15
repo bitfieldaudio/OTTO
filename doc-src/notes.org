@@ -23,7 +23,7 @@ These are the inputs/outputs the different modules need:
 To reduce cache misses, and all in all get more logical passing of data between different audio processors, each processor receives and returns an array of interleaved audio samples. With this, there are a few problems to tackle.
 ** ProcessData
 ProcessData is the template class that is passed between the processors. It should not own any data, and use something like a =gsl::span= for audio data.
-This audio data is owned by the module that created it, which should store it in a =top1::RTBuffer=. This means no new memory will be allocated for audio, except when the buffersize changes, which in practice shouldn't happen.
+This audio data is owned by the module that created it, which should store it in a =otto::RTBuffer=. This means no new memory will be allocated for audio, except when the buffersize changes, which in practice shouldn't happen.
 Midi data however, needs to be modified in length a lot more, meaning this should maybe be owned by the =ProcessData= instance itself. This however might require a vector with a small-size optimization, which I'm not sure where we can get. But it must be out there, i know LLVM has one, though i don't know how accessible it is.
 ** In place editing
 Can processors edit the audio in place, or do they need to copy to a local buffer?

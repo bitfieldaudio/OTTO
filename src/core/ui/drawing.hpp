@@ -7,7 +7,7 @@
 
 #include "core/ui/canvas.hpp"
 
-namespace top1::ui::drawing {
+namespace otto::ui::drawing {
 
   const int WIDTH = 320;
   const int HEIGHT = 240;
@@ -49,11 +49,11 @@ namespace top1::ui::drawing {
   }
 
   inline void initUtils(Canvas& ctx) {
-    Fonts::loadFont(ctx, Fonts::Light, "TOP-1-Light");
-    Fonts::loadFont(ctx, Fonts::Norm, "TOP-1-Regular");
-    Fonts::loadFont(ctx, Fonts::Bold, "TOP-1-Bold");
-    Fonts::loadFont(ctx, Fonts::SemiBold, "TOP-1-SemiBold");
-    Fonts::loadFont(ctx, Fonts::Mono, "TOP-1-Mono-Regular");
+    Fonts::loadFont(ctx, Fonts::Light, "OTTO-Light");
+    Fonts::loadFont(ctx, Fonts::Norm, "OTTO-Regular");
+    Fonts::loadFont(ctx, Fonts::Bold, "OTTO-Bold");
+    Fonts::loadFont(ctx, Fonts::SemiBold, "OTTO-SemiBold");
+    Fonts::loadFont(ctx, Fonts::Mono, "OTTO-Mono-Regular");
   }
 
 } // ui::drawing

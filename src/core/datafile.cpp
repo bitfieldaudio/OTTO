@@ -1,7 +1,7 @@
 #include "core/datafile.hpp"
 #include "core/globals.hpp"
 
-namespace top1 {
+namespace otto {
 
   void DataFile::write() {
     util::tree::Map m;
@@ -29,4 +29,4 @@ namespace top1 {
       });
   }
 
-} // top1
+} // otto

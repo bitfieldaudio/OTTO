@@ -16,9 +16,9 @@
 
 #define GLFW_INCLUDE_GLCOREARB
 #define NANOVG_GL3_IMPLEMENTATION
-#define TOP1_NVG_CREATE nvgCreateGL3
-#define TOP1_NVG_DELETE nvgDeleteGL3
-#define TOP1_INSERT_GLFW_HINTS                                     \
+#define OTTO_NVG_CREATE nvgCreateGL3
+#define OTTO_NVG_DELETE nvgDeleteGL3
+#define OTTO_INSERT_GLFW_HINTS                                     \
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_ANY_PROFILE);    \
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);   \
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);             \
@@ -29,9 +29,9 @@
 
 #define GLFW_INCLUDE_ES3
 #define NANOVG_GLES3_IMPLEMENTATION
-#define TOP1_NVG_CREATE nvgCreateGLES3
-#define TOP1_NVG_DELETE nvgDeleteGLES3
-#define TOP1_INSERT_GLFW_HINTS                                     \
+#define OTTO_NVG_CREATE nvgCreateGLES3
+#define OTTO_NVG_DELETE nvgDeleteGLES3
+#define OTTO_INSERT_GLFW_HINTS                                     \
   glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);             \
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);                   \
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
@@ -45,7 +45,7 @@
 #include <nanovg_gl.h>
 #include <nanovg_gl_utils.h>
 
-namespace top1::debug::ui {
+namespace otto::debug::ui {
 
   namespace {
 
@@ -74,9 +74,9 @@ namespace top1::debug::ui {
 
     glfwSetErrorCallback(error_callback);
 
-    TOP1_INSERT_GLFW_HINTS
+    OTTO_INSERT_GLFW_HINTS
 
-    window = glfwCreateWindow(drawing::WIDTH, drawing::HEIGHT, "TOP-1", NULL, NULL);
+    window = glfwCreateWindow(drawing::WIDTH, drawing::HEIGHT, "OTTO", NULL, NULL);
     if (!window) {
       glfwTerminate();
       return;
@@ -89,7 +89,7 @@ namespace top1::debug::ui {
 
     glfwMakeContextCurrent(window);
 
-    vg = TOP1_NVG_CREATE(NVG_ANTIALIAS | NVG_STENCIL_STROKES | NVG_DEBUG);
+    vg = OTTO_NVG_CREATE(NVG_ANTIALIAS | NVG_STENCIL_STROKES | NVG_DEBUG);
     if (vg == NULL) {
       printf("Could not init nanovg.\n");
       return;
@@ -157,14 +157,14 @@ namespace top1::debug::ui {
 
       }
 
-    TOP1_NVG_DELETE(vg);
+    OTTO_NVG_DELETE(vg);
 
     glfwTerminate();
 
     Globals::exit();
   }
 
-} // top1::ui
+} // otto::ui
 
 
 #endif // DEBUG_UI

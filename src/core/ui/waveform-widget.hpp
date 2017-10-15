@@ -8,7 +8,7 @@
 #include "core/ui/base.hpp"
 #include "util/audio.hpp"
 
-namespace top1::ui {
+namespace otto::ui {
 
   template<typename Container>
   class WaveformWidget : public Widget {
@@ -166,4 +166,4 @@ namespace top1::ui {
         };
   }
 
-} // top1::ui
+} // otto::ui

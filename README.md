@@ -1,10 +1,11 @@
-# TOP-1: Totally Original Project-1
-[![Build Status](https://travis-ci.org/topisani/TOP-1.svg?branch=master)](https://travis-ci.org/topisani/TOP-1)
+# OTTO
+
+[![Build Status](https://travis-ci.org/topisani/OTTO.svg?branch=master)](https://travis-ci.org/topisani/OTTO)
 
 Making electronic music is awesome! But for most of us, it requires a lot of setup, a lot of moving a mouse around on a laptop that's probably not quite equipped to handle realtime audio processing.
 
-### Introducing the TOP-1!  
-The TOP-1 is a full hardware and software solution, with synths, a sampler, effects, sequencers, and studio modules. It is heavily inspired by the OP-1, but takes some things in a different direction. The goal is to create an all-in-one portable device, that allows anyone to play around with electronic music. It shall be open and accessible, while maintaining the very constrained interfaces, necessary to really be creative.
+### Introducing the OTTO!  
+The OTTO is a complete hardware and software solution, with synths, a sampler, effects, sequencers, and studio modules. It is heavily inspired by the OP-1, but takes some things in a different direction. The goal is to create an all-in-one portable device, that allows anyone to play around with electronic music. It shall be open and accessible, while maintaining the very constrained interfaces, necessary to really be creative.
 
 Come chat with us at our [discord server](https://discord.gg/4cV9Ucz) if you're interested in the project.
 
@@ -26,7 +27,7 @@ The software will be set up to run on a Raspberry Pi, with a small AMOLED screen
 # Current progress
 A lot of the main software backend is completed. The 4-track tapedeck is implemented, along with the mixer and the metronome. We are working hard on synths and drums, currently there's a proof of concept additive drum synthesizer, and drum and synth samplers.
 
-Currently, it runs in a window on your desktop, and uses [jack](http://jackaudio.org/) for audio. We have been considering using [portaudio](http://portaudio.com/) instead, as it is better for cross platform development. Currently the TOP-1 only runs on Linux, but there are efforts to get it running on [OS X](https://github.com/topisani/TOP-1/issues/13) and Windows.
+Currently, it runs in a window on your desktop, and uses [jack](http://jackaudio.org/) for audio. We have been considering using [portaudio](http://portaudio.com/) instead, as it is better for cross platform development. Currently the OTTO only runs on Linux, but there are efforts to get it running on [OS X](https://github.com/topisani/OTTO/issues/13) and Windows.
 
 ## Key bindings
 These are the key bindings currently emulating the hardware buttons:
@@ -51,7 +52,7 @@ These are the key bindings currently emulating the hardware buttons:
 | Ctrl + C    | Lift Tape Selection | Ctrl + V            | Drop Tape Selection |
 
 # Installation
-The TOP-1 is written in bleeding edge C++17, which gives some problems with dependencies. First of all, you need a up to date compiler: GCC-7 or clang 5.0 should work. The biggest problem is the standard library. Currently i think only `libstdc++ 7` has all that we need. This will probably change in a few months, as other implementations catch up.
+The OTTO is written in bleeding edge C++17, which gives some problems with dependencies. First of all, you need a up to date compiler: GCC-7 or clang 5.0 should work. The biggest problem is the standard library. Currently i think only `libstdc++ 7` has all that we need. This will probably change in a few months, as other implementations catch up.
 
 For Debian/Ubuntu, this should install most of the dependencies:
 ```bash
@@ -66,17 +67,17 @@ You will also need cmake 3.8 or above, get it [here](https://cmake.org/download/
 
 I recommend also installing `patchage` and `jack-keyboard`, but they are in no way required.
 
-With this set up, you should be able to build & run the TOP-1 with:
+With this set up, you should be able to build & run the OTTO with:
 ```
 cmake .
 make -j4
-bin/top-1
+bin/otto
 ```
 
-As previously mentioned, there are (currently unfruitful) efforts to run on [OS X](https://github.com/topisani/TOP-1/issues/13) and windows.
+As previously mentioned, there are (currently unfruitful) efforts to run on [OS X](https://github.com/topisani/OTTO/issues/13) and windows.
 
 ## Faust
-Nearly all DSP in the TOP-1 is written in [faust](http://faust.grame.fr/). Faust compiles to C++, and if you don't have plans to edit the `.dsp` files, you don't have to worry about faust. If you do want to do DSP work, it is very important that you use the correct faust version, which currently is `0.9.104`. To install that, run the following commands:
+Nearly all DSP in the OTTO is written in [faust](http://faust.grame.fr/). Faust compiles to C++, and if you don't have plans to edit the `.dsp` files, you don't have to worry about faust. If you do want to do DSP work, it is very important that you use the correct faust version, which currently is `0.9.104`. To install that, run the following commands:
 ```bash
 git clone https://github.com/grame-cncm/faust
 cd faust

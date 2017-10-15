@@ -2,7 +2,7 @@
 
 #include "util/poly-ptr.hpp"
 
-namespace top1::util {
+namespace otto::util {
 
   struct Base {
     int base_field = 4;
@@ -119,7 +119,7 @@ namespace top1::util {
     REQUIRE(fail == false);
   }
 
-  // Test to make sure `top1::audio::ProcessData` works
+  // Test to make sure `otto::audio::ProcessData` works
   TEST_CASE("Oddly specific Poly Pointer test", "[util] [poly-ptr]") {
 
     struct S {

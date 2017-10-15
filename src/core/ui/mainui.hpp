@@ -2,7 +2,7 @@
 
 #include "core/ui/base.hpp"
 
-namespace top1::ui {
+namespace otto::ui {
 
   class MainUI : public Screen {
 
@@ -34,4 +34,4 @@ namespace top1::ui {
     bool keyrelease(Key key) override;
   };
 
-} // top1::ui
+} // otto::ui

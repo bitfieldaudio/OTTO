@@ -2,7 +2,7 @@
 
 #include "core/globals.hpp"
 
-namespace top1::audio {
+namespace otto::audio {
 namespace detail {
 
   void registerAudioBufferResize(std::function<void(int)> eventHandler) {
@@ -10,4 +10,4 @@ namespace detail {
   }
 
 } // detail
-} // top1::audio
+} // otto::audio

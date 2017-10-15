@@ -4,7 +4,7 @@
 
 #include <thread>
 
-namespace top1::ui {
+namespace otto::ui {
 
   void MainUI::display(Screen& screen) {
     currentScreen->exit();
@@ -95,4 +95,4 @@ namespace top1::ui {
     return true;
   }
 
-} // top1::ui
+} // otto::ui

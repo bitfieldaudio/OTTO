@@ -6,7 +6,7 @@
 #include "core/audio/processor.hpp"
 #include "debug/ui.hpp"
 
-namespace top1::audio {
+namespace otto::audio {
 
   /// Class that interacts with OS audio/midi framework, and delegates
   /// processing to the modules.

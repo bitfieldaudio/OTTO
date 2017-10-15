@@ -15,6 +15,6 @@ namespace filesystem = std::experimental::filesystem;
 
 #endif
 
-namespace top1 {
+namespace otto {
   namespace fs = filesystem;
 }

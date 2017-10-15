@@ -2,7 +2,7 @@
 
 #include <cmath>
 
-namespace top1::util::audio {
+namespace otto::util::audio {
 
   /************************************************************/
   /* Waveform Implementation                                  */
@@ -67,4 +67,4 @@ namespace top1::util::audio {
     return _data.cend();
   }
 
-} // top1::audio
+} // otto::audio

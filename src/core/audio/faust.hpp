@@ -19,7 +19,7 @@
 #include "core/modules/module.hpp"
 #include "core/modules/module-props.hpp"
 
-namespace top1::audio {
+namespace otto::audio {
 
   using FaustDSP = dsp;
 
@@ -227,4 +227,4 @@ namespace top1::audio {
 
   };
 
-} // top1
+} // otto

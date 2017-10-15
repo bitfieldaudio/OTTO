@@ -20,7 +20,7 @@
 #include "modules/studio/metronome/metronome.hpp"
 
 
-namespace top1 {
+namespace otto {
 
   class Globals {
   private:

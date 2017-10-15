@@ -8,7 +8,7 @@
 
 #include "util/timer.hpp"
 
-namespace top1::modules {
+namespace otto::modules {
 
   using TapeTime = unsigned;
 

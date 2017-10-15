@@ -9,7 +9,7 @@
 #include "util/algorithm.hpp"
 #include "util/audio.hpp"
 
-namespace top1::modules {
+namespace otto::modules {
   class MixerScreen;
 
   class Mixer final : public modules::Module {
@@ -57,4 +57,4 @@ namespace top1::modules {
     using ModuleScreen<Mixer>::ModuleScreen;
   };
 
-} // top1::modules
+} // otto::modules

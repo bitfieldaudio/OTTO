@@ -11,7 +11,7 @@
 #include "tapebuffer.hpp"
 
 
-namespace top1::modules {
+namespace otto::modules {
 
   class Tapedeck final : public modules::Module {
     std::unique_ptr<ui::ModuleScreen<Tapedeck>> tapeScreen;
@@ -111,4 +111,4 @@ namespace top1::modules {
     int timeUntil(std::size_t tt);
   };
 
-} // top1::module
+} // otto::module

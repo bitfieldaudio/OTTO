@@ -22,15 +22,15 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Clone the repo:
 ```bash
-git clone https://github.com/topisani/TOP-1
-cd TOP-1
+git clone https://github.com/topisani/OTTO
+cd OTTO
 ```
 
 Build and Conquer:
 ```bash
 cmake .
 make
-bin/top-1
+bin/otto
 ```
 
 `make` also compiles the tests. To run them:

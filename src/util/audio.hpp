@@ -7,7 +7,7 @@
 #include "util/dyn-array.hpp"
 #include "util/iterator.hpp"
 
-namespace top1::util::audio {
+namespace otto::util::audio {
 
   /*
    * Mixes two signals, and normalizes the result.
@@ -173,4 +173,4 @@ namespace top1::util::audio {
     }
   };
 
-} // top1::audio
+} // otto::audio

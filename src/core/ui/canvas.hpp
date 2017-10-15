@@ -8,7 +8,7 @@
 
 #include "util/math.hpp"
 
-namespace top1::ui::drawing {
+namespace otto::ui::drawing {
 
   using NanoCanvas::HorizontalAlign;
   using NanoCanvas::VerticalAlign;
@@ -433,4 +433,4 @@ namespace top1::ui::drawing {
     }
   };
 
-} // top1::ui::drawing
+} // otto::ui::drawing

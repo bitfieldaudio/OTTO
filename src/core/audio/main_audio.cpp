@@ -2,7 +2,7 @@
 #include "core/globals.hpp"
 #include "util/algorithm.hpp"
 
-namespace top1::audio {
+namespace otto::audio {
 
   ProcessData<2> MainAudio::process(ProcessData<1> external_in)
   {

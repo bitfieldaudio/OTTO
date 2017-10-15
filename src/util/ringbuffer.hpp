@@ -4,7 +4,7 @@
 
 #include "util/iterator.hpp"
 
-namespace top1::util {
+namespace otto::util {
 
   // A simple array wrapper that provides an iterator that wraps across to the
   // end

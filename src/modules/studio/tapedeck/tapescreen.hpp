@@ -5,13 +5,13 @@
 #include "tapedeck.hpp"
 #include "core/globals.hpp"
 
-namespace top1::ui::drawing {
+namespace otto::ui::drawing {
   namespace Colours {
     const Colour Tape = Colour::bytes(60, 60, 59);
   }
 }
 
-namespace top1::modules {
+namespace otto::modules {
 
   using namespace ui;
   using namespace ui::drawing;

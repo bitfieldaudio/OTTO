@@ -14,7 +14,7 @@
 #include "filesystem.hpp"
 #include "core/globals.hpp"
 
-namespace top1::util::timer {
+namespace otto::util::timer {
 
   struct Timer {
     using Duration = std::chrono::nanoseconds;
@@ -143,6 +143,6 @@ namespace top1::util::timer {
 
   inline GlobalTimerDispatcher dispatcher {};
 
-} // top1::util::timer
+} // otto::util::timer
 
-#define TIME_SCOPE(name) auto timer = ::top1::util::timer::dispatcher.timeScope(name);
+#define TIME_SCOPE(name) auto timer = ::otto::util::timer::dispatcher.timeScope(name);

@@ -10,7 +10,7 @@
 
 #include "util/dyn-array.hpp"
 
-namespace top1::modules {
+namespace otto::modules {
 
   class SynthSampleScreen; // FWDCL
 

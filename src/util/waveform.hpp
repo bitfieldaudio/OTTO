@@ -4,7 +4,7 @@
 #include <cmath>
 #include <vector>
 
-namespace top1::util::audio {
+namespace otto::util::audio {
 
   class Waveform {
   public:
@@ -61,4 +61,4 @@ namespace top1::util::audio {
     } _current;
   };
 
-} // top1::audio
+} // otto::audio

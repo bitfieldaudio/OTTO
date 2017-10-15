@@ -12,7 +12,7 @@
 #include "util/audio.hpp"
 #include "util/ringbuffer.hpp"
 
-namespace top1 {
+namespace otto {
 
   // FDCL - Defined in tapebuffer.cpp
   struct Producer;

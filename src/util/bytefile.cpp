@@ -3,7 +3,7 @@
 #include <plog/Log.h>
 #include <fmt/format.h>
 
-namespace top1::util {
+namespace otto::util {
 
   /****************************************/
   /* ByteFile Implementation              */
@@ -107,4 +107,4 @@ namespace top1::util {
     return Position(end);
   }
 
-} // top1
+} // otto
