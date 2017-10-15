@@ -266,7 +266,7 @@ namespace otto::modules {
       ctx.font(Fonts::Bold);
       ctx.font(18.0);
       ctx.fillStyle(Colour::bytes(60, 60, 59));
-      ctx.fillText("TOP-ONE", 29.1, 36.4);
+      ctx.fillText("OTTO", 29.1, 36.4);
       ctx.fillText("TAPE", 231.2, 36.4);
 
       // tAPEDECK/COLOURCODE/UNDERSCORE
