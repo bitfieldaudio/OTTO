@@ -14,7 +14,7 @@
 #include "core/audio/processor.hpp"
 #include "core/audio/main_audio.hpp"
 
-namespace top1::audio {
+namespace otto::audio {
 
   static void jackError(const char* s) {
     LOGE << "JACK: " << s;
@@ -33,7 +33,7 @@ namespace top1::audio {
 
     using AudioSample = jack_default_audio_sample_t;
     const size_t sampleSize = sizeof(AudioSample);
-    const std::string clientName = "TOP-1";
+    const std::string clientName = "OTTO";
 
     MainAudio& owner;
 
@@ -306,4 +306,4 @@ namespace top1::audio {
   }
 
 
-} // top1::audio
+} // otto::audio

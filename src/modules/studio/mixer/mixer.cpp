@@ -3,7 +3,7 @@
 #include "core/globals.hpp"
 #include "util/timer.hpp"
 
-namespace top1::modules {
+namespace otto::modules {
 
   /**************************************************/
   /* MixerModule Implementation                     */

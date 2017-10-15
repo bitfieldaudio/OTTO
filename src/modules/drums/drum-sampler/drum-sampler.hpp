@@ -12,7 +12,7 @@
 #include "util/algorithm.hpp"
 #include "util/dyn-array.hpp"
 
-namespace top1::modules {
+namespace otto::modules {
 
   class DrumSampleScreen; // FWDCL
 

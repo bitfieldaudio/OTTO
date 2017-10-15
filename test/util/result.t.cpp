@@ -4,11 +4,11 @@
 
 #include "util/result.hpp"
 
-namespace top1::util {
+namespace otto::util {
 
   using namespace std::literals;
 
-  TEST_CASE("top1::result", "[result] [util]") {
+  TEST_CASE("otto::result", "[result] [util]") {
 
     SECTION("Basic tests") {
       using result_t = result<std::string, int>;

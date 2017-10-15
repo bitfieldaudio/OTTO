@@ -5,7 +5,7 @@
 #include "core/modules/faust-module.hpp"
 #include "core/ui/module-ui.hpp"
 
-namespace top1::modules {
+namespace otto::modules {
 
   class NukeSynth : public FaustSynthModule {
 

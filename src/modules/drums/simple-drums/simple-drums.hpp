@@ -7,7 +7,7 @@
 #include "core/ui/canvas.hpp"
 #include "core/ui/module-ui.hpp"
 
-namespace top1::modules {
+namespace otto::modules {
 
   struct SimpleDrumVoice : audio::FaustWrapper<0, 1> {
     struct Props : Properties {

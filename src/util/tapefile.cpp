@@ -1,6 +1,6 @@
 #include "tapefile.hpp"
 
-namespace top1::util {
+namespace otto::util {
 
   using Chunk = ByteFile::Chunk;
   using SliceData = TapeFile::SliceData;

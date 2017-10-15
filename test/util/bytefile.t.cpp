@@ -5,7 +5,7 @@
 #include "util/bytefile.hpp"
 #include "util/algorithm.hpp"
 
-namespace top1::util {
+namespace otto::util {
 
   using Chunk = ByteFile::Chunk;
   using Path = ByteFile::Path;
@@ -73,7 +73,7 @@ namespace top1::util {
         REQUIRE(f.read_bytes(readBytes.begin(), 10).is_err());
       }
 
-      SECTION("Using top1::bytes") {
+      SECTION("Using otto::bytes") {
         REQUIRE_NOTHROW(f.open(somePath));
 
         REQUIRE(f.position() == 0);

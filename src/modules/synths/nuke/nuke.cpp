@@ -5,7 +5,7 @@
 
 #include "nuke.faust.h"
 
-namespace top1::modules {
+namespace otto::modules {
 
   /*
    * Declarations

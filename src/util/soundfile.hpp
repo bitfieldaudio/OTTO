@@ -5,7 +5,7 @@
 #include "util/bytefile.hpp"
 #include "util/algorithm.hpp"
 
-namespace top1::util {
+namespace otto::util {
 
   class SoundFile : public ByteFile {
     public:

@@ -8,7 +8,7 @@
 #include "util/ringbuffer.hpp"
 #include "util/algorithm.hpp"
 
-namespace top1::debug {
+namespace otto::debug {
 
   class Info {
   public:
@@ -55,13 +55,13 @@ namespace top1::debug {
   }
 
   inline Info::Info() {
-    #ifdef TOP1_DEBUG_UI
+    #ifdef OTTO_DEBUG_UI
     index = ui::add_info(*this);
     #endif
   }
 
   inline Info::~Info() {
-    #ifdef TOP1_DEBUG_UI
+    #ifdef OTTO_DEBUG_UI
     ui::info_ptrs[index] = nullptr;
     #endif
   }
@@ -71,17 +71,17 @@ namespace top1::debug {
  * Macros
  */
 
-#ifdef TOP1_DEBUG_UI
+#ifdef OTTO_DEBUG_UI
 
-#define IF_DEBUG(...)                       \
-    __VA_ARGS__;                             \
+#define IF_DEBUG(...)                        \
+  __VA_ARGS__;                               \
 
 #define CALL_IF_DEBUG(lambda)                   \
   lambda();
 
-#else // TOP1_DEBUG_UI
+#else // OTTO_DEBUG_UI
 
 #define CALL_IF_DEBUG(lambda)
 #define IF_DEBUG(...)
 
-#endif // TOP1_DEBUG_UI
+#endif // OTTO_DEBUG_UI

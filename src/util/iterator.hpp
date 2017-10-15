@@ -5,7 +5,7 @@
 #include <functional>
 #include <type_traits>
 
-namespace top1::util {
+namespace otto::util {
 
   namespace detail {
 
@@ -455,7 +455,7 @@ namespace top1::util {
   /// error, and corrects it while iterating.
   ///
   /// The most common use case is iterating over data at a non-integer
-  /// rate ratio. In the TOP-1 it is used to read sound samples at a
+  /// rate ratio. In the OTTO it is used to read sound samples at a
   /// different rate than how they were recorded.
   ///
   /// When used to iterator through data, it is preferred to use
@@ -619,7 +619,7 @@ namespace top1::util {
   /// Iterates over multiple iterators at the same time
   ///
   /// Its very useful with structured bindings and `for` loops. Using the helper
-  /// function [top1::util::zip], you can iterate over multiple ranges like
+  /// function [otto::util::zip], you can iterate over multiple ranges like
   /// this:
   /// ```
   /// for (auto&& [r1, r2] : util::zip(range1, range2)) {

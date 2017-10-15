@@ -2,7 +2,7 @@
 
 #include "util/jsonfile.hpp"
 
-namespace top1 {
+namespace otto {
   class DataFile : public util::JsonFile {
   public:
     void write() override;

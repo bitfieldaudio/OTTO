@@ -8,7 +8,7 @@
 #include "util/audio.hpp"
 #include "util/iterator.hpp"
 
-namespace top1::modules {
+namespace otto::modules {
 
   using BeatPos = int;
 

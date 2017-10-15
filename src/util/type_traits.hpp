@@ -4,7 +4,7 @@
 #include <variant>
 #include <iterator>
 
-namespace top1::util {
+namespace otto::util {
 
   /// Any arithmetic type except bool
   template<typename T, typename Enable = void>

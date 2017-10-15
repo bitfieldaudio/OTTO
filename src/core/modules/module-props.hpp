@@ -14,7 +14,7 @@
 #include "util/math.hpp"
 #include "util/tree.hpp"
 
-namespace top1::modules {
+namespace otto::modules {
 
   inline
   namespace mode {
@@ -375,4 +375,4 @@ namespace top1::modules {
   static_assert(std::is_same_v<Property<bool>::Mode, mode::toggle_mode>,
                 "Default mode of Property<bool> should be toggle_mode");
 
-} // top1::modules
+} // otto::modules

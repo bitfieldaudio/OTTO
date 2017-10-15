@@ -10,7 +10,7 @@
 #include "util/timer.hpp"
 #include "util/algorithm.hpp"
 
-namespace top1::modules {
+namespace otto::modules {
 
   using TapeTime = std::size_t;
 
@@ -271,4 +271,4 @@ namespace top1::modules {
 
     return data.midi_only();
   }
-} // top1::module
+} // otto::module

@@ -5,7 +5,7 @@
 #include "util/algorithm.hpp"
 #include "util/type_traits.hpp"
 
-namespace top1::util {
+namespace otto::util {
 
   namespace detail {
 
@@ -62,17 +62,17 @@ namespace top1::util {
    * stored. In this sense, it behaves a bit like a `std::variant`, with the
    * added difference of not providing storage for the enclosed type.
    *
-   * Two partial specializations, <top1::poly_ptr> and <top1::unique_poly_ptr>
-   * are provided. <top1::poly_ptr> uses raw pointers for storage, and as such
-   * ownership should be managed elsewhere. <top1::unique_poly_ptr> uses
+   * Two partial specializations, <otto::poly_ptr> and <otto::unique_poly_ptr>
+   * are provided. <otto::poly_ptr> uses raw pointers for storage, and as such
+   * ownership should be managed elsewhere. <otto::unique_poly_ptr> uses
    * `std::unique_ptr`, and therefore owns its elements.
    *
    * This is especially useful for storing a predefined set of types,
    * that all inherit from the same base class, in a container.
-   * In the TOP-1 it's used for midi events, to be able to store the
+   * In the OTTO it's used for midi events, to be able to store the
    * events in a vector, and only access the subtypes when necessary.
    *
-   * You should use either `top1::poly_ptr` or `top1::unique_poly_ptr`
+   * You should use either `otto::poly_ptr` or `otto::unique_poly_ptr`
    * in nearly all cases.
    *
    * @Storage The underlying pointer to use for storage.

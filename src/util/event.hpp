@@ -4,7 +4,7 @@
 #include <functional>
 #include <plog/Log.h>
 
-namespace top1::util {
+namespace otto::util {
 
 /*
  * An event registry and dispatcher

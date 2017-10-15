@@ -8,7 +8,7 @@
 
 #include "util/audio.hpp"
 
-namespace top1 {
+namespace otto {
   /**
    * Audio Processors are anything that can process audio/midi.
    * They run on the audio thread, and are called by the audio system (Jack).
@@ -124,4 +124,4 @@ namespace top1 {
     };
 
   } // audio
-} // top1
+} // otto

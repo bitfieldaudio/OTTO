@@ -4,7 +4,7 @@
 #include "core/ui/drawing.hpp"
 #include "core/globals.hpp"
 
-namespace top1::modules {
+namespace otto::modules {
 
   SimpleDrumVoice::SimpleDrumVoice() :
     FaustWrapper(std::make_unique<FAUSTCLASS>(), props) {}

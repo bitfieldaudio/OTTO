@@ -2,7 +2,7 @@
 
 #include <json.hpp>
 
-namespace top1::util {
+namespace otto::util {
 
   using json = nlohmann::json;
 

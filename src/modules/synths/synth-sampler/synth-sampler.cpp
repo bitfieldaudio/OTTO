@@ -8,7 +8,7 @@
 #include "core/globals.hpp"
 #include "util/soundfile.hpp"
 
-namespace top1::modules {
+namespace otto::modules {
 
   SynthSampler::SynthSampler() :
     SynthModule(&props),
@@ -149,9 +149,9 @@ namespace top1::modules {
   void SynthSampler::init() {
     load();
   }
-} // top1::module
+} // otto::module
 
-namespace top1::ui::drawing {
+namespace otto::ui::drawing {
 
   const static Size topWFsize = {210, 20};
   const static Point topWFpos = {60, 20};
@@ -169,9 +169,9 @@ namespace top1::ui::drawing {
     const Colour TopWFActive = White;
     const Colour WFGrid = 0x303040;
   }
-} // top1::ui::drawing
+} // otto::ui::drawing
 
-namespace top1::modules {
+namespace otto::modules {
 
   /****************************************/
   /* SampleEditScreen                     */
@@ -277,4 +277,4 @@ namespace top1::modules {
       });
 
   }
-} // top1::module
+} // otto::module

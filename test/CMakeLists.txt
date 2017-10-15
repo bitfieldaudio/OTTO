@@ -1,9 +1,9 @@
 set(CMAKE_CXX_STANDARD 17)
 
-file(GLOB_RECURSE sources ${TOP-1_SOURCE_DIR}/test/*.cpp)
+file(GLOB_RECURSE sources ${OTTO_SOURCE_DIR}/test/*.cpp)
 
 # Executable
-add_executable(top-1_test ${sources})
-target_link_libraries(top-1_test PUBLIC top-1)
-target_include_directories(top-1_test PUBLIC ${TOP-1_SOURCE_DIR}/test)
-set_target_properties(top-1_test PROPERTIES OUTPUT_NAME test)
+add_executable(otto_test ${sources})
+target_link_libraries(otto_test PUBLIC otto)
+target_include_directories(otto_test PUBLIC ${OTTO_SOURCE_DIR}/test)
+set_target_properties(otto_test PROPERTIES OUTPUT_NAME test)

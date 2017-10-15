@@ -4,7 +4,7 @@
 #include "core/modules/module.hpp"
 #include "core/audio/processor.hpp"
 
-namespace top1::modules {
+namespace otto::modules {
 
   class FaustSynthModule : public audio::FaustWrapper<0, 1>, public SynthModule {
   public:

@@ -4,7 +4,7 @@
 
 #include "core/ui/canvas.hpp"
 
-namespace top1::ui {
+namespace otto::ui {
 
   /**
    * Used for keypresses

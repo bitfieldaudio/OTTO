@@ -11,7 +11,7 @@
 
 #include "util/type_traits.hpp"
 
-namespace top1::util::tree {
+namespace otto::util::tree {
 
   struct String {
 
@@ -181,4 +181,4 @@ namespace top1::util::tree {
 
   // TODO: Add more, e.g. vector, array, map, etc.
 
-} // top1::tree
+} // otto::tree

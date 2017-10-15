@@ -13,7 +13,7 @@
 #include "core/globals.hpp"
 
 int main(int argc, char *argv[]) {
-  using namespace top1;
+  using namespace otto;
 
   auto cleanup = [] {
     Globals::events.preExit.runAll();
@@ -27,7 +27,7 @@ int main(int argc, char *argv[]) {
 
   try {
     static plog::ConsoleAppender<plog::TxtFormatter> consoleAppender;
-    plog::init(plog::debug, (top1::Globals::data_dir / "log.txt").c_str())
+    plog::init(plog::debug, (otto::Globals::data_dir / "log.txt").c_str())
       .addAppender(&consoleAppender);
     LOGI << "LOGGING NOW";
 

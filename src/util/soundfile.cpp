@@ -1,7 +1,7 @@
 #include "util/soundfile.hpp"
 #include <plog/Log.h>
 
-namespace top1::util {
+namespace otto::util {
 
   using Chunk = ByteFile::Chunk;
   using Position = SoundFile::Position;

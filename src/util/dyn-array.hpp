@@ -7,7 +7,7 @@
 #include <cstring>
 #include <type_traits>
 
-namespace top1::util {
+namespace otto::util {
 
   /// Dynamic array
   ///

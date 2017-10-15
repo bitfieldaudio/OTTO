@@ -6,7 +6,7 @@
 
 #include "util/tree.hpp"
 
-namespace top1::util {
+namespace otto::util {
 
   class JsonFile {
   public:

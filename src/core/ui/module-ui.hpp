@@ -2,7 +2,7 @@
 
 #include "core/ui/base.hpp"
 
-namespace top1::ui {
+namespace otto::ui {
 
   /**
    * A screen that belongs to a module of type M
@@ -22,4 +22,4 @@ namespace top1::ui {
     virtual ~ModuleScreen() {}
   };
 
-} // top1::ui
+} // otto::ui

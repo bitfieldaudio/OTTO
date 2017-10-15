@@ -7,7 +7,7 @@
 #include <functional>
 #include "util/type_traits.hpp"
 
-namespace top1::util {
+namespace otto::util {
 
   /// A sum type, holding either an Ok value, or an Err
   ///
@@ -76,7 +76,7 @@ namespace top1::util {
       }
     }
 
-    /// Map <top1::result<O, E>> to `result<U, E>` by invoking `op` on a contained
+    /// Map <otto::result<O, E>> to `result<U, E>` by invoking `op` on a contained
     /// `Ok` value, leaving an `Err` value untouched
     ///
     /// Can be used to compose the result of two functions

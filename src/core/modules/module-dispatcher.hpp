@@ -4,7 +4,7 @@
 #include "core/ui/screens.hpp"
 #include "core/audio/processor.hpp"
 
-namespace top1::modules {
+namespace otto::modules {
 
   namespace detail {
 

@@ -2,7 +2,7 @@
 
 #include "util/iterator.hpp"
 
-namespace top1::util {
+namespace otto::util {
 
   TEST_CASE("Float step iterator: Different Speeds through big array", "[iterator] [util]") {
 

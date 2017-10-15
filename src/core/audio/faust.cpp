@@ -3,7 +3,7 @@
 #include "core/globals.hpp"
 #include <exception>
 
-namespace top1::audio {
+namespace otto::audio {
 
   namespace detail {
     void register_faust_wrapper_events(dsp& _dsp, FaustOptions& opts) {
@@ -17,4 +17,4 @@ namespace top1::audio {
         });
     }
   }
-} // top1::audio
+} // otto::audio

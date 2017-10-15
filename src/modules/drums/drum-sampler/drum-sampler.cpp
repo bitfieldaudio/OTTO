@@ -7,7 +7,7 @@
 #include "core/ui/icons.hpp"
 #include "util/soundfile.hpp"
 
-namespace top1::ui::drawing {
+namespace otto::ui::drawing {
 
   const static drawing::Size topWFsize = {210, 20};
   const static drawing::Point topWFpos = {60, 20};
@@ -26,10 +26,10 @@ namespace top1::ui::drawing {
     const Colour WFGrid = 0x303040;
   }
 
-} // top1::ui::drawing
+} // otto::ui::drawing
 
 
-namespace top1::modules {
+namespace otto::modules {
 
   DrumSampler::DrumSampler() :
     SynthModule(&props),
@@ -319,4 +319,4 @@ namespace top1::modules {
 
   }
 
-} // top1::module
+} // otto::module

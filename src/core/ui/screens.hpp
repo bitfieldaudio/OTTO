@@ -5,7 +5,7 @@
 #include "core/ui/base.hpp"
 #include "core/ui/drawing.hpp"
 
-namespace top1::ui {
+namespace otto::ui {
 
   template<typename ItemType>
   class SelectorScreen : public Screen {

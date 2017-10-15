@@ -4,7 +4,7 @@
 
 #include "util/timer.hpp"
 
-namespace top1::util::timer {
+namespace otto::util::timer {
 
   int calcMargin() {
     Timer approxT;

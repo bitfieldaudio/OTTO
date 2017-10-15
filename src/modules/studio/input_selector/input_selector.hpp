@@ -3,7 +3,7 @@
 #include "core/modules/module.hpp"
 #include "core/modules/module-props.hpp"
 
-namespace top1::modules {
+namespace otto::modules {
 
   class InputSelector : public Module {
   public:

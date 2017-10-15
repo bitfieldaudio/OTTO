@@ -2,7 +2,7 @@
 
 #include "core/ui/drawing.hpp"
 
-namespace top1::ui::drawing::icons {
+namespace otto::ui::drawing::icons {
 
   struct Icon : public SizedDrawable {
     Colour colour;
@@ -44,4 +44,4 @@ namespace top1::ui::drawing::icons {
     void draw(Canvas&) override;
   };
 
-} // top1::ui::drawing::icons
+} // otto::ui::drawing::icons

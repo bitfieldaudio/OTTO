@@ -4,7 +4,7 @@
 
 #include "core/modules/module-props.hpp"
 
-namespace top1::modules {
+namespace otto::modules {
 
   TEST_CASE ("Module Properties", "[modules]") {
 

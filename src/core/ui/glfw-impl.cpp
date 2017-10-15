@@ -13,8 +13,8 @@
 #include "debug/ui.hpp"
 
 #define NANOVG_GL3_IMPLEMENTATION
-#define TOP1_NVG_CREATE nvgCreateGL3
-#define TOP1_NVG_DELETE nvgDeleteGL3
+#define OTTO_NVG_CREATE nvgCreateGL3
+#define OTTO_NVG_DELETE nvgDeleteGL3
 
 #include <NanoCanvas.h>
 
@@ -24,7 +24,7 @@
 #include <nanovg_gl.h>
 #include <nanovg_gl_utils.h>
 
-namespace top1::ui {
+namespace otto::ui {
 
   namespace {
 
@@ -145,8 +145,8 @@ namespace top1::ui {
 
     static void init()
     {
-      #ifdef TOP1_DEBUG_UI
-      window = glfwCreateWindow(1280, 720, "TOP-1 Debugging", NULL, NULL);
+      #ifdef OTTO_DEBUG_UI
+      window = glfwCreateWindow(1280, 720, "OTTO Debugging", NULL, NULL);
       auto prev_ctx = glfwGetCurrentContext();
       glfwMakeContextCurrent(window);
       glfwSwapInterval(1);
@@ -190,12 +190,12 @@ namespace top1::ui {
 
       glfwMakeContextCurrent(prev_ctx);
 
-      #endif // TOP1_DEBUG_UI
+      #endif // OTTO_DEBUG_UI
     }
 
     static void draw_frame()
     {
-      #ifdef TOP1_DEBUG_UI
+      #ifdef OTTO_DEBUG_UI
       auto prev_win = glfwGetCurrentContext();
       glfwMakeContextCurrent(window);
       glfwPollEvents();
@@ -260,11 +260,11 @@ namespace top1::ui {
       glfwSwapBuffers(window);
 
       glfwMakeContextCurrent(prev_win);
-      #endif // TOP1_DEBUG_UI
+#endif // OTTO_DEBUG_UI
     }
 
   private: 
-    #ifdef TOP1_DEBUG_UI
+#ifdef OTTO_DEBUG_UI
 
     static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
     {
@@ -519,7 +519,7 @@ namespace top1::ui {
       glBindTexture(GL_TEXTURE_2D, last_texture);
     }
 
-    #endif // TOP1_DEBUG_UI
+#endif // OTTO_DEBUG_UI
 
   };
 
@@ -544,7 +544,7 @@ namespace top1::ui {
 
     DbgData::init();
 
-    GLFWwindow* window = glfwCreateWindow(drawing::WIDTH, drawing::HEIGHT, "TOP-1", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(drawing::WIDTH, drawing::HEIGHT, "OTTO", NULL, NULL);
     if (!window) {
       glfwTerminate();
       return;
@@ -557,7 +557,7 @@ namespace top1::ui {
 
     glfwMakeContextCurrent(window);
 
-    NVGcontext* vg = TOP1_NVG_CREATE(NVG_ANTIALIAS | NVG_STENCIL_STROKES | NVG_DEBUG);
+    NVGcontext* vg = OTTO_NVG_CREATE(NVG_ANTIALIAS | NVG_STENCIL_STROKES | NVG_DEBUG);
     if (vg == NULL) {
       printf("Could not init nanovg.\n");
       return;
@@ -652,11 +652,11 @@ namespace top1::ui {
       info.fps_history.push({ImGui::GetIO().Framerate, 1.f / spent});
     }
 
-    TOP1_NVG_DELETE(vg);
+    OTTO_NVG_DELETE(vg);
 
     glfwTerminate();
 
     Globals::exit();
   }
 
-} // top1::ui
+} // otto::ui
