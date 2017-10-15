@@ -32,8 +32,6 @@ int main(int argc, char *argv[]) {
     LOGI << "LOGGING NOW";
 
     midi::generateFreqTable(440);
-    std::mutex mut;
-    std::unique_lock lock (mut);
 
     using namespace modules;
 
