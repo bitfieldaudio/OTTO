@@ -235,6 +235,15 @@ namespace otto {
 
   tape_buffer::~tape_buffer() {}
 
+  /* Debug Info */
+
+  void tape_buffer::DbgInfo::draw()
+  {
+    ImGui::Begin("Tape buffer");
+    read_size_graph.plot("Read size");
+    ImGui::End();
+  }
+
   /*
    * TapeSliceSet
    */

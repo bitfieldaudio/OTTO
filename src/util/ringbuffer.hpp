@@ -73,7 +73,7 @@ namespace otto::util {
   };
 
   template<typename T, std::size_t N>
-  class ringbuffer : public wrapping_array<T, N> {
+  class ringbuffer : private wrapping_array<T, N> {
     using Super = wrapping_array<T, N>;
   public:
 
@@ -92,31 +92,61 @@ namespace otto::util {
       return index % capacity;
     }
 
-    void push(T v) {
+    void push(T v)
+    {
       head += 1;
       if (head - tail > capacity) {
-        tail = head - capacity - 2;
+        tail = head - capacity + 1;
       }
       Super::storage[wrap(head)] = std::move(v);
     }
 
-    value_type& front() {
+    value_type& front()
+    {
       return (*this)[head];
     }
 
-    value_type& back() {
+    value_type& back()
+    {
       return (*this)[tail];
     }
 
-    std::size_t size() const {
+    std::size_t size() const
+    {
       return head - tail;
     }
 
-    value_type& operator[](std::size_t idx) {
+    iterator begin()
+    {
+      return Super::iter(tail);
+    }
+
+    const_iterator begin() const
+    {
+      return Super::citer(tail);
+    }
+
+    iterator end()
+    {
+      return Super::iter(head);
+    }
+    const_iterator end() const
+    {
+      return Super::citer(head);
+    }
+
+    value_type* data()
+    {
+      return Super::storage.data();
+    }
+
+    value_type& operator[](std::size_t idx)
+    {
       return Super::storage[wrap(tail + idx)];
     }
 
-    const value_type& operator[](std::size_t idx) const {
+    const value_type& operator[](std::size_t idx) const
+    {
       return Super::storage[wrap(tail + idx)];
     }
 

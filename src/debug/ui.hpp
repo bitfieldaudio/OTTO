@@ -7,6 +7,27 @@
 
 #include "util/ringbuffer.hpp"
 #include "util/algorithm.hpp"
+#include "util/locked.hpp"
+
+/*
+ * Macros
+ */
+
+#ifdef OTTO_DEBUG_UI
+
+#define IF_DEBUG(...)                           \
+  __VA_ARGS__;                                  \
+
+#define CALL_IF_DEBUG(lambda)                   \
+  lambda();
+
+#else // OTTO_DEBUG_UI
+
+#define CALL_IF_DEBUG(lambda)
+#define IF_DEBUG(...)
+
+#endif // OTTO_DEBUG_UI
+
 
 namespace otto::debug {
 
@@ -20,12 +41,32 @@ namespace otto::debug {
     virtual void draw() = 0;
 
   protected:
-    template<typename T, std::size_t N>
-    static void plot(util::ringbuffer<T, N>& buf, float min, float max) {
-      ImGui::PlotLines("", [] (void* data, int n) {
-          return (*static_cast<util::ringbuffer<T, N>*>(data))[n];
-        }, &buf, buf.size(), 0, nullptr, min, max, ImVec2(0, 80));
+  };
+
+  template<std::size_t N>
+  class graph {
+  public:
+
+    void push(float val) {
+      buffer.push(std::move(val));
+      min = std::min(min, val);
+      max = std::max(max, val);
     }
+
+    void plot(std::string name) {
+      plot(name, min, max);
+    }
+
+    void plot(std::string name, float min, float max) {
+      ImGui::PlotLines(name.c_str(), [] (void* data, int n) {
+          return float((*static_cast<util::ringbuffer<float, N>*>(data))[n]);
+        }, &buffer, buffer.size(), 0, nullptr, min, max, ImVec2(0, 80));
+    }
+
+  private:
+
+    util::ringbuffer<float, N> buffer;
+    float min = 0, max = 0;
   };
 
   namespace ui {
@@ -55,33 +96,10 @@ namespace otto::debug {
   }
 
   inline Info::Info() {
-    #ifdef OTTO_DEBUG_UI
-    index = ui::add_info(*this);
-    #endif
+    IF_DEBUG(index = ui::add_info(*this));
   }
 
   inline Info::~Info() {
-    #ifdef OTTO_DEBUG_UI
-    ui::info_ptrs[index] = nullptr;
-    #endif
+    IF_DEBUG(ui::info_ptrs[index] = nullptr);
   }
 }
-
-/*
- * Macros
- */
-
-#ifdef OTTO_DEBUG_UI
-
-#define IF_DEBUG(...)                        \
-  __VA_ARGS__;                               \
-
-#define CALL_IF_DEBUG(lambda)                   \
-  lambda();
-
-#else // OTTO_DEBUG_UI
-
-#define CALL_IF_DEBUG(lambda)
-#define IF_DEBUG(...)
-
-#endif // OTTO_DEBUG_UI

@@ -12,6 +12,8 @@
 #include "util/audio.hpp"
 #include "util/ringbuffer.hpp"
 
+#include "debug/ui.hpp"
+
 namespace otto {
 
   // FDCL - Defined in tapebuffer.cpp
@@ -143,6 +145,7 @@ namespace otto {
       auto src = util::float_step(buffer.citer(current_position), speed);
       std::copy_n(src, n, dst);
       advance(n * speed);
+      IF_DEBUG(dbg.read_size_graph.push(n * speed));
     }
 
     /// Jumps the tape to absolute position `p`
@@ -171,6 +174,14 @@ namespace otto {
     // Defined in implementation file
     friend struct Producer;
     std::unique_ptr<Producer> producer;
+
+    struct DbgInfo : debug::Info {
+      debug::graph<1 << 10> read_size_graph;
+
+      void draw() override;
+    };
+
+    IF_DEBUG(DbgInfo dbg);
 
   };
 }

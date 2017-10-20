@@ -48,10 +48,13 @@ namespace otto::audio {
     IF_DEBUG({
         float max;
         for (auto& frm : mixer_out) {
-            float sum = frm[0] + frm[1];
-            if (std::abs(sum - max) > 0) {
-              max = sum;
-            }
+          float sum = frm[0] + frm[1];
+          if (std::abs(sum - max) > 0) {
+            max = sum;
+          }
+        }
+        if (max == 0) {
+          dbg_info.buffers_lost++;
         }
         dbg_info.audio_graph.push(max / 2.f);
       });
@@ -62,7 +65,8 @@ namespace otto::audio {
   void MainAudio::DbgInfo::draw()
   {
     ImGui::Begin("Audio");
-    plot(audio_graph, -1, 1);
+    audio_graph.plot("Audio graph", -1, 1);
+    ImGui::Text("Buffers lost: %d", buffers_lost);
     ImGui::End();
   }
 
