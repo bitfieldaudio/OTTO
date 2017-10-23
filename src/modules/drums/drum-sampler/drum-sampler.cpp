@@ -54,7 +54,7 @@ namespace otto::modules {
       path = Globals::data_dir / "samples" / "drums" / (name + ".aiff");
     }
     if (!fs::exists(path)) {
-      throw util::exception("DrumSampler: Specified sample path not found: {}", path);
+      throw util::exception("DrumSampler: Specified sample path not found: {}", path.c_str());
     }
     return path;
   }
