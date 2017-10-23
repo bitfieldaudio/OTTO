@@ -68,3 +68,12 @@ WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 set(Backward_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/backward-cpp)
 add_subdirectory(${Backward_DIR})
 find_package(Backward)
+
+if(OTTO_BUILD_DOCS)
+  execute_process(COMMAND git submodule update --init -- external/standardese
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+  set(standardese_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/standardese)
+  set(STANDARDESES_BUILD_TEST OFF CACHE BOOL "Build standardese tests")
+  add_subdirectory(${standardese_DIR})
+  include(${standardese_DIR}/standardese-config.cmake)
+endif()

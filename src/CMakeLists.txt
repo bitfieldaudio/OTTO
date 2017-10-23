@@ -32,3 +32,11 @@ target_compile_definitions(otto PUBLIC OTTO_DEBUG_UI)
 add_executable(otto_exec ${OTTO_SOURCE_DIR}/src/main.cpp ${BACKWARD_ENABLE})
 target_link_libraries(otto_exec PUBLIC otto)
 set_target_properties(otto_exec PROPERTIES OUTPUT_NAME otto)
+
+
+# Docs
+if (OTTO_BUILD_DOCS)
+  standardese_generate(otto CONFIG ${OTTO_SOURCE_DIR}/.standardese
+    INCLUDE_DIRECTORY ${otto_includedirs}
+    INPUT ${headers})
+endif()
