@@ -6,6 +6,7 @@
 #include "core/ui/drawing.hpp"
 #include "core/ui/icons.hpp"
 #include "util/soundfile.hpp"
+#include "util/exception.hpp"
 
 namespace otto::ui::drawing {
 
@@ -45,11 +46,17 @@ namespace otto::modules {
   }
 
   fs::path DrumSampler::samplePath(std::string name) {
-    auto wav_path = Globals::data_dir / "samples" / "drums" / (name + ".wav");
-    if (!fs::exists(wav_path)) {
-      return Globals::data_dir / "samples" / "drums" / (name + ".aiff");
+    if (name.empty()) {
+      throw util::exception("DrumSampler: Got empty sample name. Is one specified in data/modules.json?");
     }
-    return wav_path;
+    auto path = Globals::data_dir / "samples" / "drums" / (name + ".wav");
+    if (!fs::exists(path)) {
+      path = Globals::data_dir / "samples" / "drums" / (name + ".aiff");
+    }
+    if (!fs::exists(path)) {
+      throw util::exception("DrumSampler: Specified sample path not found: {}", path);
+    }
+    return path;
   }
 
   audio::ProcessData<1> DrumSampler::process(audio::ProcessData<0> data) {

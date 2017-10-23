@@ -34,7 +34,8 @@ namespace otto::ui::drawing {
     inline Font SemiBold;
     inline Font Mono;
 
-    inline fs::path font_dir {"data/fonts"};
+    inline const fs::path font_dir {"data/fonts"};
+
     inline void loadFont(Canvas& ctx, Font& font, const std::string& name)
     {
       auto path = Fonts::font_dir / (name + ".ttf");
