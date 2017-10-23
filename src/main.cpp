@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
     cleanup();
     return 1;
   } catch (...) {
-    LOGI << "Exception thrown, exitting!";
+    LOGI << "Unknown exception thrown, exitting!";
     cleanup();
     return 1;
   }

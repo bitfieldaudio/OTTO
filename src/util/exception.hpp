@@ -8,7 +8,7 @@
 
 namespace otto::util {
 
-  class exception : std::exception {
+  class exception : public std::exception {
 
     std::string message;
 
@@ -21,12 +21,12 @@ namespace otto::util {
     ///
     /// \effects Constructs with message `fmt::format(message, args...)`
     template<typename... Args>
-    exception(std::string_view message, Args&&... args)
+    exception(std::string message, Args&&... args)
       : message {fmt::format(message, std::forward<Args>(args)...)}
     {}
 
-    const char* what() const noexcept {
-      return fmt::format("Otto error: {}",  message).c_str();
+    const char* what() const noexcept override {
+      return message.c_str();
     }
   };
 }

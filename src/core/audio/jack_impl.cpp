@@ -60,6 +60,9 @@ namespace otto::audio {
     Impl(MainAudio& owner)
       : owner (owner)
     {
+      jack_set_error_function(jackError);
+      jack_set_info_function(jackLogInfo);
+
       client = jack_client_open(clientName.c_str(), JackNullOption, &jackStatus);
 
       if ((!jackStatus) & JackServerStarted) {
@@ -88,9 +91,6 @@ namespace otto::audio {
           (static_cast<Impl*>(arg))->buffersizeCallback(nframes);
           return 0;
         }, this);
-
-      jack_set_error_function(jackError);
-      jack_set_info_function(jackLogInfo);
 
       jack_on_shutdown(client, shutdown, nullptr);
 

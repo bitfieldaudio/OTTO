@@ -5,6 +5,7 @@
 #include <optional>
 #include <utility>
 #include <functional>
+#include <exception>
 #include "util/type_traits.hpp"
 
 namespace otto::util {
@@ -33,8 +34,14 @@ namespace otto::util {
     /// Thrown from <unwrap_ok> and <unwrap_err>.
     ///
     /// Holds an instance of the `result` it was thrown from
-    struct result_except {
+    struct result_except : std::exception {
       result res;
+
+      result_except(result r) : res (r) {}
+
+      const char* what() const noexcept override {
+        return "otto::util::result::result_except";
+      }
     };
 
     template<typename = std::enable_if_t<std::is_default_constructible_v<Ok>>>
