@@ -197,7 +197,7 @@ namespace otto::ui::vg {
     /**
      * Draw this widget to the context.
      * Called from the parent's draw method.
-     * @param ctx the canvas to draw on.
+     * \param ctx the canvas to draw on.
      */
     virtual void draw(Canvas& ctx) = 0;
 
@@ -216,7 +216,7 @@ namespace otto::ui::vg {
   /**
    * A modified NanoCanvas interface.
    *
-   * Allows for usage of <Point> and <Size> classes
+   * Allows for usage of [*Point]() and [*Size]() classes
    */
   class Canvas : public NanoCanvas::Canvas {
     public:

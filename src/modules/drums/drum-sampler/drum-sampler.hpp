@@ -7,6 +7,7 @@
 #include "core/modules/module.hpp"
 #include "core/ui/module-ui.hpp"
 #include "core/ui/waveform-widget.hpp"
+#include "core/ui/waveform_widget.hpp"
 #include "core/ui/canvas.hpp"
 
 #include "util/algorithm.hpp"
