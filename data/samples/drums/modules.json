@@ -1,0 +1,151 @@
+{
+  "Drums": {
+    "Sampler": {
+      "Voice 0": {
+        "in": 0,
+        "mode": 0,
+        "out": 22244,
+        "speed": 1.0
+      },
+      "Voice 1": {
+        "in": 22244,
+        "mode": 0,
+        "out": 51815,
+        "speed": 1.0
+      },
+      "Voice 10": {
+        "in": 345312,
+        "mode": 0,
+        "out": 461514,
+        "speed": 1.0
+      },
+      "Voice 11": {
+        "in": 461514,
+        "mode": 0,
+        "out": 697463,
+        "speed": 1.0
+      },
+      "Voice 12": {
+        "in": 1,
+        "mode": 0,
+        "out": 22244,
+        "speed": 1.0
+      },
+      "Voice 13": {
+        "in": 22244,
+        "mode": 0,
+        "out": 51815,
+        "speed": 1.0
+      },
+      "Voice 14": {
+        "in": 51815,
+        "mode": 0,
+        "out": 81439,
+        "speed": 1.0
+      },
+      "Voice 15": {
+        "in": 81439,
+        "mode": 0,
+        "out": 107162,
+        "speed": 1.0
+      },
+      "Voice 16": {
+        "in": 107162,
+        "mode": 0,
+        "out": 119100,
+        "speed": 1.0
+      },
+      "Voice 17": {
+        "in": 119100,
+        "mode": 0,
+        "out": 138736,
+        "speed": 1.0
+      },
+      "Voice 18": {
+        "in": 138736,
+        "mode": 0,
+        "out": 157554,
+        "speed": 1.0
+      },
+      "Voice 19": {
+        "in": 157554,
+        "mode": 0,
+        "out": 181380,
+        "speed": 1.0
+      },
+      "Voice 2": {
+        "in": 51815,
+        "mode": 0,
+        "out": 81439,
+        "speed": 1.0
+      },
+      "Voice 20": {
+        "in": 181380,
+        "mode": 0,
+        "out": 219437,
+        "speed": 1.0
+      },
+      "Voice 21": {
+        "in": 219437,
+        "mode": 0,
+        "out": 345312,
+        "speed": 1.0
+      },
+      "Voice 22": {
+        "in": 345312,
+        "mode": -1,
+        "out": 461514,
+        "speed": 1.0
+      },
+      "Voice 23": {
+        "in": 461514,
+        "mode": 2,
+        "out": 697463,
+        "speed": 1.0
+      },
+      "Voice 3": {
+        "in": 81439,
+        "mode": 0,
+        "out": 107162,
+        "speed": 1.0
+      },
+      "Voice 4": {
+        "in": 107162,
+        "mode": 0,
+        "out": 119100,
+        "speed": 1.0
+      },
+      "Voice 5": {
+        "in": 119100,
+        "mode": 0,
+        "out": 138736,
+        "speed": 1.0
+      },
+      "Voice 6": {
+        "in": 138736,
+        "mode": 0,
+        "out": 157554,
+        "speed": 1.0
+      },
+      "Voice 7": {
+        "in": 157554,
+        "mode": 2,
+        "out": 181380,
+        "speed": 1.0
+      },
+      "Voice 8": {
+        "in": 181380,
+        "mode": -1,
+        "out": 219437,
+        "speed": 1.0
+      },
+      "Voice 9": {
+        "in": 219437,
+        "mode": 2,
+        "out": 345312,
+        "speed": 1.0
+      },
+      "sample name": "samplepack"
+    }
+  }
+}
