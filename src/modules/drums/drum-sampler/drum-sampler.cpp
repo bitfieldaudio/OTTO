@@ -143,15 +143,20 @@ namespace otto::modules {
     auto path = samplePath(props.sampleName);
     std::size_t rs = 0;
     if (!(path.empty() || props.sampleName.get().empty())) {
-      util::SoundFile sf;
+      try {
+        util::SoundFile sf;
         sf.open(path);
-      rs = std::min<int>(maxSampleSize, sf.length());
-      sampleData.resize(rs);
-      sf.read_samples(sampleData.data(), rs);
+        rs = std::min<int>(maxSampleSize, sf.length());
+        sampleData.resize(rs);
+        sf.read_samples(sampleData.data(), rs);
 
-      sampleSampleRate = sf.info.samplerate;
-      sampleSpeed = sampleSampleRate / float(Globals::samplerate);
-      if (sf.length() == 0) LOGD << "Empty sample file";
+        sampleSampleRate = sf.info.samplerate;
+        sampleSpeed = sampleSampleRate / float(Globals::samplerate);
+        if (sf.length() == 0) LOGD << "Empty sample file";
+      } catch (util::exception& e) {
+        LOGE << "Failure while trying to load sample file '"
+             << path.c_str() << "':\n" << e.what();
+      }
     } else {
       sampleData.resize(0);
       LOGI << "Empty sampleName";
@@ -172,18 +177,7 @@ namespace otto::modules {
       }
     }
 
-    auto &mwf = editScreen->mainWF;
-    mwf->clear();
-    for (auto &&s : sampleData) {
-      mwf->addFrame(s);
-    }
-
-    auto &wf = editScreen->topWF;
-    wf->clear();
-    for (auto &&s : sampleData) {
-      wf->addFrame(s);
-    }
-    editScreen->topWFW.viewRange = {0, wf->size() - 1};
+    editScreen->topWFW.range({0, rs});
   }
 
   void DrumSampler::init() {
@@ -220,13 +214,10 @@ namespace otto::modules {
   }
 
 
-  DrumSampleScreen::DrumSampleScreen(DrumSampler *m) :
-    ui::ModuleScreen<DrumSampler> (m),
-    topWF (new util::audio::Waveform(module->sampleData.size()
-                               / ui::vg::topWFsize.w / 4.0, 1.0)),
-    topWFW (topWF, ui::vg::topWFsize),
-    mainWF (new util::audio::Waveform(50, 1.0)),
-    mainWFW (mainWF, ui::vg::mainWFsize) {}
+  DrumSampleScreen::DrumSampleScreen(DrumSampler *m)
+    : ui::ModuleScreen<DrumSampler> (m),
+      topWFW(module->sampleData, ui::vg::topWFsize),
+      mainWFW (module->sampleData, ui::vg::mainWFsize) {}
 
   void modules::DrumSampleScreen::draw(ui::vg::Canvas &ctx) {
     using namespace ui::vg;
@@ -234,7 +225,8 @@ namespace otto::modules {
     Colour colourCurrent;
 
     ctx.callAt(topWFpos, [&] () {
-        topWFW.drawRange(ctx, topWFW.viewRange, Colours::TopWF);
+        topWFW.draw(ctx);
+        ctx.stroke(Colours::TopWF);
         for (int i = 0; i < DrumSampler::nVoices; ++i) {
           auto& voice = module->props.voiceData[i];
           bool isActive = voice.playProgress >= 0;
@@ -247,10 +239,8 @@ namespace otto::modules {
             if (voice.fwd()) mix = 1 - mix; //voice is not reversed
 
             Colour colour = baseColour.mix(Colours::TopWFActive, mix);
-            topWFW.drawRange(ctx, {
-                std::size_t(std::round(voice.in / topWF->ratio)),
-                  std::size_t(std::round(voice.out / topWF->ratio))
-                  }, colour);
+            topWFW.draw_range(ctx, {std::size_t(voice.in), std::size_t(voice.out)});
+            ctx.stroke(colour);
           }
         }
         {
@@ -262,10 +252,8 @@ namespace otto::modules {
           if (voice.fwd()) mix = 1 - mix; //voice is not reversed
 
           colourCurrent = baseColour.mix(Colours::TopWFActive, mix);
-          topWFW.drawRange(ctx, {
-              std::size_t(std::round(voice.in / topWF->ratio)),
-                std::size_t(std::round(voice.out / topWF->ratio))
-                }, colourCurrent);
+          topWFW.draw_range(ctx, {std::size_t(voice.in), std::size_t(voice.out)});
+          ctx.stroke(colourCurrent);
         }
       });
 
@@ -299,29 +287,18 @@ namespace otto::modules {
     ctx.fillText(fmt::format("×{:.2F}", voice.speed.get()), pitchPos);
 
     ctx.callAt(mainWFpos, [&] () {
-        mainWFW.lineCol = colourCurrent;
-        mainWFW.minPx = 5;
-        mainWFW.viewRange = {
-          std::size_t(std::round(voice.in / mainWF->ratio)),
-          std::size_t(std::round(voice.out / mainWF->ratio))};
+        mainWFW.range({std::size_t(voice.in), std::size_t(voice.out)});
+        ctx.stroke(colourCurrent);
 
         mainWFW.draw(ctx);
 
         ctx.beginPath();
-        ctx.circle(mainWFW.point(mainWFW.viewRange.in), 2);
+        ctx.circle(mainWFW.point(mainWFW.range().in), 3);
         ctx.fill(Colours::Blue);
 
         ctx.beginPath();
-        ctx.circle(mainWFW.point(mainWFW.viewRange.in), 5);
-        ctx.stroke(Colours::Blue);
-
-        ctx.beginPath();
-        ctx.circle(mainWFW.point(mainWFW.viewRange.out), 2);
+        ctx.circle(mainWFW.point(mainWFW.range().out), 3);
         ctx.fill(Colours::Green);
-
-        ctx.beginPath();
-        ctx.circle(mainWFW.point(mainWFW.viewRange.out), 5);
-        ctx.stroke(Colours::Green);
       });
 
   }

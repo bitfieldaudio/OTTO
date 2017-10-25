@@ -18,15 +18,13 @@ namespace otto::util {
   ///
   /// Both can be very useful in different contexts.
   ///
-  /// Upon construction, the generator will be called, and the cache will be
-  /// valid. This means there is no requirement for `T` to be default constructible.
+  /// \requires `T` shall be `DefaultConstructible`
   template<typename T>
   struct cached {
 
     template<typename FuncRef>
     cached(FuncRef&& fr)
-      : generator {make_generator(std::forward<FuncRef>(fr))},
-        cache {generator()}
+      : generator {make_generator(std::forward<FuncRef>(fr))}
     {}
 
     /// Invalidate the cache

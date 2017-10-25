@@ -6,7 +6,6 @@
 
 #include "core/modules/module.hpp"
 #include "core/ui/module-ui.hpp"
-#include "core/ui/waveform-widget.hpp"
 #include "core/ui/waveform_widget.hpp"
 #include "core/ui/canvas.hpp"
 
@@ -90,10 +89,8 @@ namespace otto::modules {
   class DrumSampleScreen : public ui::ModuleScreen<DrumSampler> {
   public:
 
-    std::shared_ptr<util::audio::Waveform> topWF;
-    ui::WaveformWidget<util::audio::Waveform> topWFW;
-    std::shared_ptr<util::audio::Waveform> mainWF;
-    ui::WaveformWidget<util::audio::Waveform> mainWFW;
+    ui::widgets::Waveform<util::dyn_array<float>> topWFW;
+    ui::widgets::Waveform<util::dyn_array<float>> mainWFW;
 
     DrumSampleScreen(DrumSampler *);
 
@@ -101,7 +98,6 @@ namespace otto::modules {
 
     bool keypress(ui::Key) override;
     void rotary(ui::RotaryEvent) override;
-    
   };
 
 }
