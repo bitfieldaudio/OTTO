@@ -57,10 +57,10 @@ namespace otto::modules {
   };
 
   class SimpleDrumsScreen : public ui::ModuleScreen<SimpleDrumsModule> {
-    void drawOsc(ui::drawing::Canvas& ctx, SimpleDrumVoice::Props::Osc &osc);
-    void drawKbd(ui::drawing::Canvas& ctx);
+    void drawOsc(ui::vg::Canvas& ctx, SimpleDrumVoice::Props::Osc &osc);
+    void drawKbd(ui::vg::Canvas& ctx);
   private:
-    void draw(ui::drawing::Canvas& ctx) override;
+    void draw(ui::vg::Canvas& ctx) override;
 
     bool keypress(ui::Key key) override;
     void rotary(ui::RotaryEvent) override;

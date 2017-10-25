@@ -19,12 +19,12 @@ namespace otto::ui {
     };
     using ItemMap = std::vector<Item>;
     ItemMap items;
-    drawing::Colour itemColour;
+    vg::Colour itemColour;
     std::function<void()> onSelect = [](){};
 
-    SelectorScreen(const ItemMap&, drawing::Colour);
+    SelectorScreen(const ItemMap&, vg::Colour);
 
-    void draw(drawing::Canvas&) override;
+    void draw(vg::Canvas&) override;
     bool keypress(ui::Key) override;
     void rotary(ui::RotaryEvent) override;
 
@@ -38,12 +38,12 @@ namespace otto::ui {
   /****************************************/
 
   template<typename T>
-  SelectorScreen<T>::SelectorScreen(const ItemMap& items, drawing::Colour c) :
+  SelectorScreen<T>::SelectorScreen(const ItemMap& items, vg::Colour c) :
     items (items), itemColour (c) {}
 
   template<typename T>
-  void SelectorScreen<T>::draw(drawing::Canvas& ctx) {
-    using namespace drawing;
+  void SelectorScreen<T>::draw(vg::Canvas& ctx) {
+    using namespace vg;
 
     int nitems = std::min<int>(items.size(), HEIGHT / itemHeight);
 

@@ -85,8 +85,8 @@ namespace otto::modules {
     }
   }
 
-  void SimpleDrumsScreen::draw(ui::drawing::Canvas &ctx) {
-    using namespace ui::drawing;
+  void SimpleDrumsScreen::draw(ui::vg::Canvas &ctx) {
+    using namespace ui::vg;
     auto &voice = (module->voices[module->currentVoiceIdx]);
     ctx.save();
     drawOsc(ctx, voice.props.D1);
@@ -97,8 +97,8 @@ namespace otto::modules {
     drawKbd(ctx);
   }
 
-  void SimpleDrumsScreen::drawOsc(ui::drawing::Canvas &ctx, SimpleDrumVoice::Props::Osc &osc) {
-    using namespace ui::drawing;
+  void SimpleDrumsScreen::drawOsc(ui::vg::Canvas &ctx, SimpleDrumVoice::Props::Osc &osc) {
+    using namespace ui::vg;
 
     ctx.globalAlpha(1.0);
     ctx.lineJoin(Canvas::LineJoin::ROUND);
@@ -410,8 +410,8 @@ namespace otto::modules {
 
   }
 
-  void SimpleDrumsScreen::drawKbd(ui::drawing::Canvas &ctx) {
-    using namespace ui::drawing;
+  void SimpleDrumsScreen::drawKbd(ui::vg::Canvas &ctx) {
+    using namespace ui::vg;
     // #KEYBOARD
     ctx.save();
     ctx.transform(1.000000, 0.000000, 0.000000, 1.000000, 18.000000, 0.000000);

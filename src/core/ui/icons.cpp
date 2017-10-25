@@ -2,7 +2,7 @@
 
 #include <cmath>
 
-namespace otto::ui::drawing::icons {
+namespace otto::ui::vg::icons {
 
   void Arrow::draw(Canvas& ctx) {
     ctx.save();

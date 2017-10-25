@@ -151,7 +151,7 @@ namespace otto::modules {
   }
 } // otto::module
 
-namespace otto::ui::drawing {
+namespace otto::ui::vg {
 
   const static Size topWFsize = {210, 20};
   const static Point topWFpos = {60, 20};
@@ -194,14 +194,14 @@ namespace otto::modules {
 
   SynthSampleScreen::SynthSampleScreen(SynthSampler *m) :
     ui::ModuleScreen<SynthSampler> (m),
-    topWF (new util::audio::Waveform(module->sampleData.size() / ui::drawing::topWFsize.w / 4.0, 1.0)
+    topWF (new util::audio::Waveform(module->sampleData.size() / ui::vg::topWFsize.w / 4.0, 1.0)
            ),
-    topWFW (topWF, ui::drawing::topWFsize),
+    topWFW (topWF, ui::vg::topWFsize),
     mainWF (new util::audio::Waveform(50, 1.0)),
-    mainWFW (mainWF, ui::drawing::mainWFsize) {}
+    mainWFW (mainWF, ui::vg::mainWFsize) {}
 
-  void modules::SynthSampleScreen::draw(ui::drawing::Canvas &ctx) {
-    using namespace ui::drawing;
+  void modules::SynthSampleScreen::draw(ui::vg::Canvas &ctx) {
+    using namespace ui::vg;
 
     Colour colourCurrent;
     auto& props = module->props;

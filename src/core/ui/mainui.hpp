@@ -29,7 +29,7 @@ namespace otto::ui {
 
     void display(Screen& screen);
 
-    void draw(drawing::Canvas& ctx) override;
+    void draw(vg::Canvas& ctx) override;
     bool keypress(Key key) override;
     bool keyrelease(Key key) override;
   };

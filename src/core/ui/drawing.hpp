@@ -7,7 +7,7 @@
 
 #include "core/ui/canvas.hpp"
 
-namespace otto::ui::drawing {
+namespace otto::ui::vg {
 
   const int WIDTH = 320;
   const int HEIGHT = 240;

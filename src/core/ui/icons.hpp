@@ -2,7 +2,7 @@
 
 #include "core/ui/drawing.hpp"
 
-namespace otto::ui::drawing::icons {
+namespace otto::ui::vg::icons {
 
   struct Icon : public SizedDrawable {
     Colour colour;

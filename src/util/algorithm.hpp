@@ -60,10 +60,10 @@ namespace otto::util {
   /// an incrementing value, starting at zero. Use this instead of
   /// raw indexed loops wherever possible.
   /// 
-  /// @first Input iterator to the begining of the range
-  /// @last Input iterator to the end of the range
-  /// @f Must be invocable with arguments `value_type`, `std::size_t`
-  /// @return The number of iterations performed
+  /// \param first Input iterator to the begining of the range
+  /// \param last Input iterator to the end of the range
+  /// \param f Must be invocable with arguments `value_type`, `std::size_t`
+  /// \param return The number of iterations performed
   template<typename InputIt, typename F>
   constexpr std::size_t indexed_for(InputIt&& first, InputIt&& last, F&& f) {
     std::size_t i = 0;

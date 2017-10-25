@@ -25,11 +25,11 @@ namespace otto::ui {
       iterator(const WaveformWidget &w, int idx, float inc, Range r) :
         w (w), idx (idx), inc (inc) , range (r) {}
 
-      drawing::Point get() const {
+      vg::Point get() const {
         return w.point(idx);
       }
 
-      drawing::Point operator*() const {
+      vg::Point operator*() const {
         return get();
       }
 
@@ -72,22 +72,24 @@ namespace otto::ui {
     };
 
     Range viewRange;
-    drawing::Colour lineCol;
+    vg::Colour lineCol;
     float minPx;
     float scale = 1;
 
     WaveformWidget() {};
 
-    WaveformWidget(std::shared_ptr<Container> wf, drawing::Size s ) :
-      Widget (s), wf (wf) {
+    WaveformWidget(std::shared_ptr<Container> wf, vg::Size s )
+      : Widget (s),
+        wf (wf)
+    {
       viewRange = {0, wf->size() - 1};
     }
 
-    void draw(drawing::Canvas &) override;
+    void draw(vg::Canvas &) override;
 
-    void drawRange(drawing::Canvas&, Range range, drawing::Colour);
+    void drawRange(vg::Canvas&, Range range, vg::Colour);
 
-    void drawRange(drawing::Canvas& ctx, Range range) {
+    void drawRange(vg::Canvas& ctx, Range range) {
       drawRange(ctx, range, lineCol);
     }
 
@@ -100,7 +102,7 @@ namespace otto::ui {
     }
     iterator end(Range range) const;
 
-    drawing::Point point(std::size_t idx) const;
+    vg::Point point(std::size_t idx) const;
 
   private:
     std::shared_ptr<Container> wf;
@@ -111,17 +113,17 @@ namespace otto::ui {
   /****************************************/
 
   template<typename C>
-  inline void WaveformWidget<C>::draw(drawing::Canvas &ctx) {
+  inline void WaveformWidget<C>::draw(vg::Canvas &ctx) {
     drawRange(ctx, viewRange);
   }
 
   template<typename C>
   inline void WaveformWidget<C>::drawRange(
-                                           drawing::Canvas &ctx,
+                                           vg::Canvas &ctx,
                                            Range range,
-                                           drawing::Colour colour)
+                                           vg::Colour colour)
   {
-    using namespace drawing;
+    using namespace vg;
 
     const float pxPrPt = size.w / float(viewRange.size());
 
@@ -153,7 +155,7 @@ namespace otto::ui {
   }
 
   template<typename C>
-  inline drawing::Point WaveformWidget<C>::point(std::size_t idx) const {
+  inline vg::Point WaveformWidget<C>::point(std::size_t idx) const {
     if (idx < wf->size() && idx >= 0) {
       return {
         (idx - viewRange.in) / float(viewRange.size()) * size.w,

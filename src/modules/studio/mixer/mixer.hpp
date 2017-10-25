@@ -44,14 +44,14 @@ namespace otto::modules {
 
   class MixerScreen : public ui::ModuleScreen<Mixer> {
 
-    void draw(ui::drawing::Canvas& ctx) override;
+    void draw(ui::vg::Canvas& ctx) override;
 
     bool keypress(ui::Key key) override;
     bool keyrelease(ui::Key key) override;
     void rotary(ui::RotaryEvent) override;
 
     // TODO: Convert to Widget
-    void drawMixerSegment(ui::drawing::Canvas& ctx, int track, float x, float y);
+    void drawMixerSegment(ui::vg::Canvas& ctx, int track, float x, float y);
 
   public:
     using ModuleScreen<Mixer>::ModuleScreen;

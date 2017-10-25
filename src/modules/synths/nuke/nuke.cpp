@@ -17,35 +17,35 @@ namespace otto::modules {
     float max;
   };
 
-  struct Knob : ui::drawing::Drawable {
+  struct Knob : ui::vg::Drawable {
 
-    ui::drawing::Colour colour;
+    ui::vg::Colour colour;
     PointInRange rotation;
 
     Knob() = default;
-    Knob(ui::drawing::Colour c, PointInRange r) : colour (c), rotation (r) {}
+    Knob(ui::vg::Colour c, PointInRange r) : colour (c), rotation (r) {}
 
-    void draw(ui::drawing::Canvas& ctx) override;
+    void draw(ui::vg::Canvas& ctx) override;
 
   };
 
   class NukeSynthScreen : public ui::ModuleScreen<NukeSynth> {
 
     std::array<Knob, 4> knobs = {{
-        Knob{ui::drawing::Colours::Blue, {-1.13097, 0.5, M_PI}},
-        Knob{ui::drawing::Colours::Green, {-0.376991, 0.5, 3.51858}},
-        Knob{ui::drawing::Colours::White, {0, 0.5, M_PI}},
-        Knob{ui::drawing::Colours::Red, {-0.565486, 0.5, 0.565486}},
+        Knob{ui::vg::Colours::Blue, {-1.13097, 0.5, M_PI}},
+        Knob{ui::vg::Colours::Green, {-0.376991, 0.5, 3.51858}},
+        Knob{ui::vg::Colours::White, {0, 0.5, M_PI}},
+        Knob{ui::vg::Colours::Red, {-0.565486, 0.5, 0.565486}},
       }};
 
-    void draw_bg(ui::drawing::Canvas& ctx);
-    void draw_text(ui::drawing::Canvas& ctx);
-    void draw_key(ui::drawing::Canvas& ctx);
-    void draw_level_dots(ui::drawing::Canvas& ctx);
-    void draw_slider(ui::drawing::Canvas& ctx);
-    void draw_knobs(ui::drawing::Canvas& ctx);
+    void draw_bg(ui::vg::Canvas& ctx);
+    void draw_text(ui::vg::Canvas& ctx);
+    void draw_key(ui::vg::Canvas& ctx);
+    void draw_level_dots(ui::vg::Canvas& ctx);
+    void draw_slider(ui::vg::Canvas& ctx);
+    void draw_knobs(ui::vg::Canvas& ctx);
 
-    void draw(ui::drawing::Canvas& ctx) override;
+    void draw(ui::vg::Canvas& ctx) override;
     bool keypress(ui::Key key) override;
     void rotary(ui::RotaryEvent e) override;
 
@@ -114,7 +114,7 @@ namespace otto::modules {
   }
 
 
-  using namespace ui::drawing;
+  using namespace ui::vg;
 
   void NukeSynthScreen::draw(Canvas &ctx) {
     draw_bg(ctx);

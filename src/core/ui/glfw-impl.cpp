@@ -544,7 +544,7 @@ namespace otto::ui {
 
     DbgData::init();
 
-    GLFWwindow* window = glfwCreateWindow(drawing::WIDTH, drawing::HEIGHT, "OTTO", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(vg::WIDTH, vg::HEIGHT, "OTTO", NULL, NULL);
     if (!window) {
       glfwTerminate();
       return;
@@ -568,8 +568,8 @@ namespace otto::ui {
     glfwSetTime(0);
     double prevt = glfwGetTime();
 
-    drawing::Canvas canvas(vg, drawing::WIDTH, drawing::HEIGHT);
-    drawing::initUtils(canvas);
+    vg::Canvas canvas(vg, vg::WIDTH, vg::HEIGHT);
+    vg::initUtils(canvas);
 
     LOGD << "Opening GLFW Window";
 
@@ -614,7 +614,7 @@ namespace otto::ui {
       glfwGetFramebufferSize(window, &fbWidth, &fbHeight);
       // Calculate pixel ration for hi-dpi devices.
       pxRatio = (float)fbWidth / (float)winWidth;
-      scale = std::min((float)winWidth/(float)drawing::WIDTH, (float)winHeight/(float)drawing::HEIGHT);
+      scale = std::min((float)winWidth/(float)vg::WIDTH, (float)winHeight/(float)vg::HEIGHT);
       canvas.setSize(winWidth, winHeight);
 
       // Update and render
@@ -628,7 +628,7 @@ namespace otto::ui {
       glEnable(GL_CULL_FACE);
       glDisable(GL_DEPTH_TEST);
 
-      canvas.clearColor(drawing::Colours::Black);
+      canvas.clearColor(vg::Colours::Black);
       canvas.begineFrame(winWidth, winHeight);
 
       canvas.scale(scale, scale);

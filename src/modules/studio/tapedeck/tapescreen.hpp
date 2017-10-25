@@ -5,7 +5,7 @@
 #include "tapedeck.hpp"
 #include "core/globals.hpp"
 
-namespace otto::ui::drawing {
+namespace otto::ui::vg {
   namespace Colours {
     const Colour Tape = Colour::bytes(60, 60, 59);
   }
@@ -14,7 +14,7 @@ namespace otto::ui::drawing {
 namespace otto::modules {
 
   using namespace ui;
-  using namespace ui::drawing;
+  using namespace ui::vg;
 
   struct TapeScreen : public ui::ModuleScreen<Tapedeck> {
     bool stopRecOnRelease = true;

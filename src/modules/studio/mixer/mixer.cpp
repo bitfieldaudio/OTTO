@@ -57,9 +57,9 @@ namespace otto::modules {
   /* MixerScreen Implementation                     */
   /**************************************************/
 
-  using namespace ui::drawing;
+  using namespace ui::vg;
 
-  void MixerScreen::draw(ui::drawing::Canvas& ctx) {
+  void MixerScreen::draw(ui::vg::Canvas& ctx) {
 
     drawMixerSegment(ctx, 1, 18, 32.5);
     drawMixerSegment(ctx, 2, 93, 32.5);
@@ -101,7 +101,7 @@ namespace otto::modules {
     }
   }
 
-  void MixerScreen::drawMixerSegment(ui::drawing::Canvas& ctx,
+  void MixerScreen::drawMixerSegment(ui::vg::Canvas& ctx,
                                      int track, float x, float y) {
 
     Colour trackCol;

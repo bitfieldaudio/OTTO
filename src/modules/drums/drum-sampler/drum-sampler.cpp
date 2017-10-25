@@ -8,16 +8,16 @@
 #include "util/soundfile.hpp"
 #include "util/exception.hpp"
 
-namespace otto::ui::drawing {
+namespace otto::ui::vg {
 
-  const static drawing::Size topWFsize = {210, 20};
-  const static drawing::Point topWFpos = {60, 20};
-  const static drawing::Size arrowSize = {20, 20};
-  const static drawing::Point arrowPos = {280, 20};
-  const static drawing::Size pitchSize = {30, 20};
-  const static drawing::Point pitchPos = {20, 40};
-  const static drawing::Size mainWFsize = {280, 170};
-  const static drawing::Point mainWFpos = {20, 50};
+  const static vg::Size topWFsize = {210, 20};
+  const static vg::Point topWFpos = {60, 20};
+  const static vg::Size arrowSize = {20, 20};
+  const static vg::Point arrowPos = {280, 20};
+  const static vg::Size pitchSize = {30, 20};
+  const static vg::Point pitchPos = {20, 40};
+  const static vg::Size mainWFsize = {280, 170};
+  const static vg::Point mainWFpos = {20, 50};
 
   namespace Colours {
 
@@ -223,13 +223,13 @@ namespace otto::modules {
   DrumSampleScreen::DrumSampleScreen(DrumSampler *m) :
     ui::ModuleScreen<DrumSampler> (m),
     topWF (new util::audio::Waveform(module->sampleData.size()
-                               / ui::drawing::topWFsize.w / 4.0, 1.0)),
-    topWFW (topWF, ui::drawing::topWFsize),
+                               / ui::vg::topWFsize.w / 4.0, 1.0)),
+    topWFW (topWF, ui::vg::topWFsize),
     mainWF (new util::audio::Waveform(50, 1.0)),
-    mainWFW (mainWF, ui::drawing::mainWFsize) {}
+    mainWFW (mainWF, ui::vg::mainWFsize) {}
 
-  void modules::DrumSampleScreen::draw(ui::drawing::Canvas &ctx) {
-    using namespace ui::drawing;
+  void modules::DrumSampleScreen::draw(ui::vg::Canvas &ctx) {
+    using namespace ui::vg;
 
     Colour colourCurrent;
 

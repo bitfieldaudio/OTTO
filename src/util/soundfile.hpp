@@ -7,11 +7,15 @@
 
 namespace otto::util {
 
+  /// A file handler for sound (wav, aiff) files
   class SoundFile : public ByteFile {
     public:
+    /// Used for indexing into the file
     using Position = int;
+    /// The type of a sample
     using Sample = float;
     using Chunk = ByteFile::Chunk;
+    /// Size in bytes of one sample
     constexpr static std::size_t sample_size = sizeof(Sample);
 
     enum class Error {

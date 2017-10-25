@@ -96,7 +96,7 @@ namespace otto::modules {
 
     DrumSampleScreen(DrumSampler *);
 
-    void draw(ui::drawing::Canvas&) override;
+    void draw(ui::vg::Canvas&) override;
 
     bool keypress(ui::Key) override;
     void rotary(ui::RotaryEvent) override;

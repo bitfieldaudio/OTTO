@@ -8,7 +8,7 @@
 
 #include "util/math.hpp"
 
-namespace otto::ui::drawing {
+namespace otto::ui::vg {
 
   using NanoCanvas::HorizontalAlign;
   using NanoCanvas::VerticalAlign;
@@ -42,10 +42,10 @@ namespace otto::ui::drawing {
     constexpr bool operator==(Point rhs) const {return x == rhs.x && y == rhs.y;}
     constexpr bool operator!=(Point rhs) const {return x != rhs.x && y != rhs.y;}
     constexpr Point operator+(Point rhs) const {return {x + rhs.x, y + rhs.y};}
-    constexpr Point operator-(Point rhs) const {return {x - rhs.x, y - rhs.y};}
     constexpr Point operator*(float s) const {return {x * s, y * s};}
     constexpr Point operator/(float s) const {return {x / s, y / s};}
     constexpr Point operator-() const {return {-x, -y};}
+    constexpr util::math::vec operator-(Point rhs) const {return {x - rhs.x, y - rhs.y};}
 
     constexpr operator util::math::vec() const {return {x, y};}
   };
@@ -64,7 +64,22 @@ namespace otto::ui::drawing {
     constexpr Point center() const {
       return {w / 2.f, h / 2.f};
     }
+
+    constexpr Size abs() const {
+      return {std::abs(w), std::abs(h)};
+    }
     constexpr operator util::math::vec() const {return {w, h};}
+  };
+
+  /// A positioned box
+  struct Box {
+    Point p1 {0, 0};
+    Point p2 {0, 0};
+
+    constexpr Size size() const
+    {
+      return Size{p2 - p1}.abs();
+    }
   };
 
   struct Colour {
@@ -370,7 +385,7 @@ namespace otto::ui::drawing {
     }
 
     template<typename It>
-      Canvas& bzCurve(It pointB, It pointE, float f = 0.5, float t = 1) {
+    Canvas& bzCurve(It pointB, It pointE, float f = 0.5, float t = 1) {
 
       moveTo(*pointB);
 
@@ -397,17 +412,27 @@ namespace otto::ui::drawing {
       return *this;
     }
 
+    /// Draw a curve between points using only horizontal and vertical lines and
+    /// rounded corners
+    ///
+    /// This is the algorithm used by the samplers, and in general to display waveforms
+    ///
+    /// \param first An iterator to the first point
+    /// \param last An iterator one past the last point
+    /// \param maxR The maximum radius for curves, in pixels. If negative, there
+    ///             is no limit
+    /// \requires `It` shall be an `InputIterator<Point>`
     template<typename It>
-      Canvas& roundedCurve(It pointB, It pointE, float maxR = -1) {
+    Canvas& roundedCurve(It first, It last, float maxR = -1) {
 
       maxR = maxR < 0 ? std::numeric_limits<float>::max() : maxR;
-      moveTo(*pointB);
+      moveTo(*first);
 
-      Point cur = *pointB;
+      Point cur = *first;
       Point nxt = cur;
-      for (auto it = pointB; it < pointE; ++it) {
+      for (; first != last; ++first) {
         cur = nxt;
-        nxt = *it;
+        nxt = *first;
         if (nxt == cur) continue;
         float rx = std::abs(nxt.x - cur.x) / 2.0;
         float ry = std::abs(nxt.y - cur.y) / 2.0;

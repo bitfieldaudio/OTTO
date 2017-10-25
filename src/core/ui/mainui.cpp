@@ -18,7 +18,7 @@ namespace otto::ui {
   void MainUI::exit() {
   }
 
-  void MainUI::draw(drawing::Canvas& ctx) {
+  void MainUI::draw(vg::Canvas& ctx) {
     currentScreen->draw(ctx);
   }
 

@@ -103,7 +103,7 @@ namespace otto::modules {
 
   template<typename M>
   ModuleDispatcher<M>::ModuleDispatcher() :
-    selectorScreen (new ui::SelectorScreen<int>({}, ui::drawing::Colours::Blue)) {
+    selectorScreen (new ui::SelectorScreen<int>({}, ui::vg::Colours::Blue)) {
     selectorScreen->onSelect = [&]() {
       current(selectorScreen->selectedItem);
     };

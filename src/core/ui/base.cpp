@@ -3,8 +3,8 @@
 
 namespace otto::ui {
 
-  void DefaultScreen::draw(drawing::Canvas& ctx) {
-    using namespace drawing;
+  void DefaultScreen::draw(vg::Canvas& ctx) {
+    using namespace vg;
 
   }
 

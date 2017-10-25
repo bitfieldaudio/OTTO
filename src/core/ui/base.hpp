@@ -70,10 +70,10 @@ namespace otto::ui {
 
   using PressedKeys = bool[256];
 
-  class Widget : public drawing::SizedDrawable {
+  class Widget : public vg::SizedDrawable {
   public:
     Widget() {}
-    explicit Widget(drawing::Size size) : SizedDrawable (size) {}
+    explicit Widget(vg::Size size) : SizedDrawable (size) {}
 
   };
 
@@ -102,7 +102,7 @@ namespace otto::ui {
    *
    * If it belongs to a module, use <ui::ModuleScreen>.
    */
-  class Screen : public drawing::Drawable {
+  class Screen : public vg::Drawable {
   public:
 
     using ptr = std::unique_ptr<Screen>;
@@ -149,7 +149,7 @@ namespace otto::ui {
    */
   class DefaultScreen : public Screen {
   public:
-    void draw(drawing::Canvas& ctx) override;
+    void draw(vg::Canvas& ctx) override;
     bool keypress(Key key) override;
   };
 

@@ -14,14 +14,14 @@ namespace otto::modules {
 
   class MetronomeScreen : public ui::ModuleScreen<Metronome> {
 
-    void drawMetronome(ui::drawing::Canvas&);
+    void drawMetronome(ui::vg::Canvas&);
 
   public:
     using ui::ModuleScreen<Metronome>::ModuleScreen;
 
     void rotary(ui::RotaryEvent) override;
 
-    void draw(ui::drawing::Canvas&) override;
+    void draw(ui::vg::Canvas&) override;
 
   };
 
@@ -115,8 +115,8 @@ namespace otto::modules {
     }
   }
 
-  void MetronomeScreen::draw(ui::drawing::Canvas &ctx) {
-    using namespace ui::drawing;
+  void MetronomeScreen::draw(ui::vg::Canvas &ctx) {
+    using namespace ui::vg;
 
     ctx.lineJoin(Canvas::LineJoin::ROUND);
     ctx.lineCap(Canvas::LineCap::ROUND);
@@ -196,8 +196,8 @@ namespace otto::modules {
     ctx.fillText("GAIN", 300, 210);
 
   }
-  void MetronomeScreen::drawMetronome(ui::drawing::Canvas &ctx) {
-    using namespace ui::drawing;
+  void MetronomeScreen::drawMetronome(ui::vg::Canvas &ctx) {
+    using namespace ui::vg;
     // Metronome Background
     {
       ctx.save();
