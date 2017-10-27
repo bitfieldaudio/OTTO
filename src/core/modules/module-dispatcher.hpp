@@ -71,8 +71,9 @@ namespace otto::modules {
   public:
 
     audio::ProcessData<1> process(audio::ProcessData<0> data) {
-      if (modules.size() > 0)
+      if (modules.size() > 0) {
         return modules[currentModule].val->process(data);
+      }
       return {};
     }
   };
@@ -81,8 +82,9 @@ namespace otto::modules {
   public:
 
     audio::ProcessData<1> process(audio::ProcessData<1> data) {
-      if (modules.size() > 0)
+      if (modules.size() > 0) {
         return modules[currentModule].val->process(data);
+      }
       return data;
     }
   };
@@ -91,8 +93,9 @@ namespace otto::modules {
   public:
 
     audio::ProcessData<0> process(audio::ProcessData<0> data) {
-      if (modules.size() > 0)
+      if (modules.size() > 0) {
         return modules[currentModule].val->process(data);
+      }
       return {};
     }
   };
