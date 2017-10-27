@@ -83,7 +83,7 @@ namespace otto::modules {
     audio::ProcessData<1> process(audio::ProcessData<1> data) {
       if (modules.size() > 0)
         return modules[currentModule].val->process(data);
-      return {};
+      return data;
     }
   };
 

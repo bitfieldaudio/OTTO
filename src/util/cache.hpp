@@ -7,7 +7,7 @@ namespace otto::util {
 
   /// A simple wrapper for invalidatable caches
   ///
-  /// The cached value is imutable
+  /// The cached value is imutable, and lazilly refreshed.
   /// This wrapper is not thread safe at invalidation!
   ///
   /// It is constructed with a generator function, which can take two forms:
@@ -47,6 +47,20 @@ namespace otto::util {
         _valid = true;
       }
       return cache;
+    }
+
+    /// Access the cached value
+    ///
+    /// Alias to `value()`
+    const T* operator->() {
+      return &value();
+    }
+
+    /// Access the cached value
+    ///
+    /// Alias to `value()`
+    const T& operator*() {
+      return value();
     }
 
   private:

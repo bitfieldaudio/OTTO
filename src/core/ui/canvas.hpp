@@ -423,8 +423,9 @@ namespace otto::ui::vg {
     ///             is no limit
     /// \requires `It` shall be an `InputIterator<Point>`
     template<typename It>
-    Canvas& roundedCurve(It first, It last, float maxR = -1) {
-
+    Canvas& roundedCurve(It first, It last, float maxR = -1)
+    {
+      if (first == last) return *this;
       maxR = maxR < 0 ? std::numeric_limits<float>::max() : maxR;
       moveTo(*first);
 
@@ -445,6 +446,25 @@ namespace otto::ui::vg {
         arcTo(cp1, cp2, r);
         arcTo(cp3, nxt, r);
       }
+      return *this;
+    }
+
+    /// A scatterplot of points
+    /// 
+    /// \param first An iterator to the first point
+    /// \param last An iterator one past the last point
+    /// \param r The radius of the points
+    /// \param c The colour of the points
+    /// \requires `It` shall be an `InputIterator<Point>`
+    /// 
+    template<typename It>
+    Canvas& plotPoints(It first, It last, float r, Colour c)
+    {
+      std::for_each(first, last, [this, c, r] (Point p) {
+          beginPath();
+          circle(p, r);
+          fill(c);
+        });
       return *this;
     }
 

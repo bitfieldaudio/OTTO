@@ -225,6 +225,7 @@ namespace otto::modules {
     Colour colourCurrent;
 
     ctx.callAt(topWFpos, [&] () {
+        ctx.beginPath();
         topWFW.draw(ctx);
         ctx.stroke(Colours::TopWF);
         for (int i = 0; i < DrumSampler::nVoices; ++i) {
@@ -239,6 +240,7 @@ namespace otto::modules {
             if (voice.fwd()) mix = 1 - mix; //voice is not reversed
 
             Colour colour = baseColour.mix(Colours::TopWFActive, mix);
+          ctx.beginPath();
             topWFW.draw_range(ctx, {std::size_t(voice.in), std::size_t(voice.out)});
             ctx.stroke(colour);
           }
@@ -252,6 +254,7 @@ namespace otto::modules {
           if (voice.fwd()) mix = 1 - mix; //voice is not reversed
 
           colourCurrent = baseColour.mix(Colours::TopWFActive, mix);
+          ctx.beginPath();
           topWFW.draw_range(ctx, {std::size_t(voice.in), std::size_t(voice.out)});
           ctx.stroke(colourCurrent);
         }
@@ -288,16 +291,18 @@ namespace otto::modules {
 
     ctx.callAt(mainWFpos, [&] () {
         mainWFW.range({std::size_t(voice.in), std::size_t(voice.out)});
-        ctx.stroke(colourCurrent);
 
+        ctx.beginPath();
+        ctx.lineWidth(2.f);
         mainWFW.draw(ctx);
+        ctx.stroke(colourCurrent);
 
         ctx.beginPath();
         ctx.circle(mainWFW.point(mainWFW.range().in), 3);
         ctx.fill(Colours::Blue);
 
         ctx.beginPath();
-        ctx.circle(mainWFW.point(mainWFW.range().out), 3);
+        ctx.circle(mainWFW.point(mainWFW.range().out - 1), 3);
         ctx.fill(Colours::Green);
       });
 

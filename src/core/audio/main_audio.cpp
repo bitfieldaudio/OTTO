@@ -16,7 +16,14 @@ namespace otto::audio {
     auto record_in = [&] () {
       switch (Globals::selector.props.input.get()) {
       case Selection::Internal:
-        return Globals::effect.process(Globals::synth.process(midi_in));
+      {
+        auto synth_out = Globals::synth.process(midi_in);
+        auto drums_out = Globals::drums.process(midi_in);
+        for (auto&& [dst, src] : util::zip(drums_out, synth_out)) {
+          util::audio::add_all(src, dst);
+        }
+        return Globals::effect.process(drums_out);
+      }
       case Selection::External:
         return Globals::effect.process(external_in);
       case Selection::TrackFB:

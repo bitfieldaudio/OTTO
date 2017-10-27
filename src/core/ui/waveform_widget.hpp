@@ -64,7 +64,9 @@ namespace otto::ui::widgets {
     /// Get the graphical point for an index
     vg::Point point(std::size_t index)
     {
-      return point_cache.value()[index / smpl_pr_px];
+      if (point_cache->size() == 0) return {0, size.h};
+      return point_cache.value()[std::clamp(int(std::round(index / smpl_pr_px)),
+          0, int(point_cache->size() - 1))];
     }
 
   private:
@@ -76,6 +78,7 @@ namespace otto::ui::widgets {
         if (_range.size() <= 0) {
           return;
         }
+        const float space_btwn_pnts = 2.f;
         auto iter = std::begin(container) + _range.in;
         float max;
         smpl_pr_px = _range.size() / size.w;
@@ -83,10 +86,10 @@ namespace otto::ui::widgets {
         for (int i = 0; i < _range.size(); i++, iter++) {
           max = std::max(max, std::abs(*iter));
           double intprt;
-          err = std::modf(err + std::fmod(i + 1, smpl_pr_px), &intprt);
+          err = std::modf(err + std::fmod(i + 1, smpl_pr_px * space_btwn_pnts), &intprt);
           if (intprt == 0) {
             cache.emplace_back(i / smpl_pr_px,
-              0);
+              (1 - std::min(max / _top_val, 1.f)) * size.h);
             max = 0;
           }
         }
@@ -95,10 +98,10 @@ namespace otto::ui::widgets {
       };
 
     /// The range in samples of the full widget width
-    Range _range;
+    Range _range = {0, 0};
     /// The value of the waveform at the top of the widget.
     /// Everything above this will be clipped
-    float _top_val;
+    float _top_val = 1.f;
     /// Sound length / pixel width
     float smpl_pr_px;
 
@@ -110,11 +113,7 @@ namespace otto::ui::widgets {
   template<typename C>
   inline void Waveform<C>::draw(vg::Canvas& ctx)
   {
-    LOGD << "range size:   " << _range.size();
-    LOGD << "widget width: " << size.w;
-    LOGD << "smpl_pr_px:   " << smpl_pr_px;
-    LOGD << "Cache size:   " << point_cache.value().size();
-    LOGD << "Cache width:  " << -(point_cache.value().front() - point_cache.value().back()).x;
+    if (point_cache->size() == 0) return;
     ctx.roundedCurve(
       std::begin(point_cache.value()),
       std::end(point_cache.value()));
@@ -123,11 +122,7 @@ namespace otto::ui::widgets {
   template<typename C>
   inline void Waveform<C>::draw_range(vg::Canvas& ctx, Range subrange)
   {
-    LOGD << "range size:   " << _range.size();
-    LOGD << "widget width: " << size.w;
-    LOGD << "smpl_pr_px:   " << smpl_pr_px;
-    LOGD << "Adjusted in:  " << subrange.in / smpl_pr_px;
-    LOGD << "Adjusted out: " << subrange.out / smpl_pr_px;
+    if (point_cache->size() == 0) return;
     ctx.roundedCurve(
       std::begin(point_cache.value()) + subrange.in / smpl_pr_px,
       std::begin(point_cache.value()) + subrange.out / smpl_pr_px);

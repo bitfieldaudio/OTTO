@@ -96,6 +96,10 @@ namespace otto::util::audio {
       return in == o.in && out == o.out;
     }
 
+    bool operator!=(Section o) const {
+      return in != o.in || out != o.out;
+    }
+
     enum Overlap {
       None        = 0b0000,
       Equal       = 0b0001,
