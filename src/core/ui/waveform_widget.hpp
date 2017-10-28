@@ -95,26 +95,17 @@ namespace otto::ui::widgets {
           error = std::modf(error + 2 * radius * smpl_pr_px, &intprt);
 
           // Average:
-          // float sum = 0.f;
-          // for (int j = 0; (j < intprt) && (iter != last); j++, iter++) {
-          //   sum += std::abs(*iter);
-          // }
-          // float val = sum / intprt;
-
-          // Max:
-          float max = 0.f;
+          float sum = 0.f;
           for (int j = 0; (j < intprt) && (iter != last); j++, iter++) {
-            max = std::max(max, std::abs(*iter));
+            sum += std::abs(*iter);
           }
-          float val = max;
+          float val = sum / intprt;
 
-          cache.emplace_back(i * 2 * radius, (1 - val) * size.h);
+          cache.emplace_back(i * 2 * radius,
+            (1 - std::min(val / _top_val, 1.f)) * size.h);
           // Required, as iter might otherwise be incremented twice with no check
           if (iter == last) break;
         }
-
-        LOGD << "Refreshed waveform cache";
-        LOGD << "Cache size: " << cache.size();
 
       };
 
@@ -174,12 +165,12 @@ namespace otto::ui::widgets {
       float dx = std::abs(nxt.x - cur.x);
       float dy = std::abs(nxt.y - cur.y);
       float r = radius;
-      if (first + 2 < last) {
+      if (first + 1 < last) {
         // Skip a point if they are too close
         if (dx < radius * 2 || dy < radius * 2) continue;
       } else {
         // But allways draw the last one
-        r = std::min(dx, dy);
+        r = std::min({dx, dy, radius});
       }
       vg::Point md = (cur + nxt) / 2.0;
       vg::Point cp1 = {md.x, cur.y};

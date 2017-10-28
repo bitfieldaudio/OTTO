@@ -19,6 +19,9 @@ namespace otto::ui {
   }
 
   void MainUI::draw(vg::Canvas& ctx) {
+    ctx.lineWidth(2);
+    ctx.lineCap(vg::Canvas::LineCap::ROUND);
+    ctx.lineJoin(vg::Canvas::Canvas::LineJoin::ROUND);
     currentScreen->draw(ctx);
   }
 
