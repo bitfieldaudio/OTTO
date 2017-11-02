@@ -44,7 +44,7 @@ file(MAKE_DIRECTORY ${OUTDIR}/src)
 if(NOT EXISTS ${OUTDIR}/include/GL/glcorearb.h)
     message(STATUS "Downloading glcorearb.h to include/GL...")
     file(DOWNLOAD
-        https://www.khronos.org/registry/OpenGL/api/GL/glcorearb.h
+        http://www.khronos.org/registry/OpenGL/api/GL/glcorearb.h
         ${OUTDIR}/include/GL/glcorearb.h)
 else()
     message(STATUS "Reusing glcorearb.h from include/GL...")
