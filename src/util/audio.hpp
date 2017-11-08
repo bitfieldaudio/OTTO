@@ -84,6 +84,14 @@ namespace otto::util::audio {
       return out - in;
     }
 
+    T middle() const {
+      return in + (out - in) / static_cast<T>(2);
+    }
+
+    T clamp(T val) const {
+      return std::clamp(val, in, out);
+    }
+
     bool contains(const T element) const {
       return (element >= in && element <= out);
     }

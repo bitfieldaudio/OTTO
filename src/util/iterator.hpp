@@ -4,6 +4,7 @@
 #include <cmath>
 #include <functional>
 #include <type_traits>
+#include <tuple>
 
 namespace otto::util {
 
@@ -296,12 +297,36 @@ namespace otto::util {
       return *(*this + d);
     }
 
+  }; // iterator_adaptor_impl
+
+
+  /// A simple sequence of data, defined by a pair of iterators
+  template<typename BIter, typename EIter>
+  struct sequence {
+
+    using iterator = std::common_type_t<BIter, EIter>;
+
+    sequence(BIter f, EIter l)
+      : first {f},
+        last {l}
+    {}
+
+    BIter begin() {
+      return first;
+    }
+
+    EIter end() {
+      return last;
+    }
+
+    BIter first;
+    EIter last;
   };
 
   ///
   /// Zero overhead wrapper to create iterators
   ///
-  /// @Impl must define the following member functions:
+  /// \tparam Impl must define the following member functions:
   /// ```
   /// void advance(difference_type);
   /// reference dereference();
@@ -479,10 +504,10 @@ namespace otto::util {
 
   /// Create a float_step_iterator
   template<typename I, typename V =
-    typename detail::value_type<std::remove_reference_t<I>>::type>
+    typename detail::value_type<std::decay_t<I>>::type>
   auto float_step(I&& iter, float step = 1)
   {
-    return float_step_iterator<std::remove_reference_t<I>,
+    return float_step_iterator<std::decay_t<I>,
       V>{std::forward<I>(iter), step};
   }
 
@@ -652,10 +677,10 @@ namespace otto::util {
 
     auto end() const { return last; }
 
-    zipped_iterator<std::remove_reference_t<
+    zipped_iterator<std::decay_t<
                       decltype(std::begin(std::declval<Ranges>()))>...> first;
 
-    zipped_iterator<std::remove_reference_t<
+    zipped_iterator<std::decay_t<
                       decltype(std::end(std::declval<Ranges>()))>...> last;
   };
 
@@ -663,5 +688,104 @@ namespace otto::util {
   template<typename... Ranges>
   auto zip(Ranges&&... ranges) {
     return ZippedRange<Ranges...>(std::forward<Ranges>(ranges)...);
+  }
+
+
+  /****************************************************************************/
+  /* ADJACENT PAIR ITERATORS                                                  */
+  /****************************************************************************/
+
+  namespace detail {
+
+    template<typename Iter>
+    struct AdjacentIterImpl {
+      using iter_value_type = typename detail::value_type<Iter>::type;
+      using value_type = std::pair<iter_value_type, iter_value_type>;
+      using iter_reference = typename detail::reference<Iter>::type;
+      static_assert(!std::is_const_v<iter_reference>);
+      using reference = std::pair<iter_reference, iter_reference>;
+      using iterator_category = typename detail::iterator_category<Iter>::type;
+
+      AdjacentIterImpl(Iter iter)
+        : cur {iter + 1},
+          last {std::move(iter)}
+      {}
+
+      void advance(int n)
+      {
+        std::advance(cur, n);
+        std::advance(last, n);
+      }
+
+      reference dereference()
+      {
+        static_assert(!std::is_const_v<decltype(*last)>);
+        static_assert(!std::is_const_v<decltype(*cur)>);
+        return {*last, *cur};
+      }
+
+      bool equal(const AdjacentIterImpl& o) const
+      {
+        return cur == o.cur;
+      }
+
+      Iter cur;
+      Iter last;
+    };
+
+  }
+
+  template<typename Iter>
+  using adjacent_pair_iterator = iterator_adaptor<detail::AdjacentIterImpl<Iter>>;
+
+  template<typename Range>
+  struct AdjacentRange {
+
+    using iterator = adjacent_pair_iterator<typename std::decay_t<Range>::iterator>;
+
+    static_assert(!std::is_const_v<Range>);
+
+    AdjacentRange(Range& range)
+      : first  {std::begin(range)},
+        last  {std::end(range)}
+    {
+      if (first != last) {
+        // No pair starting with last element
+        last--;
+      }
+    }
+
+    AdjacentRange(Range&& range)
+      : first  {std::begin(range)},
+        last  {std::end(range)}
+    {
+      if (first != last) {
+        // No pair starting with last element
+        last--;
+      }
+    }
+
+
+    auto begin() {
+      return first;
+    }
+
+    auto end() {
+      return last;
+    }
+
+    iterator first;
+    iterator last;
+
+  };
+
+  template<typename Range>
+  auto adjacent_pairs(Range& rng) {
+    return AdjacentRange{rng};
+  }
+
+  template<typename BIter, typename EIter>
+  auto adjacent_pairs(BIter f, EIter l) {
+    return AdjacentRange{util::sequence(f, l)};
   }
 }

@@ -187,4 +187,36 @@ namespace otto::util {
       REQUIRE_THAT(data, Catch::Matchers::Equals(new_data));
     }
   }
+
+  TEST_CASE("Adjacent Pair itereators", "[iterator] [util]") {
+
+    std::size_t some_size = 1000;
+
+    SECTION("Adjacent Pairs") {
+
+      std::vector<int> data {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+
+      std::vector<int> expected {
+        1, 2,
+        2, 3,
+        3, 4,
+        4, 5,
+        5, 6,
+        6, 7,
+        7, 8,
+        8, 9,
+        9, 10
+      };
+
+      std::vector<int> actual;
+
+      for (auto pair : util::adjacent_pairs(data)) {
+        static_assert(std::is_same_v<std::decay_t<decltype(pair)>, std::pair<int&, int&>>);
+        actual.push_back(pair.first);
+        actual.push_back(pair.second);
+      }
+
+      REQUIRE_THAT(actual, Catch::Matchers::Equals(expected));
+    }
+  }
 }

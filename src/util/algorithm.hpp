@@ -28,7 +28,7 @@ namespace otto::util {
   namespace detail {
     template<class Func, int... ns>
     constexpr auto generate_sequence_impl(std::integer_sequence<int, ns...>&&, Func&& gen) {
-      return std::array<std::remove_reference_t<
+      return std::array<std::decay_t<
         decltype(std::invoke(gen, std::declval<int>()))>,
         sizeof...(ns)>{std::invoke(gen, ns)...};
     }

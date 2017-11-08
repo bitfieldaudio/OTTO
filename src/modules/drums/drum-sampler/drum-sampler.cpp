@@ -217,7 +217,9 @@ namespace otto::modules {
   DrumSampleScreen::DrumSampleScreen(DrumSampler *m)
     : ui::ModuleScreen<DrumSampler> (m),
       topWFW(module->sampleData, ui::vg::topWFsize),
-      mainWFW (module->sampleData, ui::vg::mainWFsize) {}
+      mainWFW (module->sampleData, ui::vg::mainWFsize) {
+    topWFW.radius_range = {1.f, 1.f};
+  }
 
   void modules::DrumSampleScreen::draw(ui::vg::Canvas &ctx) {
     using namespace ui::vg;
