@@ -17,6 +17,13 @@ namespace otto::ui {
     using Range = util::audio::Section<std::size_t>;
 
     struct iterator {
+
+      using value_type = vg::Point;
+      using difference_type = std::ptrdiff_t;
+      using reference = vg::Point;
+      using pointer = vg::Point*;
+      using iterator_category = std::bidirectional_iterator_tag;
+
       const WaveformWidget &w;
       int idx;
       float inc;
@@ -33,7 +40,7 @@ namespace otto::ui {
         return get();
       }
 
-      void operator++() {
+      iterator operator++() {
         int nx = std::round(inc * std::round(idx / inc + 1));
         if (idx < range.out && nx > range.out) {
           idx = range.out;
@@ -46,9 +53,10 @@ namespace otto::ui {
           }
           idx = mx;
         }
+        return *this;
       }
 
-      void operator--() {
+      iterator operator--() {
         int nx = std::round(inc * std::round(idx / inc - 1));
         if (idx > range.in && nx < range.in) {
           idx = range.in;
@@ -61,6 +69,7 @@ namespace otto::ui {
           }
           idx = mx;
         }
+        return *this;
       }
 
       bool operator==(iterator rhs) const {return idx == rhs.idx;}
@@ -134,7 +143,7 @@ namespace otto::ui {
       ctx.moveTo(range.in / pxPrPt, size.h);
       ctx.lineTo(range.out / pxPrPt, size.h - 0);
     } else {
-      ctx.roundedCurve(begin(range), end(range), 1);
+      ctx.plotRounded(begin(range), end(range), 1);
     }
     ctx.strokeStyle(colour);
     ctx.stroke();

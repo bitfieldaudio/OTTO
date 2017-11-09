@@ -707,8 +707,8 @@ namespace otto::util {
       using iterator_category = typename detail::iterator_category<Iter>::type;
 
       AdjacentIterImpl(Iter iter)
-        : cur {iter + 1},
-          last {std::move(iter)}
+        : last {iter},
+          cur {++iter}
       {}
 
       void advance(int n)

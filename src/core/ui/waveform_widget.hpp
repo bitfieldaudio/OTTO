@@ -113,17 +113,6 @@ namespace otto::ui::widgets {
 
     const Container& container;
 
-
-    /// Draw a curve between points using only horizontal and vertical lines and
-    /// rounded corners
-    ///
-    /// This is the algorithm used by the samplers, and in general to display waveforms
-    ///
-    /// \param first An iterator to the first point
-    /// \param last An iterator one past the last point
-    /// \param maxR The maximum radius for curves, in pixels. If negative, there
-    ///             is no limit
-    /// \requires `It` shall be an `InputIterator<Point>`
     void roundedCurve(vg::Canvas& ctx, point_iter first, point_iter last);
 
   };
@@ -134,39 +123,20 @@ namespace otto::ui::widgets {
   inline void Waveform<C>::draw(vg::Canvas& ctx)
   {
     if (point_cache->points.size() == 0) return;
-    roundedCurve(ctx,
+    ctx.plotRounded(
       std::begin(point_cache->points),
-      std::end(point_cache->points));
+      std::end(point_cache->points),
+      point_cache->radius);
   }
 
   template<typename C>
   inline void Waveform<C>::draw_range(vg::Canvas& ctx, Range subrange)
   {
     if (point_cache->points.size() == 0) return;
-    roundedCurve(ctx,
+    ctx.plotRounded(
       std::begin(point_cache->points) + subrange.in / point_cache->sp2r,
-      std::begin(point_cache->points) + subrange.out / point_cache->sp2r);
-  }
-
-  template<typename C>
-  inline void Waveform<C>::roundedCurve(vg::Canvas& ctx, point_iter first, point_iter last)
-  {
-    if (first == last) return;
-
-    ctx.moveTo(*first);
-    for (auto [p1, p2] : util::adjacent_pairs(first, last))
-    {
-      float dx = std::abs(p2.x - p1.x);
-      float dy = std::abs(p2.y - p1.y);
-      float r = std::min({dx / 2.f, dy / 2.f, point_cache.radius});
-      vg::Point md = (p1 + p2) / 2.0;
-      vg::Point cp1 = {md.x, p1.y};
-      vg::Point cp2 = md;
-      vg::Point cp3 = {md.x, p2.y};
-
-      ctx.arcTo(cp1, cp2, r);
-      ctx.arcTo(cp3, p2, r);
-    }
+      std::begin(point_cache->points) + subrange.out / point_cache->sp2r,
+      point_cache->radius);
   }
 
   template<typename C>

@@ -7,6 +7,7 @@
 #include <NanoCanvas.h>
 
 #include "util/math.hpp"
+#include "util/iterator.hpp"
 
 namespace otto::ui::vg {
 
@@ -385,7 +386,7 @@ namespace otto::ui::vg {
     }
 
     template<typename It>
-    Canvas& bzCurve(It pointB, It pointE, float f = 0.5, float t = 1) {
+    Canvas& plotBezier(It pointB, It pointE, float f = 0.5, float t = 1) {
 
       moveTo(*pointB);
 
@@ -422,41 +423,50 @@ namespace otto::ui::vg {
     /// \param maxR The maximum radius for curves, in pixels. If negative, there
     ///             is no limit
     /// \requires `It` shall be an `InputIterator<Point>`
-    template<typename It>
-    Canvas& roundedCurve(It first, It last, float maxR = -1)
+    template<typename Iter>
+    void plotRounded(Iter first, Iter last, float max_radius)
     {
-      if (first == last) return *this;
-      maxR = maxR < 0 ? std::numeric_limits<float>::max() : maxR;
-      moveTo(*first);
+      if (first == last) return;
 
-      Point cur = *first;
-      Point nxt = cur;
-      for (; first != last; ++first) {
-        cur = nxt;
-        nxt = *first;
-        if (nxt == cur) continue;
-        float rx = std::abs(nxt.x - cur.x) / 2.0;
-        float ry = std::abs(nxt.y - cur.y) / 2.0;
-        float r = std::min(std::min(rx, ry), maxR);
-        Point md = (cur + nxt) / 2.0;
-        Point cp1 = {md.x, cur.y};
-        Point cp2 = md;
-        Point cp3 = {md.x, nxt.y};
+      moveTo(*first);
+      for (auto [p1, p2] : util::adjacent_pairs(first, last))
+      {
+        float dx = std::abs(p2.x - p1.x);
+        float dy = std::abs(p2.y - p1.y);
+        float r = std::min({dx / 2.f, dy / 2.f, max_radius});
+        vg::Point md = (p1 + p2) / 2.0;
+        vg::Point cp1 = {md.x, p1.y};
+        vg::Point cp2 = md;
+        vg::Point cp3 = {md.x, p2.y};
 
         arcTo(cp1, cp2, r);
-        arcTo(cp3, nxt, r);
+        arcTo(cp3, p2, r);
       }
-      return *this;
+      lineTo(*(--last));
+    }
+
+    /// Plot a curve between points using straight lines
+    ///
+    /// \param first An iterator to the first point
+    /// \param last An iterator one past the last point
+    /// \requires `It` shall be an `InputIterator<Point>`
+    template<typename Iter>
+    void plotLines(Iter first, Iter last)
+    {
+      moveTo(*first++);
+      for (auto p : util::sequence(first, last)) {
+        lineTo(p);
+      }
     }
 
     /// A scatterplot of points
-    /// 
+    ///
     /// \param first An iterator to the first point
     /// \param last An iterator one past the last point
     /// \param r The radius of the points
     /// \param c The colour of the points
     /// \requires `It` shall be an `InputIterator<Point>`
-    /// 
+    ///
     template<typename It>
     Canvas& plotPoints(It first, It last, float r, Colour c)
     {
