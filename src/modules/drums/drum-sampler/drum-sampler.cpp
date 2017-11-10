@@ -8,27 +8,6 @@
 #include "util/soundfile.hpp"
 #include "util/exception.hpp"
 
-namespace otto::ui::vg {
-
-  const static vg::Size topWFsize = {210, 20};
-  const static vg::Point topWFpos = {60, 20};
-  const static vg::Size arrowSize = {20, 20};
-  const static vg::Point arrowPos = {280, 20};
-  const static vg::Size pitchSize = {30, 20};
-  const static vg::Point pitchPos = {20, 40};
-  const static vg::Size mainWFsize = {280, 170};
-  const static vg::Point mainWFpos = {20, 50};
-
-  namespace Colours {
-
-    const Colour TopWF = Blue.dim(0.2);
-    const Colour TopWFCur = Blue.brighten(0.5);
-    const Colour TopWFActive = White;
-    const Colour WFGrid = 0x303040;
-  }
-
-} // otto::ui::drawing
-
 
 namespace otto::modules {
 
@@ -177,7 +156,7 @@ namespace otto::modules {
       }
     }
 
-    editScreen->topWFW.range({0, rs});
+    editScreen->topWFW.range({0, int(rs)});
   }
 
   void DrumSampler::init() {
@@ -216,98 +195,389 @@ namespace otto::modules {
 
   DrumSampleScreen::DrumSampleScreen(DrumSampler *m)
     : ui::ModuleScreen<DrumSampler> (m),
-      topWFW(module->sampleData, ui::vg::topWFsize),
-      mainWFW (module->sampleData, ui::vg::mainWFsize) {
+      topWFW(module->sampleData, {273.9, 15.f}),
+      mainWFW (module->sampleData, {273.9, 100.2})
+  {
     topWFW.radius_range = {1.f, 1.f};
   }
 
-  void modules::DrumSampleScreen::draw(ui::vg::Canvas &ctx) {
+  using PlayMode = DrumSampler::Props::VoiceData::Mode;
+
+  void draw_play_mode(ui::vg::Canvas& ctx, PlayMode mode)
+  {
+    ctx.save();
+    ctx.strokeStyle(ui::vg::Colour::bytes(228, 50, 41));
+
+    switch (mode) {
+    case PlayMode::FwdStop:
+      // laag1/Play Until Stop/Play Icon
+      ctx.beginPath();
+      ctx.moveTo(166.4, 43.9);
+      ctx.lineTo(183.5, 37.4);
+      ctx.bezierCurveTo(183.9, 37.3, 183.9, 36.6, 183.5, 36.4);
+      ctx.lineTo(178.2, 34.4);
+      ctx.lineTo(166.4, 30.0);
+      ctx.bezierCurveTo(166.0, 29.9, 165.7, 30.1, 165.7, 30.5);
+      ctx.lineTo(165.7, 43.4);
+      ctx.bezierCurveTo(165.7, 43.7, 166.0, 44.0, 166.4, 43.9);
+      ctx.closePath();
+      ctx.stroke();
+
+      // laag1/Play Until Stop/until
+      ctx.beginPath();
+      ctx.moveTo(190.5, 33.8);
+      ctx.lineTo(193.5, 37.1);
+      ctx.lineTo(190.5, 40.3);
+      ctx.stroke();
+
+      // laag1/Play Until Stop/stop
+      ctx.beginPath();
+      ctx.moveTo(207.9, 41.2);
+      ctx.lineTo(199.6, 41.2);
+      ctx.lineTo(199.6, 33.0);
+      ctx.lineTo(207.9, 33.0);
+      ctx.lineTo(207.9, 41.2);
+      ctx.closePath();
+      ctx.stroke();
+      break;
+    case PlayMode::FwdLoop:
+      // laag1/InfiniteRepeat Icon/arrow right
+      ctx.beginPath();
+      ctx.moveTo(179.8, 39.8);
+      ctx.lineTo(182.8, 43.0);
+      ctx.lineTo(179.8, 46.2);
+      ctx.stroke();
+
+      // laag1/InfiniteRepeat Icon/arrow left
+      ctx.beginPath();
+      ctx.moveTo(191.0, 34.1);
+      ctx.lineTo(188.0, 30.8);
+      ctx.lineTo(191.0, 27.6);
+      ctx.stroke();
+
+      // laag1/InfiniteRepeat Icon/repeat
+      ctx.beginPath();
+      ctx.moveTo(182.8, 43.0);
+      ctx.lineTo(171.6, 43.0);
+      ctx.bezierCurveTo(169.2, 43.0, 167.2, 41.0, 167.2, 38.5);
+      ctx.lineTo(167.2, 35.4);
+      ctx.bezierCurveTo(167.2, 32.9, 169.2, 30.9, 171.6, 30.9);
+      ctx.lineTo(172.8, 30.9);
+      ctx.lineTo(176.9, 30.9);
+      ctx.bezierCurveTo(178.1, 30.9, 179.3, 31.3, 180.1, 32.2);
+      ctx.lineTo(189.6, 41.7);
+      ctx.bezierCurveTo(190.4, 42.5, 191.6, 43.0, 192.8, 43.0);
+      ctx.lineTo(198.9, 43.0);
+      ctx.bezierCurveTo(201.4, 43.0, 203.4, 41.0, 203.4, 38.5);
+      ctx.lineTo(203.4, 35.4);
+      ctx.bezierCurveTo(203.4, 32.9, 201.4, 30.9, 198.9, 30.9);
+      ctx.lineTo(188.1, 30.9);
+      ctx.stroke();
+      break;
+
+    case PlayMode::Fwd:
+      // laag1/Play Icon
+      ctx.beginPath();
+      ctx.moveTo(178.0, 43.9);
+      ctx.lineTo(195.1, 37.4);
+      ctx.bezierCurveTo(195.6, 37.3, 195.6, 36.6, 195.1, 36.4);
+      ctx.lineTo(189.8, 34.4);
+      ctx.lineTo(178.0, 30.0);
+      ctx.bezierCurveTo(177.7, 29.9, 177.3, 30.1, 177.3, 30.5);
+      ctx.lineTo(177.3, 43.4);
+      ctx.bezierCurveTo(177.3, 43.7, 177.7, 44.0, 178.0, 43.9);
+      ctx.closePath();
+      ctx.stroke();
+      break;
+
+    case PlayMode::BwdStop:
+      // laag1/Play Until Stop REVERSE/Play Icon
+      ctx.beginPath();
+      ctx.moveTo(166.4, 43.9);
+      ctx.lineTo(183.5, 37.4);
+      ctx.bezierCurveTo(183.9, 37.3, 183.9, 36.6, 183.5, 36.4);
+      ctx.lineTo(178.2, 34.4);
+      ctx.lineTo(166.4, 30.0);
+      ctx.bezierCurveTo(166.0, 29.9, 165.7, 30.1, 165.7, 30.5);
+      ctx.lineTo(165.7, 43.4);
+      ctx.bezierCurveTo(165.7, 43.7, 166.0, 44.0, 166.4, 43.9);
+      ctx.closePath();
+      ctx.stroke();
+
+      // laag1/Play Until Stop REVERSE/until
+      ctx.beginPath();
+      ctx.moveTo(190.5, 33.8);
+      ctx.lineTo(193.5, 37.1);
+      ctx.lineTo(190.5, 40.3);
+      ctx.stroke();
+
+      // laag1/Play Until Stop REVERSE/stop
+      ctx.beginPath();
+      ctx.moveTo(207.9, 41.2);
+      ctx.lineTo(199.6, 41.2);
+      ctx.lineTo(199.6, 33.0);
+      ctx.lineTo(207.9, 33.0);
+      ctx.lineTo(207.9, 41.2);
+      ctx.closePath();
+      ctx.stroke();
+
+      // laag1/Play Until Stop REVERSE/arrow
+
+      // laag1/Play Until Stop REVERSE/arrow/arrow
+      ctx.beginPath();
+      ctx.moveTo(160.9, 40.2);
+      ctx.lineTo(157.9, 36.9);
+      ctx.lineTo(160.9, 33.7);
+      ctx.stroke();
+
+      // laag1/Play Until Stop REVERSE/arrow/lines
+      ctx.beginPath();
+      ctx.moveTo(168.8, 36.9);
+      ctx.lineTo(158.0, 36.9);
+      ctx.stroke();
+      break;
+
+    case PlayMode::BwdLoop:
+      // laag1/InfiniteRepeat Icon REVERSE/arrowhead
+      ctx.beginPath();
+      ctx.moveTo(191.0, 34.1);
+      ctx.lineTo(188.0, 30.8);
+      ctx.lineTo(191.0, 27.6);
+      ctx.stroke();
+
+      // laag1/InfiniteRepeat Icon REVERSE/replay
+      ctx.beginPath();
+      ctx.moveTo(182.8, 43.0);
+      ctx.lineTo(171.6, 43.0);
+      ctx.bezierCurveTo(169.2, 43.0, 167.2, 41.0, 167.2, 38.5);
+      ctx.lineTo(167.2, 35.4);
+      ctx.bezierCurveTo(167.2, 32.9, 169.2, 30.9, 171.6, 30.9);
+      ctx.lineTo(172.8, 30.9);
+      ctx.lineTo(176.9, 30.9);
+      ctx.bezierCurveTo(178.1, 30.9, 179.3, 31.3, 180.1, 32.2);
+      ctx.lineTo(189.6, 41.7);
+      ctx.bezierCurveTo(190.4, 42.5, 191.6, 43.0, 192.8, 43.0);
+      ctx.lineTo(198.9, 43.0);
+      ctx.bezierCurveTo(201.4, 43.0, 203.4, 41.0, 203.4, 38.5);
+      ctx.lineTo(203.4, 35.4);
+      ctx.bezierCurveTo(203.4, 32.9, 201.4, 30.9, 198.9, 30.9);
+      ctx.lineTo(188.1, 30.9);
+      ctx.stroke();
+
+      // laag1/InfiniteRepeat Icon REVERSE/arrowhead2
+      ctx.beginPath();
+      ctx.moveTo(179.8, 39.8);
+      ctx.lineTo(182.8, 43.0);
+      ctx.lineTo(179.8, 46.2);
+      ctx.stroke();
+
+      // laag1/InfiniteRepeat Icon REVERSE/arrow
+
+      // laag1/InfiniteRepeat Icon REVERSE/arrow/arrow
+      ctx.beginPath();
+      ctx.moveTo(162.4, 40.2);
+      ctx.lineTo(159.4, 36.9);
+      ctx.lineTo(162.4, 33.7);
+      ctx.stroke();
+
+      // laag1/InfiniteRepeat Icon REVERSE/arrow/lines
+      ctx.beginPath();
+      ctx.moveTo(170.3, 36.9);
+      ctx.lineTo(159.5, 36.9);
+      ctx.stroke();
+      break;
+
+    case PlayMode::Bwd:
+      // laag1/Play Icon REVERSE/Groep/Play Icon
+      ctx.beginPath();
+      ctx.moveTo(178.0, 43.9);
+      ctx.lineTo(195.1, 37.4);
+      ctx.bezierCurveTo(195.6, 37.3, 195.6, 36.6, 195.1, 36.4);
+      ctx.lineTo(189.8, 34.4);
+      ctx.lineTo(178.0, 30.0);
+      ctx.bezierCurveTo(177.7, 29.9, 177.3, 30.1, 177.3, 30.5);
+      ctx.lineTo(177.3, 43.4);
+      ctx.bezierCurveTo(177.3, 43.7, 177.7, 44.0, 178.0, 43.9);
+      ctx.closePath();
+      ctx.stroke();
+
+      // laag1/Play Icon REVERSE/Groep/Groep/Groep/Pad
+      ctx.beginPath();
+      ctx.moveTo(172.6, 40.2);
+      ctx.lineTo(169.6, 36.9);
+      ctx.lineTo(172.6, 33.7);
+      ctx.stroke();
+
+      // laag1/Play Icon REVERSE/Groep/Pad
+      ctx.beginPath();
+      ctx.moveTo(180.5, 36.9);
+      ctx.lineTo(169.7, 36.9);
+      ctx.stroke();
+
+      // laag1/Play Icon REVERSE/Groep/Groep/Groep/Pad
+      ctx.beginPath();
+      ctx.moveTo(172.6, 40.2);
+      ctx.lineTo(169.6, 36.9);
+      ctx.lineTo(172.6, 33.7);
+      ctx.stroke();
+
+      // laag1/Play Icon REVERSE/Groep/Pad
+      ctx.beginPath();
+      ctx.moveTo(180.5, 36.9);
+      ctx.lineTo(169.7, 36.9);
+      ctx.stroke();
+
+      // laag1/Play Icon REVERSE/Groep/Groep/Groep/Pad
+      ctx.beginPath();
+      ctx.moveTo(172.6, 40.2);
+      ctx.lineTo(169.6, 36.9);
+      ctx.lineTo(172.6, 33.7);
+      ctx.stroke();
+
+      // laag1/Play Icon REVERSE/Groep/Pad
+      ctx.beginPath();
+      ctx.moveTo(180.5, 36.9);
+      ctx.lineTo(169.7, 36.9);
+      ctx.stroke();
+    }
+
+    ctx.restore();
+
+  }
+
+  void modules::DrumSampleScreen::draw(ui::vg::Canvas& ctx) {
     using namespace ui::vg;
 
-    Colour colourCurrent;
+      // laag1/Note
+      ctx.font(24.3);
+      ctx.font(Fonts::Norm);
+      ctx.save();
+      ctx.transform(1.000, 0.000, 0.000, 1.000, 43.4, 45.6);
+      ctx.fillStyle(Colour::bytes(255, 255, 255));
+      ctx.fillText("C2", 0, 0);
+      ctx.restore();
 
-    ctx.callAt(topWFpos, [&] () {
-        ctx.beginPath();
-        topWFW.draw(ctx);
-        ctx.stroke(Colours::TopWF);
-        for (int i = 0; i < DrumSampler::nVoices; ++i) {
-          auto& voice = module->props.voiceData[i];
-          bool isActive = voice.playProgress >= 0;
-          bool isCurrent = i == module->currentVoiceIdx;
-          if (isActive && !isCurrent) {
-            Colour baseColour = Colours::TopWF;
-            float mix = voice.playProgress / float(voice.out - voice.in);
+      // laag1/HigherLower
 
-            if (mix < 0) mix = 1;
-            if (voice.fwd()) mix = 1 - mix; //voice is not reversed
+      // laag1/HigherLower/ArrowTop
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(90.8, 28.2);
+      ctx.lineTo(95.3, 24.7);
+      ctx.lineTo(99.8, 28.2);
+      ctx.lineWidth(2.0);
+      ctx.strokeStyle(Colour::bytes(249, 182, 0));
+      ctx.stroke();
 
-            Colour colour = baseColour.mix(Colours::TopWFActive, mix);
+      // laag1/HigherLower/ArrowBottom
+      ctx.beginPath();
+      ctx.moveTo(99.8, 46.2);
+      ctx.lineTo(95.3, 49.7);
+      ctx.lineTo(90.8, 46.2);
+      ctx.strokeStyle(Colour::bytes(112, 125, 132));
+      ctx.stroke();
+
+      // laag1/HigherLower/Mid
+      ctx.beginPath();
+      ctx.moveTo(93.4, 36.9);
+      ctx.lineTo(97.1, 36.9);
+      ctx.strokeStyle(Colour::bytes(255, 255, 255));
+      ctx.stroke();
+
+      // laag1/HigherLower/Top
+      ctx.beginPath();
+      ctx.moveTo(94.4, 31.9);
+      ctx.lineTo(96.1, 31.9);
+      ctx.strokeStyle(Colour::bytes(249, 182, 0));
+      ctx.stroke();
+
+      // laag1/HigherLower/Bottom
+      ctx.beginPath();
+      ctx.moveTo(94.4, 41.9);
+      ctx.lineTo(96.1, 41.9);
+      ctx.strokeStyle(Colour::bytes(112, 125, 132));
+      ctx.stroke();
+
+      // laag1/Render Fx Tape
+      ctx.restore();
+      ctx.font(Fonts::Bold);
+      ctx.font(12.2);
+      ctx.fillStyle(Colour::bytes(112, 125, 132));
+      ctx.fillText("render", 235.1, 35.3);
+      ctx.fillText("fx tape", 235.1, 47.3);
+
+      // laag1/Pitchshift Height
+      ctx.font(24.3);
+      ctx.font(Fonts::Norm);
+      ctx.save();
+      ctx.transform(1.000, 0.000, 0.000, 1.000, 111.4, 45.9);
+      ctx.fillStyle(Colour::bytes(249, 182, 0));
+      ctx.fillText("10", 0, 0);
+      ctx.restore();
+
+      auto& voice = module->props.voiceData[module->currentVoiceIdx];
+
+      draw_play_mode(ctx, PlayMode(voice.mode.get()));
+
+      ctx.callAt({22.2, 197.9}, [&] {
+          // Draw full waveform
           ctx.beginPath();
-            topWFW.draw_range(ctx, {std::size_t(voice.in), std::size_t(voice.out)});
-            ctx.stroke(colour);
-          }
-        }
-        {
-          auto& voice = module->props.voiceData[module->currentVoiceIdx];
-          Colour baseColour = Colours::TopWFCur;
-          float mix = voice.playProgress / float(voice.out - voice.in);
+          topWFW.draw(ctx, [] (auto& ctx, auto f, auto l) {
+              ctx.plotLines(f, l);
+            });
+          ctx.stroke(Colour::bytes(228, 50, 41));
 
-          if (mix < 0) mix = 1;
-          if (voice.fwd()) mix = 1 - mix; //voice is not reversed
-
-          colourCurrent = baseColour.mix(Colours::TopWFActive, mix);
           ctx.beginPath();
-          topWFW.draw_range(ctx, {std::size_t(voice.in), std::size_t(voice.out)});
-          ctx.stroke(colourCurrent);
-        }
-      });
+          topWFW.draw_range(ctx, {voice.in, voice.out},
+            [] (auto& ctx, auto f, auto l) {
+              ctx.plotLines(f, l);
+            });
+          ctx.stroke(Colour::bytes(234, 163, 200));
 
-    auto& voice = module->props.voiceData[module->currentVoiceIdx];
+        });
 
-    icons::Arrow icon;
+      int in = std::max(0.f, voice.in - voice.length() / 4.f);
+      int out = std::min(module->sampleData.size() - 1.f, voice.out + voice.length() / 4.f);
+      mainWFW.range({in, out});
+      ctx.callAt({22.3, 73.3}, [&] {
+          auto p1 = mainWFW.point_floor(voice.in);
+          auto p2 = mainWFW.point_floor(voice.out);
+          auto size = mainWFW.size;
 
-    if (voice.fwd()) {
-      icon.dir = icons::Arrow::Right;
-    } else {
-      icon.dir = icons::Arrow::Left;
-    }
+          // Baseline
+          ctx.beginPath();
+          ctx.moveTo(0, size.h);
+          ctx.lineTo(size.w, size.h);
+          ctx.stroke(Colour::bytes(61, 63, 65));
 
-    if (voice.stop()) {
-      icon.stopped = true;
-    }
+          // Baseline markers
+          ctx.beginPath();
+          ctx.moveTo(p1.x, size.h);
+          ctx.lineTo(p1.x + 1.f, size.h);
+          ctx.moveTo(p2.x, size.h);
+          ctx.lineTo(p2.x + 1.f, size.h);
+          ctx.stroke(Colour::bytes(234, 163, 200));
 
-    if (voice.loop()) {
-      icon.looping = true;
-    }
+          // Gray parts
+          ctx.beginPath();
+          mainWFW.draw_range(ctx, {in, voice.in});
+          mainWFW.draw_range(ctx, {voice.out, out});
+          ctx.stroke(Colour::bytes(61, 63, 65));
 
-    icon.size = arrowSize;
-    icon.colour = Colours::Red;
-    ctx.drawAt(arrowPos, icon);
+          // Center part
+          ctx.beginPath();
+          mainWFW.draw_range(ctx, {voice.in, voice.out});
+          ctx.stroke(Colour::bytes(234, 163, 200));
 
-    ctx.beginPath();
-    ctx.fillStyle(Colours::White);
-    ctx.font(Fonts::Norm);
-    ctx.font(18);
-    ctx.textAlign(TextAlign::Left, TextAlign::Baseline);
-    ctx.fillText(fmt::format("×{:.2F}", voice.speed.get()), pitchPos);
+          ctx.beginPath();
+          ctx.circle(p1, 3.f);
+          ctx.fill(Colours::Blue);
 
-    ctx.callAt(mainWFpos, [&] () {
-        mainWFW.range({std::size_t(voice.in), std::size_t(voice.out)});
+          ctx.beginPath();
+          ctx.circle(p2, 3.f);
+          ctx.fill(Colours::Green);
 
-        ctx.beginPath();
-        ctx.lineWidth(2.f);
-        mainWFW.draw(ctx);
-        ctx.stroke(colourCurrent);
-
-        ctx.beginPath();
-        ctx.circle(mainWFW.point(mainWFW.range().in), 3);
-        ctx.fill(Colours::Blue);
-
-        ctx.beginPath();
-        ctx.circle(mainWFW.point(mainWFW.range().out - 1), 3);
-        ctx.fill(Colours::Green);
-      });
-
+        });
   }
 
 } // otto::module

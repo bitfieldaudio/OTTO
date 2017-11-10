@@ -11,7 +11,7 @@ namespace otto::ui::widgets {
   /// Draws a waveform from data.
   template<typename Container>
   struct Waveform : Widget {
-    using Range = util::audio::Section<std::size_t>;
+    using Range = util::audio::Section<int>;
 
     util::audio::Section<float> radius_range = {2.f, 4.f};
 
@@ -21,10 +21,16 @@ namespace otto::ui::widgets {
         container {cont}
     {}
 
-    /// Draw the entire waveform
+    /// Draw the entire waveform using the default plotter (`plotRounded`).
     void draw(vg::Canvas&);
 
-    /// Draw a subset of the waveform.
+    /// Draw the entire waveform using `Plotter`
+    ///
+    /// \expects `Plotter` should be invocable as `void(ctx, first, last)`
+    template<typename Plotter>
+    void draw(vg::Canvas&, Plotter&&);
+
+    /// Draw a subset of the waveform using the default plotter (`plotRounded`).
     ///
     /// Useful for colouring different parts differently.
     ///
@@ -34,6 +40,20 @@ namespace otto::ui::widgets {
     /// \expects `subrange` should be within [*Waveform<C>::range]() -
     /// `range.in`
     void draw_range(vg::Canvas&, Range subrange);
+
+    /// Draw a subset of the waveform using `Plotter`.
+    ///
+    /// Useful for colouring different parts differently.
+    ///
+    /// \param subrange
+    ///        The range to draw, with 0 at `[*Waveform<C>::range]().in`
+    ///
+    /// \expects `subrange` should be within [*Waveform<C>::range]() -
+    /// `range.in`
+    ///
+    /// \expects `Plotter` should be invocable as `void(ctx, first, last)`
+    template<typename Plotter>
+    void draw_range(vg::Canvas&, Range subrange, Plotter&&);
 
     /// The viewed range. Start and end indexes into the container coresponding
     /// to left/right edges of the widget
@@ -64,15 +84,32 @@ namespace otto::ui::widgets {
       }
     }
 
-    /// Get the graphical point for an index
-    vg::Point point(std::size_t index)
+    /// Get the graphical point for a sample index
+    vg::Point point(int index)
     {
       if (point_cache->points.size() == 0) return {0, size.h};
-      return point_cache->points[std::clamp(
-          std::size_t(std::floor(index / point_cache->smpl_pr_px
-              / point_cache->radius / 2.f)),
-          std::size_t(0),
-          std::size_t(point_cache->points.size() - 1))];
+      return point_cache->points[
+        std::clamp(
+          int(std::round((index - _range.in) / point_cache->sp2r)),
+          0, int(point_cache->points.size() - 1))];
+    }
+
+    vg::Point point_floor(int index)
+    {
+      if (point_cache->points.size() == 0) return {0, size.h};
+      return point_cache->points[
+        std::clamp(
+          int(std::floor((index - _range.in) / point_cache->sp2r)),
+          0, int(point_cache->points.size() - 1))];
+    }
+
+    vg::Point point_ceil(int index)
+    {
+      if (point_cache->points.size() == 0) return {0, size.h};
+      return point_cache->points[
+        std::clamp(
+          int(std::ceil((index - _range.in) / point_cache->sp2r)),
+          0, int(point_cache->points.size() - 1))];
     }
 
   private:
@@ -113,8 +150,6 @@ namespace otto::ui::widgets {
 
     const Container& container;
 
-    void roundedCurve(vg::Canvas& ctx, point_iter first, point_iter last);
-
   };
 
   // Implementation ///////////////////////////////////////////////////////////
@@ -122,21 +157,39 @@ namespace otto::ui::widgets {
   template<typename C>
   inline void Waveform<C>::draw(vg::Canvas& ctx)
   {
+    draw(ctx, [&] (vg::Canvas& ctx, auto first, auto last) {
+        ctx.plotRounded(first, last, point_cache.radius);
+      });
+  }
+
+  template<typename C>
+  template<typename Plotter>
+  inline void Waveform<C>::draw(vg::Canvas& ctx, Plotter&& p)
+  {
     if (point_cache->points.size() == 0) return;
-    ctx.plotRounded(
+    std::invoke(std::forward<Plotter>(p),
+      ctx,
       std::begin(point_cache->points),
-      std::end(point_cache->points),
-      point_cache->radius);
+      std::end(point_cache->points));
   }
 
   template<typename C>
   inline void Waveform<C>::draw_range(vg::Canvas& ctx, Range subrange)
   {
+    draw_range(ctx, subrange, [&] (vg::Canvas& ctx, auto first, auto last) {
+        ctx.plotRounded(first, last, point_cache.radius);
+      });
+  }
+
+  template<typename C>
+  template<typename Plotter>
+  inline void Waveform<C>::draw_range(vg::Canvas& ctx, Range subrange, Plotter&& p)
+  {
     if (point_cache->points.size() == 0) return;
-    ctx.plotRounded(
-      std::begin(point_cache->points) + subrange.in / point_cache->sp2r,
-      std::begin(point_cache->points) + subrange.out / point_cache->sp2r,
-      point_cache->radius);
+    std::invoke(std::forward<Plotter>(p),
+      ctx,
+      std::begin(point_cache->points) + std::floor((subrange.in - _range.in) / point_cache->sp2r),
+      std::begin(point_cache->points) + std::ceil((subrange.out - _range.in) / point_cache->sp2r));
   }
 
   template<typename C>

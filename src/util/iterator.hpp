@@ -702,13 +702,12 @@ namespace otto::util {
       using iter_value_type = typename detail::value_type<Iter>::type;
       using value_type = std::pair<iter_value_type, iter_value_type>;
       using iter_reference = typename detail::reference<Iter>::type;
-      static_assert(!std::is_const_v<iter_reference>);
       using reference = std::pair<iter_reference, iter_reference>;
       using iterator_category = typename detail::iterator_category<Iter>::type;
 
       AdjacentIterImpl(Iter iter)
         : last {iter},
-          cur {++iter}
+          cur {std::next(iter)}
       {}
 
       void advance(int n)
@@ -719,8 +718,6 @@ namespace otto::util {
 
       reference dereference()
       {
-        static_assert(!std::is_const_v<decltype(*last)>);
-        static_assert(!std::is_const_v<decltype(*cur)>);
         return {*last, *cur};
       }
 
@@ -729,8 +726,8 @@ namespace otto::util {
         return cur == o.cur;
       }
 
-      Iter cur;
       Iter last;
+      Iter cur;
     };
 
   }
@@ -742,8 +739,6 @@ namespace otto::util {
   struct AdjacentRange {
 
     using iterator = adjacent_pair_iterator<typename std::decay_t<Range>::iterator>;
-
-    static_assert(!std::is_const_v<Range>);
 
     AdjacentRange(Range& range)
       : first  {std::begin(range)},
