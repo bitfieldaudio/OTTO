@@ -506,16 +506,16 @@ namespace otto::modules {
       ctx.fillText("render", 235.1, 35.3);
       ctx.fillText("fx tape", 235.1, 47.3);
 
+      auto& voice = module->props.voiceData[module->currentVoiceIdx];
+
       // laag1/Pitchshift Height
       ctx.font(24.3);
       ctx.font(Fonts::Norm);
       ctx.save();
       ctx.transform(1.000, 0.000, 0.000, 1.000, 111.4, 45.9);
       ctx.fillStyle(Colour::bytes(249, 182, 0));
-      ctx.fillText("10", 0, 0);
+      ctx.fillText(fmt::format("{:.2f}", voice.speed), 0, 0);
       ctx.restore();
-
-      auto& voice = module->props.voiceData[module->currentVoiceIdx];
 
       draw_play_mode(ctx, PlayMode(voice.mode.get()));
 
