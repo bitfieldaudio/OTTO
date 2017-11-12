@@ -272,6 +272,7 @@ namespace otto {
 
   void tape_buffer::TapeSliceSet::erase(TapeSlice slice) {
     for (auto&& sl : slices) {
+      // TODO: Split if sl contains slice
       sl -= slice;
     }
     std::remove_if(std::begin(slices), std::end(slices),

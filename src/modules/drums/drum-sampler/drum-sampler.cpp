@@ -203,7 +203,7 @@ namespace otto::modules {
 
   using PlayMode = DrumSampler::Props::VoiceData::Mode;
 
-  void draw_play_mode(ui::vg::Canvas& ctx, PlayMode mode)
+  static void draw_play_mode(ui::vg::Canvas& ctx, PlayMode mode)
   {
     ctx.save();
     ctx.strokeStyle(ui::vg::Colour::bytes(228, 50, 41));
@@ -445,139 +445,137 @@ namespace otto::modules {
 
   }
 
+  static voice draw_pitch(ui::vg::Canvas& ctx, float pitch)
+  {
+    using namespace ui::vg;
+    // laag1/HigherLower/ArrowTop
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(90.8, 28.2);
+    ctx.lineTo(95.3, 24.7);
+    ctx.lineTo(99.8, 28.2);
+    ctx.lineWidth(2.0);
+    ctx.stroke(Colour::bytes(249, 182, 0));
+
+    // laag1/HigherLower/ArrowBottom
+    ctx.beginPath();
+    ctx.moveTo(99.8, 46.2);
+    ctx.lineTo(95.3, 49.7);
+    ctx.lineTo(90.8, 46.2);
+    ctx.stroke(Colour::bytes(112, 125, 132));
+
+    // laag1/HigherLower/Mid
+    ctx.beginPath();
+    ctx.moveTo(93.4, 36.9);
+    ctx.lineTo(97.1, 36.9);
+    ctx.stroke(Colour::bytes(255, 255, 255));
+
+    // laag1/HigherLower/Top
+    ctx.beginPath();
+    ctx.moveTo(94.4, 31.9);
+    ctx.lineTo(96.1, 31.9);
+    ctx.stroke(Colour::bytes(249, 182, 0));
+
+    // laag1/HigherLower/Bottom
+    ctx.beginPath();
+    ctx.moveTo(94.4, 41.9);
+    ctx.lineTo(96.1, 41.9);
+    ctx.stroke(Colour::bytes(112, 125, 132));
+    // laag1/Pitchshift Height
+    ctx.font(24.3);
+    ctx.font(Fonts::Norm);
+    ctx.save();
+    ctx.transform(1.000, 0.000, 0.000, 1.000, 111.4, 45.9);
+    ctx.fillStyle(Colour::bytes(249, 182, 0));
+    ctx.fillText(fmt::format("{:.2f}", pitch), 0, 0);
+    ctx.restore();
+  }
+
   void modules::DrumSampleScreen::draw(ui::vg::Canvas& ctx) {
     using namespace ui::vg;
 
-      // laag1/Note
-      ctx.font(24.3);
-      ctx.font(Fonts::Norm);
-      ctx.save();
-      ctx.transform(1.000, 0.000, 0.000, 1.000, 43.4, 45.6);
-      ctx.fillStyle(Colour::bytes(255, 255, 255));
-      ctx.fillText("C2", 0, 0);
-      ctx.restore();
+    // laag1/Note
+    ctx.font(24.3);
+    ctx.font(Fonts::Norm);
+    ctx.save();
+    ctx.transform(1.000, 0.000, 0.000, 1.000, 43.4, 45.6);
+    ctx.fillStyle(Colour::bytes(255, 255, 255));
+    ctx.fillText(midi::note_name(module->currentVoiceIdx + 24), 0, 0);
+    ctx.restore();
 
-      // laag1/HigherLower
 
-      // laag1/HigherLower/ArrowTop
-      ctx.save();
-      ctx.beginPath();
-      ctx.moveTo(90.8, 28.2);
-      ctx.lineTo(95.3, 24.7);
-      ctx.lineTo(99.8, 28.2);
-      ctx.lineWidth(2.0);
-      ctx.strokeStyle(Colour::bytes(249, 182, 0));
-      ctx.stroke();
+    // laag1/Render Fx Tape
+    ctx.restore();
+    ctx.font(Fonts::Bold);
+    ctx.font(12.2);
+    ctx.fillStyle(Colour::bytes(112, 125, 132));
+    ctx.fillText("render", 235.1, 35.3);
+    ctx.fillText("fx tape", 235.1, 47.3);
 
-      // laag1/HigherLower/ArrowBottom
-      ctx.beginPath();
-      ctx.moveTo(99.8, 46.2);
-      ctx.lineTo(95.3, 49.7);
-      ctx.lineTo(90.8, 46.2);
-      ctx.strokeStyle(Colour::bytes(112, 125, 132));
-      ctx.stroke();
+    auto& voice = module->props.voiceData[module->currentVoiceIdx];
 
-      // laag1/HigherLower/Mid
-      ctx.beginPath();
-      ctx.moveTo(93.4, 36.9);
-      ctx.lineTo(97.1, 36.9);
-      ctx.strokeStyle(Colour::bytes(255, 255, 255));
-      ctx.stroke();
 
-      // laag1/HigherLower/Top
-      ctx.beginPath();
-      ctx.moveTo(94.4, 31.9);
-      ctx.lineTo(96.1, 31.9);
-      ctx.strokeStyle(Colour::bytes(249, 182, 0));
-      ctx.stroke();
+    draw_play_mode(ctx, PlayMode(voice.mode.get()));
 
-      // laag1/HigherLower/Bottom
-      ctx.beginPath();
-      ctx.moveTo(94.4, 41.9);
-      ctx.lineTo(96.1, 41.9);
-      ctx.strokeStyle(Colour::bytes(112, 125, 132));
-      ctx.stroke();
+    ctx.callAt({22.2, 197.9}, [&] {
+        // Draw full waveform
+        ctx.beginPath();
+        topWFW.draw(ctx, [] (auto& ctx, auto f, auto l) {
+            ctx.plotLines(f, l);
+          });
+        ctx.stroke(Colour::bytes(228, 50, 41));
 
-      // laag1/Render Fx Tape
-      ctx.restore();
-      ctx.font(Fonts::Bold);
-      ctx.font(12.2);
-      ctx.fillStyle(Colour::bytes(112, 125, 132));
-      ctx.fillText("render", 235.1, 35.3);
-      ctx.fillText("fx tape", 235.1, 47.3);
+        ctx.beginPath();
+        topWFW.draw_range(ctx, {voice.in, voice.out},
+          [] (auto& ctx, auto f, auto l) {
+            ctx.plotLines(f, l);
+          });
+        ctx.stroke(Colour::bytes(234, 163, 200));
 
-      auto& voice = module->props.voiceData[module->currentVoiceIdx];
+      });
 
-      // laag1/Pitchshift Height
-      ctx.font(24.3);
-      ctx.font(Fonts::Norm);
-      ctx.save();
-      ctx.transform(1.000, 0.000, 0.000, 1.000, 111.4, 45.9);
-      ctx.fillStyle(Colour::bytes(249, 182, 0));
-      ctx.fillText(fmt::format("{:.2f}", voice.speed), 0, 0);
-      ctx.restore();
+    int in = std::max(0.f, voice.in - voice.length() / 4.f);
+    int out = std::min(module->sampleData.size() - 1.f, voice.out + voice.length() / 4.f);
+    mainWFW.range({in, out});
+    ctx.callAt({22.3, 73.3}, [&] {
+        auto p1 = mainWFW.point_floor(voice.in);
+        auto p2 = mainWFW.point_floor(voice.out);
+        auto size = mainWFW.size;
 
-      draw_play_mode(ctx, PlayMode(voice.mode.get()));
+        // Baseline
+        ctx.beginPath();
+        ctx.moveTo(0, size.h);
+        ctx.lineTo(size.w, size.h);
+        ctx.stroke(Colour::bytes(61, 63, 65));
 
-      ctx.callAt({22.2, 197.9}, [&] {
-          // Draw full waveform
-          ctx.beginPath();
-          topWFW.draw(ctx, [] (auto& ctx, auto f, auto l) {
-              ctx.plotLines(f, l);
-            });
-          ctx.stroke(Colour::bytes(228, 50, 41));
+        // Baseline markers
+        ctx.beginPath();
+        ctx.moveTo(p1.x, size.h);
+        ctx.lineTo(p1.x + 1.f, size.h);
+        ctx.moveTo(p2.x, size.h);
+        ctx.lineTo(p2.x + 1.f, size.h);
+        ctx.stroke(Colour::bytes(234, 163, 200));
 
-          ctx.beginPath();
-          topWFW.draw_range(ctx, {voice.in, voice.out},
-            [] (auto& ctx, auto f, auto l) {
-              ctx.plotLines(f, l);
-            });
-          ctx.stroke(Colour::bytes(234, 163, 200));
+        // Gray parts
+        ctx.beginPath();
+        mainWFW.draw_range(ctx, {in, voice.in});
+        mainWFW.draw_range(ctx, {voice.out, out});
+        ctx.stroke(Colour::bytes(61, 63, 65));
 
-        });
+        // Center part
+        ctx.beginPath();
+        mainWFW.draw_range(ctx, {voice.in, voice.out});
+        ctx.stroke(Colour::bytes(234, 163, 200));
 
-      int in = std::max(0.f, voice.in - voice.length() / 4.f);
-      int out = std::min(module->sampleData.size() - 1.f, voice.out + voice.length() / 4.f);
-      mainWFW.range({in, out});
-      ctx.callAt({22.3, 73.3}, [&] {
-          auto p1 = mainWFW.point_floor(voice.in);
-          auto p2 = mainWFW.point_floor(voice.out);
-          auto size = mainWFW.size;
+        ctx.beginPath();
+        ctx.circle(p1, 3.f);
+        ctx.fill(Colours::Blue);
 
-          // Baseline
-          ctx.beginPath();
-          ctx.moveTo(0, size.h);
-          ctx.lineTo(size.w, size.h);
-          ctx.stroke(Colour::bytes(61, 63, 65));
+        ctx.beginPath();
+        ctx.circle(p2, 3.f);
+        ctx.fill(Colours::Green);
 
-          // Baseline markers
-          ctx.beginPath();
-          ctx.moveTo(p1.x, size.h);
-          ctx.lineTo(p1.x + 1.f, size.h);
-          ctx.moveTo(p2.x, size.h);
-          ctx.lineTo(p2.x + 1.f, size.h);
-          ctx.stroke(Colour::bytes(234, 163, 200));
-
-          // Gray parts
-          ctx.beginPath();
-          mainWFW.draw_range(ctx, {in, voice.in});
-          mainWFW.draw_range(ctx, {voice.out, out});
-          ctx.stroke(Colour::bytes(61, 63, 65));
-
-          // Center part
-          ctx.beginPath();
-          mainWFW.draw_range(ctx, {voice.in, voice.out});
-          ctx.stroke(Colour::bytes(234, 163, 200));
-
-          ctx.beginPath();
-          ctx.circle(p1, 3.f);
-          ctx.fill(Colours::Blue);
-
-          ctx.beginPath();
-          ctx.circle(p2, 3.f);
-          ctx.fill(Colours::Green);
-
-        });
+      });
   }
 
 } // otto::module
