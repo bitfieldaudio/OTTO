@@ -481,4 +481,28 @@ namespace otto::util {
     return std::none_of(begin(cont), end(cont), std::forward<UnaryPredicate>(p));
   }
 
+  template<typename Cont>
+  decltype(auto) max_element(Cont&& cont) {
+    using std::begin; using std::end;
+    return std::max_element(begin(cont), end(cont));
+  }
+
+  template<typename Cont>
+  decltype(auto) min_element(Cont&& cont) {
+    using std::begin; using std::end;
+    return std::min_element(begin(cont), end(cont));
+  }
+
+  template<typename Cont, typename Compare>
+  decltype(auto) min_element(Cont&& cont, Compare&& f) {
+    using std::begin; using std::end;
+    return std::min_element(begin(cont), end(cont), std::forward<Compare>(f));
+  }
+
+  template<typename Cont, typename Compare>
+  decltype(auto) max_element(Cont&& cont, Compare&& f) {
+    using std::begin; using std::end;
+    return std::max_element(begin(cont), end(cont), std::forward<Compare>(f));
+  }
+
 }

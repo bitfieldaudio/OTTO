@@ -5,9 +5,6 @@
 #include "filesystem.hpp"
 
 #include "core/modules/module.hpp"
-#include "core/ui/module-ui.hpp"
-#include "core/ui/waveform_widget.hpp"
-#include "core/ui/canvas.hpp"
 
 #include "util/algorithm.hpp"
 #include "util/dyn-array.hpp"
@@ -28,7 +25,7 @@ namespace otto::modules {
     int sampleSampleRate = 44100;
     float sampleSpeed = 1;
 
-    std::unique_ptr<DrumSampleScreen> editScreen;
+    std::unique_ptr<DrumSampleScreen> screen;
 
     static constexpr int nVoices = 24;
 
@@ -40,10 +37,10 @@ namespace otto::modules {
           Fwd = 0,  FwdStop = 1,  FwdLoop = 2,
           Bwd = -1, BwdStop = -2, BwdLoop = -3
         };
-        Property<int>          in = {this, "in",    0, { 0, -1, 100}};
-        Property<int>         out = {this, "out",   0, { 0, -1, 100}};
-        Property<float>     speed = {this, "speed", 1, { 0,  5, 0.01}};
-        Property<int, wrap>  mode = {this, "mode",  0, {-3,  2, 1}};
+        Property<int>          in   = {this, "in",    0, { 0, -1, 100}};
+        Property<int>         out   = {this, "out",   0, { 0, -1, 100}};
+        Property<float, pow2> pitch = {this, "pitch", 0, { -2,  4, 1/12.f}};
+        Property<int, wrap>  mode   = {this, "mode",  0, {-3,  3, 1}};
 
         bool fwd() const {return mode >= 0;}
         bool bwd() const {return !fwd();}
@@ -74,6 +71,7 @@ namespace otto::modules {
     int currentVoiceIdx = 0;
 
     DrumSampler();
+    ~DrumSampler();
 
     audio::ProcessData<1> process(audio::ProcessData<0>) override;
 
@@ -84,20 +82,6 @@ namespace otto::modules {
     void init() override;
 
     static fs::path samplePath(std::string name);
-  };
-
-  class DrumSampleScreen : public ui::ModuleScreen<DrumSampler> {
-  public:
-
-    ui::widgets::Waveform<util::dyn_array<float>> topWFW;
-    ui::widgets::Waveform<util::dyn_array<float>> mainWFW;
-
-    DrumSampleScreen(DrumSampler *);
-
-    void draw(ui::vg::Canvas&) override;
-
-    bool keypress(ui::Key) override;
-    void rotary(ui::RotaryEvent) override;
   };
 
 }

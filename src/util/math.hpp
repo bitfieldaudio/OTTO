@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cmath>
+#include <array>
+#include <algorithm>
 
 namespace otto::util::math {
 
@@ -63,5 +65,23 @@ namespace otto::util::math {
       return vec(std::cos(a), std::sin(a)) * l;
     }
   };
+
+  /// Split a number into `N` values between 0 and 1, each representing a Nth
+  /// part of the range `[min,max]`
+  ///
+  /// This is useful for UI especially, when you want to display a range of
+  /// values by fading colours between N fixed points. See `draw_pitch` in
+  /// `drum_sampler.cpp` for an example
+  template<int N>
+  constexpr std::array<float, N> split_values(float f, float min, float max)
+  {
+    std::array<float, N> res;
+    // f scaled to [0, N]
+    float f1 = (N - 1) * (f - min) / (max - min);
+    for (int i = 0; i < N; i++) {
+      res[i] = 1 - std::clamp(std::abs(i - f1), 0.f, 1.f);
+    }
+    return res;
+  }
 
 }

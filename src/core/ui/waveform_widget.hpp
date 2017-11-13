@@ -232,6 +232,11 @@ namespace otto::ui::widgets {
         sum += std::abs(*iter);
       }
       float val = sum / intprt;
+      // Max
+      // float val = 0;
+      // for (int j = 0; (j < intprt) && (iter != last); j++, iter++) {
+      //   val = std::max(std::abs(*iter), val);
+      // }
 
       points.emplace_back(
         start_x + i * 2 * radius,

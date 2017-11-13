@@ -51,7 +51,10 @@ namespace otto::modules {
       sized_step_mode(T min = std::numeric_limits<T>::min(),
         T max = std::numeric_limits<T>::max(),
         T step = static_cast<T>(1))
-        : min (min), max (max), stepSize (step) {}
+        : min (min <= max ? min : std::numeric_limits<T>::min()),
+          max (min <= max ? max : std::numeric_limits<T>::max()),
+          stepSize (step)
+      {}
 
       void step(int steps) {
         set(*value + steps * stepSize);
@@ -84,7 +87,10 @@ namespace otto::modules {
     struct wrap_mode {
 
       wrap_mode(T min, T max, T step = static_cast<T>(1))
-        : min (min), max (max), stepSize (step) {}
+        : min (min <= max ? min : std::numeric_limits<T>::min()),
+          max (min <= max ? max : std::numeric_limits<T>::max()),
+          stepSize (step)
+      {}
 
       void step(int steps) {
         *value = min + util::math::modulo(*value + steps * stepSize - min, max - min);
@@ -102,14 +108,14 @@ namespace otto::modules {
       T* value;
     };
 
-    /// Like `sized_step`, But steps exponentially
-    struct exp {}; // Tag
-
     template<typename T>
     struct exp_mode {
 
       exp_mode(T min, T max, T step = static_cast<T>(1))
-        : min (min), max (max), stepSize (step) {}
+        : min (min <= max ? min : std::numeric_limits<T>::min()),
+          max (min <= max ? max : std::numeric_limits<T>::max()),
+          stepSize (step)
+      {}
 
       void step(int steps) {
         set(*value * std::pow(stepSize, steps));
@@ -126,6 +132,88 @@ namespace otto::modules {
       T min, max, stepSize;
       T* value;
     };
+
+    /// Like `sized_step`, But steps exponentially
+    struct exp {
+      template<typename T>
+      using mode = std::enable_if_t<util::is_number_or_enum_v<T>, exp_mode<T>>;
+    }; // Tag
+
+    template<typename T>
+    struct log2_mode {
+
+      log2_mode(T min, T max, T step = static_cast<T>(1))
+        : min (min <= max ? min : std::numeric_limits<T>::min()),
+          max (min <= max ? max : std::numeric_limits<T>::max()),
+          stepSize (step)
+      {}
+
+      void step(int steps) {
+        set(*value + stepSize * steps);
+      }
+
+      void set(T v) {
+        *value = std::clamp(v, min, max);
+        log_v = std::log2(*value);
+      }
+
+      T log2() const {
+        return log_v;
+      }
+
+      float normalize() const {
+        return (*value - min)/ float(max);
+      }
+
+      T min, max, stepSize;
+      T* value;
+    private:
+      T log_v;
+    };
+
+    /// Keep a cached value of `log2(value)` avaliable at `mode.log2()`
+    struct log2 {
+      template<typename T>
+      using mode = std::enable_if_t<util::is_number_or_enum_v<T>, log2_mode<T>>;
+    }; // Tag
+
+    template<typename T>
+    struct pow2_mode {
+
+      pow2_mode(T min, T max, T step = static_cast<T>(1))
+        : min (min <= max ? min : std::numeric_limits<T>::min()),
+          max (min <= max ? max : std::numeric_limits<T>::max()),
+          stepSize (step)
+      {}
+
+      void step(int steps) {
+        set(*value + stepSize * steps);
+      }
+
+      void set(T v) {
+        *value = std::clamp(v, min, max);
+        pow2_v = std::pow(2, *value);
+      }
+
+      T pow2() const {
+        return pow2_v;
+      }
+
+      float normalize() const {
+        return (*value - min)/ float(max);
+      }
+
+      T min, max, stepSize;
+      T* value;
+    private:
+      T pow2_v;
+    };
+
+    /// Keep a cached value of `pow(2, value)` avaliable at `mode.pow2()`
+    struct pow2 {
+      template<typename T>
+      using mode = std::enable_if_t<util::is_number_or_enum_v<T>, pow2_mode<T>>;
+    }; // Tag
 
     /// Default mode for Bool
     struct toggle {};
@@ -160,13 +248,13 @@ namespace otto::modules {
 
     template<typename T>
     struct mode_for_tag<T, wrap,
-                        std::enable_if_t<util::is_number_or_enum_v<T>>> {
+      std::enable_if_t<util::is_number_or_enum_v<T>>> {
       using mode = wrap_mode<T>;
     };
 
     template<typename T>
     struct mode_for_tag<T, def,
-                        std::enable_if_t<util::is_number_or_enum_v<T>>> {
+      std::enable_if_t<util::is_number_or_enum_v<T>>> {
       using mode = sized_step_mode<T>;
     };
 
@@ -178,6 +266,12 @@ namespace otto::modules {
     template<>
     struct mode_for_tag<std::string, def> {
       using mode = plain_set_mode<std::string>;
+    };
+
+    template<typename T, typename Tag>
+    struct mode_for_tag<T, Tag,
+      std::void_t<typename Tag::template mode<T>>> {
+      using mode = typename Tag::template mode<T>;
     };
 
   } // mode
@@ -317,8 +411,7 @@ namespace otto::modules {
     }
 
     void reset() final {
-      value = init;
-      updateFaust();
+      set(init);
     }
 
     util::tree::Node makeNode() final {
@@ -326,8 +419,7 @@ namespace otto::modules {
     }
 
     void readNode(const util::tree::Node& n) final {
-      value = util::tree::readNode<Value>(n).value_or(value);
-      updateFaust();
+      set(util::tree::readNode<Value>(n).value_or(value));
     }
 
     void updateFaust() final {
@@ -349,10 +441,6 @@ namespace otto::modules {
     Property& operator=(const Value& v) {
       set(v);
       return *this;
-    }
-
-    operator Value&() {
-      return value;
     }
 
     operator const Value&() const {

@@ -3,19 +3,34 @@
 #include "drum-sampler.hpp"
 #include "core/globals.hpp"
 #include "core/ui/module-ui.hpp"
+#include "core/ui/waveform_widget.hpp"
+#include "core/ui/canvas.hpp"
 #include "core/ui/drawing.hpp"
 #include "core/ui/icons.hpp"
 #include "util/soundfile.hpp"
 #include "util/exception.hpp"
 
-
 namespace otto::modules {
+
+  class DrumSampleScreen : public ui::ModuleScreen<DrumSampler> {
+  public:
+
+    ui::widgets::Waveform<util::dyn_array<float>> topWFW;
+    ui::widgets::Waveform<util::dyn_array<float>> mainWFW;
+
+    DrumSampleScreen(DrumSampler *);
+
+    void draw(ui::vg::Canvas&) override;
+
+    bool keypress(ui::Key) override;
+    void rotary(ui::RotaryEvent) override;
+  };
 
   DrumSampler::DrumSampler() :
     SynthModule(&props),
     maxSampleSize (16 * Globals::samplerate),
     sampleData (maxSampleSize),
-    editScreen (new DrumSampleScreen(this)) {
+    screen (new DrumSampleScreen(this)) {
 
     Globals::events.samplerateChanged.add([&] (int sr) {
         maxSampleSize = 16 * sr;
@@ -23,6 +38,8 @@ namespace otto::modules {
       });
 
   }
+
+  DrumSampler::~DrumSampler() = default;
 
   fs::path DrumSampler::samplePath(std::string name) {
     if (name.empty()) {
@@ -54,7 +71,7 @@ namespace otto::modules {
 
     for (auto &&voice : props.voiceData) {
 
-      float playSpeed = voice.speed * sampleSpeed;
+      float playSpeed = voice.pitch.mode.pow2() * sampleSpeed;
 
       // Process audio
       if (voice.playProgress >= 0 && playSpeed > 0) {
@@ -68,13 +85,13 @@ namespace otto::modules {
               }
             }
           } else {
-            int frms = std::min<int>(data.nframes, voice.length() - voice.playProgress);
-            for(int i = 0; i < frms; ++i) {
+            for(int i = 0; i < data.nframes; ++i) {
               proc_buf[i][0] += sampleData[voice.in + voice.playProgress];
               voice.playProgress += playSpeed;
-            }
-            if (voice.playProgress >= voice.length()) {
-              voice.playProgress = -1;
+              if (voice.playProgress >= voice.length()) {
+                voice.playProgress = -1;
+                break;
+              }
             }
           }
         } else {
@@ -87,10 +104,10 @@ namespace otto::modules {
               }
             }
           } else {
-            int frms = std::min<int>(data.nframes, voice.playProgress);
-            for(int i = 0; i < frms; ++i) {
+            for(int i = 0; i < data.nframes; ++i) {
               proc_buf[i][0] += sampleData[voice.in + voice.playProgress];
               voice.playProgress -= playSpeed;
+              if (voice.playProgress < 0) break;
             }
           }
         }
@@ -114,7 +131,7 @@ namespace otto::modules {
   }
 
   void DrumSampler::display() {
-    Globals::ui.display(*editScreen);
+    Globals::ui.display(*screen);
   }
 
   void DrumSampler::load() {
@@ -156,7 +173,10 @@ namespace otto::modules {
       }
     }
 
-    editScreen->topWFW.range({0, int(rs)});
+    float max = *util::max_element(sampleData);
+    screen->topWFW.range({0, int(rs)});
+    screen->topWFW.top_val(max);
+    screen->mainWFW.top_val(max);
   }
 
   void DrumSampler::init() {
@@ -167,11 +187,20 @@ namespace otto::modules {
   /* SampleEditScreen                     */
   /****************************************/
 
+  DrumSampleScreen::DrumSampleScreen(DrumSampler *m)
+    : ui::ModuleScreen<DrumSampler> (m),
+      topWFW(module->sampleData, {273.9, 15.f}),
+      mainWFW (module->sampleData, {273.9, 100.2})
+  {
+    topWFW.radius_range = {0.5f, 0.5f};
+    mainWFW.radius_range = {1.5f, 3.f};
+  }
+
   bool DrumSampleScreen::keypress(ui::Key key) {
     using namespace ui;
     auto& voice = module->props.voiceData[module->currentVoiceIdx];
     switch (key) {
-    case K_WHITE_CLICK: voice.speed.reset(); return true;
+    case K_WHITE_CLICK: voice.pitch.reset(); return true;
     default:
       return false;
     }
@@ -186,20 +215,12 @@ namespace otto::modules {
     case Rotary::Green:
       voice.out.step(e.clicks); break;
     case Rotary::White:
-      voice.speed.step(e.clicks); break;
+      voice.pitch.step(e.clicks); break;
     case Rotary::Red:
       voice.mode.step(e.clicks); break;
     }
   }
 
-
-  DrumSampleScreen::DrumSampleScreen(DrumSampler *m)
-    : ui::ModuleScreen<DrumSampler> (m),
-      topWFW(module->sampleData, {273.9, 15.f}),
-      mainWFW (module->sampleData, {273.9, 100.2})
-  {
-    topWFW.radius_range = {1.f, 1.f};
-  }
 
   using PlayMode = DrumSampler::Props::VoiceData::Mode;
 
@@ -445,9 +466,16 @@ namespace otto::modules {
 
   }
 
-  static voice draw_pitch(ui::vg::Canvas& ctx, float pitch)
+  static void draw_pitch(ui::vg::Canvas& ctx, float pitch)
   {
     using namespace ui::vg;
+
+    // TODO: Cache!
+    auto col_vals = util::math::split_values<5>(pitch < 0 ? pitch * 2 : pitch, -4, 4);
+    auto const yellow = Colour::bytes(249, 182, 0);
+    auto const white = Colours::White;
+    auto const gray = Colour::bytes(112, 125, 132);
+
     // laag1/HigherLower/ArrowTop
     ctx.save();
     ctx.beginPath();
@@ -455,39 +483,41 @@ namespace otto::modules {
     ctx.lineTo(95.3, 24.7);
     ctx.lineTo(99.8, 28.2);
     ctx.lineWidth(2.0);
-    ctx.stroke(Colour::bytes(249, 182, 0));
+    ctx.stroke(gray.mix(yellow, col_vals[4]));
+
+    // laag1/HigherLower/Top
+    ctx.beginPath();
+    ctx.moveTo(94.4, 31.9);
+    ctx.lineTo(96.1, 31.9);
+    ctx.stroke(gray.mix(yellow, col_vals[3]));
+
+    // laag1/HigherLower/Mid
+    ctx.beginPath();
+    ctx.moveTo(93.4, 36.9);
+    ctx.lineTo(97.1, 36.9);
+    ctx.stroke(white.mix(yellow, col_vals[2]));
+
+    // laag1/HigherLower/Bottom
+    ctx.beginPath();
+    ctx.moveTo(94.4, 41.9);
+    ctx.lineTo(96.1, 41.9);
+    ctx.stroke(gray.mix(yellow, col_vals[1]));
 
     // laag1/HigherLower/ArrowBottom
     ctx.beginPath();
     ctx.moveTo(99.8, 46.2);
     ctx.lineTo(95.3, 49.7);
     ctx.lineTo(90.8, 46.2);
-    ctx.stroke(Colour::bytes(112, 125, 132));
+    ctx.stroke(gray.mix(yellow, col_vals[0]));
 
-    // laag1/HigherLower/Mid
-    ctx.beginPath();
-    ctx.moveTo(93.4, 36.9);
-    ctx.lineTo(97.1, 36.9);
-    ctx.stroke(Colour::bytes(255, 255, 255));
-
-    // laag1/HigherLower/Top
-    ctx.beginPath();
-    ctx.moveTo(94.4, 31.9);
-    ctx.lineTo(96.1, 31.9);
-    ctx.stroke(Colour::bytes(249, 182, 0));
-
-    // laag1/HigherLower/Bottom
-    ctx.beginPath();
-    ctx.moveTo(94.4, 41.9);
-    ctx.lineTo(96.1, 41.9);
-    ctx.stroke(Colour::bytes(112, 125, 132));
     // laag1/Pitchshift Height
     ctx.font(24.3);
     ctx.font(Fonts::Norm);
     ctx.save();
-    ctx.transform(1.000, 0.000, 0.000, 1.000, 111.4, 45.9);
+    ctx.transform(1.000, 0.000, 0.000, 1.000, 111.4, 36.9);
     ctx.fillStyle(Colour::bytes(249, 182, 0));
-    ctx.fillText(fmt::format("{:.2f}", pitch), 0, 0);
+    ctx.textAlign(TextAlign::Left, TextAlign::Middle);
+    ctx.fillText(fmt::format("{:+.0f}", pitch * 12), 0, 0);
     ctx.restore();
   }
 
@@ -496,7 +526,7 @@ namespace otto::modules {
 
     // laag1/Note
     ctx.font(24.3);
-    ctx.font(Fonts::Norm);
+    ctx.font(Fonts::Mono);
     ctx.save();
     ctx.transform(1.000, 0.000, 0.000, 1.000, 43.4, 45.6);
     ctx.fillStyle(Colour::bytes(255, 255, 255));
@@ -514,7 +544,12 @@ namespace otto::modules {
 
     auto& voice = module->props.voiceData[module->currentVoiceIdx];
 
+    const Colour pink = Colour::bytes(234, 163, 200);
+    float progress = voice.playProgress / float(voice.length());
+    progress = voice.bwd() ? 1 - progress : progress;
+    Colour voice_col = pink.mix(Colours::White, progress);
 
+    draw_pitch(ctx, voice.pitch);
     draw_play_mode(ctx, PlayMode(voice.mode.get()));
 
     ctx.callAt({22.2, 197.9}, [&] {
@@ -530,7 +565,7 @@ namespace otto::modules {
           [] (auto& ctx, auto f, auto l) {
             ctx.plotLines(f, l);
           });
-        ctx.stroke(Colour::bytes(234, 163, 200));
+        ctx.stroke(voice_col);
 
       });
 
@@ -554,7 +589,7 @@ namespace otto::modules {
         ctx.lineTo(p1.x + 1.f, size.h);
         ctx.moveTo(p2.x, size.h);
         ctx.lineTo(p2.x + 1.f, size.h);
-        ctx.stroke(Colour::bytes(234, 163, 200));
+        ctx.stroke(voice_col);
 
         // Gray parts
         ctx.beginPath();
@@ -565,7 +600,7 @@ namespace otto::modules {
         // Center part
         ctx.beginPath();
         mainWFW.draw_range(ctx, {voice.in, voice.out});
-        ctx.stroke(Colour::bytes(234, 163, 200));
+        ctx.stroke(voice_col);
 
         ctx.beginPath();
         ctx.circle(p1, 3.f);
