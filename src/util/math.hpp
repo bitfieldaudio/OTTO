@@ -75,7 +75,7 @@ namespace otto::util::math {
   template<int N>
   constexpr std::array<float, N> split_values(float f, float min, float max)
   {
-    std::array<float, N> res;
+    std::array<float, N> res {0};
     // f scaled to [0, N]
     float f1 = (N - 1) * (f - min) / (max - min);
     for (int i = 0; i < N; i++) {
