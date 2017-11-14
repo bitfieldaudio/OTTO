@@ -31,7 +31,7 @@ namespace otto::util {
     }
 
     bytes(const char str[len + 1]) {
-      std::copy(str, str + len + 1,
+      std::copy_n(str, len,
         reinterpret_cast<char*>(data));
     }
 

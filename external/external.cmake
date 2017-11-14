@@ -62,13 +62,6 @@ execute_process(COMMAND git submodule update --init -- external/glfw
 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/glfw)
 
-# Backward
-execute_process(COMMAND git submodule update --init -- external/backward-cpp
-WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-set(Backward_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/backward-cpp)
-add_subdirectory(${Backward_DIR})
-find_package(Backward)
-
 if(OTTO_BUILD_DOCS)
   execute_process(COMMAND git submodule update --init -- external/standardese
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})

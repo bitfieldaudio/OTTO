@@ -198,6 +198,7 @@ namespace otto::audio {
       for (int i = 0; ports[i] != nullptr; i++) {
         ret.emplace_back(ports[i]);
       }
+      jack_free(ports);
       return ret;
     };
 
