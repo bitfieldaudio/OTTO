@@ -1,7 +1,7 @@
 #pragma once
 
 #include <functional>
-#include <type_traits>
+#include "util/type_traits.hpp"
 
 namespace otto::util {
 
@@ -101,9 +101,9 @@ namespace otto::util {
     /// Used in the constructor
     template<typename Fr>
     static auto make_generator(Fr&& fr) {
-      if constexpr (std::is_invocable_v<Fr, T&>) {
+      if constexpr (util::is_invocable_v<Fr, T&>) {
         return fr;
-      } else if constexpr (std::is_same_v<std::invoke_result_t<Fr>, T>) {
+      } else if constexpr (std::is_same_v<util::invoke_result_t<Fr>, T>) {
         return [fr = std::forward<Fr>(fr)] (T& cache) {
           cache = std::invoke(fr);
         };

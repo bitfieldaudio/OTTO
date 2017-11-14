@@ -11,7 +11,7 @@ namespace otto::util::math {
     return (el <= max && el >= min);
   }
 
-  constexpr inline float round(float f, int places) {
+  inline float round(float f, int places) {
     int i = std::pow(10, places);
     return std::round(f * i)/i;
   }

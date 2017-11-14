@@ -4,6 +4,7 @@
 
 #include "util/bytefile.hpp"
 #include "util/algorithm.hpp"
+#include "util/exception.hpp"
 
 namespace otto::util {
 
@@ -18,8 +19,8 @@ namespace otto::util {
     /// Size in bytes of one sample
     constexpr static std::size_t sample_size = sizeof(Sample);
 
-    enum class Error {
-      UnrecognizedFileType,
+    struct Error {
+      static inline util::exception const UnrecognizedFileType {"Unrecognized file type"};
     };
 
     struct Info {

@@ -18,9 +18,9 @@ target_link_libraries(otto PUBLIC ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries(otto PUBLIC Backward::Backward)
 target_include_directories(otto PUBLIC ./)
 
-if (NOT APPLE)
-  # Currently you have to set these manually on osx.
-  # See https://github.com/topisani/OTTO/issues/13
+if (OTTO_USE_LIBCXX)
+  target_link_libraries(otto PUBLIC c++experimental)
+else()
   target_link_libraries(otto PUBLIC stdc++fs)
   target_link_libraries(otto PUBLIC atomic)
 endif()

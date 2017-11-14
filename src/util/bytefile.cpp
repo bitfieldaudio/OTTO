@@ -39,7 +39,7 @@ namespace otto::util {
     }
     path = p;
     fstream.open(p, std::ios::in | std::ios::out | std::ios::binary);
-    if (!fstream) {
+    if (!fstream || size() == 0) {
       // File didnt exist, create it
       create_file();
     }

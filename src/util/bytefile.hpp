@@ -75,6 +75,10 @@ namespace otto::util {
       return (char*) data;
     }
 
+    std::string str() const {
+      return {(char*)data, len};
+    }
+
     // Factories
     template<std::size_t N = len, typename Num = int_n_bytes_u_t<N>>
     static bytes from_u(Num n) {
@@ -234,7 +238,7 @@ namespace otto::util {
 
     template<typename F>
       auto for_chunks_in_range(Position, Position, F&& f) ->
-      std::enable_if_t<std::is_invocable_v<F, Chunk&>, void>;
+      std::enable_if_t<util::is_invocable_v<F, Chunk&>, void>;
 
     // Data
   protected:
@@ -333,7 +337,7 @@ namespace otto::util {
 
   template<typename F>
   auto ByteFile::for_chunks_in_range(Position i, Position o, F &&f) ->
-  std::enable_if_t<std::is_invocable_v<F, Chunk&>, void> {
+  std::enable_if_t<util::is_invocable_v<F, Chunk&>, void> {
     seek(i);
     if (o > size()) {
       o = size();

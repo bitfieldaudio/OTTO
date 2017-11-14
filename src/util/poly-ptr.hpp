@@ -262,8 +262,8 @@ namespace otto::util {
     /// TODO: Document
     template<typename... Funcs>
     auto match(Funcs&&... f) -> std::common_type_t<
-      std::invoke_result_t<overloaded<Funcs...>, base_type&>,
-      std::invoke_result_t<overloaded<Funcs...>, Types&>...>;
+      util::invoke_result_t<overloaded<Funcs...>, base_type&>,
+      util::invoke_result_t<overloaded<Funcs...>, Types&>...>;
 
     protected:
 
@@ -446,12 +446,12 @@ namespace otto::util {
   template<typename S, typename B, typename... Ts>
   template<typename... Funcs>
   auto basic_poly_ptr<S, B, Ts...>::match(Funcs&&... f) ->
-  std::common_type_t<std::invoke_result_t<overloaded<Funcs...>, base_type&>,
-    std::invoke_result_t<overloaded<Funcs...>, Ts&>...> {
+  std::common_type_t<util::invoke_result_t<overloaded<Funcs...>, base_type&>,
+    util::invoke_result_t<overloaded<Funcs...>, Ts&>...> {
     using Visitor = overloaded<Funcs...>;
     using R = std::common_type_t<
-      std::invoke_result_t<Visitor, base_type&>,
-      std::invoke_result_t<Visitor, Ts&>...>;
+      util::invoke_result_t<Visitor, base_type&>,
+      util::invoke_result_t<Visitor, Ts&>...>;
 
     if constexpr (std::is_void_v<R>) {
         visitor_dispatch<Visitor, R, Ts..., B>::apply(this,

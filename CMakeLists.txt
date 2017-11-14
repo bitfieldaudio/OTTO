@@ -11,8 +11,14 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
 # set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_STATIC_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
 
-set(OTTO_DEBUG_UI ON)
-set(OTTO_BUILD_DOCS OFF)
+option(OTTO_DEBUG_UI "Enable the imgui based debug ui" ON)
+option(OTTO_BUILD_DOCS "Build documentation" OFF)
+option(OTTO_USE_LIBCXX "link towards libc++ instead of libstdc++" OFF)
+
+if (OTTO_USE_LIBCXX)
+  message("Using libc++ instead of libstdc++")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+endif()
 
 include(external/external.cmake)
 

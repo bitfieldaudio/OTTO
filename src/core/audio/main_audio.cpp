@@ -29,7 +29,7 @@ namespace otto::audio {
       case Selection::TrackFB:
         util::transform(playback_out, audiobuf1.begin(),
           [track = Globals::selector.props.track.get()] (auto&& a) {
-            return std::array{a[track]};
+            return std::array<float, 1>{a[track]};
           });
         return external_in.redirect(audiobuf1);
       case Selection::MasterFB:
@@ -46,7 +46,7 @@ namespace otto::audio {
 
     if (Globals::selector.props.input == Selection::MasterFB) {
       util::transform(mixer_out, audiobuf1.begin(),
-        [] (auto&& a) { return std::array{a[0] + a[1]}; });
+        [] (auto&& a) { return std::array<float, 1>{a[0] + a[1]}; });
       record_in = {{audiobuf1.data(), external_in.nframes}, external_in.midi};
     }
 

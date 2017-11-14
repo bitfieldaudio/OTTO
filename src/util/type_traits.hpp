@@ -3,6 +3,7 @@
 #include <type_traits>
 #include <variant>
 #include <iterator>
+#include <variant.hpp>
 
 namespace otto::util {
 
@@ -138,4 +139,25 @@ namespace otto::util {
 
   template<int N>
   using int_n_bytes_u_t = typename int_n_bytes<N>::utype;
+
+  // libc++ 5.0 doesnt have these
+  
+  template<typename F, typename... Args>
+  using is_invocable = mpark::lib::is_invocable<F, Args...>;
+  
+  template<typename F, typename... Args>
+  constexpr bool is_invocable_v = mpark::lib::is_invocable<F, Args...>::value;
+  
+  template<typename R, typename F, typename... Args>
+  using is_invocable_r = mpark::lib::is_invocable_r<R, F, Args...>;
+  
+  template<typename R, typename F, typename... Args>
+  constexpr bool is_invocable_r_v = mpark::lib::is_invocable_r<R, F, Args...>::value;
+  
+  template<typename F, typename... Args>
+  using invoke_result = mpark::lib::invoke_result<F, Args...>;
+  
+  template<typename F, typename... Args>
+  using invoke_result_t = mpark::lib::invoke_result_t<F, Args...>;
+
 }

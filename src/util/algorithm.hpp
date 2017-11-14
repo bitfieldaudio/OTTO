@@ -169,18 +169,6 @@ namespace otto::util {
     return std::push_heap(begin(cont), end(cont), std::forward<Compare>(comp));
   }
 
-  template<typename Cont>
-  decltype(auto) random_shuffle(Cont&& cont) {
-    using std::begin; using std::end;
-    return std::random_shuffle(begin(cont), end(cont));
-  }
-
-  template<typename Cont, typename RandomNumberGenerator>
-  decltype(auto) random_shuffle(Cont&& cont, RandomNumberGenerator&& r) {
-    using std::begin; using std::end;
-    return std::random_shuffle(begin(cont), end(cont), std::forward<RandomNumberGenerator>(r));
-  }
-
   template<typename Cont, typename T>
   decltype(auto) remove(Cont&& cont, T&& value) {
     using std::begin; using std::end;

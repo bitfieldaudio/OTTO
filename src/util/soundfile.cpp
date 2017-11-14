@@ -115,7 +115,8 @@ namespace otto::util {
     } else if (header.id.as_u() == 0) {
       create_file();
     } else {
-      throw Error::UnrecognizedFileType;
+      throw Error::UnrecognizedFileType.append(
+        fmt::format("Got {} while reading file {}", header.id.str(), path.c_str()));
     }
 
     switch (info.type) {

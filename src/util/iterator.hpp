@@ -6,6 +6,8 @@
 #include <type_traits>
 #include <tuple>
 
+#include "util/type_traits.hpp"
+
 namespace otto::util {
 
   namespace detail {
@@ -26,14 +28,14 @@ namespace otto::util {
 
     template<typename Impl, typename T = void>
     struct value_type {
-      using type = typename Impl::value_type;
+      using type = typename std::iterator_traits<Impl>::value_type;
     };
 
     template<typename Impl>
     struct value_type<Impl,
-      std::void_t<typename std::iterator_traits<Impl>::value_type>>
+      std::void_t<typename Impl::value_type>>
     {
-      using type = typename std::iterator_traits<Impl>::value_type;
+      using type = typename Impl::value_type;
     };
 
     // Pointer type
@@ -66,14 +68,14 @@ namespace otto::util {
     template<typename Impl, typename T = void>
     struct iterator_category
     {
-      using type = typename Impl::iterator_category;
+      using type = typename std::iterator_traits<Impl>::iterator_category;
     };
 
     template<typename Impl>
     struct iterator_category<Impl,
-      std::void_t<typename std::iterator_traits<Impl>::iterator_category>>
+      std::void_t<typename Impl::iterator_category>>
     {
-      using type = typename std::iterator_traits<Impl>::iterator_category;
+      using type = typename Impl::iterator_category;
     };
   }
 
@@ -149,12 +151,12 @@ namespace otto::util {
     }
 
     // Comparison (Any)
-    bool operator==(const iterator_adaptor_impl& r)
+    bool operator==(const iterator_adaptor_impl& r) const
     {
       return Impl::equal(r);
     }
 
-    bool operator!=(const iterator_adaptor_impl& r)
+    bool operator!=(const iterator_adaptor_impl& r) const
     {
       return !Impl::equal(r);
     }
@@ -518,7 +520,7 @@ namespace otto::util {
   template<typename Generator>
   class GeneratingIterImpl {
   public:
-    using value_type = std::invoke_result_t<Generator>;
+    using value_type = util::invoke_result_t<Generator>;
     using iterator_category = std::input_iterator_tag;
 
     GeneratingIterImpl(Generator generator)

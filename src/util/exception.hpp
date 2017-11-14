@@ -28,5 +28,12 @@ namespace otto::util {
     const char* what() const noexcept override {
       return message.c_str();
     }
+
+    exception append(std::string_view v) const {
+      exception e = *this;
+      e.message.append("\n");
+      e.message.append(v);
+      return e;
+    }
   };
 }

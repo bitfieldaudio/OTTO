@@ -27,7 +27,7 @@ namespace otto::ui::vg {
     // cppcheck-suppress noExplicitConstructor
     constexpr Point(util::math::vec v) : x (v.x), y (v.y) {}
 
-    constexpr Point rotate(float rad) const {
+    Point rotate(float rad) const {
       float sn = std::sin(rad);
       float cs = std::cos(rad);
       return {
@@ -67,7 +67,8 @@ namespace otto::ui::vg {
     }
 
     constexpr Size abs() const {
-      return {std::abs(w), std::abs(h)};
+      const auto abs = [] (float f) {return f < 0 ? -f : f;};
+      return {abs(w), abs(h)};
     }
     constexpr operator util::math::vec() const {return {w, h};}
   };

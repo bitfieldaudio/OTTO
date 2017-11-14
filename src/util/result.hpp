@@ -89,7 +89,7 @@ namespace otto::util {
     /// Can be used to compose the result of two functions
     template<typename F>
       auto map(F&& op) const noexcept ->
-      result<std::invoke_result_t<F, Ok>, Err> {
+      result<util::invoke_result_t<F, Ok>, Err> {
       if (is_ok()) {
         return std::invoke(op, mpark::get<Ok>(data));
       }
@@ -102,7 +102,7 @@ namespace otto::util {
     /// Can be used to pass through a successful result while handling the error
     template<typename F>
       auto map_err(F&& op) const noexcept ->
-      result<Ok, std::invoke_result_t<F, Err>> {
+      result<Ok, util::invoke_result_t<F, Err>> {
       if (is_err()) {
         return std::invoke(op, mpark::get<Err>(data));
       }
@@ -125,7 +125,7 @@ namespace otto::util {
     /// otherwise returns its own `Err` value
     template<typename F>
       auto and_then(F&& f) const noexcept ->
-      std::enable_if_t<std::is_invocable_r_v<result<Ok, Err>, F, Ok>,
+      std::enable_if_t<util::is_invocable_r_v<result<Ok, Err>, F, Ok>,
                        result<Ok, Err>> {
       if (is_ok()) {
         return std::invoke(std::forward<F>(f), mpark::get<Ok>(data));
@@ -150,7 +150,7 @@ namespace otto::util {
     /// otherwise returns its own `Ok` value
     template<typename F>
       auto or_else(F&& f) const noexcept ->
-      std::enable_if_t<std::is_invocable_r_v<result<Ok, Err>, F, Err>,
+      std::enable_if_t<util::is_invocable_r_v<result<Ok, Err>, F, Err>,
                        result<Ok, Err>> {
       if (is_err()) {
         return std::invoke(std::forward<F>(f), mpark::get<Err>(data));
@@ -183,7 +183,7 @@ namespace otto::util {
     /// otherwise invokes `f` with the error value
     template<typename F>
       auto ok_or_else(F&& f) const noexcept ->
-      std::enable_if_t<std::is_invocable_r_v<Ok, F, Err>, Ok> {
+      std::enable_if_t<util::is_invocable_r_v<Ok, F, Err>, Ok> {
       if (is_ok()) {
         return mpark::get<Ok>(data);
       } else {
@@ -195,7 +195,7 @@ namespace otto::util {
     /// otherwise invokes `f` with the ok value
     template<typename F>
       auto err_or_else(F&& f) const noexcept ->
-      std::enable_if_t<std::is_invocable_r_v<Err, F, Ok>, Err> {
+      std::enable_if_t<util::is_invocable_r_v<Err, F, Ok>, Err> {
       if (is_err()) {
         return mpark::get<Err>(data);
       } else {
@@ -206,7 +206,7 @@ namespace otto::util {
     /// If ok, call `f(ok)`
     template<typename F>
       auto if_ok(F&& f) const noexcept ->
-      std::enable_if_t<std::is_invocable_v<F, Ok>, void> {
+      std::enable_if_t<util::is_invocable_v<F, Ok>, void> {
       if (is_ok()) {
         std::invoke(std::forward<F>(f), mpark::get<Ok>(data));
       }
@@ -215,7 +215,7 @@ namespace otto::util {
     /// If err, call `f(err)`
     template<typename F>
       auto if_err(F&& f) const noexcept ->
-      std::enable_if_t<std::is_invocable_v<F, Err>, void> {
+      std::enable_if_t<util::is_invocable_v<F, Err>, void> {
       if (is_err()) {
         return std::invoke(std::forward<F>(f), mpark::get<Err>(data));
       }
@@ -223,8 +223,8 @@ namespace otto::util {
 
     /// If ok, call `fo(ok)`, otherwise call `fe(err)`
     template<typename FO, typename FE,
-             typename Ret = std::common_type_t<std::invoke_result_t<FO, Ok>,
-                                               std::invoke_result_t<FE, Err>>>
+             typename Ret = std::common_type_t<util::invoke_result_t<FO, Ok>,
+                                               util::invoke_result_t<FE, Err>>>
       Ret wrap(FO&& fo, FE&& fe) noexcept {
       if (is_ok()) {
         return std::invoke(std::forward<FO>(fo), mpark::get<Ok>(data));
@@ -235,8 +235,8 @@ namespace otto::util {
 
     /// If ok, call `visitor(ok)`, otherwise call `visitor(err)`
     template<typename V,
-             typename Ret = std::common_type_t<std::invoke_result_t<V, Ok>,
-                                               std::invoke_result_t<V, Err>>>
+             typename Ret = std::common_type_t<util::invoke_result_t<V, Ok>,
+                                               util::invoke_result_t<V, Err>>>
       Ret visit(V&& visitor) noexcept {
       if (is_ok()) {
         return std::invoke(std::forward<V>(visitor), mpark::get<Ok>(data));

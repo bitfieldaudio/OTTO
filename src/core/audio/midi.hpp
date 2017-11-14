@@ -80,7 +80,7 @@ namespace otto::midi {
 
   }
 
-  constexpr void generateFreqTable(float tuning = 440) {
+  inline void generateFreqTable(float tuning = 440) {
     for (int i = 0; i < 128; i++) {
       detail::freq_table[i] = tuning * std::pow(2, float(i - 69)/float(12));
     }

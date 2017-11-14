@@ -58,12 +58,10 @@ namespace otto::modules {
   audio::ProcessData<1> DrumSampler::process(audio::ProcessData<0> data) {
     for (auto &&nEvent : data.midi) {
       util::match(nEvent, [&] (midi::NoteOnEvent& e) {
-          if (e.channel == 1) {
-            currentVoiceIdx = e.key % nVoices;
-            auto &&voice = props.voiceData[currentVoiceIdx];
-            voice.playProgress = (voice.fwd()) ? 0 : voice.length() - 1;
-            voice.trigger = true;
-          }
+          currentVoiceIdx = e.key % nVoices;
+          auto &&voice = props.voiceData[currentVoiceIdx];
+          voice.playProgress = (voice.fwd()) ? 0 : voice.length() - 1;
+          voice.trigger = true;
         }, [] (auto&&) {});
     }
 

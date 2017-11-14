@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 #include <type_traits>
+#include <optional>
 
 #include "util/type_traits.hpp"
 
@@ -157,25 +158,25 @@ namespace otto::util::tree {
 
   template<>
   inline std::optional<float> readNode<float>(Node n) {
-    return n.match([] (Float n) {return std::optional(n.value);},
+    return n.match([] (Float n) {return std::optional<float>(n.value);},
                  [] (auto&&) {return std::optional<float>();});
   }
 
   template<>
   inline std::optional<int> readNode<int>(Node n) {
-    return n.match([] (Int n) {return std::optional(n.value);},
+    return n.match([] (Int n) {return std::optional<int>(n.value);},
                  [] (auto&&) {return std::optional<int>();});
   }
 
   template<>
   inline std::optional<bool> readNode<bool>(Node n) {
-    return n.match([] (Bool n) {return std::optional(n.value);},
+    return n.match([] (Bool n) {return std::optional<bool>(n.value);},
                  [] (auto&&) {return std::optional<bool>();});
   }
 
   template<>
   inline std::optional<std::string> readNode<std::string>(Node n) {
-    return n.match([] (String n) {return std::optional(n.value);},
+    return n.match([] (String n) {return std::optional<std::string>(n.value);},
                  [] (auto&&) {return std::optional<std::string>();});
   }
 
