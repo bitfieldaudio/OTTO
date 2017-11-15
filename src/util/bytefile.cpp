@@ -38,7 +38,7 @@ namespace otto::util {
       throw "File already open";
     }
     path = p;
-    fstream.open(p, std::ios::in | std::ios::out | std::ios::binary);
+    fstream.open(p.c_str(), std::ios::in | std::ios::out | std::ios::binary);
     if (!fstream || size() == 0) {
       // File didnt exist, create it
       create_file();

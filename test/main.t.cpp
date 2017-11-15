@@ -4,10 +4,9 @@
 #include <plog/Log.h>
 #include <plog/Appenders/ConsoleAppender.h>
 
-namespace fs = std::experimental::filesystem;
-
 int main( int argc, char* argv[] )
 {
+  using namespace otto;
   static plog::ConsoleAppender<plog::TxtFormatter> consoleAppender;
   plog::init(plog::info, (test::dir / "test-log.txt").c_str()).addAppender(&consoleAppender);
 

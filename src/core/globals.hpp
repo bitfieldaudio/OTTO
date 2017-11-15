@@ -5,10 +5,10 @@
 #include <array>
 #include <atomic>
 #include <condition_variable>
-#include <filesystem.hpp>
 
 #include "util/event.hpp"
 
+#include "filesystem.hpp"
 #include "core/datafile.hpp"
 #include "core/audio/main_audio.hpp"
 #include "core/ui/mainui.hpp"
