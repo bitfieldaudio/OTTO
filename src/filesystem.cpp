@@ -6,23 +6,12 @@
 #include "util/algorithm.hpp"
 #include "util/iterator.hpp"
 
-#if defined(_WIN32)
-# include <windows.h>
-#else
-# include <unistd.h>
-# include <dirent.h>
-#endif
+#include <sys/stat.h>
+#include <unistd.h>
+#include <dirent.h>
 
 #if defined(__linux)
 # include <linux/limits.h>
-#endif
-
-#if !defined(_WIN32)
-#define IS_POSIX 1
-#define IS_WIN32 0
-#else
-#define IS_POSIX 0
-#define IS_WIN32 1
 #endif
 
 namespace otto::filesystem {
@@ -31,11 +20,7 @@ namespace otto::filesystem {
 
   namespace {
 
-    #if IS_POSIX
     path::string_type separators = "/\\";
-    #else
-    path::string_type separators = "\\/";
-    #endif
 
     path::format detect_format(const path::string_type& s)
     {
@@ -713,7 +698,6 @@ namespace otto::filesystem {
   DIter::directory_iterator(const path& p)
   {
     _entries = std::make_shared<std::vector<DEntr>>();
-#if IS_POSIX
     DIR *dir;
     struct dirent *de;
 
@@ -725,9 +709,7 @@ namespace otto::filesystem {
         _entries->emplace_back(de->d_name);
     }
     closedir(dir);
-#else
-#error "Only implemented for posix"
-#endif
+
     if (_entries->size() == 0) {
       _ptr = nullptr;
     } else {
@@ -803,7 +785,6 @@ namespace otto::filesystem {
 
     void populate_entries(const path& p)
     {
-#if IS_POSIX
       DIR *dir;
       struct dirent *de;
 
@@ -815,9 +796,7 @@ namespace otto::filesystem {
         entries.emplace_back(de->d_name);
       }
       closedir(dir);
-#else
-#error "Only implemented for posix"
-#endif
+      
       if (entries.size() == 0) {
         entry = nullptr;
       } else {
@@ -926,77 +905,34 @@ namespace otto::filesystem {
 
   bool remove_file(const path& p)
   {
-    printf("Deleting file: %s", p.c_str());
-    return true;
-#if false
     return std::remove(p.c_str()) == 0;
-//#else
-    return DeleteFileW(p.wstr().c_str()) != 0;
-#endif
   }
 
   bool resize_file(const path& p, size_t target_length)
   {
-#if !defined(_WIN32)
     return ::truncate(p.c_str(), (off_t) target_length) == 0;
-#else
-    HANDLE handle = CreateFileW(p.wstr().c_str(), GENERIC_WRITE, 0, nullptr, 0, FILE_ATTRIBUTE_NORMAL, nullptr);
-    if (handle == INVALID_HANDLE_VALUE)
-      return false;
-    LARGE_INTEGER size;
-    size.QuadPart = (LONGLONG) target_length;
-    if (SetFilePointerEx(handle, size, NULL, FILE_BEGIN) == 0) {
-      CloseHandle(handle);
-      return false;
-    }
-    if (SetEndOfFile(handle) == 0) {
-      CloseHandle(handle);
-      return false;
-    }
-    CloseHandle(handle);
-    return true;
-#endif
   }
 
   path current_path()
   {
-#if !defined(_WIN32)
     char temp[PATH_MAX];
     if (::getcwd(temp, PATH_MAX) == NULL)
       throw std::runtime_error("Internal error in getcwd(): " + std::string(strerror(errno)));
     return path(temp);
-#else
-    std::wstring temp(MAX_PATH, '\0');
-    if (!_wgetcwd(&temp[0], MAX_PATH))
-      throw std::runtime_error("Internal error in getcwd(): " + std::to_string(GetLastError()));
-    return path(temp.c_str());
-#endif
   }
 
   path absolute(const path& p)
   {
-#if !defined(_WIN32)
     char temp[PATH_MAX];
     if (realpath(p.c_str(), temp) == NULL)
       throw std::runtime_error("Internal error in realpath(): " + std::string(strerror(errno)));
     return path(temp);
-#else
-    std::wstring value = p.wstr(), out(MAX_PATH, '\0');
-    DWORD length = GetFullPathNameW(value.c_str(), MAX_PATH, &out[0], NULL);
-    if (length == 0)
-      throw std::runtime_error("Internal error in realpath(): " + std::to_string(GetLastError()));
-    return path(out.substr(0, length));
-#endif
   }
 
   bool exists(const path& p)
   {
-#if defined(_WIN32)
-    return GetFileAttributesW(p.wstr().c_str()) != INVALID_FILE_ATTRIBUTES;
-#else
     struct stat sb;
     return stat(p.c_str(), &sb) == 0;
-#endif
   }
 
   bool is_block_file(const path& p)
@@ -1063,25 +999,15 @@ namespace otto::filesystem {
 
   size_t file_size(const path& p)
   {
-#if defined(_WIN32)
-    struct _stati64 sb;
-    if (_wstati64(p.c_str(), &sb) != 0)
-      throw std::runtime_error("path::file_size(): cannot stat file \"" + p.string() + "\"!");
-#else
     struct stat sb;
     if (stat(p.c_str(), &sb) != 0)
       throw std::runtime_error("path::file_size(): cannot stat file \"" + p.string() + "\"!");
-#endif
     return (size_t) sb.st_size;
   }
 
   bool create_directory(const path& p)
   {
-#if defined(_WIN32)
-    return CreateDirectoryW(p.wstr().c_str(), NULL) != 0;
-#else
     return mkdir(p.c_str(), S_IRUSR | S_IWUSR | S_IXUSR) == 0;
-#endif
   }
 
   bool create_directories(const path& p)
