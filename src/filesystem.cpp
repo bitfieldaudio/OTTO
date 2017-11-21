@@ -281,9 +281,15 @@ namespace otto::filesystem {
       } else {
         return {};
       }
+      #if __APPLE__
       return file_time_type() +
         std::chrono::duration_cast<file_time_type::duration>(
           std::chrono::nanoseconds(st.st_mtim.tv_nsec));
+      #else
+      return file_time_type() +
+        std::chrono::duration_cast<file_time_type::duration>(
+          std::chrono::nanoseconds(st.st_mtim.tv_nsec));
+      #endif
     }
 
     file_status status(struct stat st, std::error_code& ec)
