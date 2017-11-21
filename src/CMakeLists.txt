@@ -17,7 +17,6 @@ target_link_libraries(otto PUBLIC ${CMAKE_THREAD_LIBS_INIT})
 target_include_directories(otto PUBLIC ./)
 
 if (NOT OTTO_USE_LIBCXX)
-  target_link_libraries(otto PUBLIC stdc++fs)
   target_link_libraries(otto PUBLIC atomic)
 endif()
 

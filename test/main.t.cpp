@@ -13,7 +13,6 @@ int main( int argc, char* argv[] )
   if (fs::exists(test::dir)) {
     fs::remove_all(test::dir);
   }
-
   fs::create_directories(test::dir);
 
   int result = Catch::Session().run( argc, argv );
