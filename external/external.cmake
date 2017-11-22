@@ -62,12 +62,12 @@ execute_process(COMMAND git submodule update --init -- external/glfw
 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/glfw)
 
-if(OTTO_BUILD_DOCS)
+if(BUILD_DOCS)
   execute_process(COMMAND git submodule update --init -- external/standardese
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
   set(standardese_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/standardese)
   set(STANDARDESE_BUILD_TEST OFF CACHE BOOL "Build standardese tests")
   add_subdirectory(${standardese_DIR})
-  set(STANDARDESE_TOOL "${CMAKE_CURRENT_BINARY_DIR}/external/standardese/tool/standardese")
+  set(STANDARDESE_TOOL "${CMAKE_CURRENT_BINARY_DIR}/bin/standardese")
   include(${standardese_DIR}/standardese-config.cmake)
 endif()

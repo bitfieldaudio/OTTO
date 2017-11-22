@@ -1874,6 +1874,7 @@ namespace otto::filesystem {
 
   bool remove(const path& p, std::error_code& ec) noexcept
   {
+    if (!exists(p, ec)) return false;
     if (::remove(p.c_str())) {
       ec = {errno, std::system_category()};
       return false;

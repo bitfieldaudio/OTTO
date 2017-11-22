@@ -29,6 +29,23 @@ namespace otto::util {
       REQUIRE(fs::is_regular_file(somePath));
     }
 
+    SECTION("Create file") {
+      fs::remove(somePath);
+
+      REQUIRE_NOTHROW(f.open(somePath));
+
+      bytes<12> data {42, 5, 3, 5, 12, 32, 65, 2, 8, 89, 123, 255};
+
+      f.write_bytes(data);
+      f.close();
+
+      REQUIRE(f.open(somePath).is_ok());
+
+      bytes<12> got;
+      REQUIRE(f.read_bytes(got).is_ok());
+
+    }
+
     SECTION("seek") {
 
       ByteFile::Position somePos = 10;

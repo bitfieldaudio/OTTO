@@ -13,7 +13,7 @@
  * Macros
  */
 
-#ifdef OTTO_DEBUG_UI
+#if OTTO_DEBUG_UI
 
 #define IF_DEBUG(...)                           \
   __VA_ARGS__;                                  \
@@ -23,8 +23,8 @@
 
 #else // OTTO_DEBUG_UI
 
-#define CALL_IF_DEBUG(lambda)
 #define IF_DEBUG(...)
+#define CALL_IF_DEBUG(lambda)
 
 #endif // OTTO_DEBUG_UI
 
@@ -73,25 +73,26 @@ namespace otto::debug {
 
     inline std::vector<Info*> info_ptrs;
 
-    inline std::size_t add_info(Info& new_info) {
-      for (std::size_t i = 0; i < info_ptrs.size(); i++) {
-        auto& info = info_ptrs[i];
-        if (info == nullptr) {
-          info = &new_info;
-          return i;
+    IF_DEBUG(
+      inline std::size_t add_info(Info& new_info) {
+        for (std::size_t i = 0; i < info_ptrs.size(); i++) {
+          auto& info = info_ptrs[i];
+          if (info == nullptr) {
+            info = &new_info;
+            return i;
+          }
         }
+        info_ptrs.push_back(&new_info);
+        return info_ptrs.size() - 1;
       }
-      info_ptrs.push_back(&new_info);
-      return info_ptrs.size() - 1;
-    }
 
-    inline void draw() {
-      for (auto& info : info_ptrs) {
-        if (info != nullptr) {
-          info->draw();
+      inline void draw() {
+        for (auto& info : info_ptrs) {
+          if (info != nullptr) {
+            info->draw();
+          }
         }
-      }
-    }
+      })
 
   }
 

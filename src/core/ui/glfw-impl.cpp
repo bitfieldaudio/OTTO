@@ -145,7 +145,7 @@ namespace otto::ui {
 
     static void init()
     {
-      #ifdef OTTO_DEBUG_UI
+#if OTTO_DEBUG_UI
       window = glfwCreateWindow(1280, 720, "OTTO Debugging", NULL, NULL);
       auto prev_ctx = glfwGetCurrentContext();
       glfwMakeContextCurrent(window);
@@ -178,9 +178,9 @@ namespace otto::ui {
       io.SetClipboardTextFn = set_clipboard;
       io.GetClipboardTextFn = get_clipboard;
       io.ClipboardUserData = window;
-      #ifdef _WIN32
+#ifdef _WIN32
       io.ImeWindowHandle = glfwGetWin32Window(window);
-      #endif
+#endif
 
       glfwSetMouseButtonCallback(window, mouse_callback);
       glfwSetScrollCallback(window, scroll_callback);
@@ -190,12 +190,12 @@ namespace otto::ui {
 
       glfwMakeContextCurrent(prev_ctx);
 
-      #endif // OTTO_DEBUG_UI
+#endif // OTTO_DEBUG_UI
     }
 
     static void draw_frame()
     {
-      #ifdef OTTO_DEBUG_UI
+#if OTTO_DEBUG_UI
       auto prev_win = glfwGetCurrentContext();
       glfwMakeContextCurrent(window);
       glfwPollEvents();
@@ -264,7 +264,7 @@ namespace otto::ui {
     }
 
   private: 
-#ifdef OTTO_DEBUG_UI
+#if OTTO_DEBUG_UI
 
     static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
     {
@@ -550,23 +550,22 @@ namespace otto::ui {
       return;
     }
 
+    glfwMakeContextCurrent(window);
+    glfwSwapInterval(1);
+#if !OTTO_DEBUG_UI
+    gl3wInit();
+#endif
+
     glfwSetWindowAspectRatio(window, 4, 3);
     glfwSetWindowSizeLimits(window, 320, 240, GLFW_DONT_CARE, GLFW_DONT_CARE);
 
     glfwSetKeyCallback(window, key);
-
-    glfwMakeContextCurrent(window);
 
     NVGcontext* vg = OTTO_NVG_CREATE(NVG_ANTIALIAS | NVG_STENCIL_STROKES | NVG_DEBUG);
     if (vg == NULL) {
       printf("Could not init nanovg.\n");
       return;
     }
-
-    glfwSwapInterval(1);
-
-    glfwSetTime(0);
-    double prevt = glfwGetTime();
 
     vg::Canvas canvas(vg, vg::WIDTH, vg::HEIGHT);
     vg::initUtils(canvas);
@@ -596,6 +595,9 @@ namespace otto::ui {
         ImGui::End();
       }
     } info;
+
+    glfwSetTime(0);
+    double prevt = glfwGetTime();
 
     double mx, my, t, dt, spent;
     while (!glfwWindowShouldClose(window) && Globals::running())

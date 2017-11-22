@@ -16,22 +16,27 @@ target_link_libraries(otto PUBLIC jack)
 target_link_libraries(otto PUBLIC ${CMAKE_THREAD_LIBS_INIT})
 target_include_directories(otto PUBLIC ./)
 
-if (NOT OTTO_USE_LIBCXX)
+if (NOT USE_LIBCXX)
   target_link_libraries(otto PUBLIC atomic)
 endif()
 
 target_link_libraries(otto PUBLIC imgui)
-target_compile_definitions(otto PUBLIC OTTO_DEBUG_UI)
 
 # Executable
 add_executable(otto_exec ${OTTO_SOURCE_DIR}/src/main.cpp ${BACKWARD_ENABLE})
 target_link_libraries(otto_exec PUBLIC otto)
 set_target_properties(otto_exec PROPERTIES OUTPUT_NAME otto)
 
-
 # Docs
-if (OTTO_BUILD_DOCS)
-  standardese_generate(otto CONFIG ${OTTO_SOURCE_DIR}/.standardese
-    INCLUDE_DIRECTORY ${otto_includedirs}
+if (BUILD_DOCS)
+  file(WRITE ${OTTO_BINARY_DIR}/.standardese
+"[compilation]
+commands_dir=${OTTO_BINARY_DIR}
+
+[input]
+blacklist_namespace=detail
+extract_private=true
+")
+  standardese_generate(otto CONFIG ${OTTO_BINARY_DIR}/.standardese
     INPUT ${headers})
 endif()
