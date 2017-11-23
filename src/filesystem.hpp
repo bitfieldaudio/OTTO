@@ -430,7 +430,6 @@ namespace otto::filesystem {
     class path pathobject; // exposition only
     friend class directory_iterator; // exposition only
 
-    file_type _type;
     uintmax_t _file_size;
     uintmax_t _hard_link_count;
     file_status _status;
@@ -597,30 +596,39 @@ namespace otto::filesystem {
   bool equivalent(const path& p1, const path& p2, std::error_code& ec) noexcept;
 
 
+  bool exists(file_status status) noexcept;
   bool exists(const path& p);
   bool exists(const path& p, std::error_code&) noexcept;
 
+  bool is_block_file(file_status status) noexcept;
   bool is_block_file(const path& p);
   bool is_block_file(const path& p, std::error_code&) noexcept;
 
+  bool is_character_file(file_status status) noexcept;
   bool is_character_file(const path& p);
   bool is_character_file(const path& p, std::error_code&) noexcept;
 
+  bool is_directory(file_status status) noexcept;
   bool is_directory(const path& p);
   bool is_directory(const path& p, std::error_code&) noexcept;
 
+  bool is_fifo(file_status status) noexcept;
   bool is_fifo(const path& p);
   bool is_fifo(const path& p, std::error_code&) noexcept;
 
+  bool is_other(file_status status) noexcept;
   bool is_other(const path& p);
   bool is_other(const path& p, std::error_code&) noexcept;
 
+  bool is_regular_file(file_status status) noexcept;
   bool is_regular_file(const path& p);
   bool is_regular_file(const path& p, std::error_code&) noexcept;
 
+  bool is_socket(file_status status) noexcept;
   bool is_socket(const path& p);
   bool is_socket(const path& p, std::error_code&) noexcept;
 
+  bool is_symlink(file_status status) noexcept;
   bool is_symlink(const path& p);
   bool is_symlink(const path& p, std::error_code&) noexcept;
 

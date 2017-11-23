@@ -16,6 +16,7 @@ namespace otto::util {
     Path somePath = test::dir / "test1.bytes";
 
     ByteFile f;
+    fs::remove(somePath);
 
     SECTION("Open / close") {
 
@@ -30,7 +31,6 @@ namespace otto::util {
     }
 
     SECTION("Create file") {
-      fs::remove(somePath);
 
       REQUIRE_NOTHROW(f.open(somePath));
 
@@ -39,11 +39,12 @@ namespace otto::util {
       f.write_bytes(data);
       f.close();
 
-      REQUIRE(f.open(somePath).is_ok());
+      REQUIRE_NOTHROW(f.open(somePath));
 
       bytes<12> got;
       REQUIRE(f.read_bytes(got).is_ok());
 
+      REQUIRE(data == got);
     }
 
     SECTION("seek") {

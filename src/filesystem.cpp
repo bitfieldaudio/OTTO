@@ -141,119 +141,6 @@ namespace otto::filesystem {
       return to_file_type(st.st_mode);
     }
 
-    struct stat stat(const path& p, std::error_code& ec)
-    {
-      struct stat res;
-      if (::stat(p.c_str(), &res) != 0) {
-        ec = {errno, std::system_category()};
-      } else {
-        ec.clear();
-      }
-      return res;
-    }
-
-    struct stat lstat(const path& p, std::error_code& ec)
-    {
-      struct stat res;
-      if (::lstat(p.c_str(), &res) != 0) {
-        ec = {errno, std::system_category()};
-      } else {
-        ec.clear();
-      }
-      return res;
-    }
-
-    bool exists(struct stat st, std::error_code& ec)
-    {
-      if (ec.value() == 0) {
-        ec.clear();
-      } else {
-        return false;
-      }
-      file_type type = to_file_type(st.st_mode);
-      return type != file_type::not_found && type != file_type::none;
-    }
-
-    bool is_block_file(struct stat st, std::error_code& ec)
-    {
-      if (ec.value() == 0) {
-        ec.clear();
-      } else {
-        return false;
-      }
-      return to_file_type(st.st_mode) == file_type::block;
-    }
-
-    bool is_character_file(struct stat st, std::error_code& ec)
-    {
-      if (ec.value() == 0) {
-        ec.clear();
-      } else {
-        return false;
-      }
-      return to_file_type(st.st_mode) == file_type::character;
-    }
-
-    bool is_directory(struct stat st, std::error_code& ec)
-    {
-      if (ec.value() == 0) {
-        ec.clear();
-      } else {
-        return false;
-      }
-      return to_file_type(st.st_mode) == file_type::directory;
-    }
-
-    bool is_fifo(struct stat st, std::error_code& ec)
-    {
-      if (ec.value() == 0) {
-        ec.clear();
-      } else {
-        return false;
-      }
-      return to_file_type(st.st_mode) == file_type::fifo;
-    }
-
-    bool is_other(struct stat st, std::error_code& ec)
-    {
-      if (ec.value() == 0) {
-        ec.clear();
-      } else {
-        return false;
-      }
-      return to_file_type(st.st_mode) == file_type::unknown;
-    }
-
-    bool is_regular_file(struct stat st, std::error_code& ec)
-    {
-      if (ec.value() == 0) {
-        ec.clear();
-      } else {
-        return false;
-      }
-      return to_file_type(st.st_mode) == file_type::regular;
-    }
-
-    bool is_socket(struct stat st, std::error_code& ec)
-    {
-      if (ec.value() == 0) {
-        ec.clear();
-      } else {
-        return false;
-      }
-      return to_file_type(st.st_mode) == file_type::socket;
-    }
-
-    bool is_symlink(struct stat st, std::error_code& ec)
-    {
-      if (ec.value() == 0) {
-        ec.clear();
-      } else {
-        return false;
-      }
-      return to_file_type(st.st_mode) == file_type::symlink;
-    }
-
     uintmax_t file_size(struct stat st, std::error_code& ec)
     {
       if (ec.value() == 0) {
@@ -292,13 +179,57 @@ namespace otto::filesystem {
 #endif
     }
 
-    file_status status(struct stat st, std::error_code& ec)
+    struct stat stat(path p, std::error_code& ec)
     {
-      if (ec.value() == 0) {
-        ec.clear();
+      struct stat st;
+      if (::stat(p.c_str(), &st) != 0) {
+        ec = {errno, std::system_category()};
       } else {
-        return {};
+        ec.clear();
       }
+      return st;
+    }
+
+    struct stat lstat(path p, std::error_code& ec)
+    {
+      struct stat st;
+      if (::lstat(p.c_str(), &st) != 0) {
+        ec = {errno, std::system_category()};
+      } else {
+        ec.clear();
+      }
+      return st;
+    }
+
+    file_status status(path p, struct stat& st, std::error_code& ec)
+    {
+      if (::stat(p.c_str(), &st) != 0) {
+        if (errno == ENOENT) {
+          ec.clear();
+          return file_status{file_type::not_found, perms::none};
+        } else {
+          ec = {errno, std::system_category()};
+          return {};
+        }
+      }
+      ec.clear();
+      file_type type = to_file_type(st, ec);
+      perms prms = static_cast<perms>(st.st_mode) & perms::mask;
+      return file_status{type, prms};
+    }
+
+    file_status link_status(path p, struct stat& st, std::error_code& ec)
+    {
+      if (::stat(p.c_str(), &st) != 0) {
+        if (errno == ENOENT) {
+          ec.clear();
+          return file_status{file_type::not_found, perms::none};
+        } else {
+          ec = {errno, std::system_category()};
+          return {};
+        }
+      }
+      ec.clear();
       file_type type = to_file_type(st, ec);
       perms prms = static_cast<perms>(st.st_mode) & perms::mask;
       return file_status{type, prms};
@@ -482,15 +413,7 @@ namespace otto::filesystem {
 
   int path::compare(const path& p) const noexcept
   {
-    for (auto [c1, c2] : util::zip(native(), p.native())) {
-      if (c1 < c2) return -1;
-      if (c1 > c2) return 1;
-    }
-    auto l1 = native().length();
-    auto l2 = p.native().length();
-    if (l1 < l2) return -1;
-    if (l1 > l2) return 1;
-    return 0;
+    return native() < p.native();
   }
 
   int path::compare(const string_type& s) const
@@ -922,13 +845,16 @@ namespace otto::filesystem {
 
   void DEntr::refresh(std::error_code& ec) noexcept
   {
-    auto st = px::stat(pathobject, ec);
-    _type = px::to_file_type(st, ec);
-    _file_size = px::file_size(st, ec);
-    _hard_link_count = px::hard_link_count(st, ec);
-    _status = px::status(st, ec);
-    st = px::lstat(pathobject, ec);
-    _symlink_status = px::status(st, ec);
+    struct stat st;
+    _status = px::status(pathobject, st, ec);
+    if (filesystem::exists(_status)) {
+      _file_size = px::file_size(st, ec);
+      _hard_link_count = px::hard_link_count(st, ec);
+    } else {
+      _file_size = 0;
+      _hard_link_count = 0;
+    }
+    _symlink_status = filesystem::symlink_status(pathobject, ec);
   }
 
   // 30.10.11.3, observers
@@ -944,92 +870,92 @@ namespace otto::filesystem {
 
   bool DEntr::exists(std::error_code& ec) const noexcept
   {
-    return _type != file_type::not_found && _type != file_type::none;
+    return filesystem::exists(_status);
   }
 
   bool DEntr::exists() const
   {
-    return _type != file_type::not_found && _type != file_type::none;
+    return filesystem::exists(_status);
   }
 
   bool DEntr::is_block_file(std::error_code& ec) const noexcept
   {
-    return _type == file_type::block;
+    return filesystem::is_block_file(_status);
   }
 
   bool DEntr::is_block_file() const
   {
-    return _type == file_type::block;
+    return filesystem::is_block_file(_status);
   }
 
   bool DEntr::is_character_file(std::error_code& ec) const noexcept
   {
-    return _type == file_type::character;
+    return filesystem::is_character_file(_status);
   }
 
   bool DEntr::is_character_file() const
   {
-    return _type == file_type::character;
+    return filesystem::is_character_file(_status);
   }
 
   bool DEntr::is_directory(std::error_code& ec) const noexcept
   {
-    return _type == file_type::directory;
+    return filesystem::is_directory(_status);
   }
 
   bool DEntr::is_directory() const
   {
-    return _type == file_type::directory;
+    return filesystem::is_directory(_status);
   }
 
   bool DEntr::is_fifo(std::error_code& ec) const noexcept
   {
-    return _type == file_type::fifo;
+    return filesystem::is_fifo(_status);
   }
 
   bool DEntr::is_fifo() const
   {
-    return _type == file_type::fifo;
+    return filesystem::is_fifo(_status);
   }
 
   bool DEntr::is_other(std::error_code& ec) const noexcept
   {
-    return _type == file_type::unknown;
+    return filesystem::is_other(_status);
   }
 
   bool DEntr::is_other() const
   {
-    return _type == file_type::unknown;
+    return filesystem::is_other(_status);
   }
 
   bool DEntr::is_regular_file(std::error_code& ec) const noexcept
   {
-    return _type == file_type::regular;
+    return filesystem::is_regular_file(_status);
   }
 
   bool DEntr::is_regular_file() const
   {
-    return _type == file_type::regular;
+    return filesystem::is_regular_file(_status);
   }
 
   bool DEntr::is_socket(std::error_code& ec) const noexcept
   {
-    return _type == file_type::socket;
+    return filesystem::is_socket(_status);
   }
 
   bool DEntr::is_socket() const
   {
-    return _type == file_type::socket;
+    return filesystem::is_socket(_status);
   }
 
   bool DEntr::is_symlink(std::error_code& ec) const noexcept
   {
-    return _type == file_type::socket;
+    return filesystem::is_symlink(_status);
   }
 
   bool DEntr::is_symlink() const
   {
-    return _type == file_type::socket;
+    return filesystem::is_symlink(_status);
   }
 
   uintmax_t DEntr::file_size(std::error_code& ec) const noexcept
@@ -1401,30 +1327,30 @@ namespace otto::filesystem {
   }
 
   /*
-  void copy(const path& from, const path& to);
-  void copy(const path& from, const path& to, std::error_code& ec) noexcept;
+    void copy(const path& from, const path& to);
+    void copy(const path& from, const path& to, std::error_code& ec) noexcept;
 
-  void copy(const path& from, const path& to, copy_options options);
-  void copy(const path& from, const path& to, copy_options options,
+    void copy(const path& from, const path& to, copy_options options);
+    void copy(const path& from, const path& to, copy_options options,
     std::error_code& ec) noexcept
-  {
+    {
     auto f = status(from);
     auto t = status(to);
     if ((options & copy_options::create_symlinks) != copy_options::none
-      || (options & copy_options::skip_symlinks) != copy_options::none) {
-      auto f = symlink_status(from);
-      auto t = symlink_status(to);
+    || (options & copy_options::skip_symlinks) != copy_options::none) {
+    auto f = symlink_status(from);
+    auto t = symlink_status(to);
     } else if ((options & copy_options::copy_symlinks) != copy_options::none) {
-      auto f = symlink_status(from);
-      auto t = status(to);
+    auto f = symlink_status(from);
+    auto t = status(to);
     } else {
-      auto f = status(from);
-      auto t = status(to);
+    auto f = status(from);
+    auto t = status(to);
     }
     if (f.type() == file_type::not_found) {
-      f.type();
+    f.type();
     }
-  }
+    }
   */
 
   bool copy_file(const path& from, const path& to)
@@ -1487,8 +1413,8 @@ namespace otto::filesystem {
   }
 
   /*
-  void copy_symlink(const path& existing_symlink, const path& new_symlink);
-  void copy_symlink(const path& existing_symlink, const path& new_symlink,
+    void copy_symlink(const path& existing_symlink, const path& new_symlink);
+    void copy_symlink(const path& existing_symlink, const path& new_symlink,
     std::error_code& ec) noexcept;
   */
 
@@ -1541,20 +1467,20 @@ namespace otto::filesystem {
   }
 
   /*
-  bool create_directory(const path& p, const path& attributes);
-  bool create_directory(const path& p, const path& attributes,
+    bool create_directory(const path& p, const path& attributes);
+    bool create_directory(const path& p, const path& attributes,
     std::error_code& ec) noexcept;
 
-  void create_directory_symlink(const path& to, const path& new_symlink);
-  void create_directory_symlink(const path& to, const path& new_symlink,
+    void create_directory_symlink(const path& to, const path& new_symlink);
+    void create_directory_symlink(const path& to, const path& new_symlink,
     std::error_code& ec) noexcept;
 
-  void create_hard_link(const path& to, const path& new_hard_link);
-  void create_hard_link(const path& to, const path& new_hard_link,
+    void create_hard_link(const path& to, const path& new_hard_link);
+    void create_hard_link(const path& to, const path& new_hard_link,
     std::error_code& ec) noexcept;
 
-  void create_symlink(const path& to, const path& new_symlink);
-  void create_symlink(const path& to, const path& new_symlink,
+    void create_symlink(const path& to, const path& new_symlink);
+    void create_symlink(const path& to, const path& new_symlink,
     std::error_code& ec) noexcept;
   */
 
@@ -1620,148 +1546,140 @@ namespace otto::filesystem {
     }
   }
 
+  bool exists(file_status status) noexcept
+  {
+    return status.type() != file_type::not_found;
+  }
+
   bool exists(const path& p)
   {
-    std::error_code ec;
-    auto res = exists(p, ec);
-    if (ec != std::error_code()) {
-      throw filesystem_error("In filesystem::exists", p, ec);
-    }
-    return res;
+    return exists(status(p));
   }
 
   bool exists(const path& p, std::error_code& ec) noexcept
   {
-    struct stat st;
-    return !::stat(p.c_str(), &st);
+    return exists(status(p, ec));
+  }
+
+  bool is_block_file(file_status status) noexcept
+  {
+    return status.type() == file_type::block;
   }
 
   bool is_block_file(const path& p)
   {
-    std::error_code ec;
-    auto res = is_block_file(p, ec);
-    if (ec != std::error_code()) {
-      throw filesystem_error("In filesystem::is_block_file", p, ec);
-    }
-    return res;
+    return is_block_file(status(p));
   }
 
   bool is_block_file(const path& p, std::error_code& ec) noexcept
   {
-    auto st = px::stat(p, ec);
-    return px::is_block_file(st, ec);
+    return is_block_file(status(p, ec));
+  }
+
+  bool is_character_file(file_status status) noexcept
+  {
+    return status.type() == file_type::character;
   }
 
   bool is_character_file(const path& p)
   {
-    std::error_code ec;
-    auto res = is_character_file(p, ec);
-    if (ec != std::error_code()) {
-      throw filesystem_error("In filesystem::is_character_file", p, ec);
-    }
-    return res;
+    return is_character_file(status(p));
   }
 
   bool is_character_file(const path& p, std::error_code& ec) noexcept
   {
-    auto st = px::stat(p, ec);
-    return px::is_character_file(st, ec);
+    return is_character_file(status(p, ec));
+  }
+
+  bool is_directory(file_status status) noexcept
+  {
+    return status.type() == file_type::directory;
   }
 
   bool is_directory(const path& p)
   {
-    std::error_code ec;
-    auto res = is_directory(p, ec);
-    if (ec != std::error_code()) {
-      throw filesystem_error("In filesystem::is_directory", p, ec);
-    }
-    return res;
+    return is_directory(status(p));
   }
 
   bool is_directory(const path& p, std::error_code& ec) noexcept
   {
-    auto st = px::stat(p, ec);
-    return px::is_directory(st, ec);
+    return is_directory(status(p, ec));
+  }
+
+  bool is_fifo(file_status status) noexcept
+  {
+    return status.type() == file_type::fifo;
   }
 
   bool is_fifo(const path& p)
   {
-    std::error_code ec;
-    auto res = is_fifo(p, ec);
-    if (ec != std::error_code()) {
-      throw filesystem_error("In filesystem::is_fifo", p, ec);
-    }
-    return res;
+    return is_fifo(status(p));
   }
 
   bool is_fifo(const path& p, std::error_code& ec) noexcept
   {
-    auto st = px::stat(p, ec);
-    return px::is_fifo(st, ec);
+    return is_fifo(status(p, ec));
+  }
+
+  bool is_other(file_status status) noexcept
+  {
+    return  exists(status) && !is_regular_file(status)
+      && !is_directory(status) && !is_symlink(status);
   }
 
   bool is_other(const path& p)
   {
-    std::error_code ec;
-    auto res = is_other(p, ec);
-    if (ec != std::error_code()) {
-      throw filesystem_error("In filesystem::is_other", p, ec);
-    }
-    return res;
+    return is_other(status(p));
   }
 
   bool is_other(const path& p, std::error_code& ec) noexcept
   {
-    auto st = px::stat(p, ec);
-    return px::is_other(st, ec);
+    return is_other(status(p, ec));
+  }
+
+  bool is_regular_file(file_status status) noexcept
+  {
+    return status.type() == file_type::regular;
   }
 
   bool is_regular_file(const path& p)
   {
-    std::error_code ec;
-    auto res = is_regular_file(p, ec);
-    if (ec != std::error_code()) {
-      throw filesystem_error("In filesystem::is_regular_file", p, ec);
-    }
-    return res;
+    return is_regular_file(status(p));
   }
 
   bool is_regular_file(const path& p, std::error_code& ec) noexcept
   {
-    auto st = px::stat(p, ec);
-    return px::is_regular_file(st, ec);
+    return is_regular_file(status(p, ec));
+  }
+
+  bool is_socket(file_status status) noexcept
+  {
+    return status.type() == file_type::socket;
   }
 
   bool is_socket(const path& p)
   {
-    std::error_code ec;
-    auto res = is_socket(p, ec);
-    if (ec != std::error_code()) {
-      throw filesystem_error("In filesystem::is_socket", p, ec);
-    }
-    return res;
+    return is_socket(status(p));
   }
 
   bool is_socket(const path& p, std::error_code& ec) noexcept
   {
-    auto st = px::stat(p, ec);
-    return px::is_socket(st, ec);
+    return is_socket(status(p, ec));
+  }
+
+  bool is_symlink(file_status status) noexcept
+  {
+    return status.type() == file_type::symlink;
   }
 
   bool is_symlink(const path& p)
   {
-    std::error_code ec;
-    auto res = is_symlink(p, ec);
-    if (ec != std::error_code()) {
-      throw filesystem_error("In filesystem::is_symlink", p, ec);
-    }
-    return res;
+    return is_symlink(status(p));
   }
 
   bool is_symlink(const path& p, std::error_code& ec) noexcept
   {
-    auto st = px::stat(p, ec);
-    return px::is_symlink(st, ec);
+    return is_symlink(status(p, ec));
   }
 
   uintmax_t file_size(const path& p)
@@ -1824,8 +1742,8 @@ namespace otto::filesystem {
 
   file_status status(const path& p, std::error_code& ec) noexcept
   {
-    auto st = px::stat(p, ec);
-    return px::status(st, ec);
+    struct stat st;
+    return px::status(p, st, ec);
   }
 
   file_status symlink_status(const path& p)
@@ -1840,26 +1758,26 @@ namespace otto::filesystem {
 
   file_status symlink_status(const path& p, std::error_code& ec) noexcept
   {
-    auto st = px::lstat(p, ec);
-    return px::status(st, ec);
+    struct stat st;
+    return px::status(p, st, ec);
   }
 
   /*
-  void permissions(const path& p, perms prms,
+    void permissions(const path& p, perms prms,
     perm_options opts);
-  void permissions(const path& p, perms prms, std::error_code& ec) noexcept;
-  void permissions(const path& p, perms prms, perm_options opts, std::error_code& ec);
+    void permissions(const path& p, perms prms, std::error_code& ec) noexcept;
+    void permissions(const path& p, perms prms, perm_options opts, std::error_code& ec);
 
-  path proximate(const path& p, std::error_code& ec);
-  path proximate(const path& p, const path& base = current_path());
-  path proximate(const path& p, const path& base, std::error_code& ec);
+    path proximate(const path& p, std::error_code& ec);
+    path proximate(const path& p, const path& base = current_path());
+    path proximate(const path& p, const path& base, std::error_code& ec);
 
-  path read_symlink(const path& p);
-  path read_symlink(const path& p, std::error_code& ec);
+    path read_symlink(const path& p);
+    path read_symlink(const path& p, std::error_code& ec);
 
-  path relative(const path& p, std::error_code& ec);
-  path relative(const path& p, const path& base);
-  path relative(const path& p, const path& base, std::error_code& ec);
+    path relative(const path& p, std::error_code& ec);
+    path relative(const path& p, const path& base);
+    path relative(const path& p, const path& base, std::error_code& ec);
   */
 
   bool remove(const path& p)
@@ -1904,8 +1822,8 @@ namespace otto::filesystem {
         if (ec) return -1;
         n++;
       }
+      n += static_cast<uintmax_t>(remove(p, ec));
     }
-    remove(p);
     if (ec) return -1;
     return n;
   }
@@ -1948,22 +1866,22 @@ namespace otto::filesystem {
   }
 
   /*
-  space_info space(const path& p);
-  space_info space(const path& p, std::error_code& ec) noexcept;
+    space_info space(const path& p);
+    space_info space(const path& p, std::error_code& ec) noexcept;
 
-  file_status status(const path& p);
-  file_status status(const path& p, std::error_code& ec) noexcept;
+    file_status status(const path& p);
+    file_status status(const path& p, std::error_code& ec) noexcept;
 
-  bool status_known(file_status s) noexcept;
+    bool status_known(file_status s) noexcept;
 
-  file_status symlink_status(const path& p);
-  file_status symlink_status(const path& p, std::error_code& ec) noexcept;
+    file_status symlink_status(const path& p);
+    file_status symlink_status(const path& p, std::error_code& ec) noexcept;
 
-  path temp_directory_path();
-  path temp_directory_path(std::error_code& ec);
+    path temp_directory_path();
+    path temp_directory_path(std::error_code& ec);
 
-  path weakly_canonical(const path& p);
-  path weakly_canonical(const path& p, std::error_code& ec);
+    path weakly_canonical(const path& p);
+    path weakly_canonical(const path& p, std::error_code& ec);
   */
 
 }

@@ -10,14 +10,12 @@ int main( int argc, char* argv[] )
   static plog::ConsoleAppender<plog::TxtFormatter> consoleAppender;
   plog::init(plog::info, (test::dir / "test-log.txt").c_str()).addAppender(&consoleAppender);
 
-  if (fs::exists(test::dir)) {
-    fs::remove_all(test::dir);
-  }
+  fs::remove_all(test::dir);
   fs::create_directories(test::dir);
 
   int result = Catch::Session().run( argc, argv );
 
-  // global clean-up...
+  fs::remove_all(test::dir);
 
   return ( result < 0xff ? result : 0xff );
 }
