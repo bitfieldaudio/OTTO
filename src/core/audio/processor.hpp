@@ -113,7 +113,9 @@ namespace otto {
         auto res = *this;
         length = length < 0 ? nframes - idx : length;
         res.nframes = length;
-        res.audio = {audio.data() + idx, length};
+        if constexpr (channels != 0) {
+          res.audio = {audio.data() + idx, length};
+        }
         return res;
       }
 

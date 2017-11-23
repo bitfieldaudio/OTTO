@@ -17,7 +17,6 @@ namespace otto::modules {
   class Metronome : public Module, audio::FaustWrapper<0, 1> {
 
     std::unique_ptr<MetronomeScreen> screen;
-    audio::ProcessBuffer<1> proc_buf;
 
     using audio::FaustWrapper<0, 1>::process;
 

@@ -116,17 +116,17 @@ namespace otto::util {
 
     // Increment (Any)
 
-    iterator_adaptor_impl operator++()
+    iterator_adaptor_impl& operator++()
+    {
+      Impl::advance(1);
+      return *this;
+    }
+
+    iterator_adaptor_impl operator++(int)
     {
       auto old = *this;
       Impl::advance(1);
       return old;
-    }
-
-    iterator_adaptor_impl& operator++(int)
-    {
-      Impl::advance(1);
-      return *this;
     }
 
     // Dereference (Any)
@@ -192,17 +192,17 @@ namespace otto::util {
 
     // Decrement (Bidirectional)
 
-    iterator_adaptor_impl operator--()
+    iterator_adaptor_impl& operator--()
+    {
+      Impl::advance(-1);
+      return *this;
+    }
+
+    iterator_adaptor_impl operator--(int)
     {
       auto old = *this;
       Impl::advance(-1);
       return old;
-    }
-
-    iterator_adaptor_impl& operator--(int)
-    {
-      Impl::advance(-1);
-      return *this;
     }
   };
 

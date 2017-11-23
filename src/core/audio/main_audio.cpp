@@ -19,8 +19,10 @@ namespace otto::audio {
       {
         auto synth_out = Globals::synth.process(midi_in);
         auto drums_out = Globals::drums.process(midi_in);
-        for (auto&& [dst, src] : util::zip(drums_out, synth_out)) {
-          util::audio::add_all(src, dst);
+        auto mtrnm_out = Globals::metronome.process(midi_in);
+        for (auto&& [drm, snth, mtrn] : util::zip(drums_out, synth_out, mtrnm_out)) {
+          util::audio::add_all(drm, snth);
+          util::audio::add_all(drm, mtrn);
         }
         return Globals::effect.process(drums_out);
       }
