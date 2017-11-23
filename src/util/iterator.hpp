@@ -346,8 +346,36 @@ namespace otto::util {
   using iterator_adaptor = iterator_adaptor_impl<Impl,
     typename detail::iterator_category<Impl>::type>;
 
+
+
+  /// An iterator wrapper to iterate with a non-integer ratio
+  ///
+  /// This iterates through contiguous data, or simply increments an
+  /// integer value, with floating point steps. It keeps track of the
+  /// error, and corrects it while iterating.
+  ///
+  /// The most common use case is iterating over data at a non-integer
+  /// rate ratio. In the OTTO it is used to read sound samples at a
+  /// different rate than how they were recorded.
+  ///
+  /// When used to iterator through data, it is preferred to use
+  /// `first < last` as the loop condition, as opposed to the
+  /// conventional `first != last`. The need for doing this depends on
+  /// the relationship between the `first` and `last` iterators. If
+  /// one was created from the other, using <operator+> or
+  /// <operator->, they are guarantied to be reachable from the other
+  /// using <operator++> or <operator--> as applicable, as long as the
+  /// <step> member variable on the mutating iterator is unchanged.
+  ///
+  /// It has the same iterator category as the wrapped iteratory, except for
+  /// random access iterators, which will be wrapped as bidirectional iterators.
+  /// This is because a lot of the random access optimizations dont really apply
+  /// to this.
+  ///
+  /// \tparam I Any iterator that will be wrapped.
+  /// \tparam V The value type.
   template<typename I, typename V = typename detail::value_type<I>::type>
-  class FloatStepIterImpl {
+  class float_step_iterator {
   public:
     /*
      * Member types
@@ -357,68 +385,79 @@ namespace otto::util {
 
     // for `std::iterator_traits`
     using value_type = V;
-    using iterator_category = typename detail::iterator_category<I>::type;
+    using reference = typename std::iterator_traits<wrapped_type>::reference;
+    using pointer = typename std::iterator_traits<wrapped_type>::pointer;
+    using difference_type = typename std::iterator_traits<wrapped_type>::difference_type;
+    using iterator_category = std::common_type_t<
+      typename detail::iterator_category<I>::type, std::bidirectional_iterator_tag>;
 
     /*
      * Initialization
      */
 
     /// Construct an iterator, pointing to `ptr`
-    FloatStepIterImpl(const wrapped_type& iter, float step = 1.f)
+    float_step_iterator(const wrapped_type& iter, float step = 1.f)
       : iter {iter}, step {step}
     {}
 
     /// Copy constructor
-    FloatStepIterImpl(const FloatStepIterImpl& r)
+    float_step_iterator(const float_step_iterator& r)
       : iter {r.iter},
         step {r.step},
         _error {r._error}
     {}
 
     /// Move constructor
-    FloatStepIterImpl(FloatStepIterImpl&& r)
+    float_step_iterator(float_step_iterator&& r)
       : iter {std::move(r.iter)},
         step {std::move(r.step)},
         _error {std::move(r._error)}
     {}
 
     // Default assignment operator
-    FloatStepIterImpl& operator=(const FloatStepIterImpl&) = default;
+    float_step_iterator& operator=(const float_step_iterator&) = default;
+    float_step_iterator& operator=(float_step_iterator&&) = default;
 
-    // Default assignment operator
-    FloatStepIterImpl& operator=(FloatStepIterImpl&&) = default;
-
-
-    /* Iterator implementation */
-  protected:
+    /* Iterator operators */
 
     /// Dereference the iterator
     ///
     /// Propagates to the dereference operator of <ptr>
-    decltype(auto) dereference() {return *iter;}
-    decltype(auto) dereference() const {return *iter;}
+    decltype(auto) operator*() {return *iter;}
+    decltype(auto) operator*() const {return *iter;}
 
     /// Compare equal
     ///
     /// Requires members <ptr> and <_error> to be equal.
     /// Ignores <step>, as it has no effect on the dereferenced value.
-    bool equal(const FloatStepIterImpl& r) const
+    bool operator==(const float_step_iterator& r) const
     {
       return iter == r.iter && _error == r._error;
     }
 
-    /// Get the real difference between this and `o`
+    /// Compare inequal
+    ///
+    /// Implemented as if by `!(*this == r)`
+    bool operator!=(const float_step_iterator& r) const
+    {
+      return !(*this == r);
+    }
+
+    /// Get the number of iterations to get from `rhs` to this
     ///
     /// Takes the error values into account.
-    std::ptrdiff_t difference(const FloatStepIterImpl& o) const
+    std::ptrdiff_t operator-(const float_step_iterator& rhs) const
     {
-      return (float(iter - o.iter) + (_error - o._error)) / step;
+      return (float(iter - rhs.iter) + (_error - rhs._error)) / step;
     }
 
     /// Increment this by `n`
     ///
-    /// Guarrantied to be equal to calling <operator++> `n` times
-    void advance(int n)
+    /// \effects Advance the iterator by `floor(error + n * speed)`, and store
+    /// the remainder in `error`.
+    ///
+    /// \returns A reference to this
+    float_step_iterator& operator+=(int n)
     {
       float intPart;
       _error = std::modf(_error + step * n, &intPart);
@@ -427,13 +466,76 @@ namespace otto::util {
         _error += 1;
       }
       std::advance(iter, intPart);
+      return *this;
+    }
+
+    /// Increment this by one
+    ///
+    /// \effects Same as `*this += 1`
+    /// \returns A reference to this
+    float_step_iterator& operator++()
+    {
+      *this += 1;
+      return *this;
+    }
+
+    /// Increment this by one
+    ///
+    /// \effects Same as `*this += 1`
+    /// \returns A copy of this pre increment
+    float_step_iterator operator++(int)
+    {
+      auto tmp = *this;
+      operator++();
+      return tmp;
+    }
+
+    /// Decrement this by `n`
+    ///
+    /// \effects Same as `*this += -n`
+    /// \returns A reference to this
+    /// \requires `wrapped_type` shall be at least a Bidirectional Iterator, or
+    /// this function will not exist.
+    auto operator-=(int n) -> std::enable_if_t<
+      std::is_base_of_v<std::bidirectional_iterator_tag, iterator_category>,
+      float_step_iterator&>
+    {
+      return *this += -n;
+    }
+
+    /// Decrement this by one
+    ///
+    /// \effects Same as `*this += -1`
+    /// \returns A reference to this
+    /// \requires `wrapped_type` shall be at least a Bidirectional Iterator, or
+    /// this function will not exist.
+    auto operator--() -> std::enable_if_t<
+      std::is_base_of_v<std::bidirectional_iterator_tag, iterator_category>,
+        float_step_iterator&>
+    {
+      return *this += -1;
+    }
+
+    /// Decrement this by one
+    ///
+    /// \effects Same as `*this += -1`
+    /// \returns A copy of this pre increment
+    /// \requires `wrapped_type` shall be at least a Bidirectional Iterator, or
+    /// this function will not exist.
+    auto operator--(int) -> std::enable_if_t<
+        std::is_base_of_v<std::bidirectional_iterator_tag, iterator_category>,
+        float_step_iterator&>
+    {
+      auto tmp = *this;
+      *this += -1;
+      return tmp;
     }
 
     /* Member functions */
-  public:
 
     /// Get a copy of the underlying pointer.
-    wrapped_type data() const {
+    wrapped_type data() const
+    {
       return iter;
     }
 
@@ -443,8 +545,22 @@ namespace otto::util {
     /// Otherwise it is in the range `[0, 1)`, signifying the
     /// fractional part of the real index. I.e.
     /// `ptr + error() == real_index`.
-    float error() const {
+    float error() const
+    {
       return _error;
+    }
+
+    /// The real numeric difference between this and `rhs`.
+    ///
+    /// Only avaliable if `wrapped_type` is random access.
+    auto difference(const float_step_iterator& rhs) ->
+    std::enable_if_t<std::is_same_v<
+                       typename std::iterator_traits<
+                         wrapped_type>::iterator_category,
+                       std::random_access_iterator_tag>,
+      float>
+    {
+      return (iter - rhs.iter) + (error() - rhs.error());
     }
 
     /*
@@ -474,35 +590,8 @@ namespace otto::util {
     wrapped_type iter;
   };
 
-
-  /// An iterator wrapper to iterate with a non-integer ratio
-  ///
-  /// This iterates through contiguous data, or simply increments an
-  /// integer value, with floating point steps. It keeps track of the
-  /// error, and corrects it while iterating.
-  ///
-  /// The most common use case is iterating over data at a non-integer
-  /// rate ratio. In the OTTO it is used to read sound samples at a
-  /// different rate than how they were recorded.
-  ///
-  /// When used to iterator through data, it is preferred to use
-  /// `first < last` as the loop condition, as opposed to the
-  /// conventional `first != last`. The need for doing this depends on
-  /// the relationship between the `first` and `last` iterators. If
-  /// one was created from the other, using <operator+> or
-  /// <operator->, they are guarantied to be reachable from the other
-  /// using <operator++> or <operator--> as applicable, as long as the
-  /// <step> member variable on the mutating iterator is unchanged.
-  ///
-  /// `float_step_iterator` nearly models a random access iterator,
-  /// missing only a few operations, that may be added in the future.
-  /// but should not be used as such. It does however model a
-  /// Bidirectional iterator.
-  ///
-  /// \tparam I A random access iterator that will be wrapped.
-  /// \tparam V The value type.
-  template<typename I, typename V = typename detail::value_type<I>::type>
-  using float_step_iterator = iterator_adaptor<FloatStepIterImpl<I, V>>;
+  template<typename Iterator>
+  float_step_iterator(const Iterator& iter, float step) -> float_step_iterator<Iterator>;
 
   /// Create a float_step_iterator
   template<typename I, typename V =
@@ -512,7 +601,6 @@ namespace otto::util {
     return float_step_iterator<std::decay_t<I>,
       V>{std::forward<I>(iter), step};
   }
-
 
   ///
   /// Generating iterator

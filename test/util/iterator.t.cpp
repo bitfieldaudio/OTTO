@@ -104,12 +104,12 @@ namespace otto::util {
       std::vector expected {0, 1, 2, 3, 2, 1, 2};
       std::vector<int> actual;
       actual.push_back(*first);   // 0
-      actual.push_back(*first++); // 1
-      actual.push_back(*first++); // 2
-      actual.push_back(*first++); // 3
-      actual.push_back(*first--); // 2
-      actual.push_back(*first--); // 1
-      actual.push_back(*first++); // 2
+      actual.push_back(*++first); // 1
+      actual.push_back(*++first); // 2
+      actual.push_back(*++first); // 3
+      actual.push_back(*--first); // 2
+      actual.push_back(*--first); // 1
+      actual.push_back(*++first); // 2
 
       REQUIRE_THAT(expected, Catch::Matchers::Equals(actual));
     }
@@ -121,12 +121,12 @@ namespace otto::util {
       std::vector expected {10, 9, 8, 7, 8, 9, 8};
       std::vector<int> actual;
       actual.push_back(*first);   // 10
-      actual.push_back(*first++); // 9
-      actual.push_back(*first++); // 8
-      actual.push_back(*first++); // 7
-      actual.push_back(*first--); // 8
-      actual.push_back(*first--); // 9
-      actual.push_back(*first++); // 8
+      actual.push_back(*++first); // 9
+      actual.push_back(*++first); // 8
+      actual.push_back(*++first); // 7
+      actual.push_back(*--first); // 8
+      actual.push_back(*--first); // 9
+      actual.push_back(*++first); // 8
 
       REQUIRE_THAT(expected, Catch::Matchers::Equals(actual));
     }
@@ -138,12 +138,12 @@ namespace otto::util {
       std::vector expected {0, 0, 1, 1, 1, 0, 1};
       std::vector<int> actual;
       actual.push_back(*first);   // 0
-      actual.push_back(*first++); // 0.5
-      actual.push_back(*first++); // 1
-      actual.push_back(*first++); // 1.5
-      actual.push_back(*first--); // 1
-      actual.push_back(*first--); // 0.5
-      actual.push_back(*first++); // 1
+      actual.push_back(*++first); // 0.5
+      actual.push_back(*++first); // 1
+      actual.push_back(*++first); // 1.5
+      actual.push_back(*--first); // 1
+      actual.push_back(*--first); // 0.5
+      actual.push_back(*++first); // 1
 
       REQUIRE_THAT(expected, Catch::Matchers::Equals(actual));
     }
@@ -155,12 +155,12 @@ namespace otto::util {
       std::vector expected {10, 9, 9, 8, 9, 9, 9};
       std::vector<int> actual;
       actual.push_back(*first);   // 10
-      actual.push_back(*first++); // 9.5
-      actual.push_back(*first++); // 9
-      actual.push_back(*first++); // 8.5
-      actual.push_back(*first--); // 9
-      actual.push_back(*first--); // 9.5
-      actual.push_back(*first++); // 9
+      actual.push_back(*++first); // 9.5
+      actual.push_back(*++first); // 9
+      actual.push_back(*++first); // 8.5
+      actual.push_back(*--first); // 9
+      actual.push_back(*--first); // 9.5
+      actual.push_back(*++first); // 9
 
       REQUIRE_THAT(expected, Catch::Matchers::Equals(actual));
     }
