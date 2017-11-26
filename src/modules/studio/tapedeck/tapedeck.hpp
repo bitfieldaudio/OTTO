@@ -54,9 +54,9 @@ namespace otto::modules {
           return std::invoke(reverse);
         } else {
           if constexpr (!std::is_void_v<Ret>) {
-              return Ret();
-            }
+            return Ret();
           }
+        }
       }
 
       bool recording() const;

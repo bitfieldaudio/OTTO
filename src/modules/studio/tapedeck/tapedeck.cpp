@@ -227,7 +227,17 @@ namespace otto::modules {
 
     // Read audio
     if (state.doPlayAudio()) {
-      tapeBuffer->read_frames(data.nframes, realSpeed, std::begin(proc_buf));
+      if (state.looping) {
+        auto jmp = realSpeed > 0 ? loopSect.out : loopSect.in;
+        auto n = tapeBuffer->read_until(jmp, realSpeed,
+          std::begin(proc_buf), data.nframes);
+        if (n < data.nframes) {
+          tapeBuffer->jump_to(realSpeed > 0 ? loopSect.in : loopSect.out);
+          tapeBuffer->read_n(data.nframes - n, realSpeed, std::begin(proc_buf));
+        }
+      } else {
+        tapeBuffer->read_n(data.nframes, realSpeed, std::begin(proc_buf));
+      }
     }
 
     return data.redirect(proc_buf);
@@ -245,7 +255,7 @@ namespace otto::modules {
 
     if (state.recording()) {
       // Write audio
-      auto sect = tapeBuffer->write_frames(std::begin(data.audio), data.nframes,
+      auto sect = tapeBuffer->write_n(std::begin(data.audio), data.nframes,
         realSpeed, [&, track = state.track] (auto&& src, auto& dst) {
           dst[track] += src[0] * props.gain;
         });

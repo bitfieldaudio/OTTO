@@ -443,6 +443,46 @@ namespace otto::util {
       return !(*this == r);
     }
 
+    /// Compare less than
+    ///
+    /// Only avaliable if `wrapped_type` is less than comparable to itself.
+    /// If the two wrapped instances are equal, the error values are compared.
+    auto operator <(const float_step_iterator& r) const
+      -> decltype(std::declval<wrapped_type>() < std::declval<wrapped_type>())
+    {
+      return iter < r.iter || (iter == r.iter && _error < r._error);
+    }
+
+    /// Compare greater than
+    ///
+    /// Only avaliable if `wrapped_type` is greater than comparable to itself.
+    /// If the two wrapped instances are equal, the error values are compared.
+    auto operator >(const float_step_iterator& r) const
+      -> decltype(std::declval<wrapped_type>() > std::declval<wrapped_type>())
+    {
+      return iter > r.iter || (iter == r.iter && _error > r._error);
+    }
+
+    /// Compare less than or equal to
+    ///
+    /// Only avaliable if `wrapped_type` is less than comparable to itself.
+    /// If the two wrapped instances are equal, the error values are compared.
+    auto operator<=(const float_step_iterator& r) const
+      -> decltype(std::declval<wrapped_type>() < std::declval<wrapped_type>())
+    {
+      return iter < r.iter || (iter == r.iter && _error <= r._error);
+    }
+
+    /// Compare greater than or equal to
+    ///
+    /// Only avaliable if `wrapped_type` is greater than comparable to itself.
+    /// If the two wrapped instances are equal, the error values are compared.
+    auto operator>=(const float_step_iterator& r) const
+      -> decltype(std::declval<wrapped_type>() > std::declval<wrapped_type>())
+    {
+      return iter > r.iter || (iter == r.iter && _error >= r._error);
+    }
+
     /// Get the number of iterations to get from `rhs` to this
     ///
     /// Takes the error values into account.

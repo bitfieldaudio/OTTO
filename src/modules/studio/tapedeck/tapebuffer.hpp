@@ -99,9 +99,9 @@ namespace otto {
     /// the first frame in the range will be positioned at `cursor + 1`.
     /// If `speed` is `0`, nothing will be written
     ///
-    /// @return the section of tape that was just written
+    /// \returns the section of tape that was just written
     template<typename Iter, typename BinaryFunc>
-    util::audio::Section<int> write_frames(Iter iter, int n, float speed,
+    util::audio::Section<int> write_n(Iter iter, int n, float speed,
       BinaryFunc&& func = [] (auto&& in, auto& tape) { tape = in; })
     {
       util::audio::Section<int> written {0,0};
@@ -139,13 +139,29 @@ namespace otto {
     }
 
     template<typename Iter>
-    void read_frames(int n, float speed, Iter dst)
+    void read_n(int n, float speed, Iter dst)
     {
       float error = 0.f;
       auto src = util::float_step(buffer.citer(current_position), speed);
       std::copy_n(src, n, dst);
       advance(n * speed);
       IF_DEBUG(dbg.read_size_graph.push(n * speed));
+    }
+
+    template<typename Iter>
+    std::size_t read_until(std::size_t pos, float speed, Iter dst,
+      std::size_t max_n = std::numeric_limits<std::size_t>::max())
+    {
+      auto first = util::float_step(buffer.citer(current_position), speed);
+      auto last = util::float_step(buffer.citer(pos), speed);
+      auto iter = first;
+      std::size_t i = 0;
+      for (;iter < last && i < max_n; ++iter, ++i)
+      {
+        *dst = *iter;
+      }
+      advance(iter.difference(first));
+      return i;
     }
 
     /// Jumps the tape to absolute position `p`
