@@ -16,7 +16,7 @@ target_link_libraries(otto PUBLIC jack)
 target_link_libraries(otto PUBLIC ${CMAKE_THREAD_LIBS_INIT})
 target_include_directories(otto PUBLIC ./)
 
-if (NOT USE_LIBCXX)
+if (NOT OTTO_USE_LIBCXX)
   target_link_libraries(otto PUBLIC atomic)
 endif()
 
@@ -28,7 +28,7 @@ target_link_libraries(otto_exec PUBLIC otto)
 set_target_properties(otto_exec PROPERTIES OUTPUT_NAME otto)
 
 # Docs
-if (BUILD_DOCS)
+if (OTTO_BUILD_DOCS)
   file(WRITE ${OTTO_BINARY_DIR}/.standardese
 "[compilation]
 commands_dir=${OTTO_BINARY_DIR}

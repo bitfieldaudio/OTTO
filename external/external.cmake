@@ -19,12 +19,11 @@ file(GLOB_RECURSE nanovg_src "${CMAKE_CURRENT_SOURCE_DIR}/external/nanovg/src/*.
 add_library(nanovg ${nanovg_src})
 target_include_directories(nanovg INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/external/nanovg/src)
 
-# Use GL3 on OSX, and GLES3 on linux
+# Link to the OpenGL framework on OSX
 if (APPLE)
   find_package(OpenGL)
   target_include_directories(nanovg INTERFACE ${OPENGL_INCLUDE_DIR})
   target_link_libraries(nanovg INTERFACE ${OPENGL_LIBRARIES})
-else ()
 endif()
 
 # NanoCanvas
@@ -62,7 +61,7 @@ execute_process(COMMAND git submodule update --init -- external/glfw
 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/glfw)
 
-if(BUILD_DOCS)
+if(OTTO_BUILD_DOCS)
   execute_process(COMMAND git submodule update --init -- external/standardese
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
   set(standardese_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/standardese)
