@@ -10,7 +10,6 @@
 #include <filesystem.hpp>
 
 using Random = effolkronium::random_static;
-namespace fs = otto::filesystem;
 
 namespace otto::test {
 

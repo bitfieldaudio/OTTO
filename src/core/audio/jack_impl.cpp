@@ -226,9 +226,8 @@ namespace otto::audio {
     {
       if (!(owner.do_process && Globals::running())) return;
 
-      static auto& timer = util::timer::dispatcher.timers["Audio Frame time"];
-      if (timer.running) timer.stopTimer();
-      timer.startTimer();
+      static auto timer = util::timer::find_or_make("JackAudio::Process");
+      timer.tick();
 
       if (nframes > bufferSize) {
         LOGE << "Jack requested more frames than expected";

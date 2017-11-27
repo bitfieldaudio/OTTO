@@ -374,7 +374,7 @@ namespace otto::filesystem {
 
     // 30.10.11.3, observers
 
-    const path& path() const;
+    const class path& path() const;
     operator const class path&() const;
 
     bool exists() const;

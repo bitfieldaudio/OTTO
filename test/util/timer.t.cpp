@@ -7,12 +7,13 @@
 namespace otto::util::timer {
 
   int calcMargin() {
-    Timer approxT;
+    Timer approxT {"approx"};
     {
-      auto volatile t = ScopeTimer(approxT);
-      std::this_thread::sleep_for(Timer::Duration(1));
+      start(approxT);
+      std::this_thread::sleep_for(Timer::time_point::duration(1));
+      stop();
     }
-    return approxT.times[0].count() * 3;
+    return approxT.data.front().count() * 3;
   }
 
   auto TimeApproximation(long int time) {
@@ -21,16 +22,14 @@ namespace otto::util::timer {
 
   TEST_CASE("Timers", "[timer]") {
 
-    TimerDispatcher dispatcher;
-
-    SECTION("ScopeTimer") {
-      Timer t;
-      auto sleepTime = Timer::Duration(std::chrono::seconds(1));
+    SECTION("ScopedTimer") {
+      Timer t {"t"};
+      auto sleepTime = Timer::time_point::duration(std::chrono::seconds(1));
       {
-        auto volatile timer = ScopeTimer(t);
+        auto timer = ScopedTimer(t);
         std::this_thread::sleep_for(sleepTime);
       }
-      CHECK(t.times[0].count() == TimeApproximation(sleepTime.count()));
+      CHECK(t.data.front().count() == TimeApproximation(sleepTime.count()));
     }
   }
 

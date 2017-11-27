@@ -858,7 +858,7 @@ namespace otto::filesystem {
   }
 
   // 30.10.11.3, observers
-  const path& DEntr::path() const
+  const class path& DEntr::path() const
   {
     return pathobject;
   }

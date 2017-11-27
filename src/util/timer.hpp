@@ -12,137 +12,142 @@
 
 #include <json.hpp>
 #include "filesystem.hpp"
-#include "core/globals.hpp"
 
+
+/// A simple stack-based library used to time nested parts of a program.
 namespace otto::util::timer {
 
+  /// The type used to identify timers
+  using timer_id = std::string;
+
+  /// Contains the actual timing data.
+  ///
+  /// Should only very rarely be interacted with directly by the user.
   struct Timer {
-    using Duration = std::chrono::nanoseconds;
-    using Clock = std::chrono::steady_clock;
-    using TimePoint = std::chrono::time_point<Clock, Duration>;
 
-    static double numSecs(Duration d) {
-      return std::chrono::duration<double>(d).count();
-    }
+    /// A `std::chrono::time_point` used to measure timings.
+    using time_point = std::chrono::time_point<
+      std::chrono::steady_clock, std::chrono::nanoseconds>;
 
-    bool running;
-    std::vector<Duration> times;
-    TimePoint start;
+    /// Construct a new timer with id `id`
+    ///
+    /// \effects set member variable `id` to `id`
+    /// \remarks at this point, `start_time` is undefined.
+    Timer(const timer_id& id);
 
-    Timer() = default;
-    Timer(Timer&&) noexcept = default;
+    /// Construct a new timer with id `id`
+    ///
+    /// \effects set member variable `id` to `id`
+    /// \remarks at this point, `start_time` is undefined.
+    Timer(timer_id&& id);
 
-    void startTimer() {
-      running = true;
-      start = Clock::now();
-    }
+    /// Start the timer
+    ///
+    /// \effects sets `start_time` to `time_point::clock::now()`
+    /// \postconditions `running == true`
+    void start();
 
-    void stopTimer() {
-      times.push_back(Clock::now() - start);
-      running = false;
-    }
+    /// Stop the timer
+    ///
+    /// \requires `running == true`
+    /// \effects pushes `time_point::clock::now() - start_time` to the back of `data`.
+    /// \postconditions `running == false`
+    void stop();
 
-    Duration calcAvg() const {
-      Duration sum = std::accumulate(times.begin(), times.end(),
-                                     Duration(0), std::plus<Duration>());
-      return sum / times.size();
-    }
+    /// Tick the timer
+    ///
+    /// \effects if `running == false`, same as `start()`. Otherwise, push
+    /// `time_point::clock::now() - start_time` to the back of `data`, and
+    /// assign `time_point::clock::now()` to `start_time`
+    /// \postconditions `running == true`
+    /// \complexity `time_point::clock::now()` is only called once.
+    void tick();
 
-    Duration calcMed() const {
-      auto vec = times;
-      auto iter = vec.begin() + vec.size() / 2;
-      std::nth_element(vec.begin(), vec.end(), iter);
-      return *iter;
-    }
+    /// Simple serialization of the Timer data, with all the children nested.
+    nlohmann::json serialize() const;
 
-    Duration calcMin() const {
-      return *std::min_element(times.begin(), times.end());
-    }
-
-    Duration calcMax() const {
-      return *std::max_element(times.begin(), times.end());
-    }
-
-    nlohmann::json jsonSerialize() const {
-      auto ret = nlohmann::json::object();
-      ret["count"] = times.size();
-      ret["Average"] = numSecs(calcAvg());
-      ret["Median"] = numSecs(calcMed());
-      ret["min"] = numSecs(calcMin());
-      ret["max"] = numSecs(calcMax());
-      // auto tms = nlohmann::json::array();
-      // for (auto&& t : times) {
-      //   tms.push_back(t.count());
-      // }
-      // ret["measurements"] = tms;
-      return ret;
-    }
+    timer_id id;
+    std::vector<Timer> children;
+    std::vector<time_point::duration> data;
+    time_point start_time;
+    bool running {false};
   };
 
-  /// RAII based timer. Times from creation until destruction.
-  struct ScopeTimer {
+  /// A pointer to a timer, which stops and pops the timer upon destruction.
+  ///
+  /// This is useful for scope timers, and must always be moved from
+  struct ScopedTimer {
 
-    Timer& timer;
+    /// Construct a handle to the provided timer
+    ///
+    /// \postconditions `this->timer == &timer`
+    explicit ScopedTimer(Timer& timer) noexcept;
 
-    ScopeTimer(Timer& t) : timer (t) {
-      timer.startTimer();
-    }
+    /// Construct a handle to the provided timer
+    ///
+    /// \note `timer` can be null
+    /// \postconditions `this->timer == timer`
+    explicit ScopedTimer(Timer* timer) noexcept;
 
-    ~ScopeTimer() {
-      timer.stopTimer();
-    }
+    /// Move only
+    ScopedTimer(const ScopedTimer& rhs) = delete;
+
+    /// Move construct this handler
+    ///
+    /// \postconditions `this->timer == rhs.timer` and also,
+    /// `rhs.timer == nullptr`
+    ScopedTimer(ScopedTimer&& rhs) noexcept;
+
+    /// Destruct the handler and stop the timer.
+    ///
+    /// \effects if `timer != nullptr`, call `stop(*this)`.
+    /// Otherwise, do nothing
+    ~ScopedTimer();
+
+    Timer* timer;
   };
 
-  struct TimerDispatcher {
-    std::unordered_map<std::string, Timer> timers;
-    fs::path path = Globals::data_dir / "timers.json";
+  /// Find or create a child of the current top of the stack, which matches id
+  /// `id`.
+  Timer& find_or_make(timer_id id);
 
-    virtual ~TimerDispatcher() {}
+  /// Start a timer with id `id`, and push it to the stack.
+  Timer& start(timer_id id);
 
-    /// Time a call to function `f`
-    template<typename Callable, typename... Args>
-    auto timedCall(const std::string& name, Callable&& f, Args... args) {
-      Timer& timer = timers[name];
-      timer.startTimer();
-      auto&& ret = std::invoke(std::forward<Callable>(f), std::forward<Args>(args)...);
-      timer.stopTimer();
-      return ret;
-    }
+  /// Start `timer` and push it onto the stack.
+  Timer& start(Timer& timer);
 
-    ScopeTimer timeScope(const std::string& name) {
-      return ScopeTimer(timers[name]);
-    }
+  /// Start a timer with id `id`, and push it to the stack.
+  ScopedTimer start_scoped(timer_id id);
 
-    nlohmann::json jsonSerialize() {
-      nlohmann::json output = nlohmann::json::object();
-      for (auto&& [n, t] : timers) {
-        output[n] = t.jsonSerialize();
-      }
-      return output;
-    }
+  /// Start the timer pointed to by `TimerHandle`
+  ScopedTimer start_scoped(Timer&);
 
-    void writeToFile() {
-      std::ofstream stream(path, std::ios::trunc);
-      stream << std::setw(2) << jsonSerialize() << std::endl;
-      stream.close();
-    }
-  };
+  /// Stop the current timer, and pop it off the stack
+  void stop();
 
-  /// Writes to file on destruction. 
-  struct GlobalTimerDispatcher : public TimerDispatcher {
+  /// Stop the timer, and pop it off the stack if it is there.
+  ///
+  /// \effects `timer.stop()` and, if `&timer` is in `timer_stack`, stop and pop
+  /// it and everything after it.
+  // void stop(Timer& timer);
 
-    GlobalTimerDispatcher() : TimerDispatcher() {
-      timers["Program time"].startTimer();
-    }
+  /// Tick a timer with id `id`, and push it to the back of the stack if it is
+  /// not there already.
+  Timer& tick(timer_id id);
 
-    ~GlobalTimerDispatcher() {
-      timers["Program time"].stopTimer();
-      writeToFile();
-    }
-  };
+  /// Tick `timer`
+  ///
+  /// \effects `timer.tick()` and, if `timer_stack.back() != &timer`, push it to
+  /// the stack.
+  Timer& tick(Timer& timer);
 
-  inline GlobalTimerDispatcher dispatcher {};
+  nlohmann::json serialize();
 
 } // otto::util::timer
 
-#define TIME_SCOPE(name) auto timer = ::otto::util::timer::dispatcher.timeScope(name);
+// M A C R O S /////////////////////////////////////////////////////////////////
+
+#define TIME_SCOPE(name) auto scope_timer = ::otto::util::timer::start_scoped(name);
+
+
