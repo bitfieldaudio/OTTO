@@ -32,9 +32,9 @@ namespace otto::filesystem {
 
     // 30.10.7.4.1, constructors and destructor
 
-    path() noexcept;
+    path();
     path(const path& p);
-    path(path&& p) noexcept;
+    path(path&& p);
     path(string_type&& source, format fmt = auto_format);
 
     template <class Source>
