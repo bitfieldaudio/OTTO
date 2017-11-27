@@ -26,7 +26,7 @@ namespace otto::util::timer {
       Timer t {"t"};
       auto sleepTime = Timer::time_point::duration(std::chrono::seconds(1));
       {
-        auto timer = ScopedTimer(t);
+        auto volatile timer = start_scoped(t);
         std::this_thread::sleep_for(sleepTime);
       }
       CHECK(t.data.front().count() == TimeApproximation(sleepTime.count()));

@@ -63,7 +63,7 @@ namespace otto::util::timer {
     rhs.timer = nullptr;
   }
 
-  ScopedTimer::~ScopedTimer() noexcept
+  ScopedTimer::~ScopedTimer()
   {
     if (timer != nullptr) stop();
   }

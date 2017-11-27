@@ -45,6 +45,8 @@ namespace otto::util::timer {
     ///
     /// \effects sets `start_time` to `time_point::clock::now()`
     /// \postconditions `running == true`
+    /// \remarks Do *not* use this function. In most cases you want the free
+    /// function which also pushes and pops from/to the stack
     void start();
 
     /// Stop the timer
@@ -52,6 +54,8 @@ namespace otto::util::timer {
     /// \requires `running == true`
     /// \effects pushes `time_point::clock::now() - start_time` to the back of `data`.
     /// \postconditions `running == false`
+    /// \remarks Do *not* use this function. In most cases you want the free
+    /// function which also pushes and pops from/to the stack
     void stop();
 
     /// Tick the timer
@@ -61,6 +65,8 @@ namespace otto::util::timer {
     /// assign `time_point::clock::now()` to `start_time`
     /// \postconditions `running == true`
     /// \complexity `time_point::clock::now()` is only called once.
+    /// \remarks Do *not* use this function. In most cases you want the free
+    /// function which also pushes and pops from/to the stack
     void tick();
 
     /// Simple serialization of the Timer data, with all the children nested.
@@ -77,6 +83,7 @@ namespace otto::util::timer {
   ///
   /// This is useful for scope timers, and must always be moved from
   struct ScopedTimer {
+  private:
 
     /// Construct a handle to the provided timer
     ///
@@ -105,6 +112,9 @@ namespace otto::util::timer {
     ~ScopedTimer();
 
     Timer* timer;
+
+    friend ScopedTimer start_scoped(timer_id id);
+    friend ScopedTimer start_scoped(Timer id);
   };
 
   /// Find or create a child of the current top of the stack, which matches id

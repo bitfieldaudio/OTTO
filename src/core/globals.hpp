@@ -63,7 +63,7 @@ namespace otto {
       ui.init();
     }
 
-    //TODO: status codes etc
+    // TODO: status codes etc
     static inline void exit() {
       isRunning = false;
     }
