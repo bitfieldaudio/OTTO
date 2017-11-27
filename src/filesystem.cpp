@@ -259,7 +259,7 @@ namespace otto::filesystem {
 
   path& path::operator=(const path& p) = default;
 
-  path& path::operator=(path&& p) noexcept = default;
+  path& path::operator=(path&& p) = default;
 
   path& path::operator=(string_type&& source)
   {

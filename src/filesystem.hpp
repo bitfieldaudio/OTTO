@@ -47,7 +47,7 @@ namespace otto::filesystem {
 
     // 30.10.7.4.2, assignments
     path& operator=(const path& p);
-    path& operator=(path&& p) noexcept;
+    path& operator=(path&& p);
     path& operator=(string_type&& source);
 
     path& assign(string_type&& source);

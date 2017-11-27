@@ -83,18 +83,6 @@ namespace otto::util::timer {
   ///
   /// This is useful for scope timers, and must always be moved from
   struct ScopedTimer {
-  private:
-
-    /// Construct a handle to the provided timer
-    ///
-    /// \postconditions `this->timer == &timer`
-    explicit ScopedTimer(Timer& timer) noexcept;
-
-    /// Construct a handle to the provided timer
-    ///
-    /// \note `timer` can be null
-    /// \postconditions `this->timer == timer`
-    explicit ScopedTimer(Timer* timer) noexcept;
 
     /// Move only
     ScopedTimer(const ScopedTimer& rhs) = delete;
@@ -111,10 +99,23 @@ namespace otto::util::timer {
     /// Otherwise, do nothing
     ~ScopedTimer();
 
+  private:
+
+    /// Construct a handle to the provided timer
+    ///
+    /// \postconditions `this->timer == &timer`
+    explicit ScopedTimer(Timer& timer) noexcept;
+
+    /// Construct a handle to the provided timer
+    ///
+    /// \note `timer` can be null
+    /// \postconditions `this->timer == timer`
+    explicit ScopedTimer(Timer* timer) noexcept;
+
     Timer* timer;
 
-    friend ScopedTimer start_scoped(timer_id id);
-    friend ScopedTimer start_scoped(Timer id);
+    friend ScopedTimer start_scoped(timer_id);
+    friend ScopedTimer start_scoped(Timer&);
   };
 
   /// Find or create a child of the current top of the stack, which matches id
