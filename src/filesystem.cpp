@@ -104,7 +104,7 @@ namespace otto::filesystem {
 
   namespace px {
 
-    path::string_type separators = "/\\";
+    const char* separators = "/\\";
 
     path::format detect_format(const path::string_type& s)
     {
@@ -113,7 +113,11 @@ namespace otto::filesystem {
 
     bool is_separator(path::value_type c)
     {
-      return util::any_of(separators, [c] (char s) { return c == s; });
+      const char* s = separators;
+      while (*s != 0) {
+        if (*s++ == c) return true;
+      }
+      return false;
     }
 
     file_type to_file_type(int stat_mode)
