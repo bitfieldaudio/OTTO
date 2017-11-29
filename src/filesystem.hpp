@@ -347,10 +347,10 @@ namespace otto::filesystem {
 
     // 30.10.11.1, constructors and destructor
 
-    directory_entry() noexcept = default;
+    directory_entry() = default;
 
     directory_entry(const directory_entry&) = default;
-    directory_entry(directory_entry&&) noexcept = default;
+    directory_entry(directory_entry&&) = default;
 
     explicit directory_entry(const path& p);
     directory_entry(const path& p, std::error_code& ec);
