@@ -41,10 +41,17 @@ namespace otto::util::timer {
   nlohmann::json Timer::serialize() const
   {
     auto arr = nlohmann::json::array();
-    for (auto dur : data) {
+    for (auto&& dur : data) {
       arr.push_back(dur.count());
     }
-    return arr;
+    auto json_chldrn = nlohmann::json::object();
+    for (auto&& c : children) {
+      json_chldrn[c.id] = c.serialize();
+    }
+    return {
+      {"data", arr},
+      {"children", json_chldrn}
+    };
   }
 
 // otto::util::timer::ScopedTimer /////////////////////////////////////////////
@@ -70,14 +77,22 @@ namespace otto::util::timer {
 
 // otto::util::timer free functions ///////////////////////////////////////////
 
-  static std::string get_thread_name() {
+  /// This owns one vector per thread
+  std::vector<Timer> thread_timers;
+
+  static Timer& create_thread_timer() {
     std::ostringstream s;
+    s << "Thread ";
+#if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
+    char buf[256];
+    s << pthread_getname_np(pthread_self(), buf, 256);
+#else
     s << std::this_thread::get_id();
-    return s.str();
+#endif
+    return thread_timers.emplace_back(s.str());
   }
 
-  thread_local Timer root_timer {get_thread_name()};
-  thread_local std::vector<Timer*> timer_stack = {&root_timer};
+  thread_local std::vector<Timer*> timer_stack = {&create_thread_timer()};
 
   Timer& find_or_make(timer_id id)
   {
@@ -143,9 +158,9 @@ namespace otto::util::timer {
 
   nlohmann::json serialize()
   {
-    auto arr = nlohmann::json::array();
-    for (auto timer : timer_stack) {
-      arr.push_back(timer->serialize());
+    auto arr = nlohmann::json::object();
+    for (auto timer : thread_timers) {
+      arr[timer.id] = timer.serialize();
     }
     return arr;
   }

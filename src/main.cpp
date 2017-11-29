@@ -11,6 +11,7 @@
 #include "modules/synths/synth-sampler/synth-sampler.hpp"
 #include "modules/synths/nuke/nuke.hpp"
 #include "core/globals.hpp"
+#include "util/timer.hpp"
 
 int main(int argc, char *argv[]) {
   using namespace otto;
@@ -23,6 +24,9 @@ int main(int argc, char *argv[]) {
     Globals::audio.exit();
     Globals::dataFile.write();
     Globals::events.postExit.runAll();
+    auto f = std::ofstream((Globals::data_dir / "timers.json").string(), std::ios::trunc);
+    f << std::setw(2) << util::timer::serialize() << std::endl;
+    f.close();
   };
 
   try {
