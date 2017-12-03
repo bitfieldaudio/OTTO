@@ -26,8 +26,9 @@ namespace otto::util {
     ///
     /// \param f Invocable as `f(T)`
     /// \returns The result of calling `f(t)`
+    /// \requires `Func` is invocable as `Func(T&)`
     template<typename Func>
-    auto with_lock(Func&& f)
+    auto apply(Func&& f)
     {
       auto lock = std::unique_lock(mutex);
       return std::invoke(std::forward<Func>(f), contents);
@@ -38,8 +39,9 @@ namespace otto::util {
     ///
     /// \param f Invocable as `f(T)`
     /// \returns The result of calling `f(t)`
+    /// \requires `Func` is invocable as `Func(const T&)`
     template<typename Func>
-    auto with_lock(Func&& f) const
+    auto apply(Func&& f) const
     {
       auto lock = std::unique_lock(mutex);
       return std::invoke(std::forward<Func>(f), contents);

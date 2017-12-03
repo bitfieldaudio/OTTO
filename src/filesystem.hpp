@@ -247,28 +247,28 @@ namespace otto::filesystem {
   };
 
   enum class perms {
-    none = 0,
-    owner_read = 0400, // Read permission, owner
-    owner_write = 0200, // Write permission, owner
-    owner_exec = 0100, // Execute/search permission, owner
-    owner_all = 0700, // Read, write, execute/search by owner;
-    // owner_read | owner_write | owner_exec
-    group_read = 040, // Read permission, group
-    group_write = 020, // Write permission, group
-    group_exec = 010, // Execute/search permission, group
-    group_all = 070, // Read, write, execute/search by group;
-    // group_read | group_write | group_exec
-    others_read = 04, // Read permission, others
-    others_write = 02, // Write permission, others
-    others_exec = 01, // Execute/search permission, others
-    others_all = 07, // Read, write, execute/search by others;
-    // others_read | others_write | others_exec
-    all = 0777, // owner_all | group_all | others_all
-    set_uid = 04000, // Set-user-ID on execution
-    set_gid = 02000, // Set-group-ID on execution
-    sticky_bit = 01000, // Operating system dependent.
-    mask = 07777, // all | set_uid | set_gid | sticky_bit
-    unknown = 0xFFFF
+    none         = 0,
+    owner_read   = 0400,  // Read permission, owner
+    owner_write  = 0200,  // Write permission, owner
+    owner_exec   = 0100,  // Execute/search permission, owner
+    owner_all    = 0700,  // Read, write, execute/search by owner;
+                          // owner_read | owner_write | owner_exec
+    group_read   = 0040,  // Read permission, group
+    group_write  = 0020,  // Write permission, group
+    group_exec   = 0010,  // Execute/search permission, group
+    group_all    = 0070,  // Read, write, execute/search by group;
+                          // group_read | group_write | group_exec
+    others_read  = 0004,  // Read permission, others
+    others_write = 0002,  // Write permission, others
+    others_exec  = 0001,  // Execute/search permission, others
+    others_all   = 0007,  // Read, write, execute/search by others;
+                          // others_read | others_write | others_exec
+    all          = 0777,  // owner_all | group_all | others_all
+    set_uid      = 04000, // Set-user-ID on execution
+    set_gid      = 02000, // Set-group-ID on execution
+    sticky_bit   = 01000, // Operating system dependent.
+    mask         = 07777, // all | set_uid | set_gid | sticky_bit
+    unknown      = 0xFFFF
   };
 
   using file_time_type = std::chrono::time_point<std::chrono::system_clock>;
@@ -777,5 +777,18 @@ namespace otto::filesystem {
     return *this += path(first, last);
   }
 
+  template <class charT, class traits>
+  std::basic_ostream<charT, traits>&
+  operator<<(std::basic_ostream<charT, traits>& os, const path& p)
+  {
+    os << p.native();
+  }
+
+  template <class charT, class traits>
+  std::basic_istream<charT, traits>&
+  operator>>(std::basic_istream<charT, traits>& is, path& p)
+  {
+    is >> p.native();
+  }
 
 }
