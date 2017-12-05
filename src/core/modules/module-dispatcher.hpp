@@ -61,6 +61,9 @@ namespace otto::modules {
       modules.emplace_back(std::move(name),
         std::make_unique<T>(std::forward<Args>(args)...));
     }
+
+    nlohmann::json to_json() const override;
+    void from_json(const nlohmann::json&) override;
   };
 
   class SynthModuleDispatcher : public ModuleDispatcher<SynthModule> {
@@ -134,4 +137,33 @@ namespace otto::modules {
     }
   }
 
+  template <typename M>
+  nlohmann::json ModuleDispatcher<M>::to_json() const
+  {
+    auto obj = nlohmann::json::object();
+    for (auto&& [k, v] : modules) {
+      obj[k] = v->to_json();
+    }
+    return obj;
+  }
+
+  template <typename M>
+  void ModuleDispatcher<M>::from_json(const nlohmann::json& j)
+  {
+    if (j.is_object()) {
+      for (auto it = j.begin(); it != j.end(); it++) {
+        auto md = std::find(modules.begin(), modules.end(), it.key());
+        if (md != modules.end()) {
+          md->val->from_json(it.value());
+        } else {
+          // Consider throwing? but it might be alright that a module wasnt
+          // found, maybe it was for a never version of the OTTO
+          LOGE << "Unrecognized module";
+        }
+      }
+    } else if (!j.empty()) {
+      throw util::JsonFile::exception(util::JsonFile::ErrorCode::invalid_data,
+        "Expected a json object");
+    }
+  }
 }

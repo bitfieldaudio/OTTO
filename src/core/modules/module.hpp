@@ -42,7 +42,7 @@ namespace otto::modules {
   }
 
   inline void from_json(const nlohmann::json& j, Module& m) {
-    if (m.propsPtr != nullptr) m.propsPtr->from_json(j);
+    m.from_json(j);
   }
 
   class SynthModule : public Module {

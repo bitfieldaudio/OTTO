@@ -9,8 +9,8 @@
 #include <type_traits>
 
 #include <plog/Log.h>
-#include <json.hpp>
 
+#include "util/jsonfile.hpp"
 #include "util/exception.hpp"
 #include "util/type_traits.hpp"
 #include "util/math.hpp"
@@ -376,13 +376,15 @@ namespace otto::modules {
     void from_json(const nlohmann::json& n) override {
       if (n.is_object()) {
         for (auto it = n.begin(); it != n.end(); it++) {
-          auto p = std::find_if(begin(), end(), [k = it.key()] (auto&& p) {return p->name == k;});
+          auto p = std::find_if(
+            begin(), end(), [k = it.key()](auto&& p) { return p->name == k; });
           if (p != end()) {
             (*p)->from_json(it.value());
           }
         }
-      } else {
-        throw util::exception("Expected a json object");
+      } else if (!n.empty()) {
+        throw util::JsonFile::exception(util::JsonFile::ErrorCode::invalid_data,
+          "Expected a json object");
       }
     }
 

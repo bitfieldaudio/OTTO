@@ -37,7 +37,7 @@ namespace otto::filesystem {
     path(path&& p);
     path(string_type&& source, format fmt = auto_format);
 
-    template <class Source>
+    template <class Source, typename>
     path(const Source& source, format fmt = auto_format);
 
     template <class InputIterator>
@@ -702,7 +702,8 @@ namespace otto {
 
 namespace otto::filesystem {
 
-  template <class Source>
+  template <class Source, typename =
+    std::enable_if_t<std::is_constructible_v<path::string_type, Source>>>
   path::path(const Source& source, format fmt)
     : path(string_type(source), fmt)
   {}
