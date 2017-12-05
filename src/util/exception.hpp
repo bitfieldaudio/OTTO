@@ -8,11 +8,24 @@
 
 namespace otto::util {
 
-  class exception : public std::exception {
+  namespace detail {
+    
+    template<typename T>
+    auto to_str_or_empty(T&& t) ->
+      std::enable_if_t<std::is_constructible_v<std::string, T>,
+        std::string>
+    {
+      return std::string(std::forward<T>(t));
+    }
 
-    std::string message;
+    template<typename T>
+    auto to_str_or_empty(T&& t) -> std::string
+    {
+      return {};
+    }
+  }
 
-  public:
+  struct exception : public std::exception {
 
     /// String formatting constructor. Models `fmt::format`
     ///
@@ -29,11 +42,72 @@ namespace otto::util {
       return message.c_str();
     }
 
+    /// Create a new `exception` with `v` appended to the message
+    [[nodiscard]]
     exception append(std::string_view v) const {
       exception e = *this;
       e.message.append("\n");
       e.message.append(v);
       return e;
     }
+
+    std::string message;
+
   };
+
+  /// A wrapper for throwing arbitrary data
+  ///
+  /// Always use this instead of throwing an error code.
+  ///
+  /// ## Prefered usage (error codes):
+  /// 
+  /// Define an `ErrorCode` enum, and a type alias to `as_exception<ErrorCode>`
+  /// as member types in your class. You may also want to write a
+  /// `to_string(ErrorCode)` function, which will be appended to the exception
+  /// message.
+  ///
+  /// ```cpp
+  /// enum struct ErrorCode {
+  ///   none = 0,
+  ///   not_found,
+  ///   invalid
+  /// }
+  /// using exception = util::as_exception<ErrorCode>;
+  /// ```
+  template<typename Data>
+  struct as_exception : exception {
+
+    using data_type = Data;
+
+    template<typename DataRef, typename... Args>
+    as_exception(DataRef&& dr, const std::string& m, Args&&... args)
+      : exception(m, std::forward<Args>(args)...),
+        _data (std::forward<DataRef>(dr))
+    {
+      using namespace std::literals;
+      auto str_data = detail::to_str_or_empty(_data);
+      if (!str_data.empty()) {
+        message.append("\nData: ");
+        message.append(str_data);
+      }
+    }
+
+    data_type& data() noexcept
+    {
+      return _data;
+    }
+
+    const data_type& data() const noexcept
+    {
+      return _data;
+    }
+
+  private:
+    data_type _data;
+  };
+
+
+  template<typename DataRef, typename... Args>
+  as_exception(DataRef&& dr, const std::string& message, Args&&... args)
+    -> as_exception<std::decay_t<DataRef>>;
 }

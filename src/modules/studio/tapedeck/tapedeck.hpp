@@ -46,18 +46,8 @@ namespace otto::modules {
       int track       = 0;
       bool looping    = false;
 
-      template<typename Ret, typename Callable1, typename Callable2>
-      Ret forPlayDir(Callable1&& forward, Callable2&& reverse) {
-        if (playSpeed > 0) {
-          return std::invoke(forward);
-        } else if (playSpeed < 0) {
-          return std::invoke(reverse);
-        } else {
-          if constexpr (!std::is_void_v<Ret>) {
-            return Ret();
-          }
-        }
-      }
+      bool fwd() const;
+      bool bwd() const;
 
       bool recording() const;
       bool playing() const;

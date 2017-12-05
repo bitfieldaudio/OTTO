@@ -42,20 +42,22 @@ namespace otto::modules {
     return data.redirect(proc_buf);
   }
 
-  util::tree::Node SimpleDrumsModule::makeNode() {
-    util::tree::Array ar;
+  nlohmann::json SimpleDrumsModule::to_json() const {
+    auto ar = nlohmann::json::array();
     for (auto &v : voices) {
-      ar.values.push_back(v.props.makeNode());
+      ar.push_back(v.props.to_json());
     }
     return ar;
   }
 
-  void SimpleDrumsModule::readNode(util::tree::Node n) {
-    n.match([&] (util::tree::Array &ar) {
-        for (int i = 0; i < ar.values.size(); ++i) {
-          voices[i].props.readNode(ar[i]);
-        }
-      }, [] (auto) {});
+  void SimpleDrumsModule::from_json(const nlohmann::json& j) {
+    if (j.is_array()) {
+      for (int i = 0; i < j.size(); ++i) {
+        voices[i].props.from_json(j[i]);
+      }
+    } else {
+      throw util::exception("Expected a jsn array");
+    }
   }
 
   bool SimpleDrumsScreen::keypress(ui::Key key) {

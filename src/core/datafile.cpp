@@ -3,30 +3,31 @@
 
 namespace otto {
 
-  void DataFile::write() {
-    util::tree::Map m;
+  void DataFile::write(OpenOptions options)
+  {
+    data().clear();
+    data()["TapeDeck"]  = Globals::tapedeck;
+    data()["Mixer"]     = Globals::mixer;
+    data()["Synth"]     = Globals::synth;
+    data()["Drums"]     = Globals::drums;
+    data()["Metronome"] = Globals::metronome;
 
-    m["TapeDeck"] = Globals::tapedeck.makeNode();
-    m["Mixer"] = Globals::mixer.makeNode();
-    m["Synth"] = Globals::synth.makeNode();
-    m["Drums"] = Globals::drums.makeNode();
-    m["Metronome"] = Globals::metronome.makeNode();
-    data = m;
-    JsonFile::write();
+    JsonFile::write(options);
   }
 
-  void DataFile::read() {
-    JsonFile::read();
+  void DataFile::read(OpenOptions options)
+  {
+    JsonFile::read(options);
 
-    data.match([&] (util::tree::Map &m) {
-        Globals::tapedeck.readNode(m["TapeDeck"]);
-        Globals::mixer.readNode(m["Mixer"]);
-        Globals::synth.readNode(m["Synth"]);
-        Globals::drums.readNode(m["Drums"]);
-        Globals::metronome.readNode(m["Metronome"]);
-      }, [&] (auto) {
-        LOGE << "Invalid Json - expected a map at root";
-      });
+    if (data().is_object()) {
+      from_json(data()["TapeDeck"],  Globals::tapedeck);
+      from_json(data()["Mixer"],     Globals::mixer);
+      from_json(data()["Synth"],     Globals::synth);
+      from_json(data()["Drums"],     Globals::drums);
+      from_json(data()["Metronome"], Globals::metronome);
+    } else {
+      throw exception(ErrorCode::invalid_data, "Expected object at json root");
+    }
   }
 
-} // otto
+}  // namespace otto

@@ -52,8 +52,8 @@ namespace otto::modules {
 
     void display() override;
 
-    util::tree::Node makeNode() override;
-    void readNode(util::tree::Node) override;
+    nlohmann::json to_json() const override;
+    void from_json(const nlohmann::json&) override;
   };
 
   class SimpleDrumsScreen : public ui::ModuleScreen<SimpleDrumsModule> {

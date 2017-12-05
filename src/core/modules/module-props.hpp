@@ -9,10 +9,11 @@
 #include <type_traits>
 
 #include <plog/Log.h>
+#include <json.hpp>
 
+#include "util/exception.hpp"
 #include "util/type_traits.hpp"
 #include "util/math.hpp"
-#include "util/tree.hpp"
 
 namespace otto::modules {
 
@@ -306,12 +307,22 @@ namespace otto::modules {
     /// Reset to inital value
     virtual void reset() = 0;
 
-    virtual util::tree::Node makeNode() {
-      return util::tree::Null();
+    virtual nlohmann::json to_json() const {
+      return {};
     }
 
-    virtual void readNode(const util::tree::Node& n) {}
+    virtual void from_json(const nlohmann::json& n) {}
   };
+
+  inline void to_json(nlohmann::json& j, const PropertyBase& pb)
+  {
+    j = pb.to_json();
+  }
+
+  inline void from_json(const nlohmann::json& j, PropertyBase& pb)
+  {
+    pb.from_json(j);
+  }
 
   class Properties : public PropertyBase {
   public:
@@ -352,28 +363,27 @@ namespace otto::modules {
       std::for_each(begin(), end(), [] (auto&& p) {p->updateFaust();});
     }
 
-    util::tree::Node makeNode() override {
-      std::unordered_map<std::string, util::tree::Node> map;
+    nlohmann::json to_json() const override {
+      auto obj = nlohmann::json::object();
       for (auto&& p : props) {
         if (p->store) {
-          map[p->name] = p->makeNode();
+          obj[p->name] = p->to_json();
         }
       }
-      return util::tree::Map{std::move(map)};
+      return obj;
     }
 
-    void readNode(const util::tree::Node& n) override {
-      n.match([this] (const util::tree::Map& m) {
-          for (auto&& pair : m.values) {
-            auto p = std::find_if(begin(), end(),
-                                  [&] (auto&& p) {return p->name == pair.first;});
-            if (p != end()) {
-              (*p)->readNode(pair.second);
-            }
+    void from_json(const nlohmann::json& n) override {
+      if (n.is_object()) {
+        for (auto it = n.begin(); it != n.end(); it++) {
+          auto p = std::find_if(begin(), end(), [k = it.key()] (auto&& p) {return p->name == k;});
+          if (p != end()) {
+            (*p)->from_json(it.value());
           }
-        }, [] (auto&&) {
-          LOGF << "Expected tree::Map";
-        });
+        }
+      } else {
+        throw util::exception("Expected a json object");
+      }
     }
 
   protected:
@@ -414,12 +424,12 @@ namespace otto::modules {
       set(init);
     }
 
-    util::tree::Node makeNode() final {
-      return util::tree::makeNode(value);
+    nlohmann::json to_json() const final {
+      return value;
     }
 
-    void readNode(const util::tree::Node& n) final {
-      set(util::tree::readNode<Value>(n).value_or(value));
+    void from_json(const nlohmann::json& n) final {
+      set(n.get<Value>());
     }
 
     void updateFaust() final {

@@ -38,7 +38,7 @@ namespace otto {
       util::EventDispatcher<unsigned> samplerateChanged;
     } events;
 
-    static inline DataFile dataFile;
+    static inline DataFile dataFile {data_dir / "modules.json"};
     static inline unsigned samplerate = 44100;
 
     static inline audio::MainAudio audio;
@@ -53,7 +53,6 @@ namespace otto {
     static inline modules::InputSelector selector;
 
     static inline void init() {
-      dataFile.path = data_dir / "modules.json";
       dataFile.read();
       audio.init();
       tapedeck.init();

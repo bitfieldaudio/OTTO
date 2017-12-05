@@ -42,6 +42,14 @@ namespace otto::modules {
     return stopped();
   }
 
+  bool Tapedeck::State::fwd() const {
+    return playSpeed > 0;
+  }
+  bool Tapedeck::State::bwd() const {
+    return playSpeed < 0;
+  }
+
+
   bool Tapedeck::State::playing() const {
     return playType == PLAYING;
   }
@@ -154,20 +162,16 @@ namespace otto::modules {
 
   int Tapedeck::timeUntil(std::size_t tt) {
     return 0;
-    TapeTime ttUntil = state.forPlayDir<TapeTime>([&] {return tt - position();},
-                                                  [&] {return position() - tt;});
+    auto ttUntil = state.fwd() ? tt - position() : position() - tt;
     if (state.doLoop() && state.looping) {
-      TapeTime leftTillOut = state.forPlayDir<TapeTime>([&] {return loopSect.out - position();},
-                                                        [&] {return position() - loopSect.in;});
+      TapeTime leftTillOut = state.fwd() ? loopSect.out - position() : position() - loopSect.in;
       if (leftTillOut != -1 && leftTillOut < ttUntil) {
-        return state.forPlayDir<int>([&] { return (leftTillOut + (tt - loopSect.out)) ;},
-                                     [&] { return (leftTillOut + (loopSect.in - tt)) ;})/state.playSpeed;
-      } else {
-        return ttUntil/state.playSpeed;
+        return (leftTillOut +
+          (state.fwd() ? (tt - loopSect.out) : loopSect.in - tt))
+          / state.playSpeed;
       }
-    } else {
-      return ttUntil/state.playSpeed;
     }
+    return ttUntil/state.playSpeed;
   }
 
   /*

@@ -64,47 +64,46 @@ namespace otto::modules {
 
     }
 
-    namespace tree = util::tree;
+    using nlohmann::json;
 
-    SECTION("Property to tree::Node conversions") {
+    SECTION("Property to json conversions") {
 
-      REQUIRE(props.fProp.makeNode().match([](const tree::Float& f) {
-            return f.value == 5.2f;
-          }, [] (auto) {return false;}));
+      REQUIRE(props.fProp.to_json() == 5.2f);
 
-      tree::Map node = {{
-          {"fProp", tree::Float{5.2f}},
-          {"otherProp", tree::Float{16}},
-          {"toggle", tree::Bool{false}},
-          {"subProps", tree::Map{{
-                {"anInt", tree::Int{42}}
-              }}}
-        }};
+      json node = {
+          {"fProp", 5.2f},
+          {"otherProp", 16},
+          {"toggle", false},
+          {"subProps", {
+                {"anInt", 42}
+              }
+          }
+        };
 
-      auto propsNode = props.makeNode();
-      REQUIRE(propsNode.is<tree::Map>());
-      REQUIRE(propsNode.get<tree::Map>() == node);
+      auto propsNode = props.to_json();
+      REQUIRE(propsNode == node);
 
     }
 
-    SECTION("tree::Node to Property conversions") {
+    SECTION("json to Property conversions") {
 
-      props.fProp.readNode(tree::Float{8.f});
+      props.fProp.from_json({8.f});
       REQUIRE(props.fProp == 8.f);
-      
-      tree::Map node = {{
-          {"fProp", tree::Float{2.f}},
-          {"otherProp", tree::Float{31}},
-          {"toggle", tree::Bool{true}},
-          {"subProps", tree::Map{{
-                {"anInt", tree::Int{9}}
-              }}}
-        }};
 
-      props.readNode(node);
+      json node = {
+          {"fProp", 2.f},
+          {"otherProp", 31},
+          {"toggle", true},
+          {"subProps", {
+                {"anInt", 9}
+              }
+          }
+        };
+
+      props.from_json(node);
       REQUIRE(props.fProp == 2.f);
 
-      REQUIRE(props.makeNode() == node);
+      REQUIRE(props.to_json() == node);
     }
 
     SECTION("Properties work with range-based for loops") {

@@ -61,10 +61,6 @@ namespace otto::modules {
       modules.emplace_back(std::move(name),
         std::make_unique<T>(std::forward<Args>(args)...));
     }
-
-    util::tree::Node makeNode() override;
-
-    void readNode(util::tree::Node node) override;
   };
 
   class SynthModuleDispatcher : public ModuleDispatcher<SynthModule> {
@@ -136,29 +132,6 @@ namespace otto::modules {
     } else {
       throw std::out_of_range("Attempt to access module out of range");
     }
-  }
-
-  template<typename M>
-  util::tree::Node ModuleDispatcher<M>::makeNode() {
-    util::tree::Map node;
-    for ([[maybe_unused]] auto&& [k, v] : modules) {
-      node[k] = v->makeNode();
-    }
-    return node;
-  }
-
-  template<typename M>
-  void ModuleDispatcher<M>::readNode(util::tree::Node node) {
-    node.match([&] (util::tree::Map n) {
-        for (auto&& m : n.values) {
-          auto&& md = std::find(modules.begin(), modules.end(), m.first);
-          if (md != modules.end()) {
-            md->val->readNode(m.second);
-          } else {
-            LOGE << "Unrecognized module";
-          }
-        }
-      }, [] (auto) {});
   }
 
 }

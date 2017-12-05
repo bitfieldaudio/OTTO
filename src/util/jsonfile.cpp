@@ -1,88 +1,61 @@
 #include "jsonfile.hpp"
 
+#include <fstream>
 #include <json.hpp>
 
 namespace otto::util {
 
   using json = nlohmann::json;
 
-  json treeToJson(const tree::Node &tree) {
-    struct Visitor {
-      json operator()(tree::Float n) {
-        return json::number_float_t(n.value);
-      }
-      json operator()(tree::String n) {
-        return json::string_t(n.value);
-      }
-      json operator()(tree::Int n) {
-        return json::number_integer_t(n.value);
-      }
-      json operator()(tree::Bool n) {
-        return json::boolean_t (n.value);
-      }
-      json operator()(tree::Null n) {
-        return nullptr;
-      }
-      json operator()(tree::Array n) {
-        json a = json::array();
-        for (auto &el : n) {
-          a.push_back(mapbox::util::apply_visitor(Visitor(), el));
-        }
-        return a;
-      }
-      json operator()(tree::Map n) {
-        json m = json::object();
-        for (auto &el : n) {
-          m[el.first] = mapbox::util::apply_visitor(Visitor(), el.second);
-        }
-        return m;
-      }
-    };
-    return mapbox::util::apply_visitor(Visitor(), tree);
+  JsonFile::JsonFile(const fs::path& p)
+    : _path (p)
+  {}
+
+  void JsonFile::write(JsonFile::OpenOptions options)
+  {
+    if (auto ec = validate(); ec != ErrorCode::none) {
+      throw exception(ec, "Error while writing preset file '{}'", _path.c_str());
+    }
+    errno = 0;
+    std::ofstream stream(_path, std::ios::trunc);
+    stream << std::setw(2) << _data << std::endl;
+    stream.close();
+    if (errno) {
+      throw std::system_error(errno, std::system_category());
+    }
   }
 
-  tree::Node jsonToTree(const json &j) {
-    if (j.is_null()) return tree::Null();
-    if (j.is_boolean()) return tree::Bool { j.get<bool>() };
-    if (j.is_number_integer()) return tree::Int { j.get<int>() };
-    if (j.is_number()) return tree::Float { j.get<float>() };
-    if (j.is_string()) return tree::String { j.get<std::string>() };
-    if (j.is_array()) {
-      tree::Array ar;
-      for (auto &el : j) {
-        ar.values.push_back(jsonToTree(el));
-      }
-      return ar;
-    }
-    if (j.is_object()) {
-      tree::Map m;
-      for (auto it = j.begin(); it != j.end(); ++it) {
-        m[it.key()] = jsonToTree(it.value());
-      }
-      return m;
-    }
-    LOGE << "Unexpected json type";
-    return tree::Null();
-  }
-
-  void JsonFile::read() {
+  void JsonFile::read(JsonFile::OpenOptions options)
+  {
     std::ifstream stream;
-    stream.open(path);
+    stream.open(_path);
     if (!stream) {
-      LOGI << "Empty JsonFile, creating " << path;
-      stream.close();
-      write();
-      stream.open(path);
+      if ((options & OpenOptions::create) != OpenOptions::none) {
+        stream.close();
+        write();
+        stream.open(_path);
+      }
     }
-    json j;
-    stream >> j;
-    data = jsonToTree(j);
+    if (!stream) {
+      throw std::system_error(errno, std::system_category());
+    }
+    _data.clear();
+    stream >> _data;
     stream.close();
+    if (auto ec = validate(); ec != ErrorCode::none) {
+      throw exception(ec, "Error while reading preset file '{}'", _path.c_str());
+    }
   }
 
-  void JsonFile::write() {
-    std::ofstream stream(path, std::ios::trunc);
-    stream << std::setw(2) << treeToJson(data) << std::endl;
-    stream.close();
+  std::string to_string(JsonFile::ErrorCode ec)
+  {
+    using ErrorCode = JsonFile::ErrorCode;
+    switch (ec) {
+    case ErrorCode::none: return "";
+    case ErrorCode::invalid_json: return "Invalid json";
+    case ErrorCode::missing_header: return "OTTO Preset header missing";
+    case ErrorCode::unknown_version: return "Unknown preset format version";
+    case ErrorCode::invalid_data: return "Invalid preset data. Take a look at the specification again";
+    }
   }
 }
