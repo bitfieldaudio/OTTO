@@ -66,9 +66,8 @@ namespace otto::audio {
       client = jack_client_open(clientName.c_str(), JackNullOption, &jackStatus);
 
       if ((!jackStatus) & JackServerStarted) {
-        LOGF << "Failed to start jack server";
-        Globals::exit();
-        return;
+        throw global::exception(global::ErrorCode::audio_error,
+          "Failed to start jack server");
       }
 
       LOGI << "Jack server started";
@@ -97,9 +96,8 @@ namespace otto::audio {
       bufferSize = jack_get_buffer_size(client);
 
       if (jack_activate(client)) {
-        LOGF << "Cannot activate JACK client";
-        Globals::exit();
-        return;
+        throw global::exception(global::ErrorCode::audio_error,
+          "Cannot activate jack client");
       }
 
       setupPorts();
@@ -111,7 +109,7 @@ namespace otto::audio {
     {
       LOGI << "Closing Jack client";
       jack_client_close(client);
-      Globals::exit();
+      global::exit(global::ErrorCode::none);
     };
 
     void setupPorts()
@@ -121,9 +119,8 @@ namespace otto::audio {
         client, "input", JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0);
 
       if (ports.input == NULL) {
-        LOGF << "Couldn't register input port";
-        Globals::exit();
-        return;
+        throw global::exception(global::ErrorCode::audio_error,
+          "Couldn't register input port");
       }
 
       ports.outL = jack_port_register(
@@ -135,26 +132,24 @@ namespace otto::audio {
       auto outputs = findPorts(JackPortIsPhysical | JackPortIsInput);
 
       if (inputs.empty()) {
-        LOGF << "Couldn't find physical input port";
-        Globals::exit();
-        return;
+        throw global::exception(global::ErrorCode::audio_error,
+          "Couldn't find physical input port");
       }
       if (outputs.empty()) {
-        LOGF << "Couldn't find physical output ports";
-        Globals::exit();
-        return;
+        throw global::exception(global::ErrorCode::audio_error,
+          "Couldn't find physical output ports");
       }
 
       bool s;
 
       s = connectPorts(jack_port_name(ports.input), inputs[0]);
-      if (!s) {Globals::exit(); return;}
+      if (!s) {global::exit(global::ErrorCode::audio_error); return;}
 
       s = connectPorts(outputs[0 % outputs.size()], jack_port_name(ports.outL));
-      if (!s) {Globals::exit(); return;}
+      if (!s) {global::exit(global::ErrorCode::audio_error); return;}
 
       s = connectPorts(outputs[1 % outputs.size()], jack_port_name(ports.outR));
-      if (!s) {Globals::exit(); return;}
+      if (!s) {global::exit(global::ErrorCode::audio_error); return;}
 
 
       // Midi ports
@@ -162,9 +157,8 @@ namespace otto::audio {
         client, "midiIn", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
 
       if (ports.midiIn == NULL) {
-        LOGF << "Couldn't register midi_in port";
-        Globals::exit();
-        return;
+        throw global::exception(global::ErrorCode::audio_error,
+          "Couldn't register midi_in port");
       }
 
       ports.midiOut = jack_port_register(
@@ -211,23 +205,23 @@ namespace otto::audio {
     void samplerateCallback(unsigned srate)
     {
       LOGI << fmt::format("Jack changed the sample rate to {}", srate);
-      Globals::samplerate = srate;
-      Globals::events.samplerateChanged.runAll(srate);
+      global::audio.samplerate = srate;
+      global::event::samplerate_change.runAll(srate);
     }
 
     void buffersizeCallback(unsigned buffsize)
     {
       LOGI << fmt::format("Jack changed the buffer size to {}", buffsize);
       bufferSize = buffsize;
-      Globals::events.bufferSizeChanged.runAll(buffsize);
+      global::event::buffersize_change.runAll(buffsize);
     }
 
     void process(unsigned nframes)
     {
-      if (!(owner.do_process && Globals::running())) return;
+      if (!(owner.do_process && global::running())) return;
 
       static auto timer = util::timer::find_or_make("JackAudio::Process");
-      timer.tick();
+      util::timer::tick(timer);
 
       if (nframes > bufferSize) {
         LOGE << "Jack requested more frames than expected";

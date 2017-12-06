@@ -62,7 +62,7 @@ namespace otto::modules {
     screen (new NukeSynthScreen(this)) {}
 
   void NukeSynth::display() {
-    Globals::ui.display(*screen);
+    global::ui.display(*screen);
   }
 
   audio::ProcessData<1> NukeSynth::process(audio::ProcessData<0> data)

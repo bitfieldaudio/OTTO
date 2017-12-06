@@ -15,7 +15,7 @@ namespace otto::modules {
   SimpleDrumsModule::~SimpleDrumsModule() {}
 
   void SimpleDrumsModule::display() {
-    Globals::ui.display(*screen);
+    global::ui.display(*screen);
   }
 
   audio::ProcessData<1> SimpleDrumsModule::process(audio::ProcessData<0> data) {
@@ -63,7 +63,7 @@ namespace otto::modules {
   bool SimpleDrumsScreen::keypress(ui::Key key) {
     using namespace ui;
     auto &voice = module->voices[module->currentVoiceIdx];
-    auto &osc = Globals::ui.keys[K_SHIFT] ? voice.props.D2 : voice.props.D1;
+    auto &osc = global::ui.keys[K_SHIFT] ? voice.props.D2 : voice.props.D1;
     switch (key) {
     case K_GREEN_CLICK:
       osc.filterSwitch.step(); return true;
@@ -74,7 +74,7 @@ namespace otto::modules {
 
   void SimpleDrumsScreen::rotary(ui::RotaryEvent e) {
     auto &voice = module->voices[module->currentVoiceIdx];
-    auto &osc = Globals::ui.keys[ui::K_SHIFT] ? voice.props.D2 : voice.props.D1;
+    auto &osc = global::ui.keys[ui::K_SHIFT] ? voice.props.D2 : voice.props.D1;
     switch (e.rotary) {
     case ui::Rotary::Blue:
       osc.freq.step(e.clicks);

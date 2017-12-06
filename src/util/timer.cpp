@@ -2,6 +2,9 @@
 
 #include <thread>
 #include <sstream>
+#include <mutex>
+
+#include "util/exception.hpp"
 
 namespace otto::util::timer {
 
@@ -80,6 +83,8 @@ namespace otto::util::timer {
   /// This owns one vector per thread
   std::vector<Timer> thread_timers;
 
+  static std::mutex mutex;
+
   static Timer& create_thread_timer() {
     std::ostringstream s;
     s << "Thread ";
@@ -89,14 +94,24 @@ namespace otto::util::timer {
 #else
     s << std::this_thread::get_id();
 #endif
-    return thread_timers.emplace_back(s.str());
+    {
+      std::lock_guard lock (mutex);
+      return thread_timers.emplace_back(s.str());
+    }
   }
 
   thread_local std::vector<Timer*> timer_stack = {&create_thread_timer()};
 
   Timer& find_or_make(timer_id id)
   {
-    auto& timers = timer_stack.back()->children;
+    if (timer_stack.size() == 0) {
+      throw util::exception("Timer stack empty. That shouldnt happen!");
+    }
+    auto& stack_top = *timer_stack.back();
+    if (stack_top.id == id) {
+      return stack_top;
+    }
+    auto& timers = stack_top.children;
     auto iter = std::find_if(timers.begin(), timers.end(),
       [id] (const Timer& t) {
         return t.id == id;
@@ -158,6 +173,7 @@ namespace otto::util::timer {
 
   nlohmann::json serialize()
   {
+    std::lock_guard lock (mutex);
     auto arr = nlohmann::json::object();
     for (auto timer : thread_timers) {
       arr[timer.id] = timer.serialize();

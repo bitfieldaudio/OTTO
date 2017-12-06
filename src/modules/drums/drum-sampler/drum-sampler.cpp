@@ -28,11 +28,11 @@ namespace otto::modules {
 
   DrumSampler::DrumSampler() :
     SynthModule(&props),
-    maxSampleSize (16 * Globals::samplerate),
+    maxSampleSize (16 * global::audio.samplerate),
     sampleData (maxSampleSize),
     screen (new DrumSampleScreen(this)) {
 
-    Globals::events.samplerateChanged.add([&] (int sr) {
+    global::event::samplerate_change.add([&] (int sr) {
         maxSampleSize = 16 * sr;
         sampleSpeed = sampleSampleRate / float(sr);
       });
@@ -45,9 +45,9 @@ namespace otto::modules {
     if (name.empty()) {
       throw util::exception("DrumSampler: Got empty sample name. Is one specified in data/modules.json?");
     }
-    auto path = Globals::data_dir / "samples" / "drums" / (name + ".wav");
+    auto path = global::data_dir / "samples" / "drums" / (name + ".wav");
     if (!fs::exists(path)) {
-      path = Globals::data_dir / "samples" / "drums" / (name + ".aiff");
+      path = global::data_dir / "samples" / "drums" / (name + ".aiff");
     }
     if (!fs::exists(path)) {
       throw util::exception("DrumSampler: Specified sample path not found: {}", path.c_str());
@@ -129,7 +129,7 @@ namespace otto::modules {
   }
 
   void DrumSampler::display() {
-    Globals::ui.display(*screen);
+    global::ui.display(*screen);
   }
 
   void DrumSampler::load() {
@@ -145,7 +145,7 @@ namespace otto::modules {
         sf.read_samples(sampleData.data(), rs);
 
         sampleSampleRate = sf.info.samplerate;
-        sampleSpeed = sampleSampleRate / float(Globals::samplerate);
+        sampleSpeed = sampleSampleRate / float(global::audio.samplerate);
         if (sf.length() == 0) LOGD << "Empty sample file";
       } catch (util::exception& e) {
         LOGE << "Failure while trying to load sample file '"

@@ -7,11 +7,11 @@ namespace otto::audio {
 
   namespace detail {
     void register_faust_wrapper_events(dsp& _dsp, FaustOptions& opts) {
-      Globals::events.preInit.add([&]() {
-          _dsp.init(Globals::samplerate);
+      global::event::pre_init.add([&]() {
+          _dsp.init(global::audio.samplerate);
           _dsp.buildUserInterface(&opts);
         });
-      Globals::events.samplerateChanged.add([&](int sr) {
+      global::event::samplerate_change.add([&](int sr) {
           _dsp.instanceInit(sr);
           opts.props->updateFaust();
         });

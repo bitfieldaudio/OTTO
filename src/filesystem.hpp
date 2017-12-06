@@ -13,6 +13,9 @@
 # include <Windows.h>
 #endif
 
+// For fmt::format support
+#include <fmt/ostream.h>
+
 namespace otto::filesystem {
 
   class path {
@@ -783,6 +786,7 @@ namespace otto::filesystem {
   operator<<(std::basic_ostream<charT, traits>& os, const path& p)
   {
     os << p.native();
+    return os;
   }
 
   template <class charT, class traits>
@@ -790,6 +794,7 @@ namespace otto::filesystem {
   operator>>(std::basic_istream<charT, traits>& is, path& p)
   {
     is >> p.native();
+    return is;
   }
 
 }

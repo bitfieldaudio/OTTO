@@ -109,7 +109,7 @@ namespace otto::modules {
   }
 
   void Tapedeck::display() {
-    Globals::ui.display(*tapeScreen);
+    global::ui.display(*tapeScreen);
   }
 
   // Looping
@@ -153,11 +153,11 @@ namespace otto::modules {
 
 
   void Tapedeck::goToBar(BeatPos bar) {
-    if (state.doJumps()) tapeBuffer->jump_to(Globals::metronome.getBarTime(bar));
+    if (state.doJumps()) tapeBuffer->jump_to(global::metronome.getBarTime(bar));
   }
 
   void Tapedeck::goToBarRel(BeatPos bars) {
-    if (state.doJumps()) tapeBuffer->jump_to(Globals::metronome.getBarTimeRel(bars));
+    if (state.doJumps()) tapeBuffer->jump_to(global::metronome.getBarTimeRel(bars));
   }
 
   int Tapedeck::timeUntil(std::size_t tt) {
@@ -205,7 +205,7 @@ namespace otto::modules {
             } else {
               float adjTime = time * (0.001 + std::abs(state.nextSpeed - state.prevSpeed));
               state.playSpeed = state.prevSpeed + (state.nextSpeed - state.prevSpeed) *
-                (1 - std::cos((x / float(Globals::samplerate) * 1000/(adjTime)) * M_PI)) * 0.5;
+                (1 - std::cos((x / float(global::audio.samplerate) * 1000/(adjTime)) * M_PI)) * 0.5;
               x += data.nframes;
             }
           }

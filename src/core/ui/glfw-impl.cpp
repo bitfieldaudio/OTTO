@@ -8,6 +8,7 @@
 #include <plog/Log.h>
 
 #include "core/ui/base.hpp"
+#include "core/ui/drawing.hpp"
 #include "core/ui/mainui.hpp"
 #include "core/globals.hpp"
 #include "debug/ui.hpp"
@@ -107,7 +108,7 @@ namespace otto::ui {
 
     void key(GLFWwindow* window, int key, int scancode, int action, int mods) {
       using namespace ui;
-      MainUI& self = Globals::ui;
+      MainUI& self = global::ui;
       Key k = keyboardKey(key, mods);
       if (action == GLFW_PRESS) {
         self.keypress(k);
@@ -529,8 +530,6 @@ namespace otto::ui {
   }
 
   void MainUI::mainRoutine() {
-    MainUI& self = Globals::ui;
-
     glfwSetErrorCallback(error_callback);
 
     if (!glfwInit()) {
@@ -600,7 +599,7 @@ namespace otto::ui {
     double prevt = glfwGetTime();
 
     double mx, my, t, dt, spent;
-    while (!glfwWindowShouldClose(window) && Globals::running())
+    while (!glfwWindowShouldClose(window) && global::running())
     {
       int winWidth, winHeight;
       int fbWidth, fbHeight;
@@ -634,7 +633,7 @@ namespace otto::ui {
       canvas.begineFrame(winWidth, winHeight);
 
       canvas.scale(scale, scale);
-      self.draw(canvas);
+      draw(canvas);
 
       canvas.endFrame();
 
@@ -658,7 +657,7 @@ namespace otto::ui {
 
     glfwTerminate();
 
-    Globals::exit();
+    global::exit(global::ErrorCode::ui_closed);
   }
 
 } // otto::ui

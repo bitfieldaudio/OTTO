@@ -12,11 +12,11 @@ namespace otto::modules {
 
   SynthSampler::SynthSampler() :
     SynthModule(&props),
-    maxSampleSize (16 * Globals::samplerate),
+    maxSampleSize (16 * global::audio.samplerate),
     sampleData (maxSampleSize),
     editScreen (new SynthSampleScreen(this)) {
 
-    Globals::events.samplerateChanged.add([&] (int sr) {
+    global::event::samplerate_change.add([&] (int sr) {
         maxSampleSize = 16 * sr;
         sampleSpeed = sampleSampleRate / float(sr);
       });
@@ -24,9 +24,9 @@ namespace otto::modules {
   }
 
   fs::path SynthSampler::samplePath(std::string name) {
-    auto wav_path = Globals::data_dir / "samples" / "synth" / (name + ".wav");
+    auto wav_path = global::data_dir / "samples" / "synth" / (name + ".wav");
     if (!fs::exists(wav_path)) {
-      return Globals::data_dir / "samples" / "synth" / (name + ".aiff");
+      return global::data_dir / "samples" / "synth" / (name + ".aiff");
     }
     return wav_path;
   }
@@ -101,7 +101,7 @@ namespace otto::modules {
   }
 
   void SynthSampler::display() {
-    Globals::ui.display(*editScreen);
+    global::ui.display(*editScreen);
   }
 
   void SynthSampler::load() {
@@ -116,7 +116,7 @@ namespace otto::modules {
       sf.read_samples(sampleData.data(), rs);
 
       sampleSampleRate = sf.info.samplerate;
-      sampleSpeed = sampleSampleRate / float(Globals::samplerate);
+      sampleSpeed = sampleSampleRate / float(global::audio.samplerate);
       if (sf.length() == 0) LOGD << "Empty sample file";
     } else {
       sampleData.resize(0);

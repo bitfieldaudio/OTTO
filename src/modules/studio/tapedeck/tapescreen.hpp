@@ -2,6 +2,7 @@
 #pragma once
 #include <fmt/format.h>
 
+#include "core/ui/drawing.hpp"
 #include "tapedeck.hpp"
 #include "core/globals.hpp"
 
@@ -23,13 +24,13 @@ namespace otto::modules {
 
     bool keypress(ui::Key key) override
     {
-      bool shift = Globals::ui.keys[ui::K_SHIFT];
+      bool shift = global::ui.keys[ui::K_SHIFT];
       switch (key) {
       case ui::K_REC:
         module->state.startRecord();
         return true;
       case ui::K_PLAY:
-        if (Globals::ui.keys[ui::K_REC]) {
+        if (global::ui.keys[ui::K_REC]) {
           stopRecOnRelease = false;
         }
         return false;
@@ -132,7 +133,7 @@ namespace otto::modules {
 
     std::string timeStr(std::size_t position) const
     {
-      double seconds = position/(1.0 * Globals::samplerate);
+      double seconds = position/(1.0 * global::audio.samplerate);
       double minutes = seconds / 60.0;
       return fmt::format("{:0>2}:{:0>5.2f}", (int) minutes, fmod(seconds, 60.0));
     }
@@ -411,7 +412,7 @@ namespace otto::modules {
 
       // The amount of time to display on the timeline
       // TODO: Animate this?
-      int timeline_time = 5 * Globals::samplerate;
+      int timeline_time = 5 * global::audio.samplerate;
 
       util::audio::Section<int> view_time {
         (int) module->position() - timeline_time/2,
@@ -436,8 +437,8 @@ namespace otto::modules {
         ctx.lineCap(Canvas::LineCap::ROUND);
         ctx.lineJoin(Canvas::LineJoin::ROUND);
 
-        auto iter = Globals::metronome.iter(Globals::metronome.time_for_bar(
-            std::min(0.f, Globals::metronome.bar_for_time(view_time.in) - 1)));
+        auto iter = global::metronome.iter(global::metronome.time_for_bar(
+            std::min(0.f, global::metronome.bar_for_time(view_time.in) - 1)));
 
         while (true) {
           float x = time_to_coord(*iter);

@@ -17,21 +17,21 @@ int main(int argc, char *argv[]) {
   using namespace otto;
 
   auto cleanup = [] {
-    Globals::events.preExit.runAll();
-    Globals::ui.exit();
-    Globals::mixer.exit();
-    Globals::tapedeck.exit();
-    Globals::audio.exit();
-    Globals::dataFile.write();
-    Globals::events.postExit.runAll();
-    auto f = std::ofstream((Globals::data_dir / "timers.json").string(), std::ios::trunc);
+      global::event::pre_exit.runAll();
+    global::ui.exit();
+    global::mixer.exit();
+    global::tapedeck.exit();
+    global::audio.exit();
+    global::save_data();
+    global::event::post_exit.runAll();
+    auto f = std::ofstream((global::data_dir / "timers.json").string(), std::ios::trunc);
     f << std::setw(2) << util::timer::serialize() << std::endl;
     f.close();
   };
 
   try {
     static plog::ConsoleAppender<plog::TxtFormatter> consoleAppender;
-    plog::init(plog::debug, (otto::Globals::data_dir / "log.txt").c_str())
+    plog::init(plog::debug, (otto::global::data_dir / "log.txt").c_str())
       .addAppender(&consoleAppender);
     LOGI << "LOGGING NOW";
 
@@ -39,19 +39,19 @@ int main(int argc, char *argv[]) {
 
     using namespace modules;
 
-    Globals::drums.registerModule<DrumSampler>("Sampler");
-    Globals::drums.registerModule<SimpleDrumsModule>("Additive Drums");
+    global::drums.registerModule<DrumSampler>("Sampler");
+    global::drums.registerModule<SimpleDrumsModule>("Additive Drums");
 
-    Globals::synth.registerModule<NukeSynth>("Nuke");
-    Globals::synth.registerModule<SynthSampler>("Sampler");
+    global::synth.registerModule<NukeSynth>("Nuke");
+    global::synth.registerModule<SynthSampler>("Sampler");
 
-    Globals::events.preInit.runAll();
-    Globals::init();
-    Globals::events.postInit.runAll();
+    global::event::pre_init.runAll();
+    global::init();
+    global::event::post_init.runAll();
 
-    Globals::audio.start_processing();
+    global::audio.start_processing();
 
-    Globals::ui.mainRoutine();
+    global::ui.mainRoutine();
 
   } catch (const char* e) {
     LOGF << e;

@@ -14,7 +14,7 @@ namespace otto::modules {
     screen (new MixerScreen(this)) {}
 
   void Mixer::display() {
-    Globals::ui.display(*screen);
+    global::ui.display(*screen);
   }
 
   // Mixing!
@@ -94,7 +94,7 @@ namespace otto::modules {
   }
 
   void MixerScreen::rotary(ui::RotaryEvent e) {
-    if (Globals::ui.keys[ui::K_SHIFT]) {
+    if (global::ui.keys[ui::K_SHIFT]) {
       module->props.tracks[static_cast<int>(e.rotary)].pan.step(e.clicks);
     } else {
       module->props.tracks[static_cast<int>(e.rotary)].level.step(e.clicks);
@@ -190,7 +190,7 @@ namespace otto::modules {
     ctx.font(60);
     ctx.textAlign(TextAlign::Center, TextAlign::Baseline);
     std::string txt;
-    if (!Globals::ui.keys[ui::K_SHIFT]) {
+    if (!global::ui.keys[ui::K_SHIFT]) {
       txt = fmt::format("{:0>2.0f}", mix * 100);
     } else {
       if (int(pan * 10) == 0)

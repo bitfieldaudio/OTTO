@@ -6,26 +6,29 @@
 
 namespace otto::ui {
 
-  void MainUI::display(Screen& screen) {
+  void MainUI::display(Screen& screen)
+  {
     currentScreen->exit();
     currentScreen = &screen;
     currentScreen->init();
   }
 
-  void MainUI::init() {
-  }
+  void MainUI::init()
+  {}
 
-  void MainUI::exit() {
-  }
+  void MainUI::exit()
+  {}
 
-  void MainUI::draw(vg::Canvas& ctx) {
+  void MainUI::draw(vg::Canvas& ctx)
+  {
     ctx.lineWidth(2);
     ctx.lineCap(vg::Canvas::LineCap::ROUND);
     ctx.lineJoin(vg::Canvas::Canvas::LineJoin::ROUND);
     currentScreen->draw(ctx);
   }
 
-  bool MainUI::keypress(ui::Key key) {
+  bool MainUI::keypress(ui::Key key)
+  {
     switch (key) {
     case K_RED_UP:
       currentScreen->rotary({Rotary::Red, 1}); break;
@@ -52,18 +55,20 @@ namespace otto::ui {
     return true;
   }
 
-  bool MainUI::keyrelease(ui::Key key) {
+  bool MainUI::keyrelease(ui::Key key)
+  {
     keys[key] = false;
     return currentScreen->keyrelease(key);
   }
 
-  bool MainUI::globKeyPost(ui::Key key) {
+  bool MainUI::globKeyPost(ui::Key key)
+  {
     switch (key) {
     case ui::K_PLAY:
-      if (Globals::tapedeck.state.playing()) {
-        Globals::tapedeck.state.stop();
+      if (global::tapedeck.state.playing()) {
+        global::tapedeck.state.stop();
       } else {
-        Globals::tapedeck.state.play();
+        global::tapedeck.state.play();
       }
       return true;
     default:
@@ -71,26 +76,27 @@ namespace otto::ui {
     }
   }
 
-  bool MainUI::globKeyPre(ui::Key key) {
+  bool MainUI::globKeyPre(ui::Key key)
+  {
     using namespace ui;
     switch (key) {
     case K_QUIT:
-      Globals::exit();
+      global::exit(global::ErrorCode::user_exit);
       break;
     case K_TAPE:
-      Globals::tapedeck.display();
+      global::tapedeck.display();
       break;
     case K_MIXER:
-      Globals::mixer.display();
+      global::mixer.display();
       break;
     case K_SYNTH:
-      Globals::synth.display();
+      global::synth.display();
       break;
     case K_DRUMS:
-      Globals::drums.display();
+      global::drums.display();
       break;
     case K_METRONOME:
-      Globals::metronome.display();
+      global::metronome.display();
       break;
     default:
       return false;

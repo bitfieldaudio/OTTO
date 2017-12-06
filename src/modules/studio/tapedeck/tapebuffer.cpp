@@ -30,7 +30,7 @@ namespace otto {
     const int min_read_size = tape_buffer::buffer_size >> 8;
     const int min_write_size = tape_buffer::buffer_size >> 8;
 
-    const fs::path path = Globals::data_dir / "tape.wav";
+    const fs::path path = global::data_dir / "tape.wav";
     util::TapeFile file;
     std::thread thread;
     tape_buffer& owner;

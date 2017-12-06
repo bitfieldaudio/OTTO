@@ -6,7 +6,7 @@ namespace otto::audio {
 namespace detail {
 
   void registerAudioBufferResize(std::function<void(int)> eventHandler) {
-    Globals::events.bufferSizeChanged.add(eventHandler);
+    global::event::buffersize_change.add(eventHandler);
   }
 
 } // detail

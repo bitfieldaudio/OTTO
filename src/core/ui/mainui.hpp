@@ -11,7 +11,7 @@ namespace otto::ui {
 
   public:
 
-    static void mainRoutine();
+    void mainRoutine();
 
     ui::PressedKeys keys;
     DefaultScreen defaultScreen;

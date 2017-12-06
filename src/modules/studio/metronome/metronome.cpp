@@ -37,13 +37,13 @@ namespace otto::modules {
   audio::ProcessData<1> Metronome::process(audio::ProcessData<0> data) {
     TIME_SCOPE("Metronome::process");
 
-    float BPsample = props.bpm / 60.0 / (float) Globals::samplerate;
-    float beat = Globals::tapedeck.position() * BPsample;
-    int framesTillNext = std::fmod(beat, 1)/BPsample * Globals::tapedeck.state.playSpeed;
+    float BPsample = props.bpm / 60.0 / (float) global::audio.samplerate;
+    float beat = global::tapedeck.position() * BPsample;
+    int framesTillNext = std::fmod(beat, 1)/BPsample * global::tapedeck.state.playSpeed;
 
     if (framesTillNext < data.nframes
-      && Globals::tapedeck.state.playing()
-      && Globals::tapedeck.state.playSpeed/BPsample > 1) {
+      && global::tapedeck.state.playing()
+      && global::tapedeck.state.playSpeed/BPsample > 1) {
       FaustWrapper::process(data.slice(0, framesTillNext));
       props.trigger = true;
       FaustWrapper::process(data.slice(framesTillNext));
@@ -56,12 +56,12 @@ namespace otto::modules {
   }
 
   void Metronome::display() {
-    Globals::ui.display(*screen);
+    global::ui.display(*screen);
   }
 
   // Bars
   BeatPos Metronome::closestBar(TapeTime time) {
-    double fpb = (Globals::samplerate)*60/(double)props.bpm;
+    double fpb = (global::audio.samplerate)*60/(double)props.bpm;
     BeatPos prevBar = time/fpb;
     TapeTime prevBarTime = getBarTime(prevBar);
     if (time - prevBarTime > fpb/2) {
@@ -71,16 +71,16 @@ namespace otto::modules {
   }
 
   TapeTime Metronome::getBarTime(BeatPos bar) {
-    double fpb = (Globals::samplerate)*60/(double)props.bpm;
+    double fpb = (global::audio.samplerate)*60/(double)props.bpm;
     return bar * fpb;
   }
 
   TapeTime Metronome::getBarTimeRel(BeatPos bar) {
-    if (bar == 0) return closestBar(Globals::tapedeck.position());
-    double fpb = (Globals::samplerate)*60/(double)props.bpm;
-    BeatPos curBar = Globals::tapedeck.position()/fpb;
+    if (bar == 0) return closestBar(global::tapedeck.position());
+    double fpb = (global::audio.samplerate)*60/(double)props.bpm;
+    BeatPos curBar = global::tapedeck.position()/fpb;
     TapeTime curBarTime = getBarTime(curBar);
-    TapeTime diff = Globals::tapedeck.position() - curBarTime;
+    TapeTime diff = global::tapedeck.position() - curBarTime;
     if (diff > fpb/2) {
       curBar += 1;
       if (bar > 0) bar -= 1;
@@ -92,13 +92,13 @@ namespace otto::modules {
 
   float Metronome::bar_for_time(std::size_t time) const
   {
-    float fpb = (Globals::samplerate)*60/(float)props.bpm;
+    float fpb = (global::audio.samplerate)*60/(float)props.bpm;
     return time / fpb;
   }
 
   std::size_t Metronome::time_for_bar(float bar) const
   {
-    float fpb = (Globals::samplerate)*60/(float)props.bpm;
+    float fpb = (global::audio.samplerate)*60/(float)props.bpm;
     return bar * fpb;
   }
 
@@ -229,8 +229,8 @@ namespace otto::modules {
     {
       ctx.save();
 
-      float BPsample(module->props.bpm/60.0/(float)Globals::samplerate);
-      float beat(Globals::tapedeck.position() * BPsample);
+      float BPsample(module->props.bpm/60.0/(float)global::audio.samplerate);
+      float beat(global::tapedeck.position() * BPsample);
       float factor((std::fmod(beat, 2)));
       factor = factor < 1 ? (factor * 2 - 1) : ((1 - factor) * 2 + 1);
       factor = std::sin(factor * M_PI/2);

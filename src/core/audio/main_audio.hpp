@@ -29,6 +29,8 @@ namespace otto::audio {
 
   public:
 
+    std::atomic_int samplerate;
+
     // A unique_ptr pimpl requires externally defined ctors and dtors
     MainAudio();
     ~MainAudio();
