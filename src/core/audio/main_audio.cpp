@@ -1,14 +1,14 @@
 #include "main_audio.hpp"
 
 #include "core/globals.hpp"
-#include "modules/studio/input_selector/input_selector.hpp"
+#include "engines/studio/input_selector/input_selector.hpp"
 #include "util/algorithm.hpp"
 
 namespace otto::audio {
 
   ProcessData<2> MainAudio::process(ProcessData<1> external_in)
   {
-    using Selection = modules::InputSelector::Selection;
+    using Selection = engines::InputSelector::Selection;
 
     // Main processor function
     auto midi_in      = external_in.midi_only();

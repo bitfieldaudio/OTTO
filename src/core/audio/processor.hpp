@@ -23,7 +23,7 @@ namespace otto {
    * audio system and it's deligates.
    *
    * If another thread needs access to any of this data, e.g. the audio/midi data,
-   * They need an audio processor to read it and store it. It is up to the module
+   * They need an audio processor to read it and store it. It is up to the engine
    * in question to handle thread safety.
    */
   namespace audio {

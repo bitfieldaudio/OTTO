@@ -16,8 +16,8 @@
 #include "util/type_traits.hpp"
 #include "util/algorithm.hpp"
 
-#include "core/modules/module.hpp"
-#include "core/modules/module-props.hpp"
+#include "core/engines/engine.hpp"
+#include "core/engines/engine-props.hpp"
 
 namespace otto::audio {
 
@@ -35,10 +35,10 @@ namespace otto::audio {
       BOOL
     };
 
-    modules::Properties *props;
+    engines::Properties *props;
 
     FaustOptions() {}
-    FaustOptions(modules::Properties* props) : props (props) {}
+    FaustOptions(engines::Properties* props) : props (props) {}
 
     void openTabBox(const char* label) override {
       if (atRoot) {
@@ -140,7 +140,7 @@ namespace otto::audio {
             (*it)->linkToFaust(ptr, output);
             break;
           } else {
-            if (auto* p = dynamic_cast<modules::Properties*>(*it); p != nullptr) {
+            if (auto* p = dynamic_cast<engines::Properties*>(*it); p != nullptr) {
               b = p->begin();
               e = p->end();
             }
@@ -185,7 +185,7 @@ namespace otto::audio {
 
     FaustWrapper() {};
 
-    FaustWrapper(std::unique_ptr<dsp>&& d, modules::Properties& props)
+    FaustWrapper(std::unique_ptr<dsp>&& d, engines::Properties& props)
       : opts (&props), fDSP (std::move(d))
     {
       if (fDSP->getNumInputs() != Cin || fDSP->getNumOutputs() != Cout) {

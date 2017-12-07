@@ -100,7 +100,7 @@ namespace otto::ui {
   /**
    * Represents a view that covers the entire screen
    *
-   * If it belongs to a module, use <ui::ModuleScreen>.
+   * If it belongs to a engine, use <ui::EngineScreen>.
    */
   class Screen : public vg::Drawable {
   public:

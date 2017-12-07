@@ -12,10 +12,11 @@ namespace otto::global {
   // Local Variables //////////////////////////////////////////////////////////
 
   namespace {
+    std::atomic_bool is_running {true};
     std::atomic<ErrorCode> error_code;
 
     // TODO: Depends on static initialization
-    util::JsonFile data_file{data_dir / "modules.json"};
+    util::JsonFile data_file{data_dir / "engines.json"};
 
   }
 
@@ -34,12 +35,13 @@ namespace otto::global {
 
   void exit(ErrorCode ec) noexcept
   {
+    is_running = false;
     error_code = ec;
   }
 
   bool running() noexcept
   {
-    return error_code == ErrorCode::none;
+    return is_running;
   }
 
   ErrorCode error() noexcept

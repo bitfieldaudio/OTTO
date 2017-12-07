@@ -4,12 +4,12 @@
 
 #include "core/audio/midi.hpp"
 #include "core/ui/mainui.hpp"
-#include "modules/studio/tapedeck/tapedeck.hpp"
-#include "modules/studio/mixer/mixer.hpp"
-#include "modules/drums/simple-drums/simple-drums.hpp"
-#include "modules/drums/drum-sampler/drum-sampler.hpp"
-#include "modules/synths/synth-sampler/synth-sampler.hpp"
-#include "modules/synths/nuke/nuke.hpp"
+#include "engines/studio/tapedeck/tapedeck.hpp"
+#include "engines/studio/mixer/mixer.hpp"
+#include "engines/drums/simple-drums/simple-drums.hpp"
+#include "engines/drums/drum-sampler/drum-sampler.hpp"
+#include "engines/synths/synth-sampler/synth-sampler.hpp"
+#include "engines/synths/nuke/nuke.hpp"
 #include "core/globals.hpp"
 #include "util/timer.hpp"
 
@@ -37,13 +37,13 @@ int main(int argc, char *argv[]) {
 
     midi::generateFreqTable(440);
 
-    using namespace modules;
+    using namespace engines;
 
-    global::drums.registerModule<DrumSampler>("Sampler");
-    global::drums.registerModule<SimpleDrumsModule>("Additive Drums");
+    global::drums.registerEngine<DrumSampler>("Sampler");
+    global::drums.registerEngine<SimpleDrumsEngine>("Additive Drums");
 
-    global::synth.registerModule<NukeSynth>("Nuke");
-    global::synth.registerModule<SynthSampler>("Sampler");
+    global::synth.registerEngine<NukeSynth>("Nuke");
+    global::synth.registerEngine<SynthSampler>("Sampler");
 
     global::event::pre_init.runAll();
     global::init();

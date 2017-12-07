@@ -6,12 +6,12 @@
 #include "core/audio/main_audio.hpp"
 #include "core/ui/mainui.hpp"
 
-#include "core/modules/module-dispatcher.hpp"
+#include "core/engines/engine-dispatcher.hpp"
 
-#include "modules/studio/input_selector/input_selector.hpp"
-#include "modules/studio/metronome/metronome.hpp"
-#include "modules/studio/mixer/mixer.hpp"
-#include "modules/studio/tapedeck/tapedeck.hpp"
+#include "engines/studio/input_selector/input_selector.hpp"
+#include "engines/studio/metronome/metronome.hpp"
+#include "engines/studio/mixer/mixer.hpp"
+#include "engines/studio/tapedeck/tapedeck.hpp"
 
 namespace otto {
 
@@ -40,13 +40,13 @@ namespace otto {
     inline audio::MainAudio audio;
     inline ui::MainUI ui;
 
-    inline modules::SynthModuleDispatcher synth;
-    inline modules::SynthModuleDispatcher drums;
-    inline modules::EffectModuleDispatcher effect;
-    inline modules::Tapedeck tapedeck;
-    inline modules::Mixer mixer;
-    inline modules::Metronome metronome;
-    inline modules::InputSelector selector;
+    inline engines::SynthEngineDispatcher synth;
+    inline engines::SynthEngineDispatcher drums;
+    inline engines::EffectEngineDispatcher effect;
+    inline engines::Tapedeck tapedeck;
+    inline engines::Mixer mixer;
+    inline engines::Metronome metronome;
+    inline engines::InputSelector selector;
 
     void init();
 

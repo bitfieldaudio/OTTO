@@ -9,7 +9,7 @@
 namespace otto::audio {
 
   /// Class that interacts with OS audio/midi framework, and delegates
-  /// processing to the modules.
+  /// processing to the engines.
   class MainAudio {
 
     // PIMPL - define in individual implementation files
