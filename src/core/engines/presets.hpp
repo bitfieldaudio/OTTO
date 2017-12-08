@@ -6,19 +6,6 @@
 
 namespace otto::engines {
 
-  enum struct EngineType {
-    drums,
-    synth,
-    effect,
-    studio,
-  };
-
-  struct EngineData {
-    EngineType type;
-    std::string name;
-    nlohmann::json data;
-  };
-
   /// # OTTO Preset format
   ///
   /// OTTO Presets are defined in a json file with the following layout:

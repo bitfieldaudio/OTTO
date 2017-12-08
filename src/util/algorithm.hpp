@@ -493,4 +493,16 @@ namespace otto::util {
     return std::max_element(begin(cont), end(cont), std::forward<Compare>(f));
   }
 
+  template<typename Cont, typename T>
+  decltype(auto) find(Cont&& cont, T&& t) {
+    using std::begin; using std::end;
+    return std::find(begin(cont), end(cont), std::forward<T>(t));
+  }
+
+  template<typename Cont, typename UnaryPredicate>
+  decltype(auto) find_if(Cont&& cont, UnaryPredicate&& f) {
+    using std::begin; using std::end;
+    return std::find_if(begin(cont), end(cont), std::forward<UnaryPredicate>(f));
+  }
+
 }

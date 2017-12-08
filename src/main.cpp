@@ -17,14 +17,15 @@ int main(int argc, char *argv[]) {
   using namespace otto;
 
   auto cleanup = [] {
-      global::event::pre_exit.runAll();
+    global::event::pre_exit.runAll();
     global::ui.exit();
     global::mixer.exit();
     global::tapedeck.exit();
     global::audio.exit();
     global::save_data();
     global::event::post_exit.runAll();
-    auto f = std::ofstream((global::data_dir / "timers.json").string(), std::ios::trunc);
+    auto f = std::ofstream(
+      (global::data_dir / "timers.json").string(), std::ios::trunc);
     f << std::setw(2) << util::timer::serialize() << std::endl;
     f.close();
   };
@@ -39,11 +40,11 @@ int main(int argc, char *argv[]) {
 
     using namespace engines;
 
-    global::drums.registerEngine<DrumSampler>("Sampler");
-    global::drums.registerEngine<SimpleDrumsEngine>("Additive Drums");
+    global::drums.register_engine<DrumSampler>();
+    global::drums.register_engine<SimpleDrumsEngine>();
 
-    global::synth.registerEngine<NukeSynth>("Nuke");
-    global::synth.registerEngine<SynthSampler>("Sampler");
+    global::synth.register_engine<NukeSynth>();
+    global::synth.register_engine<SynthSampler>();
 
     global::event::pre_init.runAll();
     global::init();
