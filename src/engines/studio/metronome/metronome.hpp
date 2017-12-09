@@ -12,21 +12,15 @@ namespace otto::engines {
 
   using BeatPos = int;
 
-  class MetronomeScreen; // FWDCL
-
-  class Metronome : public Engine, audio::FaustWrapper<0, 1> {
-
-    std::unique_ptr<MetronomeScreen> screen;
+  struct Metronome : Engine<EngineType::studio>, private audio::FaustWrapper<0, 1> {
 
     using audio::FaustWrapper<0, 1>::process;
 
-  public:
     struct Props : public engines::Properties {
-      Property<float> bpm     = {this, "BPM", 120, {40, 320, 1}};
-      Property<float> gain    = {this, "GAIN", 0, {0, 1, 0.01}};
-      Property<int>   tone    = {this, "TONE", 12, {0, 24, 1}};
-      Property<bool, mode::def,
-        false> trigger = {this, "TRIGGER", false};
+      Property<float> bpm  = {this, "BPM", 120, {40, 320, 1}};
+      Property<float> gain = {this, "GAIN", 0, {0, 1, 0.01}};
+      Property<int> tone   = {this, "TONE", 12, {0, 24, 1}};
+      Property<bool, mode::def, false> trigger = {this, "TRIGGER", false};
     } props;
 
     util::audio::Graph graph;
@@ -35,7 +29,6 @@ namespace otto::engines {
     ~Metronome();
 
     audio::ProcessData<1> process(audio::ProcessData<0>);
-    void display() override;
 
     // TODO: Move this into core
     /* Bar iteration */

@@ -7,11 +7,7 @@
 
 namespace otto::engines {
 
-  class NukeSynth : public FaustSynthEngine {
-
-    ui::EngineScreen<NukeSynth>::ptr screen;
-
-  public:
+  struct NukeSynth : public FaustSynthEngine {
 
     struct Props : Properties {
       struct : public Properties {
@@ -30,7 +26,5 @@ namespace otto::engines {
     NukeSynth();
 
     audio::ProcessData<1> process(audio::ProcessData<0>) override;
-
-    void display() override;
   };
 }

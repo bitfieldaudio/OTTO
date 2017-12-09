@@ -26,10 +26,10 @@ namespace otto::global {
   {
     read_data();
     audio.init();
-    tapedeck.init();
-    mixer.init();
-    synth.current().init();
-    drums.current().init();
+    tapedeck.on_enable();
+    mixer.on_enable();
+    synth.select(0UL);
+    drums.select(0UL);
     ui.init();
   }
 
@@ -58,8 +58,8 @@ namespace otto::global {
     if (data.is_object()) {
       from_json(data["TapeDeck"], tapedeck);
       from_json(data["Mixer"], mixer);
-      from_json(data["Synth"], synth);
-      from_json(data["Drums"], drums);
+      // from_json(data["Synth"], synth);
+      // from_json(data["Drums"], drums);
       from_json(data["Metronome"], metronome);
     } else {
       throw util::JsonFile::exception(util::JsonFile::ErrorCode::invalid_data,
@@ -74,8 +74,8 @@ namespace otto::global {
     data.clear();
     data["TapeDeck"]  = tapedeck;
     data["Mixer"]     = mixer;
-    data["Synth"]     = synth;
-    data["Drums"]     = drums;
+    // data["Synth"]     = synth;
+    // data["Drums"]     = drums;
     data["Metronome"] = metronome;
     data_file.write();
   }

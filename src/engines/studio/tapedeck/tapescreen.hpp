@@ -2,15 +2,15 @@
 #pragma once
 #include <fmt/format.h>
 
+#include "core/globals.hpp"
 #include "core/ui/drawing.hpp"
 #include "tapedeck.hpp"
-#include "core/globals.hpp"
 
 namespace otto::ui::vg {
   namespace Colours {
     const Colour Tape = Colour::bytes(60, 60, 59);
   }
-}
+} // namespace otto::ui::vg
 
 namespace otto::engines {
 
@@ -26,83 +26,74 @@ namespace otto::engines {
     {
       bool shift = global::ui.keys[ui::K_SHIFT];
       switch (key) {
-      case ui::K_REC:
-        engine->state.startRecord();
-        return true;
+      case ui::K_REC: engine.state.startRecord(); return true;
       case ui::K_PLAY:
         if (global::ui.keys[ui::K_REC]) {
           stopRecOnRelease = false;
         }
         return false;
-      case ui::K_TRACK_1:
-        engine->state.track = 0;
-        return true;
-      case ui::K_TRACK_2:
-        engine->state.track = 1;
-        return true;
-      case ui::K_TRACK_3:
-        engine->state.track = 2;
-        return true;
-      case ui::K_TRACK_4:
-        engine->state.track = 3;
-        return true;
+      case ui::K_TRACK_1: engine.state.track = 0; return true;
+      case ui::K_TRACK_2: engine.state.track = 1; return true;
+      case ui::K_TRACK_3: engine.state.track = 2; return true;
+      case ui::K_TRACK_4: engine.state.track = 3; return true;
       case ui::K_LEFT:
-        if (shift) engine->goToBarRel(-1);
-        else engine->state.spool(-5);
+        if (shift)
+          engine.goToBarRel(-1);
+        else
+          engine.state.spool(-5);
         return true;
       case ui::K_RIGHT:
-        if (shift) engine->goToBarRel(1);
-        else engine->state.spool(5);
+        if (shift)
+          engine.goToBarRel(1);
+        else
+          engine.state.spool(5);
         return true;
       case ui::K_LOOP:
-        engine->state.looping = !engine->state.looping;
+        engine.state.looping = !engine.state.looping;
         return true;
       case ui::K_LOOP_IN:
-        if (shift) engine->loopInHere();
-        else engine->goToLoopIn();
+        if (shift)
+          engine.loopInHere();
+        else
+          engine.goToLoopIn();
         return true;
       case ui::K_LOOP_OUT:
-        if (shift) engine->loopOutHere();
-        else engine->goToLoopOut();
+        if (shift)
+          engine.loopOutHere();
+        else
+          engine.goToLoopOut();
         return true;
       case ui::K_CUT:
-        if (engine->state.doTapeOps()) {
+        if (engine.state.doTapeOps()) {
           if (shift) {
             // TODO: Glue
           } else {
-            engine->tapeBuffer->slices[engine->state.track]
-              .cut(engine->position());
+            engine.tapeBuffer->slices[engine.state.track].cut(
+              engine.position());
           }
         }
-          return true;
+        return true;
       case ui::K_LIFT:
-        if (engine->state.doTapeOps())
+        if (engine.state.doTapeOps())
           // TODO:
-          // engine->tapeBuffer.lift(engine->state.track);
+          // engine.tapeBuffer.lift(engine.state.track);
           return true;
       case ui::K_DROP:
-        if (engine->state.doTapeOps())
+        if (engine.state.doTapeOps())
           // TODO:
-          // engine->tapeBuffer.drop(engine->state.track);
+          // engine.tapeBuffer.drop(engine.state.track);
           return true;
-      default:
-        return false;
+      default: return false;
       }
     }
 
     void rotary(ui::RotaryEvent e) override
     {
       switch (e.rotary) {
-      case ui::Rotary::Blue:
-        break;
-      case ui::Rotary::Green:
-        break;
-      case ui::Rotary::White:
-        engine->props.baseSpeed.step(e.clicks);
-        break;
-      case ui::Rotary::Red:
-        engine->props.gain.step(e.clicks);
-        break;
+      case ui::Rotary::Blue: break;
+      case ui::Rotary::Green: break;
+      case ui::Rotary::White: engine.props.baseSpeed.step(e.clicks); break;
+      case ui::Rotary::Red: engine.props.gain.step(e.clicks); break;
       }
     }
 
@@ -111,31 +102,29 @@ namespace otto::engines {
       switch (key) {
       case ui::K_REC:
         if (stopRecOnRelease) {
-          engine->state.stopRecord();
+          engine.state.stopRecord();
           return true;
         } else {
           stopRecOnRelease = true;
           return true;
         }
       case ui::K_LEFT:
-      case ui::K_RIGHT:
-        engine->state.stop();
-        return true;
-      default:
-        return false;
+      case ui::K_RIGHT: engine.state.stop(); return true;
+      default: return false;
       }
     }
 
     std::string timeStr() const
     {
-      return timeStr(engine->position());
+      return timeStr(engine.position());
     }
 
     std::string timeStr(std::size_t position) const
     {
-      double seconds = position/(1.0 * global::audio.samplerate);
+      double seconds = position / (1.0 * global::audio.samplerate);
       double minutes = seconds / 60.0;
-      return fmt::format("{:0>2}:{:0>5.2f}", (int) minutes, fmod(seconds, 60.0));
+      return fmt::format("{:0>2}:{:0>5.2f}", (int) minutes,
+                         fmod(seconds, 60.0));
     }
 
     /* Drawing */
@@ -324,8 +313,8 @@ namespace otto::engines {
       ctx.stroke();
 
       // tAPEDECK/SPEEDINDICATOR/INDICATOR
-      float speed_amount = (engine->state.playSpeed) / engine->state.max_speed;
-      float speed_x = 160.4 + speed_amount * 26;
+      float speed_amount = (engine.state.playSpeed) / engine.state.max_speed;
+      float speed_x      = 160.4 + speed_amount * 26;
       ctx.beginPath();
       ctx.moveTo(speed_x, 154.8);
       ctx.lineTo(speed_x, 160.0);
@@ -343,7 +332,7 @@ namespace otto::engines {
       ctx.font(14.9);
       ctx.textAlign(TextAlign::Center, TextAlign::Baseline);
       ctx.fillStyle(Colour::bytes(255, 255, 255));
-      ctx.fillText(fmt::format("{: .2f}", engine->props.baseSpeed), 160.5, 96.3);
+      ctx.fillText(fmt::format("{: .2f}", engine.props.baseSpeed), 160.5, 96.3);
 
       // tAPEDECK/TIMESTAMP
       ctx.font(Fonts::Mono);
@@ -414,22 +403,23 @@ namespace otto::engines {
       // TODO: Animate this?
       int timeline_time = 5 * global::audio.samplerate;
 
-      util::audio::Section<int> view_time {
-        (int) engine->position() - timeline_time/2,
-        (int) engine->position() + timeline_time/2};
+      util::audio::Section<int> view_time{
+        (int) engine.position() - timeline_time / 2,
+        (int) engine.position() + timeline_time / 2};
 
-      float left_edge = 23.2;
-      float right_edge = 296.2;
+      float left_edge      = 23.2;
+      float right_edge     = 296.2;
       float timeline_width = right_edge - left_edge;
 
       float length_pr_time = timeline_width / timeline_time;
-      auto time_to_coord = [&](int time) {
+      auto time_to_coord   = [&](int time) {
         time -= view_time.in;
         return left_edge + time * length_pr_time;
       };
 
       { // Bar Markers
-        float max_x = std::min(right_edge, time_to_coord(tape_buffer::max_length));
+        float max_x =
+          std::min(right_edge, time_to_coord(tape_buffer::max_length));
         float min_x = std::max(left_edge, time_to_coord(0));
 
         ctx.lineWidth(1.5);
@@ -438,7 +428,7 @@ namespace otto::engines {
         ctx.lineJoin(Canvas::LineJoin::ROUND);
 
         auto iter = global::metronome.iter(global::metronome.time_for_bar(
-            std::min(0.f, global::metronome.bar_for_time(view_time.in) - 1)));
+          std::min(0.f, global::metronome.bar_for_time(view_time.in) - 1)));
 
         while (true) {
           float x = time_to_coord(*iter);
@@ -456,7 +446,7 @@ namespace otto::engines {
       }
 
       // Loop section
-      auto ls = engine->loopSect;
+      auto ls = engine.loopSect;
       if (ls.size() > 0) {
         if (view_time.overlaps(ls)) {
           ctx.beginPath();
@@ -470,39 +460,39 @@ namespace otto::engines {
       // tAPEDECK/TIMELINE
       ctx.lineWidth(2.0);
 
-      auto draw_slice = [&] (auto slice, int track) {
+      auto draw_slice = [&](auto slice, int track) {
         if (slice.size() == 0) return;
         float y = 203 + 5 * track;
         ctx.beginPath();
-        ctx.moveTo(std::max(left_edge,  time_to_coord(slice.in)), y);
+        ctx.moveTo(std::max(left_edge, time_to_coord(slice.in)), y);
         ctx.lineTo(std::min(right_edge, time_to_coord(slice.out - 1)), y);
         ctx.stroke();
       };
 
       ctx.strokeStyle(Colours::Tape);
       for (int track = 0; track < 4; track++) {
-        for (auto&& slice : engine->tapeBuffer->slices[track]
-               .overlapping_slices(view_time)) {
+        for (auto&& slice :
+             engine.tapeBuffer->slices[track].overlapping_slices(view_time)) {
           draw_slice(slice, track);
         }
       }
 
       // Recording or selected
-      int cur_track = engine->state.track;
-      auto slice = engine->recSect;
-      if (slice.size() > 0 ) {
+      int cur_track = engine.state.track;
+      auto slice    = engine.recSect;
+      if (slice.size() > 0) {
         ctx.strokeStyle(Colours::Red);
       } else {
-        slice = engine->tapeBuffer->slices[cur_track].current(engine->position());
+        slice = engine.tapeBuffer->slices[cur_track].current(engine.position());
         ctx.strokeStyle(Colours::Blue);
       }
       draw_slice(slice, cur_track);
 
       // tAPEDECK/TIMELINE/TAPEINDICATORLEFT
 
-      auto indicator_colour = [&] (int track) {
-        return (engine->state.track == track) ?
-        Colour(Colours::White) : Colour::bytes(60, 60, 59);
+      auto indicator_colour = [&](int track) {
+        return (engine.state.track == track) ? Colour(Colours::White)
+                                             : Colour::bytes(60, 60, 59);
       };
 
       // tAPEDECK/TIMELINE/TAPEINDICATORLEFT/1
@@ -592,10 +582,11 @@ namespace otto::engines {
 
     void draw_slider(Canvas& ctx)
     {
-      float graph = engine->procGraph.clip();
-      float setting = engine->props.gain.mode.normalize();
-      auto colour = (Colour::bytes(60, 60, 59).mix(Colours::Red,
-          std::min(1.f, graph / setting * 3.f)));
+      float graph   = engine.procGraph.clip();
+      float setting = engine.props.gain.mode.normalize();
+      auto colour =
+        (Colour::bytes(60, 60, 59)
+           .mix(Colours::Red, std::min(1.f, graph / setting * 3.f)));
       ctx.save();
       // tAPEDECK/SYNTH
       ctx.beginPath();
@@ -644,8 +635,7 @@ namespace otto::engines {
 
     void draw_state_icon(Canvas& ctx)
     {
-
-      auto& state = engine->state;
+      auto& state = engine.state;
       ctx.save();
 
       ctx.lineCap(Canvas::LineCap::ROUND);
@@ -665,7 +655,7 @@ namespace otto::engines {
         ctx.fillStyle(Colours::White);
       }
 
-      if (state.recording()){ // Record
+      if (state.recording()) { // Record
         ctx.beginPath();
         ctx.moveTo(17.4, 6.9);
         ctx.bezierCurveTo(17.4, 9.9, 14.9, 12.4, 11.9, 12.4);
@@ -715,7 +705,7 @@ namespace otto::engines {
         ctx.fill();
         ctx.stroke();
       } else if (state.looping) { // Loop
-        if (engine->props.baseSpeed > 0) {
+        if (engine.props.baseSpeed > 0) {
           // icons/loopforward/Pad
           ctx.beginPath();
           ctx.moveTo(9.3, 3.9);
@@ -759,7 +749,7 @@ namespace otto::engines {
           ctx.stroke();
         }
       } else if (state.playing()) { // Play
-        if (engine->props.baseSpeed > 0) {
+        if (engine.props.baseSpeed > 0) {
           // icons/play
           ctx.beginPath();
           ctx.moveTo(7.7, 1.4);
@@ -800,19 +790,20 @@ namespace otto::engines {
     {
       Point l_center = {93.4, 90.1};
       Point r_center = {224.6, 90.1};
-      Colour colour  = engine->state.readyToRec ? Colour(Colours::Red) : Colour::bytes(112, 126, 133);
+      Colour colour  = engine.state.readyToRec ? Colour(Colours::Red)
+                                              : Colour::bytes(112, 126, 133);
 
-      float min_r = 26;
-      float max_r = 42;
-      float pos_amount = (engine->position() / float(tape_buffer::max_length));
-      float l_radius = min_r + pos_amount * (max_r - min_r);
-      float r_radius = min_r + (1 - pos_amount) * (max_r - min_r);
+      float min_r      = 26;
+      float max_r      = 42;
+      float pos_amount = (engine.position() / float(tape_buffer::max_length));
+      float l_radius   = min_r + pos_amount * (max_r - min_r);
+      float r_radius   = min_r + (1 - pos_amount) * (max_r - min_r);
       draw_tape_half(ctx, colour, {37, 160}, l_center, l_radius);
       draw_tape_half(ctx, colour, {284, 160}, r_center, r_radius);
 
       draw_static_tape(ctx, colour);
 
-      float reel_rotation = engine->position() / 44100.0 * M_PI;
+      float reel_rotation = engine.position() / 44100.0 * M_PI;
       draw_reel_wheel(ctx, l_center, reel_rotation, colour);
       draw_reel_wheel(ctx, r_center, reel_rotation, colour);
     }
@@ -825,12 +816,13 @@ namespace otto::engines {
       // to C
       // TODO: Some of this could be done constexpr or simply by hand
       util::math::vec cp = p - c;
-      float l = std::sqrt(cp.x*cp.x + cp.y*cp.y);
-      float v = std::asin(r/l);
-      float u = std::asin(std::abs(cp.x)/l);
-      float w = u - v;
-      float m = std::cos(v) * l;
-      Point ip = p - Point{(cp.x > 0 ? 1 : -1) * std::sin(w) * m, std::cos(w) * m};
+      float l            = std::sqrt(cp.x * cp.x + cp.y * cp.y);
+      float v            = std::asin(r / l);
+      float u            = std::asin(std::abs(cp.x) / l);
+      float w            = u - v;
+      float m            = std::cos(v) * l;
+      Point ip =
+        p - Point{(cp.x > 0 ? 1 : -1) * std::sin(w) * m, std::cos(w) * m};
 
       ctx.lineWidth(2);
       ctx.beginPath();
@@ -883,7 +875,10 @@ namespace otto::engines {
       ctx.restore();
     }
 
-    void draw_reel_wheel(Canvas& ctx, Point center, float rotation, Colour colour)
+    void draw_reel_wheel(Canvas& ctx,
+                         Point center,
+                         float rotation,
+                         Colour colour)
     {
       // rEELWHEEL/LEFTREEL
       ctx.save();
@@ -938,4 +933,4 @@ namespace otto::engines {
     }
   };
 
-}
+} // namespace otto::engines

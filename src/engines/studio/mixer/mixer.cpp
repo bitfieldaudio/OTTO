@@ -5,17 +5,27 @@
 
 namespace otto::engines {
 
+  struct MixerScreen : ui::EngineScreen<Mixer> {
+
+    using EngineScreen<Mixer>::EngineScreen;
+
+    void draw(ui::vg::Canvas& ctx) override;
+
+    bool keypress(ui::Key key) override;
+    bool keyrelease(ui::Key key) override;
+    void rotary(ui::RotaryEvent) override;
+
+    // TODO: Convert to Widget
+    void drawMixerSegment(ui::vg::Canvas& ctx, int track, float x, float y);
+  };
+
   /**************************************************/
   /* MixerEngine Implementation                     */
   /**************************************************/
 
-  Mixer::Mixer() :
-    Engine(&props),
-    screen (new MixerScreen(this)) {}
-
-  void Mixer::display() {
-    global::ui.display(*screen);
-  }
+  Mixer::Mixer()  //
+    : Engine("Mixer", props, std::make_unique<MixerScreen>(this))
+  {}
 
   // Mixing!
 
@@ -72,16 +82,16 @@ namespace otto::engines {
     using namespace ui;
     switch (key) {
     case K_BLUE_CLICK:
-      engine->props.tracks[0].muted.step();
+      engine.props.tracks[0].muted.step();
       return true;
     case K_GREEN_CLICK:
-      engine->props.tracks[1].muted.step();
+      engine.props.tracks[1].muted.step();
       return true;
     case K_WHITE_CLICK:
-      engine->props.tracks[2].muted.step();
+      engine.props.tracks[2].muted.step();
       return true;
     case K_RED_CLICK:
-      engine->props.tracks[3].muted.step();
+      engine.props.tracks[3].muted.step();
       return true;
     default:
       return false;
@@ -95,9 +105,9 @@ namespace otto::engines {
 
   void MixerScreen::rotary(ui::RotaryEvent e) {
     if (global::ui.keys[ui::K_SHIFT]) {
-      engine->props.tracks[static_cast<int>(e.rotary)].pan.step(e.clicks);
+      engine.props.tracks[static_cast<int>(e.rotary)].pan.step(e.clicks);
     } else {
-      engine->props.tracks[static_cast<int>(e.rotary)].level.step(e.clicks);
+      engine.props.tracks[static_cast<int>(e.rotary)].level.step(e.clicks);
     }
   }
 
@@ -111,11 +121,11 @@ namespace otto::engines {
     case 3: trackCol = Colours::White; break;
     case 4: trackCol = Colours::Red; break;
     }
-    Colour muteCol = (engine->props.tracks[track-1].muted) ? Colours::Red : Colours::Gray60;
-    float mix = engine->props.tracks[track-1].level;
-    float graph = engine->graphs[track-1].clip();
-    engine->graphs[track-1].clear();
-    float pan = engine->props.tracks[track-1].pan;
+    Colour muteCol = (engine.props.tracks[track-1].muted) ? Colours::Red : Colours::Gray60;
+    float mix = engine.props.tracks[track-1].level;
+    float graph = engine.graphs[track-1].clip();
+    engine.graphs[track-1].clear();
+    float pan = engine.props.tracks[track-1].pan;
 
     ctx.save();
     ctx.translate(x, y);

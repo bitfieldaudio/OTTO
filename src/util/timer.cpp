@@ -80,12 +80,22 @@ namespace otto::util::timer {
 
 // otto::util::timer free functions ///////////////////////////////////////////
 
+  struct TimerStack {
+    Timer root;
+    std::vector<Timer*> stack;
+
+    TimerStack(const timer_id& name)
+      : root (name),
+        stack {&root}
+    {}
+  };
+
   /// This owns one vector per thread
-  std::vector<Timer> thread_timers;
+  std::vector<TimerStack> thread_stacks;
 
   static std::mutex mutex;
 
-  static Timer& create_thread_timer() {
+  static TimerStack* create_timer_stack() {
     std::ostringstream s;
     s << "Thread ";
 #if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
@@ -96,18 +106,27 @@ namespace otto::util::timer {
 #endif
     {
       std::lock_guard lock (mutex);
-      return thread_timers.emplace_back(s.str());
+      return &thread_stacks.emplace_back(s.str());
     }
   }
 
-  thread_local std::vector<Timer*> timer_stack = {&create_thread_timer()};
+  // Do not access directly! use the function below
+  thread_local TimerStack* _timer_stack = nullptr;
+
+  auto& timer_stack() noexcept
+  {
+    if (_timer_stack == nullptr) {
+      _timer_stack = create_timer_stack();
+    }
+    return _timer_stack->stack;
+  }
 
   Timer& find_or_make(timer_id id)
   {
-    if (timer_stack.size() == 0) {
+    if (timer_stack().size() == 0) {
       throw util::exception("Timer stack empty. That shouldnt happen!");
     }
-    auto& stack_top = *timer_stack.back();
+    auto& stack_top = *timer_stack().back();
     if (stack_top.id == id) {
       return stack_top;
     }
@@ -130,7 +149,7 @@ namespace otto::util::timer {
 
   Timer& start(Timer& timer)
   {
-    timer_stack.push_back(&timer);
+    timer_stack().push_back(&timer);
     timer.start();
     return timer;
   }
@@ -142,16 +161,16 @@ namespace otto::util::timer {
 
   ScopedTimer start_scoped(Timer& timer)
   {
-    timer_stack.push_back(&timer);
+    timer_stack().push_back(&timer);
     timer.start();
     return ScopedTimer{timer};
   }
 
   void stop()
   {
-    if (timer_stack.size() != 0U) {
-      timer_stack.back()->stop();
-      timer_stack.pop_back();
+    if (timer_stack().size() != 0U) {
+      timer_stack().back()->stop();
+      timer_stack().pop_back();
     } else {
       throw std::runtime_error("Attempted to stop the last timer");
     }
@@ -164,8 +183,8 @@ namespace otto::util::timer {
 
   Timer& tick(Timer& timer)
   {
-    if (timer_stack.back() != &timer) {
-      timer_stack.push_back(&timer);
+    if (timer_stack().back() != &timer) {
+      timer_stack().push_back(&timer);
     }
     timer.tick();
     return timer;
@@ -175,8 +194,8 @@ namespace otto::util::timer {
   {
     std::lock_guard lock (mutex);
     auto arr = nlohmann::json::object();
-    for (auto timer : thread_timers) {
-      arr[timer.id] = timer.serialize();
+    for (auto timer : thread_stacks) {
+      arr[timer.root.id] = timer.root.serialize();
     }
     return arr;
   }

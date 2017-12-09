@@ -12,25 +12,20 @@ namespace otto::engines {
 
   using TapeTime = unsigned;
 
-  class MetronomeScreen : public ui::EngineScreen<Metronome> {
-
+  struct MetronomeScreen : ui::EngineScreen<Metronome> {
     void drawMetronome(ui::vg::Canvas&);
 
-  public:
     using ui::EngineScreen<Metronome>::EngineScreen;
 
     void rotary(ui::RotaryEvent) override;
 
     void draw(ui::vg::Canvas&) override;
-
   };
 
   Metronome::Metronome()
-    : Engine(&props),
-      audio::FaustWrapper<0, 1>(std::make_unique<FAUSTCLASS>(), props),
-    screen (std::make_unique<MetronomeScreen>(this))
-  {
-  }
+    : Engine("Metronome", props, std::make_unique<MetronomeScreen>(this)),
+      audio::FaustWrapper<0, 1>(std::make_unique<FAUSTCLASS>(), props)
+  {}
 
   Metronome::~Metronome() {}
 
@@ -53,10 +48,6 @@ namespace otto::engines {
     }
 
     return data.redirect(FaustWrapper::proc_buf);
-  }
-
-  void Metronome::display() {
-    global::ui.display(*screen);
   }
 
   // Bars
@@ -105,11 +96,11 @@ namespace otto::engines {
   void MetronomeScreen::rotary(ui::RotaryEvent e) {
     switch(e.rotary) {
     case ui::Rotary::Red:
-      engine->props.gain.step(e.clicks); break;
+      engine.props.gain.step(e.clicks); break;
     case ui::Rotary::Blue:
-      engine->props.bpm.step(e.clicks); break;
+      engine.props.bpm.step(e.clicks); break;
     case ui::Rotary::Green:
-      engine->props.tone.step(e.clicks); break;
+      engine.props.tone.step(e.clicks); break;
     case ui::Rotary::White:
       break;
     }
@@ -129,7 +120,7 @@ namespace otto::engines {
     {
       // Tone meter
       ctx.save();
-      float y = 180 - engine->props.tone.mode.normalize() * 140;
+      float y = 180 - engine.props.tone.mode.normalize() * 140;
       float x = 40;
       ctx.strokeStyle(Colours::Green.dimmed);
       ctx.lineCap(Canvas::LineCap::ROUND);
@@ -152,9 +143,9 @@ namespace otto::engines {
     {
       // Gain meter
       ctx.save();
-      float y = 180 - engine->graph * 140;
+      float y = 180 - engine.graph * 140;
       float x = 280;
-      engine->graph.clear();
+      engine.graph.clear();
       ctx.beginPath();
       ctx.lineCap(Canvas::LineCap::ROUND);
       ctx.strokeStyle(Colours::Red.dimmed);
@@ -168,7 +159,7 @@ namespace otto::engines {
       ctx.stroke();
       ctx.fillStyle(Colours::Red);
       ctx.beginPath();
-      ctx.circle(x, 180 - engine->props.gain.mode.normalize() * 140, 3);
+      ctx.circle(x, 180 - engine.props.gain.mode.normalize() * 140, 3);
       ctx.fill();
       ctx.restore();
     }
@@ -229,12 +220,12 @@ namespace otto::engines {
     {
       ctx.save();
 
-      float BPsample(engine->props.bpm/60.0/(float)global::audio.samplerate);
+      float BPsample(engine.props.bpm/60.0/(float)global::audio.samplerate);
       float beat(global::tapedeck.position() * BPsample);
       float factor((std::fmod(beat, 2)));
       factor = factor < 1 ? (factor * 2 - 1) : ((1 - factor) * 2 + 1);
       factor = std::sin(factor * M_PI/2);
-      factor *= 0.2 + 0.8 * (1 - engine->props.bpm.mode.normalize());
+      factor *= 0.2 + 0.8 * (1 - engine.props.bpm.mode.normalize());
       // float a(1);
       // factor(factor > 0 ? smoothMotion(factor, a) : -smoothMotion(-factor, a));
       float rotation(factor * M_PI/3);
@@ -247,7 +238,7 @@ namespace otto::engines {
       ctx.lineWidth(2);
 
       // PENDULUM
-      float y(75 * engine->props.bpm.mode.normalize());
+      float y(75 * engine.props.bpm.mode.normalize());
       ctx.beginPath();
       ctx.moveTo(38, 15 + y);
       ctx.lineTo(62, 15 + y);
@@ -282,7 +273,7 @@ namespace otto::engines {
     ctx.font(Fonts::Light);
     ctx.font(32);
     ctx.textAlign(TextAlign::Center, TextAlign::Middle);
-    ctx.fillText(std::to_string((int)engine->props.bpm), 50, 120);
+    ctx.fillText(std::to_string((int)engine.props.bpm), 50, 120);
 
   }
 

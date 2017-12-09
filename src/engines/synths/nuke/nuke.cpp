@@ -18,25 +18,22 @@ namespace otto::engines {
   };
 
   struct Knob : ui::vg::Drawable {
-
     ui::vg::Colour colour;
     PointInRange rotation;
 
     Knob() = default;
-    Knob(ui::vg::Colour c, PointInRange r) : colour (c), rotation (r) {}
+    Knob(ui::vg::Colour c, PointInRange r) : colour(c), rotation(r) {}
 
     void draw(ui::vg::Canvas& ctx) override;
-
   };
 
-  class NukeSynthScreen : public ui::EngineScreen<NukeSynth> {
-
+  struct NukeSynthScreen : ui::EngineScreen<NukeSynth> {
     std::array<Knob, 4> knobs = {{
-        Knob{ui::vg::Colours::Blue, {-1.13097, 0.5, M_PI}},
-        Knob{ui::vg::Colours::Green, {-0.376991, 0.5, 3.51858}},
-        Knob{ui::vg::Colours::White, {0, 0.5, M_PI}},
-        Knob{ui::vg::Colours::Red, {-0.565486, 0.5, 0.565486}},
-      }};
+      Knob{ui::vg::Colours::Blue, {-1.13097, 0.5, M_PI}},
+      Knob{ui::vg::Colours::Green, {-0.376991, 0.5, 3.51858}},
+      Knob{ui::vg::Colours::White, {0, 0.5, M_PI}},
+      Knob{ui::vg::Colours::Red, {-0.565486, 0.5, 0.565486}},
+    }};
 
     void draw_bg(ui::vg::Canvas& ctx);
     void draw_text(ui::vg::Canvas& ctx);
@@ -49,26 +46,22 @@ namespace otto::engines {
     bool keypress(ui::Key key) override;
     void rotary(ui::RotaryEvent e) override;
 
-  public:
     using ui::EngineScreen<NukeSynth>::EngineScreen;
   };
 
-  /*
-   * NukeSynth
-   */
+  // NukeSynth ////////////////////////////////////////////////////////////////
 
-  NukeSynth::NukeSynth() :
-    FaustSynthEngine (std::make_unique<FAUSTCLASS>(), &props),
-    screen (new NukeSynthScreen(this)) {}
-
-  void NukeSynth::display() {
-    global::ui.display(*screen);
-  }
+  NukeSynth::NukeSynth()
+    : FaustSynthEngine("Nuke",
+                       props,
+                       std::make_unique<NukeSynthScreen>(this),
+                       std::make_unique<FAUSTCLASS>())
+  {}
 
   audio::ProcessData<1> NukeSynth::process(audio::ProcessData<0> data)
   {
-    props.key = 60;
-    props.trigger = 1;
+    props.key      = 60;
+    props.trigger  = 1;
     props.velocity = 1.f;
     FaustSynthEngine::process(data);
     return data.redirect(proc_buf);
@@ -78,36 +71,30 @@ namespace otto::engines {
    * NukeSynthScreen
    */
 
-  bool NukeSynthScreen::keypress(ui::Key key) {
+  bool NukeSynthScreen::keypress(ui::Key key)
+  {
     Knob k;
     switch (key) {
-    case ui::K_BLUE_CLICK:
-      k = knobs[0]; break;
-    case ui::K_GREEN_CLICK:
-      k = knobs[1]; break;
-    case ui::K_WHITE_CLICK:
-      k = knobs[2]; break;
-    case ui::K_RED_CLICK:
-      k = knobs[3]; break;
+    case ui::K_BLUE_CLICK: k = knobs[0]; break;
+    case ui::K_GREEN_CLICK: k = knobs[1]; break;
+    case ui::K_WHITE_CLICK: k = knobs[2]; break;
+    case ui::K_RED_CLICK: k = knobs[3]; break;
     default: return false;
     }
     LOGD << "rotation: "
-         << (k.rotation.min + ((k.rotation.max - k.rotation.min)
-             * k.rotation.cur));
+         << (k.rotation.min +
+             ((k.rotation.max - k.rotation.min) * k.rotation.cur));
     return true;
   }
 
-  void NukeSynthScreen::rotary(ui::RotaryEvent e) {
+  void NukeSynthScreen::rotary(ui::RotaryEvent e)
+  {
     PointInRange& r = [&]() -> PointInRange& {
       switch (e.rotary) {
-      case ui::Rotary::Blue:
-      return knobs[0].rotation;
-      case ui::Rotary::Green:
-      return knobs[1].rotation;
-      case ui::Rotary::White:
-      return knobs[2].rotation;
-      case ui::Rotary::Red:
-      return knobs[3].rotation;
+      case ui::Rotary::Blue: return knobs[0].rotation;
+      case ui::Rotary::Green: return knobs[1].rotation;
+      case ui::Rotary::White: return knobs[2].rotation;
+      case ui::Rotary::Red: return knobs[3].rotation;
       }
     }();
     r.cur = std::clamp(r.cur + 0.01f * e.clicks, 0.f, 1.f);
@@ -116,7 +103,8 @@ namespace otto::engines {
 
   using namespace ui::vg;
 
-  void NukeSynthScreen::draw(Canvas &ctx) {
+  void NukeSynthScreen::draw(Canvas& ctx)
+  {
     draw_bg(ctx);
     draw_key(ctx);
     draw_text(ctx);
@@ -125,7 +113,8 @@ namespace otto::engines {
     draw_knobs(ctx);
   }
 
-  void Knob::draw(Canvas& ctx) {
+  void Knob::draw(Canvas& ctx)
+  {
     ctx.rotate(rotation.min + ((rotation.max - rotation.min) * rotation.cur));
     ctx.save();
     ctx.translate(-28.9, -28.5);
@@ -172,8 +161,8 @@ namespace otto::engines {
     ctx.restore();
   }
 
-  void NukeSynthScreen::draw_knobs(Canvas& ctx) {
-
+  void NukeSynthScreen::draw_knobs(Canvas& ctx)
+  {
     // Bass
     ctx.drawAt({60.8, 92.2}, knobs[0]);
 
@@ -185,10 +174,10 @@ namespace otto::engines {
 
     // Init
     ctx.drawAt({280.4, 87.5}, knobs[3]);
-
   }
 
-  void NukeSynthScreen::draw_slider(Canvas& ctx) {
+  void NukeSynthScreen::draw_slider(Canvas& ctx)
+  {
     // mODESLIDER/CIRCLE
     ctx.save();
     ctx.beginPath();
@@ -203,7 +192,8 @@ namespace otto::engines {
     ctx.restore();
   }
 
-  void NukeSynthScreen::draw_level_dots(Canvas& ctx) {
+  void NukeSynthScreen::draw_level_dots(Canvas& ctx)
+  {
     // lEVELDOTS/6
     ctx.save();
     ctx.beginPath();
@@ -269,7 +259,8 @@ namespace otto::engines {
     ctx.restore();
   }
 
-  void NukeSynthScreen::draw_text(Canvas& ctx) {
+  void NukeSynthScreen::draw_text(Canvas& ctx)
+  {
     ctx.save();
     ctx.font(Fonts::Norm);
     ctx.font(16.f);
@@ -316,7 +307,8 @@ namespace otto::engines {
     ctx.restore();
   }
 
-  void NukeSynthScreen::draw_key(Canvas& ctx) {
+  void NukeSynthScreen::draw_key(Canvas& ctx)
+  {
     // kEY/KEYOBJECT
     ctx.save();
     ctx.beginPath();
@@ -366,7 +358,8 @@ namespace otto::engines {
     ctx.restore();
   }
 
-  void NukeSynthScreen::draw_bg(Canvas &ctx) {
+  void NukeSynthScreen::draw_bg(Canvas& ctx)
+  {
     // sTATICBG/left white border
     ctx.save();
     ctx.beginPath();
@@ -863,4 +856,4 @@ namespace otto::engines {
     ctx.stroke();
     ctx.restore();
   }
-}
+} // namespace otto::engines

@@ -6,118 +6,131 @@
 #include "core/ui/drawing.hpp"
 #include "tapedeck.hpp"
 #include "tapescreen.hpp"
-#include "util/timer.hpp"
 #include "util/algorithm.hpp"
+#include "util/timer.hpp"
 
 namespace otto::engines {
 
   using TapeTime = std::size_t;
 
-  /************************************************/
-  /* Tapedeck::State Implementation             */
-  /************************************************/
+  // TapeDeck::State ///////////////////////////////////////////////////////////
 
-  bool Tapedeck::State::doSwitchTracks() const {
+  bool Tapedeck::State::doSwitchTracks() const
+  {
     return !recording();
   }
-  bool Tapedeck::State::doTapeOps() const {
+  bool Tapedeck::State::doTapeOps() const
+  {
     return stopped();
   }
-  bool Tapedeck::State::doPlayAudio() const {
+  bool Tapedeck::State::doPlayAudio() const
+  {
     return playSpeed != 0;
   }
-  bool Tapedeck::State::doEaseIn() const {
+  bool Tapedeck::State::doEaseIn() const
+  {
     return !recording();
   }
-  bool Tapedeck::State::doStartRec() const {
+  bool Tapedeck::State::doStartRec() const
+  {
     return !spooling() && !recording();
   }
-  bool Tapedeck::State::doStartSpool() const {
+  bool Tapedeck::State::doStartSpool() const
+  {
     return !recording();
   }
-  bool Tapedeck::State::doLoop() const {
+  bool Tapedeck::State::doLoop() const
+  {
     return playing();
   }
-  bool Tapedeck::State::doJumps() const {
+  bool Tapedeck::State::doJumps() const
+  {
     return stopped();
   }
 
-  bool Tapedeck::State::fwd() const {
+  bool Tapedeck::State::fwd() const
+  {
     return playSpeed > 0;
   }
-  bool Tapedeck::State::bwd() const {
+  bool Tapedeck::State::bwd() const
+  {
     return playSpeed < 0;
   }
 
 
-  bool Tapedeck::State::playing() const {
+  bool Tapedeck::State::playing() const
+  {
     return playType == PLAYING;
   }
-  bool Tapedeck::State::spooling() const {
+  bool Tapedeck::State::spooling() const
+  {
     return playType == SPOOLING;
   }
-  bool Tapedeck::State::stopped() const {
+  bool Tapedeck::State::stopped() const
+  {
     return playType == STOPPED;
   }
-  bool Tapedeck::State::recording() const {
+  bool Tapedeck::State::recording() const
+  {
     return readyToRec && playing();
   }
 
   // Playback control
 
-  void Tapedeck::State::play(float speed) {
-    playType = PLAYING;
+  void Tapedeck::State::play(float speed)
+  {
+    playType  = PLAYING;
     nextSpeed = speed;
   }
 
-  void Tapedeck::State::spool(float speed) {
+  void Tapedeck::State::spool(float speed)
+  {
     if (!doStartSpool()) return;
-    playType = SPOOLING;
+    playType  = SPOOLING;
     nextSpeed = speed;
   }
 
-  void Tapedeck::State::stop() {
+  void Tapedeck::State::stop()
+  {
     stopRecord();
-    playType = STOPPED;
+    playType  = STOPPED;
     nextSpeed = 0;
   }
 
-  void Tapedeck::State::startRecord() {
+  void Tapedeck::State::startRecord()
+  {
     if (!doStartRec()) return;
     readyToRec = true;
   }
 
-  void Tapedeck::State::stopRecord() {
+  void Tapedeck::State::stopRecord()
+  {
     readyToRec = false;
   }
 
-  /************************************************/
-  /* Tapedeck Implementation                    */
-  /************************************************/
+  // Tapedeck //////////////////////////////////////////////////////////////////
 
-  Tapedeck::Tapedeck() :
-    Engine(&props),
-    tapeScreen (new TapeScreen(this)) {}
+  Tapedeck::Tapedeck()
+    : Engine("Tapedeck", props, std::make_unique<TapeScreen>(this))
+  {}
 
-  void Tapedeck::init() {
+  void Tapedeck::on_enable()
+  {
     tapeBuffer = std::make_unique<tape_buffer>();
-    display();
   }
 
-  void Tapedeck::exit() {
+  void Tapedeck::on_disable()
+  {
     tapeBuffer.reset();
-  }
-
-  void Tapedeck::display() {
-    global::ui.display(*tapeScreen);
   }
 
   // Looping
 
-  void Tapedeck::loopInHere() {
+  void Tapedeck::loopInHere()
+  {
     loopSect.in = tapeBuffer->position();
     if (loopSect.in == loopSect.out) {
-      loopSect.in = -1;
+      loopSect.in  = -1;
       loopSect.out = -1;
     }
     if (loopSect.in > loopSect.out) {
@@ -125,10 +138,11 @@ namespace otto::engines {
     }
   }
 
-  void Tapedeck::loopOutHere() {
+  void Tapedeck::loopOutHere()
+  {
     loopSect.out = tapeBuffer->position();
     if (loopSect.in == loopSect.out) {
-      loopSect.in = -1;
+      loopSect.in  = -1;
       loopSect.out = -1;
     }
     if (loopSect.in > loopSect.out) {
@@ -139,79 +153,93 @@ namespace otto::engines {
     }
   }
 
-  void Tapedeck::goToLoopIn() {
+  void Tapedeck::goToLoopIn()
+  {
     if (state.recording()) return;
     if (loopSect.in == -1) return;
     tapeBuffer->jump_to(loopSect.in);
   }
 
-  void Tapedeck::goToLoopOut() {
+  void Tapedeck::goToLoopOut()
+  {
     if (state.recording()) return;
     if (loopSect.out == -1) return;
     tapeBuffer->jump_to(loopSect.out);
   }
 
 
-  void Tapedeck::goToBar(BeatPos bar) {
+  void Tapedeck::goToBar(BeatPos bar)
+  {
     if (state.doJumps()) tapeBuffer->jump_to(global::metronome.getBarTime(bar));
   }
 
-  void Tapedeck::goToBarRel(BeatPos bars) {
-    if (state.doJumps()) tapeBuffer->jump_to(global::metronome.getBarTimeRel(bars));
+  void Tapedeck::goToBarRel(BeatPos bars)
+  {
+    if (state.doJumps())
+      tapeBuffer->jump_to(global::metronome.getBarTimeRel(bars));
   }
 
-  int Tapedeck::timeUntil(std::size_t tt) {
+  int Tapedeck::timeUntil(std::size_t tt)
+  {
     return 0;
     auto ttUntil = state.fwd() ? tt - position() : position() - tt;
     if (state.doLoop() && state.looping) {
-      TapeTime leftTillOut = state.fwd() ? loopSect.out - position() : position() - loopSect.in;
+      TapeTime leftTillOut =
+        state.fwd() ? loopSect.out - position() : position() - loopSect.in;
       if (leftTillOut != -1 && leftTillOut < ttUntil) {
         return (leftTillOut +
-          (state.fwd() ? (tt - loopSect.out) : loopSect.in - tt))
-          / state.playSpeed;
+                 (state.fwd() ? (tt - loopSect.out) : loopSect.in - tt)) /
+               state.playSpeed;
       }
     }
-    return ttUntil/state.playSpeed;
+    return ttUntil / state.playSpeed;
   }
 
   /*
    * Audio Processing
    */
 
-  audio::ProcessData<4> Tapedeck::process_playback(audio::ProcessData<0> data) {
+  audio::ProcessData<4> Tapedeck::process_playback(audio::ProcessData<0> data)
+  {
     TIME_SCOPE("Tapedeck::process_playback");
 
     // Animate the tape speed
     {
-      constexpr int time = 200; // animation time from 0 to 1 in ms
+      constexpr int time = 200;  // animation time from 0 to 1 in ms
       static int x;
       static float nextSpeedLast = state.nextSpeed;
       if (nextSpeedLast != state.nextSpeed) {
         state.prevSpeed = state.playSpeed;
-        x = 0;
+        x               = 0;
       }
-      nextSpeedLast = state.nextSpeed;
+      nextSpeedLast    = state.nextSpeed;
       const float diff = state.nextSpeed - state.playSpeed;
       if (diff != 0) {
         if (state.doEaseIn()) {
           if (std::abs(diff) < 0.01f) {
             state.playSpeed = state.nextSpeed;
-            x = 0;
+            x               = 0;
           } else {
             if (tapeBuffer->position() == 0 && state.nextSpeed < 0) {
               // Stop tape
               state.playSpeed = state.nextSpeed;
-              x = 0;
+              x               = 0;
             } else {
-              float adjTime = time * (0.001 + std::abs(state.nextSpeed - state.prevSpeed));
-              state.playSpeed = state.prevSpeed + (state.nextSpeed - state.prevSpeed) *
-                (1 - std::cos((x / float(global::audio.samplerate) * 1000/(adjTime)) * M_PI)) * 0.5;
+              float adjTime =
+                time * (0.001 + std::abs(state.nextSpeed - state.prevSpeed));
+              state.playSpeed =
+                state.prevSpeed +
+                (state.nextSpeed - state.prevSpeed) *
+                  (1 - std::cos((x / float(global::audio.samplerate) * 1000 /
+                                  (adjTime)) *
+                                M_PI)) *
+                  0.5;
               x += data.nframes;
             }
           }
         } else {
           state.playSpeed = state.nextSpeed;
-          x = 0;
+          x               = 0;
         }
       }
     }
@@ -219,13 +247,12 @@ namespace otto::engines {
     // Start recording by pressing a key
     if (!state.recording() && state.doStartRec() && state.readyToRec) {
       for (auto&& e : data.midi) {
-        if (mpark::holds_alternative<midi::NoteOnEvent>(e))
-          state.play();
+        if (mpark::holds_alternative<midi::NoteOnEvent>(e)) state.play();
       }
     }
 
     float realSpeed = props.baseSpeed * state.playSpeed;
-    auto pos = position();
+    auto pos        = position();
 
     proc_buf.clear();
 
@@ -233,8 +260,8 @@ namespace otto::engines {
     if (state.doPlayAudio()) {
       if (state.looping) {
         auto jmp = realSpeed > 0 ? loopSect.out : loopSect.in;
-        auto n = tapeBuffer->read_until(jmp, realSpeed,
-          std::begin(proc_buf), data.nframes);
+        auto n   = tapeBuffer->read_until(
+          jmp, realSpeed, std::begin(proc_buf), data.nframes);
         if (n < data.nframes) {
           tapeBuffer->jump_to(realSpeed > 0 ? loopSect.in : loopSect.out);
           tapeBuffer->read_n(data.nframes - n, realSpeed, std::begin(proc_buf));
@@ -247,10 +274,11 @@ namespace otto::engines {
     return data.redirect(proc_buf);
   }
 
-  audio::ProcessData<0> Tapedeck::process_record(audio::ProcessData<1> data) {
+  audio::ProcessData<0> Tapedeck::process_record(audio::ProcessData<1> data)
+  {
     TIME_SCOPE("Tapedeck::process_record");
     float realSpeed = props.baseSpeed * state.playSpeed;
-    auto pos = position();
+    auto pos        = position();
 
     // Just started recording
     if (state.recording() && !state.recLast) {
@@ -284,4 +312,4 @@ namespace otto::engines {
 
     return data.midi_only();
   }
-} // otto::engine
+}  // namespace otto::engines

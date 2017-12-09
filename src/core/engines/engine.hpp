@@ -11,12 +11,14 @@
 #include <vector>
 
 #include <plog/Log.h>
-#include <json.hpp>
 
-#include "core/audio/processor.hpp"
-#include "core/engines/engine-props.hpp"
 #include "util/exception.hpp"
 #include "util/algorithm.hpp"
+#include "util/jsonfile.hpp"
+
+#include "core/ui/base.hpp"
+#include "core/audio/processor.hpp"
+#include "core/engines/engine-props.hpp"
 
 namespace otto::engines {
 
@@ -56,7 +58,9 @@ namespace otto::engines {
   /// Use this when refering to a generic engine
   struct AnyEngine {
 
-    AnyEngine(std::string name, Properties& props);
+    AnyEngine(std::string name,
+      Properties& props,
+      std::unique_ptr<ui::Screen> screen);
 
     AnyEngine() = delete;
     virtual ~AnyEngine() = default;
@@ -88,6 +92,10 @@ namespace otto::engines {
     /// The module properties.
     const Properties& props() const noexcept;
 
+    ui::Screen& screen() noexcept;
+
+    const ui::Screen& screen() const noexcept;
+
     /* Serialization */
 
     /// Serialize the properties
@@ -105,6 +113,7 @@ namespace otto::engines {
   private:
     const std::string _name;
     Properties& _props;
+    std::unique_ptr<ui::Screen> _screen;
   };
 
   /// Serialization
@@ -126,11 +135,16 @@ namespace otto::engines {
   /// generation of this function. Do not try to use it outside this file.
   /// \exclude
 #define OTTO_ENGINE_COMMON_CONTENT(Type)                                       \
+protected:                                                                     \
   using AnyEngine::AnyEngine;                                                  \
+                                                                               \
+public:                                                                        \
   EnginePatch make_patch() const override                                      \
   {                                                                            \
     return EnginePatch{Type, name(), to_json()};                               \
   }
+
+  // macro end
 
 
   /// Engine base class
@@ -151,7 +165,6 @@ namespace otto::engines {
 
     virtual audio::ProcessData<1> process(audio::ProcessData<0>) = 0;
   };
-
   using DrumsEngine = Engine<EngineType::drums>;
 
   template<>
@@ -161,7 +174,6 @@ namespace otto::engines {
 
     virtual audio::ProcessData<1> process(audio::ProcessData<0>) = 0;
   };
-
   using SynthEngine = Engine<EngineType::synth>;
 
   template<>
@@ -171,7 +183,6 @@ namespace otto::engines {
 
     virtual audio::ProcessData<1> process(audio::ProcessData<1>) = 0;
   };
-
   using EffectEngine = Engine<EngineType::effect>;
 
   template<>
@@ -181,7 +192,6 @@ namespace otto::engines {
 
     virtual audio::ProcessData<0> process(audio::ProcessData<0>) = 0;
   };
-
   using SequencerEngine = Engine<EngineType::sequencer>;
 
   #undef OTTO_ENGINE_COMMON_CONTENT
@@ -222,8 +232,14 @@ namespace otto::engines {
 
     using Engine = Engine<ET>;
 
-    template<typename Engine, typename... Args>
-    void register_engine(Args&&...);
+
+    /// Create an engine, and add it to the registry
+    ///
+    /// \effects Construct `REngine` with `args` forwarded, and push this new
+    /// object to the back of `_engines`.
+    /// \returns a reference to the new object.
+    template<typename REngine, typename... Args>
+    REngine& register_engine(Args&&... args);
 
     /// Access the currently selected engine
     Engine& current() noexcept;
@@ -240,6 +256,9 @@ namespace otto::engines {
     /// Select engine
     ///
     /// \requires `ptr >= _engines.begin() && ptr < _engines.end()`
+    /// \effects
+    /// If `_current` is not null, `_current->on_disable()`. Then, assign `ptr`
+    /// to `_current`, and invoke `ptr->on_enable()`
     /// \postconditions `current() == *ptr`
     /// \returns `current()`
     Engine& select(Engine* ptr);
@@ -284,13 +303,111 @@ namespace otto::engines {
     Engine* _current;
   };
 
+  // Presets //////////////////////////////////////////////////////////////////
+
+  /// # OTTO Preset format
+  ///
+  /// OTTO Presets are defined in a json file with the following layout:
+  ///
+  /// ```json
+  /// {
+  ///   "OTTO Preset": {
+  ///     "Version": 0,
+  ///     "Name": "/* Name */"
+  ///   },
+  ///   "Engines": {
+  ///     "/* Type */": {
+  ///       "Engine": "/* Engine */",
+  ///       "Data": "/* Engine specific data */"
+  ///     },
+  ///     "/* Type */": {
+  ///       "Engine": "/* Engine */",
+  ///       "Data": "/* Engine specific data */"
+  ///     },
+  ///   }
+  /// }
+  /// ```
+  ///
+  ///  - `Version` is a file format version number, currently at `0`
+  ///  - `Type` is one of the types `"Drums"`, `"Synth"` or `"Effect"`. Each
+  ///  - preset can define one engine in each group
+  ///  - `Engine` is an engine id string, as if by [AnyEngine::name()]()
+  ///  - `Data` is the serialized data for the engine, as if by
+  ///    [AnyEngine::to_json()]() 
+  ///
+  /// At some point it will be possible to embed similar data in a sample file,
+  /// but currently you need to supply both a sample file and a preset file
+  struct PresetFile : util::JsonFile {
+    using util::JsonFile::ErrorCode;
+    using util::JsonFile::OpenOptions;
+    using util::JsonFile::exception;
+
+    /// Constructor
+    ///
+    /// \effects delegate to `util::JsonFile(p)`
+    /// \postconditions as `util::JsonFile(p)`, and `validate() ==
+    /// ErrorCode::none` \remarks remember to `read()` after construction
+    explicit PresetFile(const fs::path& p);
+
+    /// Confirm the presence of the header and `Engines` section, as well as the
+    /// version number.
+    ErrorCode validate() const noexcept override;
+
+    /// Get the name of this preset
+    std::string name() const;
+
+    /// Get a json object refering to the `Engines` section.
+    nlohmann::json& json_engines();
+
+    /// Get a json object refering to the `Engines` section.
+    std::vector<EnginePatch> engines() const;
+
+    /// Get a json object with an engine, defined by its group
+    EnginePatch engine(EngineType group);
+
+    /// Get a json object with an engine, defined by its group
+    const nlohmann::json& engine(const std::string& group) const;
+
+    /// Get a json object with an engine, defined by its group
+    nlohmann::json& operator[](const std::string& group);
+
+    /// Get a json object with an engine, defined by its group
+    const nlohmann::json& operator[](const std::string& group) const;
+  };
+
+  // EngineScreen /////////////////////////////////////////////////////////////
+
+  /// A [ui::Screen]() with a reference to the engine it belongs to.
+  ///
+  /// Screens for engines should inherit from this. They can then access the
+  /// engine from the `engine` reference.
+  template<typename Engine>
+  struct EngineScreen : ui::Screen {
+
+    EngineScreen(Engine* engine)
+      : Screen(), engine(*engine)
+    {}
+
+    virtual ~EngineScreen() {}
+
+  protected:
+    Engine& engine;
+  };
+
+  // //////////////////////////////////////////////////////////////////////////
+  // Template definitions /////////////////////////////////////////////////////
+  // //////////////////////////////////////////////////////////////////////////
+
   // EngineRegistry Implementations ///////////////////////////////////////////
 
   template<EngineType ET>
   template<typename Eg, typename... Args>
-  void EngineRegistry<ET>::register_engine(Args&&... args)
+  Eg& EngineRegistry<ET>::register_engine(Args&&... args)
   {
-    _engines.push_back(std::make_unique<Eg>(std::forward<Args>(args)...));
+    auto uptr = std::make_unique<Eg>(std::forward<Args>(args)...);
+    Eg& eg = *uptr;
+    _engines.push_back(std::move(uptr));
+    return eg;
   }
 
   template<EngineType ET>
@@ -337,7 +454,7 @@ namespace otto::engines {
         return eg.name() == name;
       });
     if (iter != _engines.end()) {
-      _current = iter.base();
+      select(iter.base());
     } else {
       throw util::exception("Engine '{}' not found", name);
     }
@@ -347,8 +464,9 @@ namespace otto::engines {
   template<EngineType ET>
   Engine<ET>& EngineRegistry<ET>::select(Engine* ptr)
   {
-    assert(ptr >= _engines.begin().base() && ptr < _engines.end().base());
+    if (_current != nullptr) _current->on_disable();
     _current = ptr;
+    _current->on_enable();
     return *_current;
   }
 
@@ -361,7 +479,7 @@ namespace otto::engines {
   template<EngineType ET>
   Engine<ET>& EngineRegistry<ET>::select(std::size_t idx)
   {
-    return select(_engines.begin().base() + idx);
+    return select((_engines.begin().base() + idx)->get());
   }
 
   template<EngineType ET>
@@ -392,5 +510,6 @@ namespace otto::engines {
     (*iter)->from_json(patch.data);
     return **iter;
   }
+
 
 }  // namespace otto::engines

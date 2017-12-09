@@ -13,7 +13,9 @@ namespace otto::ui {
     M& engine;
 
   public:
-    EngineScreen(M* engine) : Screen (), engine (engine) {}
+    EngineScreen(M* engine)
+      : Screen(), engine(*engine)
+    {}
 
     virtual ~EngineScreen() {}
   };

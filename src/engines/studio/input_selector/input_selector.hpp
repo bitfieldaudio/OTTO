@@ -5,9 +5,8 @@
 
 namespace otto::engines {
 
-  class InputSelector : public Engine {
-  public:
-    enum class Selection {
+  struct InputSelector final : Engine<EngineType::studio> {
+    enum struct Selection {
       Internal,
       External,
       TrackFB,
@@ -21,6 +20,10 @@ namespace otto::engines {
 
       using Properties::Properties;
     } props;
+
+    InputSelector()
+      : Engine ("InputSelector", props, nullptr)
+    {}
 
   };
 

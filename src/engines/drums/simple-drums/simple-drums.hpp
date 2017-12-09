@@ -35,40 +35,25 @@ namespace otto::engines {
     SimpleDrumVoice();
   };
 
-  class SimpleDrumsEngine : public engines::SynthEngine {
-    audio::ProcessBuffer<1> proc_buf;
-    audio::ProcessBuffer<1> voice_buf;
-  public:
-    std::array<SimpleDrumVoice, 24> voices;
-
-    int currentVoiceIdx = 0 ;
-
-    ui::EngineScreen<SimpleDrumsEngine>::ptr screen;
+  struct SimpleDrumsEngine : DrumsEngine {
 
     SimpleDrumsEngine();
     ~SimpleDrumsEngine();
 
     audio::ProcessData<1> process(audio::ProcessData<0>) override;
 
-    void display() override;
-
     nlohmann::json to_json() const override;
     void from_json(const nlohmann::json&) override;
-  };
+    
+    std::array<SimpleDrumVoice, 24> voices;
 
-  class SimpleDrumsScreen : public ui::EngineScreen<SimpleDrumsEngine> {
-    void drawOsc(ui::vg::Canvas& ctx, SimpleDrumVoice::Props::Osc &osc);
-    void drawKbd(ui::vg::Canvas& ctx);
+    int currentVoiceIdx = 0;
+
+    Properties props;
+
   private:
-    void draw(ui::vg::Canvas& ctx) override;
-
-    bool keypress(ui::Key key) override;
-    void rotary(ui::RotaryEvent) override;
-
-  public:
-
-    SimpleDrumsScreen(SimpleDrumsEngine *engine) :
-      ui::EngineScreen<SimpleDrumsEngine>(engine) {}
+    audio::ProcessBuffer<1> proc_buf;
+    audio::ProcessBuffer<1> voice_buf;
   };
 
 }

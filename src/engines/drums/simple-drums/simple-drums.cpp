@@ -6,51 +6,71 @@
 
 namespace otto::engines {
 
-  SimpleDrumVoice::SimpleDrumVoice() :
-    FaustWrapper(std::make_unique<FAUSTCLASS>(), props) {}
+  struct SimpleDrumsScreen : public ui::EngineScreen<SimpleDrumsEngine> {
+    SimpleDrumsScreen(SimpleDrumsEngine* engine)
+      : ui::EngineScreen<SimpleDrumsEngine>(engine)
+    {}
 
-  SimpleDrumsEngine::SimpleDrumsEngine() :
-    screen (new SimpleDrumsScreen(this)) {}
+    void drawOsc(ui::vg::Canvas& ctx, SimpleDrumVoice::Props::Osc& osc);
+    void drawKbd(ui::vg::Canvas& ctx);
+    void draw(ui::vg::Canvas& ctx) override;
+
+    bool keypress(ui::Key key) override;
+    void rotary(ui::RotaryEvent) override;
+  };
+
+  SimpleDrumVoice::SimpleDrumVoice()
+    : FaustWrapper(std::make_unique<FAUSTCLASS>(), props)
+  {}
+
+  SimpleDrumsEngine::SimpleDrumsEngine()
+    : DrumsEngine("Simple drums",
+        props,
+        std::make_unique<SimpleDrumsScreen>(this))
+  {}
 
   SimpleDrumsEngine::~SimpleDrumsEngine() {}
 
-  void SimpleDrumsEngine::display() {
-    global::ui.display(*screen);
-  }
-
-  audio::ProcessData<1> SimpleDrumsEngine::process(audio::ProcessData<0> data) {
-    for (auto &&nEvent : data.midi) {
-      util::match(nEvent, [&] (midi::NoteOnEvent& e) {
-          currentVoiceIdx = e.key % 24;
+  audio::ProcessData<1> SimpleDrumsEngine::process(audio::ProcessData<0> data)
+  {
+    for (auto&& nEvent : data.midi) {
+      util::match(nEvent,
+        [&](midi::NoteOnEvent& e) {
+          currentVoiceIdx                       = e.key % 24;
           voices[currentVoiceIdx].props.trigger = true;
-          voices[currentVoiceIdx].props.envelope.sustain = float(e.velocity)/128.f;
-        }, [] (auto&&) {});
+          voices[currentVoiceIdx].props.envelope.sustain =
+            float(e.velocity) / 128.f;
+        },
+        [](auto&&) {});
     }
     proc_buf.clear();
     voice_buf.clear();
-    for (auto &&voice : voices) {
+    for (auto&& voice : voices) {
       auto voice_data = voice.process(data.midi_only());
-      for (auto [vb, pb] : util::zip(voice_data, proc_buf)) {
+      for (auto[vb, pb] : util::zip(voice_data, proc_buf)) {
         util::audio::add_all(pb, vb);
       }
     }
-    for (auto &&nEvent : data.midi) {
-      util::match(nEvent, [&] (midi::NoteOffEvent& e) {
-          voices[e.key % 24].props.trigger = false;
-        }, [] (auto&&) {});
+    for (auto&& nEvent : data.midi) {
+      util::match(nEvent,
+        [&](
+          midi::NoteOffEvent& e) { voices[e.key % 24].props.trigger = false; },
+        [](auto&&) {});
     };
     return data.redirect(proc_buf);
   }
 
-  nlohmann::json SimpleDrumsEngine::to_json() const {
+  nlohmann::json SimpleDrumsEngine::to_json() const
+  {
     auto ar = nlohmann::json::array();
-    for (auto &v : voices) {
+    for (auto& v : voices) {
       ar.push_back(v.props.to_json());
     }
     return ar;
   }
 
-  void SimpleDrumsEngine::from_json(const nlohmann::json& j) {
+  void SimpleDrumsEngine::from_json(const nlohmann::json& j)
+  {
     if (j.is_array()) {
       for (int i = 0; i < j.size(); ++i) {
         voices[i].props.from_json(j[i]);
@@ -60,36 +80,33 @@ namespace otto::engines {
     }
   }
 
-  bool SimpleDrumsScreen::keypress(ui::Key key) {
+  bool SimpleDrumsScreen::keypress(ui::Key key)
+  {
     using namespace ui;
-    auto &voice = engine->voices[engine->currentVoiceIdx];
-    auto &osc = global::ui.keys[K_SHIFT] ? voice.props.D2 : voice.props.D1;
+    auto& voice = engine.voices[engine.currentVoiceIdx];
+    auto& osc   = global::ui.keys[K_SHIFT] ? voice.props.D2 : voice.props.D1;
     switch (key) {
-    case K_GREEN_CLICK:
-      osc.filterSwitch.step(); return true;
-    default:
-      return false;
+    case K_GREEN_CLICK: osc.filterSwitch.step(); return true;
+    default: return false;
     }
   }
 
-  void SimpleDrumsScreen::rotary(ui::RotaryEvent e) {
-    auto &voice = engine->voices[engine->currentVoiceIdx];
-    auto &osc = global::ui.keys[ui::K_SHIFT] ? voice.props.D2 : voice.props.D1;
+  void SimpleDrumsScreen::rotary(ui::RotaryEvent e)
+  {
+    auto& voice = engine.voices[engine.currentVoiceIdx];
+    auto& osc = global::ui.keys[ui::K_SHIFT] ? voice.props.D2 : voice.props.D1;
     switch (e.rotary) {
-    case ui::Rotary::Blue:
-      osc.freq.step(e.clicks);
-    case ui::Rotary::Green:
-      osc.toneDecay.step(e.clicks);
-    case ui::Rotary::White:
-      osc.noiseLvl.step(e.clicks);
-    case ui::Rotary::Red:
-      osc.cutoff.step(e.clicks);
+    case ui::Rotary::Blue: osc.freq.step(e.clicks);
+    case ui::Rotary::Green: osc.toneDecay.step(e.clicks);
+    case ui::Rotary::White: osc.noiseLvl.step(e.clicks);
+    case ui::Rotary::Red: osc.cutoff.step(e.clicks);
     }
   }
 
-  void SimpleDrumsScreen::draw(ui::vg::Canvas &ctx) {
+  void SimpleDrumsScreen::draw(ui::vg::Canvas& ctx)
+  {
     using namespace ui::vg;
-    auto &voice = (engine->voices[engine->currentVoiceIdx]);
+    auto& voice = (engine.voices[engine.currentVoiceIdx]);
     ctx.save();
     drawOsc(ctx, voice.props.D1);
     ctx.translate(0, 75);
@@ -99,7 +116,9 @@ namespace otto::engines {
     drawKbd(ctx);
   }
 
-  void SimpleDrumsScreen::drawOsc(ui::vg::Canvas &ctx, SimpleDrumVoice::Props::Osc &osc) {
+  void SimpleDrumsScreen::drawOsc(ui::vg::Canvas& ctx,
+    SimpleDrumVoice::Props::Osc& osc)
+  {
     using namespace ui::vg;
 
     ctx.globalAlpha(1.0);
@@ -166,14 +185,14 @@ namespace otto::engines {
     ctx.moveTo(37.751332, 30.610055);
     ctx.lineTo(40.251332, 34.940182);
     ctx.stroke();
-        
+
     // #FREQ_DIAL_RING
     ctx.beginPath();
     ctx.strokeStyle(Colours::Blue);
     ctx.lineWidth(2.000000);
     ctx.arc(47.500000, 47.500000, 11.500000, 0.000000, 6.28318531, 1);
     ctx.stroke();
-        
+
     // #FREQ_DIAL_MARKER
     ctx.beginPath();
     ctx.strokeStyle(Colours::Blue);
@@ -185,17 +204,17 @@ namespace otto::engines {
     ctx.lineTo(0, -10.5);
     ctx.restore();
     ctx.stroke();
-        
+
     // #TONE_DECAY_G
-        
+
     // #TONE_DECAY_BOX
     ctx.beginPath();
     ctx.strokeStyle(Colours::Gray60);
     ctx.lineWidth(2.000000);
     ctx.rect(91.000000, 16.000000, 63.000000, 63.000000);
     ctx.stroke();
-        
-        
+
+
     // #TXT_BG_TONE
     ctx.lineWidth(1.000000);
     ctx.fillStyle(Colours::Gray60);
@@ -203,7 +222,7 @@ namespace otto::engines {
     ctx.font(15);
     ctx.textAlign(TextAlign::Left, TextAlign::Baseline);
     ctx.fillText("PITCH", 95, 30);
-        
+
     // #TXT_BG_DELAY
     ctx.lineWidth(1.000000);
     ctx.fillStyle(Colours::Gray60);
@@ -211,16 +230,18 @@ namespace otto::engines {
     ctx.font(15);
     ctx.textAlign(TextAlign::Right, TextAlign::Baseline);
     ctx.fillText("DECAY", 150, 75);
-        
+
     // #DECAY_INDICATOR
     ctx.beginPath();
     ctx.strokeStyle(Colours::Gray70);
     ctx.lineWidth(2.000000);
     ctx.moveTo(95, 75);
     if (osc.decayGraph > 0)
-      ctx.bezierCurveTo(95, 75 - osc.decayGraph * 65, 150 - osc.decayGraph * 65, 20, 150, 20);
+      ctx.bezierCurveTo(
+        95, 75 - osc.decayGraph * 65, 150 - osc.decayGraph * 65, 20, 150, 20);
     else
-      ctx.bezierCurveTo(95 - osc.decayGraph * 65, 75, 150, 20 - osc.decayGraph * 65, 150, 20);
+      ctx.bezierCurveTo(
+        95 - osc.decayGraph * 65, 75, 150, 20 - osc.decayGraph * 65, 150, 20);
     ctx.stroke();
 
     // #DECAY_SETTING
@@ -229,20 +250,22 @@ namespace otto::engines {
     ctx.lineWidth(2.000000);
     ctx.moveTo(95, 75);
     if (osc.toneDecay > 0)
-      ctx.bezierCurveTo(95, 75 - osc.toneDecay * 65, 150 - osc.toneDecay * 65, 20, 150, 20);
+      ctx.bezierCurveTo(
+        95, 75 - osc.toneDecay * 65, 150 - osc.toneDecay * 65, 20, 150, 20);
     else
-      ctx.bezierCurveTo(95 - osc.toneDecay * 65, 75, 150, 20 - osc.toneDecay * 65, 150, 20);
+      ctx.bezierCurveTo(
+        95 - osc.toneDecay * 65, 75, 150, 20 - osc.toneDecay * 65, 150, 20);
     ctx.stroke();
 
     // #NOISE_G
-        
+
     // #NOISE_BOX
     ctx.beginPath();
     ctx.strokeStyle(Colours::Gray60);
     ctx.lineWidth(2.000000);
     ctx.rect(166.000000, 16.000000, 63.000000, 63.000000);
     ctx.stroke();
-        
+
     // #NOISE_WAVE
     ctx.beginPath();
     ctx.strokeStyle(Colours::White);
@@ -252,18 +275,22 @@ namespace otto::engines {
     ctx.lineTo(209.308660, 69.660770);
     ctx.lineTo(209.919740, 74.442740);
     ctx.lineTo(211.345610, 67.911270);
-    ctx.bezierCurveTo(211.345610, 67.911270, 211.549310, 75.784030, 211.956700, 75.725710);
-    ctx.bezierCurveTo(212.364090, 75.667410, 213.314670, 68.319490, 213.314670, 68.319490);
+    ctx.bezierCurveTo(
+      211.345610, 67.911270, 211.549310, 75.784030, 211.956700, 75.725710);
+    ctx.bezierCurveTo(
+      212.364090, 75.667410, 213.314670, 68.319490, 213.314670, 68.319490);
     ctx.lineTo(214.265250, 73.976210);
     ctx.lineTo(215.351630, 67.503060);
-    ctx.bezierCurveTo(215.351630, 67.503060, 216.370110, 75.025910, 216.505900, 75.259180);
-    ctx.bezierCurveTo(216.641700, 75.492450, 217.456480, 69.194240, 217.456480, 69.194240);
+    ctx.bezierCurveTo(
+      215.351630, 67.503060, 216.370110, 75.025910, 216.505900, 75.259180);
+    ctx.bezierCurveTo(
+      216.641700, 75.492450, 217.456480, 69.194240, 217.456480, 69.194240);
     ctx.lineTo(218.814450, 74.559380);
     ctx.lineTo(219.629230, 68.202860);
     ctx.lineTo(220.261380, 71.868810);
     ctx.lineTo(224.102300, 71.868810);
     ctx.stroke();
-        
+
     // #SQUARE_WAVE
     ctx.beginPath();
     ctx.strokeStyle(Colours::White);
@@ -277,14 +304,14 @@ namespace otto::engines {
     ctx.lineTo(187.000000, 72.000010);
     ctx.lineTo(192.000000, 72.000010);
     ctx.stroke();
-        
+
     // #NOISE_DIAL_RING
     ctx.beginPath();
     ctx.strokeStyle(Colours::White);
     ctx.lineWidth(2.000000);
     ctx.arc(197.500000, 47.500000, 11.500000, 0.000000, 6.28318531, 1);
     ctx.stroke();
-        
+
     // #NOISE_DIAL_MARKER
     ctx.beginPath();
     ctx.lineJoin(Canvas::LineJoin::MITER);
@@ -299,7 +326,7 @@ namespace otto::engines {
     ctx.lineTo(0, -10.5);
     ctx.restore();
     ctx.stroke();
-        
+
     // #NOISE_DIAL_BG
     ctx.beginPath();
     ctx.strokeStyle(Colours::Gray70);
@@ -343,20 +370,21 @@ namespace otto::engines {
     ctx.moveTo(187.751330, 30.610055);
     ctx.lineTo(190.251330, 34.940182);
     ctx.stroke();
-        
+
     // #FILTER_G
-        
+
     // #FILTER_BOX
     ctx.beginPath();
     ctx.strokeStyle(Colours::Gray60);
     ctx.lineWidth(2.000000);
     ctx.rect(241.000000, 16.000000, 63.000000, 63.000000);
     ctx.stroke();
-        
+
     // #FILTER_RING
     ctx.save();
     ctx.beginPath();
-    ctx.transform(-0.707180, 0.707033, -0.707180, -0.707033, 0.000000, 0.000000);
+    ctx.transform(
+      -0.707180, 0.707033, -0.707180, -0.707033, 0.000000, 0.000000);
     ctx.strokeStyle(osc.filterSwitch ? Colours::Gray70 : Colours::Gray60);
     ctx.miterLimit(4);
     ctx.lineWidth(1.000000);
@@ -391,7 +419,7 @@ namespace otto::engines {
     ctx.translate(158.881793, 226.450652);
     ctx.stroke();
     ctx.restore();
-        
+
     // #FILTER_MARKER
     ctx.save();
     ctx.beginPath();
@@ -401,7 +429,7 @@ namespace otto::engines {
     ctx.circle(0, -22.5, 3);
     ctx.fill();
     ctx.restore();
-        
+
     // #FILTER_BG_TXT
     ctx.lineWidth(1.000000);
     ctx.fillStyle(Colours::Gray60);
@@ -409,16 +437,16 @@ namespace otto::engines {
     ctx.font(15);
     ctx.textAlign(TextAlign::Center, TextAlign::Middle);
     ctx.fillText("FILTER", 272.5, 47.5);
-
   }
 
-  void SimpleDrumsScreen::drawKbd(ui::vg::Canvas &ctx) {
+  void SimpleDrumsScreen::drawKbd(ui::vg::Canvas& ctx)
+  {
     using namespace ui::vg;
     // #KEYBOARD
     ctx.save();
     ctx.transform(1.000000, 0.000000, 0.000000, 1.000000, 18.000000, 0.000000);
 
-    int ki = engine->currentVoiceIdx;
+    int ki = engine.currentVoiceIdx;
 
     ctx.strokeStyle(Colours::Gray60);
     ctx.lineJoin(Canvas::LineJoin::ROUND);
@@ -426,10 +454,11 @@ namespace otto::engines {
 
     // WHITE KEYS
     {
-      const static int KEY_NUMS[14] = {0,2,4,5,7,9,11,12,14,16,17,19,21,23};
+      constexpr int key_nums[14] = {
+        0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 17, 19, 21, 23};
       for (int i = 0; i < 14; i++) {
         ctx.beginPath();
-        ctx.fillStyle(ki == KEY_NUMS[i] ? Colours::Gray60 : Colours::Black);
+        ctx.fillStyle(ki == key_nums[i] ? Colours::Gray60 : Colours::Black);
         ctx.rect(15.75 + 18 * i, 165.75, 18.5, 58.5);
         ctx.fill();
         ctx.stroke();
@@ -438,12 +467,12 @@ namespace otto::engines {
 
     // BLACK KEYS
     {
-      const static int KEY_POS[10]  = {0,1,3,4, 5, 7, 8,10,11,12};
-      const static int KEY_NUMS[10] = {1,3,6,8,10,13,15,18,20,22};
+      constexpr int key_pos[10]  = {0, 1, 3, 4, 5, 7, 8, 10, 11, 12};
+      constexpr int key_nums[10] = {1, 3, 6, 8, 10, 13, 15, 18, 20, 22};
       for (int i = 0; i < 10; i++) {
         ctx.beginPath();
-        ctx.fillStyle(ki == KEY_NUMS[i] ? Colours::Gray60 : Colours::Black);
-        ctx.rect(29.75 + 18 * KEY_POS[i], 165.75, 8.5, 33.5);
+        ctx.fillStyle(ki == key_nums[i] ? Colours::Gray60 : Colours::Black);
+        ctx.rect(29.75 + 18 * key_pos[i], 165.75, 8.5, 33.5);
         ctx.fill();
         ctx.stroke();
       }
@@ -451,4 +480,4 @@ namespace otto::engines {
     ctx.restore();
   }
 
-}
+}  // namespace otto::engines

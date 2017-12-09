@@ -1,8 +1,8 @@
 #pragma once
 
-#include <thread>
 #include <atomic>
 #include <functional>
+#include <thread>
 
 #include "core/engines/engine.hpp"
 #include "core/ui/canvas.hpp"
@@ -10,21 +10,41 @@
 
 #include "tapebuffer.hpp"
 
-
 namespace otto::engines {
 
-  class Tapedeck final : public engines::Engine {
-    std::unique_ptr<ui::EngineScreen<Tapedeck>> tapeScreen;
+  struct Tapedeck final : Engine<EngineType::studio> {
+    Tapedeck();
+    Tapedeck(Tapedeck&)  = delete;
+    Tapedeck(Tapedeck&&) = delete;
 
-    audio::ProcessBuffer<4> proc_buf;
-  public:
+    void on_enable() override;
+    void on_disable() override;
+
+    util::audio::Section<int> loopSect;
+    util::audio::Section<int> recSect;
+
+    int overruns = 0;
+
+    audio::ProcessData<4> process_playback(audio::ProcessData<0>);
+    audio::ProcessData<0> process_record(audio::ProcessData<1>);
+
+    int position() const
+    {
+      return tapeBuffer->position();
+    }
+
+    void loopInHere();
+    void loopOutHere();
+    void goToLoopIn();
+    void goToLoopOut();
+
+    void goToBar(int bar);
+    void goToBarRel(int bars);
+
+    int timeUntil(std::size_t tt);
 
     struct State {
-      enum PlayType {
-        STOPPED = 0,
-        PLAYING,
-        SPOOLING
-      } playType;
+      enum PlayType { STOPPED = 0, PLAYING, SPOOLING } playType;
 
       static constexpr float max_speed = 5;
 
@@ -63,42 +83,15 @@ namespace otto::engines {
     } state;
 
     struct Props : Properties {
-      Property<float> gain = {this, "PROC_GAIN", 0.5, {0, 1, 0.01}};
+      Property<float> gain      = {this, "PROC_GAIN", 0.5, {0, 1, 0.01}};
       Property<float> baseSpeed = {this, "Tape Speed", 1, {-2.f, 2.f, 0.01}};
     } props;
 
     util::audio::Graph procGraph;
     std::unique_ptr<tape_buffer> tapeBuffer;
 
-    Tapedeck();
-    Tapedeck(Tapedeck&) = delete;
-    Tapedeck(Tapedeck&&) = delete;
-
-    void init() override;
-    void exit() override;
-
-    util::audio::Section<int> loopSect;
-    util::audio::Section<int> recSect;
-
-    int overruns = 0;
-
-    audio::ProcessData<4> process_playback(audio::ProcessData<0>);
-    audio::ProcessData<0> process_record(audio::ProcessData<1>);
-
-    void display() override;
-
-
-    int position() const { return tapeBuffer->position(); }
-
-    void loopInHere();
-    void loopOutHere();
-    void goToLoopIn();
-    void goToLoopOut();
-
-    void goToBar(int bar);
-    void goToBarRel(int bars);
-
-    int timeUntil(std::size_t tt);
+  private:
+    audio::ProcessBuffer<4> proc_buf;
   };
 
-} // otto::engine
+}  // namespace otto::engines

@@ -1,8 +1,8 @@
+#include "drum-sampler.hpp"
+
 #include <algorithm>
 
-#include "drum-sampler.hpp"
 #include "core/globals.hpp"
-#include "core/ui/engine-ui.hpp"
 #include "core/ui/waveform_widget.hpp"
 #include "core/ui/canvas.hpp"
 #include "core/ui/drawing.hpp"
@@ -12,8 +12,7 @@
 
 namespace otto::engines {
 
-  class DrumSampleScreen : public ui::EngineScreen<DrumSampler> {
-  public:
+  struct DrumSampleScreen : public EngineScreen<DrumSampler> {
 
     ui::widgets::Waveform<util::dyn_array<float>> topWFW;
     ui::widgets::Waveform<util::dyn_array<float>> mainWFW;
@@ -26,17 +25,17 @@ namespace otto::engines {
     void rotary(ui::RotaryEvent) override;
   };
 
-  DrumSampler::DrumSampler() :
-    SynthEngine(&props),
-    maxSampleSize (16 * global::audio.samplerate),
-    sampleData (maxSampleSize),
-    screen (new DrumSampleScreen(this)) {
-
-    global::event::samplerate_change.add([&] (int sr) {
-        maxSampleSize = 16 * sr;
-        sampleSpeed = sampleSampleRate / float(sr);
-      });
-
+  DrumSampler::DrumSampler()
+    : DrumsEngine("Drum Sampler",
+        props,
+        std::make_unique<DrumSampleScreen>(this)),
+      maxSampleSize(16 * global::audio.samplerate),
+      sampleData(maxSampleSize)
+  {
+    global::event::samplerate_change.add([this](int sr) {
+      maxSampleSize = 16 * sr;
+      sampleSpeed   = sampleSampleRate / float(sr);
+    });
   }
 
   DrumSampler::~DrumSampler() = default;
@@ -128,10 +127,6 @@ namespace otto::engines {
     return data.redirect(proc_buf);
   }
 
-  void DrumSampler::display() {
-    global::ui.display(*screen);
-  }
-
   void DrumSampler::load() {
 
     auto path = samplePath(props.sampleName);
@@ -172,12 +167,15 @@ namespace otto::engines {
     }
 
     float max = *util::max_element(sampleData);
-    screen->topWFW.range({0, int(rs)});
-    screen->topWFW.top_val(max);
-    screen->mainWFW.top_val(max);
+
+    // TODO: Is there a better solution than this dynamic_cast?
+    auto scrn = dynamic_cast<DrumSampleScreen&>(screen());
+    scrn.topWFW.range({0, int(rs)});
+    scrn.topWFW.top_val(max);
+    scrn.mainWFW.top_val(max);
   }
 
-  void DrumSampler::init() {
+  void DrumSampler::on_enable() {
     load();
   }
 
@@ -186,9 +184,9 @@ namespace otto::engines {
   /****************************************/
 
   DrumSampleScreen::DrumSampleScreen(DrumSampler *m)
-    : ui::EngineScreen<DrumSampler> (m),
-      topWFW(engine->sampleData, {273.9, 15.f}),
-      mainWFW (engine->sampleData, {273.9, 100.2})
+    : EngineScreen<DrumSampler> (m),
+      topWFW(engine.sampleData, {273.9, 15.f}),
+      mainWFW (engine.sampleData, {273.9, 100.2})
   {
     topWFW.radius_range = {0.5f, 0.5f};
     mainWFW.radius_range = {1.5f, 3.f};
@@ -196,7 +194,7 @@ namespace otto::engines {
 
   bool DrumSampleScreen::keypress(ui::Key key) {
     using namespace ui;
-    auto& voice = engine->props.voiceData[engine->currentVoiceIdx];
+    auto& voice = engine.props.voiceData[engine.currentVoiceIdx];
     switch (key) {
     case K_WHITE_CLICK: voice.pitch.reset(); return true;
     default:
@@ -206,7 +204,7 @@ namespace otto::engines {
 
   void DrumSampleScreen::rotary(ui::RotaryEvent e) {
     using namespace ui;
-    auto& voice = engine->props.voiceData[engine->currentVoiceIdx];
+    auto& voice = engine.props.voiceData[engine.currentVoiceIdx];
     switch (e.rotary) {
     case Rotary::Blue:
       voice.in.step(e.clicks); break;
@@ -528,7 +526,7 @@ namespace otto::engines {
     ctx.save();
     ctx.transform(1.000, 0.000, 0.000, 1.000, 43.4, 45.6);
     ctx.fillStyle(Colour::bytes(255, 255, 255));
-    ctx.fillText(midi::note_name(engine->currentVoiceIdx + 24), 0, 0);
+    ctx.fillText(midi::note_name(engine.currentVoiceIdx + 24), 0, 0);
     ctx.restore();
 
 
@@ -540,7 +538,7 @@ namespace otto::engines {
     ctx.fillText("render", 235.1, 35.3);
     ctx.fillText("fx tape", 235.1, 47.3);
 
-    auto& voice = engine->props.voiceData[engine->currentVoiceIdx];
+    auto& voice = engine.props.voiceData[engine.currentVoiceIdx];
 
     const Colour pink = Colour::bytes(234, 163, 200);
     float progress = voice.playProgress / float(voice.length());
@@ -568,7 +566,7 @@ namespace otto::engines {
       });
 
     int in = std::max(0.f, voice.in - voice.length() / 4.f);
-    int out = std::min(engine->sampleData.size() - 1.f, voice.out + voice.length() / 4.f);
+    int out = std::min(engine.sampleData.size() - 1.f, voice.out + voice.length() / 4.f);
     mainWFW.range({in, out});
     ctx.callAt({22.3, 73.3}, [&] {
         auto p1 = mainWFW.point_floor(voice.in);

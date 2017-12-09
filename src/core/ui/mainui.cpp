@@ -84,19 +84,19 @@ namespace otto::ui {
       global::exit(global::ErrorCode::user_exit);
       break;
     case K_TAPE:
-      global::tapedeck.display();
+      global::ui.display(global::tapedeck.screen());
       break;
     case K_MIXER:
-      global::mixer.display();
+      global::ui.display(global::mixer.screen());
       break;
     case K_SYNTH:
-      global::synth.display();
+      global::ui.display(global::synth->screen());
       break;
     case K_DRUMS:
-      global::drums.display();
+      global::ui.display(global::drums->screen());
       break;
     case K_METRONOME:
-      global::metronome.display();
+      global::ui.display(global::metronome.screen());
       break;
     default:
       return false;

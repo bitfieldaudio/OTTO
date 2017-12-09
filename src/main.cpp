@@ -8,7 +8,6 @@
 #include "engines/studio/mixer/mixer.hpp"
 #include "engines/drums/simple-drums/simple-drums.hpp"
 #include "engines/drums/drum-sampler/drum-sampler.hpp"
-#include "engines/synths/synth-sampler/synth-sampler.hpp"
 #include "engines/synths/nuke/nuke.hpp"
 #include "core/globals.hpp"
 #include "util/timer.hpp"
@@ -19,8 +18,8 @@ int main(int argc, char *argv[]) {
   auto cleanup = [] {
     global::event::pre_exit.runAll();
     global::ui.exit();
-    global::mixer.exit();
-    global::tapedeck.exit();
+    global::mixer.on_disable();
+    global::tapedeck.on_disable();
     global::audio.exit();
     global::save_data();
     global::event::post_exit.runAll();
@@ -44,7 +43,6 @@ int main(int argc, char *argv[]) {
     global::drums.register_engine<SimpleDrumsEngine>();
 
     global::synth.register_engine<NukeSynth>();
-    global::synth.register_engine<SynthSampler>();
 
     global::event::pre_init.runAll();
     global::init();

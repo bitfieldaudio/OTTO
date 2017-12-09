@@ -475,4 +475,5 @@ namespace otto::engines {
   static_assert(std::is_same_v<Property<bool>::Mode, mode::toggle_mode>,
                 "Default mode of Property<bool> should be toggle_mode");
 
+
 } // otto::engines

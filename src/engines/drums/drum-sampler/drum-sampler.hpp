@@ -1,31 +1,33 @@
 #pragma once
 
 #include <fmt/format.h>
-
 #include "filesystem.hpp"
 
+#include "core/audio/processor.hpp"
 #include "core/engines/engine.hpp"
 
-#include "util/algorithm.hpp"
-#include "util/dyn-array.hpp"
-
 namespace otto::engines {
-
-  class DrumSampleScreen; // FWDCL
 
   /**
    * A sampler with 24 individual voices, laid out over the keys.
    */
-  class DrumSampler : public engines::SynthEngine {
-    audio::ProcessBuffer<1> proc_buf;
-  public:
+  struct DrumSampler : public engines::DrumsEngine {
+
+    DrumSampler();
+    ~DrumSampler();
+
+    audio::ProcessData<1> process(audio::ProcessData<0>) override;
+
+    void load();
+
+    void on_enable() override;
+
+    static fs::path samplePath(std::string name);
 
     size_t maxSampleSize = 0;
     util::dyn_array<float> sampleData;
     int sampleSampleRate = 44100;
     float sampleSpeed = 1;
-
-    std::unique_ptr<DrumSampleScreen> screen;
 
     static constexpr int nVoices = 24;
 
@@ -70,18 +72,8 @@ namespace otto::engines {
 
     int currentVoiceIdx = 0;
 
-    DrumSampler();
-    ~DrumSampler();
-
-    audio::ProcessData<1> process(audio::ProcessData<0>) override;
-
-    void display() override;
-
-    void load();
-
-    void init() override;
-
-    static fs::path samplePath(std::string name);
+  private:
+    audio::ProcessBuffer<1> proc_buf;
   };
 
-}
+}  // namespace otto::engines

@@ -18,18 +18,18 @@ namespace otto::audio {
     auto record_in = [&]() {
       switch (global::selector.props.input.get()) {
       case Selection::Internal: {
-        auto synth_out = global::synth.process(midi_in);
-        auto drums_out = global::drums.process(midi_in);
+        auto synth_out = global::synth->process(midi_in);
+        auto drums_out = global::drums->process(midi_in);
         auto mtrnm_out = global::metronome.process(midi_in);
         for (auto && [ drm, snth, mtrn ] :
           util::zip(drums_out, synth_out, mtrnm_out)) {
           util::audio::add_all(drm, snth);
           util::audio::add_all(drm, mtrn);
         }
-        return global::effect.process(drums_out);
+        return global::effect->process(drums_out);
       }
       case Selection::External:
-        return global::effect.process(external_in);
+        return global::effect->process(external_in);
       case Selection::TrackFB:
         util::transform(playback_out, audiobuf1.begin(),
           [track = global::selector.props.track.get()](
