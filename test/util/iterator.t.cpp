@@ -218,5 +218,29 @@ namespace otto::util {
 
       REQUIRE_THAT(actual, Catch::Matchers::Equals(expected));
     }
+
+    SECTION("data.size() == 0") {
+
+      std::vector<int> data {};
+
+      bool flag = true;
+      for (auto pair : util::adjacent_pairs(data)) {
+        flag = false;
+      }
+
+      REQUIRE(flag);
+    }
+
+    SECTION("data.size() == 1") {
+
+      std::vector<int> data {1};
+
+      bool flag = true;
+      for (auto pair : util::adjacent_pairs(data)) {
+        flag = false;
+      }
+
+      REQUIRE(flag);
+    }
   }
 }

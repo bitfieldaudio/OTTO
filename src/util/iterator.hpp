@@ -836,19 +836,19 @@ namespace otto::util {
       using iterator_category = typename detail::iterator_category<Iter>::type;
 
       AdjacentIterImpl(Iter iter)
-        : last {iter},
+        : prev {iter},
           cur {std::next(iter)}
       {}
 
       void advance(int n)
       {
         std::advance(cur, n);
-        std::advance(last, n);
+        std::advance(prev, n);
       }
 
       reference dereference()
       {
-        return {*last, *cur};
+        return {*prev, *cur};
       }
 
       bool equal(const AdjacentIterImpl& o) const
@@ -856,7 +856,7 @@ namespace otto::util {
         return cur == o.cur;
       }
 
-      Iter last;
+      Iter prev;
       Iter cur;
     };
 

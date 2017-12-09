@@ -87,7 +87,7 @@ namespace otto::engines {
 
     SECTION("json to Property conversions") {
 
-      props.fProp.from_json({8.f});
+      props.fProp.from_json(8.f);
       REQUIRE(props.fProp == 8.f);
 
       json node = {

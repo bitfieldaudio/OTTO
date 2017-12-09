@@ -46,7 +46,7 @@ namespace otto::ui::widgets {
     /// Useful for colouring different parts differently.
     ///
     /// \param subrange
-    ///        The range to draw, with 0 at `[*Waveform<C>::range]().in`
+    ///        The range to draw, with 0 at [*Waveform<C>::range]()`().in`
     ///
     /// \expects `subrange` should be within [*Waveform<C>::range]() -
     /// `range.in`
@@ -67,7 +67,7 @@ namespace otto::ui::widgets {
     void range(Range r)
     {
       if (r != _range) {
-        _range = r;
+        _range = {std::max(0, r.in), r.out};
         point_cache.invalidate();
       }
     }
@@ -176,20 +176,26 @@ namespace otto::ui::widgets {
   template<typename C>
   inline void Waveform<C>::draw_range(vg::Canvas& ctx, Range subrange)
   {
-    draw_range(ctx, subrange, [&] (vg::Canvas& ctx, auto first, auto last) {
-        ctx.plotRounded(first, last, point_cache.radius);
-      });
+    draw_range(ctx, subrange, [&](vg::Canvas& ctx, auto first, auto last) {
+      ctx.plotRounded(first, last, point_cache.radius);
+    });
   }
 
   template<typename C>
   template<typename Plotter>
-  inline void Waveform<C>::draw_range(vg::Canvas& ctx, Range subrange, Plotter&& p)
+  inline void Waveform<C>::draw_range(vg::Canvas& ctx,
+                                      Range subrange,
+                                      Plotter&& p)
   {
     if (point_cache->points.size() == 0) return;
-    std::invoke(std::forward<Plotter>(p),
-      ctx,
-      std::begin(point_cache->points) + std::floor((subrange.in - _range.in) / point_cache->sp2r),
-      std::begin(point_cache->points) + std::ceil((subrange.out - _range.in) / point_cache->sp2r));
+    std::invoke(
+      std::forward<Plotter>(p), ctx,
+      std::begin(point_cache->points) +
+        std::max(0.f,
+                 std::floor((subrange.in - _range.in) / point_cache->sp2r)),
+      std::begin(point_cache->points) +
+        std::max(0.f,
+                 std::ceil((subrange.out - _range.in) / point_cache->sp2r)));
   }
 
   template<typename C>

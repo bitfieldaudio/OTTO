@@ -454,6 +454,8 @@ namespace otto::ui::vg {
     template<typename Iter>
     void plotLines(Iter first, Iter last)
     {
+      if (first == last) return;
+
       moveTo(*first++);
       for (auto p : util::sequence(first, last)) {
         lineTo(p);

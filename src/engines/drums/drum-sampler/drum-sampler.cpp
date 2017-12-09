@@ -152,6 +152,8 @@ namespace otto::engines {
     }
 
     for (auto &&v : props.voiceData) {
+      v.in.mode.min = 0;
+      v.out.mode.min = 0;
       v.in.mode.max = rs;
       v.out.mode.max = rs;
     }
@@ -169,7 +171,7 @@ namespace otto::engines {
     float max = *util::max_element(sampleData);
 
     // TODO: Is there a better solution than this dynamic_cast?
-    auto scrn = dynamic_cast<DrumSampleScreen&>(screen());
+    auto& scrn = dynamic_cast<DrumSampleScreen&>(screen());
     scrn.topWFW.range({0, int(rs)});
     scrn.topWFW.top_val(max);
     scrn.mainWFW.top_val(max);
