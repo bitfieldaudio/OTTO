@@ -1,13 +1,7 @@
 #pragma once
 
-#include <cstdlib>
-#include <cassert>
-#include <functional>
-#include <limits>
-#include <map>
 #include <memory>
 #include <string>
-#include <type_traits>
 #include <vector>
 
 #include <plog/Log.h>
@@ -48,8 +42,8 @@ namespace otto::engines {
   ///
   /// For applying patches, take a look at [otto::engines::EngineRegistry]()
   struct EnginePatch {
-    const EngineType type;
-    const std::string name;
+    EngineType type;
+    std::string name;
     nlohmann::json data;
   };
 
@@ -303,6 +297,12 @@ public:                                                                        \
     Engine* _current;
   };
 
+  template<EngineType ET>
+  void to_json(nlohmann::json& j, const otto::engines::EngineRegistry<ET>& er);
+
+  template<EngineType ET>
+  void from_json(const nlohmann::json& j, otto::engines::EngineRegistry<ET>& er);
+
   // Presets //////////////////////////////////////////////////////////////////
 
   /// # OTTO Preset format
@@ -394,10 +394,15 @@ public:                                                                        \
     Engine& engine;
   };
 
-  // //////////////////////////////////////////////////////////////////////////
-  // Template definitions /////////////////////////////////////////////////////
-  // //////////////////////////////////////////////////////////////////////////
+} // namespace otto::engines
 
+
+
+// ////////////////////////////////////////////////////////////////////////////
+// Template definitions ///////////////////////////////////////////////////////
+// ////////////////////////////////////////////////////////////////////////////
+
+namespace otto::engines {
   // EngineRegistry Implementations ///////////////////////////////////////////
 
   template<EngineType ET>
@@ -405,7 +410,7 @@ public:                                                                        \
   Eg& EngineRegistry<ET>::register_engine(Args&&... args)
   {
     auto uptr = std::make_unique<Eg>(std::forward<Args>(args)...);
-    Eg& eg = *uptr;
+    Eg& eg    = *uptr;
     _engines.push_back(std::move(uptr));
     return eg;
   }
@@ -487,7 +492,7 @@ public:                                                                        \
   {
     std::vector<EnginePatch> res;
     res.reserve(_engines.size());
-    util::transform(_engines, res.begin(),
+    util::transform(_engines, std::back_inserter(res),
       [] (auto&& eptr) {
         return eptr->make_patch();
       });
@@ -502,7 +507,7 @@ public:                                                                        \
     }
     auto iter = util::find_if(_engines,
       [&patch] (auto&& eptr) {
-        eptr->name() == patch.name;
+        return eptr->name() == patch.name;
       });
     if (iter == _engines.end()) {
       throw exception(ErrorCode::engine_not_found);
@@ -511,5 +516,24 @@ public:                                                                        \
     return **iter;
   }
 
+  template<EngineType ET>
+  void to_json(nlohmann::json& j, const otto::engines::EngineRegistry<ET>& er)
+  {
+    j = nlohmann::json::object();
+    auto v = er.make_patches();
+    for (auto&& patch : v) {
+      j[patch.name] = patch.data;
+    }
+  }
 
-}  // namespace otto::engines
+  template<EngineType ET>
+  void from_json(const nlohmann::json& j, otto::engines::EngineRegistry<ET>& er)
+  {
+    if (j.is_object()) {
+      for (auto iter = j.begin(); iter != j.end(); iter++) {
+        er.apply_patch({ET, iter.key(), iter.value()});
+      }
+    }
+  }
+
+} // namespace otto::engines

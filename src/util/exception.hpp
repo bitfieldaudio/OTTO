@@ -92,6 +92,11 @@ namespace otto::util {
       }
     }
 
+    template<typename DataRef>
+    as_exception(DataRef&& dr)
+      : as_exception(std::forward<DataRef>(dr), "")
+    {}
+
     data_type& data() noexcept
     {
       return _data;

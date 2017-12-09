@@ -26,7 +26,8 @@ namespace otto::audio {
           util::audio::add_all(drm, snth);
           util::audio::add_all(drm, mtrn);
         }
-        return global::effect->process(drums_out);
+        return drums_out;
+        //return global::effect->process(drums_out);
       }
       case Selection::External:
         return global::effect->process(external_in);
