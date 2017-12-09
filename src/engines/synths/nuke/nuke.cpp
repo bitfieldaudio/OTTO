@@ -27,7 +27,7 @@ namespace otto::engines {
     void draw(ui::vg::Canvas& ctx) override;
   };
 
-  struct NukeSynthScreen : ui::EngineScreen<NukeSynth> {
+  struct NukeSynthScreen : EngineScreen<NukeSynth> {
     std::array<Knob, 4> knobs = {{
       Knob{ui::vg::Colours::Blue, {-1.13097, 0.5, M_PI}},
       Knob{ui::vg::Colours::Green, {-0.376991, 0.5, 3.51858}},
@@ -46,7 +46,7 @@ namespace otto::engines {
     bool keypress(ui::Key key) override;
     void rotary(ui::RotaryEvent e) override;
 
-    using ui::EngineScreen<NukeSynth>::EngineScreen;
+    using EngineScreen<NukeSynth>::EngineScreen;
   };
 
   // NukeSynth ////////////////////////////////////////////////////////////////
@@ -75,10 +75,10 @@ namespace otto::engines {
   {
     Knob k;
     switch (key) {
-    case ui::K_BLUE_CLICK: k = knobs[0]; break;
-    case ui::K_GREEN_CLICK: k = knobs[1]; break;
-    case ui::K_WHITE_CLICK: k = knobs[2]; break;
-    case ui::K_RED_CLICK: k = knobs[3]; break;
+    case ui::Key::blue_click: k = knobs[0]; break;
+    case ui::Key::green_click: k = knobs[1]; break;
+    case ui::Key::white_click: k = knobs[2]; break;
+    case ui::Key::red_click: k = knobs[3]; break;
     default: return false;
     }
     LOGD << "rotation: "

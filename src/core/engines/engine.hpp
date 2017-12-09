@@ -10,7 +10,7 @@
 #include "util/algorithm.hpp"
 #include "util/jsonfile.hpp"
 
-#include "core/ui/base.hpp"
+#include "core/ui/widget.hpp"
 #include "core/audio/processor.hpp"
 #include "core/engines/engine-props.hpp"
 

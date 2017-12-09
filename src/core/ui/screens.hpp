@@ -2,7 +2,7 @@
 
 #include <vector>
 #include <functional>
-#include "core/ui/base.hpp"
+#include "core/ui/widget.hpp"
 #include "core/ui/drawing.hpp"
 
 namespace otto::ui {

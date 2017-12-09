@@ -5,7 +5,6 @@
 #include "core/engines/engine.hpp"
 #include "core/audio/faust.hpp"
 #include "core/ui/canvas.hpp"
-#include "core/ui/engine-ui.hpp"
 
 namespace otto::engines {
 

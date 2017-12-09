@@ -17,53 +17,53 @@ namespace otto::engines {
   using namespace ui;
   using namespace ui::vg;
 
-  struct TapeScreen : public ui::EngineScreen<Tapedeck> {
+  struct TapeScreen : public EngineScreen<Tapedeck> {
     bool stopRecOnRelease = true;
 
-    using ui::EngineScreen<Tapedeck>::EngineScreen;
+    using EngineScreen<Tapedeck>::EngineScreen;
 
     bool keypress(ui::Key key) override
     {
-      bool shift = global::ui.keys[ui::K_SHIFT];
+      bool shift = global::ui.keys[ui::Key::shift];
       switch (key) {
-      case ui::K_REC: engine.state.startRecord(); return true;
-      case ui::K_PLAY:
-        if (global::ui.keys[ui::K_REC]) {
+      case ui::Key::rec: engine.state.startRecord(); return true;
+      case ui::Key::play:
+        if (global::ui.keys[ui::Key::rec]) {
           stopRecOnRelease = false;
         }
         return false;
-      case ui::K_TRACK_1: engine.state.track = 0; return true;
-      case ui::K_TRACK_2: engine.state.track = 1; return true;
-      case ui::K_TRACK_3: engine.state.track = 2; return true;
-      case ui::K_TRACK_4: engine.state.track = 3; return true;
-      case ui::K_LEFT:
+      case ui::Key::track_1: engine.state.track = 0; return true;
+      case ui::Key::track_2: engine.state.track = 1; return true;
+      case ui::Key::track_3: engine.state.track = 2; return true;
+      case ui::Key::track_4: engine.state.track = 3; return true;
+      case ui::Key::left:
         if (shift)
           engine.goToBarRel(-1);
         else
           engine.state.spool(-5);
         return true;
-      case ui::K_RIGHT:
+      case ui::Key::right:
         if (shift)
           engine.goToBarRel(1);
         else
           engine.state.spool(5);
         return true;
-      case ui::K_LOOP:
+      case ui::Key::loop:
         engine.state.looping = !engine.state.looping;
         return true;
-      case ui::K_LOOP_IN:
+      case ui::Key::loop_in:
         if (shift)
           engine.loopInHere();
         else
           engine.goToLoopIn();
         return true;
-      case ui::K_LOOP_OUT:
+      case ui::Key::loop_out:
         if (shift)
           engine.loopOutHere();
         else
           engine.goToLoopOut();
         return true;
-      case ui::K_CUT:
+      case ui::Key::cut:
         if (engine.state.doTapeOps()) {
           if (shift) {
             // TODO: Glue
@@ -73,12 +73,12 @@ namespace otto::engines {
           }
         }
         return true;
-      case ui::K_LIFT:
+      case ui::Key::lift:
         if (engine.state.doTapeOps())
           // TODO:
           // engine.tapeBuffer.lift(engine.state.track);
           return true;
-      case ui::K_DROP:
+      case ui::Key::drop:
         if (engine.state.doTapeOps())
           // TODO:
           // engine.tapeBuffer.drop(engine.state.track);
@@ -100,7 +100,7 @@ namespace otto::engines {
     bool keyrelease(ui::Key key) override
     {
       switch (key) {
-      case ui::K_REC:
+      case ui::Key::rec:
         if (stopRecOnRelease) {
           engine.state.stopRecord();
           return true;
@@ -108,8 +108,8 @@ namespace otto::engines {
           stopRecOnRelease = true;
           return true;
         }
-      case ui::K_LEFT:
-      case ui::K_RIGHT: engine.state.stop(); return true;
+      case ui::Key::left:
+      case ui::Key::right: engine.state.stop(); return true;
       default: return false;
       }
     }

@@ -3,7 +3,6 @@
 #include "core/engines/engine.hpp"
 #include "core/engines/engine-props.hpp"
 #include "core/engines/faust-engine.hpp"
-#include "core/ui/engine-ui.hpp"
 
 namespace otto::engines {
 

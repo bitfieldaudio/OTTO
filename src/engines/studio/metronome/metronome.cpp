@@ -12,10 +12,10 @@ namespace otto::engines {
 
   using TapeTime = unsigned;
 
-  struct MetronomeScreen : ui::EngineScreen<Metronome> {
+  struct MetronomeScreen : EngineScreen<Metronome> {
     void drawMetronome(ui::vg::Canvas&);
 
-    using ui::EngineScreen<Metronome>::EngineScreen;
+    using EngineScreen<Metronome>::EngineScreen;
 
     void rotary(ui::RotaryEvent) override;
 

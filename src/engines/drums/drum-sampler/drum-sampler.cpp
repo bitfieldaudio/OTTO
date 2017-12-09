@@ -198,7 +198,7 @@ namespace otto::engines {
     using namespace ui;
     auto& voice = engine.props.voiceData[engine.currentVoiceIdx];
     switch (key) {
-    case K_WHITE_CLICK: voice.pitch.reset(); return true;
+    case Key::white_click: voice.pitch.reset(); return true;
     default:
       return false;
     }

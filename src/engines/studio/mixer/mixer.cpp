@@ -5,7 +5,7 @@
 
 namespace otto::engines {
 
-  struct MixerScreen : ui::EngineScreen<Mixer> {
+  struct MixerScreen : EngineScreen<Mixer> {
 
     using EngineScreen<Mixer>::EngineScreen;
 
@@ -81,16 +81,16 @@ namespace otto::engines {
   bool MixerScreen::keypress(ui::Key key) {
     using namespace ui;
     switch (key) {
-    case K_BLUE_CLICK:
+    case Key::blue_click:
       engine.props.tracks[0].muted.step();
       return true;
-    case K_GREEN_CLICK:
+    case Key::green_click:
       engine.props.tracks[1].muted.step();
       return true;
-    case K_WHITE_CLICK:
+    case Key::white_click:
       engine.props.tracks[2].muted.step();
       return true;
-    case K_RED_CLICK:
+    case Key::red_click:
       engine.props.tracks[3].muted.step();
       return true;
     default:
@@ -104,7 +104,7 @@ namespace otto::engines {
   }
 
   void MixerScreen::rotary(ui::RotaryEvent e) {
-    if (global::ui.keys[ui::K_SHIFT]) {
+    if (global::ui.keys[ui::Key::shift]) {
       engine.props.tracks[static_cast<int>(e.rotary)].pan.step(e.clicks);
     } else {
       engine.props.tracks[static_cast<int>(e.rotary)].level.step(e.clicks);
@@ -200,7 +200,7 @@ namespace otto::engines {
     ctx.font(60);
     ctx.textAlign(TextAlign::Center, TextAlign::Baseline);
     std::string txt;
-    if (!global::ui.keys[ui::K_SHIFT]) {
+    if (!global::ui.keys[ui::Key::shift]) {
       txt = fmt::format("{:0>2.0f}", mix * 100);
     } else {
       if (int(pan * 10) == 0)

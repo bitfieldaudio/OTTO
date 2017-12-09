@@ -30,21 +30,21 @@ namespace otto::ui {
   bool MainUI::keypress(ui::Key key)
   {
     switch (key) {
-    case K_RED_UP:
+    case Key::red_up:
       currentScreen->rotary({Rotary::Red, 1}); break;
-    case K_RED_DOWN:
+    case Key::red_down:
       currentScreen->rotary({Rotary::Red, -1}); break;
-    case K_BLUE_UP:
+    case Key::blue_up:
       currentScreen->rotary({Rotary::Blue, 1}); break;
-    case K_BLUE_DOWN:
+    case Key::blue_down:
       currentScreen->rotary({Rotary::Blue, -1}); break;
-    case K_WHITE_UP:
+    case Key::white_up:
       currentScreen->rotary({Rotary::White, 1}); break;
-    case K_WHITE_DOWN:
+    case Key::white_down:
       currentScreen->rotary({Rotary::White, -1}); break;
-    case K_GREEN_UP:
+    case Key::green_up:
       currentScreen->rotary({Rotary::Green, 1}); break;
-    case K_GREEN_DOWN:
+    case Key::green_down:
       currentScreen->rotary({Rotary::Green, -1}); break;
     default:
       keys[key] = true;
@@ -64,7 +64,7 @@ namespace otto::ui {
   bool MainUI::globKeyPost(ui::Key key)
   {
     switch (key) {
-    case ui::K_PLAY:
+    case ui::Key::play:
       if (global::tapedeck.state.playing()) {
         global::tapedeck.state.stop();
       } else {
@@ -80,22 +80,22 @@ namespace otto::ui {
   {
     using namespace ui;
     switch (key) {
-    case K_QUIT:
+    case Key::quit:
       global::exit(global::ErrorCode::user_exit);
       break;
-    case K_TAPE:
+    case Key::tape:
       global::ui.display(global::tapedeck.screen());
       break;
-    case K_MIXER:
+    case Key::mixer:
       global::ui.display(global::mixer.screen());
       break;
-    case K_SYNTH:
+    case Key::synth:
       global::ui.display(global::synth->screen());
       break;
-    case K_DRUMS:
+    case Key::drums:
       global::ui.display(global::drums->screen());
       break;
-    case K_METRONOME:
+    case Key::metronome:
       global::ui.display(global::metronome.screen());
       break;
     default:

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/ui/drawing.hpp"
-#include "core/ui/base.hpp"
+#include "core/ui/widget.hpp"
 #include "util/audio.hpp"
 #include "util/cache.hpp"
 #include "util/algorithm.hpp"

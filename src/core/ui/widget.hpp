@@ -1,74 +1,69 @@
 #pragma once
 
-#include <thread>
-
 #include "core/ui/canvas.hpp"
 
 namespace otto::ui {
 
-  /**
-   * Used for keypresses
-   */
-  enum Key {
-    K_NONE = 0,
+  /// Represents a physical key
+  enum struct Key {
+    none = 0,
 
-    K_RED_UP,
-    K_RED_DOWN,
-    K_RED_CLICK,
-    K_BLUE_UP,
-    K_BLUE_DOWN,
-    K_BLUE_CLICK,
-    K_WHITE_UP,
-    K_WHITE_DOWN,
-    K_WHITE_CLICK,
-    K_GREEN_UP,
-    K_GREEN_DOWN,
-    K_GREEN_CLICK,
+    red_up,
+    red_down,
+    red_click,
+    blue_up,
+    blue_down,
+    blue_click,
+    white_up,
+    white_down,
+    white_click,
+    green_up,
+    green_down,
+    green_click,
 
-    K_LEFT,
-    K_RIGHT,
-    K_SHIFT,
+    left,
+    right,
+    shift,
 
-    K_PLAY,
-    K_REC,
-    K_TRACK_1,
-    K_TRACK_2,
-    K_TRACK_3,
-    K_TRACK_4,
+    play,
+    rec,
+    track_1,
+    track_2,
+    track_3,
+    track_4,
 
     // Globals:
-    K_QUIT,
+    quit,
 
-    // Numbers
-    K_1,
-    K_2,
-    K_3,
-    K_4,
-    K_5,
-    K_6,
-    K_7,
-    K_8,
-    K_9,
-    K_0,
+    tape,
+    mixer,
+    metronome,
+    synth,
+    drums,
+    sampler,
+    looper,
 
-    K_TAPE,
-    K_MIXER,
-    K_METRONOME,
-    K_SYNTH,
-    K_DRUMS,
-    K_SAMPLER,
-    K_LOOPER,
+    loop,
+    loop_in,
+    loop_out,
 
-    K_LOOP,
-    K_LOOP_IN,
-    K_LOOP_OUT,
-
-    K_LIFT,
-    K_DROP,
-    K_CUT,
+    lift,
+    drop,
+    cut,
   };
 
-  using PressedKeys = bool[256];
+  struct PressedKeys {
+    bool data[256];
+
+    bool& operator[](Key k)
+    {
+      return data[static_cast<unsigned>(k)];
+    }
+    const bool& operator[](Key k) const
+    {
+      return data[static_cast<unsigned>(k)];
+    }
+  };
 
   class Widget : public vg::SizedDrawable {
   public:
@@ -93,7 +88,6 @@ namespace otto::ui {
     Rotary rotary;
 
     /// The amount of steps the rotary was turned. Negative means CCW
-    // cppcheck-suppress unusedStructMember
     int clicks;
   };
 
