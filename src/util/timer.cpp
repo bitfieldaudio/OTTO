@@ -6,80 +6,104 @@
 
 #include "util/exception.hpp"
 
+#define ENABLED OTTO_ENABLE_TIMERS
+
 namespace otto::util::timer {
 
 // otto::util::timer::Timer ///////////////////////////////////////////////////
 
-  Timer::Timer(const timer_id& id)
-    : id (id)
-  {}
+Timer::Timer(const timer_id& id)
+#if ENABLED
+  : id(id)
+#endif
+{}
 
-  Timer::Timer(timer_id&& id)
-    : id (std::move(id))
-  {}
+Timer::Timer(timer_id&& id)
+#if ENABLED
+  : id(std::move(id))
+#endif
+{}
 
-  void Timer::start()
-  {
-    start_time = time_point::clock::now();
-    running = true;
+void Timer::start()
+{
+#if ENABLED
+  start_time = time_point::clock::now();
+  running    = true;
+#endif
+}
+
+void Timer::stop()
+{
+#if ENABLED
+  data.push_back(time_point::clock::now() - start_time);
+  running = false;
+#endif
+}
+
+void Timer::tick()
+{
+#if ENABLED
+  auto now = time_point::clock::now();
+  if (running) {
+    data.push_back(now - start_time);
+  } else {
+    start_time = now;
+    running    = true;
   }
+#endif
+}
 
-  void Timer::stop()
-  {
-    data.push_back(time_point::clock::now() - start_time);
-    running = false;
+nlohmann::json Timer::serialize() const
+{
+#if ENABLED
+  auto arr = nlohmann::json::array();
+  for (auto&& dur : data) {
+    arr.push_back(dur.count());
   }
-
-  void Timer::tick()
-  {
-    auto now = time_point::clock::now();
-    if (running) {
-      data.push_back(now - start_time);
-    } else {
-      start_time = now;
-      running = true;
-    }
+  auto json_chldrn = nlohmann::json::object();
+  for (auto&& c : children) {
+    json_chldrn[c.id] = c.serialize();
   }
-
-  nlohmann::json Timer::serialize() const
-  {
-    auto arr = nlohmann::json::array();
-    for (auto&& dur : data) {
-      arr.push_back(dur.count());
-    }
-    auto json_chldrn = nlohmann::json::object();
-    for (auto&& c : children) {
-      json_chldrn[c.id] = c.serialize();
-    }
-    return {
-      {"data", arr},
-      {"children", json_chldrn}
-    };
-  }
+  return {{"data", arr}, {"children", json_chldrn}};
+#else
+  return {};
+#endif
+}
 
 // otto::util::timer::ScopedTimer /////////////////////////////////////////////
 
   ScopedTimer::ScopedTimer(Timer& timer) noexcept
+#if ENABLED
     : timer (&timer)
+#endif
   {}
 
   ScopedTimer::ScopedTimer(Timer* timer) noexcept
+#if ENABLED
     : timer (timer)
+#endif
   {}
 
   ScopedTimer::ScopedTimer(ScopedTimer&& rhs) noexcept
+#if ENABLED
     : timer (rhs.timer)
+#endif
   {
+#if ENABLED
     rhs.timer = nullptr;
+#endif
   }
 
   ScopedTimer::~ScopedTimer()
   {
+#if ENABLED
     if (timer != nullptr) stop();
+#endif
   }
 
 // otto::util::timer free functions ///////////////////////////////////////////
 
+#if ENABLED
   struct TimerStack {
     Timer root;
     std::vector<Timer*> stack;
@@ -113,16 +137,20 @@ namespace otto::util::timer {
   // Do not access directly! use the function below
   thread_local TimerStack* _timer_stack = nullptr;
 
-  auto& timer_stack() noexcept
+  static auto& timer_stack() noexcept
   {
     if (_timer_stack == nullptr) {
       _timer_stack = create_timer_stack();
     }
     return _timer_stack->stack;
   }
+#else
+  Timer one_timer_to_rule_them_all("");
+#endif
 
   Timer& find_or_make(timer_id id)
   {
+#if ENABLED
     if (timer_stack().size() == 0) {
       throw util::exception("Timer stack empty. That shouldnt happen!");
     }
@@ -140,6 +168,9 @@ namespace otto::util::timer {
     } else {
       return timers.emplace_back(id);
     }
+#else
+    return one_timer_to_rule_them_all;
+#endif
   }
 
   Timer& start(timer_id id)
@@ -149,8 +180,10 @@ namespace otto::util::timer {
 
   Timer& start(Timer& timer)
   {
+#if ENABLED
     timer_stack().push_back(&timer);
     timer.start();
+#endif
     return timer;
   }
 
@@ -161,19 +194,23 @@ namespace otto::util::timer {
 
   ScopedTimer start_scoped(Timer& timer)
   {
+#if ENABLED
     timer_stack().push_back(&timer);
     timer.start();
+#endif
     return ScopedTimer{timer};
   }
 
   void stop()
   {
+#if ENABLED
     if (timer_stack().size() != 0U) {
       timer_stack().back()->stop();
       timer_stack().pop_back();
     } else {
       throw std::runtime_error("Attempted to stop the last timer");
     }
+#endif
   }
 
   Timer& tick(timer_id id)
@@ -183,21 +220,27 @@ namespace otto::util::timer {
 
   Timer& tick(Timer& timer)
   {
+#if ENABLED
     if (timer_stack().back() != &timer) {
       timer_stack().push_back(&timer);
     }
     timer.tick();
+#endif
     return timer;
   }
 
   nlohmann::json serialize()
   {
+#if ENABLED
     std::lock_guard lock (mutex);
     auto arr = nlohmann::json::object();
     for (auto timer : thread_stacks) {
       arr[timer.root.id] = timer.root.serialize();
     }
     return arr;
+#else
+    return {};
+#endif
   }
 
 }

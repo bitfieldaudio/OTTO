@@ -15,6 +15,8 @@
 
 
 /// A simple stack-based library used to time nested parts of a program.
+///
+/// if !OTTO_ENABLE_TIMERS, all implementations are empty
 namespace otto::util::timer {
 
   /// The type used to identify timers
@@ -159,6 +161,9 @@ namespace otto::util::timer {
 
 // M A C R O S /////////////////////////////////////////////////////////////////
 
+#if OTTO_ENABLE_TIMERS
 #define TIME_SCOPE(name) auto scope_timer = ::otto::util::timer::start_scoped(name);
-
+#else
+#define TIME_SCOPE(name)
+#endif
 
