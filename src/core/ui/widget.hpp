@@ -52,18 +52,7 @@ namespace otto::ui {
     cut,
   };
 
-  struct PressedKeys {
-    bool data[256];
-
-    bool& operator[](Key k)
-    {
-      return data[static_cast<unsigned>(k)];
-    }
-    const bool& operator[](Key k) const
-    {
-      return data[static_cast<unsigned>(k)];
-    }
-  };
+  using PressedKeys = bool[256];
 
   class Widget : public vg::SizedDrawable {
   public:
@@ -130,11 +119,11 @@ namespace otto::ui {
     /**
      * Run by MainUI when switching to this screen
      */
-    virtual void init() {}
+    virtual void on_show() {}
     /*
      * Run by MainUI when switching to another screen
      */
-    virtual void exit() {}
+    virtual void on_hide() {}
   };
 
 

@@ -3,6 +3,7 @@
 #include <fmt/format.h>
 
 #include "core/globals.hpp"
+#include "core/ui/mainui.hpp"
 #include "core/ui/drawing.hpp"
 #include "tapedeck.hpp"
 
@@ -24,11 +25,11 @@ namespace otto::engines {
 
     bool keypress(ui::Key key) override
     {
-      bool shift = global::ui.keys[ui::Key::shift];
+      bool shift = ui::is_pressed(ui::Key::shift);
       switch (key) {
       case ui::Key::rec: engine.state.startRecord(); return true;
       case ui::Key::play:
-        if (global::ui.keys[ui::Key::rec]) {
+        if (ui::is_pressed(ui::Key::rec)) {
           stopRecOnRelease = false;
         }
         return false;

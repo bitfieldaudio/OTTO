@@ -3,6 +3,7 @@
 
 #include "core/ui/drawing.hpp"
 #include "core/globals.hpp"
+#include "core/ui/mainui.hpp"
 
 namespace otto::engines {
 
@@ -84,7 +85,7 @@ namespace otto::engines {
   {
     using namespace ui;
     auto& voice = engine.voices[engine.currentVoiceIdx];
-    auto& osc   = global::ui.keys[Key::shift] ? voice.props.D2 : voice.props.D1;
+    auto& osc   = ui::is_pressed(Key::shift) ? voice.props.D2 : voice.props.D1;
     switch (key) {
     case Key::green_click: osc.filterSwitch.step(); return true;
     default: return false;
@@ -94,7 +95,7 @@ namespace otto::engines {
   void SimpleDrumsScreen::rotary(ui::RotaryEvent e)
   {
     auto& voice = engine.voices[engine.currentVoiceIdx];
-    auto& osc = global::ui.keys[ui::Key::shift] ? voice.props.D2 : voice.props.D1;
+    auto& osc = ui::is_pressed(ui::Key::shift) ? voice.props.D2 : voice.props.D1;
     switch (e.rotary) {
     case ui::Rotary::Blue: osc.freq.step(e.clicks);
     case ui::Rotary::Green: osc.toneDecay.step(e.clicks);

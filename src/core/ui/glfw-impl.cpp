@@ -128,10 +128,9 @@ namespace otto::ui {
     void key(GLFWwindow* window, int key, int scancode, int action, int mods)
     {
       using namespace ui;
-      MainUI& self = global::ui;
       Key k        = keyboardKey(key, mods);
       if (action == GLFW_PRESS) {
-        self.keypress(k);
+        impl::keypress(k);
       } else if (action == GLFW_REPEAT) {
         switch (k) {
         case Key::red_up:
@@ -143,11 +142,11 @@ namespace otto::ui {
         case Key::green_up:
         case Key::green_down:
         case Key::left:
-        case Key::right: self.keypress(k);
+        case Key::right: impl::keypress(k);
         default: break;
         }
       } else if (action == GLFW_RELEASE) {
-        self.keyrelease(k);
+        impl::keyrelease(k);
       }
     }
 
@@ -627,7 +626,7 @@ namespace otto::ui {
 
   } // namespace
 
-  void MainUI::mainRoutine()
+  void main_ui_loop()
   {
     glfwSetErrorCallback(error_callback);
 
@@ -742,7 +741,7 @@ namespace otto::ui {
       canvas.begineFrame(winWidth, winHeight);
 
       canvas.scale(scale, scale);
-      draw(canvas);
+      ui::impl::draw_frame(canvas);
 
       canvas.endFrame();
 

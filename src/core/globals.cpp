@@ -30,7 +30,6 @@ namespace otto::global {
     mixer.on_enable();
     synth.select(0UL);
     drums.select(0UL);
-    ui.init();
   }
 
   void exit(ErrorCode ec) noexcept

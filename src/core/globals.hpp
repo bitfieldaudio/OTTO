@@ -4,7 +4,6 @@
 #include "util/event.hpp"
 
 #include "core/audio/main_audio.hpp"
-#include "core/ui/mainui.hpp"
 
 #include "core/engines/engine.hpp"
 
@@ -38,7 +37,6 @@ namespace otto {
     }
 
     inline audio::MainAudio audio;
-    inline ui::MainUI ui;
 
     inline engines::EngineRegistry<engines::EngineType::synth> synth;
     inline engines::EngineRegistry<engines::EngineType::drums> drums;

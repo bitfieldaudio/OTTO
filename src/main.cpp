@@ -17,7 +17,6 @@ int main(int argc, char *argv[]) {
 
   auto cleanup = [] {
     global::event::pre_exit.runAll();
-    global::ui.exit();
     global::mixer.on_disable();
     global::tapedeck.on_disable();
     global::audio.exit();
@@ -50,7 +49,7 @@ int main(int argc, char *argv[]) {
 
     global::audio.start_processing();
 
-    global::ui.mainRoutine();
+    ui::main_ui_loop();
 
   } catch (const char* e) {
     LOGF << e;
