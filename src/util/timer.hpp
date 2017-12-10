@@ -141,9 +141,10 @@ namespace otto::util::timer {
 
   /// Stop the timer, and pop it off the stack if it is there.
   ///
+  /// Currently unimplemented
   /// \effects `timer.stop()` and, if `&timer` is in `timer_stack`, stop and pop
   /// it and everything after it.
-  // void stop(Timer& timer);
+  void stop(Timer& timer) = delete;
 
   /// Tick a timer with id `id`, and push it to the back of the stack if it is
   /// not there already.

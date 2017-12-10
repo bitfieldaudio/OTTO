@@ -7,7 +7,14 @@ namespace otto::ui {
   // Local vars
   namespace {
 
-    Screen* cur_screen;
+    struct EmptyScreen : Screen {
+
+      void draw(vg::Canvas& ctx)
+      {}
+
+    } empty_screen;
+
+    Screen* cur_screen = &empty_screen;
 
     PressedKeys keys;
 
@@ -20,7 +27,7 @@ namespace otto::ui {
 
   void display(Screen& screen)
   {
-    if (cur_screen != nullptr) cur_screen->on_hide();
+    cur_screen->on_hide();
     cur_screen = &screen;
     cur_screen->on_show();
   }
@@ -55,7 +62,7 @@ namespace otto::ui {
       ctx.lineWidth(2);
       ctx.lineCap(vg::Canvas::LineCap::ROUND);
       ctx.lineJoin(vg::Canvas::Canvas::LineJoin::ROUND);
-      if (cur_screen != nullptr) cur_screen->draw(ctx);
+      cur_screen->draw(ctx);
     }
 
     bool keypress(Key key)
