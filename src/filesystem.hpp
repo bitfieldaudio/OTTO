@@ -1,16 +1,16 @@
 #pragma once
 
-#include <string>
-#include <vector>
-#include <string_view>
-#include <memory>
 #include <chrono>
+#include <memory>
+#include <string>
+#include <string_view>
 #include <system_error>
+#include <vector>
 
 #if defined(__linux)
-# include <linux/limits.h>
+#include <linux/limits.h>
 #elif defined(_WIN32)
-# include <Windows.h>
+#include <Windows.h>
 #endif
 
 // For fmt::format support
@@ -20,18 +20,13 @@ namespace otto::filesystem {
 
   class path {
   public:
-
-    using value_type = char;
+    using value_type                                = char;
     static constexpr value_type preferred_separator = '/';
     using string_type = std::basic_string<value_type>;
 
     // 30.10.9.1, enumeration format
 
-    enum format {
-      native_format,
-      generic_format,
-      auto_format
-    };
+    enum format { native_format, generic_format, auto_format };
 
     // 30.10.7.4.1, constructors and destructor
 
@@ -43,10 +38,10 @@ namespace otto::filesystem {
     path(std::basic_string_view<value_type> source, format fmt = auto_format);
     path(const value_type* source, format fmt = auto_format);
 
-    template <class Source, typename>
+    template<class Source, typename>
     path(const Source& source, format fmt = auto_format);
 
-    template <class InputIterator>
+    template<class InputIterator>
     path(InputIterator first, InputIterator last, format fmt = auto_format);
 
     ~path();
@@ -58,25 +53,25 @@ namespace otto::filesystem {
 
     path& assign(string_type&& source);
 
-    template <class Source>
+    template<class Source>
     path& operator=(const Source& source);
 
-    template <class Source>
+    template<class Source>
     path& assign(const Source& source);
 
-    template <class InputIterator>
+    template<class InputIterator>
     path& assign(InputIterator first, InputIterator last);
 
     // 30.10.7.4.3, appends
     path& operator/=(const path& p);
 
-    template <class Source>
+    template<class Source>
     path& operator/=(const Source& source);
 
-    template <class Source>
+    template<class Source>
     path& append(const Source& source);
 
-    template <class InputIterator>
+    template<class InputIterator>
     path& append(InputIterator first, InputIterator last);
 
     // 30.10.7.4.4, concatenation
@@ -86,16 +81,16 @@ namespace otto::filesystem {
     path& operator+=(const value_type* x);
     path& operator+=(value_type x);
 
-    template <class Source>
+    template<class Source>
     path& operator+=(const Source& x);
 
-    template <class EcharT>
+    template<class EcharT>
     path& operator+=(EcharT x);
 
-    template <class Source>
+    template<class Source>
     path& concat(const Source& x);
 
-    template <class InputIterator>
+    template<class InputIterator>
     path& concat(InputIterator first, InputIterator last);
 
     // 30.10.7.4.5, modifiers
@@ -154,10 +149,10 @@ namespace otto::filesystem {
     class iterator {
     public:
       using iterator_category = std::bidirectional_iterator_tag;
-      using value_type = path;
-      using difference_type = ptrdiff_t;
-      using pointer = const path*;
-      using reference = const path&;
+      using value_type        = path;
+      using difference_type   = ptrdiff_t;
+      using pointer           = const path*;
+      using reference         = const path&;
 
       iterator(const iterator&);
       iterator(iterator&&) noexcept;
@@ -179,7 +174,6 @@ namespace otto::filesystem {
       iterator operator--(int);
 
     private:
-
       void refresh();
       const path::value_type* _first;
       const path::value_type* _ptr;
@@ -197,31 +191,33 @@ namespace otto::filesystem {
 
   void swap(path& lhs, path& rhs) noexcept;
 
-  size_t hash_value (const path& p) noexcept;
+  size_t hash_value(const path& p) noexcept;
 
-  bool operator< (const path& lhs, const path& rhs) noexcept;
+  bool operator<(const path& lhs, const path& rhs) noexcept;
   bool operator<=(const path& lhs, const path& rhs) noexcept;
-  bool operator> (const path& lhs, const path& rhs) noexcept;
+  bool operator>(const path& lhs, const path& rhs) noexcept;
   bool operator>=(const path& lhs, const path& rhs) noexcept;
   bool operator==(const path& lhs, const path& rhs) noexcept;
   bool operator!=(const path& lhs, const path& rhs) noexcept;
-  path operator/ (const path& lhs, const path& rhs) noexcept;
+  path operator/(const path& lhs, const path& rhs) noexcept;
 
   // 30.10.7.6.1, path inserter and extractor
 
-  template <class charT, class traits>
-  std::basic_ostream<charT, traits>&
-  operator<<(std::basic_ostream<charT, traits>& os, const path& p);
+  template<class charT, class traits>
+  std::basic_ostream<charT, traits>& operator<<(
+    std::basic_ostream<charT, traits>& os,
+    const path& p);
 
-  template <class charT, class traits>
-  std::basic_istream<charT, traits>&
-  operator>>(std::basic_istream<charT, traits>& is, path& p);
+  template<class charT, class traits>
+  std::basic_istream<charT, traits>& operator>>(
+    std::basic_istream<charT, traits>& is,
+    path& p);
 
   // 30.10.7.6.2, path factory functions
 
-  template <class Source>
+  template<class Source>
   path u8path(const Source& source);
-  template <class InputIterator>
+  template<class InputIterator>
   path u8path(InputIterator first, InputIterator last);
 
 
@@ -253,38 +249,33 @@ namespace otto::filesystem {
   };
 
   enum class perms {
-    none         = 0,
-    owner_read   = 0400,  // Read permission, owner
-    owner_write  = 0200,  // Write permission, owner
-    owner_exec   = 0100,  // Execute/search permission, owner
-    owner_all    = 0700,  // Read, write, execute/search by owner;
-                          // owner_read | owner_write | owner_exec
-    group_read   = 0040,  // Read permission, group
-    group_write  = 0020,  // Write permission, group
-    group_exec   = 0010,  // Execute/search permission, group
-    group_all    = 0070,  // Read, write, execute/search by group;
-                          // group_read | group_write | group_exec
-    others_read  = 0004,  // Read permission, others
-    others_write = 0002,  // Write permission, others
-    others_exec  = 0001,  // Execute/search permission, others
-    others_all   = 0007,  // Read, write, execute/search by others;
-                          // others_read | others_write | others_exec
-    all          = 0777,  // owner_all | group_all | others_all
-    set_uid      = 04000, // Set-user-ID on execution
-    set_gid      = 02000, // Set-group-ID on execution
-    sticky_bit   = 01000, // Operating system dependent.
-    mask         = 07777, // all | set_uid | set_gid | sticky_bit
-    unknown      = 0xFFFF
+    none        = 0,
+    owner_read  = 0400,  // Read permission, owner
+    owner_write = 0200,  // Write permission, owner
+    owner_exec  = 0100,  // Execute/search permission, owner
+    owner_all   = 0700,  // Read, write, execute/search by owner;
+                         // owner_read | owner_write | owner_exec
+    group_read  = 0040,  // Read permission, group
+    group_write = 0020,  // Write permission, group
+    group_exec  = 0010,  // Execute/search permission, group
+    group_all   = 0070,  // Read, write, execute/search by group;
+                         // group_read | group_write | group_exec
+    others_read  = 0004, // Read permission, others
+    others_write = 0002, // Write permission, others
+    others_exec  = 0001, // Execute/search permission, others
+    others_all   = 0007, // Read, write, execute/search by others;
+                         // others_read | others_write | others_exec
+    all        = 0777,   // owner_all | group_all | others_all
+    set_uid    = 04000,  // Set-user-ID on execution
+    set_gid    = 02000,  // Set-group-ID on execution
+    sticky_bit = 01000,  // Operating system dependent.
+    mask       = 07777,  // all | set_uid | set_gid | sticky_bit
+    unknown    = 0xFFFF
   };
 
   using file_time_type = std::chrono::time_point<std::chrono::system_clock>;
 
-  enum class perm_options {
-    replace,
-    add,
-    remove,
-    nofollow
-  };
+  enum class perm_options { replace, add, remove, nofollow };
 
   enum class directory_options {
     none,
@@ -305,7 +296,7 @@ namespace otto::filesystem {
     file_status() noexcept : file_status(file_type::none) {}
     explicit file_status(file_type ft, perms prms = perms::unknown) noexcept;
     file_status(const file_status&) noexcept = default;
-    file_status(file_status&&) noexcept = default;
+    file_status(file_status&&) noexcept      = default;
     ~file_status();
 
     // assignments:
@@ -322,6 +313,7 @@ namespace otto::filesystem {
 
     file_type type() const noexcept;
     perms permissions() const noexcept;
+
   private:
     file_type _type;
     perms _perms;
@@ -332,10 +324,13 @@ namespace otto::filesystem {
     filesystem_error(const std::string& what_arg, std::error_code ec);
 
     filesystem_error(const std::string& what_arg,
-      const path& p1, std::error_code ec);
+                     const path& p1,
+                     std::error_code ec);
 
     filesystem_error(const std::string& what_arg,
-      const path& p1, const path& p2, std::error_code ec);
+                     const path& p1,
+                     const path& p2,
+                     std::error_code ec);
 
     const path& path1() const noexcept;
     const path& path2() const noexcept;
@@ -350,13 +345,12 @@ namespace otto::filesystem {
 
   class directory_entry {
   public:
-
     // 30.10.11.1, constructors and destructor
 
     directory_entry() = default;
 
     directory_entry(const directory_entry&) = default;
-    directory_entry(directory_entry&&) = default;
+    directory_entry(directory_entry&&)      = default;
 
     explicit directory_entry(const path& p);
     directory_entry(const path& p, std::error_code& ec);
@@ -425,15 +419,15 @@ namespace otto::filesystem {
     file_status symlink_status() const;
     file_status symlink_status(std::error_code&) const noexcept;
 
-    bool operator< (const directory_entry& rhs) const noexcept;
+    bool operator<(const directory_entry& rhs) const noexcept;
     bool operator==(const directory_entry& rhs) const noexcept;
     bool operator!=(const directory_entry& rhs) const noexcept;
     bool operator<=(const directory_entry& rhs) const noexcept;
-    bool operator> (const directory_entry& rhs) const noexcept;
+    bool operator>(const directory_entry& rhs) const noexcept;
     bool operator>=(const directory_entry& rhs) const noexcept;
 
   private:
-    class path pathobject; // exposition only
+    class path pathobject;           // exposition only
     friend class directory_iterator; // exposition only
 
     uintmax_t _file_size;
@@ -445,10 +439,10 @@ namespace otto::filesystem {
   class directory_iterator {
   public:
     using iterator_category = std::input_iterator_tag;
-    using value_type = directory_entry;
-    using difference_type = ptrdiff_t;
-    using pointer = const directory_entry*;
-    using reference = const directory_entry&;
+    using value_type        = directory_entry;
+    using difference_type   = ptrdiff_t;
+    using pointer           = const directory_entry*;
+    using reference         = const directory_entry&;
 
     // 30.10.12.1, member functions
     directory_iterator() noexcept;
@@ -456,8 +450,9 @@ namespace otto::filesystem {
     explicit directory_iterator(const path& p);
     directory_iterator(const path& p, directory_options options);
     directory_iterator(const path& p, std::error_code& ec);
-    directory_iterator(const path& p, directory_options options,
-      std::error_code& ec);
+    directory_iterator(const path& p,
+                       directory_options options,
+                       std::error_code& ec);
 
     directory_iterator(const directory_iterator& rhs);
     directory_iterator(directory_iterator&& rhs) noexcept;
@@ -481,8 +476,9 @@ namespace otto::filesystem {
     directory_iterator operator++(int);
 
   private:
-    void read_dir(const path& p, directory_options options,
-      std::error_code& ec);
+    void read_dir(const path& p,
+                  directory_options options,
+                  std::error_code& ec);
 
     directory_entry* _ptr;
     std::shared_ptr<std::vector<directory_entry>> _entries;
@@ -494,10 +490,10 @@ namespace otto::filesystem {
   class recursive_directory_iterator {
   public:
     using iterator_category = std::input_iterator_tag;
-    using value_type = directory_entry;
-    using difference_type = ptrdiff_t;
-    using pointer = const directory_entry*;
-    using reference = const directory_entry&;
+    using value_type        = directory_entry;
+    using difference_type   = ptrdiff_t;
+    using pointer           = const directory_entry*;
+    using reference         = const directory_entry&;
 
     // 30.10.13.1, constructors and destructor
     recursive_directory_iterator() noexcept;
@@ -516,11 +512,11 @@ namespace otto::filesystem {
     const directory_entry* operator->() const;
 
     // 30.10.13.1, modifiers
-    recursive_directory_iterator&
-    operator=(const recursive_directory_iterator& rhs);
+    recursive_directory_iterator& operator=(
+      const recursive_directory_iterator& rhs);
 
-    recursive_directory_iterator&
-    operator=(recursive_directory_iterator&& rhs) noexcept;
+    recursive_directory_iterator& operator=(
+      recursive_directory_iterator&& rhs) noexcept;
 
     recursive_directory_iterator& operator++();
     void pop();
@@ -537,11 +533,11 @@ namespace otto::filesystem {
     std::shared_ptr<SharedData> _data;
   };
 
-  recursive_directory_iterator
-  begin(recursive_directory_iterator iter) noexcept;
+  recursive_directory_iterator begin(
+    recursive_directory_iterator iter) noexcept;
 
-  recursive_directory_iterator
-  end(const recursive_directory_iterator& iter) noexcept;
+  recursive_directory_iterator end(
+    const recursive_directory_iterator& iter) noexcept;
 
   // 30.10.14, filesystem operations /////////////////////////////////////////
 
@@ -555,20 +551,26 @@ namespace otto::filesystem {
   void copy(const path& from, const path& to, std::error_code& ec) noexcept;
 
   void copy(const path& from, const path& to, copy_options options);
-  void copy(const path& from, const path& to, copy_options options,
-    std::error_code& ec) noexcept;
+  void copy(const path& from,
+            const path& to,
+            copy_options options,
+            std::error_code& ec) noexcept;
 
   bool copy_file(const path& from, const path& to);
-  bool copy_file(const path& from, const path& to,
-    std::error_code& ec) noexcept;
+  bool copy_file(const path& from,
+                 const path& to,
+                 std::error_code& ec) noexcept;
 
   bool copy_file(const path& from, const path& to, copy_options option);
-  bool copy_file(const path& from, const path& to, copy_options option,
-    std::error_code& ec) noexcept;
+  bool copy_file(const path& from,
+                 const path& to,
+                 copy_options option,
+                 std::error_code& ec) noexcept;
 
   void copy_symlink(const path& existing_symlink, const path& new_symlink);
-  void copy_symlink(const path& existing_symlink, const path& new_symlink,
-    std::error_code& ec) noexcept;
+  void copy_symlink(const path& existing_symlink,
+                    const path& new_symlink,
+                    std::error_code& ec) noexcept;
 
   bool create_directories(const path& p);
   bool create_directories(const path& p, std::error_code& ec) noexcept;
@@ -577,20 +579,24 @@ namespace otto::filesystem {
   bool create_directory(const path& p, std::error_code& ec) noexcept;
 
   bool create_directory(const path& p, const path& attributes);
-  bool create_directory(const path& p, const path& attributes,
-    std::error_code& ec) noexcept;
+  bool create_directory(const path& p,
+                        const path& attributes,
+                        std::error_code& ec) noexcept;
 
   void create_directory_symlink(const path& to, const path& new_symlink);
-  void create_directory_symlink(const path& to, const path& new_symlink,
-    std::error_code& ec) noexcept;
+  void create_directory_symlink(const path& to,
+                                const path& new_symlink,
+                                std::error_code& ec) noexcept;
 
   void create_hard_link(const path& to, const path& new_hard_link);
-  void create_hard_link(const path& to, const path& new_hard_link,
-    std::error_code& ec) noexcept;
+  void create_hard_link(const path& to,
+                        const path& new_hard_link,
+                        std::error_code& ec) noexcept;
 
   void create_symlink(const path& to, const path& new_symlink);
-  void create_symlink(const path& to, const path& new_symlink,
-    std::error_code& ec) noexcept;
+  void create_symlink(const path& to,
+                      const path& new_symlink,
+                      std::error_code& ec) noexcept;
 
   path current_path();
   path current_path(std::error_code& ec);
@@ -653,10 +659,14 @@ namespace otto::filesystem {
   file_status symlink_status(const path& p);
   file_status symlink_status(const path& p, std::error_code&) noexcept;
 
-  void permissions(const path& p, perms prms,
-    perm_options opts = perm_options::replace);
+  void permissions(const path& p,
+                   perms prms,
+                   perm_options opts = perm_options::replace);
   void permissions(const path& p, perms prms, std::error_code& ec) noexcept;
-  void permissions(const path& p, perms prms, perm_options opts, std::error_code& ec);
+  void permissions(const path& p,
+                   perms prms,
+                   perm_options opts,
+                   std::error_code& ec);
 
   path proximate(const path& p, std::error_code& ec);
   path proximate(const path& p, const path& base = current_path());
@@ -708,96 +718,98 @@ namespace otto {
 
 namespace otto::filesystem {
 
-  template <class Source, typename =
-    std::enable_if_t<std::is_constructible_v<path::string_type, Source>>>
-  path::path(const Source& source, format fmt)
-    : path(string_type(source), fmt)
+  template<class Source,
+           typename = std::enable_if_t<
+             std::is_constructible_v<path::string_type, Source>>>
+  path::path(const Source& source, format fmt) : path(string_type(source), fmt)
   {}
 
 
-  template <class InputIterator>
+  template<class InputIterator>
   path::path(InputIterator first, InputIterator last, format fmt)
     : path(string_type(first, last), fmt)
   {}
 
-  template <class Source>
+  template<class Source>
   path& path::operator=(const Source& source)
   {
     return assign(source);
   }
 
-  template <class Source>
+  template<class Source>
   path& path::assign(const Source& source)
   {
     return assign(string_type(source));
   }
 
 
-  template <class InputIterator>
+  template<class InputIterator>
   path& path::assign(InputIterator first, InputIterator last)
   {
     return assign(string_type{first, last});
   }
 
-  template <class Source>
+  template<class Source>
   path& path::operator/=(const Source& source)
   {
     return operator/=(path(source));
   }
 
-  template <class Source>
+  template<class Source>
   path& path::append(const Source& source)
   {
     return operator/=(path(source));
   }
 
-  template <class InputIterator>
+  template<class InputIterator>
   path& path::append(InputIterator first, InputIterator last)
   {
     return operator/=(path(first, last));
   }
 
-  template <class Source>
+  template<class Source>
   path& path::operator+=(const Source& x)
   {
     _path.append(path(x).native());
     return *this;
   }
 
-  template <class EcharT>
+  template<class EcharT>
   path& path::operator+=(EcharT x)
   {
     _path.append(path(x).native());
     return *this;
   }
 
-  template <class Source>
+  template<class Source>
   path& path::concat(const Source& x)
   {
     _path.append(path(x).native());
     return *this;
   }
 
-  template <class InputIterator>
+  template<class InputIterator>
   path& path::concat(InputIterator first, InputIterator last)
   {
     return *this += path(first, last);
   }
 
-  template <class charT, class traits>
-  std::basic_ostream<charT, traits>&
-  operator<<(std::basic_ostream<charT, traits>& os, const path& p)
+  template<class charT, class traits>
+  std::basic_ostream<charT, traits>& operator<<(
+    std::basic_ostream<charT, traits>& os,
+    const path& p)
   {
     os << p.native();
     return os;
   }
 
-  template <class charT, class traits>
-  std::basic_istream<charT, traits>&
-  operator>>(std::basic_istream<charT, traits>& is, path& p)
+  template<class charT, class traits>
+  std::basic_istream<charT, traits>& operator>>(
+    std::basic_istream<charT, traits>& is,
+    path& p)
   {
     is >> p.native();
     return is;
   }
 
-}
+} // namespace otto::filesystem

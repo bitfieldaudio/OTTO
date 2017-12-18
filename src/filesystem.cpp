@@ -1,102 +1,102 @@
 #include "filesystem.hpp"
 
-#include <cstring>
 #include <cerrno>
+#include <cstring>
 #include <fstream>
 
 #include "util/algorithm.hpp"
 #include "util/iterator.hpp"
 
+#include <dirent.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <dirent.h>
 #include <vector>
 
 namespace otto::filesystem {
 
-  // operator overloads for scoped enums ////////////////////////////////////////
+  // operator overloads for scoped enums // ////////////////////////////////////
 
-  file_type operator & (file_type lhs, file_type rhs)
+  file_type operator&(file_type lhs, file_type rhs)
   {
     return file_type{std::underlying_type_t<file_type>(lhs) &
-        std::underlying_type_t<file_type>(rhs)};
+                     std::underlying_type_t<file_type>(rhs)};
   }
-  file_type operator | (file_type lhs, file_type rhs)
+  file_type operator|(file_type lhs, file_type rhs)
   {
     return file_type{std::underlying_type_t<file_type>(lhs) |
-        std::underlying_type_t<file_type>(rhs)};
+                     std::underlying_type_t<file_type>(rhs)};
   }
-  bool operator != (file_type lhs, file_type rhs)
+  bool operator!=(file_type lhs, file_type rhs)
   {
     return std::underlying_type_t<directory_options>(lhs) !=
-      std::underlying_type_t<directory_options>(rhs);
+           std::underlying_type_t<directory_options>(rhs);
   }
 
-  copy_options operator & (copy_options lhs, copy_options rhs)
+  copy_options operator&(copy_options lhs, copy_options rhs)
   {
     return copy_options{std::underlying_type_t<copy_options>(lhs) &
-        std::underlying_type_t<copy_options>(rhs)};
+                        std::underlying_type_t<copy_options>(rhs)};
   }
-  copy_options operator | (copy_options lhs, copy_options rhs)
+  copy_options operator|(copy_options lhs, copy_options rhs)
   {
     return copy_options{std::underlying_type_t<copy_options>(lhs) |
-        std::underlying_type_t<copy_options>(rhs)};
+                        std::underlying_type_t<copy_options>(rhs)};
   }
 
-  bool operator != (copy_options lhs, copy_options rhs)
+  bool operator!=(copy_options lhs, copy_options rhs)
   {
     return std::underlying_type_t<directory_options>(lhs) !=
-      std::underlying_type_t<directory_options>(rhs);
+           std::underlying_type_t<directory_options>(rhs);
   }
 
-  perms operator & (perms lhs, perms rhs)
+  perms operator&(perms lhs, perms rhs)
   {
     return perms{std::underlying_type_t<perms>(lhs) &
-        std::underlying_type_t<perms>(rhs)};
+                 std::underlying_type_t<perms>(rhs)};
   }
 
-  perms operator | (perms lhs, perms rhs)
+  perms operator|(perms lhs, perms rhs)
   {
     return perms{std::underlying_type_t<perms>(lhs) |
-        std::underlying_type_t<perms>(rhs)};
+                 std::underlying_type_t<perms>(rhs)};
   }
 
-  bool operator != (perms lhs, perms rhs)
+  bool operator!=(perms lhs, perms rhs)
   {
     return std::underlying_type_t<directory_options>(lhs) !=
-      std::underlying_type_t<directory_options>(rhs);
+           std::underlying_type_t<directory_options>(rhs);
   }
 
-  perm_options operator & (perm_options lhs, perm_options rhs)
+  perm_options operator&(perm_options lhs, perm_options rhs)
   {
     return perm_options{std::underlying_type_t<perm_options>(lhs) &
-        std::underlying_type_t<perm_options>(rhs)};
+                        std::underlying_type_t<perm_options>(rhs)};
   }
-  perm_options operator | (perm_options lhs, perm_options rhs)
+  perm_options operator|(perm_options lhs, perm_options rhs)
   {
     return perm_options{std::underlying_type_t<perm_options>(lhs) |
-        std::underlying_type_t<perm_options>(rhs)};
+                        std::underlying_type_t<perm_options>(rhs)};
   }
-  bool operator != (perm_options lhs, perm_options rhs)
+  bool operator!=(perm_options lhs, perm_options rhs)
   {
     return std::underlying_type_t<directory_options>(lhs) !=
-      std::underlying_type_t<directory_options>(rhs);
+           std::underlying_type_t<directory_options>(rhs);
   }
 
-  directory_options operator & (directory_options lhs, directory_options rhs)
+  directory_options operator&(directory_options lhs, directory_options rhs)
   {
     return directory_options{std::underlying_type_t<directory_options>(lhs) &
-        std::underlying_type_t<directory_options>(rhs)};
+                             std::underlying_type_t<directory_options>(rhs)};
   }
-  directory_options operator | (directory_options lhs, directory_options rhs)
+  directory_options operator|(directory_options lhs, directory_options rhs)
   {
     return directory_options{std::underlying_type_t<directory_options>(lhs) |
-        std::underlying_type_t<directory_options>(rhs)};
+                             std::underlying_type_t<directory_options>(rhs)};
   }
-  bool operator != (directory_options lhs, directory_options rhs)
+  bool operator!=(directory_options lhs, directory_options rhs)
   {
     return std::underlying_type_t<directory_options>(lhs) !=
-      std::underlying_type_t<directory_options>(rhs);
+           std::underlying_type_t<directory_options>(rhs);
   }
 
 
@@ -136,10 +136,8 @@ namespace otto::filesystem {
     {
       if (ec != std::error_code()) {
         switch (ec.value()) {
-        case ENOENT:
-          return file_type::not_found;
-        default:
-          return file_type::none;
+        case ENOENT: return file_type::not_found;
+        default: return file_type::none;
         }
       }
       return to_file_type(st.st_mode);
@@ -174,12 +172,12 @@ namespace otto::filesystem {
       }
 #if __APPLE__
       return file_time_type() +
-        std::chrono::duration_cast<file_time_type::duration>(
-          std::chrono::nanoseconds(st.st_mtimespec.tv_nsec));
+             std::chrono::duration_cast<file_time_type::duration>(
+               std::chrono::nanoseconds(st.st_mtimespec.tv_nsec));
 #else
       return file_time_type() +
-        std::chrono::duration_cast<file_time_type::duration>(
-          std::chrono::nanoseconds(st.st_mtim.tv_nsec));
+             std::chrono::duration_cast<file_time_type::duration>(
+               std::chrono::nanoseconds(st.st_mtim.tv_nsec));
 #endif
     }
 
@@ -218,7 +216,7 @@ namespace otto::filesystem {
       }
       ec.clear();
       file_type type = to_file_type(st, ec);
-      perms prms = static_cast<perms>(st.st_mode) & perms::mask;
+      perms prms     = static_cast<perms>(st.st_mode) & perms::mask;
       return file_status{type, prms};
     }
 
@@ -235,11 +233,11 @@ namespace otto::filesystem {
       }
       ec.clear();
       file_type type = to_file_type(st, ec);
-      perms prms = static_cast<perms>(st.st_mode) & perms::mask;
+      perms prms     = static_cast<perms>(st.st_mode) & perms::mask;
       return file_status{type, prms};
     }
 
-  }
+  } // namespace px
 
   using StringView = std::basic_string_view<path::value_type>;
 
@@ -254,19 +252,18 @@ namespace otto::filesystem {
   path::path(path&& p) = default;
 
   path::path(const string_type&& source, format fmt)
-    : _path(std::move(source)), _format (fmt)
+    : _path(std::move(source)), _format(fmt)
   {}
 
   path::path(const string_type& source, format fmt)
-    : _path(source), _format (fmt)
+    : _path(source), _format(fmt)
   {}
 
   path::path(std::basic_string_view<value_type> source, format fmt)
-    : _path(source), _format (fmt)
+    : _path(source), _format(fmt)
   {}
 
-  path::path(const value_type* source, format fmt)
-    : _path(source), _format(fmt)
+  path::path(const value_type* source, format fmt) : _path(source), _format(fmt)
   {}
 
   path::~path() = default;
@@ -286,7 +283,7 @@ namespace otto::filesystem {
   path& path::assign(string_type&& source)
   {
     _format = px::detect_format(source);
-    _path = std::move(source);
+    _path   = std::move(source);
     return *this;
   }
 
@@ -295,8 +292,8 @@ namespace otto::filesystem {
 
   path& path::operator/=(const path& p)
   {
-    if (p.is_absolute() || (p.has_root_name()
-        && p.root_name() != root_name())) {
+    if (p.is_absolute() ||
+        (p.has_root_name() && p.root_name() != root_name())) {
       assign(p);
     } else {
       if (has_filename()) {
@@ -308,7 +305,7 @@ namespace otto::filesystem {
   }
 
   // 30.10.7.4.4, concatenation
-  path& path::operator+=(const path&x)
+  path& path::operator+=(const path& x)
   {
     _path.append(x.native());
     return *this;
@@ -480,7 +477,7 @@ namespace otto::filesystem {
     if (!has_relative_path()) {
       return *this;
     }
-    path res {_path};
+    path res{_path};
     while (!res.has_filename()) {
       res._path.resize(res._path.size() - 1);
     }
@@ -605,12 +602,12 @@ namespace otto::filesystem {
     lhs.swap(rhs);
   }
 
-  size_t hash_value (const path& p) noexcept
+  size_t hash_value(const path& p) noexcept
   {
     return std::hash<path::string_type>()(p.generic_string());
   }
 
-  bool operator< (const path& lhs, const path& rhs) noexcept
+  bool operator<(const path& lhs, const path& rhs) noexcept
   {
     return lhs.compare(rhs) < 0;
   }
@@ -620,7 +617,7 @@ namespace otto::filesystem {
     return !(rhs < lhs);
   }
 
-  bool operator> (const path& lhs, const path& rhs) noexcept
+  bool operator>(const path& lhs, const path& rhs) noexcept
   {
     return rhs < lhs;
   }
@@ -640,7 +637,7 @@ namespace otto::filesystem {
     return !(lhs == rhs);
   }
 
-  path operator/ (const path& lhs, const path& rhs) noexcept
+  path operator/(const path& lhs, const path& rhs) noexcept
   {
     return path(lhs) /= rhs;
   }
@@ -652,10 +649,8 @@ namespace otto::filesystem {
   path::iterator::iterator(iterator&&) noexcept = default;
 
   path::iterator::iterator(const path::value_type* first,
-    const path::value_type* ptr)
-    : _first (first),
-      _ptr (ptr),
-      _len (0)
+                           const path::value_type* ptr)
+    : _first(first), _ptr(ptr), _len(0)
   {
     refresh();
   }
@@ -699,7 +694,8 @@ namespace otto::filesystem {
 
   path::iterator& path::iterator::operator--()
   {
-    while (--_ptr != _first && !px::is_separator(*(_ptr - 1)));
+    while (--_ptr != _first && !px::is_separator(*(_ptr - 1)))
+      ;
     refresh();
     return *this;
   }
@@ -715,7 +711,8 @@ namespace otto::filesystem {
   {
     auto tmp = _ptr;
     // calculate length
-    while (*tmp != 0 && !px::is_separator(*tmp++));
+    while (*tmp != 0 && !px::is_separator(*tmp++))
+      ;
     // skip multiple separators
     while (px::is_separator(*(tmp))) tmp++;
     _len = tmp - _ptr;
@@ -724,11 +721,10 @@ namespace otto::filesystem {
   // otto::filesystem::file_status /////////////////////////////////////////////
 
   file_status::file_status(file_type ft, perms prms) noexcept
-    : _type (ft), _perms (prms)
+    : _type(ft), _perms(prms)
   {}
 
-  file_status::~file_status()
-  {}
+  file_status::~file_status() {}
 
   // 30.10.10.3, modifiers
 
@@ -758,9 +754,8 @@ namespace otto::filesystem {
   // otto::filesystem::filesystem_error ////////////////////////////////////////
 
   filesystem_error::filesystem_error(const std::string& what_arg,
-    std::error_code ec)
-    : system_error(ec),
-      _code (ec)
+                                     std::error_code ec)
+    : system_error(ec), _code(ec)
   {
     _what = std::string("Filesystem error: ") + ec.message();
     if (!what_arg.empty()) {
@@ -770,7 +765,8 @@ namespace otto::filesystem {
   }
 
   filesystem_error::filesystem_error(const std::string& what_arg,
-    const path& p1, std::error_code ec)
+                                     const path& p1,
+                                     std::error_code ec)
     : filesystem_error(what_arg, ec)
   {
     _path1 = p1;
@@ -779,7 +775,9 @@ namespace otto::filesystem {
   }
 
   filesystem_error::filesystem_error(const std::string& what_arg,
-    const path& p1, const path& p2, std::error_code ec)
+                                     const path& p1,
+                                     const path& p2,
+                                     std::error_code ec)
     : filesystem_error(what_arg, ec)
   {
     _path1 = p1;
@@ -810,20 +808,18 @@ namespace otto::filesystem {
   // shorthand
   using DEntr = directory_entry;
 
-  DEntr::directory_entry(const class path& p)
-    : pathobject (p)
+  DEntr::directory_entry(const class path& p) : pathobject(p)
   {
     refresh();
   }
 
   DEntr::directory_entry(const class path& p, std::error_code& ec)
-    : pathobject (p)
+    : pathobject(p)
   {
     refresh(ec);
   }
 
-  DEntr::~directory_entry()
-  {}
+  DEntr::~directory_entry() {}
 
   // 30.10.11.2, modifiers
   void DEntr::assign(const class path& p)
@@ -855,7 +851,8 @@ namespace otto::filesystem {
     std::error_code ec;
     refresh(ec);
     if (ec != std::error_code()) {
-      throw filesystem_error("While refreshing directory entry", pathobject, ec);
+      throw filesystem_error("While refreshing directory entry", pathobject,
+                             ec);
     }
   }
 
@@ -864,10 +861,10 @@ namespace otto::filesystem {
     struct stat st;
     _status = px::status(pathobject, st, ec);
     if (filesystem::exists(_status)) {
-      _file_size = px::file_size(st, ec);
+      _file_size       = px::file_size(st, ec);
       _hard_link_count = px::hard_link_count(st, ec);
     } else {
-      _file_size = 0;
+      _file_size       = 0;
       _hard_link_count = 0;
     }
     _symlink_status = filesystem::symlink_status(pathobject, ec);
@@ -1040,9 +1037,7 @@ namespace otto::filesystem {
   // shorthand
   using DIter = directory_iterator;
 
-  DIter::directory_iterator() noexcept
-    : _ptr (nullptr)
-  {}
+  DIter::directory_iterator() noexcept : _ptr(nullptr) {}
 
   DIter::directory_iterator(const path& p)
   {
@@ -1067,8 +1062,9 @@ namespace otto::filesystem {
     read_dir(p, {}, ec);
   }
 
-  DIter::directory_iterator(const path& p, directory_options options,
-    std::error_code& ec)
+  DIter::directory_iterator(const path& p,
+                            directory_options options,
+                            std::error_code& ec)
   {
     read_dir(p, options, ec);
   }
@@ -1096,8 +1092,7 @@ namespace otto::filesystem {
   DIter& DIter::operator++()
   {
     ++_ptr;
-    if (_ptr == _entries->end().base())
-      _ptr = nullptr;
+    if (_ptr == _entries->end().base()) _ptr = nullptr;
     return *this;
   }
 
@@ -1124,21 +1119,22 @@ namespace otto::filesystem {
     return tmp;
   }
 
-  void DIter::read_dir(const path& p, directory_options options,
-    std::error_code& ec)
+  void DIter::read_dir(const path& p,
+                       directory_options options,
+                       std::error_code& ec)
   {
     _entries = std::make_shared<std::vector<DEntr>>();
-    DIR *dir;
-    dirent *de;
+    DIR* dir;
+    dirent* de;
 
-    bool skip_denied = (options & directory_options::skip_permission_denied)
-      != directory_options::none;
+    bool skip_denied = (options & directory_options::skip_permission_denied) !=
+                       directory_options::none;
 
     errno = 0;
-    dir = opendir(p.c_str());
+    dir   = opendir(p.c_str());
     std::string name;
     if (errno != 0) {
-      while(dir) {
+      while (dir) {
         de = readdir(dir);
         if (errno == EACCES && skip_denied) {
           errno = 0;
@@ -1179,19 +1175,19 @@ namespace otto::filesystem {
   using RDIter = recursive_directory_iterator;
 
   struct RDIter::SharedData {
-    int depth = 0;
-    directory_entry* entry = nullptr;
-    std::shared_ptr<SharedData> parent = nullptr;
+    int depth                            = 0;
+    directory_entry* entry               = nullptr;
+    std::shared_ptr<SharedData> parent   = nullptr;
     std::vector<directory_entry> entries = {};
 
     void populate_entries(const path& p)
     {
-      DIR *dir;
-      struct dirent *de;
+      DIR* dir;
+      struct dirent* de;
 
       dir = opendir(p.c_str());
       std::string name;
-      while(dir) {
+      while (dir) {
         de = readdir(dir);
         if (!de) break;
         name = de->d_name;
@@ -1208,8 +1204,7 @@ namespace otto::filesystem {
     }
   };
 
-  RDIter::recursive_directory_iterator() noexcept
-  {}
+  RDIter::recursive_directory_iterator() noexcept {}
 
   RDIter::recursive_directory_iterator(const path& p)
   {
@@ -1223,8 +1218,7 @@ namespace otto::filesystem {
 
   RDIter::recursive_directory_iterator(RDIter&& rhs) noexcept = default;
 
-  RDIter::~recursive_directory_iterator()
-  {}
+  RDIter::~recursive_directory_iterator() {}
 
   // 30.10.13.1, observers
 
@@ -1276,10 +1270,9 @@ namespace otto::filesystem {
 
   bool RDIter::operator==(const RDIter& other) const
   {
-    return (_data == other._data)
-      || (_data != nullptr
-        && other._data != nullptr
-        && _data->entry == other._data->entry);
+    return (_data == other._data) ||
+           (_data != nullptr && other._data != nullptr &&
+            _data->entry == other._data->entry);
   }
 
   bool RDIter::operator!=(const RDIter& other) const
@@ -1379,8 +1372,7 @@ namespace otto::filesystem {
     return tmp;
   }
 
-  bool copy_file(const path& from, const path& to,
-    std::error_code& ec) noexcept
+  bool copy_file(const path& from, const path& to, std::error_code& ec) noexcept
   {
     return copy_file(from, to, copy_options::none);
   }
@@ -1395,26 +1387,26 @@ namespace otto::filesystem {
     return tmp;
   }
 
-  bool copy_file(const path& from, const path& to, copy_options options,
-    std::error_code& ec) noexcept
+  bool copy_file(const path& from,
+                 const path& to,
+                 copy_options options,
+                 std::error_code& ec) noexcept
   {
     auto t = status(to, ec);
     if (!is_regular_file(from) ||
-      (t.type() != file_type::not_found &&
-        (t.type() != file_type::regular ||
-          equivalent(from, to) ||
-          (options & (copy_options::skip_existing |
-            copy_options::overwrite_existing |
+        (t.type() != file_type::not_found &&
+         (t.type() != file_type::regular || equivalent(from, to) ||
+          (options &
+           (copy_options::skip_existing | copy_options::overwrite_existing |
             copy_options::update_existing)) == copy_options::none))) {
       ec.assign(EEXIST, std::system_category());
     } else {
       if (t.type() == file_type::not_found ||
-        (options & copy_options::overwrite_existing) != copy_options::none ||
-        ((options & copy_options::update_existing) != copy_options::none &&
-          last_write_time(from) > last_write_time(to)))
-      {
+          (options & copy_options::overwrite_existing) != copy_options::none ||
+          ((options & copy_options::update_existing) != copy_options::none &&
+           last_write_time(from) > last_write_time(to))) {
         std::ifstream src(from, std::ios::binary);
-        std::ofstream dst(to,   std::ios::binary | std::ios::trunc);
+        std::ofstream dst(to, std::ios::binary | std::ios::trunc);
 
         dst << src.rdbuf();
         if (errno != 0) {
@@ -1639,8 +1631,8 @@ namespace otto::filesystem {
 
   bool is_other(file_status status) noexcept
   {
-    return  exists(status) && !is_regular_file(status)
-      && !is_directory(status) && !is_symlink(status);
+    return exists(status) && !is_regular_file(status) &&
+           !is_directory(status) && !is_symlink(status);
   }
 
   bool is_other(const path& p)
@@ -1782,7 +1774,8 @@ namespace otto::filesystem {
     void permissions(const path& p, perms prms,
     perm_options opts);
     void permissions(const path& p, perms prms, std::error_code& ec) noexcept;
-    void permissions(const path& p, perms prms, perm_options opts, std::error_code& ec);
+    void permissions(const path& p, perms prms, perm_options opts,
+    std::error_code& ec);
 
     path proximate(const path& p, std::error_code& ec);
     path proximate(const path& p, const path& base = current_path());
@@ -1900,4 +1893,4 @@ namespace otto::filesystem {
     path weakly_canonical(const path& p, std::error_code& ec);
   */
 
-}
+} // namespace otto::filesystem
