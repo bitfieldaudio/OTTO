@@ -253,8 +253,20 @@ namespace otto::filesystem {
 
   path::path(path&& p) = default;
 
-  path::path(string_type&& source, format fmt)
-    : _path (std::move(source)), _format (fmt)
+  path::path(const string_type&& source, format fmt)
+    : _path(std::move(source)), _format (fmt)
+  {}
+
+  path::path(const string_type& source, format fmt)
+    : _path(source), _format (fmt)
+  {}
+
+  path::path(const std::basic_string_view<value_type> &source, format fmt)
+    : _path(source), _format (fmt)
+  {}
+
+  path::path(const value_type * source, format fmt)
+    : _path(source), _format(fmt)
   {}
 
   path::~path() = default;
@@ -432,7 +444,7 @@ namespace otto::filesystem {
 
   int path::compare(const value_type* s) const
   {
-    return compare(path(std::string(s)));
+    return compare(path(s));
   }
 
 

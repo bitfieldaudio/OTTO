@@ -36,9 +36,9 @@ namespace otto::ui {
 
   void init();
 
-  nlohmann::json serialize();
+  nlohmann::json to_json();
 
-  void deserialize(const nlohmann::json& j);
+  void from_json(const nlohmann::json& j);
 
   /// These functions are to be called only by the graphics drivers.
   namespace impl {
