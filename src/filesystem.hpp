@@ -40,8 +40,8 @@ namespace otto::filesystem {
     path(path&& p);
     path(const string_type& source, format fmt = auto_format);
     path(const string_type&& source, format fmt = auto_format);
-    path(const std::basic_string_view<value_type> &source, format fmt = auto_format);
-    path(const value_type * source, format fmt = auto_format);
+    path(std::basic_string_view<value_type> source, format fmt = auto_format);
+    path(const value_type* source, format fmt = auto_format);
 
     template <class Source, typename>
     path(const Source& source, format fmt = auto_format);
