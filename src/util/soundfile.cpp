@@ -101,7 +101,10 @@ namespace otto::util {
    * SoundFile Implementation
    */
 
-  SoundFile::SoundFile() {}
+  SoundFile::SoundFile() {
+    info.type = Info::Type::WAVE;
+    audioOffset = 0;
+  }
 
   void SoundFile::read_file() {
     ByteFile::seek(0);
