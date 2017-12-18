@@ -32,7 +32,7 @@ namespace otto::util {
     if (!stream) {
       if ((options & OpenOptions::create) != OpenOptions::none) {
         stream.close();
-        write();
+        write(options);
         stream.open(_path);
       }
     }

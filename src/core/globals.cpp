@@ -50,7 +50,7 @@ namespace otto::global {
 
   void read_data()
   {
-    data_file.read();
+    data_file.read(util::JsonFile::OpenOptions::create);
 
     auto& data = data_file.data();
 
@@ -61,8 +61,7 @@ namespace otto::global {
       from_json(data["Drums"], drums);
       from_json(data["Metronome"], metronome);
     } else {
-      throw util::JsonFile::exception(util::JsonFile::ErrorCode::invalid_data,
-        "Expected object at root of json file {}", data_file.path());
+      LOGE << "Got unexpected json from " << data_file.path().c_str();
     }
   }
 
