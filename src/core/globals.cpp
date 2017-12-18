@@ -62,7 +62,7 @@ namespace otto::global {
       from_json(data["Drums"], drums);
       from_json(data["Metronome"], metronome);
 
-      ui::deserialize(data["UI"]);
+      ui::from_json(data["UI"]);
     } else {
       throw util::JsonFile::exception(util::JsonFile::ErrorCode::invalid_data,
         "Expected object at root of json file {}", data_file.path());
@@ -79,7 +79,7 @@ namespace otto::global {
     data["Synth"]     = synth;
     data["Drums"]     = drums;
     data["Metronome"] = metronome;
-    data["UI"] = ui::serialize();
+    data["UI"] = ui::to_json();
     data_file.write();
   }
 }

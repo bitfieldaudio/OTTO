@@ -2,9 +2,9 @@
 
 #include "core/globals.hpp"
 
-#define INITIAL_ENGINE "TapeDeck"
-
 namespace otto::ui {
+
+  static constexpr const char * INITIAL_ENGINE = "TapeDeck";
 
   // Local vars
   namespace {
@@ -60,7 +60,7 @@ namespace otto::ui {
     cur_screen->on_show();
   }
 
-  nlohmann::json serialize() {
+  nlohmann::json to_json() {
     auto obj = nlohmann::json::object();
 
     obj["SelectedEngine"] = selected_engine_name;
@@ -68,7 +68,7 @@ namespace otto::ui {
     return obj;
   }
 
-  void deserialize(const nlohmann::json &j) {
+  void from_json(const nlohmann::json &j) {
     if (j.is_object()) {
       selected_engine_name = j["SelectedEngine"];
     }
