@@ -38,6 +38,7 @@ namespace otto::filesystem {
     path();
     path(const path& p);
     path(path&& p);
+    path(const string_type& source, format fmt = auto_format);
     path(const string_type&& source, format fmt = auto_format);
     path(const char * source, format fmt = auto_format);
 

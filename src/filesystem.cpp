@@ -254,7 +254,11 @@ namespace otto::filesystem {
   path::path(path&& p) = default;
 
   path::path(const string_type&& source, format fmt)
-    : _path (std::move(source)), _format (fmt)
+    : _path(std::move(source)), _format (fmt)
+  {}
+
+  path::path(const string_type& source, format fmt)
+    : _path(source), _format (fmt)
   {}
 
   path::path(const char * source, format fmt)
