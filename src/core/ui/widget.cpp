@@ -3,13 +3,4 @@
 
 namespace otto::ui {
 
-  void DefaultScreen::draw(vg::Canvas& ctx) {
-    using namespace vg;
-
-  }
-
-  bool DefaultScreen::keypress(Key key) {
-    return false;
-  }
-
 }

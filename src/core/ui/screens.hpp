@@ -20,7 +20,7 @@ namespace otto::ui {
     using ItemMap = std::vector<Item>;
     ItemMap items;
     vg::Colour itemColour;
-    std::function<void()> onSelect = [](){};
+    std::function<void()> onSelect = []() {};
 
     SelectorScreen(const ItemMap&, vg::Colour);
 

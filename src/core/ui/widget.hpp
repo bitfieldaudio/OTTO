@@ -50,9 +50,12 @@ namespace otto::ui {
     lift,
     drop,
     cut,
+
+    /// Number of keys
+    n_keys,
   };
 
-  using PressedKeys = bool[256];
+  using PressedKeys = bool[util::underlying(Key::n_keys)];
 
   class Widget : public vg::SizedDrawable {
   public:
@@ -120,20 +123,10 @@ namespace otto::ui {
      * Run by MainUI when switching to this screen
      */
     virtual void on_show() {}
-    /*
+    /**
      * Run by MainUI when switching to another screen
      */
     virtual void on_hide() {}
-  };
-
-
-  /**
-   * The default screen, shown on boot
-   */
-  class DefaultScreen : public Screen {
-  public:
-    void draw(vg::Canvas& ctx) override;
-    bool keypress(Key key) override;
   };
 
 }

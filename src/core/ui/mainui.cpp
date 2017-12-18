@@ -4,7 +4,7 @@
 
 namespace otto::ui {
 
-  static constexpr const char * INITIAL_ENGINE = "TapeDeck";
+  static constexpr const char * initial_engine = "TapeDeck";
 
   // Local vars
   namespace {
@@ -40,8 +40,8 @@ namespace otto::ui {
 
     auto getter = engines[engine_name];
     if (!getter) {
-      getter = engines[INITIAL_ENGINE];
-      selected_engine_name = INITIAL_ENGINE;
+      getter = engines[initial_engine];
+      selected_engine_name = initial_engine;
     }
 
     auto engine = getter();
