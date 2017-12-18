@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/ui/widget.hpp"
+#include <json.hpp>
 
 namespace otto::ui {
 
@@ -33,6 +34,12 @@ namespace otto::ui {
   /// for the new screen
   void display(Screen& screen);
 
+  void init();
+
+  nlohmann::json serialize();
+
+  void deserialize(const nlohmann::json& j);
+
   /// These functions are to be called only by the graphics drivers.
   namespace impl {
 
@@ -46,7 +53,6 @@ namespace otto::ui {
     /// Dispatches to the event handler for the current screen, and handles
     /// global keys.
     bool keyrelease(Key key);
-
   } // namespace impl
 
 } // namespace otto::ui

@@ -49,6 +49,7 @@ int main(int argc, char *argv[]) {
 
     global::audio.start_processing();
 
+    ui::init();
     ui::main_ui_loop();
 
   } catch (const char* e) {

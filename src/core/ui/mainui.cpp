@@ -2,6 +2,8 @@
 
 #include "core/globals.hpp"
 
+#define INITIAL_ENGINE "TapeDeck"
+
 namespace otto::ui {
 
   // Local vars
@@ -14,15 +16,41 @@ namespace otto::ui {
 
     } empty_screen;
 
+    std::map<std::string, std::function<engines::AnyEngine *()>> engines = {
+      { "TapeDeck", []() { return (engines::AnyEngine*)&global::tapedeck; } },
+      { "Mixer", []() { return (engines::AnyEngine*)&global::mixer; } },
+      { "Synth", []() { return (engines::AnyEngine*)&*global::synth; } },
+      { "Drums", []() { return (engines::AnyEngine*)&*global::drums; } },
+      { "Metronome", []() { return (engines::AnyEngine*)&global::metronome; } }
+    };
+
+    std::string selected_engine_name = "";
     Screen* cur_screen = &empty_screen;
 
     PressedKeys keys;
-
   }
 
   bool is_pressed(Key k) noexcept
   {
     return keys[static_cast<unsigned>(k)];
+  }
+
+  void selectEngine(std::string engine_name) {
+    selected_engine_name = engine_name;
+
+    auto getter = engines[engine_name];
+    if (!getter) {
+      getter = engines[INITIAL_ENGINE];
+      selected_engine_name = INITIAL_ENGINE;
+    }
+
+    auto engine = getter();
+
+    display(engine->screen());
+  }
+
+  void init() {
+    selectEngine(selected_engine_name);
   }
 
   void display(Screen& screen)
@@ -32,18 +60,32 @@ namespace otto::ui {
     cur_screen->on_show();
   }
 
+  nlohmann::json serialize() {
+    auto obj = nlohmann::json::object();
+
+    obj["SelectedEngine"] = selected_engine_name;
+
+    return obj;
+  }
+
+  void deserialize(const nlohmann::json &j) {
+    if (j.is_object()) {
+      selected_engine_name = j["SelectedEngine"];
+    }
+  }
+
   namespace impl {
 
     static bool global_keypress(Key key)
     {
       switch (key) {
       case Key::quit: global::exit(global::ErrorCode::user_exit); break;
-      case Key::tape: display(global::tapedeck.screen()); break;
-      case Key::mixer: display(global::mixer.screen()); break;
-      case Key::synth: display(global::synth->screen()); break;
-      case Key::drums: display(global::drums->screen()); break;
+      case Key::tape: selectEngine("TapeDeck"); break;
+      case Key::mixer: selectEngine("Mixer"); break;
+      case Key::synth: selectEngine("Synth"); break;
+      case Key::drums: selectEngine("Drums"); break;
       case Key::metronome:
-        display(global::metronome.screen());
+        selectEngine("Metronome");
         break;
       case ui::Key::play:
         if (global::tapedeck.state.playing()) {
@@ -89,7 +131,6 @@ namespace otto::ui {
       keys[static_cast<unsigned>(key)] = false;
       return cur_screen->keyrelease(key);
     }
-
   } // namespace impl
 
 } // namespace otto::ui
