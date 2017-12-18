@@ -261,10 +261,10 @@ namespace otto::filesystem {
     : _path(source), _format (fmt)
   {}
 
-  path::path(std::basic_string_view<value_type> source, format fmt)
+  path::path(const std::basic_string_view<value_type> &source, format fmt)
     : _path(source), _format (fmt)
   {}
-  
+
   path::path(const value_type * source, format fmt)
     : _path(source), _format(fmt)
   {}
