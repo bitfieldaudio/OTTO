@@ -224,9 +224,6 @@ public:                                                                        \
 
     static constexpr const EngineType type = ET;
 
-    using Engine = Engine<ET>;
-
-
     /// Create an engine, and add it to the registry
     ///
     /// \effects Construct `REngine` with `args` forwarded, and push this new
@@ -236,16 +233,16 @@ public:                                                                        \
     REngine& register_engine(Args&&... args);
 
     /// Access the currently selected engine
-    Engine& current() noexcept;
-    const Engine& current() const noexcept;
+    Engine<ET>& current() noexcept;
+    const Engine<ET>& current() const noexcept;
 
     /// Access the currently selected engine
-    Engine& operator*() noexcept;
-    const Engine& operator*() const noexcept;
+    Engine<ET>& operator*() noexcept;
+    const Engine<ET>& operator*() const noexcept;
 
     /// Access the currently selected engine
-    Engine const* operator->() const noexcept;
-    Engine* operator->() noexcept;
+    Engine<ET> const* operator->() const noexcept;
+    Engine<ET>* operator->() noexcept;
 
     /// Select engine
     ///
@@ -255,23 +252,23 @@ public:                                                                        \
     /// to `_current`, and invoke `ptr->on_enable()`
     /// \postconditions `current() == *ptr`
     /// \returns `current()`
-    Engine& select(Engine* ptr);
+    Engine<ET>& select(Engine<ET>* ptr);
 
     /// Select engine
     ///
     /// \effects `select(&ref)`
-    Engine& select(Engine& ref);
+    Engine<ET>& select(Engine<ET>& ref);
 
     /// Select engine by index
     ///
     /// \effects `select(_engines.begin() + idx)`
-    Engine& select(std::size_t idx);
+    Engine<ET>& select(std::size_t idx);
 
     /// Select engine by name
     ///
     /// \effects Find engine with name `name`, and `select(engine)`
     /// \throws `util::exception` when no matching engine was found
-    Engine& select(const std::string& name);
+    Engine<ET>& select(const std::string& name);
 
     /// Construct patches to get all the engines into the current state.
     ///
@@ -290,11 +287,11 @@ public:                                                                        \
     ///
     /// \returns
     /// A reference to the engine that matched the patch
-    Engine& apply_patch(const EnginePatch& seq);
+    Engine<ET>& apply_patch(const EnginePatch& seq);
 
   private:
-    std::vector<std::unique_ptr<Engine>> _engines;
-    Engine* _current;
+    std::vector<std::unique_ptr<Engine<ET>>> _engines;
+    Engine<ET>* _current;
   };
 
   template<EngineType ET>
@@ -467,7 +464,7 @@ namespace otto::engines {
   }
 
   template<EngineType ET>
-  Engine<ET>& EngineRegistry<ET>::select(Engine* ptr)
+  Engine<ET>& EngineRegistry<ET>::select(Engine<ET>* ptr)
   {
     if (_current != nullptr) _current->on_disable();
     _current = ptr;
@@ -476,7 +473,7 @@ namespace otto::engines {
   }
 
   template<EngineType ET>
-  Engine<ET>& EngineRegistry<ET>::select(Engine& ref)
+  Engine<ET>& EngineRegistry<ET>::select(Engine<ET>& ref)
   {
     return select(&ref);
   }
