@@ -201,7 +201,7 @@ namespace otto::engines {
 
   audio::ProcessData<4> Tapedeck::process_playback(audio::ProcessData<0> data)
   {
-    TIME_SCOPE("Tapedeck::process_playback");
+    util::timer::start("Tapedeck::process_playback");
 
     // Animate the tape speed
     {
@@ -276,7 +276,7 @@ namespace otto::engines {
 
   audio::ProcessData<0> Tapedeck::process_record(audio::ProcessData<1> data)
   {
-    TIME_SCOPE("Tapedeck::process_record");
+    util::timer::start("Tapedeck::process_record");
     float realSpeed = props.baseSpeed * state.playSpeed;
     auto pos        = position();
 

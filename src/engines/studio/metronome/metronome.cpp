@@ -30,7 +30,7 @@ namespace otto::engines {
   Metronome::~Metronome() {}
 
   audio::ProcessData<1> Metronome::process(audio::ProcessData<0> data) {
-    TIME_SCOPE("Metronome::process");
+    util::timer::start("Metronome::process");
 
     float BPsample = props.bpm / 60.0 / (float) global::audio.samplerate;
     float beat = global::tapedeck.position() * BPsample;

@@ -1,4 +1,3 @@
-#include <mutex>
 #include <plog/Log.h>
 #include <plog/Appenders/ConsoleAppender.h>
 
@@ -22,10 +21,8 @@ int main(int argc, char *argv[]) {
     global::audio.exit();
     global::save_data();
     global::event::post_exit.runAll();
-    auto f = std::ofstream(
-      (global::data_dir / "timers.json").string(), std::ios::trunc);
-    f << std::setw(2) << util::timer::serialize() << std::endl;
-    f.close();
+
+    util::timer::save_data();
   };
 
   try {

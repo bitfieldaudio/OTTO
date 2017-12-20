@@ -22,3 +22,7 @@ deploy_key
 /data/tape.wav
 /data/log.txt
 /testdir
+
+imgui.ini
+.vscode
+data/timers.json
