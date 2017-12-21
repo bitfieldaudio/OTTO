@@ -130,7 +130,7 @@ namespace otto::engines {
   void DrumSampler::load() {
 
     auto path = samplePath(props.sampleName);
-    std::size_t rs = 0;
+    int rs = 0;
     if (!(path.empty() || props.sampleName.get().empty())) {
       try {
         util::SoundFile sf;

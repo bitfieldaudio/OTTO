@@ -308,7 +308,7 @@ namespace otto::engines {
     virtual void reset() = 0;
 
     virtual nlohmann::json to_json() const {
-      return {};
+      return nlohmann::json();
     }
 
     virtual void from_json(const nlohmann::json& n) {}
@@ -364,7 +364,7 @@ namespace otto::engines {
     }
 
     nlohmann::json to_json() const override {
-      auto obj = nlohmann::json::object();
+      auto obj = nlohmann::json::object({});
       for (auto&& p : props) {
         if (p->store) {
           obj[p->name] = p->to_json();

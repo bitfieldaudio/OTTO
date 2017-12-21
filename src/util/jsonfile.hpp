@@ -80,6 +80,5 @@ namespace otto::util {
   std::string to_string(JsonFile::ErrorCode);
 
   // Defines bitwise operations for JsonFile::OpenOptions
-  MAKE_ENUM_OPERATORS(JsonFile::OpenOptions);
-
+  MAKE_ENUM_OPERATORS(JsonFile::OpenOptions)
 }

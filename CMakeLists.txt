@@ -11,6 +11,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 option(OTTO_DEBUG_UI "Enable the imgui based debug ui" ON)
 option(OTTO_BUILD_DOCS "Build documentation" OFF)
 option(OTTO_USE_LIBCXX "Link towards libc++ instead of libstdc++. This is the default on OSX" ${APPLE})
+option(RPI "Build for Raspberry Pi (native graphics)" OFF)
 
 if (OTTO_USE_LIBCXX)
   message("Using libc++ instead of libstdc++")
@@ -23,6 +24,12 @@ else()
   add_definitions(-DOTTO_DEBUG_UI=0)
 endif()
 
+if (RPI)
+  add_definitions(-DRPI=1)
+else()
+  add_definitions(-DRPI=0)
+endif()
+
 if(MSVC)
   # Force to always compile with W4
   if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
@@ -31,13 +38,11 @@ if(MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
   endif()
 elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
-  # Update if necessary
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long -pedantic -Wno-c++14-compat")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Wall -Wno-long-long -Wpedantic -Wno-c++14-compat -Wno-psabi")
 elseif(${CMAKE_CXX_COMPILER_ID} EQUAL "Clang")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Weverything -Wno-long-long -pedantic -Wno-c++14-compat")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Wall -Weverything -Wno-long-long -Wpedantic -Wno-c++14-compat -Wno-psabi")
 endif()
 
-include(external/external.cmake)
-
+add_subdirectory(external)
 add_subdirectory(src)
 add_subdirectory(test)

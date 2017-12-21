@@ -270,6 +270,5 @@ namespace otto::ui::widgets {
   template<typename C>
   inline std::size_t Waveform<C>::PointCache::clamp(std::size_t val) const {
     return std::clamp(val, std::size_t{0}, wf.container.size());
-  };
-
+  }
 }

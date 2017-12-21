@@ -122,6 +122,8 @@ namespace otto::util {
           return "Exception thrown"; break;
         case Type::PastEnd:
           return "Past the end of the file"; break;
+	default:
+	  return "Unrecognized error";
         }
       }
 
@@ -218,10 +220,10 @@ namespace otto::util {
     template<typename OutIter,
       typename = std::enable_if<is_iterator_v<OutIter, std::byte,
                                   std::output_iterator_tag>>>
-    result<void, std::streamsize> read_bytes(OutIter, int);
+    result<void, std::streampos> read_bytes(OutIter, int);
 
     template<std::size_t N>
-    result<void, std::streamsize> read_bytes(bytes<N>&);
+    result<void, std::streampos> read_bytes(bytes<N>&);
 
     template<typename InIter,
       typename = std::enable_if<is_iterator_v<InIter, std::byte,
@@ -277,7 +279,7 @@ namespace otto::util {
   }
 
   template<typename OutIter, typename>
-  result<void, std::streamsize> ByteFile::read_bytes(OutIter iter, int n) {
+  result<void, std::streampos> ByteFile::read_bytes(OutIter iter, int n) {
     if (!is_open()) throw Error(Error::Type::FileNotOpen);
     // If OutIter is a pointer, copy everything at once
     if constexpr (std::is_pointer_v<OutIter>) {
@@ -297,7 +299,7 @@ namespace otto::util {
   }
 
   template<std::size_t N>
-  result<void, std::streamsize> ByteFile::read_bytes(bytes<N>& bs) {
+  result<void, std::streampos> ByteFile::read_bytes(bytes<N>& bs) {
     fstream.read((char*)bs, N);
     if (fstream.eof()) {
       fstream.clear();

@@ -703,24 +703,20 @@ namespace otto::ui {
     } info;
 
     glfwSetTime(0);
-    double prevt = glfwGetTime();
 
-    double mx, my, t, dt, spent;
+    double mx, my, t, spent;
     while (!glfwWindowShouldClose(window) && global::running()) {
       int winWidth, winHeight;
       int fbWidth, fbHeight;
-      float pxRatio;
       float scale;
 
       t     = glfwGetTime();
-      dt    = t - prevt;
-      prevt = t;
 
       glfwGetCursorPos(window, &mx, &my);
       glfwGetWindowSize(window, &winWidth, &winHeight);
       glfwGetFramebufferSize(window, &fbWidth, &fbHeight);
+      
       // Calculate pixel ration for hi-dpi devices.
-      pxRatio = (float) fbWidth / (float) winWidth;
       scale   = std::min((float) winWidth / (float) vg::WIDTH,
                        (float) winHeight / (float) vg::HEIGHT);
       canvas.setSize(winWidth, winHeight);

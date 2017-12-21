@@ -56,6 +56,7 @@ namespace otto::util {
     case ErrorCode::missing_header: return "OTTO Preset header missing";
     case ErrorCode::unknown_version: return "Unknown preset format version";
     case ErrorCode::invalid_data: return "Invalid preset data. Take a look at the specification again";
+    default: return "Unknown ErrorCode";
     }
   }
 }

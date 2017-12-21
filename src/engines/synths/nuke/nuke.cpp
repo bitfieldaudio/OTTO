@@ -2,6 +2,7 @@
 
 #include "core/globals.hpp"
 #include "core/ui/drawing.hpp"
+#include "util/exception.hpp"
 
 #include "nuke.faust.h"
 
@@ -95,6 +96,7 @@ namespace otto::engines {
       case ui::Rotary::Green: return knobs[1].rotation;
       case ui::Rotary::White: return knobs[2].rotation;
       case ui::Rotary::Red: return knobs[3].rotation;
+      default: throw util::exception("Unknown rotary value");
       }
     }();
     r.cur = std::clamp(r.cur + 0.01f * e.clicks, 0.f, 1.f);

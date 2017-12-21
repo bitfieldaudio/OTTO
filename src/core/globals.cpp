@@ -29,8 +29,8 @@ namespace otto::global {
     audio.init();
     tapedeck.on_enable();
     mixer.on_enable();
-    synth.select(0UL);
-    drums.select(0UL);
+    synth.select((size_t)0);
+    drums.select((size_t)0);
   }
 
   void exit(ErrorCode ec) noexcept

@@ -39,8 +39,8 @@ namespace otto {
     std::atomic_bool keepRunning {true};
 
     Producer(tape_buffer& owner)
-      : owner {owner},
-        thread {&Producer::main_routine, this}
+      : thread {&Producer::main_routine, this},
+	owner {owner}
     {}
 
     ~Producer()
@@ -187,7 +187,7 @@ namespace otto {
         auto n = std::min(file_slices.array.size(), owner_slices.size());
         file_slices.count = n;
 
-        auto last = std::transform(
+        std::transform(
           std::begin(owner_slices),
           std::begin(owner_slices) + n,
           std::begin(file_slices.array),
