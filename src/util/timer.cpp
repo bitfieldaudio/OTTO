@@ -3,7 +3,9 @@
 #include <mutex>
 #include <thread>
 #include <memory>
+#include <fstream>
 #include <plog/Log.h>
+#include "core/globals.hpp"
 
 namespace otto::util::timer {
 #if OTTO_ENABLE_TIMERS
