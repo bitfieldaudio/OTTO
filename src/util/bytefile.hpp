@@ -114,6 +114,8 @@ namespace otto::util {
         type (t),
         message (enumString(type) + '\n' + m) {}
 
+#pragma GCC diagnostic push 
+#pragma GCC diagnostic ignored "-Wreturn-type"
       static std::string enumString(Type t) {
         switch(t) {
         case Type::FileNotOpen:
@@ -122,10 +124,9 @@ namespace otto::util {
           return "Exception thrown"; break;
         case Type::PastEnd:
           return "Past the end of the file"; break;
-	default:
-	  return "Unrecognized error";
         }
       }
+#pragma GCC diagnostic pop
 
       const char* what() const noexcept override {
         return message.c_str();

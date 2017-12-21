@@ -47,6 +47,8 @@ namespace otto::util {
     }
   }
 
+#pragma GCC diagnostic push 
+#pragma GCC diagnostic ignored "-Wreturn-type"
   std::string to_string(JsonFile::ErrorCode ec)
   {
     using ErrorCode = JsonFile::ErrorCode;
@@ -56,7 +58,7 @@ namespace otto::util {
     case ErrorCode::missing_header: return "OTTO Preset header missing";
     case ErrorCode::unknown_version: return "Unknown preset format version";
     case ErrorCode::invalid_data: return "Invalid preset data. Take a look at the specification again";
-    default: return "Unknown ErrorCode";
     }
   }
+#pragma GCC diagnostic pop
 }
