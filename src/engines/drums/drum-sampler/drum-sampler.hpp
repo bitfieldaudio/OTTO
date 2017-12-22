@@ -11,7 +11,7 @@ namespace otto::engines {
   /**
    * A sampler with 24 individual voices, laid out over the keys.
    */
-  struct DrumSampler : public engines::DrumsEngine {
+  struct DrumSampler : engines::DrumsEngine {
 
     DrumSampler();
     ~DrumSampler();

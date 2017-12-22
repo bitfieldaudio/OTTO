@@ -4,6 +4,7 @@
 
 #include "core/audio/midi.hpp"
 #include "core/ui/mainui.hpp"
+#include "core/engines/engine.hpp"
 #include "engines/studio/tapedeck/tapedeck.hpp"
 #include "engines/studio/mixer/mixer.hpp"
 #include "engines/drums/simple-drums/simple-drums.hpp"
@@ -38,10 +39,9 @@ int main(int argc, char *argv[]) {
 
     using namespace engines;
 
-    global::drums.register_engine<DrumSampler>();
-    global::drums.register_engine<SimpleDrumsEngine>();
-
-    global::synth.register_engine<NukeSynth>();
+    engines::register_engine<DrumSampler>();
+    engines::register_engine<SimpleDrumsEngine>();
+    engines::register_engine<NukeSynth>();
 
     global::event::pre_init.runAll();
     global::init();

@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <functional>
 
 #include <plog/Log.h>
 
@@ -63,16 +64,18 @@ namespace otto::engines {
 
     /// Called when this module is enabled
     ///
+    /// The samplers use this to load the sample file.
+    ///
     /// TODO: Define "enabled"
     /// \effects None
-    /// \example The samplers use this to load the sample file.
     virtual void on_enable() {}
 
     /// Called when this module is disabled
     ///
+    /// The samplers use this to load the sample file.
+    /// 
     /// TODO: Define "disabled"
     /// \effects None
-    /// \example The samplers use this to unload the sample file.
     virtual void on_disable() {}
 
     /* Accessors */
@@ -191,114 +194,46 @@ public:                                                                        \
   #undef OTTO_ENGINE_COMMON_CONTENT
 
 
-  /// Type trait to get engine type.
-  ///
-  /// If `E` is an [Engine](), this struct has a member `value` which is the
-  /// type of that engine.
-  template<typename E>
-  struct engine_type {};
-
-  /// \exclude
-  template<EngineType ET>
-  struct engine_type<Engine<ET>> {
-    constexpr static EngineType value = ET;
-  };
-
-  /// Shorthand for `engine_type<E>::value`
-  template<typename E>
-  constexpr EngineType engine_type_v = engine_type<E>::value;
-
-
-  // EngineRegistry ///////////////////////////////////////////////////////////
-
-  template<EngineType ET>
-  struct EngineRegistry {
-
-    enum struct ErrorCode {
-      none = 0,
-      engine_not_found,
-      type_mismatch
+  namespace internal {
+    template<typename T>
+    struct engine_type_impl {
     };
 
-    using exception = util::as_exception<ErrorCode>;
+    template<EngineType ET>
+    struct engine_type_impl<Engine<ET>> {
+      static constexpr EngineType value = ET;
+    };
 
-    static constexpr const EngineType type = ET;
+    template<EngineType ET>
+    Engine<ET> engine_type_impl_func(Engine<ET> const &);
+  }
 
-    /// Create an engine, and add it to the registry
-    ///
-    /// \effects Construct `REngine` with `args` forwarded, and push this new
-    /// object to the back of `_engines`.
-    /// \returns a reference to the new object.
-    template<typename REngine, typename... Args>
-    REngine& register_engine(Args&&... args);
+  /// Type trait to get engine type.
+  ///
+  /// SFINAE friendly, and will match any type that inherits from [Engine]()
+  template<typename E>
+  constexpr EngineType engine_type_v = internal::engine_type_impl<decltype(
+    internal::engine_type_impl_func(std::declval<E>()))>::value;
 
-    /// Access the currently selected engine
-    Engine<ET>& current() noexcept;
-    const Engine<ET>& current() const noexcept;
 
-    /// Access the currently selected engine
-    Engine<ET>& operator*() noexcept;
-    const Engine<ET>& operator*() const noexcept;
+  // Engine Registry ///////////////////////////////////////////////////////////
 
-    /// Access the currently selected engine
-    Engine<ET> const* operator->() const noexcept;
-    Engine<ET>* operator->() noexcept;
+  /// Register an engine.
+  ///
+  /// \effects Store a function which constructs an `REngine` in a
+  /// [std::unique_ptr]() with `args` forwarded.
+  template<typename REngine, typename... Args>
+  void register_engine(Args&&... args);
 
-    /// Select engine
-    ///
-    /// \requires `ptr >= _engines.begin() && ptr < _engines.end()`
-    /// \effects
-    /// If `_current` is not null, `_current->on_disable()`. Then, assign `ptr`
-    /// to `_current`, and invoke `ptr->on_enable()`
-    /// \postconditions `current() == *ptr`
-    /// \returns `current()`
-    Engine<ET>& select(Engine<ET>* ptr);
 
-    /// Select engine
-    ///
-    /// \effects `select(&ref)`
-    Engine<ET>& select(Engine<ET>& ref);
-
-    /// Select engine by index
-    ///
-    /// \effects `select(_engines.begin() + idx)`
-    Engine<ET>& select(std::size_t idx);
-
-    /// Select engine by name
-    ///
-    /// \effects Find engine with name `name`, and `select(engine)`
-    /// \throws `util::exception` when no matching engine was found
-    Engine<ET>& select(const std::string& name);
-
-    /// Construct patches to get all the engines into the current state.
-    ///
-    /// \returns A vector of the results of `e.make_patch()` for each engine `e`
-    std::vector<EnginePatch> make_patches() const;
-
-    /// Apply an [EnginePatch]() to a matching engine.
-    ///
-    /// \effects
-    /// If `p.type == type`, find an engine ´e´ for which `e.name() == p.name`,
-    /// and apply the patch (`e.from_json(p.data)`). 
-    ///
-    /// \throws
-    /// If no matching engine was found, [exception]() is thrown, with the
-    /// appropriate error code.
-    ///
-    /// \returns
-    /// A reference to the engine that matched the patch
-    Engine<ET>& apply_patch(const EnginePatch& seq);
-
-  private:
-    std::vector<std::unique_ptr<Engine<ET>>> _engines;
-    Engine<ET>* _current;
-  };
-
+  /// Construct all registered engines of type `ET`
+  ///
+  /// This is mostly useful for [EngineDispatcher]()
+  ///
+  /// \effects Call all the stored constructors for type `ET`, and move the
+  /// resulting `unique_ptr`s into a vector, which is returned.
   template<EngineType ET>
-  void to_json(nlohmann::json& j, const otto::engines::EngineRegistry<ET>& er);
-
-  template<EngineType ET>
-  void from_json(const nlohmann::json& j, otto::engines::EngineRegistry<ET>& er);
+  std::vector<std::unique_ptr<Engine<ET>>> create_engines();
 
   // Presets //////////////////////////////////////////////////////////////////
 
@@ -400,137 +335,58 @@ public:                                                                        \
 // ////////////////////////////////////////////////////////////////////////////
 
 namespace otto::engines {
-  // EngineRegistry Implementations ///////////////////////////////////////////
+  // EngineDispatcher Implementations ///////////////////////////////////////////
 
-  template<EngineType ET>
-  template<typename Eg, typename... Args>
-  Eg& EngineRegistry<ET>::register_engine(Args&&... args)
-  {
-    auto uptr = std::make_unique<Eg>(std::forward<Args>(args)...);
-    Eg& eg    = *uptr;
-    _engines.push_back(std::move(uptr));
-    return eg;
-  }
+  /// \exclude
+  namespace internal {
+    template<EngineType ET>
+    inline std::vector<std::function<std::unique_ptr<Engine<ET>>()>> engines {};
 
-  template<EngineType ET>
-  Engine<ET>& EngineRegistry<ET>::current() noexcept
-  {
-    return *_current;
-  }
+    /// Wrapper for capturing parameter packs by forwarding
+    template<typename T>
+    struct wrapper {
 
-  template<EngineType ET>
-  const Engine<ET>& EngineRegistry<ET>::current() const noexcept
-  {
-    return *_current;
-  }
+      T value;
 
-  template<EngineType ET>
-  Engine<ET>& EngineRegistry<ET>::operator*() noexcept
-  {
-    return *_current;
-  }
+      template<typename X, typename = std::enable_if_t<std::is_convertible_v<T, X>>>
+      wrapper(X&& x) : value(std::forward<X>(x))
+      {}
 
-  template<EngineType ET>
-  const Engine<ET>& EngineRegistry<ET>::operator*() const noexcept
-  {
-    return *_current;
-  }
+      T get() const
+      {
+        return std::move(value);
+      }
+    };
 
-  template<EngineType ET>
-  Engine<ET>* EngineRegistry<ET>::operator->() noexcept
-  {
-    return _current;
-  }
-
-  template<EngineType ET>
-  const Engine<ET>* EngineRegistry<ET>::operator->() const noexcept
-  {
-    return _current;
-  }
-
-  template<EngineType ET>
-  Engine<ET>& EngineRegistry<ET>::select(const std::string& name)
-  {
-    auto iter = util::find_if(_engines,
-      [&name] (auto&& eg) {
-        return eg.name() == name;
-      });
-    if (iter != _engines.end()) {
-      select(iter.base());
-    } else {
-      throw util::exception("Engine '{}' not found", name);
+    template<class T>
+    auto make_wrapper(T&& x)
+    {
+      return wrapper<T>(std::forward<T>(x));
     }
-    return _current;
+  } // namespace internal
+
+  template<typename Eg, typename... Args>
+  void register_engine(Args&&... args)
+  {
+    // trickery to forward capture args
+    internal::engines<engine_type_v<Eg>>.push_back(
+    [] (auto... args) {
+        return [=]()
+        {
+          // This is the actual lambda thats registered
+          return std::make_unique<Eg>(args.get()...);
+        };
+    } (make_wrapper(std::forward<Args>(args))...));
   }
 
   template<EngineType ET>
-  Engine<ET>& EngineRegistry<ET>::select(Engine<ET>* ptr)
+  std::vector<std::unique_ptr<Engine<ET>>> create_engines()
   {
-    if (_current != nullptr) _current->on_disable();
-    _current = ptr;
-    _current->on_enable();
-    return *_current;
-  }
-
-  template<EngineType ET>
-  Engine<ET>& EngineRegistry<ET>::select(Engine<ET>& ref)
-  {
-    return select(&ref);
-  }
-  
-  template<EngineType ET>
-  Engine<ET>& EngineRegistry<ET>::select(std::size_t idx)
-  {
-    return select((_engines.begin().base() + idx)->get());
-  }
-
-  template<EngineType ET>
-  std::vector<EnginePatch> EngineRegistry<ET>::make_patches() const
-  {
-    std::vector<EnginePatch> res;
-    res.reserve(_engines.size());
-    util::transform(_engines, std::back_inserter(res),
-      [] (auto&& eptr) {
-        return eptr->make_patch();
-      });
+    std::vector<std::unique_ptr<Engine<ET>>> res;
+    res.reserve(internal::engines<ET>.size());
+    for (auto&& func : internal::engines<ET>) {
+      res.emplace_back(func());
+    }
     return res;
   }
-
-  template<EngineType ET>
-  Engine<ET>& EngineRegistry<ET>::apply_patch(const EnginePatch& patch)
-  {
-    if (patch.type != type) {
-      throw exception(ErrorCode::type_mismatch);
-    }
-    auto iter = util::find_if(_engines,
-      [&patch] (auto&& eptr) {
-        return eptr->name() == patch.name;
-      });
-    if (iter == _engines.end()) {
-      throw exception(ErrorCode::engine_not_found);
-    }
-    (*iter)->from_json(patch.data);
-    return **iter;
-  }
-
-  template<EngineType ET>
-  void to_json(nlohmann::json& j, const otto::engines::EngineRegistry<ET>& er)
-  {
-    j = nlohmann::json::object();
-    auto v = er.make_patches();
-    for (auto&& patch : v) {
-      j[patch.name] = patch.data;
-    }
-  }
-
-  template<EngineType ET>
-  void from_json(const nlohmann::json& j, otto::engines::EngineRegistry<ET>& er)
-  {
-    if (j.is_object()) {
-      for (auto iter = j.begin(); iter != j.end(); iter++) {
-        er.apply_patch({ET, iter.key(), iter.value()});
-      }
-    }
-  }
-
-} // namespace otto::engines
+}
