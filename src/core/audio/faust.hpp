@@ -202,7 +202,7 @@ namespace otto::audio {
     {
       // Convert interleaved to deinterleaved and back
       auto size   = data.nframes;
-      auto raw_pb = reinterpret_cast<float*>(proc_buf.data());
+      auto raw_pb = reinterpret_cast<float*>(proc_buf.data() + data.offset);
       std::array<float*, Cin> in_bufs =
         util::generate_sequence<Cin>([&](int n) { return raw_pb + n * size; });
       for (int i = 0; i < Cin; i++) {
@@ -217,7 +217,7 @@ namespace otto::audio {
 
       for (int i = 0; i < Cout; i++) {
         for (int j = 0; j < size; j++) {
-          proc_buf[j][i] = out_bufs[i][j];
+          proc_buf[j + data.offset][i] = out_bufs[i][j];
         }
       }
 

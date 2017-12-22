@@ -56,7 +56,7 @@ namespace otto::audio {
     auto mtrnm_out = global::metronome.process(midi_in);
 
     for (auto&& [ mix, mtrn ] : util::zip(mixer_out, mtrnm_out)) {
-      util::audio::add_all(mtrn, mix);
+      util::audio::add_all(mix, mtrn);
     }
 
 
