@@ -34,6 +34,9 @@ int main(int argc, char *argv[]) {
     plog::init(plog::debug, (otto::global::data_dir / "log.txt").c_str())
       .addAppender(&consoleAppender);
     LOGI << "LOGGING NOW";
+#if (RPI)
+  LOGI << "On RPI";
+#endif
 
     midi::generateFreqTable(440);
 

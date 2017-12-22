@@ -73,7 +73,7 @@ namespace otto::engines {
   void SimpleDrumsEngine::from_json(const nlohmann::json& j)
   {
     if (j.is_array()) {
-      for (int i = 0; i < j.size(); ++i) {
+      for (size_t i = 0; i < j.size(); ++i) {
         voices[i].props.from_json(j[i]);
       }
     } else {

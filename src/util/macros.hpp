@@ -24,4 +24,5 @@
   inline constexpr Enum operator |= (Enum lhs, Enum rhs)                \
   {                                                                     \
     return lhs = (lhs | rhs);                                           \
-  }                                                                     \
+  }
+

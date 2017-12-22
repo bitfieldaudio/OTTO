@@ -216,14 +216,14 @@ namespace otto::audio {
       global::event::buffersize_change.runAll(buffsize);
     }
 
-    void process(unsigned nframes)
+    void process(int nframes)
     {
       if (!(owner.do_process && global::running())) return;
 
       static auto timer = util::timer::find_or_make("JackAudio::Process");
       util::timer::tick(timer);
 
-      if (nframes > bufferSize) {
+      if ((size_t)nframes > bufferSize) {
         LOGE << "Jack requested more frames than expected";
         return;
       }

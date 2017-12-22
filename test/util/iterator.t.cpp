@@ -41,7 +41,7 @@ namespace otto::util {
       auto first = float_step(std::begin(iterData), 0.5);
 
       std::vector<int> expected;
-      for (int i = 0; i < std::size_t(someSize/0.5); i++) {
+      for (size_t i = 0; i < std::size_t(someSize/0.5); i++) {
         expected.push_back(iterData.at(i * 0.5));
       }
 
@@ -69,7 +69,7 @@ namespace otto::util {
       auto first = float_step(std::begin(iterData), 1.5);
 
       std::vector<int> expected;
-      for (int i = 0; i < std::size_t(someSize/1.5); i++) {
+      for (size_t i = 0; i < std::size_t(someSize/1.5); i++) {
         expected.push_back(iterData.at(i * 1.5));
       }
 
@@ -224,7 +224,7 @@ namespace otto::util {
       std::vector<int> data {};
 
       bool flag = true;
-      for (auto pair : util::adjacent_pairs(data)) {
+      for (const auto& pair : util::adjacent_pairs(data)) {
         flag = false;
       }
 
@@ -236,7 +236,7 @@ namespace otto::util {
       std::vector<int> data {1};
 
       bool flag = true;
-      for (auto pair : util::adjacent_pairs(data)) {
+      for (const auto& pair : util::adjacent_pairs(data)) {
         flag = false;
       }
 

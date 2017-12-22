@@ -47,6 +47,8 @@ namespace otto::util {
     }
   }
 
+#pragma GCC diagnostic push 
+#pragma GCC diagnostic ignored "-Wreturn-type"
   std::string to_string(JsonFile::ErrorCode ec)
   {
     using ErrorCode = JsonFile::ErrorCode;
@@ -58,4 +60,5 @@ namespace otto::util {
     case ErrorCode::invalid_data: return "Invalid preset data. Take a look at the specification again";
     }
   }
+#pragma GCC diagnostic pop
 }

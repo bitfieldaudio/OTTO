@@ -16,7 +16,7 @@
 #if OTTO_DEBUG_UI
 
 #define IF_DEBUG(...)                           \
-  __VA_ARGS__;                                  \
+  __VA_ARGS__
 
 #define CALL_IF_DEBUG(lambda)                   \
   lambda();

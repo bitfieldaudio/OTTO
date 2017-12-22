@@ -397,21 +397,21 @@ namespace otto::util {
 
     /// Construct an iterator, pointing to `ptr`
     float_step_iterator(const wrapped_type& iter, float step = 1.f)
-      : iter {iter}, step {step}
+      : step {step}, iter {iter}
     {}
 
     /// Copy constructor
     float_step_iterator(const float_step_iterator& r)
-      : iter {r.iter},
-        step {r.step},
-        _error {r._error}
+      : step {r.step},
+        _error {r._error},
+        iter {r.iter}
     {}
 
     /// Move constructor
     float_step_iterator(float_step_iterator&& r)
-      : iter {std::move(r.iter)},
-        step {std::move(r.step)},
-        _error {std::move(r._error)}
+      : step {std::move(r.step)},
+        _error {std::move(r._error)},
+        iter {std::move(r.iter)}
     {}
 
     // Default assignment operator
