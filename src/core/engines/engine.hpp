@@ -41,7 +41,7 @@ namespace otto::engines {
 
   /// An engine type and name, along with its json-serialized data.
   ///
-  /// For applying patches, take a look at [otto::engines::EngineRegistry]()
+  /// For applying patches, take a look at [otto::engines::EngineDispatcher]()
   struct EnginePatch {
     EngineType type;
     std::string name;
@@ -223,7 +223,7 @@ public:                                                                        \
 
   /// Construct all registered engines of type `ET`
   ///
-  /// This is mostly useful for [EngineDispatcher]()
+  /// This is mostly useful for [EngineDispatcher<ET>]()
   ///
   /// \effects Call all the stored constructors for type `ET`, and move the
   /// resulting `unique_ptr`s into a vector, which is returned.
@@ -360,6 +360,7 @@ namespace otto::engines {
     }
   } // namespace internal
 
+  /// \exclude
   template<typename Eg, typename... Args>
   void register_engine(Args&&... args)
   {
@@ -374,6 +375,7 @@ namespace otto::engines {
     internal::engines<engine_type_v<Eg>>.push_back(lambda);
   }
 
+  /// \exclude
   template<EngineType ET>
   std::vector<std::unique_ptr<Engine<ET>>> create_engines()
   {

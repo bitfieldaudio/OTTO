@@ -8,7 +8,7 @@ namespace otto::engines {
   // Implementation is in engine_dispatcher.cpp, with explicit instantiations at
   // the bottom.
 
-  /// Owns engines of type `ET`, and dispatch to them
+  /// Owns engines of type `ET`, and dispatches to a selected one of them
   template<EngineType ET>
   struct EngineDispatcher {
     enum struct ErrorCode { none = 0, engine_not_found, type_mismatch };
@@ -24,10 +24,10 @@ namespace otto::engines {
     /// \effects None
     EngineDispatcher();
 
-    /// Construct the engines
+    /// Construct all registered engines
     ///
     /// Only call this after all engines are registered
-    /// \effects construct [_engines]() using [create_engines]()
+    /// \effects construct [_engines]() using [otto::engines:create_engines<ET>]()
     void init();
 
     /// Access the currently selected engine
