@@ -193,27 +193,22 @@ public:                                                                        \
 
   #undef OTTO_ENGINE_COMMON_CONTENT
 
-
   namespace internal {
-    template<typename T>
-    struct engine_type_impl {
-    };
-
     template<EngineType ET>
-    struct engine_type_impl<Engine<ET>> {
+    struct engine_type_impl {
       static constexpr EngineType value = ET;
     };
 
     template<EngineType ET>
-    Engine<ET> engine_type_impl_func(Engine<ET> const &);
-  }
+    engine_type_impl<ET> engine_type_impl_func(const Engine<ET>&);
+  } // namespace internal
 
   /// Type trait to get engine type.
   ///
   /// SFINAE friendly, and will match any type that inherits from [Engine]()
   template<typename E>
-  constexpr EngineType engine_type_v = internal::engine_type_impl<decltype(
-    internal::engine_type_impl_func(std::declval<E>()))>::value;
+  constexpr EngineType engine_type_v =
+    decltype(internal::engine_type_impl_func(std::declval<E>()))::value;
 
 
   // Engine Registry ///////////////////////////////////////////////////////////
@@ -369,14 +364,14 @@ namespace otto::engines {
   void register_engine(Args&&... args)
   {
     // trickery to forward capture args
-    internal::engines<engine_type_v<Eg>>.push_back(
-    [] (auto... args) {
+    auto lambda = [] (auto... args) {
         return [=]()
         {
           // This is the actual lambda thats registered
           return std::make_unique<Eg>(args.get()...);
         };
-    } (make_wrapper(std::forward<Args>(args))...));
+      } (make_wrapper(std::forward<Args>(args))...);
+    internal::engines<engine_type_v<Eg>>.push_back(lambda);
   }
 
   template<EngineType ET>

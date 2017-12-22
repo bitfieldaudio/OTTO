@@ -26,17 +26,3 @@ target_link_libraries(otto PUBLIC imgui)
 add_executable(otto_exec ${OTTO_SOURCE_DIR}/src/main.cpp ${BACKWARD_ENABLE})
 target_link_libraries(otto_exec PUBLIC otto)
 set_target_properties(otto_exec PROPERTIES OUTPUT_NAME otto)
-
-# Docs
-if (OTTO_BUILD_DOCS)
-  file(WRITE ${OTTO_BINARY_DIR}/.standardese
-"[compilation]
-commands_dir=${OTTO_BINARY_DIR}
-
-[input]
-blacklist_namespace=detail
-extract_private=true
-")
-  standardese_generate(otto CONFIG ${OTTO_BINARY_DIR}/.standardese
-    INPUT ${headers})
-endif()

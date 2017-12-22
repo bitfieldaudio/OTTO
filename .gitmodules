@@ -16,6 +16,3 @@
 [submodule "external/imgui"]
 	path = external/imgui
 	url = https://github.com/ocornut/imgui
-[submodule "external/standardese"]
-	path = external/standardese
-	url = https://github.com/foonathan/standardese

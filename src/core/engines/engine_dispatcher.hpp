@@ -8,6 +8,7 @@ namespace otto::engines {
   // Implementation is in engine_dispatcher.cpp, with explicit instantiations at
   // the bottom.
 
+  /// Owns engines of type `ET`, and dispatch to them
   template<EngineType ET>
   struct EngineDispatcher {
     enum struct ErrorCode { none = 0, engine_not_found, type_mismatch };
@@ -100,6 +101,7 @@ namespace otto::engines {
 
   // Serialization implementations
 
+  /// \exclude
   template<EngineType ET>
   void to_json(nlohmann::json& j, const EngineDispatcher<ET>& er)
   {
@@ -110,6 +112,7 @@ namespace otto::engines {
     }
   }
 
+  /// \exclude
   template<EngineType ET>
   void from_json(const nlohmann::json& j, EngineDispatcher<ET>& er)
   {
