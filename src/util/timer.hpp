@@ -35,7 +35,7 @@ namespace otto::util::timer {
     }  
   };
 
-  struct ScopedTimer {
+  struct [[nodiscard]] ScopedTimer {
     ScopedTimer(timer_id id);
     ~ScopedTimer();
 
@@ -56,3 +56,9 @@ namespace otto::util::timer {
 #endif
 
 } // otto::util::timer
+
+#if OTTO_ENABLE_TIMERS
+#define TIME_SCOPE(id) auto scoped_timer = ::otto::util::timer::start(id)
+#else
+#define TIME_SCOPE(id)
+#endif

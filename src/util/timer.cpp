@@ -49,11 +49,17 @@ namespace otto::util::timer {
   }
 
   static ThreadTimer& get_thread_timer() {
-    std::lock_guard lock(mutex);
-    auto thread_id = get_thread_id();
-    auto [iter, created] = thread_timers.emplace(thread_id, thread_id);
+    static thread_local ThreadTimer* thread_timer = nullptr;
 
-    return iter->second;
+    std::lock_guard lock(mutex);
+
+    if (thread_timer == nullptr) {
+      auto thread_id = get_thread_id();
+      auto [iter, created] = thread_timers.emplace(thread_id, thread_id);
+      thread_timer = &(iter->second);
+    }
+
+    return *thread_timer;
   }
 
   ScopedTimer::ScopedTimer(std::string id)

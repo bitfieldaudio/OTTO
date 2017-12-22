@@ -61,7 +61,7 @@ namespace otto {
       while (keepRunning) {
         std::unique_lock lock {global_lock};
         {
-          util::timer::start("TapeBuffer read cycle");
+          TIME_SCOPE("TapeBuffer read cycle");
           std::size_t index = owner.current_position;
 
           write_from_buffer();

@@ -6,6 +6,7 @@
 #include "core/audio/main_audio.hpp"
 
 #include "core/engines/engine.hpp"
+#include "core/engines/engine_dispatcher.hpp"
 
 #include "engines/studio/input_selector/input_selector.hpp"
 #include "engines/studio/metronome/metronome.hpp"
@@ -38,9 +39,9 @@ namespace otto {
 
     inline audio::MainAudio audio;
 
-    inline engines::EngineRegistry<engines::EngineType::synth> synth;
-    inline engines::EngineRegistry<engines::EngineType::drums> drums;
-    inline engines::EngineRegistry<engines::EngineType::effect> effect;
+    inline engines::EngineDispatcher<engines::EngineType::synth> synth;
+    inline engines::EngineDispatcher<engines::EngineType::drums> drums;
+    inline engines::EngineDispatcher<engines::EngineType::effect> effect;
     inline engines::Tapedeck tapedeck;
     inline engines::Mixer mixer;
     inline engines::Metronome metronome;
