@@ -186,7 +186,7 @@ namespace otto::engines {
     if (state.doLoop() && state.looping) {
       TapeTime leftTillOut =
         state.fwd() ? loopSect.out - position() : position() - loopSect.in;
-      if (leftTillOut != -1 && leftTillOut < ttUntil) {
+      if (leftTillOut < ttUntil) {
         return (leftTillOut +
                  (state.fwd() ? (tt - loopSect.out) : loopSect.in - tt)) /
                state.playSpeed;
@@ -252,7 +252,6 @@ namespace otto::engines {
     }
 
     float realSpeed = props.baseSpeed * state.playSpeed;
-    auto pos        = position();
 
     proc_buf.clear();
 
@@ -260,7 +259,7 @@ namespace otto::engines {
     if (state.doPlayAudio()) {
       if (state.looping) {
         auto jmp = realSpeed > 0 ? loopSect.out : loopSect.in;
-        auto n   = tapeBuffer->read_until(
+        long n   = tapeBuffer->read_until(
           jmp, realSpeed, std::begin(proc_buf), data.nframes);
         if (n < data.nframes) {
           tapeBuffer->jump_to(realSpeed > 0 ? loopSect.in : loopSect.out);

@@ -141,7 +141,6 @@ namespace otto {
     template<typename Iter>
     void read_n(int n, float speed, Iter dst)
     {
-      float error = 0.f;
       auto src = util::float_step(buffer.citer(current_position), speed);
       std::copy_n(src, n, dst);
       advance(n * speed);

@@ -3,8 +3,12 @@
 #include <functional>
 #include <type_traits>
 
+#pragma GCC diagnostic push 
+#pragma GCC diagnostic ignored "-Wpedantic"
+#pragma GCC diagnostic ignored "-Wunused-function"
 #include <nanovg.h>
 #include <NanoCanvas.h>
+#pragma GCC diagnostic pop
 
 #include "util/math.hpp"
 #include "util/iterator.hpp"

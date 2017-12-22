@@ -87,6 +87,8 @@ namespace otto::engines {
     return true;
   }
 
+#pragma GCC diagnostic push 
+#pragma GCC diagnostic ignored "-Wreturn-type"
   void NukeSynthScreen::rotary(ui::RotaryEvent e)
   {
     PointInRange& r = [&]() -> PointInRange& {
@@ -99,7 +101,7 @@ namespace otto::engines {
     }();
     r.cur = std::clamp(r.cur + 0.01f * e.clicks, 0.f, 1.f);
   }
-
+#pragma GCC diagnostic pop
 
   using namespace ui::vg;
 

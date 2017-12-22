@@ -58,7 +58,6 @@ namespace otto::midi {
   // TODO: Replace with variant AnyMidiEvent
   using AnyMidiEvent = mpark::variant<NoteOnEvent, NoteOffEvent, ControlChangeEvent>;
 
-
   namespace detail {
 
     inline float freq_table[128];
@@ -76,8 +75,6 @@ namespace otto::midi {
       "C7", "C#7", "D7", "D#7", "E7", "F7", "F#7", "G7", "G#7", "A7", "A#7", "B7",
       "C8", "C#8", "D8", "D#8", "E8", "F8", "F#8", "G8"
     };
-
-
   }
 
   inline void generateFreqTable(float tuning = 440) {
@@ -89,6 +86,5 @@ namespace otto::midi {
   constexpr const char* note_name(int key) noexcept
   {
     return detail::note_names[key];
-  };
-
+  }
 }
