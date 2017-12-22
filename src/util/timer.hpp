@@ -91,8 +91,7 @@ namespace otto::util::timer {
 
     /// Move construct this handler
     ///
-    /// \postconditions `this->timer == rhs.timer` and also,
-    /// `rhs.timer == nullptr`
+    /// \postconditions \ `this-\>timer == rhs.timer` and also, `rhs.timer == nullptr`
     ScopedTimer(ScopedTimer&& rhs) noexcept;
 
     /// Destruct the handler and stop the timer.
@@ -105,13 +104,13 @@ namespace otto::util::timer {
 
     /// Construct a handle to the provided timer
     ///
-    /// \postconditions `this->timer == &timer`
+    /// \postconditions `this-\>timer == &timer`
     explicit ScopedTimer(Timer& timer) noexcept;
 
     /// Construct a handle to the provided timer
     ///
     /// \note `timer` can be null
-    /// \postconditions `this->timer == timer`
+    /// \postconditions `this-\>timer == timer`
     explicit ScopedTimer(Timer* timer) noexcept;
 
     Timer* timer;

@@ -189,9 +189,8 @@ namespace otto::audio {
       : opts (&props), fDSP (std::move(d))
     {
       if (fDSP->getNumInputs() != Cin || fDSP->getNumOutputs() != Cout) {
-        throw std::runtime_error(
-          "A faustwrapper was instantiated with "
-          "a non-matching faust dsp instance");
+        throw std::runtime_error("A faustwrapper was instantiated with a "
+                                 "non-matching faust dsp instance");
       }
 
       detail::register_faust_wrapper_events(*fDSP, opts);
@@ -199,32 +198,31 @@ namespace otto::audio {
 
     virtual ~FaustWrapper() {}
 
-    audio::ProcessData<Cout> process(audio::ProcessData<Cin> data) {
+    audio::ProcessData<Cout> process(audio::ProcessData<Cin> data)
+    {
       // Convert interleaved to deinterleaved and back
-      auto size = data.nframes;
+      auto size   = data.nframes;
       auto raw_pb = reinterpret_cast<float*>(proc_buf.data());
-      auto in_bufs = util::generate_sequence<Cin>(
-        [&] (int n) {
-          return raw_pb + n * size;
-        });
+      std::array<float*, Cin> in_bufs =
+        util::generate_sequence<Cin>([&](int n) { return raw_pb + n * size; });
       for (int i = 0; i < Cin; i++) {
         for (int j = 0; j < size; j++) {
           in_bufs[i][j] = data.audio[j][i];
         }
       }
-      auto out_bufs = util::generate_sequence<Cout>(
-        [&] (int n) {
-          return faustbuf.data() + n * size;
-        });
+      std::array<float*, Cout> out_bufs = util::generate_sequence<Cout>(
+        [&](int n) { return faustbuf.data() + n * size; });
+
       fDSP->compute(data.nframes, in_bufs.data(), out_bufs.data());
-      for (int i = 0; i < Cin; i++) {
+
+      for (int i = 0; i < Cout; i++) {
         for (int j = 0; j < size; j++) {
           proc_buf[j][i] = out_bufs[i][j];
         }
       }
+
       return data.redirect(proc_buf);
     }
-
   };
 
 } // otto

@@ -15,6 +15,7 @@ CTestTestfile.cmake
 /data.json
 /tape1.tape
 /playground
+data/timers.json
 
 deploy_key
 /external/src/gl3w.c

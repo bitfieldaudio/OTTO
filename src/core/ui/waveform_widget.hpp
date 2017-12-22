@@ -26,7 +26,7 @@ namespace otto::ui::widgets {
 
     /// Draw the entire waveform using `Plotter`
     ///
-    /// \expects `Plotter` should be invocable as `void(ctx, first, last)`
+    /// \requires `Plotter` should be invocable as `void(ctx, first, last)`
     template<typename Plotter>
     void draw(vg::Canvas&, Plotter&&);
 
@@ -37,7 +37,7 @@ namespace otto::ui::widgets {
     /// \param subrange
     ///        The range to draw, with 0 at `[*Waveform<C>::range]().in`
     ///
-    /// \expects `subrange` should be within [*Waveform<C>::range]() -
+    /// \requires `subrange` should be within [*Waveform<C>::range]() -
     /// `range.in`
     void draw_range(vg::Canvas&, Range subrange);
 
@@ -48,10 +48,10 @@ namespace otto::ui::widgets {
     /// \param subrange
     ///        The range to draw, with 0 at [*Waveform<C>::range]()`().in`
     ///
-    /// \expects `subrange` should be within [*Waveform<C>::range]() -
+    /// \requires `subrange` should be within [*Waveform<C>::range]() -
     /// `range.in`
     ///
-    /// \expects `Plotter` should be invocable as `void(ctx, first, last)`
+    /// \requires `Plotter` should be invocable as `void(ctx, first, last)`
     template<typename Plotter>
     void draw_range(vg::Canvas&, Range subrange, Plotter&&);
 

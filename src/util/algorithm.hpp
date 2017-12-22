@@ -91,7 +91,7 @@ namespace otto::util {
   /// \param first Input iterator to the begining of the range
   /// \param n Number of iterations to go through
   /// \param f Must be invocable with arguments `value_type`, `std::size_t`
-  /// \return An iterator one past the last one visited
+  /// \returns An iterator one past the last one visited
   template<class InputIt, class Size, class F>
   constexpr InputIt indexed_for_n(InputIt first, Size n, F&& f) {
     for (Size i = 0; i < n; ++first, ++i) {

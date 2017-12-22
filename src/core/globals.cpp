@@ -25,12 +25,14 @@ namespace otto::global {
 
   void init()
   {
+    synth.init();
+    drums.init();
     read_data();
     audio.init();
     tapedeck.on_enable();
     mixer.on_enable();
-    synth.select((size_t)0);
-    drums.select((size_t)0);
+    synth.select(std::size_t(0));
+    drums.select(std::size_t(0));
   }
 
   void exit(ErrorCode ec) noexcept
