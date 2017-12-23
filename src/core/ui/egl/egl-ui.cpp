@@ -17,7 +17,7 @@
 
 nlohmann::json config = {{"Key repeat", false},
                          {"FPS", 60.f},
-                         {"Debug", false},
+                         {"Debug", true},
                          {"Framebuffer", "/dev/fb0"}};
 
 void EGLConnection::fatal(std::string message)
@@ -35,19 +35,6 @@ void EGLConnection::init()
 
 void EGLConnection::initEGL()
 {
-  eglData.fbfd = open(framebuffer.c_str(), O_RDWR);
-  if (!eglData.fbfd) {
-    fatal("Error opening framebuffer");
-  }
-
-  eglData.fbp =
-    (unsigned short*) mmap(0, eglData.screenDatasize, PROT_READ | PROT_WRITE,
-                           MAP_SHARED, eglData.fbfd, 0);
-
-  if ((int) eglData.fbp == -1) {
-    fatal("Error mapping memory");
-  }
-
   static const EGLint attribute_list[] = {EGL_RED_SIZE,     8,
                                           EGL_GREEN_SIZE,   8,
                                           EGL_BLUE_SIZE,    8,
@@ -96,8 +83,10 @@ void EGLConnection::initEGL()
 
   // What does this do?
   vc_dispmanx_rect_set(&eglData.rect, 0, 0, state.width, state.height);
-  eglData.data =
-    (unsigned short*) malloc(state.width * state.height * eglData.bitdepth);
+  eglData.width = state.width;
+  eglData.height = state.height;
+  eglData.screenDatasize = eglData.width * eglData.height * eglData.bitdepth;
+  eglData.data = (unsigned short*) malloc(eglData.screenDatasize);
 
   // What does this do?
   uint imagePrt;
@@ -108,11 +97,18 @@ void EGLConnection::initEGL()
     fatal("Error getting resource");
   }
 
-  eglData.origWidth  = state.width;
-  eglData.origHeight = state.height;
+  eglData.fbfd = open(framebuffer.c_str(), O_RDWR);
+  if (!eglData.fbfd) {
+    fatal("Error opening framebuffer");
+  }
 
-  state.width  = eglData.width;
-  state.height = eglData.height;
+  eglData.fbp =
+    (unsigned short*) mmap(0, eglData.screenDatasize, PROT_READ | PROT_WRITE,
+                           MAP_SHARED, eglData.fbfd, 0);
+
+  if ((int) eglData.fbp == -1) {
+    fatal("Error mapping memory");
+  }
 
   VCRect srcRect;
   VCRect dstRect;
@@ -209,7 +205,7 @@ void EGLConnection::endFrame()
 
   for (int y = 0; y < eglData.height; y++) {
     memcpy(eglData.fbp + y * eglData.width,
-           eglData.data + y * eglData.origWidth,
+           eglData.data + y * eglData.width,
            eglData.width * eglData.bitdepth);
   }
 }

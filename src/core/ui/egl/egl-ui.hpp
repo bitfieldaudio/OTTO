@@ -24,14 +24,10 @@ public:
   void initEGL();
 
   struct EGLData {
-    int width  = 320;
-    int height = 240;
-    // real screen dimensions
-    int origWidth;
-    int origHeight;
+    int width;
+    int height;
     int bitdepth = 4;
-
-    int screenDatasize = width * height * bitdepth;
+    int screenDatasize;
 
     DMXDisplay display;
     DMXResource resource;
@@ -49,8 +45,8 @@ public:
   } eglData;
 
   struct EGLState {
-    uint width  = 320;
-    uint height = 240;
+    uint width;
+    uint height;
     EGLDisplay display;
     EGLSurface surface;
     EGLContext context;
