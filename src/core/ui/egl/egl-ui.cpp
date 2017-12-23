@@ -13,6 +13,7 @@
 
 #include "./egl-deps.hpp"
 #include "./egl-ui.hpp"
+#include "./rpi-input.hpp"
 
 nlohmann::json config = {{"Key repeat", false},
                          {"FPS", 60.f},
@@ -244,6 +245,7 @@ namespace otto::ui {
     duration<double> lastFrameTime;
 
     while (global::running()) {
+      otto::ui::read_keyboard();
       t0 = clock::now();
 
       float scale = std::min(egl.eglData.width / float(vg::WIDTH),
