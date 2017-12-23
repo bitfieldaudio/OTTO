@@ -17,15 +17,13 @@ namespace otto::audio {
     std::unique_ptr<Impl> impl;
     std::atomic_bool do_process {false};
 
-    struct DbgInfo : debug::Info {
+    struct DbgInfo : otto::debug::Info {
       debug::graph<1 << 10> audio_graph;
       int buffers_lost = 0;
       int lost_pos = 0;
 
       void draw() override;
-    };
-
-    IF_DEBUG(DbgInfo dbg_info);
+    } dbg_info;
 
   public:
 
