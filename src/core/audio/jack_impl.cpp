@@ -131,10 +131,6 @@ namespace otto::audio {
       auto inputs  = findPorts(JackPortIsPhysical | JackPortIsOutput);
       auto outputs = findPorts(JackPortIsPhysical | JackPortIsInput);
 
-      if (inputs.empty()) {
-        throw global::exception(global::ErrorCode::audio_error,
-          "Couldn't find physical input port");
-      }
       if (outputs.empty()) {
         throw global::exception(global::ErrorCode::audio_error,
           "Couldn't find physical output ports");
@@ -142,8 +138,10 @@ namespace otto::audio {
 
       bool s;
 
-      s = connectPorts(jack_port_name(ports.input), inputs[0]);
-      if (!s) {global::exit(global::ErrorCode::audio_error); return;}
+      if (!inputs.empty()) {
+        s = connectPorts(jack_port_name(ports.input), inputs[0]);
+        if (!s) {global::exit(global::ErrorCode::audio_error); return;}
+      }
 
       s = connectPorts(outputs[0 % outputs.size()], jack_port_name(ports.outL));
       if (!s) {global::exit(global::ErrorCode::audio_error); return;}
