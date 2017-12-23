@@ -1,4 +1,4 @@
-#if OTTO_DEBUG_UI
+#if OTTO_UI_GLFW && OTTO_DEBUG_UI
 
 #include "debug/ui.hpp"
 #include <GL/gl3w.h>
@@ -467,4 +467,4 @@ namespace otto::debug::ui {
   }
 }
 
-#endif // OTTO_DEBUG_UI
+#endif // OTTO_UI_GLFW && OTTO_DEBUG_UI

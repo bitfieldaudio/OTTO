@@ -1,3 +1,5 @@
+#if OTTO_UI_GLFW
+
 #include <chrono>
 #include "core/globals.hpp"
 #include "core/ui/mainui.hpp"
@@ -110,7 +112,6 @@ namespace otto::ui {
       return Key::none;
     }
 
-
     void key(GLFWwindow* window, int key, int scancode, int action, int mods)
     {
       using namespace ui;
@@ -167,9 +168,7 @@ namespace otto::ui {
 
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1);
-#if !OTTO_DEBUG_UI
     gl3wInit();
-#endif
 
     glfwSetWindowAspectRatio(window, 4, 3);
     glfwSetWindowSizeLimits(window, 320, 240, GLFW_DONT_CARE, GLFW_DONT_CARE);
@@ -281,3 +280,5 @@ namespace otto::ui {
     global::exit(global::ErrorCode::ui_closed);
   }
 } // namespace otto::ui
+
+#endif // OTTO_UI_GLFW
