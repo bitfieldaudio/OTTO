@@ -13,9 +13,9 @@
 
 #define NANOVG_GLES2_IMPLEMENTATION
 
-#include "./egl-connection.hpp"
-#include "./egl-deps.hpp"
-#include "./rpi-input.hpp"
+#include "./egl_connection.hpp"
+#include "./egl_deps.hpp"
+#include "./rpi_input.hpp"
 
 static nlohmann::json config = {{"FPS", 60.f}, {"Debug", true}};
 

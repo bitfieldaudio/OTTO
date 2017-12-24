@@ -1,6 +1,6 @@
 #if OTTO_UI_EGL
 
-#include "./egl-connection.hpp"
+#include "./egl_connection.hpp"
 
 void EGLConnection::fatal(std::string message)
 {

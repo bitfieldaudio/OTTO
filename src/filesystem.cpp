@@ -1133,7 +1133,7 @@ namespace otto::filesystem {
     bool skip_denied = (options & directory_options::skip_permission_denied) !=
                        directory_options::none;
 
-    auto dir = opendir(p.c_str());
+    auto* dir = opendir(p.c_str());
     if (dir == nullptr) {
       return;
     }

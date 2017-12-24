@@ -187,7 +187,7 @@ namespace otto::ui {
 
     LOGD << "Opening GLFW Window";
 
-    struct DbgInfo : otto::debug::Info {
+    struct DbgInfo : debug::Info {
       float FPS_limit = 60.f;
       util::ringbuffer<std::pair<float, float>, 512> fps_history;
 

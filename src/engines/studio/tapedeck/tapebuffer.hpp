@@ -191,7 +191,7 @@ namespace otto {
     friend struct Producer;
     std::unique_ptr<Producer> producer;
 
-    struct DbgInfo : otto::debug::Info {
+    struct DbgInfo : debug::Info {
       void record_read(float entry) {
 #if OTTO_DEBUG_UI
         read_size_graph.push(entry);

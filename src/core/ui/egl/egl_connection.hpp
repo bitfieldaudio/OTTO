@@ -3,7 +3,7 @@
 #pragma once
 
 #include <string>
-#include "./egl-deps.hpp"
+#include "./egl_deps.hpp"
 
 class EGLConnection {
 public:

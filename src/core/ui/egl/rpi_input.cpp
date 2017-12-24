@@ -6,12 +6,16 @@
 #include <string>
 #include <vector>
 #include "core/ui/mainui.hpp"
+#include "core/globals.hpp"
 #include "filesystem.hpp"
 
 namespace otto::ui {
-  static auto constexpr RELEASE = 0;
-  static auto constexpr PRESS   = 1;
-  static auto constexpr REPEAT  = 2;
+  static auto constexpr key_release = 0;
+  static auto constexpr key_press   = 1;
+  static auto constexpr key_repeat  = 2;
+
+  // This is the number of events to read from keyboard/mouse input at one time.
+  static auto constexpr event_buffer_size = 64;
 
   namespace fs = otto::filesystem;
 
@@ -29,10 +33,17 @@ namespace otto::ui {
       if (ends_with(file, device_type)) {
         auto fullpath = path / file;
         auto fd       = open(fullpath.c_str(), O_RDONLY | O_NONBLOCK);
+        if (fd < 0) {
+          LOGE << "Couldn't open a file descriptor for "
+               << fullpath.string();
+          return -1;
+        }
+
         auto result   = ioctl(fd, EVIOCGRAB, 1);
         if (result != 0) {
           LOGE << "Couldn't get exclusive input access to "
                << fullpath.string();
+          return -1;
         }
 
         return fd;
@@ -42,16 +53,16 @@ namespace otto::ui {
     return -1;
   }
 
-  std::unique_ptr<std::vector<input_event>> read_events(int device)
+  std::vector<input_event> read_events(int device)
   {
-    struct input_event events[64];
+    struct input_event events[event_buffer_size];
     int rd = read(device, events, sizeof(events));
     if (rd <= 0) {
-      return std::make_unique<std::vector<input_event>>();
+      return std::vector<input_event>();
     }
 
     int count = rd / sizeof(struct input_event);
-    return std::make_unique<std::vector<input_event>>(events, events + count);
+    return std::vector<input_event>(events, events + count);
   }
 
   void read_mouse()
@@ -59,17 +70,18 @@ namespace otto::ui {
     static int mouse = open_device("event-mouse");
 
     if (mouse == -1) {
-      return;
+      throw global::exception(global::ErrorCode::input_error,
+        "Could not find a mouse or touchscreen!");
     }
 
     auto events = read_events(mouse);
-    for (const auto& event : *events) {
+    for (const auto& event : events) {
       switch (event.type) {
       case EV_KEY:
         switch (event.value) {
-        case PRESS: LOGI << "Mouse button down: " << event.code; break;
+        case key_press: LOGI << "Mouse button down: " << event.code; break;
 
-        case RELEASE: LOGI << "Mouse button up: " << event.code; break;
+        case key_release: LOGI << "Mouse button up: " << event.code; break;
         }
 
       case EV_REL:
@@ -176,11 +188,12 @@ namespace otto::ui {
     static bool rightCtrl = false;
     static int keyboard   = open_device("event-kbd");
     if (keyboard == -1) {
-      return;
+      throw global::exception(global::ErrorCode::input_error,
+        "Could not find a keyboard!");
     }
 
     auto events = read_events(keyboard);
-    for (const auto& event : *events) {
+    for (const auto& event : events) {
       if (event.type == EV_KEY) {
         auto pressed = event.value != 0;
 
@@ -192,11 +205,11 @@ namespace otto::ui {
 
         Key k = translate_key(event.code, leftCtrl || rightCtrl);
         switch (event.value) {
-        case RELEASE: impl::keyrelease(k); break;
+        case key_release: impl::keyrelease(k); break;
 
-        case PRESS: impl::keypress(k); break;
+        case key_press: impl::keypress(k); break;
 
-        case REPEAT:
+        case key_repeat:
           switch (k) {
           case Key::red_up:
           case Key::red_down:
