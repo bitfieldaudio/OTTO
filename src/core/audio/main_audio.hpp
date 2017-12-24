@@ -23,9 +23,7 @@ namespace otto::audio {
       int lost_pos = 0;
 
       void draw() override;
-    };
-
-    IF_DEBUG(DbgInfo dbg_info);
+    } dbg_info;
 
   public:
 

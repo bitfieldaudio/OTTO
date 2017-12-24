@@ -21,7 +21,9 @@ namespace otto {
       none = 0,
       ui_closed,
       user_exit,
-      audio_error
+      audio_error,
+      graphics_error,
+      input_error
     };
 
     using exception = util::as_exception<ErrorCode>;

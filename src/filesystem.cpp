@@ -1129,28 +1129,30 @@ namespace otto::filesystem {
                        std::error_code& ec)
   {
     _entries = std::make_shared<std::vector<DEntr>>();
-    DIR* dir;
-    dirent* de;
 
     bool skip_denied = (options & directory_options::skip_permission_denied) !=
                        directory_options::none;
 
-    errno = 0;
-    dir   = opendir(p.c_str());
-    std::string name;
-    if (errno != 0) {
-      while (dir) {
-        de = readdir(dir);
-        if (errno == EACCES && skip_denied) {
-          errno = 0;
-          continue;
-        }
-        if (!de) continue;
-        name = de->d_name;
-        if (name == "." || name == "..") continue;
-        _entries->emplace_back(de->d_name);
-      }
+    auto* dir = opendir(p.c_str());
+    if (dir == nullptr) {
+      return;
     }
+
+    std::string name;
+    dirent* de;
+    do {
+      errno = 0;
+      de = readdir(dir);
+      if (errno == EACCES && skip_denied) {
+        errno = 0;
+        continue;
+      }
+      if (!de) continue;
+      name = de->d_name;
+      if (name == "." || name == "..") continue;
+      _entries->emplace_back(de->d_name);
+    } while (de != nullptr);
+
     closedir(dir);
 
     if (errno != 0) {

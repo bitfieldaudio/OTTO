@@ -9,38 +9,16 @@
 #include "util/algorithm.hpp"
 #include "util/locked.hpp"
 
-/*
- * Macros
- */
-
-#if OTTO_DEBUG_UI
-
-#define IF_DEBUG(...)                           \
-  __VA_ARGS__
-
-#define CALL_IF_DEBUG(lambda)                   \
-  lambda();
-
-#else // OTTO_DEBUG_UI
-
-#define IF_DEBUG(...)
-#define CALL_IF_DEBUG(lambda)
-
-#endif // OTTO_DEBUG_UI
-
-
 namespace otto::debug {
-
-  class Info {
-  public:
+  struct Info {
+#if OTTO_DEBUG_UI
     std::size_t index;
 
     Info();
     virtual ~Info();
+#endif
 
     virtual void draw() = 0;
-
-  protected:
   };
 
   template<std::size_t N>
@@ -70,37 +48,44 @@ namespace otto::debug {
   };
 
   namespace ui {
+#if OTTO_DEBUG_UI
+    void init();
+    void draw_frame();
 
     inline std::vector<Info*> info_ptrs;
 
-    IF_DEBUG(
-      inline std::size_t add_info(Info& new_info) {
-        for (std::size_t i = 0; i < info_ptrs.size(); i++) {
-          auto& info = info_ptrs[i];
-          if (info == nullptr) {
-            info = &new_info;
-            return i;
-          }
+    inline std::size_t add_info(Info& new_info) {
+      for (std::size_t i = 0; i < info_ptrs.size(); i++) {
+        auto& info = info_ptrs[i];
+        if (info == nullptr) {
+          info = &new_info;
+          return i;
         }
-        info_ptrs.push_back(&new_info);
-        return info_ptrs.size() - 1;
       }
+      info_ptrs.push_back(&new_info);
+      return info_ptrs.size() - 1;
+    }
 
-      inline void draw() {
-        for (auto& info : info_ptrs) {
-          if (info != nullptr) {
-            info->draw();
-          }
+    inline void draw() {
+      for (auto& info : info_ptrs) {
+        if (info != nullptr) {
+          info->draw();
         }
-      })
-
+      }
+    }
+#else
+    inline void init() {}
+    inline void draw_frame() {}
+#endif
   }
 
-  inline Info::Info() {
-    IF_DEBUG(index = ui::add_info(*this));
-  }
+#if OTTO_DEBUG_UI
+    inline Info::Info() {
+      index = ui::add_info(*this);
+    }
 
-  inline Info::~Info() {
-    IF_DEBUG(ui::info_ptrs[index] = nullptr);
-  }
+    inline Info::~Info() {
+      ui::info_ptrs[index] = nullptr;
+    }
+#endif
 }

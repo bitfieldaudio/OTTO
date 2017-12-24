@@ -24,7 +24,6 @@ namespace otto::audio {
           util::audio::add_all(drm, snth);
         }
         return drums_out;
-        //return global::effect->process(drums_out);
       }
       case Selection::External:
         return global::effect->process(external_in);
@@ -43,8 +42,6 @@ namespace otto::audio {
       global::mixer.process_engine(record_in);
     }
 
-    // mixer_out = Globals::master_fx.process(mixer_out);
-
     if (global::selector.props.input == Selection::MasterFB) {
       util::transform(mixer_out, audiobuf1.begin(),
         [](auto&& a) { return std::array<float, 1>{a[0] + a[1]}; });
@@ -59,8 +56,8 @@ namespace otto::audio {
       util::audio::add_all(mix, mtrn);
     }
 
-
-    IF_DEBUG({
+#if OTTO_DEBUG_UI
+    {
       float max;
       for (auto& frm : mixer_out) {
         float sum = frm[0] + frm[1];
@@ -72,7 +69,8 @@ namespace otto::audio {
         dbg_info.buffers_lost++;
       }
       dbg_info.audio_graph.push(max / 2.f);
-    });
+    }
+#endif
 
     return mixer_out;
   }

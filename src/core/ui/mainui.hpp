@@ -21,8 +21,8 @@ namespace otto::ui {
   /// thread, therefore this function is called from `main()`.
   ///
   /// One important note, is that this function is implemented in the graphics
-  /// drivers, and not the expected implementation file. Currently the only
-  /// graphics driver avaliable is `src/core/ui/glfw_impl.cpp`
+  /// drivers. The drivers can be found in the "egl" (RPI native) and
+  /// "glfw" (Windowing systems) folders.
   void main_ui_loop();
 
   /// Check if a key is currently pressed.

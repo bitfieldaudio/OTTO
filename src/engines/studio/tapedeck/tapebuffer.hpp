@@ -144,7 +144,8 @@ namespace otto {
       auto src = util::float_step(buffer.citer(current_position), speed);
       std::copy_n(src, n, dst);
       advance(n * speed);
-      IF_DEBUG(dbg.read_size_graph.push(n * speed));
+
+      dbg.record_read(n * speed);
     }
 
     template<typename Iter>
@@ -191,12 +192,16 @@ namespace otto {
     std::unique_ptr<Producer> producer;
 
     struct DbgInfo : debug::Info {
-      debug::graph<1 << 10> read_size_graph;
+      void record_read(float entry) {
+#if OTTO_DEBUG_UI
+        read_size_graph.push(entry);
+#endif
+      }
 
       void draw() override;
-    };
 
-    IF_DEBUG(DbgInfo dbg);
-
+    private:
+      debug::graph<1 << 10> read_size_graph;
+    } dbg;
   };
 }
