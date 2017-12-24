@@ -2,10 +2,11 @@
 
 #pragma once
 
+#include <string>
+#include "./egl-deps.hpp"
+
 class EGLConnection {
 public:
-  std::string framebuffer = "/dev/fb1";
-
   using DMXDisplay  = DISPMANX_DISPLAY_HANDLE_T;
   using DMXResource = DISPMANX_RESOURCE_HANDLE_T;
   using DMXWindow   = EGL_DISPMANX_WINDOW_T;
@@ -32,16 +33,10 @@ public:
     DMXDisplay display;
     DMXResource resource;
     DMXWindow nativeWindow;
-    int fbfd             = 0;
-    unsigned short* fbp  = nullptr;
     unsigned short* data = nullptr;
 
     int nConfig;
     VCRect rect;
-
-    EGLData() {}
-    EGLData(EGLData&)  = delete;
-    EGLData(EGLData&&) = delete;
   } eglData;
 
   struct EGLState {
@@ -50,15 +45,7 @@ public:
     EGLDisplay display;
     EGLSurface surface;
     EGLContext context;
-
-    EGLState() {}
-    EGLState(EGLState&)  = delete;
-    EGLState(EGLState&&) = delete;
   } state;
-
-  EGLConnection() {}
-  EGLConnection(EGLConnection&)  = delete;
-  EGLConnection(EGLConnection&&) = delete;
 };
 
 #endif // OTTO_UI_EGL

@@ -7,8 +7,6 @@
 #include <EGL/eglext.h>
 #include <GLES2/gl2.h>
 
-#define NANOVG_GLES2_IMPLEMENTATION
-
 #include <NanoCanvas.h>
 #include <nanovg.h>
 #include <nanovg_gl.h>
