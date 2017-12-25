@@ -30,6 +30,7 @@ namespace otto::global {
     read_data();
     audio.init();
     tapedeck.on_enable();
+    metronome.on_enable();
     mixer.on_enable();
     synth.select(std::size_t(0));
     drums.select(std::size_t(0));

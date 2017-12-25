@@ -47,6 +47,10 @@ namespace otto::engines {
       FaustWrapper::process(data);
     }
 
+    for (auto frm : FaustWrapper::proc_buf) {
+      graph.add(frm[0]);
+    }
+
     return data.redirect(FaustWrapper::proc_buf);
   }
 
