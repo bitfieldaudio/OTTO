@@ -8,12 +8,11 @@
 #include <limits>
 #include <type_traits>
 
-#include <plog/Log.h>
-
 #include "util/jsonfile.hpp"
 #include "util/exception.hpp"
 #include "util/type_traits.hpp"
 #include "util/math.hpp"
+#include "util/logger.hpp"
 
 namespace otto::engines {
 

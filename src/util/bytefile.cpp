@@ -1,6 +1,5 @@
 #include "util/bytefile.hpp"
 
-#include <plog/Log.h>
 #include <fmt/format.h>
 
 namespace otto::util {

@@ -3,7 +3,6 @@
 #include <thread>
 #include <mutex>
 #include <condition_variable>
-#include <plog/Log.h>
 
 #include "util/tapefile.hpp"
 #include "util/timer.hpp"

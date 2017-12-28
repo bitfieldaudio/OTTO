@@ -11,8 +11,6 @@
 #include <faust/gui/meta.h>
 #include <faust/dsp/dsp.h>
 
-#include <plog/Log.h>
-
 #include "util/type_traits.hpp"
 #include "util/algorithm.hpp"
 

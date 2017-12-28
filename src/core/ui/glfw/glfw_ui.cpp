@@ -4,7 +4,6 @@
 #include "core/globals.hpp"
 #include "core/ui/mainui.hpp"
 #include "debug/ui.hpp"
-#include <plog/Log.h>
 
 #define NANOVG_GL3_IMPLEMENTATION
 #define OTTO_NVG_CREATE nvgCreateGL3

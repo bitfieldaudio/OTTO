@@ -2,12 +2,12 @@
 
 #include <fcntl.h>
 #include <linux/input.h>
-#include <plog/Log.h>
 #include <string>
 #include <vector>
-#include "core/ui/mainui.hpp"
 #include "core/globals.hpp"
+#include "core/ui/mainui.hpp"
 #include "filesystem.hpp"
+#include "util/logger.hpp"
 
 namespace otto::ui {
   static auto constexpr key_release = 0;
@@ -34,12 +34,11 @@ namespace otto::ui {
         auto fullpath = path / file;
         auto fd       = open(fullpath.c_str(), O_RDONLY | O_NONBLOCK);
         if (fd < 0) {
-          LOGE << "Couldn't open a file descriptor for "
-               << fullpath.string();
+          LOGE << "Couldn't open a file descriptor for " << fullpath.string();
           return -1;
         }
 
-        auto result   = ioctl(fd, EVIOCGRAB, 1);
+        auto result = ioctl(fd, EVIOCGRAB, 1);
         if (result != 0) {
           LOGE << "Couldn't get exclusive input access to "
                << fullpath.string();
@@ -71,7 +70,7 @@ namespace otto::ui {
 
     if (mouse == -1) {
       throw global::exception(global::ErrorCode::input_error,
-        "Could not find a mouse or touchscreen!");
+                              "Could not find a mouse or touchscreen!");
     }
 
     auto events = read_events(mouse);
@@ -189,7 +188,7 @@ namespace otto::ui {
     static int keyboard   = open_device("event-kbd");
     if (keyboard == -1) {
       throw global::exception(global::ErrorCode::input_error,
-        "Could not find a keyboard!");
+                              "Could not find a keyboard!");
     }
 
     auto events = read_events(keyboard);

@@ -5,7 +5,6 @@
 #include <jack/jack.h>
 #include <jack/midiport.h>
 #include <fmt/format.h>
-#include <plog/Log.h>
 
 #include "core/globals.hpp"
 #include "util/event.hpp"

@@ -1,11 +1,9 @@
 #pragma once
 
 #include <fmt/format.h>
-#include <plog/Log.h>
-
 #include "filesystem.hpp"
-
 #include "core/ui/canvas.hpp"
+#include "util/logger.hpp"
 
 namespace otto::ui::vg {
 
@@ -13,7 +11,6 @@ namespace otto::ui::vg {
   const int HEIGHT = 240;
 
   namespace Colours {
-
     const Colour Black      = Colour(0x000000);
 
     const MainColour White  = {0xFFFFFF, 0x646464};
@@ -24,7 +21,6 @@ namespace otto::ui::vg {
 
     const Colour Gray60     = 0x999999;
     const Colour Gray70     = 0xB2B2B2;
-
   } // Colours
 
   namespace Fonts {
