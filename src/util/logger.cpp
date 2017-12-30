@@ -20,4 +20,8 @@ namespace otto::util::logger {
 
     LOG_F(INFO, "LOGGING NOW");
   }
+
+  void set_thread_name(const std::string& name) {
+    loguru::set_thread_name(name.c_str());
+  }
 } // namespace otto::util::logger

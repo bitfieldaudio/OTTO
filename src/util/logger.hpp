@@ -7,4 +7,5 @@
 
 namespace otto::util::logger {
     void init(int argc, char * argv[], bool enable_console = true, const char * logFilePath = nullptr);
+    void set_thread_name(const std::string& name);
 }
