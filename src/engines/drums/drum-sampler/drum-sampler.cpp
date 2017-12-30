@@ -141,14 +141,14 @@ namespace otto::engines {
 
         sampleSampleRate = sf.info.samplerate;
         sampleSpeed = sampleSampleRate / float(global::audio.samplerate);
-        if (sf.length() == 0) LOGD << "Empty sample file";
+        LOG_IF_F(INFO, sf.length() == 0, "Empty sample file");
       } catch (util::exception& e) {
-        LOGE << "Failure while trying to load sample file '"
-             << path.c_str() << "':\n" << e.what();
+        LOG_F(ERROR, "Failure while trying to load sample file '{}':", path);
+        LOG_F(ERROR, e.what());
       }
     } else {
       sampleData.resize(0);
-      LOGI << "Empty sampleName";
+      LOG_F(INFO, "Empty sampleName");
     }
 
     for (auto &&v : props.voiceData) {

@@ -144,7 +144,7 @@ namespace otto::audio {
             }
           }
         } else {
-          LOGE << "Couldn't find property matching " << util::join_strings(boxes.begin(), boxes.end(), "/").c_str();
+          LOG_F(ERROR, "Couldn't find property matching {}", util::join_strings(boxes.begin(), boxes.end(), "/"));
           break;
         }
       }

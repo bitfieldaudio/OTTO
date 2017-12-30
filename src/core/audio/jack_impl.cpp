@@ -16,15 +16,15 @@
 namespace otto::audio {
 
   static void jackError(const char* s) {
-    LOGE << "JACK: " << s;
+    LOG_F(ERROR, "JACK: {}", s);
   }
 
   static void jackLogInfo(const char* s) {
-    LOGI << "JACK: " << s;
+    LOG_F(INFO, "JACK: {}", s);
   }
 
   void shutdown(void* arg) {
-    LOGI << "JACK shut down, exiting";
+    LOG_F(INFO, "JACK shut down, exiting");
   }
 
   class MainAudio::Impl {
@@ -69,8 +69,8 @@ namespace otto::audio {
           "Failed to start jack server");
       }
 
-      LOGI << "Jack server started";
-      LOGD << "Jack client status: " << jackStatus;
+      LOG_F(INFO, "Jack server started");
+      LOG_F(INFO, "Jack client status: {}", jackStatus);
 
       jack_set_process_callback(client,
         [](jack_nframes_t nframes, void* arg) {
@@ -101,12 +101,12 @@ namespace otto::audio {
 
       setupPorts();
 
-      LOGI << "Initialized JackAudio";
+      LOG_F(INFO, "Initialized JackAudio");
     }
 
     ~Impl()
     {
-      LOGI << "Closing Jack client";
+      LOG_F(INFO, "Closing Jack client");
       jack_client_close(client);
       global::exit(global::ErrorCode::none);
     };
@@ -165,19 +165,19 @@ namespace otto::audio {
       auto midiOut = findPorts(JackPortIsPhysical | JackPortIsInput, PortType::Midi);
 
       if (midiIn.empty()) {
-        LOGE << "Couldn't find physical midi input port";
+        LOG_F(ERROR, "Couldn't find physical midi input port");
         return;
       }
       if (midiOut.empty()) {
-        LOGE << "Couldn't find physical midi output port";
+        LOG_F(ERROR, "Couldn't find physical midi output port");
         return;
       }
 
       s = connectPorts(jack_port_name(ports.midiIn), midiIn[0]);
-      LOGE_IF(!s) << "Couldn't connect midi input";
+      LOG_IF_F(ERROR, !s, "Couldn't connect midi input");
 
       s = connectPorts(midiOut[0], jack_port_name(ports.midiOut));
-      LOGE_IF(!s) << "Couldn't connect midi output";
+      LOG_IF_F(ERROR, !s, "Couldn't connect midi output");
     }
 
     std::vector<std::string> findPorts(int criteria, PortType type = PortType::Audio)
@@ -201,14 +201,14 @@ namespace otto::audio {
 
     void samplerateCallback(unsigned srate)
     {
-      LOGI << fmt::format("Jack changed the sample rate to {}", srate);
+      LOG_F(INFO, "Jack changed the sample rate to {}", srate);
       global::audio.samplerate = srate;
       global::event::samplerate_change.runAll(srate);
     }
 
     void buffersizeCallback(unsigned buffsize)
     {
-      LOGI << fmt::format("Jack changed the buffer size to {}", buffsize);
+      LOG_F(INFO, "Jack changed the buffer size to {}", buffsize);
       bufferSize = buffsize;
       global::event::buffersize_change.runAll(buffsize);
     }
@@ -220,7 +220,7 @@ namespace otto::audio {
       TIME_SCOPE("JackAudio::Process");
 
       if ((size_t)nframes > bufferSize) {
-        LOGE << "Jack requested more frames than expected";
+        LOG_F(ERROR, "Jack requested more frames than expected");
         return;
       }
 
@@ -267,7 +267,7 @@ namespace otto::audio {
           {midi_buf},
             nframes});
 
-      LOGW_IF(out_data.nframes != nframes) << "Frames went missing!";
+      LOG_IF_F(WARNING, out_data.nframes != nframes, "Frames went missing!");
 
       // Separate channels
       for (int i = 0; i < nframes; i++)

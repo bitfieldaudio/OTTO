@@ -37,9 +37,9 @@ namespace otto::ui::vg {
       auto path = Fonts::font_dir / (name + ".ttf");
       font = Font(ctx, name, path);
       if (!Fonts::Light.valid()) {
-        LOGE << "Invalid font: " << Fonts::Light.name << "";
+        LOG_F(ERROR, "Invalid font: {}", Fonts::Light.name);
         if (!fs::exists(path)) {
-          LOGE << "Font file not found: " << path.c_str();
+          LOG_F(ERROR, "Font file not found: {}", path);
         }
       }
     }

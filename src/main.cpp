@@ -17,7 +17,7 @@ void cleanup();
 int main(int argc, char* argv[])
 {
   try {
-    util::logger::init();
+    util::logger::init(argc, argv);
 
     midi::generateFreqTable(440);
 
@@ -37,22 +37,22 @@ int main(int argc, char* argv[])
     ui::main_ui_loop();
 
   } catch (const char* e) {
-    LOGF << e;
-    LOGI << "Exception thrown, exitting!";
+    LOG_F(FATAL, e);
+    LOG_F(INFO, "Exception thrown, exiting!");
     cleanup();
     return 1;
   } catch (std::exception& e) {
-    LOGF << e.what();
-    LOGI << "Exception thrown, exitting!";
+    LOG_F(FATAL, e.what());
+    LOG_F(INFO, "Exception thrown, exiting!");
     cleanup();
     return 1;
   } catch (...) {
-    LOGI << "Unknown exception thrown, exitting!";
+    LOG_F(INFO, "Unknown exception thrown, exiting!");
     cleanup();
     return 1;
   }
 
-  LOGI << "Exitting";
+  LOG_F(INFO, "Exiting");
   cleanup();
   return 0;
 }

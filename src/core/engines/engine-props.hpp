@@ -437,14 +437,14 @@ namespace otto::engines {
       if (faustLink.type == FaustLink::Input) {
         if constexpr (std::is_convertible_v<Value, float>) {
             *faustLink.ptr = (float) value;
-          } else {
-          LOGF << "Attempt to update a faust link with an incompatible type";
+        } else {
+          LOG_F(FATAL, "Attempt to update a faust link with an incompatible type");
         }
       } else if (faustLink.type == FaustLink::Input) {
         if constexpr (std::is_convertible_v<float, Value>) {
             set((Value) *faustLink.ptr);
-          } else {
-          LOGF << "Attempt to update a faust link with an incompatible type";
+        } else {
+          LOG_F(FATAL, "Attempt to update a faust link with an incompatible type");
         }
       }
     }
