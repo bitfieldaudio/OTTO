@@ -54,7 +54,7 @@ namespace otto {
 
     void main_routine()
     {
-      util::logger::set_thread_name("Tape Buffer");
+      services::logger::set_thread_name("Tape Buffer");
       file.open(path);
       read_slices();
 

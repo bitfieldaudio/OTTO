@@ -7,54 +7,69 @@
 #include "engines/studio/mixer/mixer.hpp"
 #include "engines/studio/tapedeck/tapedeck.hpp"
 #include "engines/synths/nuke/nuke.hpp"
-#include "util/logger.hpp"
+#include "services/logger.hpp"
+#include "services/state.hpp"
 #include "util/timer.hpp"
 
 using namespace otto;
 
 void cleanup();
+int handleException(const char* e);
+int handleException(std::exception& e);
+int handleException();
 
 int main(int argc, char* argv[])
 {
   try {
-    util::logger::init(argc, argv);
+    services::logger::init(argc, argv);
 
     midi::generateFreqTable(440);
 
     using namespace engines;
-
-    engines::register_engine<DrumSampler>();
-    engines::register_engine<SimpleDrumsEngine>();
-    engines::register_engine<NukeSynth>();
+    register_engine<DrumSampler>();
+    register_engine<SimpleDrumsEngine>();
+    register_engine<NukeSynth>();
 
     global::event::pre_init.runAll();
     global::init();
+
     global::event::post_init.runAll();
 
     global::audio.start_processing();
 
     ui::init();
     ui::main_ui_loop();
-
-  } catch (const char* e) {
-    LOG_F(FATAL, e);
-    LOG_F(INFO, "Exception thrown, exiting!");
-    cleanup();
-    return 1;
-  } catch (std::exception& e) {
-    LOG_F(FATAL, e.what());
-    LOG_F(INFO, "Exception thrown, exiting!");
-    cleanup();
-    return 1;
-  } catch (...) {
-    LOG_F(INFO, "Unknown exception thrown, exiting!");
-    cleanup();
-    return 1;
   }
+  catch (const char* e) { return handleException(e); }
+  catch (std::exception& e) { return handleException(e); }
+  catch (...) { return handleException(); }
 
   LOG_F(INFO, "Exiting");
   cleanup();
   return 0;
+}
+
+int handleException(const char* e)
+{
+  LOG_F(FATAL, e);
+  LOG_F(INFO, "Exception thrown, exitting!");
+  cleanup();
+  return 1;
+}
+
+int handleException(std::exception& e)
+{
+  LOG_F(FATAL, e.what());
+  LOG_F(INFO, "Exception thrown, exitting!");
+  cleanup();
+  return 1;
+}
+
+int handleException()
+{
+  LOG_F(INFO, "Unknown exception thrown, exitting!");
+  cleanup();
+  return 1;
 }
 
 void cleanup()
@@ -63,7 +78,9 @@ void cleanup()
   global::mixer.on_disable();
   global::tapedeck.on_disable();
   global::audio.exit();
-  global::save_data();
+
+  services::state::save();
+
   global::event::post_exit.runAll();
 
   util::timer::save_data();
