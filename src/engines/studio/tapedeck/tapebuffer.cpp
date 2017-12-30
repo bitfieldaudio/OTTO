@@ -3,7 +3,6 @@
 #include <thread>
 #include <mutex>
 #include <condition_variable>
-#include <plog/Log.h>
 
 #include "util/tapefile.hpp"
 #include "util/timer.hpp"
@@ -55,6 +54,7 @@ namespace otto {
 
     void main_routine()
     {
+      util::logger::set_thread_name("Tape Buffer");
       file.open(path);
       read_slices();
 

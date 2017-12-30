@@ -67,7 +67,7 @@ namespace otto::global {
 
       ui::from_json(data["UI"]);
     } else {
-      LOGE << "Got unexpected json from " << data_file.path().c_str();
+      LOG_F(ERROR, "Got unexpected json from {}", data_file.path());
     }
   }
 

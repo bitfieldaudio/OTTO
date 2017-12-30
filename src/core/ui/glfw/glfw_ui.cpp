@@ -4,7 +4,6 @@
 #include "core/globals.hpp"
 #include "core/ui/mainui.hpp"
 #include "debug/ui.hpp"
-#include <plog/Log.h>
 
 #define NANOVG_GL3_IMPLEMENTATION
 #define OTTO_NVG_CREATE nvgCreateGL3
@@ -139,7 +138,7 @@ namespace otto::ui {
 
     void error_callback(int error, const char* description)
     {
-      LOGF << description;
+      LOG_F(FATAL, "GLFW UI: {}", description);
     }
 
   } // namespace
@@ -149,7 +148,7 @@ namespace otto::ui {
     glfwSetErrorCallback(error_callback);
 
     if (!glfwInit()) {
-      LOGE << ("Failed to init GLFW.");
+      LOG_F(ERROR, "Failed to init GLFW.");
     }
 
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -185,7 +184,7 @@ namespace otto::ui {
     vg::Canvas canvas(vg, vg::WIDTH, vg::HEIGHT);
     vg::initUtils(canvas);
 
-    LOGD << "Opening GLFW Window";
+    LOG_F(INFO, "Opening GLFW Window");
 
     struct DbgInfo : debug::Info {
       float FPS_limit = 60.f;

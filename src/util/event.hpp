@@ -2,7 +2,6 @@
 
 #include <vector>
 #include <functional>
-#include <plog/Log.h>
 
 namespace otto::util {
 

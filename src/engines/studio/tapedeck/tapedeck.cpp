@@ -1,4 +1,3 @@
-#include <plog/Log.h>
 #include <sys/types.h>
 #include <cmath>
 

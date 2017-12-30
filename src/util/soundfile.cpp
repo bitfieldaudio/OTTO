@@ -1,5 +1,5 @@
 #include "util/soundfile.hpp"
-#include <plog/Log.h>
+#include "util/logger.hpp"
 
 namespace otto::util {
 
@@ -121,9 +121,8 @@ namespace otto::util {
 
     switch (info.type) {
     case Info::Type::WAVE:
-      LOGD << "Reading Wave file: ";
-      LOGD << path.c_str();
-      LOGD << "-------------------";
+      LOG_F(INFO, "Reading Wave file: {}", path);
+      LOG_F(INFO, "-------------------");
 
       for (auto&& chunk : header.chunks) {
         if (chunk->id == "fmt ")
@@ -136,14 +135,14 @@ namespace otto::util {
         ByteFile::seek(chunk->beginning());
         chunk->read(*this);
 
-        LOGD << " Chunk:  " << std::string((char*)chunk->id.data, 4);
-        LOGD << " Offset: " << chunk->offset;
-        LOGD << " Size:   " << chunk->size.as_u();
-        LOGD << "-------------------";
+        LOG_F(INFO, " Chunk:  {}", std::string((char*)chunk->id.data, 4));
+        LOG_F(INFO, " Offset: {}", chunk->offset);
+        LOG_F(INFO, " Size:   {}", chunk->size.as_u());
+        LOG_F(INFO, "-------------------");
       } break;
 
-      LOGD << "Done reading file! ";
-      LOGD << "-------------------";
+      LOG_F(INFO, "Done reading file! ");
+      LOG_F(INFO, "-------------------");
     case Info::Type::AIFF:
       throw "Unsupported file type. Currently only wav is supported";
     }
@@ -156,9 +155,8 @@ namespace otto::util {
 
     switch (info.type) {
     case Info::Type::WAVE:
-      LOGD << "Writing Wave file: ";
-      LOGD << path.c_str();
-      LOGD << "-------------------";
+      LOG_F(INFO, "Writing Wave file: {}", path);
+      LOG_F(INFO, "-------------------");
 
       header.id = "RIFF";
       header.format = "WAVE";
@@ -168,9 +166,9 @@ namespace otto::util {
       header.chunks.back()->size = ByteFile::size() - audioOffset;
       header.write(*this);
 
-      LOGD << "Wrote " << header.chunks.size() << " chunks";
-      LOGE_IF(!fstream.good()) << "fstream errored";
-      LOGD << "-------------------";
+      LOG_F(INFO, "Wrote {} chunks", header.chunks.size());
+      LOG_IF_F(ERROR, !fstream.good(), "fstream errored");
+      LOG_F(INFO, "-------------------");
       break;
     case Info::Type::AIFF:
       throw "Unsupported type. Currently only wav is supported";

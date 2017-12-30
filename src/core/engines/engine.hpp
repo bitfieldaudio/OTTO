@@ -5,8 +5,6 @@
 #include <vector>
 #include <functional>
 
-#include <plog/Log.h>
-
 #include "util/exception.hpp"
 #include "util/algorithm.hpp"
 #include "util/jsonfile.hpp"

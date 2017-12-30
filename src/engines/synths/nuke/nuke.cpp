@@ -81,9 +81,10 @@ namespace otto::engines {
     case ui::Key::red_click: k = knobs[3]; break;
     default: return false;
     }
-    LOGD << "rotation: "
-         << (k.rotation.min +
-             ((k.rotation.max - k.rotation.min) * k.rotation.cur));
+
+    auto rotation = k.rotation.min + ((k.rotation.max - k.rotation.min) * k.rotation.cur);
+    LOG_F(INFO, "Nuke rotation: {}", rotation);
+
     return true;
   }
 
