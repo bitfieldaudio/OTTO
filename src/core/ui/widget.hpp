@@ -98,8 +98,8 @@ namespace otto::ui {
     /**
      * Run by MainUI when a key is pressed
      *
-     * @key the pressed key
-     * @return true if the key was used.
+     * \param key the pressed key
+     * \returns true if the key was used.
      */
     virtual bool keypress(Key) {
       return false;
@@ -107,8 +107,8 @@ namespace otto::ui {
     /**
      * Run by MainUI when a key is released
      *
-     * @key the released key
-     * @return true if the key was used.
+     * \param key the released key
+     * \returns true if the key was used.
      */
     virtual bool keyrelease(Key) {
       return false;

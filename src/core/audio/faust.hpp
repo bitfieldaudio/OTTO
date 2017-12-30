@@ -14,8 +14,8 @@
 #include "util/type_traits.hpp"
 #include "util/algorithm.hpp"
 
-#include "core/engines/engine.hpp"
-#include "core/engines/engine-props.hpp"
+#include "core/audio/processor.hpp"
+#include "core/engines/engine_props.hpp"
 
 namespace otto::audio {
 
