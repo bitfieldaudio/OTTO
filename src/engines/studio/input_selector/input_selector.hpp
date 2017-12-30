@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/engines/engine.hpp"
-#include "core/engines/engine-props.hpp"
+#include "core/engines/engine_props.hpp"
 
 namespace otto::engines {
 
