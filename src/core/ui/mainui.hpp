@@ -36,10 +36,6 @@ namespace otto::ui {
 
   void init();
 
-  nlohmann::json to_json();
-
-  void from_json(const nlohmann::json& j);
-
   /// These functions are to be called only by the graphics drivers.
   namespace impl {
 

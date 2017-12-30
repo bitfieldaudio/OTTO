@@ -56,7 +56,7 @@ namespace otto::engines {
       std::unique_ptr<ui::Screen> screen);
 
     AnyEngine() = delete;
-    virtual ~AnyEngine() = default;
+    virtual ~AnyEngine();
 
     /* Events */
 
@@ -110,18 +110,6 @@ namespace otto::engines {
     Properties& _props;
     std::unique_ptr<ui::Screen> _screen;
   };
-
-  /// Serialization
-  ///
-  /// This function is detected by nlohmann::json using adl
-  /// \effects `j = e.to_json()`
-  void to_json(nlohmann::json& j, const AnyEngine& e);
-
-  /// Deserialization
-  ///
-  /// This function is detected by nlohmann::json using adl
-  /// \effects `e.from_json(j)`
-  void from_json(const nlohmann::json& j, AnyEngine& e);
 
   // Engine class /////////////////////////////////////////////////////////////
 

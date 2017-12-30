@@ -72,12 +72,12 @@ namespace otto::engines {
 
   void SimpleDrumsEngine::from_json(const nlohmann::json& j)
   {
-    if (j.is_array()) {
-      for (size_t i = 0; i < j.size(); ++i) {
-        voices[i].props.from_json(j[i]);
-      }
-    } else {
-      throw util::exception("Expected a jsn array");
+    if (!j.is_array()) {
+      return;
+    }
+
+    for (size_t i = 0; i < j.size(); ++i) {
+      voices[i].props.from_json(j[i]);
     }
   }
 

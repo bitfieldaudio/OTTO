@@ -56,10 +56,6 @@ namespace otto {
     bool running() noexcept;
 
     ErrorCode error() noexcept;
-
-    void read_data();
-
-    void save_data();
   }
 
 }

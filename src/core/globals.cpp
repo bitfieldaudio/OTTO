@@ -1,10 +1,8 @@
 #include "globals.hpp"
-
 #include <atomic>
 #include <condition_variable>
-
-#include "util/jsonfile.hpp"
 #include "core/ui/mainui.hpp"
+#include "services/state.hpp"
 
 namespace otto::global {
 
@@ -15,10 +13,6 @@ namespace otto::global {
   namespace {
     std::atomic_bool is_running {true};
     std::atomic<ErrorCode> error_code;
-
-    // TODO: Depends on static initialization
-    util::JsonFile data_file{data_dir / "engines.json"};
-
   }
 
   // Public Functions /////////////////////////////////////////////////////////
@@ -27,7 +21,9 @@ namespace otto::global {
   {
     synth.init();
     drums.init();
-    read_data();
+
+    services::state::load();
+
     audio.init();
     tapedeck.on_enable();
     metronome.on_enable();
@@ -50,38 +46,5 @@ namespace otto::global {
   ErrorCode error() noexcept
   {
     return error_code;
-  }
-
-  void read_data()
-  {
-    data_file.read(util::JsonFile::OpenOptions::create);
-
-    auto& data = data_file.data();
-
-    if (data.is_object()) {
-      from_json(data["TapeDeck"], tapedeck);
-      from_json(data["Mixer"], mixer);
-      from_json(data["Synth"], synth);
-      from_json(data["Drums"], drums);
-      from_json(data["Metronome"], metronome);
-
-      ui::from_json(data["UI"]);
-    } else {
-      LOG_F(ERROR, "Got unexpected json from {}", data_file.path());
-    }
-  }
-
-  void save_data()
-  {
-    auto& data = data_file.data();
-
-    data.clear();
-    data["TapeDeck"]  = tapedeck;
-    data["Mixer"]     = mixer;
-    data["Synth"]     = synth;
-    data["Drums"]     = drums;
-    data["Metronome"] = metronome;
-    data["UI"] = ui::to_json();
-    data_file.write();
   }
 }

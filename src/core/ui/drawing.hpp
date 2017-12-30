@@ -3,7 +3,7 @@
 #include <fmt/format.h>
 #include "filesystem.hpp"
 #include "core/ui/canvas.hpp"
-#include "util/logger.hpp"
+#include "services/logger.hpp"
 
 namespace otto::ui::vg {
 

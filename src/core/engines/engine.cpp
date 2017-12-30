@@ -1,4 +1,5 @@
 #include "engine.hpp"
+#include "services/state.hpp"
 
 namespace otto::engines {
 
@@ -10,7 +11,16 @@ namespace otto::engines {
     : _name(std::move(name)), //
       _props(props),
       _screen(std::move(screen))
-  {}
+  {
+    auto load = [&](auto json) { from_json(json); };
+    auto save = [&]() { return to_json(); };
+    services::state::attach(_name, load, save);
+  }
+
+  AnyEngine::~AnyEngine()
+  {
+    services::state::detach(_name);
+  }
 
   /// The name of this module.
   const std::string& AnyEngine::name() const noexcept
@@ -47,17 +57,4 @@ namespace otto::engines {
   {
     _props.from_json(j);
   }
-
-  // Free functions ///////////////////////////////////////////////////////////
-
-  void to_json(nlohmann::json& j, const AnyEngine& e)
-  {
-    j = e.to_json();
-  }
-
-  void from_json(const nlohmann::json& j, AnyEngine& e)
-  {
-    e.from_json(j);
-  }
-
-}  // namespace otto::engines
+} // namespace otto::engines

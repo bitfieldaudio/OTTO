@@ -1,6 +1,7 @@
 #include "mainui.hpp"
 
 #include "core/globals.hpp"
+#include "services/state.hpp"
 
 namespace otto::ui {
 
@@ -50,7 +51,21 @@ namespace otto::ui {
   }
 
   void init() {
-    selectEngine(selected_engine_name);
+    auto load = [](const nlohmann::json &j) {
+      if (j.is_object()) {
+        selected_engine_name = j["SelectedEngine"];
+      }
+
+      selectEngine(selected_engine_name);
+    };
+
+    auto save = []() {
+      return nlohmann::json({
+        {"SelectedEngine", selected_engine_name}
+      });
+    };
+
+    services::state::attach("UI", load, save);
   }
 
   void display(Screen& screen)
@@ -58,20 +73,6 @@ namespace otto::ui {
     cur_screen->on_hide();
     cur_screen = &screen;
     cur_screen->on_show();
-  }
-
-  nlohmann::json to_json() {
-    auto obj = nlohmann::json::object();
-
-    obj["SelectedEngine"] = selected_engine_name;
-
-    return obj;
-  }
-
-  void from_json(const nlohmann::json &j) {
-    if (j.is_object()) {
-      selected_engine_name = j["SelectedEngine"];
-    }
   }
 
   namespace impl {
