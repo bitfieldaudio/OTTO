@@ -61,8 +61,8 @@ namespace otto::audio {
 
     // Main processor function
     auto midi_in      = external_in.midi_only();
-    auto playback_out = engines::EngineManager::get().tapedeck.process_playback(midi_in);
-    auto mixer_out    = engines::EngineManager::get().mixer.process_tracks(playback_out);
+    auto playback_out = engineManager.tapedeck.process_playback(midi_in);
+    auto mixer_out    = engineManager.mixer.process_tracks(playback_out);
 
     auto record_in = [&]() {
       switch (engineManager.selector.props.input.get()) {
@@ -77,7 +77,7 @@ namespace otto::audio {
       case Selection::External: return engineManager.effect->process(external_in);
       case Selection::TrackFB:
         util::transform(playback_out, _audiobuf1.begin(),
-                        [track = engines::EngineManager::get().selector.props.track.get()](auto&& a) {
+                        [track = engineManager.selector.props.track.get()](auto&& a) {
                           return std::array<float, 1>{a[track]};
                         });
         return external_in.redirect(_audiobuf1);
