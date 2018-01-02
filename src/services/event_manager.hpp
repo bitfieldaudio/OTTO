@@ -38,9 +38,6 @@ namespace otto::services {
 
     static EventManager& get();
     Event<> pre_init;
-    Event<> post_init;
-    Event<> pre_exit;
-    Event<> post_exit;
     Event<unsigned> buffersize_change;
     Event<unsigned> samplerate_change;
 

@@ -102,7 +102,7 @@ namespace otto::audio {
   {
     LOG_F(INFO, "Closing Jack client");
     jack_client_close(client);
-  };
+  }
 
   void JackAudioDriver::setupPorts()
   {

@@ -28,7 +28,6 @@ int main(int argc, char* argv[])
     eventManager.pre_init.fire();
     engineManager.init();
     audioManager.init();
-    eventManager.post_init.fire();
 
     engineManager.start();
     audioManager.start();
@@ -77,11 +76,9 @@ void cleanup()
   auto& engineManager = engines::EngineManager::get();
   auto& eventManager  = services::EventManager::get();
 
-  eventManager.pre_exit.fire();
   engineManager.shutdown();
   audioManager.shutdown();
   services::state::save();
-  eventManager.post_exit.fire();
 
   util::timer::save_data();
 }
