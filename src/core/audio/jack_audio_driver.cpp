@@ -195,7 +195,7 @@ namespace otto::audio {
     }
     jack_free(ports);
     return ret;
-  };
+  }
 
   // Helper function for connections
   bool JackAudioDriver::connectPorts(const std::string& src,
