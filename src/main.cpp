@@ -74,7 +74,6 @@ void cleanup()
 {
   auto& audioManager  = audio::AudioManager::get();
   auto& engineManager = engines::EngineManager::get();
-  auto& eventManager  = services::EventManager::get();
 
   engineManager.shutdown();
   audioManager.shutdown();
