@@ -1,6 +1,7 @@
 #include "metronome.hpp"
 
 #include "core/globals.hpp"
+#include "core/audio/audio_manager.hpp"
 #include <string>
 #include <cmath>
 
@@ -32,7 +33,7 @@ namespace otto::engines {
   audio::ProcessData<1> Metronome::process(audio::ProcessData<0> data) {
     TIME_SCOPE("Metronome::process");
 
-    float BPsample = props.bpm / 60.0 / (float) global::audio.samplerate;
+    float BPsample = props.bpm / 60.0 / (float) audio::AudioManager::get().samplerate;
     float beat = global::tapedeck.position() * BPsample;
     int framesTillNext = std::fmod(beat, 1)/BPsample * global::tapedeck.state.playSpeed;
 
@@ -56,7 +57,7 @@ namespace otto::engines {
 
   // Bars
   BeatPos Metronome::closestBar(TapeTime time) {
-    double fpb = (global::audio.samplerate)*60/(double)props.bpm;
+    double fpb = (audio::AudioManager::get().samplerate)*60/(double)props.bpm;
     BeatPos prevBar = time/fpb;
     TapeTime prevBarTime = getBarTime(prevBar);
     if (time - prevBarTime > fpb/2) {
@@ -66,13 +67,13 @@ namespace otto::engines {
   }
 
   TapeTime Metronome::getBarTime(BeatPos bar) {
-    double fpb = (global::audio.samplerate)*60/(double)props.bpm;
+    double fpb = (audio::AudioManager::get().samplerate)*60/(double)props.bpm;
     return bar * fpb;
   }
 
   TapeTime Metronome::getBarTimeRel(BeatPos bar) {
     if (bar == 0) return closestBar(global::tapedeck.position());
-    double fpb = (global::audio.samplerate)*60/(double)props.bpm;
+    double fpb = (audio::AudioManager::get().samplerate)*60/(double)props.bpm;
     BeatPos curBar = global::tapedeck.position()/fpb;
     TapeTime curBarTime = getBarTime(curBar);
     TapeTime diff = global::tapedeck.position() - curBarTime;
@@ -87,13 +88,13 @@ namespace otto::engines {
 
   float Metronome::bar_for_time(std::size_t time) const
   {
-    float fpb = (global::audio.samplerate)*60/(float)props.bpm;
+    float fpb = (audio::AudioManager::get().samplerate)*60/(float)props.bpm;
     return time / fpb;
   }
 
   std::size_t Metronome::time_for_bar(float bar) const
   {
-    float fpb = (global::audio.samplerate)*60/(float)props.bpm;
+    float fpb = (audio::AudioManager::get().samplerate)*60/(float)props.bpm;
     return bar * fpb;
   }
 
@@ -224,7 +225,7 @@ namespace otto::engines {
     {
       ctx.save();
 
-      float BPsample(engine.props.bpm/60.0/(float)global::audio.samplerate);
+      float BPsample(engine.props.bpm/60.0/(float)audio::AudioManager::get().samplerate);
       float beat(global::tapedeck.position() * BPsample);
       float factor((std::fmod(beat, 2)));
       factor = factor < 1 ? (factor * 2 - 1) : ((1 - factor) * 2 + 1);

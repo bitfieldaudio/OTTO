@@ -2,6 +2,7 @@
 #include "core/engines/engine.hpp"
 #include "core/globals.hpp"
 #include "core/ui/mainui.hpp"
+#include "core/audio/audio_manager.hpp"
 #include "engines/drums/drum-sampler/drum-sampler.hpp"
 #include "engines/drums/simple-drums/simple-drums.hpp"
 #include "engines/studio/mixer/mixer.hpp"
@@ -35,7 +36,7 @@ int main(int argc, char* argv[])
 
     global::event::post_init.runAll();
 
-    global::audio.start_processing();
+    audio::AudioManager::get().start();
 
     ui::init();
     ui::main_ui_loop();
@@ -77,7 +78,8 @@ void cleanup()
   global::event::pre_exit.runAll();
   global::mixer.on_disable();
   global::tapedeck.on_disable();
-  global::audio.exit();
+
+  audio::AudioManager::get().shutdown();
 
   services::state::save();
 

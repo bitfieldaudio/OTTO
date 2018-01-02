@@ -9,6 +9,7 @@
 #include "core/ui/icons.hpp"
 #include "util/soundfile.hpp"
 #include "util/exception.hpp"
+#include "core/audio/audio_manager.hpp"
 
 namespace otto::engines {
 
@@ -29,7 +30,7 @@ namespace otto::engines {
     : DrumsEngine("Drum Sampler",
         props,
         std::make_unique<DrumSampleScreen>(this)),
-      maxSampleSize(16 * global::audio.samplerate),
+      maxSampleSize(16 * audio::AudioManager::get().samplerate),
       sampleData(maxSampleSize)
   {
     global::event::samplerate_change.add([this](int sr) {
@@ -140,7 +141,7 @@ namespace otto::engines {
         sf.read_samples(sampleData.data(), rs);
 
         sampleSampleRate = sf.info.samplerate;
-        sampleSpeed = sampleSampleRate / float(global::audio.samplerate);
+        sampleSpeed = sampleSampleRate / float(audio::AudioManager::get().samplerate);
         LOG_IF_F(INFO, sf.length() == 0, "Empty sample file");
       } catch (util::exception& e) {
         LOG_F(ERROR, "Failure while trying to load sample file '{}':", path);

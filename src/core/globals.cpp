@@ -3,6 +3,7 @@
 #include <condition_variable>
 #include "core/ui/mainui.hpp"
 #include "services/state.hpp"
+#include "core/audio/audio_manager.hpp"
 
 namespace otto::global {
 
@@ -24,7 +25,8 @@ namespace otto::global {
 
     services::state::load();
 
-    audio.init();
+    audio::AudioManager::get().init();
+  
     tapedeck.on_enable();
     metronome.on_enable();
     mixer.on_enable();

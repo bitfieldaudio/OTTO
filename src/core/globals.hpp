@@ -3,8 +3,6 @@
 #include "filesystem.hpp"
 #include "util/event.hpp"
 
-#include "core/audio/main_audio.hpp"
-
 #include "core/engines/engine.hpp"
 #include "core/engines/engine_dispatcher.hpp"
 
@@ -14,9 +12,7 @@
 #include "engines/studio/tapedeck/tapedeck.hpp"
 
 namespace otto {
-
   namespace global {
-
     enum struct ErrorCode {
       none = 0,
       ui_closed,
@@ -38,8 +34,6 @@ namespace otto {
       inline util::EventDispatcher<unsigned> buffersize_change;
       inline util::EventDispatcher<unsigned> samplerate_change;
     }
-
-    inline audio::MainAudio audio;
 
     inline engines::EngineDispatcher<engines::EngineType::synth> synth;
     inline engines::EngineDispatcher<engines::EngineType::drums> drums;
