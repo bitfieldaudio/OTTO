@@ -1,8 +1,8 @@
 #include "audio_manager.hpp"
-#include "core/globals.hpp"
 #include "core/engines/engine_manager.hpp"
-#include "util/algorithm.hpp"
+#include "core/globals.hpp"
 #include "jack_audio_driver.hpp"
+#include "util/algorithm.hpp"
 
 namespace otto::audio {
   using AudioDriver = JackAudioDriver;
@@ -37,15 +37,19 @@ namespace otto::audio {
     return *pInstance;
   }
 
-  void AudioManager::init() {
+  void AudioManager::init()
+  {
+    midi::generateFreqTable(440);
     AudioDriver::get().init();
   }
 
-  void AudioManager::start() {
+  void AudioManager::start()
+  {
     _running = true;
   }
 
-  void AudioManager::shutdown() {
+  void AudioManager::shutdown()
+  {
     AudioDriver::get().shutdown();
   }
 
@@ -56,7 +60,7 @@ namespace otto::audio {
 
   ProcessData<2> AudioManager::process(ProcessData<1> external_in)
   {
-    using Selection = engines::InputSelector::Selection;
+    using Selection     = engines::InputSelector::Selection;
     auto& engineManager = engines::EngineManager::get();
 
     // Main processor function
@@ -74,12 +78,12 @@ namespace otto::audio {
         }
         return drums_out;
       }
-      case Selection::External: return engineManager.effect->process(external_in);
+      case Selection::External:
+        return engineManager.effect->process(external_in);
       case Selection::TrackFB:
         util::transform(playback_out, _audiobuf1.begin(),
-                        [track = engineManager.selector.props.track.get()](auto&& a) {
-                          return std::array<float, 1>{a[track]};
-                        });
+                        [track = engineManager.selector.props.track.get()](
+                          auto&& a) { return std::array<float, 1>{a[track]}; });
         return external_in.redirect(_audiobuf1);
       case Selection::MasterFB: break;
       }

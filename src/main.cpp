@@ -1,11 +1,11 @@
+#include "core/audio/audio_manager.hpp"
 #include "core/audio/midi.hpp"
+#include "core/engines/engine_manager.hpp"
 #include "core/globals.hpp"
 #include "core/ui/mainui.hpp"
-#include "core/audio/audio_manager.hpp"
-#include "core/engines/engine_manager.hpp"
+#include "services/event_manager.hpp"
 #include "services/logger.hpp"
 #include "services/state.hpp"
-#include "services/event_manager.hpp"
 #include "util/timer.hpp"
 
 using namespace otto;
@@ -18,25 +18,30 @@ int handleException();
 int main(int argc, char* argv[])
 {
   try {
+    auto& audioManager  = audio::AudioManager::get();
+    auto& engineManager = engines::EngineManager::get();
+    auto& eventManager  = services::EventManager::get();
+
     services::logger::init(argc, argv);
     services::state::load();
 
-    midi::generateFreqTable(440);
+    eventManager.pre_init.fire();
+    engineManager.init();
+    audioManager.init();
+    eventManager.post_init.fire();
 
-    services::EventManager::get().pre_init.fire();
-    engines::EngineManager::get().init();
-    audio::AudioManager::get().init();
-    services::EventManager::get().post_init.fire();
-
-    engines::EngineManager::get().start();
-    audio::AudioManager::get().start();
+    engineManager.start();
+    audioManager.start();
 
     ui::init();
     ui::main_ui_loop();
+  } catch (const char* e) {
+    return handleException(e);
+  } catch (std::exception& e) {
+    return handleException(e);
+  } catch (...) {
+    return handleException();
   }
-  catch (const char* e) { return handleException(e); }
-  catch (std::exception& e) { return handleException(e); }
-  catch (...) { return handleException(); }
 
   LOG_F(INFO, "Exiting");
   cleanup();
@@ -68,11 +73,15 @@ int handleException()
 
 void cleanup()
 {
-  services::EventManager::get().pre_exit.fire();
-  engines::EngineManager::get().shutdown();
-  audio::AudioManager::get().shutdown();
+  auto& audioManager  = audio::AudioManager::get();
+  auto& engineManager = engines::EngineManager::get();
+  auto& eventManager  = services::EventManager::get();
+
+  eventManager.pre_exit.fire();
+  engineManager.shutdown();
+  audioManager.shutdown();
   services::state::save();
-  services::EventManager::get().post_exit.fire();
+  eventManager.post_exit.fire();
 
   util::timer::save_data();
 }
