@@ -1,13 +1,8 @@
 #include "core/audio/midi.hpp"
-#include "core/engines/engine.hpp"
 #include "core/globals.hpp"
 #include "core/ui/mainui.hpp"
 #include "core/audio/audio_manager.hpp"
-#include "engines/drums/drum-sampler/drum-sampler.hpp"
-#include "engines/drums/simple-drums/simple-drums.hpp"
-#include "engines/studio/mixer/mixer.hpp"
-#include "engines/studio/tapedeck/tapedeck.hpp"
-#include "engines/synths/nuke/nuke.hpp"
+#include "core/engines/engine_manager.hpp"
 #include "services/logger.hpp"
 #include "services/state.hpp"
 #include "services/event_manager.hpp"
@@ -24,18 +19,16 @@ int main(int argc, char* argv[])
 {
   try {
     services::logger::init(argc, argv);
+    services::state::load();
 
     midi::generateFreqTable(440);
 
-    using namespace engines;
-    register_engine<DrumSampler>();
-    register_engine<SimpleDrumsEngine>();
-    register_engine<NukeSynth>();
-
     services::EventManager::get().pre_init.fire();
-    global::init();
+    engines::EngineManager::get().init();
+    audio::AudioManager::get().init();
     services::EventManager::get().post_init.fire();
 
+    engines::EngineManager::get().start();
     audio::AudioManager::get().start();
 
     ui::init();
@@ -76,13 +69,9 @@ int handleException()
 void cleanup()
 {
   services::EventManager::get().pre_exit.fire();
-  global::mixer.on_disable();
-  global::tapedeck.on_disable();
-
+  engines::EngineManager::get().shutdown();
   audio::AudioManager::get().shutdown();
-
   services::state::save();
-
   services::EventManager::get().post_exit.fire();
 
   util::timer::save_data();

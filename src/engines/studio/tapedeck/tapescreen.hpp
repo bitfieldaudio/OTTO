@@ -7,6 +7,7 @@
 #include "core/ui/drawing.hpp"
 #include "tapedeck.hpp"
 #include "core/audio/audio_manager.hpp"
+#include "core/engines/engine_manager.hpp"
 
 namespace otto::ui::vg {
   namespace Colours {
@@ -429,8 +430,9 @@ namespace otto::engines {
         ctx.lineCap(Canvas::LineCap::ROUND);
         ctx.lineJoin(Canvas::LineJoin::ROUND);
 
-        auto iter = global::metronome.iter(global::metronome.time_for_bar(
-          std::min(0.f, global::metronome.bar_for_time(view_time.in) - 1)));
+        auto& metronome = engines::EngineManager::get().metronome;
+        auto iter = metronome.iter(metronome.time_for_bar(
+          std::min(0.f, metronome.bar_for_time(view_time.in) - 1)));
 
         while (true) {
           float x = time_to_coord(*iter);

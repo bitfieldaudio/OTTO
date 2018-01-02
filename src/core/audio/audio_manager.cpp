@@ -1,6 +1,6 @@
 #include "audio_manager.hpp"
 #include "core/globals.hpp"
-#include "engines/studio/input_selector/input_selector.hpp"
+#include "core/engines/engine_manager.hpp"
 #include "util/algorithm.hpp"
 #include "jack_audio_driver.hpp"
 
@@ -57,26 +57,27 @@ namespace otto::audio {
   ProcessData<2> AudioManager::process(ProcessData<1> external_in)
   {
     using Selection = engines::InputSelector::Selection;
+    auto& engineManager = engines::EngineManager::get();
 
     // Main processor function
     auto midi_in      = external_in.midi_only();
-    auto playback_out = global::tapedeck.process_playback(midi_in);
-    auto mixer_out    = global::mixer.process_tracks(playback_out);
+    auto playback_out = engines::EngineManager::get().tapedeck.process_playback(midi_in);
+    auto mixer_out    = engines::EngineManager::get().mixer.process_tracks(playback_out);
 
     auto record_in = [&]() {
-      switch (global::selector.props.input.get()) {
+      switch (engineManager.selector.props.input.get()) {
       case Selection::Internal: {
-        auto synth_out = global::synth->process(midi_in);
-        auto drums_out = global::drums->process(midi_in);
+        auto synth_out = engineManager.synth->process(midi_in);
+        auto drums_out = engineManager.drums->process(midi_in);
         for (auto && [ drm, snth ] : util::zip(drums_out, synth_out)) {
           util::audio::add_all(drm, snth);
         }
         return drums_out;
       }
-      case Selection::External: return global::effect->process(external_in);
+      case Selection::External: return engineManager.effect->process(external_in);
       case Selection::TrackFB:
         util::transform(playback_out, _audiobuf1.begin(),
-                        [track = global::selector.props.track.get()](auto&& a) {
+                        [track = engines::EngineManager::get().selector.props.track.get()](auto&& a) {
                           return std::array<float, 1>{a[track]};
                         });
         return external_in.redirect(_audiobuf1);
@@ -85,20 +86,20 @@ namespace otto::audio {
       return audio::ProcessData<1>{{nullptr}, {nullptr}};
     }();
 
-    if (global::selector.props.input != Selection::MasterFB) {
-      global::mixer.process_engine(record_in);
+    if (engineManager.selector.props.input != Selection::MasterFB) {
+      engineManager.mixer.process_engine(record_in);
     }
 
-    if (global::selector.props.input == Selection::MasterFB) {
+    if (engineManager.selector.props.input == Selection::MasterFB) {
       util::transform(mixer_out, _audiobuf1.begin(), [](auto&& a) {
         return std::array<float, 1>{a[0] + a[1]};
       });
       record_in = {{_audiobuf1.data(), external_in.nframes}, external_in.midi};
     }
 
-    global::tapedeck.process_record(record_in);
+    engineManager.tapedeck.process_record(record_in);
 
-    auto mtrnm_out = global::metronome.process(midi_in);
+    auto mtrnm_out = engineManager.metronome.process(midi_in);
 
     for (auto && [ mix, mtrn ] : util::zip(mixer_out, mtrnm_out)) {
       util::audio::add_all(mix, mtrn);

@@ -1,14 +1,7 @@
 #pragma once
 
 #include "filesystem.hpp"
-
-#include "core/engines/engine.hpp"
-#include "core/engines/engine_dispatcher.hpp"
-
-#include "engines/studio/input_selector/input_selector.hpp"
-#include "engines/studio/metronome/metronome.hpp"
-#include "engines/studio/mixer/mixer.hpp"
-#include "engines/studio/tapedeck/tapedeck.hpp"
+#include "util/exception.hpp"
 
 namespace otto {
   namespace global {
@@ -24,16 +17,6 @@ namespace otto {
     using exception = util::as_exception<ErrorCode>;
 
     inline const filesystem::path data_dir {"data"};
-
-    inline engines::EngineDispatcher<engines::EngineType::synth> synth;
-    inline engines::EngineDispatcher<engines::EngineType::drums> drums;
-    inline engines::EngineDispatcher<engines::EngineType::effect> effect;
-    inline engines::Tapedeck tapedeck;
-    inline engines::Mixer mixer;
-    inline engines::Metronome metronome;
-    inline engines::InputSelector selector;
-
-    void init();
 
     void exit(ErrorCode ec) noexcept;
 

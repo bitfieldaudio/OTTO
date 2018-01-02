@@ -2,6 +2,7 @@
 #include "core/globals.hpp"
 #include "util/jsonfile.hpp"
 #include "util/exception.hpp"
+#include "services/logger.hpp"
 
 namespace otto::services::state {
   namespace {

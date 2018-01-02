@@ -8,6 +8,7 @@
 #include "util/algorithm.hpp"
 #include "util/timer.hpp"
 #include "core/audio/audio_manager.hpp"
+#include "core/engines/engine_manager.hpp"
 
 namespace otto::engines {
 
@@ -170,13 +171,13 @@ namespace otto::engines {
 
   void Tapedeck::goToBar(BeatPos bar)
   {
-    if (state.doJumps()) tapeBuffer->jump_to(global::metronome.getBarTime(bar));
+    if (state.doJumps()) tapeBuffer->jump_to(engines::EngineManager::get().metronome.getBarTime(bar));
   }
 
   void Tapedeck::goToBarRel(BeatPos bars)
   {
     if (state.doJumps())
-      tapeBuffer->jump_to(global::metronome.getBarTimeRel(bars));
+      tapeBuffer->jump_to(engines::EngineManager::get().metronome.getBarTimeRel(bars));
   }
 
   int Tapedeck::timeUntil(std::size_t tt)

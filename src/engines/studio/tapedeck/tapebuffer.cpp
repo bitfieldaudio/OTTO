@@ -7,6 +7,7 @@
 #include "util/tapefile.hpp"
 #include "util/timer.hpp"
 #include "core/globals.hpp"
+#include "services/logger.hpp"
 
 namespace otto {
 

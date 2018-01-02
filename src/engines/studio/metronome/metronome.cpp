@@ -2,6 +2,7 @@
 
 #include "core/globals.hpp"
 #include "core/audio/audio_manager.hpp"
+#include "core/engines/engine_manager.hpp"
 #include <string>
 #include <cmath>
 
@@ -33,13 +34,15 @@ namespace otto::engines {
   audio::ProcessData<1> Metronome::process(audio::ProcessData<0> data) {
     TIME_SCOPE("Metronome::process");
 
+    auto& tapedeck = engines::EngineManager::get().tapedeck;
+
     float BPsample = props.bpm / 60.0 / (float) audio::AudioManager::get().samplerate;
-    float beat = global::tapedeck.position() * BPsample;
-    int framesTillNext = std::fmod(beat, 1)/BPsample * global::tapedeck.state.playSpeed;
+    float beat = tapedeck.position() * BPsample;
+    int framesTillNext = std::fmod(beat, 1)/BPsample * tapedeck.state.playSpeed;
 
     if (framesTillNext < data.nframes
-      && global::tapedeck.state.playing()
-      && global::tapedeck.state.playSpeed/BPsample > 1) {
+      && tapedeck.state.playing()
+      && tapedeck.state.playSpeed/BPsample > 1) {
       FaustWrapper::process(data.slice(0, framesTillNext));
       props.trigger = true;
       FaustWrapper::process(data.slice(framesTillNext));
@@ -72,11 +75,16 @@ namespace otto::engines {
   }
 
   TapeTime Metronome::getBarTimeRel(BeatPos bar) {
-    if (bar == 0) return closestBar(global::tapedeck.position());
+    auto& tapedeck = engines::EngineManager::get().tapedeck;
+    
+    if (bar == 0) {
+      return closestBar(tapedeck.position());
+    }
+
     double fpb = (audio::AudioManager::get().samplerate)*60/(double)props.bpm;
-    BeatPos curBar = global::tapedeck.position()/fpb;
+    BeatPos curBar = tapedeck.position()/fpb;
     TapeTime curBarTime = getBarTime(curBar);
-    TapeTime diff = global::tapedeck.position() - curBarTime;
+    TapeTime diff = tapedeck.position() - curBarTime;
     if (diff > fpb/2) {
       curBar += 1;
       if (bar > 0) bar -= 1;
@@ -226,7 +234,7 @@ namespace otto::engines {
       ctx.save();
 
       float BPsample(engine.props.bpm/60.0/(float)audio::AudioManager::get().samplerate);
-      float beat(global::tapedeck.position() * BPsample);
+      float beat(engines::EngineManager::get().tapedeck.position() * BPsample);
       float factor((std::fmod(beat, 2)));
       factor = factor < 1 ? (factor * 2 - 1) : ((1 - factor) * 2 + 1);
       factor = std::sin(factor * M_PI/2);

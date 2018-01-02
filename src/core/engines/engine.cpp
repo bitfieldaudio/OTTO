@@ -12,14 +12,6 @@ namespace otto::engines {
       _props(props),
       _screen(std::move(screen))
   {
-    auto load = [&](auto json) { from_json(json); };
-    auto save = [&]() { return to_json(); };
-    services::state::attach(_name, load, save);
-  }
-
-  AnyEngine::~AnyEngine()
-  {
-    services::state::detach(_name);
   }
 
   /// The name of this module.
@@ -56,5 +48,17 @@ namespace otto::engines {
   void AnyEngine::from_json(const nlohmann::json& j)
   {
     _props.from_json(j);
+  }
+
+  // Free functions ///////////////////////////////////////////////////////////
+
+  void to_json(nlohmann::json& j, const AnyEngine& e)
+  {
+    j = e.to_json();
+  }
+
+  void from_json(const nlohmann::json& j, AnyEngine& e)
+  {
+    e.from_json(j);
   }
 } // namespace otto::engines

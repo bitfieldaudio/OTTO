@@ -1,9 +1,12 @@
 #if OTTO_UI_GLFW
 
 #include <chrono>
+#include <thread>
 #include "core/globals.hpp"
 #include "core/ui/mainui.hpp"
+#include "core/ui/drawing.hpp"
 #include "debug/ui.hpp"
+#include "services/logger.hpp"
 
 #define NANOVG_GL3_IMPLEMENTATION
 #define OTTO_NVG_CREATE nvgCreateGL3

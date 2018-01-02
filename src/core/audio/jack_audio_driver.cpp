@@ -14,6 +14,7 @@
 
 #include "core/audio/audio_manager.hpp"
 #include "core/audio/processor.hpp"
+#include "services/logger.hpp"
 
 namespace otto::audio {
   namespace {

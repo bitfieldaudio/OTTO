@@ -2,9 +2,9 @@
 
 #include "core/globals.hpp"
 #include "services/state.hpp"
+#include "core/engines/engine_manager.hpp"
 
 namespace otto::ui {
-
   static constexpr const char * initial_engine = "TapeDeck";
 
   // Local vars
@@ -16,14 +16,6 @@ namespace otto::ui {
       {}
 
     } empty_screen;
-
-    std::map<std::string, std::function<engines::AnyEngine *()>> engines = {
-      { "TapeDeck", []() { return (engines::AnyEngine*)&global::tapedeck; } },
-      { "Mixer", []() { return (engines::AnyEngine*)&global::mixer; } },
-      { "Synth", []() { return (engines::AnyEngine*)&*global::synth; } },
-      { "Drums", []() { return (engines::AnyEngine*)&*global::drums; } },
-      { "Metronome", []() { return (engines::AnyEngine*)&global::metronome; } }
-    };
 
     std::string selected_engine_name = "";
     Screen* cur_screen = &empty_screen;
@@ -39,13 +31,11 @@ namespace otto::ui {
   void selectEngine(std::string engine_name) {
     selected_engine_name = engine_name;
 
-    auto getter = engines[engine_name];
-    if (!getter) {
-      getter = engines[initial_engine];
-      selected_engine_name = initial_engine;
+    auto& engineManager = engines::EngineManager::get();
+    auto engine = engineManager.getEngineByName(engine_name);
+    if (!engine) {
+      engine = engineManager.getEngineByName(initial_engine);
     }
-
-    auto engine = getter();
 
     display(engine->screen());
   }
@@ -76,6 +66,14 @@ namespace otto::ui {
   }
 
   namespace impl {
+    static void toggle_play_state() {
+      auto& tapedeck = engines::EngineManager::get().tapedeck;
+      if (tapedeck.state.playing()) {
+        tapedeck.state.stop();
+      } else {
+        tapedeck.state.play();
+      }
+    }
 
     static bool global_keypress(Key key)
     {
@@ -89,11 +87,7 @@ namespace otto::ui {
         selectEngine("Metronome");
         break;
       case ui::Key::play:
-        if (global::tapedeck.state.playing()) {
-          global::tapedeck.state.stop();
-        } else {
-          global::tapedeck.state.play();
-        }
+        toggle_play_state();
         break;
       default: return false;
       }
@@ -133,5 +127,4 @@ namespace otto::ui {
       return cur_screen->keyrelease(key);
     }
   } // namespace impl
-
 } // namespace otto::ui
