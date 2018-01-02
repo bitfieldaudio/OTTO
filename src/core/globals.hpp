@@ -1,7 +1,6 @@
 #pragma once
 
 #include "filesystem.hpp"
-#include "util/event.hpp"
 
 #include "core/engines/engine.hpp"
 #include "core/engines/engine_dispatcher.hpp"
@@ -25,15 +24,6 @@ namespace otto {
     using exception = util::as_exception<ErrorCode>;
 
     inline const filesystem::path data_dir {"data"};
-
-    namespace event {
-      inline util::EventDispatcher<> pre_init;
-      inline util::EventDispatcher<> post_init;
-      inline util::EventDispatcher<> pre_exit;
-      inline util::EventDispatcher<> post_exit;
-      inline util::EventDispatcher<unsigned> buffersize_change;
-      inline util::EventDispatcher<unsigned> samplerate_change;
-    }
 
     inline engines::EngineDispatcher<engines::EngineType::synth> synth;
     inline engines::EngineDispatcher<engines::EngineType::drums> drums;

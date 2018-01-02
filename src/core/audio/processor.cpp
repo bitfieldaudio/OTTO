@@ -1,13 +1,10 @@
 #include "processor.hpp"
 
-#include "core/globals.hpp"
+#include "services/event_manager.hpp"
 
-namespace otto::audio {
-namespace detail {
-
-  void registerAudioBufferResize(std::function<void(int)> eventHandler) {
-    global::event::buffersize_change.add(eventHandler);
+namespace otto::audio::detail {
+  void registerAudioBufferResize(std::function<void(int)> eventHandler)
+  {
+    services::EventManager::get().buffersize_change.add(eventHandler);
   }
-
-} // detail
-} // otto::audio
+} // namespace otto::audio::detail

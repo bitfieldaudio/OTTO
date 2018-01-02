@@ -1,16 +1,11 @@
+#pragma once
+
 #include <string>
-#include <atomic>
 #include <vector>
 
 #include <jack/jack.h>
 #include <jack/midiport.h>
-#include <fmt/format.h>
-
-#include "core/globals.hpp"
-#include "util/event.hpp"
-#include "util/timer.hpp"
-
-#include "core/audio/processor.hpp"
+#include "core/audio/midi.hpp"
 
 namespace otto::audio {
   struct JackAudioDriver {

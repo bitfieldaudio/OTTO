@@ -9,7 +9,7 @@
 #include <jack/midiport.h>
 
 #include "core/globals.hpp"
-#include "util/event.hpp"
+#include "services/event_manager.hpp"
 #include "util/timer.hpp"
 
 #include "core/audio/audio_manager.hpp"
@@ -207,14 +207,14 @@ namespace otto::audio {
   {
     LOG_F(INFO, "Jack changed the sample rate to {}", srate);
     AudioManager::get().samplerate = srate;
-    global::event::samplerate_change.runAll(srate);
+    services::EventManager::get().samplerate_change.fire(srate);
   }
 
   void JackAudioDriver::buffersizeCallback(unsigned buffsize)
   {
     LOG_F(INFO, "Jack changed the buffer size to {}", buffsize);
     bufferSize = buffsize;
-    global::event::buffersize_change.runAll(buffsize);
+    services::EventManager::get().buffersize_change.fire(buffsize);
   }
 
   void JackAudioDriver::process(int nframes)

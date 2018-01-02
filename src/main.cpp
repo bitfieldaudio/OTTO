@@ -10,6 +10,7 @@
 #include "engines/synths/nuke/nuke.hpp"
 #include "services/logger.hpp"
 #include "services/state.hpp"
+#include "services/event_manager.hpp"
 #include "util/timer.hpp"
 
 using namespace otto;
@@ -31,10 +32,9 @@ int main(int argc, char* argv[])
     register_engine<SimpleDrumsEngine>();
     register_engine<NukeSynth>();
 
-    global::event::pre_init.runAll();
+    services::EventManager::get().pre_init.fire();
     global::init();
-
-    global::event::post_init.runAll();
+    services::EventManager::get().post_init.fire();
 
     audio::AudioManager::get().start();
 
@@ -75,7 +75,7 @@ int handleException()
 
 void cleanup()
 {
-  global::event::pre_exit.runAll();
+  services::EventManager::get().pre_exit.fire();
   global::mixer.on_disable();
   global::tapedeck.on_disable();
 
@@ -83,7 +83,7 @@ void cleanup()
 
   services::state::save();
 
-  global::event::post_exit.runAll();
+  services::EventManager::get().post_exit.fire();
 
   util::timer::save_data();
 }
