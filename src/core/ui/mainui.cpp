@@ -1,5 +1,7 @@
 #include "mainui.hpp"
 
+#include <map>
+
 #include "core/globals.hpp"
 #include "services/state.hpp"
 #include "core/engines/engine_manager.hpp"
@@ -9,18 +11,15 @@ namespace otto::ui {
 
   // Local vars
   namespace {
-
     struct EmptyScreen : Screen {
-
-      void draw(vg::Canvas& ctx)
-      {}
-
+      void draw(vg::Canvas& ctx) {}
     } empty_screen;
 
     std::string selected_engine_name = "";
     Screen* cur_screen = &empty_screen;
 
     PressedKeys keys;
+    std::multimap<Key, key_handler> key_handlers;
   }
 
   bool is_pressed(Key k) noexcept
@@ -40,7 +39,18 @@ namespace otto::ui {
     display(engine->screen());
   }
 
+  static void registerScreenKeys()
+  {
+    registerKeyHandler(Key::tape, [](Key k){ selectEngine("TapeDeck"); });
+    registerKeyHandler(Key::mixer, [](Key k){ selectEngine("Mixer"); });
+    registerKeyHandler(Key::synth, [](Key k){ selectEngine("Synth"); });
+    registerKeyHandler(Key::drums, [](Key k){ selectEngine("Drums"); });
+    registerKeyHandler(Key::metronome, [](Key k){ selectEngine("Metronome"); });
+  }
+
   void init() {
+    registerScreenKeys();
+
     auto load = [](const nlohmann::json &j) {
       if (j.is_object()) {
         selected_engine_name = j["SelectedEngine"];
@@ -65,32 +75,29 @@ namespace otto::ui {
     cur_screen->on_show();
   }
 
-  namespace impl {
-    static void toggle_play_state() {
-      auto& tapedeck = engines::EngineManager::get().tapedeck;
-      if (tapedeck.state.playing()) {
-        tapedeck.state.stop();
-      } else {
-        tapedeck.state.play();
-      }
-    }
+  void registerKeyHandler(Key k, key_handler handler)
+  {
+    key_handlers.insert({k, handler});
+  }
 
+  namespace impl {
     static bool global_keypress(Key key)
     {
-      switch (key) {
-      case Key::quit: global::exit(global::ErrorCode::user_exit); break;
-      case Key::tape: selectEngine("TapeDeck"); break;
-      case Key::mixer: selectEngine("Mixer"); break;
-      case Key::synth: selectEngine("Synth"); break;
-      case Key::drums: selectEngine("Drums"); break;
-      case Key::metronome:
-        selectEngine("Metronome");
-        break;
-      case ui::Key::play:
-        toggle_play_state();
-        break;
-      default: return false;
+      if (key == Key::quit) {
+        global::exit(global::ErrorCode::user_exit);
+        return true;
       }
+
+      auto result = key_handlers.equal_range(key);
+      int count = std::distance(result.first, result.second);
+      if (count == 0) {
+        return false;
+      }
+
+    	for (auto it = result.first; it != result.second; it++) {
+        it->second(key);
+      }
+
       return true;
     }
 

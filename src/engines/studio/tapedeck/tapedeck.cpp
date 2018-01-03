@@ -171,7 +171,9 @@ namespace otto::engines {
 
   void Tapedeck::goToBar(BeatPos bar)
   {
-    if (state.doJumps()) tapeBuffer->jump_to(engines::EngineManager::get().metronome.getBarTime(bar));
+    if (state.doJumps()) {
+      tapeBuffer->jump_to(engines::EngineManager::get().metronome.getBarTime(bar));
+    }
   }
 
   void Tapedeck::goToBarRel(BeatPos bars)

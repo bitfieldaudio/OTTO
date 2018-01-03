@@ -9,9 +9,9 @@
 #include <jack/midiport.h>
 
 #include "core/globals.hpp"
-#include "services/event_manager.hpp"
 #include "util/timer.hpp"
 
+#include "core/engines/engine_manager.hpp"
 #include "core/audio/audio_manager.hpp"
 #include "core/audio/processor.hpp"
 #include "services/logger.hpp"
@@ -207,31 +207,20 @@ namespace otto::audio {
   void JackAudioDriver::samplerateCallback(unsigned srate)
   {
     LOG_F(INFO, "Jack changed the sample rate to {}", srate);
-    AudioManager::get().samplerate = srate;
-    services::EventManager::get().samplerate_change.fire(srate);
+    auto& audioManager = AudioManager::get();
+    audioManager.samplerate = srate;
+    audioManager.samplerate_change.fire(srate);
   }
 
   void JackAudioDriver::buffersizeCallback(unsigned buffsize)
   {
     LOG_F(INFO, "Jack changed the buffer size to {}", buffsize);
     bufferSize = buffsize;
-    services::EventManager::get().buffersize_change.fire(buffsize);
+    auto& audioManager = AudioManager::get();
+    audioManager.buffersize_change.fire(buffsize);
   }
 
-  void JackAudioDriver::process(int nframes)
-  {
-    auto running = AudioManager::get().running() && global::running();
-    if (!running) {
-      return;
-    }
-
-    TIME_SCOPE("JackAudio::Process");
-
-    if ((size_t) nframes > bufferSize) {
-      LOG_F(ERROR, "Jack requested more frames than expected");
-      return;
-    }
-
+  void JackAudioDriver::gatherMidiInput(int nframes) {
     midi_buf.clear();
 
     // Get new midi events
@@ -265,15 +254,36 @@ namespace otto::audio {
         break;
       }
     }
+  }
+
+  void JackAudioDriver::process(int nframes)
+  {
+    auto& audioManager = AudioManager::get();
+    auto running = audioManager.running() && global::running();
+    if (!running) {
+      return;
+    }
+
+    TIME_SCOPE("JackAudio::Process");
+
+    if ((size_t) nframes > bufferSize) {
+      LOG_F(ERROR, "Jack requested more frames than expected");
+      return;
+    }
+
+    gatherMidiInput(nframes);
 
     float* outLData = (float*) jack_port_get_buffer(ports.outL, nframes);
     float* outRData = (float*) jack_port_get_buffer(ports.outR, nframes);
     float* inData   = (float*) jack_port_get_buffer(ports.input, nframes);
 
-    auto out_data = AudioManager::get().process(
+    auto& engineManager = engines::EngineManager::get();
+    auto out_data = engineManager.processAudio(
       {{reinterpret_cast<util::audio::AudioFrame<1>*>(inData), nframes},
        {midi_buf},
        nframes});
+
+    audioManager.processAudioOutput(out_data);
 
     LOG_IF_F(WARNING, out_data.nframes != nframes, "Frames went missing!");
 

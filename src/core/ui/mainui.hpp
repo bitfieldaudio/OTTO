@@ -28,6 +28,9 @@ namespace otto::ui {
   /// Check if a key is currently pressed.
   bool is_pressed(Key k) noexcept;
 
+  using key_handler = std::function<void(Key k)>;
+  void registerKeyHandler(Key k, key_handler handler);
+
   /// Display a screen.
   ///
   /// Calls [Screen::on_hide]() for the old screen, and then [Screen::on_show]()

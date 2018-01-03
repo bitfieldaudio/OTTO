@@ -5,6 +5,7 @@
 
 #include "core/audio/processor.hpp"
 #include "debug/ui.hpp"
+#include "util/event.hpp"
 
 namespace otto::audio {
   /// Class that interacts with OS audio/midi framework, and delegates
@@ -14,20 +15,22 @@ namespace otto::audio {
 
     std::atomic_int samplerate;
 
-    // Input channel is external audio in. Also should hold MIDI from system
-    ProcessData<2> process(ProcessData<1>);
-
+    void processAudioOutput(ProcessData<2> audio_output);
+  
     void init();
     void start();
     void shutdown();
 
     bool running();
 
+    util::Event<> pre_init;
+    util::Event<unsigned> buffersize_change;
+    util::Event<unsigned> samplerate_change;
+
   private:
     AudioManager() = default;
     ~AudioManager() = default;
 
-    ProcessBuffer<1> _audiobuf1;
     std::atomic_bool _running {false};
   };
 }

@@ -49,6 +49,7 @@ namespace otto::audio {
     bool connectPorts(const std::string& src, const std::string& dest);
     void samplerateCallback(unsigned srate);
     void buffersizeCallback(unsigned buffsize);
+    void gatherMidiInput(int nFrames);
     void process(int nframes);
   };
 } // otto::audio

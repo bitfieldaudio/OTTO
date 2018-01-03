@@ -7,6 +7,7 @@
 #include "engines/studio/metronome/metronome.hpp"
 #include "engines/studio/mixer/mixer.hpp"
 #include "engines/studio/tapedeck/tapedeck.hpp"
+#include "core/audio/processor.hpp"
 
 namespace otto::engines {
   struct EngineManager {
@@ -15,6 +16,8 @@ namespace otto::engines {
     void init();
     void start();
     void shutdown();
+
+    audio::ProcessData<2> processAudio(audio::ProcessData<1> external_in);
 
     AnyEngine* getEngineByName(const std::string& name);
 

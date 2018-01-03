@@ -3,7 +3,6 @@
 #include "core/engines/engine_manager.hpp"
 #include "core/globals.hpp"
 #include "core/ui/mainui.hpp"
-#include "services/event_manager.hpp"
 #include "services/logger.hpp"
 #include "services/state.hpp"
 #include "util/timer.hpp"
@@ -20,12 +19,10 @@ int main(int argc, char* argv[])
   try {
     auto& audioManager  = audio::AudioManager::get();
     auto& engineManager = engines::EngineManager::get();
-    auto& eventManager  = services::EventManager::get();
 
     services::logger::init(argc, argv);
     services::state::load();
 
-    eventManager.pre_init.fire();
     engineManager.init();
     audioManager.init();
 

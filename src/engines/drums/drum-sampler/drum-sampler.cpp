@@ -10,7 +10,6 @@
 #include "util/soundfile.hpp"
 #include "util/exception.hpp"
 #include "core/audio/audio_manager.hpp"
-#include "services/event_manager.hpp"
 
 namespace otto::engines {
 
@@ -34,7 +33,7 @@ namespace otto::engines {
       maxSampleSize(16 * audio::AudioManager::get().samplerate),
       sampleData(maxSampleSize)
   {
-    services::EventManager::get().samplerate_change.add([this](int sr) {
+    audio::AudioManager::get().samplerate_change.subscribe([this](int sr) {
       maxSampleSize = 16 * sr;
       sampleSpeed   = sampleSampleRate / float(sr);
     });
