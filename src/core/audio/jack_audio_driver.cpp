@@ -1,6 +1,5 @@
 #include "jack_audio_driver.hpp"
 
-#include <atomic>
 #include <string>
 #include <vector>
 

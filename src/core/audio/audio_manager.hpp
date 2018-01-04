@@ -1,7 +1,6 @@
 #pragma once
 
 #include <memory>
-#include <atomic>
 
 #include "core/audio/processor.hpp"
 #include "debug/ui.hpp"
