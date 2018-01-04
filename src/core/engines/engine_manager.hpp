@@ -10,6 +10,21 @@
 #include "core/audio/processor.hpp"
 
 namespace otto::engines {
+  using TapeTime = unsigned;
+
+  namespace tapeState {
+    int position();
+    float playSpeed();
+    bool playing();
+  }
+
+  namespace metronomeState {
+    TapeTime getBarTime(BeatPos bar);
+    TapeTime getBarTimeRel(BeatPos bar);
+    float bar_for_time(std::size_t time);
+    std::size_t time_for_bar(float time);
+  }
+
   struct EngineManager {
     static EngineManager& get();
 

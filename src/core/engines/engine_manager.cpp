@@ -144,4 +144,47 @@ namespace otto::engines {
 
     return getter();
   }
+
+  namespace tapeState {
+    int position()
+    {
+      auto& engineManager = EngineManager::get();
+      return engineManager.tapedeck.position();
+    }
+
+    float playSpeed()
+    {
+      auto& engineManager = EngineManager::get();
+      return engineManager.tapedeck.state.playSpeed;
+    }
+
+    bool playing()
+    {
+      auto& engineManager = EngineManager::get();
+      return engineManager.tapedeck.state.playing();
+    }
+  } // namespace tapeState
+
+  namespace metronomeState {
+    TapeTime getBarTime(BeatPos bar) {
+      auto& engineManager = EngineManager::get();
+      return engineManager.metronome.getBarTime(bar);
+    }
+
+    TapeTime getBarTimeRel(BeatPos bar) {
+      auto& engineManager = EngineManager::get();
+      return engineManager.metronome.getBarTimeRel(bar);
+    }
+
+    float bar_for_time(std::size_t time) {
+      auto& engineManager = EngineManager::get();
+      return engineManager.metronome.bar_for_time(time);
+    }
+
+    std::size_t time_for_bar(float bar) {
+      auto& engineManager = EngineManager::get();
+      return engineManager.metronome.time_for_bar(bar);
+    }
+
+  }
 } // namespace otto::engines

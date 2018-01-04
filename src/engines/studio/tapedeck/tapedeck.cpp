@@ -11,9 +11,6 @@
 #include "core/engines/engine_manager.hpp"
 
 namespace otto::engines {
-
-  using TapeTime = std::size_t;
-
   // TapeDeck::State ///////////////////////////////////////////////////////////
 
   bool Tapedeck::State::doSwitchTracks() const
@@ -172,14 +169,14 @@ namespace otto::engines {
   void Tapedeck::goToBar(BeatPos bar)
   {
     if (state.doJumps()) {
-      tapeBuffer->jump_to(engines::EngineManager::get().metronome.getBarTime(bar));
+      tapeBuffer->jump_to(engines::metronomeState::getBarTime(bar));
     }
   }
 
   void Tapedeck::goToBarRel(BeatPos bars)
   {
     if (state.doJumps())
-      tapeBuffer->jump_to(engines::EngineManager::get().metronome.getBarTimeRel(bars));
+      tapeBuffer->jump_to(engines::metronomeState::getBarTimeRel(bars));
   }
 
   int Tapedeck::timeUntil(std::size_t tt)

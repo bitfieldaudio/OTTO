@@ -430,14 +430,13 @@ namespace otto::engines {
         ctx.lineCap(Canvas::LineCap::ROUND);
         ctx.lineJoin(Canvas::LineJoin::ROUND);
 
-        auto& metronome = engines::EngineManager::get().metronome;
-        auto iter = metronome.iter(metronome.time_for_bar(
-          std::min(0.f, metronome.bar_for_time(view_time.in) - 1)));
+        auto bar = std::min(0.f, engines::metronomeState::bar_for_time(view_time.in) - 1);
 
         while (true) {
-          float x = time_to_coord(*iter);
+          auto time = engines::metronomeState::time_for_bar(bar);
+          bar += 1;
+          float x = time_to_coord(time);
           if (x < min_x) {
-            iter++;
             continue;
           }
           if (x > max_x) break;
@@ -445,7 +444,6 @@ namespace otto::engines {
           ctx.moveTo(x, 196.6);
           ctx.lineTo(x, 198.2);
           ctx.stroke();
-          iter++;
         }
       }
 

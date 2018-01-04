@@ -11,9 +11,6 @@
 #include "util/timer.hpp"
 
 namespace otto::engines {
-
-  using TapeTime = unsigned;
-
   struct MetronomeScreen : EngineScreen<Metronome> {
     void drawMetronome(ui::vg::Canvas&);
 
@@ -34,15 +31,13 @@ namespace otto::engines {
   audio::ProcessData<1> Metronome::process(audio::ProcessData<0> data) {
     TIME_SCOPE("Metronome::process");
 
-    auto& tapedeck = engines::EngineManager::get().tapedeck;
-
     float BPsample = props.bpm / 60.0 / (float) audio::AudioManager::get().samplerate;
-    float beat = tapedeck.position() * BPsample;
-    int framesTillNext = std::fmod(beat, 1)/BPsample * tapedeck.state.playSpeed;
+    float beat = engines::tapeState::position() * BPsample;
+    int framesTillNext = std::fmod(beat, 1)/BPsample * engines::tapeState::playSpeed();
 
     if (framesTillNext < data.nframes
-      && tapedeck.state.playing()
-      && tapedeck.state.playSpeed/BPsample > 1) {
+      && engines::tapeState::playing()
+      && engines::tapeState::playSpeed()/BPsample > 1) {
       FaustWrapper::process(data.slice(0, framesTillNext));
       props.trigger = true;
       FaustWrapper::process(data.slice(framesTillNext));
@@ -75,16 +70,14 @@ namespace otto::engines {
   }
 
   TapeTime Metronome::getBarTimeRel(BeatPos bar) {
-    auto& tapedeck = engines::EngineManager::get().tapedeck;
-    
     if (bar == 0) {
-      return closestBar(tapedeck.position());
+      return closestBar(engines::tapeState::position());
     }
 
     double fpb = (audio::AudioManager::get().samplerate)*60/(double)props.bpm;
-    BeatPos curBar = tapedeck.position()/fpb;
+    BeatPos curBar = engines::tapeState::position()/fpb;
     TapeTime curBarTime = getBarTime(curBar);
-    TapeTime diff = tapedeck.position() - curBarTime;
+    TapeTime diff = engines::tapeState::position() - curBarTime;
     if (diff > fpb/2) {
       curBar += 1;
       if (bar > 0) bar -= 1;
@@ -234,7 +227,7 @@ namespace otto::engines {
       ctx.save();
 
       float BPsample(engine.props.bpm/60.0/(float)audio::AudioManager::get().samplerate);
-      float beat(engines::EngineManager::get().tapedeck.position() * BPsample);
+      float beat(engines::tapeState::position() * BPsample);
       float factor((std::fmod(beat, 2)));
       factor = factor < 1 ? (factor * 2 - 1) : ((1 - factor) * 2 + 1);
       factor = std::sin(factor * M_PI/2);
