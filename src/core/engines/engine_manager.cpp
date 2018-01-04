@@ -10,6 +10,14 @@ namespace otto::engines {
   namespace {
     std::map<std::string, std::function<AnyEngine*()>> engineGetters;
     audio::ProcessBuffer<1> _audiobuf1;
+
+    EngineDispatcher<engines::EngineType::synth> synth;
+    EngineDispatcher<engines::EngineType::drums> drums;
+    EngineDispatcher<engines::EngineType::effect> effect;
+    Tapedeck tapedeck;
+    Mixer mixer;
+    Metronome metronome;
+    InputSelector selector;
   } // namespace
 
   EngineManager& EngineManager::get()
@@ -148,43 +156,35 @@ namespace otto::engines {
   namespace tapeState {
     int position()
     {
-      auto& engineManager = EngineManager::get();
-      return engineManager.tapedeck.position();
+      return tapedeck.position();
     }
 
     float playSpeed()
     {
-      auto& engineManager = EngineManager::get();
-      return engineManager.tapedeck.state.playSpeed;
+      return tapedeck.state.playSpeed;
     }
 
     bool playing()
     {
-      auto& engineManager = EngineManager::get();
-      return engineManager.tapedeck.state.playing();
+      return tapedeck.state.playing();
     }
   } // namespace tapeState
 
   namespace metronomeState {
     TapeTime getBarTime(BeatPos bar) {
-      auto& engineManager = EngineManager::get();
-      return engineManager.metronome.getBarTime(bar);
+      return metronome.getBarTime(bar);
     }
 
     TapeTime getBarTimeRel(BeatPos bar) {
-      auto& engineManager = EngineManager::get();
-      return engineManager.metronome.getBarTimeRel(bar);
+      return metronome.getBarTimeRel(bar);
     }
 
     float bar_for_time(std::size_t time) {
-      auto& engineManager = EngineManager::get();
-      return engineManager.metronome.bar_for_time(time);
+      return metronome.bar_for_time(time);
     }
 
     std::size_t time_for_bar(float bar) {
-      auto& engineManager = EngineManager::get();
-      return engineManager.metronome.time_for_bar(bar);
+      return metronome.time_for_bar(bar);
     }
-
   }
 } // namespace otto::engines

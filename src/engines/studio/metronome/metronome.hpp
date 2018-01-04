@@ -29,9 +29,6 @@ namespace otto::engines {
 
     audio::ProcessData<1> process(audio::ProcessData<0>);
 
-    // TODO: Move this into core
-    /* Bar iteration */
-
     unsigned getBarTime(BeatPos bar);
     unsigned getBarTimeRel(BeatPos bar);
     BeatPos closestBar(unsigned time);

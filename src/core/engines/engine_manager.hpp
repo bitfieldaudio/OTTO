@@ -36,14 +36,6 @@ namespace otto::engines {
 
     AnyEngine* getEngineByName(const std::string& name);
 
-    EngineDispatcher<engines::EngineType::synth> synth;
-    EngineDispatcher<engines::EngineType::drums> drums;
-    EngineDispatcher<engines::EngineType::effect> effect;
-    Tapedeck tapedeck;
-    Mixer mixer;
-    Metronome metronome;
-    InputSelector selector;
-
   private:
     EngineManager()  = default;
     ~EngineManager() = default;
