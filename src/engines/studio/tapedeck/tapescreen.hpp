@@ -6,6 +6,8 @@
 #include "core/ui/mainui.hpp"
 #include "core/ui/drawing.hpp"
 #include "tapedeck.hpp"
+#include "core/audio/audio_manager.hpp"
+#include "core/engines/engine_manager.hpp"
 
 namespace otto::ui::vg {
   namespace Colours {
@@ -122,7 +124,7 @@ namespace otto::engines {
 
     std::string timeStr(std::size_t position) const
     {
-      double seconds = position / (1.0 * global::audio.samplerate);
+      double seconds = position / (1.0 * audio::samplerate());
       double minutes = seconds / 60.0;
       return fmt::format("{:0>2}:{:0>5.2f}", (int) minutes,
                          fmod(seconds, 60.0));
@@ -402,7 +404,7 @@ namespace otto::engines {
 
       // The amount of time to display on the timeline
       // TODO: Animate this?
-      int timeline_time = 5 * global::audio.samplerate;
+      int timeline_time = 5 * audio::samplerate();
 
       util::audio::Section<int> view_time{
         (int) engine.position() - timeline_time / 2,
@@ -428,13 +430,13 @@ namespace otto::engines {
         ctx.lineCap(Canvas::LineCap::ROUND);
         ctx.lineJoin(Canvas::LineJoin::ROUND);
 
-        auto iter = global::metronome.iter(global::metronome.time_for_bar(
-          std::min(0.f, global::metronome.bar_for_time(view_time.in) - 1)));
+        auto bar = std::min(0.f, engines::metronomeState::bar_for_time(view_time.in) - 1);
 
         while (true) {
-          float x = time_to_coord(*iter);
+          auto time = engines::metronomeState::time_for_bar(bar);
+          bar += 1;
+          float x = time_to_coord(time);
           if (x < min_x) {
-            iter++;
             continue;
           }
           if (x > max_x) break;
@@ -442,7 +444,6 @@ namespace otto::engines {
           ctx.moveTo(x, 196.6);
           ctx.lineTo(x, 198.2);
           ctx.stroke();
-          iter++;
         }
       }
 

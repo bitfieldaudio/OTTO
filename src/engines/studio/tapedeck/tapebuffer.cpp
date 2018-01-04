@@ -7,6 +7,7 @@
 #include "util/tapefile.hpp"
 #include "util/timer.hpp"
 #include "core/globals.hpp"
+#include "services/logger.hpp"
 
 namespace otto {
 
@@ -54,7 +55,7 @@ namespace otto {
 
     void main_routine()
     {
-      util::logger::set_thread_name("Tape Buffer");
+      services::logger::set_thread_name("Tape Buffer");
       file.open(path);
       read_slices();
 

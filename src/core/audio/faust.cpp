@@ -1,20 +1,20 @@
 #include "core/audio/faust.hpp"
 
-#include "core/globals.hpp"
 #include <exception>
+#include "core/audio/audio_manager.hpp"
+#include "core/globals.hpp"
 
-namespace otto::audio {
+namespace otto::audio::detail {
+  void register_faust_wrapper_events(dsp& _dsp, FaustOptions& opts)
+  {
+    audio::events::pre_init().subscribe([&]() {
+      _dsp.init(audio::samplerate());
+      _dsp.buildUserInterface(&opts);
+    });
 
-  namespace detail {
-    void register_faust_wrapper_events(dsp& _dsp, FaustOptions& opts) {
-      global::event::pre_init.add([&]() {
-          _dsp.init(global::audio.samplerate);
-          _dsp.buildUserInterface(&opts);
-        });
-      global::event::samplerate_change.add([&](int sr) {
-          _dsp.instanceInit(sr);
-          opts.props->updateFaust();
-        });
-    }
+    audio::events::samplerate_change().subscribe([&](int samplerate) {
+      _dsp.instanceInit(samplerate);
+      opts.props->updateFaust();
+    });
   }
-} // otto::audio
+} // namespace otto::audio::detail

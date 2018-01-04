@@ -1,4 +1,5 @@
 #include "engine.hpp"
+#include "services/state.hpp"
 
 namespace otto::engines {
 
@@ -10,7 +11,8 @@ namespace otto::engines {
     : _name(std::move(name)), //
       _props(props),
       _screen(std::move(screen))
-  {}
+  {
+  }
 
   /// The name of this module.
   const std::string& AnyEngine::name() const noexcept
@@ -59,5 +61,4 @@ namespace otto::engines {
   {
     e.from_json(j);
   }
-
-}  // namespace otto::engines
+} // namespace otto::engines

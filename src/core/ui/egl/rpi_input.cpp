@@ -7,7 +7,7 @@
 #include "core/globals.hpp"
 #include "core/ui/mainui.hpp"
 #include "filesystem.hpp"
-#include "util/logger.hpp"
+#include "services/logger.hpp"
 
 namespace otto::ui {
   static auto constexpr key_release = 0;

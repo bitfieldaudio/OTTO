@@ -1,33 +1,25 @@
 #include "mainui.hpp"
 
+#include <map>
+
 #include "core/globals.hpp"
+#include "services/state.hpp"
+#include "core/engines/engine_manager.hpp"
 
 namespace otto::ui {
-
   static constexpr const char * initial_engine = "TapeDeck";
 
   // Local vars
   namespace {
-
     struct EmptyScreen : Screen {
-
-      void draw(vg::Canvas& ctx)
-      {}
-
+      void draw(vg::Canvas& ctx) {}
     } empty_screen;
-
-    std::map<std::string, std::function<engines::AnyEngine *()>> engines = {
-      { "TapeDeck", []() { return (engines::AnyEngine*)&global::tapedeck; } },
-      { "Mixer", []() { return (engines::AnyEngine*)&global::mixer; } },
-      { "Synth", []() { return (engines::AnyEngine*)&*global::synth; } },
-      { "Drums", []() { return (engines::AnyEngine*)&*global::drums; } },
-      { "Metronome", []() { return (engines::AnyEngine*)&global::metronome; } }
-    };
 
     std::string selected_engine_name = "";
     Screen* cur_screen = &empty_screen;
 
     PressedKeys keys;
+    std::multimap<Key, key_handler> key_handlers;
   }
 
   bool is_pressed(Key k) noexcept
@@ -38,19 +30,41 @@ namespace otto::ui {
   void selectEngine(std::string engine_name) {
     selected_engine_name = engine_name;
 
-    auto getter = engines[engine_name];
-    if (!getter) {
-      getter = engines[initial_engine];
-      selected_engine_name = initial_engine;
+    auto engine = engines::getEngineByName(engine_name);
+    if (!engine) {
+      engine = engines::getEngineByName(initial_engine);
     }
-
-    auto engine = getter();
 
     display(engine->screen());
   }
 
+  static void registerScreenKeys()
+  {
+    registerKeyHandler(Key::tape, [](Key k){ selectEngine("TapeDeck"); });
+    registerKeyHandler(Key::mixer, [](Key k){ selectEngine("Mixer"); });
+    registerKeyHandler(Key::synth, [](Key k){ selectEngine("Synth"); });
+    registerKeyHandler(Key::drums, [](Key k){ selectEngine("Drums"); });
+    registerKeyHandler(Key::metronome, [](Key k){ selectEngine("Metronome"); });
+  }
+
   void init() {
-    selectEngine(selected_engine_name);
+    registerScreenKeys();
+
+    auto load = [](const nlohmann::json &j) {
+      if (j.is_object()) {
+        selected_engine_name = j["SelectedEngine"];
+      }
+
+      selectEngine(selected_engine_name);
+    };
+
+    auto save = []() {
+      return nlohmann::json({
+        {"SelectedEngine", selected_engine_name}
+      });
+    };
+
+    services::state::attach("UI", load, save);
   }
 
   void display(Screen& screen)
@@ -60,42 +74,29 @@ namespace otto::ui {
     cur_screen->on_show();
   }
 
-  nlohmann::json to_json() {
-    auto obj = nlohmann::json::object();
-
-    obj["SelectedEngine"] = selected_engine_name;
-
-    return obj;
-  }
-
-  void from_json(const nlohmann::json &j) {
-    if (j.is_object()) {
-      selected_engine_name = j["SelectedEngine"];
-    }
+  void registerKeyHandler(Key k, key_handler handler)
+  {
+    key_handlers.insert({k, handler});
   }
 
   namespace impl {
-
     static bool global_keypress(Key key)
     {
-      switch (key) {
-      case Key::quit: global::exit(global::ErrorCode::user_exit); break;
-      case Key::tape: selectEngine("TapeDeck"); break;
-      case Key::mixer: selectEngine("Mixer"); break;
-      case Key::synth: selectEngine("Synth"); break;
-      case Key::drums: selectEngine("Drums"); break;
-      case Key::metronome:
-        selectEngine("Metronome");
-        break;
-      case ui::Key::play:
-        if (global::tapedeck.state.playing()) {
-          global::tapedeck.state.stop();
-        } else {
-          global::tapedeck.state.play();
-        }
-        break;
-      default: return false;
+      if (key == Key::quit) {
+        global::exit(global::ErrorCode::user_exit);
+        return true;
       }
+
+      auto result = key_handlers.equal_range(key);
+      int count = std::distance(result.first, result.second);
+      if (count == 0) {
+        return false;
+      }
+
+    	for (auto it = result.first; it != result.second; it++) {
+        it->second(key);
+      }
+
       return true;
     }
 
@@ -132,5 +133,4 @@ namespace otto::ui {
       return cur_screen->keyrelease(key);
     }
   } // namespace impl
-
 } // namespace otto::ui
