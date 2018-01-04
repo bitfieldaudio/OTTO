@@ -7,15 +7,13 @@
 namespace otto::audio::detail {
   void register_faust_wrapper_events(dsp& _dsp, FaustOptions& opts)
   {
-    auto& audioManager = audio::AudioManager::get();
-
-    audioManager.pre_init.subscribe([&]() {
-      _dsp.init(audioManager.samplerate);
+    audio::events::pre_init().subscribe([&]() {
+      _dsp.init(audio::samplerate());
       _dsp.buildUserInterface(&opts);
     });
 
-    audioManager.samplerate_change.subscribe([&](int sr) {
-      _dsp.instanceInit(sr);
+    audio::events::samplerate_change().subscribe([&](int samplerate) {
+      _dsp.instanceInit(samplerate);
       opts.props->updateFaust();
     });
   }

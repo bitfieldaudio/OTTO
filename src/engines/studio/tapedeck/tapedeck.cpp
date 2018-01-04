@@ -230,7 +230,7 @@ namespace otto::engines {
               state.playSpeed =
                 state.prevSpeed +
                 (state.nextSpeed - state.prevSpeed) *
-                  (1 - std::cos((x / float(audio::AudioManager::get().samplerate) * 1000 /
+                  (1 - std::cos((x / float(audio::samplerate()) * 1000 /
                                   (adjTime)) *
                                 M_PI)) *
                   0.5;

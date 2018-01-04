@@ -17,17 +17,14 @@ int handleException();
 int main(int argc, char* argv[])
 {
   try {
-    auto& audioManager  = audio::AudioManager::get();
-    auto& engineManager = engines::EngineManager::get();
-
     services::logger::init(argc, argv);
     services::state::load();
 
-    engineManager.init();
-    audioManager.init();
+    engines::init();
+    audio::init();
 
-    engineManager.start();
-    audioManager.start();
+    engines::start();
+    audio::start();
 
     ui::init();
     ui::main_ui_loop();
@@ -69,11 +66,8 @@ int handleException()
 
 void cleanup()
 {
-  auto& audioManager  = audio::AudioManager::get();
-  auto& engineManager = engines::EngineManager::get();
-
-  engineManager.shutdown();
-  audioManager.shutdown();
+  engines::shutdown();
+  audio::shutdown();
   services::state::save();
 
   util::timer::save_data();

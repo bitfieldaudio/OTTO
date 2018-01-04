@@ -207,17 +207,15 @@ namespace otto::audio {
   void JackAudioDriver::samplerateCallback(unsigned srate)
   {
     LOG_F(INFO, "Jack changed the sample rate to {}", srate);
-    auto& audioManager = AudioManager::get();
-    audioManager.samplerate = srate;
-    audioManager.samplerate_change.fire(srate);
+    samplerate = srate;
+    audio::events::samplerate_change().fire(srate);
   }
 
   void JackAudioDriver::buffersizeCallback(unsigned buffsize)
   {
     LOG_F(INFO, "Jack changed the buffer size to {}", buffsize);
     bufferSize = buffsize;
-    auto& audioManager = AudioManager::get();
-    audioManager.buffersize_change.fire(buffsize);
+    audio::events::buffersize_change().fire(buffsize);
   }
 
   void JackAudioDriver::gatherMidiInput(int nframes) {
@@ -258,8 +256,7 @@ namespace otto::audio {
 
   void JackAudioDriver::process(int nframes)
   {
-    auto& audioManager = AudioManager::get();
-    auto running = audioManager.running() && global::running();
+    auto running = audio::running() && global::running();
     if (!running) {
       return;
     }
@@ -277,13 +274,12 @@ namespace otto::audio {
     float* outRData = (float*) jack_port_get_buffer(ports.outR, nframes);
     float* inData   = (float*) jack_port_get_buffer(ports.input, nframes);
 
-    auto& engineManager = engines::EngineManager::get();
-    auto out_data = engineManager.processAudio(
+    auto out_data = engines::processAudio(
       {{reinterpret_cast<util::audio::AudioFrame<1>*>(inData), nframes},
        {midi_buf},
        nframes});
 
-    audioManager.processAudioOutput(out_data);
+    audio::processAudioOutput(out_data);
 
     LOG_IF_F(WARNING, out_data.nframes != nframes, "Frames went missing!");
 

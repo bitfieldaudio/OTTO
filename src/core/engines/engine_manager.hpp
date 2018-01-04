@@ -25,19 +25,11 @@ namespace otto::engines {
     std::size_t time_for_bar(float time);
   }
 
-  struct EngineManager {
-    static EngineManager& get();
+  void init();
+  void start();
+  void shutdown();
 
-    void init();
-    void start();
-    void shutdown();
+  audio::ProcessData<2> processAudio(audio::ProcessData<1> external_in);
 
-    audio::ProcessData<2> processAudio(audio::ProcessData<1> external_in);
-
-    AnyEngine* getEngineByName(const std::string& name);
-
-  private:
-    EngineManager()  = default;
-    ~EngineManager() = default;
-  };
+  AnyEngine* getEngineByName(const std::string& name);
 } // namespace otto::engines

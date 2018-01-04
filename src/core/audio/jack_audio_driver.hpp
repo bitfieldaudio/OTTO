@@ -14,6 +14,8 @@ namespace otto::audio {
     void init();
     void shutdown();
 
+    std::atomic_int samplerate;
+
   private:
     JackAudioDriver() = default;
     ~JackAudioDriver() = default;

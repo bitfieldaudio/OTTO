@@ -20,18 +20,7 @@ namespace otto::engines {
     InputSelector selector;
   } // namespace
 
-  EngineManager& EngineManager::get()
-  {
-    static EngineManager* pInstance;
-
-    if (!pInstance) {
-      pInstance = new EngineManager();
-    }
-
-    return *pInstance;
-  }
-
-  void EngineManager::init()
+  void init()
   {
     engineGetters = {{"TapeDeck", [&]() { return (AnyEngine*) &tapedeck; }},
                      {"Mixer", [&]() { return (AnyEngine*) &mixer; }},
@@ -46,7 +35,7 @@ namespace otto::engines {
     synth.init();
     drums.init();
 
-    ui::registerKeyHandler(ui::Key::play, [this](ui::Key key) {
+    ui::registerKeyHandler(ui::Key::play, [](ui::Key key) {
       if (tapedeck.state.playing()) {
         tapedeck.state.stop();
       } else {
@@ -73,7 +62,7 @@ namespace otto::engines {
     services::state::attach("Engines", load, save);
   }
 
-  void EngineManager::start()
+  void start()
   {
     tapedeck.on_enable();
     metronome.on_enable();
@@ -82,13 +71,13 @@ namespace otto::engines {
     drums.select(std::size_t(0));
   }
 
-  void EngineManager::shutdown()
+  void shutdown()
   {
     mixer.on_disable();
     tapedeck.on_disable();
   }
 
-  audio::ProcessData<2> EngineManager::processAudio(
+  audio::ProcessData<2> processAudio(
     audio::ProcessData<1> external_in)
   {
     using Selection = InputSelector::Selection;
@@ -143,7 +132,7 @@ namespace otto::engines {
     return mixer_out;
   }
 
-  AnyEngine* EngineManager::getEngineByName(const std::string& name)
+  AnyEngine* getEngineByName(const std::string& name)
   {
     auto getter = engineGetters[name];
     if (!getter) {

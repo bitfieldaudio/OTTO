@@ -30,10 +30,9 @@ namespace otto::ui {
   void selectEngine(std::string engine_name) {
     selected_engine_name = engine_name;
 
-    auto& engineManager = engines::EngineManager::get();
-    auto engine = engineManager.getEngineByName(engine_name);
+    auto engine = engines::getEngineByName(engine_name);
     if (!engine) {
-      engine = engineManager.getEngineByName(initial_engine);
+      engine = engines::getEngineByName(initial_engine);
     }
 
     display(engine->screen());

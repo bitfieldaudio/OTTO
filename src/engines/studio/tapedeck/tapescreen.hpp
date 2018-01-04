@@ -124,7 +124,7 @@ namespace otto::engines {
 
     std::string timeStr(std::size_t position) const
     {
-      double seconds = position / (1.0 * audio::AudioManager::get().samplerate);
+      double seconds = position / (1.0 * audio::samplerate());
       double minutes = seconds / 60.0;
       return fmt::format("{:0>2}:{:0>5.2f}", (int) minutes,
                          fmod(seconds, 60.0));
@@ -404,7 +404,7 @@ namespace otto::engines {
 
       // The amount of time to display on the timeline
       // TODO: Animate this?
-      int timeline_time = 5 * audio::AudioManager::get().samplerate;
+      int timeline_time = 5 * audio::samplerate();
 
       util::audio::Section<int> view_time{
         (int) engine.position() - timeline_time / 2,

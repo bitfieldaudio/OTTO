@@ -8,29 +8,19 @@
 #include "util/event.hpp"
 
 namespace otto::audio {
-  /// Class that interacts with OS audio/midi framework, and delegates
-  /// processing to the engines.
-  struct AudioManager {
-    static AudioManager& get();
+  namespace events {
+    util::Event<>& pre_init();
+    util::Event<unsigned>& buffersize_change();
+    util::Event<unsigned>& samplerate_change();
+  }
 
-    std::atomic_int samplerate;
+  int samplerate();
 
-    void processAudioOutput(ProcessData<2> audio_output);
+  void processAudioOutput(ProcessData<2> audio_output);
   
-    void init();
-    void start();
-    void shutdown();
+  void init();
+  void start();
+  void shutdown();
 
-    bool running();
-
-    util::Event<> pre_init;
-    util::Event<unsigned> buffersize_change;
-    util::Event<unsigned> samplerate_change;
-
-  private:
-    AudioManager() = default;
-    ~AudioManager() = default;
-
-    std::atomic_bool _running {false};
-  };
+  bool running();
 }

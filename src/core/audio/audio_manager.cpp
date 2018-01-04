@@ -18,47 +18,56 @@ namespace otto::audio {
         ImGui::Text("Buffers lost: %d", buffers_lost);
         ImGui::End();
       }
-    };
+    } debugInfo;
 
-    DebugInfo* pDebugInfo;
+    std::atomic_bool _running {false};
   } // namespace
 
-  AudioManager& AudioManager::get()
-  {
-    static AudioManager* pInstance;
-
-    if (!pInstance) {
-      pInstance  = new AudioManager();
-      pDebugInfo = new DebugInfo();
+  namespace events {
+    util::Event<>& pre_init() {
+      static util::Event<> instance;
+      return instance;
     }
 
-    return *pInstance;
+    util::Event<unsigned>& buffersize_change() {
+      static util::Event<unsigned> instance;
+      return instance;
+    }
+
+    util::Event<unsigned>& samplerate_change() {
+      static util::Event<unsigned> instance;
+      return instance;
+    }
   }
 
-  void AudioManager::init()
+  int samplerate() {
+    return AudioDriver::get().samplerate;
+  }
+
+  void init()
   {
-    pre_init.fire();
+    events::pre_init().fire();
 
     midi::generateFreqTable(440);
     AudioDriver::get().init();
   }
 
-  void AudioManager::start()
+  void start()
   {
     _running = true;
   }
 
-  void AudioManager::shutdown()
+  void shutdown()
   {
     AudioDriver::get().shutdown();
   }
 
-  bool AudioManager::running()
+  bool running()
   {
     return _running;
   }
 
-  void AudioManager::processAudioOutput(ProcessData<2> audio_output)
+  void processAudioOutput(ProcessData<2> audio_output)
   {
 #if OTTO_DEBUG_UI
       float max;
@@ -69,9 +78,10 @@ namespace otto::audio {
         }
       }
       if (max == 0) {
-        pDebugInfo->buffers_lost++;
+        debugInfo.buffers_lost++;
       }
-      pDebugInfo->audio_graph.push(max / 2.f);
+      
+      debugInfo.audio_graph.push(max / 2.f);
 #endif
   }
 } // namespace otto::audio

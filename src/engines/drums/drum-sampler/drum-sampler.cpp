@@ -30,10 +30,10 @@ namespace otto::engines {
     : DrumsEngine("Drum Sampler",
         props,
         std::make_unique<DrumSampleScreen>(this)),
-      maxSampleSize(16 * audio::AudioManager::get().samplerate),
+      maxSampleSize(16 * audio::samplerate()),
       sampleData(maxSampleSize)
   {
-    audio::AudioManager::get().samplerate_change.subscribe([this](int sr) {
+    audio::events::samplerate_change().subscribe([this](int sr) {
       maxSampleSize = 16 * sr;
       sampleSpeed   = sampleSampleRate / float(sr);
     });
@@ -141,7 +141,7 @@ namespace otto::engines {
         sf.read_samples(sampleData.data(), rs);
 
         sampleSampleRate = sf.info.samplerate;
-        sampleSpeed = sampleSampleRate / float(audio::AudioManager::get().samplerate);
+        sampleSpeed = sampleSampleRate / float(audio::samplerate());
         LOG_IF_F(INFO, sf.length() == 0, "Empty sample file");
       } catch (util::exception& e) {
         LOG_F(ERROR, "Failure while trying to load sample file '{}':", path);
