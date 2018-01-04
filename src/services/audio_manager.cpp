@@ -1,5 +1,5 @@
 #include "audio_manager.hpp"
-#include "jack_audio_driver.hpp"
+#include "audio/jack_audio_driver.hpp"
 #include "util/algorithm.hpp"
 
 namespace otto::audio {
@@ -40,7 +40,7 @@ namespace otto::audio {
     }
   }
 
-  int samplerate() {
+  int samplerate() noexcept {
     return AudioDriver::get().samplerate;
   }
 
@@ -52,7 +52,7 @@ namespace otto::audio {
     AudioDriver::get().init();
   }
 
-  void start()
+  void start() noexcept
   {
     _running = true;
   }
@@ -62,12 +62,12 @@ namespace otto::audio {
     AudioDriver::get().shutdown();
   }
 
-  bool running()
+  bool running() noexcept
   {
     return _running;
   }
 
-  void processAudioOutput(ProcessData<2> audio_output)
+  void process_audio_output(ProcessData<2> audio_output)
   {
 #if OTTO_DEBUG_UI
       float max;

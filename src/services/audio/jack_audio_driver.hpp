@@ -10,7 +10,7 @@
 
 namespace otto::audio {
   struct JackAudioDriver {
-    static JackAudioDriver& get();
+    static JackAudioDriver& get() noexcept;
 
     void init();
     void shutdown();
@@ -18,12 +18,12 @@ namespace otto::audio {
     std::atomic_int samplerate;
 
   private:
-    JackAudioDriver() = default;
-    ~JackAudioDriver() = default;
+    JackAudioDriver() noexcept = default;
+    ~JackAudioDriver() noexcept = default;
 
     using AudioSample = jack_default_audio_sample_t;
-    const size_t sampleSize = sizeof(AudioSample);
-    const std::string clientName = "OTTO";
+    static constexpr const size_t sampleSize = sizeof(AudioSample);
+    static constexpr const char* const clientName = "OTTO";
 
     struct {
       jack_port_t *outL;
@@ -35,7 +35,7 @@ namespace otto::audio {
 
     std::size_t bufferSize;
 
-    jack_client_t *client;
+    jack_client_t* client;
     jack_status_t jackStatus;
 
     std::vector<midi::AnyMidiEvent> midi_buf;

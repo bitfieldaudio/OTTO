@@ -12,7 +12,7 @@
 #include "util/audio.hpp"
 #include "util/ringbuffer.hpp"
 
-#include "debug/ui.hpp"
+#include "services/debug_ui.hpp"
 
 namespace otto {
 

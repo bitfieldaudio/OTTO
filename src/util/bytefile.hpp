@@ -255,7 +255,7 @@ namespace otto::util {
   template<typename OutIter, typename>
   result<void, OutIter> ByteFile::read_bytes(OutIter f, OutIter l) {
     if (!is_open()) throw Error(Error::Type::FileNotOpen);
-    result<void, OutIter> res;
+    result<void, OutIter> res {std::monostate()};
     // If OutIter is a pointer, copy everything at once
     if constexpr (std::is_pointer_v<OutIter>) {
       fstream.read((char*) f, l - f);
@@ -296,7 +296,7 @@ namespace otto::util {
       fstream.clear();
       return {fstream.tellg()};
     }
-    return {};
+    return result<void, std::streampos>::Ok();
   }
 
   template<std::size_t N>
@@ -306,7 +306,7 @@ namespace otto::util {
       fstream.clear();
       return {fstream.tellg()};
     }
-    return {};
+    return result<void, std::streampos>::Ok();
   }
 
   template<typename InIter, typename>

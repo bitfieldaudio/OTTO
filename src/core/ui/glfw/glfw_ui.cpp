@@ -5,7 +5,7 @@
 #include "core/globals.hpp"
 #include "core/ui/mainui.hpp"
 #include "core/ui/drawing.hpp"
-#include "debug/ui.hpp"
+#include "services/debug_ui.hpp"
 #include "services/logger.hpp"
 
 #define NANOVG_GL3_IMPLEMENTATION

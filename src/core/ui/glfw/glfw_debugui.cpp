@@ -1,6 +1,6 @@
 #if OTTO_UI_GLFW && OTTO_DEBUG_UI
 
-#include "debug/ui.hpp"
+#include "services/debug_ui.hpp"
 #include <GL/gl3w.h>
 #include <GLFW/glfw3.h>
 

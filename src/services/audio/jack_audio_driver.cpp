@@ -10,8 +10,8 @@
 #include "core/globals.hpp"
 #include "util/timer.hpp"
 
-#include "core/engines/engine_manager.hpp"
-#include "core/audio/audio_manager.hpp"
+#include "services/engine_manager.hpp"
+#include "services/audio_manager.hpp"
 #include "core/audio/processor.hpp"
 #include "services/logger.hpp"
 
@@ -24,24 +24,19 @@ namespace otto::audio {
 
     void jackLogInfo(const char* s)
     {
-      LOG_F(INFO, "JACK: {}", s);
+      LOGI("JACK: {}", s);
     }
 
     void jackShutdown(void* arg)
     {
-      LOG_F(INFO, "JACK shut down, exiting");
+      LOGI("JACK shut down, exiting");
     }
   } // namespace
 
-  JackAudioDriver& JackAudioDriver::get()
+  JackAudioDriver& JackAudioDriver::get() noexcept
   {
-    static JackAudioDriver* pInstance;
-
-    if (!pInstance) {
-      pInstance = new JackAudioDriver();
-    }
-
-    return *pInstance;
+    static JackAudioDriver instance {};
+    return instance;
   }
 
   void JackAudioDriver::init()
@@ -49,7 +44,7 @@ namespace otto::audio {
     jack_set_error_function(jackError);
     jack_set_info_function(jackLogInfo);
 
-    client = jack_client_open(clientName.c_str(), JackNullOption, &jackStatus);
+    client = jack_client_open(clientName, JackNullOption, &jackStatus);
 
     if ((!jackStatus) & JackServerStarted) {
       throw global::exception(global::ErrorCode::audio_error,
@@ -196,7 +191,7 @@ namespace otto::audio {
     return ret;
   }
 
-  // Helper function for connections
+  /// Helper function for connections
   bool JackAudioDriver::connectPorts(const std::string& src,
                                      const std::string& dest)
   {
@@ -263,7 +258,7 @@ namespace otto::audio {
     TIME_SCOPE("JackAudio::Process");
 
     if ((size_t) nframes > bufferSize) {
-      LOG_F(ERROR, "Jack requested more frames than expected");
+      LOGE("Jack requested more frames than expected");
       return;
     }
 
@@ -273,14 +268,14 @@ namespace otto::audio {
     float* outRData = (float*) jack_port_get_buffer(ports.outR, nframes);
     float* inData   = (float*) jack_port_get_buffer(ports.input, nframes);
 
-    auto out_data = engines::processAudio(
+    auto out_data = engines::process(
       {{reinterpret_cast<util::audio::AudioFrame<1>*>(inData), nframes},
        {midi_buf},
        nframes});
 
-    audio::processAudioOutput(out_data);
+    audio::process_audio_output(out_data);
 
-    LOG_IF_F(WARNING, out_data.nframes != nframes, "Frames went missing!");
+    LOGW_IF(out_data.nframes != nframes, "Frames went missing!");
 
     // Separate channels
     for (int i = 0; i < nframes; i++) {

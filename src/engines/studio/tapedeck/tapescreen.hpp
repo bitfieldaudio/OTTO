@@ -6,8 +6,8 @@
 #include "core/ui/mainui.hpp"
 #include "core/ui/drawing.hpp"
 #include "tapedeck.hpp"
-#include "core/audio/audio_manager.hpp"
-#include "core/engines/engine_manager.hpp"
+#include "services/audio_manager.hpp"
+#include "services/engine_manager.hpp"
 
 namespace otto::ui::vg {
   namespace Colours {
@@ -430,10 +430,10 @@ namespace otto::engines {
         ctx.lineCap(Canvas::LineCap::ROUND);
         ctx.lineJoin(Canvas::LineJoin::ROUND);
 
-        auto bar = std::min(0.f, engines::metronomeState::bar_for_time(view_time.in) - 1);
+        auto bar = std::min(0.f, engines::metronome_state::bar_for_time(view_time.in) - 1);
 
         while (true) {
-          auto time = engines::metronomeState::time_for_bar(bar);
+          auto time = engines::metronome_state::time_for_bar(bar);
           bar += 1;
           float x = time_to_coord(time);
           if (x < min_x) {

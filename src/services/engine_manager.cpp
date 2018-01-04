@@ -1,9 +1,15 @@
 #include "engine_manager.hpp"
 
 #include "core/ui/mainui.hpp"
+
+#include "engines/studio/input_selector/input_selector.hpp"
+#include "engines/studio/metronome/metronome.hpp"
+#include "engines/studio/mixer/mixer.hpp"
+#include "engines/studio/tapedeck/tapedeck.hpp"
 #include "engines/drums/drum-sampler/drum-sampler.hpp"
 #include "engines/drums/simple-drums/simple-drums.hpp"
 #include "engines/synths/nuke/nuke.hpp"
+
 #include "services/state.hpp"
 
 namespace otto::engines {
@@ -35,7 +41,18 @@ namespace otto::engines {
     synth.init();
     drums.init();
 
-    ui::registerKeyHandler(ui::Key::play, [](ui::Key key) {
+    ui::register_key_handler(ui::Key::tape,
+                             [](ui::Key k) { ui::select_engine(tapedeck); });
+    ui::register_key_handler(ui::Key::mixer,
+                             [](ui::Key k) { ui::select_engine(mixer); });
+    ui::register_key_handler(ui::Key::synth,
+                             [](ui::Key k) { ui::select_engine(*synth); });
+    ui::register_key_handler(ui::Key::drums,
+                             [](ui::Key k) { ui::select_engine(*drums); });
+    ui::register_key_handler(ui::Key::metronome,
+                             [](ui::Key k) { ui::select_engine(metronome); });
+
+    ui::register_key_handler(ui::Key::play, [](ui::Key key) {
       if (tapedeck.state.playing()) {
         tapedeck.state.stop();
       } else {
@@ -43,12 +60,13 @@ namespace otto::engines {
       }
     });
 
+
     auto load = [&](nlohmann::json& data) {
-      from_json(data["TapeDeck"], tapedeck);
-      from_json(data["Mixer"], mixer);
+      tapedeck.from_json(data["TapeDeck"]);
+      mixer.from_json(data["Mixer"]);
       from_json(data["Synth"], synth);
       from_json(data["Drums"], drums);
-      from_json(data["Metronome"], metronome);
+      metronome.from_json(data["Metronome"]);
     };
 
     auto save = [&]() {
@@ -77,8 +95,7 @@ namespace otto::engines {
     tapedeck.on_disable();
   }
 
-  audio::ProcessData<2> processAudio(
-    audio::ProcessData<1> external_in)
+  audio::ProcessData<2> process(audio::ProcessData<1> external_in)
   {
     using Selection = InputSelector::Selection;
 
@@ -132,17 +149,16 @@ namespace otto::engines {
     return mixer_out;
   }
 
-  AnyEngine* getEngineByName(const std::string& name)
+  AnyEngine* const by_name(const std::string& name) noexcept
   {
-    auto getter = engineGetters[name];
-    if (!getter) {
+    auto getter = engineGetters.find(name);
+    if (getter == engineGetters.end())
       return nullptr;
-    }
 
-    return getter();
+    return getter->second();
   }
 
-  namespace tapeState {
+  namespace tape_state {
     int position()
     {
       return tapedeck.position();
@@ -159,12 +175,12 @@ namespace otto::engines {
     }
   } // namespace tapeState
 
-  namespace metronomeState {
-    TapeTime getBarTime(BeatPos bar) {
+  namespace metronome_state {
+    TapeTime bar_time(BeatPos bar) {
       return metronome.getBarTime(bar);
     }
 
-    TapeTime getBarTimeRel(BeatPos bar) {
+    TapeTime bar_time_rel(BeatPos bar) {
       return metronome.getBarTimeRel(bar);
     }
 

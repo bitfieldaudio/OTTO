@@ -4,7 +4,7 @@
 
 #include "core/globals.hpp"
 #include "services/state.hpp"
-#include "core/engines/engine_manager.hpp"
+#include "services/engine_manager.hpp"
 
 namespace otto::ui {
   static constexpr const char * initial_engine = "TapeDeck";
@@ -19,7 +19,7 @@ namespace otto::ui {
     Screen* cur_screen = &empty_screen;
 
     PressedKeys keys;
-    std::multimap<Key, key_handler> key_handlers;
+    std::multimap<Key, KeyHandler> key_handlers;
   }
 
   bool is_pressed(Key k) noexcept
@@ -27,35 +27,37 @@ namespace otto::ui {
     return keys[static_cast<unsigned>(k)];
   }
 
-  void selectEngine(std::string engine_name) {
+  void select_engine(const std::string& engine_name) {
     selected_engine_name = engine_name;
 
-    auto engine = engines::getEngineByName(engine_name);
+    auto engine = engines::by_name(engine_name);
     if (!engine) {
-      engine = engines::getEngineByName(initial_engine);
+      engine = engines::by_name(initial_engine);
+    }
+    if (engine != nullptr) {
+      select_engine(*engine);
     }
 
-    display(engine->screen());
   }
 
-  static void registerScreenKeys()
+  void select_engine(engines::AnyEngine& engine) {
+    display(engine.screen());
+    selected_engine_name = engine.name();
+  }
+
+  static void register_screen_keys()
   {
-    registerKeyHandler(Key::tape, [](Key k){ selectEngine("TapeDeck"); });
-    registerKeyHandler(Key::mixer, [](Key k){ selectEngine("Mixer"); });
-    registerKeyHandler(Key::synth, [](Key k){ selectEngine("Synth"); });
-    registerKeyHandler(Key::drums, [](Key k){ selectEngine("Drums"); });
-    registerKeyHandler(Key::metronome, [](Key k){ selectEngine("Metronome"); });
   }
 
   void init() {
-    registerScreenKeys();
+    register_screen_keys();
 
     auto load = [](const nlohmann::json &j) {
       if (j.is_object()) {
         selected_engine_name = j["SelectedEngine"];
       }
 
-      selectEngine(selected_engine_name);
+      select_engine(selected_engine_name);
     };
 
     auto save = []() {
@@ -74,9 +76,9 @@ namespace otto::ui {
     cur_screen->on_show();
   }
 
-  void registerKeyHandler(Key k, key_handler handler)
+  void register_key_handler(Key k, KeyHandler handler)
   {
-    key_handlers.insert({k, handler});
+    key_handlers.emplace(k, handler);
   }
 
   namespace impl {
@@ -87,13 +89,11 @@ namespace otto::ui {
         return true;
       }
 
-      auto result = key_handlers.equal_range(key);
-      int count = std::distance(result.first, result.second);
-      if (count == 0) {
+      auto [first, last] = key_handlers.equal_range(key);
+      if (first == last)
         return false;
-      }
 
-    	for (auto it = result.first; it != result.second; it++) {
+      for (auto it = first; it != last; it++) {
         it->second(key);
       }
 

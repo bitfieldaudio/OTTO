@@ -9,7 +9,7 @@
 #include "core/ui/icons.hpp"
 #include "util/soundfile.hpp"
 #include "util/exception.hpp"
-#include "core/audio/audio_manager.hpp"
+#include "services/audio_manager.hpp"
 
 namespace otto::engines {
 

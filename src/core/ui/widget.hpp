@@ -57,24 +57,17 @@ namespace otto::ui {
 
   using PressedKeys = bool[util::underlying(Key::n_keys)];
 
-  class Widget : public vg::SizedDrawable {
-  public:
+  struct Widget : vg::SizedDrawable {
     Widget() {}
-    explicit Widget(vg::Size size) : SizedDrawable (size) {}
-
+    explicit Widget(vg::Size size) //
+      : SizedDrawable(size)
+    {}
   };
 
-  enum class Rotary {
-    Blue,
-    Green,
-    White,
-    Red
-  };
+  enum struct Rotary { Blue, Green, White, Red };
 
 
-  /**
-   * Passed to `Screen::rotary`
-   */
+  /// Passed to `Screen::rotary`
   struct RotaryEvent {
     /// The rotary at which the event occured
     Rotary rotary;
@@ -83,50 +76,41 @@ namespace otto::ui {
     int clicks;
   };
 
-  /**
-   * Represents a view that covers the entire screen
-   *
-   * If it belongs to a engine, use <ui::EngineScreen>.
-   */
-  class Screen : public vg::Drawable {
-  public:
-
+  /// Represents a view that covers the entire screen
+  ///
+  /// If it belongs to a engine, use [engines::EngineScreen]().
+  struct Screen : vg::Drawable {
     using ptr = std::unique_ptr<Screen>;
 
     Screen() : Drawable() {}
     virtual ~Screen() {}
-    /**
-     * Run by MainUI when a key is pressed
-     *
-     * \param key the pressed key
-     * \returns true if the key was used.
-     */
-    virtual bool keypress(Key) {
-      return false;
-    }
-    /**
-     * Run by MainUI when a key is released
-     *
-     * \param key the released key
-     * \returns true if the key was used.
-     */
-    virtual bool keyrelease(Key) {
+
+    /// Run by MainUI when a key is pressed
+    ///
+    /// \param key the pressed key
+    /// \returns true if the key was used.
+    virtual bool keypress(Key)
+    {
       return false;
     }
 
-    /**
-     * This should be used for handling rotary events
-     */
+    /// Run by MainUI when a key is released
+    ///
+    /// \param key the released key
+    /// \returns true if the key was used.
+    virtual bool keyrelease(Key)
+    {
+      return false;
+    }
+
+    /// This should be used for handling rotary events
     virtual void rotary(RotaryEvent) {}
 
-    /**
-     * Run by MainUI when switching to this screen
-     */
+    /// Run by MainUI when switching to this screen
     virtual void on_show() {}
-    /**
-     * Run by MainUI when switching to another screen
-     */
+
+    /// Run by MainUI when switching to another screen
     virtual void on_hide() {}
   };
 
-}
+} // namespace otto::ui

@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/ui/widget.hpp"
+#include "core/engines/engine.hpp"
 #include <json.hpp>
 
 namespace otto::ui {
@@ -28,14 +29,23 @@ namespace otto::ui {
   /// Check if a key is currently pressed.
   bool is_pressed(Key k) noexcept;
 
-  using key_handler = std::function<void(Key k)>;
-  void registerKeyHandler(Key k, key_handler handler);
+  /// Function type for key handlers
+  using KeyHandler = std::function<void(Key k)>;
+
+  /// Register a key handler
+  void register_key_handler(Key k, KeyHandler handler);
 
   /// Display a screen.
   ///
   /// Calls [Screen::on_hide]() for the old screen, and then [Screen::on_show]()
   /// for the new screen
   void display(Screen& screen);
+
+  /// Select an engine
+  void select_engine(engines::AnyEngine& engine);
+
+  /// Select an engine by name
+  void select_engine(const std::string& engine_name);
 
   void init();
 

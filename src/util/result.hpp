@@ -25,8 +25,7 @@ namespace otto::util {
   /// }
   /// ```
   template<typename ok_t, typename err_t>
-  class [[nodiscard]] result {
-  public:
+  struct [[nodiscard]] result {
     // if ok_t is void, use std::monostate, since variant cannot hold void
     using Ok = select_type_t<std::is_void_v<ok_t>, std::monostate, ok_t>;
     using Err = select_type_t<std::is_void_v<err_t>, std::monostate, err_t>;
@@ -44,8 +43,8 @@ namespace otto::util {
       }
     };
 
-    template<typename = std::enable_if_t<std::is_default_constructible_v<Ok>>>
-    result() : data (Ok()) {}
+    // template<typename = std::enable_if_t<std::is_default_constructible_v<Ok>>>
+    // result() : data (Ok()) {}
 
     result(const Ok& ok) : data (ok) {}
     result(Ok&& ok) : data (std::move(ok)) {}
@@ -54,13 +53,13 @@ namespace otto::util {
     result(Err&& err) : data (std::move(err)) {}
 
     /// Check if result is ok
-    /// @return `true` if the result is `Ok`
+    /// \returns `true` if the result is `Ok`
     bool is_ok() const noexcept {
       return mpark::holds_alternative<Ok>(data);
     }
 
     /// Check if result is errored
-    /// @return `true` if the result is `Err`
+    /// \returns `true` if the result is `Err`
     bool is_err() const noexcept {
       return mpark::holds_alternative<Err>(data);
     }

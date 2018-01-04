@@ -10,6 +10,7 @@
 namespace otto::engines {
 
   using BeatPos = int;
+  using TapeTime = int;
 
   struct Metronome : Engine<EngineType::studio>, private audio::FaustWrapper<0, 1> {
 
@@ -29,11 +30,11 @@ namespace otto::engines {
 
     audio::ProcessData<1> process(audio::ProcessData<0>);
 
-    unsigned getBarTime(BeatPos bar);
-    unsigned getBarTimeRel(BeatPos bar);
-    BeatPos closestBar(unsigned time);
+    TapeTime getBarTime(BeatPos bar);
+    TapeTime getBarTimeRel(BeatPos bar);
+    BeatPos closestBar(TapeTime time);
 
-    float bar_for_time(std::size_t time) const;
+    float bar_for_time(TapeTime time) const;
     std::size_t time_for_bar(float bar) const;
   };
 }

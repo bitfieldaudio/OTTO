@@ -1,6 +1,6 @@
 #include "processor.hpp"
 
-#include "core/audio/audio_manager.hpp"
+#include "services/audio_manager.hpp"
 
 namespace otto::audio::detail {
   void registerAudioBufferResize(std::function<void(int)> eventHandler)

@@ -7,8 +7,8 @@
 #include "tapescreen.hpp"
 #include "util/algorithm.hpp"
 #include "util/timer.hpp"
-#include "core/audio/audio_manager.hpp"
-#include "core/engines/engine_manager.hpp"
+#include "services/audio_manager.hpp"
+#include "services/engine_manager.hpp"
 
 namespace otto::engines {
   // TapeDeck::State ///////////////////////////////////////////////////////////
@@ -169,14 +169,14 @@ namespace otto::engines {
   void Tapedeck::goToBar(BeatPos bar)
   {
     if (state.doJumps()) {
-      tapeBuffer->jump_to(engines::metronomeState::getBarTime(bar));
+      tapeBuffer->jump_to(engines::metronome_state::bar_time(bar));
     }
   }
 
   void Tapedeck::goToBarRel(BeatPos bars)
   {
     if (state.doJumps())
-      tapeBuffer->jump_to(engines::metronomeState::getBarTimeRel(bars));
+      tapeBuffer->jump_to(engines::metronome_state::bar_time_rel(bars));
   }
 
   int Tapedeck::timeUntil(std::size_t tt)

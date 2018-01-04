@@ -1,6 +1,6 @@
-#include "core/audio/audio_manager.hpp"
+#include "services/audio_manager.hpp"
 #include "core/audio/midi.hpp"
-#include "core/engines/engine_manager.hpp"
+#include "services/engine_manager.hpp"
 #include "core/globals.hpp"
 #include "core/ui/mainui.hpp"
 #include "services/logger.hpp"

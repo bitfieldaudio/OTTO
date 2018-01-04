@@ -1,9 +1,6 @@
 #include "globals.hpp"
 #include <atomic>
 #include <condition_variable>
-#include "core/ui/mainui.hpp"
-#include "services/state.hpp"
-#include "core/audio/audio_manager.hpp"
 
 namespace otto::global {
   namespace {

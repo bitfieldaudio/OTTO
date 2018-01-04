@@ -1,7 +1,7 @@
 #include "core/audio/faust.hpp"
 
 #include <exception>
-#include "core/audio/audio_manager.hpp"
+#include "services/audio_manager.hpp"
 #include "core/globals.hpp"
 
 namespace otto::audio::detail {

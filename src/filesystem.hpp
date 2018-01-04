@@ -30,9 +30,9 @@ namespace otto::filesystem {
 
     // 30.10.7.4.1, constructors and destructor
 
-    path();
+    path() noexcept;
     path(const path& p);
-    path(path&& p);
+    path(path&& p) noexcept;
     path(const string_type& source, format fmt = auto_format);
     path(const string_type&& source, format fmt = auto_format);
     path(std::basic_string_view<value_type> source, format fmt = auto_format);

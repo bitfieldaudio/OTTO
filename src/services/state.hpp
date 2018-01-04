@@ -5,11 +5,26 @@
 #include <string>
 
 namespace otto::services::state {
-  using loader = std::function<void(nlohmann::json& json)>;
-  using saver  = std::function<nlohmann::json()>;
+  /// Decoder
+  using Loader = std::function<void(nlohmann::json& json)>;
+  /// Encoder
+  using Saver  = std::function<nlohmann::json()>;
 
+  /// Read `data/state.json` and invoke attached loaders
   void load();
+
+  /// Invoke attached savers and write `data/state.json`
   void save();
-  void attach(std::string name, loader load, saver save);
+
+  /// Attach state handler with a name
+  ///
+  /// \throws [otto::util::exception]() If a handler has already been attached
+  /// with the name `name` 
+  void attach(std::string name, Loader load, Saver save);
+
+  /// Detach a state handler
+  ///
+  /// \throws [otto::util::exception]() If no such handler is attached
   void detach(std::string name);
+
 } // namespace otto::services::state

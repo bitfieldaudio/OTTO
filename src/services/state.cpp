@@ -8,8 +8,8 @@ namespace otto::services::state {
   namespace {
     struct Client {
       std::string name;
-      loader load;
-      saver save;
+      Loader load;
+      Saver save;
     };
 
     struct State {
@@ -17,15 +17,12 @@ namespace otto::services::state {
       util::JsonFile data_file{global::data_dir / "state.json"};
       bool loaded = false;
 
+      State() = default;
+
       static State& instance()
       {
-        static State* pInstance;
-
-        if (!pInstance) {
-          pInstance = new State();
-        }
-
-        return *pInstance;
+        static State instance {};
+        return instance;
       }
 
       void load()
@@ -63,13 +60,15 @@ namespace otto::services::state {
         data_file.write();
       }
 
-      void attach(std::string name, loader load, saver save)
+      void attach(const std::string& name, Loader&& load, Saver&& save)
       {
         if (clients.find(name) != clients.end()) {
-          throw util::exception("Tried to attach a state client with the same name as another: " + name);
+          throw util::exception(
+            "Tried to attach a state client with the same name as another: " +
+            name);
         }
 
-        clients[name] = {name, load, save};
+        clients[name] = {name, load, std::move(save)};
 
         if (loaded) {
           auto& data = data_file.data();
@@ -77,7 +76,7 @@ namespace otto::services::state {
         }
       }
 
-      void detach(std::string name)
+      void detach(const std::string& name)
       {
         if (clients.find(name) == clients.end()) {
           throw util::exception(
@@ -99,12 +98,12 @@ namespace otto::services::state {
     State::instance().save();
   }
 
-  void attach(std::string name, loader load, saver save)
+  void attach(std::string name, Loader load, Saver save)
   {
-    State::instance().attach(name, load, save);
+    State::instance().attach(std::move(name), std::move(load), std::move(save));
   }
 
-  void detach(std::string name)
+  void detach(const std::string& name)
   {
     State::instance().detach(name);
   }
