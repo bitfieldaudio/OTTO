@@ -9,7 +9,7 @@
 #include "util/algorithm.hpp"
 #include "util/jsonfile.hpp"
 
-#include "core/ui/widget.hpp"
+#include "core/ui/screen.hpp"
 #include "core/audio/processor.hpp"
 #include "core/engines/engine_props.hpp"
 

@@ -1,7 +1,7 @@
 #include "simple-drums.hpp"
 #include "simple-drums.faust.h"
 
-#include "core/ui/drawing.hpp"
+#include "core/ui/vector_graphics.hpp"
 #include "core/globals.hpp"
 #include "core/ui/mainui.hpp"
 

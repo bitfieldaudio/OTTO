@@ -1,14 +1,15 @@
 #pragma once
 
-#include "core/ui/drawing.hpp"
+#include "core/ui/vector_graphics.hpp"
 
 namespace otto::ui::vg::icons {
 
-  struct Icon : public SizedDrawable {
+  struct Icon : Drawable {
+    Size size;
     Colour colour;
     float lineWidth = 2;
 
-    virtual void draw(Canvas&) override {};
+    virtual void draw(Canvas&) override {}
   };
 
   /// A simple arrow

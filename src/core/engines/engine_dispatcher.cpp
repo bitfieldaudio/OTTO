@@ -1,33 +1,32 @@
 #include "engine_dispatcher.hpp"
 
+#include "engine_selector_screen.hpp"
+
 namespace otto::engines {
 
-  // EngineDispatcher Implementations /////////////////////////////////////////
-  template<EngineType ET>
-  EngineDispatcher<ET>::EngineDispatcher()
-  {}
-  
-  template<EngineType ET>
-  void EngineDispatcher<ET>::init()
-  {
-    _engines = create_engines<ET>();
-    if (_engines.empty()) {
-      throw util::exception(
-        "No engines registered. Can't construct EngineDispatcher");
-    }
-  }
+// EngineDispatcher Implementations /////////////////////////////////////////
+template<EngineType ET>
+void EngineDispatcher<ET>::init()
+{
+_engines = create_engines<ET>();
+if (_engines.empty()) {
+    throw util::exception(
+    "No engines registered. Can't construct EngineDispatcher");
+}
+_selector_screen = std::make_unique<EngineSelectorScreen>(*this);
+}
 
-  template<EngineType ET>
-  Engine<ET>& EngineDispatcher<ET>::current() noexcept
-  {
-    return *_current;
-  }
+template<EngineType ET>
+Engine<ET>& EngineDispatcher<ET>::current() noexcept
+{
+return *_current;
+}
 
-  template<EngineType ET>
-  const Engine<ET>& EngineDispatcher<ET>::current() const noexcept
-  {
-    return *_current;
-  }
+template<EngineType ET>
+const Engine<ET>& EngineDispatcher<ET>::current() const noexcept
+{
+return *_current;
+}
 
   template<EngineType ET>
   Engine<ET>& EngineDispatcher<ET>::operator*() noexcept
@@ -110,6 +109,18 @@ namespace otto::engines {
     }
     (*iter)->from_json(patch.data);
     return **iter;
+  }
+
+  template<EngineType ET>
+  ui::Screen& EngineDispatcher<ET>::selector_screen() noexcept
+  {
+    return *_selector_screen;
+  }
+
+  template<EngineType ET>
+  const std::vector<std::unique_ptr<Engine<ET>>>& EngineDispatcher<ET>::engines() const noexcept
+  {
+    return _engines;
   }
 
   // Explicit instantiations

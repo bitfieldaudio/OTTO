@@ -56,7 +56,6 @@ namespace otto::engines {
     /// \postconditions as `util::JsonFile(p)`, and
     /// `validate() == ErrorCode::none`
     /// \remarks remember to `read()` after construction
-    /// *BOLD TEXT*
     explicit PresetFile(const fs::path& p);
 
     /// Confirm the presence of the header and `Engines` section, as well as the

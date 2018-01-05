@@ -19,15 +19,12 @@ namespace otto::engines {
 
     // Initialization
 
-    /// Construct an EngineDispatcher
-    ///
-    /// \effects None
-    EngineDispatcher();
-
     /// Construct all registered engines
     ///
     /// Only call this after all engines are registered
-    /// \effects construct [_engines]() using [otto::engines:create_engines<ET>]()
+    /// \effects
+    ///  - construct [_engines]() using [otto::engines:create_engines<ET>]()
+    ///  - instantiate [_selector_screen]() with a new [EngineSelectorScreen<ET>]()
     void init();
 
     /// Access the currently selected engine
@@ -36,10 +33,12 @@ namespace otto::engines {
 
     /// Access the currently selected engine
     Engine<ET>& operator*() noexcept;
+    /// Access the currently selected engine
     const Engine<ET>& operator*() const noexcept;
 
     /// Access the currently selected engine
     Engine<ET> const* operator->() const noexcept;
+    /// Access the currently selected engine
     Engine<ET>* operator->() noexcept;
 
     /// Select engine
@@ -86,8 +85,17 @@ namespace otto::engines {
     /// \returns A reference to the engine that matched the patch
     Engine<ET>& apply_patch(const EnginePatch& seq);
 
+    /// Access the screen used to select engines/presets
+    ///
+    /// The returned screen has the dynamic type [EngineSelectorScreen]()
+    /// \preconditions [init]() has previously been called
+    ui::Screen& selector_screen() noexcept;
+
+    const std::vector<std::unique_ptr<Engine<ET>>>& engines() const noexcept;
+
   private:
     std::vector<std::unique_ptr<Engine<ET>>> _engines;
+    std::unique_ptr<ui::Screen> _selector_screen;
     Engine<ET>* _current;
   };
 

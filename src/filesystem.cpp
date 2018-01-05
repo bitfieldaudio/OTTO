@@ -245,11 +245,11 @@ namespace otto::filesystem {
 
   // 30.10.7.4.1, constructors and destructor
 
-  path::path() = default;
+  path::path() noexcept = default;
 
   path::path(const path& p) = default;
 
-  path::path(path&& p) = default;
+  path::path(path&& p) noexcept = default;
 
   path::path(const string_type&& source, format fmt)
     : _format(fmt),

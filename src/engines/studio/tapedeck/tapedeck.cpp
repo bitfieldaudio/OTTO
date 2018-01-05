@@ -2,7 +2,7 @@
 #include <cmath>
 
 #include "core/globals.hpp"
-#include "core/ui/drawing.hpp"
+#include "core/ui/vector_graphics.hpp"
 #include "tapedeck.hpp"
 #include "tapescreen.hpp"
 #include "util/algorithm.hpp"

@@ -1,6 +1,6 @@
 #include "mixer.hpp"
 #include "core/ui/mainui.hpp"
-#include "core/ui/drawing.hpp"
+#include "core/ui/vector_graphics.hpp"
 #include "core/globals.hpp"
 #include "util/timer.hpp"
 

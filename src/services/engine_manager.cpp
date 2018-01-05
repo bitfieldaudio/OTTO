@@ -45,12 +45,22 @@ namespace otto::engines {
                              [](ui::Key k) { ui::select_engine(tapedeck); });
     ui::register_key_handler(ui::Key::mixer,
                              [](ui::Key k) { ui::select_engine(mixer); });
-    ui::register_key_handler(ui::Key::synth,
-                             [](ui::Key k) { ui::select_engine(*synth); });
-    ui::register_key_handler(ui::Key::drums,
-                             [](ui::Key k) { ui::select_engine(*drums); });
     ui::register_key_handler(ui::Key::metronome,
                              [](ui::Key k) { ui::select_engine(metronome); });
+    ui::register_key_handler(ui::Key::synth, [](ui::Key k) {
+      if (ui::is_pressed(ui::Key::shift)) {
+        ui::display(drums.selector_screen());
+      } else {
+        ui::select_engine(*synth);
+      }
+    });
+    ui::register_key_handler(ui::Key::drums, [](ui::Key k) {
+      if (ui::is_pressed(ui::Key::shift)) {
+        ui::display(drums.selector_screen());
+      } else {
+        ui::select_engine(*drums);
+      }
+    });
 
     ui::register_key_handler(ui::Key::play, [](ui::Key key) {
       if (tapedeck.state.playing()) {
