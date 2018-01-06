@@ -49,8 +49,8 @@ namespace otto::engines {
           }
           graphs[t].add(audio);
         }
-        out = {lMix, rMix};
-    }
+        out = {{lMix, rMix}};
+  };
 
     return data.redirect(proc_buf);
   }

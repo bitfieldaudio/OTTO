@@ -34,7 +34,7 @@ namespace otto::filesystem {
     path(const path& p);
     path(path&& p) noexcept;
     path(const string_type& source, format fmt = auto_format);
-    path(const string_type&& source, format fmt = auto_format);
+    path(string_type&& source, format fmt = auto_format);
     path(std::basic_string_view<value_type> source, format fmt = auto_format);
     path(const value_type* source, format fmt = auto_format);
 

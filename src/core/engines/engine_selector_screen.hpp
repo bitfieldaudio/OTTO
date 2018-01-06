@@ -36,7 +36,7 @@ namespace otto::engines {
   template<EngineType ET>
   EngineSelectorScreen::EngineSelectorScreen(EngineDispatcher<ET>& ed)
     : engine_wid(engine_names, eng_opts([&ed](int idx) -> AnyEngine& {
-                   return ed.select(std::size_t{idx});
+                   return ed.select(static_cast<std::size_t>(idx));
                  })),
       preset_wid(preset_names, prst_opts([&ed]() -> AnyEngine& { return ed.current(); }))
   {

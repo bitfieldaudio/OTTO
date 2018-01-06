@@ -30,7 +30,7 @@ namespace otto::util {
     constexpr auto generate_sequence_impl(std::integer_sequence<int, ns...>&&, Func&& gen) {
       return std::array<std::decay_t<
         decltype(std::invoke(gen, std::declval<int>()))>,
-        sizeof...(ns)>{std::invoke(gen, ns)...};
+        sizeof...(ns)>{{std::invoke(gen, ns)...}};
     }
   }
 

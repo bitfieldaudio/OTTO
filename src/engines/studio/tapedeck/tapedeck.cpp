@@ -179,7 +179,7 @@ namespace otto::engines {
       tapeBuffer->jump_to(engines::metronome_state::bar_time_rel(bars));
   }
 
-  int Tapedeck::timeUntil(std::size_t tt)
+  int Tapedeck::timeUntil(int tt)
   {
     return 0;
     auto ttUntil = state.fwd() ? tt - position() : position() - tt;
