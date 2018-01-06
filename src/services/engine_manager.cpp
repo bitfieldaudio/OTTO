@@ -1,18 +1,22 @@
 #include "engine_manager.hpp"
 
-#include "core/ui/mainui.hpp"
+#include <map>
 
+#include "core/ui/mainui.hpp"
+#include "core/globals.hpp"
+
+#include "engines/drums/drum-sampler/drum-sampler.hpp"
+#include "engines/drums/simple-drums/simple-drums.hpp"
 #include "engines/studio/input_selector/input_selector.hpp"
 #include "engines/studio/metronome/metronome.hpp"
 #include "engines/studio/mixer/mixer.hpp"
 #include "engines/studio/tapedeck/tapedeck.hpp"
-#include "engines/drums/drum-sampler/drum-sampler.hpp"
-#include "engines/drums/simple-drums/simple-drums.hpp"
 #include "engines/synths/nuke/nuke.hpp"
 
 #include "services/state.hpp"
 
 namespace otto::engines {
+
   namespace {
     std::map<std::string, std::function<AnyEngine*()>> engineGetters;
     audio::ProcessBuffer<1> _audiobuf1;
@@ -24,6 +28,17 @@ namespace otto::engines {
     Mixer mixer;
     Metronome metronome;
     InputSelector selector;
+
+    struct PresetNamesDataPair {
+      std::vector<std::string> names;
+      std::vector<nlohmann::json> data;
+    };
+
+    // Key is engine name.
+    // This design is chosen because we want to expose the names vector separately.
+    std::map<std::string, PresetNamesDataPair> _preset_data;
+
+    const fs::path presets_dir = global::data_dir / "presets";
   } // namespace
 
   void init()
@@ -88,6 +103,7 @@ namespace otto::engines {
     };
 
     services::state::attach("Engines", load, save);
+    load_preset_files();
   }
 
   void start()
@@ -119,18 +135,17 @@ namespace otto::engines {
       case Selection::Internal: {
         auto synth_out = synth->process(midi_in);
         auto drums_out = drums->process(midi_in);
-        for (auto && [ drm, snth ] : util::zip(drums_out, synth_out)) {
+        for (auto&& [drm, snth] : util::zip(drums_out, synth_out)) {
           util::audio::add_all(drm, snth);
         }
         return drums_out;
       }
       case Selection::External: return effect->process(external_in);
       case Selection::TrackFB:
-        util::transform(
-          playback_out,
-          _audiobuf1.begin(), [track = selector.props.track.get()](auto&& a) {
-            return std::array<float, 1>{a[track]};
-          });
+        util::transform(playback_out, _audiobuf1.begin(),
+                        [track = selector.props.track.get()](auto&& a) {
+                          return std::array<float, 1>{a[track]};
+                        });
         return external_in.redirect(_audiobuf1);
       case Selection::MasterFB: break;
       }
@@ -152,7 +167,7 @@ namespace otto::engines {
 
     auto mtrnm_out = metronome.process(midi_in);
 
-    for (auto && [ mix, mtrn ] : util::zip(mixer_out, mtrnm_out)) {
+    for (auto&& [mix, mtrn] : util::zip(mixer_out, mtrnm_out)) {
       util::audio::add_all(mix, mtrn);
     }
 
@@ -162,8 +177,7 @@ namespace otto::engines {
   AnyEngine* const by_name(const std::string& name) noexcept
   {
     auto getter = engineGetters.find(name);
-    if (getter == engineGetters.end())
-      return nullptr;
+    if (getter == engineGetters.end()) return nullptr;
 
     return getter->second();
   }
@@ -183,23 +197,81 @@ namespace otto::engines {
     {
       return tapedeck.state.playing();
     }
-  } // namespace tapeState
+  } // namespace tape_state
 
   namespace metronome_state {
-    TapeTime bar_time(BeatPos bar) {
+    TapeTime bar_time(BeatPos bar)
+    {
       return metronome.getBarTime(bar);
     }
 
-    TapeTime bar_time_rel(BeatPos bar) {
+    TapeTime bar_time_rel(BeatPos bar)
+    {
       return metronome.getBarTimeRel(bar);
     }
 
-    float bar_for_time(std::size_t time) {
+    float bar_for_time(std::size_t time)
+    {
       return metronome.bar_for_time(time);
     }
 
-    std::size_t time_for_bar(float bar) {
+    std::size_t time_for_bar(float bar)
+    {
       return metronome.time_for_bar(bar);
     }
+  } // namespace metronome_state
+
+  // Presets ///////////////////////////////////////////////////////////////////
+
+  const std::vector<std::string>& preset_names(const std::string& engine_name)
+  {
+    return _preset_data[engine_name].names;
   }
+
+  void apply_preset(AnyEngine& engine, const std::string& name)
+  {
+    auto& pd = _preset_data[engine.name()];
+    auto niter = util::find(pd.names, name);
+    if (niter == pd.names.end()) {
+      throw exception(ErrorCode::no_such_preset, "No preset named '{}' for engine '{}'", name, engine.name());
+    }
+    engine.from_json(pd.data[niter - pd.names.begin()]);
+    engine.on_enable();
+  }
+
+  void apply_preset(AnyEngine& engine, int idx)
+  {
+    auto& pd = _preset_data[engine.name()];
+    if (idx < 0 || idx >= pd.data.size()) {
+      throw exception(ErrorCode::no_such_preset, "Preset index {} is out range for engine '{}'", idx, engine.name());
+    }
+    engine.from_json(pd.data[idx]);
+    engine.on_enable();
+  }
+
+  void load_preset_files()
+  {
+    LOG_SCOPE_FUNCTION(INFO);
+    if (!fs::exists(presets_dir)) {
+      DLOGI("Creating preset directory");
+      fs::create_directories(presets_dir);
+    }
+    decltype(_preset_data) new_preset_data;
+    DLOGI("Loading presets");
+    for (auto&& de : fs::recursive_directory_iterator(presets_dir)) {
+      LOGI_SCOPE("Loading preset file {}", de.path());
+      if (de.is_regular_file() || de.is_symlink()) {
+        util::JsonFile jf {de.path()};
+        jf.read();
+        auto&& engine = jf.data()["engine"];
+        auto&& name = jf.data()["name"];
+        auto& pd = new_preset_data[engine];
+        pd.names.push_back(name);
+        pd.data.emplace_back(std::move(jf.data()["data"]));
+        DLOGI("Loaded preset '{}' for engine '{}", name, engine);
+      }
+    }
+    _preset_data = std::move(new_preset_data);
+  }
+
 } // namespace otto::engines

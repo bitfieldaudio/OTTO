@@ -26,8 +26,8 @@ namespace otto::engines {
     ui::SelectorWidget engine_wid;
     ui::SelectorWidget preset_wid;
 
-    ui::SelectorWidget::Options eng_opts(std::function<void(int)>&&) noexcept;
-    ui::SelectorWidget::Options prst_opts(std::function<void(int)>&&) noexcept;
+    ui::SelectorWidget::Options eng_opts(std::function<AnyEngine&(int)>&&) noexcept;
+    ui::SelectorWidget::Options prst_opts(std::function<AnyEngine&()>&&) noexcept;
   };
 
   // Constructor implementation
@@ -35,10 +35,10 @@ namespace otto::engines {
   /// \exclude
   template<EngineType ET>
   EngineSelectorScreen::EngineSelectorScreen(EngineDispatcher<ET>& ed)
-    : engine_wid(engine_names,
-                 eng_opts([&ed](int idx) { ed.select(std::size_t{idx}); })),
-      preset_wid(preset_names,
-                 prst_opts([](int idx) {}))
+    : engine_wid(engine_names, eng_opts([&ed](int idx) -> AnyEngine& {
+                   return ed.select(std::size_t{idx});
+                 })),
+      preset_wid(preset_names, prst_opts([&ed]() -> AnyEngine& { return ed.current(); }))
   {
     engine_names.reserve(ed.engines().size());
     util::transform(ed.engines(), std::back_inserter(engine_names),

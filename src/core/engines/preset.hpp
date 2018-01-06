@@ -38,13 +38,6 @@
 
 namespace otto::engines {
 
-  struct NameJsonPair {
-    std::string name;
-    nlohmann::json data;
-  };
-
-  std::vector<NameJsonPair>& presets_for_engine(const AnyEngine&);
-
   struct PresetFile : util::JsonFile {
     using util::JsonFile::ErrorCode;
     using util::JsonFile::exception;

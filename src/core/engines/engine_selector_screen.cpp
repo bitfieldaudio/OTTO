@@ -1,6 +1,7 @@
 #include "engine_selector_screen.hpp"
 
 #include "core/ui/vector_graphics.hpp"
+#include "services/engine_manager.hpp"
 
 namespace otto::engines {
 
@@ -8,36 +9,11 @@ namespace otto::engines {
   using namespace otto::ui::vg;
 
   SelectorWidget::Options EngineSelectorScreen::eng_opts(
-    std::function<void(int)>&& on_select) noexcept
+    std::function<AnyEngine&(int)>&& select_eg) noexcept
   {
         SelectorWidget::Options opts;
-        opts.on_select = [this, sl = std::move(on_select)](int idx) {
-          preset_names = {engine_names[idx],
-                          "what",
-                          "is",
-                          "this",
-                          "PRESET CALLLED",
-                          "one",
-                          "two",
-                          "three",
-                          "four",
-                          "five",
-                          "six",
-                          "seven",
-                          "eight",
-                          "nine",
-                          "ten",
-                          "eleven",
-                          "twelve",
-                          "thirteen",
-                          "fourteen",
-                          "fifteen",
-                          "sixteen",
-                          "seventeen",
-                          "eighteen",
-                          "nineteen",
-                          "twenty"};
-          preset_wid.items(preset_names);
+        opts.on_select = [this, sl = std::move(select_eg)](int idx) {
+          preset_wid.items(engines::preset_names(sl(idx).name()));
           sl(idx);
         };
         opts.item_colour = Colours::Blue;
@@ -46,10 +22,12 @@ namespace otto::engines {
   }
 
   SelectorWidget::Options EngineSelectorScreen::prst_opts(
-    std::function<void(int)>&& on_select) noexcept
+    std::function<AnyEngine&()>&& cur_eg) noexcept
   {
         SelectorWidget::Options opts;
-        opts.on_select = std::move(on_select);
+        opts.on_select = [cur_eg = std::move(cur_eg)](int idx) {
+            engines::apply_preset(cur_eg(), idx);
+          };
         opts.item_colour = Colours::Green;
         opts.size = {120, vg::HEIGHT};
         return opts;

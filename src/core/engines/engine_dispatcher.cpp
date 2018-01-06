@@ -4,29 +4,29 @@
 
 namespace otto::engines {
 
-// EngineDispatcher Implementations /////////////////////////////////////////
-template<EngineType ET>
-void EngineDispatcher<ET>::init()
-{
-_engines = create_engines<ET>();
-if (_engines.empty()) {
-    throw util::exception(
-    "No engines registered. Can't construct EngineDispatcher");
-}
-_selector_screen = std::make_unique<EngineSelectorScreen>(*this);
-}
+  // EngineDispatcher Implementations /////////////////////////////////////////
+  template<EngineType ET>
+  void EngineDispatcher<ET>::init()
+  {
+    _engines = create_engines<ET>();
+    if (_engines.empty()) {
+      throw util::exception(
+        "No engines registered. Can't construct EngineDispatcher");
+    }
+    _selector_screen = std::make_unique<EngineSelectorScreen>(*this);
+  }
 
-template<EngineType ET>
-Engine<ET>& EngineDispatcher<ET>::current() noexcept
-{
-return *_current;
-}
+  template<EngineType ET>
+  Engine<ET>& EngineDispatcher<ET>::current() noexcept
+  {
+    return *_current;
+  }
 
-template<EngineType ET>
-const Engine<ET>& EngineDispatcher<ET>::current() const noexcept
-{
-return *_current;
-}
+  template<EngineType ET>
+  const Engine<ET>& EngineDispatcher<ET>::current() const noexcept
+  {
+    return *_current;
+  }
 
   template<EngineType ET>
   Engine<ET>& EngineDispatcher<ET>::operator*() noexcept
@@ -55,8 +55,8 @@ return *_current;
   template<EngineType ET>
   Engine<ET>& EngineDispatcher<ET>::select(const std::string& name)
   {
-    auto iter =
-      util::find_if(_engines, [&name](auto&& eg) { return eg->name() == name; });
+    auto iter = util::find_if(
+      _engines, [&name](auto&& eg) { return eg->name() == name; });
     if (iter != _engines.end()) {
       select((*iter).get());
     } else {
@@ -118,7 +118,8 @@ return *_current;
   }
 
   template<EngineType ET>
-  const std::vector<std::unique_ptr<Engine<ET>>>& EngineDispatcher<ET>::engines() const noexcept
+  const std::vector<std::unique_ptr<Engine<ET>>>&
+  EngineDispatcher<ET>::engines() const noexcept
   {
     return _engines;
   }
