@@ -1150,7 +1150,7 @@ namespace otto::filesystem {
       if (!de) continue;
       name = de->d_name;
       if (name == "." || name == "..") continue;
-      _entries->emplace_back(de->d_name);
+      _entries->emplace_back(p / de->d_name);
     } while (de != nullptr);
 
     closedir(dir);
@@ -1181,43 +1181,17 @@ namespace otto::filesystem {
 
   using RDIter = recursive_directory_iterator;
 
-  struct RDIter::SharedData {
-    int depth                            = 0;
-    directory_entry* entry               = nullptr;
-    std::shared_ptr<SharedData> parent   = nullptr;
-    std::vector<directory_entry> entries = {};
-
-    void populate_entries(const path& p)
-    {
-      DIR* dir;
-      struct dirent* de;
-
-      dir = opendir(p.c_str());
-      std::string name;
-      while (dir) {
-        de = readdir(dir);
-        if (!de) break;
-        name = de->d_name;
-        if (name == "." || name == "..") continue;
-        entries.emplace_back(p / de->d_name);
-      }
-      closedir(dir);
-
-      if (entries.size() == 0) {
-        entry = nullptr;
-      } else {
-        entry = entries.data();
-      }
-    }
-  };
-
   RDIter::recursive_directory_iterator() noexcept {}
 
   RDIter::recursive_directory_iterator(const path& p)
   {
     if (fs::is_directory(p)) {
-      _data = std::make_shared<SharedData>();
-      _data->populate_entries(p);
+      _data = std::make_shared<std::vector<DIter>>();
+      std::error_code ec;
+      _data->emplace_back(p, ec);
+      if (ec.value() != 0) {
+        throw filesystem_error("Error constructing recursive_directory_iterator", p, ec);
+      }
     }
   }
 
@@ -1231,18 +1205,18 @@ namespace otto::filesystem {
 
   int RDIter::depth() const
   {
-    return _data->depth;
+    return _data->size();
   }
 
 
   const directory_entry& RDIter::operator*() const
   {
-    return *_data->entry;
+    return *_data->back();
   }
 
   const directory_entry* RDIter::operator->() const
   {
-    return _data->entry;
+    return _data->back().operator->();
   }
 
 
@@ -1255,14 +1229,15 @@ namespace otto::filesystem {
   RDIter& RDIter::operator++()
   {
     if (_data != nullptr) {
-      if (_data->entry->is_directory()) {
-        auto new_data = std::make_shared<SharedData>(*_data);
-        new_data->depth++;
-        new_data->parent = _data;
-        new_data->populate_entries(_data->entry->path());
+      if (_data->back()->is_directory()) {
+        std::error_code ec;
+        _data->emplace_back(_data->back()->path(), ec);
+        if (ec.value() != 0) {
+          throw filesystem_error("", ec);
+        }
       } else {
-        ++_data->entry;
-        if (_data->entry == _data->entries.end().base()) {
+        ++_data->back();
+        if (_data->back() == end(_data->back())) {
           pop();
         }
       }
@@ -1272,14 +1247,24 @@ namespace otto::filesystem {
 
   void RDIter::pop()
   {
-    _data = _data->parent;
+    if (_data != nullptr) {
+      _data->pop_back();
+      if (_data->size() == 0) {
+        _data = nullptr; 
+      } else {
+        ++(_data->back());
+        if (_data->back() == end(_data->back())) {
+          pop();
+        }
+      }
+    }
   }
 
   bool RDIter::operator==(const RDIter& other) const
   {
     return (_data == other._data) ||
            (_data != nullptr && other._data != nullptr &&
-            _data->entry == other._data->entry);
+             _data->back() == other._data->back());
   }
 
   bool RDIter::operator!=(const RDIter& other) const
