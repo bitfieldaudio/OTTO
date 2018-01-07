@@ -13,6 +13,11 @@ namespace otto::presets {
   /// EngineManager exceptions. Contain an [ErrorCode]()
   using exception = util::as_exception<ErrorCode>;
 
+  /// Initialize preset manager
+  ///
+  /// \effects `load_preset_files()`
+  void init();
+
   /// (Re)load preset files
   ///
   /// Invoked by [init](). Call to reload all preset files.

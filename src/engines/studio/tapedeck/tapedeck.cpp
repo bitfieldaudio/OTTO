@@ -109,7 +109,7 @@ namespace otto::engines {
   // Tapedeck //////////////////////////////////////////////////////////////////
 
   Tapedeck::Tapedeck()
-    : Engine("Tapedeck", props, std::make_unique<TapeScreen>(this))
+    : Engine("TapeDeck", props, std::make_unique<TapeScreen>(this))
   {}
 
   void Tapedeck::on_enable()

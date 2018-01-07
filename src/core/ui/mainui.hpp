@@ -47,6 +47,9 @@ namespace otto::ui {
   /// Select an engine by name
   void select_engine(const std::string& engine_name);
 
+  /// Get the currently selected engine
+  const std::string& selected_engine_name();;
+
   void init();
 
   /// These functions are to be called only by the graphics drivers.

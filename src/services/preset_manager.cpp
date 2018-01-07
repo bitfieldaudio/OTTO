@@ -1,6 +1,7 @@
 #include "preset_manager.hpp"
 
 #include "core/globals.hpp"
+#include "services/debug_ui.hpp"
 
 namespace otto::presets {
 
@@ -16,6 +17,15 @@ namespace otto::presets {
     std::map<std::string, PresetNamesDataPair> _preset_data;
 
     const fs::path presets_dir = global::data_dir / "presets";
+
+  }
+
+  static void draw_debug_info();
+
+  void init() {
+    debug::ui::add_info(draw_debug_info);
+
+    load_preset_files();
   }
 
   const std::vector<std::string>& preset_names(const std::string& engine_name)
@@ -82,6 +92,7 @@ namespace otto::presets {
 
   void load_preset_files()
   {
+
     LOG_SCOPE_FUNCTION(INFO);
     if (!fs::exists(presets_dir)) {
       DLOGI("Creating preset directory");
@@ -105,5 +116,59 @@ namespace otto::presets {
     _preset_data = std::move(new_preset_data);
   }
 
+  static void create_preset(const std::string& engine_name,
+                            const std::string& preset_name,
+                            const nlohmann::json& preset_data)
+  {
+    LOG_SCOPE_FUNCTION(INFO);
+    util::JsonFile jf{presets_dir / engine_name / (preset_name + ".json")};
 
+    jf.data() = nlohmann::json::object();
+    jf.data()["engine"] = engine_name;
+    jf.data()["name"] = preset_name;
+    jf.data()["props"] = preset_data;
+
+    jf.write(util::JsonFile::OpenOptions::create);
+  }
+
+}
+// Debug UI /////////////////////////////////////////////////////////////////
+#include "core/ui/mainui.hpp"
+#include "services/engine_manager.hpp"
+
+namespace otto::presets {
+
+  static void draw_debug_info()
+  {
+    ImGui::Begin("Presets");
+
+    static std::string engine_name;
+    static char preset_name[256] = "";
+    static nlohmann::json preset_data;
+
+    if (ImGui::Button("Create preset")) {
+      auto engine = engines::by_name(ui::selected_engine_name());
+      if (engine != nullptr) {
+        engine_name = engine->name();
+        preset_data = engine->props().to_json();
+        ImGui::OpenPopup("New preset");
+      }
+    }
+    if (ImGui::BeginPopup("New preset")) {
+      ImGui::Text("Engine: %s", engine_name.c_str());
+      ImGui::InputText("Preset Name", preset_name, 256);
+      if (ImGui::Button("Create preset")) {
+        create_preset(engine_name, std::string(preset_name), preset_data);
+        load_preset_files();
+        ImGui::CloseCurrentPopup();
+      }
+      if (ImGui::Button("Cancel")) {
+        ImGui::CloseCurrentPopup();
+      }
+
+      ImGui::EndPopup();
+    }
+
+    ImGui::End();
+  }
 }

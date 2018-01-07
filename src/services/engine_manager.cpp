@@ -56,14 +56,14 @@ namespace otto::engines {
       if (ui::is_pressed(ui::Key::shift)) {
         ui::display(synth.selector_screen());
       } else {
-        ui::select_engine(*synth);
+        ui::select_engine("Synth");
       }
     });
     ui::register_key_handler(ui::Key::drums, [](ui::Key k) {
       if (ui::is_pressed(ui::Key::shift)) {
         ui::display(drums.selector_screen());
       } else {
-        ui::select_engine(*drums);
+        ui::select_engine("Drums");
       }
     });
 

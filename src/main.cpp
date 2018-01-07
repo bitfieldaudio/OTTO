@@ -21,7 +21,7 @@ int main(int argc, char* argv[])
     services::logger::init(argc, argv);
     services::state::load();
 
-    presets::load_preset_files();
+    presets::init();
     engines::init();
     audio::init();
 
