@@ -48,7 +48,7 @@ namespace otto::ui {
   void select_engine(const std::string& engine_name);
 
   /// Get the currently selected engine
-  const std::string& selected_engine_name();;
+  const std::string& selected_engine_name();
 
   void init();
 
