@@ -98,22 +98,25 @@ namespace otto::presets {
       DLOGI("Creating preset directory");
       fs::create_directories(presets_dir);
     }
-    decltype(_preset_data) new_preset_data;
     DLOGI("Loading presets");
     for (auto&& de : fs::recursive_directory_iterator(presets_dir)) {
       LOGI_SCOPE("Loading preset file {}", de.path());
       if (de.is_regular_file() || de.is_symlink()) {
         util::JsonFile jf{de.path()};
         jf.read();
-        auto&& engine = jf.data()["engine"];
-        auto&& name   = jf.data()["name"];
-        auto& pd      = new_preset_data[engine];
-        pd.names.push_back(name);
-        pd.data.emplace_back(std::move(jf.data()["props"]));
-        DLOGI("Loaded preset '{}' for engine '{}", name, engine);
+        std::string engine = jf.data()["engine"];
+        std::string name   = jf.data()["name"];
+        auto& pd           = _preset_data[engine];
+        if (auto found = util::find(pd.names, name); found != pd.names.end()) {
+          pd.data[found - pd.names.begin()] = std::move(jf.data()["props"]);
+          DLOGI("Reloaded preset '{}' for engine '{}", name, engine);
+        } else {
+          pd.names.push_back(name);
+          pd.data.emplace_back(std::move(jf.data()["props"]));
+          DLOGI("Loaded preset '{}' for engine '{}", name, engine);
+        }
       }
     }
-    _preset_data = std::move(new_preset_data);
   }
 
   static void create_preset(const std::string& engine_name,
@@ -133,6 +136,9 @@ namespace otto::presets {
 
 }
 // Debug UI /////////////////////////////////////////////////////////////////
+
+#if OTTO_DEBUG_UI
+
 #include "core/ui/mainui.hpp"
 #include "services/engine_manager.hpp"
 
@@ -172,3 +178,10 @@ namespace otto::presets {
     ImGui::End();
   }
 }
+
+#else
+
+namespace otto::presets {
+  static void draw_debug_info() {}
+}
+#endif

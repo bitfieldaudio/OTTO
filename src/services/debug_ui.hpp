@@ -61,7 +61,7 @@ namespace otto::debug {
     inline std::vector<std::function<void()>> draw_funcs;
 
     template<typename Callable>
-    inline std::enable_if_t<std::is_invocable_v<Callable>, std::size_t>
+    inline std::enable_if_t<util::is_invocable_v<Callable>, std::size_t>
     add_info(Callable&& callable)
     {
       for (std::size_t i = 0; i < draw_funcs.size(); i++) {
