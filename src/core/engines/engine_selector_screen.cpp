@@ -1,26 +1,64 @@
 #include "engine_selector_screen.hpp"
 
+#include "core/ui/vector_graphics.hpp"
+#include "services/preset_manager.hpp"
+
 namespace otto::engines {
 
   using namespace otto::ui;
+  using namespace otto::ui::vg;
 
-  template<EngineType ET>
-  void EngineSelectorScreen<ET>::rotary(RotaryEvent e) {
-    
+  SelectorWidget::Options EngineSelectorScreen::eng_opts(
+    std::function<AnyEngine&(int)>&& select_eg) noexcept
+  {
+        SelectorWidget::Options opts;
+        opts.on_select = [this, sl = std::move(select_eg)](int idx) {
+          auto& eg = sl(idx);
+          preset_wid.items(presets::preset_names(eg.name()));
+          preset_wid.select(eg.current_preset(), true);
+        };
+        opts.item_colour = Colours::Blue;
+        opts.size = {120, vg::HEIGHT};
+        return opts;
   }
 
-  template<EngineType ET>
-  void EngineSelectorScreen<ET>::draw(vg::Canvas& ctx) {
-    
+  SelectorWidget::Options EngineSelectorScreen::prst_opts(
+    std::function<AnyEngine&()>&& cur_eg) noexcept
+  {
+        SelectorWidget::Options opts;
+        opts.on_select = [cur_eg = std::move(cur_eg)](int idx) {
+            presets::apply_preset(cur_eg(), idx);
+          };
+        opts.item_colour = Colours::Green;
+        opts.size = {120, vg::HEIGHT};
+        return opts;
   }
 
-  template<EngineType ET>
-  void EngineSelectorScreen<ET>::on_show() {
-    
+  void EngineSelectorScreen::rotary(RotaryEvent e)
+  {
+    switch (e.rotary) {
+    case Rotary::Blue:
+      engine_wid.prev(e.clicks);
+      break;
+    case Rotary::Green:
+      preset_wid.prev(e.clicks);
+      break;
+    default:;
+    }
   }
 
-  template<EngineType ET>
-  void EngineSelectorScreen<ET>::on_hide() {
-    
+  void EngineSelectorScreen::draw(vg::Canvas& ctx)
+  {
+    ctx.drawAt({40, 0}, engine_wid);
+    ctx.drawAt({160, 0}, preset_wid);
   }
-}
+
+  void EngineSelectorScreen::on_show()
+  {
+    engine_wid.options.on_select(engine_wid.selected_item());
+  }
+
+  void EngineSelectorScreen::on_hide()
+  {}
+
+} // namespace otto::engines

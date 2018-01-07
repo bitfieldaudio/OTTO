@@ -48,6 +48,8 @@ Website: www.ilikebigbits.com
 	* Version 1.4.1 - 2016-09-29 - Customize formating with LOGURU_FILENAME_WIDTH
 	* Version 1.5.0 - 2016-12-22 - LOGURU_USE_FMTLIB by kolis and LOGURU_WITH_FILEABS by scinart
 	* Version 1.5.1 - 2017-08-08 - Terminal colors on Windows 10 thanks to looki
+	* Version 1.6.0 - 2018-01-03 - Add LOGURU_RTTI and LOGURU_STACKTRACES settings
+	* Version 1.7.0 - 2018-01-03 - Add ability to turn off the preamble with loguru::g_preamble
 
 # Compiling
 	Just include <loguru.hpp> where you want to use Loguru.
@@ -149,6 +151,12 @@ Website: www.ilikebigbits.com
 		Such a scheme is useful if you have a daemon program that moves the log file every 24 hours and expects new file to be created.
 		Feature by scinart (https://github.com/emilk/loguru/pull/23).
 
+	LOGURU_STACKTRACES (default 1 on supported platforms):
+		Print stack traces on abort.
+
+	LOGURU_RTTI (default 1):
+		Set to 0 if your platform does not support runtime type information (-fno-rtti).
+
 	You can also configure:
 	loguru::g_flush_interval_ms:
 		If set to zero Loguru will flush on every line (unbuffered mode).
@@ -230,6 +238,10 @@ Website: www.ilikebigbits.com
 
 #ifndef LOGURU_WITH_FILEABS
 	#define LOGURU_WITH_FILEABS 0
+#endif
+
+#ifndef LOGURU_RTTI
+	#define LOGURU_RTTI 1
 #endif
 
 // --------------------------------------------------------------------
@@ -327,6 +339,10 @@ namespace loguru
 #undef INFO
 #undef MAX
 
+	class printf_tag_t {};
+	// Pass this to log functions right after the format to force use of printf syntax, even when fmtlib is used.
+	const printf_tag_t printf_tag;
+
 	enum NamedVerbosity : Verbosity
 	{
 		// You may use Verbosity_OFF on g_stderr_verbosity, but for nothing else!
@@ -379,6 +395,7 @@ namespace loguru
 	extern Verbosity g_stderr_verbosity;
 	extern bool      g_colorlogtostderr; // True by default.
 	extern unsigned  g_flush_interval_ms; // 0 (unbuffered) by default.
+	extern bool      g_preamble; // Prefix each log line with date, time etc? True by default.
 
 	// May not throw!
 	typedef void (*log_handler_t)(void* user_data, const Message& message);
@@ -489,13 +506,23 @@ namespace loguru
 	Verbosity current_verbosity_cutoff();
 
 #if LOGURU_USE_FMTLIB
+	void log_message(int stack_trace_skip, Message& message, bool with_indentation, bool abort_if_fatal);
+	void log_to_everywhere(int stack_trace_skip, Verbosity verbosity,
+						   const char* file, unsigned line,
+		                                   const char* prefix, const char* buff);
 	// Actual logging function. Use the LOG macro instead of calling this directly.
-	void log(Verbosity verbosity, const char* file, unsigned line, LOGURU_FORMAT_STRING_TYPE format, fmt::ArgList args);
-	FMT_VARIADIC(void, log, Verbosity, const char*, unsigned, LOGURU_FORMAT_STRING_TYPE)
+	template<class... Args>
+	void log(Verbosity verbosity, const char* file, unsigned line, LOGURU_FORMAT_STRING_TYPE format, Args&&...);
+
+	template<class... Args>
+	void log(Verbosity verbosity, const char* file, unsigned line, LOGURU_FORMAT_STRING_TYPE format, printf_tag_t, Args&&...);
 
 	// Log without any preamble or indentation.
-	void raw_log(Verbosity verbosity, const char* file, unsigned line, LOGURU_FORMAT_STRING_TYPE format, fmt::ArgList args);
-	FMT_VARIADIC(void, raw_log, Verbosity, const char*, unsigned, LOGURU_FORMAT_STRING_TYPE)
+	template<class... Args>
+	void raw_log(Verbosity verbosity, const char* file, unsigned line, LOGURU_FORMAT_STRING_TYPE format, Args&&...);
+
+	template<class... Args>
+	void raw_log(Verbosity verbosity, const char* file, unsigned line, LOGURU_FORMAT_STRING_TYPE format, printf_tag_t, Args&&...);
 #else // LOGURU_USE_FMTLIB?
 	// Actual logging function. Use the LOG macro instead of calling this directly.
 	void log(Verbosity verbosity, const char* file, unsigned line, LOGURU_FORMAT_STRING_TYPE format, ...) LOGURU_PRINTF_LIKE(4, 5);
@@ -509,7 +536,8 @@ namespace loguru
 	{
 	public:
 		LogScopeRAII() : _file(nullptr) {} // No logging
-		LogScopeRAII(Verbosity verbosity, const char* file, unsigned line, LOGURU_FORMAT_STRING_TYPE format, ...) LOGURU_PRINTF_LIKE(5, 6);
+		template<class... Args>
+		LogScopeRAII(Verbosity verbosity, const char* file, unsigned line, LOGURU_FORMAT_STRING_TYPE format, Args...);
 		~LogScopeRAII();
 
 		LogScopeRAII(LogScopeRAII&& other) = default;
@@ -525,6 +553,9 @@ namespace loguru
 		bool        _indent_stderr; // Did we?
 		long long   _start_time_ns;
 		char        _name[LOGURU_SCOPE_TEXT_SIZE];
+
+		// To keep template definitions small
+		void constructor_helper();
 	};
 
 	// Marked as 'noreturn' for the benefit of the static analyzer and optimizer.
@@ -912,7 +943,7 @@ namespace loguru
 				#expr_left, #op, #expr_right, str_left.c_str(), #op, str_right.c_str());           \
 			auto user_msg = loguru::textprintf(__VA_ARGS__);                                        \
 			loguru::log_and_abort(0, fail_info.c_str(), __FILE__, __LINE__,                        \
-								  "%s", user_msg.c_str());                                         \
+				                                    "%s", printf_tag, user_msg.c_str());	\
 		}                                                                                          \
 	} while (false)
 
@@ -1280,6 +1311,8 @@ This will define all the Loguru functions so that the linker may find them.
 #if defined(LOGURU_IMPLEMENTATION) && !defined(LOGURU_HAS_BEEN_IMPLEMENTED)
 #define LOGURU_HAS_BEEN_IMPLEMENTED
 
+#define LOGURU_PREAMBLE_WIDTH (53 + LOGURU_THREADNAME_WIDTH + LOGURU_FILENAME_WIDTH)
+
 #include <algorithm>
 #include <atomic>
 #include <chrono>
@@ -1322,15 +1355,21 @@ This will define all the Loguru functions so that the linker may find them.
 #if defined(_WIN32) || defined(__CYGWIN__)
 	#define LOGURU_PTHREADS    0
 	#define LOGURU_WINTHREADS  1
-	#define LOGURU_STACKTRACES 0
+	#ifndef LOGURU_STACKTRACES
+		#define LOGURU_STACKTRACES 0
+	#endif
 #elif defined(__rtems__)
 	#define LOGURU_PTHREADS    1
 	#define LOGURU_WINTHREADS  0
-	#define LOGURU_STACKTRACES 0
+	#ifndef LOGURU_STACKTRACES
+		#define LOGURU_STACKTRACES 0
+	#endif
 #else
 	#define LOGURU_PTHREADS    1
 	#define LOGURU_WINTHREADS  0
-	#define LOGURU_STACKTRACES 1
+	#ifndef LOGURU_STACKTRACES
+		#define LOGURU_STACKTRACES 1
+	#endif
 #endif
 
 #if LOGURU_STACKTRACES
@@ -1412,6 +1451,7 @@ namespace loguru
 	Verbosity g_stderr_verbosity  = Verbosity_0;
 	bool      g_colorlogtostderr  = true;
 	unsigned  g_flush_interval_ms = 0;
+	bool      g_preamble          = true;
 
 	static std::recursive_mutex  s_mutex;
 	static Verbosity             s_max_out_verbosity = Verbosity_OFF;
@@ -1572,21 +1612,21 @@ namespace loguru
 				fclose(file_abs->fp);
 			}
 			if (!file_abs->fp) {
-				LOG_F(INFO, "Reopening file '%s' due to previous error", file_abs->path);
+				LOG_F(INFO, "Reopening file '%s' due to previous error", printf_tag, file_abs->path);
 			}
 			else if (ret < 0) {
 				const auto why = errno_as_text();
-				LOG_F(INFO, "Reopening file '%s' due to '%s'", file_abs->path, why.c_str());
+				LOG_F(INFO, "Reopening file '%s' due to '%s'", printf_tag, file_abs->path, why.c_str());
 			} else {
-				LOG_F(INFO, "Reopening file '%s' due to file changed", file_abs->path);
+				LOG_F(INFO, "Reopening file '%s' due to file changed", printf_tag, file_abs->path);
 			}
 			// try reopen current file.
 			if (!create_directories(file_abs->path)) {
-				LOG_F(ERROR, "Failed to create directories to '%s'", file_abs->path);
+				LOG_F(ERROR, "Failed to create directories to '%s'", printf_tag, file_abs->path);
 			}
 			file_abs->fp = fopen(file_abs->path, file_abs->mode_str);
 			if (!file_abs->fp) {
-				LOG_F(ERROR, "Failed to open '%s'", file_abs->path);
+				LOG_F(ERROR, "Failed to open '%s'", printf_tag, file_abs->path);
 			} else {
 				stat(file_abs->path, &file_abs->st);
 			}
@@ -1605,14 +1645,14 @@ namespace loguru
 	{
 #ifdef _MSC_VER
 		int bytes_needed = _vscprintf(format, vlist);
-		CHECK_F(bytes_needed >= 0, "Bad string format: '%s'", format);
+		CHECK_F(bytes_needed >= 0, "Bad string format: '%s'", printf_tag, format);
 		char* buff = (char*)malloc(bytes_needed+1);
 		vsnprintf(buff, bytes_needed+1, format, vlist);
 		return Text(buff);
 #else
 		char* buff = nullptr;
 		int result = vasprintf(&buff, format, vlist);
-		CHECK_F(result >= 0, "Bad string format: '%s'", format);
+		CHECK_F(result >= 0, "Bad string format: '%s'", printf_tag, format);
 		return Text(buff);
 #endif
 	}
@@ -1660,7 +1700,7 @@ namespace loguru
 				if (value_str[0] == '\0') {
 					// Value in separate argument
 					arg_it += 1;
-					CHECK_LT_F(arg_it, argc, "Missing verbosiy level after %s", verbosity_flag);
+					CHECK_LT_F(arg_it, argc, "Missing verbosiy level after %s", printf_tag, verbosity_flag);
 					value_str = argv[arg_it];
 					out_argc -= 1;
 				}
@@ -1680,7 +1720,7 @@ namespace loguru
 					char* end = 0;
 					g_stderr_verbosity = static_cast<int>(strtol(value_str, &end, 10));
 					CHECK_F(end && *end == '\0',
-						"Invalid verbosity. Expected integer, INFO, WARNING, ERROR or OFF, got '%s'", value_str);
+						"Invalid verbosity. Expected integer, INFO, WARNING, ERROR or OFF, got '%s'", printf_tag, value_str);
 				}
 			} else {
 				argv[arg_dest++] = argv[arg_it];
@@ -1783,7 +1823,7 @@ namespace loguru
 		if (!getcwd(s_current_dir, sizeof(s_current_dir)))
 		{
 			const auto error_text = errno_as_text();
-			LOG_F(WARNING, "Failed to get current working directory: %s", error_text.c_str());
+			LOG_F(WARNING, "Failed to get current working directory: %s", printf_tag, error_text.c_str());
 		}
 
 		s_arguments = "";
@@ -1803,7 +1843,7 @@ namespace loguru
 		#elif LOGURU_PTHREADS
 			char old_thread_name[16] = {0};
 			auto this_thread = pthread_self();
-			#if !(defined(__FreeBSD__) || defined(__OpenBSD__))
+			#if defined(__APPLE__) || defined(__linux__)
 				pthread_getname_np(this_thread, old_thread_name, sizeof(old_thread_name));
 			#endif
 			if (old_thread_name[0] == 0) {
@@ -1811,26 +1851,28 @@ namespace loguru
 					pthread_setname_np("main thread");
 				#elif defined(__FreeBSD__) || defined(__OpenBSD__)
 					pthread_set_name_np(this_thread, "main thread");
-				#else
+				#elif defined(__linux__)
 					pthread_setname_np(this_thread, "main thread");
 				#endif
 			}
 		#endif // LOGURU_PTHREADS
 
 		if (g_stderr_verbosity >= Verbosity_INFO) {
-			if (g_colorlogtostderr && s_terminal_has_color) {
-				fprintf(stderr, "%s%s%s\n", terminal_reset(), terminal_dim(), PREAMBLE_EXPLAIN.c_str());
-			} else {
-				fprintf(stderr, "%s\n", PREAMBLE_EXPLAIN.c_str());
+			if (g_preamble) {
+				if (g_colorlogtostderr && s_terminal_has_color) {
+					fprintf(stderr, "%s%s%s\n", terminal_reset(), terminal_dim(), PREAMBLE_EXPLAIN.c_str());
+				} else {
+					fprintf(stderr, "%s\n", PREAMBLE_EXPLAIN.c_str());
+				}
 			}
 			fflush(stderr);
 		}
-		LOG_F(INFO, "arguments: %s", s_arguments.c_str());
+		LOG_F(INFO, "arguments: %s", printf_tag, s_arguments.c_str());
 		if (strlen(s_current_dir) != 0)
 		{
-			LOG_F(INFO, "Current dir: %s", s_current_dir);
+			LOG_F(INFO, "Current dir: %s", printf_tag, s_current_dir);
 		}
-		LOG_F(INFO, "stderr verbosity: %d", g_stderr_verbosity);
+		LOG_F(INFO, "stderr verbosity: %d", printf_tag, g_stderr_verbosity);
 		LOG_F(INFO, "-----------------------------------");
 
 		install_signal_handlers();
@@ -1922,7 +1964,7 @@ namespace loguru
 			if (mkdir(file_path, 0755) == -1) {
 	#endif
 				if (errno != EEXIST) {
-					LOG_F(ERROR, "Failed to create directory '%s'", file_path);
+					LOG_F(ERROR, "Failed to create directory '%s'", printf_tag, file_path);
 					LOG_IF_F(ERROR, errno == EACCES,       "EACCES");
 					LOG_IF_F(ERROR, errno == ENAMETOOLONG, "ENAMETOOLONG");
 					LOG_IF_F(ERROR, errno == ENOENT,       "ENOENT");
@@ -1949,13 +1991,13 @@ namespace loguru
 		}
 
 		if (!create_directories(path)) {
-			LOG_F(ERROR, "Failed to create directories to '%s'", path);
+			LOG_F(ERROR, "Failed to create directories to '%s'", printf_tag, path);
 		}
 
 		const char* mode_str = (mode == FileMode::Truncate ? "w" : "a");
 		auto file = fopen(path, mode_str);
 		if (!file) {
-			LOG_F(ERROR, "Failed to open '%s'", path);
+			LOG_F(ERROR, "Failed to open '%s'", printf_tag, path);
 			return false;
 		}
 #if LOGURU_WITH_FILEABS
@@ -1980,10 +2022,12 @@ namespace loguru
 			fprintf(file, "Current dir: %s\n", s_current_dir);
 		}
 		fprintf(file, "File verbosity level: %d\n", verbosity);
-		fprintf(file, "%s\n", PREAMBLE_EXPLAIN.c_str());
+		if (g_preamble) {
+			fprintf(file, "%s\n", PREAMBLE_EXPLAIN.c_str());
+		}
 		fflush(file);
 
-		LOG_F(INFO, "Logging to '%s', mode: '%s', verbosity: %d", path, mode_str, verbosity);
+		LOG_F(INFO, "Logging to '%s', mode: '%s', verbosity: %d", printf_tag, path, mode_str, verbosity);
 		return true;
 	}
 
@@ -2029,7 +2073,7 @@ namespace loguru
 			on_callback_change();
 			return true;
 		} else {
-			LOG_F(ERROR, "Failed to locate callback with id '%s'", id);
+			LOG_F(ERROR, "Failed to locate callback with id '%s'", printf_tag, id);
 			return false;
 		}
 	}
@@ -2072,7 +2116,7 @@ namespace loguru
 				pthread_setname_np(name);
 			#elif defined(__FreeBSD__) || defined(__OpenBSD__)
 				pthread_set_name_np(pthread_self(), name);
-			#else
+			#elif defined(__linux__)
 				pthread_setname_np(pthread_self(), name);
 			#endif
 		#elif LOGURU_WINTHREADS
@@ -2102,10 +2146,10 @@ namespace loguru
 			} else {
 				buffer[0] = 0;
 			}
-		#elif defined(__FreeBSD__) || defined(__OpenBSD__)
-			buffer[0] = 0;
-		#else
+		#elif defined(__APPLE__) || defined(__linux__)
 			pthread_getname_np(thread, buffer, length);
+		#else
+			buffer[0] = 0;
 		#endif
 
 		if (buffer[0] == 0) {
@@ -2150,17 +2194,22 @@ namespace loguru
 		return result;
 	}
 
-	template <class T>
-	std::string type_name() {
-		auto demangled = demangle(typeid(T).name());
-		return demangled.c_str();
-	}
+	#if LOGURU_RTTI
+		template <class T>
+		std::string type_name()
+		{
+			auto demangled = demangle(typeid(T).name());
+			return demangled.c_str();
+		}
+	#endif // LOGURU_RTTI
 
 	static const StringPairList REPLACE_LIST = {
-		{ type_name<std::string>(),    "std::string"    },
-		{ type_name<std::wstring>(),   "std::wstring"   },
-		{ type_name<std::u16string>(), "std::u16string" },
-		{ type_name<std::u32string>(), "std::u32string" },
+		#if LOGURU_RTTI
+			{ type_name<std::string>(),    "std::string"    },
+			{ type_name<std::wstring>(),   "std::wstring"   },
+			{ type_name<std::u16string>(), "std::u16string" },
+			{ type_name<std::u32string>(), "std::u32string" },
+		#endif // LOGURU_RTTI
 		{ "std::__1::",                "std::"          },
 		{ "__thiscall ",               ""               },
 		{ "__cdecl ",                  ""               },
@@ -2254,11 +2303,7 @@ namespace loguru
 
 	std::string stacktrace_as_stdstring(int)
 	{
-		#if defined(_MSC_VER)
-		#pragma message ( "Loguru: No stacktraces available on this platform" )
-		#else
-		#warning "Loguru: No stacktraces available on this platform"
-		#endif
+		// No stacktraces available on this platform"
 		return "";
 	}
 
@@ -2274,6 +2319,10 @@ namespace loguru
 
 	static void print_preamble(char* out_buff, size_t out_buff_size, Verbosity verbosity, const char* file, unsigned line)
 	{
+		if (!g_preamble) {
+			out_buff[0] = '\0';
+			return;
+		}
 		long long ms_since_epoch = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
 		time_t sec_since_epoch = time_t(ms_since_epoch / 1000);
 		tm time_info;
@@ -2310,7 +2359,7 @@ namespace loguru
 	}
 
 	// stack_trace_skip is just if verbosity == FATAL.
-	static void log_message(int stack_trace_skip, Message& message, bool with_indentation, bool abort_if_fatal)
+	void log_message(int stack_trace_skip, Message& message, bool with_indentation, bool abort_if_fatal)
 	{
 		const auto verbosity = message.verbosity;
 		std::lock_guard<std::recursive_mutex> lock(s_mutex);
@@ -2318,12 +2367,12 @@ namespace loguru
 		if (message.verbosity == Verbosity_FATAL) {
 			auto st = loguru::stacktrace(stack_trace_skip + 2);
 			if (!st.empty()) {
-				RAW_LOG_F(ERROR, "Stack trace:\n%s", st.c_str());
+				RAW_LOG_F(ERROR, "Stack trace:\n%s", printf_tag, st.c_str());
 			}
 
 			auto ec = loguru::get_error_context();
 			if (!ec.empty()) {
-				RAW_LOG_F(ERROR, "%s", ec.c_str());
+				RAW_LOG_F(ERROR, "%s", printf_tag, ec.c_str());
 			}
 		}
 
@@ -2412,36 +2461,41 @@ namespace loguru
 
 	// stack_trace_skip is just if verbosity == FATAL.
 	void log_to_everywhere(int stack_trace_skip, Verbosity verbosity,
-						   const char* file, unsigned line,
-						   const char* prefix, const char* buff)
+	                       const char* file, unsigned line,
+	                       const char* prefix, const char* buff)
 	{
-		char preamble_buff[128];
+		char preamble_buff[LOGURU_PREAMBLE_WIDTH];
 		print_preamble(preamble_buff, sizeof(preamble_buff), verbosity, file, line);
 		auto message = Message{verbosity, file, line, preamble_buff, "", prefix, buff};
 		log_message(stack_trace_skip + 1, message, true, true);
 	}
 
-#if LOGURU_USE_FMTLIB
-	void log(Verbosity verbosity, const char* file, unsigned line, const char* format, fmt::ArgList args)
-	{
-		auto formatted = fmt::format(format, args);
-		log_to_everywhere(1, verbosity, file, line, "", formatted.c_str());
-	}
-
-	void raw_log(Verbosity verbosity, const char* file, unsigned line, const char* format, fmt::ArgList args)
-	{
-		auto formatted = fmt::format(format, args);
-		auto message = Message{verbosity, file, line, "", "", "", formatted.c_str()};
-		log_message(1, message, false, true);
-	}
-
-#else
+#if !LOGURU_USE_FMTLIB
 	void log(Verbosity verbosity, const char* file, unsigned line, const char* format, ...)
 	{
 		va_list vlist;
 		va_start(vlist, format);
 		auto buff = vtextprintf(format, vlist);
 		log_to_everywhere(1, verbosity, file, line, "", buff.c_str());
+		va_end(vlist);
+	}
+
+	void log(Verbosity verbosity, const char* file, unsigned line, const char* format, printf_tag_t, ...)
+	{
+		va_list vlist;
+		va_start(vlist, format);
+		auto buff = vtextprintf(format, vlist);
+		log_to_everywhere(1, verbosity, file, line, "", buff.c_str());
+		va_end(vlist);
+	}
+
+	void raw_log(Verbosity verbosity, const char* file, unsigned line, const char* format, printf_tag_t, ...)
+	{
+		va_list vlist;
+		va_start(vlist, format);
+		auto buff = vtextprintf(format, vlist);
+		auto message = Message{verbosity, file, line, "", "", "", buff.c_str()};
+		log_message(1, message, false, true);
 		va_end(vlist);
 	}
 
@@ -2469,25 +2523,19 @@ namespace loguru
 		s_needs_flushing = false;
 	}
 
-	LogScopeRAII::LogScopeRAII(Verbosity verbosity, const char* file, unsigned line, const char* format, ...)
-		: _verbosity(verbosity), _file(file), _line(line)
-	{
-		if (verbosity <= current_verbosity_cutoff()) {
+	void LogScopeRAII::constructor_helper() {
+		if (_verbosity <= current_verbosity_cutoff()) {
 			std::lock_guard<std::recursive_mutex> lock(s_mutex);
-			_indent_stderr = (verbosity <= g_stderr_verbosity);
+			_indent_stderr = (_verbosity <= g_stderr_verbosity);
 			_start_time_ns = now_ns();
-			va_list vlist;
-			va_start(vlist, format);
-			vsnprintf(_name, sizeof(_name), format, vlist);
-			log_to_everywhere(1, _verbosity, file, line, "{ ", _name);
-			va_end(vlist);
+			log_to_everywhere(1, _verbosity, _file, _line, "{ ", _name);
 
 			if (_indent_stderr) {
 				++s_stderr_indentation;
 			}
 
 			for (auto& p : s_callbacks) {
-				if (verbosity <= p.verbosity) {
+				if (_verbosity <= p.verbosity) {
 					++p.indentation;
 				}
 			}
@@ -2513,7 +2561,7 @@ namespace loguru
 				}
 			}
 			auto duration_sec = (now_ns() - _start_time_ns) / 1e9;
-			log(_verbosity, _file, _line, "} %.*f s: %s", SCOPE_TIME_PRECISION, duration_sec, _name);
+			log(_verbosity, _file, _line, "} %.*f s: %s", printf_tag, SCOPE_TIME_PRECISION, duration_sec, _name);
 		}
 	}
 
@@ -2556,13 +2604,13 @@ namespace loguru
 	StreamLogger::~StreamLogger() noexcept(false)
 	{
 		auto message = _ss.str();
-		log(_verbosity, _file, _line, "%s", message.c_str());
+		log(_verbosity, _file, _line, "%s", printf_tag, message.c_str());
 	}
 
 	AbortLogger::~AbortLogger() noexcept(false)
 	{
 		auto message = _ss.str();
-		loguru::log_and_abort(1, _expr, _file, _line, "%s", message.c_str());
+		loguru::log_and_abort(1, _expr, _file, _line, "%s", printf_tag, message.c_str());
 	}
 
 	#endif // LOGURU_WITH_STREAMS
@@ -2859,7 +2907,7 @@ namespace loguru
 		*/
 
 		flush();
-		char preamble_buff[128];
+		char preamble_buff[LOGURU_PREAMBLE_WIDTH];
 		print_preamble(preamble_buff, sizeof(preamble_buff), Verbosity_FATAL, "", 0);
 		auto message = Message{Verbosity_FATAL, "", 0, preamble_buff, "", "Signal: ", signal_name};
 		try {
@@ -2885,7 +2933,7 @@ namespace loguru
 		sig_action.sa_sigaction = &signal_handler;
 		for (const auto& s : ALL_SIGNALS) {
 			CHECK_F(sigaction(s.number, &sig_action, NULL) != -1,
-				"Failed to install handler for %s", s.name);
+				"Failed to install handler for %s", printf_tag, s.name);
 		}
 	}
 } // namespace loguru
@@ -2893,3 +2941,51 @@ namespace loguru
 #endif // _WIN32
 
 #endif // LOGURU_IMPLEMENTATION
+
+#ifndef LOGURU_TEMPLATE_DEFINITIONS
+#define LOGURU_TEMPLATE_DEFINITIONS
+namespace loguru {
+	template<class... Args>
+	LogScopeRAII::LogScopeRAII(Verbosity verbosity, const char* file, unsigned line, const char* format, Args... args)
+		: _verbosity(verbosity), _file(file), _line(line)
+	{
+#if LOGURU_USE_FMTLIB
+		snprintf(_name, sizeof(_name), fmt::format(format, args...).c_str());
+#else
+		snprintf(_name, sizeof(_name), format, args...);
+#endif
+		constructor_helper();
+	}
+#if LOGURU_USE_FMTLIB
+	template<class... Args>
+	void log(Verbosity verbosity, const char* file, unsigned line, const char* format, Args&&... args)
+	{
+		auto formatted = fmt::format(format, std::forward<Args>(args)...);
+		log_to_everywhere(1, verbosity, file, line, "", formatted.c_str());
+	}
+
+	template<class... Args>
+	void log(Verbosity verbosity, const char* file, unsigned line, const char* format, printf_tag_t pt, Args&&... args)
+	{
+		auto buff = textprintf(format, std::forward<Args>(args)...);
+		log_to_everywhere(1, verbosity, file, line, "", buff.c_str());
+	}
+
+	template<class... Args>
+	void raw_log(Verbosity verbosity, const char* file, unsigned line, const char* format, Args&&... args)
+	{
+		auto formatted = fmt::format(format, std::forward<Args>(args)...);
+		auto message = Message{verbosity, file, line, "", "", "", formatted.c_str()};
+		log_message(1, message, false, true);
+	}
+
+	template<class... Args>
+	void raw_log(Verbosity verbosity, const char* file, unsigned line, const char* format, printf_tag_t pt, Args&&... args)
+	{
+		auto buff = textprintf(format, std::forward<Args>(args)...);
+		auto message = Message{verbosity, file, line, "", "", "", buff.c_str()};
+		log_message(1, message, false, true);
+	}
+} // namespace loguru
+#endif // LOGURU_USE_FMTLIB
+#endif // LOGURU_TEMPLATE_DEFINITIONS

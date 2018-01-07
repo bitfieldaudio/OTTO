@@ -4,7 +4,7 @@
 #include <thread>
 #include "core/globals.hpp"
 #include "core/ui/mainui.hpp"
-#include "core/ui/drawing.hpp"
+#include "core/ui/vector_graphics.hpp"
 #include "services/debug_ui.hpp"
 #include "services/logger.hpp"
 

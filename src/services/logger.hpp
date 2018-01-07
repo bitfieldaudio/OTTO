@@ -9,7 +9,7 @@ namespace otto::services::logger {
 
   /// Initialize the logger
   void init(int argc,
-            char* argv[],
+            char** argv,
             bool enable_console     = true,
             const char* logFilePath = nullptr);
 

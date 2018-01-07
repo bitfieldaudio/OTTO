@@ -1,12 +1,12 @@
 #include "engine_dispatcher.hpp"
 
+#include "engine_selector_screen.hpp"
+#include "services/engine_manager.hpp"
+#include "services/preset_manager.hpp"
+
 namespace otto::engines {
 
   // EngineDispatcher Implementations /////////////////////////////////////////
-  template<EngineType ET>
-  EngineDispatcher<ET>::EngineDispatcher()
-  {}
-  
   template<EngineType ET>
   void EngineDispatcher<ET>::init()
   {
@@ -15,6 +15,16 @@ namespace otto::engines {
       throw util::exception(
         "No engines registered. Can't construct EngineDispatcher");
     }
+    for (auto&& engine : _engines) {
+      // Apply default presets to all engines
+      try {
+        int idx = engine->current_preset();
+        presets::apply_preset(*engine, std::max(idx, 0), true);
+      } catch (presets::exception& e) {
+        DLOGI(e.what());
+      }
+    }
+    _selector_screen = std::make_unique<EngineSelectorScreen>(*this);
   }
 
   template<EngineType ET>
@@ -56,8 +66,8 @@ namespace otto::engines {
   template<EngineType ET>
   Engine<ET>& EngineDispatcher<ET>::select(const std::string& name)
   {
-    auto iter =
-      util::find_if(_engines, [&name](auto&& eg) { return eg->name() == name; });
+    auto iter = util::find_if(
+      _engines, [&name](auto&& eg) { return eg->name() == name; });
     if (iter != _engines.end()) {
       select((*iter).get());
     } else {
@@ -69,6 +79,7 @@ namespace otto::engines {
   template<EngineType ET>
   Engine<ET>& EngineDispatcher<ET>::select(Engine<ET>* ptr)
   {
+    if (_current == ptr && ptr != nullptr) return *_current;
     if (_current != nullptr) _current->on_disable();
     _current = ptr;
     _current->on_enable();
@@ -88,28 +99,42 @@ namespace otto::engines {
   }
 
   template<EngineType ET>
-  std::vector<EnginePatch> EngineDispatcher<ET>::make_patches() const
+  ui::Screen& EngineDispatcher<ET>::selector_screen() noexcept
   {
-    std::vector<EnginePatch> res;
-    res.reserve(_engines.size());
-    util::transform(_engines, std::back_inserter(res),
-                    [](auto&& eptr) { return eptr->make_patch(); });
-    return res;
+    return *_selector_screen;
   }
 
   template<EngineType ET>
-  Engine<ET>& EngineDispatcher<ET>::apply_patch(const EnginePatch& patch)
+  const std::vector<std::unique_ptr<Engine<ET>>>&
+  EngineDispatcher<ET>::engines() const noexcept
   {
-    if (patch.type != type) {
-      throw exception(ErrorCode::type_mismatch);
+    return _engines;
+  }
+
+  template<EngineType ET>
+  nlohmann::json EngineDispatcher<ET>::to_json() const
+  {
+    nlohmann::json j = nlohmann::json::object();
+    for (auto&& engine : _engines) {
+      j[engine->name()] = engine->to_json();
     }
-    auto iter = util::find_if(
-      _engines, [&patch](auto&& eptr) { return eptr->name() == patch.name; });
-    if (iter == _engines.end()) {
-      throw exception(ErrorCode::engine_not_found);
+    return j;
+  }
+
+  template<EngineType ET>
+  void EngineDispatcher<ET>::from_json(const nlohmann::json& j)
+  {
+    if (j.is_object()) {
+      for (auto iter = j.begin(); iter != j.end(); iter++) {
+        auto found = util::find_if(_engines, [name = iter.key()](auto&& eptr) {
+          return eptr->name() == name;
+        });
+        if (found == _engines.end()) {
+          throw exception(ErrorCode::engine_not_found);
+        }
+        (*found)->from_json(iter.value());
+      }
     }
-    (*iter)->from_json(patch.data);
-    return **iter;
   }
 
   // Explicit instantiations

@@ -5,7 +5,7 @@
 #include "core/globals.hpp"
 #include "core/ui/waveform_widget.hpp"
 #include "core/ui/canvas.hpp"
-#include "core/ui/drawing.hpp"
+#include "core/ui/vector_graphics.hpp"
 #include "core/ui/icons.hpp"
 #include "util/soundfile.hpp"
 #include "util/exception.hpp"

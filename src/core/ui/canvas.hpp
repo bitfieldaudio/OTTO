@@ -52,7 +52,8 @@ namespace otto::ui::vg {
     constexpr Point operator-() const {return {-x, -y};}
     constexpr util::math::vec operator-(Point rhs) const {return {x - rhs.x, y - rhs.y};}
 
-    constexpr operator util::math::vec() const {return {x, y};}
+    constexpr explicit operator util::math::vec() const {return {x, y};}
+    constexpr util::math::vec vec() const {return {x, y};}
   };
 
   struct Size {
@@ -74,13 +75,24 @@ namespace otto::ui::vg {
       const auto abs = [] (float f) {return f < 0 ? -f : f;};
       return {abs(w), abs(h)};
     }
-    constexpr operator util::math::vec() const {return {w, h};}
+    constexpr explicit operator util::math::vec() const {return {w, h};}
+    constexpr util::math::vec vec() const {return {w, h};}
   };
 
   /// A positioned box
   struct Box {
     Point p1 {0, 0};
     Point p2 {0, 0};
+
+    constexpr Box() = default;
+
+    constexpr Box(Point p1, Point p2) //
+      : p1 (p1), p2 (p2)
+    {}
+
+    constexpr Box(Point p, Size s) //
+      : p1 (p), p2 (p - s.vec())
+    {}
 
     constexpr Size size() const
     {
@@ -189,43 +201,29 @@ namespace otto::ui::vg {
     using Colour::operator NanoCanvas::Color;
   };
 
-  class Canvas; // FWDCL
+  struct Canvas; // FWDCL
 
-  /**
-   * Anything that can be drawn on screen.
-   * Holds a pointer to its parent
-   */
-  class Drawable {
-    public:
+  /// Anything that can be drawn on screen.
+  ///
+  /// Holds a pointer to its parent
+  struct Drawable {
 
-    Drawable() {};
+    Drawable() = default;
 
-    /**
-     * Draw this widget to the context.
-     * Called from the parent's draw method.
-     * \param ctx the canvas to draw on.
-     */
+    virtual ~Drawable() = default;
+
+    /// Draw this widget to the context.
+    ///
+    /// Called from the parent's draw method.
+    /// \param ctx the canvas to draw on.
     virtual void draw(Canvas& ctx) = 0;
 
   };
 
-  class SizedDrawable : public Drawable {
-    protected:
-    public:
-    Size size;
-
-    SizedDrawable() {};
-    explicit SizedDrawable(Size s) : size (s) {};
-
-  };
-
-  /**
-   * A modified NanoCanvas interface.
-   *
-   * Allows for usage of [*Point]() and [*Size]() classes
-   */
-  class Canvas : public NanoCanvas::Canvas {
-    public:
+  /// A modified NanoCanvas interface.
+  ///
+  /// Allows for usage of [*Point]() and [*Size]() classes
+  struct Canvas : NanoCanvas::Canvas {
     using Super = NanoCanvas::Canvas;
 
     // Enums
@@ -238,6 +236,11 @@ namespace otto::ui::vg {
 
     Canvas(NVGcontext* ctx, float width, float height, float scaleRatio = 1.0f) :
       Super(ctx, width, height, scaleRatio) {}
+
+    /// Get the canvas size
+    Size size() const noexcept {
+      return {m_width, m_height};
+    }
 
     using Super::moveTo;
     Canvas& moveTo(Point p) {
@@ -307,6 +310,12 @@ namespace otto::ui::vg {
       return *this;
     }
 
+    using Super::font;
+    Canvas& font(const Font& f, float size) {
+      Super::font(f);
+      Super::font(size);
+      return *this;
+    }
 
     using Super::fillText;
     Canvas& fillText(const std::string& text, Point p, float rowWidth = NAN) {

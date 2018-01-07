@@ -26,19 +26,25 @@ namespace otto::debug {
   public:
 
     void push(float val) {
+#if OTTO_DEBUG_UI
       buffer.push(std::move(val));
       min = std::min(min, val);
       max = std::max(max, val);
+#endif
     }
 
     void plot(std::string name) {
+#if OTTO_DEBUG_UI
       plot(name, min, max);
+#endif
     }
 
     void plot(std::string name, float min, float max) {
+#if OTTO_DEBUG_UI
       ImGui::PlotLines(name.c_str(), [] (void* data, int n) {
           return float((*static_cast<util::ringbuffer<float, N>*>(data))[n]);
         }, &buffer, buffer.size(), 0, nullptr, min, max, ImVec2(0, 80));
+#endif
     }
 
   private:
@@ -52,24 +58,31 @@ namespace otto::debug {
     void init();
     void draw_frame();
 
-    inline std::vector<Info*> info_ptrs;
+    inline std::vector<std::function<void()>> draw_funcs;
 
-    inline std::size_t add_info(Info& new_info) {
-      for (std::size_t i = 0; i < info_ptrs.size(); i++) {
-        auto& info = info_ptrs[i];
-        if (info == nullptr) {
-          info = &new_info;
+    template<typename Callable>
+    inline std::enable_if_t<util::is_invocable_v<Callable>, std::size_t>
+    add_info(Callable&& callable)
+    {
+      for (std::size_t i = 0; i < draw_funcs.size(); i++) {
+        auto& func = draw_funcs[i];
+        if (func == nullptr) {
+          func = std::forward<Callable>(callable);
           return i;
         }
       }
-      info_ptrs.push_back(&new_info);
-      return info_ptrs.size() - 1;
+      draw_funcs.emplace_back(std::forward<Callable>(callable));
+      return draw_funcs.size() - 1;
+    }
+
+    inline std::size_t add_info(Info& info) {
+      return add_info([&info] { info.draw(); });
     }
 
     inline void draw() {
-      for (auto& info : info_ptrs) {
-        if (info != nullptr) {
-          info->draw();
+      for (auto& func : draw_funcs) {
+        if (func != nullptr) {
+          func();
         }
       }
     }
@@ -85,7 +98,7 @@ namespace otto::debug {
     }
 
     inline Info::~Info() {
-      ui::info_ptrs[index] = nullptr;
+      ui::draw_funcs[index] = nullptr;
     }
 #endif
 }

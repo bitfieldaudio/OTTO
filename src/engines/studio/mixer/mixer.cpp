@@ -1,6 +1,6 @@
 #include "mixer.hpp"
 #include "core/ui/mainui.hpp"
-#include "core/ui/drawing.hpp"
+#include "core/ui/vector_graphics.hpp"
 #include "core/globals.hpp"
 #include "util/timer.hpp"
 
@@ -49,8 +49,8 @@ namespace otto::engines {
           }
           graphs[t].add(audio);
         }
-        out = {lMix, rMix};
-    }
+        out = {{lMix, rMix}};
+  };
 
     return data.redirect(proc_buf);
   }

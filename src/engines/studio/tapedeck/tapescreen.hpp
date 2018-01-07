@@ -4,7 +4,7 @@
 
 #include "core/globals.hpp"
 #include "core/ui/mainui.hpp"
-#include "core/ui/drawing.hpp"
+#include "core/ui/vector_graphics.hpp"
 #include "tapedeck.hpp"
 #include "services/audio_manager.hpp"
 #include "services/engine_manager.hpp"

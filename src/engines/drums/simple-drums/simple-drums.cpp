@@ -1,7 +1,7 @@
 #include "simple-drums.hpp"
 #include "simple-drums.faust.h"
 
-#include "core/ui/drawing.hpp"
+#include "core/ui/vector_graphics.hpp"
 #include "core/globals.hpp"
 #include "core/ui/mainui.hpp"
 
@@ -61,23 +61,23 @@ namespace otto::engines {
     return data.redirect(proc_buf);
   }
 
-  nlohmann::json SimpleDrumsEngine::to_json() const
+  nlohmann::json SimpleDrumsEngine::Props::to_json() const
   {
     auto ar = nlohmann::json::array();
-    for (auto& v : voices) {
+    for (auto& v : engine.voices) {
       ar.push_back(v.props.to_json());
     }
     return ar;
   }
 
-  void SimpleDrumsEngine::from_json(const nlohmann::json& j)
+  void SimpleDrumsEngine::Props::from_json(const nlohmann::json& j)
   {
     if (!j.is_array()) {
       return;
     }
 
     for (size_t i = 0; i < j.size(); ++i) {
-      voices[i].props.from_json(j[i]);
+      engine.voices[i].props.from_json(j[i]);
     }
   }
 

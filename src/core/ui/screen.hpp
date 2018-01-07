@@ -57,15 +57,20 @@ namespace otto::ui {
 
   using PressedKeys = bool[util::underlying(Key::n_keys)];
 
-  struct Widget : vg::SizedDrawable {
+  /// A [Drawable]() with a defined size
+  ///
+  /// Intended as a base class for widgets.
+  struct Widget : vg::Drawable {
+    vg::Size size;
+
     Widget() {}
+
     explicit Widget(vg::Size size) //
-      : SizedDrawable(size)
+      : Drawable(), size(size)
     {}
   };
 
   enum struct Rotary { Blue, Green, White, Red };
-
 
   /// Passed to `Screen::rotary`
   struct RotaryEvent {
@@ -80,7 +85,6 @@ namespace otto::ui {
   ///
   /// If it belongs to a engine, use [engines::EngineScreen]().
   struct Screen : vg::Drawable {
-    using ptr = std::unique_ptr<Screen>;
 
     Screen() : Drawable() {}
     virtual ~Screen() {}

@@ -40,7 +40,7 @@ namespace otto::engines {
     void goToBar(int bar);
     void goToBarRel(int bars);
 
-    int timeUntil(std::size_t tt);
+    int timeUntil(int tt);
 
     struct State {
       enum PlayType { STOPPED = 0, PLAYING, SPOOLING } playType;

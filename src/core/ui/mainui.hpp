@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "core/ui/widget.hpp"
+#include "core/ui/screen.hpp"
 #include "core/engines/engine.hpp"
 #include <json.hpp>
 
@@ -13,7 +13,7 @@ namespace otto::ui {
   /// The main ui loop
   ///
   /// This sets up all the device specific graphics, and calls
-  /// [internal::draw_frame]() 60 times pr second, until [global::running] is
+  /// [internal::draw_frame]() 60 times pr second, until [global::running]() is
   /// false, or the graphics are exitted by the user. It is also responsible for
   /// listening to keyevents, and calling [internal::keypress]() and
   /// [internal::keyrelease]() as apropriate.
@@ -46,6 +46,9 @@ namespace otto::ui {
 
   /// Select an engine by name
   void select_engine(const std::string& engine_name);
+
+  /// Get the currently selected engine
+  const std::string& selected_engine_name();
 
   void init();
 

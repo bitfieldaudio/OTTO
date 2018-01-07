@@ -166,6 +166,7 @@ install:
 before_script:
   - cd "${TRAVIS_BUILD_DIR}"
   - mkdir build && cd build
+  - export CXXFLAGS="$CXXFLAGS -Werror"
   - cmake .. -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DOTTO_USE_LIBCXX=$USE_LIBCXX $CMAKE_OPTIONS
 
 script:

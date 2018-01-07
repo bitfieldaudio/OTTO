@@ -34,7 +34,7 @@ namespace otto::filesystem {
     path(const path& p);
     path(path&& p) noexcept;
     path(const string_type& source, format fmt = auto_format);
-    path(const string_type&& source, format fmt = auto_format);
+    path(string_type&& source, format fmt = auto_format);
     path(std::basic_string_view<value_type> source, format fmt = auto_format);
     path(const value_type* source, format fmt = auto_format);
 
@@ -436,6 +436,8 @@ namespace otto::filesystem {
     file_status _symlink_status;
   };
 
+  class recursive_directory_iterator;
+
   class directory_iterator {
   public:
     using iterator_category = std::input_iterator_tag;
@@ -482,6 +484,8 @@ namespace otto::filesystem {
 
     directory_entry* _ptr;
     std::shared_ptr<std::vector<directory_entry>> _entries;
+
+    friend recursive_directory_iterator;
   };
 
   directory_iterator begin(directory_iterator iter) noexcept;
@@ -528,9 +532,7 @@ namespace otto::filesystem {
     recursive_directory_iterator operator++(int);
 
   private:
-    struct SharedData;
-
-    std::shared_ptr<SharedData> _data;
+    std::shared_ptr<std::vector<directory_iterator>> _data;
   };
 
   recursive_directory_iterator begin(

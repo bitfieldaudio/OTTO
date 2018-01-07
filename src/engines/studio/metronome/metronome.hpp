@@ -1,8 +1,8 @@
 #pragma once
 
 #include "core/engines/engine.hpp"
-#include "core/ui/widget.hpp"
-#include "core/ui/drawing.hpp"
+#include "core/ui/screen.hpp"
+#include "core/ui/vector_graphics.hpp"
 #include "core/audio/faust.hpp"
 #include "util/audio.hpp"
 #include "util/iterator.hpp"

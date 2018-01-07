@@ -105,7 +105,6 @@ namespace otto {
       BinaryFunc&& func = [] (auto&& in, auto& tape) { tape = in; })
     {
       util::audio::Section<int> written {0,0};
-      if (speed == 0) return written;
       int write_n = 0;
       float inpt_speed;
       if (speed > 0) {
@@ -116,6 +115,8 @@ namespace otto {
         write_n = n * -speed;
         written = {current_position + 1, current_position + write_n + 1};
         inpt_speed = 1.f / -speed;
+      } else {
+        return written;
       }
 
       auto tape = buffer.iter(written.in);

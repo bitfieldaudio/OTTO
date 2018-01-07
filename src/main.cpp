@@ -1,6 +1,7 @@
 #include "services/audio_manager.hpp"
 #include "core/audio/midi.hpp"
 #include "services/engine_manager.hpp"
+#include "services/preset_manager.hpp"
 #include "core/globals.hpp"
 #include "core/ui/mainui.hpp"
 #include "services/logger.hpp"
@@ -20,6 +21,7 @@ int main(int argc, char* argv[])
     services::logger::init(argc, argv);
     services::state::load();
 
+    presets::init();
     engines::init();
     audio::init();
 
@@ -43,23 +45,23 @@ int main(int argc, char* argv[])
 
 int handleException(const char* e)
 {
-  LOG_F(FATAL, e);
-  LOG_F(INFO, "Exception thrown, exitting!");
+  LOGE(e);
+  LOGE("Exception thrown, exitting!");
   cleanup();
   return 1;
 }
 
 int handleException(std::exception& e)
 {
-  LOG_F(FATAL, e.what());
-  LOG_F(INFO, "Exception thrown, exitting!");
+  LOGE(e.what());
+  LOGE("Exception thrown, exitting!");
   cleanup();
   return 1;
 }
 
 int handleException()
 {
-  LOG_F(INFO, "Unknown exception thrown, exitting!");
+  LOGE("Unknown exception thrown, exitting!");
   cleanup();
   return 1;
 }

@@ -30,7 +30,7 @@ namespace otto::util {
     constexpr auto generate_sequence_impl(std::integer_sequence<int, ns...>&&, Func&& gen) {
       return std::array<std::decay_t<
         decltype(std::invoke(gen, std::declval<int>()))>,
-        sizeof...(ns)>{std::invoke(gen, ns)...};
+        sizeof...(ns)>{{std::invoke(gen, ns)...}};
     }
   }
 
@@ -63,7 +63,7 @@ namespace otto::util {
   /// \param first Input iterator to the begining of the range
   /// \param last Input iterator to the end of the range
   /// \param f Must be invocable with arguments `value_type`, `std::size_t`
-  /// \param return The number of iterations performed
+  /// \returns The number of iterations performed
   template<typename InputIt, typename F>
   constexpr std::size_t indexed_for(InputIt&& first, InputIt&& last, F&& f) {
     std::size_t i = 0;

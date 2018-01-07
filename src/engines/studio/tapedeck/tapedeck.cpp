@@ -2,7 +2,7 @@
 #include <cmath>
 
 #include "core/globals.hpp"
-#include "core/ui/drawing.hpp"
+#include "core/ui/vector_graphics.hpp"
 #include "tapedeck.hpp"
 #include "tapescreen.hpp"
 #include "util/algorithm.hpp"
@@ -109,7 +109,7 @@ namespace otto::engines {
   // Tapedeck //////////////////////////////////////////////////////////////////
 
   Tapedeck::Tapedeck()
-    : Engine("Tapedeck", props, std::make_unique<TapeScreen>(this))
+    : Engine("TapeDeck", props, std::make_unique<TapeScreen>(this))
   {}
 
   void Tapedeck::on_enable()
@@ -179,7 +179,7 @@ namespace otto::engines {
       tapeBuffer->jump_to(engines::metronome_state::bar_time_rel(bars));
   }
 
-  int Tapedeck::timeUntil(std::size_t tt)
+  int Tapedeck::timeUntil(int tt)
   {
     return 0;
     auto ttUntil = state.fwd() ? tt - position() : position() - tt;

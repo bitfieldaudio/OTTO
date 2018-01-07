@@ -21,6 +21,10 @@ namespace otto::services::logger {
     loguru::init(argc, argv);
     loguru::add_file(logFilePath, loguru::Append, loguru::Verbosity_MAX);
 
+    loguru::set_fatal_handler([](const loguru::Message& message){
+        throw global::exception(global::ErrorCode::none, std::string(message.prefix) + message.message);
+      });
+
     LOG_F(INFO, "LOGGING NOW");
   }
 

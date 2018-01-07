@@ -95,7 +95,7 @@ namespace otto::util {
 
   TEST_CASE("Float step iterator: Going back and forth", "[iterator] [util]") {
 
-    std::array<int, 11> data {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    std::array<int, 11> data {{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10}};
 
     SECTION("Step = 1") {
 

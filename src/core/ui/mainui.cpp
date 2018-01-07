@@ -15,7 +15,7 @@ namespace otto::ui {
       void draw(vg::Canvas& ctx) {}
     } empty_screen;
 
-    std::string selected_engine_name = "";
+    std::string _selected_engine_name = "";
     Screen* cur_screen = &empty_screen;
 
     PressedKeys keys;
@@ -28,21 +28,27 @@ namespace otto::ui {
   }
 
   void select_engine(const std::string& engine_name) {
-    selected_engine_name = engine_name;
+    _selected_engine_name = engine_name;
 
     auto engine = engines::by_name(engine_name);
     if (!engine) {
       engine = engines::by_name(initial_engine);
     }
     if (engine != nullptr) {
-      select_engine(*engine);
+      display(engine->screen());
+      _selected_engine_name = engine_name;
     }
 
   }
 
   void select_engine(engines::AnyEngine& engine) {
     display(engine.screen());
-    selected_engine_name = engine.name();
+    _selected_engine_name = engine.name();
+  }
+
+  const std::string& selected_engine_name()
+  {
+    return _selected_engine_name;
   }
 
   static void register_screen_keys()
@@ -54,15 +60,15 @@ namespace otto::ui {
 
     auto load = [](const nlohmann::json &j) {
       if (j.is_object()) {
-        selected_engine_name = j["SelectedEngine"];
+        _selected_engine_name = j["SelectedEngine"];
       }
 
-      select_engine(selected_engine_name);
+      select_engine(_selected_engine_name);
     };
 
     auto save = []() {
       return nlohmann::json({
-        {"SelectedEngine", selected_engine_name}
+        {"SelectedEngine", _selected_engine_name}
       });
     };
 

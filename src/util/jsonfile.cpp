@@ -16,6 +16,11 @@ namespace otto::util {
     if (auto ec = validate(); ec != ErrorCode::none) {
       throw exception(ec, "Error while writing preset file '{}'", _path.c_str());
     }
+    if (!fs::exists(_path) && (options & OpenOptions::create) != OpenOptions::none) {
+      fs::path dir_p = _path;
+      dir_p.remove_filename();
+      fs::create_directories(dir_p);
+    }
     errno = 0;
     std::ofstream stream(_path, std::ios::trunc);
     stream << std::setw(2) << _data << std::endl;

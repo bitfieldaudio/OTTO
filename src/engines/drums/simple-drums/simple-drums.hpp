@@ -36,19 +36,22 @@ namespace otto::engines {
 
   struct SimpleDrumsEngine : DrumsEngine {
 
+    struct Props : Properties {
+      nlohmann::json to_json() const override;
+      void from_json(const nlohmann::json&) override;
+
+      SimpleDrumsEngine& engine;
+      Props(SimpleDrumsEngine* eg) : engine(*eg) {}
+    } props {this};
+
     SimpleDrumsEngine();
     ~SimpleDrumsEngine();
 
     audio::ProcessData<1> process(audio::ProcessData<0>) override;
-
-    nlohmann::json to_json() const override;
-    void from_json(const nlohmann::json&) override;
     
     std::array<SimpleDrumVoice, 24> voices;
 
     int currentVoiceIdx = 0;
-
-    Properties props;
 
   private:
     audio::ProcessBuffer<1> proc_buf;

@@ -1,18 +1,22 @@
 #include "engine_manager.hpp"
 
+#include <map>
+
+#include "core/globals.hpp"
 #include "core/ui/mainui.hpp"
 
+#include "engines/drums/drum-sampler/drum-sampler.hpp"
+#include "engines/drums/simple-drums/simple-drums.hpp"
 #include "engines/studio/input_selector/input_selector.hpp"
 #include "engines/studio/metronome/metronome.hpp"
 #include "engines/studio/mixer/mixer.hpp"
 #include "engines/studio/tapedeck/tapedeck.hpp"
-#include "engines/drums/drum-sampler/drum-sampler.hpp"
-#include "engines/drums/simple-drums/simple-drums.hpp"
 #include "engines/synths/nuke/nuke.hpp"
 
 #include "services/state.hpp"
 
 namespace otto::engines {
+
   namespace {
     std::map<std::string, std::function<AnyEngine*()>> engineGetters;
     audio::ProcessBuffer<1> _audiobuf1;
@@ -24,6 +28,7 @@ namespace otto::engines {
     Mixer mixer;
     Metronome metronome;
     InputSelector selector;
+
   } // namespace
 
   void init()
@@ -45,12 +50,22 @@ namespace otto::engines {
                              [](ui::Key k) { ui::select_engine(tapedeck); });
     ui::register_key_handler(ui::Key::mixer,
                              [](ui::Key k) { ui::select_engine(mixer); });
-    ui::register_key_handler(ui::Key::synth,
-                             [](ui::Key k) { ui::select_engine(*synth); });
-    ui::register_key_handler(ui::Key::drums,
-                             [](ui::Key k) { ui::select_engine(*drums); });
     ui::register_key_handler(ui::Key::metronome,
                              [](ui::Key k) { ui::select_engine(metronome); });
+    ui::register_key_handler(ui::Key::synth, [](ui::Key k) {
+      if (ui::is_pressed(ui::Key::shift)) {
+        ui::display(synth.selector_screen());
+      } else {
+        ui::select_engine("Synth");
+      }
+    });
+    ui::register_key_handler(ui::Key::drums, [](ui::Key k) {
+      if (ui::is_pressed(ui::Key::shift)) {
+        ui::display(drums.selector_screen());
+      } else {
+        ui::select_engine("Drums");
+      }
+    });
 
     ui::register_key_handler(ui::Key::play, [](ui::Key key) {
       if (tapedeck.state.playing()) {
@@ -64,17 +79,17 @@ namespace otto::engines {
     auto load = [&](nlohmann::json& data) {
       tapedeck.from_json(data["TapeDeck"]);
       mixer.from_json(data["Mixer"]);
-      from_json(data["Synth"], synth);
-      from_json(data["Drums"], drums);
+      synth.from_json(data["Synth"]);
+      drums.from_json(data["Drums"]);
       metronome.from_json(data["Metronome"]);
     };
 
-    auto save = [&]() {
-      return nlohmann::json({{"TapeDeck", tapedeck},
-                             {"Mixer", mixer},
-                             {"Synth", synth},
-                             {"Drums", drums},
-                             {"Metronome", metronome}});
+    auto save = [&] {
+      return nlohmann::json({{"TapeDeck", tapedeck.to_json()},
+                             {"Mixer", mixer.to_json()},
+                             {"Synth", synth.to_json()},
+                             {"Drums", drums.to_json()},
+                             {"Metronome", metronome.to_json()}});
     };
 
     services::state::attach("Engines", load, save);
@@ -109,18 +124,17 @@ namespace otto::engines {
       case Selection::Internal: {
         auto synth_out = synth->process(midi_in);
         auto drums_out = drums->process(midi_in);
-        for (auto && [ drm, snth ] : util::zip(drums_out, synth_out)) {
+        for (auto&& [drm, snth] : util::zip(drums_out, synth_out)) {
           util::audio::add_all(drm, snth);
         }
         return drums_out;
       }
       case Selection::External: return effect->process(external_in);
       case Selection::TrackFB:
-        util::transform(
-          playback_out,
-          _audiobuf1.begin(), [track = selector.props.track.get()](auto&& a) {
-            return std::array<float, 1>{a[track]};
-          });
+        util::transform(playback_out, _audiobuf1.begin(),
+                        [track = selector.props.track.get()](auto&& a) {
+                          return std::array<float, 1>{{a[track]}};
+                        });
         return external_in.redirect(_audiobuf1);
       case Selection::MasterFB: break;
       }
@@ -133,7 +147,7 @@ namespace otto::engines {
 
     if (selector.props.input == Selection::MasterFB) {
       util::transform(mixer_out, _audiobuf1.begin(), [](auto&& a) {
-        return std::array<float, 1>{a[0] + a[1]};
+          return std::array<float, 1>{{a[0] + a[1]}};
       });
       record_in = {{_audiobuf1.data(), external_in.nframes}, external_in.midi};
     }
@@ -142,7 +156,7 @@ namespace otto::engines {
 
     auto mtrnm_out = metronome.process(midi_in);
 
-    for (auto && [ mix, mtrn ] : util::zip(mixer_out, mtrnm_out)) {
+    for (auto&& [mix, mtrn] : util::zip(mixer_out, mtrnm_out)) {
       util::audio::add_all(mix, mtrn);
     }
 
@@ -152,8 +166,7 @@ namespace otto::engines {
   AnyEngine* const by_name(const std::string& name) noexcept
   {
     auto getter = engineGetters.find(name);
-    if (getter == engineGetters.end())
-      return nullptr;
+    if (getter == engineGetters.end()) return nullptr;
 
     return getter->second();
   }
@@ -173,23 +186,27 @@ namespace otto::engines {
     {
       return tapedeck.state.playing();
     }
-  } // namespace tapeState
+  } // namespace tape_state
 
   namespace metronome_state {
-    TapeTime bar_time(BeatPos bar) {
+    TapeTime bar_time(BeatPos bar)
+    {
       return metronome.getBarTime(bar);
     }
 
-    TapeTime bar_time_rel(BeatPos bar) {
+    TapeTime bar_time_rel(BeatPos bar)
+    {
       return metronome.getBarTimeRel(bar);
     }
 
-    float bar_for_time(std::size_t time) {
+    float bar_for_time(std::size_t time)
+    {
       return metronome.bar_for_time(time);
     }
 
-    std::size_t time_for_bar(float bar) {
+    std::size_t time_for_bar(float bar)
+    {
       return metronome.time_for_bar(bar);
     }
-  }
+  } // namespace metronome_state
 } // namespace otto::engines
