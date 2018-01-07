@@ -6,24 +6,17 @@ CMakeScripts
 Makefile
 cmake_install.cmake
 install_manifest.txt
-CTestTestfile.cmake
 /.gdb_history
-/tapedeck.log
-/unnamed.wav
-/log.txt
 /compile_commands.json
-/data.json
-/tape1.tape
-/playground
-data/timers.json
 
 deploy_key
 /external/src/gl3w.c
 /external/include/GL
-/data/tape.wav
-/data/log.txt
 /testdir
 
 imgui.ini
 .vscode
-data/timers.json
+/data/timers.json
+/data/state.json
+/data/tape.wav
+/data/log.txt

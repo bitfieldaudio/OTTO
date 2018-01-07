@@ -31,16 +31,19 @@ namespace otto::services::state {
 
         auto& data = data_file.data();
 
+        if (data.is_null()) {
+          data = nlohmann::json::object();
+        }
         if (!data.is_object()) {
-          LOG_F(ERROR, "Got unexpected json from {}", data_file.path());
+          LOGF("Got unexpected json from {}", data_file.path());
           data = {};
         }
-
-        loaded = true;
 
         for (const auto & [ name, client ] : clients) {
           client.load(data[name]);
         }
+
+        loaded = true;
       }
 
       void save()

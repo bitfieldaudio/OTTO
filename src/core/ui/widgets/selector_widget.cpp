@@ -3,9 +3,10 @@
 namespace otto::ui {
 
   SelectorWidget::SelectorWidget(std::vector<std::string>& items,
-                                 Options&& options)
-    : Widget(options.size), //
-      options(std::move(options)),
+                                 Options&& p_options)
+    : Widget(p_options.size),
+      options(std::move(p_options)),
+      _selected_item(options.initial_selection),
       _items(&items)
   {}
 
@@ -54,12 +55,12 @@ namespace otto::ui {
     return false;
   }
 
-  bool SelectorWidget::select(int idx) noexcept
+  bool SelectorWidget::select(int idx, bool no_callback) noexcept
   {
     if (idx == _selected_item) return true;
     if (idx < 0 || idx >= nitems()) return false;
     _selected_item = idx;
-    options.on_select(idx);
+    if (!no_callback) options.on_select(idx);
     return true;
   }
 

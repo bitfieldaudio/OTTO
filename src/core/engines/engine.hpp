@@ -82,31 +82,55 @@ namespace otto::engines {
 
     const ui::Screen& screen() const noexcept;
 
+    /// The currently selected preset
+    ///
+    /// \returns `-1` if no preset has been set
+    int current_preset() const noexcept;
+
+    /// Set the current preset
+    ///
+    /// Should only be called from [presets::apply_preset]()
+    /// \returns new_val
+    int current_preset(int new_val) noexcept;
+
     /* Serialization */
 
-    /// Serialize the properties
-    virtual nlohmann::json to_json() const;
+    /// Serialize the engine
+    ///
+    /// ## Format
+    /// 
+    /// ```json
+    /// {
+    ///   "preset": "<preset_name>",
+    ///   "props": "<props.to_json()>"
+    /// }
+    /// ```
+    ///
+    /// `"preset"` is omitted if `presets::name_of_idx(current_preset())`
+    /// throws an exception.
+    /// `<props.to_json()>` is the serialized properties
+    ///
+    /// \throws [nlohmann::json::exception](), see it for details.
+    nlohmann::json to_json() const;
 
-    /// Deserialize the properties
-    virtual void from_json(const nlohmann::json& j);
+    /// Deserialize the engine
+    ///
+    /// \effects
+    /// If a preset was set, apply it. Then deserialize the properties.
+    ///
+    /// \see to_json
+    ///
+    /// \throws same as [presets::apply_preset(AnyEngine&, const std::string&)]
+    /// if the json contains a preset name.
+    /// [nlohmann::json::exception](), see it for details.
+    void from_json(const nlohmann::json& j);
 
   private:
     const std::string _name;
     Properties& _props;
     std::unique_ptr<ui::Screen> _screen;
+    int _current_preset = -1;
   };
-
-  /// Serialization
-  ///
-  /// This function is detected by nlohmann::json using adl
-  /// \effects `j = e.to_json()`
-  void to_json(nlohmann::json& j, const AnyEngine& e);
-
-  /// Deserialization
-  ///
-  /// This function is detected by nlohmann::json using adl
-  /// \effects `e.from_json(j)`
-  void from_json(const nlohmann::json& j, AnyEngine& e);
 
   // Engine class /////////////////////////////////////////////////////////////
 

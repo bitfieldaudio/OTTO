@@ -2,6 +2,7 @@
 
 #include "engine_selector_screen.hpp"
 #include "services/engine_manager.hpp"
+#include "services/preset_manager.hpp"
 
 namespace otto::engines {
 
@@ -13,6 +14,15 @@ namespace otto::engines {
     if (_engines.empty()) {
       throw util::exception(
         "No engines registered. Can't construct EngineDispatcher");
+    }
+    for (auto&& engine : _engines) {
+      // Apply default presets to all engines
+      try {
+        int idx = engine->current_preset();
+        presets::apply_preset(*engine, std::max(idx, 0), true);
+      } catch (presets::exception& e) {
+        DLOGI(e.what());
+      }
     }
     _selector_screen = std::make_unique<EngineSelectorScreen>(*this);
   }
@@ -69,6 +79,7 @@ namespace otto::engines {
   template<EngineType ET>
   Engine<ET>& EngineDispatcher<ET>::select(Engine<ET>* ptr)
   {
+    if (_current == ptr && ptr != nullptr) return *_current;
     if (_current != nullptr) _current->on_disable();
     _current = ptr;
     _current->on_enable();
@@ -114,23 +125,15 @@ namespace otto::engines {
   void EngineDispatcher<ET>::from_json(const nlohmann::json& j)
   {
     if (j.is_object()) {
-      auto& engine_name = j["engine"];
-      auto& preset_name = j["preset"];
-      auto& data = j["data"];
-      if (!engine_name.is_string() || !preset_name.is_string() || data.is_null()) {
-        DLOGE("Got json: {}", j);
-        throw util::JsonFile::exception(util::JsonFile::ErrorCode::invalid_data,
-          "Unexpected json structure");
-      }
-      auto found = util::find_if(
-        _engines, [name = engine_name.get<std::string>()](auto&& eptr) {
+      for (auto iter = j.begin(); iter != j.end(); iter++) {
+        auto found = util::find_if(_engines, [name = iter.key()](auto&& eptr) {
           return eptr->name() == name;
         });
-      if (found == _engines.end()) {
-        throw exception(ErrorCode::engine_not_found);
+        if (found == _engines.end()) {
+          throw exception(ErrorCode::engine_not_found);
+        }
+        (*found)->from_json(iter.value());
       }
-      engines::apply_preset(**found, preset_name.get<std::string>());
-      (*found)->from_json(data);
     }
   }
 

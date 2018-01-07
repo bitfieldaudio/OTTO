@@ -23,6 +23,8 @@ namespace otto::ui {
       float font_size = 15.f;
       /// Dimensions of the widget. Initializes [Widget::size]()
       vg::Size size = {160, 240};
+      /// Initial value for `_selected_item`
+      int initial_selection = 0;
     } const options;
 
     /// Construct with options.
@@ -54,9 +56,11 @@ namespace otto::ui {
     /// If `idx` is less than `0`, or greater than the number of items, no
     /// action is taken, and `false` is returned.
     ///
+    /// \param no_callback If true, `options.on_select` will not be called.
+    ///
     /// \postconditions
     /// `selected_item() == idx` unless `false` was returned.
-    bool select(int idx) noexcept;
+    bool select(int idx, bool no_callback = false) noexcept;
 
     /// Get the index of the currently selected item
     int selected_item() const noexcept;

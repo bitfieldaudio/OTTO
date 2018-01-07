@@ -29,17 +29,6 @@ namespace otto::engines {
     Metronome metronome;
     InputSelector selector;
 
-    struct PresetNamesDataPair {
-      std::vector<std::string> names;
-      std::vector<nlohmann::json> data;
-    };
-
-    // Key is engine name.
-    // This design is chosen because we want to expose the names vector
-    // separately.
-    std::map<std::string, PresetNamesDataPair> _preset_data;
-
-    const fs::path presets_dir = global::data_dir / "presets";
   } // namespace
 
   void init()
@@ -65,7 +54,7 @@ namespace otto::engines {
                              [](ui::Key k) { ui::select_engine(metronome); });
     ui::register_key_handler(ui::Key::synth, [](ui::Key k) {
       if (ui::is_pressed(ui::Key::shift)) {
-        ui::display(drums.selector_screen());
+        ui::display(synth.selector_screen());
       } else {
         ui::select_engine(*synth);
       }
@@ -104,7 +93,6 @@ namespace otto::engines {
     };
 
     services::state::attach("Engines", load, save);
-    load_preset_files();
   }
 
   void start()
@@ -221,62 +209,4 @@ namespace otto::engines {
       return metronome.time_for_bar(bar);
     }
   } // namespace metronome_state
-
-  // Presets ///////////////////////////////////////////////////////////////////
-
-  const std::vector<std::string>& preset_names(const std::string& engine_name)
-  {
-    return _preset_data[engine_name].names;
-  }
-
-  void apply_preset(AnyEngine& engine, const std::string& name)
-  {
-    auto& pd   = _preset_data[engine.name()];
-    auto niter = util::find(pd.names, name);
-    if (niter == pd.names.end()) {
-      throw exception(ErrorCode::no_such_preset,
-                      "No preset named '{}' for engine '{}'", name,
-                      engine.name());
-    }
-    engine.from_json(pd.data[niter - pd.names.begin()]);
-    engine.on_enable();
-  }
-
-  void apply_preset(AnyEngine& engine, int idx)
-  {
-    auto& pd = _preset_data[engine.name()];
-    if (idx < 0 || static_cast<std::size_t>(idx) >= pd.data.size()) {
-      throw exception(ErrorCode::no_such_preset,
-                      "Preset index {} is out range for engine '{}'", idx,
-                      engine.name());
-    }
-    engine.from_json(pd.data[idx]);
-    engine.on_enable();
-  }
-
-  void load_preset_files()
-  {
-    LOG_SCOPE_FUNCTION(INFO);
-    if (!fs::exists(presets_dir)) {
-      DLOGI("Creating preset directory");
-      fs::create_directories(presets_dir);
-    }
-    decltype(_preset_data) new_preset_data;
-    DLOGI("Loading presets");
-    for (auto&& de : fs::recursive_directory_iterator(presets_dir)) {
-      LOGI_SCOPE("Loading preset file {}", de.path());
-      if (de.is_regular_file() || de.is_symlink()) {
-        util::JsonFile jf{de.path()};
-        jf.read();
-        auto&& engine = jf.data()["engine"];
-        auto&& name   = jf.data()["name"];
-        auto& pd      = new_preset_data[engine];
-        pd.names.push_back(name);
-        pd.data.emplace_back(std::move(jf.data()["data"]));
-        DLOGI("Loaded preset '{}' for engine '{}", name, engine);
-      }
-    }
-    _preset_data = std::move(new_preset_data);
-  }
-
 } // namespace otto::engines

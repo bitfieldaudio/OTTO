@@ -1,7 +1,7 @@
 {
   "engine": "Drum Sampler",
   "name": "Jonna",
-  "data": {
+  "props": {
     "Voice 0": {
       "in": 0,
       "mode": 0,
