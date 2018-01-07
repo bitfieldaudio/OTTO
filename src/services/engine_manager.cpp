@@ -90,17 +90,17 @@ namespace otto::engines {
     auto load = [&](nlohmann::json& data) {
       tapedeck.from_json(data["TapeDeck"]);
       mixer.from_json(data["Mixer"]);
-      from_json(data["Synth"], synth);
-      from_json(data["Drums"], drums);
+      synth.from_json(data["Synth"]);
+      drums.from_json(data["Drums"]);
       metronome.from_json(data["Metronome"]);
     };
 
-    auto save = [&]() {
-      return nlohmann::json({{"TapeDeck", tapedeck},
-                             {"Mixer", mixer},
-                             {"Synth", synth},
-                             {"Drums", drums},
-                             {"Metronome", metronome}});
+    auto save = [&] {
+      return nlohmann::json({{"TapeDeck", tapedeck.to_json()},
+                             {"Mixer", mixer.to_json()},
+                             {"Synth", synth.to_json()},
+                             {"Drums", drums.to_json()},
+                             {"Metronome", metronome.to_json()}});
     };
 
     services::state::attach("Engines", load, save);

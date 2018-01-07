@@ -69,22 +69,6 @@ namespace otto::engines {
     /// \throws `util::exception` when no matching engine was found
     Engine<ET>& select(const std::string& name);
 
-    /// Construct patches to get all the engines into the current state.
-    ///
-    /// \returns A vector of the results of `e.make_patch()` for each engine `e`
-    std::vector<EnginePatch> make_patches() const;
-
-    /// Apply an [EnginePatch]() to a matching engine.
-    ///
-    /// \effects If `p.type == type`, find an engine ´e´ for which `e.name() ==
-    /// p.name`, and apply the patch (`e.from_json(p.data)`).
-    ///
-    /// \throws If no matching engine was found, [exception]() is thrown, with
-    /// the appropriate error code.
-    ///
-    /// \returns A reference to the engine that matched the patch
-    Engine<ET>& apply_patch(const EnginePatch& seq);
-
     /// Access the screen used to select engines/presets
     ///
     /// The returned screen has the dynamic type [EngineSelectorScreen]()
@@ -93,42 +77,13 @@ namespace otto::engines {
 
     const std::vector<std::unique_ptr<Engine<ET>>>& engines() const noexcept;
 
+    nlohmann::json to_json() const;
+    void from_json(const nlohmann::json&);
+
   private:
     std::vector<std::unique_ptr<Engine<ET>>> _engines;
     std::unique_ptr<ui::Screen> _selector_screen;
     Engine<ET>* _current;
   };
-
-  template<EngineType ET>
-  void to_json(nlohmann::json& j,
-               const otto::engines::EngineDispatcher<ET>& er);
-
-  template<EngineType ET>
-  void from_json(const nlohmann::json& j,
-                 otto::engines::EngineDispatcher<ET>& er);
-
-  // Serialization implementations
-
-  /// \exclude
-  template<EngineType ET>
-  void to_json(nlohmann::json& j, const EngineDispatcher<ET>& er)
-  {
-    j      = nlohmann::json::object();
-    auto v = er.make_patches();
-    for (auto&& patch : v) {
-      j[patch.name] = patch.data;
-    }
-  }
-
-  /// \exclude
-  template<EngineType ET>
-  void from_json(const nlohmann::json& j, EngineDispatcher<ET>& er)
-  {
-    if (j.is_object()) {
-      for (auto iter = j.begin(); iter != j.end(); iter++) {
-        er.apply_patch({ET, iter.key(), iter.value()});
-      }
-    }
-  }
 
 } // namespace otto::engines

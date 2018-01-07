@@ -37,15 +37,6 @@ namespace otto::engines {
     other
   };
 
-  /// An engine type and name, along with its json-serialized data.
-  ///
-  /// For applying patches, take a look at [otto::engines::EngineDispatcher]()
-  struct EnginePatch {
-    EngineType type;
-    std::string name;
-    nlohmann::json data;
-  };
-
   /// Abstract base class for Engines
   ///
   /// Use this when refering to a generic engine
@@ -99,12 +90,6 @@ namespace otto::engines {
     /// Deserialize the properties
     virtual void from_json(const nlohmann::json& j);
 
-    /// Construct an [EnginePatch]() with the serialized data.
-    ///
-    /// This is implemented in the [Engine]() specializations, so you don't have
-    /// to worry about it when writing your own engine.
-    virtual EnginePatch make_patch() const = 0;
-
   private:
     const std::string _name;
     Properties& _props;
@@ -127,17 +112,13 @@ namespace otto::engines {
 
   /// Define common functions for the `Engine` specializations below
   /// This macro is undefined a few lines down, and is only used to simplify the
-  /// generation of this function. Do not try to use it outside this file.
+  /// generation of this function.
   /// \exclude
 #define OTTO_ENGINE_COMMON_CONTENT(Type)                                       \
 protected:                                                                     \
   using AnyEngine::AnyEngine;                                                  \
                                                                                \
-public:                                                                        \
-  EnginePatch make_patch() const override                                      \
-  {                                                                            \
-    return EnginePatch{Type, name(), to_json()};                               \
-  }
+public:
 
   // macro end
 

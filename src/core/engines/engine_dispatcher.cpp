@@ -1,6 +1,7 @@
 #include "engine_dispatcher.hpp"
 
 #include "engine_selector_screen.hpp"
+#include "services/engine_manager.hpp"
 
 namespace otto::engines {
 
@@ -87,31 +88,6 @@ namespace otto::engines {
   }
 
   template<EngineType ET>
-  std::vector<EnginePatch> EngineDispatcher<ET>::make_patches() const
-  {
-    std::vector<EnginePatch> res;
-    res.reserve(_engines.size());
-    util::transform(_engines, std::back_inserter(res),
-                    [](auto&& eptr) { return eptr->make_patch(); });
-    return res;
-  }
-
-  template<EngineType ET>
-  Engine<ET>& EngineDispatcher<ET>::apply_patch(const EnginePatch& patch)
-  {
-    if (patch.type != type) {
-      throw exception(ErrorCode::type_mismatch);
-    }
-    auto iter = util::find_if(
-      _engines, [&patch](auto&& eptr) { return eptr->name() == patch.name; });
-    if (iter == _engines.end()) {
-      throw exception(ErrorCode::engine_not_found);
-    }
-    (*iter)->from_json(patch.data);
-    return **iter;
-  }
-
-  template<EngineType ET>
   ui::Screen& EngineDispatcher<ET>::selector_screen() noexcept
   {
     return *_selector_screen;
@@ -122,6 +98,40 @@ namespace otto::engines {
   EngineDispatcher<ET>::engines() const noexcept
   {
     return _engines;
+  }
+
+  template<EngineType ET>
+  nlohmann::json EngineDispatcher<ET>::to_json() const
+  {
+    nlohmann::json j = nlohmann::json::object();
+    for (auto&& engine : _engines) {
+      j[engine->name()] = engine->to_json();
+    }
+    return j;
+  }
+
+  template<EngineType ET>
+  void EngineDispatcher<ET>::from_json(const nlohmann::json& j)
+  {
+    if (j.is_object()) {
+      auto& engine_name = j["engine"];
+      auto& preset_name = j["preset"];
+      auto& data = j["data"];
+      if (!engine_name.is_string() || !preset_name.is_string() || data.is_null()) {
+        DLOGE("Got json: {}", j);
+        throw util::JsonFile::exception(util::JsonFile::ErrorCode::invalid_data,
+          "Unexpected json structure");
+      }
+      auto found = util::find_if(
+        _engines, [name = engine_name.get<std::string>()](auto&& eptr) {
+          return eptr->name() == name;
+        });
+      if (found == _engines.end()) {
+        throw exception(ErrorCode::engine_not_found);
+      }
+      engines::apply_preset(**found, preset_name.get<std::string>());
+      (*found)->from_json(data);
+    }
   }
 
   // Explicit instantiations
