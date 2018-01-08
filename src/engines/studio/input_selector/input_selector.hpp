@@ -5,6 +5,9 @@
 
 namespace otto::engines {
 
+  using namespace core;
+  using namespace core::engines;
+
   struct InputSelector final : Engine<EngineType::studio> {
     enum struct Selection {
       Internal,

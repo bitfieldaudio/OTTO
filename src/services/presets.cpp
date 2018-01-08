@@ -1,9 +1,9 @@
-#include "preset_manager.hpp"
+#include "presets.hpp"
 
 #include "core/globals.hpp"
 #include "services/debug_ui.hpp"
 
-namespace otto::presets {
+namespace otto::service::presets {
 
   namespace {
     struct PresetNamesDataPair {
@@ -23,7 +23,7 @@ namespace otto::presets {
   static void draw_debug_info();
 
   void init() {
-    debug::ui::add_info(draw_debug_info);
+    debug_ui::add_info(draw_debug_info);
 
     load_preset_files();
   }
@@ -60,7 +60,7 @@ namespace otto::presets {
     return found - names.begin();
   }
 
-  void apply_preset(engines::AnyEngine& engine, const std::string& name, bool no_enable_callback)
+  void apply_preset(core::engines::AnyEngine& engine, const std::string& name, bool no_enable_callback)
   {
     auto& pd   = _preset_data[engine.name()];
     auto niter = util::find(pd.names, name);
@@ -76,7 +76,7 @@ namespace otto::presets {
     if (!no_enable_callback) engine.on_enable();
   }
 
-  void apply_preset(engines::AnyEngine& engine, int idx, bool no_enable_callback)
+  void apply_preset(core::engines::AnyEngine& engine, int idx, bool no_enable_callback)
   {
     auto& pd = _preset_data[engine.name()];
     if (idx < 0 || static_cast<std::size_t>(idx) >= pd.data.size()) {
@@ -139,10 +139,10 @@ namespace otto::presets {
 
 #if OTTO_DEBUG_UI
 
-#include "core/ui/mainui.hpp"
-#include "services/engine_manager.hpp"
+#include "services/ui.hpp"
+#include "services/engines.hpp"
 
-namespace otto::presets {
+namespace otto::service::presets {
 
   static void draw_debug_info()
   {
@@ -181,7 +181,7 @@ namespace otto::presets {
 
 #else
 
-namespace otto::presets {
+namespace otto::service::presets {
   static void draw_debug_info() {}
 }
 #endif

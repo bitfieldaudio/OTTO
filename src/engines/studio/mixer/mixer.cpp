@@ -1,8 +1,11 @@
 #include "mixer.hpp"
-#include "core/ui/mainui.hpp"
+
+#include "util/timer.hpp"
+
 #include "core/ui/vector_graphics.hpp"
 #include "core/globals.hpp"
-#include "util/timer.hpp"
+
+#include "services/ui.hpp"
 
 namespace otto::engines {
 
@@ -105,7 +108,7 @@ namespace otto::engines {
   }
 
   void MixerScreen::rotary(ui::RotaryEvent e) {
-    if (ui::is_pressed(ui::Key::shift)) {
+    if (service::ui::is_pressed(ui::Key::shift)) {
       engine.props.tracks[static_cast<int>(e.rotary)].pan.step(e.clicks);
     } else {
       engine.props.tracks[static_cast<int>(e.rotary)].level.step(e.clicks);
@@ -201,7 +204,7 @@ namespace otto::engines {
     ctx.font(60);
     ctx.textAlign(TextAlign::Center, TextAlign::Baseline);
     std::string txt;
-    if (!ui::is_pressed(ui::Key::shift)) {
+    if (!service::ui::is_pressed(ui::Key::shift)) {
       txt = fmt::format("{:0>2.0f}", mix * 100);
     } else {
       if (int(pan * 10) == 0)

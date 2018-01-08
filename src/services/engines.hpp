@@ -7,7 +7,7 @@
 
 #include "util/result.hpp"
 
-namespace otto::engines {
+namespace otto::service::engines {
 
   /// Type used to identify position on tape
   using TapeTime = int;
@@ -58,11 +58,11 @@ namespace otto::engines {
   void shutdown();
 
   /// Process the engine audio chain
-  audio::ProcessData<2> process(audio::ProcessData<1> external_in);
+  core::audio::ProcessData<2> process(core::audio::ProcessData<1> external_in);
 
   /// Get an engine by name
   ///
   /// \returns `nullptr` if no such engine was found
-  AnyEngine* const by_name(const std::string& name) noexcept;
+  core::engines::AnyEngine* const by_name(const std::string& name) noexcept;
 
-} // namespace otto::engines
+} // namespace otto::service::engines

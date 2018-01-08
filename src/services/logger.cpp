@@ -4,7 +4,7 @@
 #define LOGURU_IMPLEMENTATION 1
 #include <loguru.hpp>
 
-namespace otto::services::logger {
+namespace otto::service::logger {
   void init(int argc,
             char* argv[],
             bool enable_console,

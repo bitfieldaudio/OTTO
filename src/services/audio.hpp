@@ -6,7 +6,9 @@
 #include "services/debug_ui.hpp"
 #include "util/event.hpp"
 
-namespace otto::audio {
+namespace otto::service::audio {
+
+  using core::audio::ProcessData;
 
   namespace events {
     util::Event<>& pre_init();

@@ -1,17 +1,20 @@
 #pragma once
 
 #include <fmt/format.h>
-#include "filesystem.hpp"
+#include "util/filesystem.hpp"
 
 #include "core/audio/processor.hpp"
 #include "core/engines/engine.hpp"
 
 namespace otto::engines {
 
+  using namespace core;
+  using namespace core::engines;
+
   /**
    * A sampler with 24 individual voices, laid out over the keys.
    */
-  struct DrumSampler : engines::DrumsEngine {
+  struct DrumSampler : DrumsEngine {
 
     DrumSampler();
     ~DrumSampler();

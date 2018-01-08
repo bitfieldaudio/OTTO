@@ -5,7 +5,7 @@
 #include "core/ui/screen.hpp"
 #include "core/ui/vector_graphics.hpp"
 
-namespace otto::ui {
+namespace otto::core::ui {
 
   /// A menu-style generic selector widget
   ///

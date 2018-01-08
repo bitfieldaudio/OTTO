@@ -2,11 +2,13 @@
 
 #include <chrono>
 #include <thread>
+
 #include "core/globals.hpp"
-#include "core/ui/mainui.hpp"
 #include "core/ui/vector_graphics.hpp"
+
 #include "services/debug_ui.hpp"
 #include "services/logger.hpp"
+#include "services/ui.hpp"
 
 #define NANOVG_GL3_IMPLEMENTATION
 #define OTTO_NVG_CREATE nvgCreateGL3
@@ -17,7 +19,10 @@
 #include <GLFW/glfw3.h>
 #include <nanovg_gl.h>
 
-namespace otto::ui {
+namespace otto::service::ui {
+
+  using namespace core::ui;
+
   namespace {
     Key keyboardKey(int xKey, int mods)
     {
@@ -159,7 +164,7 @@ namespace otto::ui {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 
-    otto::debug::ui::init();
+    debug_ui::init();
 
     GLFWwindow* window =
       glfwCreateWindow(vg::WIDTH, vg::HEIGHT, "OTTO", NULL, NULL);
@@ -189,7 +194,7 @@ namespace otto::ui {
 
     LOG_F(INFO, "Opening GLFW Window");
 
-    struct DbgInfo : debug::Info {
+    struct DbgInfo : debug_ui::Info {
       float FPS_limit = 60.f;
       util::ringbuffer<std::pair<float, float>, 512> fps_history;
 
@@ -265,7 +270,7 @@ namespace otto::ui {
 
       glfwPollEvents();
 
-      otto::debug::ui::draw_frame();
+      debug_ui::draw_frame();
 
       spent = glfwGetTime() - t;
 

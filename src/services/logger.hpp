@@ -1,11 +1,11 @@
 #pragma once
 
-#include <filesystem.hpp>
+#include "util/filesystem.hpp"
 
 #define LOGURU_USE_FMTLIB 1
 #include <loguru.hpp>
 
-namespace otto::services::logger {
+namespace otto::service::logger {
 
   /// Initialize the logger
   void init(int argc,

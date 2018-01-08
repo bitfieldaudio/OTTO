@@ -2,7 +2,7 @@
 
 #include "core/ui/canvas.hpp"
 
-namespace otto::ui {
+namespace otto::core::ui {
 
   /// Represents a physical key
   enum struct Key {
@@ -117,4 +117,4 @@ namespace otto::ui {
     virtual void on_hide() {}
   };
 
-} // namespace otto::ui
+} // namespace otto::core::ui

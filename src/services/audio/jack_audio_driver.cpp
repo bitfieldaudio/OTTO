@@ -7,19 +7,20 @@
 #include <jack/jack.h>
 #include <jack/midiport.h>
 
-#include "core/globals.hpp"
 #include "util/timer.hpp"
 
-#include "services/engine_manager.hpp"
-#include "services/audio_manager.hpp"
+#include "core/globals.hpp"
 #include "core/audio/processor.hpp"
+
+#include "services/engines.hpp"
+#include "services/audio.hpp"
 #include "services/logger.hpp"
 
-namespace otto::audio {
+namespace otto::service::audio {
   namespace {
     void jackError(const char* s)
     {
-      LOG_F(ERROR, "JACK: {}", s);
+      LOGE("JACK: {}", s);
     }
 
     void jackLogInfo(const char* s)
@@ -221,10 +222,10 @@ namespace otto::audio {
 
     jack_midi_event_t event;
     for (int i = 0; i < nevents; i++) {
-      using namespace midi;
+      using namespace core::midi;
 
       jack_midi_event_get(&event, midiBuf, i);
-      midi::MidiEvent mEvent;
+      MidiEvent mEvent;
 
       mEvent.channel = event.buffer[0] & 0b00001111;
       mEvent.data    = event.buffer + 1;

@@ -1,13 +1,15 @@
-#include "audio_manager.hpp"
-#include "audio/jack_audio_driver.hpp"
+#include "audio.hpp"
+
 #include "util/algorithm.hpp"
 
-namespace otto::audio {
+#include "audio/jack_audio_driver.hpp"
+
+namespace otto::service::audio {
   using AudioDriver = JackAudioDriver;
 
   namespace {
-    struct DebugInfo : debug::Info {
-      debug::graph<1 << 10> audio_graph;
+    struct DebugInfo : debug_ui::Info {
+      debug_ui::graph<1 << 10> audio_graph;
       int buffers_lost = 0;
       int lost_pos     = 0;
 
@@ -48,7 +50,7 @@ namespace otto::audio {
   {
     events::pre_init().fire();
 
-    midi::generateFreqTable(440);
+    core::midi::generateFreqTable(440);
     AudioDriver::get().init();
   }
 

@@ -8,7 +8,7 @@
 #include <jack/midiport.h>
 #include "core/audio/midi.hpp"
 
-namespace otto::audio {
+namespace otto::service::audio {
   struct JackAudioDriver {
     static JackAudioDriver& get() noexcept;
 
@@ -38,7 +38,7 @@ namespace otto::audio {
     jack_client_t* client;
     jack_status_t jackStatus;
 
-    std::vector<midi::AnyMidiEvent> midi_buf;
+    std::vector<core::midi::AnyMidiEvent> midi_buf;
 
     enum class PortType {
       Audio,

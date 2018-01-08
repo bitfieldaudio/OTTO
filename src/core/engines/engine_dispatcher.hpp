@@ -3,7 +3,7 @@
 #include "core/engines/engine.hpp"
 
 
-namespace otto::engines {
+namespace otto::core::engines {
 
   // Implementation is in engine_dispatcher.cpp, with explicit instantiations at
   // the bottom.
@@ -86,4 +86,4 @@ namespace otto::engines {
     Engine<ET>* _current;
   };
 
-} // namespace otto::engines
+} // namespace otto::core::engines

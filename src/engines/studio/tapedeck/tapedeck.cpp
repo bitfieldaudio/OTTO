@@ -7,10 +7,16 @@
 #include "tapescreen.hpp"
 #include "util/algorithm.hpp"
 #include "util/timer.hpp"
-#include "services/audio_manager.hpp"
-#include "services/engine_manager.hpp"
+#include "services/audio.hpp"
+#include "services/engines.hpp"
 
 namespace otto::engines {
+
+  using service::engines::BeatPos;
+  using service::engines::TapeTime;
+
+  namespace metronome_state = service::engines::metronome_state;
+
   // TapeDeck::State ///////////////////////////////////////////////////////////
 
   bool Tapedeck::State::doSwitchTracks() const
@@ -169,14 +175,14 @@ namespace otto::engines {
   void Tapedeck::goToBar(BeatPos bar)
   {
     if (state.doJumps()) {
-      tapeBuffer->jump_to(engines::metronome_state::bar_time(bar));
+      tapeBuffer->jump_to(metronome_state::bar_time(bar));
     }
   }
 
   void Tapedeck::goToBarRel(BeatPos bars)
   {
     if (state.doJumps())
-      tapeBuffer->jump_to(engines::metronome_state::bar_time_rel(bars));
+      tapeBuffer->jump_to(metronome_state::bar_time_rel(bars));
   }
 
   int Tapedeck::timeUntil(int tt)
@@ -230,7 +236,7 @@ namespace otto::engines {
               state.playSpeed =
                 state.prevSpeed +
                 (state.nextSpeed - state.prevSpeed) *
-                  (1 - std::cos((x / float(audio::samplerate()) * 1000 /
+                (1 - std::cos((x / float(service::audio::samplerate()) * 1000 /
                                   (adjTime)) *
                                 M_PI)) *
                   0.5;

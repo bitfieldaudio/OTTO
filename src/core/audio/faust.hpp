@@ -17,7 +17,7 @@
 #include "core/audio/processor.hpp"
 #include "core/engines/engine_props.hpp"
 
-namespace otto::audio {
+namespace otto::core::audio {
 
   using FaustDSP = dsp;
 

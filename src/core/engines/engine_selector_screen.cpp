@@ -1,12 +1,12 @@
 #include "engine_selector_screen.hpp"
 
 #include "core/ui/vector_graphics.hpp"
-#include "services/preset_manager.hpp"
+#include "services/presets.hpp"
 
-namespace otto::engines {
+namespace otto::core::engines {
 
-  using namespace otto::ui;
-  using namespace otto::ui::vg;
+  using namespace otto::core::ui;
+  using namespace otto::core::ui::vg;
 
   SelectorWidget::Options EngineSelectorScreen::eng_opts(
     std::function<AnyEngine&(int)>&& select_eg) noexcept
@@ -14,7 +14,7 @@ namespace otto::engines {
         SelectorWidget::Options opts;
         opts.on_select = [this, sl = std::move(select_eg)](int idx) {
           auto& eg = sl(idx);
-          preset_wid.items(presets::preset_names(eg.name()));
+          preset_wid.items(service::presets::preset_names(eg.name()));
           preset_wid.select(eg.current_preset(), true);
         };
         opts.item_colour = Colours::Blue;
@@ -27,7 +27,7 @@ namespace otto::engines {
   {
         SelectorWidget::Options opts;
         opts.on_select = [cur_eg = std::move(cur_eg)](int idx) {
-            presets::apply_preset(cur_eg(), idx);
+            service::presets::apply_preset(cur_eg(), idx);
           };
         opts.item_colour = Colours::Green;
         opts.size = {120, vg::HEIGHT};
@@ -61,4 +61,4 @@ namespace otto::engines {
   void EngineSelectorScreen::on_hide()
   {}
 
-} // namespace otto::engines
+} // namespace otto::core::engines

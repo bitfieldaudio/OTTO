@@ -14,7 +14,7 @@
 
 #include "services/debug_ui.hpp"
 
-namespace otto {
+namespace otto::engines {
 
   // FDCL - Defined in tapebuffer.cpp
   struct Producer;
@@ -192,7 +192,7 @@ namespace otto {
     friend struct Producer;
     std::unique_ptr<Producer> producer;
 
-    struct DbgInfo : debug::Info {
+    struct DbgInfo : service::debug_ui::Info {
       void record_read(float entry) {
 #if OTTO_DEBUG_UI
         read_size_graph.push(entry);
@@ -202,7 +202,7 @@ namespace otto {
       void draw() override;
 
     private:
-      debug::graph<1 << 10> read_size_graph;
+      service::debug_ui::graph<1 << 10> read_size_graph;
     } dbg;
   };
 }

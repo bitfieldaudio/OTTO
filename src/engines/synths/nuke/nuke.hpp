@@ -6,6 +6,9 @@
 
 namespace otto::engines {
 
+  using namespace core;
+  using namespace core::engines;
+
   struct NukeSynth : public FaustSynthEngine {
 
     struct Props : Properties {

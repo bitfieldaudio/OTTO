@@ -3,70 +3,73 @@
 #include <fmt/format.h>
 
 #include "core/globals.hpp"
-#include "core/ui/mainui.hpp"
 #include "core/ui/vector_graphics.hpp"
-#include "tapedeck.hpp"
-#include "services/audio_manager.hpp"
-#include "services/engine_manager.hpp"
 
-namespace otto::ui::vg {
-  namespace Colours {
-    const Colour Tape = Colour::bytes(60, 60, 59);
-  }
-} // namespace otto::ui::vg
+#include "services/ui.hpp"
+#include "services/audio.hpp"
+#include "services/engines.hpp"
+
+#include "tapedeck.hpp"
 
 namespace otto::engines {
 
-  using namespace ui;
-  using namespace ui::vg;
+  using namespace core;
+
+  using namespace core::ui;
+  using namespace core::ui::vg;
+
+  namespace Colours {
+    using namespace core::ui::vg::Colours;
+    const Colour Tape = Colour::bytes(60, 60, 59);
+  }
 
   struct TapeScreen : public EngineScreen<Tapedeck> {
     bool stopRecOnRelease = true;
 
     using EngineScreen<Tapedeck>::EngineScreen;
 
-    bool keypress(ui::Key key) override
+    bool keypress(Key key) override
     {
-      bool shift = ui::is_pressed(ui::Key::shift);
+      bool shift = service::ui::is_pressed(ui::Key::shift);
       switch (key) {
-      case ui::Key::rec: engine.state.startRecord(); return true;
-      case ui::Key::play:
-        if (ui::is_pressed(ui::Key::rec)) {
+      case Key::rec: engine.state.startRecord(); return true;
+      case Key::play:
+        if (service::ui::is_pressed(ui::Key::rec)) {
           stopRecOnRelease = false;
         }
         return false;
-      case ui::Key::track_1: engine.state.track = 0; return true;
-      case ui::Key::track_2: engine.state.track = 1; return true;
-      case ui::Key::track_3: engine.state.track = 2; return true;
-      case ui::Key::track_4: engine.state.track = 3; return true;
-      case ui::Key::left:
+      case Key::track_1: engine.state.track = 0; return true;
+      case Key::track_2: engine.state.track = 1; return true;
+      case Key::track_3: engine.state.track = 2; return true;
+      case Key::track_4: engine.state.track = 3; return true;
+      case Key::left:
         if (shift)
           engine.goToBarRel(-1);
         else
           engine.state.spool(-5);
         return true;
-      case ui::Key::right:
+      case Key::right:
         if (shift)
           engine.goToBarRel(1);
         else
           engine.state.spool(5);
         return true;
-      case ui::Key::loop:
+      case Key::loop:
         engine.state.looping = !engine.state.looping;
         return true;
-      case ui::Key::loop_in:
+      case Key::loop_in:
         if (shift)
           engine.loopInHere();
         else
           engine.goToLoopIn();
         return true;
-      case ui::Key::loop_out:
+      case Key::loop_out:
         if (shift)
           engine.loopOutHere();
         else
           engine.goToLoopOut();
         return true;
-      case ui::Key::cut:
+      case Key::cut:
         if (engine.state.doTapeOps()) {
           if (shift) {
             // TODO: Glue
@@ -76,12 +79,12 @@ namespace otto::engines {
           }
         }
         return true;
-      case ui::Key::lift:
+      case Key::lift:
         if (engine.state.doTapeOps())
           // TODO:
           // engine.tapeBuffer.lift(engine.state.track);
           return true;
-      case ui::Key::drop:
+      case Key::drop:
         if (engine.state.doTapeOps())
           // TODO:
           // engine.tapeBuffer.drop(engine.state.track);
@@ -90,20 +93,20 @@ namespace otto::engines {
       }
     }
 
-    void rotary(ui::RotaryEvent e) override
+    void rotary(RotaryEvent e) override
     {
       switch (e.rotary) {
-      case ui::Rotary::Blue: break;
-      case ui::Rotary::Green: break;
-      case ui::Rotary::White: engine.props.baseSpeed.step(e.clicks); break;
-      case ui::Rotary::Red: engine.props.gain.step(e.clicks); break;
+      case Rotary::Blue: break;
+      case Rotary::Green: break;
+      case Rotary::White: engine.props.baseSpeed.step(e.clicks); break;
+      case Rotary::Red: engine.props.gain.step(e.clicks); break;
       }
     }
 
-    bool keyrelease(ui::Key key) override
+    bool keyrelease(Key key) override
     {
       switch (key) {
-      case ui::Key::rec:
+      case Key::rec:
         if (stopRecOnRelease) {
           engine.state.stopRecord();
           return true;
@@ -111,8 +114,8 @@ namespace otto::engines {
           stopRecOnRelease = true;
           return true;
         }
-      case ui::Key::left:
-      case ui::Key::right: engine.state.stop(); return true;
+      case Key::left:
+      case Key::right: engine.state.stop(); return true;
       default: return false;
       }
     }
@@ -124,7 +127,7 @@ namespace otto::engines {
 
     std::string timeStr(std::size_t position) const
     {
-      double seconds = position / (1.0 * audio::samplerate());
+      double seconds = position / (1.0 * service::audio::samplerate());
       double minutes = seconds / 60.0;
       return fmt::format("{:0>2}:{:0>5.2f}", (int) minutes,
                          fmod(seconds, 60.0));
@@ -404,7 +407,7 @@ namespace otto::engines {
 
       // The amount of time to display on the timeline
       // TODO: Animate this?
-      int timeline_time = 5 * audio::samplerate();
+      int timeline_time = 5 * service::audio::samplerate();
 
       util::audio::Section<int> view_time{
         (int) engine.position() - timeline_time / 2,
@@ -430,10 +433,10 @@ namespace otto::engines {
         ctx.lineCap(Canvas::LineCap::ROUND);
         ctx.lineJoin(Canvas::LineJoin::ROUND);
 
-        auto bar = std::min(0.f, engines::metronome_state::bar_for_time(view_time.in) - 1);
+        auto bar = std::min(0.f, service::engines::metronome_state::bar_for_time(view_time.in) - 1);
 
         while (true) {
-          auto time = engines::metronome_state::time_for_bar(bar);
+          auto time = service::engines::metronome_state::time_for_bar(bar);
           bar += 1;
           float x = time_to_coord(time);
           if (x < min_x) {

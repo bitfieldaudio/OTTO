@@ -4,11 +4,11 @@
 #include <json.hpp>
 #include <string>
 
-namespace otto::services::state {
+namespace otto::service::state {
   /// Decoder
   using Loader = std::function<void(nlohmann::json& json)>;
   /// Encoder
-  using Saver  = std::function<nlohmann::json()>;
+  using Saver = std::function<nlohmann::json()>;
 
   /// Read `data/state.json` and invoke attached loaders
   void load();
@@ -19,7 +19,7 @@ namespace otto::services::state {
   /// Attach state handler with a name
   ///
   /// \throws [otto::util::exception]() If a handler has already been attached
-  /// with the name `name` 
+  /// with the name `name`
   void attach(std::string name, Loader load, Saver save);
 
   /// Detach a state handler
@@ -27,4 +27,4 @@ namespace otto::services::state {
   /// \throws [otto::util::exception]() If no such handler is attached
   void detach(std::string name);
 
-} // namespace otto::services::state
+} // namespace otto::service::state

@@ -4,7 +4,7 @@
 #include "util/exception.hpp"
 #include "services/logger.hpp"
 
-namespace otto::services::state {
+namespace otto::service::state {
   namespace {
     struct Client {
       std::string name;

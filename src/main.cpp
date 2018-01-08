@@ -1,12 +1,14 @@
-#include "services/audio_manager.hpp"
+#include "util/timer.hpp"
+
 #include "core/audio/midi.hpp"
-#include "services/engine_manager.hpp"
-#include "services/preset_manager.hpp"
 #include "core/globals.hpp"
-#include "core/ui/mainui.hpp"
+
+#include "services/engines.hpp"
+#include "services/presets.hpp"
+#include "services/ui.hpp"
 #include "services/logger.hpp"
 #include "services/state.hpp"
-#include "util/timer.hpp"
+#include "services/audio.hpp"
 
 using namespace otto;
 
@@ -18,18 +20,18 @@ int handleException();
 int main(int argc, char* argv[])
 {
   try {
-    services::logger::init(argc, argv);
-    services::state::load();
+    service::logger::init(argc, argv);
+    service::state::load();
 
-    presets::init();
-    engines::init();
-    audio::init();
+    service::presets::init();
+    service::engines::init();
+    service::audio::init();
 
-    engines::start();
-    audio::start();
+    service::engines::start();
+    service::audio::start();
 
-    ui::init();
-    ui::main_ui_loop();
+    service::ui::init();
+    service::ui::main_ui_loop();
   } catch (const char* e) {
     return handleException(e);
   } catch (std::exception& e) {
@@ -68,9 +70,9 @@ int handleException()
 
 void cleanup()
 {
-  engines::shutdown();
-  audio::shutdown();
-  services::state::save();
+  service::engines::shutdown();
+  service::audio::shutdown();
+  service::state::save();
 
   util::timer::save_data();
 }

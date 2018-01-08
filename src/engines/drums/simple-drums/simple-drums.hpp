@@ -8,6 +8,9 @@
 
 namespace otto::engines {
 
+  using namespace core;
+  using namespace core::engines;
+
   struct SimpleDrumVoice : audio::FaustWrapper<0, 1> {
     struct Props : Properties {
       struct Osc : Properties {

@@ -5,7 +5,7 @@
 
 #include "util/poly-ptr.hpp"
 
-namespace otto::midi {
+namespace otto::core::midi {
 
   struct MidiEvent {
 
