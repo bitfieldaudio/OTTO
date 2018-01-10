@@ -13,9 +13,9 @@
 using namespace otto;
 
 void cleanup();
-int handleException(const char* e);
-int handleException(std::exception& e);
-int handleException();
+int handle_exception(const char* e);
+int handle_exception(std::exception& e);
+int handle_exception();
 
 int main(int argc, char* argv[])
 {
@@ -33,11 +33,11 @@ int main(int argc, char* argv[])
     service::ui::init();
     service::ui::main_ui_loop();
   } catch (const char* e) {
-    return handleException(e);
+    return handle_exception(e);
   } catch (std::exception& e) {
-    return handleException(e);
+    return handle_exception(e);
   } catch (...) {
-    return handleException();
+    return handle_exception();
   }
 
   LOG_F(INFO, "Exiting");
@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
   return 0;
 }
 
-int handleException(const char* e)
+int handle_exception(const char* e)
 {
   LOGE(e);
   LOGE("Exception thrown, exitting!");
@@ -53,7 +53,7 @@ int handleException(const char* e)
   return 1;
 }
 
-int handleException(std::exception& e)
+int handle_exception(std::exception& e)
 {
   LOGE(e.what());
   LOGE("Exception thrown, exitting!");
@@ -61,7 +61,7 @@ int handleException(std::exception& e)
   return 1;
 }
 
-int handleException()
+int handle_exception()
 {
   LOGE("Unknown exception thrown, exitting!");
   cleanup();

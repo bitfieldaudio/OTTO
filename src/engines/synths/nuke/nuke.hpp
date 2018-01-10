@@ -9,10 +9,10 @@ namespace otto::engines {
   using namespace core;
   using namespace core::engines;
 
-  struct NukeSynth : public FaustSynthEngine {
+  struct NukeSynth : FaustSynthEngine {
 
     struct Props : Properties {
-      struct : public Properties {
+      struct : Properties {
         Property<float> attack      = {this, "ATTACK",  0,   {0, 2, 0.02}};
         Property<float> decay       = {this, "DECAY",   0,   {0, 2, 0.02}};
         Property<float> sustain     = {this, "SUSTAIN", 1,   {0, 1, 0.02}};
