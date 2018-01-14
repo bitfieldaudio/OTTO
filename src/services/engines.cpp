@@ -19,6 +19,22 @@ namespace otto::service::engines {
 
   using namespace core::engines;
 
+  enum struct SynthOrDrums { synth, drums };
+
+  nlohmann::json to_json(SynthOrDrums sod)
+  {
+    return sod == SynthOrDrums::synth ? "Synth" : "Drums";
+  }
+
+  void from_json(const nlohmann::json& js, SynthOrDrums& sod)
+  {
+    if (js == "Synth") {
+      sod = SynthOrDrums::synth;
+    } else if (js == "Drums") {
+      sod = SynthOrDrums::drums;
+    }
+  }
+
   namespace {
     std::map<std::string, std::function<AnyEngine*()>> engineGetters;
     core::audio::ProcessBuffer<1> _audiobuf1;
@@ -31,6 +47,7 @@ namespace otto::service::engines {
     otto::engines::Metronome metronome;
     otto::engines::InputSelector selector;
 
+    SynthOrDrums current_sound_source = SynthOrDrums::synth;
   } // namespace
 
   void init()
@@ -60,6 +77,7 @@ namespace otto::service::engines {
       } else {
         service::ui::select_engine("Synth");
       }
+      current_sound_source = SynthOrDrums::synth;
     });
     service::ui::register_key_handler(core::ui::Key::drums, [](core::ui::Key k) {
       if (service::ui::is_pressed(core::ui::Key::shift)) {
@@ -67,6 +85,7 @@ namespace otto::service::engines {
       } else {
         service::ui::select_engine("Drums");
       }
+      current_sound_source = SynthOrDrums::drums;
     });
 
     service::ui::register_key_handler(core::ui::Key::play, [](core::ui::Key key) {
@@ -84,6 +103,7 @@ namespace otto::service::engines {
       synth.from_json(data["Synth"]);
       drums.from_json(data["Drums"]);
       metronome.from_json(data["Metronome"]);
+      from_json(data["CurrentSoundSource"], current_sound_source);
     };
 
     auto save = [&] {
@@ -91,7 +111,8 @@ namespace otto::service::engines {
                              {"Mixer", mixer.to_json()},
                              {"Synth", synth.to_json()},
                              {"Drums", drums.to_json()},
-                             {"Metronome", metronome.to_json()}});
+                             {"Metronome", metronome.to_json()},
+                             {"CurrentSoundSource", to_json(current_sound_source)}});
     };
 
     service::state::attach("Engines", load, save);
@@ -124,12 +145,11 @@ namespace otto::service::engines {
     auto record_in = [&]() {
       switch (selector.props.input.get()) {
       case Selection::Internal: {
-        auto synth_out = synth->process(midi_in);
-        auto drums_out = drums->process(midi_in);
-        for (auto&& [drm, snth] : util::zip(drums_out, synth_out)) {
-          util::audio::add_all(drm, snth);
+        if (current_sound_source == SynthOrDrums::synth) {
+          return synth->process(midi_in);
+        } else {
+          return drums->process(midi_in);
         }
-        return drums_out;
       }
       case Selection::External: return effect->process(external_in);
       case Selection::TrackFB:

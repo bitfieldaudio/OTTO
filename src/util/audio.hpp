@@ -26,6 +26,7 @@ namespace otto::util::audio {
   template<int nChannels = 4, typename SampleType = float>
   using AudioFrame = std::array<SampleType, nChannels>;
 
+  /// Add all elements in r1 to their respective elements in r2.
   template<typename Rng1, typename Rng2>
   void add_all(Rng1&& r1, Rng2&& r2)
   {
