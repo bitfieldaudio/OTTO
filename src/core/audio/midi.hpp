@@ -92,7 +92,7 @@ namespace otto::core::midi {
     return detail::note_names[key];
   }
 
-  constexpr float note_freq(int key) noexcept
+  inline float note_freq(int key) noexcept
   {
     return detail::freq_table[key];
   }
