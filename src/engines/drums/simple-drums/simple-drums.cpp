@@ -1,5 +1,5 @@
 #include "simple-drums.hpp"
-#include "simple-drums.faust.h"
+#include "simple-drums.faust.hpp"
 
 #include "core/ui/vector_graphics.hpp"
 #include "core/globals.hpp"

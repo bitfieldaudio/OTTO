@@ -3,7 +3,7 @@
 #include "core/globals.hpp"
 #include "core/ui/vector_graphics.hpp"
 
-#include "nuke.faust.h"
+#include "nuke.faust.hpp"
 
 namespace otto::engines {
 

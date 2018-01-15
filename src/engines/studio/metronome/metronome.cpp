@@ -6,7 +6,7 @@
 #include <string>
 #include <cmath>
 
-#include "metronome.faust.h"
+#include "metronome.faust.hpp"
 
 #include "util/timer.hpp"
 
