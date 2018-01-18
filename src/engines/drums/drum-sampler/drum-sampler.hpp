@@ -63,7 +63,7 @@ namespace otto::engines {
 
       // Construct VoiceData's
       std::array<VoiceData, nVoices> voiceData =
-        util::generate_sequence<nVoices>([this] (int n) {
+        util::generate_array<nVoices>([this] (int n) {
             return VoiceData((Properties*) this, fmt::format("Voice {}", n));
           });
 

@@ -4,6 +4,7 @@
 #include <type_traits>
 #include "util/algorithm.hpp"
 #include "util/type_traits.hpp"
+#include "util/utility.hpp"
 
 namespace otto::util {
 
