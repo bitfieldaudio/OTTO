@@ -98,6 +98,11 @@ namespace otto::core::props {
     }
   } // namespace black_magic
 
+  /// Type trait to see if a tag_list contains a tag.
+  template<typename TagList, typename T>
+  static constexpr bool contains_tag_v =
+    boost::hana::contains(TagList(), boost::hana::type_c<T>);
+
   /// This type inherits from all mixins matched by `Tags`
   ///
   /// \see inherit_from_all_mixins_impl

@@ -18,7 +18,7 @@ namespace otto::core::props {
     /// Initialize the mixin of type `Tag` with args
     template<typename Tag, typename... Args>
     auto init(Args&&... args) -> std::enable_if_t<
-      hana::contains(tag_list, hana::type_c<Tag>),
+      contains_tag_v<tag_list_t, Tag>,
       decltype(mixin<Tag>::init(std::declval<Args>()...),
         std::declval<PropertyImpl&>())>
     {

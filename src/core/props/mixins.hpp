@@ -37,9 +37,21 @@ namespace otto::core::props {
       value_type value;
     };
 
+    OTTO_PROPS_MIXIN(has_children)
+    {
+      OTTO_PROPS_MIXIN_DECLS(has_children);
+
+      static_assert(
+        std::is_void_v<value_type>,
+        "A property that has children must have a value_type of void");
+
+      static_assert(!is<has_value>,
+                    "A property that has children must not have a value");
+    };
+
     OTTO_PROPS_MIXIN(has_name)
     {
-      OTTO_PROPS_MIXIN_DECLS(has_name);
+     OTTO_PROPS_MIXIN_DECLS(has_name);
 
       void init(std::string name)
       {
@@ -55,13 +67,17 @@ namespace otto::core::props {
       std::string _name;
     };
 
-    OTTO_PROPS_MIXIN(serializable)
+    OTTO_PROPS_MIXIN(serializable, has_value)
     {
       OTTO_PROPS_MIXIN_DECLS(serializable);
 
-      virtual nlohmann::json to_json() const
+      nlohmann::json to_json() const
       {
-        
+        if constexpr (is<has_children>) {
+          return as<has_children>().children;
+        } else {
+          return as<has_value>().value;
+        }
       }
     };
 
@@ -90,9 +106,9 @@ namespace otto::core::props {
         step_size = p_step_size;
       }
 
-      virtual void step(int n)
+      void step(int n)
       {
-        //base<has_value>::set(base<has_value>::get() + n * step_size);
+        as<has_value>().set(as<has_value>().get() + n * step_size);
       }
 
       value_type step_size;
