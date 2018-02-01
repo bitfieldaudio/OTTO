@@ -13,7 +13,7 @@ namespace otto::core::props {
     constexpr static tag_list_t tag_list;
 
     template<typename Tag>
-    using mixin = tag_mixin_t<Tag, T, tag_list_t>;
+    using mixin = MixinTag::mixin_t<Tag, T, tag_list_t>;
 
     using inherits_from_mixins_t<T, TagList>::inherits_from_mixins_t;
     using inherits_from_mixins_t<T, TagList>::operator=;
@@ -36,24 +36,23 @@ namespace otto::core::props {
     template<typename Tag>
     constexpr auto as() -> ::std::enable_if_t<
       PropertyImpl::is<Tag>,
-      ::otto::core::props::tag_mixin_t<Tag, value_type, tag_list_t>&>
+      MixinTag::mixin_t<Tag, value_type, tag_list_t>&>
     {
       return static_cast<
-        ::otto::core::props::tag_mixin_t<Tag, value_type, tag_list_t>&>(*this);
+        MixinTag::mixin_t<Tag, value_type, tag_list_t>&>(*this);
     }
 
     template<typename Tag>
     constexpr auto as() const -> ::std::enable_if_t<
       PropertyImpl::is<Tag>,
-      const ::otto::core::props::tag_mixin_t<Tag, value_type, tag_list_t>&>
+      const MixinTag::mixin_t<Tag, value_type, tag_list_t>&>
     {
-      return static_cast<
-        const ::otto::core::props::tag_mixin_t<Tag, value_type, tag_list_t>&>(
+      return static_cast<const MixinTag::mixin_t<Tag, value_type, tag_list_t>&>(
         *this);
     }
 
     template<typename Hook>
-    using hook = detail::hook_t<Hook, value_type>;
+    using hook = HookTag::impl_t<Hook, value_type>;
 
     template<typename Hook>
     typename hook<Hook>::arg_type run_hook(

@@ -21,41 +21,43 @@
                                                                                \
   template<typename Tag>                                                       \
   constexpr auto as()                                                          \
-    ->::std::enable_if_t<self_type::is<Tag>, ::otto::core::props::tag_mixin_t< \
-                                               Tag, value_type, tag_list_t>&>  \
+    ->::std::enable_if_t<                                                      \
+      self_type::is<Tag>,                                                      \
+      ::otto::core::props::MixinTag::mixin_t<Tag, value_type, tag_list_t>&>    \
   {                                                                            \
     auto* as_prop = static_cast<property_type*>(this);                         \
     return static_cast<                                                        \
-      ::otto::core::props::tag_mixin_t<Tag, value_type, tag_list_t>&>(         \
+      ::otto::core::props::MixinTag::mixin_t<Tag, value_type, tag_list_t>&>(   \
       *as_prop);                                                               \
   }                                                                            \
                                                                                \
   template<typename Tag>                                                       \
-  constexpr auto as() const->::std::enable_if_t<                               \
-    self_type::is<Tag>,                                                        \
-    const ::otto::core::props::tag_mixin_t<Tag, value_type, tag_list_t>&>      \
+  constexpr auto as()                                                          \
+    const->::std::enable_if_t<self_type::is<Tag>,                              \
+                              const ::otto::core::props::MixinTag::mixin_t<    \
+                                Tag, value_type, tag_list_t>&>                 \
   {                                                                            \
     const auto& as_prop = static_cast<const property_type&>(*this);            \
-    return static_cast<                                                        \
-      const ::otto::core::props::tag_mixin_t<Tag, value_type, tag_list_t>&>(   \
-      as_prop);                                                                \
+    return static_cast<const ::otto::core::props::MixinTag::mixin_t<           \
+      Tag, value_type, tag_list_t>&>(as_prop);                                 \
   }                                                                            \
                                                                                \
-  template<typename Hook>                                                      \
-  using hook = detail::hook_t<Hook, value_type>;                               \
+  template<typename HT>                                                        \
+  using hook = HookTag::impl_t<HT, value_type>;                                \
                                                                                \
-  template<typename Hook>                                                      \
-  typename hook<Hook>::arg_type run_hook(                                      \
-    const typename hook<Hook>::arg_type& arg)                                  \
+  template<typename HT,                                                        \
+           CONCEPT_REQUIRES_(::ranges::concepts::models<                       \
+                             ::otto::core::props::HookTag, HT, value_type>())> \
+  typename hook<HT>::arg_type run_hook(const typename hook<HT>::arg_type& arg) \
   {                                                                            \
-    return ::otto::core::props::detail::run_hook<Hook>(*this, arg);     \
+    return ::otto::core::props::detail::run_hook<HT>(*this, arg);              \
   }                                                                            \
                                                                                \
-  template<typename Hook>                                                      \
-  typename hook<Hook>::arg_type run_hook(                                      \
-    const typename hook<Hook>::arg_type& arg) const                            \
+  template<typename HT>                                                        \
+  typename hook<HT>::arg_type run_hook(const typename hook<HT>::arg_type& arg) \
+    const                                                                      \
   {                                                                            \
-    return ::otto::core::props::detail::run_hook<Hook>(*this, arg);     \
+    return ::otto::core::props::detail::run_hook<HT>(*this, arg);              \
   }
 
 
@@ -79,7 +81,6 @@
     struct type {                                                              \
       using value_type = Val;                                                  \
       using arg_type   = ARG_TYPE;                                             \
-      arg_type _arg;                                                           \
       type(const arg_type& a) : _arg(a) {}                                     \
       type(arg_type&& a) : _arg(std::move(a)) {}                               \
       operator arg_type&()                                                     \
@@ -90,6 +91,9 @@
       {                                                                        \
         return _arg;                                                           \
       }                                                                        \
+                                                                               \
+    private:                                                                   \
+      arg_type _arg;                                                           \
     };                                                                         \
   };
 

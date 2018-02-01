@@ -16,3 +16,6 @@
 [submodule "external/imgui"]
 	path = external/imgui
 	url = https://github.com/ocornut/imgui
+[submodule "external/range-v3"]
+	path = external/range-v3
+	url = https://github.com/ericniebler/range-v3

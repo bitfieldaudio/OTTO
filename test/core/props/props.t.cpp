@@ -42,10 +42,10 @@ namespace otto::core::props {
 
       // Assert that the mixin implementation is inherited by the property
       static_assert(
-        std::is_base_of_v<
-          tag_mixin_t<mixins::steppable, float,
-                      make_tag_list_t<mixins::steppable, mixins::has_name>>,
-          decltype(pf)>);
+        std::is_base_of_v<MixinTag::mixin_t<mixins::steppable, float,
+                                            make_tag_list_t<mixins::steppable,
+                                                            mixins::has_name>>,
+                          decltype(pf)>);
 
       pf.set(3.f);
       REQUIRE(pf.get() == 3.f);
@@ -57,16 +57,27 @@ namespace otto::core::props {
     }
 
     struct Props {
-      Property<float, mixins::steppable, mixins::has_limits, mixins::has_name, mixins::faust_link> pf1 = 0.f;
-      Property<float, mixins::steppable, mixins::has_name, mixins::faust_link> pf2 = 1.f;
+      Property<float,
+               mixins::steppable,
+               mixins::has_limits,
+               mixins::has_name,
+               mixins::faust_link>
+        pf1 = 0.f;
+      Property<float, mixins::steppable, mixins::has_name, mixins::faust_link>
+        pf2 = 1.f;
 
-      Props() {
-        pf1.init<mixins::steppable>(1.f)
-          .init<mixins::has_limits>(-5.f, 5.f);
+      Props()
+      {
+        pf1.init<mixins::steppable>(1.f).init<mixins::has_limits>(-5.f, 5.f);
       };
     } props;
 
-    static_assert(detail::has_handler<typename decltype(props.pf1)::mixin<mixins::has_limits>, mixins::has_value::hooks::on_set>::value);
+    CONCEPT_ASSERT(cpts::models<HookTag, mixins::has_value::hooks::on_set,
+                                typename decltype(props.pf1)::value_type>());
+
+    static_assert(MixinImpl::has_handler_v<
+                  typename decltype(props.pf1)::mixin<mixins::has_limits>,
+                  mixins::has_value::hooks::on_set>);
 
     REQUIRE(props.pf1 == 0.f);
     REQUIRE(props.pf2 == 1.f);

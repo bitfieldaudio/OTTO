@@ -1,34 +1,8 @@
 #pragma once
 
-#include <boost/hana.hpp>
-
-#include "util/type_traits.hpp"
+#include "type_traits.hpp"
 
 namespace otto::core::props {
-
-  /// Type used to list tags
-  template<typename... Tags>
-  using tag_list = boost::hana::tuple<boost::hana::type<Tags>...>;
-
-  namespace detail {
-    template<typename Tag, typename = void>
-    struct required_tags_impl {
-      using type = tag_list<>;
-    };
-
-    template<typename Tag>
-    struct required_tags_impl<Tag, std::void_t<typename Tag::required_tags>> {
-      using type = typename Tag::required_tags;
-    };
-  } // namespace detail
-
-  /// Get mixin type for type `T` and tag `Tag`
-  template<typename Tag, typename T, typename TagList>
-  using tag_mixin_t = typename Tag::template implementation_type<T, TagList>;
-
-  /// Get all required tags for `Tag`
-  template<typename Tag>
-  using required_tags_t = typename detail::required_tags_impl<Tag>::type;
 
   /// !!! Warning: `boost::hana` ahead !!!
   ///
@@ -69,10 +43,10 @@ namespace otto::core::props {
     template<typename TagList>
     constexpr auto with_required(TagList const& tl)
     {
-      return sort_tags(
-        hana::concat(tl, hana::flatten(hana::transform(tl, [](auto tag) {
-                       return required_tags_t<typename decltype(+tag)::type>();
-                     }))));
+      return sort_tags(hana::concat(
+        tl, hana::flatten(hana::transform(tl, [](auto tag) {
+          return MixinTag::required_tags_t<typename decltype(+tag)::type>();
+        }))));
     }
 
     /// Simple type that inherits publicly from all of `SuperClasses...`
@@ -112,7 +86,7 @@ namespace otto::core::props {
     {
       return inherit_from_all_types_impl(hana::transform(tl, [](auto tag) {
         return hana::type_c<
-          tag_mixin_t<typename decltype(+tag)::type, ValueType, TagList>>;
+          MixinTag::mixin_t<typename decltype(+tag)::type, ValueType, TagList>>;
       }));
     }
   } // namespace black_magic
@@ -135,68 +109,5 @@ namespace otto::core::props {
   template<typename... Tags>
   using make_tag_list_t = decltype(black_magic::with_required(
     boost::hana::make_tuple(boost::hana::type_c<Tags>...)));
-
-  namespace detail {
-    /// Get the hook type from a tag and a value type
-    template<typename Hook, typename VT>
-    using hook_t = typename Hook::template type<VT>;
-
-    /// Get the hook type from a tag and a Mixin type
-    template<typename Hook, typename Mixin>
-    using mixin_hook_t = hook_t<Hook, typename Mixin::value_type>;
-
-    /// Get the hooks struct for a tag
-    template<typename Tag, typename = void>
-    struct tag_hooks {
-      struct type {};
-    };
-
-    /// Get the hooks struct for a tag
-    template<typename Tag>
-    struct tag_hooks<Tag, std::void_t<typename Tag::hooks>> {
-      using type = typename Tag::hooks;
-    };
-
-    /// Get the hooks struct for a tag
-    template<typename Tag>
-    using tag_hooks_t = typename tag_hooks<Tag>::type;
-
-    /// Check if Mixin has a handler for Hook
-    template<typename Mixin, typename Hook, typename = void>
-    struct has_handler : std::false_type {};
-
-    /// Check if Mixin has a handler for Hook
-    template<typename Mixin, typename Hook>
-    struct has_handler<Mixin,
-                       Hook,
-                       std::void_t<decltype(std::declval<Mixin>().on_hook(
-                         std::declval<mixin_hook_t<Hook, Mixin>&>()))>>
-      : std::true_type {};
-
-    /// Check if Mixin has a handler for Hook
-    template<typename Mixin, typename Hook>
-    constexpr const bool has_handler_v = has_handler<Mixin, Hook>::value;
-
-    /// Run `Mixin`'s handler for `Hook` if it has one
-    template<typename Hook, typename Mixin>
-    void run_hook_if_handler(Mixin& m, mixin_hook_t<Hook, Mixin>& h)
-    {
-      if constexpr (has_handler_v<Mixin, Hook>) {
-        m.on_hook(h);
-      }
-    }
-
-    /// Run handler for `Hook` for all of `Mixin`s siblings
-    template<typename Hook, typename Mixin>
-    auto run_hook(Mixin& m, const typename mixin_hook_t<Hook, Mixin>::arg_type& arg)
-    {
-      mixin_hook_t<Hook, Mixin> hook {arg};
-      boost::hana::for_each(m.tag_list, [&hook, &m](const auto& mtype) {
-          run_hook_if_handler<Hook>(hook,
-                            m.template as<typename decltype(+mtype)::type>());
-      });
-      return hook.value();
-    }
-  } // namespace detail
 
 } // namespace otto::core::props

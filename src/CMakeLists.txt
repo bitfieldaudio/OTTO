@@ -13,6 +13,7 @@ target_link_libraries(otto PUBLIC GSL)
 target_link_libraries(otto PUBLIC fmt)
 target_link_libraries(otto PUBLIC jack)
 target_link_libraries(otto PUBLIC imgui)
+target_link_libraries(otto PUBLIC range-v3)
 target_link_libraries(otto PUBLIC ${CMAKE_THREAD_LIBS_INIT})
 target_include_directories(otto PUBLIC ./)
 

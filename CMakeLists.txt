@@ -10,6 +10,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 option(OTTO_DEBUG_UI "Enable the imgui based debug ui" ON)
 option(OTTO_BUILD_DOCS "Build documentation" OFF)
+option(OTTO_BUILD_TESTS "Build tests" ON)
 option(OTTO_USE_LIBCXX "Link towards libc++ instead of libstdc++. This is the default on OSX" ${APPLE})
 option(OTTO_ENABLE_TIMERS "Enable debugging timers" OFF)
 option(OTTO_RPI "Build for Raspberry Pi (native graphics)" OFF)
@@ -58,4 +59,8 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 add_subdirectory(src)
-add_subdirectory(test)
+
+if (OTTO_BUILD_TESTS)
+  add_subdirectory(test)
+endif()
+
