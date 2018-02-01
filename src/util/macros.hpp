@@ -65,3 +65,8 @@
   GET_MACRO_15(__VA_ARGS__, FE_15, FE_14, FE_13, FE_12, FE_11, FE_10, FE_9,    \
                FE_8, FE_7, FE_6, FE_5, FE_4, FE_3, FE_2, FE_1, NONE)           \
   (action, __VA_ARGS__)
+
+# define EMPTY(...)
+# define DEFER(...) __VA_ARGS__ EMPTY()
+# define OBSTRUCT(...) __VA_ARGS__ DEFER(EMPTY)()
+# define EXPAND(...) __VA_ARGS__

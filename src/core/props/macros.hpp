@@ -10,6 +10,7 @@
   using self_type  = THIS_TYPE##_;                                             \
   using value_type = ValueType;                                                \
   using tag_list_t = TagList;                                                  \
+  using hooks      = ::otto::core::props::detail::tag_hooks_t<THIS_TYPE>;      \
   using property_type =                                                        \
     ::otto::core::props::inherits_from_mixins_t<value_type, tag_list_t>;       \
   constexpr static tag_list_t tag_list;                                        \
@@ -27,7 +28,96 @@
     return static_cast<                                                        \
       ::otto::core::props::tag_mixin_t<Tag, value_type, tag_list_t>&>(         \
       *as_prop);                                                               \
+  }                                                                            \
+                                                                               \
+  template<typename Tag>                                                       \
+  constexpr auto as() const->::std::enable_if_t<                               \
+    self_type::is<Tag>,                                                        \
+    const ::otto::core::props::tag_mixin_t<Tag, value_type, tag_list_t>&>      \
+  {                                                                            \
+    const auto& as_prop = static_cast<const property_type&>(*this);            \
+    return static_cast<                                                        \
+      const ::otto::core::props::tag_mixin_t<Tag, value_type, tag_list_t>&>(   \
+      as_prop);                                                                \
+  }                                                                            \
+                                                                               \
+  template<typename Hook>                                                      \
+  using hook = detail::hook_t<Hook, value_type>;                               \
+                                                                               \
+  template<typename Hook>                                                      \
+  typename hook<Hook>::arg_type run_hook(                                      \
+    const typename hook<Hook>::arg_type& arg)                                  \
+  {                                                                            \
+    return ::otto::core::props::detail::run_hook<Hook>(*this, arg);     \
+  }                                                                            \
+                                                                               \
+  template<typename Hook>                                                      \
+  typename hook<Hook>::arg_type run_hook(                                      \
+    const typename hook<Hook>::arg_type& arg) const                            \
+  {                                                                            \
+    return ::otto::core::props::detail::run_hook<Hook>(*this, arg);     \
   }
+
+
+#define _OTTO_PROPS_ADD_PREFIX(MACRO) OTTO_PROPS_MIXIN_##MACRO
+
+#define OTTO_PROPS_MIXIN_REQUIRES(...)                                         \
+  using required_tags = ::otto::core::props::tag_list<__VA_ARGS__>;
+
+#define _OTTO_PROPS_MIXIN_HOOK_1(NAME)                    \
+  struct NAME {                                                                \
+    template<typename Val>                                                     \
+    struct type {                                                              \
+      using value_type = Val;                                                  \
+      using arg_type   = void;                                          \
+    };                                                                         \
+  };
+
+#define _OTTO_PROPS_MIXIN_HOOK_2(NAME, ARG_TYPE)                               \
+  struct NAME {                                                                \
+    template<typename Val>                                                     \
+    struct type {                                                              \
+      using value_type = Val;                                                  \
+      using arg_type   = ARG_TYPE;                                             \
+      arg_type _arg;                                                           \
+      type(const arg_type& a) : _arg(a) {}                                     \
+      type(arg_type&& a) : _arg(std::move(a)) {}                               \
+      operator arg_type&()                                                     \
+      {                                                                        \
+        return _arg;                                                           \
+      }                                                                        \
+      arg_type& value()                                                        \
+      {                                                                        \
+        return _arg;                                                           \
+      }                                                                        \
+    };                                                                         \
+  };
+
+#define _OTTO_PROPS_MIXIN_HOOK(...)                                            \
+/* Call _OTTO_PROPS_MIXIN_HOOK_1 if 2 arguments was provided, and */         \
+/* _OTTO_PROPS_MIXIN_HOOK_2 if 3 args were provided */                       \
+GET_MACRO_2(__VA_ARGS__, _OTTO_PROPS_MIXIN_HOOK_2,                    \
+            _OTTO_PROPS_MIXIN_HOOK_1)                                        \
+(__VA_ARGS__)
+
+// Macro recursion is not allowed, so use this and the DEFER macro
+// to invoke FOR_EACH recursively
+#define _OTTO_PROPS_DEFERED_FOR_EACH() FOR_EACH
+
+/// Call _OTTO_PROPS_MIXIN_HOOK with ARGLIST, where ARGLIST is a set of
+/// arguments wrapped in parens.
+#define _OTTO_PROPS_MIXIN_HOOK_CALL(ARGLIST) _OTTO_PROPS_MIXIN_HOOK ARGLIST
+
+/// Add hooks to a mixin.
+/// This macro is used in OTTO_PROPS_MIXIN by the name HOOKS.
+/// Arguments should be groups of parentheses of the form (HOOK_NAME, HOOK_TYPE)
+#define OTTO_PROPS_MIXIN_HOOKS(...)                                            \
+  struct hooks {                                                               \
+    /* The use of the DEFER macro is because this is called from within a      \
+     * FOR_EACH call */                                                        \
+    DEFER(_OTTO_PROPS_DEFERED_FOR_EACH)                                        \
+    ()(_OTTO_PROPS_MIXIN_HOOK_CALL, __VA_ARGS__)                               \
+  };
 
 /// \exclude
 #define OTTO_PROPS_MIXIN_1(TAG_NAME)                                           \
@@ -50,9 +140,9 @@
   struct TAG_NAME {                                                            \
     template<typename ValueType, typename TagList>                             \
     using implementation_type = TAG_NAME##_<ValueType, TagList>;               \
-    using required_tags       = ::otto::core::props::tag_list<__VA_ARGS__>;    \
     constexpr static ::boost::hana::string name =                              \
       BOOST_HANA_STRING(#TAG_NAME);                                            \
+    EXPAND(EXPAND(EXPAND(FOR_EACH(_OTTO_PROPS_ADD_PREFIX, __VA_ARGS__))))      \
   };                                                                           \
   template<typename ValueType, typename TagList>                               \
   struct TAG_NAME##_

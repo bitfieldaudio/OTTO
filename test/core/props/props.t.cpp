@@ -55,5 +55,22 @@ namespace otto::core::props {
       REQUIRE(pf == 5.f);
       float f = pf;
     }
+
+    struct Props {
+      Property<float, mixins::steppable, mixins::has_limits, mixins::has_name, mixins::faust_link> pf1 = 0.f;
+      Property<float, mixins::steppable, mixins::has_name, mixins::faust_link> pf2 = 1.f;
+
+      Props() {
+        pf1.init<mixins::steppable>(1.f)
+          .init<mixins::has_limits>(-5.f, 5.f);
+      };
+    } props;
+
+    static_assert(detail::has_handler<typename decltype(props.pf1)::mixin<mixins::has_limits>, mixins::has_value::hooks::on_set>::value);
+
+    REQUIRE(props.pf1 == 0.f);
+    REQUIRE(props.pf2 == 1.f);
+    props.pf1 = 10.f;
+    REQUIRE(props.pf1 == 5.f);
   }
 } // namespace otto::core::props

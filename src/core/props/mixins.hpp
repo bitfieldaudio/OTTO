@@ -9,32 +9,53 @@ namespace otto::core::props {
 
   namespace mixins {
 
-    OTTO_PROPS_MIXIN(has_value)
+    OTTO_PROPS_MIXIN(has_value, HOOKS((on_set, value_type)))
     {
       OTTO_PROPS_MIXIN_DECLS(has_value);
 
-      virtual value_type get() const
+      has_value_() {}
+      has_value_(const value_type& v) : _value(v) {}
+
+      const value_type& get() const
       {
-        return value;
+        return _value;
       }
 
-      virtual void set(const value_type& v)
+      void set(const value_type& v)
       {
-        value = v;
+        _value = run_hook<hooks::on_set>(v);
       }
 
       self_type& operator=(const value_type& rhs)
       {
-        value = rhs;
+        set(rhs);
         return *this;
       }
 
       operator const value_type&() const
       {
-        return value;
+        return get();
       }
 
-      value_type value;
+    protected:
+      value_type _value;
+    };
+
+    OTTO_PROPS_MIXIN(has_limits) {
+      OTTO_PROPS_MIXIN_DECLS(has_limits);
+
+      void init(const value_type& min, const value_type& max) {
+        _min = min;
+        _max = max;
+      }
+
+      void on_hook(hook<has_value::hooks::on_set>& hook) {
+        hook.value() = std::clamp(hook.value(), _min, _max);
+      }
+
+    protected:
+      value_type _min;
+      value_type _max;
     };
 
     OTTO_PROPS_MIXIN(has_children)
@@ -67,7 +88,7 @@ namespace otto::core::props {
       std::string _name;
     };
 
-    OTTO_PROPS_MIXIN(serializable, has_value)
+    OTTO_PROPS_MIXIN(serializable, REQUIRES(has_value))
     {
       OTTO_PROPS_MIXIN_DECLS(serializable);
 
@@ -81,7 +102,7 @@ namespace otto::core::props {
       }
     };
 
-    OTTO_PROPS_MIXIN(faust_link)
+    OTTO_PROPS_MIXIN(faust_link, REQUIRES(has_value))
     {
       OTTO_PROPS_MIXIN_DECLS(faust_link);
 
@@ -97,7 +118,7 @@ namespace otto::core::props {
       value_type cached_value();
     };
 
-    OTTO_PROPS_MIXIN(steppable, has_value)
+    OTTO_PROPS_MIXIN(steppable, REQUIRES(has_value))
     {
       OTTO_PROPS_MIXIN_DECLS(steppable);
 
