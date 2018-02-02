@@ -82,6 +82,7 @@ namespace otto::core::props {
     REQUIRE(props.pf1 == 0.f);
     REQUIRE(props.pf2 == 1.f);
     props.pf1 = 10.f;
+    // Test limits
     REQUIRE(props.pf1 == 5.f);
   }
 } // namespace otto::core::props

@@ -58,18 +58,6 @@ namespace otto::core::props {
       value_type _max;
     };
 
-    OTTO_PROPS_MIXIN(has_children)
-    {
-      OTTO_PROPS_MIXIN_DECLS(has_children);
-
-      static_assert(
-        std::is_void_v<value_type>,
-        "A property that has children must have a value_type of void");
-
-      static_assert(!is<has_value>,
-                    "A property that has children must not have a value");
-    };
-
     OTTO_PROPS_MIXIN(has_name)
     {
      OTTO_PROPS_MIXIN_DECLS(has_name);
@@ -94,11 +82,7 @@ namespace otto::core::props {
 
       nlohmann::json to_json() const
       {
-        if constexpr (is<has_children>) {
-          return as<has_children>().children;
-        } else {
-          return as<has_value>().value;
-        }
+        return as<has_value>().value;
       }
     };
 
@@ -121,6 +105,9 @@ namespace otto::core::props {
     OTTO_PROPS_MIXIN(steppable, REQUIRES(has_value))
     {
       OTTO_PROPS_MIXIN_DECLS(steppable);
+
+      static_assert(util::is_number_or_enum_v<value_type>,
+                    "The 'steppable' mixin requires a number or enum type");
 
       void init(value_type p_step_size = value_type{1})
       {
