@@ -28,7 +28,7 @@ namespace otto::engines {
       };
 
       std::array<TrackInfo, 4> tracks =
-        util::generate_sequence<4>([this](int n) {
+        util::generate_array<4>([this](int n) {
           return TrackInfo(this, fmt::format("Track {}", n + 1));
         });
     } props;

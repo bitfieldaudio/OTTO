@@ -759,6 +759,11 @@ namespace otto::util {
       return tuple_deref_impl<0>(iterators);
     }
 
+    reference dereference() const
+    {
+      return tuple_deref_impl<0>(iterators);
+    }
+
     bool equal(const ZippedIteratorImpl& o) const
     {
       return tuple_equals_impl<0>(iterators, o.iterators);

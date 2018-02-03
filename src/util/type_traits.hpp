@@ -35,26 +35,6 @@ namespace otto::util {
   template<typename T>
   constexpr inline bool is_number_or_enum_v = is_number_or_enum<T>::value;
 
-  /// Overload lambdas
-  template<typename... Ls>
-  struct overloaded : Ls... {
-    overloaded(Ls... ls) : Ls(ls)... {}
-    using Ls::operator()...;
-  };
-
-  template<typename... Ls>
-  overloaded(Ls...)->overloaded<Ls...>;
-
-  /// Pattern matching for std::variant
-  template<class Var, class... Lambdas>
-  decltype(auto) match(Var&& v, Lambdas... ls)
-  {
-    auto&& matcher = overloaded<Lambdas...>(std::forward<Lambdas>(ls)...);
-    // ADL to use std::visit or mpark::visit
-    // TODO: Remove this when the standard is adapted
-    return visit(std::move(matcher), std::forward<Var>(v));
-  }
-
   /// has member type `type` which is `T1` if b is `true`,
   /// otherwise it is `T2`
   template<bool b, typename T1, typename T2>
@@ -78,6 +58,18 @@ namespace otto::util {
   template<bool b, typename T1, typename T2>
   constexpr bool select_type_v = select_type<b, T1, T2>::value;
 
+  template<typename T, typename... Ts>
+  struct is_one_of {
+    static constexpr bool value = false;
+  };
+
+  template<typename T, typename T1, typename... Ts>
+  struct is_one_of<T, T1, Ts...> {
+    static const constexpr bool value = std::is_same_v<T, T1> || is_one_of<T, Ts...>::value;
+  };
+
+  template<typename T, typename... Ts>
+  constexpr bool is_one_of_v = is_one_of<T, Ts...>::value;
 
   /// Extends `std::true_type` if `iter` is an iterator over `type`,
   /// with category of at least `category`

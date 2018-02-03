@@ -27,7 +27,7 @@ namespace otto::util {
 
   namespace detail {
     template<class Func, int... ns>
-    constexpr auto generate_sequence_impl(std::integer_sequence<int, ns...>&&, Func&& gen) {
+    constexpr auto generate_array_impl(std::integer_sequence<int, ns...>&&, Func&& gen) {
       return std::array<std::decay_t<
         decltype(std::invoke(gen, std::declval<int>()))>,
         sizeof...(ns)>{{std::invoke(gen, ns)...}};
@@ -35,9 +35,9 @@ namespace otto::util {
   }
 
   template<int n, class Func>
-  constexpr auto generate_sequence(Func&& gen) {
+  constexpr auto generate_array(Func&& gen) {
     auto intseq = std::make_integer_sequence<int, n>();
-    return detail::generate_sequence_impl(std::move(intseq), std::forward<Func>(gen));
+    return detail::generate_array_impl(std::move(intseq), std::forward<Func>(gen));
   }
 
 
@@ -437,6 +437,18 @@ namespace otto::util {
   decltype(auto) upper_bound(Cont&& cont, T&& value, Compare&& comp) {
     using std::begin; using std::end;
     return std::upper_bound(begin(cont), end(cont), std::forward<T>(value), std::forward<Compare>(comp));
+  }
+
+  template<typename Cont, typename OutputIterator>
+  decltype(auto) copy(Cont&& cont, OutputIterator&& first) {
+    using std::begin; using std::end;
+    return std::copy(begin(cont), end(cont), std::forward<OutputIterator>(first));
+  }
+
+  template<typename Cont, typename OutputIterator, typename UnaryPredicate>
+  decltype(auto) copy_if(Cont&& cont, OutputIterator&& first, UnaryPredicate&& p) {
+    using std::begin; using std::end;
+    return std::copy_if(begin(cont), end(cont), std::forward<OutputIterator>(first), std::forward<UnaryPredicate>(p));
   }
 
   template<typename Cont, typename T>
