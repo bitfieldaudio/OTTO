@@ -11,6 +11,8 @@
   using value_type = ValueType;                                                \
   using tag_list_t = TagList;                                                  \
   using hooks      = ::otto::core::props::detail::tag_hooks_t<THIS_TYPE>;      \
+  using interface_type =                                                       \
+    ::otto::core::props::MixinTag::interface_type<THIS_TYPE>;                  \
   using property_type =                                                        \
     ::otto::core::props::inherits_from_mixins_t<value_type, tag_list_t>;       \
   constexpr static tag_list_t tag_list;                                        \
@@ -42,8 +44,9 @@
       Tag, value_type, tag_list_t>&>(as_prop);                                 \
   }                                                                            \
                                                                                \
-  template<typename HT>                                                        \
-  using hook = HookTag::impl_t<HT, value_type>;                                \
+  template<typename HT, ::otto::core::props::HookOrder HO =                    \
+                          ::otto::core::props::HookOrder::Middle>              \
+  using hook = HookTag::impl_t<HT, value_type, HO>;                            \
                                                                                \
   template<typename HT,                                                        \
            CONCEPT_REQUIRES_(::ranges::concepts::models<                       \
@@ -66,23 +69,32 @@
 #define OTTO_PROPS_MIXIN_REQUIRES(...)                                         \
   using required_tags = ::otto::core::props::tag_list<__VA_ARGS__>;
 
-#define _OTTO_PROPS_MIXIN_HOOK_1(NAME)                    \
+#define OTTO_PROPS_MIXIN_INTERFACE(...)                                         \
+  using interface_type = __VA_ARGS__;
+
+#define _OTTO_PROPS_MIXIN_HOOK_1(NAME)                                         \
   struct NAME {                                                                \
-    template<typename Val>                                                     \
+    template<typename Val, ::otto::core::props::HookOrder HO>                  \
     struct type {                                                              \
       using value_type = Val;                                                  \
-      using arg_type   = void;                                          \
+      using arg_type   = void;                                                 \
+      template<::otto::core::props::HookOrder HO1>                             \
+      type(type<Val, HO1>&& rhs)                                               \
+      {}                                                                       \
     };                                                                         \
   };
 
 #define _OTTO_PROPS_MIXIN_HOOK_2(NAME, ARG_TYPE)                               \
   struct NAME {                                                                \
-    template<typename Val>                                                     \
+    template<typename Val, ::otto::core::props::HookOrder HO>                  \
     struct type {                                                              \
       using value_type = Val;                                                  \
       using arg_type   = ARG_TYPE;                                             \
       type(const arg_type& a) : _arg(a) {}                                     \
       type(arg_type&& a) : _arg(std::move(a)) {}                               \
+      template<::otto::core::props::HookOrder HO1>                             \
+      type(type<Val, HO1>&& rhs) : _arg(std::move(rhs.value()))         \
+      {}                                                                       \
       operator arg_type&()                                                     \
       {                                                                        \
         return _arg;                                                           \

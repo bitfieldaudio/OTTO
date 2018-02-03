@@ -2,8 +2,6 @@
 
 #include <functional>
 
-#include "core/engines/props/props.hpp"
-
 #include "core/props/props.hpp"
 
 namespace otto::core::props {
@@ -81,7 +79,7 @@ namespace otto::core::props {
 
     static_assert(MixinImpl::has_handler_v<
                   typename decltype(props.pf1)::mixin<mixins::has_limits>,
-                  mixins::has_value::hooks::on_set>);
+      mixins::has_value::hooks::on_set, HookOrder::Early>);
 
     REQUIRE(props.pf1 == 0.f);
     REQUIRE(props.pf2 == 1.f);
@@ -91,26 +89,8 @@ namespace otto::core::props {
   }
 } // namespace otto::core::props
 
+#if false
 namespace otto::core::props {
-
-  struct FaustLink {
-    enum struct Type { Input, Output } const type;
-    void refresh();
-
-    std::string name;
-  private:
-    float* faust_var_;
-    std::function<void(float)> set_;
-  };
-
-  struct JsonClient {
-    std::function<void(const nlohmann::json&)> loader;
-    std::function<nlohmann::json()> saver;
-  };
-
-  struct ValueHandler {
-    std::function<void()> reset;
-  };
 
   Property<float, steppable, has_limits, serializable> property = {
     steppable::init(0),
@@ -145,3 +125,4 @@ namespace otto::core::props {
     REQUIRE(props[1] == props.prop2)
   }
 }
+#endif

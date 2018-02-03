@@ -9,7 +9,13 @@ namespace otto::core::props {
 
   namespace mixins {
 
-    OTTO_PROPS_MIXIN(has_value, HOOKS((on_set, value_type)))
+
+    OTTO_PROPS_MIXIN( //
+      has_value,
+      // on_set can be used to modify the value before asignment,
+      // as well as updating cached variables.
+      HOOKS((on_set, value_type)),
+      INTERFACE(struct { const std::function<void()> reset; }))
     {
       OTTO_PROPS_MIXIN_DECLS(has_value);
 
@@ -26,6 +32,8 @@ namespace otto::core::props {
         _value = run_hook<hooks::on_set>(v);
       }
 
+      void reset(){};
+
       self_type& operator=(const value_type& rhs)
       {
         set(rhs);
@@ -39,6 +47,8 @@ namespace otto::core::props {
 
     protected:
       value_type _value;
+
+      interface_type interface_ = {[this]() { reset(); }};
     };
 
     OTTO_PROPS_MIXIN(has_limits) {
@@ -49,7 +59,7 @@ namespace otto::core::props {
         _max = max;
       }
 
-      void on_hook(hook<has_value::hooks::on_set>& hook) {
+      void on_hook(hook<has_value::hooks::on_set, HookOrder::Early>& hook) {
         hook.value() = std::clamp(hook.value(), _min, _max);
       }
 
@@ -76,7 +86,12 @@ namespace otto::core::props {
       std::string _name;
     };
 
-    OTTO_PROPS_MIXIN(serializable, REQUIRES(has_value))
+    struct JsonClient {
+      std::function<void(const nlohmann::json&)> loader;
+      std::function<nlohmann::json()> saver;
+    };
+
+    OTTO_PROPS_MIXIN(serializable, REQUIRES(has_value), INTERFACE(JsonClient))
     {
       OTTO_PROPS_MIXIN_DECLS(serializable);
 
@@ -86,20 +101,83 @@ namespace otto::core::props {
       }
     };
 
-    OTTO_PROPS_MIXIN(faust_link, REQUIRES(has_value))
+    struct FaustLink {
+      enum struct Type { ToFaust, FromFaust };
+
+      FaustLink(const std::string& name,
+                const std::function<float()>& get,
+                float* faust_var)
+        : name(name),
+          get_or_set_(get),
+          faust_var_(faust_var),
+          type(Type::ToFaust)
+      {}
+
+      FaustLink(const std::string& name,
+                const std::function<void(float)>& set,
+                float* faust_var)
+        : name(name),
+          get_or_set_(set),
+          faust_var_(faust_var),
+          type(Type::FromFaust)
+      {}
+
+      void refresh() {
+        if (type == Type::ToFaust) {
+          *faust_var_ = mpark::get<0>(get_or_set_)();
+        } else {
+          mpark::get<1>(get_or_set_)(*faust_var_);
+        }
+      }
+
+      void update(float& fptr) {
+        if (type == Type::ToFaust) {
+          *faust_var_ = fptr;
+        } else {
+          fptr = *faust_var_;
+        }
+      }
+
+      const std::string name;
+
+    private:
+      mpark::variant<std::function<float()>, std::function<void(float)>> const get_or_set_; 
+      float* const faust_var_;
+
+    public:
+      Type const type;
+    };
+
+    OTTO_PROPS_MIXIN(faust_link, //
+                     REQUIRES(has_value),
+                     INTERFACE(FaustLink))
     {
       OTTO_PROPS_MIXIN_DECLS(faust_link);
 
-      void update_link();
-      void add_link();
-    };
+      void refresh_links() {
+        for (auto&& fl : faust_links_) {
+          fl.refresh();
+        }
+      }
 
-    OTTO_PROPS_MIXIN(with_cache)
-    {
-      OTTO_PROPS_MIXIN_DECLS(with_cache);
+      void add_link(const FaustLink& fl) {
+        faust_links_.push_back(fl);
+      }
 
-      void update_cache();
-      value_type cached_value();
+      void clear_links() {
+        faust_links_.clear();
+      }
+
+      void on_hook(hook<has_value::hooks::on_set, HookOrder::After> & hook) {
+        for (auto&& fl : faust_links_) {
+          if (fl.type == FaustLink::Type::ToFaust) {
+            fl.update(hook.value());
+          }
+        }
+      }
+
+    private:
+      std::vector<interface_type> faust_links_;
     };
 
     OTTO_PROPS_MIXIN(steppable, REQUIRES(has_value))

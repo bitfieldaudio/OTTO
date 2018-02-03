@@ -6,8 +6,23 @@ namespace otto::core::props {
 
   // PropertyBase /////////////////////////////////////////////////////////////
 
+  /// Base class of all properties
+  struct PropertyBase {};
+
+  /// Equality compare two PropertyBase's
+  ///
+  /// \returns `&lhs == &rhs`
+  bool operator==(const PropertyBase& lhs, const PropertyBase& rhs);
+
+  /// Inequality compare two PropertyBase's
+  ///
+  /// \returns `&lhs != &rhs`
+  bool operator!=(const PropertyBase& lhs, const PropertyBase& rhs);
+
+  // PropertyImpl /////////////////////////////////////////////////////////////
+
   template<typename T, typename TagList>
-  struct PropertyImpl : inherits_from_mixins_t<T, TagList> {
+  struct PropertyImpl : PropertyBase, inherits_from_mixins_t<T, TagList> {
     using value_type = T;
     using tag_list_t = TagList;
     constexpr static tag_list_t tag_list;
