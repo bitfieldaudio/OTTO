@@ -46,4 +46,16 @@ namespace otto::util {
     return match(std::forward<Var>(v), std::forward<Lambdas>(ls)..., nullmatch);
   }
 
+  // capture_this /////////////////////////////////////////////////////////////
+
+  /// Get a callable from a member pointer and an object.
+  template<typename Type, typename Ret, typename... Args>
+  auto capture_this(Ret (Type::*func)(Args...), Type* object) {
+    return [object, func] (Args... args) -> Ret { return (object->*func)(args...);};
+  }
+  template<typename Type, typename Ret, typename... Args>
+  auto capture_this(Ret (Type::*func)(Args...), Type& object) {
+    return [&object, func] (Args... args) -> Ret { return (object.*func)(args...);};
+  }
+
 } // namespace otto::util

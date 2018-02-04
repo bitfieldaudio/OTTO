@@ -12,7 +12,7 @@
   using tag_list_t = TagList;                                                  \
   using hooks      = ::otto::core::props::detail::tag_hooks_t<THIS_TYPE>;      \
   using interface_type =                                                       \
-    ::otto::core::props::MixinTag::interface_type<THIS_TYPE>;                  \
+    ::otto::core::props::MixinTag::leaf_interface<THIS_TYPE>;                  \
   using property_type =                                                        \
     ::otto::core::props::inherits_from_mixins_t<value_type, tag_list_t>;       \
   constexpr static tag_list_t tag_list;                                        \
@@ -69,8 +69,19 @@
 #define OTTO_PROPS_MIXIN_REQUIRES(...)                                         \
   using required_tags = ::otto::core::props::tag_list<__VA_ARGS__>;
 
-#define OTTO_PROPS_MIXIN_INTERFACE(...)                                         \
-  using interface_type = __VA_ARGS__;
+#define OTTO_PROPS_MIXIN_LEAF_INTERFACE(...)                                   \
+  using leaf_interface = __VA_ARGS__;
+
+#define OTTO_PROPS_MIXIN_BRANCH_INTERFACE(...)                                 \
+  using branch_interface = __VA_ARGS__;
+
+#define OTTO_PROPS_MIXIN_EXTEND_BRANCH_INTERFACE(...)                          \
+  using branch_interface =                                                     \
+    struct interface : ::otto::core::props::BaseBranchInterface<tag_type> __VA_ARGS__;
+
+#define OTTO_PROPS_MIXIN_VALUE(...)                                            \
+  template<typename ValueType, typename TagList>                               \
+  using implementation_type = __VA_ARGS__;
 
 #define _OTTO_PROPS_MIXIN_HOOK_1(NAME)                                         \
   struct NAME {                                                                \
@@ -140,6 +151,7 @@ GET_MACRO_2(__VA_ARGS__, _OTTO_PROPS_MIXIN_HOOK_2,                    \
   template<typename ValueType, typename TagList>                               \
   struct TAG_NAME##_;                                                          \
   struct TAG_NAME {                                                            \
+    using tag_type = TAG_NAME;                                                 \
     template<typename ValueType, typename TagList>                             \
     using implementation_type = TAG_NAME##_<ValueType, TagList>;               \
     using required_tags       = ::otto::core::props::tag_list<>;               \
@@ -154,6 +166,7 @@ GET_MACRO_2(__VA_ARGS__, _OTTO_PROPS_MIXIN_HOOK_2,                    \
   template<typename ValueType, typename TagList>                               \
   struct TAG_NAME##_;                                                          \
   struct TAG_NAME {                                                            \
+    using tag_type = TAG_NAME;                                                 \
     template<typename ValueType, typename TagList>                             \
     using implementation_type = TAG_NAME##_<ValueType, TagList>;               \
     constexpr static ::boost::hana::string name =                              \

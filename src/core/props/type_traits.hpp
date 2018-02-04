@@ -1,28 +1,13 @@
 #pragma once
 
 #include <range/v3/utility/concepts.hpp>
-#include <util/type_traits.hpp>
-
 #include <boost/hana.hpp>
 
-namespace otto::core::props {
+#include "util/type_traits.hpp"
 
-  /// Order of hook handlers.
-  ///
-  /// This is the second template argument to hook implementations, and is used
-  /// to sort handlers.
-  enum struct HookOrder {
-    /// Should only read hook values
-    Before,
-    /// Change values early
-    Early,
-    /// Change values in the middle. Default
-    Middle,
-    /// Change values late
-    Late,
-    /// Should only read hook values
-    After,
-  };
+#include "base.hpp"
+
+namespace otto::core::props {
 
   namespace cpts = ranges::concepts;
 
@@ -136,7 +121,7 @@ namespace otto::core::props {
       cpts::valid_expr(                  //
         cpts::has_type<boost::hana::string>(Tag::name)));
 
-    // Required Tags impl //
+  // Required Tags impl //
 
   private:
     template<typename Tag, typename = void>
@@ -159,48 +144,69 @@ namespace otto::core::props {
     template<typename Tag, typename T, typename TagList>
     using mixin_t = typename Tag::template implementation_type<T, TagList>;
 
-    // Shared Interface //
+    // Type-erased Interface //
   private:
     template<typename Tag, typename = void>
-    struct interface_type_impl {
+    struct leaf_interface_impl {
       using type = void;
     };
 
     template<typename Tag>
-    struct interface_type_impl<Tag, std::void_t<typename Tag::interface_type>> {
-      using type = typename Tag::interface_type;
+    struct leaf_interface_impl<Tag, std::void_t<typename Tag::leaf_interface>> {
+      using type = typename Tag::leaf_interface;
     };
 
   public:
-    /// Get the shared interface type for `Tag`
+    /// Get the type-erased leaf interface type for `Tag`
     ///
-    /// the interface type is a non-templated type which provides functionality
-    /// that can be used polymorphically. For example, the `serializable` mixin
-    /// has a `JsonClient` with loader and saver functions to use independently
-    /// from the specific property.
+    /// The interface type is a non-templated type which provides functionality
+    /// that can be used in a type-erased context. For example, the
+    /// `serializable` mixin has a `JsonClient` with loader and saver functions
+    /// to use independently from the specific property.
     ///
-    /// If a mixin provides a shared interface, it should have a `interface_type
-    /// interface()` or `interface_type& interface()` member function, which
-    /// returns an instance of this type.
+    /// If a mixin provides a type-erased interface, it should have a
+    /// `interface_type& interface()` member function, which returns an instance
+    /// of this type.
     ///
     /// If no interface type is provided, this is void.
     template<typename Tag>
-    using interface_type = typename interface_type_impl<Tag>::type;
+    using leaf_interface = typename leaf_interface_impl<Tag>::type;
 
-    /// Check if `Tag` has a shared interface 
+    /// Check if `Tag` has a type-erased interface
     ///
-    /// the interface type is a non-templated type which provides functionality
-    /// that can be used polymorphically. For example, the `serializable` mixin
-    /// has a `JsonClient` with loader and saver functions to use independently
-    /// from the specific property.
+    /// The interface type is a non-templated type which provides functionality
+    /// that can be used in a type-erased context. For example, the
+    /// `serializable` mixin has a `JsonClient` with loader and saver functions
+    /// to use independently from the specific property.
     ///
-    /// If a mixin provides a shared interface, it should have a `interface_type
-    /// interface()` or `interface_type& interface()` member function, which
-    /// returns an instance of this type.
+    /// If a mixin provides a type-erased interface, it should have a
+    /// `interface_type& interface()` member function, which returns an instance
+    /// of this type.
     ///
     /// If no interface type is provided, this is void.
     template<typename Tag>
-    constexpr static bool has_interface = !std::is_void_v<interface_type<Tag>>;
+    constexpr static bool has_leaf_interface = !std::is_void_v<leaf_interface<Tag>>;
+
+  private:
+    template<typename Tag, typename = void>
+    struct branch_interface_impl {
+      using type = BaseBranchInterface<Tag>;
+    };
+
+    template<typename Tag>
+    struct branch_interface_impl<Tag, std::void_t<typename Tag::branch_interface>> {
+      using type = typename Tag::branch_interface;
+    };
+
+  public:
+
+    /// The type-erased interface for a branch of `Tag`
+    ///
+    /// By default, this has a vector of pointers to child interfaces and
+    /// pointers to other common branch data, such as the name. These can all be
+    /// accessed through accessor functions.
+    template<typename Tag>
+    using branch_interface = typename branch_interface_impl<Tag>::type;
   };
 
   namespace detail {
@@ -295,5 +301,73 @@ namespace otto::core::props {
       return h5.value();
     }
   } // namespace detail
+
+  /// A pointer to either a branch or a leaf interface for mixin `Tag`
+  ///
+  /// Provides functions for checking type and accessing the value.
+  template<typename Tag>
+  struct BranchOrLeafPtr; // Forward declaration
+
+  /// The base class of the type-erased interface for a branch of `Tag`
+  ///
+  /// Has a vector of pointers to child interfaces and pointers to other
+  /// common branch data, such as the name. These can all be accessed through
+  /// accessor functions.
+  template<typename Tag>
+  struct BaseBranchInterface {
+    // Cannot be checked since this is instantiated in the declaration of the tag
+    // CONCEPT_ASSERT(cpts::models<MixinTag, Tag>() &&
+    //                MixinTag::has_leaf_interface<Tag>);
+
+    using storage_type = std::vector<BranchOrLeafPtr<Tag>>;
+
+    storage_type& children() {
+      return storage_;
+    }
+
+  private:
+    storage_type storage_;
+  };
+
+  /// A pointer to either a branch or a leaf interface for mixin `Tag`
+  ///
+  /// Provides functions for checking type and accessing the value.
+  template<typename Tag>
+  struct BranchOrLeafPtr {
+    CONCEPT_ASSERT(cpts::models<MixinTag, Tag>() &&
+                   MixinTag::has_leaf_interface<Tag>);
+
+    using branch = MixinTag::branch_interface<Tag>;
+    using leaf = MixinTag::leaf_interface<Tag>;
+
+    BranchOrLeafPtr(branch& b) : storage_(&b) {}
+    BranchOrLeafPtr(leaf& l) : storage_(&l) {}
+
+    BranchOrLeafPtr(branch* b) : storage_(b) {}
+    BranchOrLeafPtr(leaf* l) : storage_(l) {}
+
+    bool is_branch() const noexcept
+    {
+      return mpark::holds_alternative<0>(storage_);
+    }
+
+    bool is_leaf() const noexcept
+    {
+      return mpark::holds_alternative<1>(storage_);
+    }
+
+    branch& get_branch() const
+    {
+      return mpark::get<0>(storage_);
+    }
+
+    leaf& get_leaf() const
+    {
+      return mpark::get<1>(storage_);
+    }
+
+  private:
+    mpark::variant<branch*, leaf*> storage_;
+  };
 
 }
