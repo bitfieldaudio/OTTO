@@ -19,6 +19,11 @@ namespace otto::core::props {
     {
       OTTO_PROPS_MIXIN_DECLS(has_value);
 
+      void init(const value_type& v)
+      {
+        set(v);
+      }
+
       has_value_() {}
       has_value_(const value_type& v) : _value(v) {}
 
@@ -99,7 +104,16 @@ namespace otto::core::props {
           void from_json(const nlohmann::json& js) {
           }
 
-          void to_json(const nlohmann::json& js) {
+          nlohmann::json to_json() {
+            auto js = nlohmann::json::object();
+            for (auto& itf : children()) {
+              if (itf.is_branch()) {
+                js[itf.get_branch().name()] = itf.get_branch().to_json();
+              } else {
+                js[itf.get_leaf().name] = itf.get_leaf().to_json();
+              }
+            }
+            return js;
           }
       }))
     {
@@ -114,15 +128,15 @@ namespace otto::core::props {
         as<has_value>().set(js);
       }
 
-      const interface_type& interface() {
+      interface_type& interface() {
         return interface_;
       }
 
     private:
-      const interface_type interface_ = {
+      interface_type interface_ = {
         as<has_name>().name(),
-        util::capture_this(&self_type::from_json, this),
-        util::capture_this(&self_type::to_json, this),
+        [this] (const nlohmann::json& js) {from_json(js);},
+        [this] () -> nlohmann::json {return to_json();}
       };
     };
 
@@ -217,7 +231,7 @@ namespace otto::core::props {
       }
 
     private:
-      std::vector<interface_type> faust_links_;
+      std::vector<FaustLink> faust_links_;
 
       interface_type interface_ = {
         util::capture_this(&self_type::refresh_links, this)};

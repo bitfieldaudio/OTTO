@@ -18,12 +18,18 @@ namespace otto::core::props {
   /// Equality compare two PropertyBase's
   ///
   /// \returns `&lhs == &rhs`
-  bool operator==(const PropertyBase& lhs, const PropertyBase& rhs);
+  bool operator==(const PropertyBase& lhs, const PropertyBase& rhs)
+  {
+    return &lhs == &rhs;
+  }
 
   /// Inequality compare two PropertyBase's
   ///
   /// \returns `&lhs != &rhs`
-  bool operator!=(const PropertyBase& lhs, const PropertyBase& rhs);
+  bool operator!=(const PropertyBase& lhs, const PropertyBase& rhs)
+  {
+    return &lhs != &rhs;
+  }
 
   // PropertyImpl /////////////////////////////////////////////////////////////
 
@@ -103,28 +109,25 @@ namespace otto::core::props {
 
     // Initialization //
 
+    template<typename... Fields>
+    Properties(Fields&... fields) {
+      // Fold expression with comma operator
+      (init_field(fields), ...);
+    }
+
     template<typename Field>
     void init_field(Field& f) {
       boost::hana::for_each(tag_list_t(), [&] (auto ttype) {
           using Tag = typename decltype(+ttype)::type;
-          std::get<MixinTag::branch_interface<Tag>>(storage_);
+          std::get<MixinTag::branch_interface<Tag>>(storage_).push_back(
+            f.interface());
         });
     }
-    // Accessors //
 
-    std::size_t size() const noexcept;
-
-    PropertyBase& operator[](std::size_t) noexcept;
-    const PropertyBase& operator[](std::size_t) const noexcept;
-
-    // Iterators //
-
-    auto begin();
-    auto end();
-    auto begin() const;
-    auto end() const;
-    auto cbegin() const;
-    auto cend() const;
+    template<typename Tag>
+    MixinTag::branch_interface<Tag>& interface() {
+      return std::get<MixinTag::branch_interface<Tag>>(storage_);
+    }
 
   private:
     interface_storage_type storage_;

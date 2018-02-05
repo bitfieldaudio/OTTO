@@ -89,40 +89,55 @@ namespace otto::core::props {
   }
 } // namespace otto::core::props
 
-#if false
 namespace otto::core::props {
 
-  Property<float, steppable, has_limits, serializable> property = {
-    steppable::init(0),
-    has_limits::init(0, 10),
-    serializable::init()
-  };
+  using namespace mixins;
 
-  struct Props : Properties {
-    Property<float, has_name, has_parent> prop1 = {
-      0,
-      has_name::init("prop1"),
-      has_parent::init(this)
-    };
-    Property<float, has_name, has_parent> prop2 = {
-      0,
-      has_name::init("prop2"),
-      has_parent::init(this)
-    };
+  Property<float, has_value, steppable, has_limits, serializable> property = 0;
+
+  struct Props : Properties<serializable> {
+    Property<float, has_value, serializable> prop1 = 0;
+    Property<float, has_value, serializable> prop2 = 4;
+
+    Props () {
+      prop1 //
+        .init<has_name>("prop1")
+        .init<has_value>(0);
+
+      prop2
+        .init<has_name>("prop2")
+        .init<has_value>(4);
+
+      init_field(prop1);
+      init_field(prop2);
+    }
   } props;
 
-  TEST_CASE("Property conversions", "") {
+
+  TEST_CASE("Property conversions", "[props]") {
     auto& pb = static_cast<PropertyBase&>(property);
     REQUIRE(pb == property);
 
     const float& val = static_cast<const float&>(property);
-    REQUIRE(&val == &property.value());
+    REQUIRE(&val == &property.get());
   }
 
-  TEST_CASE("Property children", "") {
-    REQUIRE(props.size() == 2);
-    REQUIRE(props[0] == props.prop1);
-    REQUIRE(props[1] == props.prop2)
+  TEST_CASE("mixins::serializable", "[props]") {
+    REQUIRE(props.prop1.to_json() == 0.f);
+    REQUIRE(props.prop2.to_json() == 4.f);
+    auto expct = nlohmann::json{{"prop1", 0.f}, {"prop2", 4.f}};
+    REQUIRE(props.interface<serializable>().to_json() == expct);
   }
+
+  // Alternative, nicer initialization syntax. tag::init returns a type that
+  // contains the args forwarded by std::forward_tuple. This would enable us
+  // (with more magic metaprogramming) to actually use constructors for the
+  // mixins.
+  #if false
+  Property<float, has_value, steppable, has_limits, serializable> property = {
+    steppable::init(0),
+    has_limits::init(0, 10),
+    serializable::init()
+  };
+  #endif
 }
-#endif

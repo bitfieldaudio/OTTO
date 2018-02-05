@@ -325,6 +325,15 @@ namespace otto::core::props {
       return storage_;
     }
 
+    void push_back(BranchOrLeafPtr<Tag> ptr) {
+      storage_.push_back(ptr);
+    }
+
+    const std::string& name() {
+      static std::string nm = "Test";
+      return nm;
+    };
+
   private:
     storage_type storage_;
   };
@@ -334,8 +343,8 @@ namespace otto::core::props {
   /// Provides functions for checking type and accessing the value.
   template<typename Tag>
   struct BranchOrLeafPtr {
-    CONCEPT_ASSERT(cpts::models<MixinTag, Tag>() &&
-                   MixinTag::has_leaf_interface<Tag>);
+    // CONCEPT_ASSERT(cpts::models<MixinTag, Tag>() &&
+    //                MixinTag::has_leaf_interface<Tag>);
 
     using branch = MixinTag::branch_interface<Tag>;
     using leaf = MixinTag::leaf_interface<Tag>;
@@ -358,12 +367,12 @@ namespace otto::core::props {
 
     branch& get_branch() const
     {
-      return mpark::get<0>(storage_);
+      return *mpark::get<0>(storage_);
     }
 
     leaf& get_leaf() const
     {
-      return mpark::get<1>(storage_);
+      return *mpark::get<1>(storage_);
     }
 
   private:
