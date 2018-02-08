@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #include <range/v3/utility/concepts.hpp>
 #include <boost/hana.hpp>
 
@@ -9,11 +11,82 @@
 
 namespace otto::core::props {
 
-  namespace cpts = ranges::concepts;
-
   /// Type used to list tags
   template<typename... Tags>
   using tag_list = boost::hana::tuple<boost::hana::type<Tags>...>;
+
+  // Type traits for mixins //
+
+  namespace mixins::mixin {
+    template<typename Tag>
+    struct required_tags {
+      using type = tag_list<>;
+    };
+
+    template<typename Tag, typename ValueType, typename TagList>
+    struct leaf_implementation;
+
+    template<typename Tag>
+    struct leaf_interface;
+
+    template<typename Tag>
+    struct branch_interface : BaseBranchInterface<Tag> {};
+
+    template<typename Tag>
+    struct hooks {};
+
+    /// Tag type used to create a hook with the value type as its argument
+    struct value_type {};
+
+    template<typename Argument>
+    struct hook {
+      template<typename Val, HookOrder HO>
+      struct type {
+        using value_type = Val;
+        using arg_type   = Argument;
+
+        type(const arg_type& a) : _arg(a) {}
+        type(arg_type&& a) : _arg(std::move(a)) {}
+
+        template<HookOrder HO1>
+        type(type<Val, HO1>&& rhs) : _arg(std::move(rhs.value()))
+        {}
+        operator arg_type&()
+        {
+          return _arg;
+        }
+        arg_type& value()
+        {
+          return _arg;
+        }
+
+      private:
+        arg_type _arg;
+      };
+    };
+
+    template<>
+    struct hook<void> {
+      template<typename Val, ::otto::core::props::HookOrder HO>
+      struct type {
+        using value_type = Val;
+        using arg_type   = void;
+        template<::otto::core::props::HookOrder HO1>
+        type(type<Val, HO1>&& rhs)
+        {}
+      };
+    };
+
+    template<>
+    struct hook<value_type> {
+      template<typename Val, ::otto::core::props::HookOrder HO>
+      using type = typename hook<Val>::template type<Val, HO>;
+    };
+  }
+
+  // Concepts //
+
+  namespace cpts = ranges::concepts;
 
   struct NonVoid {
     template<typename T>
@@ -121,30 +194,18 @@ namespace otto::core::props {
       cpts::valid_expr(                  //
         cpts::has_type<boost::hana::string>(Tag::name)));
 
-  // Required Tags impl //
-
-  private:
-    template<typename Tag, typename = void>
-    struct required_tags_impl {
-      using type = tag_list<>;
-    };
-
-    template<typename Tag>
-    struct required_tags_impl<Tag, std::void_t<typename Tag::required_tags>> {
-      using type = typename Tag::required_tags;
-    };
-
-  public:
+    // Required Tags impl //
 
     /// Get all required tags for `Tag`
     template<typename Tag>
-    using required_tags_t = typename required_tags_impl<Tag>::type;
+    using required_tags_t = typename mixins::mixin::required_tags<Tag>::type;
 
     /// Get mixin type for type `T` and tag `Tag`
     template<typename Tag, typename T, typename TagList>
-    using mixin_t = typename Tag::template implementation_type<T, TagList>;
+    using mixin_t = mixins::mixin::leaf_implementation<Tag, T, TagList>;
 
     // Type-erased Interface //
+
   private:
     template<typename Tag, typename = void>
     struct leaf_interface_impl {
@@ -152,8 +213,8 @@ namespace otto::core::props {
     };
 
     template<typename Tag>
-    struct leaf_interface_impl<Tag, std::void_t<typename Tag::leaf_interface>> {
-      using type = typename Tag::leaf_interface;
+    struct leaf_interface_impl<Tag, std::void_t<mixins::mixin::leaf_interface<Tag>>> {
+      using type = mixins::mixin::leaf_interface<Tag>;
     };
 
   public:
@@ -167,10 +228,8 @@ namespace otto::core::props {
     /// If a mixin provides a type-erased interface, it should have a
     /// `interface_type& interface()` member function, which returns an instance
     /// of this type.
-    ///
-    /// If no interface type is provided, this is void.
     template<typename Tag>
-    using leaf_interface = typename leaf_interface_impl<Tag>::type;
+    using leaf_interface = typename mixins::mixin::leaf_interface<Tag>;
 
     /// Check if `Tag` has a type-erased interface
     ///
@@ -187,45 +246,16 @@ namespace otto::core::props {
     template<typename Tag>
     constexpr static bool has_leaf_interface = !std::is_void_v<leaf_interface<Tag>>;
 
-  private:
-    template<typename Tag, typename = void>
-    struct branch_interface_impl {
-      using type = BaseBranchInterface<Tag>;
-    };
-
-    template<typename Tag>
-    struct branch_interface_impl<Tag, std::void_t<typename Tag::branch_interface>> {
-      using type = typename Tag::branch_interface;
-    };
-
-  public:
-
     /// The type-erased interface for a branch of `Tag`
     ///
     /// By default, this has a vector of pointers to child interfaces and
     /// pointers to other common branch data, such as the name. These can all be
     /// accessed through accessor functions.
     template<typename Tag>
-    using branch_interface = typename branch_interface_impl<Tag>::type;
+    using branch_interface = typename mixins::mixin::branch_interface<Tag>;
   };
 
   namespace detail {
-
-    /// Get the hooks struct for a tag
-    template<typename Tag, typename = void>
-    struct tag_hooks {
-      struct type {};
-    };
-
-    /// Get the hooks struct for a tag
-    template<typename Tag>
-    struct tag_hooks<Tag, std::void_t<typename Tag::hooks>> {
-      using type = typename Tag::hooks;
-    };
-
-    /// Get the hooks struct for a tag
-    template<typename Tag>
-    using tag_hooks_t = typename tag_hooks<Tag>::type;
 
     /// Run `Mixin`'s handler for `Hook` if it has one
     template<typename HT,
@@ -378,5 +408,4 @@ namespace otto::core::props {
   private:
     mpark::variant<branch*, leaf*> storage_;
   };
-
 }

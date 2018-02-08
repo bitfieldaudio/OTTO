@@ -3,6 +3,7 @@
 #include <functional>
 
 #include "core/props/props.hpp"
+#include "core/props/mixins/all.hpp"
 
 namespace otto::core::props {
 
@@ -79,9 +80,9 @@ namespace otto::core::props {
 
     static_assert(MixinImpl::has_handler_v<
                   typename decltype(props.pf1)::mixin<mixins::has_limits>,
-      mixins::has_value::hooks::on_set, HookOrder::Early>);
+                  mixins::has_value::hooks::on_set, HookOrder::Early>);
 
-    REQUIRE(props.pf1 == 0.f);
+    // REQUIRE(props.pf1 == 0.f);
     REQUIRE(props.pf2 == 1.f);
     props.pf1 = 10.f;
     // Test limits
@@ -96,21 +97,16 @@ namespace otto::core::props {
   Property<float, has_value, steppable, has_limits, serializable> property = 0;
 
   struct Props : Properties<serializable> {
-    Property<float, has_value, serializable> prop1 = 0;
-    Property<float, has_value, serializable> prop2 = 4;
+    Property<float, has_value, serializable> prop1 = {
+      has_value::init(0),
+      has_name::init("prop1")
+    };
+    Property<float, has_value, serializable> prop2 = {
+      has_name::init("prop2"),
+      has_value::init(4)
+    };
 
-    Props () {
-      prop1 //
-        .init<has_name>("prop1")
-        .init<has_value>(0);
-
-      prop2
-        .init<has_name>("prop2")
-        .init<has_value>(4);
-
-      init_field(prop1);
-      init_field(prop2);
-    }
+    Props() : Properties(prop1, prop2) {}
   } props;
 
 
@@ -129,15 +125,40 @@ namespace otto::core::props {
     REQUIRE(props.interface<serializable>().to_json() == expct);
   }
 
-  // Alternative, nicer initialization syntax. tag::init returns a type that
-  // contains the args forwarded by std::forward_tuple. This would enable us
-  // (with more magic metaprogramming) to actually use constructors for the
-  // mixins.
-  #if false
-  Property<float, has_value, steppable, has_limits, serializable> property = {
-    steppable::init(0),
-    has_limits::init(0, 10),
-    serializable::init()
-  };
-  #endif
+  TEST_CASE("mixins::has_limits", "[props]") {
+    // Alternative, nicer initialization syntax. tag::init returns a type that
+    // contains the args forwarded by std::forward_tuple. This would enable us
+    // (with more magic metaprogramming) to actually use constructors for the
+    // mixins.
+
+    Property<float, has_value, steppable, has_limits, serializable> pp = {
+      has_limits::init(1, 5), //
+      steppable::init(1.5f),  //
+    };
+
+    REQUIRE(pp.min == 1.f);
+    REQUIRE(pp.max == 5.f);
+    REQUIRE(pp.step_size == 1.5f);
+
+    pp.set(4);
+    REQUIRE(pp == 4.f);
+    pp.set(5);
+    REQUIRE(pp == 5.f);
+    pp = 5.0001f;
+    REQUIRE(pp == 5.f);
+    pp = 1023095.f;
+    REQUIRE(pp == 5.f);
+    pp = 1.f;
+    REQUIRE(pp == 1.f);
+    pp = 0.f;
+    REQUIRE(pp == 1.f);
+    pp = -203.f;
+    REQUIRE(pp == 1.f);
+    pp.min = -10;
+    REQUIRE(pp == 1.f);
+    pp = -3;
+    REQUIRE(pp == -3.f);
+    pp = -30;
+    REQUIRE(pp == -10.f);
+  }
 }

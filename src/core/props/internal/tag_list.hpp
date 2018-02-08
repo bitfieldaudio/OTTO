@@ -110,4 +110,33 @@ namespace otto::core::props {
   using make_tag_list_t = decltype(black_magic::with_required(
     boost::hana::make_tuple(boost::hana::type_c<Tags>...)));
 
+
+  template<typename Tag, typename... Args>
+  struct TaggedTuple {
+    using tag_type = Tag;
+    std::tuple<Args...> args;
+
+    static constexpr bool _this_is_a_mixin_initializer_type_ = true;
+  };
+
+  template<typename Tag, typename... Args>
+  auto make_initializer(Args&&... args) {
+    return TaggedTuple<Tag, Args...>{std::forward_as_tuple(std::forward<Args>(args)...)};
+  }
+
+  template<typename Initializer, typename = void>
+  struct is_initializer : std::false_type {};
+
+  template<typename Initializer>
+  struct is_initializer<
+    Initializer,
+    std::void_t<decltype(Initializer::_this_is_a_mixin_initializer_type_),
+                typename Initializer::tag_type>> {
+    constexpr static const bool value =
+      Initializer::_this_is_a_mixin_initializer_type_;
+  };
+
+  template<typename Initializer>
+  constexpr static bool is_initializer_v = is_initializer<Initializer>::value;
+
 } // namespace otto::core::props

@@ -70,3 +70,26 @@
 # define DEFER(...) __VA_ARGS__ EMPTY()
 # define OBSTRUCT(...) __VA_ARGS__ DEFER(EMPTY)()
 # define EXPAND(...) __VA_ARGS__
+
+// a FOREACH macro that puts the sequence element last in a macro call with
+// other args
+#define FEL_01(WHAT, ARGS, X)      WHAT(EXPAND ARGS, X)
+#define FEL_02(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X) FEL_01(WHAT, ARGS, __VA_ARGS__)
+#define FEL_03(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X) FEL_02(WHAT, ARGS, __VA_ARGS__)
+#define FEL_04(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X) FEL_03(WHAT, ARGS, __VA_ARGS__)
+#define FEL_05(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X) FEL_04(WHAT, ARGS, __VA_ARGS__)
+#define FEL_06(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X) FEL_05(WHAT, ARGS, __VA_ARGS__)
+#define FEL_07(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X) FEL_06(WHAT, ARGS, __VA_ARGS__)
+#define FEL_08(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X) FEL_07(WHAT, ARGS, __VA_ARGS__)
+#define FEL_09(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X) FEL_08(WHAT, ARGS, __VA_ARGS__)
+#define FEL_10(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X) FEL_09(WHAT, ARGS, __VA_ARGS__)
+#define FEL_11(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X) FEL_10(WHAT, ARGS, __VA_ARGS__)
+#define FEL_12(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X) FEL_11(WHAT, ARGS, __VA_ARGS__)
+#define FEL_13(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X) FEL_12(WHAT, ARGS, __VA_ARGS__)
+#define FEL_14(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X) FEL_13(WHAT, ARGS, __VA_ARGS__)
+#define FEL_15(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X) FEL_14(WHAT, ARGS, __VA_ARGS__)
+
+#define FOR_EACH_LAST(action, args, ...)                                     \
+  GET_MACRO_15(__VA_ARGS__, FEL_15, FEL_14, FEL_13, FEL_12, FEL_11, FEL_10, FEL_09,    \
+               FEL_08, FEL_07, FEL_06, FEL_05, FEL_04, FEL_03, FEL_02, FEL_01, NONE)           \
+  (action, args, __VA_ARGS__)
