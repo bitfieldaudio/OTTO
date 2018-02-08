@@ -6,6 +6,7 @@
 #include <boost/hana.hpp>
 
 #include "util/type_traits.hpp"
+#include "util/meta.hpp"
 
 #include "base.hpp"
 
@@ -13,7 +14,7 @@ namespace otto::core::props {
 
   /// Type used to list tags
   template<typename... Tags>
-  using tag_list = boost::hana::tuple<boost::hana::type<Tags>...>;
+  using tag_list = meta::list<Tags...>;
 
   // Type traits for mixins //
 
@@ -147,7 +148,7 @@ namespace otto::core::props {
     auto requires_(T&& t) -> decltype(                       //
       cpts::valid_expr(                                      //
         cpts::model_of<NonVoid, typename T::value_type>(),   //
-        cpts::model_of<NonVoid, typename T::tag_list_t>(),   //
+        cpts::model_of<NonVoid, typename T::tag_list>(),   //
         cpts::model_of<NonVoid, typename T::hooks>(),        //
         cpts::model_of<NonVoid, typename T::property_type>() //
         ));                                                  //
@@ -192,7 +193,7 @@ namespace otto::core::props {
     template<typename Tag>
     auto requires_(Tag&& t) -> decltype( //
       cpts::valid_expr(                  //
-        cpts::has_type<boost::hana::string>(Tag::name)));
+        cpts::has_type<const char*>(Tag::name)));
 
     // Required Tags impl //
 
@@ -278,8 +279,8 @@ namespace otto::core::props {
                cpts::models<HookTag, H, typename Mixin::value_type>() &&
                cpts::models<MixinImpl, Mixin>())>
     auto run_all_hooks_impl(Mixin& m, MixinImpl::hook_t<Mixin, H, HO>&& hook) {
-      boost::hana::for_each(m.tag_list, [&hook, &m](const auto& mtype) {
-          run_hook_if_handler<H, HO>(m.template as<typename decltype(+mtype)::type>(), hook);
+      meta::for_each<typename Mixin::tag_list>([&hook, &m](auto mtype) {
+          run_hook_if_handler<H, HO>(m.template as<meta::_t<decltype(mtype)>>(), hook);
       });
       return hook;
     };

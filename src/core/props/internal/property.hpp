@@ -31,11 +31,10 @@ namespace otto::core::props {
   template<typename T, typename TagList>
   struct PropertyImpl : PropertyBase, inherits_from_mixins_t<T, TagList> {
     using value_type = T;
-    using tag_list_t = TagList;
-    constexpr static tag_list_t tag_list;
+    using tag_list = TagList;
 
     template<typename Tag>
-    using mixin = MixinTag::mixin_t<Tag, T, tag_list_t>;
+    using mixin = MixinTag::mixin_t<Tag, T, tag_list>;
 
     using inherits_from_mixins_t<T, TagList>::inherits_from_mixins_t;
     using inherits_from_mixins_t<T, TagList>::operator=;
@@ -57,7 +56,7 @@ namespace otto::core::props {
     /// Initialize the mixin of type `Tag` with args
     template<typename Tag, typename... Args>
     auto init(Args&&... args)
-      -> std::enable_if_t<contains_tag_v<tag_list_t, Tag>,
+      -> std::enable_if_t<contains_tag_v<tag_list, Tag>,
                           decltype(mixin<Tag>::init(std::declval<Args>()...),
                                    std::declval<PropertyImpl&>())>
     {
@@ -67,7 +66,7 @@ namespace otto::core::props {
 
     template<typename Tag, typename... Args>
     auto init_with_tuple(const TaggedTuple<Tag, Args...>& tt)
-      -> std::enable_if_t<contains_tag_v<tag_list_t, Tag>,
+      -> std::enable_if_t<contains_tag_v<tag_list, Tag>,
                           decltype(mixin<Tag>::init(std::declval<Args>()...),
                                    std::declval<PropertyImpl&>())>
     {
@@ -81,23 +80,23 @@ namespace otto::core::props {
 
     template<typename Tag>
     constexpr static bool is =
-      ::otto::core::props::contains_tag_v<tag_list_t, Tag>;
+      ::otto::core::props::contains_tag_v<tag_list, Tag>;
 
     template<typename Tag>
     constexpr auto as() -> ::std::enable_if_t<
       PropertyImpl::is<Tag>,
-      MixinTag::mixin_t<Tag, value_type, tag_list_t>&>
+      MixinTag::mixin_t<Tag, value_type, tag_list>&>
     {
       return static_cast<
-        MixinTag::mixin_t<Tag, value_type, tag_list_t>&>(*this);
+        MixinTag::mixin_t<Tag, value_type, tag_list>&>(*this);
     }
 
     template<typename Tag>
     constexpr auto as() const -> ::std::enable_if_t<
       PropertyImpl::is<Tag>,
-      const MixinTag::mixin_t<Tag, value_type, tag_list_t>&>
+      const MixinTag::mixin_t<Tag, value_type, tag_list>&>
     {
-      return static_cast<const MixinTag::mixin_t<Tag, value_type, tag_list_t>&>(
+      return static_cast<const MixinTag::mixin_t<Tag, value_type, tag_list>&>(
         *this);
     }
 
@@ -127,7 +126,7 @@ namespace otto::core::props {
   template<typename... Tags>
   struct Properties {
 
-    using tag_list_t = tag_list<Tags...>;
+    using tag_list = props::tag_list<Tags...>;
     using interface_storage_type = std::tuple<MixinTag::branch_interface<Tags>...>;
 
     // Initialization //
@@ -140,8 +139,8 @@ namespace otto::core::props {
 
     template<typename Field>
     void init_field(Field& f) {
-      boost::hana::for_each(tag_list_t(), [&] (auto ttype) {
-          using Tag = typename decltype(+ttype)::type;
+      meta::for_each<tag_list>([&] (auto ttype) {
+          using Tag = meta::_t<decltype(ttype)>;
           std::get<MixinTag::branch_interface<Tag>>(storage_).push_back(
             f.interface());
         });

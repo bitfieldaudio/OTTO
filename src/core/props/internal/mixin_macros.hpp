@@ -8,36 +8,33 @@
 #ifndef OTTO_PROPS_MIXIN__MACROS_DEFINED
 #define OTTO_PROPS_MIXIN__MACROS_DEFINED
 
-#include <boost/hana/string.hpp>
-
 #include "util/macros.hpp"
 
 /// Declarations to place at the beginning of mixin decls.
 #define OTTO_PROPS_MIXIN_DECLS(TAG_NAME)                                       \
   using value_type = ValueType;                                                \
-  using tag_list_t = TagList;                                                  \
+  using tag_list = TagList;                                                  \
   using self_type =                                                            \
-    leaf_implementation<TAG_NAME, value_type, tag_list_t>;               \
+    leaf_implementation<TAG_NAME, value_type, tag_list>;               \
   using hooks = ::otto::core::props::mixins::mixin::hooks<TAG_NAME>;    \
   using interface_type =                                                       \
     ::otto::core::props::MixinTag::leaf_interface<TAG_NAME>;                   \
   using property_type =                                                        \
-    ::otto::core::props::inherits_from_mixins_t<value_type, tag_list_t>;       \
-  constexpr static tag_list_t tag_list;                                        \
+    ::otto::core::props::inherits_from_mixins_t<value_type, tag_list>;       \
                                                                                \
   template<typename Tag>                                                       \
   constexpr static bool is =                                                   \
-    ::otto::core::props::contains_tag_v<tag_list_t, Tag>;                      \
+    ::otto::core::props::contains_tag_v<tag_list, Tag>;                      \
                                                                                \
   template<typename Tag>                                                       \
   constexpr auto as()                                                          \
     ->::std::enable_if_t<                                                      \
       self_type::is<Tag>,                                                      \
-      ::otto::core::props::MixinTag::mixin_t<Tag, value_type, tag_list_t>&>    \
+      ::otto::core::props::MixinTag::mixin_t<Tag, value_type, tag_list>&>    \
   {                                                                            \
     auto* as_prop = static_cast<property_type*>(this);                         \
     return static_cast<                                                        \
-      ::otto::core::props::MixinTag::mixin_t<Tag, value_type, tag_list_t>&>(   \
+      ::otto::core::props::MixinTag::mixin_t<Tag, value_type, tag_list>&>(   \
       *as_prop);                                                               \
   }                                                                            \
                                                                                \
@@ -45,11 +42,11 @@
   constexpr auto as()                                                          \
     const->::std::enable_if_t<self_type::is<Tag>,                              \
                               const ::otto::core::props::MixinTag::mixin_t<    \
-                                Tag, value_type, tag_list_t>&>                 \
+                                Tag, value_type, tag_list>&>                 \
   {                                                                            \
     const auto& as_prop = static_cast<const property_type&>(*this);            \
     return static_cast<const ::otto::core::props::MixinTag::mixin_t<           \
-      Tag, value_type, tag_list_t>&>(as_prop);                                 \
+      Tag, value_type, tag_list>&>(as_prop);                                 \
   }                                                                            \
                                                                                \
   template<typename HT, ::otto::core::props::HookOrder HO =                    \
@@ -121,9 +118,8 @@
 #define OTTO_PROPS_MIXIN_TAG(TAG_NAME)                                         \
   struct TAG_NAME {                                                            \
     using tag_type = TAG_NAME;                                                 \
-    using hooks    = ::otto::core::props::mixins::mixin::hooks<TAG_NAME>; \
-    constexpr static ::boost::hana::string name =                              \
-      BOOST_HANA_STRING(#TAG_NAME);                                            \
+    using hooks    = ::otto::core::props::mixins::mixin::hooks<TAG_NAME>;      \
+    constexpr static const char* name = #TAG_NAME;                             \
     template<typename... Args>                                                 \
     static auto init(Args&&... args)                                           \
     {                                                                          \

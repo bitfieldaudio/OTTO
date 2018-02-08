@@ -4,111 +4,77 @@
 
 namespace otto::core::props {
 
-  /// !!! Warning: `boost::hana` ahead !!!
+  /// Metafunction that adds all of the required tags for all tags in
+  /// `TagList` to the list.
+  template<typename TagList>
+  struct add_required;
+
+  template<typename... Tags>
+  struct add_required<tag_list<Tags...>> {
+    using type = meta::flatten_t<
+      meta::concat_t<tag_list<Tags, MixinTag::required_tags_t<Tags>>...>>;
+  };
+
+  constexpr bool compare_str(const char* a, const char* b)
+  {
+    for (; (*a != '\0') && (*b != '\0'); ++a, (void) ++b) {
+      if (*a < *b) return true;
+      if (*b < *a) return false;
+    }
+    return (*a == '\0') && (*b != '\0');
+  }
+
+  template<typename Tag1, typename Tag2>
+  struct compare_tags {
+    constexpr static bool value = compare_str(Tag1::name, Tag2::name);
+  };
+
+  /// Uniquify and sort tags by their name
+  template<typename TagList>
+  struct normalize_tags {
+    using type = meta::sort_t<meta::uniquify_t<TagList>, compare_tags>;
+  };
+
+  /// Simple type that inherits publicly from all of `SuperClasses...`
   ///
-  /// This code is used to:
-  ///  - create lists of tags
-  ///  - append tags required by tags already in the list, to the list
-  ///  - sort and uniquify these tag lists, so the type is independent of
-  ///    ordering
-  ///  - Inherit all the mixin implementations of a tag list.
-  ///
-  /// Everything here should be kept well documented and internal to this file.
-  /// Public interfaces should be exposed outside the namespace, and should use
-  /// a standard interface instead of the hana interface.
-  namespace black_magic {
-
-    namespace hana = boost::hana;
-
-    /// Sort tags by their name and uniquify the list
-    ///
-    /// This is a `boost::hana` function that operates on types. Do not use it
-    /// in runtime a context
-    ///
-    /// \requires `TagList == tag_list<...>`
-    template<typename TagList>
-    constexpr auto sort_tags(TagList const& tl)
-    {
-      return hana::unique(hana::sort(tl, [](auto tag1, auto tag2) {
-        return decltype(+tag1)::type::name < decltype(+tag2)::type::name;
-      }));
-    }
-
-    /// Add all tags required by tags in TagList. Sort and uniquify
-    ///
-    /// This is a `boost::hana` function that operates on types. Do not use it
-    /// in runtime a context
-    ///
-    /// \requires `TagList == tag_list<...>`
-    template<typename TagList>
-    constexpr auto with_required(TagList const& tl)
-    {
-      return sort_tags(hana::concat(
-        tl, hana::flatten(hana::transform(tl, [](auto tag) {
-          return MixinTag::required_tags_t<typename decltype(+tag)::type>();
-        }))));
-    }
-
-    /// Simple type that inherits publicly from all of `SuperClasses...`
-    ///
-    /// Also uses all operators and constructors
-    template<typename... SuperClasses>
-    struct inherit_from_all : SuperClasses... {
-      using SuperClasses::SuperClasses...;
-      using SuperClasses::operator=...;
-    };
-
-    /// Get a type that inherits from all types in `typelist`
-    ///
-    /// This is a `boost::hana` function that operates on types. Do not use it
-    /// in runtime a context
-    ///
-    /// \returns a `boost::hana::type` containing the result type
-    template<typename... MixinTypes>
-    constexpr auto inherit_from_all_types_impl(
-      hana::tuple<MixinTypes...> const& typelist)
-    {
-      return hana::type_c<
-        inherit_from_all<typename std::decay_t<MixinTypes>::type...>>;
-    }
-
-    /// Get a type that inherits from all the mixins coresponding to TagList.
-    ///
-    /// Does not add required mixins.
-    ///
-    /// This is a `boost::hana` function that operates on types. Do not use it
-    /// in runtime a context
-    ///
-    /// \requires `TagList == tag_list<...>`
-    /// \returns a `boost::hana::type` containing the result type
-    template<typename ValueType, typename TagList>
-    constexpr auto inherit_from_all_mixins_impl(TagList const& tl)
-    {
-      return inherit_from_all_types_impl(hana::transform(tl, [](auto tag) {
-        return hana::type_c<
-          MixinTag::mixin_t<typename decltype(+tag)::type, ValueType, TagList>>;
-      }));
-    }
-  } // namespace black_magic
+  /// Also uses all operators and constructors
+  template<typename... SuperClasses>
+  struct inherit_from_all : SuperClasses... {
+    using SuperClasses::SuperClasses...;
+    using SuperClasses::operator=...;
+  };
 
   /// Type trait to see if a tag_list contains a tag.
   template<typename TagList, typename T>
-  static constexpr bool contains_tag_v =
-    boost::hana::contains(TagList(), boost::hana::type_c<T>);
+  constexpr const bool contains_tag_v = meta::_v<meta::contains<TagList, T>>;
+
+  /// Metafunction to get a type that inherits from all the mixins
+  /// coresponding to TagList.
+  ///
+  /// Does not add required mixins.
+  ///
+  /// \requires `TagList == tag_list<...>`
+  /// \returns a `boost::hana::type` containing the result type
+  template<typename ValueType, typename TagList>
+  struct inherit_from_all_mixins;
+
+  template<typename ValueType, typename... Tags>
+  struct inherit_from_all_mixins<ValueType, tag_list<Tags...>> {
+    using type = inherit_from_all<
+      MixinTag::mixin_t<Tags, ValueType, tag_list<Tags...>>...>;
+  };
 
   /// This type inherits from all mixins matched by `Tags`
   ///
   /// \see inherit_from_all_mixins_impl
   /// \requires `TagList == tag_list<...>`
   template<typename ValueType, typename TagList>
-  using inherits_from_mixins_t =
-    typename decltype(black_magic::inherit_from_all_mixins_impl<ValueType>(
-      std::declval<TagList>()))::type;
+  using inherits_from_mixins_t = meta::_t<inherit_from_all_mixins<ValueType, TagList>>;
 
   /// Make a tag_list type with all `Tags` and their requirements
   template<typename... Tags>
-  using make_tag_list_t = decltype(black_magic::with_required(
-    boost::hana::make_tuple(boost::hana::type_c<Tags>...)));
+  using make_tag_list_t =
+    meta::_t<normalize_tags<meta::_t<add_required<tag_list<Tags...>>>>>;
 
 
   template<typename Tag, typename... Args>
@@ -120,8 +86,10 @@ namespace otto::core::props {
   };
 
   template<typename Tag, typename... Args>
-  auto make_initializer(Args&&... args) {
-    return TaggedTuple<Tag, Args...>{std::forward_as_tuple(std::forward<Args>(args)...)};
+  auto make_initializer(Args&&... args)
+  {
+    return TaggedTuple<Tag, Args...>{
+      std::forward_as_tuple(std::forward<Args>(args)...)};
   }
 
   template<typename Initializer, typename = void>

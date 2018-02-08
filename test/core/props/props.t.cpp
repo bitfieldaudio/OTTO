@@ -7,29 +7,6 @@
 
 namespace otto::core::props {
 
-  // Make sure that tags are sorted and uniquified correctly
-
-  BOOST_HANA_CONSTANT_CHECK(
-    black_magic::sort_tags(tag_list<mixins::has_value, mixins::steppable>()) ==
-    black_magic::sort_tags(tag_list<mixins::steppable, mixins::has_value>()));
-
-  BOOST_HANA_CONSTANT_CHECK(
-    black_magic::sort_tags(
-      tag_list<mixins::has_value, mixins::steppable, mixins::has_value>()) ==
-    black_magic::sort_tags(tag_list<mixins::steppable, mixins::has_value>()));
-
-  // Make sure that requirements are pulled in, and still sorted correctly
-
-  BOOST_HANA_CONSTANT_CHECK(
-    black_magic::with_required(tag_list<mixins::steppable>()) ==
-    black_magic::sort_tags(tag_list<mixins::steppable, mixins::has_value>()));
-
-  // Test the public `make_tag_list_t` type
-
-  BOOST_HANA_CONSTANT_CHECK(
-    make_tag_list_t<mixins::steppable>() ==
-    black_magic::sort_tags(tag_list<mixins::steppable, mixins::has_value>()));
-
   TEST_CASE("Propeties", "[props]")
   {
     SECTION("Basic mixin tests")
@@ -38,10 +15,10 @@ namespace otto::core::props {
 
       Property<float, mixins::steppable, mixins::has_name> pf;
 
-      BOOST_HANA_CONSTANT_CHECK(
-        pf.tag_list ==
-        black_magic::sort_tags(
-          tag_list<mixins::steppable, mixins::has_value, mixins::has_name>()));
+      OTTO_META_ASSERT_EQUAL(
+        decltype(pf)::tag_list,
+        meta::_t<normalize_tags<
+        tag_list<mixins::steppable, mixins::has_value, mixins::has_name>>>);
 
       // Assert that the mixin implementation is inherited by the property
       static_assert(
