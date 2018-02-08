@@ -71,7 +71,7 @@ namespace otto::core::props {
 
   using namespace mixins;
 
-  Property<float, has_value, steppable, has_limits, serializable> property = 0;
+  Property<float, has_value, steppable, has_limits, serializable> property = 0.f;
 
   struct Props : Properties<serializable> {
     Property<float, has_value, serializable> prop1 = {

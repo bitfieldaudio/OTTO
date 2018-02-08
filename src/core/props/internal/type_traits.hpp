@@ -3,7 +3,6 @@
 #include <string>
 
 #include <range/v3/utility/concepts.hpp>
-#include <boost/hana.hpp>
 
 #include "util/type_traits.hpp"
 #include "util/meta.hpp"
@@ -283,7 +282,7 @@ namespace otto::core::props {
           run_hook_if_handler<H, HO>(m.template as<meta::_t<decltype(mtype)>>(), hook);
       });
       return hook;
-    };
+    }
 
       /// Run handler for `Hook` for all of `Mixin`s siblings
       template<typename H,

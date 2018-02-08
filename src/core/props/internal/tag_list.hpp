@@ -40,7 +40,6 @@ namespace otto::core::props {
   /// Also uses all operators and constructors
   template<typename... SuperClasses>
   struct inherit_from_all : SuperClasses... {
-    using SuperClasses::SuperClasses...;
     using SuperClasses::operator=...;
   };
 
