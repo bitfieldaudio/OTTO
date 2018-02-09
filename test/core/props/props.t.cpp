@@ -99,7 +99,12 @@ namespace otto::core::props {
     REQUIRE(props.prop1.to_json() == 0.f);
     REQUIRE(props.prop2.to_json() == 4.f);
     auto expct = nlohmann::json{{"prop1", 0.f}, {"prop2", 4.f}};
-    REQUIRE(props.interface<serializable>().to_json() == expct);
+    LOGI("102");
+    auto& interface = props.interface<serializable>();
+    REQUIRE(interface.name() == "Test");
+    auto got = interface.to_json();
+    LOGI("106");
+    REQUIRE(got == expct);
   }
 
   TEST_CASE("mixins::has_limits", "[props]") {

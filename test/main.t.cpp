@@ -1,7 +1,6 @@
 #define CATCH_CONFIG_RUNNER
 #include "testing.t.hpp"
 #include "util/filesystem.hpp"
-#include "services/logger.hpp"
 
 int main( int argc, char* argv[] )
 {

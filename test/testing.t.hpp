@@ -7,6 +7,7 @@
 #include <random.hpp>
 
 #include "util/filesystem.hpp"
+#include "services/logger.hpp"
 
 using Random = effolkronium::random_static;
 

@@ -2,8 +2,9 @@
 
 #include <cmath>
 #include <variant.hpp>
+#include <array>
 
-#include "util/poly-ptr.hpp"
+#include "util/utility.hpp"
 
 namespace otto::core::midi {
 
