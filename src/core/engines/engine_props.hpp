@@ -14,7 +14,7 @@
 #include "util/math.hpp"
 #include "services/logger.hpp"
 
-namespace otto::engines {
+namespace otto::core::engines {
 
   inline
   namespace mode {

@@ -1,8 +1,8 @@
 #include "engine.hpp"
 #include "services/state.hpp"
-#include "services/preset_manager.hpp"
+#include "services/presets.hpp"
 
-namespace otto::engines {
+namespace otto::core::engines {
 
   // AnyEngine ////////////////////////////////////////////////////////////////
 
@@ -55,8 +55,8 @@ namespace otto::engines {
     nlohmann::json j;
     j["props"] = _props.to_json();
     try {
-      j["preset"] = presets::name_of_idx(_name, _current_preset);
-    } catch (presets::exception& e) {
+      j["preset"] = service::presets::name_of_idx(_name, _current_preset);
+    } catch (service::presets::exception& e) {
       // no preset set, all is good
     }
     return j;
@@ -67,10 +67,10 @@ namespace otto::engines {
     if (j.is_object()) {
       auto iter = j.find("preset");
       if (iter != j.end()) {
-        presets::apply_preset(*this, iter->get<std::string>(), true);
+        service::presets::apply_preset(*this, iter->get<std::string>(), true);
       }
       _props.from_json(j["props"]);
     }
   }
 
-} // namespace otto::engines
+} // namespace otto::core::engines

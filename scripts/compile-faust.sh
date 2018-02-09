@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function compile {
-    ARCH_DIR="./scripts/"
+    ARCH_DIR="./scripts"
     ARCH_FILE="faust-template.h"
     echo "Compiling $1"
     bn=$(basename $1)
@@ -9,7 +9,7 @@ function compile {
     dir=$(dirname $1)
     classname=faust_${bn//-/_}
 
-    faust $1 -o "${dir}/${bn}.faust.h" -cn $classname -a $ARCH_DIR$ARCH_FILE
+    faust $1 -o "${dir}/${bn}.faust.hpp" -cn $classname -a $ARCH_DIR/$ARCH_FILE
 }
 
 export -f compile

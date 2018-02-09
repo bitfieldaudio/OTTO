@@ -1,6 +1,6 @@
 #include "selector_widget.hpp"
 
-namespace otto::ui {
+namespace otto::core::ui {
 
   SelectorWidget::SelectorWidget(std::vector<std::string>& items,
                                  Options&& p_options)
@@ -87,4 +87,4 @@ namespace otto::ui {
     _selected_item = 0;
     return *_items;
   }
-} // namespace otto::ui
+} // namespace otto::core::ui

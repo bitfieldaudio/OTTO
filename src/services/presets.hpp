@@ -2,7 +2,7 @@
 
 #include "core/engines/engine.hpp"
 
-namespace otto::presets {
+namespace otto::service::presets {
 
   /// Error codes. Thrown with exceptions
   enum struct ErrorCode {
@@ -60,7 +60,7 @@ namespace otto::presets {
   ///
   /// \throws [exception]() with [ErrorCode::no_such_preset]() if no matching
   /// preset was found.
-  void apply_preset(engines::AnyEngine& engine, const std::string& name, bool no_enable_callback = false);
+  void apply_preset(core::engines::AnyEngine& engine, const std::string& name, bool no_enable_callback = false);
 
   /// Apply preset to engine
   ///
@@ -68,5 +68,5 @@ namespace otto::presets {
   ///
   /// \throws [exception]() with [ErrorCode::no_such_preset]() if no matching
   /// preset was found.
-  void apply_preset(engines::AnyEngine& engine, int idx, bool no_enable_callback = false);
+  void apply_preset(core::engines::AnyEngine& engine, int idx, bool no_enable_callback = false);
 }

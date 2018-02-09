@@ -10,7 +10,10 @@
 
 namespace otto::engines {
 
-  struct Mixer final : engines::Engine<EngineType::studio> {
+  using namespace core;
+  using namespace core::engines;
+
+  struct Mixer final : Engine<EngineType::studio> {
     Mixer();
 
     audio::ProcessData<2> process_tracks(audio::ProcessData<4>);

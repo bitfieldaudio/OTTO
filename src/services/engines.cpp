@@ -1,9 +1,8 @@
-#include "engine_manager.hpp"
+#include "engines.hpp"
 
 #include <map>
 
 #include "core/globals.hpp"
-#include "core/ui/mainui.hpp"
 
 #include "engines/drums/drum-sampler/drum-sampler.hpp"
 #include "engines/drums/simple-drums/simple-drums.hpp"
@@ -14,21 +13,41 @@
 #include "engines/synths/nuke/nuke.hpp"
 
 #include "services/state.hpp"
+#include "services/ui.hpp"
 
-namespace otto::engines {
+namespace otto::service::engines {
+
+  using namespace core::engines;
+
+  enum struct SynthOrDrums { synth, drums };
+
+  nlohmann::json to_json(SynthOrDrums sod)
+  {
+    return sod == SynthOrDrums::synth ? "Synth" : "Drums";
+  }
+
+  void from_json(const nlohmann::json& js, SynthOrDrums& sod)
+  {
+    if (js == "Synth") {
+      sod = SynthOrDrums::synth;
+    } else if (js == "Drums") {
+      sod = SynthOrDrums::drums;
+    }
+  }
 
   namespace {
     std::map<std::string, std::function<AnyEngine*()>> engineGetters;
-    audio::ProcessBuffer<1> _audiobuf1;
+    core::audio::ProcessBuffer<1> _audiobuf1;
 
-    EngineDispatcher<engines::EngineType::synth> synth;
-    EngineDispatcher<engines::EngineType::drums> drums;
-    EngineDispatcher<engines::EngineType::effect> effect;
-    Tapedeck tapedeck;
-    Mixer mixer;
-    Metronome metronome;
-    InputSelector selector;
+    EngineDispatcher<EngineType::synth> synth;
+    EngineDispatcher<EngineType::drums> drums;
+    EngineDispatcher<EngineType::effect> effect;
+    otto::engines::Tapedeck tapedeck;
+    otto::engines::Mixer mixer;
+    otto::engines::Metronome metronome;
+    otto::engines::InputSelector selector;
 
+    SynthOrDrums current_sound_source = SynthOrDrums::synth;
   } // namespace
 
   void init()
@@ -39,35 +58,37 @@ namespace otto::engines {
                      {"Drums", [&]() { return (AnyEngine*) &*drums; }},
                      {"Metronome", [&]() { return (AnyEngine*) &metronome; }}};
 
-    register_engine<DrumSampler>();
-    register_engine<SimpleDrumsEngine>();
-    register_engine<NukeSynth>();
+    register_engine<otto::engines::DrumSampler>();
+    register_engine<otto::engines::SimpleDrumsEngine>();
+    register_engine<otto::engines::NukeSynth>();
 
     synth.init();
     drums.init();
 
-    ui::register_key_handler(ui::Key::tape,
-                             [](ui::Key k) { ui::select_engine(tapedeck); });
-    ui::register_key_handler(ui::Key::mixer,
-                             [](ui::Key k) { ui::select_engine(mixer); });
-    ui::register_key_handler(ui::Key::metronome,
-                             [](ui::Key k) { ui::select_engine(metronome); });
-    ui::register_key_handler(ui::Key::synth, [](ui::Key k) {
-      if (ui::is_pressed(ui::Key::shift)) {
-        ui::display(synth.selector_screen());
+    service::ui::register_key_handler(core::ui::Key::tape,
+                             [](core::ui::Key k) { service::ui::select_engine(tapedeck); });
+    service::ui::register_key_handler(core::ui::Key::mixer,
+                             [](core::ui::Key k) { service::ui::select_engine(mixer); });
+    service::ui::register_key_handler(core::ui::Key::metronome,
+                             [](core::ui::Key k) { service::ui::select_engine(metronome); });
+    service::ui::register_key_handler(core::ui::Key::synth, [](core::ui::Key k) {
+      if (service::ui::is_pressed(core::ui::Key::shift)) {
+        service::ui::display(synth.selector_screen());
       } else {
-        ui::select_engine("Synth");
+        service::ui::select_engine("Synth");
       }
+      current_sound_source = SynthOrDrums::synth;
     });
-    ui::register_key_handler(ui::Key::drums, [](ui::Key k) {
-      if (ui::is_pressed(ui::Key::shift)) {
-        ui::display(drums.selector_screen());
+    service::ui::register_key_handler(core::ui::Key::drums, [](core::ui::Key k) {
+      if (service::ui::is_pressed(core::ui::Key::shift)) {
+        service::ui::display(drums.selector_screen());
       } else {
-        ui::select_engine("Drums");
+        service::ui::select_engine("Drums");
       }
+      current_sound_source = SynthOrDrums::drums;
     });
 
-    ui::register_key_handler(ui::Key::play, [](ui::Key key) {
+    service::ui::register_key_handler(core::ui::Key::play, [](core::ui::Key key) {
       if (tapedeck.state.playing()) {
         tapedeck.state.stop();
       } else {
@@ -82,6 +103,7 @@ namespace otto::engines {
       synth.from_json(data["Synth"]);
       drums.from_json(data["Drums"]);
       metronome.from_json(data["Metronome"]);
+      from_json(data["CurrentSoundSource"], current_sound_source);
     };
 
     auto save = [&] {
@@ -89,10 +111,11 @@ namespace otto::engines {
                              {"Mixer", mixer.to_json()},
                              {"Synth", synth.to_json()},
                              {"Drums", drums.to_json()},
-                             {"Metronome", metronome.to_json()}});
+                             {"Metronome", metronome.to_json()},
+                             {"CurrentSoundSource", to_json(current_sound_source)}});
     };
 
-    services::state::attach("Engines", load, save);
+    service::state::attach("Engines", load, save);
   }
 
   void start()
@@ -110,9 +133,9 @@ namespace otto::engines {
     tapedeck.on_disable();
   }
 
-  audio::ProcessData<2> process(audio::ProcessData<1> external_in)
+  core::audio::ProcessData<2> process(core::audio::ProcessData<1> external_in)
   {
-    using Selection = InputSelector::Selection;
+    using Selection = otto::engines::InputSelector::Selection;
 
     // Main processor function
     auto midi_in      = external_in.midi_only();
@@ -122,12 +145,11 @@ namespace otto::engines {
     auto record_in = [&]() {
       switch (selector.props.input.get()) {
       case Selection::Internal: {
-        auto synth_out = synth->process(midi_in);
-        auto drums_out = drums->process(midi_in);
-        for (auto&& [drm, snth] : util::zip(drums_out, synth_out)) {
-          util::audio::add_all(drm, snth);
+        if (current_sound_source == SynthOrDrums::synth) {
+          return synth->process(midi_in);
+        } else {
+          return drums->process(midi_in);
         }
-        return drums_out;
       }
       case Selection::External: return effect->process(external_in);
       case Selection::TrackFB:
@@ -138,7 +160,7 @@ namespace otto::engines {
         return external_in.redirect(_audiobuf1);
       case Selection::MasterFB: break;
       }
-      return audio::ProcessData<1>{{nullptr}, {nullptr}};
+      return core::audio::ProcessData<1>{{nullptr}, {nullptr}};
     }();
 
     if (selector.props.input != Selection::MasterFB) {

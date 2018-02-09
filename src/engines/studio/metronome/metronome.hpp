@@ -9,6 +9,9 @@
 
 namespace otto::engines {
 
+  using namespace core;
+  using namespace core::engines;
+
   using BeatPos = int;
   using TapeTime = int;
 
@@ -16,7 +19,7 @@ namespace otto::engines {
 
     using audio::FaustWrapper<0, 1>::process;
 
-    struct Props : public engines::Properties {
+    struct Props : public Properties {
       Property<float> bpm  = {this, "BPM", 120, {40, 320, 1}};
       Property<float> gain = {this, "GAIN", 0, {0, 1, 0.01}};
       Property<int> tone   = {this, "TONE", 12, {0, 24, 1}};

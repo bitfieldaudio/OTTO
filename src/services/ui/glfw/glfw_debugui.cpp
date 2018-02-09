@@ -4,7 +4,7 @@
 #include <GL/gl3w.h>
 #include <GLFW/glfw3.h>
 
-namespace otto::debug::ui {
+namespace otto::service::debug_ui {
   static bool mouse_pressed[3] = {false, false, false};
   static float mouse_wheel = 0.0f;
   static double time = 0.0f;
@@ -451,7 +451,7 @@ namespace otto::debug::ui {
 
     static ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-    debug::ui::draw();
+    debug_ui::draw();
 
     glfwGetFramebufferSize(window, &display_w, &display_h);
     glViewport(0, 0, display_w, display_h);

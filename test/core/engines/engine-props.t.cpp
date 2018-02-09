@@ -4,7 +4,7 @@
 
 #include "core/engines/engine_props.hpp"
 
-namespace otto::engines {
+namespace otto::core::engines {
 
   TEST_CASE ("Module Properties", "[engines]") {
 

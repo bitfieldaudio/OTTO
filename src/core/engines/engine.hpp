@@ -13,7 +13,7 @@
 #include "core/audio/processor.hpp"
 #include "core/engines/engine_props.hpp"
 
-namespace otto::engines {
+namespace otto::core::engines {
 
   /// Engine type
   ///
@@ -253,7 +253,7 @@ public:
     Engine& engine;
   };
 
-} // namespace otto::engines
+} // namespace otto::core::engines
 
 
 
@@ -261,7 +261,7 @@ public:
 // Template definitions ///////////////////////////////////////////////////////
 // ////////////////////////////////////////////////////////////////////////////
 
-namespace otto::engines {
+namespace otto::core::engines {
   // EngineDispatcher Implementations ///////////////////////////////////////////
 
   /// \exclude

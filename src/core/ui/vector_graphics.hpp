@@ -1,11 +1,11 @@
 #pragma once
 
 #include <fmt/format.h>
-#include "filesystem.hpp"
+#include "util/filesystem.hpp"
 #include "core/ui/canvas.hpp"
 #include "services/logger.hpp"
 
-namespace otto::ui::vg {
+namespace otto::core::ui::vg {
 
   const int WIDTH = 320;
   const int HEIGHT = 240;

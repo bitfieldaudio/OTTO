@@ -5,7 +5,7 @@
 
 #include "util/poly-ptr.hpp"
 
-namespace otto::midi {
+namespace otto::core::midi {
 
   struct MidiEvent {
 
@@ -90,5 +90,10 @@ namespace otto::midi {
   constexpr const char* note_name(int key) noexcept
   {
     return detail::note_names[key];
+  }
+
+  inline float note_freq(int key) noexcept
+  {
+    return detail::freq_table[key];
   }
 }

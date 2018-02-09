@@ -6,7 +6,7 @@
 #include "core/ui/screen.hpp"
 #include "core/ui/widgets/selector_widget.hpp"
 
-namespace otto::engines {
+namespace otto::core::engines {
 
   struct EngineSelectorScreen : ui::Screen {
 

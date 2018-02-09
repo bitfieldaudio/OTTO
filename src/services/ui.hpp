@@ -8,7 +8,7 @@
 #include "core/engines/engine.hpp"
 #include <json.hpp>
 
-namespace otto::ui {
+namespace otto::service::ui {
 
   /// The main ui loop
   ///
@@ -27,22 +27,22 @@ namespace otto::ui {
   void main_ui_loop();
 
   /// Check if a key is currently pressed.
-  bool is_pressed(Key k) noexcept;
+  bool is_pressed(core::ui::Key k) noexcept;
 
   /// Function type for key handlers
-  using KeyHandler = std::function<void(Key k)>;
+  using KeyHandler = std::function<void(core::ui::Key k)>;
 
   /// Register a key handler
-  void register_key_handler(Key k, KeyHandler handler);
+  void register_key_handler(core::ui::Key k, KeyHandler handler);
 
   /// Display a screen.
   ///
   /// Calls [Screen::on_hide]() for the old screen, and then [Screen::on_show]()
   /// for the new screen
-  void display(Screen& screen);
+  void display(core::ui::Screen& screen);
 
   /// Select an engine
-  void select_engine(engines::AnyEngine& engine);
+  void select_engine(core::engines::AnyEngine& engine);
 
   /// Select an engine by name
   void select_engine(const std::string& engine_name);
@@ -56,15 +56,15 @@ namespace otto::ui {
   namespace impl {
 
     /// Draws the current screen and overlays.
-    void draw_frame(vg::Canvas& ctx);
+    void draw_frame(core::ui::vg::Canvas& ctx);
 
     /// Dispatches to the event handler for the current screen, and handles
     /// global keys.
-    bool keypress(Key key);
+    bool keypress(core::ui::Key key);
 
     /// Dispatches to the event handler for the current screen, and handles
     /// global keys.
-    bool keyrelease(Key key);
+    bool keyrelease(core::ui::Key key);
   } // namespace impl
 
-} // namespace otto::ui
+} // namespace otto::service::ui

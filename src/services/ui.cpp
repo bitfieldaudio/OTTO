@@ -1,13 +1,16 @@
-#include "mainui.hpp"
+#include "ui.hpp"
 
 #include <map>
 
 #include "core/globals.hpp"
 #include "services/state.hpp"
-#include "services/engine_manager.hpp"
+#include "services/engines.hpp"
 
-namespace otto::ui {
-  static constexpr const char * initial_engine = "TapeDeck";
+namespace otto::service::ui {
+
+  using namespace core::ui;
+
+  static constexpr const char* initial_engine = "TapeDeck";
 
   // Local vars
   namespace {
@@ -41,7 +44,7 @@ namespace otto::ui {
 
   }
 
-  void select_engine(engines::AnyEngine& engine) {
+  void select_engine(core::engines::AnyEngine& engine) {
     display(engine.screen());
     _selected_engine_name = engine.name();
   }
@@ -72,7 +75,7 @@ namespace otto::ui {
       });
     };
 
-    services::state::attach("UI", load, save);
+    service::state::attach("UI", load, save);
   }
 
   void display(Screen& screen)

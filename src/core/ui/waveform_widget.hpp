@@ -6,7 +6,7 @@
 #include "util/cache.hpp"
 #include "util/algorithm.hpp"
 
-namespace otto::ui::widgets {
+namespace otto::core::ui::widgets {
 
   /// Draws a waveform from data.
   template<typename Container>

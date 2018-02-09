@@ -9,7 +9,7 @@
 #include "core/ui/icons.hpp"
 #include "util/soundfile.hpp"
 #include "util/exception.hpp"
-#include "services/audio_manager.hpp"
+#include "services/audio.hpp"
 
 namespace otto::engines {
 
@@ -30,10 +30,10 @@ namespace otto::engines {
     : DrumsEngine("Drum Sampler",
         props,
         std::make_unique<DrumSampleScreen>(this)),
-      maxSampleSize(16 * audio::samplerate()),
+      maxSampleSize(16 * service::audio::samplerate()),
       sampleData(maxSampleSize)
   {
-    audio::events::samplerate_change().subscribe([this](int sr) {
+    service::audio::events::samplerate_change().subscribe([this](int sr) {
       maxSampleSize = 16 * sr;
       sampleSpeed   = sampleSampleRate / float(sr);
     });
@@ -141,7 +141,7 @@ namespace otto::engines {
         sf.read_samples(sampleData.data(), rs);
 
         sampleSampleRate = sf.info.samplerate;
-        sampleSpeed = sampleSampleRate / float(audio::samplerate());
+        sampleSpeed = sampleSampleRate / float(service::audio::samplerate());
         LOG_IF_F(INFO, sf.length() == 0, "Empty sample file");
       } catch (util::exception& e) {
         LOG_F(ERROR, "Failure while trying to load sample file '{}':", path);
@@ -520,7 +520,7 @@ namespace otto::engines {
     ctx.restore();
   }
 
-  void engines::DrumSampleScreen::draw(ui::vg::Canvas& ctx) {
+  void DrumSampleScreen::draw(ui::vg::Canvas& ctx) {
     using namespace ui::vg;
 
     // laag1/Note

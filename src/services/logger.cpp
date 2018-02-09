@@ -4,7 +4,7 @@
 #define LOGURU_IMPLEMENTATION 1
 #include <loguru.hpp>
 
-namespace otto::services::logger {
+namespace otto::service::logger {
   void init(int argc,
             char* argv[],
             bool enable_console,
@@ -25,7 +25,7 @@ namespace otto::services::logger {
         throw global::exception(global::ErrorCode::none, std::string(message.prefix) + message.message);
       });
 
-    LOG_F(INFO, "LOGGING NOW");
+    LOGI("LOGGING NOW");
   }
 
   void set_thread_name(const std::string& name)

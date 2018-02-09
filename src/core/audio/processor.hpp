@@ -25,7 +25,7 @@
 
 #include "util/audio.hpp"
 
-namespace otto::audio {
+namespace otto::core::audio {
 
   /**
    * Checks if a type qualifies as an <AudioProcessor>
@@ -141,4 +141,4 @@ namespace otto::audio {
     }
   };
 
-} // namespace otto::audio
+} // namespace otto::core::audio

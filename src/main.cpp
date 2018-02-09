@@ -1,41 +1,43 @@
-#include "services/audio_manager.hpp"
+#include "util/timer.hpp"
+
 #include "core/audio/midi.hpp"
-#include "services/engine_manager.hpp"
-#include "services/preset_manager.hpp"
 #include "core/globals.hpp"
-#include "core/ui/mainui.hpp"
+
+#include "services/engines.hpp"
+#include "services/presets.hpp"
+#include "services/ui.hpp"
 #include "services/logger.hpp"
 #include "services/state.hpp"
-#include "util/timer.hpp"
+#include "services/audio.hpp"
 
 using namespace otto;
 
 void cleanup();
-int handleException(const char* e);
-int handleException(std::exception& e);
-int handleException();
+int handle_exception(const char* e);
+int handle_exception(std::exception& e);
+int handle_exception();
 
 int main(int argc, char* argv[])
 {
   try {
-    services::logger::init(argc, argv);
-    services::state::load();
+    service::logger::init(argc, argv);
+    service::state::load();
 
-    presets::init();
-    engines::init();
-    audio::init();
+    service::presets::init();
+    service::engines::init();
+    service::audio::init();
 
-    engines::start();
-    audio::start();
+    service::engines::start();
+    service::audio::start();
 
-    ui::init();
-    ui::main_ui_loop();
+    service::ui::init();
+    service::ui::main_ui_loop();
   } catch (const char* e) {
-    return handleException(e);
+    return handle_exception(e);
   } catch (std::exception& e) {
-    return handleException(e);
+    return handle_exception(e);
   } catch (...) {
-    return handleException();
+    return handle_exception();
   }
 
   LOG_F(INFO, "Exiting");
@@ -43,7 +45,7 @@ int main(int argc, char* argv[])
   return 0;
 }
 
-int handleException(const char* e)
+int handle_exception(const char* e)
 {
   LOGE(e);
   LOGE("Exception thrown, exitting!");
@@ -51,7 +53,7 @@ int handleException(const char* e)
   return 1;
 }
 
-int handleException(std::exception& e)
+int handle_exception(std::exception& e)
 {
   LOGE(e.what());
   LOGE("Exception thrown, exitting!");
@@ -59,7 +61,7 @@ int handleException(std::exception& e)
   return 1;
 }
 
-int handleException()
+int handle_exception()
 {
   LOGE("Unknown exception thrown, exitting!");
   cleanup();
@@ -68,9 +70,9 @@ int handleException()
 
 void cleanup()
 {
-  engines::shutdown();
-  audio::shutdown();
-  services::state::save();
+  service::engines::shutdown();
+  service::audio::shutdown();
+  service::state::save();
 
   util::timer::save_data();
 }

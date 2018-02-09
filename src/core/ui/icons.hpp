@@ -2,7 +2,7 @@
 
 #include "core/ui/vector_graphics.hpp"
 
-namespace otto::ui::vg::icons {
+namespace otto::core::ui::vg::icons {
 
   struct Icon : Drawable {
     Size size;

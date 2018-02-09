@@ -13,7 +13,7 @@
 #include "util/math.hpp"
 #include "util/iterator.hpp"
 
-namespace otto::ui::vg {
+namespace otto::core::ui::vg {
 
   using NanoCanvas::HorizontalAlign;
   using NanoCanvas::VerticalAlign;

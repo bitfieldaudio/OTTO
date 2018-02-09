@@ -9,7 +9,7 @@
 #include "core/globals.hpp"
 #include "services/logger.hpp"
 
-namespace otto {
+namespace otto::engines {
 
   using value_type = tape_buffer::value_type;
   constexpr int buffer_size = tape_buffer::buffer_size;
@@ -55,7 +55,7 @@ namespace otto {
 
     void main_routine()
     {
-      services::logger::set_thread_name("Tape Buffer");
+      service::logger::set_thread_name("Tape Buffer");
       file.open(path);
       read_slices();
 

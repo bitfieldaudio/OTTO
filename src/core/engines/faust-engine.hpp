@@ -4,7 +4,7 @@
 #include "core/engines/engine.hpp"
 #include "core/audio/processor.hpp"
 
-namespace otto::engines {
+namespace otto::core::engines {
 
   struct FaustSynthEngine : audio::FaustWrapper<0, 1>, SynthEngine {
     FaustSynthEngine(std::string name,

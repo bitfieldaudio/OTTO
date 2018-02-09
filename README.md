@@ -2,12 +2,19 @@
 
 [![Build Status](https://travis-ci.org/topisani/OTTO.svg?branch=master)](https://travis-ci.org/topisani/OTTO)
 
-Making electronic music is awesome! But for most of us, it requires a lot of setup, a lot of moving a mouse around on a laptop that's probably not quite equipped to handle realtime audio processing.
+Making electronic music is awesome! But for most of us, it requires a lot of setup, a lot of moving a mouse around on a laptop that's probably not quite equipped to handle realtime audio processing. Don't you wish you had one single device, which was built to do it all for you, easily and on the fly?
 
 ### Introducing the OTTO!  
-The OTTO is a complete hardware and software solution, with synths, a sampler, effects, sequencers, and studio modules. It is heavily inspired by the OP-1, but takes some things in a different direction. The goal is to create an all-in-one portable device, that allows anyone to play around with electronic music. It shall be open and accessible, while maintaining the very constrained interfaces, necessary to really be creative.
+The OTTO is a complete hardware and software solution, with synths, a sampler, effects, sequencers, and studio modules. The interface is modal, easy to use, simple, but most of all, it encourages experimentation. The graphics are quirky, and the workflow is minimal.
 
-Come chat with us at our [discord server](https://discord.gg/4cV9Ucz) if you're interested in the project.
+> That sounds cool and all, but haven't I heard about this before? <br>
+>   — _You_
+
+Yes, the OTTO is heavily inspired by the [OP-1](https://teenage.engineering/products/op-1) (as you will clearly see from our graphics), in fact it started off as a direct clone, but these days we try to take a different spin on an idea that is fundamentally the same.
+
+At this point it might be important to mention that the OTTO is not, and will never be, a commercially aimed product. It is open source by nature, in both hardware and software. If you want an OTTO, you're going to get your hands dirty, if not with the code, at least with the hardware.
+
+Now that proper introductions are made, we would like to invite you to our [discord server](https://discord.gg/4cV9Ucz) where we hang out and discuss all things OTTO.
 
 # Screenshots:  
 @D-I-S-K-U-S has been working hard on graphics, and these are some of the highlights:
@@ -15,108 +22,32 @@ Come chat with us at our [discord server](https://discord.gg/4cV9Ucz) if you're 
 <img src="doc-src/images/1.png" width="320px"> <img src="doc-src/images/2.png" width="320px">
 <img src="doc-src/images/3.png" width="320px"> <img src="doc-src/images/4.png" width="320px">
 
-# The final product
-The software is modular, with modules in six groups: Synths, drums, effects, modulation, sequencing, and studio. These modules are chained together as can be seen in this diagram:
+# The software
+The software is written in (very) modern C++, and the goal is to be as modular and flexible as possible. Graphics are done with a C++ wrapper on top of [NanoVG](https://github.com/memononen/nanovg), with swappable backends, currently GLFW and EGL are avaliable. Audio/midi drivers are also designed to be swappable, though currently the only one available is [jack](http://jackaudio.org).
 
-![Signal path](doc-src/images/signalpath.png)
+Currently the software runs on the desktop, with [keybinds](https://github.com/topisani/OTTO/wiki/Keyboard-mapping) emulating the physical buttons. A lot of the backend is in, though even that is still undergoing a lot of continuous changes, and has a lot of missing features. While we are working more on that, DSP and graphics for engines is being developed and added, so slowly we should start seeing some more content in an application that is currently quite bare.
 
-Each module has up to 4 settings, that can be controlled using 4 rotary encoders. Like the OP-1, the colours of the 4 rotaries corresponds to the colour of the option on screen that will be changed. Each module slot will be accessible from a single hardware button press.
+The DSP is written seperately in [faust](http://faust.grame.fr), a functional language designed for audio processing that compiles to C++, so if you are up for writing some synths/effects, but not quite ready to take on the beast that is C++ yet, there is still hope. As with anything, come over to our [discord server](https://discord.gg/VF6DNP7) to hear more!
 
-The software will be set up to run on a Raspberry Pi, with a small AMOLED screen, 4 rotary encoders, and around 20 buttons. This can then be built into any kind of enclosure, with or without a midi keyboard and other bells and whistles.
+For build instructions, check out [the wiki](https://github.com/topisani/OTTO/wiki/Compiling-and-Running), I apologise in advance, but I really want to use C++17, so you will need a _very_ new compiler.
 
-# Current progress
-A lot of the main software backend is completed. The 4-track tapedeck is implemented, along with the mixer and the metronome. We are working hard on synths and drums, currently there's a proof of concept additive drum synthesizer, and drum and synth samplers.
+# The hardware
+We are still working on the first prototypes, so this is still very much in flux. You can follow along on [the wiki](https://github.com/topisani/OTTO/wiki/Hardware) and of course on [discord](https://discord.gg/PxCvXZp), but here are the basic ideas:
 
-Currently, it runs in a window on your desktop, and uses [jack](http://jackaudio.org/) for audio. We have been considering using [portaudio](http://portaudio.com/) instead, as it is better for cross platform development. Currently the OTTO only runs on Linux, but there are efforts to get it running on [OS X](https://github.com/topisani/OTTO/issues/13) and Windows.
+ - A Raspberry Pi (or similar) at the core, running a minimal linux distro.
+ - A >= 320x240 RGB screen, preferably amoled.
+ - ~30 hardware buttons, so nearly every feature has its own button.
+ - 4 color coded rotary encoders (full credits to the OP-1 for that idea), as the main controls. Each screen has a maximum of 4 variables which will be colored corresponding to their encoder.
 
-## Key bindings
-These are the key bindings currently emulating the hardware buttons:
+Those are the things that are fairly set in stone - everything else is up to you. We would like to see the OTTO exist in all sizes, shapes and colours. We plan to build guides, shopping lists and software packages for our own setups and encourage you to do the same.
 
-| Key         | Action              | Key                 | Action              |
-|-------------|---------------------|---------------------|---------------------|
-| Ctrl        | (mod) Encoder Click |                     |                     |
-| Q           | +Red Encoder        | A                   | -Red Encoder        |
-| W           | +Blue Encoder       | S                   | -Blue Encoder       |
-| E           | +White Encoder      | D                   | -White Encoder      |
-| R           | +Green Encoder      | F                   | -Green Encoder      |
-| Left Arrow  | Rewind              | Shift + Left Arrow  | Skip Rewind         |
-| Right Arrow | Forward             | Shift + Right Arrow | Skip Forward        |
-| Space       | Play                | Z                   | Record              |
-| F1          | Track 1             | F2                  | Track 2             |
-| F3          | Track 3             | F4                  | Track 4             |
-| Ctrl + T    | Tape                | Ctrl + Y            | Mixer               |
-| Ctrl + U    | Synth               | Ctrl + G            | Metronome           |
-| I           | Go to Loop In       | Shift + I           | Set Loop In         |
-| O           | Go to Loop Out      | Shift + O           | Set Loop Out        |
-| L           | Toggle Looping      | Ctrl + X            | Cut Tape Selection  |
-| Ctrl + C    | Lift Tape Selection | Ctrl + V            | Drop Tape Selection |
+Other than that, these are some of the ideas that are on the board for the future:
 
-# Installation
-The OTTO is written in bleeding edge C++17, which gives some problems with dependencies. First of all, you need a up to date compiler: GCC-7 or clang 5.0 should work. The biggest problem is the standard library. Currently i think only `libstdc++ 7` has all that we need. This will probably change in a few months, as other implementations catch up.
-
-For Debian/Ubuntu, this should install most of the dependencies:
-```bash
-apt install jackd\
-    g++-7\
-    libjack-jackd2-dev\
-    libgles2-mesa-dev -y
-```
-(If you don't have `g++-7`, google how to get it for your specific version)
-
-You will also need cmake 3.8 or above, get it [here](https://cmake.org/download/)
-
-I recommend also installing `patchage` and `jack-keyboard`, but they are in no way required.
-
-With this set up, you should be able to build & run the OTTO with:
-```
-cmake .
-make -j4
-bin/otto
-```
-
-As previously mentioned, there are (currently unfruitful) efforts to run on [OS X](https://github.com/topisani/OTTO/issues/13) and windows.
-
-## Faust
-Nearly all DSP in the OTTO is written in [faust](http://faust.grame.fr/). Faust compiles to C++, and if you don't have plans to edit the `.dsp` files, you don't have to worry about faust. If you do want to do DSP work, it is very important that you use the correct faust version, which currently is `0.9.104`. To install that, run the following commands:
-```bash
-git clone https://github.com/grame-cncm/faust
-cd faust
-git checkout 24db8d98e63aa8a119ffc601bf6aeec3e33e7a86
-make
-sudo make install
-```
-Once you have faust installed, verify that the `faust` command uses the correct version. You should see something like this:
-```bash
-$ faust --version
-FAUST, DSP to C++ compiler, Version 0.9.104
-Copyright (C) 2002-2017, GRAME - Centre National de Creation Musicale. All rights reserved. 
-```
-
-Then, make the apropriate changes in the `.dsp` files, and compile them by running
-```
-sh scripts/compile-faust.sh
-```
+ - A mobile app to run the graphics and serve as the screen, since good screens are hard to come by, and you probably already have a great one in your pocket.
+ - Support for optional hardware, like an FM radio, bluetooth speakers, a joystick
+ - Whatever you can think of basically!
+ 
+It should also be noted that the OTTO of course feeds on midi, and you should be able to hook up all sorts of controllers, with sync and control signals for the OTTO variables.
 
 # Getting involved
-We are a small group of people who would really appreciate your help or just your interest in the project. If you do want to help, these are some areas you could help with:
- - Software testing
- - Writing documentation
- - Hardware design / testing
- - UI design
- - Creating default samples & settings
- 
-And of course, the coding itself, with areas like
- - Synth/Effect design
- - General backend design
- - Hardware bridging
- - Distro setup - a custom distro for the Pi might be necessary
-
-If you are interested, come chat with us at our [discord server](https://discord.gg/4cV9Ucz), it's where all the magic happens!
-
-# Credits
- - Audio Framework: [jack](http://jackaudio.org/)
- - DSP Framework: [faust](http://faust.grame.fr/)
- - Vector Graphics: [NanoVG](https://github.com/memononen/nanovg) with [NanoCanvas](https://github.com/Geequlim/NanoCanvas)
- - [plog](https://github.com/SergiusTheBest/plog), a great little logging lib
- - [fmtlib](http://fmtlib.net), string formatting in C++
- - [json](https://github.com/nlohmann/json/), json for modern C++
+We are a small, but steadily growing, group of people working in all sorts of areas, and we are always looking for contributors in whatever form, or just people who are interested in general. If you are not a developer, we could still really use some help with testing, documenting, hardware, samples and presets for engines, and more. And if I didn't mention it yet, the best place for you to get involved is our [discord server](https://discord.gg/4cV9Ucz). Seriously, it's where all the magic happens!

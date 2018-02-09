@@ -11,6 +11,9 @@
 
 namespace otto::engines {
 
+  using namespace core;
+  using namespace core::engines;
+
   struct Tapedeck final : Engine<EngineType::studio> {
     Tapedeck();
     Tapedeck(Tapedeck&)  = delete;

@@ -1,12 +1,12 @@
 #include "metronome.hpp"
 
 #include "core/globals.hpp"
-#include "services/audio_manager.hpp"
-#include "services/engine_manager.hpp"
+#include "services/audio.hpp"
+#include "services/engines.hpp"
 #include <string>
 #include <cmath>
 
-#include "metronome.faust.h"
+#include "metronome.faust.hpp"
 
 #include "util/timer.hpp"
 
@@ -31,13 +31,13 @@ namespace otto::engines {
   audio::ProcessData<1> Metronome::process(audio::ProcessData<0> data) {
     TIME_SCOPE("Metronome::process");
 
-    float BPsample = props.bpm / 60.0 / (float) audio::samplerate();
-    float beat = engines::tape_state::position() * BPsample;
-    int framesTillNext = std::fmod(beat, 1)/BPsample * engines::tape_state::playSpeed();
+    float BPsample = props.bpm / 60.0 / (float) service::audio::samplerate();
+    float beat = service::engines::tape_state::position() * BPsample;
+    int framesTillNext = std::fmod(beat, 1)/BPsample * service::engines::tape_state::playSpeed();
 
     if (framesTillNext < data.nframes
-      && engines::tape_state::playing()
-      && engines::tape_state::playSpeed()/BPsample > 1) {
+      && service::engines::tape_state::playing()
+      && service::engines::tape_state::playSpeed()/BPsample > 1) {
       FaustWrapper::process(data.slice(0, framesTillNext));
       props.trigger = true;
       FaustWrapper::process(data.slice(framesTillNext));
@@ -55,7 +55,7 @@ namespace otto::engines {
 
   // Bars
   BeatPos Metronome::closestBar(TapeTime time) {
-    double fpb = (audio::samplerate())*60/(double)props.bpm;
+    double fpb = (service::audio::samplerate())*60/(double)props.bpm;
     BeatPos prevBar = time/fpb;
     TapeTime prevBarTime = getBarTime(prevBar);
     if (time - prevBarTime > fpb/2) {
@@ -65,19 +65,19 @@ namespace otto::engines {
   }
 
   TapeTime Metronome::getBarTime(BeatPos bar) {
-    double fpb = (audio::samplerate())*60/(double)props.bpm;
+    double fpb = (service::audio::samplerate())*60/(double)props.bpm;
     return bar * fpb;
   }
 
   TapeTime Metronome::getBarTimeRel(BeatPos bar) {
     if (bar == 0) {
-      return closestBar(engines::tape_state::position());
+      return closestBar(service::engines::tape_state::position());
     }
 
-    double fpb = (audio::samplerate())*60/(double)props.bpm;
-    BeatPos curBar = engines::tape_state::position()/fpb;
+    double fpb = (service::audio::samplerate())*60/(double)props.bpm;
+    BeatPos curBar = service::engines::tape_state::position()/fpb;
     TapeTime curBarTime = getBarTime(curBar);
-    TapeTime diff = engines::tape_state::position() - curBarTime;
+    TapeTime diff = service::engines::tape_state::position() - curBarTime;
     if (diff > fpb/2) {
       curBar += 1;
       if (bar > 0) bar -= 1;
@@ -89,13 +89,13 @@ namespace otto::engines {
 
   float Metronome::bar_for_time(TapeTime time) const
   {
-    float fpb = (audio::samplerate())*60/(float)props.bpm;
+    float fpb = (service::audio::samplerate())*60/(float)props.bpm;
     return time / fpb;
   }
 
   std::size_t Metronome::time_for_bar(float bar) const
   {
-    float fpb = (audio::samplerate())*60/(float)props.bpm;
+    float fpb = (service::audio::samplerate())*60/(float)props.bpm;
     return bar * fpb;
   }
 
@@ -226,8 +226,8 @@ namespace otto::engines {
     {
       ctx.save();
 
-      float BPsample(engine.props.bpm/60.0/(float)audio::samplerate());
-      float beat(engines::tape_state::position() * BPsample);
+      float BPsample(engine.props.bpm/60.0/(float)service::audio::samplerate());
+      float beat(service::engines::tape_state::position() * BPsample);
       float factor((std::fmod(beat, 2)));
       factor = factor < 1 ? (factor * 2 - 1) : ((1 - factor) * 2 + 1);
       factor = std::sin(factor * M_PI/2);
