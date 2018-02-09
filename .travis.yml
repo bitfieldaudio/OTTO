@@ -172,7 +172,7 @@ before_script:
 script:
   - cd "${TRAVIS_BUILD_DIR}"
   - cmake --build build -- -j${JOBS}
-  - build/bin/test || RESULT=$?
+  - build/bin/test -s || RESULT=$?
   - |
     if [[ -n "$RESULT" ]]; then
     echo "Tests failed, running in GDB for stacktrace"
