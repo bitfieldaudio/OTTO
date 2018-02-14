@@ -9,61 +9,21 @@
 
 #include "has_value.hpp"
 
-namespace otto::core::props::mixins {
+#include "core/audio/faust.hpp"
 
-  struct FaustLink {
-    enum struct Type { ToFaust, FromFaust };
+#include "services/logger.hpp"
 
-    FaustLink(const std::string_view& name,
-              const std::function<float()>& get,
-              float* faust_var)
-      : name(name),
-        type(Type::ToFaust),
-        get_or_set_(get),
-        faust_var_(faust_var)
-    {}
-
-    FaustLink(const std::string_view& name,
-              const std::function<void(float)>& set,
-              float* faust_var)
-      : name(name),
-        type(Type::FromFaust),
-        get_or_set_(set),
-        faust_var_(faust_var)
-    {}
-
-    void refresh()
-    {
-      if (type == Type::ToFaust) {
-        *faust_var_ = mpark::get<0>(get_or_set_)();
-      } else {
-        mpark::get<1>(get_or_set_)(*faust_var_);
-      }
-    }
-
-    void update(float& fptr)
-    {
-      if (type == Type::ToFaust) {
-        *faust_var_ = fptr;
-      } else {
-        fptr = *faust_var_;
-      }
-    }
-
-    const std::string_view name;
-    Type const type;
-
-  private:
-    mpark::variant<std::function<float()>, std::function<void(float)>> const
-      get_or_set_;
-    float* const faust_var_;
-  };
+namespace otto::core::props {
 
   OTTO_PROPS_MIXIN(faust_link, REQUIRES(faust_link, has_value));
+
+  using FaustLink = audio::FaustLink;
 
   template<>
   struct mixin::leaf_interface<faust_link> {
     const std::function<void()> refresh_links;
+    const std::function<void(FaustLink)> register_link;
+    const std::string& name;
   };
 
   template<>
@@ -78,10 +38,40 @@ namespace otto::core::props::mixins {
         }
       }
     }
+
+    template<typename Container>
+    void register_link(const Container& name_parts, FaustLink link) {
+      auto first = std::begin(name_parts), last = std::end(name_parts);
+      auto found = util::find_if(children(), [& name = *first](
+                                               auto&& child) {
+        return (child.is_leaf() ? child.get_leaf().name
+                                : child.get_branch().name()) == name;
+      });
+      if (found != children().end()) {
+        if (found->is_leaf()) {
+          if (std::next(first)  == last) {
+            found->get_leaf().register_link(link);
+          } else {
+            LOGE("Expected a branch property, got a leaf");
+          }
+        } else {
+          if (std::next(first) != last) {
+            found->get_branch().register_link(
+              util::sequence(std::move(first++), std::move(last)));
+          } else {
+            LOGE("Expected a leaf property, got a branch");
+          }
+        }
+      }
+    }
   };
 
   OTTO_PROPS_MIXIN_IMPL(faust_link) {
     OTTO_PROPS_MIXIN_DECLS(faust_link);
+
+    void init(FaustLink::Type type) {
+      type_ = type;
+    }
 
     void refresh_links()
     {
@@ -114,8 +104,11 @@ namespace otto::core::props::mixins {
       return interface_;
     }
 
+    const FaustLink::Type& type = type_;
+
   private:
-    std::vector<FaustLink> faust_links_;
+    FaustLink::Type type_;
+    std::vector<float*> faust_links_;
 
     interface_type interface_ = {
       util::capture_this(&self_type::refresh_links, this)};

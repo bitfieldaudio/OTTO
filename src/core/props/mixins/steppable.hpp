@@ -9,7 +9,7 @@
 
 #include "has_value.hpp"
 
-namespace otto::core::props::mixins {
+namespace otto::core::props {
 
   OTTO_PROPS_MIXIN(steppable, REQUIRES(steppable, has_value))
   {

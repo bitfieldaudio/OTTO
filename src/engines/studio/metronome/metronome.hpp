@@ -19,11 +19,27 @@ namespace otto::engines {
 
     using audio::FaustWrapper<0, 1>::process;
 
-    struct Props : public Properties {
-      Property<float> bpm  = {this, "BPM", 120, {40, 320, 1}};
-      Property<float> gain = {this, "GAIN", 0, {0, 1, 0.01}};
-      Property<int> tone   = {this, "TONE", 12, {0, 24, 1}};
-      Property<bool, mode::def, false> trigger = {this, "TRIGGER", false};
+    struct Props : public props::Properties<> {
+      // clang-format: off
+      props::Property<float, props::has_limits> bpm = {
+        has_name  ::init("BPM"),
+        has_value ::init(120),
+        has_limits::init(40, 320),
+        steppable ::init(1)
+      };
+      props::Property<float> gain = {
+        has_name  ::init("GAIN"),
+        has_value ::init(0),
+        has_limits::init(0, 1),
+        steppable ::init(0.01)
+      };
+      props::Property<int> tone = { has_name::init("TONE"), 12, { 0, 24, 1 } };
+      props::Property<bool, props::no_serialize> trigger = {
+        has_name::init("TRIGGER"), has_value::init(false)
+      };
+
+      Props() : Properties(bpm, gain, tone, trigger) {}
+      // clang-format: on
     } props;
 
     util::audio::Graph graph;

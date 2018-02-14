@@ -75,6 +75,10 @@ namespace otto::meta {
   template<typename Pair>
   using _second = typename Pair::second;
 
+  /// Metafunction to see if T1 and T2 are the same type
+  template<typename T1, typename T2>
+  struct equals;
+
   /// The default compare metafunction. Overload for user types.
   template<typename T1, typename T2>
   struct compare;
@@ -87,6 +91,16 @@ namespace otto::meta {
   template<typename List>
   struct tail;
 
+  /// Metafunction to see if `List` contains `T`
+  template<typename List, typename T>
+  struct contains;
+
+  /// Metafunction to see if `List` has an element matching `Predicate`
+  ///
+  /// Has a static constexpr bool member `value`
+  template<typename List, template<typename T> typename Predicate>
+  struct has_one;
+
   /// Metafunction to concattenate lists.
   template<typename... Lists>
   struct concat;
@@ -95,9 +109,17 @@ namespace otto::meta {
   template<typename List>
   struct flatten;
 
-  /// Metafunction to see if `List` contains `T`
+  /// Metafunction to filter items by predicate
+  template<typename List, template<typename T> typename Predicate>
+  struct filter;
+
+  /// Metafunction to remove items by predicate
+  template<typename List, template<typename T> typename Predicate>
+  struct remove_if;
+
+  /// Metafunction to remove an item from a list
   template<typename List, typename T>
-  struct contains;
+  struct remove;
 
   /// Metafunction to make sure every type only exists once in the list.
   ///
@@ -125,9 +147,13 @@ namespace otto::meta {
 
   // _t and _v aliases ////////////////////////////////////////////////////////
 
+  /// Metafunction to see if T1 and T2 are the same type
+  template<typename T1, typename T2>
+  constexpr const bool equals_v = _v<equals<T1, T2>>;
+
   /// The default compare metafunction. Overload for user types.
   template<typename T1, typename T2>
-  using compare_t = _t<compare<T1, T2>>;
+  constexpr const bool compare_v = _v<compare<T1, T2>>;
 
   /// Metafunction to get first element in a list.
   template<typename List>
@@ -148,6 +174,24 @@ namespace otto::meta {
   /// Metafunction to see if `List` contains `T`
   template<typename List, typename T>
   constexpr const bool contains_v = _v<contains<List, T>>;
+
+  /// Metafunction to see if `List` has an element matching `Predicate`
+  ///
+  /// Has a static constexpr bool member `value`
+  template<typename List, template<typename T> typename Predicate>
+  constexpr const bool has_one_v = _v<has_one<List, Predicate>>;
+
+  /// Metafunction to filter items by predicate
+  template<typename List, template<typename T> typename Predicate>
+  using filter_t = _t<filter<List, Predicate>>;
+
+  /// Metafunction to remove items by predicate
+  template<typename List, template<typename T> typename Predicate>
+  using remove_if_t = _t<remove_if<List, Predicate>>;
+
+  /// Metafunction to remove an item from a list
+  template<typename List, typename T>
+  using remove_t = _t<remove<List, T>>;
 
   /// Metafunction to make sure every type only exists once in the list.
   ///
@@ -190,6 +234,11 @@ namespace otto::meta {
   constexpr auto transform_to_tuple(Callable&& cb);
 
   // Implementations ////////////////////////////////////////////////////////
+
+  template<typename T1, typename T2>
+  struct equals {
+    constexpr static const bool value = std::is_same_v<T1, T2>;
+  };
 
   // Compare //
 
@@ -234,11 +283,18 @@ namespace otto::meta {
     using type = list<>;
   };
 
+  // has_one //
+
+  template<template<typename T> typename P, typename... Types>
+  struct has_one<list<Types...>, P> {
+    static constexpr const bool value = (_v<P<Types>> || ...);
+  };
+
   // contains //
 
-  template<typename T, typename... Args>
-  struct contains<list<Args...>, T> {
-    static constexpr const bool value = util::is_one_of_v<T, Args...>;
+  template<typename T, typename... Types>
+  struct contains<list<Types...>, T> {
+    static constexpr const bool value = (equals_v<T, Types> || ...);
   };
 
   // flatten //
@@ -252,6 +308,61 @@ namespace otto::meta {
   struct flatten {
     // Flattening a non-list type means sticking it in a list
     using type = list<NonListType>;
+  };
+
+  // filter //
+
+  namespace detail {
+    template<template<typename T> typename Predicate, typename... Types>
+    struct filter_impl;
+
+    template<template<typename T> typename Predicate,
+             typename T,
+             typename... Types>
+    struct filter_impl<Predicate, T, Types...> {
+      using type = _t<std::conditional_t<
+        _v<Predicate<T>>,
+        concat<list<T>, _t<filter<list<Types...>, Predicate>>>,
+        filter<list<Types...>, Predicate>>>;
+    };
+
+    template<template<typename T> typename Predicate, typename T>
+    struct filter_impl<Predicate, T> {
+      using type = std::conditional_t<_v<Predicate<T>>, list<T>, list<>>;
+    };
+
+    template<template<typename T> typename Predicate>
+    struct filter_impl<Predicate> {
+      using type = list<>;
+    };
+  }
+
+  template<template<typename T> typename Predicate, typename... Types>
+  struct filter<list<Types...>, Predicate> {
+    using type = _t<detail::filter_impl<Predicate, list<Types...>>>;
+  };
+
+  // remove_if //
+  template<template<typename T> typename Predicate, typename... Types>
+  struct remove_if<list<Types...>, Predicate> {
+  private:
+    template<typename T>
+    struct predicate {
+      static constexpr const bool value = !_v<Predicate<T>>;
+    };
+  public:
+    using type = _t<detail::filter_impl<predicate, list<Types...>>>;
+  };
+
+  // remove //
+
+  template<typename T, typename... Types>
+  struct remove<list<Types...>, T> {
+  private:
+    template<typename T1>
+    using predicate = equals<T, T1>;
+  public:
+    using type = _t<remove_if<list<Types...>, predicate>>;
   };
 
   // uniquify //

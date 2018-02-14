@@ -1,4 +1,4 @@
-#pragma once
+#::pragma once
 
 #include <string>
 
@@ -17,7 +17,7 @@ namespace otto::core::props {
 
   // Type traits for mixins //
 
-  namespace mixins::mixin {
+  namespace mixin {
     template<typename Tag>
     struct required_tags {
       using type = tag_list<>;
@@ -198,11 +198,11 @@ namespace otto::core::props {
 
     /// Get all required tags for `Tag`
     template<typename Tag>
-    using required_tags_t = typename mixins::mixin::required_tags<Tag>::type;
+    using required_tags_t = typename mixin::required_tags<Tag>::type;
 
     /// Get mixin type for type `T` and tag `Tag`
     template<typename Tag, typename T, typename TagList>
-    using mixin_t = mixins::mixin::leaf_implementation<Tag, T, TagList>;
+    using mixin_t = mixin::leaf_implementation<Tag, T, TagList>;
 
     // Type-erased Interface //
 
@@ -213,8 +213,8 @@ namespace otto::core::props {
     };
 
     template<typename Tag>
-    struct leaf_interface_impl<Tag, std::void_t<mixins::mixin::leaf_interface<Tag>>> {
-      using type = mixins::mixin::leaf_interface<Tag>;
+    struct leaf_interface_impl<Tag, std::void_t<mixin::leaf_interface<Tag>>> {
+      using type = mixin::leaf_interface<Tag>;
     };
 
   public:
@@ -229,7 +229,7 @@ namespace otto::core::props {
     /// `interface_type& interface()` member function, which returns an instance
     /// of this type.
     template<typename Tag>
-    using leaf_interface = typename mixins::mixin::leaf_interface<Tag>;
+    using leaf_interface = typename mixin::leaf_interface<Tag>;
 
     /// Check if `Tag` has a type-erased interface
     ///
@@ -252,7 +252,7 @@ namespace otto::core::props {
     /// pointers to other common branch data, such as the name. These can all be
     /// accessed through accessor functions.
     template<typename Tag>
-    using branch_interface = typename mixins::mixin::branch_interface<Tag>;
+    using branch_interface = typename mixin::branch_interface<Tag>;
   };
 
   namespace detail {
@@ -351,6 +351,8 @@ namespace otto::core::props {
 
     using storage_type = std::vector<BranchOrLeafPtr<Tag>>;
 
+    BaseBranchInterface(const std::string& name) : name_ (name) {}
+
     storage_type& children() {
       return storage_;
     }
@@ -360,12 +362,12 @@ namespace otto::core::props {
     }
 
     const std::string& name() {
-      static std::string nm = "Test";
-      return nm;
+      return name_;
     };
 
   private:
     storage_type storage_;
+    const std::string& name_;
   };
 
   /// A pointer to either a branch or a leaf interface for mixin `Tag`

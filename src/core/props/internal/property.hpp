@@ -118,9 +118,6 @@ namespace otto::core::props {
     }
   };
 
-  template<typename ValueType, typename... Tags>
-  using Property = PropertyImpl<ValueType, make_tag_list_t<Tags...>>;
-
   // Properties ////////////////////////////////////////////////////////////////
 
   template<typename... Tags>
@@ -152,7 +149,8 @@ namespace otto::core::props {
     }
 
   private:
-    interface_storage_type storage_;
+    std::string name_;
+    interface_storage_type storage_{MixinTag::branch_interface<Tags>(name_)...};
   };
 
 } // namespace otto::core::props

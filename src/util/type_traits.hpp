@@ -60,16 +60,11 @@ namespace otto::util {
 
   template<typename T, typename... Ts>
   struct is_one_of {
-    static constexpr bool value = false;
-  };
-
-  template<typename T, typename T1, typename... Ts>
-  struct is_one_of<T, T1, Ts...> {
-    static const constexpr bool value = std::is_same_v<T, T1> || is_one_of<T, Ts...>::value;
+    static constexpr const bool value = (std::is_same_v<T, Ts> || ...);
   };
 
   template<typename T, typename... Ts>
-  constexpr bool is_one_of_v = is_one_of<T, Ts...>::value;
+  constexpr bool is_one_of_v = (std::is_same_v<T, Ts> || ...);
 
   /// Extends `std::true_type` if `iter` is an iterator over `type`,
   /// with category of at least `category`

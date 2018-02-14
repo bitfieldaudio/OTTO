@@ -11,7 +11,7 @@
 
 #include "core/ui/screen.hpp"
 #include "core/audio/processor.hpp"
-#include "core/engines/engine_props.hpp"
+#include "core/props/props.hpp"
 
 namespace otto::core::engines {
 
@@ -42,8 +42,9 @@ namespace otto::core::engines {
   /// Use this when refering to a generic engine
   struct AnyEngine {
 
+    template<typename... Tags>
     AnyEngine(std::string name,
-      Properties& props,
+      props::Properties<Tags...>& props,
       std::unique_ptr<ui::Screen> screen);
 
     AnyEngine() = delete;
@@ -71,12 +72,6 @@ namespace otto::core::engines {
 
     /// The name of this module.
     const std::string& name() const noexcept;
-
-    /// The module properties.
-    Properties& props() noexcept;
-
-    /// The module properties.
-    const Properties& props() const noexcept;
 
     ui::Screen& screen() noexcept;
 
@@ -127,7 +122,6 @@ namespace otto::core::engines {
 
   private:
     const std::string _name;
-    Properties& _props;
     std::unique_ptr<ui::Screen> _screen;
     int _current_preset = -1;
   };
