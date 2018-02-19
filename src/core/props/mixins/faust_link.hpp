@@ -20,37 +20,31 @@ namespace otto::core::props {
   using FaustLink = audio::FaustLink;
 
   template<>
-  struct mixin::leaf_interface<faust_link> {
-    const std::function<void()> refresh_links;
-    const std::function<void(FaustLink)> register_link;
-    const std::string& name;
+  struct mixin::interface<faust_link> {
+    virtual void refresh_links() = 0;
+    virtual void register_link(FaustLink) = 0;
   };
 
   template<>
-  struct mixin::branch_interface<faust_link> : BaseBranchInterface<faust_link> {
+  struct mixin::branch<faust_link> : virtual properties_base,
+                                     mixin::interface<faust_link> {
     void refresh_links()
     {
-      for (auto&& itf : children()) {
-        if (itf.is_branch()) {
-          itf.get_branch().refresh_links();
-        } else {
-          itf.get_leaf().refresh_links();
-        }
+      for (property_base& itf : children()) {
+        if (itf.is<faust_link>()) itf.as<faust_link>().refresh_links();
       }
     }
 
     template<typename Container>
     void register_link(const Container& name_parts, FaustLink link) {
       auto first = std::begin(name_parts), last = std::end(name_parts);
-      auto found = util::find_if(children(), [& name = *first](
-                                               auto&& child) {
-        return (child.is_leaf() ? child.get_leaf().name
-                                : child.get_branch().name()) == name;
-      });
+      auto found = util::find_if(
+        children(),
+        [& name = *first](const auto&& child) { return child.name() == name; });
       if (found != children().end()) {
-        if (found->is_leaf()) {
+        if (found->is_branch()) {
           if (std::next(first)  == last) {
-            found->get_leaf().register_link(link);
+            found->template as<faust_link>().register_link(link);
           } else {
             LOGE("Expected a branch property, got a leaf");
           }

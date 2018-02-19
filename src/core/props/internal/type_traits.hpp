@@ -1,4 +1,4 @@
-#::pragma once
+#pragma once
 
 #include <string>
 
@@ -24,13 +24,13 @@ namespace otto::core::props {
     };
 
     template<typename Tag, typename ValueType, typename TagList>
-    struct leaf_implementation;
+    struct leaf;
 
     template<typename Tag>
-    struct leaf_interface;
+    struct interface;
 
     template<typename Tag>
-    struct branch_interface : BaseBranchInterface<Tag> {};
+    struct branch : properties_base {};
 
     template<typename Tag>
     struct hooks {};
@@ -332,82 +332,4 @@ namespace otto::core::props {
     }
   } // namespace detail
 
-  /// A pointer to either a branch or a leaf interface for mixin `Tag`
-  ///
-  /// Provides functions for checking type and accessing the value.
-  template<typename Tag>
-  struct BranchOrLeafPtr; // Forward declaration
-
-  /// The base class of the type-erased interface for a branch of `Tag`
-  ///
-  /// Has a vector of pointers to child interfaces and pointers to other
-  /// common branch data, such as the name. These can all be accessed through
-  /// accessor functions.
-  template<typename Tag>
-  struct BaseBranchInterface {
-    // Cannot be checked since this is instantiated in the declaration of the tag
-    // CONCEPT_ASSERT(cpts::models<MixinTag, Tag>() &&
-    //                MixinTag::has_leaf_interface<Tag>);
-
-    using storage_type = std::vector<BranchOrLeafPtr<Tag>>;
-
-    BaseBranchInterface(const std::string& name) : name_ (name) {}
-
-    storage_type& children() {
-      return storage_;
-    }
-
-    void push_back(BranchOrLeafPtr<Tag> ptr) {
-      storage_.push_back(ptr);
-    }
-
-    const std::string& name() {
-      return name_;
-    };
-
-  private:
-    storage_type storage_;
-    const std::string& name_;
-  };
-
-  /// A pointer to either a branch or a leaf interface for mixin `Tag`
-  ///
-  /// Provides functions for checking type and accessing the value.
-  template<typename Tag>
-  struct BranchOrLeafPtr {
-    // CONCEPT_ASSERT(cpts::models<MixinTag, Tag>() &&
-    //                MixinTag::has_leaf_interface<Tag>);
-
-    using branch = MixinTag::branch_interface<Tag>;
-    using leaf = MixinTag::leaf_interface<Tag>;
-
-    BranchOrLeafPtr(branch& b) : storage_(&b) {}
-    BranchOrLeafPtr(leaf& l) : storage_(&l) {}
-
-    BranchOrLeafPtr(branch* b) : storage_(b) {}
-    BranchOrLeafPtr(leaf* l) : storage_(l) {}
-
-    bool is_branch() const noexcept
-    {
-      return mpark::holds_alternative<0>(storage_);
-    }
-
-    bool is_leaf() const noexcept
-    {
-      return mpark::holds_alternative<1>(storage_);
-    }
-
-    branch& get_branch() const
-    {
-      return *mpark::get<0>(storage_);
-    }
-
-    leaf& get_leaf() const
-    {
-      return *mpark::get<1>(storage_);
-    }
-
-  private:
-    mpark::variant<branch*, leaf*> storage_;
-  };
 }

@@ -14,9 +14,9 @@
 #define OTTO_PROPS_MIXIN_DECLS(TAG_NAME)                                       \
   using value_type = ValueType;                                                \
   using tag_list   = TagList;                                                  \
-  using self_type  = leaf_implementation<TAG_NAME, value_type, tag_list>;      \
+  using self_type  = leaf<TAG_NAME, value_type, tag_list>;      \
   using interface_type =                                                       \
-    ::otto::core::props::MixinTag::leaf_interface<TAG_NAME>;                   \
+    ::otto::core::props::MixinTag::interface<TAG_NAME>;                   \
   using property_type =                                                        \
     ::otto::core::props::inherits_from_mixins_t<value_type, tag_list>;         \
                                                                                \
@@ -73,20 +73,17 @@
     using type = ::otto::core::props::tag_list<__VA_ARGS__>;                   \
   }
 
-#define OTTO_PROPS_MIXIN_LEAF_INTERFACE(TAG_NAME, ...)                         \
+#define OTTO_PROPS_MIXIN_INTERFACE(TAG_NAME, ...)                         \
   template<>                                                                   \
-  struct otto::core::props::mixin::leaf_interface<TAG_NAME>          \
+  struct otto::core::props::mixin::interface<TAG_NAME>          \
     __VA_ARGS__
 
-#define OTTO_PROPS_MIXIN_BRANCH_INTERFACE(TAG_NAME, ...)                       \
+#define OTTO_PROPS_MIXIN_BRANCH(TAG_NAME, ...)                                 \
   template<>                                                                   \
-  struct otto::core::props::mixin::branch_interface<TAG_NAME>        \
-    __VA_ARGS__
-
-#define OTTO_PROPS_MIXIN_EXTEND_BRANCH_INTERFACE(TAG_NAME, ...)                \
-  template<>                                                                   \
-  struct otto::core::props::mixin::branch_interface<TAG_NAME>        \
-    : otto::core::props::BaseBranchInterface<TAG_NAME> __VA_ARGS__
+  struct otto::core::props::mixin::branch<TAG_NAME>                            \
+    : virtual otto::core::props::properties_base,                              \
+      otto::core::props::mixin::interface<TAG_NAME>                            \
+        __VA_ARGS__
 
 #define _OTTO_PROPS_MIXIN_HOOK_1(NAME)                                         \
   using NAME = ::otto::core::props::mixin::hook<void>;
@@ -127,19 +124,20 @@
     }                                                                          \
   }
 
-#define OTTO_PROPS_MIXIN_IMPL(TAG_NAME)                                        \
+#define OTTO_PROPS_MIXIN_LEAF(TAG_NAME)                                        \
   template<typename ValueType, typename TagList>                               \
-  struct otto::core::props::mixin::leaf_implementation<              \
-    TAG_NAME, ValueType, TagList>
+  struct otto::core::props::mixin::leaf<TAG_NAME, ValueType, TagList>
 
 #define OTTO_PROPS_MIXIN__NAME_REQUIRES(...) REQUIRES
 #define OTTO_PROPS_MIXIN__ARGS_REQUIRES(...) __VA_ARGS__
 #define OTTO_PROPS_MIXIN__NAME_HOOKS(...) HOOKS
 #define OTTO_PROPS_MIXIN__ARGS_HOOKS(...) __VA_ARGS__
-#define OTTO_PROPS_MIXIN__NAME_LEAF_INTERFACE(...) LEAF_INTERFACE
-#define OTTO_PROPS_MIXIN__ARGS_LEAF_INTERFACE(...) __VA_ARGS__
-#define OTTO_PROPS_MIXIN__NAME_BRANCH_INTERFACE(...) BRANCH_INTERFACE
-#define OTTO_PROPS_MIXIN__ARGS_BRANCH_INTERFACE(...) __VA_ARGS__
+#define OTTO_PROPS_MIXIN__NAME_INTERFACE(...) INTERFACE
+#define OTTO_PROPS_MIXIN__ARGS_INTERFACE(...) __VA_ARGS__
+#define OTTO_PROPS_MIXIN__NAME_LEAF(...) LEAF
+#define OTTO_PROPS_MIXIN__ARGS_LEAF(...) __VA_ARGS__
+#define OTTO_PROPS_MIXIN__NAME_BRANCH(...) BRANCH
+#define OTTO_PROPS_MIXIN__ARGS_BRANCH(...) __VA_ARGS__
 #define OTTO_PROPS_MIXIN__NAME_TAG(...) TAG
 #define OTTO_PROPS_MIXIN__ARGS_TAG(...) __VA_ARGS__
 
@@ -157,12 +155,12 @@
 #define OTTO_PROPS_MIXIN_2(TAG_NAME, ...)                                      \
   OTTO_PROPS_MIXIN_TAG(TAG_NAME);                                              \
   OTTO_PROPS_MIXIN_SCOPE(TAG_NAME, __VA_ARGS__)                               \
-  OTTO_PROPS_MIXIN_IMPL(TAG_NAME)
+  OTTO_PROPS_MIXIN_LEAF(TAG_NAME)
 
 /// \exclude
 #define OTTO_PROPS_MIXIN_1(TAG_NAME)                                           \
   OTTO_PROPS_MIXIN_TAG(TAG_NAME);                                       \
-  OTTO_PROPS_MIXIN_IMPL(TAG_NAME)
+  OTTO_PROPS_MIXIN_LEAF(TAG_NAME)
 
 /// Start a mixin declaration.
 ///
