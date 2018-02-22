@@ -12,6 +12,7 @@ namespace otto::engines {
 
   using namespace core;
   using namespace core::engines;
+  using namespace props;
 
   struct Mixer final : Engine<EngineType::studio> {
     Mixer();
@@ -19,10 +20,10 @@ namespace otto::engines {
     audio::ProcessData<2> process_tracks(audio::ProcessData<4>);
     audio::ProcessData<2> process_engine(audio::ProcessData<1>);
 
-    struct Props : public Properties {
-      struct TrackInfo : public Properties {
-        Property<float> level = {this, "LEVEL", 0.5, {0, 1, 0.01}};
-        Property<float> pan   = {this, "PAN", 0, {-1, 1, 0.1}};
+    struct Props : public Properties<> {
+      struct TrackInfo : public Properties<> {
+        Property<float> level = {this, "LEVEL", 0.5, has_limits::init(0.f, 1.f), steppable::init(0.01f)};
+        Property<float> pan   = {this, "PAN", 0, has_limits::init(-1, 1), steppable::init(0.1)};
         Property<bool> muted  = {this, "MUTE", false};
         using Properties::Properties;
       };

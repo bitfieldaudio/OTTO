@@ -10,61 +10,46 @@
 #include "util/exception.hpp"
 #include "util/utility.hpp"
 
-#include "has_name.hpp"
-#include "has_value.hpp"
-
 namespace otto::core::props {
 
-  OTTO_PROPS_MIXIN(serializable, REQUIRES(has_value, has_name));
+  OTTO_PROPS_MIXIN(serializable);
 
   template<>
-  struct mixin::leaf_interface<serializable> {
-    const std::string& name;
-    std::function<void(const nlohmann::json&)> from_json;
-    std::function<nlohmann::json()> to_json;
-    const bool& do_serialize;
+  struct mixin::interface<serializable> {
+    virtual void from_json(const nlohmann::json&) = 0;
+    virtual nlohmann::json to_json() const             = 0;
+    bool do_serialize;
   };
 
-  template<>
-  struct mixin::branch_interface<serializable>
-    : BaseBranchInterface<serializable> {
-    void from_json(const nlohmann::json& o)
+  OTTO_PROPS_MIXIN_BRANCH (serializable) {
+    void from_json(const nlohmann::json& o) override
     {
       CHECK_F(o.is_object(), "Expected json object");
       for (auto it = o.begin(); it != o.end(); ++it) {
-        auto found = util::find(children(), [key = it.key()](auto itf) {
-          if (itf.is_leaf()) return itf.get_leaf().name == key;
-          if (itf.is_branch()) return itf.get_branch().name() == key;
+        auto found = util::find_if(children(), [key = it.key()](property_base& prop) {
+            return prop.name() == key;
         });
         if (found != children().end()) {
-          if (found->is_leaf()) {
-            if (found->get_leaf().do_serialize)
-              found->get_leaf().from_json(it.value());
-          }
-          if (found->is_branch()) found->get_branch().from_json(it.value());
+          auto& item = static_cast<property_base&>(*found).as<serializable>();
+          if (item.do_serialize) item.from_json(it.value());
         } else {
           throw util::exception("No property found matching {}", it.key());
         }
       }
     }
 
-    nlohmann::json to_json()
+    nlohmann::json to_json() const override
     {
       auto js = nlohmann::json::object();
-      for (auto& itf : children()) {
-        if (itf.is_branch()) {
-          js[itf.get_branch().name()] = itf.get_branch().to_json();
-        } else {
-          auto& leaf = itf.get_leaf();
-          if (leaf.do_serialize) js[leaf.name] = leaf.to_json();
-        }
+      for (property_base& itf : children()) {
+        if (itf.as<serializable>().do_serialize)
+          js[itf.name()] = itf.as<serializable>().to_json();
       }
       return js;
     }
   };
 
-  OTTO_PROPS_MIXIN_IMPL(serializable)
-  {
+  OTTO_PROPS_MIXIN_LEAF (serializable) {
     OTTO_PROPS_MIXIN_DECLS(serializable);
 
     void init(bool do_serialize)
@@ -72,28 +57,15 @@ namespace otto::core::props {
       this->do_serialize = do_serialize;
     }
 
-    nlohmann::json to_json() const
+    nlohmann::json to_json() const override
     {
-      return as<has_value>().get();
+      return dynamic_cast<property_type const&>(*this).get();
     }
 
-    void from_json(const nlohmann::json& js)
+    void from_json(const nlohmann::json& js) override
     {
-      as<has_value>().set(js);
+      dynamic_cast<property_type&>(*this).set(js);
     }
-
-    interface_type& interface()
-    {
-      return interface_;
-    }
-
-    bool do_serialize;
-
-  private:
-    interface_type interface_ = {
-      as<has_name>().name(),
-      [this](const nlohmann::json& js) { from_json(js); },
-      [this]() -> nlohmann::json { return to_json(); }, do_serialize};
   };
 
-} // namespace otto::core::props::mixins
+} // namespace otto::core::props

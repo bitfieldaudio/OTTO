@@ -7,10 +7,10 @@ namespace otto::core::engines {
   // AnyEngine ////////////////////////////////////////////////////////////////
 
   AnyEngine::AnyEngine(std::string name,
-                       Properties& props,
+                       props::branch_base& props,
                        std::unique_ptr<ui::Screen> screen)
-    : _name(std::move(name)), //
-      _props(props),
+    : _props(props), //
+      _name(std::move(name)),
       _screen(std::move(screen))
   {}
 
@@ -20,12 +20,12 @@ namespace otto::core::engines {
     return _name;
   }
 
-  Properties& AnyEngine::props() noexcept
+  props::branch_base& AnyEngine::props() noexcept
   {
     return _props;
   }
 
-  const Properties& AnyEngine::props() const noexcept
+  props::branch_base const& AnyEngine::props() const noexcept
   {
     return _props;
   }
@@ -35,7 +35,7 @@ namespace otto::core::engines {
     return *_screen;
   }
 
-  const ui::Screen& AnyEngine::screen() const noexcept
+  ui::Screen const& AnyEngine::screen() const noexcept
   {
     return *_screen;
   }
@@ -53,11 +53,13 @@ namespace otto::core::engines {
   nlohmann::json AnyEngine::to_json() const
   {
     nlohmann::json j;
-    j["props"] = _props.to_json();
-    try {
-      j["preset"] = service::presets::name_of_idx(_name, _current_preset);
-    } catch (service::presets::exception& e) {
-      // no preset set, all is good
+    if (_props.is<props::serializable>()) {
+      j["props"] = _props.as<props::serializable>().to_json();
+      try {
+        j["preset"] = service::presets::name_of_idx(_name, _current_preset);
+      } catch (service::presets::exception& e) {
+        // no preset set, all is good
+      }
     }
     return j;
   }
@@ -69,7 +71,8 @@ namespace otto::core::engines {
       if (iter != j.end()) {
         service::presets::apply_preset(*this, iter->get<std::string>(), true);
       }
-      _props.from_json(j["props"]);
+      if (_props.is<props::serializable>())
+        _props.as<props::serializable>().from_json(j["props"]);
     }
   }
 

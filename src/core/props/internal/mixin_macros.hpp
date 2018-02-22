@@ -12,13 +12,12 @@
 
 /// Declarations to place at the beginning of mixin decls.
 #define OTTO_PROPS_MIXIN_DECLS(TAG_NAME)                                       \
-  using value_type = ValueType;                                                \
-  using tag_list   = TagList;                                                  \
-  using self_type  = leaf<TAG_NAME, value_type, tag_list>;      \
-  using interface_type =                                                       \
-    ::otto::core::props::MixinTag::interface<TAG_NAME>;                   \
+  using value_type     = ValueType;                                            \
+  using tag_list       = TagList;                                              \
+  using self_type      = leaf<TAG_NAME, value_type, tag_list>;                 \
+  using interface_type = ::otto::core::props::MixinTag::interface<TAG_NAME>;   \
   using property_type =                                                        \
-    ::otto::core::props::inherits_from_mixins_t<value_type, tag_list>;         \
+    ::otto::core::props::PropertyImpl<value_type, tag_list>;         \
                                                                                \
   template<typename Tag>                                                       \
   constexpr static bool is =                                                   \
@@ -28,22 +27,23 @@
   constexpr auto as()                                                          \
     ->::std::enable_if_t<                                                      \
       self_type::is<Tag>,                                                      \
-      ::otto::core::props::MixinTag::mixin_t<Tag, value_type, tag_list>&>      \
+      ::otto::core::props::MixinTag::leaf<Tag, value_type, tag_list>&>         \
   {                                                                            \
     auto* as_prop = static_cast<property_type*>(this);                         \
     return static_cast<                                                        \
-      ::otto::core::props::MixinTag::mixin_t<Tag, value_type, tag_list>&>(     \
+      ::otto::core::props::MixinTag::leaf<Tag, value_type, tag_list>&>(        \
       *as_prop);                                                               \
   }                                                                            \
                                                                                \
   template<typename Tag>                                                       \
   constexpr auto as() const->::std::enable_if_t<                               \
     self_type::is<Tag>,                                                        \
-    const ::otto::core::props::MixinTag::mixin_t<Tag, value_type, tag_list>&>  \
+    const ::otto::core::props::MixinTag::leaf<Tag, value_type, tag_list>&>     \
   {                                                                            \
     const auto& as_prop = static_cast<const property_type&>(*this);            \
-    return static_cast<const ::otto::core::props::MixinTag::mixin_t<           \
-      Tag, value_type, tag_list>&>(as_prop);                                   \
+    return static_cast<                                                        \
+      const ::otto::core::props::MixinTag::leaf<Tag, value_type, tag_list>&>(  \
+      as_prop);                                                                \
   }                                                                            \
                                                                                \
   template<typename HT, ::otto::core::props::HookOrder HO =                    \
@@ -69,27 +69,25 @@
 
 #define OTTO_PROPS_MIXIN_REQUIRES(TAG_NAME, ...)                               \
   template<>                                                                   \
-    struct otto::core::props::mixin::required_tags<TAG_NAME> { \
+  struct otto::core::props::mixin::required_tags<TAG_NAME> {                   \
     using type = ::otto::core::props::tag_list<__VA_ARGS__>;                   \
   }
 
-#define OTTO_PROPS_MIXIN_INTERFACE(TAG_NAME, ...)                         \
+#define OTTO_PROPS_MIXIN_INTERFACE(TAG_NAME)                                   \
   template<>                                                                   \
-  struct otto::core::props::mixin::interface<TAG_NAME>          \
-    __VA_ARGS__
+  struct otto::core::props::mixin::interface<TAG_NAME>
 
-#define OTTO_PROPS_MIXIN_BRANCH(TAG_NAME, ...)                                 \
+#define OTTO_PROPS_MIXIN_BRANCH(TAG_NAME)                                      \
   template<>                                                                   \
   struct otto::core::props::mixin::branch<TAG_NAME>                            \
-    : virtual otto::core::props::properties_base,                              \
-      otto::core::props::mixin::interface<TAG_NAME>                            \
-        __VA_ARGS__
+    : virtual otto::core::props::branch_base,                                  \
+      otto::core::props::mixin::interface<TAG_NAME>
 
 #define _OTTO_PROPS_MIXIN_HOOK_1(NAME)                                         \
-  using NAME = ::otto::core::props::mixin::hook<void>;
+  struct NAME : ::otto::core::props::mixin::hook<void> {};
 
 #define _OTTO_PROPS_MIXIN_HOOK_2(NAME, ARG_TYPE)                               \
-  using NAME = ::otto::core::props::mixin::hook<ARG_TYPE>;
+  struct NAME : ::otto::core::props::mixin::hook<ARG_TYPE> {};
 
 #define _OTTO_PROPS_MIXIN_HOOK(...)                                            \
   /* Call _OTTO_PROPS_MIXIN_HOOK_1 if 2 arguments was provided, and */         \
@@ -107,14 +105,14 @@
 /// Arguments should be groups of parentheses of the form (HOOK_NAME, HOOK_TYPE)
 #define OTTO_PROPS_MIXIN_HOOKS(TAG_NAME, ...)                                  \
   template<>                                                                   \
-  struct otto::core::props::mixin::hooks<TAG_NAME> {                 \
+  struct otto::core::props::mixin::hooks<TAG_NAME> {                           \
     FOR_EACH(_OTTO_PROPS_MIXIN_HOOK_CALL, __VA_ARGS__)                         \
   }
 
 #define OTTO_PROPS_MIXIN_TAG(TAG_NAME)                                         \
   struct TAG_NAME {                                                            \
     using tag_type = TAG_NAME;                                                 \
-    using hooks    = ::otto::core::props::mixin::hooks<TAG_NAME>;      \
+    using hooks    = ::otto::core::props::mixin::hooks<TAG_NAME>;              \
     constexpr static const char* name = #TAG_NAME;                             \
     template<typename... Args>                                                 \
     static auto init(Args&&... args)                                           \
@@ -126,7 +124,8 @@
 
 #define OTTO_PROPS_MIXIN_LEAF(TAG_NAME)                                        \
   template<typename ValueType, typename TagList>                               \
-  struct otto::core::props::mixin::leaf<TAG_NAME, ValueType, TagList>
+  struct otto::core::props::mixin::leaf<TAG_NAME, ValueType, TagList>          \
+    : otto::core::props::mixin::interface<TAG_NAME>
 
 #define OTTO_PROPS_MIXIN__NAME_REQUIRES(...) REQUIRES
 #define OTTO_PROPS_MIXIN__ARGS_REQUIRES(...) __VA_ARGS__
@@ -141,26 +140,22 @@
 #define OTTO_PROPS_MIXIN__NAME_TAG(...) TAG
 #define OTTO_PROPS_MIXIN__ARGS_TAG(...) __VA_ARGS__
 
-#define OTTO_PROPS_ADD_PREFIX(MACRO)                                          \
-  OTTO_PROPS_MIXIN_ ## MACRO
+#define OTTO_PROPS_ADD_PREFIX(MACRO) OTTO_PROPS_MIXIN_##MACRO
 
 #define OTTO_PROPS_MAKE_CALL(TAG_NAME, MACRO)                                  \
   DEFER(OTTO_PROPS_ADD_PREFIX)                                                 \
   (OTTO_PROPS_MIXIN__NAME_##MACRO(TAG_NAME, OTTO_PROPS_MIXIN__ARGS_##MACRO));
 
-#define OTTO_PROPS_MIXIN_SCOPE(TAG_NAME, ...) \
+#define OTTO_PROPS_MIXIN_SCOPE(TAG_NAME, ...)                                  \
   EXPAND(FOR_EACH_LAST(OTTO_PROPS_MAKE_CALL, (TAG_NAME), __VA_ARGS__))
 
 /// \exclude
 #define OTTO_PROPS_MIXIN_2(TAG_NAME, ...)                                      \
   OTTO_PROPS_MIXIN_TAG(TAG_NAME);                                              \
-  OTTO_PROPS_MIXIN_SCOPE(TAG_NAME, __VA_ARGS__)                               \
-  OTTO_PROPS_MIXIN_LEAF(TAG_NAME)
+  OTTO_PROPS_MIXIN_SCOPE(TAG_NAME, __VA_ARGS__)
 
 /// \exclude
-#define OTTO_PROPS_MIXIN_1(TAG_NAME)                                           \
-  OTTO_PROPS_MIXIN_TAG(TAG_NAME);                                       \
-  OTTO_PROPS_MIXIN_LEAF(TAG_NAME)
+#define OTTO_PROPS_MIXIN_1(TAG_NAME) OTTO_PROPS_MIXIN_TAG(TAG_NAME);
 
 /// Start a mixin declaration.
 ///
@@ -185,12 +180,6 @@
 #define OTTO_PROPS_MIXIN(...)                                                  \
   /* Call OTTO_PROPS_MIXIN_1 if only 1 argument was provided, and */           \
   /* OTTO_PROPS_MIXIN_2 if multiple args were provided */                      \
-  GET_MACRO_15(__VA_ARGS__, OTTO_PROPS_MIXIN_2, OTTO_PROPS_MIXIN_2,            \
-               OTTO_PROPS_MIXIN_2, OTTO_PROPS_MIXIN_2, OTTO_PROPS_MIXIN_2,     \
-               OTTO_PROPS_MIXIN_2, OTTO_PROPS_MIXIN_2, OTTO_PROPS_MIXIN_2,     \
-               OTTO_PROPS_MIXIN_2, OTTO_PROPS_MIXIN_2, OTTO_PROPS_MIXIN_2,     \
-               OTTO_PROPS_MIXIN_2, OTTO_PROPS_MIXIN_2, OTTO_PROPS_MIXIN_2,     \
-               OTTO_PROPS_MIXIN_1, NONE)                                       \
-  (__VA_ARGS__)
+  SWITCH_FOR_VARARGS_1(OTTO_PROPS_MIXIN_1, OTTO_PROPS_MIXIN_2, __VA_ARGS__)
 
 #endif // OTTO_PROPS_MIXIN__MACROS_DEFINED

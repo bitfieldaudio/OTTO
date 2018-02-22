@@ -45,6 +45,27 @@ namespace otto {
                            meta::list<>);
   }
 
+  // meta::filter /////////////////////////////////////////////////////////////
+  namespace test_filter {
+    template<typename Num>
+    struct func;
+    template<int N>
+    struct func<meta::c<N>> {
+      constexpr static const bool value = N < 5;
+    };
+    static_assert(meta::_v<func<meta::c<4>>>);
+
+    OTTO_META_ASSERT_EQUAL(
+      meta::filter_t<meta::c_list<1, 2, 3, 4, 5, 6, 7, 8, 9>, func>,
+      meta::c_list<1, 2, 3, 4>);
+
+    OTTO_META_ASSERT_EQUAL(meta::filter_t<meta::c_list<1, 2, 3, 4>, func>,
+                           meta::c_list<1, 2, 3, 4>);
+
+    OTTO_META_ASSERT_EQUAL(meta::filter_t<meta::c_list<5, 6, 7, 8, 9>, func>,
+                           meta::c_list<>);
+  }
+
   // meta::contains ///////////////////////////////////////////////////////////
   namespace test_contains {
     static_assert(meta::_v<meta::contains<var, int>>);

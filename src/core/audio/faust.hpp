@@ -16,28 +16,19 @@
 
 #include "core/audio/processor.hpp"
 
+#include "core/props/mixins/faust_link.hpp"
+
 namespace otto::core::audio {
 
-  struct FaustLink {
-    float* const faust_var_;
-    enum struct Type { ToFaust, FromFaust } const type;
-  };
+  using props::FaustLink;
 
-  struct FaustClient {
-    using RegisterFunc = std::function<void(
-      const std::vector<std::string>&, FaustLink)>;
-    using RefreshFunc = std::function<void()>;
-
-    RegisterFunc register_link;
-    RefreshFunc refresh_links;
-  };
+  using FaustClient = props::mixin::branch<props::faust_link>;
 
   using FaustDSP = dsp;
 
   struct FaustOptions : UI {
 
-    FaustOptions(const FaustClient& client) : client(client) {}
-    FaustOptions(FaustClient&& client) : client(std::move(client)) {}
+    FaustOptions(FaustClient& client) : client(client) {}
 
     void openTabBox(const char* label) override {
       if (atRoot) {
@@ -124,11 +115,11 @@ namespace otto::core::audio {
       FaustLink::Type type = FaustLink::Type::ToFaust) {
 
       boxes.emplace_back(label);
-      client.register_link(boxes, FaustLink{ptr, type});
+      client.register_link(std::begin(boxes), std::end(boxes), FaustLink{ptr, type});
       boxes.pop_back();
     }
 
-    const FaustClient client;
+    FaustClient& client;
 
   private:
 
@@ -166,8 +157,11 @@ namespace otto::core::audio {
 
     FaustWrapper() {};
 
-    FaustWrapper(std::unique_ptr<dsp>&& d, FaustClient client)
-      : opts (std::move(client)), fDSP (std::move(d))
+    FaustWrapper(std::unique_ptr<dsp>&& d, props::branch_base& branch)
+      : FaustWrapper(std::move(d), dynamic_cast<FaustClient&>(branch)) {}
+
+    FaustWrapper(std::unique_ptr<dsp>&& d, FaustClient& client)
+      : opts (client), fDSP (std::move(d))
     {
       if (fDSP->getNumInputs() != Cin || fDSP->getNumOutputs() != Cout) {
         throw std::runtime_error("A faustwrapper was instantiated with a "

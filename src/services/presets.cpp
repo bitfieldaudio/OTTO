@@ -71,7 +71,7 @@ namespace otto::service::presets {
     }
     DLOGI("Applying preset {} to engine {}", name, engine.name());
     int idx = niter - pd.names.begin();
-    engine.props().from_json(pd.data[idx]);
+    engine.props().as<core::props::serializable>().from_json(pd.data[idx]);
     engine.current_preset(idx);
     if (!no_enable_callback) engine.on_enable();
   }
@@ -85,7 +85,7 @@ namespace otto::service::presets {
                       engine.name());
     }
     DLOGI("Applying preset {} to engine {}", pd.names[idx], engine.name());
-    engine.props().from_json(pd.data[idx]);
+    engine.props().as<core::props::serializable>().from_json(pd.data[idx]);
     engine.current_preset(idx);
     if (!no_enable_callback) engine.on_enable();
   }
@@ -156,7 +156,7 @@ namespace otto::service::presets {
       auto engine = engines::by_name(ui::selected_engine_name());
       if (engine != nullptr) {
         engine_name = engine->name();
-        preset_data = engine->props().to_json();
+        preset_data = engine->props().as<core::props::serializable>().to_json();
         ImGui::OpenPopup("New preset");
       }
     }

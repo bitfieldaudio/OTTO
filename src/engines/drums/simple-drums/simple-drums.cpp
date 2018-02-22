@@ -200,7 +200,7 @@ namespace otto::engines {
     ctx.lineWidth(2.000000);
     ctx.save();
     ctx.translate(47.5, 47.5);
-    ctx.rotate(-0.75 * M_PI + 1.5 * M_PI * osc.freq.mode.normalize());
+    ctx.rotate(-0.75 * M_PI + 1.5 * M_PI * osc.freq.normalize());
     ctx.moveTo(0, 0);
     ctx.lineTo(0, -10.5);
     ctx.restore();
@@ -322,7 +322,7 @@ namespace otto::engines {
     ctx.lineWidth(2.000000);
     ctx.save();
     ctx.translate(197.5, 47.5);
-    ctx.rotate(-0.75 * M_PI + 1.5 * M_PI * osc.noiseLvl.mode.normalize());
+    ctx.rotate(-0.75 * M_PI + 1.5 * M_PI * osc.noiseLvl.normalize());
     ctx.moveTo(0, 0);
     ctx.lineTo(0, -10.5);
     ctx.restore();
@@ -426,7 +426,7 @@ namespace otto::engines {
     ctx.beginPath();
     ctx.fillStyle(osc.filterSwitch ? Colours::Red : Colours::Gray60);
     ctx.translate(272.5, 47.5);
-    ctx.rotate(-0.75 * M_PI + 1.5 * M_PI * osc.cutoff.mode.normalize());
+    ctx.rotate(-0.75 * M_PI + 1.5 * M_PI * osc.cutoff.normalize());
     ctx.circle(0, -22.5, 3);
     ctx.fill();
     ctx.restore();

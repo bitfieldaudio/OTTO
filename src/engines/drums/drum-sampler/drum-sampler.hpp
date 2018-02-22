@@ -6,10 +6,13 @@
 #include "core/audio/processor.hpp"
 #include "core/engines/engine.hpp"
 
+#include "core/props/props.hpp"
+
 namespace otto::engines {
 
   using namespace core;
   using namespace core::engines;
+  using namespace props;
 
   /**
    * A sampler with 24 individual voices, laid out over the keys.
@@ -34,23 +37,42 @@ namespace otto::engines {
 
     static constexpr int nVoices = 24;
 
-    struct Props : public Properties {
-      Property<std::string> sampleName = {this, "sample name", ""};
+    struct Props : props::Properties<> {
+      props::Property<std::string> sampleName = {this, "sample name", ""};
 
-      struct VoiceData : public Properties {
+      struct VoiceData : props::Properties<> {
         enum Mode {
           Fwd = 0,  FwdStop = 1,  FwdLoop = 2,
           Bwd = -1, BwdStop = -2, BwdLoop = -3
         };
-        Property<int>          in   = {this, "in",    0, { 0, -1, 100}};
-        Property<int>         out   = {this, "out",   0, { 0, -1, 100}};
-        Property<float, pow2> pitch = {this, "pitch", 0, { -2,  4, 1/12.f}};
-        Property<int, wrap>  mode   = {this, "mode",  0, {-3,  3, 1}};
+        props::Property<int> in = {this, "in", 0, //
+                                   has_limits::init(0, -1),
+                                   steppable::init(100)};
+        props::Property<int> out = {this, "out", 0, //
+                                    has_limits::init(0, -1),
+                                    steppable::init(100)};
+        props::Property<float, props::pow2> pitch = {this, "pitch", 0, //
+                                                     has_limits::init(-2, 4),
+                                                     steppable::init(1 / 12.f)};
+        props::Property<int, props::wrap> mode  = {this, "mode", 0,
+                                                   has_limits::init(-3, 3)};
 
-        bool fwd() const {return mode >= 0;}
-        bool bwd() const {return !fwd();}
-        bool stop() const {return mode == FwdStop || mode == BwdStop;}
-        bool loop() const {return mode == FwdLoop || mode == BwdLoop;}
+        bool fwd() const
+        {
+          return mode >= 0;
+        }
+        bool bwd() const
+        {
+          return !fwd();
+        }
+        bool stop() const
+        {
+          return mode == FwdStop || mode == BwdStop;
+        }
+        bool loop() const
+        {
+          return mode == FwdLoop || mode == BwdLoop;
+        }
 
         float playProgress = -1;
         bool trigger;

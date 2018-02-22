@@ -107,7 +107,7 @@ namespace otto::engines {
 
   void NukeSynthScreen::draw_power(Canvas& ctx)
   {
-    float rotation = engine.props.relation.mode.normalize() * M_PI;
+    float rotation = engine.props.relation.normalize() * M_PI;
     // NUKE/powerdial
 
     // NUKE/powerdial/dial
@@ -289,7 +289,7 @@ namespace otto::engines {
 
   void NukeSynthScreen::draw_aux(Canvas& ctx)
   {
-    float rotation = engine.props.aux.mode.normalize() * 1.25 * M_PI;
+    float rotation = engine.props.aux.normalize() * 1.25 * M_PI;
     // NUKE/aux
 
     // NUKE/aux/dial
@@ -325,7 +325,7 @@ namespace otto::engines {
 
   void NukeSynthScreen::draw_Q(Canvas& ctx)
   {
-    float rotation = engine.props.filter.mode.normalize() * M_PI;
+    float rotation = engine.props.filter.normalize() * M_PI;
     // NUKE/Q
 
     // NUKE/Q/dial

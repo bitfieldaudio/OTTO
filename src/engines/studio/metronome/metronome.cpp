@@ -126,7 +126,7 @@ namespace otto::engines {
     {
       // Tone meter
       ctx.save();
-      float y = 180 - engine.props.tone.mode.normalize() * 140;
+      float y = 180 - engine.props.tone.normalize() * 140;
       float x = 40;
       ctx.strokeStyle(Colours::Green.dimmed);
       ctx.lineCap(Canvas::LineCap::ROUND);
@@ -165,7 +165,7 @@ namespace otto::engines {
       ctx.stroke();
       ctx.fillStyle(Colours::Red);
       ctx.beginPath();
-      ctx.circle(x, 180 - engine.props.gain.mode.normalize() * 140, 3);
+      ctx.circle(x, 180 - engine.props.gain.normalize() * 140, 3);
       ctx.fill();
       ctx.restore();
     }
@@ -231,7 +231,7 @@ namespace otto::engines {
       float factor((std::fmod(beat, 2)));
       factor = factor < 1 ? (factor * 2 - 1) : ((1 - factor) * 2 + 1);
       factor = std::sin(factor * M_PI/2);
-      factor *= 0.2 + 0.8 * (1 - engine.props.bpm.mode.normalize());
+      factor *= 0.2 + 0.8 * (1 - engine.props.bpm.normalize());
       // float a(1);
       // factor(factor > 0 ? smoothMotion(factor, a) : -smoothMotion(-factor, a));
       float rotation(factor * M_PI/3);
@@ -244,7 +244,7 @@ namespace otto::engines {
       ctx.lineWidth(2);
 
       // PENDULUM
-      float y(75 * engine.props.bpm.mode.normalize());
+      float y(75 * engine.props.bpm.normalize());
       ctx.beginPath();
       ctx.moveTo(38, 15 + y);
       ctx.lineTo(62, 15 + y);

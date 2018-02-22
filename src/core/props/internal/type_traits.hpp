@@ -23,14 +23,19 @@ namespace otto::core::props {
       using type = tag_list<>;
     };
 
+    template<typename Tag>
+    using required_tags_t = meta::_t<required_tags<Tag>>;
+
     template<typename Tag, typename ValueType, typename TagList>
     struct leaf;
 
     template<typename Tag>
-    struct interface;
+    struct interface {
+      virtual ~interface() noexcept = default;
+    };
 
     template<typename Tag>
-    struct branch : properties_base {};
+    struct branch : virtual branch_base {};
 
     template<typename Tag>
     struct hooks {};
@@ -45,17 +50,25 @@ namespace otto::core::props {
         using value_type = Val;
         using arg_type   = Argument;
 
-        type(const arg_type& a) : _arg(a) {}
-        type(arg_type&& a) : _arg(std::move(a)) {}
+        explicit type(const arg_type& a) : _arg(a) {}
+        explicit type(arg_type&& a) : _arg(std::move(a)) {}
 
         template<HookOrder HO1>
-        type(type<Val, HO1>&& rhs) : _arg(std::move(rhs.value()))
+        explicit type(type<Val, HO1>&& rhs) : _arg(std::move(rhs.value()))
         {}
         operator arg_type&()
         {
           return _arg;
         }
+        operator arg_type const&() const
+        {
+          return _arg;
+        }
         arg_type& value()
+        {
+          return _arg;
+        }
+        arg_type const& value() const
         {
           return _arg;
         }
@@ -159,7 +172,6 @@ namespace otto::core::props {
              typename HT,
              HookOrder HO = HookOrder::Middle,
              CONCEPT_REQUIRES_(
-               cpts::models<MixinImpl, Mixin>() &&
                cpts::models<HookTag, HT, typename Mixin::value_type>())>
     using hook_t = HookTag::impl_t<HT, typename Mixin::value_type, HO>;
 
@@ -202,23 +214,23 @@ namespace otto::core::props {
 
     /// Get mixin type for type `T` and tag `Tag`
     template<typename Tag, typename T, typename TagList>
-    using mixin_t = mixin::leaf_implementation<Tag, T, TagList>;
+    using leaf = mixin::leaf<Tag, T, TagList>;
 
     // Type-erased Interface //
 
   private:
     template<typename Tag, typename = void>
-    struct leaf_interface_impl {
+    struct interface_impl {
       using type = void;
     };
 
     template<typename Tag>
-    struct leaf_interface_impl<Tag, std::void_t<mixin::leaf_interface<Tag>>> {
-      using type = mixin::leaf_interface<Tag>;
+    struct interface_impl<Tag, std::void_t<mixin::interface<Tag>>> {
+      using type = mixin::interface<Tag>;
     };
 
   public:
-    /// Get the type-erased leaf interface type for `Tag`
+    /// Get the type-erased interface type for `Tag`
     ///
     /// The interface type is a non-templated type which provides functionality
     /// that can be used in a type-erased context. For example, the
@@ -229,7 +241,7 @@ namespace otto::core::props {
     /// `interface_type& interface()` member function, which returns an instance
     /// of this type.
     template<typename Tag>
-    using leaf_interface = typename mixin::leaf_interface<Tag>;
+    using interface = typename mixin::interface<Tag>;
 
     /// Check if `Tag` has a type-erased interface
     ///
@@ -244,15 +256,11 @@ namespace otto::core::props {
     ///
     /// If no interface type is provided, this is void.
     template<typename Tag>
-    constexpr static bool has_leaf_interface = !std::is_void_v<leaf_interface<Tag>>;
+    constexpr static bool has_interface = !std::is_void_v<interface<Tag>>;
 
-    /// The type-erased interface for a branch of `Tag`
-    ///
-    /// By default, this has a vector of pointers to child interfaces and
-    /// pointers to other common branch data, such as the name. These can all be
-    /// accessed through accessor functions.
+    /// A branch of `Tag`
     template<typename Tag>
-    using branch_interface = typename mixin::branch_interface<Tag>;
+    using branch = typename mixin::branch<Tag>;
   };
 
   namespace detail {
@@ -262,8 +270,7 @@ namespace otto::core::props {
              HookOrder HO,
              typename Mixin,
              CONCEPT_REQUIRES_(
-               cpts::models<HookTag, HT, typename Mixin::value_type>() &&
-               cpts::models<MixinImpl, Mixin>())>
+               cpts::models<HookTag, HT, typename Mixin::value_type>())>
     void run_hook_if_handler(Mixin& m, MixinImpl::hook_t<Mixin, HT, HO>& h)
     {
       if constexpr (MixinImpl::has_handler_v<Mixin, HT, HO>) {
@@ -275,11 +282,13 @@ namespace otto::core::props {
              typename Mixin,
              HookOrder HO,
              CONCEPT_REQUIRES_(
-               cpts::models<HookTag, H, typename Mixin::value_type>() &&
-               cpts::models<MixinImpl, Mixin>())>
+               cpts::models<HookTag, H, typename Mixin::value_type>())>
     auto run_all_hooks_impl(Mixin& m, MixinImpl::hook_t<Mixin, H, HO>&& hook) {
-      meta::for_each<typename Mixin::tag_list>([&hook, &m](auto mtype) {
-          run_hook_if_handler<H, HO>(m.template as<meta::_t<decltype(mtype)>>(), hook);
+      meta::for_each<typename Mixin::tag_list>(
+        [&hook, &m](auto&& mtype) {
+          run_hook_if_handler<H, HO>(
+            m.template as<decltype(mtype._t())>(),
+            hook);
       });
       return hook;
     }
@@ -289,8 +298,7 @@ namespace otto::core::props {
                typename Mixin,
                CONCEPT_REQUIRES_(
                  cpts::models<HookTag, H, typename Mixin::value_type>() &&
-                 !cpts::models<HookWithValue, MixinImpl::hook_t<Mixin, H>>() &&
-                 cpts::models<MixinImpl, Mixin>())>
+                 !cpts::models<HookWithValue, MixinImpl::hook_t<Mixin, H>>())>
       void run_hook(Mixin& m)
     {
       MixinImpl::hook_t<Mixin, H, HookOrder::Before> hook {};
@@ -311,8 +319,7 @@ namespace otto::core::props {
              typename Mixin,
              CONCEPT_REQUIRES_(
                cpts::models<HookTag, H, typename Mixin::value_type>() &&
-               cpts::models<HookWithValue, MixinImpl::hook_t<Mixin, H>>() &&
-               cpts::models<MixinImpl, Mixin>())>
+               cpts::models<HookWithValue, MixinImpl::hook_t<Mixin, H>>())>
     auto run_hook(
       Mixin& m,
       const HookWithValue::arg_type<MixinImpl::hook_t<Mixin, H>>& arg)

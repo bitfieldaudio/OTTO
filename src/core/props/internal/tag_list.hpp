@@ -60,7 +60,7 @@ namespace otto::core::props {
   template<typename ValueType, typename... Tags>
   struct inherit_from_all_mixins<ValueType, tag_list<Tags...>> {
     using type = inherit_from_all<
-      MixinTag::mixin_t<Tags, ValueType, tag_list<Tags...>>...>;
+      MixinTag::leaf<Tags, ValueType, tag_list<Tags...>>...>;
   };
 
   /// This type inherits from all mixins matched by `Tags`
@@ -70,11 +70,47 @@ namespace otto::core::props {
   template<typename ValueType, typename TagList>
   using inherits_from_mixins_t = meta::_t<inherit_from_all_mixins<ValueType, TagList>>;
 
-  /// Make a tag_list type with all `Tags` and their requirements
-  template<typename... Tags>
-  using make_tag_list_t =
-    meta::_t<normalize_tags<meta::_t<add_required<tag_list<Tags...>>>>>;
+  template<typename Tag>
+  struct no {};
 
+  namespace detail {
+    template<typename Tag>
+    struct is_disabler {
+      constexpr static bool value = false;
+      using type = void;
+    };
+
+    template<typename Tag>
+    struct is_disabler<no<Tag>> {
+      constexpr static bool value = true;
+      using type = Tag;
+    };
+  }
+
+  template<typename ValueType>
+  struct default_mixins;
+
+  using no_defaults = no<default_mixins<void>>;
+
+  template<typename TagList>
+  struct remove_disabled_tags {
+    using disablers = meta::filter_t<TagList, detail::is_disabler>;
+    template<typename T>
+    using is_disabled = meta::contains<disablers, no<T>>;
+    using after_disable = meta::remove_if_t<TagList, is_disabled>;
+    using type = meta::remove_if_t<after_disable, detail::is_disabler>;
+  };
+
+  template<typename ValueType, typename... Tags>
+  struct get_tag_list {
+    using defaults =
+      std::conditional_t<meta::contains_v<tag_list<Tags...>, no_defaults>,
+                         tag_list<>,
+                         meta::_t<default_mixins<ValueType>>>;
+    using after_disable = meta::_t<remove_disabled_tags<meta::concat_t<defaults, tag_list<Tags...>>>>;
+    using type = meta::_t<normalize_tags<
+      meta::_t<add_required<after_disable>>>>;
+  };
 
   template<typename Tag, typename... Args>
   struct TaggedTuple {

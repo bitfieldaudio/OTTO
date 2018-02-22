@@ -44,6 +44,12 @@
 #define GET_MACRO_14(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12,_13,_14,NAME,...) NAME
 #define GET_MACRO_15(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12,_13,_14,_15,NAME,...) NAME
 
+#define SWITCH_FOR_VARARGS_1(NO_VARARGS, VARARGS, ...)                         \
+  GET_MACRO_15(__VA_ARGS__, VARARGS, VARARGS, VARARGS, VARARGS, VARARGS,       \
+               VARARGS, VARARGS, VARARGS, VARARGS, VARARGS, VARARGS, VARARGS,  \
+               VARARGS, VARARGS, NO_VARARGS, NONE)                             \
+  (__VA_ARGS__)
+
 // a FOREACH macro
 #define FE_1(WHAT, X) WHAT(X) 
 #define FE_2(WHAT, X, ...) WHAT(X)FE_1(WHAT, __VA_ARGS__)

@@ -143,7 +143,7 @@ namespace otto::service::engines {
     auto mixer_out    = mixer.process_tracks(playback_out);
 
     auto record_in = [&]() {
-      switch (selector.props.input.get()) {
+      switch (Selection{selector.props.input.get()}) {
       case Selection::Internal: {
         if (current_sound_source == SynthOrDrums::synth) {
           return synth->process(midi_in);
@@ -163,11 +163,11 @@ namespace otto::service::engines {
       return core::audio::ProcessData<1>{{nullptr}, {nullptr}};
     }();
 
-    if (selector.props.input != Selection::MasterFB) {
+    if (Selection{selector.props.input.get()} != Selection::MasterFB) {
       mixer.process_engine(record_in);
     }
 
-    if (selector.props.input == Selection::MasterFB) {
+    if (Selection{selector.props.input.get()} == Selection::MasterFB) {
       util::transform(mixer_out, _audiobuf1.begin(), [](auto&& a) {
           return std::array<float, 1>{{a[0] + a[1]}};
       });

@@ -588,7 +588,7 @@ namespace otto::engines {
     void draw_slider(Canvas& ctx)
     {
       float graph   = engine.procGraph.clip();
-      float setting = engine.props.gain.mode.normalize();
+      float setting = engine.props.gain.normalize();
       auto colour =
         (Colour::bytes(60, 60, 59)
            .mix(Colours::Red, std::min(1.f, graph / setting * 3.f)));

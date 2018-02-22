@@ -42,9 +42,8 @@ namespace otto::core::engines {
   /// Use this when refering to a generic engine
   struct AnyEngine {
 
-    template<typename... Tags>
     AnyEngine(std::string name,
-      props::Properties<Tags...>& props,
+      props::branch_base& props,
       std::unique_ptr<ui::Screen> screen);
 
     AnyEngine() = delete;
@@ -120,8 +119,12 @@ namespace otto::core::engines {
     /// [nlohmann::json::exception](), see it for details.
     void from_json(const nlohmann::json& j);
 
+    props::branch_base& props() noexcept;
+    props::branch_base const& props() const noexcept;
+
   private:
-    const std::string _name;
+    props::branch_base& _props;
+    std::string const _name;
     std::unique_ptr<ui::Screen> _screen;
     int _current_preset = -1;
   };

@@ -62,5 +62,5 @@ SpacesInParentheses: false
 SpacesInSquareBrackets: false
 Standard: Cpp11
 UseTab: Never
-
+ForEachMacros: ['OTTO_PROPS_MIXIN_INTERFACE', 'OTTO_PROPS_MIXIN_BRANCH', 'OTTO_PROPS_MIXIN_LEAF']
 ...

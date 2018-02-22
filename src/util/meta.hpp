@@ -2,8 +2,6 @@
 
 #include "util/type_traits.hpp"
 
-#define OTTO_META_ASSERT_EQUAL(...) static_assert(std::is_same_v<__VA_ARGS__>)
-
 /// OTTO Metaprogramming utilities
 ///
 /// ## Metafunctions
@@ -65,6 +63,8 @@ namespace otto::meta {
   template<typename Type>
   struct one {
     using type = Type;
+
+    type _t() const noexcept;
   };
 
   /// First element of Pair
@@ -313,10 +313,10 @@ namespace otto::meta {
   // filter //
 
   namespace detail {
-    template<template<typename T> typename Predicate, typename... Types>
+    template<template<typename V> typename Predicate, typename... Types>
     struct filter_impl;
 
-    template<template<typename T> typename Predicate,
+    template<template<typename V> typename Predicate,
              typename T,
              typename... Types>
     struct filter_impl<Predicate, T, Types...> {
@@ -326,12 +326,12 @@ namespace otto::meta {
         filter<list<Types...>, Predicate>>>;
     };
 
-    template<template<typename T> typename Predicate, typename T>
+    template<template<typename V> typename Predicate, typename T>
     struct filter_impl<Predicate, T> {
       using type = std::conditional_t<_v<Predicate<T>>, list<T>, list<>>;
     };
 
-    template<template<typename T> typename Predicate>
+    template<template<typename V> typename Predicate>
     struct filter_impl<Predicate> {
       using type = list<>;
     };
@@ -339,7 +339,7 @@ namespace otto::meta {
 
   template<template<typename T> typename Predicate, typename... Types>
   struct filter<list<Types...>, Predicate> {
-    using type = _t<detail::filter_impl<Predicate, list<Types...>>>;
+    using type = _t<detail::filter_impl<Predicate, Types...>>;
   };
 
   // remove_if //
@@ -351,7 +351,7 @@ namespace otto::meta {
       static constexpr const bool value = !_v<Predicate<T>>;
     };
   public:
-    using type = _t<detail::filter_impl<predicate, list<Types...>>>;
+    using type = _t<detail::filter_impl<predicate, Types...>>;
   };
 
   // remove //
@@ -451,7 +451,7 @@ namespace otto::meta {
     struct for_each_impl<T, Types...> {
       template<typename Callable>
       static constexpr void apply(Callable&& cb) {
-        cb(one<T>());
+        std::invoke(cb, one<T>());
         for_each_impl<Types...>::apply(std::forward<Callable>(cb));
       }
     };
@@ -511,3 +511,5 @@ namespace otto::meta {
   }
 
 }
+
+#define OTTO_META_ASSERT_EQUAL(...) static_assert(std::is_same_v<__VA_ARGS__>)
