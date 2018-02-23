@@ -42,8 +42,8 @@ namespace otto::service::engines {
     EngineDispatcher<EngineType::synth> synth;
     EngineDispatcher<EngineType::drums> drums;
     EngineDispatcher<EngineType::effect> effect;
-    otto::engines::Tapedeck tapedeck;
     otto::engines::Mixer mixer;
+    otto::engines::Tapedeck tapedeck;
     otto::engines::Metronome metronome;
     otto::engines::InputSelector selector;
 

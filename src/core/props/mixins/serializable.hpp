@@ -18,7 +18,7 @@ namespace otto::core::props {
   struct mixin::interface<serializable> {
     virtual void from_json(const nlohmann::json&) = 0;
     virtual nlohmann::json to_json() const             = 0;
-    bool do_serialize;
+    bool do_serialize = true;
   };
 
   OTTO_PROPS_MIXIN_BRANCH (serializable) {
@@ -30,8 +30,11 @@ namespace otto::core::props {
             return prop.name() == key;
         });
         if (found != children().end()) {
-          auto& item = static_cast<property_base&>(*found).as<serializable>();
-          if (item.do_serialize) item.from_json(it.value());
+          auto& prop = static_cast<property_base&>(*found);
+          if (prop.is<serializable>()) {
+            auto& item = prop.as<serializable>();
+            if (item.do_serialize) item.from_json(it.value());
+          }
         } else {
           throw util::exception("No property found matching {}", it.key());
         }
@@ -41,9 +44,11 @@ namespace otto::core::props {
     nlohmann::json to_json() const override
     {
       auto js = nlohmann::json::object();
-      for (property_base& itf : children()) {
-        if (itf.as<serializable>().do_serialize)
-          js[itf.name()] = itf.as<serializable>().to_json();
+      for (property_base& prop : children()) {
+        if (prop.is<serializable>()) {
+          if (prop.as<serializable>().do_serialize)
+            js[prop.name()] = prop.as<serializable>().to_json();
+        }
       }
       return js;
     }

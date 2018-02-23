@@ -1,7 +1,8 @@
 #pragma once
 
 #include "core/engines/engine.hpp"
-#include "core/engines/faust-engine.hpp"
+
+#include "core/audio/faust.hpp"
 
 namespace otto::engines {
 
@@ -9,7 +10,7 @@ namespace otto::engines {
   using namespace core::engines;
   using namespace props;
 
-  struct NukeSynth : FaustSynthEngine {
+  struct NukeSynth : SynthEngine {
 
     struct Props : Properties<> {
 
@@ -40,5 +41,8 @@ namespace otto::engines {
     NukeSynth();
 
     audio::ProcessData<1> process(audio::ProcessData<0>) override;
+
+  private:
+    audio::FaustWrapper<0, 1> faust_;
   };
 } // namespace otto::engines

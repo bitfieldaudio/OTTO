@@ -145,20 +145,16 @@ namespace otto::core::audio {
   class FaustWrapper {
     // Needed to convert from faust's deinterleaved data to interleaved
     audio::RTBuffer<float, std::max(Cin, Cout)> faustbuf;
-  protected:
+  public:
 
     audio::ProcessBuffer<Cout> proc_buf;
 
     FaustOptions opts;
 
-  public:
 
     std::unique_ptr<dsp> fDSP;
 
     FaustWrapper() {};
-
-    FaustWrapper(std::unique_ptr<dsp>&& d, props::branch_base& branch)
-      : FaustWrapper(std::move(d), dynamic_cast<FaustClient&>(branch)) {}
 
     FaustWrapper(std::unique_ptr<dsp>&& d, FaustClient& client)
       : opts (client), fDSP (std::move(d))

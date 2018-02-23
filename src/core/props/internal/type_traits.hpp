@@ -45,16 +45,16 @@ namespace otto::core::props {
 
     template<typename Argument>
     struct hook {
-      template<typename Val, HookOrder HO>
+      template<typename HookTag, typename Val, HookOrder HO>
       struct type {
         using value_type = Val;
         using arg_type   = Argument;
 
-        explicit type(const arg_type& a) : _arg(a) {}
-        explicit type(arg_type&& a) : _arg(std::move(a)) {}
+        type(const arg_type& a) : _arg(a) {}
+        type(arg_type&& a) : _arg(std::move(a)) {}
 
         template<HookOrder HO1>
-        explicit type(type<Val, HO1>&& rhs) : _arg(std::move(rhs.value()))
+        type(type<HookTag, Val, HO1>&& rhs) : _arg(std::move(rhs.value()))
         {}
         operator arg_type&()
         {
@@ -80,20 +80,20 @@ namespace otto::core::props {
 
     template<>
     struct hook<void> {
-      template<typename Val, ::otto::core::props::HookOrder HO>
+      template<typename HookTag, typename Val, ::otto::core::props::HookOrder HO>
       struct type {
         using value_type = Val;
         using arg_type   = void;
         template<::otto::core::props::HookOrder HO1>
-        type(type<Val, HO1>&& rhs)
+        type(type<HookTag, Val, HO1>&& rhs)
         {}
       };
     };
 
     template<>
     struct hook<value_type> {
-      template<typename Val, ::otto::core::props::HookOrder HO>
-      using type = typename hook<Val>::template type<Val, HO>;
+      template<typename HookTag, typename Val, ::otto::core::props::HookOrder HO>
+      using type = typename hook<Val>::template type<HookTag, Val, HO>;
     };
   }
 
@@ -147,12 +147,12 @@ namespace otto::core::props {
 
     /// Get the hook type from a tag and a value type
     template<typename HT, typename VT, HookOrder HO = HookOrder::Middle>
-    using impl_t = typename HT::template type<VT, HO>;
+    using impl_t = typename HT::template type<HT, VT, HO>;
 
     template<typename T, typename ValueType, HookOrder HO = HookOrder::Middle>
     auto requires_(T&& t) -> decltype( //
       cpts::valid_expr(                //
-        cpts::model_of<Hook, typename T::template type<ValueType, HO>>()));
+        cpts::model_of<Hook, typename T::template type<T, ValueType, HO>>()));
   };
 
   struct MixinImpl {

@@ -34,7 +34,7 @@ namespace otto::core::props {
 
   /// Base class of all properties, leaves and branches both
   struct property_base {
-    property_base(branch_base* parent, std::string const& name);
+    property_base(branch_base* parent = nullptr, std::string const& name = "");
 
     virtual ~property_base() = default;
 
@@ -63,7 +63,7 @@ namespace otto::core::props {
     template<typename Tag>
     mixin::interface<Tag> const& as() const
     {
-      return dynamic_cast<mixin::interface<Tag>&>(*this);
+      return dynamic_cast<mixin::interface<Tag> const&>(*this);
     }
 
     bool is_branch() const noexcept; 
@@ -77,7 +77,7 @@ namespace otto::core::props {
     template<typename Tag>
     mixin::branch<Tag> const& as_branch() const
     {
-      return dynamic_cast<mixin::branch<Tag>&>(*this);
+      return dynamic_cast<mixin::branch<Tag> const&>(*this);
     }
 
   private:
@@ -86,6 +86,8 @@ namespace otto::core::props {
   };
 
   /// Base class of all property branches
+  ///
+  /// All mixin branches inherit virtually from this
   struct branch_base : property_base {
 
     using storage_type = std::vector<std::reference_wrapper<property_base>>;
@@ -114,5 +116,17 @@ namespace otto::core::props {
   {
     return dynamic_cast<const branch_base*>(this);
   }
+
+  /// Non-virtual base class for Properties
+  ///
+  /// Useful to get the adress of a common base class for branches, before the
+  /// branch has been constructed. This is used in engines, where the base class
+  /// AnyEngine is passed the adress of the engines `props` member, as a pointer
+  /// to this type. At that point in construction `props` has not yet been
+  /// constructed, so its v-table isn't set up, and it therefore cannot be
+  /// converted to a virtual base class.
+  struct properties_base : virtual branch_base {
+    using branch_base::branch_base;
+  };
 
 } // namespace otto::core::props

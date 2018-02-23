@@ -23,7 +23,7 @@ namespace otto::engines {
 
   Metronome::Metronome()
     : Engine("Metronome", props, std::make_unique<MetronomeScreen>(this)),
-      audio::FaustWrapper<0, 1>(std::make_unique<FAUSTCLASS>(), props)
+      faust_(std::make_unique<FAUSTCLASS>(), props)
   {}
 
   Metronome::~Metronome() {}
@@ -38,19 +38,19 @@ namespace otto::engines {
     if (framesTillNext < data.nframes
       && service::engines::tape_state::playing()
       && service::engines::tape_state::playSpeed()/BPsample > 1) {
-      FaustWrapper::process(data.slice(0, framesTillNext));
+      faust_.process(data.slice(0, framesTillNext));
       props.trigger = true;
-      FaustWrapper::process(data.slice(framesTillNext));
+      faust_.process(data.slice(framesTillNext));
       props.trigger = false;
     } else {
-      FaustWrapper::process(data);
+     faust_.process(data);
     }
 
-    for (auto frm : FaustWrapper::proc_buf) {
+    for (auto frm : faust_.proc_buf) {
       graph.add(frm[0]);
     }
 
-    return data.redirect(FaustWrapper::proc_buf);
+    return data.redirect(faust_.proc_buf);
   }
 
   // Bars

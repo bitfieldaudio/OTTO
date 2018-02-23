@@ -78,11 +78,9 @@ namespace otto::core::props {
     REQUIRE(props.prop1.to_json() == 0.f);
     REQUIRE(props.prop2.to_json() == 4.f);
     auto expct = nlohmann::json{{"prop1", 0.f}, {"prop2", 4.f}};
-    LOGI("102");
     auto& interface = props.as<serializable>();
     REQUIRE(props.name() == "");
     auto got = interface.to_json();
-    LOGI("106");
     REQUIRE(got == expct);
   }
 

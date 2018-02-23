@@ -34,10 +34,8 @@ namespace otto::engines {
   // NukeSynth ////////////////////////////////////////////////////////////////
 
   NukeSynth::NukeSynth()
-    : FaustSynthEngine("Nuke",
-                       props,
-                       std::make_unique<NukeSynthScreen>(this),
-                       std::make_unique<FAUSTCLASS>())
+    : SynthEngine("Nuke", props, std::make_unique<NukeSynthScreen>(this)),
+      faust_(std::make_unique<FAUSTCLASS>(), props)
   {}
 
   audio::ProcessData<1> NukeSynth::process(audio::ProcessData<0> data)
@@ -52,7 +50,7 @@ namespace otto::engines {
                   },
                   [](auto&&) {});
     }
-    auto res = FaustSynthEngine::process(data);
+    auto res = faust_.process(data);
 
     for (auto&& ev : data.midi) {
       util::match(ev,

@@ -11,10 +11,7 @@ namespace otto::core::props {
 
   template<>
   struct mixin::hooks<has_limits> {
-    struct on_exceeded {
-      template<typename Val, HookOrder HO>
-      struct type : hook<value_type>::type<Val, HO> {};
-    };
+    struct on_exceeded : hook<value_type> {};
   };
 
   OTTO_PROPS_MIXIN_LEAF (has_limits) {

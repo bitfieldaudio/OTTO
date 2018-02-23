@@ -26,7 +26,6 @@ namespace otto::engines {
   /**************************************************/
   /* MixerEngine Implementation                     */
   /**************************************************/
-
   Mixer::Mixer()  //
     : Engine("Mixer", props, std::make_unique<MixerScreen>(this))
   {}

@@ -126,13 +126,13 @@ namespace otto::core::props {
   // Properties ////////////////////////////////////////////////////////////////
 
   template<typename... Tags>
-  struct PropertiesImpl : virtual branch_base, mixin::branch<Tags>... {
+  struct PropertiesImpl : properties_base, mixin::branch<Tags>... {
 
     using tag_list = props::tag_list<Tags...>;
 
     // Initialization //
     PropertiesImpl() : branch_base(nullptr, "") {}
-    using branch_base::branch_base;
+    using properties_base::properties_base;
 
   private:
     std::string name_;

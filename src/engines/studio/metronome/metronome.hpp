@@ -16,10 +16,8 @@ namespace otto::engines {
   using BeatPos = int;
   using TapeTime = int;
 
-  struct Metronome : Engine<EngineType::studio>, private audio::FaustWrapper<0, 1> {
-
-    using audio::FaustWrapper<0, 1>::process;
-
+  struct Metronome : Engine<EngineType::studio>
+  {
     struct Props : public Properties<> {
       Property<float, has_limits> bpm = {
         this, "BPM", 120, has_limits::init(40, 320), steppable::init(1)};
@@ -42,5 +40,7 @@ namespace otto::engines {
 
     float bar_for_time(TapeTime time) const;
     std::size_t time_for_bar(float bar) const;
+  private:
+    audio::FaustWrapper<0, 1> faust_;
   };
 }
