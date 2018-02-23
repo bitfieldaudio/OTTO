@@ -55,7 +55,7 @@ namespace otto::engines {
                                                      has_limits::init(-2, 4),
                                                      steppable::init(1 / 12.f)};
         props::Property<int, props::wrap> mode  = {this, "mode", 0,
-                                                   has_limits::init(-3, 3)};
+                                                   has_limits::init(-3, 2)};
 
         bool fwd() const
         {

@@ -17,16 +17,18 @@
   using self_type      = leaf<TAG_NAME, value_type, tag_list>;                 \
   using interface_type = ::otto::core::props::MixinTag::interface<TAG_NAME>;   \
   using property_type =                                                        \
-    ::otto::core::props::PropertyImpl<value_type, tag_list>;         \
+    ::otto::core::props::PropertyImpl<value_type, tag_list>;                   \
                                                                                \
   template<typename Tag>                                                       \
-  constexpr static bool is =                                                   \
-    ::otto::core::props::contains_tag_v<tag_list, Tag>;                        \
+  constexpr static bool is()                                                   \
+  {                                                                            \
+    return ::otto::core::props::contains_tag_v<tag_list, Tag>;                 \
+  }                                                                            \
                                                                                \
   template<typename Tag>                                                       \
   constexpr auto as()                                                          \
     ->::std::enable_if_t<                                                      \
-      self_type::is<Tag>,                                                      \
+      self_type::is<Tag>(),                                             \
       ::otto::core::props::MixinTag::leaf<Tag, value_type, tag_list>&>         \
   {                                                                            \
     auto* as_prop = static_cast<property_type*>(this);                         \
@@ -37,7 +39,7 @@
                                                                                \
   template<typename Tag>                                                       \
   constexpr auto as() const->::std::enable_if_t<                               \
-    self_type::is<Tag>,                                                        \
+    self_type::is<Tag>(),                                               \
     const ::otto::core::props::MixinTag::leaf<Tag, value_type, tag_list>&>     \
   {                                                                            \
     const auto& as_prop = static_cast<const property_type&>(*this);            \
@@ -155,7 +157,7 @@
   OTTO_PROPS_MIXIN_SCOPE(TAG_NAME, __VA_ARGS__)
 
 /// \exclude
-#define OTTO_PROPS_MIXIN_1(TAG_NAME) OTTO_PROPS_MIXIN_TAG(TAG_NAME);
+#define OTTO_PROPS_MIXIN_1(TAG_NAME) OTTO_PROPS_MIXIN_TAG(TAG_NAME)
 
 /// Start a mixin declaration.
 ///

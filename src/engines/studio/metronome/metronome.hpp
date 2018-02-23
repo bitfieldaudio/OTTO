@@ -18,12 +18,18 @@ namespace otto::engines {
 
   struct Metronome : Engine<EngineType::studio>
   {
-    struct Props : public Properties<> {
-      Property<float, has_limits> bpm = {
-        this, "BPM", 120, has_limits::init(40, 320), steppable::init(1)};
-      Property<float> gain = {this, "GAIN", 0, has_limits::init(0, 1),
+    struct Props : Properties<> {
+      Property<float, has_limits> bpm = {this, "BPM", 120, //
+                                         has_limits::init(40, 320),
+                                         steppable::init(1)};
+
+      Property<float> gain = {this, "GAIN", 0,        //
+                              has_limits::init(0, 1), //
                               steppable ::init(0.01)};
-      Property<int> tone   = {this, "TONE", 12, has_limits::init(0, 24)};
+
+      Property<int> tone = {this, "TONE", 12, //
+                            has_limits::init(0, 24)};
+
       Property<bool, no_serialize> trigger = {this, "TRIGGER", false};
     } props;
 

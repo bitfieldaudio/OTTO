@@ -9,7 +9,7 @@
 
 namespace otto::core::props {
 
-  OTTO_PROPS_MIXIN(steppable)
+  OTTO_PROPS_MIXIN(steppable);
 
   OTTO_PROPS_MIXIN_LEAF (steppable) {
     OTTO_PROPS_MIXIN_DECLS(steppable);
@@ -25,10 +25,14 @@ namespace otto::core::props {
     void step(int n = 1)
     {
       auto& prop = dynamic_cast<property_type&>(*this);
-      prop.set(prop.get() + n * step_size);
+      if constexpr (std::is_same_v<bool, value_type>) {
+        prop.set((prop.get() + n) % 2);
+      } else {
+        prop.set(prop.get() + n * step_size);
+      }
     }
 
-    value_type step_size;
+    value_type step_size = 1;
   };
 
 } // namespace otto::core::props

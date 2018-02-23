@@ -85,11 +85,6 @@ namespace otto::core::props {
   }
 
   TEST_CASE("has_limits", "[props]") {
-    // Alternative, nicer initialization syntax. tag::init returns a type that
-    // contains the args forwarded by std::forward_tuple. This would enable us
-    // (with more magic metaprogramming) to actually use constructors for the
-    // mixins.
-
     Property<float, steppable, has_limits, serializable> pp = {nullptr, "", 0,
       has_limits::init(1, 5), //
       steppable::init(1.5f),  //
@@ -119,5 +114,23 @@ namespace otto::core::props {
     REQUIRE(pp == -3.f);
     pp = -30;
     REQUIRE(pp == -10.f);
+  }
+
+  TEST_CASE("wrap", "[props]") {
+
+    Property<int, wrap> prop = {nullptr, "prop", 0,
+                                has_limits::init(-2, 2)};
+
+    REQUIRE(prop == 0);
+    prop.set(1);
+    REQUIRE(prop == 1);
+    prop.set(2);
+    REQUIRE(prop == 2);
+    prop.set(3);
+    REQUIRE(prop == -2);
+    prop.set(-2);
+    REQUIRE(prop == -2);
+    prop.set(-3);
+    REQUIRE(prop == 2);
   }
 }
