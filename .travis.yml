@@ -176,7 +176,7 @@ script:
   - |
     if [[ -n "$RESULT" ]]; then
     echo "Tests failed, running in GDB for stacktrace"
-    gdb -return-child-result -batch -ex "run" -ex "thread apply all bt" -ex "quit" --args build/bin/test
+    gdb -return-child-result -batch -ex "run -s" -ex "thread apply all bt" -ex "quit" --args build/bin/test
     fi
 
 notifications:

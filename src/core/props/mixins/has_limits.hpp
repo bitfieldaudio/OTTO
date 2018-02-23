@@ -41,8 +41,8 @@ namespace otto::core::props {
       return (prop.get() - min) / (max - min);
     }
 
-    value_type min;
-    value_type max;
+    value_type min = std::numeric_limits<value_type>::min();
+    value_type max = std::numeric_limits<value_type>::max();
   };
 
 } // namespace otto::core::props

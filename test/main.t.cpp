@@ -7,7 +7,7 @@ int main( int argc, char* argv[] )
   using namespace otto;
   fs::remove_all(test::dir);
   fs::create_directories(test::dir);
-  service::logger::init(argc, argv, false, (test::dir / "test-log.txt").c_str());
+  service::logger::init(argc, argv, true, (test::dir / "test-log.txt").c_str());
 
   int result = Catch::Session().run( argc, argv );
 
