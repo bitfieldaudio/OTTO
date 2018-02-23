@@ -25,7 +25,7 @@ namespace otto::core::props {
     template<typename Tag>
     using mixin = MixinTag::leaf<Tag, T, tag_list>;
 
-    using mixin<Tags>::mixin...;
+    using MixinTag::leaf<Tags, T, tag_list>::leaf...;
     using mixin<Tags>::operator=...;
 
     /// Initialize the mixin of type `Tag` with args

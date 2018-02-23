@@ -154,7 +154,8 @@
 /// \exclude
 #define OTTO_PROPS_MIXIN_2(TAG_NAME, ...)                                      \
   OTTO_PROPS_MIXIN_TAG(TAG_NAME);                                              \
-  OTTO_PROPS_MIXIN_SCOPE(TAG_NAME, __VA_ARGS__)
+  OTTO_PROPS_MIXIN_SCOPE(TAG_NAME, __VA_ARGS__)                                \
+  inline char _##TAG_NAME##_do_not_warn_about_too_many_semicolons
 
 /// \exclude
 #define OTTO_PROPS_MIXIN_1(TAG_NAME) OTTO_PROPS_MIXIN_TAG(TAG_NAME)
