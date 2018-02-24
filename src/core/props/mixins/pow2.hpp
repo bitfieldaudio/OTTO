@@ -12,7 +12,7 @@ namespace otto::core::props {
   OTTO_PROPS_MIXIN_LEAF(pow2) {
     OTTO_PROPS_MIXIN_DECLS(pow2);
 
-    value_type pow2() const
+    value_type pow_2() const
     {
       return pow2_;
     }
@@ -25,4 +25,4 @@ namespace otto::core::props {
   private:
     value_type pow2_;
   };
-};
+}

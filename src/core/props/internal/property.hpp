@@ -40,8 +40,10 @@ namespace otto::core::props {
     template<typename Tag, typename... Args>
     void init_with_tuple(const TaggedTuple<Tag, Args...>& tt)
     {
-      // Clang is bugged, and marks the `this` capture as unused
-      auto lambda = [this](auto&&... init_args) {this->init<Tag>(init_args...);};
+      // Clang is bugged, and marks the `this` capture as unused if the lambda
+      // is inlined in the `apply` call.
+      // GCC 7.2 marks the variable `lambda` as unused.
+      [[maybe_unused]] auto lambda = [this](auto&&... init_args) {this->init<Tag>(init_args...);};
       std::apply(lambda, tt.args);
     }
 
@@ -50,8 +52,9 @@ namespace otto::core::props {
       : property_base(parent, name), value_(std::forward<TRef>(value))
     {
       if constexpr ((is_initializer_v<Args> && ...)) {
-        // lambda and fold expression on comma operator
-        auto lambda = [](PropertyImpl* obj, auto&& tuple) { obj->init_with_tuple(tuple); };
+        // GCC 7.2 marks this variable as unused.
+        [[maybe_unused]] auto lambda = [](PropertyImpl* obj, auto&& tuple) { obj->init_with_tuple(tuple); };
+        // fold expression on comma operator
         (lambda(this, std::forward<Args>(args)), ...);
       } else {
         static_cast<inherits_from_mixins_t<T, tag_list>&>(*this) = {

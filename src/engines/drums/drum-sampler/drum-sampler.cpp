@@ -69,7 +69,7 @@ namespace otto::engines {
 
     for (auto &&voice : props.voiceData) {
 
-      float playSpeed = voice.pitch.pow2() * sampleSpeed;
+      float playSpeed = voice.pitch.pow_2() * sampleSpeed;
 
       // Process audio
       if (voice.playProgress >= 0 && playSpeed > 0) {
