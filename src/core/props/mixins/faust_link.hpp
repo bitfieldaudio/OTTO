@@ -100,7 +100,7 @@ namespace otto::core::props {
     const FaustLink::Type& type = type_;
 
   private:
-    FaustLink::Type type_;
+    FaustLink::Type type_ = FaustLink::Type::ToFaust;
     std::vector<float*> faust_links_;
   };
 

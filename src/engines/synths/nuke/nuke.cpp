@@ -35,30 +35,15 @@ namespace otto::engines {
 
   NukeSynth::NukeSynth()
     : SynthEngine("Nuke", props, std::make_unique<NukeSynthScreen>(this)),
+      voice_mgr_(props),
       faust_(std::make_unique<FAUSTCLASS>(), props)
   {}
 
   audio::ProcessData<1> NukeSynth::process(audio::ProcessData<0> data)
   {
-    for (auto&& ev : data.midi) {
-      util::match(ev,
-                  [& props = this->props](midi::NoteOnEvent& ev) {
-                    props.midi.freq = midi::note_freq(ev.key);
-                    props.midi.vel  = 10.f;
-                    props.midi.gate = true;
-                    props.last_key = ev.key;
-                  },
-                  [](auto&&) {});
-    }
+    voice_mgr_.process_before(data);
     auto res = faust_.process(data);
-
-    for (auto&& ev : data.midi) {
-      util::match(ev,
-                  [& props = this->props](midi::NoteOffEvent& ev) {
-                    if (props.last_key == ev.key) props.midi.gate = false;
-                  },
-                  [](auto&&) {});
-    }
+    voice_mgr_.process_after(data);
     return res;
   }
 
