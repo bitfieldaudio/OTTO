@@ -97,6 +97,11 @@ namespace otto::service::ui {
           return Key::drums;
         else
           break;
+      case GLFW_KEY_K:
+        if (mods & GLFW_MOD_CONTROL)
+          return Key::envelope;
+        else
+          break;
 
       case GLFW_KEY_L: return Key::loop;
       case GLFW_KEY_I: return Key::loop_in;

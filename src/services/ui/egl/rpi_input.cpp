@@ -154,6 +154,11 @@ namespace otto::ui {
         return Key::drums;
       }
       break;
+    case KEY_K:
+      if (ctrl) {
+        return Key::envelope;
+      }
+      break;
 
     case KEY_L: return Key::loop;
     case KEY_I: return Key::loop_in;

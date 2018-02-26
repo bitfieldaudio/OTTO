@@ -88,6 +88,18 @@ namespace otto::service::engines {
       current_sound_source = SynthOrDrums::drums;
     });
 
+    service::ui::register_key_handler(core::ui::Key::envelope, [](core::ui::Key k) {
+        auto* engine = by_name(service::ui::selected_engine_name());
+        auto* owner = dynamic_cast<core::engines::EngineWithEnvelope*>(engine);
+        if (owner) {
+          if (service::ui::is_pressed(core::ui::Key::shift)) {
+            service::ui::display(owner->voices_screen());
+          } else {
+            service::ui::display(owner->envelope_screen());
+          }
+        }
+    });
+
     service::ui::register_key_handler(core::ui::Key::play, [](core::ui::Key key) {
       if (tapedeck.state.playing()) {
         tapedeck.state.stop();
@@ -162,6 +174,12 @@ namespace otto::service::engines {
       }
       return core::audio::ProcessData<1>{{nullptr}, {nullptr}};
     }();
+
+    for (auto& frm : record_in) {
+      for (auto& smpl : frm) {
+        smpl *= tapedeck.props.gain;
+      }
+    }
 
     if (Selection{selector.props.input.get()} != Selection::MasterFB) {
       mixer.process_engine(record_in);

@@ -294,7 +294,7 @@ namespace otto::engines {
       // Write audio
       auto sect = tapeBuffer->write_n(std::begin(data.audio), data.nframes,
         realSpeed, [&, track = state.track] (auto&& src, auto& dst) {
-          dst[track] += src[0] * props.gain;
+            dst[track] += src[0]; // * props.gain;
         });
       recSect += sect;
     }
@@ -312,7 +312,7 @@ namespace otto::engines {
 
     procGraph.clear();
     for (auto&& smpl : data.audio) {
-      procGraph.add(smpl[0] * props.gain);
+      procGraph.add(smpl[0]); // * props.gain);
     }
 
     return data.midi_only();

@@ -250,6 +250,11 @@ public:                                                                        \
     Engine& engine;
   };
 
+  struct EngineWithEnvelope {
+    virtual ui::Screen& envelope_screen() = 0;
+    virtual ui::Screen& voices_screen() = 0;
+  };
+
 } // namespace otto::core::engines
 
 

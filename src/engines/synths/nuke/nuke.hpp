@@ -11,17 +11,9 @@ namespace otto::engines {
   using namespace core::engines;
   using namespace props;
 
-  struct NukeSynth : SynthEngine {
+  struct NukeSynth : SynthEngine, EngineWithEnvelope {
 
     struct Props : Properties<> {
-
-      struct : Properties<> {
-        Property<float> attack  = {this, "Attack",  0,   has_limits::init(0, 2), steppable::init( 0.02)};
-        Property<float> decay   = {this, "Decay",   0,   has_limits::init(0, 2), steppable::init( 0.02)};
-        Property<float> sustain = {this, "Sustain", 1,   has_limits::init(0, 1), steppable::init( 0.02)};
-        Property<float> release = {this, "Release", 0.2, has_limits::init(0, 2), steppable::init( 0.02)};
-        using Properties::Properties;
-      } envelope{this, "envelope"};
 
       Property<float> wave     = {this, "Wave",     0,  has_limits::init(0, 4),    steppable::init(0.01)};
       Property<float> relation = {this, "Relation", 2,  has_limits::init(0, 3.01), steppable::init(0.01)};
@@ -33,6 +25,14 @@ namespace otto::engines {
     NukeSynth();
 
     audio::ProcessData<1> process(audio::ProcessData<0>) override;
+
+    ui::Screen& envelope_screen() override {
+      return voice_mgr_.envelope_screen();
+    }
+
+    ui::Screen& voices_screen() override {
+      return voice_mgr_.settings_screen();
+    }
 
   private:
     audio::VoiceManager<6> voice_mgr_;

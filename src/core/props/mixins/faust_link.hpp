@@ -24,6 +24,7 @@ namespace otto::core::props {
     virtual void register_link(std::vector<std::string>::const_iterator first,
                                std::vector<std::string>::const_iterator last,
                                FaustLink) = 0;
+    virtual void clear() = 0;
   };
 
   OTTO_PROPS_MIXIN_BRANCH (faust_link) {
@@ -31,7 +32,7 @@ namespace otto::core::props {
     {
       for (property_base& itf : children()) {
         if (itf.is<faust_link>()) itf.as<faust_link>().refresh_links();
-      } // namespace otto::core::props
+      }
     }
 
     void register_link(std::vector<std::string>::const_iterator first,
@@ -45,6 +46,12 @@ namespace otto::core::props {
         auto& item = static_cast<property_base&>(*found);
         item.as<faust_link>().register_link(std::move(++first), std::move(last),
                                             link);
+      }
+    }
+
+    void clear() override {
+      for (property_base& itf : children()) {
+        if (itf.is<faust_link>()) itf.as<faust_link>().clear();
       }
     }
   };
@@ -83,7 +90,7 @@ namespace otto::core::props {
       add_link(std::move(link));
     }
 
-    void clear_links()
+    void clear() override
     {
       faust_links_.clear();
     }

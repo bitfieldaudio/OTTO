@@ -385,15 +385,6 @@ namespace otto::engines {
   {
     // NUKE/bg
     ctx.save();
-    ctx.beginPath();
-    ctx.moveTo(320.0, 240.0);
-    ctx.lineTo(0.0, 240.0);
-    ctx.lineTo(0.0, 0.0);
-    ctx.lineTo(320.0, 0.0);
-    ctx.lineTo(320.0, 240.0);
-    ctx.closePath();
-    ctx.fillStyle(Colour::bytes(12, 13, 15));
-    ctx.fill();
 
     // NUKE/border
     ctx.beginPath();
