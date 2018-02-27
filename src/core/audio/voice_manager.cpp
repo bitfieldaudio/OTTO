@@ -55,7 +55,7 @@ namespace otto::core::audio {
   void EnvelopeScreen::draw(Canvas& ctx)
   {
     const float a = props.attack.normalize() / 4.f;
-    const float d = (props.decay.normalize() + 1.f) / 4.f;
+    const float d = props.decay.normalize() / 4.f + a;
     const float s = props.sustain.normalize();
     const float r = (props.release.normalize() + 3.f) / 4.f;
     draw_bg(ctx);
