@@ -27,6 +27,7 @@ namespace otto::engines {
     void draw_dots(Canvas& ctx);
     void draw_bars(Canvas& ctx);
     void draw_aux(Canvas& ctx);
+    void draw_wave(Canvas& ctx);
     void draw_Q(Canvas& ctx);
     void draw_sights(Canvas& ctx);
   };
@@ -85,6 +86,7 @@ namespace otto::engines {
     draw_bars(ctx);
     draw_aux(ctx);
     draw_Q(ctx);
+    draw_wave(ctx);
     draw_sights(ctx);
   }
 
@@ -304,6 +306,62 @@ namespace otto::engines {
     ctx.fillStyle(Colour::bytes(231, 63, 99));
     ctx.textAlign(TextAlign::Center, TextAlign::Baseline);
     ctx.fillText("+4", 90.0, 210.3);
+  }
+
+  void NukeSynthScreen::draw_wave(Canvas& ctx)
+  {
+    float dial = engine.props.wave.normalize() * 4.f;
+    //  Dial takes values between 0 and 4 and returns a list of line endpoints
+    //  Position at integer values are hardcoded. In between, they are
+    //  interpolated between surrounding integer value position
+    //  The points lie in a 1x4 box 
+
+    // Pure waves (integer positions)
+    //  first row is x-coords, second row is y-coords
+    // NOTE: These can be moved into the if-statement -- we never need more than
+    // two of them in a single function call
+
+    using util::math::vec;
+     
+    std::valarray<vec> const pw_square = {{0, 1}, {0, 1}, {0, 0}, {2, 0},
+                                          {2, 1}, {2, 1}, {2, 0}, {4, 0}, {4, 1}};
+    std::valarray<vec> const square = {{0, 1}, {1, 1}, {1, 0}, {2, 0},
+                                       {2, 1}, {3, 1}, {3, 0}, {4, 0}, {4, 1}};
+    std::valarray<vec> const below_triangle = {
+      {4 / 5, 1},     {4 / 5, 1},     {2 * 4 / 5, 0},
+      {2 * 4 / 5, 0}, {3 * 4 / 5, 1}, {3 * 4 / 5, 1}, {4 * 4 / 5, 0},
+      {4 * 4 / 5, 0}, {4, 1}};
+    std::valarray<vec> const triangle = {
+      {4 / 5, 1},     {2 * 4 / 5, 0}, {3 * 4 / 5, 1},
+      {3 * 4 / 5, 1}, {3 * 4 / 5, 1}, {4 * 4 / 5, 0}, {4, 1},
+      {4, 1},         {4, 1}};
+    std::valarray<vec> const saw = {{0, 1}, {2, 0}, {2, 1}, {2, 1},
+                                    {2, 1}, {4, 0}, {4, 1}, {4, 1}, {4, 1}};
+    std::valarray<vec> const hs_saw = {{0, 1}, {1, 0}, {1, 1}, {2, 0},
+                                       {2, 1}, {3, 0}, {3, 1}, {4, 0}, {4, 1}};
+
+    // Initialise points
+    auto points = pw_square;
+    // fractional part of dial
+    auto frac = dial - std::floor(dial);
+
+    if (dial >= 0 && dial < 1)
+      points = pw_square * (1 - frac) + square * frac;
+    else if (dial >= 1 && dial < 2)
+      points = square * (1 - frac) + below_triangle * frac;
+    else if (dial >= 2 && dial < 3)
+      points = triangle * (1 - frac) + saw * frac;
+    else if (dial >= 3 && dial < 4)
+      points = saw * (1 - frac) + hs_saw * frac;
+    else if (dial == 4)
+      points = hs_saw * 0;  
+
+    // Move the points to the correct positions
+    points = points * vec{73.8f / 4.f, 15.3f} + vec{25.6f, 24.0f};
+
+    ctx.beginPath();
+    ctx.plotLines(std::begin(points), std::end(points));
+    ctx.stroke(Colours::Green);
   }
 
   void NukeSynthScreen::draw_Q(Canvas& ctx)

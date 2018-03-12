@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <type_traits>
+#include <valarray>
 
 #pragma GCC diagnostic push 
 #pragma GCC diagnostic ignored "-Wpedantic"
@@ -26,35 +27,55 @@ namespace otto::core::ui::vg {
     float x, y;
 
     constexpr Point() : Point(0, 0) {}
+    constexpr Point(const Point&) noexcept = default;
+    constexpr Point& operator=(const Point&) noexcept = default;
     constexpr Point(float x, float y) : x (x), y (y) {}
 
     // cppcheck-suppress noExplicitConstructor
     constexpr Point(util::math::vec v) : x (v.x), y (v.y) {}
 
-    Point rotate(float rad) const {
+    Point rotate(float rad) const noexcept {
       float sn = std::sin(rad);
       float cs = std::cos(rad);
       return {
         x * cs - y * sn,
-          x * sn + y * cs
-          };
+        x * sn + y * cs
+      };
     }
 
-    constexpr Point swapXY() const {return {y, x};}
-    constexpr Point flipX() const {return {-x, y};}
-    constexpr Point flipY() const {return {x, -y};}
+    constexpr Point swapXY() const noexcept {return {y, x};}
+    constexpr Point flipX() const noexcept {return {-x, y};}
+    constexpr Point flipY() const noexcept {return {x, -y};}
 
-    constexpr bool operator==(Point rhs) const {return x == rhs.x && y == rhs.y;}
-    constexpr bool operator!=(Point rhs) const {return x != rhs.x && y != rhs.y;}
-    constexpr Point operator+(Point rhs) const {return {x + rhs.x, y + rhs.y};}
-    constexpr Point operator*(float s) const {return {x * s, y * s};}
-    constexpr Point operator/(float s) const {return {x / s, y / s};}
-    constexpr Point operator-() const {return {-x, -y};}
-    constexpr util::math::vec operator-(Point rhs) const {return {x - rhs.x, y - rhs.y};}
+    constexpr bool operator==(Point rhs) const noexcept {return x == rhs.x && y == rhs.y;}
+    constexpr bool operator!=(Point rhs) const noexcept {return x != rhs.x && y != rhs.y;}
+    constexpr Point operator+(Point rhs) const noexcept {return {x + rhs.x, y + rhs.y};}
+    constexpr Point operator*(float s) const noexcept {return {x * s, y * s};}
+    constexpr Point operator/(float s) const noexcept {return {x / s, y / s};}
+    constexpr Point operator-() const noexcept {return {-x, -y};}
+    constexpr util::math::vec operator-(Point rhs) const noexcept {return {x - rhs.x, y - rhs.y};}
 
-    constexpr explicit operator util::math::vec() const {return {x, y};}
-    constexpr util::math::vec vec() const {return {x, y};}
+    constexpr explicit operator util::math::vec() const noexcept {return {x, y};}
+    constexpr util::math::vec vec() const noexcept {return {x, y};}
   };
+
+  inline auto operator*(std::valarray<Point> const& rhs, float lhs) noexcept
+  {
+    auto res = rhs;
+    for (Point& p : res) {
+      p = {p.x * lhs, p.y * lhs};
+    }
+    return res;
+  }
+
+  inline auto operator/(std::valarray<Point> const& rhs, float lhs) noexcept
+  {
+    auto res = rhs;
+    for (Point& p : res) {
+      p = {p.x / lhs, p.y / lhs};
+    }
+    return res;
+  }
 
   struct Size {
     float w, h;

@@ -3,6 +3,7 @@
 #include <cmath>
 #include <array>
 #include <algorithm>
+#include <valarray>
 
 namespace otto::util::math {
 
@@ -24,12 +25,14 @@ namespace otto::util::math {
   }
 
   struct vec {
-    const float x, y;
+    float x, y;
 
-    constexpr vec() : vec(0, 0) {}
-    constexpr vec(float x, float y) : x (x), y (y) {}
+    constexpr vec() noexcept : vec(0, 0) {}
+    constexpr vec(vec const&) noexcept = default;
+    constexpr vec& operator=(vec const&) noexcept = default;
+    constexpr vec(float x, float y) noexcept : x (x), y (y) {}
 
-    vec rotate(float angle) const {
+    vec rotate(float angle) const noexcept {
       float s = std::sin(angle);
       float c = std::cos(angle);
 
@@ -39,32 +42,52 @@ namespace otto::util::math {
       return {nx, ny};
     }
 
-    float angle() const {
+    float angle() const noexcept {
       return std::atan(y/x);
     }
 
-    float len() const {return std::sqrt(x * x + y * y);}
-    constexpr float dir() const {return y / x;}
+    float len() const noexcept {return std::sqrt(x * x + y * y);}
+    constexpr float dir() const noexcept {return y / x;}
 
-    constexpr vec hat() const {return {-y, x};}
+    constexpr vec hat() const noexcept {return {-y, x};}
 
-    constexpr vec swapXY() const {return {y, x};}
-    constexpr vec flipSignX() const {return {-x, y};}
-    constexpr vec flipSignY() const {return {x, -y};}
+    constexpr vec swapXY() const noexcept {return {y, x};}
+    constexpr vec flipSignX() const noexcept {return {-x, y};}
+    constexpr vec flipSignY() const noexcept {return {x, -y};}
 
-    constexpr bool operator==(const vec& r) const {return x == r.x && y == r.y;}
-    constexpr bool operator!=(const vec& r) const {return x != r.x && y != r.y;}
-    constexpr vec operator-(const vec& r) const {return {x - r.x, y - r.y};}
-    constexpr vec operator+(const vec& r) const {return {x + r.x, y + r.y};}
-    constexpr vec operator*(float s) const {return {x * s, y * s};}
-    constexpr vec operator/(float s) const {return {x / s, y / s};}
-    constexpr vec operator-() const {return {-x, -y};}
+    constexpr bool operator==(const vec& r) const noexcept {return x == r.x && y == r.y;}
+    constexpr bool operator!=(const vec& r) const noexcept {return x != r.x && y != r.y;}
+    constexpr vec operator-(const vec& r) const noexcept {return {x - r.x, y - r.y};}
+    constexpr vec operator+(const vec& r) const noexcept {return {x + r.x, y + r.y};}
+    constexpr vec operator*(float s) const noexcept {return {x * s, y * s};}
+    constexpr vec operator/(float s) const noexcept {return {x / s, y / s};}
+    constexpr vec operator*(const vec& r) const noexcept {return {x * r.x, y * r.y};}
+    constexpr vec operator/(const vec& r) const noexcept {return {x / r.x, y / r.y};}
+    constexpr vec operator-() const noexcept {return {-x, -y};}
 
     // Factory methods
     static vec angleAndLen(float a, float l) {
       return vec(std::cos(a), std::sin(a)) * l;
     }
   };
+
+  inline auto operator*(std::valarray<vec> const& rhs, float lhs) noexcept
+  {
+    auto res = rhs;
+    for (vec& p : res) {
+      p = {p.x * lhs, p.y * lhs};
+    }
+    return res;
+  }
+
+  inline auto operator/(std::valarray<vec> const& rhs, float lhs) noexcept
+  {
+    auto res = rhs;
+    for (vec& p : res) {
+      p = {p.x / lhs, p.y / lhs};
+    }
+    return res;
+  }
 
   /// Split a number into `N` values between 0 and 1, each representing a Nth
   /// part of the range `[min,max]`
