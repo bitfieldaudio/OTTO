@@ -15,10 +15,12 @@ namespace otto::service::audio {
 
       void draw() override
       {
+#if OTTO_DEBUG_UI
         ImGui::Begin("Audio");
         audio_graph.plot("Audio graph", -1, 1);
         ImGui::Text("Buffers lost: %d", buffers_lost);
         ImGui::End();
+#endif
       }
     } debugInfo;
 

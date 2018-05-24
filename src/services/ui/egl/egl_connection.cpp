@@ -1,12 +1,7 @@
 #if OTTO_UI_EGL
 
 #include "./egl_connection.hpp"
-
-void EGLConnection::fatal(std::string message)
-{
-  printf((message + "\n").c_str());
-  ::exit(1);
-}
+#include "services/logger.hpp"
 
 void EGLConnection::init()
 {
@@ -32,36 +27,38 @@ void EGLConnection::initEGL()
   state.display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 
   if (state.display == EGL_NO_DISPLAY) {
-    fatal("Error opening EGL display");
+    LOGF("Error opening EGL display");
   }
 
   EGLBoolean result = eglInitialize(state.display, nullptr, nullptr);
   if (result == EGL_FALSE) {
-    fatal("Error initializing EGL display");
+    LOGF("Error initializing EGL display");
   }
 
   EGLConfig config;
   result = eglChooseConfig(state.display, attribute_list, &config, 1,
                            &eglData.nConfig);
   if (result == EGL_FALSE) {
-    fatal("Error choosing EGL config");
+    LOGF("Error choosing EGL config");
   }
 
   result = eglBindAPI(EGL_OPENGL_ES_API);
   if (result == EGL_FALSE) {
-    fatal("Error binding EGL API");
+    LOGF("Error binding EGL API");
   }
 
   state.context =
     eglCreateContext(state.display, config, EGL_NO_CONTEXT, context_attributes);
   if (state.context == EGL_NO_CONTEXT) {
-    fatal("Error creating EGL context");
+    LOGF("Error creating EGL context");
   }
 
   int success = graphics_get_display_size(0, &state.width, &state.height);
   if (success < 0) {
-    fatal("Error getting display size");
+    LOGF("Error getting display size");
   }
+
+  LOGI("EGL Display size: {} x {}", state.width, state.height);
 
   // What does this do?
   vc_dispmanx_rect_set(&eglData.rect, 0, 0, state.width, state.height);
@@ -76,7 +73,7 @@ void EGLConnection::initEGL()
                                                  state.height, &imagePrt);
 
   if (!eglData.resource) {
-    fatal("Error getting resource");
+    LOGF("Error getting resource");
   }
 
   VCRect srcRect;
@@ -94,7 +91,7 @@ void EGLConnection::initEGL()
 
   eglData.display = vc_dispmanx_display_open(0);
   if (!eglData.display) {
-    fatal("Error opening display");
+    LOGF("Error opening display");
   }
 
   DMXDisplay dmxDisplay = eglData.display;
@@ -113,14 +110,14 @@ void EGLConnection::initEGL()
                                          &eglData.nativeWindow, nullptr);
 
   if (state.surface == EGL_NO_SURFACE) {
-    fatal("Error creating EGL surface");
+    LOGF("Error creating EGL surface");
   }
 
   result =
     eglMakeCurrent(state.display, state.surface, state.surface, state.context);
 
   if (result == EGL_FALSE) {
-    fatal("Error connecting the context to the surface");
+    LOGF("Error connecting the context to the surface");
   }
 
   // Set background color and clear buffers

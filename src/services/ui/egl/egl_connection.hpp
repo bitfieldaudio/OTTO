@@ -20,8 +20,6 @@ public:
   void beginFrame();
   void endFrame();
 
-  void fatal(std::string message);
-
   void initEGL();
 
   struct EGLData {

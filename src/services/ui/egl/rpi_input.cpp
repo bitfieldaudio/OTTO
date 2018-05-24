@@ -2,14 +2,18 @@
 
 #include <fcntl.h>
 #include <linux/input.h>
+#include <unistd.h>
 #include <string>
 #include <vector>
 #include "core/globals.hpp"
-#include "core/ui/mainui.hpp"
-#include "filesystem.hpp"
+#include "services/ui.hpp"
+#include "util/filesystem.hpp"
 #include "services/logger.hpp"
 
-namespace otto::ui {
+namespace otto::service::ui {
+
+  using namespace otto::core::ui;
+
   static auto constexpr key_release = 0;
   static auto constexpr key_press   = 1;
   static auto constexpr key_repeat  = 2;
@@ -34,14 +38,13 @@ namespace otto::ui {
         auto fullpath = path / file;
         auto fd       = open(fullpath.c_str(), O_RDONLY | O_NONBLOCK);
         if (fd < 0) {
-          LOGE << "Couldn't open a file descriptor for " << fullpath.string();
+          LOGE("Couldn't open a file descriptor for {}", fullpath.string());
           return -1;
         }
 
         auto result = ioctl(fd, EVIOCGRAB, 1);
         if (result != 0) {
-          LOGE << "Couldn't get exclusive input access to "
-               << fullpath.string();
+          LOGE("Couldn't get exclusive input access to {}", fullpath.string());
           return -1;
         }
 
@@ -78,20 +81,20 @@ namespace otto::ui {
       switch (event.type) {
       case EV_KEY:
         switch (event.value) {
-        case key_press: LOGI << "Mouse button down: " << event.code; break;
+        case key_press: LOGI("Mouse button down: {}", event.code); break;
 
-        case key_release: LOGI << "Mouse button up: " << event.code; break;
+        case key_release: LOGI("Mouse button up: {}", event.code); break;
         }
 
       case EV_REL:
         switch (event.code) {
-        case 0: LOGI << "Mouse moved left/right: " << event.value; break;
+        case 0: LOGI("Mouse moved left/right: {}", event.value); break;
 
-        case 1: LOGI << "Mouse moved left/right: " << event.value; break;
+        case 1: LOGI("Mouse moved left/right: {}", event.value); break;
         }
 
       case EV_ABS:
-        LOGI << "Mouse absolute event: " << event.code << ", " << event.value;
+        LOGI("Mouse absolute event: {}, {}", event.code, event.value);
         break;
       }
     }

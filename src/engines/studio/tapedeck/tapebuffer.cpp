@@ -240,9 +240,11 @@ namespace otto::engines {
 
   void tape_buffer::DbgInfo::draw()
   {
+#if OTTO_DEBUG_UI
     ImGui::Begin("Tape buffer");
     read_size_graph.plot("Read size");
     ImGui::End();
+#endif
   }
 
   /*
