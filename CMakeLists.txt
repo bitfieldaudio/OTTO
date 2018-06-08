@@ -7,32 +7,29 @@ set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-option(OTTO_DEBUG_UI "Enable the imgui based debug ui" ON)
-option(OTTO_BUILD_DOCS "Build documentation" OFF)
-option(OTTO_BUILD_TESTS "Build tests" ON)
-option(OTTO_USE_LIBCXX "Link towards libc++ instead of libstdc++. This is the default on OSX" ${APPLE})
-option(OTTO_ENABLE_TIMERS "Enable debugging timers" OFF)
-option(OTTO_RPI "Build for Raspberry Pi (native graphics)" OFF)
+include(cmake/utils.cmake)
+
+otto_option(BUILD_DOCS "Build documentation" OFF)
+otto_option(BUILD_TESTS "Build tests" ON)
+otto_option(USE_LIBCXX "Link towards libc++ instead of libstdc++. This is the default on OSX" ${APPLE})
+
+otto_option(RPI "Build for Raspberry Pi (native graphics)" OFF)
+
+otto_option(ENABLE_TIMERS "Enable debugging timers" OFF)
+otto_option(DEBUG_UI "Enable the imgui based debug ui" NOT OTTO_RPI)
+otto_option(UI_EGL "Use EGL for the UI" OTTO_RPI)
+otto_option(UI_GLFW "Use GLFW for the UI" NOT OTTO_RPI)
+otto_option(AUDIO_ALSA "Use ALSA for audio" OTTO_RPI)
+otto_option(AUDIO_JACK "Use JACK for audio" NOT OTTO_RPI)
+
+otto_debug_definitions()
 
 if (OTTO_USE_LIBCXX)
   message("Using libc++ instead of libstdc++")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
 endif()
 
-if (OTTO_RPI)
-  set(OTTO_DEBUG_UI OFF)
-endif()
-
 add_subdirectory(external)
-
-if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/config.hpp")
-  file(READ "${CMAKE_CURRENT_SOURCE_DIR}/config.example.hpp" CONFIG_FILE_CONTENTS)
-  file(WRITE "${CMAKE_CURRENT_SOURCE_DIR}/config.hpp" "${CONFIG_FILE_CONTENTS}")
-endif()
-
-configure_file(config.hpp ${CMAKE_CURRENT_BINARY_DIR}/include/build/config.hpp)
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -include ${CMAKE_CURRENT_BINARY_DIR}/include/build/config.hpp")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -include ${CMAKE_CURRENT_BINARY_DIR}/include/build/config.hpp")
 
 
 # Enable warnings for local code

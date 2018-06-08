@@ -20,7 +20,7 @@ namespace otto::service::audio {
     void init();
     void shutdown();
 
-    std::atomic_int samplerate;
+    std::atomic_int samplerate = 44100;
 
   private:
     AlsaAudioDriver() = default;
@@ -30,6 +30,7 @@ namespace otto::service::audio {
     int process_callback(int nframes);
 
     snd_pcm_t* playback_handle;
+    snd_pcm_t* capture_handle;
     snd_seq_t* seq_handle;
 
     core::audio::ProcessBuffer<1> in_data;

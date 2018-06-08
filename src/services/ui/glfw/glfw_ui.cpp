@@ -127,7 +127,7 @@ namespace otto::service::ui {
     void key(GLFWwindow* window, int key, int scancode, int action, int mods)
     {
       using namespace ui;
-      Key k        = keyboardKey(key, mods);
+      Key k = keyboardKey(key, mods);
       if (action == GLFW_PRESS) {
         impl::keypress(k);
       } else if (action == GLFW_REPEAT) {
@@ -205,6 +205,7 @@ namespace otto::service::ui {
 
       void draw() override
       {
+#if OTTO_DEBUG_UI
         ImGui::Begin("Graphics");
         ImGui::Text("FPS limit");
         ImGui::SliderFloat("", &FPS_limit, 0.f, 300.f);
@@ -227,6 +228,7 @@ namespace otto::service::ui {
                          this, fps_history.size(), 0, nullptr, 0, 0,
                          ImVec2(0, 80));
         ImGui::End();
+#endif
       }
     } info;
 
@@ -243,9 +245,9 @@ namespace otto::service::ui {
       glfwGetCursorPos(window, &mx, &my);
       glfwGetWindowSize(window, &winWidth, &winHeight);
       glfwGetFramebufferSize(window, &fbWidth, &fbHeight);
-      
+
       // Calculate pixel ration for hi-dpi devices.
-      scale   = std::min((float) winWidth / (float) vg::WIDTH,
+      scale = std::min((float) winWidth / (float) vg::WIDTH,
                        (float) winHeight / (float) vg::HEIGHT);
       canvas.setSize(winWidth, winHeight);
 
@@ -282,7 +284,9 @@ namespace otto::service::ui {
       std::this_thread::sleep_for(
         std::chrono::milliseconds(int(1000 / info.FPS_limit - spent * 1000)));
 
+      #if OTTO_DEBUG_UI
       info.fps_history.push({ImGui::GetIO().Framerate, 1.f / spent});
+      #endif
     }
 
     OTTO_NVG_DELETE(vg);
@@ -291,6 +295,6 @@ namespace otto::service::ui {
 
     global::exit(global::ErrorCode::ui_closed);
   }
-} // namespace otto::ui
+} // namespace otto::service::ui
 
 #endif // OTTO_UI_GLFW

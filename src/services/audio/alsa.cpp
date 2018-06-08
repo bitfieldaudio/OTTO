@@ -25,22 +25,35 @@
 
 namespace otto::service::audio {
 
+  static int buffer_size = 512;
+  static unsigned periods = 4;
+
   static void debug_snd_params(snd_pcm_hw_params_t* params)
   {
-    unsigned int val, val2;
+
+    {
+      snd_pcm_access_t val;
+      snd_pcm_hw_params_get_access(params, &val);
+      LOGI("access type = {}", snd_pcm_access_name(val));
+    }
+
+    {
+      snd_pcm_format_t val;
+      snd_pcm_hw_params_get_format(params, &val);
+      LOGI("format = '{}' ({})", snd_pcm_format_name(val),
+           snd_pcm_format_description((snd_pcm_format_t) val));
+    }
+
+    {
+      snd_pcm_subformat_t val;
+      snd_pcm_hw_params_get_subformat(params, &val);
+      LOGI("subformat = '{}' ({})",
+           snd_pcm_subformat_name(val),
+           snd_pcm_subformat_description(val));
+    }
+
+    unsigned int val;
     int dir;
-
-    snd_pcm_hw_params_get_access(params, (snd_pcm_access_t*) &val);
-    LOGI("access type = {}", snd_pcm_access_name((snd_pcm_access_t) val));
-
-    snd_pcm_hw_params_get_format(params, (snd_pcm_format_t*) &val);
-    LOGI("format = '{}' ({})", snd_pcm_format_name((snd_pcm_format_t) val),
-         snd_pcm_format_description((snd_pcm_format_t) val));
-
-    snd_pcm_hw_params_get_subformat(params, (snd_pcm_subformat_t*) &val);
-    LOGI("subformat = '{}' ({})",
-         snd_pcm_subformat_name((snd_pcm_subformat_t) val),
-         snd_pcm_subformat_description((snd_pcm_subformat_t) val));
 
     snd_pcm_hw_params_get_channels(params, &val);
     LOGI("channels = {}", val);
@@ -58,14 +71,17 @@ namespace otto::service::audio {
     snd_pcm_hw_params_get_buffer_time(params, &val, &dir);
     LOGI("buffer time = {} us", val);
 
-    snd_pcm_hw_params_get_buffer_size(params, (snd_pcm_uframes_t*) &val);
+    snd_pcm_hw_params_get_buffer_size(params, &frames);
     LOGI("buffer size = {} frames", val);
 
     snd_pcm_hw_params_get_periods(params, &val, &dir);
     LOGI("periods per buffer = {} frames", val);
 
-    snd_pcm_hw_params_get_rate_numden(params, &val, &val2);
-    LOGI("exact rate = {}/{} bps", val, val2);
+    {
+      unsigned int val2;
+      snd_pcm_hw_params_get_rate_numden(params, &val, &val2);
+      LOGI("exact rate = {}/{} bps", val, val2);
+    }
 
     val = snd_pcm_hw_params_get_sbits(params);
     LOGI("significant bits = {}", val);
@@ -104,6 +120,69 @@ namespace otto::service::audio {
     LOGI("can sync start = {}", val);
   }
 
+  static void setup_alsa_device(snd_pcm_t* handle, int channels)
+  {
+    int rc;
+    snd_pcm_hw_params_t* params;
+
+    /* Allocate a hardware parameters object. */
+    rc = snd_pcm_hw_params_malloc(&params);
+    LOGF_IF(rc < 0, "Unable to allocate hardware param struct: {}",
+            snd_strerror(rc));
+
+    /* Fill it in with default values. */
+    rc = snd_pcm_hw_params_any(handle, params);
+    LOGF_IF(rc < 0, "Unable to initialize hardware param struct: {}",
+            snd_strerror(rc));
+
+    /* Set the desired hardware parameters. */
+
+    /* Interleaved mode */
+    rc = snd_pcm_hw_params_set_access(handle, params,
+                                      SND_PCM_ACCESS_RW_INTERLEAVED);
+    LOGE_IF(rc < 0, "Error setting access: {}", snd_strerror(rc));
+
+    /* Signed 16-bit little-endian format */
+    rc = snd_pcm_hw_params_set_format(handle, params, SND_PCM_FORMAT_FLOAT);
+    LOGE_IF(rc < 0, "Error setting format: {}", snd_strerror(rc));
+
+    /* Two channels (stereo) */
+    rc = snd_pcm_hw_params_set_channels(handle, params, channels);
+    LOGE_IF(rc < 0, "Error setting channelse: {}", snd_strerror(rc));
+
+    /* 44100 bits/second sampling rate (CD quality) */
+    unsigned rate = AudioDriver::get().samplerate;
+    int dir = 0;
+    rc = snd_pcm_hw_params_set_rate_near(handle, params, &rate, &dir);
+    LOGE_IF(rc < 0, "Error setting sample rate: {}", snd_strerror(rc));
+    AudioDriver::get().samplerate = rate;
+
+    // Set periods
+    rc = snd_pcm_hw_params_set_periods_near(handle, params, &periods, 0);
+    LOGE_IF(rc < 0, "Error setting periods: {}", snd_strerror(rc));
+
+    snd_pcm_uframes_t frame_size = channels * sizeof(float);
+    snd_pcm_uframes_t frames = buffer_size * periods / frame_size;
+    rc = snd_pcm_hw_params_set_buffer_size_near(handle, params, &frames);
+    LOGE_IF(rc < 0, "Error setting buffer size: {}", snd_strerror(rc));
+
+    if (frames != buffer_size * periods / frame_size) {
+      buffer_size = frames * frame_size / periods;
+    }
+
+    /* Display information about the PCM interface */
+
+    LOGI("PCM handle name = '{}'\n", snd_pcm_name(handle));
+
+    LOGI("PCM state = {}\n", snd_pcm_state_name(snd_pcm_state(handle)));
+
+    debug_snd_params(params);
+
+    /* Write the parameters to the driver */
+    rc = snd_pcm_hw_params(handle, params);
+    LOGF_IF(rc < 0, "Unable to set HW params: {}", snd_strerror(rc));
+  }
+
   AlsaAudioDriver& AlsaAudioDriver::get() noexcept
   {
     static AlsaAudioDriver instance{};
@@ -113,84 +192,30 @@ namespace otto::service::audio {
   void AlsaAudioDriver::init()
   {
     int rc;
-    snd_pcm_hw_params_t* params;
 
-    /* Open PCM device for playback. */
     rc = snd_pcm_open(&playback_handle, "default", SND_PCM_STREAM_PLAYBACK, 0);
-    LOGF_IF(rc < 0, "Unable to open PCM device: {}", snd_strerror(rc));
+    LOGF_IF(rc < 0, "Unable to open PCM playback device: {}", snd_strerror(rc));
+    rc = snd_pcm_open(&capture_handle, "default", SND_PCM_STREAM_CAPTURE, 0);
+    LOGF_IF(rc < 0, "Unable to open PCM playback device: {}", snd_strerror(rc));
 
-    /* Allocate a hardware parameters object. */
-    rc = snd_pcm_hw_params_malloc(&params);
-    LOGF_IF(rc < 0, "Unable to allocate hardware param struct: {}",
-            snd_strerror(rc));
+    setup_alsa_device(playback_handle, 2);
+    setup_alsa_device(capture_handle, 1);
 
-    /* Fill it in with default values. */
-    rc = snd_pcm_hw_params_any(playback_handle, params);
-    LOGF_IF(rc < 0, "Unable to initialize hardware param struct: {}",
-            snd_strerror(rc));
+    rc = snd_seq_open(&seq_handle, "default", SND_SEQ_OPEN_DUPLEX, 0);
+    LOGF_IF(rc < 0, "Unable to open sequencer device: {}", snd_strerror(rc));
 
-    /* Set the desired hardware parameters. */
-
-    /* Interleaved mode */
-    rc = snd_pcm_hw_params_set_access(playback_handle, params,
-                                      SND_PCM_ACCESS_RW_INTERLEAVED);
-    LOGE_IF(rc < 0, "Error setting access: {}", snd_strerror(rc));
-
-    /* Signed 16-bit little-endian format */
-    rc = snd_pcm_hw_params_set_format(playback_handle, params,
-                                      SND_PCM_FORMAT_FLOAT);
-    LOGE_IF(rc < 0, "Error setting format: {}", snd_strerror(rc));
-
-    /* Two channels (stereo) */
-    rc = snd_pcm_hw_params_set_channels(playback_handle, params, 2);
-    LOGE_IF(rc < 0, "Error setting channelse: {}", snd_strerror(rc));
-
-    /* 44100 bits/second sampling rate (CD quality) */
-    unsigned rate = 44100;
-    int dir = 0;
-    rc = snd_pcm_hw_params_set_rate_near(playback_handle, params, &rate, &dir);
-    LOGE_IF(rc < 0, "Error setting sample rate: {}", snd_strerror(rc));
-
-    // Set periods
-    // unsigned periods = 4;
-    // rc = snd_pcm_hw_params_set_periods(playback_handle, params, periods, 0);
-    // LOGE_IF(rc < 0, "Error setting periods: {}", snd_strerror(rc));
-
-    // snd_pcm_uframes_t sample_size = 4;
-    // snd_pcm_uframes_t periodsize = sample_size * 2;
-    // snd_pcm_uframes_t buffersize = 1024;
-    // rc = snd_pcm_hw_params_set_buffer_size_near(playback_handle, params,
-    // &buffersize); LOGE_IF(rc < 0, "Error setting buffer size: {}",
-    // snd_strerror(rc));
-
-    /* Display information about the PCM interface */
-
-    LOGI("PCM playback_handle name = '{}'\n", snd_pcm_name(playback_handle));
-
-    LOGI("PCM state = {}\n",
-         snd_pcm_state_name(snd_pcm_state(playback_handle)));
-
-    debug_snd_params(params);
-
-    if (snd_seq_open(&seq_handle, "default", SND_SEQ_OPEN_DUPLEX, 0) < 0) {
-        fprintf(stderr, "Error opening ALSA sequencer.\n");
-        exit(1);
-    }
     snd_seq_set_client_name(seq_handle, "OTTO");
-    if (snd_seq_create_simple_port(seq_handle, "OTTO",
-        SND_SEQ_PORT_CAP_WRITE|SND_SEQ_PORT_CAP_SUBS_WRITE,
-        SND_SEQ_PORT_TYPE_APPLICATION) < 0) {
-        fprintf(stderr, "Error creating sequencer port.\n");
-        exit(1);
-    }
+    rc = snd_seq_create_simple_port(
+      seq_handle, "OTTO", SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE,
+      SND_SEQ_PORT_TYPE_APPLICATION);
+    LOGF_IF(rc < 0, "Error creating sequencer port: {}", snd_strerror(rc));
 
     LOGI("Opened sequencer");
 
-    /* Write the parameters to the driver */
-    rc = snd_pcm_hw_params(playback_handle, params);
-    LOGF_IF(rc < 0, "Unable to set HW params: {}", snd_strerror(rc));
-
     audio_thread = std::thread([this] { main_loop(); });
+
+    events::buffersize_change().fire(buffer_size);
+    events::samplerate_change().fire(samplerate);
   }
 
   void AlsaAudioDriver::shutdown()
@@ -201,7 +226,6 @@ namespace otto::service::audio {
 
   int AlsaAudioDriver::process_callback(int nframes)
   {
-    return nframes;
     auto running = audio::running() && global::running();
     if (!running) {
       return nframes;
@@ -223,30 +247,60 @@ namespace otto::service::audio {
 
   void AlsaAudioDriver::main_loop()
   {
-    int nfds = 0, l1 = 0;
-    struct pollfd* pfds;
-    const int BUFSIZE = 512;
+    int nframes, inframes, outframes, frame_size;
+    int channels = 2;
 
-    nfds = snd_pcm_poll_descriptors_count(playback_handle);
-    pfds = (struct pollfd*) alloca(sizeof(struct pollfd) * nfds);
-    snd_pcm_poll_descriptors(playback_handle, pfds, nfds);
+    bool restarting = true;
+
     while (global::running()) {
-      if (poll(pfds, nfds, 1000) > 0) {
-        // for (l1 = 0; l1 < seq_nfds; l1++) {
-        //   if (pfds[l1].revents > 0) midi_callback();
-        // }
-        for (l1 = 0; l1 < nfds; l1++) {
-          if (pfds[l1].revents > 0) {
-            if (process_callback(BUFSIZE) < BUFSIZE) {
-              fprintf(stderr, "xrun !\n");
-              snd_pcm_prepare(playback_handle);
-            }
-          }
-        }
+      frame_size = channels * sizeof(float);
+      nframes = buffer_size / frame_size;
+
+      if (restarting) {
+        restarting = false;
+        /* drop any output we might got and stop */
+        snd_pcm_drop(capture_handle);
+        snd_pcm_drop(playback_handle);
+        /* prepare for use */
+        snd_pcm_prepare(capture_handle);
+        snd_pcm_prepare(playback_handle);
+
+        /* fill the whole output buffer */
+        for (int i = 0; i < periods; i += 1)
+          snd_pcm_writei(playback_handle, in_data.data(), nframes);
       }
+
+      while ((inframes =
+                snd_pcm_readi(capture_handle, in_data.data(), nframes)) < 0) {
+        if (inframes == -EAGAIN) continue;
+        LOGE("Input Overrun");
+        //restarting = 1;
+        snd_pcm_prepare(capture_handle);
+      }
+
+      LOGE_IF(inframes != nframes,
+              "Short read from capture device: {}, expecting {}", inframes,
+              nframes);
+
+      auto out_data =
+        engines::process({{in_data.data(), nframes}, {}, nframes});
+
+      audio::process_audio_output(out_data);
+
+      LOGW_IF(out_data.nframes != nframes, "Frames went missing!");
+
+      while ((outframes = snd_pcm_writei(playback_handle, out_data.audio.data(),
+                                         out_data.nframes)) < 0) {
+        if (outframes == -EAGAIN) continue;
+        LOGE("Output buffer underrun");
+        //restarting = 1;
+        snd_pcm_prepare(playback_handle);
+      }
+
+      LOGE_IF(outframes != nframes,
+              "Short write to capture device: {}, expecting {}", outframes,
+              nframes);
     }
-    snd_pcm_close(playback_handle);
-    snd_seq_close(seq_handle);
   }
 } // namespace otto::service::audio
 
