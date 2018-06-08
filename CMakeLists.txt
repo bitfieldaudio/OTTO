@@ -19,28 +19,21 @@ if (OTTO_USE_LIBCXX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
 endif()
 
-if (OTTO_ENABLE_TIMERS)
-  add_definitions(-DOTTO_ENABLE_TIMERS=1)
-else ()
-  add_definitions(-DOTTO_ENABLE_TIMERS=0)
-endif ()
-
 if (OTTO_RPI)
-  add_definitions(-DOTTO_UI_EGL=1)
-  add_definitions(-DOTTO_AUDIO_ALSA=1)
   set(OTTO_DEBUG_UI OFF)
-else()
-  add_definitions(-DOTTO_UI_GLFW=1)
-  add_definitions(-DOTTO_AUDIO_JACK=1)
-endif()
-
-if (OTTO_DEBUG_UI)
-  add_definitions(-DOTTO_DEBUG_UI=1)
-else()
-  add_definitions(-DOTTO_DEBUG_UI=0)
 endif()
 
 add_subdirectory(external)
+
+if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/config.hpp")
+  file(READ "${CMAKE_CURRENT_SOURCE_DIR}/config.example.hpp" CONFIG_FILE_CONTENTS)
+  file(WRITE "${CMAKE_CURRENT_SOURCE_DIR}/config.hpp" "${CONFIG_FILE_CONTENTS}")
+endif()
+
+configure_file(config.hpp ${CMAKE_CURRENT_BINARY_DIR}/include/build/config.hpp)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -include ${CMAKE_CURRENT_BINARY_DIR}/include/build/config.hpp")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -include ${CMAKE_CURRENT_BINARY_DIR}/include/build/config.hpp")
+
 
 # Enable warnings for local code
 if(MSVC)
