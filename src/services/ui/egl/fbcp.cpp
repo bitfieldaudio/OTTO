@@ -59,6 +59,7 @@ namespace otto::service::ui {
     vc_dispmanx_snapshot(egl_data.display, screen_resource, DISPMANX_NO_ROTATE);
     vc_dispmanx_resource_read_data(screen_resource, &rect1, fbp,
                                    vinfo.xres * vinfo.bits_per_pixel / 8);
+    LOGI("fbcp: Copied");
   }
 
   void RpiFBCP::exit() noexcept

@@ -1,4 +1,4 @@
-#include "jack_audio_driver.hpp"
+#include "jack.hpp"
 
 #include <string>
 #include <vector>

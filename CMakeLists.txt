@@ -27,9 +27,11 @@ endif ()
 
 if (OTTO_RPI)
   add_definitions(-DOTTO_UI_EGL=1)
+  add_definitions(-DOTTO_AUDIO_ALSA=1)
   set(OTTO_DEBUG_UI OFF)
 else()
   add_definitions(-DOTTO_UI_GLFW=1)
+  add_definitions(-DOTTO_AUDIO_JACK=1)
 endif()
 
 if (OTTO_DEBUG_UI)

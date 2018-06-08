@@ -2,10 +2,13 @@
 
 #include "util/algorithm.hpp"
 
-#include "audio/jack_audio_driver.hpp"
+#if OTTO_AUDIO_JACK
+  #include "audio/jack.hpp"
+#elif OTTO_AUDIO_ALSA
+  #include "audio/alsa.hpp"
+#endif
 
 namespace otto::service::audio {
-  using AudioDriver = JackAudioDriver;
 
   namespace {
     struct DebugInfo : debug_ui::Info {

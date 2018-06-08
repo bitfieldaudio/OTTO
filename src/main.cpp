@@ -28,7 +28,7 @@ int main(int argc, char* argv[])
     service::audio::init();
 
     service::engines::start();
-    //service::audio::start();
+    service::audio::start();
 
     service::ui::init();
     service::ui::main_ui_loop();

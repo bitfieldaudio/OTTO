@@ -55,4 +55,6 @@ namespace otto::service::audio {
     void gatherMidiInput(int nFrames);
     void process(int nframes);
   };
+
+  using AudioDriver = JackAudioDriver;
 } // otto::audio
