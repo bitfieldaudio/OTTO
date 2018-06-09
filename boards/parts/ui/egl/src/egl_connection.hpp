@@ -1,5 +1,3 @@
-#if OTTO_UI_EGL
-
 #pragma once
 
 #include <string>
@@ -45,5 +43,3 @@ public:
     EGLContext context;
   } state;
 };
-
-#endif // OTTO_UI_EGL

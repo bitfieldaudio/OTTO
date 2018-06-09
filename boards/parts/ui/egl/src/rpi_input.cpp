@@ -1,5 +1,3 @@
-#if OTTO_UI_EGL
-
 #include <fcntl.h>
 #include <linux/input.h>
 #include <unistd.h>
@@ -237,5 +235,3 @@ namespace otto::service::ui {
     }
   }
 } // namespace otto::ui
-
-#endif // OTTO_UI_EGL

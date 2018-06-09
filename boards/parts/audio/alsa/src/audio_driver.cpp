@@ -1,5 +1,3 @@
-#if OTTO_AUDIO_ALSA
-
 #include "alsa.hpp"
 
 #include <string>
@@ -150,7 +148,6 @@ namespace otto::service::audio {
     rc = snd_pcm_hw_params_set_channels(handle, params, channels);
     LOGE_IF(rc < 0, "Error setting channelse: {}", snd_strerror(rc));
 
-    /* 44100 bits/second sampling rate (CD quality) */
     unsigned rate = AudioDriver::get().samplerate;
     int dir = 0;
     rc = snd_pcm_hw_params_set_rate_near(handle, params, &rate, &dir);
@@ -249,13 +246,12 @@ namespace otto::service::audio {
   {
     int nframes, inframes, outframes, frame_size;
     int channels = 2;
+    frame_size = channels * sizeof(float);
+    nframes = buffer_size / frame_size;
 
     bool restarting = true;
 
     while (global::running()) {
-      frame_size = channels * sizeof(float);
-      nframes = buffer_size / frame_size;
-
       if (restarting) {
         restarting = false;
         /* drop any output we might got and stop */
@@ -303,5 +299,3 @@ namespace otto::service::audio {
     }
   }
 } // namespace otto::service::audio
-
-#endif // OTTO_AUDIO_ALSA

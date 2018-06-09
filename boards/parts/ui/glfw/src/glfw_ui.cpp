@@ -1,5 +1,3 @@
-#if OTTO_UI_GLFW
-
 #include <chrono>
 #include <thread>
 
@@ -296,5 +294,3 @@ namespace otto::service::ui {
     global::exit(global::ErrorCode::ui_closed);
   }
 } // namespace otto::service::ui
-
-#endif // OTTO_UI_GLFW

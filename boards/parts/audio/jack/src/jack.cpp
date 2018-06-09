@@ -1,4 +1,4 @@
-#include "jack.hpp"
+#include "board/audio_driver.hpp"
 
 #include <string>
 #include <vector>
@@ -8,6 +8,7 @@
 #include <jack/midiport.h>
 
 #include "util/timer.hpp"
+#include "util/algorithm.hpp"
 
 #include "core/globals.hpp"
 #include "core/audio/processor.hpp"
@@ -228,7 +229,7 @@ namespace otto::service::audio {
       MidiEvent mEvent;
 
       mEvent.channel = event.buffer[0] & 0b00001111;
-      mEvent.data    = event.buffer + 1;
+      std::copy_n(event.buffer + 1, std::min(event.size - 1, mEvent.max_data_size), mEvent.data.begin());
       mEvent.time    = event.time;
 
       auto type = MidiEvent::Type(event.buffer[0] >> 4);

@@ -1,7 +1,5 @@
 #pragma once
 
-#if OTTO_UI_EGL
-
 #include <linux/fb.h>
 
 #include "./egl_connection.hpp"
@@ -40,5 +38,3 @@ namespace otto::service::ui {
   };
 
 }
-#endif
-

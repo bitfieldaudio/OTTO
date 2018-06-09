@@ -2,11 +2,7 @@
 
 #include "util/algorithm.hpp"
 
-#if OTTO_AUDIO_JACK
-  #include "audio/jack.hpp"
-#elif OTTO_AUDIO_ALSA
-  #include "audio/alsa.hpp"
-#endif
+#include "board/audio_driver.hpp"
 
 namespace otto::service::audio {
 

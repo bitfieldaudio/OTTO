@@ -36,3 +36,26 @@ function(otto_debug_definitions)
     endforeach(item)
     message("\n")
 endfunction(otto_debug_definitions)
+
+macro(otto_include_board BOARD)
+
+    set(BOARD_DIR "${OTTO_SOURCE_DIR}/boards/${BOARD}/")
+
+    if(NOT IS_DIRECTORY ${BOARD_DIR})
+      message(FATAL_ERROR "Invalid board '${BOARD}'")
+    endif()
+    
+    string(REPLACE "/" "_" BOARD_DEFINITION_NAME ${BOARD})
+    string(REPLACE "-" "_" BOARD_DEFINITION_NAME ${BOARD_DEFINITION_NAME})
+    string(TOUPPER "${BOARD_DEFINITON_NAME}" BOARD_DEFINITION_NAME)
+    target_compile_definitions(otto PUBLIC "OTTO_BOARD_${BOARD_DEFINITION_NAME}")
+    target_include_directories(otto PUBLIC ${BOARD_DIR}/include)
+    
+    file(GLOB_RECURSE BOARD_SOURCES ${BOARD_DIR}/src/*.cpp)
+    if (NOT "${BOARD_SOURCES}" STREQUAL "") 
+        target_sources(otto PRIVATE ${BOARD_SOURCES})
+    endif()
+
+    include(${BOARD_DIR}/config.cmake)
+
+endmacro(otto_include_board)

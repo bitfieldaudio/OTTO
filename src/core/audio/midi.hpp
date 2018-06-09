@@ -1,63 +1,16 @@
 #pragma once
 
-#include <cmath>
-#include <variant.hpp>
 #include <array>
+#include <cmath>
+#include <gsl/gsl>
+#include <variant.hpp>
+
+#include "util/algorithm.hpp"
+#include "util/exception.hpp"
 
 #include "util/utility.hpp"
 
 namespace otto::core::midi {
-
-  struct MidiEvent {
-
-    using byte = unsigned char;
-
-    enum class Type {
-      NoteOff       = 0b1000,
-      NoteOn        = 0b1001,
-      ControlChange = 0b1011,
-    };
-
-    Type type;
-
-    byte *data;
-    int channel;
-    int time;
-
-  };
-
-  struct NoteEvent : MidiEvent {
-    int key = data[0];
-    int velocity = data[1];
-
-    NoteEvent(const MidiEvent& event)
-      : MidiEvent(event)
-    {};
-  };
-
-  struct NoteOnEvent : NoteEvent {
-
-    NoteOnEvent(const MidiEvent& event)
-      : NoteEvent(event)
-    {};
-  };
-
-  struct NoteOffEvent : NoteEvent {
-
-    NoteOffEvent(const MidiEvent& event)
-      : NoteEvent(event)
-    {};
-  };
-
-  struct ControlChangeEvent : public MidiEvent {
-    int controler = data[0];
-    int value = data[1];
-
-    ControlChangeEvent(const MidiEvent& event) : MidiEvent(event) {};
-  };
-
-  // TODO: Replace with variant AnyMidiEvent
-  using AnyMidiEvent = mpark::variant<NoteOnEvent, NoteOffEvent, ControlChangeEvent>;
 
   namespace detail {
 
@@ -82,9 +35,77 @@ namespace otto::core::midi {
 
   } // namespace detail
 
-  inline void generateFreqTable(float tuning = 440) {
+
+  struct MidiEvent {
+    static constexpr std::size_t max_data_size = 2;
+    using byte = unsigned char;
+
+    enum class Type {
+      NoteOff = 0b1000,
+      NoteOn = 0b1001,
+      ControlChange = 0b1011,
+    };
+
+    Type type;
+
+    std::array<byte, max_data_size> data;
+    int channel;
+    int time;
+  };
+
+  struct NoteEvent : MidiEvent {
+    byte& key = data[0];
+    byte& velocity = data[1];
+
+    constexpr NoteEvent(const MidiEvent& event) noexcept : MidiEvent(event) {}
+
+    /// Construct a NoteEvent from a type, note as string, and optional velocity
+    /// and channels
+    ///
+    /// \throws `util::exception` if `note` is not in `detail::note_names`
+    constexpr NoteEvent(MidiEvent::Type type,
+                        std::string_view note,
+                        float velocity = 1,
+                        byte channel = 0)
+      : MidiEvent{type, {}, channel, 0}
+    {
+      velocity = gsl::narrow_cast<byte>(velocity * 128);
+
+      // std::find is not constexpr, so i roll my own
+      auto iter = detail::note_names.cbegin();
+      const auto last = detail::note_names.cend();
+      for (int i = 0; iter != last; ++i, ++iter) {
+        if (*iter == note) {
+          key = i;
+          return;
+        }
+      }
+      throw util::exception("Invalid note name");
+    }
+  };
+
+  struct NoteOnEvent : NoteEvent {
+    NoteOnEvent(const MidiEvent& event) : NoteEvent(event){};
+  };
+
+  struct NoteOffEvent : NoteEvent {
+    NoteOffEvent(const MidiEvent& event) : NoteEvent(event){};
+  };
+
+  struct ControlChangeEvent : public MidiEvent {
+    int controler = data[0];
+    int value = data[1];
+
+    ControlChangeEvent(const MidiEvent& event) : MidiEvent(event){};
+  };
+
+  using AnyMidiEvent =
+    mpark::variant<NoteOnEvent, NoteOffEvent, ControlChangeEvent>;
+
+  inline void generateFreqTable(float tuning = 440)
+  {
     for (int i = 0; i < 128; i++) {
-      detail::freq_table[i] = tuning * std::pow(2, float(i - 69)/float(12));
+      detail::freq_table[i] = tuning * std::pow(2, float(i - 69) / float(12));
     }
   }
 
@@ -97,4 +118,5 @@ namespace otto::core::midi {
   {
     return detail::freq_table[key];
   }
-}
+
+} // namespace otto::core::midi

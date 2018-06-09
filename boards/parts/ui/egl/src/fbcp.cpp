@@ -1,5 +1,3 @@
-#if OTTO_UI_EGL
-
 #include <fcntl.h>
 #include <stdio.h>
 #include <sys/ioctl.h>
@@ -70,4 +68,3 @@ namespace otto::service::ui {
   }
 
 } // namespace otto::services::ui
-#endif

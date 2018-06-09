@@ -1,7 +1,5 @@
 #pragma once
 
-#if OTTO_AUDIO_ALSA
-
 #include <atomic>
 #include <string>
 #include <vector>
@@ -40,5 +38,3 @@ namespace otto::service::audio {
 
   using AudioDriver = AlsaAudioDriver;
 } // otto::audio
-
-#endif
