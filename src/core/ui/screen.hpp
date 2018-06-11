@@ -48,6 +48,8 @@ namespace otto::core::ui {
     loop_in,
     loop_out,
 
+    ret,
+
     lift,
     drop,
     cut,

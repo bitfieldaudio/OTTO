@@ -8,7 +8,7 @@
 #include "util/filesystem.hpp"
 #include "services/logger.hpp"
 
-#include "board/ui/rpi_input.hpp"
+#include "board/ui/keys.hpp"
 
 namespace otto::board::ui {
 
@@ -102,8 +102,8 @@ namespace otto::board::ui {
 
   void read_keyboard()
   {
-    static bool leftCtrl  = false;
-    static bool rightCtrl = false;
+    static Modifiers left;
+    static Modifiers right;
     static int keyboard   = open_device("event-kbd");
     if (keyboard == -1) {
       throw global::exception(global::ErrorCode::input_error,
@@ -116,34 +116,25 @@ namespace otto::board::ui {
         auto pressed = event.value != 0;
 
         switch (event.code) {
-        case KEY_LEFTCTRL: leftCtrl = pressed; break;
-
-        case KEY_RIGHTCTRL: rightCtrl = pressed;
+          case KEY_LEFTCTRL:   left.set(Modifier::ctrl,   pressed); break;
+          case KEY_RIGHTCTRL:  right.set(Modifier::ctrl,  pressed); break;
+          case KEY_LEFTALT:    left.set(Modifier::alt,    pressed); break;
+          case KEY_RIGHTALT:   right.set(Modifier::alt,   pressed); break;
+          case KEY_LEFTSHIFT:  left.set(Modifier::shift,  pressed); break;
+          case KEY_RIGHTSHIFT: right.set(Modifier::shift, pressed); break;
+          case KEY_LEFTMETA:   left.set(Modifier::super,  pressed); break;
+          case KEY_RIGHTMETA:  right.set(Modifier::super, pressed); break;
         }
 
-        Key k = translate_key(event.code, leftCtrl || rightCtrl);
-        switch (event.value) {
-        case key_release: impl::keyrelease(k); break;
-
-        case key_press: impl::keypress(k); break;
-
-        case key_repeat:
-          switch (k) {
-          case Key::red_up:
-          case Key::red_down:
-          case Key::blue_up:
-          case Key::blue_down:
-          case Key::white_up:
-          case Key::white_down:
-          case Key::green_up:
-          case Key::green_down:
-          case Key::left:
-          case Key::right: impl::keypress(k); break;
-
-          default: break;
+        Action action = [event] {
+          switch (event.value) {
+          case key_release: return Action::release;
+          case key_press: return Action::press;
+          case key_repeat: return Action::repeat;
           }
-          break;
-        }
+        }();
+
+        handle_keyevent(action, left | right, board::ui::Key(event.code));
       }
     }
   }

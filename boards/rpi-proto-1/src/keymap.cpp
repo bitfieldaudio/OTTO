@@ -1,94 +1,94 @@
-#include "board/ui/rpi_input.hpp"
+#include "board/ui/keys.hpp"
+
+#include "services/audio.hpp"
+#include "services/ui.hpp"
 
 namespace otto::board::ui {
 
-  Key translate_key(int key_code, bool ctrl)
+  void handle_keyevent(Action action, Modifiers mods, Key key)
   {
-    switch (key_code) {
-    // Rotaries
-    case KEY_Q: return ctrl ? Key::blue_click : Key::blue_up;
-    case KEY_A: return ctrl ? Key::blue_click : Key::blue_down;
-    case KEY_W: return ctrl ? Key::green_click : Key::green_up;
-    case KEY_S: return ctrl ? Key::green_click : Key::green_down;
-    case KEY_E: return ctrl ? Key::white_click : Key::white_up;
-    case KEY_D: return ctrl ? Key::white_click : Key::white_down;
-    case KEY_R: return ctrl ? Key::red_click : Key::red_up;
-    case KEY_F: return ctrl ? Key::red_click : Key::red_down;
+    auto send_midi = [action](const char* str) {
+      int note = core::midi::note_number(str);
+      if (note < 0) throw util::exception("Invalid note '{}'", str);
+      if (action == Action::press)
+        service::audio::send_midi_event(core::midi::NoteOnEvent{note});
+      else if (action == Action::release)
+        service::audio::send_midi_event(core::midi::NoteOffEvent{note});
+    };
 
-    case KEY_LEFT: return Key::left;
-    case KEY_RIGHT:
-      return Key::right;
+    using OKey = otto::core::ui::Key;
 
-    // Tapedeck
-    case KEY_SPACE: return Key::play;
-    case KEY_Z: return Key::rec;
-    case KEY_F1: return Key::track_1;
-    case KEY_F2: return Key::track_2;
-    case KEY_F3: return Key::track_3;
-    case KEY_F4:
-      return Key::track_4;
+    auto send_key = [action](OKey k, bool repeat = false) {
+      if (action == Action::press || (action == Action::repeat && repeat))
+        service::ui::impl::keypress(k);
+      else if (action == Action::release)
+        service::ui::impl::keyrelease(k);
+    };
 
-    // Numbers
-    case KEY_T:
-      if (ctrl) {
-        return Key::tape;
-      }
-      break;
-    case KEY_Y:
-      if (ctrl) {
-        return Key::mixer;
-      }
-      break;
-    case KEY_U:
-      if (ctrl) {
-        return Key::synth;
-      }
-      break;
-    case KEY_G:
-      if (ctrl) {
-        return Key::metronome;
-      }
-      break;
-    case KEY_H:
-      if (ctrl) {
-        return Key::sampler;
-      }
-      break;
-    case KEY_J:
-      if (ctrl) {
-        return Key::drums;
-      }
-      break;
-    case KEY_K:
-      if (ctrl) {
-        return Key::envelope;
-      }
-      break;
+    // The function key
+    static bool func = false;
 
-    case KEY_L: return Key::loop;
-    case KEY_I: return Key::loop_in;
-    case KEY_O: return Key::loop_out;
+    switch (key) {
+    // Midi
+    case Key::a: send_midi("F-1"); break;
+    case Key::b: send_midi("F#-1"); break;
+    case Key::c: send_midi("G-1"); break;
+    case Key::d: send_midi("G#-1"); break;
+    case Key::e: send_midi("A0"); break;
+    case Key::f: send_midi("A#0"); break;
+    case Key::g: send_midi("B0"); break;
+    case Key::h: send_midi("C0"); break;
+    case Key::i: send_midi("C#0"); break;
+    case Key::j: send_midi("D0"); break;
+    case Key::k: send_midi("D#0"); break;
+    case Key::l: send_midi("E0"); break;
+    case Key::m: send_midi("F0"); break;
+    case Key::n: send_midi("F#0"); break;
+    case Key::o: send_midi("G0"); break;
+    case Key::p: send_midi("G#0"); break;
+    case Key::q: send_midi("A1"); break;
+    case Key::r: send_midi("A#1"); break;
+    case Key::s: send_midi("B1"); break;
+    case Key::t: send_midi("C1"); break;
+    case Key::u: send_midi("C#1"); break;
+    case Key::v: send_midi("D1"); break;
+    case Key::w: send_midi("D#1"); break;
+    case Key::x: send_midi("E1"); break;
 
-    case KEY_X: return Key::cut;
-    case KEY_C:
-      if (ctrl) {
-        return Key::lift;
-      }
-      break;
+    // Modifiers
+    case Key::period: send_key(OKey::shift); break;
+    case Key::comma: func = (action != Action::release); break;
 
-    case KEY_V:
-      if (ctrl) {
-        return Key::drop;
-      }
-      break;
+    // Rotary emulation
+    case Key::f1: send_key(func ? OKey::blue_click : OKey::blue_up, !func); break;
+    case Key::f2: send_key(func ? OKey::green_click : OKey::green_up, !func); break;
+    case Key::f3: send_key(func ? OKey::white_click : OKey::white_up, !func); break;
+    case Key::f4: send_key(func ? OKey::red_click : OKey::red_up, !func); break;
+    case Key::f5: send_key(func ? OKey::blue_click : OKey::blue_down, !func); break;
+    case Key::f6: send_key(func ? OKey::green_click : OKey::green_down, !func); break;
+    case Key::f7: send_key(func ? OKey::white_click : OKey::white_down, !func); break;
+    case Key::f8: send_key(func ? OKey::red_click : OKey::red_down, !func); break;
 
-    case KEY_LEFTSHIFT:
-    case KEY_RIGHTSHIFT: return Key::shift;
+    case Key::space: send_key(OKey::synth); break;
+    case Key::left_control: send_key(OKey::drums); break;
+    case Key::left_shift: send_key(OKey::envelope); break;
 
-    case KEY_ESC: return Key::quit;
+    case Key::enter: send_key(OKey::tape); break;
+    case Key::y: send_key(OKey::mixer); break;
+    case Key::z: send_key(OKey::metronome); break;
+
+    case Key::n1: send_key(OKey::rec); break;
+    case Key::n2: send_key(OKey::play); break;
+    case Key::n3: send_key(OKey::loop); break;
+    case Key::n4: send_key(OKey::ret); break;
+
+    case Key::n5: send_key(OKey::left); break;
+    case Key::n6: send_key(OKey::right); break;
+    case Key::n7: send_key(OKey::lift); break;
+    case Key::n8: send_key(OKey::drop); break;
+
+    default: break;
     }
-
-    return Key::none;
   }
 
-}
+} // namespace otto::board::ui

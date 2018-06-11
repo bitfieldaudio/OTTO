@@ -152,23 +152,30 @@ namespace otto::board::ui {
   struct Modifiers {
     std::underlying_type_t<Modifier> data = 0;
 
-    constexpr Modifiers(std::initializer_list<Modifier> mods) noexcept
+    constexpr Modifiers(std::initializer_list<Modifier> mods = {}) noexcept
       : data{util::accumulate(mods, 0, [](auto m1, Modifier m2) {
           return util::underlying(m1) | util::underlying(m2);
         })}
     {}
 
-    constexpr Modifiers(Modifier data) noexcept
-      : data (util::underlying(data))
+    constexpr Modifiers(Modifier data) noexcept : data(util::underlying(data))
     {}
 
     constexpr Modifiers(std::underlying_type_t<Modifier> data) noexcept
-      : data (data)
+      : data(data)
     {}
 
     constexpr bool is(Modifier m) const noexcept
     {
       return util::underlying(m) & data;
+    }
+
+    constexpr void set(Modifier m, bool flag = true) noexcept
+    {
+      if (flag)
+        data |= util::underlying(m);
+      else
+        data &= ~util::underlying(m);
     }
 
     constexpr Modifiers operator&(Modifier m) const noexcept
@@ -179,6 +186,11 @@ namespace otto::board::ui {
     constexpr Modifiers operator|(Modifier m) const noexcept
     {
       return {data | util::underlying(m)};
+    }
+
+    constexpr Modifiers operator|(Modifiers m) const noexcept
+    {
+      return {data | m.data};
     }
 
     constexpr operator bool() const noexcept
