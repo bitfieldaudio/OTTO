@@ -1,6 +1,7 @@
 #include "board/ui/keys.hpp"
 
 #include "services/ui.hpp"
+#include "services/audio.hpp"
 
 namespace otto::board::ui {
 
@@ -106,9 +107,39 @@ namespace otto::board::ui {
       return OKey::none;
     }();
 
+    int note;
+
+    namespace midi = core::midi;
+
+    if (mods & Modifier::alt) {
+      note = [key] () {
+        switch (key) {
+          case Key::q:  return midi::note_number("C0");
+          case Key::n2: return midi::note_number("C#0");
+          case Key::w:  return midi::note_number("D0");
+          case Key::n3: return midi::note_number("D#0");
+          case Key::e:  return midi::note_number("E0");
+          case Key::r:  return midi::note_number("F0");
+          case Key::n5: return midi::note_number("F#0");
+          case Key::t:  return midi::note_number("G0");
+          case Key::n6: return midi::note_number("G#0");
+          case Key::y:  return midi::note_number("A1");
+          case Key::n7: return midi::note_number("A#1");
+          case Key::u:  return midi::note_number("B1");
+          case Key::i:  return midi::note_number("C1");
+          case Key::n9: return midi::note_number("C#1");
+          case Key::o:  return midi::note_number("D1");
+          case Key::n0: return midi::note_number("D#1");
+          case Key::p:  return midi::note_number("E1");
+          default: return -1;
+        }
+      }();
+    }
+
     if (action == Action::press)
     {
-      service::ui::impl::keypress(k);
+      if (note >= 0) service::audio::send_midi_event(midi::NoteOnEvent{note});
+      else if (k != OKey::none) service::ui::impl::keypress(k);
     }
     else if (action == Action::repeat)
     {
@@ -128,7 +159,8 @@ namespace otto::board::ui {
     }
     else if (action == Action::release)
     {
-      service::ui::impl::keyrelease(k);
+      if (note >= 0) service::audio::send_midi_event(midi::NoteOffEvent{note});
+      else if (k != OKey::none) service::ui::impl::keyrelease(k);
     }
   }
 } // namespace otto::board::ui

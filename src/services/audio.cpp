@@ -6,6 +6,23 @@
 
 namespace otto::service::audio {
 
+  /**
+   * Interface requirements:
+   * 
+   * ```cpp
+   * struct AudioDriver {
+   * 
+   *   static AudioDriver& get() noexcept;
+   * 
+   *   void init();
+   *   void shutdown();
+   *
+   *   std::atomic_int samplerate;
+   *
+   * };
+   * ```
+   */
+
   namespace {
     struct DebugInfo : debug_ui::Info {
       debug_ui::graph<1 << 10> audio_graph;
@@ -86,5 +103,10 @@ namespace otto::service::audio {
       
       debugInfo.audio_graph.push(max / 2.f);
 #endif
+  }
+
+  void send_midi_event(core::midi::AnyMidiEvent evt) noexcept
+  {
+    AudioDriver::get().send_midi_event(std::move(evt));
   }
 } // namespace otto::audio

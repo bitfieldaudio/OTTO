@@ -44,4 +44,9 @@ namespace otto::service::audio {
   ///
   /// \returns `true` if [start()]() has been called and [shutdown()]() hasn't
   bool running() noexcept;
+
+  /// Send a midi event into the system.
+  /// 
+  /// The `core::midi` namespace has some nice utils for constructing events.
+  void send_midi_event(core::midi::AnyMidiEvent) noexcept;
 }

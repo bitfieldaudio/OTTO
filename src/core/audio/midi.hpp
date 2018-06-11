@@ -35,6 +35,18 @@ namespace otto::core::midi {
 
   } // namespace detail
 
+  constexpr int note_number(std::string_view sv) noexcept {
+      // std::find is not constexpr, so i roll my own
+      auto iter = detail::note_names.cbegin();
+      constexpr auto last = detail::note_names.cend();
+      for (int i = 0; iter != last; ++i, ++iter) {
+        if (*iter == sv) {
+          return i;
+        }
+      }
+      return -1;
+  }
+
 
   struct MidiEvent {
     static constexpr std::size_t max_data_size = 2;
@@ -70,26 +82,42 @@ namespace otto::core::midi {
       : MidiEvent{type, {}, channel, 0}
     {
       velocity = gsl::narrow_cast<byte>(velocity * 128);
+      key = note_number(note);
+    }
 
-      // std::find is not constexpr, so i roll my own
-      auto iter = detail::note_names.cbegin();
-      const auto last = detail::note_names.cend();
-      for (int i = 0; iter != last; ++i, ++iter) {
-        if (*iter == note) {
-          key = i;
-          return;
-        }
-      }
-      throw util::exception("Invalid note name");
+    /// Construct a NoteEvent from a type, note as string, and optional velocity
+    /// and channels
+    ///
+    /// \throws `util::exception` if `note` is not in `detail::note_names`
+    constexpr NoteEvent(MidiEvent::Type type,
+                        int note,
+                        float velocity = 1,
+                        byte channel = 0)
+      : MidiEvent{type, {}, channel, 0}
+    {
+      velocity = gsl::narrow_cast<byte>(velocity * 128);
+      key = note;
     }
   };
 
   struct NoteOnEvent : NoteEvent {
     NoteOnEvent(const MidiEvent& event) : NoteEvent(event){};
+
+    constexpr NoteOnEvent(int note,
+                        float velocity = 1,
+                        byte channel = 0)
+      : NoteEvent{MidiEvent::Type::NoteOn, note, velocity, channel}
+    {}
   };
 
   struct NoteOffEvent : NoteEvent {
     NoteOffEvent(const MidiEvent& event) : NoteEvent(event){};
+
+    constexpr NoteOffEvent(int note,
+                        float velocity = 1,
+                        byte channel = 0)
+      : NoteEvent{MidiEvent::Type::NoteOff, note, velocity, channel}
+    {}
   };
 
   struct ControlChangeEvent : public MidiEvent {
