@@ -9,11 +9,9 @@
 
 #include "./fbcp.hpp"
 
-namespace otto::service::ui {
+namespace otto::board::ui {
 
-  RpiFBCP::RpiFBCP(EGLConnection::EGLData& data)
-    : egl_data(data)
-  {}
+  RpiFBCP::RpiFBCP(EGLConnection::EGLData& data) : egl_data(data) {}
 
   void RpiFBCP::init()
   {
@@ -67,4 +65,4 @@ namespace otto::service::ui {
     vc_dispmanx_resource_delete(screen_resource);
   }
 
-} // namespace otto::services::ui
+} // namespace otto::board::ui

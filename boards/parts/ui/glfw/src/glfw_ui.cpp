@@ -12,6 +12,8 @@
 #define OTTO_NVG_CREATE nvgCreateGL3
 #define OTTO_NVG_DELETE nvgDeleteGL3
 
+#include "board/ui/keys.hpp"
+
 // C APIs. Include last
 #include <GL/gl3w.h>
 #include <GLFW/glfw3.h>
@@ -22,129 +24,9 @@ namespace otto::service::ui {
   using namespace core::ui;
 
   namespace {
-    Key keyboardKey(int xKey, int mods)
-    {
-      switch (xKey) {
-        // Rotaries
-      case GLFW_KEY_Q:
-        if (mods & GLFW_MOD_CONTROL) return Key::blue_click;
-        return Key::blue_up;
-      case GLFW_KEY_A:
-        if (mods & GLFW_MOD_CONTROL) return Key::blue_click;
-        return Key::blue_down;
-      case GLFW_KEY_W:
-        if (mods & GLFW_MOD_CONTROL) return Key::green_click;
-        return Key::green_up;
-      case GLFW_KEY_S:
-        if (mods & GLFW_MOD_CONTROL) return Key::green_click;
-        return Key::green_down;
-      case GLFW_KEY_E:
-        if (mods & GLFW_MOD_CONTROL) return Key::white_click;
-        return Key::white_up;
-      case GLFW_KEY_D:
-        if (mods & GLFW_MOD_CONTROL) return Key::white_click;
-        return Key::white_down;
-      case GLFW_KEY_R:
-        if (mods & GLFW_MOD_CONTROL) return Key::red_click;
-        return Key::red_up;
-      case GLFW_KEY_F:
-        if (mods & GLFW_MOD_CONTROL) return Key::red_click;
-        return Key::red_down;
-
-      case GLFW_KEY_LEFT: return Key::left;
-      case GLFW_KEY_RIGHT:
-        return Key::right;
-
-        // Tapedeck
-      case GLFW_KEY_SPACE: return Key::play;
-      case GLFW_KEY_Z: return Key::rec;
-      case GLFW_KEY_F1: return Key::track_1;
-      case GLFW_KEY_F2: return Key::track_2;
-      case GLFW_KEY_F3: return Key::track_3;
-      case GLFW_KEY_F4:
-        return Key::track_4;
-
-        // Numbers
-      case GLFW_KEY_T:
-        if (mods & GLFW_MOD_CONTROL)
-          return Key::tape;
-        else
-          break;
-      case GLFW_KEY_Y:
-        if (mods & GLFW_MOD_CONTROL)
-          return Key::mixer;
-        else
-          break;
-      case GLFW_KEY_U:
-        if (mods & GLFW_MOD_CONTROL)
-          return Key::synth;
-        else
-          break;
-      case GLFW_KEY_G:
-        if (mods & GLFW_MOD_CONTROL)
-          return Key::metronome;
-        else
-          break;
-      case GLFW_KEY_H:
-        if (mods & GLFW_MOD_CONTROL)
-          return Key::sampler;
-        else
-          break;
-      case GLFW_KEY_J:
-        if (mods & GLFW_MOD_CONTROL)
-          return Key::drums;
-        else
-          break;
-      case GLFW_KEY_K:
-        if (mods & GLFW_MOD_CONTROL)
-          return Key::envelope;
-        else
-          break;
-
-      case GLFW_KEY_L: return Key::loop;
-      case GLFW_KEY_I: return Key::loop_in;
-      case GLFW_KEY_O: return Key::loop_out;
-
-      case GLFW_KEY_X: return Key::cut;
-      case GLFW_KEY_C:
-        if (mods & GLFW_MOD_CONTROL)
-          return Key::lift;
-        else
-          break;
-      case GLFW_KEY_V:
-        if (mods & GLFW_MOD_CONTROL) return Key::drop;
-
-      case GLFW_KEY_LEFT_SHIFT:
-      case GLFW_KEY_RIGHT_SHIFT: return Key::shift;
-
-      default: return Key::none;
-      }
-      return Key::none;
-    }
-
     void key(GLFWwindow* window, int key, int scancode, int action, int mods)
     {
-      using namespace ui;
-      Key k = keyboardKey(key, mods);
-      if (action == GLFW_PRESS) {
-        impl::keypress(k);
-      } else if (action == GLFW_REPEAT) {
-        switch (k) {
-        case Key::red_up:
-        case Key::red_down:
-        case Key::blue_up:
-        case Key::blue_down:
-        case Key::white_up:
-        case Key::white_down:
-        case Key::green_up:
-        case Key::green_down:
-        case Key::left:
-        case Key::right: impl::keypress(k);
-        default: break;
-        }
-      } else if (action == GLFW_RELEASE) {
-        impl::keyrelease(k);
-      }
+      board::ui::handle_keyevent(board::ui::Action{action}, board::ui::Modifiers{mods}, board::ui::Key{key});
     }
 
     void error_callback(int error, const char* description)

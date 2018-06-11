@@ -1,6 +1,6 @@
 #pragma once
 
-namespace otto::service::ui {
+namespace otto::board::ui {
   void read_keyboard();
   void read_mouse();
-} // namespace otto::ui
+} // namespace otto::board::ui
