@@ -66,8 +66,8 @@ namespace otto::core::midi {
   };
 
   struct NoteEvent : MidiEvent {
-    byte& key = data[0];
-    byte& velocity = data[1];
+    byte key = data[0];
+    byte velocity = data[1];
 
     constexpr NoteEvent(const MidiEvent& event) noexcept : MidiEvent(event) {}
 
@@ -81,7 +81,7 @@ namespace otto::core::midi {
                         byte channel = 0)
       : MidiEvent{type, {}, channel, 0}
     {
-      velocity = gsl::narrow_cast<byte>(velocity * 128);
+      velocity = gsl::narrow_cast<byte>(std::min(127.f, velocity * 127));
       key = note_number(note);
     }
 
@@ -95,8 +95,8 @@ namespace otto::core::midi {
                         byte channel = 0)
       : MidiEvent{type, {}, channel, 0}
     {
-      velocity = gsl::narrow_cast<byte>(velocity * 128);
-      key = note;
+      velocity = gsl::narrow_cast<byte>(std::min(127.f, velocity * 127));
+      key = gsl::narrow_cast<byte>(note);
     }
   };
 
@@ -104,7 +104,7 @@ namespace otto::core::midi {
     NoteOnEvent(const MidiEvent& event) : NoteEvent(event){};
 
     constexpr NoteOnEvent(int note,
-                        float velocity = 1,
+                        float velocity = 1.f,
                         byte channel = 0)
       : NoteEvent{MidiEvent::Type::NoteOn, note, velocity, channel}
     {}
