@@ -1,3 +1,5 @@
+#include <cstdlib>
+
 #include "board/ui/keys.hpp"
 
 #include "services/audio.hpp"
@@ -7,13 +9,16 @@ namespace otto::board::ui {
 
   void handle_keyevent(Action action, Modifiers mods, Key key)
   {
-    auto send_midi = [action](const char* str) {
-      int note = core::midi::note_number(str);
-      if (note < 0) throw util::exception("Invalid note '{}'", str);
-      if (action == Action::press)
-        service::audio::send_midi_event(core::midi::NoteOnEvent{note});
-      else if (action == Action::release)
+    auto send_midi = [action](int note) {
+      note += 36;
+      if (action == Action::press) {
+        auto evt = core::midi::NoteOnEvent{note};
+        service::audio::send_midi_event(evt);
+        LOGI("Press key {}", evt.key);
+      } else if (action == Action::release) {
         service::audio::send_midi_event(core::midi::NoteOffEvent{note});
+        LOGI("Release key {}", note);
+      }
     };
 
     using OKey = otto::core::ui::Key;
@@ -25,35 +30,39 @@ namespace otto::board::ui {
         service::ui::impl::keyrelease(k);
     };
 
+    auto shutdown = [action] {
+      if (action == Action::press) std::system("halt");
+    };
+
     // The function key
     static bool func = false;
 
     switch (key) {
     // Midi
-    case Key::a: send_midi("F-1"); break;
-    case Key::b: send_midi("F#-1"); break;
-    case Key::c: send_midi("G-1"); break;
-    case Key::d: send_midi("G#-1"); break;
-    case Key::e: send_midi("A0"); break;
-    case Key::f: send_midi("A#0"); break;
-    case Key::g: send_midi("B0"); break;
-    case Key::h: send_midi("C0"); break;
-    case Key::i: send_midi("C#0"); break;
-    case Key::j: send_midi("D0"); break;
-    case Key::k: send_midi("D#0"); break;
-    case Key::l: send_midi("E0"); break;
-    case Key::m: send_midi("F0"); break;
-    case Key::n: send_midi("F#0"); break;
-    case Key::o: send_midi("G0"); break;
-    case Key::p: send_midi("G#0"); break;
-    case Key::q: send_midi("A1"); break;
-    case Key::r: send_midi("A#1"); break;
-    case Key::s: send_midi("B1"); break;
-    case Key::t: send_midi("C1"); break;
-    case Key::u: send_midi("C#1"); break;
-    case Key::v: send_midi("D1"); break;
-    case Key::w: send_midi("D#1"); break;
-    case Key::x: send_midi("E1"); break;
+    case Key::a: send_midi(17); break;
+    case Key::b: send_midi(18); break;
+    case Key::c: send_midi(19); break;
+    case Key::d: send_midi(20); break;
+    case Key::e: send_midi(21); break;
+    case Key::f: send_midi(22); break;
+    case Key::g: send_midi(23); break;
+    case Key::h: send_midi(24); break;
+    case Key::i: send_midi(25); break;
+    case Key::j: send_midi(26); break;
+    case Key::k: send_midi(27); break;
+    case Key::l: send_midi(28); break;
+    case Key::m: send_midi(29); break;
+    case Key::n: send_midi(30); break;
+    case Key::o: send_midi(31); break;
+    case Key::p: send_midi(32); break;
+    case Key::q: send_midi(33); break;
+    case Key::r: send_midi(34); break;
+    case Key::s: send_midi(35); break;
+    case Key::t: send_midi(36); break;
+    case Key::u: send_midi(37); break;
+    case Key::v: send_midi(38); break;
+    case Key::w: send_midi(39); break;
+    case Key::x: send_midi(40); break;
 
     // Modifiers
     case Key::period: send_key(OKey::shift); break;
@@ -73,7 +82,7 @@ namespace otto::board::ui {
     case Key::left_control: send_key(OKey::drums); break;
     case Key::left_shift: send_key(OKey::envelope); break;
 
-    case Key::enter: send_key(OKey::tape); break;
+    case Key::enter: func ? shutdown() : send_key(OKey::tape); break;
     case Key::y: send_key(OKey::mixer); break;
     case Key::z: send_key(OKey::metronome); break;
 

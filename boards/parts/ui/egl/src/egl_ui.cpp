@@ -47,10 +47,10 @@ namespace otto::service::ui {
     // is the temporary fix. Stretch everything to fill the display, and then
     // scale it down in fbcp. Actually only rendering 320x240 should also help
     // performance, so it is definately desired at some point
-    float xscale = egl.eglData.width / float(vg::WIDTH);
-    float yscale = egl.eglData.height / float(vg::HEIGHT);
+    float xscale = egl.draw_size.width / float(vg::WIDTH);
+    float yscale = egl.draw_size.height / float(vg::HEIGHT);
 
-    canvas.setSize(egl.eglData.width, egl.eglData.height);
+    canvas.setSize(egl.draw_size.width, egl.draw_size.height);
 
     using std::chrono::duration;
     using std::chrono::nanoseconds;
@@ -72,7 +72,7 @@ namespace otto::service::ui {
       // Update and render
       egl.beginFrame();
       canvas.clearColor(vg::Colours::Black);
-      canvas.begineFrame(egl.eglData.width, egl.eglData.height);
+      canvas.begineFrame(egl.draw_size.width, egl.draw_size.height);
       canvas.scale(xscale, yscale);
       ui::impl::draw_frame(canvas);
 

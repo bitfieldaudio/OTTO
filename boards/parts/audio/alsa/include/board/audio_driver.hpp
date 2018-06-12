@@ -11,6 +11,8 @@
 #include "core/audio/midi.hpp"
 #include "core/audio/processor.hpp"
 
+#include "util/locked.hpp"
+
 namespace otto::service::audio {
   struct AlsaAudioDriver {
     static AlsaAudioDriver& get() noexcept;
@@ -19,6 +21,8 @@ namespace otto::service::audio {
     void shutdown();
 
     std::atomic_int samplerate = 44100;
+
+    void send_midi_event(core::midi::AnyMidiEvent);
 
   private:
     AlsaAudioDriver() = default;
@@ -32,6 +36,7 @@ namespace otto::service::audio {
     snd_seq_t* seq_handle;
 
     core::audio::ProcessBuffer<1> in_data;
+    util::atomic_swap<std::vector<core::midi::AnyMidiEvent>> midi_bufs;
 
     std::thread audio_thread;
   };

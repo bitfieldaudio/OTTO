@@ -61,7 +61,7 @@ namespace otto::board::ui {
     LOGI("EGL Display size: {} x {}", state.width, state.height);
 
     // What does this do?
-    vc_dispmanx_rect_set(&eglData.rect, 0, 0, state.width, state.height);
+    vc_dispmanx_rect_set(&eglData.rect, 0, 0, draw_size.width, draw_size.height);
     eglData.width = state.width;
     eglData.height = state.height;
     eglData.screenDatasize = eglData.width * eglData.height * eglData.bitdepth;
@@ -79,15 +79,15 @@ namespace otto::board::ui {
     VCRect srcRect;
     VCRect dstRect;
 
+    srcRect.x = 0;
+    srcRect.y = 0;
+    srcRect.width = draw_size.width << 16;
+    srcRect.height = draw_size.height << 16;
+
     dstRect.x = 0;
     dstRect.y = 0;
     dstRect.width = state.width;
     dstRect.height = state.height;
-
-    srcRect.x = 0;
-    srcRect.y = 0;
-    srcRect.width = state.width << 16;
-    srcRect.height = state.height << 16;
 
     eglData.display = vc_dispmanx_display_open(0);
     if (!eglData.display) {
@@ -101,8 +101,8 @@ namespace otto::board::ui {
       0, 0, DISPMANX_TRANSFORM_T());
 
     eglData.nativeWindow.element = dmxElement;
-    eglData.nativeWindow.width = state.width;
-    eglData.nativeWindow.height = state.height;
+    eglData.nativeWindow.width = draw_size.width;
+    eglData.nativeWindow.height = draw_size.height;
 
     vc_dispmanx_update_submit_sync(dmxUpdate);
 
@@ -152,7 +152,7 @@ namespace otto::board::ui {
   void EGLConnection::beginFrame()
   {
     // Start with a clear screen
-    glViewport(0, 0, eglData.width, eglData.height);
+    glViewport(0, 0, draw_size.width, draw_size.height);
 
     glClearColor(0, 0, 0, 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);

@@ -37,6 +37,11 @@ namespace otto::board::ui {
       VCRect rect;
     } eglData;
 
+    struct Size {
+      int width = 320;
+      int height = 240;
+    } draw_size;
+
     struct EGLState {
       uint width;
       uint height;

@@ -37,6 +37,7 @@ namespace otto::board::ui {
       if (ends_with(file, device_type)) {
         auto fullpath = path / file;
         auto fd       = open(fullpath.c_str(), O_RDONLY | O_NONBLOCK);
+        LOGI("Opening device {}", fullpath);
         if (fd < 0) {
           LOGE("Couldn't open a file descriptor for {}", fullpath.string());
           return -1;
@@ -104,7 +105,7 @@ namespace otto::board::ui {
   {
     static Modifiers left;
     static Modifiers right;
-    static int keyboard   = open_device("event-kbd");
+    static int keyboard   = open_device("0-event-kbd");
     if (keyboard == -1) {
       throw global::exception(global::ErrorCode::input_error,
                               "Could not find a keyboard!");
@@ -131,6 +132,7 @@ namespace otto::board::ui {
           case key_release: return Action::release;
           case key_press: return Action::press;
           case key_repeat: return Action::repeat;
+          default: return Action{-1};
           }
         }();
 

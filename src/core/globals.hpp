@@ -11,7 +11,8 @@ namespace otto {
       user_exit,
       audio_error,
       graphics_error,
-      input_error
+      input_error,
+      signal_recieved
     };
 
     using exception = util::as_exception<ErrorCode>;
@@ -23,6 +24,8 @@ namespace otto {
     bool running() noexcept;
 
     ErrorCode error() noexcept;
+
+    void handle_signal(int signal) noexcept;
   }
 
 }
