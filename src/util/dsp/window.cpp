@@ -1,5 +1,4 @@
-#pragma once
-#include "util/window.hpp"
+#include "window.hpp"
 #include <math.h>
 
 namespace otto::util::dsp {
