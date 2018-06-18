@@ -1,14 +1,7 @@
 #include "log_slider.hpp"
 #include <cmath>
 namespace otto::util::dsp {
-  LogSlider::LogSlider()
-  {
-  }
-  LogSlider::~LogSlider()
-  {
-  }
-
-  /*
+  /**
     BELOW IS THE CORE DEAL OF THE LOGARITHMIC SLIDER
 
     x: proportion          (0)  |-----------|(1)
