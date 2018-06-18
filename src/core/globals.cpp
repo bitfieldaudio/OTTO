@@ -23,4 +23,10 @@ namespace otto::global {
   {
     return error_code;
   }
+
+  void handle_signal(int signal) noexcept
+  {
+    is_running = false;
+    error_code = ErrorCode::signal_recieved;
+  }
 }

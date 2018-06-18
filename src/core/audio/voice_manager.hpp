@@ -206,6 +206,7 @@ namespace otto::core::audio {
                     vp.midi.freq     = midi::note_freq(ev.key);
                     vp.midi.velocity = ev.velocity / 127.f;
                     vp.midi.trigger  = 1;
+                    LOGI("Voice {} begin key {} {}Hz velocity: {}", v, ev.key, vp.midi.freq, vp.midi.velocity);
                   },
                   [](auto&&) {});
     }

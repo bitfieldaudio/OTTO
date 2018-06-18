@@ -35,7 +35,7 @@ BraceWrapping:
   SplitEmptyNamespace: false
 BreakConstructorInitializers: BeforeColon
 BreakStringLiterals: true
-ColumnLimit: 80
+ColumnLimit: 100
 ConstructorInitializerAllOnOneLineOrOnePerLine: true
 ConstructorInitializerIndentWidth: 2
 ContinuationIndentWidth: 2

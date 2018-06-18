@@ -4,7 +4,7 @@
 
 #include "./egl_connection.hpp"
 
-namespace otto::service::ui {
+namespace otto::board::ui {
 
   /// This class is used to copy from the HDMI framebuffer on the pi, to the
   /// framebuffer which is used by fbtft. This is useful when using an SPI
@@ -37,4 +37,4 @@ namespace otto::service::ui {
     struct fb_var_screeninfo vinfo;
   };
 
-}
+} // namespace otto::board::ui

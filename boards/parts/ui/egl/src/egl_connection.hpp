@@ -3,43 +3,52 @@
 #include <string>
 #include "./egl_deps.hpp"
 
-class EGLConnection {
-public:
-  using DMXDisplay  = DISPMANX_DISPLAY_HANDLE_T;
-  using DMXResource = DISPMANX_RESOURCE_HANDLE_T;
-  using DMXWindow   = EGL_DISPMANX_WINDOW_T;
-  using DMXElement  = DISPMANX_ELEMENT_HANDLE_T;
-  using DMXUpdate   = DISPMANX_UPDATE_HANDLE_T;
-  using VCRect      = VC_RECT_T;
+namespace otto::board::ui {
 
-  void init();
-  void exit();
+  class EGLConnection {
+  public:
+    using DMXDisplay = DISPMANX_DISPLAY_HANDLE_T;
+    using DMXResource = DISPMANX_RESOURCE_HANDLE_T;
+    using DMXWindow = EGL_DISPMANX_WINDOW_T;
+    using DMXElement = DISPMANX_ELEMENT_HANDLE_T;
+    using DMXUpdate = DISPMANX_UPDATE_HANDLE_T;
+    using VCRect = VC_RECT_T;
 
-  void beginFrame();
-  void endFrame();
+    void init();
+    void exit();
 
-  void initEGL();
+    void beginFrame();
+    void endFrame();
 
-  struct EGLData {
-    int width;
-    int height;
-    int bitdepth = 4;
-    int screenDatasize;
+    void initEGL();
 
-    DMXDisplay display;
-    DMXResource resource;
-    DMXWindow nativeWindow;
-    unsigned short* data = nullptr;
+    struct EGLData {
+      int width;
+      int height;
+      int bitdepth = 4;
+      int screenDatasize;
 
-    int nConfig;
-    VCRect rect;
-  } eglData;
+      DMXDisplay display;
+      DMXResource resource;
+      DMXWindow nativeWindow;
+      unsigned short* data = nullptr;
 
-  struct EGLState {
-    uint width;
-    uint height;
-    EGLDisplay display;
-    EGLSurface surface;
-    EGLContext context;
-  } state;
-};
+      int nConfig;
+      VCRect rect;
+    } eglData;
+
+    struct Size {
+      int width = 320;
+      int height = 240;
+    } draw_size;
+
+    struct EGLState {
+      uint width;
+      uint height;
+      EGLDisplay display;
+      EGLSurface surface;
+      EGLContext context;
+    } state;
+  };
+
+} // namespace otto::board::ui

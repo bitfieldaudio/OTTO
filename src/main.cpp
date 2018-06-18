@@ -1,3 +1,5 @@
+#include <csignal>
+
 #include "util/timer.hpp"
 
 #include "core/audio/midi.hpp"
@@ -19,8 +21,15 @@ int handle_exception();
 
 int main(int argc, char* argv[])
 {
+
   try {
     service::logger::init(argc, argv);
+
+    // Overwrite the logger signal handlers
+    std::signal(SIGINT, global::handle_signal);
+    std::signal(SIGABRT, global::handle_signal);
+    std::signal(SIGTERM, global::handle_signal);
+
     service::state::load();
 
     service::presets::init();

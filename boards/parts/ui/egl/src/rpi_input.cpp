@@ -8,7 +8,9 @@
 #include "util/filesystem.hpp"
 #include "services/logger.hpp"
 
-namespace otto::service::ui {
+#include "board/ui/keys.hpp"
+
+namespace otto::board::ui {
 
   using namespace otto::core::ui;
 
@@ -35,6 +37,7 @@ namespace otto::service::ui {
       if (ends_with(file, device_type)) {
         auto fullpath = path / file;
         auto fd       = open(fullpath.c_str(), O_RDONLY | O_NONBLOCK);
+        LOGI("Opening device {}", fullpath);
         if (fd < 0) {
           LOGE("Couldn't open a file descriptor for {}", fullpath.string());
           return -1;
@@ -98,100 +101,11 @@ namespace otto::service::ui {
     }
   }
 
-  static Key translate_key(int key_code, bool ctrl)
-  {
-    switch (key_code) {
-    // Rotaries
-    case KEY_Q: return ctrl ? Key::blue_click : Key::blue_up;
-    case KEY_A: return ctrl ? Key::blue_click : Key::blue_down;
-    case KEY_W: return ctrl ? Key::green_click : Key::green_up;
-    case KEY_S: return ctrl ? Key::green_click : Key::green_down;
-    case KEY_E: return ctrl ? Key::white_click : Key::white_up;
-    case KEY_D: return ctrl ? Key::white_click : Key::white_down;
-    case KEY_R: return ctrl ? Key::red_click : Key::red_up;
-    case KEY_F: return ctrl ? Key::red_click : Key::red_down;
-
-    case KEY_LEFT: return Key::left;
-    case KEY_RIGHT:
-      return Key::right;
-
-    // Tapedeck
-    case KEY_SPACE: return Key::play;
-    case KEY_Z: return Key::rec;
-    case KEY_F1: return Key::track_1;
-    case KEY_F2: return Key::track_2;
-    case KEY_F3: return Key::track_3;
-    case KEY_F4:
-      return Key::track_4;
-
-    // Numbers
-    case KEY_T:
-      if (ctrl) {
-        return Key::tape;
-      }
-      break;
-    case KEY_Y:
-      if (ctrl) {
-        return Key::mixer;
-      }
-      break;
-    case KEY_U:
-      if (ctrl) {
-        return Key::synth;
-      }
-      break;
-    case KEY_G:
-      if (ctrl) {
-        return Key::metronome;
-      }
-      break;
-    case KEY_H:
-      if (ctrl) {
-        return Key::sampler;
-      }
-      break;
-    case KEY_J:
-      if (ctrl) {
-        return Key::drums;
-      }
-      break;
-    case KEY_K:
-      if (ctrl) {
-        return Key::envelope;
-      }
-      break;
-
-    case KEY_L: return Key::loop;
-    case KEY_I: return Key::loop_in;
-    case KEY_O: return Key::loop_out;
-
-    case KEY_X: return Key::cut;
-    case KEY_C:
-      if (ctrl) {
-        return Key::lift;
-      }
-      break;
-
-    case KEY_V:
-      if (ctrl) {
-        return Key::drop;
-      }
-      break;
-
-    case KEY_LEFTSHIFT:
-    case KEY_RIGHTSHIFT: return Key::shift;
-
-    case KEY_ESC: return Key::quit;
-    }
-
-    return Key::none;
-  }
-
   void read_keyboard()
   {
-    static bool leftCtrl  = false;
-    static bool rightCtrl = false;
-    static int keyboard   = open_device("event-kbd");
+    static Modifiers left;
+    static Modifiers right;
+    static int keyboard   = open_device("0-event-kbd");
     if (keyboard == -1) {
       throw global::exception(global::ErrorCode::input_error,
                               "Could not find a keyboard!");
@@ -203,34 +117,26 @@ namespace otto::service::ui {
         auto pressed = event.value != 0;
 
         switch (event.code) {
-        case KEY_LEFTCTRL: leftCtrl = pressed; break;
-
-        case KEY_RIGHTCTRL: rightCtrl = pressed;
+          case KEY_LEFTCTRL:   left.set(Modifier::ctrl,   pressed); break;
+          case KEY_RIGHTCTRL:  right.set(Modifier::ctrl,  pressed); break;
+          case KEY_LEFTALT:    left.set(Modifier::alt,    pressed); break;
+          case KEY_RIGHTALT:   right.set(Modifier::alt,   pressed); break;
+          case KEY_LEFTSHIFT:  left.set(Modifier::shift,  pressed); break;
+          case KEY_RIGHTSHIFT: right.set(Modifier::shift, pressed); break;
+          case KEY_LEFTMETA:   left.set(Modifier::super,  pressed); break;
+          case KEY_RIGHTMETA:  right.set(Modifier::super, pressed); break;
         }
 
-        Key k = translate_key(event.code, leftCtrl || rightCtrl);
-        switch (event.value) {
-        case key_release: impl::keyrelease(k); break;
-
-        case key_press: impl::keypress(k); break;
-
-        case key_repeat:
-          switch (k) {
-          case Key::red_up:
-          case Key::red_down:
-          case Key::blue_up:
-          case Key::blue_down:
-          case Key::white_up:
-          case Key::white_down:
-          case Key::green_up:
-          case Key::green_down:
-          case Key::left:
-          case Key::right: impl::keypress(k); break;
-
-          default: break;
+        Action action = [event] {
+          switch (event.value) {
+          case key_release: return Action::release;
+          case key_press: return Action::press;
+          case key_repeat: return Action::repeat;
+          default: return Action{-1};
           }
-          break;
-        }
+        }();
+
+        handle_keyevent(action, left | right, board::ui::Key(event.code));
       }
     }
   }

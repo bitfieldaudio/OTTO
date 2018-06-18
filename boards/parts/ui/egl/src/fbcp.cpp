@@ -9,11 +9,9 @@
 
 #include "./fbcp.hpp"
 
-namespace otto::service::ui {
+namespace otto::board::ui {
 
-  RpiFBCP::RpiFBCP(EGLConnection::EGLData& data)
-    : egl_data(data)
-  {}
+  RpiFBCP::RpiFBCP(EGLConnection::EGLData& data) : egl_data(data) {}
 
   void RpiFBCP::init()
   {
@@ -57,7 +55,6 @@ namespace otto::service::ui {
     vc_dispmanx_snapshot(egl_data.display, screen_resource, DISPMANX_NO_ROTATE);
     vc_dispmanx_resource_read_data(screen_resource, &rect1, fbp,
                                    vinfo.xres * vinfo.bits_per_pixel / 8);
-    LOGI("fbcp: Copied");
   }
 
   void RpiFBCP::exit() noexcept
@@ -67,4 +64,4 @@ namespace otto::service::ui {
     vc_dispmanx_resource_delete(screen_resource);
   }
 
-} // namespace otto::services::ui
+} // namespace otto::board::ui

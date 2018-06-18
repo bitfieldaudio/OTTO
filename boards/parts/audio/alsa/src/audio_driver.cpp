@@ -1,4 +1,4 @@
-#include "alsa.hpp"
+#include "board/audio_driver.hpp"
 
 #include <string>
 #include <vector>
@@ -242,8 +242,16 @@ namespace otto::service::audio {
                           out_data.nframes);
   }
 
+  void AlsaAudioDriver::send_midi_event(core::midi::AnyMidiEvent evt)
+  {
+    midi_bufs.outer().emplace_back(std::move(evt));
+  }
+
   void AlsaAudioDriver::main_loop()
   {
+    sched_param sch_params;
+    sch_params.sched_priority = 100;
+    pthread_setschedparam(audio_thread.native_handle(), SCHED_RR, &sch_params);
     int nframes, inframes, outframes, frame_size;
     int channels = 2;
     frame_size = channels * sizeof(float);
@@ -269,7 +277,7 @@ namespace otto::service::audio {
       while ((inframes =
                 snd_pcm_readi(capture_handle, in_data.data(), nframes)) < 0) {
         if (inframes == -EAGAIN) continue;
-        LOGE("Input Overrun");
+        LOGE("Input Overrun {}", snd_strerror(-inframes));
         //restarting = 1;
         snd_pcm_prepare(capture_handle);
       }
@@ -278,8 +286,10 @@ namespace otto::service::audio {
               "Short read from capture device: {}, expecting {}", inframes,
               nframes);
 
+      midi_bufs.swap();
+
       auto out_data =
-        engines::process({{in_data.data(), nframes}, {}, nframes});
+        engines::process({{in_data.data(), nframes}, midi_bufs.inner(), nframes});
 
       audio::process_audio_output(out_data);
 
@@ -288,7 +298,7 @@ namespace otto::service::audio {
       while ((outframes = snd_pcm_writei(playback_handle, out_data.audio.data(),
                                          out_data.nframes)) < 0) {
         if (outframes == -EAGAIN) continue;
-        LOGE("Output buffer underrun");
+        LOGE("Output underrun {}", snd_strerror(inframes));
         //restarting = 1;
         snd_pcm_prepare(playback_handle);
       }

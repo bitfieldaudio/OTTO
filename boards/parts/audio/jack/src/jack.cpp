@@ -100,6 +100,11 @@ namespace otto::service::audio {
     jack_client_close(client);
   }
 
+  void JackAudioDriver::send_midi_event(core::midi::AnyMidiEvent evt) noexcept
+  {
+    midi_bufs.outer().emplace_back(std::move(evt));
+  }
+
   void JackAudioDriver::setupPorts()
   {
     // Audio ports
@@ -215,7 +220,7 @@ namespace otto::service::audio {
   }
 
   void JackAudioDriver::gatherMidiInput(int nframes) {
-    midi_buf.clear();
+    midi_bufs.swap();
 
     // Get new midi events
     void* midiBuf = jack_port_get_buffer(ports.midiIn, nframes);
@@ -236,15 +241,15 @@ namespace otto::service::audio {
       switch (type) {
       case MidiEvent::Type::NoteOff:
         mEvent.type = MidiEvent::Type::NoteOff;
-        midi_buf.emplace_back(NoteOffEvent(mEvent));
+        midi_bufs.inner().emplace_back(NoteOffEvent(mEvent));
         break;
       case MidiEvent::Type::NoteOn:
         mEvent.type = MidiEvent::Type::NoteOn;
-        midi_buf.emplace_back(NoteOnEvent(mEvent));
+        midi_bufs.inner().emplace_back(NoteOnEvent(mEvent));
         break;
       case MidiEvent::Type::ControlChange:
         mEvent.type = MidiEvent::Type::ControlChange;
-        midi_buf.emplace_back(ControlChangeEvent(mEvent));
+        midi_bufs.inner().emplace_back(ControlChangeEvent(mEvent));
         break;
       }
     }
@@ -272,7 +277,7 @@ namespace otto::service::audio {
 
     auto out_data = engines::process(
       {{reinterpret_cast<util::audio::AudioFrame<1>*>(inData), nframes},
-       {midi_buf},
+       {midi_bufs.inner()},
        nframes});
 
     audio::process_audio_output(out_data);
