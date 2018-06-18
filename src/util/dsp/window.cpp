@@ -16,25 +16,25 @@ namespace otto::util::dsp {
   }
 
 
-  void Window::compute (double* buffer, int size, WindowType type, bool normalize) noexcept
+  void Window::compute (gsl::span<double> buffer, WindowType type, bool normalize) noexcept
   {
       auto cosn = [](int n, int i, int size) { return cos (static_cast<double> (n * M_PI * i) / static_cast<double> (size - 1)); };
+      auto size = buffer.size();
 
       switch (type)
       {
           case rectangular:
           {
-              for (int i = 0; i < size; ++i)
-                  buffer[i] = 1.0;
+              for (auto& sample : buffer)
+                  sample = 1.0;
           }
           break;
 
           case triangular:
           {
               auto middle_position = 0.5 * static_cast<double> (size - 1);
-
-              for (int i = 0; i < size; ++i)
-                  buffer[i] = 1.0 - std::abs ((static_cast<double> (i) - middle_position) / middle_position);
+              for (auto& sample : buffer)
+                  sample = 1.0 - std::abs ((static_cast<double> (i) - middle_position) / middle_position);
           }
           break;
 
@@ -89,20 +89,20 @@ namespace otto::util::dsp {
       if (normalize)
       {
           double sum = 0.0;
-          for (int i = 0; i < size; ++i)
-              sum += buffer[i];
+          for (auto& sample : buffer)
+              sum += sample;
 
           auto factor = static_cast<double> (size) / sum;
 
-          for (int j = 0; j < size; ++j)
-            buffer[j] *= factor;
+          for (auto& sample : buffer)
+              sample *= factor;
       }
   }
 
 
-  void Window::apply_to (double* buffer, int size) noexcept
+  void Window::apply_to (gsl::span<double> buffer) noexcept
   {
-      const int rs = std::min<int>(size, window_buffer.size());
+      const int rs = std::min<int>(buffer.size(), window_buffer.size());
       for (int j = 0; j < rs; ++j)
         buffer[j] *= window_buffer[j];
   }

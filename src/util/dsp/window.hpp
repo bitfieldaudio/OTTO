@@ -25,7 +25,7 @@ namespace otto::util::dsp {
       void reset (int size, WindowType type, bool normalize = true) noexcept;
 
       /// Multiplies the buffer and the window, sample by sample
-      void apply_to (double* buffer, int size) noexcept;
+      void apply_to (gsl::span<double> buffer) noexcept;
 
 
       ////////////////////////////////////////////////////////////////////////////////
@@ -33,7 +33,7 @@ namespace otto::util::dsp {
       static const std::string get_window_type_name (WindowType) noexcept;
 
       /// Computes the window samples and stores them in the buffer
-      static void compute (double* buffer, int size, WindowType, bool normalize = true) noexcept;
+      static void compute (gsl::span<double> buffer, WindowType, bool normalize = true) noexcept;
   private:
       dyn_array<double> window_buffer;
   };
