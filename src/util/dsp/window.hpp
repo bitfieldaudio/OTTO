@@ -1,5 +1,6 @@
 #pragma once
 
+#include <gsl/span>
 #include <string>
 #include "util/dyn-array.hpp"
 
