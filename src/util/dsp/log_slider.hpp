@@ -6,16 +6,16 @@ namespace otto::util::dsp {
     LogSlider() = default;
     ~LogSlider() = default;
 
-    double proportionOfLengthToValue(double proportion) noexcept;
-    double valueToProportionOfLength(double value) noexcept;
-    void setRange(double newMinimum = 1, double newMaximum = 10);
+    double proportion_of_length_to_value(double proportion) noexcept;
+    double value_to_proportion_of_length(double value) noexcept;
+    void set_range(double new_minimum = 1, double new_maximum = 10);
 
   private:
       // below log transform coefficients
       double a;
       double b;
-      void updateLogCoefficients();
-      double minValue;
-      double maxValue;
+      void update_log_coefficients();
+      double min_value;
+      double max_value;
   };
 }

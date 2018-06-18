@@ -3,7 +3,7 @@
 
 namespace otto::util::dsp {
 
-  Window::Window (int size, WindowType type, bool normalize) : windowBuffer(size)
+  Window::Window (int size, WindowType type, bool normalize) : window_buffer(size)
   {
       reset (size, type, normalize);
   }
@@ -11,8 +11,8 @@ namespace otto::util::dsp {
 
   void Window::reset (int size, WindowType type, bool normalize) noexcept
   {
-      windowBuffer.resize (size);
-      compute (windowBuffer.begin(), size, type, normalize);
+      window_buffer.resize (size);
+      compute (window_buffer.begin(), size, type, normalize);
   }
 
 
@@ -31,10 +31,10 @@ namespace otto::util::dsp {
 
           case triangular:
           {
-              auto middlePosition = 0.5 * static_cast<double> (size - 1);
+              auto middle_position = 0.5 * static_cast<double> (size - 1);
 
               for (int i = 0; i < size; ++i)
-                  buffer[i] = 1.0 - std::abs ((static_cast<double> (i) - middlePosition) / middlePosition);
+                  buffer[i] = 1.0 - std::abs ((static_cast<double> (i) - middle_position) / middle_position);
           }
           break;
 
@@ -70,7 +70,7 @@ namespace otto::util::dsp {
           }
           break;
 
-          case blackmanHarris:
+          case blackman_harris:
           {
               for (int i = 0; i < size; ++i)
               {
@@ -100,15 +100,15 @@ namespace otto::util::dsp {
   }
 
 
-  void Window::applyTo (double* buffer, int size) noexcept
+  void Window::apply_to (double* buffer, int size) noexcept
   {
-      const int rs = std::min<int>(size, windowBuffer.size());
+      const int rs = std::min<int>(size, window_buffer.size());
       for (int j = 0; j < rs; ++j)
-        buffer[j] *= windowBuffer[j];
+        buffer[j] *= window_buffer[j];
   }
 
 
-  const std::string Window::getWindowTypeName (WindowType type) noexcept
+  const std::string Window::get_window_type_name (WindowType type) noexcept
   {
       switch (type)
       {
@@ -117,7 +117,7 @@ namespace otto::util::dsp {
           case hann:              return "Hann";
           case hamming:           return "Hamming";
           case blackman:          return "Blackman";
-          case blackmanHarris:    return "Blackman-Harris";
+          case blackman_harris:    return "Blackman-Harris";
           default:                return "";
       }
   }
