@@ -3,7 +3,7 @@
 
 namespace otto::util::dsp {
 
-  Window::Window (int size, WindowType type, bool normalize)
+  Window::Window (int size, WindowType type, bool normalize) : windowBuffer(size)
   {
       reset (size, type, normalize);
   }
@@ -18,7 +18,7 @@ namespace otto::util::dsp {
 
   void Window::compute (double* buffer, int size, WindowType type, bool normalize) noexcept
   {
-      auto cosn = [](int n, int i, int size) { return std::cos (static_cast<double> (n * M_PI * i) / static_cast<double> (size - 1)); }
+      auto cosn = [](int n, int i, int size) { return cos (static_cast<double> (n * M_PI * i) / static_cast<double> (size - 1)); };
 
       switch (type)
       {
