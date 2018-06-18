@@ -12,7 +12,7 @@ namespace otto::util::dsp {
   void Window::reset (int size, WindowType type, bool normalize) noexcept
   {
       window_buffer.resize (size);
-      compute (window_buffer.begin(), size, type, normalize);
+      compute (gsl::as_span(window_buffer.begin(), size), type, normalize);
   }
 
 
@@ -33,7 +33,7 @@ namespace otto::util::dsp {
           case triangular:
           {
               auto middle_position = 0.5 * static_cast<double> (size - 1);
-              for (auto& sample : buffer)
+              for (int i = 0; i < size; ++i)
                   sample = 1.0 - std::abs ((static_cast<double> (i) - middle_position) / middle_position);
           }
           break;
