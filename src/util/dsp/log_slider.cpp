@@ -1,5 +1,5 @@
-#include "LogSlider.hpp"
-#include <math.h>
+#include "log_slider.hpp"
+#include <cmath>
 namespace otto::util::dsp {
   LogSlider::LogSlider()
   {
