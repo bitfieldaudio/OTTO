@@ -65,6 +65,8 @@ namespace otto::service::ui {
     /// Dispatches to the event handler for the current screen, and handles
     /// global keys.
     bool keyrelease(core::ui::Key key);
+
+    void rotary(core::ui::RotaryEvent ev);
   } // namespace impl
 
 } // namespace otto::service::ui

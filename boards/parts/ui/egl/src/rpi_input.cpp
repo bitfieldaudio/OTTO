@@ -3,6 +3,8 @@
 #include <unistd.h>
 #include <string>
 #include <vector>
+#include <thread>
+
 #include "core/globals.hpp"
 #include "services/ui.hpp"
 #include "util/filesystem.hpp"
@@ -101,11 +103,50 @@ namespace otto::board::ui {
     }
   }
 
+  void read_encoders() {
+		auto file = fopen("/dev/ttyACM0", "r");
+		if (file == nullptr) return;
+
+		char *line = nullptr;
+		std::size_t len;
+		std::size_t read;
+
+		while (global::running()) {
+ 			read = getline(&line, &len, file);
+ 			if (len >= 2) {
+				if (line[1] == 'P') {
+  				switch (line[0]) {
+    				case 'B': service::ui::impl::keypress(core::ui::Key::blue_click); break;
+    				case 'G': service::ui::impl::keypress(core::ui::Key::green_click); break;
+    				case 'Y': service::ui::impl::keypress(core::ui::Key::white_click); break;
+    				case 'R': service::ui::impl::keypress(core::ui::Key::red_click); break;
+    				default: break;
+  				}
+  				continue;
+				}
+   			RotaryEvent rot;
+				switch (line[0]) {
+  				case 'B': rot.rotary = Rotary::Blue; break;
+  				case 'G': rot.rotary = Rotary::Green; break;
+  				case 'Y': rot.rotary = Rotary::White; break;
+  				case 'R': rot.rotary = Rotary::Red; break;
+  				default: rot.rotary = Rotary{-1};
+				}
+				if (rot.rotary == Rotary{-1}) continue;
+				char* end = line + len;
+				rot.clicks = std::strtol(line + 1, &end, 10);
+				service::ui::impl::rotary(rot);
+ 			}
+		}
+  }
+
   void read_keyboard()
   {
     static Modifiers left;
     static Modifiers right;
     static int keyboard   = open_device("0-event-kbd");
+    static std::thread encoder_thread = std::thread{[] { read_encoders(); }};
+
     if (keyboard == -1) {
       throw global::exception(global::ErrorCode::input_error,
                               "Could not find a keyboard!");
