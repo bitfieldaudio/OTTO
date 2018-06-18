@@ -26,18 +26,18 @@ namespace otto::util::dsp {
   void LogSlider::updateLogCoefficients()
   {
       a = minValue;
-      b = log(maxValue / minValue);
+      b = std::log(maxValue / minValue);
   }
 
   // TODO: optimize with exp / log approximations
-  double LogSlider::proportionOfLengthToValue(double proportion)
+  double LogSlider::proportionOfLengthToValue(double proportion) noexcept
   {
-      double value = a * exp(b * proportion);
+      double value = a * std::exp(b * proportion);
       return value;
   }
-  double LogSlider::valueToProportionOfLength(double value)
+  double LogSlider::valueToProportionOfLength(double value) noexcept
   {
-      double proportion = log(value / a) / b;
+      double proportion = std::log(value / a) / b;
       return proportion;
   }
 
