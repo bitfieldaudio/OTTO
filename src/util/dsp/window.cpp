@@ -1,5 +1,5 @@
 #include "window.hpp"
-#include <math.h>
+#include <cmath>
 
 namespace otto::util::dsp {
 
