@@ -1,6 +1,6 @@
 #pragma once
 
-#include "..\dyn-array.hpp"
+#include "util/dyn-array.hpp"
 #include <string>
 
 namespace otto::util::dsp {
