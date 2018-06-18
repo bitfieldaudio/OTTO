@@ -1,7 +1,7 @@
 #pragma once
 
-#include "util/dyn-array.hpp"
 #include <string>
+#include "util/dyn-array.hpp"
 
 namespace otto::util::dsp {
 

@@ -1,5 +1,5 @@
-#include "log_slider.hpp"
 #include <cmath>
+#include "log_slider.hpp"
 namespace otto::util::dsp {
   /**
     BELOW IS THE CORE DEAL OF THE LOGARITHMIC SLIDER
