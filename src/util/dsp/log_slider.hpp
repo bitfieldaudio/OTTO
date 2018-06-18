@@ -6,8 +6,8 @@ namespace otto::util::dsp {
     LogSlider() = default;
     ~LogSlider() = default;
 
-    double proportionOfLengthToValue(double proportion);
-    double valueToProportionOfLength(double value);
+    double proportionOfLengthToValue(double proportion) noexcept;
+    double valueToProportionOfLength(double value) noexcept;
     void setRange(double newMinimum = 1, double newMaximum = 10);
 
   private:
