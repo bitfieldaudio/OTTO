@@ -1134,8 +1134,10 @@ namespace otto::filesystem {
     bool skip_denied = (options & directory_options::skip_permission_denied) !=
                        directory_options::none;
 
+    errno = 0;
     auto* dir = opendir(p.c_str());
     if (dir == nullptr) {
+      ec.assign(errno, std::system_category());
       return;
     }
 
@@ -1145,7 +1147,6 @@ namespace otto::filesystem {
       errno = 0;
       de = readdir(dir);
       if (errno == EACCES && skip_denied) {
-        errno = 0;
         continue;
       }
       if (!de) continue;

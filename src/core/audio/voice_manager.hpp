@@ -62,9 +62,33 @@ namespace otto::core::audio {
     using Properties::Properties;
   };
 
+  enum struct PlayMode {
+		poly, mono, unison
+  };
+
+  std::string to_string(PlayMode) noexcept;
+
+  struct SettingsProps : props::Properties<> {
+
+		props::Property<PlayMode, props::wrap> play_mode = {this, "Play Mode", PlayMode::poly,
+                                           props::has_limits::init(PlayMode::poly, PlayMode::unison)};
+
+    props::Property<float> portamento = {this, "Portamento", 0,
+                                     	   props::has_limits::init(0, 1),
+                                         props::steppable::init(0.01)};
+
+    props::Property<int> octave = {this, "Octave", 0,
+                                   props::has_limits::init(-2, 7)};
+
+    props::Property<int> transpose = {this, "Transpose", 0,
+                                      props::has_limits::init(-12, 12)};
+    using Properties::Properties;
+  };
+
+
   namespace detail {
     std::unique_ptr<ui::Screen> make_envelope_screen(EnvelopeProps& props);
-    std::unique_ptr<ui::Screen> make_settings_screen(EnvelopeProps& props);
+    std::unique_ptr<ui::Screen> make_settings_screen(SettingsProps& props);
   }
 
   template<int N>
@@ -76,12 +100,13 @@ namespace otto::core::audio {
       [this](auto n) { return VoiceProps(&voices_props, std::to_string(n)); });
 
     EnvelopeProps envelope_props;
+    SettingsProps settings_props;
 
     VoiceManager(props::properties_base& parent)
       : voices_props(&parent, "voices"),
         envelope_props(&parent, "envelope"),
         envelope_screen_(detail::make_envelope_screen(envelope_props)),
-        settings_screen_(detail::make_settings_screen(envelope_props))
+        settings_screen_(detail::make_settings_screen(settings_props))
     {
       for (int i = 0; i < N; ++i){
         free_voices.push_back(i);
@@ -198,7 +223,8 @@ namespace otto::core::audio {
   {
     for (auto&& ev : data.midi) {
       util::match(ev,
-                  [this](midi::NoteOnEvent& ev) {
+                  [this](midi::NoteOnEvent ev) {
+                    ev.key += settings_props.octave * 12 + settings_props.transpose;
                     stop_voice(gsl::narrow_cast<char>(ev.key));
                     Voice v = get_voice();
                     note_stack.push_back({gsl::narrow_cast<char>(ev.key), v});
@@ -218,6 +244,7 @@ namespace otto::core::audio {
     for (auto&& ev : data.midi) {
       util::match(ev,
                   [this](midi::NoteOffEvent& ev) {
+                    ev.key += settings_props.octave * 12 + settings_props.transpose;
                     stop_voice(gsl::narrow_cast<char>(ev.key));
                   },
                   [](auto&&) {});

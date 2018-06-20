@@ -65,7 +65,7 @@ with {
   only_noise = 1-(aux<=0.01);
 
   //ADSR envelope----------------------------
-  envelope = en.adsr(a,d,s,r,midigate)*(midigain * 5);
+  envelope = en.adsre(a,d,s,r,midigate) * midigain;
   a = hslider("/v:envelope/Attack", 0.001, 0.001, 4, 0.001);
   d = hslider("/v:envelope/Decay", 0.0, 0.0, 4, 0.001);
   s = hslider("/v:envelope/Sustain", 1.0, 0.0, 1.0, 0.01) * 100;

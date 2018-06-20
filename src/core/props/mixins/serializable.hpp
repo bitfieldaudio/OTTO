@@ -64,12 +64,17 @@ namespace otto::core::props {
 
     nlohmann::json to_json() const override
     {
-      return dynamic_cast<property_type const&>(*this).get();
+      // Unwrap enums
+      return util::underlying(dynamic_cast<property_type const&>(*this).get());
     }
 
     void from_json(const nlohmann::json& js) override
     {
-      dynamic_cast<property_type&>(*this).set(js);
+      if constexpr (std::is_enum_v<value_type>) {
+        dynamic_cast<property_type&>(*this).set(static_cast<value_type>(static_cast<std::underlying_type_t<value_type>>(js)));
+      } else {
+        dynamic_cast<property_type&>(*this).set(js);
+      }
     }
   };
 

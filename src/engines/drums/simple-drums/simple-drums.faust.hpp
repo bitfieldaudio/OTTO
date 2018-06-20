@@ -1,6 +1,6 @@
 /* ------------------------------------------------------------
 name: "simple-drums"
-Code generated with Faust 2.5.16 (https://faust.grame.fr)
+Code generated with Faust 2.5.23 (https://faust.grame.fr)
 Compilation options: cpp, -scal -ftz 0
 ------------------------------------------------------------ */
 
@@ -105,6 +105,7 @@ class faust_simple_drums : public dsp {
 		m->declare("envelopes.lib/license", "LGPL with exception");
 		m->declare("envelopes.lib/name", "Faust Envelope Library");
 		m->declare("envelopes.lib/version", "0.0");
+		m->declare("filename", "simple-drums");
 		m->declare("filters.lib/name", "Faust Filters Library");
 		m->declare("filters.lib/version", "0.0");
 		m->declare("maths.lib/author", "GRAME");
