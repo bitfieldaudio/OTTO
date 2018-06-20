@@ -54,18 +54,19 @@ While OTTOs may differ on a lot, some things are fairly set in stone :
 - ~30 hardware buttons, so nearly every feature has its own button.
 - 4 colour coded rotary encoders (full credits to the OP-1 for that idea), as the main controls. Each screen has a maximum of 4 variables which will be coloured corresponding to their encoder.
 
-### Roadmap
+# Roadmap
 
 A lot of the backend is in, though even that is still undergoing a lot of continuous changes, and has a lot of missing features. While we are working more on that, DSP and graphics for engines is being developed and added, so slowly we should start seeing some more content in an application that is currently quite bare.
 
- - [:heavy_check_mark:] Tapedeck
- - [:heavy_check_mark:] Metronome
- - [:heavy_check_mark:] Input selection screen - select external audio, internal audio, or the mixer output
- - [ ] Sequencers - A few basic ones are planned
- - [ ] Synthesizers - One or two simple synths
- - [ ] Effects - Filter, EQ, Delay, Bit crushing etc
- - [ ] Sampler - This is the big one!
- - [ ] Modulation - LFO mainly
+     - [x] Tapedeck
+     - [x] Metronome
+     - [x] Input selection screen - select external audio, internal audio, or the mixer output
+     - [ ] Sequencers - A few basic ones are planned
+     - [ ] Synthesizers - One or two simple synths
+     - [ ] Effects - Filter, EQ, Delay, Bit crushing etc
+     - [ ] Sampler - This is the big one!
+     - [ ] Modulation - LFO mainly
+
 And from there its just modules, modules, modules.
 
 Other ideas for the future include:
@@ -86,10 +87,10 @@ If you're up for it, we'd love some help, for a lot of different things, like:
  - UI design
  - Creating default samples & settings
 and of course, the coding itself, with areas like
- - Synth/Effect design (I know very little about dsp)
+ - Synth/Effect design
  - General backend design
  - Hardware bridging
- - Distro setup - a custom distro for the Pi might be necessary
+ - Distro setup (a custom linux distro for the Pi would be optimal)
  
 The DSP can be written seperately in [faust](http://faust.grame.fr), a functional language designed for audio processing that compiles to C++, so if you are up for writing some synths/effects, but not quite ready to take on the beast that is C++ yet, there is still hope.
 
