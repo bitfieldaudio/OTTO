@@ -129,7 +129,7 @@ namespace otto::core::audio {
 
   private:
 
-    auto get_voice() -> Voice;
+    auto get_voice(char key) -> Voice;
     void stop_voice(char key);
 
     std::deque<Voice> free_voices;
@@ -169,11 +169,13 @@ namespace otto::core::audio {
   }
 
   template<int N>
-  auto VoiceManager<N>::get_voice() -> Voice
+  auto VoiceManager<N>::get_voice(char key) -> Voice
   {
     if (free_voices.size() > 0) {
-      auto v = free_voices.front();
-      free_voices.pop_front();
+      auto it = util::find_if(note_stack, [key] (auto& nvp) { return nvp.note == key; });
+      auto fvit = it == note_stack.end() ? free_voices.begin() : util::find(free_voices, it->voice);
+      auto v = *fvit;
+      free_voices.erase(fvit);
       return v;
     } else {
       auto found =
@@ -201,7 +203,7 @@ namespace otto::core::audio {
         found->voice = v;
         auto& vp = voices[v];
         vp.midi.trigger = true;
-        vp.midi.freq    = midi::note_freq(found->note);
+        vp.midi.freq     = midi::note_freq(found->note + settings_props.octave * 12 + settings_props.transpose);
       } else {
         auto& vp = voices[v];
         free_voices.push_back(v);
@@ -224,12 +226,11 @@ namespace otto::core::audio {
     for (auto&& ev : data.midi) {
       util::match(ev,
                   [this](midi::NoteOnEvent ev) {
-                    ev.key += settings_props.octave * 12 + settings_props.transpose;
                     stop_voice(gsl::narrow_cast<char>(ev.key));
-                    Voice v = get_voice();
+                    Voice v = get_voice(ev.key);
                     note_stack.push_back({gsl::narrow_cast<char>(ev.key), v});
                     auto& vp         = voices[v];
-                    vp.midi.freq     = midi::note_freq(ev.key);
+                    vp.midi.freq     = midi::note_freq(ev.key + settings_props.octave * 12 + settings_props.transpose);
                     vp.midi.velocity = ev.velocity / 127.f;
                     vp.midi.trigger  = 1;
                     LOGI("Voice {} begin key {} {}Hz velocity: {}", v, ev.key, vp.midi.freq, vp.midi.velocity);
@@ -244,7 +245,6 @@ namespace otto::core::audio {
     for (auto&& ev : data.midi) {
       util::match(ev,
                   [this](midi::NoteOffEvent& ev) {
-                    ev.key += settings_props.octave * 12 + settings_props.transpose;
                     stop_voice(gsl::narrow_cast<char>(ev.key));
                   },
                   [](auto&&) {});
