@@ -56,23 +56,11 @@ While OTTOs may differ on a lot, some things are fairly set in stone :
 
 # Roadmap
 
-A lot of the backend is in, though even that is still undergoing a lot of continuous changes, and has a lot of missing features. While we are working more on that, DSP and graphics for engines is being developed and added, so slowly we should start seeing some more content in an application that is currently quite bare.
-
-     - [x] Tapedeck
-     - [x] Metronome
-     - [x] Input selection screen - select external audio, internal audio, or the mixer output
-     - [ ] Sequencers - A few basic ones are planned
-     - [ ] Synthesizers - One or two simple synths
-     - [ ] Effects - Filter, EQ, Delay, Bit crushing etc
-     - [ ] Sampler - This is the big one!
-     - [ ] Modulation - LFO mainly
-
-And from there its just modules, modules, modules.
+Currently, the OTTO consists mainly of a lot of backend, and some proof-of-concept interfaces. During the following months, we will work on punching out the core structure and interactions, along with adding synths, sequencers and effects.
 
 Other ideas for the future include:
 - A mobile app to run the graphics and serve as the screen, since good screens are hard to come by, and you probably already have a great one in your pocket.
 - Support for optional hardware, like an FM radio, Bluetooth speakers, a joystick
-- Whatever you can think of basically!
 
 It should also be noted that the OTTO of course feeds on midi, and you should be able to hook up all sorts of controllers, with sync and control signals for the OTTO variables.
 
@@ -100,10 +88,7 @@ If you feel like joining the adventure, please check out the [guidelines](https:
  - Audio Framework: [jack](http://jackaudio.org/)
  - DSP Framework: [faust](http://faust.grame.fr/)
  - Vector Graphics: [NanoVG](https://github.com/memononen/nanovg) with [NanoCanvas](https://github.com/Geequlim/NanoCanvas)
- - [plog](https://github.com/SergiusTheBest/plog), a great little logging lib
  - [fmtlib](http://fmtlib.net), string formatting in C++
  - [json](https://github.com/nlohmann/json/), json for modern C++
  - [mapbox/variant](https://github.com/mapbox/variant), one of the best variant implementations out there
-
-And of course, none of this would be posible without [spacemacs](http://spacemacs.org/), because i would've given up programming long ago
 
