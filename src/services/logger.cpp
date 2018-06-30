@@ -10,8 +10,9 @@ namespace otto::service::logger {
             bool enable_console,
             const char* logFilePath)
   {
+    std::string def_path = global::data_dir / "log.txt";
     if (logFilePath == nullptr) {
-      logFilePath = (global::data_dir / "log.txt").c_str();
+      logFilePath = def_path.c_str();
     }
 
     if (!enable_console) {
