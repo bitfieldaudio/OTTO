@@ -26,7 +26,6 @@ namespace otto::engines {
   /**************************************************/
   /* MixerEngine Implementation                     */
   /**************************************************/
-
   Mixer::Mixer()  //
     : Engine("Mixer", props, std::make_unique<MixerScreen>(this))
   {}
@@ -35,11 +34,11 @@ namespace otto::engines {
 
   audio::ProcessData<2> Mixer::process_tracks(audio::ProcessData<4> data)
   {
-    auto level = util::generate_sequence<4>(
+    auto level = util::generate_array<4>(
       [this] (int n) { return props.tracks[n].level.get(); });
-    auto pan = util::generate_sequence<4>(
+    auto pan = util::generate_array<4>(
       [this] (int n) { return props.tracks[n].pan.get(); });
-    auto muted = util::generate_sequence<4>(
+    auto muted = util::generate_array<4>(
       [this] (int n) { return props.tracks[n].muted.get(); });
 
     for (auto&& [in, out] : util::zip(data.audio, proc_buf)) {

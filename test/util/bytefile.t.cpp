@@ -224,9 +224,9 @@ namespace otto::util {
           f.write_bytes(data.data(), someSize);
         });
 
-      INFO(fmt::format("Iterators: {}ns", iterTime.count()));
-      INFO(fmt::format("Pointers:  {}ns", ptrTime.count()));
-      INFO(fmt::format("Pointers are {} times faster", iterTime.count() / ptrTime.count()));
+      LOGI("Iterators: {}ns", iterTime.count());
+      LOGI("Pointers:  {}ns", ptrTime.count());
+      LOGI("Pointers are {} times faster", iterTime.count() / ptrTime.count());
     }
   }
 

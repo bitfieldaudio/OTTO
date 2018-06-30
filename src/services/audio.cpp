@@ -2,10 +2,26 @@
 
 #include "util/algorithm.hpp"
 
-#include "audio/jack_audio_driver.hpp"
+#include "board/audio_driver.hpp"
 
 namespace otto::service::audio {
-  using AudioDriver = JackAudioDriver;
+
+  /**
+   * Interface requirements:
+   * 
+   * ```cpp
+   * struct AudioDriver {
+   * 
+   *   static AudioDriver& get() noexcept;
+   * 
+   *   void init();
+   *   void shutdown();
+   *
+   *   std::atomic_int samplerate;
+   *
+   * };
+   * ```
+   */
 
   namespace {
     struct DebugInfo : debug_ui::Info {
@@ -15,10 +31,12 @@ namespace otto::service::audio {
 
       void draw() override
       {
+#if OTTO_DEBUG_UI
         ImGui::Begin("Audio");
         audio_graph.plot("Audio graph", -1, 1);
         ImGui::Text("Buffers lost: %d", buffers_lost);
         ImGui::End();
+#endif
       }
     } debugInfo;
 
@@ -85,5 +103,10 @@ namespace otto::service::audio {
       
       debugInfo.audio_graph.push(max / 2.f);
 #endif
+  }
+
+  void send_midi_event(core::midi::AnyMidiEvent evt) noexcept
+  {
+    AudioDriver::get().send_midi_event(std::move(evt));
   }
 } // namespace otto::audio

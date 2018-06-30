@@ -14,7 +14,7 @@ namespace otto::core::audio::detail {
 
     service::audio::events::samplerate_change().subscribe([&](int samplerate) {
       _dsp.instanceInit(samplerate);
-      opts.props->updateFaust();
+      opts.client.refresh_links();
     });
   }
 } // namespace otto::core::audio::detail

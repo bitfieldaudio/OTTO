@@ -1,25 +1,26 @@
 #pragma once
 
 #include "core/engines/engine.hpp"
-#include "core/engines/engine_props.hpp"
 
 namespace otto::engines {
 
   using namespace core;
   using namespace core::engines;
+  using namespace props;
 
   struct InputSelector final : Engine<EngineType::studio> {
     enum struct Selection {
-      Internal,
-      External,
-      TrackFB,
-      MasterFB
+      Internal = 0,
+      External = 1,
+      TrackFB = 2,
+      MasterFB = 3
     };
 
-    struct Props : Properties {
-      Property<Selection, wrap> input {this, "input",
-          Selection::Internal, {Selection::Internal, Selection::MasterFB}};
-      Property<int, wrap> track {this, "track", 0, {0, 3}};
+    struct Props : Properties<> {
+      Property<std::underlying_type_t<Selection>, wrap> input = {
+        this, "input", 0,
+        has_limits::init(0, 3)};
+      Property<int, wrap> track {this, "track", 0, has_limits::init(0, 3)};
 
       using Properties::Properties;
     } props;

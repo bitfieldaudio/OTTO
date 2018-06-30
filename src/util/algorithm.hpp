@@ -1,9 +1,9 @@
 #pragma once
 
 #include <algorithm>
-#include <numeric>
-#include <initializer_list>
 #include <functional>
+#include <initializer_list>
+#include <numeric>
 #include <string>
 #include <string_view>
 
@@ -13,31 +13,37 @@ namespace otto::util {
 
   /// Joins a sequence of strings, separating them using `js`
   template<class StrIterator> // Models InputIterator<std::string>
-  std::string join_strings(StrIterator b, StrIterator e, std::string_view js = ", ")
+  std::string join_strings(StrIterator b,
+                           StrIterator e,
+                           std::string_view js = ", ")
   {
     std::string result;
-    std::for_each(b, e, [&] (auto&& s) {
-        if (!result.empty()) {
-          result.append(js);
-        }
-        result.append(s);
-      });
+    std::for_each(b, e, [&](auto&& s) {
+      if (!result.empty()) {
+        result.append(js);
+      }
+      result.append(s);
+    });
     return result;
   }
 
   namespace detail {
     template<class Func, int... ns>
-    constexpr auto generate_sequence_impl(std::integer_sequence<int, ns...>&&, Func&& gen) {
-      return std::array<std::decay_t<
-        decltype(std::invoke(gen, std::declval<int>()))>,
+    constexpr auto generate_array_impl(std::integer_sequence<int, ns...>&&,
+                                       Func&& gen)
+    {
+      return std::array<
+        std::decay_t<decltype(std::invoke(gen, std::declval<int>()))>,
         sizeof...(ns)>{{std::invoke(gen, ns)...}};
     }
-  }
+  } // namespace detail
 
   template<int n, class Func>
-  constexpr auto generate_sequence(Func&& gen) {
+  constexpr auto generate_array(Func&& gen)
+  {
     auto intseq = std::make_integer_sequence<int, n>();
-    return detail::generate_sequence_impl(std::move(intseq), std::forward<Func>(gen));
+    return detail::generate_array_impl(std::move(intseq),
+                                       std::forward<Func>(gen));
   }
 
 
@@ -46,7 +52,8 @@ namespace otto::util {
    */
 
   template<typename InputIt, typename Size, typename F>
-  constexpr InputIt for_each_n(InputIt&& first, Size n, F&& f) {
+  constexpr InputIt for_each_n(InputIt&& first, Size n, F&& f)
+  {
     for (Size i = 0; i < n; ++first, ++i) {
       std::invoke(f, *first);
     }
@@ -65,18 +72,20 @@ namespace otto::util {
   /// \param f Must be invocable with arguments `value_type`, `std::size_t`
   /// \returns The number of iterations performed
   template<typename InputIt, typename F>
-  constexpr std::size_t indexed_for(InputIt&& first, InputIt&& last, F&& f) {
+  constexpr std::size_t indexed_for(InputIt&& first, InputIt&& last, F&& f)
+  {
     std::size_t i = 0;
     std::for_each(std::forward<InputIt>(first), std::forward<InputIt>(last),
-      [&] (auto&& a) {
-        std::invoke(f, a, i);
-        i++;
-      });
+                  [&](auto&& a) {
+                    std::invoke(f, a, i);
+                    i++;
+                  });
     return i;
   }
 
   template<typename Rng, typename F>
-  constexpr std::size_t indexed_for(Rng&& rng, F&& f) {
+  constexpr std::size_t indexed_for(Rng&& rng, F&& f)
+  {
     return indexed_for(std::begin(rng), std::end(rng), std::forward<F>(f));
   }
 
@@ -93,7 +102,8 @@ namespace otto::util {
   /// \param f Must be invocable with arguments `value_type`, `std::size_t`
   /// \returns An iterator one past the last one visited
   template<class InputIt, class Size, class F>
-  constexpr InputIt indexed_for_n(InputIt first, Size n, F&& f) {
+  constexpr InputIt indexed_for_n(InputIt first, Size n, F&& f)
+  {
     for (Size i = 0; i < n; ++first, ++i) {
       std::invoke(f, *first, i);
     }
@@ -101,12 +111,14 @@ namespace otto::util {
   }
 
   template<class Rng, class Size, class F>
-  constexpr std::size_t indexed_for_n(Rng&& rng, Size n, F&& f) {
+  constexpr std::size_t indexed_for_n(Rng&& rng, Size n, F&& f)
+  {
     return indexed_for_n(std::begin(rng), std::end(rng), n, std::forward<F>(f));
   }
 
   template<typename Iter1, typename Iter2, typename F>
-  constexpr void for_both(Iter1&& f1, Iter1&& l1, Iter2&& f2, Iter2&& l2, F&& f) {
+  constexpr void for_both(Iter1&& f1, Iter1&& l1, Iter2&& f2, Iter2&& l2, F&& f)
+  {
     Iter1 i1 = std::forward<Iter1>(f1);
     Iter2 i2 = std::forward<Iter2>(f2);
     for (; i1 != l1 && i2 != l2; i1++, i2++) {
@@ -117,8 +129,8 @@ namespace otto::util {
   template<typename Rng1, typename Rng2, typename F>
   constexpr void for_both(Rng1&& r1, Rng2&& r2, F&& f)
   {
-    for_both(std::begin(r1), std::end(r1),
-      std::begin(r2), std::end(r2), std::forward<F>(f));
+    for_both(std::begin(r1), std::end(r1), std::begin(r2), std::end(r2),
+             std::forward<F>(f));
   }
 
   /*
@@ -128,381 +140,662 @@ namespace otto::util {
    */
 
   template<typename Cont, typename T>
-  decltype(auto) accumulate(Cont&& cont, T&& init) {
+  constexpr auto accumulate(Cont&& cont, T&& init)
+  {
+    // TODO C++20: std::accumulate is constexpr
     using std::begin, std::end;
-    return std::accumulate(begin(cont), end(cont), std::forward<T>(init));
+    auto first = begin(cont);
+    auto last = end(cont);
+    for (; first != last; ++first) init = init + *first;
+    return init;
   }
 
   template<typename Cont, typename T, typename BinaryOperation>
-  decltype(auto) accumulate(Cont&& cont, T&& init, BinaryOperation&& op) {
-    using std::begin; using std::end;
-    return std::accumulate(begin(cont), end(cont), std::forward<T>(init), std::forward<BinaryOperation>(op));
+  constexpr auto accumulate(Cont&& cont,
+                                      T&& init,
+                                      BinaryOperation&& op)
+  {
+    // TODO C++20: std::accumulate is constexpr
+    using std::begin, std::end;
+    auto first = begin(cont);
+    auto last = end(cont);
+    for (; first != last; ++first) init = op(init, *first);
+    return init;
   }
 
   template<typename Cont, typename OutputIterator>
-  decltype(auto) adjacent_difference(Cont&& cont, OutputIterator&& first) {
-    using std::begin; using std::end;
-    return std::adjacent_difference(begin(cont), end(cont), std::forward<OutputIterator>(first));
+  decltype(auto) adjacent_difference(Cont&& cont, OutputIterator&& first)
+  {
+    using std::begin;
+    using std::end;
+    return std::adjacent_difference(begin(cont), end(cont),
+                                    std::forward<OutputIterator>(first));
   }
 
   template<typename Cont>
-  decltype(auto) prev_permutation(Cont&& cont) {
-    using std::begin; using std::end;
+  decltype(auto) prev_permutation(Cont&& cont)
+  {
+    using std::begin;
+    using std::end;
     return std::prev_permutation(begin(cont), end(cont));
   }
 
   template<typename Cont, typename Compare>
-  decltype(auto) prev_permutation(Cont&& cont, Compare&& comp) {
-    using std::begin; using std::end;
-    return std::prev_permutation(begin(cont), end(cont), std::forward<Compare>(comp));
+  decltype(auto) prev_permutation(Cont&& cont, Compare&& comp)
+  {
+    using std::begin;
+    using std::end;
+    return std::prev_permutation(begin(cont), end(cont),
+                                 std::forward<Compare>(comp));
   }
 
   template<typename Cont>
-  decltype(auto) push_heap(Cont&& cont) {
-    using std::begin; using std::end;
+  decltype(auto) push_heap(Cont&& cont)
+  {
+    using std::begin;
+    using std::end;
     return std::push_heap(begin(cont), end(cont));
   }
 
   template<typename Cont, typename Compare>
-  decltype(auto) push_heap(Cont&& cont, Compare&& comp) {
-    using std::begin; using std::end;
+  decltype(auto) push_heap(Cont&& cont, Compare&& comp)
+  {
+    using std::begin;
+    using std::end;
     return std::push_heap(begin(cont), end(cont), std::forward<Compare>(comp));
   }
 
   template<typename Cont, typename T>
-  decltype(auto) remove(Cont&& cont, T&& value) {
-    using std::begin; using std::end;
+  decltype(auto) remove(Cont&& cont, T&& value)
+  {
+    using std::begin;
+    using std::end;
     return std::remove(begin(cont), end(cont), std::forward<T>(value));
   }
 
   template<typename Cont, typename OutputIterator, typename T>
-  decltype(auto) remove_copy(Cont&& cont, OutputIterator&& first, T&& value) {
-    using std::begin; using std::end;
-    return std::remove_copy(begin(cont), end(cont), std::forward<OutputIterator>(first), std::forward<T>(value));
+  decltype(auto) remove_copy(Cont&& cont, OutputIterator&& first, T&& value)
+  {
+    using std::begin;
+    using std::end;
+    return std::remove_copy(begin(cont), end(cont),
+                            std::forward<OutputIterator>(first),
+                            std::forward<T>(value));
   }
 
   template<typename Cont, typename OutputIterator, typename UnaryPredicate>
-  decltype(auto) remove_copy_if(Cont&& cont, OutputIterator&& first, UnaryPredicate&& p) {
-    using std::begin; using std::end;
-    return std::remove_copy_if(begin(cont), end(cont), std::forward<OutputIterator>(first), std::forward<UnaryPredicate>(p));
+  decltype(auto) remove_copy_if(Cont&& cont,
+                                OutputIterator&& first,
+                                UnaryPredicate&& p)
+  {
+    using std::begin;
+    using std::end;
+    return std::remove_copy_if(begin(cont), end(cont),
+                               std::forward<OutputIterator>(first),
+                               std::forward<UnaryPredicate>(p));
   }
 
   template<typename Cont, typename UnaryPredicate>
-  decltype(auto) remove_if(Cont&& cont, UnaryPredicate&& p) {
-    using std::begin; using std::end;
-    return std::remove_if(begin(cont), end(cont), std::forward<UnaryPredicate>(p));
+  decltype(auto) remove_if(Cont&& cont, UnaryPredicate&& p)
+  {
+    using std::begin;
+    using std::end;
+    return std::remove_if(begin(cont), end(cont),
+                          std::forward<UnaryPredicate>(p));
   }
 
   template<typename Cont, typename T, typename T2>
-  decltype(auto) replace(Cont&& cont, T&& old_value, T2&& new_value) {
-    using std::begin; using std::end;
-    return std::replace(begin(cont), end(cont), std::forward<T>(old_value), std::forward<T2>(new_value));
+  decltype(auto) replace(Cont&& cont, T&& old_value, T2&& new_value)
+  {
+    using std::begin;
+    using std::end;
+    return std::replace(begin(cont), end(cont), std::forward<T>(old_value),
+                        std::forward<T2>(new_value));
   }
 
   template<typename Cont, typename OutputIterator, typename T, typename T2>
-  decltype(auto) replace_copy(Cont&& cont, OutputIterator&& first, T&& old_value, T2&& new_value) {
-    using std::begin; using std::end;
-    return std::replace_copy(begin(cont), end(cont), std::forward<OutputIterator>(first), std::forward<T>(old_value), std::forward<T2>(old_value));
+  decltype(auto) replace_copy(Cont&& cont,
+                              OutputIterator&& first,
+                              T&& old_value,
+                              T2&& new_value)
+  {
+    using std::begin;
+    using std::end;
+    return std::replace_copy(
+      begin(cont), end(cont), std::forward<OutputIterator>(first),
+      std::forward<T>(old_value), std::forward<T2>(old_value));
   }
 
-  template<typename Cont, typename OutputIterator, typename UnaryPredicate, typename T>
-  decltype(auto) replace_copy_if(Cont&& cont, OutputIterator&& first, UnaryPredicate&& p, T&& new_value) {
-    using std::begin; using std::end;
-    return std::replace_copy(begin(cont), end(cont), std::forward<OutputIterator>(first), std::forward<UnaryPredicate>(p), std::forward<T>(new_value));
+  template<typename Cont,
+           typename OutputIterator,
+           typename UnaryPredicate,
+           typename T>
+  decltype(auto) replace_copy_if(Cont&& cont,
+                                 OutputIterator&& first,
+                                 UnaryPredicate&& p,
+                                 T&& new_value)
+  {
+    using std::begin;
+    using std::end;
+    return std::replace_copy(
+      begin(cont), end(cont), std::forward<OutputIterator>(first),
+      std::forward<UnaryPredicate>(p), std::forward<T>(new_value));
   }
 
   template<typename Cont, typename UnaryPredicate, typename T>
-  decltype(auto) replace_if(Cont&& cont, UnaryPredicate&& p, T&& new_value) {
-    using std::begin; using std::end;
-    return std::replace_if(begin(cont), end(cont), std::forward<UnaryPredicate>(p), std::forward<T>(new_value));
+  decltype(auto) replace_if(Cont&& cont, UnaryPredicate&& p, T&& new_value)
+  {
+    using std::begin;
+    using std::end;
+    return std::replace_if(begin(cont), end(cont),
+                           std::forward<UnaryPredicate>(p),
+                           std::forward<T>(new_value));
   }
 
   template<typename Cont>
-  decltype(auto) reverse(Cont&& cont) {
-    using std::begin; using std::end;
+  decltype(auto) reverse(Cont&& cont)
+  {
+    using std::begin;
+    using std::end;
     return std::reverse(begin(cont), end(cont));
   }
 
   template<typename Cont, typename OutputIterator>
-  decltype(auto) reverse_copy(Cont&& cont, OutputIterator&& first) {
-    using std::begin; using std::end;
-    return std::reverse_copy(begin(cont), end(cont), std::forward<OutputIterator>(first));
+  decltype(auto) reverse_copy(Cont&& cont, OutputIterator&& first)
+  {
+    using std::begin;
+    using std::end;
+    return std::reverse_copy(begin(cont), end(cont),
+                             std::forward<OutputIterator>(first));
   }
 
   template<typename Cont, typename ForwardIterator>
-  decltype(auto) rotate(Cont&& cont, ForwardIterator&& new_first) {
-    using std::begin; using std::end;
-    return std::rotate(begin(cont), std::forward<ForwardIterator>(new_first), end(cont));
+  decltype(auto) rotate(Cont&& cont, ForwardIterator&& new_first)
+  {
+    using std::begin;
+    using std::end;
+    return std::rotate(begin(cont), std::forward<ForwardIterator>(new_first),
+                       end(cont));
   }
 
   template<typename Cont, typename ForwardIterator, typename OutputIterator>
-  decltype(auto) rotate_copy(Cont&& cont, ForwardIterator&& new_first, OutputIterator&& first) {
-    using std::begin; using std::end;
-    return std::rotate_copy(begin(cont), std::forward<ForwardIterator>(new_first), end(cont), std::forward<OutputIterator>(first));
+  decltype(auto) rotate_copy(Cont&& cont,
+                             ForwardIterator&& new_first,
+                             OutputIterator&& first)
+  {
+    using std::begin;
+    using std::end;
+    return std::rotate_copy(begin(cont),
+                            std::forward<ForwardIterator>(new_first), end(cont),
+                            std::forward<OutputIterator>(first));
   }
 
   template<typename Cont, typename Cont2>
-  decltype(auto) search(Cont&& cont, Cont2&& cont2) {
-    using std::begin; using std::end;
+  decltype(auto) search(Cont&& cont, Cont2&& cont2)
+  {
+    using std::begin;
+    using std::end;
     return std::search(begin(cont), end(cont), begin(cont2), end(cont2));
   }
 
   template<typename Cont, typename Cont2, typename BinaryPredicate>
-  decltype(auto) search(Cont&& cont, Cont2&& cont2, BinaryPredicate&& p) {
-    using std::begin; using std::end;
-    return std::search(begin(cont), end(cont), begin(cont2), end(cont2), std::forward<BinaryPredicate>(p));
+  decltype(auto) search(Cont&& cont, Cont2&& cont2, BinaryPredicate&& p)
+  {
+    using std::begin;
+    using std::end;
+    return std::search(begin(cont), end(cont), begin(cont2), end(cont2),
+                       std::forward<BinaryPredicate>(p));
   }
 
   template<typename Cont, typename Size, typename T>
-  decltype(auto) search_n(Cont&& cont, Size count, T&& value) {
-    using std::begin; using std::end;
+  decltype(auto) search_n(Cont&& cont, Size count, T&& value)
+  {
+    using std::begin;
+    using std::end;
     return std::search_n(begin(cont), end(cont), count, std::forward<T>(value));
   }
 
   template<typename Cont, typename Size, typename T, typename BinaryPredicate>
-  decltype(auto) search_n(Cont&& cont, Size count, T&& value, BinaryPredicate&& p) {
-    using std::begin; using std::end;
-    return std::search_n(begin(cont), end(cont), count, std::forward<T>(value), std::forward<BinaryPredicate>(p));
+  decltype(auto) search_n(Cont&& cont,
+                          Size count,
+                          T&& value,
+                          BinaryPredicate&& p)
+  {
+    using std::begin;
+    using std::end;
+    return std::search_n(begin(cont), end(cont), count, std::forward<T>(value),
+                         std::forward<BinaryPredicate>(p));
   }
 
   template<typename Cont, typename Cont2, typename OutputIterator>
-  decltype(auto) set_difference(Cont&& cont, Cont2&& cont2, OutputIterator&& first) {
-    using std::begin; using std::end;
-    return std::set_difference(begin(cont), end(cont), begin(cont2), end(cont2), std::forward<OutputIterator>(first));
+  decltype(auto) set_difference(Cont&& cont,
+                                Cont2&& cont2,
+                                OutputIterator&& first)
+  {
+    using std::begin;
+    using std::end;
+    return std::set_difference(begin(cont), end(cont), begin(cont2), end(cont2),
+                               std::forward<OutputIterator>(first));
   }
 
-  template<typename Cont, typename Cont2, typename OutputIterator, typename Compare>
-  decltype(auto) set_difference(Cont&& cont, Cont2&& cont2, OutputIterator&& first, Compare&& comp) {
-    using std::begin; using std::end;
-    return std::set_difference(begin(cont), end(cont), begin(cont2), end(cont2), std::forward<OutputIterator>(first), std::forward<Compare>(comp));
-  }
-
-  template<typename Cont, typename Cont2, typename OutputIterator>
-  decltype(auto) set_intersection(Cont&& cont, Cont2&& cont2, OutputIterator&& first) {
-    using std::begin; using std::end;
-    return std::set_intersection(begin(cont), end(cont), begin(cont2), end(cont2), std::forward<OutputIterator>(first));
-  }
-
-  template<typename Cont, typename Cont2, typename OutputIterator, typename Compare>
-  decltype(auto) set_intersection(Cont&& cont, Cont2&& cont2, OutputIterator&& first, Compare&& comp) {
-    using std::begin; using std::end;
-    return std::set_intersection(begin(cont), end(cont), begin(cont2), end(cont2), std::forward<OutputIterator>(first), std::forward<Compare>(comp));
-  }
-
-  template<typename Cont, typename Cont2, typename OutputIterator>
-  decltype(auto) set_symmetric_difference(Cont&& cont, Cont2&& cont2, OutputIterator&& first) {
-    using std::begin; using std::end;
-    return std::set_symmetric_difference(begin(cont), end(cont), begin(cont2), end(cont2), std::forward<OutputIterator>(first));
-  }
-
-  template<typename Cont, typename Cont2, typename OutputIterator, typename Compare>
-  decltype(auto) set_symmetric_difference(Cont&& cont, Cont2&& cont2, OutputIterator&& first, Compare&& comp) {
-    using std::begin; using std::end;
-    return std::set_symmetric_difference(begin(cont), end(cont), begin(cont2), end(cont2), std::forward<OutputIterator>(first), std::forward<Compare>(comp));
+  template<typename Cont,
+           typename Cont2,
+           typename OutputIterator,
+           typename Compare>
+  decltype(auto) set_difference(Cont&& cont,
+                                Cont2&& cont2,
+                                OutputIterator&& first,
+                                Compare&& comp)
+  {
+    using std::begin;
+    using std::end;
+    return std::set_difference(begin(cont), end(cont), begin(cont2), end(cont2),
+                               std::forward<OutputIterator>(first),
+                               std::forward<Compare>(comp));
   }
 
   template<typename Cont, typename Cont2, typename OutputIterator>
-  decltype(auto) set_union(Cont&& cont, Cont2&& cont2, OutputIterator&& first) {
-    using std::begin; using std::end;
-    return std::set_union(begin(cont), end(cont), begin(cont2), end(cont2), std::forward<OutputIterator>(first));
+  decltype(auto) set_intersection(Cont&& cont,
+                                  Cont2&& cont2,
+                                  OutputIterator&& first)
+  {
+    using std::begin;
+    using std::end;
+    return std::set_intersection(begin(cont), end(cont), begin(cont2),
+                                 end(cont2),
+                                 std::forward<OutputIterator>(first));
   }
 
-  template<typename Cont, typename Cont2, typename OutputIterator, typename Compare>
-  decltype(auto) set_union(Cont&& cont, Cont2&& cont2, OutputIterator&& first, Compare&& comp) {
-    using std::begin; using std::end;
-    return std::set_union(begin(cont), end(cont), begin(cont2), end(cont2), std::forward<OutputIterator>(first), std::forward<Compare>(comp));
+  template<typename Cont,
+           typename Cont2,
+           typename OutputIterator,
+           typename Compare>
+  decltype(auto) set_intersection(Cont&& cont,
+                                  Cont2&& cont2,
+                                  OutputIterator&& first,
+                                  Compare&& comp)
+  {
+    using std::begin;
+    using std::end;
+    return std::set_intersection(
+      begin(cont), end(cont), begin(cont2), end(cont2),
+      std::forward<OutputIterator>(first), std::forward<Compare>(comp));
+  }
+
+  template<typename Cont, typename Cont2, typename OutputIterator>
+  decltype(auto) set_symmetric_difference(Cont&& cont,
+                                          Cont2&& cont2,
+                                          OutputIterator&& first)
+  {
+    using std::begin;
+    using std::end;
+    return std::set_symmetric_difference(begin(cont), end(cont), begin(cont2),
+                                         end(cont2),
+                                         std::forward<OutputIterator>(first));
+  }
+
+  template<typename Cont,
+           typename Cont2,
+           typename OutputIterator,
+           typename Compare>
+  decltype(auto) set_symmetric_difference(Cont&& cont,
+                                          Cont2&& cont2,
+                                          OutputIterator&& first,
+                                          Compare&& comp)
+  {
+    using std::begin;
+    using std::end;
+    return std::set_symmetric_difference(
+      begin(cont), end(cont), begin(cont2), end(cont2),
+      std::forward<OutputIterator>(first), std::forward<Compare>(comp));
+  }
+
+  template<typename Cont, typename Cont2, typename OutputIterator>
+  decltype(auto) set_union(Cont&& cont, Cont2&& cont2, OutputIterator&& first)
+  {
+    using std::begin;
+    using std::end;
+    return std::set_union(begin(cont), end(cont), begin(cont2), end(cont2),
+                          std::forward<OutputIterator>(first));
+  }
+
+  template<typename Cont,
+           typename Cont2,
+           typename OutputIterator,
+           typename Compare>
+  decltype(auto) set_union(Cont&& cont,
+                           Cont2&& cont2,
+                           OutputIterator&& first,
+                           Compare&& comp)
+  {
+    using std::begin;
+    using std::end;
+    return std::set_union(begin(cont), end(cont), begin(cont2), end(cont2),
+                          std::forward<OutputIterator>(first),
+                          std::forward<Compare>(comp));
   }
 
   template<typename Cont, typename UniformRandomNumberGenerator>
-  decltype(auto) shuffle(Cont&& cont, UniformRandomNumberGenerator&& g) {
-    using std::begin; using std::end;
-    return std::shuffle(begin(cont), end(cont), std::forward<UniformRandomNumberGenerator>(g));
+  decltype(auto) shuffle(Cont&& cont, UniformRandomNumberGenerator&& g)
+  {
+    using std::begin;
+    using std::end;
+    return std::shuffle(begin(cont), end(cont),
+                        std::forward<UniformRandomNumberGenerator>(g));
   }
 
   template<typename Cont>
-  decltype(auto) sort(Cont&& cont) {
-    using std::begin; using std::end;
+  decltype(auto) sort(Cont&& cont)
+  {
+    using std::begin;
+    using std::end;
     return std::sort(begin(cont), end(cont));
   }
 
   template<typename Cont, typename Compare>
-  decltype(auto) sort(Cont&& cont, Compare&& comp) {
-    using std::begin; using std::end;
+  decltype(auto) sort(Cont&& cont, Compare&& comp)
+  {
+    using std::begin;
+    using std::end;
     return std::sort(begin(cont), end(cont), std::forward<Compare>(comp));
   }
 
   template<typename Cont>
-  decltype(auto) sort_heap(Cont&& cont) {
-    using std::begin; using std::end;
+  decltype(auto) sort_heap(Cont&& cont)
+  {
+    using std::begin;
+    using std::end;
     return std::sort_heap(begin(cont), end(cont));
   }
 
   template<typename Cont, typename Compare>
-  decltype(auto) sort_heap(Cont&& cont, Compare&& comp) {
-    using std::begin; using std::end;
+  decltype(auto) sort_heap(Cont&& cont, Compare&& comp)
+  {
+    using std::begin;
+    using std::end;
     return std::sort_heap(begin(cont), end(cont), std::forward<Compare>(comp));
   }
 
   template<typename Cont, typename UnaryPredicate>
-  decltype(auto) stable_partition(Cont&& cont, UnaryPredicate&& p) {
-    using std::begin; using std::end;
-    return std::stable_partition(begin(cont), end(cont), std::forward<UnaryPredicate>(p));
+  decltype(auto) stable_partition(Cont&& cont, UnaryPredicate&& p)
+  {
+    using std::begin;
+    using std::end;
+    return std::stable_partition(begin(cont), end(cont),
+                                 std::forward<UnaryPredicate>(p));
   }
 
   template<typename Cont>
-  decltype(auto) stable_sort(Cont&& cont) {
-    using std::begin; using std::end;
+  decltype(auto) stable_sort(Cont&& cont)
+  {
+    using std::begin;
+    using std::end;
     return std::stable_sort(begin(cont), end(cont));
   }
 
   template<typename Cont, typename Compare>
-  decltype(auto) stable_sort(Cont&& cont, Compare&& comp) {
-    using std::begin; using std::end;
-    return std::stable_sort(begin(cont), end(cont), std::forward<Compare>(comp));
+  decltype(auto) stable_sort(Cont&& cont, Compare&& comp)
+  {
+    using std::begin;
+    using std::end;
+    return std::stable_sort(begin(cont), end(cont),
+                            std::forward<Compare>(comp));
   }
 
   template<typename Cont, typename ForwardIterator>
-  decltype(auto) swap_ranges(Cont&& cont, ForwardIterator&& first) {
-    using std::begin; using std::end;
-    return std::swap_ranges(begin(cont), end(cont), std::forward<ForwardIterator>(first));
+  decltype(auto) swap_ranges(Cont&& cont, ForwardIterator&& first)
+  {
+    using std::begin;
+    using std::end;
+    return std::swap_ranges(begin(cont), end(cont),
+                            std::forward<ForwardIterator>(first));
   }
 
   template<typename Cont, typename Cont2, typename F>
-  auto transform(Cont&& cont, Cont2&& cont2, F&& f) -> decltype(begin(cont2)) {
-    using std::begin; using std::end;
-    return std::transform(begin(cont), end(cont), begin(cont2), std::forward<F>(f));
+  auto transform(Cont&& cont, Cont2&& cont2, F&& f) -> decltype(begin(cont2))
+  {
+    using std::begin;
+    using std::end;
+    return std::transform(begin(cont), end(cont), begin(cont2),
+                          std::forward<F>(f));
   }
 
   template<typename Cont, typename Iter, typename F>
-  decltype(auto) transform(Cont&& cont, Iter&& iter, F&& f) {
-    using std::begin; using std::end;
-    return std::transform(begin(cont), end(cont), std::forward<Iter>(iter), std::forward<F>(f));
+  decltype(auto) transform(Cont&& cont, Iter&& iter, F&& f)
+  {
+    using std::begin;
+    using std::end;
+    return std::transform(begin(cont), end(cont), std::forward<Iter>(iter),
+                          std::forward<F>(f));
   }
 
-  template<typename Cont, typename Cont2, typename Cont3, typename BinaryPredicate>
-  auto transform(Cont&& cont, Cont2&& cont2, Cont3&& cont3, BinaryPredicate&& f) -> decltype(begin(cont2), begin(cont3)) {
-    using std::begin; using std::end;
-    return std::transform(begin(cont), end(cont), begin(cont2), begin(cont3), std::forward<BinaryPredicate>(f));
+  template<typename Cont,
+           typename Cont2,
+           typename Cont3,
+           typename BinaryPredicate>
+  auto transform(Cont&& cont, Cont2&& cont2, Cont3&& cont3, BinaryPredicate&& f)
+    -> decltype(begin(cont2), begin(cont3))
+  {
+    using std::begin;
+    using std::end;
+    return std::transform(begin(cont), end(cont), begin(cont2), begin(cont3),
+                          std::forward<BinaryPredicate>(f));
   }
 
-  template<typename Cont, typename InputIterator, typename Cont3, typename BinaryPredicate>
-  auto transform(Cont&& cont, InputIterator&& iter, Cont3&& cont3, BinaryPredicate&& f) -> decltype(begin(cont), begin(cont3)) {
-    using std::begin; using std::end;
-    return std::transform(begin(cont), end(cont), std::forward<InputIterator>(iter), begin(cont3), std::forward<BinaryPredicate>(f));
+  template<typename Cont,
+           typename InputIterator,
+           typename Cont3,
+           typename BinaryPredicate>
+  auto transform(Cont&& cont,
+                 InputIterator&& iter,
+                 Cont3&& cont3,
+                 BinaryPredicate&& f) -> decltype(begin(cont), begin(cont3))
+  {
+    using std::begin;
+    using std::end;
+    return std::transform(begin(cont), end(cont),
+                          std::forward<InputIterator>(iter), begin(cont3),
+                          std::forward<BinaryPredicate>(f));
   }
 
-  template<typename Cont, typename Cont2, typename InputIterator, typename BinaryPredicate>
-  auto transform(Cont&& cont, Cont2&& cont2, InputIterator&& iter, BinaryPredicate&& f) -> decltype(begin(cont), begin(cont2), iter) {
-    using std::begin; using std::end;
-    return std::transform(begin(cont), end(cont), begin(cont2), std::forward<InputIterator>(iter), std::forward<BinaryPredicate>(f));
+  template<typename Cont,
+           typename Cont2,
+           typename InputIterator,
+           typename BinaryPredicate>
+  auto transform(Cont&& cont,
+                 Cont2&& cont2,
+                 InputIterator&& iter,
+                 BinaryPredicate&& f)
+    -> decltype(begin(cont), begin(cont2), iter)
+  {
+    using std::begin;
+    using std::end;
+    return std::transform(begin(cont), end(cont), begin(cont2),
+                          std::forward<InputIterator>(iter),
+                          std::forward<BinaryPredicate>(f));
   }
 
-  template<typename Cont, typename InputIterator, typename OutputIterator, typename BinaryOperation>
-  decltype(auto) transform(Cont&& cont, InputIterator&& firstIn, OutputIterator&& firstOut, BinaryOperation&& op) {
-    using std::begin; using std::end;
-    return std::transform(begin(cont), end(cont), std::forward<InputIterator>(firstIn), std::forward<OutputIterator>(firstOut), std::forward<BinaryOperation>(op));
+  template<typename Cont,
+           typename InputIterator,
+           typename OutputIterator,
+           typename BinaryOperation>
+  decltype(auto) transform(Cont&& cont,
+                           InputIterator&& firstIn,
+                           OutputIterator&& firstOut,
+                           BinaryOperation&& op)
+  {
+    using std::begin;
+    using std::end;
+    return std::transform(begin(cont), end(cont),
+                          std::forward<InputIterator>(firstIn),
+                          std::forward<OutputIterator>(firstOut),
+                          std::forward<BinaryOperation>(op));
   }
 
   template<typename Cont>
-  decltype(auto) unique(Cont&& cont) {
-    using std::begin; using std::end;
+  decltype(auto) unique(Cont&& cont)
+  {
+    using std::begin;
+    using std::end;
     return std::unique(begin(cont), end(cont));
   }
 
   template<typename Cont, typename BinaryPredicate>
-  decltype(auto) unique(Cont&& cont, BinaryPredicate&& p) {
-    using std::begin; using std::end;
-    return std::unique(begin(cont), end(cont), std::forward<BinaryPredicate>(p));
+  decltype(auto) unique(Cont&& cont, BinaryPredicate&& p)
+  {
+    using std::begin;
+    using std::end;
+    return std::unique(begin(cont), end(cont),
+                       std::forward<BinaryPredicate>(p));
   }
 
   template<typename Cont, typename OutputIterator>
-  decltype(auto) unique_copy(Cont&& cont, OutputIterator&& first) {
-    using std::begin; using std::end;
-    return std::unique_copy(begin(cont), end(cont), std::forward<OutputIterator>(first));
+  decltype(auto) unique_copy(Cont&& cont, OutputIterator&& first)
+  {
+    using std::begin;
+    using std::end;
+    return std::unique_copy(begin(cont), end(cont),
+                            std::forward<OutputIterator>(first));
   }
 
   template<typename Cont, typename OutputIterator, typename BinaryPredicate>
-  decltype(auto) unique_copy(Cont&& cont, OutputIterator&& first, BinaryPredicate&& p) {
-    using std::begin; using std::end;
-    return std::unique_copy(begin(cont), end(cont), std::forward<OutputIterator>(first), std::forward<BinaryPredicate>(p));
+  decltype(auto) unique_copy(Cont&& cont,
+                             OutputIterator&& first,
+                             BinaryPredicate&& p)
+  {
+    using std::begin;
+    using std::end;
+    return std::unique_copy(begin(cont), end(cont),
+                            std::forward<OutputIterator>(first),
+                            std::forward<BinaryPredicate>(p));
   }
 
   template<typename Cont, typename T>
-  decltype(auto) upper_bound(Cont&& cont, T&& value) {
-    using std::begin; using std::end;
+  decltype(auto) upper_bound(Cont&& cont, T&& value)
+  {
+    using std::begin;
+    using std::end;
     return std::upper_bound(begin(cont), end(cont), std::forward<T>(value));
   }
 
   template<typename Cont, typename T, typename Compare>
-  decltype(auto) upper_bound(Cont&& cont, T&& value, Compare&& comp) {
-    using std::begin; using std::end;
-    return std::upper_bound(begin(cont), end(cont), std::forward<T>(value), std::forward<Compare>(comp));
+  decltype(auto) upper_bound(Cont&& cont, T&& value, Compare&& comp)
+  {
+    using std::begin;
+    using std::end;
+    return std::upper_bound(begin(cont), end(cont), std::forward<T>(value),
+                            std::forward<Compare>(comp));
+  }
+
+  template<typename Cont, typename OutputIterator>
+  decltype(auto) copy(Cont&& cont, OutputIterator&& first)
+  {
+    using std::begin;
+    using std::end;
+    return std::copy(begin(cont), end(cont),
+                     std::forward<OutputIterator>(first));
+  }
+
+  template<typename Cont, typename OutputIterator, typename UnaryPredicate>
+  decltype(auto) copy_if(Cont&& cont,
+                         OutputIterator&& first,
+                         UnaryPredicate&& p)
+  {
+    using std::begin;
+    using std::end;
+    return std::copy_if(begin(cont), end(cont),
+                        std::forward<OutputIterator>(first),
+                        std::forward<UnaryPredicate>(p));
   }
 
   template<typename Cont, typename T>
-  decltype(auto) fill(Cont&& cont, T&& value) {
-    using std::begin; using std::end;
+  decltype(auto) fill(Cont&& cont, T&& value)
+  {
+    using std::begin;
+    using std::end;
     return std::fill(begin(cont), end(cont), std::forward<T>(value));
   }
 
   template<typename Cont, typename T>
-  decltype(auto) fill_n(Cont&& cont, std::size_t n, T&& value) {
-    using std::begin; using std::end;
+  decltype(auto) fill_n(Cont&& cont, std::size_t n, T&& value)
+  {
+    using std::begin;
+    using std::end;
     return std::fill_n(begin(cont), n, std::forward<T>(value));
   }
 
   template<typename Cont, typename UnaryPredicate>
-  decltype(auto) any_of(Cont&& cont, UnaryPredicate&& p) {
-    using std::begin; using std::end;
+  decltype(auto) any_of(Cont&& cont, UnaryPredicate&& p)
+  {
+    using std::begin;
+    using std::end;
     return std::any_of(begin(cont), end(cont), std::forward<UnaryPredicate>(p));
   }
 
   template<typename Cont, typename UnaryPredicate>
-  decltype(auto) all_of(Cont&& cont, UnaryPredicate&& p) {
-    using std::begin; using std::end;
+  decltype(auto) all_of(Cont&& cont, UnaryPredicate&& p)
+  {
+    using std::begin;
+    using std::end;
     return std::all_of(begin(cont), end(cont), std::forward<UnaryPredicate>(p));
   }
 
   template<typename Cont, typename UnaryPredicate>
-  decltype(auto) none_of(Cont&& cont, UnaryPredicate&& p) {
-    using std::begin; using std::end;
-    return std::none_of(begin(cont), end(cont), std::forward<UnaryPredicate>(p));
+  decltype(auto) none_of(Cont&& cont, UnaryPredicate&& p)
+  {
+    using std::begin;
+    using std::end;
+    return std::none_of(begin(cont), end(cont),
+                        std::forward<UnaryPredicate>(p));
   }
 
   template<typename Cont>
-  decltype(auto) max_element(Cont&& cont) {
-    using std::begin; using std::end;
+  decltype(auto) max_element(Cont&& cont)
+  {
+    using std::begin;
+    using std::end;
     return std::max_element(begin(cont), end(cont));
   }
 
   template<typename Cont>
-  decltype(auto) min_element(Cont&& cont) {
-    using std::begin; using std::end;
+  decltype(auto) min_element(Cont&& cont)
+  {
+    using std::begin;
+    using std::end;
     return std::min_element(begin(cont), end(cont));
   }
 
   template<typename Cont, typename Compare>
-  decltype(auto) min_element(Cont&& cont, Compare&& f) {
-    using std::begin; using std::end;
+  decltype(auto) min_element(Cont&& cont, Compare&& f)
+  {
+    using std::begin;
+    using std::end;
     return std::min_element(begin(cont), end(cont), std::forward<Compare>(f));
   }
 
   template<typename Cont, typename Compare>
-  decltype(auto) max_element(Cont&& cont, Compare&& f) {
-    using std::begin; using std::end;
+  decltype(auto) max_element(Cont&& cont, Compare&& f)
+  {
+    using std::begin;
+    using std::end;
     return std::max_element(begin(cont), end(cont), std::forward<Compare>(f));
   }
 
   template<typename Cont, typename T>
-  decltype(auto) find(Cont&& cont, T&& t) {
-    using std::begin; using std::end;
+  decltype(auto) find(Cont&& cont, T&& t)
+  {
+    using std::begin;
+    using std::end;
     return std::find(begin(cont), end(cont), std::forward<T>(t));
   }
 
   template<typename Cont, typename UnaryPredicate>
-  decltype(auto) find_if(Cont&& cont, UnaryPredicate&& f) {
-    using std::begin; using std::end;
-    return std::find_if(begin(cont), end(cont), std::forward<UnaryPredicate>(f));
+  decltype(auto) find_if(Cont&& cont, UnaryPredicate&& f)
+  {
+    using std::begin;
+    using std::end;
+    return std::find_if(begin(cont), end(cont),
+                        std::forward<UnaryPredicate>(f));
   }
 
-}
+} // namespace otto::util

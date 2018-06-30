@@ -42,10 +42,13 @@ namespace otto::core::ui {
     drums,
     sampler,
     looper,
+    envelope,
 
     loop,
     loop_in,
     loop_out,
+
+    ret,
 
     lift,
     drop,

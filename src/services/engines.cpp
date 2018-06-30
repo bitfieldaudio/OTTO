@@ -42,8 +42,8 @@ namespace otto::service::engines {
     EngineDispatcher<EngineType::synth> synth;
     EngineDispatcher<EngineType::drums> drums;
     EngineDispatcher<EngineType::effect> effect;
-    otto::engines::Tapedeck tapedeck;
     otto::engines::Mixer mixer;
+    otto::engines::Tapedeck tapedeck;
     otto::engines::Metronome metronome;
     otto::engines::InputSelector selector;
 
@@ -86,6 +86,18 @@ namespace otto::service::engines {
         service::ui::select_engine("Drums");
       }
       current_sound_source = SynthOrDrums::drums;
+    });
+
+    service::ui::register_key_handler(core::ui::Key::envelope, [](core::ui::Key k) {
+        auto* engine = by_name(service::ui::selected_engine_name());
+        auto* owner = dynamic_cast<core::engines::EngineWithEnvelope*>(engine);
+        if (owner) {
+          if (service::ui::is_pressed(core::ui::Key::shift)) {
+            service::ui::display(owner->voices_screen());
+          } else {
+            service::ui::display(owner->envelope_screen());
+          }
+        }
     });
 
     service::ui::register_key_handler(core::ui::Key::play, [](core::ui::Key key) {
@@ -143,7 +155,7 @@ namespace otto::service::engines {
     auto mixer_out    = mixer.process_tracks(playback_out);
 
     auto record_in = [&]() {
-      switch (selector.props.input.get()) {
+      switch (Selection{selector.props.input.get()}) {
       case Selection::Internal: {
         if (current_sound_source == SynthOrDrums::synth) {
           return synth->process(midi_in);
@@ -163,11 +175,17 @@ namespace otto::service::engines {
       return core::audio::ProcessData<1>{{nullptr}, {nullptr}};
     }();
 
-    if (selector.props.input != Selection::MasterFB) {
+    for (auto& frm : record_in) {
+      for (auto& smpl : frm) {
+        smpl *= tapedeck.props.gain;
+      }
+    }
+
+    if (Selection{selector.props.input.get()} != Selection::MasterFB) {
       mixer.process_engine(record_in);
     }
 
-    if (selector.props.input == Selection::MasterFB) {
+    if (Selection{selector.props.input.get()} == Selection::MasterFB) {
       util::transform(mixer_out, _audiobuf1.begin(), [](auto&& a) {
           return std::array<float, 1>{{a[0] + a[1]}};
       });

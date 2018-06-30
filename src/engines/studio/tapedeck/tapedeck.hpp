@@ -13,6 +13,7 @@ namespace otto::engines {
 
   using namespace core;
   using namespace core::engines;
+  using namespace props;
 
   struct Tapedeck final : Engine<EngineType::studio> {
     Tapedeck();
@@ -84,9 +85,12 @@ namespace otto::engines {
 
     } state;
 
-    struct Props : Properties {
-      Property<float> gain      = {this, "PROC_GAIN", 0.5, {0, 1, 0.01}};
-      Property<float> baseSpeed = {this, "Tape Speed", 1, {-2.f, 2.f, 0.01}};
+    struct Props : Properties<> {
+      Property<float> gain = {this, "PROC_GAIN", 0.5, has_limits::init(0, 1),
+                              steppable::init(0.01)};
+      Property<float> baseSpeed = {this, "Tape Speed", 1,
+                                   has_limits::init(-2.f, 2.f),
+                                   steppable::init(0.01)};
     } props;
 
     util::audio::Graph procGraph;

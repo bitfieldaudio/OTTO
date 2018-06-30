@@ -1,21 +1,19 @@
 #pragma once
 
-#include <mutex>
+#include <atomic>
 #include <functional>
+#include <mutex>
 
 namespace otto::util {
 
   /// Wrap any type in a mutex, and guarantee that it is locked on every access.
   template<typename T>
   class locked {
-
     T contents;
 
   public:
-
     template<typename... Args>
-    locked(Args&&... args)
-      : contents {std::forward<Args>(args)...}
+    locked(Args&&... args) : contents{std::forward<Args>(args)...}
     {}
 
     /// Direct access to the mutex to do manual locking
@@ -50,7 +48,8 @@ namespace otto::util {
     /// Get a non-locked reference to the value.
     ///
     /// This is of course highly unsafe, and defeats the purpose of the wrapper
-    T& unsafe_access() {
+    T& unsafe_access()
+    {
       return contents;
     }
 
@@ -58,11 +57,75 @@ namespace otto::util {
     /// Get a non-locked reference to the value.
     ///
     /// This is of course highly unsafe, and defeats the purpose of the wrapper
-    const T& unsafe_access() const {
+    const T& unsafe_access() const
+    {
       return contents;
     }
   };
 
-}
+  /// Inner and outer buffers swapped atomically
+  ///
+  /// The inner buffer can always be accessed lock-free,
+  /// the outer is locked on swap.
+  ///
+  /// \tparam T needs .clear(), which is called on swap
+  template<typename T>
+  struct atomic_swap {
+    constexpr atomic_swap(const T& inner,
+                          const T& outer) noexcept(std::is_nothrow_copy_constructible_v<T>)
+      : _store{{inner, outer}}
+    {}
+
+    constexpr atomic_swap(T&& inner, const T& outer) noexcept(
+      std::is_nothrow_copy_constructible_v<T>&& std::is_nothrow_move_constructible_v<T>)
+      : _store{{std::move(inner), outer}}
+    {}
+
+    constexpr atomic_swap(const T& inner, T&& outer = T{}) noexcept(
+      std::is_nothrow_copy_constructible_v<T>&& std::is_nothrow_move_constructible_v<T>)
+      : _store{{inner, std::move(outer)}}
+    {}
+
+    constexpr atomic_swap(T&& inner = T{},
+                          T&& outer = T{}) noexcept(std::is_nothrow_move_constructible_v<T>)
+      : _store{{std::move(outer), std::move(outer)}}
+    {}
+
+    constexpr T& inner() noexcept
+    {
+      return _store[_inner_idx];
+    }
+
+    constexpr const T& inner() const noexcept
+    {
+      return _store[_inner_idx];
+    }
+
+    constexpr T& outer() noexcept
+    {
+      std::unique_lock lock(_outer_lock);
+      return _store[(_inner_idx + 1) % 2];
+    }
+
+    constexpr const T& outer() const noexcept
+    {
+      std::unique_lock lock(_outer_lock);
+      return _store[(_inner_idx + 1) % 2];
+    }
+
+    constexpr void swap() noexcept
+    {
+      std::unique_lock lock(_outer_lock);
+      _inner_idx = (_inner_idx + 1) % 2;
+      _store[(_inner_idx + 1) % 2].clear();
+    }
+
+  private:
+    std::array<T, 2> _store;
+    std::atomic<char> _inner_idx = 0;
+    std::mutex _outer_lock;
+  };
+
+} // namespace otto::util
 
 //  LocalWords:  util

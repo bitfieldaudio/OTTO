@@ -94,6 +94,10 @@ namespace otto::service::debug_ui {
 #else
   inline void init() {}
   inline void draw_frame() {}
+
+  template<typename Callable>
+  inline std::enable_if_t<util::is_invocable_v<Callable>> add_info(
+    Callable&& callable) {}
 #endif
 
 #if OTTO_DEBUG_UI

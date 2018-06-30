@@ -71,6 +71,13 @@ namespace otto::core::audio {
     }
   };
 
+  /**
+   * A DynArray that resizes to fit the RealTime bufferSize.
+   *
+   * This is the container used in AudioProcessors, and it should be used
+   * in any place where the realtime data is copied out. It is resized on
+   * the bufferSizeChanged event
+   */
   template<int N>
   using ProcessBuffer = RTBuffer<std::array<float, N>, 1>;
 

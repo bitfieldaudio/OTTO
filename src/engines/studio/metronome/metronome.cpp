@@ -23,7 +23,7 @@ namespace otto::engines {
 
   Metronome::Metronome()
     : Engine("Metronome", props, std::make_unique<MetronomeScreen>(this)),
-      audio::FaustWrapper<0, 1>(std::make_unique<FAUSTCLASS>(), props)
+      faust_(std::make_unique<FAUSTCLASS>(), props)
   {}
 
   Metronome::~Metronome() {}
@@ -38,19 +38,19 @@ namespace otto::engines {
     if (framesTillNext < data.nframes
       && service::engines::tape_state::playing()
       && service::engines::tape_state::playSpeed()/BPsample > 1) {
-      FaustWrapper::process(data.slice(0, framesTillNext));
+      faust_.process(data.slice(0, framesTillNext));
       props.trigger = true;
-      FaustWrapper::process(data.slice(framesTillNext));
+      faust_.process(data.slice(framesTillNext));
       props.trigger = false;
     } else {
-      FaustWrapper::process(data);
+     faust_.process(data);
     }
 
-    for (auto frm : FaustWrapper::proc_buf) {
+    for (auto frm : faust_.proc_buf) {
       graph.add(frm[0]);
     }
 
-    return data.redirect(FaustWrapper::proc_buf);
+    return data.redirect(faust_.proc_buf);
   }
 
   // Bars
@@ -126,7 +126,7 @@ namespace otto::engines {
     {
       // Tone meter
       ctx.save();
-      float y = 180 - engine.props.tone.mode.normalize() * 140;
+      float y = 180 - engine.props.tone.normalize() * 140;
       float x = 40;
       ctx.strokeStyle(Colours::Green.dimmed);
       ctx.lineCap(Canvas::LineCap::ROUND);
@@ -165,7 +165,7 @@ namespace otto::engines {
       ctx.stroke();
       ctx.fillStyle(Colours::Red);
       ctx.beginPath();
-      ctx.circle(x, 180 - engine.props.gain.mode.normalize() * 140, 3);
+      ctx.circle(x, 180 - engine.props.gain.normalize() * 140, 3);
       ctx.fill();
       ctx.restore();
     }
@@ -231,7 +231,7 @@ namespace otto::engines {
       float factor((std::fmod(beat, 2)));
       factor = factor < 1 ? (factor * 2 - 1) : ((1 - factor) * 2 + 1);
       factor = std::sin(factor * M_PI/2);
-      factor *= 0.2 + 0.8 * (1 - engine.props.bpm.mode.normalize());
+      factor *= 0.2 + 0.8 * (1 - engine.props.bpm.normalize());
       // float a(1);
       // factor(factor > 0 ? smoothMotion(factor, a) : -smoothMotion(-factor, a));
       float rotation(factor * M_PI/3);
@@ -244,7 +244,7 @@ namespace otto::engines {
       ctx.lineWidth(2);
 
       // PENDULUM
-      float y(75 * engine.props.bpm.mode.normalize());
+      float y(75 * engine.props.bpm.normalize());
       ctx.beginPath();
       ctx.moveTo(38, 15 + y);
       ctx.lineTo(62, 15 + y);

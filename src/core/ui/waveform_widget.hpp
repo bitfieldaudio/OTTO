@@ -46,12 +46,13 @@ namespace otto::core::ui::widgets {
     /// Useful for colouring different parts differently.
     ///
     /// \param subrange
-    ///        The range to draw, with 0 at [*Waveform<C>::range]()`().in`
+    /// The range to draw, with 0 at [*Waveform<C>::range]()`().in`
     ///
-    /// \requires `subrange` should be within [*Waveform<C>::range]() -
-    /// `range.in`
+    /// \requires
+    /// `subrange` should be within [*Waveform<C>::range]() - `range.in`
     ///
-    /// \requires `Plotter` should be invocable as `void(ctx, first, last)`
+    /// \requires
+    /// `Plotter` should be invocable as `void(ctx, first, last)`
     template<typename Plotter>
     void draw_range(vg::Canvas&, Range subrange, Plotter&&);
 

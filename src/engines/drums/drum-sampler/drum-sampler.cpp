@@ -69,7 +69,7 @@ namespace otto::engines {
 
     for (auto &&voice : props.voiceData) {
 
-      float playSpeed = voice.pitch.mode.pow2() * sampleSpeed;
+      float playSpeed = voice.pitch.pow_2() * sampleSpeed;
 
       // Process audio
       if (voice.playProgress >= 0 && playSpeed > 0) {
@@ -153,10 +153,10 @@ namespace otto::engines {
     }
 
     for (auto &&v : props.voiceData) {
-      v.in.mode.min = 0;
-      v.out.mode.min = 0;
-      v.in.mode.max = rs;
-      v.out.mode.max = rs;
+      v.in.min = 0;
+      v.out.min = 0;
+      v.in.max = rs;
+      v.out.max = rs;
     }
 
     // Auto assign voices
@@ -197,9 +197,8 @@ namespace otto::engines {
 
   bool DrumSampleScreen::keypress(ui::Key key) {
     using namespace ui;
-    auto& voice = engine.props.voiceData[engine.currentVoiceIdx];
+    auto& voice [[maybe_unused]] = engine.props.voiceData[engine.currentVoiceIdx];
     switch (key) {
-    case Key::white_click: voice.pitch.reset(); return true;
     default:
       return false;
     }

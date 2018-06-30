@@ -6,11 +6,11 @@ namespace otto::core::engines {
 
   // AnyEngine ////////////////////////////////////////////////////////////////
 
-  AnyEngine::AnyEngine(std::string name,
-                       Properties& props,
+  AnyEngine::AnyEngine(std::string const& name,
+    props::properties_base& props,
                        std::unique_ptr<ui::Screen> screen)
-    : _name(std::move(name)), //
-      _props(props),
+    : _props(props),
+      _name(name),
       _screen(std::move(screen))
   {}
 
@@ -20,24 +20,24 @@ namespace otto::core::engines {
     return _name;
   }
 
-  Properties& AnyEngine::props() noexcept
-  {
-    return _props;
-  }
-
-  const Properties& AnyEngine::props() const noexcept
-  {
-    return _props;
-  }
-
   ui::Screen& AnyEngine::screen() noexcept
   {
     return *_screen;
   }
 
-  const ui::Screen& AnyEngine::screen() const noexcept
+  ui::Screen const& AnyEngine::screen() const noexcept
   {
     return *_screen;
+  }
+
+  props::properties_base& AnyEngine::props() noexcept
+  {
+    return _props;
+  }
+
+  props::properties_base const& AnyEngine::props() const noexcept
+  {
+    return _props;
   }
 
   int AnyEngine::current_preset() const noexcept
@@ -53,11 +53,13 @@ namespace otto::core::engines {
   nlohmann::json AnyEngine::to_json() const
   {
     nlohmann::json j;
-    j["props"] = _props.to_json();
-    try {
-      j["preset"] = service::presets::name_of_idx(_name, _current_preset);
-    } catch (service::presets::exception& e) {
-      // no preset set, all is good
+    if (props().is<props::serializable>()) {
+      j["props"] = props().as<props::serializable>().to_json();
+      try {
+        j["preset"] = service::presets::name_of_idx(_name, _current_preset);
+      } catch (service::presets::exception& e) {
+        // no preset set, all is good
+      }
     }
     return j;
   }
@@ -69,7 +71,8 @@ namespace otto::core::engines {
       if (iter != j.end()) {
         service::presets::apply_preset(*this, iter->get<std::string>(), true);
       }
-      _props.from_json(j["props"]);
+      if (props().is<props::serializable>())
+        props().as<props::serializable>().from_json(j["props"]);
     }
   }
 

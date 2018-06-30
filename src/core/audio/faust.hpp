@@ -15,28 +15,20 @@
 #include "util/algorithm.hpp"
 
 #include "core/audio/processor.hpp"
-#include "core/engines/engine_props.hpp"
+
+#include "core/props/mixins/faust_link.hpp"
 
 namespace otto::core::audio {
 
+  using props::FaustLink;
+
+  using FaustClient = props::mixin::branch<props::faust_link>;
+
   using FaustDSP = dsp;
 
-  class FaustOptions : public UI {
+  struct FaustOptions : UI {
 
-    std::vector<std::string> boxes;
-    bool atRoot = true;
-
-  public:
-
-    enum OPTTYPE {
-      FLOAT,
-      BOOL
-    };
-
-    engines::Properties *props;
-
-    FaustOptions() {}
-    FaustOptions(engines::Properties* props) : props (props) {}
+    FaustOptions(FaustClient& client) : client(client) {}
 
     void openTabBox(const char* label) override {
       if (atRoot) {
@@ -66,7 +58,7 @@ namespace otto::core::audio {
     void addHorizontalBargraph(
       const char* label, FAUSTFLOAT* zone,
       FAUSTFLOAT min, FAUSTFLOAT max) override {
-      registerOption(label, zone, 0, min, max, 0, FLOAT, true);
+      registerOption(label, zone, 0, min, max, 0, FaustLink::Type::FromFaust);
     }
 
     void addVerticalBargraph(
@@ -76,11 +68,11 @@ namespace otto::core::audio {
     }
 
     void addButton(const char* label, FAUSTFLOAT* zone) override {
-      this->registerOption(label, zone, 0, 0, 1, 1, BOOL);
+      this->registerOption(label, zone, 0, 0, 1, 1);
     }
 
     void addCheckButton(const char* label, FAUSTFLOAT* zone) override {
-      this->registerOption(label, zone, 0, 0, 1, 1, BOOL);
+      this->registerOption(label, zone, 0, 0, 1, 1);
     }
 
     void addVerticalSlider(
@@ -90,7 +82,7 @@ namespace otto::core::audio {
       FAUSTFLOAT min,
       FAUSTFLOAT max,
       FAUSTFLOAT step) override {
-      this->registerOption(label, zone, init, min, max, step, FLOAT);
+      this->registerOption(label, zone, init, min, max, step);
     }
 
     void addHorizontalSlider(
@@ -100,7 +92,7 @@ namespace otto::core::audio {
       FAUSTFLOAT min,
       FAUSTFLOAT max,
       FAUSTFLOAT step) override {
-      this->registerOption(label, zone, init, min, max, step, FLOAT);
+      this->registerOption(label, zone, init, min, max, step);
     }
 
     void addNumEntry(
@@ -110,47 +102,29 @@ namespace otto::core::audio {
       FAUSTFLOAT min,
       FAUSTFLOAT max,
       FAUSTFLOAT step) override {
-      this->registerOption(label, zone, init, min, max, step, FLOAT);
+      this->registerOption(label, zone, init, min, max, step);
     }
 
-    virtual void registerOption(
+    void registerOption(
       const char* label,
       FAUSTFLOAT* ptr,
       FAUSTFLOAT init,
       FAUSTFLOAT min,
       FAUSTFLOAT max,
       FAUSTFLOAT step,
-      OPTTYPE type,
-      bool output = false) {
+      FaustLink::Type type = FaustLink::Type::ToFaust) {
 
       boxes.emplace_back(label);
-
-      auto lookingFor = boxes.begin();
-      auto b = props->begin();
-      auto e = props->end();
-      while (true) {
-        auto it = std::find_if(b, e,
-          [&](auto&& p) {
-            return p->name == *lookingFor;
-          });
-        if (it != e) {
-          if (++lookingFor == boxes.end()) { // Found
-            (*it)->linkToFaust(ptr, output);
-            break;
-          } else {
-            if (auto* p = dynamic_cast<engines::Properties*>(*it); p != nullptr) {
-              b = p->begin();
-              e = p->end();
-            }
-          }
-        } else {
-          LOG_F(ERROR, "Couldn't find property matching {}", util::join_strings(boxes.begin(), boxes.end(), "/"));
-          break;
-        }
-      }
-
+      client.register_link(std::begin(boxes), std::end(boxes), FaustLink{ptr, type});
       boxes.pop_back();
     }
+
+    FaustClient& client;
+
+  private:
+
+    std::vector<std::string> boxes;
+    bool atRoot = true;
   };
 
   namespace detail {
@@ -171,20 +145,19 @@ namespace otto::core::audio {
   class FaustWrapper {
     // Needed to convert from faust's deinterleaved data to interleaved
     audio::RTBuffer<float, std::max(Cin, Cout)> faustbuf;
-  protected:
+  public:
 
     audio::ProcessBuffer<Cout> proc_buf;
 
     FaustOptions opts;
 
-  public:
 
     std::unique_ptr<dsp> fDSP;
 
     FaustWrapper() {};
 
-    FaustWrapper(std::unique_ptr<dsp>&& d, engines::Properties& props)
-      : opts (&props), fDSP (std::move(d))
+    FaustWrapper(std::unique_ptr<dsp>&& d, FaustClient& client)
+      : opts (client), fDSP (std::move(d))
     {
       if (fDSP->getNumInputs() != Cin || fDSP->getNumOutputs() != Cout) {
         throw std::runtime_error("A faustwrapper was instantiated with a "
@@ -202,13 +175,13 @@ namespace otto::core::audio {
       auto size   = data.nframes;
       auto raw_pb = reinterpret_cast<float*>(proc_buf.data() + data.offset);
       std::array<float*, Cin> in_bufs =
-        util::generate_sequence<Cin>([&](int n) { return raw_pb + n * size; });
+        util::generate_array<Cin>([&](int n) { return raw_pb + n * size; });
       for (int i = 0; i < Cin; i++) {
         for (int j = 0; j < size; j++) {
           in_bufs[i][j] = data.audio[j][i];
         }
       }
-      std::array<float*, Cout> out_bufs = util::generate_sequence<Cout>(
+      std::array<float*, Cout> out_bufs = util::generate_array<Cout>(
         [&](int n) { return faustbuf.data() + n * size; });
 
       fDSP->compute(data.nframes, in_bufs.data(), out_bufs.data());

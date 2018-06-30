@@ -11,7 +11,7 @@
 
 #include "core/ui/screen.hpp"
 #include "core/audio/processor.hpp"
-#include "core/engines/engine_props.hpp"
+#include "core/props/props.hpp"
 
 namespace otto::core::engines {
 
@@ -42,8 +42,8 @@ namespace otto::core::engines {
   /// Use this when refering to a generic engine
   struct AnyEngine {
 
-    AnyEngine(std::string name,
-      Properties& props,
+    AnyEngine(std::string const& name,
+      props::properties_base& props,
       std::unique_ptr<ui::Screen> screen);
 
     AnyEngine() = delete;
@@ -71,12 +71,6 @@ namespace otto::core::engines {
 
     /// The name of this module.
     const std::string& name() const noexcept;
-
-    /// The module properties.
-    Properties& props() noexcept;
-
-    /// The module properties.
-    const Properties& props() const noexcept;
 
     ui::Screen& screen() noexcept;
 
@@ -125,9 +119,12 @@ namespace otto::core::engines {
     /// [nlohmann::json::exception](), see it for details.
     void from_json(const nlohmann::json& j);
 
+    props::properties_base& props() noexcept;
+    props::properties_base const& props() const noexcept;
+
   private:
-    const std::string _name;
-    Properties& _props;
+    props::properties_base& _props;
+    std::string _name;
     std::unique_ptr<ui::Screen> _screen;
     int _current_preset = -1;
   };
@@ -142,7 +139,7 @@ namespace otto::core::engines {
 protected:                                                                     \
   using AnyEngine::AnyEngine;                                                  \
                                                                                \
-public:
+public:                                                                        \
 
   // macro end
 
@@ -251,6 +248,11 @@ public:
 
   protected:
     Engine& engine;
+  };
+
+  struct EngineWithEnvelope {
+    virtual ui::Screen& envelope_screen() = 0;
+    virtual ui::Screen& voices_screen() = 0;
   };
 
 } // namespace otto::core::engines

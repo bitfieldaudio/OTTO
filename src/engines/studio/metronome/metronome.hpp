@@ -11,19 +11,26 @@ namespace otto::engines {
 
   using namespace core;
   using namespace core::engines;
+  using namespace props;
 
   using BeatPos = int;
   using TapeTime = int;
 
-  struct Metronome : Engine<EngineType::studio>, private audio::FaustWrapper<0, 1> {
+  struct Metronome : Engine<EngineType::studio>
+  {
+    struct Props : Properties<> {
+      Property<float, has_limits> bpm = {this, "BPM", 120, //
+                                         has_limits::init(40, 320),
+                                         steppable::init(1)};
 
-    using audio::FaustWrapper<0, 1>::process;
+      Property<float> gain = {this, "GAIN", 0,        //
+                              has_limits::init(0, 1), //
+                              steppable ::init(0.01)};
 
-    struct Props : public Properties {
-      Property<float> bpm  = {this, "BPM", 120, {40, 320, 1}};
-      Property<float> gain = {this, "GAIN", 0, {0, 1, 0.01}};
-      Property<int> tone   = {this, "TONE", 12, {0, 24, 1}};
-      Property<bool, mode::def, false> trigger = {this, "TRIGGER", false};
+      Property<int> tone = {this, "TONE", 12, //
+                            has_limits::init(0, 24)};
+
+      Property<bool, no_serialize> trigger = {this, "TRIGGER", false};
     } props;
 
     util::audio::Graph graph;
@@ -39,5 +46,7 @@ namespace otto::engines {
 
     float bar_for_time(TapeTime time) const;
     std::size_t time_for_bar(float bar) const;
+  private:
+    audio::FaustWrapper<0, 1> faust_;
   };
 }
