@@ -26,7 +26,6 @@ int main(int argc, char* argv[])
     service::logger::init(argc, argv);
 
     // Overwrite the logger signal handlers
-    std::signal(SIGINT, global::handle_signal);
     std::signal(SIGABRT, global::handle_signal);
     std::signal(SIGTERM, global::handle_signal);
 

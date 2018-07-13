@@ -258,6 +258,16 @@ namespace otto::core::ui::vg {
     Canvas(NVGcontext* ctx, float width, float height, float scaleRatio = 1.0f) :
       Super(ctx, width, height, scaleRatio) {}
 
+    /// Canvas is non-copyable
+    Canvas(const Canvas&) = delete;
+    /// Canvas is non-copyable
+    auto operator=(const Canvas&) = delete;
+
+    /// Canvas is movable
+    Canvas(Canvas&&) = default;
+    /// Canvas is movable
+    auto operator=(Canvas&&) = default;
+
     /// Get the canvas size
     Size size() const noexcept {
       return {m_width, m_height};

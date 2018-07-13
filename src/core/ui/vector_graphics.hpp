@@ -7,8 +7,13 @@
 
 namespace otto::core::ui::vg {
 
+  [[deprecated]]
   const int WIDTH = 320;
+  [[deprecated]]
   const int HEIGHT = 240;
+
+  constexpr float width = 320;
+  constexpr float height = 240;
 
   namespace Colours {
     const Colour Black      = Colour(0x000000);
