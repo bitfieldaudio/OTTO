@@ -266,7 +266,7 @@ namespace otto::core::ui::vg {
     /// Canvas is movable
     Canvas(Canvas&&) = default;
     /// Canvas is movable
-    auto operator=(Canvas&&) = default;
+    Canvas& operator=(Canvas&&) = default;
 
     /// Get the canvas size
     Size size() const noexcept {
