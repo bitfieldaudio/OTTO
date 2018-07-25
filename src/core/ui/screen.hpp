@@ -143,7 +143,6 @@ namespace otto::core::ui {
 
     /// An absolute position of the top left corner
     struct Absolute : vg::Point {
-      Absolute(const vg::Point&) = default;
       using Point::Point;
     };
 

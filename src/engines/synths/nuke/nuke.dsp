@@ -2,6 +2,18 @@
 // Bargraphs are "Bars" (for the bars on top of the UI, indicating the filter cutoff), and "Dots" (for the dots next to  
 // POWER)
 
+adsre(attT60,decT60,susLvl,relT60,gate) = envelope with {
+  ugate = gate>0;
+  samps = ugate : +~(*(ugate)); // ramp time in samples
+  attSamps = int(attT60 * ma.SR);
+  target = select2(ugate, 0.0,
+           select2(samps<attSamps, (susLvl)*float(ugate), ugate));
+  t60 = select2(ugate, relT60, select2(samps<attSamps, decT60, attT60));
+  pole = ba.tau2pole(t60/6.91);
+  envelope = target : si.smooth(pole);
+};
+
+
 import("stdfaust.lib");
 
 process = hgroup("voices", vgroup("0", voice) + vgroup("3", voice) +
@@ -65,7 +77,7 @@ with {
   only_noise = 1-(aux<=0.01);
 
   //ADSR envelope----------------------------
-  envelope = en.adsr(a,d,s,r,midigate) * midigain;
+  envelope = adsre(a,d,s,r,midigate) * midigain;
   a = hslider("/v:envelope/Attack", 0.001, 0.001, 4, 0.001);
   d = hslider("/v:envelope/Decay", 0.0, 0.0, 4, 0.001);
   s = hslider("/v:envelope/Sustain", 1.0, 0.0, 1.0, 0.01) * 100;
