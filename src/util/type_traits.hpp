@@ -30,6 +30,62 @@ namespace otto::util {
   template<typename T>
   constexpr inline bool is_number_or_enum_v = is_number_or_enum<T>::value;
 
+  /// Check if a type is equal comparable to another type (or itself)
+  template<typename T1, typename T2 = T1,  typename Enable = void>
+  struct is_equal_comparable : std::false_type {};
+
+  template<typename T1, typename T2>
+  struct is_equal_comparable<T1, T2, std::void_t<decltype(std::declval<T1>() == std::declval<T2>())>>
+   : std::true_type {};
+
+  template<typename T1>
+  struct is_equal_comparable<T1, T1> : std::true_type {};
+
+  template<typename T1, typename T2 = T1>
+  constexpr bool is_equal_comparable_v = is_equal_comparable<T1, T2>::value;
+
+  /// Check if a type is less than comparable to another type (or itself)
+  template<typename T1, typename T2 = T1,  typename Enable = void>
+  struct is_less_than_comparable : std::false_type {};
+
+  template<typename T1, typename T2>
+  struct is_less_than_comparable<T1, T2, std::void_t<decltype(std::declval<T1>() < std::declval<T2>())>>
+   : std::true_type {};
+
+  template<typename T1>
+  struct is_less_than_comparable<T1, T1> : std::true_type {};
+
+  template<typename T1, typename T2 = T1>
+  constexpr bool is_less_than_comparable_v = is_less_than_comparable<T1, T2>::value;
+
+  /// Check if a type is greater than comparable to another type (or itself)
+  template<typename T1, typename T2 = T1,  typename Enable = void>
+  struct is_greater_than_comparable : std::false_type {};
+
+  template<typename T1, typename T2>
+  struct is_greater_than_comparable<T1, T2, std::void_t<decltype(std::declval<T1>() > std::declval<T2>())>>
+   : std::true_type {};
+
+  template<typename T1>
+  struct is_greater_than_comparable<T1, T1> : std::true_type {};
+
+  template<typename T1, typename T2 = T1>
+  constexpr bool is_greater_than_comparable_v = is_greater_than_comparable<T1, T2>::value;
+
+  /// Get the underlying type if T is an enum, otherwise just T
+  template<typename T, typename Enable = void>
+  struct enum_decay {
+    using type = T;
+  };
+
+  template<typename T>
+  struct enum_decay<T, std::enable_if_t<std::is_enum_v<T>>> {
+    using type = std::underlying_type_t<T>;
+  };
+
+  template<typename T>
+  using enum_decay_t = typename enum_decay<T>::type;
+
   /// has member type `type` which is `T1` if b is `true`,
   /// otherwise it is `T2`
   template<bool b, typename T1, typename T2>

@@ -8,9 +8,11 @@
 
 namespace otto::core::props {
 
-  template<typename ValueType>
+  template<typename T, typename Enable>
   struct default_mixins {
-    using type = tag_list<serializable>;
+    using type = std::conditional_t<std::is_enum_v<T>,
+      tag_list<serializable, has_limits, steppable>,
+      tag_list<serializable>>;
   };
 
   template<>

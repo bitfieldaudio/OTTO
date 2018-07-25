@@ -88,7 +88,6 @@ namespace otto::core::ui {
   ///
   /// If it belongs to a engine, use [engines::EngineScreen]().
   struct Screen : vg::Drawable {
-
     Screen() : Drawable() {}
     virtual ~Screen() {}
 
@@ -118,6 +117,59 @@ namespace otto::core::ui {
 
     /// Run by MainUI when switching to another screen
     virtual void on_hide() {}
+  };
+
+  /// Possible alignments for floating widgets, like overlays
+  enum struct Alignment {
+    top_left,
+    top_center,
+    top_right,
+    center_left,
+    center,
+    center_right,
+    bottom_left,
+    bottom_center,
+    bottom_right
+  };
+
+  /// Two-way padding
+  struct Padding {
+    float horizontal = 0;
+    float vertical = 0;
+  };
+
+  /// An absolute or relative position on screen
+  struct Position {
+
+    /// An absolute position of the top left corner
+    struct Absolute : vg::Point {
+      Absolute(const vg::Point&) = default;
+      using Point::Point;
+    };
+
+    struct Relative {
+      Alignment alignment = Alignment::center;
+      Padding padding = {};
+
+      /// Get the absolute position of a box given the size
+      auto absolute(vg::Size size = {}) const noexcept -> Absolute;
+    };
+
+  private:
+    std::variant<Relative, Absolute> _data;
+  };
+
+  struct Overlay : Widget {
+
+    /// Draw the overlay at its correct position
+    void draw(vg::Canvas&) override final;
+
+  protected:
+
+    virtual void draw_impl(vg::Canvas&) = 0;
+
+  private:
+    Position _position;
   };
 
 } // namespace otto::core::ui
