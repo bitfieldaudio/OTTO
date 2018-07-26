@@ -1,8 +1,6 @@
 #pragma once
 
-#ifndef __APPLE__
 #include <GL/gl3w.h>
-#endif
 #include <GLFW/glfw3.h>
 
 #include "util/algorithm.hpp"

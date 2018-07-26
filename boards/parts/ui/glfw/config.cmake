@@ -1,8 +1,6 @@
 # Generate gl3w files
-if(NOT APPLE)
-    include("${OTTO_EXTERNAL_DIR}/gl3w_gen.cmake")
-    gl3w_gen("${OTTO_EXTERNAL_DIR}/")
-endif()
+include("${OTTO_EXTERNAL_DIR}/gl3w_gen.cmake")
+gl3w_gen("${OTTO_EXTERNAL_DIR}/")
 
 # GLFW
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "Build GLFW examples")

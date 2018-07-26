@@ -39,17 +39,26 @@ set(UNLICENSE
 ")
 
 file(MAKE_DIRECTORY ${OUTDIR}/include/GL)
+file(MAKE_DIRECTORY ${OUTDIR}/include/KHR)
 file(MAKE_DIRECTORY ${OUTDIR}/src)
 
 if(NOT EXISTS ${OUTDIR}/include/GL/glcorearb.h)
     message(STATUS "Downloading glcorearb.h to include/GL...")
     file(DOWNLOAD
-        http://www.khronos.org/registry/OpenGL/api/GL/glcorearb.h
+        https://www.khronos.org/registry/OpenGL/api/GL/glcorearb.h
         ${OUTDIR}/include/GL/glcorearb.h)
 else()
     message(STATUS "Reusing glcorearb.h from include/GL...")
 endif()
 
+if(NOT EXISTS ${OUTDIR}/include/KHR/khrplatform.h)
+    message(STATUS "Downloading khrplatform.h to include/KHR...")
+    file(DOWNLOAD
+        https://www.khronos.org/registry/EGL/api/KHR/khrplatform.h
+        ${OUTDIR}/include/KHR/khrplatform.h)
+else()
+    message(STATUS "Reusing glcorearb.h from include/GL...")
+endif()
 message(STATUS "Parsing glcorearb.h header...")
 
 file(STRINGS ${OUTDIR}/include/GL/glcorearb.h GLCOREARB)

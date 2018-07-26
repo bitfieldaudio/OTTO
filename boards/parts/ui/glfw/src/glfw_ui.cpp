@@ -15,9 +15,7 @@
 #include "board/ui/keys.hpp"
 
 // C APIs. Include last
-#ifndef __APPLE__
 #include <GL/gl3w.h>
-#endif
 #include <GLFW/glfw3.h>
 #include <nanovg_gl.h>
 
