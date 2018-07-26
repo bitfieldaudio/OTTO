@@ -302,7 +302,7 @@ namespace otto::core::audio {
 
     constexpr float x_pad = 30;
     constexpr float y_pad = 50;
-    constexpr float space = (HEIGHT - 2.f * y_pad) / 3.f;
+    constexpr float space = (height - 2.f * y_pad) / 3.f;
 
     ctx.beginPath();
     ctx.fillStyle(Colours::Blue);
@@ -312,7 +312,7 @@ namespace otto::core::audio {
     ctx.beginPath();
     ctx.fillStyle(Colours::Blue);
     ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(to_string(props.play_mode), {WIDTH - x_pad, y_pad});
+    ctx.fillText(to_string(props.play_mode), {width - x_pad, y_pad});
 
     ctx.beginPath();
     ctx.fillStyle(Colours::Green);
@@ -322,7 +322,7 @@ namespace otto::core::audio {
     ctx.beginPath();
     ctx.fillStyle(Colours::Green);
     ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:3.2}", props.portamento), {WIDTH - x_pad, y_pad + space});
+    ctx.fillText(fmt::format("{:3.2}", props.portamento), {width - x_pad, y_pad + space});
 
     ctx.beginPath();
     ctx.fillStyle(Colours::Yellow);
@@ -332,7 +332,7 @@ namespace otto::core::audio {
     ctx.beginPath();
     ctx.fillStyle(Colours::Yellow);
     ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:+}", props.octave), {WIDTH - x_pad, y_pad + 2 * space});
+    ctx.fillText(fmt::format("{:+}", props.octave), {width - x_pad, y_pad + 2 * space});
 
     ctx.beginPath();
     ctx.fillStyle(Colours::Red);
@@ -342,7 +342,7 @@ namespace otto::core::audio {
     ctx.beginPath();
     ctx.fillStyle(Colours::Red);
     ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:+}", props.transpose), {WIDTH - x_pad, y_pad + 3 * space});
+    ctx.fillText(fmt::format("{:+}", props.transpose), {width - x_pad, y_pad + 3 * space});
   }
 
 } // namespace otto::core::audio

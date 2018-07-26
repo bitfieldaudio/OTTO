@@ -18,7 +18,7 @@ namespace otto::core::engines {
           preset_wid.select(eg.current_preset(), true);
         };
         opts.item_colour = Colours::Blue;
-        opts.size = {120, vg::HEIGHT};
+        opts.size = {120, vg::height};
         return opts;
   }
 
@@ -30,7 +30,7 @@ namespace otto::core::engines {
             service::presets::apply_preset(cur_eg(), idx);
           };
         opts.item_colour = Colours::Green;
-        opts.size = {120, vg::HEIGHT};
+        opts.size = {120, vg::height};
         return opts;
   }
 

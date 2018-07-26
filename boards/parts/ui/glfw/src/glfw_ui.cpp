@@ -52,7 +52,7 @@ namespace otto::service::ui {
     debug_ui::init();
 
     GLFWwindow* window =
-      glfwCreateWindow(vg::WIDTH, vg::HEIGHT, "OTTO", NULL, NULL);
+      glfwCreateWindow(vg::width, vg::height, "OTTO", NULL, NULL);
     if (!window) {
       glfwTerminate();
       return;
@@ -74,7 +74,7 @@ namespace otto::service::ui {
       return;
     }
 
-    vg::Canvas canvas(vg, vg::WIDTH, vg::HEIGHT);
+    vg::Canvas canvas(vg, vg::width, vg::height);
     vg::initUtils(canvas);
 
     LOG_F(INFO, "Opening GLFW Window");
@@ -127,8 +127,8 @@ namespace otto::service::ui {
       glfwGetFramebufferSize(window, &fbWidth, &fbHeight);
 
       // Calculate pixel ration for hi-dpi devices.
-      scale = std::min((float) winWidth / (float) vg::WIDTH,
-                       (float) winHeight / (float) vg::HEIGHT);
+      scale = std::min((float) winWidth / (float) vg::width,
+                       (float) winHeight / (float) vg::height);
       canvas.setSize(winWidth, winHeight);
 
       // Update and render
