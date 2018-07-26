@@ -46,6 +46,7 @@ namespace otto::core::audio {
       case PlayMode::poly: return "Poly";
       case PlayMode::mono: return "Mono";
       case PlayMode::unison: return "Unison";
+      default: return "";
     };
   }
 

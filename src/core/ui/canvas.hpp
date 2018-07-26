@@ -26,13 +26,13 @@ namespace otto::core::ui::vg {
   struct Point {
     float x, y;
 
-    constexpr Point() : Point(0, 0) {}
+    constexpr Point() noexcept : Point(0, 0) {}
     constexpr Point(const Point&) noexcept = default;
     constexpr Point& operator=(const Point&) noexcept = default;
-    constexpr Point(float x, float y) : x (x), y (y) {}
+    constexpr Point(float x, float y) noexcept : x (x), y (y) {}
 
     // cppcheck-suppress noExplicitConstructor
-    constexpr Point(util::math::vec v) : x (v.x), y (v.y) {}
+    constexpr Point(util::math::vec v) noexcept : x (v.x), y (v.y) {}
 
     Point rotate(float rad) const noexcept {
       float sn = std::sin(rad);
