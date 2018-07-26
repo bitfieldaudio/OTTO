@@ -16,20 +16,44 @@ namespace otto::core::audio {
     EnvelopeProps& props;
   };
 
+  struct SettingsScreen : ui::Screen {
+
+    SettingsScreen(SettingsProps& props)
+      : props (props)
+    {}
+
+    void draw(ui::vg::Canvas&) override;
+    void rotary(ui::RotaryEvent ev) override;
+
+    SettingsProps& props;
+  };
+
   namespace detail {
     std::unique_ptr<ui::Screen> make_envelope_screen(EnvelopeProps& props)
     {
       return std::make_unique<EnvelopeScreen>(props);
     }
 
-    std::unique_ptr<ui::Screen> make_settings_screen(EnvelopeProps& props)
+    std::unique_ptr<ui::Screen> make_settings_screen(SettingsProps& props)
     {
-      return std::make_unique<EnvelopeScreen>(props);
+      return std::make_unique<SettingsScreen>(props);
     }
+  }
+
+  std::string to_string(PlayMode pm) noexcept
+  {
+    switch (pm) {
+      case PlayMode::poly: return "Poly";
+      case PlayMode::mono: return "Mono";
+      case PlayMode::unison: return "Unison";
+      default: return "";
+    };
   }
 
   using namespace ui;
   using namespace ui::vg;
+
+  // ENVELOPE SCREEN //////////////////////////////////////////////////////////
 
   void EnvelopeScreen::rotary(RotaryEvent ctx) {
     switch (ctx.rotary) {
@@ -257,6 +281,69 @@ namespace otto::core::audio {
     ctx.moveTo(45.9, 51.7);
     ctx.lineTo(45.9, 188.7);
     ctx.stroke();
+  }
+
+  // SETTINGS SCREEN //////////////////////////////////////////////////////////
+
+  void SettingsScreen::rotary(ui::RotaryEvent ev)
+  {
+    switch (ev.rotary) {
+      case Rotary::Blue: props.play_mode.step(ev.clicks); break;
+      case Rotary::Green: props.portamento.step(ev.clicks); break;
+      case Rotary::White: props.octave.step(ev.clicks); break;
+      case Rotary::Red: props.transpose.step(ev.clicks); break;
+    }
+  }
+
+  void SettingsScreen::draw(ui::vg::Canvas& ctx)
+  {
+    using namespace ui::vg;
+
+    ctx.font(Fonts::Bold, 40);
+
+    constexpr float x_pad = 30;
+    constexpr float y_pad = 50;
+    constexpr float space = (height - 2.f * y_pad) / 3.f;
+
+    ctx.beginPath();
+    ctx.fillStyle(Colours::Blue);
+    ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
+    ctx.fillText("Play Mode", {x_pad, y_pad});
+
+    ctx.beginPath();
+    ctx.fillStyle(Colours::Blue);
+    ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
+    ctx.fillText(to_string(props.play_mode), {width - x_pad, y_pad});
+
+    ctx.beginPath();
+    ctx.fillStyle(Colours::Green);
+    ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
+    ctx.fillText("Portamento", {x_pad, y_pad + space});
+
+    ctx.beginPath();
+    ctx.fillStyle(Colours::Green);
+    ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
+    ctx.fillText(fmt::format("{:3.2}", props.portamento), {width - x_pad, y_pad + space});
+
+    ctx.beginPath();
+    ctx.fillStyle(Colours::Yellow);
+    ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
+    ctx.fillText("Octave", {x_pad, y_pad + 2 * space});
+
+    ctx.beginPath();
+    ctx.fillStyle(Colours::Yellow);
+    ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
+    ctx.fillText(fmt::format("{:+}", props.octave), {width - x_pad, y_pad + 2 * space});
+
+    ctx.beginPath();
+    ctx.fillStyle(Colours::Red);
+    ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
+    ctx.fillText("Transpose", {x_pad, y_pad + 3 * space});
+
+    ctx.beginPath();
+    ctx.fillStyle(Colours::Red);
+    ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
+    ctx.fillText(fmt::format("{:+}", props.transpose), {width - x_pad, y_pad + 3 * space});
   }
 
 } // namespace otto::core::audio

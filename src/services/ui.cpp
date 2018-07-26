@@ -136,6 +136,10 @@ namespace otto::service::ui {
       return true;
     }
 
+    void rotary(RotaryEvent ev) {
+			cur_screen->rotary(ev);
+    }
+
     bool keyrelease(Key key)
     {
       keys[static_cast<unsigned>(key)] = false;

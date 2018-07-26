@@ -9,11 +9,6 @@
 
 namespace otto::service::engines {
 
-  /// Type used to identify position on tape
-  using TapeTime = int;
-  /// Type used to identify time by bars
-  using BeatPos = int;
-
   /// Error codes. Thrown with exceptions
   enum struct ErrorCode {
     no_such_engine,
@@ -21,19 +16,6 @@ namespace otto::service::engines {
 
   /// EngineManager exceptions. Contain an [ErrorCode]()
   using exception = util::as_exception<ErrorCode>;
-
-  namespace tape_state {
-    int position();
-    float playSpeed();
-    bool playing();
-  } // namespace tape_state
-
-  namespace metronome_state {
-    TapeTime bar_time(BeatPos bar);
-    TapeTime bar_time_rel(BeatPos bar);
-    float bar_for_time(std::size_t time);
-    std::size_t time_for_bar(float time);
-  } // namespace metronome_state
 
   /// Initialize engine manager
   ///

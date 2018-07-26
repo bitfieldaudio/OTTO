@@ -19,7 +19,8 @@ namespace otto::core::props {
 
     void init(value_type p_step_size = value_type{1})
     {
-      step_size = p_step_size;
+      // unwrap enums
+      step_size = util::underlying(p_step_size);
     }
 
     void step(int n = 1)
@@ -27,12 +28,14 @@ namespace otto::core::props {
       auto& prop = dynamic_cast<property_type&>(*this);
       if constexpr (std::is_same_v<bool, value_type>) {
         prop.set((prop.get() + n) % 2);
+      } else if constexpr (std::is_enum_v<value_type>) {
+        prop.set(static_cast<value_type>(util::underlying(prop.get()) + n * step_size));
       } else {
         prop.set(prop.get() + n * step_size);
       }
     }
 
-    value_type step_size = 1;
+    util::enum_decay_t<value_type> step_size = 1;
   };
 
 } // namespace otto::core::props

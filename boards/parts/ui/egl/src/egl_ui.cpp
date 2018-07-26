@@ -29,8 +29,10 @@ namespace otto::service::ui {
   {
     EGLConnection egl;
     egl.init();
+    #if OTTO_USE_FBCP
     auto fbcp = RpiFBCP{egl.eglData};
     fbcp.init();
+    #endif
 
     NVGcontext* nvg =
       nvgCreateGLES2(NVG_ANTIALIAS | NVG_STENCIL_STROKES | NVG_DEBUG);
@@ -88,7 +90,9 @@ namespace otto::service::ui {
       canvas.endFrame();
       egl.endFrame();
 
+      #if OTTO_USE_FBCP
       fbcp.copy();
+      #endif
 
       lastFrameTime = clock::now() - t0;
       std::this_thread::sleep_for(waitTime - lastFrameTime);

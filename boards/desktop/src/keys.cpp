@@ -29,23 +29,23 @@ namespace otto::board::ui {
 
     if (mods & Modifier::alt) {
       switch (key) {
-      case Key::q: send_midi(core::midi::note_number("C0")); return;
-      case Key::n2: send_midi(core::midi::note_number("C#0")); return;
-      case Key::w: send_midi(core::midi::note_number("D0")); return;
-      case Key::n3: send_midi(core::midi::note_number("D#0")); return;
-      case Key::e: send_midi(core::midi::note_number("E0")); return;
-      case Key::r: send_midi(core::midi::note_number("F0")); return;
-      case Key::n5: send_midi(core::midi::note_number("F#0")); return;
-      case Key::t: send_midi(core::midi::note_number("G0")); return;
-      case Key::n6: send_midi(core::midi::note_number("G#0")); return;
-      case Key::y: send_midi(core::midi::note_number("A1")); return;
-      case Key::n7: send_midi(core::midi::note_number("A#1")); return;
-      case Key::u: send_midi(core::midi::note_number("B1")); return;
-      case Key::i: send_midi(core::midi::note_number("C1")); return;
-      case Key::n9: send_midi(core::midi::note_number("C#1")); return;
-      case Key::o: send_midi(core::midi::note_number("D1")); return;
-      case Key::n0: send_midi(core::midi::note_number("D#1")); return;
-      case Key::p: send_midi(core::midi::note_number("E1")); return;
+      case Key::q:  send_midi(17); return;
+      case Key::n2: send_midi(18); return;
+      case Key::w:  send_midi(19); return;
+      case Key::n3: send_midi(20); return;
+      case Key::e:  send_midi(21); return;
+      case Key::r:  send_midi(22); return;
+      case Key::n5: send_midi(23); return;
+      case Key::t:  send_midi(24); return;
+      case Key::n6: send_midi(25); return;
+      case Key::y:  send_midi(26); return;
+      case Key::n7: send_midi(27); return;
+      case Key::u:  send_midi(28); return;
+      case Key::i:  send_midi(29); return;
+      case Key::n9: send_midi(30); return;
+      case Key::o:  send_midi(31); return;
+      case Key::n0: send_midi(32); return;
+      case Key::p:  send_midi(33); return;
       default: break;
       }
     }

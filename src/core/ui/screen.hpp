@@ -88,7 +88,6 @@ namespace otto::core::ui {
   ///
   /// If it belongs to a engine, use [engines::EngineScreen]().
   struct Screen : vg::Drawable {
-
     Screen() : Drawable() {}
     virtual ~Screen() {}
 
