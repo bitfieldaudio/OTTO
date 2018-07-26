@@ -26,13 +26,13 @@ namespace otto::core::ui::vg {
   struct Point {
     float x, y;
 
-    constexpr Point() : Point(0, 0) {}
+    constexpr Point() noexcept : Point(0, 0) {}
     constexpr Point(const Point&) noexcept = default;
     constexpr Point& operator=(const Point&) noexcept = default;
-    constexpr Point(float x, float y) : x (x), y (y) {}
+    constexpr Point(float x, float y) noexcept : x (x), y (y) {}
 
     // cppcheck-suppress noExplicitConstructor
-    constexpr Point(util::math::vec v) : x (v.x), y (v.y) {}
+    constexpr Point(util::math::vec v) noexcept : x (v.x), y (v.y) {}
 
     Point rotate(float rad) const noexcept {
       float sn = std::sin(rad);
@@ -257,6 +257,16 @@ namespace otto::core::ui::vg {
 
     Canvas(NVGcontext* ctx, float width, float height, float scaleRatio = 1.0f) :
       Super(ctx, width, height, scaleRatio) {}
+
+    /// Canvas is non-copyable
+    Canvas(const Canvas&) = delete;
+    /// Canvas is non-copyable
+    auto operator=(const Canvas&) = delete;
+
+    /// Canvas is movable
+    Canvas(Canvas&&) = default;
+    /// Canvas is movable
+    Canvas& operator=(Canvas&&) = default;
 
     /// Get the canvas size
     Size size() const noexcept {

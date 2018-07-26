@@ -87,7 +87,7 @@ namespace otto::core::props {
     };
   }
 
-  template<typename ValueType>
+  template<typename ValueType, typename Enable = void>
   struct default_mixins;
 
   using no_defaults = no<default_mixins<void>>;
