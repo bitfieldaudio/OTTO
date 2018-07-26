@@ -1,7 +1,9 @@
 #if OTTO_DEBUG_UI
 
 #include "services/debug_ui.hpp"
+#ifndef __APPLE__
 #include <GL/gl3w.h>
+#endif
 #include <GLFW/glfw3.h>
 
 namespace otto::service::debug_ui {
