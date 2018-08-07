@@ -61,4 +61,7 @@ execute_process(COMMAND git submodule update --init -- range-v3 WORKING_DIRECTOR
 add_library(range-v3 INTERFACE)
 target_include_directories(range-v3 SYSTEM INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/range-v3/include)
 
+# Tiny Process library
+execute_process(COMMAND git submodule update --init -- tiny-process-library WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tiny-process-library)
 

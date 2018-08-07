@@ -19,3 +19,6 @@
 [submodule "external/range-v3"]
 	path = external/range-v3
 	url = https://github.com/ericniebler/range-v3
+[submodule "external/tiny-process-library"]
+	path = external/tiny-process-library
+	url = https://github.com/eidheim/tiny-process-library
