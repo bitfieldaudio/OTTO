@@ -21,8 +21,8 @@ Now that proper introductions are made, we would like to invite you to our [disc
 
 We are currently working on redesigning the UI, but this is some of the ideas we are playing with:
 
-<img src="https://camo.githubusercontent.com/a68ee81ff37e4a8d1415c3c09f74f2ae04631ae2/687474703a2f2f7076742e616c62657274736d2e69742f75692f4f74746f322d31312e706e67" width="320px"> <img src="https://camo.githubusercontent.com/a68ee81ff37e4a8d1415c3c09f74f2ae04631ae2/687474703a2f2f7076742e616c62657274736d2e69742f75692f4f74746f322d31312e706e67" width="320px">
-<img src="dhttps://camo.githubusercontent.com/9fe9b330ee422687194d0db52c9d797e174e27bd/687474703a2f2f7076742e616c62657274736d2e69742f75692f4f74746f322d31302e6a7067" width="320px"> <img src="https://camo.githubusercontent.com/bf6acb765e52c124776a3a717be52edc0cf6d281/687474703a2f2f7076742e616c62657274736d2e69742f75692f4f74746f322d30392e6a7067" width="320px">
+<img src="https://camo.githubusercontent.com/a68ee81ff37e4a8d1415c3c09f74f2ae04631ae2/687474703a2f2f7076742e616c62657274736d2e69742f75692f4f74746f322d31312e706e67" width="650px">
+<img src="https://camo.githubusercontent.com/9fe9b330ee422687194d0db52c9d797e174e27bd/687474703a2f2f7076742e616c62657274736d2e69742f75692f4f74746f322d31302e6a7067" width="320px"> <img src="https://camo.githubusercontent.com/bf6acb765e52c124776a3a717be52edc0cf6d281/687474703a2f2f7076742e616c62657274736d2e69742f75692f4f74746f322d30392e6a7067" width="320px">
 
 # The software
 
