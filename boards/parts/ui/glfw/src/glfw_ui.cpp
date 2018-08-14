@@ -31,7 +31,7 @@ namespace otto::service::ui {
 
     void error_callback(int error, const char* description)
     {
-      LOG_F(FATAL, "GLFW UI: {}", description);
+      LOG_F(ERROR, "GLFW UI: {}", description);
     }
 
   } // namespace

@@ -105,7 +105,10 @@ namespace otto::board::ui {
 
   void read_encoders() {
 		auto file = fopen("/dev/ttyACM0", "r");
-		if (file == nullptr) return;
+		if (file == nullptr) {
+  		LOGW("Encoder device not found (expected /dev/ttyACM0). Continuing without it");
+  		return;
+		}
 
 		char *line = nullptr;
 		std::size_t len;
@@ -144,7 +147,11 @@ namespace otto::board::ui {
   {
     static Modifiers left;
     static Modifiers right;
-    static int keyboard   = open_device("0-event-kbd");
+    static int keyboard   = [] {
+      int dev = open_device("0-event-kbd");
+      if (dev < 0) dev = open_device("event-kbd");
+      return dev;
+    }();
     static std::thread encoder_thread = std::thread{[] { read_encoders(); }};
 
     if (keyboard == -1) {

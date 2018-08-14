@@ -3,6 +3,8 @@
 #include "services/audio.hpp"
 #include "services/ui.hpp"
 
+#include "services/logger.hpp"
+
 namespace otto::board::ui {
 
   void handle_keyevent(Action action, Modifiers mods, Key key)
