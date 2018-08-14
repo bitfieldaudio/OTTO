@@ -72,8 +72,6 @@ namespace otto::core::audio {
     }
   }
 
-  static void draw_bg(Canvas& ctx);
-
   void EnvelopeScreen::draw(Canvas& ctx)
   {
 
