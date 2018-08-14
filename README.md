@@ -11,7 +11,7 @@ The OTTO is a complete hardware and software solution, with synths, a sampler, e
 > That sounds cool and all, but haven't I heard about this before? <br>
 > — _You_
 
-Yes, the OTTO is heavily inspired by the [OP-1](https://teenage.engineering/products/op-1) (as you will clearly see from our graphics), in fact it started off as a direct clone, but these days we try to take a different spin on an idea that is fundamentally the same.
+Yes, the OTTO is heavily inspired by the [OP-1](https://teenage.engineering/products/op-1), in fact it started off as a direct clone, but these days we try to take a different spin on an idea that is fundamentally the same.
 
 At this point it might be important to mention that the OTTO is not, and will never be, a commercially aimed product. It is open source by nature, in both hardware and software. If you want an OTTO, you're going to get your hands dirty, if not with the code, at least with the hardware.
 
@@ -19,10 +19,23 @@ Now that proper introductions are made, we would like to invite you to our [disc
 
 # Screenshots:
 
-@D-I-S-K-U-S has been working hard on graphics, and these are some of the highlights:
+We are currently working on redesigning the UI, but this is some of the ideas we are playing with:
 
-<img src="doc-src/images/1.png" width="320px"> <img src="doc-src/images/2.png" width="320px">
-<img src="doc-src/images/3.png" width="320px"> <img src="doc-src/images/4.png" width="320px">
+<img src="https://camo.githubusercontent.com/a68ee81ff37e4a8d1415c3c09f74f2ae04631ae2/687474703a2f2f7076742e616c62657274736d2e69742f75692f4f74746f322d31312e706e67" width="640px"> 
+
+<img src="https://image.ibb.co/nGgtbK/shoot.png" width="320px"> <img src="https://image.ibb.co/cpKziz/shoot.png" width="320px">
+
+# The hardware
+
+The OTTO is basically going to be a Rpi3 (or other similar boards, we are looking into that), a screen, a DAC, 4 encoders and some 30+ buttons/keys. Some of us are currently building prototypes, and the formfactors and features vary greatly.
+Below this you see two OTTO hardware prototypes. Feature wise they are similar, but [the first one](https://github.com/topisani/OTTO-proto-1) is hand-wired, lasercut, and uses arduino pro micros for handling the keys/encoders. [The second one](https://github.com/cester-ino/OTTO-hardware) is 3D printed, uses a PCB with onboard microcontroler etc.
+![](https://github.com/topisani/OTTO-proto-1/raw/master/images/closed.jpeg)
+![](https://github.com/cester-ino/OTTO-hardware/blob/cb988b7792a6fb47a434e5be7b6f8e89364f83bb/images/OTTOtac0_1.png)
+
+As you can see, the OTTO can be built very differently depending on your skills, your avaliable resources and tools, and your priorities.
+You can also have other features than these two, for example the DSP all supports velocity sensitive keys.
+
+You can find more info about the first prototype design on the "Otto Proto One" on [this dedicated repo](https://github.com/topisani/OTTO-proto-1), and @cester-ino's [over at his repo](https://github.com/cester-ino/OTTO-hardware)
 
 # The software
 
@@ -38,12 +51,6 @@ The software is written in (very) modern C++, and the goal is to be as modular a
 It is possible to run the software on the desktop, with [keybinds](https://github.com/topisani/OTTO/wiki/Keyboard-mapping) emulating the physical buttons and encoders.
 
 For build instructions, check out [the wiki](https://github.com/topisani/OTTO/wiki/Compiling-and-Running).
-
-# The hardware
-
-We would like to see the OTTO exist in all sizes, shapes and colours. We plan to build guides, shopping lists and software packages for our own setups and encourage you to do the same.
-
-In fact, you can find more info about the first prototype design on the "Otto Proto One" on [this dedicated repo](https://github.com/topisani/OTTO-proto-1).
 
 ### Backbone
 
