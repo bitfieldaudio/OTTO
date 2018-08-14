@@ -10,7 +10,7 @@ namespace otto::service::ui {
 
   using namespace core::ui;
 
-  static constexpr const char* initial_engine = "TapeDeck";
+  static constexpr const char* initial_engine = "Synth";
 
   // Local vars
   namespace {

@@ -31,7 +31,15 @@ namespace otto::service::ui {
     egl.init();
     #if OTTO_USE_FBCP
     auto fbcp = RpiFBCP{egl.eglData};
-    fbcp.init();
+    bool use_fbcp = true;
+    try {
+      fbcp.init();
+    } catch (util::exception& e) {
+      LOGW("Error starting FBCP: {}", e.what());
+      LOGI("If you are using an HDMI screen you probably meant to compile with OTTO_USE_FBCP=OFF");
+      LOGI("FBCP has been disabled. /dev/fb0 will not be copied to /dev/fb1");
+      use_fbcp = false;
+    }
     #endif
 
     NVGcontext* nvg =
@@ -91,7 +99,7 @@ namespace otto::service::ui {
       egl.endFrame();
 
       #if OTTO_USE_FBCP
-      fbcp.copy();
+      if (use_fbcp) fbcp.copy();
       #endif
 
       lastFrameTime = clock::now() - t0;

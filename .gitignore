@@ -12,6 +12,7 @@ install_manifest.txt
 deploy_key
 /external/src/gl3w.c
 /external/include/GL
+/external/include/KHR
 /testdir
 
 imgui.ini

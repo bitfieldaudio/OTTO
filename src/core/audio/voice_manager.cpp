@@ -73,214 +73,60 @@ namespace otto::core::audio {
   }
 
   static void draw_bg(Canvas& ctx);
-  static void draw_x_arrow(Canvas& ctx, Colour c, float pos);
-  static void draw_y_arrow(Canvas& ctx, Colour c, float pos);
 
   void EnvelopeScreen::draw(Canvas& ctx)
   {
-    const float a = props.attack.normalize() / 4.f;
-    const float d = props.decay.normalize() / 4.f + a;
-    const float s = props.sustain.normalize();
-    const float r = (props.release.normalize() + 3.f) / 4.f;
-    draw_bg(ctx);
-    draw_x_arrow(ctx, Colours::Blue, a);
-    draw_x_arrow(ctx, Colours::Green, d);
-    draw_y_arrow(ctx, Colours::Yellow, s);
-    draw_x_arrow(ctx, Colours::Red, r);
+
+    constexpr auto b = vg::Box{ 30.f, 60.f, 260.f, 110.f };
+    const float spacing = 10.f;
+    const float max_width = (b.width - 3 * spacing) / 3.f;
+    const float aw = max_width * props.attack.normalize(); 
+    const float dw = max_width * props.decay.normalize(); 
+    const float sh = b.height * props.sustain.normalize(); 
+    const float rw = max_width * props.release.normalize(); 
+
+    ctx.lineWidth(6.f);
+
+    const float arc_size = 0.9;
 
     ctx.beginPath();
-    ctx.moveTo(45.9,                       188.7);
-    ctx.lineTo(45.9 + a * 240.f,           188.7 - 137.f);
-    ctx.lineTo(45.9 + d * 240.f,           188.7 - s * 137.f);
-    ctx.lineTo(45.9 + (3.f / 4.f) * 240.f, 188.7 - s * 137.f);
-    ctx.lineTo(45.9 + r * 240.f,           188.7);
-    ctx.lineWidth(2.f);
+    ctx.moveTo(b.x, b.y + b.height + 14);
+    ctx.lineTo(b.x + b.width, b.y + b.height + spacing);
     ctx.stroke(Colours::White);
-  }
 
-  static void draw_x_arrow(Canvas& ctx, Colour c, float pos)
-  {
-    ctx.save();
-    ctx.translate(pos * 240.f, 0.f);
     ctx.beginPath();
-    ctx.moveTo(49.9, 206.6);
-    ctx.lineTo(45.9, 199.7);
-    ctx.lineTo(41.9, 206.6);
-    ctx.lineTo(44.9, 206.6);
-    ctx.lineTo(44.9, 211.2);
-    ctx.bezierCurveTo(44.9, 211.8, 45.4, 212.2, 45.9, 212.2);
-    ctx.bezierCurveTo(46.5, 212.2, 46.9, 211.8, 46.9, 211.2);
-    ctx.lineTo(46.9, 206.6);
-    ctx.lineTo(49.9, 206.6);
+    ctx.moveTo(b.x, b.y + b.height);
+    ctx.quadraticCurveTo({b.x + aw * arc_size, b.y + b.height * arc_size}, {b.x + aw, b.y}); // curve
+    ctx.lineTo(b.x + aw, b.y + b.height);
     ctx.closePath();
-    ctx.fill(c);
-    ctx.restore();
-  }
+    ctx.stroke(Colours::Blue);
+    ctx.fill(Colours::Blue);
 
-  static void draw_y_arrow(Canvas& ctx, Colour c, float pos)
-  {
-    ctx.save();
-    ctx.translate(0.f, -pos * 137.f);
     ctx.beginPath();
-    ctx.moveTo(36.3, 188.7);
-    ctx.lineTo(29.4, 184.7);
-    ctx.lineTo(29.4, 187.7);
-    ctx.lineTo(23.8, 187.7);
-    ctx.bezierCurveTo(23.3, 187.7, 22.8, 188.2, 22.8, 188.7);
-    ctx.bezierCurveTo(22.8, 189.3, 23.3, 189.7, 23.8, 189.7);
-    ctx.lineTo(29.4, 189.7);
-    ctx.lineTo(29.4, 192.7);
-    ctx.lineTo(36.3, 188.7);
+    ctx.moveTo(b.x + aw + spacing, b.y + b.height);
+    ctx.lineTo(b.x + aw + spacing, b.y);
+    ctx.quadraticCurveTo({b.x + aw + spacing + dw * (1 - arc_size), b.y + (b.height - sh) * arc_size}, {b.x + aw + spacing + dw, b.y + b.height - sh}); // curve
+    ctx.lineTo(b.x + aw + spacing + dw, b.y + b.height);
     ctx.closePath();
-    ctx.fill(c);
-    ctx.restore();
-  }
+    ctx.stroke(Colours::Green);
+    ctx.fill(Colours::Green);
 
-  static void draw_bg(Canvas& ctx)
-  {
-    // Laag1/linegroup2/end
-    ctx.save();
     ctx.beginPath();
-    ctx.moveTo(48.8, 51.7);
-    ctx.lineTo(42.3, 51.7);
-    ctx.lineWidth(2.0);
-    ctx.strokeStyle(Colour::bytes(61, 63, 65));
-    ctx.lineCap(Canvas::LineCap::ROUND);
-    ctx.lineJoin(Canvas::LineJoin::ROUND);
-    ctx.stroke();
+    ctx.moveTo(b.x + aw + spacing + dw + spacing,      b.y + b.height - sh);
+    ctx.lineTo(b.x + b.width - spacing - rw, b.y + b.height - sh);
+    ctx.lineTo(b.x + b.width - spacing - rw, b.y + b.height);
+    ctx.lineTo(b.x + aw + spacing + dw + spacing, b.y + b.height);
+    ctx.closePath();
+    ctx.stroke(Colours::Yellow);
+    ctx.fill(Colours::Yellow);
 
-    // Laag1/linegroup2/6
     ctx.beginPath();
-    ctx.moveTo(45.8, 71.7);
-    ctx.lineTo(42.3, 71.7);
-    ctx.stroke();
-
-    // Laag1/linegroup2/5
-    ctx.beginPath();
-    ctx.moveTo(45.8, 92.1);
-    ctx.lineTo(42.3, 92.1);
-    ctx.stroke();
-
-    // Laag1/linegroup2/4
-    ctx.beginPath();
-    ctx.moveTo(45.8, 111.7);
-    ctx.lineTo(42.3, 111.7);
-    ctx.stroke();
-
-    // Laag1/linegroup2/3
-    ctx.beginPath();
-    ctx.moveTo(45.8, 131.7);
-    ctx.lineTo(42.3, 131.7);
-    ctx.stroke();
-
-    // Laag1/linegroup2/2
-    ctx.beginPath();
-    ctx.moveTo(45.8, 151.7);
-    ctx.lineTo(42.3, 151.7);
-    ctx.stroke();
-
-    // Laag1/linegroup2/1
-    ctx.beginPath();
-    ctx.moveTo(45.8, 171.7);
-    ctx.lineTo(42.3, 171.7);
-    ctx.stroke();
-
-    // Laag1/linegroup
-    ctx.restore();
-
-    // Laag1/linegroup/end
-    ctx.save();
-    ctx.beginPath();
-    ctx.moveTo(285.5, 193.7);
-    ctx.lineTo(285.5, 184.2);
-    ctx.lineWidth(2.0);
-    ctx.strokeStyle(Colour::bytes(61, 63, 65));
-    ctx.lineCap(Canvas::LineCap::ROUND);
-    ctx.lineJoin(Canvas::LineJoin::ROUND);
-    ctx.stroke();
-
-    // Laag1/linegroup/11
-    ctx.beginPath();
-    ctx.moveTo(265.5, 193.7);
-    ctx.lineTo(265.5, 189.2);
-    ctx.stroke();
-
-    // Laag1/linegroup/10
-    ctx.beginPath();
-    ctx.moveTo(245.5, 193.7);
-    ctx.lineTo(245.5, 189.2);
-    ctx.stroke();
-
-    // Laag1/linegroup/9
-    ctx.beginPath();
-    ctx.moveTo(225.5, 193.7);
-    ctx.lineTo(225.5, 189.2);
-    ctx.stroke();
-
-    // Laag1/linegroup/8
-    ctx.beginPath();
-    ctx.moveTo(205.5, 193.7);
-    ctx.lineTo(205.5, 189.2);
-    ctx.stroke();
-
-    // Laag1/linegroup/7
-    ctx.beginPath();
-    ctx.moveTo(185.5, 193.7);
-    ctx.lineTo(185.5, 189.2);
-    ctx.stroke();
-
-    // Laag1/linegroup/6
-    ctx.beginPath();
-    ctx.moveTo(165.5, 193.7);
-    ctx.lineTo(165.5, 189.2);
-    ctx.stroke();
-
-    // Laag1/linegroup/5
-    ctx.beginPath();
-    ctx.moveTo(145.5, 193.7);
-    ctx.lineTo(145.5, 189.2);
-    ctx.stroke();
-
-    // Laag1/linegroup/4
-    ctx.beginPath();
-    ctx.moveTo(125.5, 193.7);
-    ctx.lineTo(125.5, 189.2);
-    ctx.stroke();
-
-    // Laag1/linegroup/3
-    ctx.beginPath();
-    ctx.moveTo(105.5, 193.7);
-    ctx.lineTo(105.5, 189.2);
-    ctx.stroke();
-
-    // Laag1/linegroup/2
-    ctx.beginPath();
-    ctx.moveTo(85.5, 193.7);
-    ctx.lineTo(85.5, 189.2);
-    ctx.stroke();
-
-    // Laag1/linegroup/1
-    ctx.beginPath();
-    ctx.moveTo(65.5, 193.7);
-    ctx.lineTo(65.5, 189.2);
-    ctx.stroke();
-
-    // Laag1/horizontalline
-    ctx.restore();
-    ctx.beginPath();
-    ctx.moveTo(45.9, 188.7);
-    ctx.lineTo(285.5, 188.7);
-    ctx.lineWidth(2.0);
-    ctx.strokeStyle(Colour::bytes(61, 63, 65));
-    ctx.lineCap(Canvas::LineCap::ROUND);
-    ctx.lineJoin(Canvas::LineJoin::ROUND);
-    ctx.stroke();
-
-    // Laag1/verticalline
-    ctx.beginPath();
-    ctx.moveTo(45.9, 51.7);
-    ctx.lineTo(45.9, 188.7);
-    ctx.stroke();
+    ctx.moveTo(b.x + b.width - rw, b.y + b.height);
+    ctx.lineTo(b.x + b.width - rw, b.y + b.height - sh);
+    ctx.quadraticCurveTo({b.x + b.width - rw * arc_size, b.y + b.height - sh * (1 - arc_size)}, {b.x + b.width,      b.y + b.height});
+    ctx.closePath();
+    ctx.stroke(Colours::Red);
+    ctx.fill(Colours::Red);
   }
 
   // SETTINGS SCREEN //////////////////////////////////////////////////////////
