@@ -4,7 +4,7 @@ gl3w_gen("${OTTO_EXTERNAL_DIR}/")
 
 # GLFW
 find_package(glfw3)
-if (NOT glfw3_FOUND)
+if (glfw3_FOUND)
     message("Using system GLFW")
     if(NOT APPLE) 
         target_link_libraries(glfw INTERFACE dl)

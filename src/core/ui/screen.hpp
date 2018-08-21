@@ -38,6 +38,7 @@ namespace otto::core::ui {
     tape,
     mixer,
     metronome,
+    sequencer,
     synth,
     drums,
     sampler,

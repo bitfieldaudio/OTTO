@@ -80,7 +80,7 @@ namespace otto::board::ui {
     case Key::y: if (ctrl) send_key(OKey::mixer); break;
     case Key::u: if (ctrl) send_key(OKey::synth); break;
     case Key::g: if (ctrl) send_key(OKey::metronome); break;
-    case Key::h: if (ctrl) send_key(OKey::sampler); break;
+    case Key::h: if (ctrl) send_key(OKey::sequencer); break;
     case Key::j: if (ctrl) send_key(OKey::drums); break;
     case Key::k: if (ctrl) send_key(OKey::envelope); break;
 

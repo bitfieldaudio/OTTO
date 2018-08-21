@@ -5,6 +5,7 @@
 #include "core/globals.hpp"
 
 #include "engines/synths/nuke/nuke.hpp"
+#include "engines/seq/euclid/euclid.hpp"
 
 #include "services/state.hpp"
 #include "services/ui.hpp"
@@ -33,6 +34,7 @@ namespace otto::service::engines {
     std::map<std::string, std::function<AnyEngine*()>> engineGetters;
     core::audio::ProcessBuffer<2> audio_out;
 
+    EngineDispatcher<EngineType::sequencer> sequencer;
     EngineDispatcher<EngineType::synth> synth;
     EngineDispatcher<EngineType::effect> effect;
 
@@ -44,8 +46,20 @@ namespace otto::service::engines {
     engineGetters.try_emplace("Synth", [&]() { return (AnyEngine*) &*synth; });
 
     register_engine<otto::engines::NukeSynth>();
+    register_engine<otto::engines::Euclid>();
 
     synth.init();
+    sequencer.init();
+    sequencer.select(std::size_t(0));
+
+    service::ui::register_key_handler(core::ui::Key::sequencer, [](core::ui::Key k) {
+      if (service::ui::is_pressed(core::ui::Key::shift)) {
+        service::ui::display(sequencer.selector_screen());
+      } else {
+        service::ui::select_engine("Sequencer");
+      }
+      service::ui::display(sequencer->screen());
+    });
 
     service::ui::register_key_handler(core::ui::Key::synth, [](core::ui::Key k) {
       if (service::ui::is_pressed(core::ui::Key::shift)) {
@@ -70,11 +84,13 @@ namespace otto::service::engines {
 
     auto load = [&](nlohmann::json& data) {
       synth.from_json(data["Synth"]);
+      sequencer.from_json(data["Sequencer"]);
       from_json(data["CurrentSoundSource"], current_sound_source);
     };
 
     auto save = [&] {
       return nlohmann::json({{"Synth", synth.to_json()},
+                             {"Sequencer", sequencer.to_json()},
                              {"CurrentSoundSource", to_json(current_sound_source)}});
     };
 
@@ -94,7 +110,8 @@ namespace otto::service::engines {
   {
     // Main processor function
     auto midi_in      = external_in.midi_only();
-    auto synth_out = synth->process(midi_in);
+    auto seq_out = sequencer->process(midi_in);
+    auto synth_out = synth->process(seq_out);
 
     for (auto&& [snth, out] : util::zip(synth_out, audio_out)) {
       out[0] = snth[0];

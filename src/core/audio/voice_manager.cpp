@@ -74,7 +74,6 @@ namespace otto::core::audio {
 
   void EnvelopeScreen::draw(Canvas& ctx)
   {
-
     constexpr auto b = vg::Box{ 30.f, 60.f, 260.f, 110.f };
     const float spacing = 10.f;
     const float max_width = (b.width - 3 * spacing) / 3.f;

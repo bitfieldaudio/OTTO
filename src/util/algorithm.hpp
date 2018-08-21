@@ -27,6 +27,13 @@ namespace otto::util {
     return result;
   }
 
+  /// Joins a sequence of strings, separating them using `js`
+  template<typename Container> 
+  std::string join_strings(Container&& cont, std::string_view js = ", ")
+  {
+    return join_strings(std::begin(cont), std::end(cont), js);
+  }
+
   namespace detail {
     template<class Func, int... ns>
     constexpr auto generate_array_impl(std::integer_sequence<int, ns...>&&,
