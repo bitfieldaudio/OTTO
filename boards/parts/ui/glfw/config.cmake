@@ -4,9 +4,11 @@ gl3w_gen("${OTTO_EXTERNAL_DIR}/")
 
 # GLFW
 find_package(glfw3)
-if (glfw3_FOUND)
+if (NOT glfw3_FOUND)
     message("Using system GLFW")
-    target_link_libraries(glfw INTERFACE dl)
+    if(NOT APPLE) 
+        target_link_libraries(glfw INTERFACE dl)
+    endif()
 else() 
     message("GLFW not found, building from source")
     set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "Build GLFW examples")
@@ -16,3 +18,4 @@ else()
 endif()
 
 target_link_libraries(otto PUBLIC glfw)
+
