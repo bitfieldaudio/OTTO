@@ -142,5 +142,6 @@ namespace otto::core::engines {
   template struct EngineDispatcher<EngineType::synth>;
   template struct EngineDispatcher<EngineType::drums>;
   template struct EngineDispatcher<EngineType::effect>;
+  template struct EngineDispatcher<EngineType::sequencer>;
 
 } // namespace otto::core::engines
