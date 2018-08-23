@@ -209,7 +209,13 @@ namespace otto::engines {
     ctx.fillText(
       util::join_strings(util::view::transform(
                            util::view::filter(current.notes, [](char note) { return note >= 0; }),
-                           [](char note) { return midi::note_name(note); }),
+                           // extra safe on the note value to avoid overflow
+                           [](char note) {
+                             if (note >= 0)
+                               return midi::note_name(note);
+                             else
+                               return "";
+                           }),
                          " "),
       {160, 120});
   }
