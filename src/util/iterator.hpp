@@ -977,7 +977,7 @@ namespace otto::util {
       auto first = transformiter(begin(r), std::forward<Callable>(c));
       auto last = transformiter(end(r), first);
       return sequence(first, last);
-    };
+    }
   }
 
   ///
@@ -1052,7 +1052,7 @@ namespace otto::util {
       auto first = filteriter(begin(r), end(r), std::forward<Predicate>(c));
       auto last = filteriter(end(r), end(r), first);
       return sequence(first, last);
-    };
+    }
   }
 
 }

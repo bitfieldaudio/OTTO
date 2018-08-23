@@ -191,7 +191,6 @@ namespace otto::engines {
   {
     using namespace ui::vg;
 
-    auto& props = engine.props;
     auto& current = engine.current_channel();
 
     ctx.font(Fonts::Bold, 40);
