@@ -28,33 +28,38 @@ namespace otto::engines {
   audio::ProcessData<0> Euclid::process(audio::ProcessData<0> data)
   {
     auto& current = current_channel();
+
+    // Will record up to 6 notes (firsts pressed within a chord)
+    // Possible to redo until explicitely exiting recording mode
+    // Will reset previous notes upon new entry
     if (recording) {
       for (auto& event : data.midi) {
         util::match(event,
                     [&](midi::NoteOnEvent& ev) {
-                      if (recording.value() == current.notes &&
-                          util::all_of(recording.value(), [](char note) { return note < 0; })) {
-                        util::fill(recording.value(), -1);
+                      // new event on an empty recording buffer: reset notes
+                      if (util::all_of(recording.value(), [](char note) { return note < 0; })) {
                         util::fill(current.notes, -1);
                       }
+                      // adding first new notes to buffer
                       for (auto& note : recording.value()) {
-                        if (note >= 0) continue;
+                        if (note >= 0 && note != ev.key) {
+                          continue;
+                        }
                         note = ev.key;
                         break;
                       }
                       current.notes = recording.value();
                     },
                     [&](midi::NoteOffEvent& ev) {
+                      // reset released keys: can change notes while pressing chord
                       for (auto& note : recording.value()) {
                         if (note != ev.key) continue;
                         note = -1;
                       }
-                      if (util::all_of(recording.value(), [](char note) { return note < 0; })) {
-                        recording = std::nullopt;
-                      }
                     },
                     [](auto&&) {});
       }
+
       return data;
     }
 
@@ -124,7 +129,8 @@ namespace otto::engines {
       if (engine.recording) {
         engine.recording = std::nullopt;
       } else {
-        engine.recording = engine.current_channel().notes;
+        // reset buffer upon new reconding
+        engine.recording = {-1, -1, -1, -1, -1, -1};
       }
     default: return false; ;
     }
