@@ -64,13 +64,16 @@ namespace otto::engines {
 
     if (next_beat <= data.nframes) {
       for (auto& channel : props.channels) {
-        channel._beat_counter++;
-        channel._beat_counter %= channel.length;
-        if (channel._hits_enabled.at(channel._beat_counter)) {
-          for (auto note : channel.notes) {
-            if (note >= 0) {
-              data.midi.push_back(midi::NoteOnEvent(note));
-              data.midi.push_back(midi::NoteOffEvent(note));
+        // a channel with 0 length is disabled
+        if (channel.length > 0) {
+          channel._beat_counter++;
+          channel._beat_counter %= channel.length;
+          if (channel._hits_enabled.at(channel._beat_counter)) {
+            for (auto note : channel.notes) {
+              if (note >= 0) {
+                data.midi.push_back(midi::NoteOnEvent(note));
+                data.midi.push_back(midi::NoteOffEvent(note));
+              }
             }
           }
         }
@@ -85,9 +88,11 @@ namespace otto::engines {
   void Euclid::Channel::update_notes()
   {
     util::fill(_hits_enabled, false);
-    for (float i = 0; i < length; i += length / float(hits)) {
-      int idx = int(std::round(i) + rotation) % length;
-      _hits_enabled.at(idx) = true;
+    if (hits > 0) {
+      for (float i = 0; i < length; i += length / float(hits)) {
+        int idx = int(std::round(i) + rotation) % length;
+        _hits_enabled.at(idx) = true;
+      }
     }
   }
 
