@@ -977,7 +977,7 @@ namespace otto::util {
       auto first = transformiter(begin(r), std::forward<Callable>(c));
       auto last = transformiter(end(r), first);
       return sequence(first, last);
-    };
+    }
   }
 
   ///
@@ -994,11 +994,21 @@ namespace otto::util {
 
     FilterIterImpl(WrappedIter iter, WrappedIter last, Predicate callable)
       : iter (std::move(iter)), last(last), callable {std::make_shared<Predicate>(std::move(callable))}
-    {}
+    {
+      nextvalid();
+    }
 
     FilterIterImpl(WrappedIter iter, WrappedIter last, FilterIterImpl other)
       : iter (std::move(iter)), last(last), callable {other.callable}
-    {}
+    {
+      nextvalid();
+    }
+
+    void nextvalid() {
+      while(iter != last && !std::invoke(*callable, *iter)){
+	++iter;
+      }
+    }
 
     void advance(int n)
     {
@@ -1042,7 +1052,7 @@ namespace otto::util {
       auto first = filteriter(begin(r), end(r), std::forward<Predicate>(c));
       auto last = filteriter(end(r), end(r), first);
       return sequence(first, last);
-    };
+    }
   }
 
 }

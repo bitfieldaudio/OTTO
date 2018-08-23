@@ -191,7 +191,6 @@ namespace otto::engines {
   {
     using namespace ui::vg;
 
-    auto& props = engine.props;
     auto& current = engine.current_channel();
 
     ctx.font(Fonts::Bold, 40);
@@ -204,7 +203,8 @@ namespace otto::engines {
     ctx.beginPath();
     ctx.fillText(
       util::join_strings(util::view::transform(
-                           util::view::filter(current.notes, [](char note) { return note >= 0; }),
+                           // extra safe on the note value to avoid overflow
+                           util::view::filter(current.notes, [](char note) { return note >= 0 && note < 128; }),
                            [](char note) { return midi::note_name(note); }),
                          " "),
       {160, 120});
