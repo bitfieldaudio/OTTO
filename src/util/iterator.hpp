@@ -994,11 +994,21 @@ namespace otto::util {
 
     FilterIterImpl(WrappedIter iter, WrappedIter last, Predicate callable)
       : iter (std::move(iter)), last(last), callable {std::make_shared<Predicate>(std::move(callable))}
-    {}
+    {
+      nextvalid();
+    }
 
     FilterIterImpl(WrappedIter iter, WrappedIter last, FilterIterImpl other)
       : iter (std::move(iter)), last(last), callable {other.callable}
-    {}
+    {
+      nextvalid();
+    }
+
+    void nextvalid() {
+      while(iter != last && !std::invoke(*callable, *iter)){
+	++iter;
+      }
+    }
 
     void advance(int n)
     {
