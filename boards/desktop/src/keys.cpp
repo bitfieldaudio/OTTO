@@ -68,7 +68,7 @@ namespace otto::board::ui {
     case Key::right: send_key(OKey::right); break;
 
       // Tapedeck
-    case Key::space: send_key(OKey::play); break;
+    case Key::p: send_key(OKey::play); break;
     case Key::z: send_key(OKey::rec); break;
     case Key::f1: send_key(OKey::track_1); break;
     case Key::f2: send_key(OKey::track_2); break;

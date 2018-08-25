@@ -28,7 +28,7 @@ namespace otto::engines {
 
       void update_notes();
 
-      Channel(int n) : Properties(){};
+      Channel(int n) : Properties(nullptr, std::to_string(n)){};
 
       int _beat_counter = 0;
       std::array<bool, max_length> _hits_enabled;
@@ -59,8 +59,16 @@ namespace otto::engines {
 
     std::optional<std::array<char, 6>> recording = std::nullopt;
 
+    bool running = false;
+
   private:
-    int _counter = 0;
+    friend struct EuclidScreen;
+
     int _samples_per_beat = 22050;
+    int _counter = _samples_per_beat;
+    bool _should_run = false;
+
+    // Used in recording to clear the current value when the first keyonevent is sent
+    bool _has_pressed_keys = false;
   };
 } // namespace otto::engines

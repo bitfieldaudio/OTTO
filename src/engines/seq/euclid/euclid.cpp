@@ -7,6 +7,8 @@
 #include "util/iterator.hpp"
 #include "util/utility.hpp"
 
+#include "services/logger.hpp"
+
 namespace otto::engines {
 
   using namespace ui;
@@ -30,6 +32,7 @@ namespace otto::engines {
       int max_length = 16;
 
       struct ChannelState {
+        Channel* channel;
         float radius = 40;
         Colour colour = Colours::Gray70;
         int length = 0;
@@ -42,6 +45,7 @@ namespace otto::engines {
       std::array<ChannelState, 4> channels;
 
     } state;
+
     void refresh_state();
 
     void draw_channel(ui::vg::Canvas& ctx, State::ChannelState& chan);
@@ -60,17 +64,17 @@ namespace otto::engines {
       for (auto& event : data.midi) {
         util::match(event,
                     [&](midi::NoteOnEvent& ev) {
-                      if (recording.value() == current.notes &&
-                          util::all_of(recording.value(), [](char note) { return note < 0; })) {
+                      if (!_has_pressed_keys) {
                         util::fill(recording.value(), -1);
                         util::fill(current.notes, -1);
+                        _has_pressed_keys = true;
                       }
                       for (auto& note : recording.value()) {
                         if (note >= 0) continue;
                         note = ev.key;
                         break;
                       }
-                      util::unique(recording.value(), std::equal_to());
+                      util::unique(recording.value(), std::equal_to<char>());
                       current.notes = recording.value();
                     },
                     [&](midi::NoteOffEvent& ev) {
@@ -84,10 +88,15 @@ namespace otto::engines {
                     },
                     [](auto&&) {});
       }
+    }
+    if (_should_run) running = true;
+    if (!running) return data;
+    
+    if (!_should_run && running) {
+      _counter = _samples_per_beat;
+      running = false;
       return data;
     }
-
-    data.midi.clear();
 
     auto next_beat = _samples_per_beat - _counter;
 
@@ -96,7 +105,7 @@ namespace otto::engines {
         if (channel.length > 0) {
           channel._beat_counter++;
           channel._beat_counter %= channel.length;
-          if (channel._hits_enabled.at(channel._beat_counter)) {
+          if (running && channel._hits_enabled.at(channel._beat_counter)) {
             for (auto note : channel.notes) {
               if (note >= 0) {
                 data.midi.push_back(midi::NoteOnEvent(note));
@@ -153,9 +162,14 @@ namespace otto::engines {
         engine.recording = std::nullopt;
       } else {
         engine.recording = engine.current_channel().notes;
+        engine._has_pressed_keys = true;
       }
+      break;
+    case ui::Key::play: 
+      engine._should_run = !engine._should_run; break;
     default: return false; ;
     }
+    return true;
   }
 
   void EuclidScreen::draw(ui::vg::Canvas& ctx)
@@ -245,6 +259,14 @@ namespace otto::engines {
       if (hit.active) ctx.fill(chan.colour);
       ctx.stroke(chan.colour);
     }
+
+    auto& hit = chan.hits.at((chan.channel->_beat_counter + (engine.running ? 0 : 1)) % chan.length);
+
+    ctx.beginPath();
+    float r = (hit.active ? 7 : 5);
+    if (engine.running) r *= (1 - (engine._counter / float(engine._samples_per_beat)));
+    ctx.circle(hit.point, r);
+    ctx.fill(Colours::Red);
   }
 
   void EuclidScreen::refresh_state()
@@ -258,6 +280,8 @@ namespace otto::engines {
     for (int i = 0; i < 4; i++) {
       auto& chan = props.channels.at(i);
       auto& cs = state.channels.at(i);
+
+      cs.channel = &chan;
 
       cs.radius = 40 + i * 20;
       cs.colour = &chan == &current ? Colours::Blue : Colours::Gray70;
