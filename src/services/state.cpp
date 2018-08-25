@@ -1,8 +1,8 @@
-#include "state.hpp"
 #include "core/globals.hpp"
-#include "util/jsonfile.hpp"
-#include "util/exception.hpp"
 #include "services/logger.hpp"
+#include "state.hpp"
+#include "util/exception.hpp"
+#include "util/jsonfile.hpp"
 
 namespace otto::service::state {
   namespace {
@@ -21,7 +21,7 @@ namespace otto::service::state {
 
       static State& instance()
       {
-        static State instance {};
+        static State instance{};
         return instance;
       }
 
@@ -39,8 +39,12 @@ namespace otto::service::state {
           data = {};
         }
 
-        for (const auto & [ name, client ] : clients) {
-          client.load(data[name]);
+        for (const auto& [name, client] : clients) {
+          try {
+            client.load(data[name]);
+          } catch (util::exception& e) {
+            LOGE("Exception while loading state for {}: {}", name, e.what());
+          }
         }
 
         loaded = true;
@@ -56,7 +60,7 @@ namespace otto::service::state {
 
         data.clear();
 
-        for (const auto & [ name, client ] : clients) {
+        for (const auto& [name, client] : clients) {
           data[name] = client.save();
         }
 
@@ -66,9 +70,8 @@ namespace otto::service::state {
       void attach(const std::string& name, Loader&& load, Saver&& save)
       {
         if (clients.find(name) != clients.end()) {
-          throw util::exception(
-            "Tried to attach a state client with the same name as another: " +
-            name);
+          throw util::exception("Tried to attach a state client with the same name as another: " +
+                                name);
         }
 
         clients[name] = {name, load, std::move(save)};
@@ -82,8 +85,7 @@ namespace otto::service::state {
       void detach(const std::string& name)
       {
         if (clients.find(name) == clients.end()) {
-          throw util::exception(
-            "Tried to detach a state client that was never attached: " + name);
+          throw util::exception("Tried to detach a state client that was never attached: " + name);
         }
 
         clients.erase(name);
@@ -110,4 +112,4 @@ namespace otto::service::state {
   {
     State::instance().detach(name);
   }
-} // namespace otto::services::state
+} // namespace otto::service::state

@@ -274,8 +274,9 @@ namespace otto::engines {
     auto& props = engine.props;
     auto& current = props.channels.at(props.channel);
 
-    state.max_length =
-      *util::max_element(util::view::transform(props.channels, FIELD_GETTER(length)));
+    for (auto& chan : props.channels) {
+      if (state.max_length < chan.length) state.max_length = chan.length;
+    }
 
     for (int i = 0; i < 4; i++) {
       auto& chan = props.channels.at(i);

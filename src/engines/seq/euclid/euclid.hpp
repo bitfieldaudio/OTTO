@@ -24,11 +24,11 @@ namespace otto::engines {
       Property<int> rotation = {this, "Rotation", 0, has_limits::init(0, max_length),
                                 steppable::init(1)};
 
-      std::array<char, 6> notes = {-1, -1, -1, -1, -1, -1};
+      std::array<char, 6> notes = {{-1, -1, -1, -1, -1, -1}};
 
       void update_notes();
 
-      Channel(int n) : Properties(nullptr, std::to_string(n)){};
+      Channel(properties_base* prnt, int n) : Properties(prnt, std::to_string(n)){};
 
       int _beat_counter = 0;
       std::array<bool, max_length> _hits_enabled;
@@ -36,16 +36,9 @@ namespace otto::engines {
 
     struct Props : Properties<> {
       Property<int> channel = {this, "Channel", 0, has_limits::init(0, 3)};
-      std::array<Channel, 4> channels = util::generate_array<4>([](int n) { return Channel(n); });
-
-      Props()
-      {
-        for (auto& chan : channels) {
-          channels_props.push_back(chan);
-        }
-      }
-
       Properties<> channels_props = {this, "Channels"};
+      std::array<Channel, 4> channels = util::generate_array<4>([this](int n) { return Channel(this, n); });
+
     } props;
 
     Euclid();
