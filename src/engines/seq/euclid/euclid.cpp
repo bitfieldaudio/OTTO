@@ -28,33 +28,38 @@ namespace otto::engines {
   audio::ProcessData<0> Euclid::process(audio::ProcessData<0> data)
   {
     auto& current = current_channel();
+
+    // Will record up to 6 notes (firsts pressed within a chord)
+    // Possible to redo until explicitely exiting recording mode
+    // Will reset previous notes upon new entry
     if (recording) {
       for (auto& event : data.midi) {
         util::match(event,
                     [&](midi::NoteOnEvent& ev) {
-                      if (recording.value() == current.notes &&
-                          util::all_of(recording.value(), [](char note) { return note < 0; })) {
-                        util::fill(recording.value(), -1);
+                      // new event on an empty recording buffer: reset notes
+                      if (util::all_of(recording.value(), [](char note) { return note < 0; })) {
                         util::fill(current.notes, -1);
                       }
+                      // adding first new notes to buffer
                       for (auto& note : recording.value()) {
-                        if (note >= 0) continue;
+                        if (note >= 0 && note != ev.key) {
+                          continue;
+                        }
                         note = ev.key;
                         break;
                       }
                       current.notes = recording.value();
                     },
                     [&](midi::NoteOffEvent& ev) {
+                      // reset released keys: can change notes while pressing chord
                       for (auto& note : recording.value()) {
                         if (note != ev.key) continue;
                         note = -1;
                       }
-                      if (util::all_of(recording.value(), [](char note) { return note < 0; })) {
-                        recording = std::nullopt;
-                      }
                     },
                     [](auto&&) {});
       }
+
       return data;
     }
 
@@ -64,13 +69,16 @@ namespace otto::engines {
 
     if (next_beat <= data.nframes) {
       for (auto& channel : props.channels) {
-        channel._beat_counter++;
-        channel._beat_counter %= channel.length;
-        if (channel._hits_enabled.at(channel._beat_counter)) {
-          for (auto note : channel.notes) {
-            if (note >= 0) {
-              data.midi.push_back(midi::NoteOnEvent(note));
-              data.midi.push_back(midi::NoteOffEvent(note));
+        // a channel with 0 length is disabled
+        if (channel.length > 0) {
+          channel._beat_counter++;
+          channel._beat_counter %= channel.length;
+          if (channel._hits_enabled.at(channel._beat_counter)) {
+            for (auto note : channel.notes) {
+              if (note >= 0) {
+                data.midi.push_back(midi::NoteOnEvent(note));
+                data.midi.push_back(midi::NoteOffEvent(note));
+              }
             }
           }
         }
@@ -85,9 +93,11 @@ namespace otto::engines {
   void Euclid::Channel::update_notes()
   {
     util::fill(_hits_enabled, false);
-    for (float i = 0; i < length; i += length / float(hits)) {
-      int idx = int(std::round(i) + rotation) % length;
-      _hits_enabled.at(idx) = true;
+    if (hits > 0) {
+      for (float i = 0; i < length; i += length / float(hits)) {
+        int idx = int(std::round(i) + rotation) % length;
+        _hits_enabled.at(idx) = true;
+      }
     }
   }
 
@@ -119,7 +129,8 @@ namespace otto::engines {
       if (engine.recording) {
         engine.recording = std::nullopt;
       } else {
-        engine.recording = engine.current_channel().notes;
+        // reset buffer upon new reconding
+        engine.recording = {-1, -1, -1, -1, -1, -1};
       }
     default: return false; ;
     }
@@ -203,9 +214,14 @@ namespace otto::engines {
     ctx.beginPath();
     ctx.fillText(
       util::join_strings(util::view::transform(
+                           util::view::filter(current.notes, [](char note) { return note >= 0; }),
                            // extra safe on the note value to avoid overflow
-                           util::view::filter(current.notes, [](char note) { return note >= 0 && note < 128; }),
-                           [](char note) { return midi::note_name(note); }),
+                           [](char note) {
+                             if (note >= 0)
+                               return midi::note_name(note);
+                             else
+                               return "";
+                           }),
                          " "),
       {160, 120});
   }
