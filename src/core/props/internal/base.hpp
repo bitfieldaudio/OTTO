@@ -108,6 +108,10 @@ namespace otto::core::props {
       storage_.push_back(std::ref(*ptr));
     }
 
+    void push_back(property_base& ref) {
+      storage_.push_back(std::ref(ref));
+    }
+
   private:
     storage_type storage_;
   };

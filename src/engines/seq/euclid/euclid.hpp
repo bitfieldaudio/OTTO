@@ -19,9 +19,8 @@ namespace otto::engines {
 
     struct Channel : Properties<> {
       Property<int> length = {this, "Length", max_length, has_limits::init(0, max_length),
-                              steppable::init(1)};
-      Property<int> hits = {this, "Hits", 0, has_limits::init(0, max_length),
-                            steppable::init(1)};
+                                    steppable::init(1)};
+      Property<int, wrap> hits = {this, "Hits", 0, has_limits::init(0, max_length), steppable::init(1)};
       Property<int> rotation = {this, "Rotation", 0, has_limits::init(0, max_length),
                                 steppable::init(1)};
 
@@ -38,13 +37,23 @@ namespace otto::engines {
     struct Props : Properties<> {
       Property<int> channel = {this, "Channel", 0, has_limits::init(0, 3)};
       std::array<Channel, 4> channels = util::generate_array<4>([](int n) { return Channel(n); });
+
+      Props()
+      {
+        for (auto& chan : channels) {
+          channels_props.push_back(chan);
+        }
+      }
+
+      Properties<> channels_props = {this, "Channels"};
     } props;
 
     Euclid();
 
     audio::ProcessData<0> process(audio::ProcessData<0>) override;
 
-    Channel& current_channel() {
+    Channel& current_channel()
+    {
       return props.channels.at(props.channel);
     }
 

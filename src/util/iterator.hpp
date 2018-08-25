@@ -111,6 +111,9 @@ namespace otto::util {
 
     virtual ~iterator_adaptor_impl() = default;
 
+    iterator_adaptor_impl& operator=(const iterator_adaptor_impl&) = default;
+    iterator_adaptor_impl& operator=(iterator_adaptor_impl&&) = default;
+
     using Impl::operator=;
 
     /* Operators */
@@ -182,6 +185,8 @@ namespace otto::util {
 
     iterator_adaptor_impl(const iterator_adaptor_impl&) = default;
     iterator_adaptor_impl(iterator_adaptor_impl&&) = default;
+    iterator_adaptor_impl& operator=(const iterator_adaptor_impl&) = default;
+    iterator_adaptor_impl& operator=(iterator_adaptor_impl&&) = default;
 
     using Super::operator=;
 
@@ -225,6 +230,8 @@ namespace otto::util {
 
     iterator_adaptor_impl(const iterator_adaptor_impl&) = default;
     iterator_adaptor_impl(iterator_adaptor_impl&&) = default;
+    iterator_adaptor_impl& operator=(const iterator_adaptor_impl&) = default;
+    iterator_adaptor_impl& operator=(iterator_adaptor_impl&&) = default;
 
     using Super::operator=;
 
@@ -649,7 +656,7 @@ namespace otto::util {
   template<typename Generator>
   class GeneratingIterImpl {
   public:
-    using value_type = std::invoke_result_t<Generator>;
+    using value_type = util::invoke_result_t<Generator>;
     using iterator_category = std::input_iterator_tag;
 
     GeneratingIterImpl(Generator generator)

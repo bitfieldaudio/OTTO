@@ -43,7 +43,8 @@ namespace otto::service::engines {
 
   void init()
   {
-    engineGetters.try_emplace("Synth", [&]() { return (AnyEngine*) &*synth; });
+    engineGetters.try_emplace("Synth", [&]() { return dynamic_cast<AnyEngine*>(&*synth); });
+    engineGetters.try_emplace("Sequencer", [&]() { return dynamic_cast<AnyEngine*>(&*sequencer); });
 
     register_engine<otto::engines::NukeSynth>();
     register_engine<otto::engines::Euclid>();
@@ -57,8 +58,8 @@ namespace otto::service::engines {
         service::ui::display(sequencer.selector_screen());
       } else {
         service::ui::select_engine("Sequencer");
+        service::ui::display(sequencer->screen());
       }
-      service::ui::display(sequencer->screen());
     });
 
     service::ui::register_key_handler(core::ui::Key::synth, [](core::ui::Key k) {
