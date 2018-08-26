@@ -24,6 +24,8 @@ namespace otto::core::ui {
     left,
     right,
     shift,
+    oct_up,
+    oct_down,
 
     play,
     rec,
@@ -44,6 +46,7 @@ namespace otto::core::ui {
     sampler,
     looper,
     envelope,
+    voices,
 
     loop,
     loop_in,

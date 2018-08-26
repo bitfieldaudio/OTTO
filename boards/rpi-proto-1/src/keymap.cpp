@@ -34,9 +34,6 @@ namespace otto::board::ui {
       if (action == Action::press) std::system("halt");
     };
 
-    // The function key
-    static bool func = false;
-
     switch (key) {
     // Midi
     case Key::a: send_midi(17); break;
@@ -64,37 +61,37 @@ namespace otto::board::ui {
     case Key::w: send_midi(39); break;
     case Key::x: send_midi(40); break;
 
-    // Modifiers
-    case Key::period: send_key(OKey::shift); break;
-    case Key::comma: func = (action != Action::release); break;
+    case Key::period: send_key(OKey::oct_up); break;
+    case Key::comma: send_key(OKey::oct_down); break;
 
-    // Rotary emulation
-    case Key::f1: send_key(func ? OKey::blue_click : OKey::blue_up, !func); break;
-    case Key::f2: send_key(func ? OKey::green_click : OKey::green_up, !func); break;
-    case Key::f3: send_key(func ? OKey::white_click : OKey::white_up, !func); break;
-    case Key::f4: send_key(func ? OKey::red_click : OKey::red_up, !func); break;
-    case Key::f5: send_key(func ? OKey::blue_click : OKey::blue_down, !func); break;
-    case Key::f6: send_key(func ? OKey::green_click : OKey::green_down, !func); break;
-    case Key::f7: send_key(func ? OKey::white_click : OKey::white_down, !func); break;
-    case Key::f8: send_key(func ? OKey::red_click : OKey::red_down, !func); break;
+    case Key::f1: break; // Used for sound slots
+    case Key::f2: break; // Used for sound slots
+    case Key::f3: break; // Used for sound slots
+    case Key::f4: break; // Used for sound slots
+    case Key::f5: break; // Used for sound slots
+    case Key::f6: break; // Used for sound slots
+    case Key::f7: break; // Used for sound slots
+    case Key::f8: break; // Used for sound slots
 
-    case Key::space: send_key(OKey::synth); break;
-    case Key::left_control: send_key(OKey::sequencer); break;
-    case Key::left_shift: send_key(OKey::envelope); break;
+    case Key::space: send_key(OKey::none); break; // master
+    case Key::left_control: send_key(OKey::play); break;
+    case Key::left_shift: send_key(OKey::shift); break;
 
-    case Key::enter: func ? shutdown() : send_key(OKey::tape); break;
-    case Key::y: send_key(OKey::mixer); break;
-    case Key::z: send_key(OKey::metronome); break;
+    case Key::enter:
+      if (service::ui::is_pressed(OKey::shift)) shutdown();
+      break;
+    case Key::y: break;
+    case Key::z: break;
 
-    case Key::n1: send_key(OKey::rec); break;
-    case Key::n2: send_key(OKey::play); break;
-    case Key::n3: send_key(OKey::loop); break;
-    case Key::n4: send_key(OKey::ret); break;
+    case Key::n1: send_key(OKey::sequencer); break;
+    case Key::n2: send_key(OKey::synth); break;
+    case Key::n3: break; // FX 1
+    case Key::n4: break; // FX 2
 
-    case Key::n5: send_key(OKey::left); break;
-    case Key::n6: send_key(OKey::right); break;
-    case Key::n7: send_key(OKey::lift); break;
-    case Key::n8: send_key(OKey::drop); break;
+    case Key::n5: send_key(OKey::voices); break;
+    case Key::n6: send_key(OKey::envelope); break;
+    case Key::n7: break; // MOMENT 1
+    case Key::n8: break; // MOMENT 2
 
     default: break;
     }
