@@ -14,22 +14,6 @@ namespace otto::service::engines {
 
   using namespace core::engines;
 
-  enum struct SynthOrDrums { synth, drums };
-
-  nlohmann::json to_json(SynthOrDrums sod)
-  {
-    return sod == SynthOrDrums::synth ? "Synth" : "Drums";
-  }
-
-  void from_json(const nlohmann::json& js, SynthOrDrums& sod)
-  {
-    if (js == "Synth") {
-      sod = SynthOrDrums::synth;
-    } else if (js == "Drums") {
-      sod = SynthOrDrums::drums;
-    }
-  }
-
   namespace {
     std::map<std::string, std::function<AnyEngine*()>> engineGetters;
     core::audio::ProcessBuffer<2> audio_out;
@@ -37,8 +21,6 @@ namespace otto::service::engines {
     EngineDispatcher<EngineType::sequencer> sequencer;
     EngineDispatcher<EngineType::synth> synth;
     EngineDispatcher<EngineType::effect> effect;
-
-    SynthOrDrums current_sound_source = SynthOrDrums::synth;
   } // namespace
 
   void init()
@@ -68,12 +50,10 @@ namespace otto::service::engines {
       } else {
         service::ui::select_engine("Synth");
       }
-      current_sound_source = SynthOrDrums::synth;
     });
 
     service::ui::register_key_handler(core::ui::Key::envelope, [](core::ui::Key k) {
-        auto* engine = by_name(service::ui::selected_engine_name());
-        auto* owner = dynamic_cast<core::engines::EngineWithEnvelope*>(engine);
+        auto* owner = dynamic_cast<core::engines::EngineWithEnvelope*>(&synth.current());
         if (owner) {
           if (service::ui::is_pressed(core::ui::Key::shift)) {
             service::ui::display(owner->voices_screen());
@@ -86,13 +66,11 @@ namespace otto::service::engines {
     auto load = [&](nlohmann::json& data) {
       synth.from_json(data["Synth"]);
       sequencer.from_json(data["Sequencer"]);
-      from_json(data["CurrentSoundSource"], current_sound_source);
     };
 
     auto save = [&] {
       return nlohmann::json({{"Synth", synth.to_json()},
-                             {"Sequencer", sequencer.to_json()},
-                             {"CurrentSoundSource", to_json(current_sound_source)}});
+                             {"Sequencer", sequencer.to_json()}});
     };
 
     service::state::attach("Engines", load, save);

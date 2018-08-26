@@ -55,7 +55,7 @@ namespace otto::util {
 
     template<typename Impl, typename T = void>
     struct reference {
-      using type = typename value_type<Impl>::type&;
+      using type = typename std::iterator_traits<Impl>::reference;
     };
 
     template<typename Impl>
@@ -995,6 +995,7 @@ namespace otto::util {
   public:
 
     using value_type = typename detail::value_type<WrappedIter>::type;
+    using reference = typename detail::reference<WrappedIter>::type;
     using iterator_category = typename detail::iterator_category<WrappedIter>::type;
 
     static_assert(std::is_same_v<std::decay_t<decltype(*std::declval<WrappedIter>())>, value_type>);
@@ -1024,7 +1025,7 @@ namespace otto::util {
       }
     }
 
-    value_type& dereference()
+    reference dereference()
     {
       return *iter;
     }

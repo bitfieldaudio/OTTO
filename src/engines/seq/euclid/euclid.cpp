@@ -34,7 +34,7 @@ namespace otto::engines {
       struct ChannelState {
         Channel* channel;
         float radius = 40;
-        Colour colour = Colours::Gray70;
+        bool is_current = false;
         int length = 0;
         struct Hit {
           Point point = {};
@@ -60,13 +60,14 @@ namespace otto::engines {
   audio::ProcessData<0> Euclid::process(audio::ProcessData<0> data)
   {
     auto& current = current_channel();
-    if (recording) {
+    // Copy for thread safety
+    if (auto recording = this->recording; recording) {
       for (auto& event : data.midi) {
         util::match(event,
                     [&](midi::NoteOnEvent& ev) {
                       if (!_has_pressed_keys) {
                         util::fill(recording.value(), -1);
-                        util::fill(current.notes, -1);
+                        current.notes.set(recording.value());
                         _has_pressed_keys = true;
                       }
                       for (auto& note : recording.value()) {
@@ -87,11 +88,14 @@ namespace otto::engines {
                       }
                     },
                     [](auto&&) {});
+        this->recording = recording;
+        if (!recording) break;
+        ;
       }
     }
     if (_should_run) running = true;
     if (!running) return data;
-    
+
     if (!_should_run && running) {
       _counter = _samples_per_beat;
       running = false;
@@ -106,7 +110,7 @@ namespace otto::engines {
           channel._beat_counter++;
           channel._beat_counter %= channel.length;
           if (running && channel._hits_enabled.at(channel._beat_counter)) {
-            for (auto note : channel.notes) {
+            for (auto note : channel.notes.get()) {
               if (note >= 0) {
                 data.midi.push_back(midi::NoteOnEvent(note));
                 data.midi.push_back(midi::NoteOffEvent(note));
@@ -161,12 +165,11 @@ namespace otto::engines {
       if (engine.recording) {
         engine.recording = std::nullopt;
       } else {
+        engine._has_pressed_keys = false;
         engine.recording = engine.current_channel().notes;
-        engine._has_pressed_keys = true;
       }
       break;
-    case ui::Key::play: 
-      engine._should_run = !engine._should_run; break;
+    case ui::Key::play: engine._should_run = !engine._should_run; break;
     default: return false; ;
     }
     return true;
@@ -196,7 +199,7 @@ namespace otto::engines {
     ctx.beginPath();
     ctx.fillText(
       util::join_strings(util::view::transform(
-                           util::view::filter(current.notes, [](char note) { return note >= 0; }),
+                           util::view::filter(current.notes.get(), [](char note) { return note >= 0; }),
                            [](char note) { return midi::note_name(note); }),
                          " "),
       {160, 120});
@@ -252,18 +255,37 @@ namespace otto::engines {
   {
     using namespace ui::vg;
 
-    ctx.lineWidth(2);
-    for (auto& hit : util::sequence(chan.hits.begin(), chan.hits.begin() + chan.length)) {
+    auto hit_colour = chan.is_current ? Colour(Colours::Blue) : Colour::bytes(0x77, 0x57, 0x77);
+    auto len_colour = chan.is_current ? Colour(Colours::Green) : hit_colour;
+
+    if (chan.length == 0) {
+      ctx.lineWidth(6);
       ctx.beginPath();
-      ctx.circle(hit.point, hit.active ? 5 : 3);
-      if (hit.active) ctx.fill(chan.colour);
-      ctx.stroke(chan.colour);
+      ctx.circle(state.center, chan.radius);
+      ctx.stroke(len_colour);
+      return;
     }
 
-    auto& hit = chan.hits.at((chan.channel->_beat_counter + (engine.running ? 0 : 1)) % chan.length);
+    for (auto& hit : util::sequence(chan.hits.begin(), chan.hits.begin() + chan.length)) {
+      ctx.beginPath();
+      ctx.circle(hit.point, hit.active ? 7 : 3);
+      ctx.fill(hit_colour);
+    }
+
+    if (chan.length < state.max_length) {
+      ctx.lineWidth(6);
+      ctx.beginPath();
+      ctx.arc(state.center, chan.radius, 2 * M_PI * ((chan.length - 0.3) / float(state.max_length) - 0.25),
+               2 * M_PI * ((state.max_length - 1 + 0.3) / float(state.max_length) - 0.25));
+      ctx.stroke(len_colour);
+    }
+
+
+    auto& hit =
+      chan.hits.at((chan.channel->_beat_counter + (engine.running ? 0 : 1)) % chan.length);
 
     ctx.beginPath();
-    float r = (hit.active ? 7 : 5);
+    float r = (hit.active ? 7 : 3);
     if (engine.running) r *= (1 - (engine._counter / float(engine._samples_per_beat)));
     ctx.circle(hit.point, r);
     ctx.fill(Colours::Red);
@@ -274,6 +296,7 @@ namespace otto::engines {
     auto& props = engine.props;
     auto& current = props.channels.at(props.channel);
 
+    state.max_length = 0;
     for (auto& chan : props.channels) {
       if (state.max_length < chan.length) state.max_length = chan.length;
     }
@@ -285,7 +308,7 @@ namespace otto::engines {
       cs.channel = &chan;
 
       cs.radius = 40 + i * 20;
-      cs.colour = &chan == &current ? Colours::Blue : Colours::Gray70;
+      cs.is_current = &chan == &current;
       cs.length = chan.length;
 
       for (int i = 0; i < cs.length; i++) {

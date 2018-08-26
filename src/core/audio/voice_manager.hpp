@@ -105,6 +105,7 @@ namespace otto::core::audio {
     VoiceManager(props::properties_base& parent)
       : voices_props(&parent, "voices"),
         envelope_props(&parent, "envelope"),
+        settings_props(&parent, "voice_settings"),
         envelope_screen_(detail::make_envelope_screen(envelope_props)),
         settings_screen_(detail::make_settings_screen(settings_props))
     {
