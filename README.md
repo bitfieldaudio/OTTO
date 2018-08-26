@@ -11,7 +11,7 @@ The OTTO is a complete hardware and software solution, with synths, a sampler, e
 > That sounds cool and all, but haven't I heard about this before? <br>
 > — _You_
 
-Yes, the OTTO is heavily inspired by the [OP-1](https://teenage.engineering/products/op-1), in fact it started off as a direct clone, but these days we try to take a different spin on an idea that is fundamentally the same.
+Yes, the OTTO is heavily inspired by the [OP-1](https://teenage.engineering/products/op-1), but it *is not* an OP-1 clone. If you want an OP-1 you can get it [here](https://teenage.engineering/store).
 
 At this point it might be important to mention that the OTTO is not, and will never be, a commercially aimed product. It is open source by nature, in both hardware and software. If you want an OTTO, you're going to get your hands dirty, if not with the code, at least with the hardware.
 
