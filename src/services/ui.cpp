@@ -2,9 +2,11 @@
 
 #include <map>
 
+#include "util/locked.hpp"
+
 #include "core/globals.hpp"
-#include "services/state.hpp"
 #include "services/engines.hpp"
+#include "services/state.hpp"
 
 namespace otto::service::ui {
 
@@ -23,14 +25,24 @@ namespace otto::service::ui {
 
     PressedKeys keys;
     std::multimap<Key, KeyHandler> key_handlers;
-  }
+    struct KeyPress {
+      Key key;
+    };
+    struct KeyRelease {
+      Key key;
+    };
+    using KeyEvent = mpark::variant<KeyPress, KeyRelease>;
+    util::atomic_swap<std::vector<KeyEvent>> key_events;
+    util::atomic_swap<std::vector<RotaryEvent>> rotary_events;
+  } // namespace
 
   bool is_pressed(Key k) noexcept
   {
     return keys[static_cast<unsigned>(k)];
   }
 
-  void select_engine(const std::string& engine_name) {
+  void select_engine(const std::string& engine_name)
+  {
     _selected_engine_name = engine_name;
 
     auto engine = engines::by_name(engine_name);
@@ -41,10 +53,10 @@ namespace otto::service::ui {
       display(engine->screen());
       _selected_engine_name = engine_name;
     }
-
   }
 
-  void select_engine(core::engines::AnyEngine& engine) {
+  void select_engine(core::engines::AnyEngine& engine)
+  {
     display(engine.screen());
     _selected_engine_name = engine.name();
   }
@@ -54,14 +66,13 @@ namespace otto::service::ui {
     return _selected_engine_name;
   }
 
-  static void register_screen_keys()
-  {
-  }
+  static void register_screen_keys() {}
 
-  void init() {
+  void init()
+  {
     register_screen_keys();
 
-    auto load = [](const nlohmann::json &j) {
+    auto load = [](const nlohmann::json& j) {
       if (j.is_object()) {
         _selected_engine_name = j["SelectedEngine"];
       }
@@ -69,11 +80,7 @@ namespace otto::service::ui {
       select_engine(_selected_engine_name);
     };
 
-    auto save = []() {
-      return nlohmann::json({
-        {"SelectedEngine", _selected_engine_name}
-      });
-    };
+    auto save = []() { return nlohmann::json({{"SelectedEngine", _selected_engine_name}}); };
 
     service::state::attach("UI", load, save);
   }
@@ -99,8 +106,7 @@ namespace otto::service::ui {
       }
 
       auto [first, last] = key_handlers.equal_range(key);
-      if (first == last)
-        return false;
+      if (first == last) return false;
 
       for (auto it = first; it != last; it++) {
         it->second(key);
@@ -117,33 +123,52 @@ namespace otto::service::ui {
       cur_screen->draw(ctx);
     }
 
-    bool keypress(Key key)
+    void keypress(Key key)
     {
-      switch (key) {
-      case Key::red_up: cur_screen->rotary({Rotary::Red, 1}); break;
-      case Key::red_down: cur_screen->rotary({Rotary::Red, -1}); break;
-      case Key::blue_up: cur_screen->rotary({Rotary::Blue, 1}); break;
-      case Key::blue_down: cur_screen->rotary({Rotary::Blue, -1}); break;
-      case Key::white_up: cur_screen->rotary({Rotary::White, 1}); break;
-      case Key::white_down: cur_screen->rotary({Rotary::White, -1}); break;
-      case Key::green_up: cur_screen->rotary({Rotary::Green, 1}); break;
-      case Key::green_down: cur_screen->rotary({Rotary::Green, -1}); break;
-      default:
-        keys[static_cast<unsigned>(key)] = true;
-        if (global_keypress(key)) return true;
-        return cur_screen->keypress(key);
+      key_events.outer().push_back(KeyPress{key});
+    }
+
+    void rotary(RotaryEvent ev)
+    {
+      rotary_events.outer().push_back(ev);
+    }
+
+    void keyrelease(Key key)
+    {
+      key_events.outer().push_back(KeyRelease{key});
+    }
+
+    void flush_events()
+    {
+      key_events.swap();
+      for (auto& event : key_events.inner()) {
+        util::match( //
+          event,
+          [](KeyPress ev) {
+            switch (ev.key) {
+            case Key::red_up: cur_screen->rotary({Rotary::Red, 1}); break;
+            case Key::red_down: cur_screen->rotary({Rotary::Red, -1}); break;
+            case Key::blue_up: cur_screen->rotary({Rotary::Blue, 1}); break;
+            case Key::blue_down: cur_screen->rotary({Rotary::Blue, -1}); break;
+            case Key::white_up: cur_screen->rotary({Rotary::White, 1}); break;
+            case Key::white_down: cur_screen->rotary({Rotary::White, -1}); break;
+            case Key::green_up: cur_screen->rotary({Rotary::Green, 1}); break;
+            case Key::green_down: cur_screen->rotary({Rotary::Green, -1}); break;
+            default:
+              keys[static_cast<unsigned>(ev.key)] = true;
+              if (global_keypress(ev.key)) return;
+              cur_screen->keypress(ev.key);
+            }
+          },
+          [](KeyRelease& ev) {
+            keys[static_cast<unsigned>(ev.key)] = false;
+            cur_screen->keyrelease(ev.key);
+          });
       }
-      return true;
-    }
-
-    void rotary(RotaryEvent ev) {
-			cur_screen->rotary(ev);
-    }
-
-    bool keyrelease(Key key)
-    {
-      keys[static_cast<unsigned>(key)] = false;
-      return cur_screen->keyrelease(key);
+      rotary_events.swap();
+      for (auto& event : rotary_events.inner()) {
+        cur_screen->rotary(event);
+      }
     }
   } // namespace impl
-} // namespace otto::ui
+} // namespace otto::service::ui

@@ -60,13 +60,23 @@ namespace otto::service::ui {
 
     /// Dispatches to the event handler for the current screen, and handles
     /// global keys.
-    bool keypress(core::ui::Key key);
+    /// 
+    /// Can be executed from a separate thread
+    void keypress(core::ui::Key key);
 
     /// Dispatches to the event handler for the current screen, and handles
     /// global keys.
-    bool keyrelease(core::ui::Key key);
+    /// 
+    /// Can be executed from a separate thread, but must be the same thread as keypress
+    void keyrelease(core::ui::Key key);
 
+    /// Send rotary event
+    /// 
+    /// Can be executed from a separate thread
     void rotary(core::ui::RotaryEvent ev);
+
+    /// Actually executes the key and rotary events
+    void flush_events();
   } // namespace impl
 
 } // namespace otto::service::ui

@@ -79,7 +79,7 @@ namespace otto::board::ui {
     case Key::f8: send_key(func ? OKey::red_click : OKey::red_down, !func); break;
 
     case Key::space: send_key(OKey::synth); break;
-    case Key::left_control: send_key(OKey::drums); break;
+    case Key::left_control: send_key(OKey::sequencer); break;
     case Key::left_shift: send_key(OKey::envelope); break;
 
     case Key::enter: func ? shutdown() : send_key(OKey::tape); break;
