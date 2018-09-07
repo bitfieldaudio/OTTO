@@ -19,22 +19,14 @@ namespace otto::core::engines {
   ///
   /// Each engine has a type, which signifies the group it belongs to.
   enum struct EngineType {
-    /// Drum engines
-    drums,
     /// Synth engines
     synth,
     /// FX engines
     effect,
     /// Sequencer engines
     sequencer,
-    /// Modulation engines
-    modulation,
-    /// Studio engines
-    studio,
-    /// System engines
-    system,
-    /// Uncategorized
-    other
+    /// Twist engines - Not really engines in the same sense
+    twist,
   };
 
   /// Abstract base class for Engines
@@ -156,15 +148,6 @@ public:                                                                        \
   // Engine specializations ///////////////////////////////////////////////////
 
   template<>
-  struct Engine<EngineType::drums> : AnyEngine {
-
-    OTTO_ENGINE_COMMON_CONTENT(EngineType::drums)
-
-    virtual audio::ProcessData<1> process(audio::ProcessData<0>) = 0;
-  };
-  using DrumsEngine = Engine<EngineType::drums>;
-
-  template<>
   struct Engine<EngineType::synth> : AnyEngine {
 
     OTTO_ENGINE_COMMON_CONTENT(EngineType::synth)
@@ -190,6 +173,16 @@ public:                                                                        \
     virtual audio::ProcessData<0> process(audio::ProcessData<0>) = 0;
   };
   using SequencerEngine = Engine<EngineType::sequencer>;
+
+  template<>
+  struct Engine<EngineType::twist> : AnyEngine {
+
+    OTTO_ENGINE_COMMON_CONTENT(EngineType::twist)
+
+    virtual audio::ProcessData<0> process(audio::ProcessData<0>) = 0;
+  };
+  using TwistEngine = Engine<EngineType::twist>;
+
 
   #undef OTTO_ENGINE_COMMON_CONTENT
 

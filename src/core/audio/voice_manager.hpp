@@ -188,7 +188,7 @@ namespace otto::core::audio {
         DLOGI("Stealing voice {} from key {}", v, found->note);
         return v;
       } else {
-        LOGE("No voice found. Using voice 0");
+        DLOGE("No voice found. Using voice 0");
         return Voice{0};
       }
     }
@@ -234,7 +234,7 @@ namespace otto::core::audio {
                     vp.midi.freq     = midi::note_freq(ev.key + settings_props.octave * 12 + settings_props.transpose);
                     vp.midi.velocity = ev.velocity / 127.f;
                     vp.midi.trigger  = 1;
-                    LOGI("Voice {} begin key {} {}Hz velocity: {}", v, ev.key, vp.midi.freq, vp.midi.velocity);
+                    DLOGI("Voice {} begin key {} {}Hz velocity: {}", v, ev.key, vp.midi.freq, vp.midi.velocity);
                   },
                   [](auto&&) {});
     }

@@ -8,6 +8,7 @@
 #include "util/utility.hpp"
 
 #include "services/logger.hpp"
+#include "services/state.hpp"
 
 namespace otto::engines {
 
@@ -56,6 +57,11 @@ namespace otto::engines {
     static_cast<EuclidScreen*>(&screen())->refresh_state();
   }
 
+  void Euclid::on_enable()
+  {
+    for (auto& c : props.channels) c.update_notes();
+    static_cast<EuclidScreen*>(&screen())->refresh_state();
+  }
 
   audio::ProcessData<0> Euclid::process(audio::ProcessData<0> data)
   {
@@ -83,7 +89,7 @@ namespace otto::engines {
                         if (note != ev.key) continue;
                         note = -1;
                       }
-                      if (util::all_of(recording.value(), [](char note) { return note < 0; })) {
+                      if (util::all_of(recording.value(), [](int note) { return note < 0; })) {
                         recording = std::nullopt;
                       }
                     },
@@ -197,12 +203,12 @@ namespace otto::engines {
     ctx.fillText("CHANNEL NOTES", {160, 50});
 
     ctx.beginPath();
-    ctx.fillText(
-      util::join_strings(util::view::transform(
-                           util::view::filter(current.notes.get(), [](char note) { return note >= 0; }),
-                           [](char note) { return midi::note_name(note); }),
-                         " "),
-      {160, 120});
+    ctx.fillText(util::join_strings(
+                   util::view::transform(
+                     util::view::filter(current.notes.get(), [](int note) { return note >= 0; }),
+                     [](int note) { return midi::note_name(note); }),
+                   " "),
+                 {160, 120});
   }
 
   void EuclidScreen::draw_normal(ui::vg::Canvas& ctx)
@@ -255,7 +261,7 @@ namespace otto::engines {
   {
     using namespace ui::vg;
 
-    auto hit_colour = chan.is_current ? Colour(Colours::Blue) : Colour::bytes(0x77, 0x57, 0x77);
+    auto hit_colour = chan.is_current ? Colour(Colours::Blue) : Colour::bytes(0x88, 0x72, 0x8E);
     auto len_colour = chan.is_current ? Colour(Colours::Green) : hit_colour;
 
     if (chan.length == 0) {
@@ -275,8 +281,9 @@ namespace otto::engines {
     if (chan.length < state.max_length) {
       ctx.lineWidth(6);
       ctx.beginPath();
-      ctx.arc(state.center, chan.radius, 2 * M_PI * ((chan.length - 0.3) / float(state.max_length) - 0.25),
-               2 * M_PI * ((state.max_length - 1 + 0.3) / float(state.max_length) - 0.25));
+      ctx.arc(state.center, chan.radius,
+              2 * M_PI * ((chan.length - 0.3) / float(state.max_length) - 0.25),
+              2 * M_PI * ((state.max_length - 1 + 0.3) / float(state.max_length) - 0.25));
       ctx.stroke(len_colour);
     }
 

@@ -4,8 +4,8 @@
 
 #include "core/globals.hpp"
 
-#include "engines/synths/nuke/nuke.hpp"
 #include "engines/seq/euclid/euclid.hpp"
+#include "engines/synths/nuke/nuke.hpp"
 
 #include "services/state.hpp"
 #include "services/ui.hpp"
@@ -33,7 +33,6 @@ namespace otto::service::engines {
 
     synth.init();
     sequencer.init();
-    sequencer.select(std::size_t(0));
 
     service::ui::register_key_handler(core::ui::Key::sequencer, [](core::ui::Key k) {
       if (service::ui::is_pressed(core::ui::Key::shift)) {
@@ -53,14 +52,14 @@ namespace otto::service::engines {
     });
 
     service::ui::register_key_handler(core::ui::Key::envelope, [](core::ui::Key k) {
-        auto* owner = dynamic_cast<core::engines::EngineWithEnvelope*>(&synth.current());
-        if (owner) {
-          if (service::ui::is_pressed(core::ui::Key::shift)) {
-            service::ui::display(owner->voices_screen());
-          } else {
-            service::ui::display(owner->envelope_screen());
-          }
+      auto* owner = dynamic_cast<core::engines::EngineWithEnvelope*>(&synth.current());
+      if (owner) {
+        if (service::ui::is_pressed(core::ui::Key::shift)) {
+          service::ui::display(owner->voices_screen());
+        } else {
+          service::ui::display(owner->envelope_screen());
         }
+      }
     });
 
     auto load = [&](nlohmann::json& data) {
@@ -69,9 +68,9 @@ namespace otto::service::engines {
     };
 
     auto save = [&] {
-      return nlohmann::json({{"Synth", synth.to_json()},
-                             {"Sequencer", sequencer.to_json()}});
+      return nlohmann::json({{"Synth", synth.to_json()}, {"Sequencer", sequencer.to_json()}});
     };
+
 
     service::state::attach("Engines", load, save);
   }
@@ -79,16 +78,15 @@ namespace otto::service::engines {
   void start()
   {
     synth.select(std::size_t(0));
+    sequencer.select(std::size_t(0));
   }
 
-  void shutdown()
-  {
-  }
+  void shutdown() {}
 
   core::audio::ProcessData<2> process(core::audio::ProcessData<1> external_in)
   {
     // Main processor function
-    auto midi_in      = external_in.midi_only();
+    auto midi_in = external_in.midi_only();
     auto seq_out = sequencer->process(midi_in);
     auto synth_out = synth->process(seq_out);
 
@@ -107,4 +105,4 @@ namespace otto::service::engines {
     return getter->second();
   }
 
-} // namespace otto::engines
+} // namespace otto::service::engines
