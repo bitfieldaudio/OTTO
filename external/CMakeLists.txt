@@ -65,3 +65,9 @@ target_include_directories(range-v3 SYSTEM INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}
 execute_process(COMMAND git submodule update --init -- tiny-process-library WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tiny-process-library)
 
+# Tinyosc
+file(GLOB_RECURSE tinyosc_src "${CMAKE_CURRENT_SOURCE_DIR}/tinyosc/*.c")
+add_library(tinyosc ${tinyosc_src})
+set(tinyosc_src "${CMAKE_CURRENT_SOURCE_DIR}/tinyosc/tinyosc.c")
+target_include_directories(tinyosc SYSTEM INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/tinyosc)
+

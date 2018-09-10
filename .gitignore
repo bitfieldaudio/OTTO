@@ -21,3 +21,6 @@ imgui.ini
 /data/state.json
 /data/tape.wav
 /data/log.txt
+CMakeDoxyfile.in
+CMakeDoxygenDefaults.cmake
+external/GSL

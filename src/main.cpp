@@ -1,4 +1,5 @@
 #include <csignal>
+#include <thread> 
 
 #include "util/timer.hpp"
 
@@ -11,6 +12,7 @@
 #include "services/logger.hpp"
 #include "services/state.hpp"
 #include "services/audio.hpp"
+#include "services/osc.hpp"
 
 using namespace otto;
 
@@ -18,6 +20,7 @@ void cleanup();
 int handle_exception(const char* e);
 int handle_exception(std::exception& e);
 int handle_exception();
+void thread_tinyosc(); 
 
 int main(int argc, char* argv[])
 {
@@ -34,6 +37,9 @@ int main(int argc, char* argv[])
     service::presets::init();
     service::engines::init();
     service::audio::init();
+    
+    // start tinyosc in thread
+    std::thread tinyosc_thread(thread_tinyosc);
 
     service::engines::start();
     service::audio::start();
@@ -51,6 +57,11 @@ int main(int argc, char* argv[])
   LOG_F(INFO, "Exiting");
   cleanup();
   return 0;
+}
+
+void thread_tinyosc() 
+{
+  service::osc::init();
 }
 
 int handle_exception(const char* e)
