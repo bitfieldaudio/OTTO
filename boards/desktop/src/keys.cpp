@@ -79,9 +79,9 @@ namespace otto::board::ui {
     case Key::t: if (ctrl) send_key(OKey::tape); break;
     case Key::y: if (ctrl) send_key(OKey::mixer); break;
     case Key::u: if (ctrl) send_key(OKey::synth); break;
+    case Key::j: if (ctrl) send_key(OKey::fx1); break;
     case Key::g: if (ctrl) send_key(OKey::metronome); break;
     case Key::h: if (ctrl) send_key(OKey::sequencer); break;
-    case Key::j: if (ctrl) send_key(OKey::drums); break;
     case Key::k: if (ctrl) send_key(OKey::envelope); break;
 
     case Key::l: send_key(OKey::loop); break;

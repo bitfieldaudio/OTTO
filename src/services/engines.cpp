@@ -6,6 +6,7 @@
 
 #include "engines/seq/euclid/euclid.hpp"
 #include "engines/synths/nuke/nuke.hpp"
+#include "engines/fx/wormhole/wormhole.hpp"
 
 #include "services/state.hpp"
 #include "services/ui.hpp"
@@ -26,13 +27,16 @@ namespace otto::service::engines {
   void init()
   {
     engineGetters.try_emplace("Synth", [&]() { return dynamic_cast<AnyEngine*>(&*synth); });
+    engineGetters.try_emplace("Effect", [&]() { return dynamic_cast<AnyEngine*>(&*effect); });
     engineGetters.try_emplace("Sequencer", [&]() { return dynamic_cast<AnyEngine*>(&*sequencer); });
 
-    register_engine<otto::engines::NukeSynth>();
     register_engine<otto::engines::Euclid>();
+    register_engine<otto::engines::NukeSynth>();
+    register_engine<otto::engines::Wormhole>();
 
-    synth.init();
     sequencer.init();
+    synth.init();
+    effect.init();
 
     service::ui::register_key_handler(core::ui::Key::sequencer, [](core::ui::Key k) {
       if (service::ui::is_pressed(core::ui::Key::shift)) {
@@ -62,13 +66,31 @@ namespace otto::service::engines {
       }
     });
 
+    service::ui::register_key_handler(core::ui::Key::voices, [](core::ui::Key k) {
+      auto* owner = dynamic_cast<core::engines::EngineWithEnvelope*>(&synth.current());
+      if (owner) {
+        service::ui::display(owner->voices_screen());
+      }
+    });
+
+    service::ui::register_key_handler(core::ui::Key::fx1, [](core::ui::Key k) {
+      if (service::ui::is_pressed(core::ui::Key::shift)) {
+        service::ui::display(effect.selector_screen());
+      } else {
+        service::ui::select_engine("Effect");
+      }
+    });
+
     auto load = [&](nlohmann::json& data) {
       synth.from_json(data["Synth"]);
+      effect.from_json(data["Effect"]);
       sequencer.from_json(data["Sequencer"]);
     };
 
     auto save = [&] {
-      return nlohmann::json({{"Synth", synth.to_json()}, {"Sequencer", sequencer.to_json()}});
+      return nlohmann::json({{"Synth", synth.to_json()},
+                             {"Effect", effect.to_json()},
+                             {"Sequencer", sequencer.to_json()}});
     };
 
 
@@ -77,8 +99,9 @@ namespace otto::service::engines {
 
   void start()
   {
-    synth.select(std::size_t(0));
     sequencer.select(std::size_t(0));
+    synth.select(std::size_t(0));
+    effect.select(std::size_t(0));
   }
 
   void shutdown() {}
@@ -91,10 +114,11 @@ namespace otto::service::engines {
     auto synth_out = synth->process(seq_out);
 
     for (auto&& [snth, out] : util::zip(synth_out, audio_out)) {
-      out[0] = snth[0];
-      out[1] = snth[0];
+      out[0] = 0.75 * snth[0];
+      out[1] = 0.75 * snth[0];
     }
-    return midi_in.redirect(audio_out);
+    auto fx_out = effect->process(synth_out.redirect(audio_out));
+    return fx_out;
   }
 
   AnyEngine* const by_name(const std::string& name) noexcept

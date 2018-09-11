@@ -41,6 +41,7 @@ namespace otto::core::ui {
     mixer,
     metronome,
     sequencer,
+    fx1,
     synth,
     drums,
     sampler,

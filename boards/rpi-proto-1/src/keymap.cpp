@@ -85,7 +85,7 @@ namespace otto::board::ui {
 
     case Key::n1: send_key(OKey::sequencer); break;
     case Key::n2: send_key(OKey::synth); break;
-    case Key::n3: break; // FX 1
+    case Key::n3: send_key(OKey::fx1); break;
     case Key::n4: break; // FX 2
 
     case Key::n5: send_key(OKey::voices); break;

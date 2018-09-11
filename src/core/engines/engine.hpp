@@ -161,7 +161,7 @@ public:                                                                        \
 
     OTTO_ENGINE_COMMON_CONTENT(EngineType::effect)
 
-    virtual audio::ProcessData<1> process(audio::ProcessData<1>) = 0;
+    virtual audio::ProcessData<2> process(audio::ProcessData<2>) = 0;
   };
   using EffectEngine = Engine<EngineType::effect>;
 
