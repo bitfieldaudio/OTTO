@@ -74,12 +74,45 @@ namespace otto::service::osc {
           } else {
             tosc_message osc;
             tosc_parseMessage(&osc, buffer, len);
-            //printf("%s", tosc_getAddress(&osc));
+            //printf("%s\n", tosc_getAddress(&osc));
+            // encoder increase or decrease?
             int increase_decrease = (int)tosc_getNextFloat(&osc);
-            if(increase_decrease) {
-              service::ui::impl::keypress(OKey::blue_up);
-            } else {
-              service::ui::impl::keypress(OKey::blue_down);
+            // which encoder
+            // TODO: Fix ugly prototyping code
+            if(strcmp ("/OTTO/blue",tosc_getAddress(&osc)) == 0) {
+              if(increase_decrease) {
+                // double speed ;) to fix somewhere else
+                service::ui::impl::keypress(OKey::blue_up);
+              } else {
+                service::ui::impl::keypress(OKey::blue_down);
+              }
+            }   
+            if(strcmp ("/OTTO/green",tosc_getAddress(&osc)) == 0) {
+              if(increase_decrease) {
+                service::ui::impl::keypress(OKey::green_up);
+              } else {
+                service::ui::impl::keypress(OKey::green_down);
+              }
+            }   
+            if(strcmp ("/OTTO/yellow",tosc_getAddress(&osc)) == 0) {
+              if(increase_decrease) {
+                service::ui::impl::keypress(OKey::white_up);
+              } else {
+                service::ui::impl::keypress(OKey::white_down);
+              }
+            }   
+            if(strcmp ("/OTTO/red",tosc_getAddress(&osc)) == 0) {
+              if(increase_decrease) {
+                service::ui::impl::keypress(OKey::red_up);
+              } else {
+                service::ui::impl::keypress(OKey::red_down);
+              }
+            }
+            if(strcmp ("/OTTO/synth",tosc_getAddress(&osc)) == 0) {
+              service::ui::impl::keypress(OKey::synth);
+            }
+            if(strcmp ("/OTTO/env",tosc_getAddress(&osc)) == 0) {
+              service::ui::impl::keypress(OKey::envelope);
             }
           }
         }
