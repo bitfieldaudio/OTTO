@@ -5,6 +5,8 @@
 #include "services/ui.hpp"
 #include "board/ui/keys.hpp"
 
+#include "core/ui/screen.hpp"
+
 #include <arpa/inet.h>
 #include <sys/select.h>
 #include <fcntl.h>
@@ -17,29 +19,11 @@
 
 namespace otto::service::osc {
   
-  static volatile bool keepRunning = true;
-
-  // handle Ctrl+C
-  static void sigintHandler(int x) {
-    keepRunning = false;
-  }
-
-  void init()
+  void run()
   {
-    LOGI("tinyosc init!");
+    LOGI("tinyosc run");
     
     char buffer[2048]; // declare a 2Kb buffer to read packet data into
-
-    //// printf("Starting write tests:\n");
-//     int len = 0;
-//     char blob[8] = {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF};
-//     len = tosc_writeMessage(buffer, sizeof(buffer), "/address", "fsibTFNI",
-//         1.0f, "hello world", -1, sizeof(blob), blob);
-//     tosc_printOscBuffer(buffer, len);
-//     printf("done.\n");
-
-    // register the SIGINT handler (Ctrl+C)
-    signal(SIGINT, &sigintHandler);
 
     // open a socket to listen for datagrams (i.e. UDP packets) on port 9000
     const int fd = socket(AF_INET, SOCK_DGRAM, 0);
@@ -50,10 +34,10 @@ namespace otto::service::osc {
     sin.sin_addr.s_addr = INADDR_ANY;
     bind(fd, (struct sockaddr *) &sin, sizeof(struct sockaddr_in));
     LOGI("tinyosc is now listening on port 9000.\n");
-    LOGI("Press Ctrl+C to stop.\n");
 
-    while (keepRunning) {
+    while (otto::global::running()) {
       using OKey = core::ui::Key;
+      using Rotary = core::ui::Rotary;
       fd_set readSet;
       FD_ZERO(&readSet);
       FD_SET(fd, &readSet);
@@ -81,31 +65,31 @@ namespace otto::service::osc {
             // TODO: Fix ugly prototyping code
             if(strcmp ("/OTTO/blue",tosc_getAddress(&osc)) == 0) {
               if(increase_decrease) {
-                // double speed ;) to fix somewhere else
-                service::ui::impl::keypress(OKey::blue_up);
+                //service::ui::impl::keypress(OKey::blue_up);
+                service::ui::impl::rotary({Rotary::Blue, 1});
               } else {
-                service::ui::impl::keypress(OKey::blue_down);
+                service::ui::impl::rotary({Rotary::Blue, -1});
               }
             }   
             if(strcmp ("/OTTO/green",tosc_getAddress(&osc)) == 0) {
               if(increase_decrease) {
-                service::ui::impl::keypress(OKey::green_up);
+                service::ui::impl::rotary({Rotary::Green, 1});
               } else {
-                service::ui::impl::keypress(OKey::green_down);
+                service::ui::impl::rotary({Rotary::Green, -1});
               }
             }   
             if(strcmp ("/OTTO/yellow",tosc_getAddress(&osc)) == 0) {
               if(increase_decrease) {
-                service::ui::impl::keypress(OKey::white_up);
+                service::ui::impl::rotary({Rotary::White, 1});
               } else {
-                service::ui::impl::keypress(OKey::white_down);
+                service::ui::impl::rotary({Rotary::White, -1});
               }
             }   
             if(strcmp ("/OTTO/red",tosc_getAddress(&osc)) == 0) {
               if(increase_decrease) {
-                service::ui::impl::keypress(OKey::red_up);
+                service::ui::impl::rotary({Rotary::Red, 1});
               } else {
-                service::ui::impl::keypress(OKey::red_down);
+                service::ui::impl::rotary({Rotary::Red, -1});
               }
             }
             if(strcmp ("/OTTO/synth",tosc_getAddress(&osc)) == 0) {
@@ -117,12 +101,10 @@ namespace otto::service::osc {
           }
         }
       }
-    }
+    } // while (otto::global::running())
 
     // close the UDP socket
     close(fd);
-
-    //return 0;
   }
 
 }

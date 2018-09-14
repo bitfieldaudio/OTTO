@@ -46,6 +46,10 @@ int main(int argc, char* argv[])
 
     service::ui::init();
     service::ui::main_ui_loop();
+    
+    // join thread before exit
+    tinyosc_thread.join();
+    
   } catch (const char* e) {
     return handle_exception(e);
   } catch (std::exception& e) {
@@ -61,7 +65,7 @@ int main(int argc, char* argv[])
 
 void thread_tinyosc() 
 {
-  service::osc::init();
+  service::osc::run();  
 }
 
 int handle_exception(const char* e)

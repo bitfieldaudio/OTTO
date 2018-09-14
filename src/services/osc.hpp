@@ -3,5 +3,5 @@
 
 namespace otto::service::osc {
 
-  void init();
+  void run();
 }
