@@ -67,11 +67,11 @@ with {
 
 blackhole_master = blackhole(mix,decay,hicut,pitchmix)
 with {
-    decay = hslider("DECAY", 0.5, 0.05, 1.00, 0.01) : *(0.5) : +(0.5);
-    hicut = hslider("TONE[scale:log]", 4000, 100, 14000, 0.01) :si.smoo;
+    decay = hslider("LENGTH", 0.5, 0.05, 1.00, 0.01) : *(0.5) : +(0.5);
+    hicut = hslider("SHAPE[scale:log]", 4000, 100, 14000, 0.01) :si.smoo;
     pitchmix = hslider("SHIMMER", 0.0, 0, 1.2, 0.01);
     mix = hslider("MIX", 0.5, 0, 1, 0.01);
 };
 
-process = _, _ : blackhole_master, blackhole_master : _ , _ ;
+process = _, _ :> blackhole_master <: _ , _ ;
 

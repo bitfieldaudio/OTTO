@@ -46,6 +46,8 @@ namespace otto::core::props {
         auto& item = static_cast<property_base&>(*found);
         item.as<faust_link>().register_link(std::move(++first), std::move(last),
                                             link);
+      } else {
+        LOGW("Developer warning: Attempt to register a faust link for {} failed", *first);
       }
     }
 

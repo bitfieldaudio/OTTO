@@ -14,10 +14,10 @@ namespace otto::engines {
 
     struct Props : Properties<> {
 
-      Property<float> mix     = {this, "Mix",     0,  has_limits::init(0, 4),    steppable::init(0.01)};
-      Property<float> shimmer = {this, "Shimmer", 2,  has_limits::init(0, 3.01), steppable::init(0.01)};
-      Property<float> length  = {this, "Length",  0,  has_limits::init(0, 3),    steppable::init(0.01)};
-      Property<float> shape   = {this, "shape",  20, has_limits::init(0, 99),   steppable::init(0.5)};
+      Property<float> mix     = {this, "MIX",     0.5,  has_limits::init(0, 1),    steppable::init(0.01)};
+      Property<float> shimmer = {this, "SHIMMER", 0,  has_limits::init(0, 1.2), steppable::init(0.01)};
+      Property<float> length  = {this, "LENGTH",  0,  has_limits::init(0, 3),    steppable::init(0.01)};
+      Property<float, exp_step> shape   = {this, "SHAPE",  4000, has_limits::init(100, 14000),   steppable::init(1.2)};
 
     } props;
 
