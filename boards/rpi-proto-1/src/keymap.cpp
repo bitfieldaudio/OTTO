@@ -31,7 +31,7 @@ namespace otto::board::ui {
     };
 
     auto shutdown = [action] {
-      if (action == Action::press) std::system("halt");
+      if (action == Action::press) std::system("shutdown -h now");
     };
 
     switch (key) {
@@ -78,7 +78,10 @@ namespace otto::board::ui {
     case Key::left_shift: send_key(OKey::shift); break;
 
     case Key::enter:
-      if (service::ui::is_pressed(OKey::shift)) shutdown();
+      if (service::ui::is_pressed(OKey::shift))
+        shutdown();
+      else
+        send_key(OKey::master);
       break;
     case Key::y: break;
     case Key::z: break;

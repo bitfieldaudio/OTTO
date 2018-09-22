@@ -27,6 +27,9 @@ namespace otto::core::engines {
     sequencer,
     /// Twist engines - Not really engines in the same sense
     twist,
+
+    /// Misc engines - used for stuff like the Master screen.
+    misc
   };
 
   /// Abstract base class for Engines
@@ -152,7 +155,7 @@ public:                                                                        \
 
     OTTO_ENGINE_COMMON_CONTENT(EngineType::synth)
 
-    virtual audio::ProcessData<1> process(audio::ProcessData<0>) = 0;
+    virtual audio::ProcessData<1> process(audio::ProcessData<1>) = 0;
   };
   using SynthEngine = Engine<EngineType::synth>;
 

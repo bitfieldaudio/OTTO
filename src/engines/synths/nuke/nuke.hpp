@@ -24,7 +24,7 @@ namespace otto::engines {
 
     NukeSynth();
 
-    audio::ProcessData<1> process(audio::ProcessData<0>) override;
+    audio::ProcessData<1> process(audio::ProcessData<1>) override;
 
     ui::Screen& envelope_screen() override {
       return voice_mgr_.envelope_screen();

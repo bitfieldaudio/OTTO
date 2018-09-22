@@ -24,7 +24,7 @@ namespace otto::service::ui {
     Screen* cur_screen = &empty_screen;
 
     PressedKeys keys;
-    std::multimap<Key, KeyHandler> key_handlers;
+    std::unordered_multimap<Key, std::pair<KeyHandler, KeyHandler>> key_handlers;
     struct KeyPress {
       Key key;
     };
@@ -92,13 +92,17 @@ namespace otto::service::ui {
     cur_screen->on_show();
   }
 
-  void register_key_handler(Key k, KeyHandler handler)
+  core::ui::Screen* current_screen() {
+    return cur_screen;
+  }
+
+  void register_key_handler(Key k, KeyHandler press_handler, KeyHandler release_handler)
   {
-    key_handlers.emplace(k, handler);
+    key_handlers.emplace(k, std::pair{std::move(press_handler), std::move(release_handler)});
   }
 
   namespace impl {
-    static bool global_keypress(Key key)
+    static bool global_keypress(Key key, bool is_press = true)
     {
       if (key == Key::quit) {
         global::exit(global::ErrorCode::user_exit);
@@ -108,8 +112,9 @@ namespace otto::service::ui {
       auto [first, last] = key_handlers.equal_range(key);
       if (first == last) return false;
 
-      for (auto it = first; it != last; it++) {
-        it->second(key);
+      for (auto&& [key, funcs] : util::sequence(first, last)) {
+        auto& func = is_press ? funcs.first : funcs.second;
+        if (func) func(key);
       }
 
       return true;
@@ -145,23 +150,13 @@ namespace otto::service::ui {
         util::match( //
           event,
           [](KeyPress ev) {
-            switch (ev.key) {
-            case Key::red_up: cur_screen->rotary({Rotary::Red, 1}); break;
-            case Key::red_down: cur_screen->rotary({Rotary::Red, -1}); break;
-            case Key::blue_up: cur_screen->rotary({Rotary::Blue, 1}); break;
-            case Key::blue_down: cur_screen->rotary({Rotary::Blue, -1}); break;
-            case Key::white_up: cur_screen->rotary({Rotary::White, 1}); break;
-            case Key::white_down: cur_screen->rotary({Rotary::White, -1}); break;
-            case Key::green_up: cur_screen->rotary({Rotary::Green, 1}); break;
-            case Key::green_down: cur_screen->rotary({Rotary::Green, -1}); break;
-            default:
-              keys[static_cast<unsigned>(ev.key)] = true;
-              if (global_keypress(ev.key)) return;
-              cur_screen->keypress(ev.key);
-            }
+            keys[static_cast<unsigned>(ev.key)] = true;
+            if (global_keypress(ev.key)) return;
+            cur_screen->keypress(ev.key);
           },
           [](KeyRelease& ev) {
             keys[static_cast<unsigned>(ev.key)] = false;
+            if (global_keypress(ev.key, false)) return;
             cur_screen->keyrelease(ev.key);
           });
       }

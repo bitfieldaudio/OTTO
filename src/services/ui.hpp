@@ -33,7 +33,7 @@ namespace otto::service::ui {
   using KeyHandler = std::function<void(core::ui::Key k)>;
 
   /// Register a key handler
-  void register_key_handler(core::ui::Key k, KeyHandler handler);
+  void register_key_handler(core::ui::Key k, KeyHandler press_handler, KeyHandler release_handler = nullptr);
 
   /// Display a screen.
   ///
@@ -46,6 +46,8 @@ namespace otto::service::ui {
 
   /// Select an engine by name
   void select_engine(const std::string& engine_name);
+
+  core::ui::Screen* current_screen();
 
   /// Get the currently selected engine
   const std::string& selected_engine_name();

@@ -14,7 +14,7 @@ namespace otto::core::midi {
 
   namespace detail {
 
-    inline float freq_table[128];
+    inline double freq_table[128];
 
     constexpr std::array<const char*, 128> note_names = {
       {"C-2", "C#-2", "D-2", "D#-2", "E-2", "F-2", "F#-2", "G-2", "G#-2", "A-2", "A#-2", "B-2",
@@ -115,10 +115,10 @@ namespace otto::core::midi {
 
   using AnyMidiEvent = mpark::variant<NoteOnEvent, NoteOffEvent, ControlChangeEvent>;
 
-  inline void generateFreqTable(float tuning = 440)
+  inline void generateFreqTable(double tuning = 440)
   {
     for (int i = 0; i < 128; i++) {
-      detail::freq_table[i] = tuning * std::pow(2, float(i - 69) / float(12));
+      detail::freq_table[i] = tuning * std::pow(2.0, double(i - 69) / double(12));
     }
   }
 

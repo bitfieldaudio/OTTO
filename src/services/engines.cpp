@@ -7,6 +7,8 @@
 #include "engines/seq/euclid/euclid.hpp"
 #include "engines/synths/nuke/nuke.hpp"
 #include "engines/fx/wormhole/wormhole.hpp"
+#include "engines/misc/master/master.hpp"
+#include "engines/synths/external/external.hpp"
 
 #include "services/state.hpp"
 #include "services/ui.hpp"
@@ -22,6 +24,8 @@ namespace otto::service::engines {
     EngineDispatcher<EngineType::sequencer> sequencer;
     EngineDispatcher<EngineType::synth> synth;
     EngineDispatcher<EngineType::effect> effect;
+
+    otto::engines::Master master;
   } // namespace
 
   void init()
@@ -33,6 +37,7 @@ namespace otto::service::engines {
     register_engine<otto::engines::Euclid>();
     register_engine<otto::engines::NukeSynth>();
     register_engine<otto::engines::Wormhole>();
+    register_engine<otto::engines::External>();
 
     sequencer.init();
     synth.init();
@@ -81,6 +86,15 @@ namespace otto::service::engines {
       }
     });
 
+    static core::ui::Screen* master_last_screen = nullptr;
+
+    service::ui::register_key_handler(core::ui::Key::master, [](core::ui::Key k) {
+      master_last_screen = service::ui::current_screen();
+      service::ui::display(master.screen());
+    }, [] (core::ui::Key k) {
+      if (master_last_screen) service::ui::display(*master_last_screen);
+    });
+
     auto load = [&](nlohmann::json& data) {
       synth.from_json(data["Synth"]);
       effect.from_json(data["Effect"]);
@@ -92,7 +106,6 @@ namespace otto::service::engines {
                              {"Effect", effect.to_json()},
                              {"Sequencer", sequencer.to_json()}});
     };
-
 
     service::state::attach("Engines", load, save);
   }
@@ -111,14 +124,15 @@ namespace otto::service::engines {
     // Main processor function
     auto midi_in = external_in.midi_only();
     auto seq_out = sequencer->process(midi_in);
-    auto synth_out = synth->process(seq_out);
+    auto synth_out = synth->process({external_in.audio, seq_out.midi, external_in.nframes});
 
     for (auto&& [snth, out] : util::zip(synth_out, audio_out)) {
-      out[0] = 0.75 * snth[0];
-      out[1] = 0.75 * snth[0];
+      out[0] = snth[0];
+      out[1] = snth[0];
     }
     auto fx_out = effect->process(synth_out.redirect(audio_out));
-    return fx_out;
+
+    return master.process(fx_out);;
   }
 
   AnyEngine* const by_name(const std::string& name) noexcept
