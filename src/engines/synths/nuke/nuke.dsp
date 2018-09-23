@@ -70,4 +70,4 @@ with {
   d = hslider("/v:envelope/Decay", 0.0, 0.0, 4, 0.001);
   s = hslider("/v:envelope/Sustain", 1.0, 0.0, 1.0, 0.01);
   r = hslider("/v:envelope/Release", 0.0, 0.0, 4.0, 0.01);
-};
+};  

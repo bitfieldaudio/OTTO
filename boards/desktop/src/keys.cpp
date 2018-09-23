@@ -29,25 +29,31 @@ namespace otto::board::ui {
         service::ui::impl::keyrelease(k);
     };
 
+    auto send_rotary = [action](core::ui::Rotary rot, int n) {
+      if (action == Action::press || (action == Action::repeat))
+        service::ui::impl::rotary({rot, n});
+    };
+
+
     if (mods & Modifier::alt) {
       switch (key) {
-      case Key::q:  send_midi(17); return;
+      case Key::q: send_midi(17); return;
       case Key::n2: send_midi(18); return;
-      case Key::w:  send_midi(19); return;
+      case Key::w: send_midi(19); return;
       case Key::n3: send_midi(20); return;
-      case Key::e:  send_midi(21); return;
-      case Key::r:  send_midi(22); return;
+      case Key::e: send_midi(21); return;
+      case Key::r: send_midi(22); return;
       case Key::n5: send_midi(23); return;
-      case Key::t:  send_midi(24); return;
+      case Key::t: send_midi(24); return;
       case Key::n6: send_midi(25); return;
-      case Key::y:  send_midi(26); return;
+      case Key::y: send_midi(26); return;
       case Key::n7: send_midi(27); return;
-      case Key::u:  send_midi(28); return;
-      case Key::i:  send_midi(29); return;
+      case Key::u: send_midi(28); return;
+      case Key::i: send_midi(29); return;
       case Key::n9: send_midi(30); return;
-      case Key::o:  send_midi(31); return;
+      case Key::o: send_midi(31); return;
       case Key::n0: send_midi(32); return;
-      case Key::p:  send_midi(33); return;
+      case Key::p: send_midi(33); return;
       default: break;
       }
     }
@@ -55,42 +61,64 @@ namespace otto::board::ui {
     bool ctrl = mods & Modifier::ctrl;
     switch (key) {
       // Rotaries
-    case Key::q: send_key(ctrl ? OKey::blue_click  : OKey::blue_up, !ctrl); break;
-    case Key::a: send_key(ctrl ? OKey::blue_click  : OKey::blue_down, !ctrl); break;
-    case Key::w: send_key(ctrl ? OKey::green_click : OKey::green_up, !ctrl); break;
-    case Key::s: send_key(ctrl ? OKey::green_click : OKey::green_down, !ctrl); break;
-    case Key::e: send_key(ctrl ? OKey::white_click : OKey::white_up, !ctrl); break;
-    case Key::d: send_key(ctrl ? OKey::white_click : OKey::white_down, !ctrl); break;
-    case Key::r: send_key(ctrl ? OKey::red_click   : OKey::red_up, !ctrl); break;
-    case Key::f: send_key(ctrl ? OKey::red_click   : OKey::red_down, !ctrl); break;
+    case Key::q:
+      if (ctrl)
+        send_key(OKey::blue_click);
+      else
+        send_rotary(core::ui::Rotary::Blue, 1);
+      break;
+    case Key::a:
+      if (ctrl)
+        send_key(OKey::blue_click);
+      else
+        send_rotary(core::ui::Rotary::Blue, -1);
+      break;
+    case Key::w:
+      if (ctrl)
+        send_key(OKey::green_click);
+      else
+        send_rotary(core::ui::Rotary::Green, 1);
+      break;
+    case Key::s:
+      if (ctrl)
+        send_key(OKey::green_click);
+      else
+        send_rotary(core::ui::Rotary::Green, -1);
+      break;
+    case Key::e:
+      if (ctrl)
+        send_key(OKey::white_click);
+      else
+        send_rotary(core::ui::Rotary::White, 1);
+      break;
+    case Key::d:
+      if (ctrl)
+        send_key(OKey::white_click);
+      else
+        send_rotary(core::ui::Rotary::White, -1);
+      break;
+    case Key::r:
+      if (ctrl)
+        send_key(OKey::red_click);
+      else
+        send_rotary(core::ui::Rotary::Red, 1);
+      break;
+    case Key::f:
+      if (ctrl)
+        send_key(OKey::red_click);
+      else
+        send_rotary(core::ui::Rotary::Red, -1);
+      break;
 
-    case Key::left: send_key(OKey::left); break;
-    case Key::right: send_key(OKey::right); break;
+    // Engines
+    case Key::n1: send_key(OKey::sequencer); break;
+    case Key::n2: send_key(OKey::synth); break;
+    case Key::n3: send_key(OKey::envelope); break;
+    case Key::n4: send_key(OKey::voices); break;
+    case Key::n5: send_key(OKey::fx1); break;
 
-      // Tapedeck
     case Key::p: send_key(OKey::play); break;
-    case Key::z: send_key(OKey::rec); break;
-    case Key::f1: send_key(OKey::track_1); break;
-    case Key::f2: send_key(OKey::track_2); break;
-    case Key::f3: send_key(OKey::track_3); break;
-    case Key::f4: send_key(OKey::track_4); break;
-
-      // Numbers
-    case Key::t: if (ctrl) send_key(OKey::tape); break;
-    case Key::y: if (ctrl) send_key(OKey::mixer); break;
-    case Key::u: if (ctrl) send_key(OKey::synth); break;
-    case Key::g: if (ctrl) send_key(OKey::metronome); break;
-    case Key::h: if (ctrl) send_key(OKey::sequencer); break;
-    case Key::j: if (ctrl) send_key(OKey::drums); break;
-    case Key::k: if (ctrl) send_key(OKey::envelope); break;
-
-    case Key::l: send_key(OKey::loop); break;
-    case Key::i: send_key(OKey::loop_in); break;
-    case Key::o: send_key(OKey::loop_out); break;
-
-    case Key::x: send_key(OKey::cut); break;
-    case Key::c: if (ctrl) send_key(OKey::lift); 
-    case Key::v: if (ctrl) send_key(OKey::drop); break;
+    case Key::m: send_key(OKey::master); break;
 
     case Key::left_shift: [[fallthrough]];
     case Key::right_shift: send_key(OKey::shift); break;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <tuple>
 
 #include "util/utility.hpp"
 
@@ -9,7 +10,7 @@
 
 namespace otto::core::props {
 
-  OTTO_PROPS_MIXIN(steppable);
+  OTTO_PROPS_MIXIN(steppable, HOOKS((on_step, value_type)));
 
   OTTO_PROPS_MIXIN_LEAF (steppable) {
     OTTO_PROPS_MIXIN_DECLS(steppable);
@@ -26,16 +27,21 @@ namespace otto::core::props {
     void step(int n = 1)
     {
       auto& prop = dynamic_cast<property_type&>(*this);
-      if constexpr (std::is_same_v<bool, value_type>) {
-        prop.set((prop.get() + n) % 2);
-      } else if constexpr (std::is_enum_v<value_type>) {
-        prop.set(static_cast<value_type>(util::underlying(prop.get()) + n * step_size));
-      } else {
-        prop.set(prop.get() + n * step_size);
-      }
+      _current_step_count = n;
+      auto new_value = run_hook<hooks::on_step>([&] () -> value_type {
+        if constexpr (std::is_same_v<bool, value_type>) {
+          return (prop.get() + n) % 2;
+        } else if constexpr (std::is_enum_v<value_type>) {
+          return static_cast<value_type>(util::underlying(prop.get()) + n * step_size);
+        } else {
+          return prop.get() + n * step_size;
+        }
+      }());
+      prop.set(new_value);
     }
 
     util::enum_decay_t<value_type> step_size = 1;
+    int _current_step_count;
   };
 
 } // namespace otto::core::props

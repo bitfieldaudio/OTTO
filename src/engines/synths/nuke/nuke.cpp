@@ -40,11 +40,11 @@ namespace otto::engines {
       faust_(std::make_unique<FAUSTCLASS>(), props)
   {}
 
-  audio::ProcessData<1> NukeSynth::process(audio::ProcessData<0> data)
+  audio::ProcessData<1> NukeSynth::process(audio::ProcessData<1> data)
   {
-    voice_mgr_.process_before(data);
-    auto res = faust_.process(data);
-    voice_mgr_.process_after(data);
+    voice_mgr_.process_before(data.midi_only());
+    auto res = faust_.process(data.midi_only());
+    voice_mgr_.process_after(data.midi_only());
     return res;
   }
 

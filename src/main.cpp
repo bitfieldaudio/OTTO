@@ -28,6 +28,7 @@ int main(int argc, char* argv[])
     // Overwrite the logger signal handlers
     std::signal(SIGABRT, global::handle_signal);
     std::signal(SIGTERM, global::handle_signal);
+    std::signal(SIGINT, global::handle_signal);
 
     service::state::load();
 

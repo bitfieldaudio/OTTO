@@ -51,6 +51,8 @@ namespace otto::engines {
 
     Euclid();
 
+    void on_enable() override;
+
     audio::ProcessData<0> process(audio::ProcessData<0>) override;
 
     Channel& current_channel()
@@ -65,7 +67,7 @@ namespace otto::engines {
   private:
     friend struct EuclidScreen;
 
-    int _samples_per_beat = 22050;
+    int _samples_per_beat = 22050 / 4;
     int _counter = _samples_per_beat;
     bool _should_run = false;
 
