@@ -47,8 +47,6 @@ namespace otto::engines {
   {
     using namespace ui::vg;
 
-    auto& props = engine.props;
-
     // Text
     ctx.font(Fonts::Bold, 26);
     ctx.fillStyle(Colour::bytes(255, 255, 255));
