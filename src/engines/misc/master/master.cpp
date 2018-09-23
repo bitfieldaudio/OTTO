@@ -49,19 +49,50 @@ namespace otto::engines {
 
     auto& props = engine.props;
 
-    ctx.font(Fonts::Bold, 40);
+    // Text
+    ctx.font(Fonts::Bold, 26);
+    ctx.fillStyle(Colour::bytes(255, 255, 255));
+    ctx.fillText("master volume", 86.6, 189.9);
 
+    // Dot
+    ctx.save();
     ctx.beginPath();
-    ctx.fillStyle(Colours::Red);
-    ctx.textAlign(HorizontalAlign::Center, VerticalAlign::Baseline);
-    ctx.fillText("Volume", {160, 60});
+    ctx.circle({160,110},4);
+    ctx.fillStyle(Colours::Green);
+    ctx.fill();
+    ctx.lineWidth(6.0);
+    ctx.strokeStyle(Colour::bytes(147, 192, 34));
+    ctx.lineCap(Canvas::LineCap::ROUND);
+    ctx.lineJoin(Canvas::LineJoin::ROUND);
+    ctx.stroke();
 
-    ctx.font(Fonts::Bold, 100);
+    // Dial
+    float rotation = -2.15 + engine.props.volume * 4.3;
 
+    ctx.save();
+    ctx.rotateAround(rotation,{160,110});
     ctx.beginPath();
-    ctx.fillStyle(Colours::Red);
-    ctx.textAlign(HorizontalAlign::Center, VerticalAlign::Top);
-    ctx.fillText(fmt::format("{}", (int) std::round(props.volume * 100.0)), {160, 70});
+    ctx.moveTo(160.0, 110.8);
+    ctx.lineTo(160.0, 73.4);
+    ctx.stroke();
+    ctx.restore();
+
+    // Outer circle
+    ctx.restore();
+    ctx.beginPath();
+    ctx.moveTo(109.4, 144.9);
+    ctx.bezierCurveTo(102.8, 135.1, 99.0, 123.4, 99.0, 110.8);
+    ctx.bezierCurveTo(99.0, 77.1, 126.3, 49.8, 160.0, 49.8);
+    ctx.bezierCurveTo(193.7, 49.8, 221.0, 77.1, 221.0, 110.8);
+    ctx.bezierCurveTo(221.0, 122.6, 217.6, 133.7, 211.8, 143.0);
+    ctx.lineWidth(6.0);
+    ctx.strokeStyle(Colour::bytes(99, 99, 99));
+    ctx.lineCap(Canvas::LineCap::ROUND);
+    ctx.lineJoin(Canvas::LineJoin::ROUND);
+    ctx.stroke();
+    ctx.restore();
+
+
   }
 
 } // namespace otto::engines

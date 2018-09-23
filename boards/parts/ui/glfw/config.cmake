@@ -10,7 +10,7 @@ if (glfw3_FOUND)
     include_directories(${GLFW_INCLUDE_DIRS})
     target_link_libraries(otto ${GLFW_LIBRARIES})
 
-    target_link_libraries(glfw INTERFACE dl)
+    target_link_libraries(otto INTERFACE dl)
 else() 
     message("GLFW not found, building from source")
     set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "Build GLFW examples")

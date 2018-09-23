@@ -66,6 +66,8 @@ namespace otto::engines {
     ctx.lineWidth(6);
     ctx.stroke(Colours::White);
 
+    engine.graph.clear();
+
   }
 
 } // namespace otto::engines

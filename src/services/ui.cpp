@@ -24,7 +24,7 @@ namespace otto::service::ui {
     Screen* cur_screen = &empty_screen;
 
     PressedKeys keys;
-    std::unordered_multimap<Key, std::pair<KeyHandler, KeyHandler>> key_handlers;
+    std::multimap<Key, std::pair<KeyHandler, KeyHandler>> key_handlers;
     struct KeyPress {
       Key key;
     };
