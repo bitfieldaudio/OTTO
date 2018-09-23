@@ -27,8 +27,6 @@ namespace otto::core::ui::vg {
     inline Font Light;
     inline Font Norm;
     inline Font Bold;
-    inline Font SemiBold;
-    inline Font Mono;
 
     inline const fs::path font_dir {"data/fonts"};
 
@@ -46,11 +44,9 @@ namespace otto::core::ui::vg {
   }
 
   inline void initUtils(Canvas& ctx) {
-    Fonts::loadFont(ctx, Fonts::Light, "OTTO-Light");
-    Fonts::loadFont(ctx, Fonts::Norm, "OTTO-Regular");
-    Fonts::loadFont(ctx, Fonts::Bold, "OTTO-Bold");
-    Fonts::loadFont(ctx, Fonts::SemiBold, "OTTO-SemiBold");
-    Fonts::loadFont(ctx, Fonts::Mono, "OTTO-Mono-Regular");
+    Fonts::loadFont(ctx, Fonts::Light, "Roboto-Light");
+    Fonts::loadFont(ctx, Fonts::Norm, "Roboto-Regular");
+    Fonts::loadFont(ctx, Fonts::Bold, "Roboto-Black");
   }
 
 } // ui::drawing
