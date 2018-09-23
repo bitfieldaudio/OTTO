@@ -93,8 +93,8 @@ namespace otto::board::ui {
 
     case Key::n5: send_key(OKey::voices); break;
     case Key::n6: send_key(OKey::envelope); break;
-    case Key::n7: break; // MOMENT 1
-    case Key::n8: break; // MOMENT 2
+    case Key::n7: break; // TWIST 1
+    case Key::n8: break; // TWIST 2
 
     default: break;
     }

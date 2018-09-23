@@ -52,8 +52,8 @@ namespace otto::service::audio {
       throw global::exception(global::ErrorCode::audio_error, "Failed to start jack server");
     }
 
-    LOG_F(INFO, "Jack server started");
-    LOG_F(INFO, "Jack client status: {}", jackStatus);
+    LOGI("Jack server started");
+    LOGI("Jack client status: {}", jackStatus);
 
     jack_set_process_callback(client,
                               [](jack_nframes_t nframes, void* arg) {
@@ -75,6 +75,13 @@ namespace otto::service::audio {
       [](jack_nframes_t nframes, void* arg) {
         (static_cast<JackAudioDriver*>(arg))->buffersizeCallback(nframes);
         return 0;
+      },
+      this);
+
+    jack_set_port_registration_callback(
+      client,
+      [](jack_port_id_t id, int is_register, void* data) {
+        if (is_register) (static_cast<JackAudioDriver*>(data))->new_ports.push_back(id);
       },
       this);
 
@@ -208,6 +215,25 @@ namespace otto::service::audio {
     audio::events::buffersize_change().fire(buffsize);
   }
 
+  void JackAudioDriver::new_port_callback(jack_port_id_t id)
+  {
+    DLOGI("New port");
+    auto* port = jack_port_by_id(client, id);
+    auto flags = jack_port_flags(port);
+    auto type = jack_port_type(port);
+    if (type != nullptr && strcmp(type, JACK_DEFAULT_MIDI_TYPE) == 0) {
+      if (flags & JackPortIsInput) {
+        auto portname = jack_port_name(port);
+        auto port2name = jack_port_name(ports.midiOut);
+        if (portname && port2name) connectPorts(portname, port2name);
+      } else if (flags & JackPortIsOutput) {
+        auto portname = jack_port_name(port);
+        auto port2name = jack_port_name(ports.midiIn);
+        if (portname && port2name) connectPorts(port2name, portname);
+      }
+    }
+  }
+
   void JackAudioDriver::gatherMidiInput(int nframes)
   {
     midi_bufs.swap();
@@ -251,6 +277,13 @@ namespace otto::service::audio {
     auto running = audio::running() && global::running();
     if (!running) {
       return;
+    }
+
+    if (!new_ports.empty()) {
+      for (auto port : new_ports) {
+        new_port_callback(port);
+      }
+      new_ports.clear();
     }
 
     TIME_SCOPE("JackAudio::Process");

@@ -196,7 +196,7 @@ class faust_master : public dsp {
 			fRec2[0] = ((fRec2[1] * fTemp3) + (fTemp2 * (1.0f - fTemp3)));
 			fRec1[0] = fRec2[0];
 			fRec0[0] = ((fConst1 * fRec0[1]) + (fConst2 * (0.0f - (0.75f * max(((20.0f * log10f(fRec1[0])) + 6.0f), 0.0f)))));
-			float fTemp4 = powf(10.0f, (0.0500000007f * fRec0[0]));
+			float fTemp4 = exp10f((0.0500000007f * fRec0[0]));
 			output0[i] = FAUSTFLOAT((fTemp4 * fTemp1));
 			output1[i] = FAUSTFLOAT((fTemp4 * fTemp0));
 			fRec2[1] = fRec2[0];
