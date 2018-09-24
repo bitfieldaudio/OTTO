@@ -43,9 +43,9 @@ namespace otto::core::audio {
   std::string to_string(PlayMode pm) noexcept
   {
     switch (pm) {
-      case PlayMode::poly: return "Poly";
-      case PlayMode::mono: return "Mono";
-      case PlayMode::unison: return "Unison";
+      case PlayMode::poly: return "poly";
+      case PlayMode::mono: return "mono";
+      case PlayMode::unison: return "unison";
       default: return "";
     };
   }
@@ -87,7 +87,7 @@ namespace otto::core::audio {
     const float arc_size = 0.9;
 
     ctx.beginPath();
-    ctx.moveTo(b.x, b.y + b.height + 14);
+    ctx.moveTo(b.x, b.y + b.height + spacing);
     ctx.lineTo(b.x + b.width, b.y + b.height + spacing);
     ctx.stroke(Colours::White);
 
@@ -142,7 +142,7 @@ namespace otto::core::audio {
   {
     using namespace ui::vg;
 
-    ctx.font(Fonts::Bold, 40);
+    ctx.font(Fonts::Norm, 35);
 
     constexpr float x_pad = 30;
     constexpr float y_pad = 50;
@@ -151,7 +151,7 @@ namespace otto::core::audio {
     ctx.beginPath();
     ctx.fillStyle(Colours::Blue);
     ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
-    ctx.fillText("Play Mode", {x_pad, y_pad});
+    ctx.fillText("play mode", {x_pad, y_pad});
 
     ctx.beginPath();
     ctx.fillStyle(Colours::Blue);
@@ -161,7 +161,7 @@ namespace otto::core::audio {
     ctx.beginPath();
     ctx.fillStyle(Colours::Green);
     ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
-    ctx.fillText("Portamento", {x_pad, y_pad + space});
+    ctx.fillText("portamento", {x_pad, y_pad + space});
 
     ctx.beginPath();
     ctx.fillStyle(Colours::Green);
@@ -171,7 +171,7 @@ namespace otto::core::audio {
     ctx.beginPath();
     ctx.fillStyle(Colours::Yellow);
     ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
-    ctx.fillText("Octave", {x_pad, y_pad + 2 * space});
+    ctx.fillText("octave", {x_pad, y_pad + 2 * space});
 
     ctx.beginPath();
     ctx.fillStyle(Colours::Yellow);
@@ -181,7 +181,7 @@ namespace otto::core::audio {
     ctx.beginPath();
     ctx.fillStyle(Colours::Red);
     ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
-    ctx.fillText("Transpose", {x_pad, y_pad + 3 * space});
+    ctx.fillText("transpose", {x_pad, y_pad + 3 * space});
 
     ctx.beginPath();
     ctx.fillStyle(Colours::Red);

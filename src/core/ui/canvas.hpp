@@ -181,7 +181,7 @@ namespace otto::core::ui::vg {
   }
 
   inline Colour Colour::dim(float amount) const {
-    float dim = 1 - amount;
+    float dim = std::clamp(1.f - amount,0.f,1.f);
     Colour ret;
     ret.r = std::clamp<uint8_t>(r * dim, 0x00, 0xFF);
     ret.g = std::clamp<uint8_t>(g * dim, 0x00, 0xFF);
@@ -402,6 +402,13 @@ namespace otto::core::ui::vg {
       return *this;
     }
 
+    Canvas& scaleTowards(float s, Point p) {
+      translate(p);
+      scale(s, s);
+      translate(-p);
+      return *this;
+    }
+
     Canvas& draw(Drawable &d) {
       d.draw(*this);
       return *this;
@@ -426,6 +433,14 @@ namespace otto::core::ui::vg {
       d.draw(*this);
       restore();
       return *this;
+    }
+
+    template<typename FuncRef>
+    Canvas& group(FuncRef&& func) {
+        save();
+        func();
+        restore();
+        return *this;
     }
 
     Canvas& callAt(Point p, const std::function<void(void)>& f) {

@@ -195,7 +195,7 @@ namespace otto::engines {
 
     auto& current = engine.current_channel();
 
-    ctx.font(Fonts::Bold, 40);
+    ctx.font(Fonts::Norm, 40);
 
     ctx.beginPath();
     ctx.fillStyle(Colours::Red);
@@ -229,30 +229,30 @@ namespace otto::engines {
             2.0 * M_PI * (current.rotation / float(state.max_length) - 0.25));
     ctx.stroke(Colours::Red);
 
-    ctx.font(Fonts::Norm, 14.0);
+    ctx.font(Fonts::Norm, 22.0);
     ctx.fillStyle(Colours::White);
-    ctx.fillText("Length", 251.9, 41.6);
+    ctx.fillText("length", 252, 41.6);
 
     ctx.save();
-    ctx.font(Fonts::Norm, 30.0);
+    ctx.font(Fonts::Norm, 35.0);
     ctx.fillStyle(Colours::Green);
-    ctx.fillText(std::to_string(current.length), 251.9, 72.9);
+    ctx.fillText(std::to_string(current.length), 252, 72.9);
 
-    ctx.font(Fonts::Norm, 14.0);
+    ctx.font(Fonts::Norm, 22.0);
     ctx.fillStyle(Colours::White);
-    ctx.fillText("Pulses", 251.9, 111.7);
+    ctx.fillText("pulses", 252, 108.7);
 
-    ctx.font(Fonts::Norm, 30.0);
+    ctx.font(Fonts::Norm, 35.0);
     ctx.fillStyle(Colours::Yellow);
-    ctx.fillText(std::to_string(current.hits), 251.9, 143.0);
+    ctx.fillText(std::to_string(current.hits), 252, 140.0);
 
-    ctx.font(Fonts::Norm, 14.0);
+    ctx.font(Fonts::Norm, 22.0);
     ctx.fillStyle(Colours::White);
-    ctx.fillText("rotation", 251.9, 173.9);
+    ctx.fillText("offset", 252, 173.9);
 
-    ctx.font(Fonts::Norm, 30.0);
+    ctx.font(Fonts::Norm, 35.0);
     ctx.fillStyle(Colours::Red);
-    ctx.fillText(std::to_string(current.rotation), 251.9, 205.3);
+    ctx.fillText(std::to_string(current.rotation), 252, 205.3);
 
     ctx.restore();
   }

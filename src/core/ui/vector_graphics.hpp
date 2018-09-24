@@ -19,6 +19,7 @@ namespace otto::core::ui::vg {
     const MainColour Green  = {0x5ECF3E, 0x0C6E0C};
     const MainColour Blue   = {0x009EE3, 0x0C0C6E};
 
+    const Colour Gray50     = 0x646464;
     const Colour Gray60     = 0x999999;
     const Colour Gray70     = 0xB2B2B2;
   } // Colours
@@ -45,7 +46,7 @@ namespace otto::core::ui::vg {
 
   inline void initUtils(Canvas& ctx) {
     Fonts::loadFont(ctx, Fonts::Light, "Roboto-Light");
-    Fonts::loadFont(ctx, Fonts::Norm, "Roboto-Regular");
+    Fonts::loadFont(ctx, Fonts::Norm, "Roboto-Medium");
     Fonts::loadFont(ctx, Fonts::Bold, "Roboto-Black");
   }
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 4.7.1, 2018-09-23T02:31:38. -->
+<!-- Written by QtCreator 4.7.1, 2018-09-23T22:37:59. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -75,8 +75,8 @@
    <value type="int" key="ProjectExplorer.Target.ActiveRunConfiguration">1</value>
    <valuemap type="QVariantMap" key="ProjectExplorer.Target.BuildConfiguration.0">
     <valuelist type="QVariantList" key="CMake.Configuration">
+     <value type="QString">CMAKE_BUILD_TYPE:STRING=Debug</value>
      <value type="QString">CMAKE_CXX_COMPILER:FILEPATH=/usr/local/Cellar/llvm/5.0.0/bin/clang++</value>
-     <value type="QString">unset CMAKE_CXX_FLAGS</value>
      <value type="QString">CMAKE_C_COMPILER:FILEPATH=/usr/local/Cellar/llvm/5.0.0/bin/clang</value>
      <value type="QString">CMAKE_PREFIX_PATH:STRING=%{Qt:QT_INSTALL_PREFIX}</value>
      <value type="QString">QT_QMAKE_EXECUTABLE:STRING=%{Qt:qmakeExecutable}</value>
@@ -117,7 +117,7 @@
     <value type="int" key="ProjectExplorer.BuildConfiguration.BuildStepListCount">2</value>
     <value type="bool" key="ProjectExplorer.BuildConfiguration.ClearSystemEnvironment">false</value>
     <valuelist type="QVariantList" key="ProjectExplorer.BuildConfiguration.UserEnvironmentChanges">
-     <value type="QString">CXXFLAGS=-I/usr/local/opt/llvm/include -I/usr/local/include</value>
+     <value type="QString">CXXFLAGS=-I/usr/local/opt/llvm/include -I/usr/local/include -Wno-conversions</value>
      <value type="QString">LDFLAGS=-L/usr/local/lib -L/usr/local/opt/llvm/lib -Wl,-rpath,/usr/local/opt/llvm/lib</value>
      <value type="QString">CC=clang</value>
      <value type="QString">CXX=clang++</value>

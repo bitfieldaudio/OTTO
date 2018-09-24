@@ -16,8 +16,8 @@ namespace otto::engines {
 
       Property<float> mix     = {this, "MIX",     0.5,  has_limits::init(0, 1),    steppable::init(0.01)};
       Property<float> shimmer = {this, "SHIMMER", 0,  has_limits::init(0, 1.2), steppable::init(0.01)};
-      Property<float> length  = {this, "LENGTH",  0,  has_limits::init(0, 3),    steppable::init(0.01)};
-      Property<float, exp_step> shape   = {this, "SHAPE",  4000, has_limits::init(100, 14000),   steppable::init(1.2)};
+      Property<float> length  = {this, "LENGTH",  1,  has_limits::init(0, 1),    steppable::init(0.01)};
+      Property<float> shape   = {this, "SHAPE",  4000, has_limits::init(100, 14000),   steppable::init(100)};
 
     } props;
 

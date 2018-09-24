@@ -532,7 +532,7 @@ namespace otto::filesystem {
     recursive_directory_iterator operator++(int);
 
   private:
-    std::shared_ptr<std::vector<directory_iterator>> _data;
+    std::shared_ptr<std::vector<directory_iterator>> _data = nullptr;
   };
 
   recursive_directory_iterator begin(
