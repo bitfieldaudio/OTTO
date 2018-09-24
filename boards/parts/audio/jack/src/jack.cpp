@@ -41,6 +41,11 @@ namespace otto::service::audio {
     return instance;
   }
 
+  core::audio::AudioBufferPool& JackAudioDriver::buffer_pool()
+  {
+    return *_buffer_pool;
+  }
+
   void JackAudioDriver::init()
   {
     jack_set_error_function(jackError);
@@ -213,6 +218,7 @@ namespace otto::service::audio {
     LOG_F(INFO, "Jack changed the buffer size to {}", buffsize);
     bufferSize = buffsize;
     audio::events::buffersize_change().fire(buffsize);
+    _buffer_pool = std::make_unique<AudioBufferPool>(bufferSize);
   }
 
   void JackAudioDriver::new_port_callback(jack_port_id_t id)
@@ -299,8 +305,10 @@ namespace otto::service::audio {
     float* outRData = (float*) jack_port_get_buffer(ports.outR, nframes);
     float* inData = (float*) jack_port_get_buffer(ports.input, nframes);
 
+    int ref_count = 0;
+    auto in_buf = AudioBufferHandle(inData, nframes, ref_count);
     auto out_data =
-      engines::process({{reinterpret_cast<util::audio::AudioFrame<1>*>(inData), nframes},
+      engines::process({in_buf,
                         {midi_bufs.inner()},
                         nframes});
 
@@ -310,8 +318,8 @@ namespace otto::service::audio {
 
     // Separate channels
     for (int i = 0; i < nframes; i++) {
-      outLData[i] = out_data.audio[i][0];
-      outRData[i] = out_data.audio[i][1];
+      outLData[i] = std::get<0>(out_data.audio[i]);
+      outRData[i] = std::get<1>(out_data.audio[i]);
     }
   }
 } // namespace otto::service::audio

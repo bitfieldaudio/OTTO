@@ -72,6 +72,11 @@ namespace otto::service::audio {
     AudioDriver::get().init();
   }
 
+  AudioBufferPool& buffer_pool() noexcept
+  {
+    return AudioDriver::get().buffer_pool();
+  }
+
   void start() noexcept
   {
     _running = true;
@@ -91,8 +96,8 @@ namespace otto::service::audio {
   {
 #if OTTO_DEBUG_UI
       float max;
-      for (auto& frm : audio_output) {
-        float sum = frm[0] + frm[1];
+      for (auto&& [l, r] : audio_output) {
+        float sum = l + r;
         if (std::abs(sum - max) > 0) {
           max = sum;
         }

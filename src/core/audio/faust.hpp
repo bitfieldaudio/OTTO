@@ -1,22 +1,27 @@
 #pragma once
 
-#include <map>
-#include <vector>
-#include <string>
-#include <memory>
 #include <algorithm>
 #include <gsl/span>
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
 
+#include <faust/dsp/dsp.h>
 #include <faust/gui/UI.h>
 #include <faust/gui/meta.h>
-#include <faust/dsp/dsp.h>
 
-#include "util/type_traits.hpp"
 #include "util/algorithm.hpp"
+#include "util/type_traits.hpp"
 
 #include "core/audio/processor.hpp"
 
 #include "core/props/mixins/faust_link.hpp"
+
+namespace otto::service::audio {
+  using core::audio::AudioBufferPool;
+  AudioBufferPool& buffer_pool() noexcept;
+}
 
 namespace otto::core::audio {
 
@@ -27,10 +32,10 @@ namespace otto::core::audio {
   using FaustDSP = dsp;
 
   struct FaustOptions : UI {
-
     FaustOptions(FaustClient& client) : client(client) {}
 
-    void openTabBox(const char* label) override {
+    void openTabBox(const char* label) override
+    {
       if (atRoot) {
         atRoot = false;
       } else {
@@ -38,82 +43,90 @@ namespace otto::core::audio {
       }
     }
 
-    void openHorizontalBox(const char* label) override {
+    void openHorizontalBox(const char* label) override
+    {
       if (atRoot) {
         atRoot = false;
       } else {
         boxes.push_back(label);
       }
     }
-    void openVerticalBox(const char* label) override {
+    void openVerticalBox(const char* label) override
+    {
       if (atRoot) {
         atRoot = false;
       } else {
         boxes.push_back(label);
       }
     }
-    void closeBox() override {
+    void closeBox() override
+    {
       if (!boxes.empty()) boxes.pop_back();
     }
-    void addHorizontalBargraph(
-      const char* label, FAUSTFLOAT* zone,
-      FAUSTFLOAT min, FAUSTFLOAT max) override {
+    void addHorizontalBargraph(const char* label,
+                               FAUSTFLOAT* zone,
+                               FAUSTFLOAT min,
+                               FAUSTFLOAT max) override
+    {
       registerOption(label, zone, 0, min, max, 0, FaustLink::Type::FromFaust);
     }
 
-    void addVerticalBargraph(
-      const char* label, FAUSTFLOAT* zone,
-      FAUSTFLOAT min, FAUSTFLOAT max) override {
+    void addVerticalBargraph(const char* label,
+                             FAUSTFLOAT* zone,
+                             FAUSTFLOAT min,
+                             FAUSTFLOAT max) override
+    {
       addHorizontalBargraph(label, zone, min, max);
     }
 
-    void addButton(const char* label, FAUSTFLOAT* zone) override {
+    void addButton(const char* label, FAUSTFLOAT* zone) override
+    {
       this->registerOption(label, zone, 0, 0, 1, 1);
     }
 
-    void addCheckButton(const char* label, FAUSTFLOAT* zone) override {
+    void addCheckButton(const char* label, FAUSTFLOAT* zone) override
+    {
       this->registerOption(label, zone, 0, 0, 1, 1);
     }
 
-    void addVerticalSlider(
-      const char* label,
-      FAUSTFLOAT* zone,
-      FAUSTFLOAT init,
-      FAUSTFLOAT min,
-      FAUSTFLOAT max,
-      FAUSTFLOAT step) override {
+    void addVerticalSlider(const char* label,
+                           FAUSTFLOAT* zone,
+                           FAUSTFLOAT init,
+                           FAUSTFLOAT min,
+                           FAUSTFLOAT max,
+                           FAUSTFLOAT step) override
+    {
       this->registerOption(label, zone, init, min, max, step);
     }
 
-    void addHorizontalSlider(
-      const char* label,
-      FAUSTFLOAT* zone,
-      FAUSTFLOAT init,
-      FAUSTFLOAT min,
-      FAUSTFLOAT max,
-      FAUSTFLOAT step) override {
+    void addHorizontalSlider(const char* label,
+                             FAUSTFLOAT* zone,
+                             FAUSTFLOAT init,
+                             FAUSTFLOAT min,
+                             FAUSTFLOAT max,
+                             FAUSTFLOAT step) override
+    {
       this->registerOption(label, zone, init, min, max, step);
     }
 
-    void addNumEntry(
-      const char* label,
-      FAUSTFLOAT* zone,
-      FAUSTFLOAT init,
-      FAUSTFLOAT min,
-      FAUSTFLOAT max,
-      FAUSTFLOAT step) override {
+    void addNumEntry(const char* label,
+                     FAUSTFLOAT* zone,
+                     FAUSTFLOAT init,
+                     FAUSTFLOAT min,
+                     FAUSTFLOAT max,
+                     FAUSTFLOAT step) override
+    {
       this->registerOption(label, zone, init, min, max, step);
     }
 
-    void registerOption(
-      const char* label,
-      FAUSTFLOAT* ptr,
-      FAUSTFLOAT init,
-      FAUSTFLOAT min,
-      FAUSTFLOAT max,
-      FAUSTFLOAT step,
-      FaustLink::Type type = FaustLink::Type::ToFaust) {
-
+    void registerOption(const char* label,
+                        FAUSTFLOAT* ptr,
+                        FAUSTFLOAT init,
+                        FAUSTFLOAT min,
+                        FAUSTFLOAT max,
+                        FAUSTFLOAT step,
+                        FaustLink::Type type = FaustLink::Type::ToFaust)
+    {
       boxes.emplace_back(label);
       client.register_link(std::begin(boxes), std::end(boxes), FaustLink{ptr, type});
       boxes.pop_back();
@@ -122,7 +135,6 @@ namespace otto::core::audio {
     FaustClient& client;
 
   private:
-
     std::vector<std::string> boxes;
     bool atRoot = true;
   };
@@ -142,22 +154,14 @@ namespace otto::core::audio {
   /// Make sure this corresponds with the actually called faust script
   ///
   template<int Cin, int Cout>
-  class FaustWrapper {
-    // Needed to convert from faust's deinterleaved data to interleaved
-    audio::RTBuffer<float, std::max(Cin, Cout)> faustbuf;
-  public:
-
-    audio::ProcessBuffer<Cout> proc_buf;
-
+  struct FaustWrapper {
     FaustOptions opts;
-
 
     std::unique_ptr<dsp> fDSP;
 
-    FaustWrapper() {};
+    FaustWrapper(){};
 
-    FaustWrapper(std::unique_ptr<dsp>&& d, FaustClient& client)
-      : opts (client), fDSP (std::move(d))
+    FaustWrapper(std::unique_ptr<dsp>&& d, FaustClient& client) : opts(client), fDSP(std::move(d))
     {
       if (fDSP->getNumInputs() != Cin || fDSP->getNumOutputs() != Cout) {
         throw std::runtime_error("A faustwrapper was instantiated with a "
@@ -171,29 +175,12 @@ namespace otto::core::audio {
 
     audio::ProcessData<Cout> process(audio::ProcessData<Cin> data)
     {
-      // Convert interleaved to deinterleaved and back
-      auto size   = data.nframes;
-      auto raw_pb = reinterpret_cast<float*>(proc_buf.data() + data.offset);
-      std::array<float*, Cin> in_bufs =
-        util::generate_array<Cin>([&](int n) { return raw_pb + n * size; });
-      for (int i = 0; i < Cin; i++) {
-        for (int j = 0; j < size; j++) {
-          in_bufs[i][j] = data.audio[j][i];
-        }
-      }
-      std::array<float*, Cout> out_bufs = util::generate_array<Cout>(
-        [&](int n) { return faustbuf.data() + n * size; });
-
+      auto out = service::audio::buffer_pool().allocate_multi<Cout>();
+      auto in_bufs = data.audio.data();
+      auto out_bufs = out.data();
       fDSP->compute(data.nframes, in_bufs.data(), out_bufs.data());
-
-      for (int i = 0; i < Cout; i++) {
-        for (int j = 0; j < size; j++) {
-          proc_buf[j + data.offset][i] = out_bufs[i][j];
-        }
-      }
-
-      return data.redirect(proc_buf);
+      return data.redirect(out);
     }
   };
 
-} // otto
+} // namespace otto::core::audio

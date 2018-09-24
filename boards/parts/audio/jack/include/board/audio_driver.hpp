@@ -7,6 +7,7 @@
 #include <jack/jack.h>
 #include <jack/midiport.h>
 #include "core/audio/midi.hpp"
+#include "core/audio/processor.hpp"
 #include "util/locked.hpp"
 
 #include "util/locked.hpp"
@@ -22,8 +23,10 @@ namespace otto::service::audio {
 
     void send_midi_event(core::midi::AnyMidiEvent) noexcept;
 
+    core::audio::AudioBufferPool& buffer_pool();
+
   private:
-    JackAudioDriver() noexcept = default;
+    JackAudioDriver() = default;
     ~JackAudioDriver() noexcept = default;
 
     using AudioSample = jack_default_audio_sample_t;
@@ -43,7 +46,7 @@ namespace otto::service::audio {
     jack_client_t* client;
     jack_status_t jackStatus;
 
-    util::atomic_swap<std::vector<core::midi::AnyMidiEvent>> midi_bufs;
+    util::atomic_swap<core::midi::shared_vector<core::midi::AnyMidiEvent>> midi_bufs = {{}, {}};
 
     enum class PortType {
       Audio,
@@ -63,6 +66,8 @@ namespace otto::service::audio {
 
     /// Jack cannot connect to a port from the notification thread, so we just add them here, and process them from the main one instead.
     std::vector<jack_port_id_t> new_ports;
+
+    std::unique_ptr<core::audio::AudioBufferPool> _buffer_pool;
   };
 
   using AudioDriver = JackAudioDriver;

@@ -4,11 +4,11 @@
 
 #include "core/globals.hpp"
 
-#include "engines/seq/euclid/euclid.hpp"
-#include "engines/synths/nuke/nuke.hpp"
 #include "engines/fx/wormhole/wormhole.hpp"
 #include "engines/misc/master/master.hpp"
+#include "engines/seq/euclid/euclid.hpp"
 #include "engines/synths/external/external.hpp"
+#include "engines/synths/nuke/nuke.hpp"
 
 #include "services/state.hpp"
 #include "services/ui.hpp"
@@ -19,7 +19,6 @@ namespace otto::service::engines {
 
   namespace {
     std::map<std::string, std::function<AnyEngine*()>> engineGetters;
-    core::audio::ProcessBuffer<2> audio_out;
 
     EngineDispatcher<EngineType::sequencer> sequencer;
     EngineDispatcher<EngineType::synth> synth;
@@ -88,12 +87,15 @@ namespace otto::service::engines {
 
     static core::ui::Screen* master_last_screen = nullptr;
 
-    service::ui::register_key_handler(core::ui::Key::master, [](core::ui::Key k) {
-      master_last_screen = service::ui::current_screen();
-      service::ui::display(master.screen());
-    }, [] (core::ui::Key k) {
-      if (master_last_screen) service::ui::display(*master_last_screen);
-    });
+    service::ui::register_key_handler(core::ui::Key::master,
+                                      [](core::ui::Key k) {
+                                        master_last_screen = service::ui::current_screen();
+                                        service::ui::display(master.screen());
+                                      },
+                                      [](core::ui::Key k) {
+                                        if (master_last_screen)
+                                          service::ui::display(*master_last_screen);
+                                      });
 
     auto load = [&](nlohmann::json& data) {
       synth.from_json(data["Synth"]);
@@ -124,15 +126,18 @@ namespace otto::service::engines {
     // Main processor function
     auto midi_in = external_in.midi_only();
     auto seq_out = sequencer->process(midi_in);
+    auto audio_out = service::audio::buffer_pool().allocate_multi<2>();
     auto synth_out = synth->process({external_in.audio, seq_out.midi, external_in.nframes});
 
     for (auto&& [snth, out] : util::zip(synth_out, audio_out)) {
-      out[0] = snth[0];
-      out[1] = snth[0];
+      std::get<0>(out) = std::get<0>(snth);
+      std::get<1>(out) = std::get<0>(snth);
     }
-    auto fx_out = effect->process(synth_out.redirect(audio_out));
+    synth_out.audio.release();
+    auto fx_out = effect->process(seq_out.redirect(audio_out));
+    audio_out.release();
 
-    return master.process(fx_out);;
+    return master.process(std::move(fx_out));
   }
 
   AnyEngine* const by_name(const std::string& name) noexcept

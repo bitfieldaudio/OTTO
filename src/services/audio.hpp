@@ -9,12 +9,16 @@
 namespace otto::service::audio {
 
   using core::audio::ProcessData;
+  using core::audio::AudioBufferHandle;
+  using core::audio::AudioBufferPool;
 
   namespace events {
     util::Event<>& pre_init();
     util::Event<unsigned>& buffersize_change();
     util::Event<unsigned>& samplerate_change();
   }
+
+  AudioBufferPool& buffer_pool() noexcept;
 
   /// Get the current samplerate
   int samplerate() noexcept;

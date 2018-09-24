@@ -12,9 +12,15 @@ include(cmake/utils.cmake)
 otto_option(BUILD_DOCS "Build documentation" OFF)
 otto_option(BUILD_TESTS "Build tests" ON)
 otto_option(USE_LIBCXX "Link towards libc++ instead of libstdc++. This is the default on OSX" ${APPLE})
+otto_option(ENABLE_ASAN "Enable the adress sanitizer on development builds" OFF)
 
 otto_option(ENABLE_TIMERS "Enable debugging timers" OFF)
 otto_option(DEBUG_UI "Enable the imgui based debug ui" NOT OTTO_RPI)
+
+if (OTTO_ENABLE_ASAN) 
+  set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
+  set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
+endif()
 
 set(OTTO_BOARD "desktop" CACHE STRING "The board configuration to use")
 

@@ -88,7 +88,7 @@ namespace otto::util {
 
     constexpr atomic_swap(T&& inner = T{},
                           T&& outer = T{}) noexcept(std::is_nothrow_move_constructible_v<T>)
-      : _store{{std::move(outer), std::move(outer)}}
+      : _store{{std::move(inner), std::move(outer)}}
     {}
 
     constexpr T& inner() noexcept

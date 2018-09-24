@@ -794,7 +794,6 @@ namespace otto::util {
   ///   ...
   /// }
   /// ```
-
   template<typename... Iterators>
   using zipped_iterator = iterator_adaptor<ZippedIteratorImpl<Iterators...>>;
 

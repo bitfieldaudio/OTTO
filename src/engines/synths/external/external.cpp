@@ -25,9 +25,9 @@ namespace otto::engines {
 
   audio::ProcessData<1> External::process(audio::ProcessData<1> data)
   {
-    for (auto& frm : data) {
-      frm[0] *= props.gain * props.gain;
-      graph.add(frm[0]);
+    for (auto&& [frm]: data) {
+      frm *= props.gain * props.gain;
+      graph.add(frm);
     }
     return data;
   }

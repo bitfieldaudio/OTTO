@@ -9,6 +9,7 @@
 #include "util/exception.hpp"
 
 #include "util/utility.hpp"
+#include "services/logger.hpp"
 
 namespace otto::core::midi {
 
@@ -131,5 +132,109 @@ namespace otto::core::midi {
   {
     return detail::freq_table[key];
   }
+
+  template<typename T>
+  struct shared_vector {
+    using value_type = T;
+
+    shared_vector() = default;
+
+    shared_vector(std::vector<value_type>&& other)
+      : _data (std::make_shared<std::vector<value_type>>(std::move(other)))
+    {}
+
+    shared_vector(const std::vector<value_type>& other)
+      : _data (std::make_shared<std::vector<value_type>>(other))
+    {}
+
+    auto begin()
+    {
+      return _data->begin();
+    }
+    auto end()
+    {
+      return _data->end();
+    }
+    auto begin() const
+    {
+      return _data->begin();
+    }
+    auto end() const
+    {
+      return _data->end();
+    }
+    auto cbegin() const
+    {
+      return _data->cbegin();
+    }
+    auto cend() const
+    {
+      return _data->cend();
+    }
+
+    auto&& front()
+    {
+      return _data->front();
+    }
+    auto&& back()
+    {
+      return _data->back();
+    }
+    auto&& front() const
+    {
+      return _data->front();
+    }
+    auto&& back() const
+    {
+      return _data->back();
+    }
+
+    auto& operator*()
+    {
+      return *_data;
+    }
+    auto& operator*() const
+    {
+      return *_data;
+    }
+
+    auto& operator-> ()
+    {
+      return &*_data;
+    }
+    auto& operator-> () const
+    {
+      return &*_data;
+    }
+
+    auto& operator[](std::size_t i)
+    {
+      return (_data)[i];
+    }
+
+    auto clear()
+    {
+      _data->clear();
+    }
+
+    auto push_back(const value_type& el)
+    {
+      _data->push_back(el);
+    }
+
+    template<typename... Ref>
+    auto&& emplace_back(Ref&&... args)
+    {
+      return _data->emplace_back(std::forward<Ref>(args)...);
+    };
+
+    std::shared_ptr<std::vector<value_type>> _data = std::make_shared<std::vector<value_type>>();
+
+    int _test_field = [] {
+      DLOGI("Constructed a shared_vector");
+      return 0;
+    }();
+  };
+
 
 } // namespace otto::core::midi
