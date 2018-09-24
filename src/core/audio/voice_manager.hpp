@@ -70,7 +70,7 @@ namespace otto::core::audio {
 
   struct SettingsProps : props::Properties<> {
 
-		props::Property<PlayMode, props::wrap> play_mode = {this, "Play Mode", PlayMode::poly,
+        props::Property<PlayMode, props::wrap> play_mode = {this, "Play Mode", PlayMode::poly,
                                            props::has_limits::init(PlayMode::poly, PlayMode::unison)};
 
     props::Property<float> portamento = {this, "Portamento", 0,
