@@ -22,6 +22,8 @@ namespace otto::core::ui::vg {
     const Colour Gray50     = 0x646464;
     const Colour Gray60     = 0x999999;
     const Colour Gray70     = 0xB2B2B2;
+
+    const Colour Pink       = 0xEE7AAA;
   } // Colours
 
   namespace Fonts {
