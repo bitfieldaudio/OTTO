@@ -44,11 +44,11 @@ namespace otto::core::audio {
 
   struct EnvelopeProps : props::Properties<> {
     props::Property<float> attack = {this, "Attack", 0,
-                                     props::has_limits::init(0, 2),
+                                     props::has_limits::init(0, 6),
                                      props::steppable::init(0.02)};
 
     props::Property<float> decay = {this, "Decay", 0,
-                                    props::has_limits::init(0, 2),
+                                    props::has_limits::init(0, 4),
                                     props::steppable::init(0.02)};
 
     props::Property<float> sustain = {this, "Sustain", 1,
@@ -56,7 +56,7 @@ namespace otto::core::audio {
                                       props::steppable::init(0.02)};
 
     props::Property<float> release = {this, "Release", 0.2,
-                                      props::has_limits::init(0, 2),
+                                      props::has_limits::init(0, 4),
                                       props::steppable::init(0.02)};
 
     using Properties::Properties;
