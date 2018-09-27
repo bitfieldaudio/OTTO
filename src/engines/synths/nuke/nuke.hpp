@@ -17,8 +17,8 @@ namespace otto::engines {
 
       Property<float> wave     = {this, "Wave",     0,  has_limits::init(0, 4),    steppable::init(0.01)};
       Property<float> relation = {this, "Relation", 2,  has_limits::init(0, 3.01), steppable::init(0.01)};
-      Property<float> aux      = {this, "Aux",      0,  has_limits::init(0, 3),    steppable::init(0.01)};
-      Property<float> filter   = {this, "Filter",   20, has_limits::init(0, 99),   steppable::init(0.5)};
+      Property<float> aux      = {this, "Sub",      0,  has_limits::init(0, 1),    steppable::init(0.01)};
+      Property<float> filter   = {this, "Filter",   0.5, has_limits::init(0, 1),   steppable::init(0.01)};
 
     } props;
 

@@ -1,0 +1,22 @@
+{
+  "engine": "Nuke",
+  "name": "LadyGaga",
+  "props": {
+    "Filter": 0.680000305175781,
+    "Relation": 0.510001420974731,
+    "Sub": 0.0,
+    "Wave": 1.69999873638153,
+    "envelope": {
+      "Attack": 0.0,
+      "Decay": 0.619999945163727,
+      "Release": 0.200000002980232,
+      "Sustain": 0.0
+    },
+    "voice_settings": {
+      "Octave": 2,
+      "Play Mode": 0,
+      "Portamento": 0.0,
+      "Transpose": 0
+    }
+  }
+}

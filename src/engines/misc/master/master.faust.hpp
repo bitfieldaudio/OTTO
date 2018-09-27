@@ -1,6 +1,6 @@
 /* ------------------------------------------------------------
 name: "master"
-Code generated with Faust 2.5.23 (https://faust.grame.fr)
+Code generated with Faust 2.10.0 (https://faust.grame.fr)
 Compilation options: cpp, -scal -ftz 0
 ------------------------------------------------------------ */
 
@@ -30,6 +30,7 @@ using std::min;
 #define FAUSTFLOAT float
 #endif 
 
+#include <algorithm>
 #include <cmath>
 #include <math.h>
 
@@ -131,11 +132,11 @@ class faust_master : public dsp {
 	
 	virtual void instanceConstants(int samplingFreq) {
 		fSamplingFreq = samplingFreq;
-		fConst0 = min(192000.0f, max(1.0f, float(fSamplingFreq)));
-		fConst1 = expf((0.0f - (2500.0f / fConst0)));
+		fConst0 = std::min(192000.0f, std::max(1.0f, float(fSamplingFreq)));
+		fConst1 = std::exp((0.0f - (2500.0f / fConst0)));
 		fConst2 = (1.0f - fConst1);
-		fConst3 = expf((0.0f - (1250.0f / fConst0)));
-		fConst4 = expf((0.0f - (2.0f / fConst0)));
+		fConst3 = std::exp((0.0f - (1250.0f / fConst0)));
+		fConst4 = std::exp((0.0f - (2.0f / fConst0)));
 		
 	}
 	
@@ -191,11 +192,11 @@ class faust_master : public dsp {
 		for (int i = 0; (i < count); i = (i + 1)) {
 			float fTemp0 = float(input1[i]);
 			float fTemp1 = float(input0[i]);
-			float fTemp2 = fabsf((fabsf(fTemp0) + fabsf(fTemp1)));
+			float fTemp2 = std::fabs((std::fabs(fTemp0) + std::fabs(fTemp1)));
 			float fTemp3 = ((fRec1[1] > fTemp2)?fConst4:fConst3);
 			fRec2[0] = ((fRec2[1] * fTemp3) + (fTemp2 * (1.0f - fTemp3)));
 			fRec1[0] = fRec2[0];
-			fRec0[0] = ((fConst1 * fRec0[1]) + (fConst2 * (0.0f - (0.75f * max(((20.0f * log10f(fRec1[0])) + 6.0f), 0.0f)))));
+			fRec0[0] = ((fConst1 * fRec0[1]) + (fConst2 * (0.0f - (0.75f * std::max(((20.0f * std::log10(fRec1[0])) + 6.0f), 0.0f)))));
 			float fTemp4 = exp10f((0.0500000007f * fRec0[0]));
 			output0[i] = FAUSTFLOAT((fTemp4 * fTemp1));
 			output1[i] = FAUSTFLOAT((fTemp4 * fTemp0));
