@@ -1,0 +1,22 @@
+{
+  "engine": "Nuke",
+  "name": "Velcro",
+  "props": {
+    "Filter": 0.350000619888306,
+    "Relation": 0.890001058578491,
+    "Sub": 0.779999554157257,
+    "Wave": 0.339999973773956,
+    "envelope": {
+      "Attack": 0.0,
+      "Decay": 0.0,
+      "Release": 0.200000002980232,
+      "Sustain": 1.0
+    },
+    "voice_settings": {
+      "Octave": 2,
+      "Play Mode": 0,
+      "Portamento": 0.0,
+      "Transpose": 0
+    }
+  }
+}

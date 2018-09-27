@@ -1,0 +1,22 @@
+{
+  "engine": "Nuke",
+  "name": "Deckard",
+  "props": {
+    "Filter": 0.480000495910645,
+    "Relation": 2.35999822616577,
+    "Sub": 0.649999678134918,
+    "Wave": 2.96999764442444,
+    "envelope": {
+      "Attack": 2.0,
+      "Decay": 0.639999985694885,
+      "Release": 2.0,
+      "Sustain": 1.0
+    },
+    "voice_settings": {
+      "Octave": 3,
+      "Play Mode": 0,
+      "Portamento": 0.0,
+      "Transpose": 0
+    }
+  }
+}
