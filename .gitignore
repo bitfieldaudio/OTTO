@@ -21,3 +21,5 @@ imgui.ini
 /data/state.json
 /data/tape.wav
 /data/log.txt
+
+CMakeLists.txt.user

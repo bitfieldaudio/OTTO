@@ -7,8 +7,8 @@ process = hgroup("voices", vgroup("0", voice) + vgroup("3", voice) +
                            vgroup("1", voice) + vgroup("4", voice) +
                            vgroup("2", voice) + vgroup("5", voice)) :  _ ;
 
+//voice = hgroup("midi", envelope) //Only for testing. Can be used to draw the envelope on the debug build.
 voice = hgroup("midi", ( multi_osc(osc1_freq) , multi_osc(osc2_freq) ) <: mixer :> VCF : *(envelope))
-//voice = hgroup("midi", envelope)
 with {
   midigate	= button ("trigger");
   midifreq	= hslider("freq", 440, 20, 1000, 1);
@@ -60,22 +60,22 @@ with {
 
 
   //ADSR envelope----------------------------
-  envelope = adsre_min(a,d,s,r,midigate)*(midigain);
+  envelope = adsre_OTTO(a,d,s,r,midigate)*(midigain);
   a = hslider("/v:envelope/Attack", 0.001, 0.001, 4, 0.001);
   d = hslider("/v:envelope/Decay", 0.0, 0.0, 4, 0.001);
   s = hslider("/v:envelope/Sustain", 1.0, 0.0, 1.0, 0.01);
   r = hslider("/v:envelope/Release", 0.0, 0.0, 4.0, 0.01);
 
-  adsre_min(attT60,decT60,susLvl,relT60,gate) = envel
-  with {
-  ugate = gate>0;
-  samps = ugate : +~(*(ugate)); // ramp time in samples
-  attSamps = int(attT60 * ma.SR);
-  attLvl = samps/attSamps; //The function for the attack phase. Should go from 0-1 in attSamps samples.
-  target = select2(ugate, 0.0,
-           select2(samps<attSamps, (susLvl)*float(ugate), attLvl)); //In the attack phase the target moves up following attLvl
-  t60 = select2(ugate, relT60, select2(samps<attSamps, decT60, 0.0000001)); //Instead of attT60, we choose some very small number, such that there is virtually no smoothing in the attack phase
-  pole = ba.tau2pole(t60/6.91);
-  envel = target : si.smooth(pole);
-  };
+adsre_OTTO(attT60,decT60,susLvl,relT60,gate) = envel
+with {
+ugate = gate>0;
+samps = ugate : +~(*(ugate)); // ramp time in samples
+attSamps = int(attT60 * ma.SR);
+target = select2(ugate, 0.0,
+         select2(samps<attSamps, (susLvl)*float(ugate), 1/0.63));
+t60 = select2(ugate, relT60, select2(samps<attSamps, decT60, attT60*6.91));
+pole = ba.tau2pole(t60/6.91);
+envel = target : si.smooth(pole) : min(1.0);
+};
+
 };
