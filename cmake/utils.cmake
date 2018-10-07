@@ -1,4 +1,5 @@
 set(OTTO_OPTIONS "")
+set(OTTO_DEFINITIONS "")
 
 # Declare an option which will prefixed with OTTO_, and #defined as 1 or 0
 function(otto_option NAME DESC)
@@ -12,6 +13,9 @@ function(otto_option NAME DESC)
     set(OTTO_OPTIONS "${OTTO_OPTIONS}" PARENT_SCOPE)
 endfunction(otto_option)
 
+function(otto_definition NAME VALUE)
+    list(APPEND OTTO_DEFINITIONS "${NAME}=${VALUE}")    
+endfunction(otto_definition)
 
 # Add defintions to target
 function(otto_add_definitions TARGET)
@@ -21,6 +25,9 @@ function(otto_add_definitions TARGET)
         else()
             target_compile_definitions(${TARGET} PUBLIC "OTTO_${item}=0")
         endif()
+    endforeach(item)
+    foreach(item IN LISTS OTTO_DEFINTIONS)
+        target_compile_definitions(${TARGET} PUBLIC "${item}")
     endforeach(item)
 endfunction(otto_add_definitions)
 
