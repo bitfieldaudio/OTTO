@@ -100,12 +100,14 @@ namespace otto::service::engines {
     auto load = [&](nlohmann::json& data) {
       synth.from_json(data["Synth"]);
       effect.from_json(data["Effect"]);
+      master.from_json(data["Master"]);
       sequencer.from_json(data["Sequencer"]);
     };
 
     auto save = [&] {
       return nlohmann::json({{"Synth", synth.to_json()},
                              {"Effect", effect.to_json()},
+                             {"Master", master.to_json()},
                              {"Sequencer", sequencer.to_json()}});
     };
 
