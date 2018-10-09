@@ -12,7 +12,7 @@ voice = hgroup("midi", ( multi_osc(osc1_freq) , multi_osc(osc2_freq) ) <: mixer 
 with {
   midigate	= button ("trigger");
   midifreq	= hslider("freq", 440, 20, 1000, 1);
-  midigain	= hslider("velocity", 0.5, 0, 1, 1/127);
+  midigain	= hslider("velocity", 1, 0, 1, 1/127);
 
   // Filter
   flt = hslider("/Filter",0.5, 0, 1, 0.01) : si.smoo;
@@ -66,16 +66,16 @@ with {
   s = hslider("/v:envelope/Sustain", 1.0, 0.0, 1.0, 0.01);
   r = hslider("/v:envelope/Release", 0.0, 0.0, 4.0, 0.01);
 
-adsre_OTTO(attT60,decT60,susLvl,relT60,gate) = envel
-with {
-ugate = gate>0;
-samps = ugate : +~(*(ugate)); // ramp time in samples
-attSamps = int(attT60 * ma.SR);
-target = select2(ugate, 0.0,
-         select2(samps<attSamps, (susLvl)*float(ugate), 1/0.63));
-t60 = select2(ugate, relT60, select2(samps<attSamps, decT60, attT60*6.91));
-pole = ba.tau2pole(t60/6.91);
-envel = target : si.smooth(pole) : min(1.0);
+  adsre_OTTO(attT60,decT60,susLvl,relT60,gate) = envel
+  with {
+    ugate = gate>0;
+    samps = ugate : +~(*(ugate)); // ramp time in samples
+    attSamps = int(attT60 * ma.SR);
+    target = select2(ugate, 0.0,
+             select2(samps<attSamps, (susLvl)*float(ugate), 1/0.63));
+    t60 = select2(ugate, relT60, select2(samps<attSamps, decT60, attT60*6.91));
+    pole = ba.tau2pole(t60/6.91);
+    envel = target : si.smooth(pole) : min(1.0);
 };
 
 };
