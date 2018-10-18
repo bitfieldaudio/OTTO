@@ -1,6 +1,6 @@
 /* ------------------------------------------------------------
 name: "wormhole"
-Code generated with Faust 2.10.0 (https://faust.grame.fr)
+Code generated with Faust 2.11.10 (https://faust.grame.fr)
 Compilation options: cpp, -scal -ftz 0
 ------------------------------------------------------------ */
 
@@ -167,6 +167,7 @@ class faust_wormhole : public dsp {
 	float fConst4;
 	float fConst5;
 	float fConst6;
+	float fConst7;
 	float fRec55[3];
 	float fRec54[3];
 	float fVec14[512];
@@ -182,10 +183,10 @@ class faust_wormhole : public dsp {
 	float fVec19[4096];
 	float fRec42[2];
 	float fVec20[2048];
-	float fConst7;
 	float fConst8;
-	float fRec41[3];
 	float fConst9;
+	float fRec41[3];
+	float fConst10;
 	float fRec3[2];
 	FAUSTFLOAT fHslider3;
 	float fRec69[3];
@@ -357,16 +358,17 @@ class faust_wormhole : public dsp {
 	
 	virtual void instanceConstants(int samplingFreq) {
 		fSamplingFreq = samplingFreq;
-		fConst0 = std::min(192000.0f, std::max(1.0f, float(fSamplingFreq)));
+		fConst0 = std::min<float>(192000.0f, std::max<float>(1.0f, float(fSamplingFreq)));
 		fConst1 = (3.14159274f / fConst0);
 		fConst2 = (0.25f / fConst0);
 		fConst3 = std::tan((314.159271f / fConst0));
 		fConst4 = (1.0f / fConst3);
 		fConst5 = (1.0f / (((fConst4 + 1.41421354f) / fConst3) + 1.0f));
-		fConst6 = (1.0f / faust_wormhole_faustpower2_f(fConst3));
-		fConst7 = (((fConst4 + -1.41421354f) / fConst3) + 1.0f);
-		fConst8 = (2.0f * (1.0f - fConst6));
-		fConst9 = (2.0f * (0.0f - fConst6));
+		fConst6 = faust_wormhole_faustpower2_f(fConst3);
+		fConst7 = (1.0f / fConst6);
+		fConst8 = (((fConst4 + -1.41421354f) / fConst3) + 1.0f);
+		fConst9 = (2.0f * (1.0f - fConst7));
+		fConst10 = (0.0f - (2.0f / fConst6));
 		
 	}
 	
@@ -986,11 +988,11 @@ class faust_wormhole : public dsp {
 			float fTemp13 = (343.0f * fTemp12);
 			float fTemp14 = (fTemp13 + -1.0f);
 			int iTemp15 = int(fTemp14);
-			int iTemp16 = std::min(2049, std::max(0, iTemp15));
+			int iTemp16 = std::min<int>(2049, std::max<int>(0, iTemp15));
 			float fTemp17 = std::floor(fTemp14);
 			float fTemp18 = (fTemp17 + (2.0f - fTemp13));
 			float fTemp19 = (fTemp13 + (-1.0f - fTemp17));
-			int iTemp20 = std::min(2049, std::max(0, (iTemp15 + 1)));
+			int iTemp20 = std::min<int>(2049, std::max<int>(0, (iTemp15 + 1)));
 			fRec19[0] = ((fVec0[((IOTA - iTemp16) & 511)] * fTemp18) + (fTemp19 * fVec0[((IOTA - iTemp20) & 511)]));
 			float fRec20 = (0.0f - (0.600000024f * fTemp11));
 			float fTemp21 = (fRec19[1] + (fRec20 + (0.600000024f * fRec17[1])));
@@ -998,11 +1000,11 @@ class faust_wormhole : public dsp {
 			float fTemp22 = (441.0f * fTemp12);
 			float fTemp23 = (fTemp22 + -1.0f);
 			int iTemp24 = int(fTemp23);
-			int iTemp25 = std::min(2049, std::max(0, iTemp24));
+			int iTemp25 = std::min<int>(2049, std::max<int>(0, iTemp24));
 			float fTemp26 = std::floor(fTemp23);
 			float fTemp27 = (fTemp26 + (2.0f - fTemp22));
 			float fTemp28 = (fTemp22 + (-1.0f - fTemp26));
-			int iTemp29 = std::min(2049, std::max(0, (iTemp24 + 1)));
+			int iTemp29 = std::min<int>(2049, std::max<int>(0, (iTemp24 + 1)));
 			fRec17[0] = ((fVec1[((IOTA - iTemp25) & 511)] * fTemp27) + (fTemp28 * fVec1[((IOTA - iTemp29) & 511)]));
 			float fRec18 = (0.0f - (0.600000024f * fTemp21));
 			float fTemp30 = (fRec17[1] + (fRec18 + (0.600000024f * fRec15[1])));
@@ -1010,11 +1012,11 @@ class faust_wormhole : public dsp {
 			float fTemp31 = (625.0f * fTemp12);
 			float fTemp32 = (fTemp31 + -1.0f);
 			int iTemp33 = int(fTemp32);
-			int iTemp34 = std::min(2049, std::max(0, iTemp33));
+			int iTemp34 = std::min<int>(2049, std::max<int>(0, iTemp33));
 			float fTemp35 = std::floor(fTemp32);
 			float fTemp36 = (fTemp35 + (2.0f - fTemp31));
 			float fTemp37 = (fTemp31 + (-1.0f - fTemp35));
-			int iTemp38 = std::min(2049, std::max(0, (iTemp33 + 1)));
+			int iTemp38 = std::min<int>(2049, std::max<int>(0, (iTemp33 + 1)));
 			fRec15[0] = ((fVec2[((IOTA - iTemp34) & 1023)] * fTemp36) + (fTemp37 * fVec2[((IOTA - iTemp38) & 1023)]));
 			float fRec16 = (0.0f - (0.600000024f * fTemp30));
 			float fTemp39 = (fRec15[1] + (fRec16 + (0.600000024f * fRec13[1])));
@@ -1022,11 +1024,11 @@ class faust_wormhole : public dsp {
 			float fTemp40 = (727.0f * fTemp12);
 			float fTemp41 = (fTemp40 + -1.0f);
 			int iTemp42 = int(fTemp41);
-			int iTemp43 = std::min(2049, std::max(0, iTemp42));
+			int iTemp43 = std::min<int>(2049, std::max<int>(0, iTemp42));
 			float fTemp44 = std::floor(fTemp41);
 			float fTemp45 = (fTemp44 + (2.0f - fTemp40));
 			float fTemp46 = (fTemp40 + (-1.0f - fTemp44));
-			int iTemp47 = std::min(2049, std::max(0, (iTemp42 + 1)));
+			int iTemp47 = std::min<int>(2049, std::max<int>(0, (iTemp42 + 1)));
 			fRec13[0] = ((fVec3[((IOTA - iTemp43) & 1023)] * fTemp45) + (fTemp46 * fVec3[((IOTA - iTemp47) & 1023)]));
 			float fRec14 = (0.0f - (0.600000024f * fTemp39));
 			float fTemp48 = (fRec13[1] + (fRec14 + (0.600000024f * fRec11[1])));
@@ -1034,11 +1036,11 @@ class faust_wormhole : public dsp {
 			float fTemp49 = (1331.0f * fTemp12);
 			float fTemp50 = (fTemp49 + -1.0f);
 			int iTemp51 = int(fTemp50);
-			int iTemp52 = std::min(2049, std::max(0, iTemp51));
+			int iTemp52 = std::min<int>(2049, std::max<int>(0, iTemp51));
 			float fTemp53 = std::floor(fTemp50);
 			float fTemp54 = (fTemp53 + (2.0f - fTemp49));
 			float fTemp55 = (fTemp49 + (-1.0f - fTemp53));
-			int iTemp56 = std::min(2049, std::max(0, (iTemp51 + 1)));
+			int iTemp56 = std::min<int>(2049, std::max<int>(0, (iTemp51 + 1)));
 			fRec11[0] = ((fVec4[((IOTA - iTemp52) & 2047)] * fTemp54) + (fTemp55 * fVec4[((IOTA - iTemp56) & 2047)]));
 			float fRec12 = (0.0f - (0.600000024f * fTemp48));
 			float fTemp57 = (fRec11[1] + (fRec12 + (0.600000024f * fRec9[1])));
@@ -1046,11 +1048,11 @@ class faust_wormhole : public dsp {
 			float fTemp58 = (2403.0f * fTemp12);
 			float fTemp59 = (fTemp58 + -1.0f);
 			int iTemp60 = int(fTemp59);
-			int iTemp61 = std::min(2049, std::max(0, iTemp60));
+			int iTemp61 = std::min<int>(2049, std::max<int>(0, iTemp60));
 			float fTemp62 = std::floor(fTemp59);
 			float fTemp63 = (fTemp62 + (2.0f - fTemp58));
 			float fTemp64 = (fTemp58 + (-1.0f - fTemp62));
-			int iTemp65 = std::min(2049, std::max(0, (iTemp60 + 1)));
+			int iTemp65 = std::min<int>(2049, std::max<int>(0, (iTemp60 + 1)));
 			fRec9[0] = ((fVec5[((IOTA - iTemp61) & 4095)] * fTemp63) + (fTemp64 * fVec5[((IOTA - iTemp65) & 4095)]));
 			float fRec10 = (0.0f - (0.600000024f * fTemp57));
 			float fTemp66 = (fRec10 + fRec9[1]);
@@ -1058,7 +1060,7 @@ class faust_wormhole : public dsp {
 			float fTemp67 = (1356.0f * fTemp12);
 			int iTemp68 = int(fTemp67);
 			float fTemp69 = std::floor(fTemp67);
-			fRec1[0] = (0.353553385f * ((fVec6[((IOTA - std::min(8193, std::max(0, iTemp68))) & 2047)] * (fTemp69 + (1.0f - fTemp67))) + ((fTemp67 - fTemp69) * fVec6[((IOTA - std::min(8193, std::max(0, (iTemp68 + 1)))) & 2047)])));
+			fRec1[0] = (0.353553385f * ((fVec6[((IOTA - std::min<int>(8193, std::max<int>(0, iTemp68))) & 2047)] * (fTemp69 + (1.0f - fTemp67))) + ((fTemp67 - fTemp69) * fVec6[((IOTA - std::min<int>(8193, std::max<int>(0, (iTemp68 + 1)))) & 2047)])));
 			fRec40[0] = ((fRec23[0] * (fTemp1 - (fRec8[1] + ((fRec2[1] + fRec6[1]) + fRec4[1])))) - (((fTemp4 * fRec40[2]) + (2.0f * (fTemp5 * fRec40[1]))) / fTemp6));
 			fRec39[0] = (((fRec40[2] + (fRec40[0] + (2.0f * fRec40[1]))) / fTemp6) - (((fTemp7 * fRec39[2]) + (2.0f * (fTemp5 * fRec39[1]))) / fTemp8));
 			float fTemp70 = ((((0.600000024f * fRec37[1]) + ((fRec39[2] + (fRec39[0] + (2.0f * fRec39[1]))) / fTemp8)) + fTemp9) + fTemp10);
@@ -1090,7 +1092,7 @@ class faust_wormhole : public dsp {
 			float fTemp77 = (1422.0f * fTemp12);
 			int iTemp78 = int(fTemp77);
 			float fTemp79 = std::floor(fTemp77);
-			fRec2[0] = (0.353553385f * ((fVec13[((IOTA - std::min(8193, std::max(0, iTemp78))) & 2047)] * (fTemp79 + (1.0f - fTemp77))) + ((fTemp77 - fTemp79) * fVec13[((IOTA - std::min(8193, std::max(0, (iTemp78 + 1)))) & 2047)])));
+			fRec2[0] = (0.353553385f * ((fVec13[((IOTA - std::min<int>(8193, std::max<int>(0, iTemp78))) & 2047)] * (fTemp79 + (1.0f - fTemp77))) + ((fTemp77 - fTemp79) * fVec13[((IOTA - std::min<int>(8193, std::max<int>(0, (iTemp78 + 1)))) & 2047)])));
 			float fTemp80 = (fRec3[1] + fRec7[1]);
 			fRec55[0] = ((fRec23[0] * ((fRec6[1] + (fTemp0 + fRec2[1])) - (fRec8[1] + (fTemp80 + fRec4[1])))) - (((fTemp4 * fRec55[2]) + (2.0f * (fTemp5 * fRec55[1]))) / fTemp6));
 			fRec54[0] = (((fRec55[2] + (fRec55[0] + (2.0f * fRec55[1]))) / fTemp6) - (((fTemp7 * fRec54[2]) + (2.0f * (fTemp5 * fRec54[1]))) / fTemp8));
@@ -1123,8 +1125,8 @@ class faust_wormhole : public dsp {
 			float fTemp88 = (1557.0f * fTemp12);
 			int iTemp89 = int(fTemp88);
 			float fTemp90 = std::floor(fTemp88);
-			fRec41[0] = ((0.353553385f * ((fVec20[((IOTA - std::min(8193, std::max(0, iTemp89))) & 2047)] * (fTemp90 + (1.0f - fTemp88))) + ((fTemp88 - fTemp90) * fVec20[((IOTA - std::min(8193, std::max(0, (iTemp89 + 1)))) & 2047)]))) - (fConst5 * ((fConst7 * fRec41[2]) + (fConst8 * fRec41[1]))));
-			fRec3[0] = (fConst5 * (((fConst6 * fRec41[0]) + (fConst9 * fRec41[1])) + (fConst6 * fRec41[2])));
+			fRec41[0] = ((0.353553385f * ((fVec20[((IOTA - std::min<int>(8193, std::max<int>(0, iTemp89))) & 2047)] * (fTemp90 + (1.0f - fTemp88))) + ((fTemp88 - fTemp90) * fVec20[((IOTA - std::min<int>(8193, std::max<int>(0, (iTemp89 + 1)))) & 2047)]))) - (fConst5 * ((fConst8 * fRec41[2]) + (fConst9 * fRec41[1]))));
+			fRec3[0] = (fConst5 * (((fConst7 * fRec41[0]) + (fConst10 * fRec41[1])) + (fConst7 * fRec41[2])));
 			fRec69[0] = ((fRec23[0] * ((fRec8[1] + (fTemp0 + fRec4[1])) - (fRec6[1] + (fTemp80 + fRec2[1])))) - (((fTemp4 * fRec69[2]) + (2.0f * (fTemp5 * fRec69[1]))) / fTemp6));
 			fRec68[0] = (((fRec69[2] + (fRec69[0] + (2.0f * fRec69[1]))) / fTemp6) - (((fTemp7 * fRec68[2]) + (2.0f * (fTemp5 * fRec68[1]))) / fTemp8));
 			float fTemp91 = ((((0.600000024f * fRec66[1]) + ((fRec68[2] + (fRec68[0] + (2.0f * fRec68[1]))) / fTemp8)) + fTemp9) + fTemp10);
@@ -1158,12 +1160,12 @@ class faust_wormhole : public dsp {
 			fRec70[0] = std::fmod(((fTemp98 + fRec70[1]) + 8191.0f), fTemp99);
 			int iTemp100 = int(fRec70[0]);
 			float fTemp101 = std::floor(fRec70[0]);
-			float fTemp102 = std::min((fRec70[0] / fTemp99), 1.0f);
+			float fTemp102 = std::min<float>((fRec70[0] / fTemp99), 1.0f);
 			float fTemp103 = (fRec70[0] + fTemp98);
 			float fTemp104 = (fTemp103 + 8192.0f);
 			int iTemp105 = int(fTemp104);
 			float fTemp106 = std::floor(fTemp104);
-			fRec4[0] = (0.353553385f * ((fSlow4 * fVec27[((IOTA - int(std::min(8192.0f, std::max(0.0f, fTemp99)))) & 131071)]) + (fSlow3 * ((((fVec27[((IOTA - std::min(65537, std::max(0, iTemp100))) & 131071)] * (fTemp101 + (1.0f - fRec70[0]))) + ((fRec70[0] - fTemp101) * fVec27[((IOTA - std::min(65537, std::max(0, (iTemp100 + 1)))) & 131071)])) * fTemp102) + (((fVec27[((IOTA - std::min(65537, std::max(0, iTemp105))) & 131071)] * (fTemp106 + (-8191.0f - fTemp103))) + ((fTemp103 + (8192.0f - fTemp106)) * fVec27[((IOTA - std::min(65537, std::max(0, (iTemp105 + 1)))) & 131071)])) * (1.0f - fTemp102))))));
+			fRec4[0] = (0.353553385f * ((fSlow4 * fVec27[((IOTA - int(std::min<float>(8192.0f, std::max<float>(0.0f, fTemp99)))) & 131071)]) + (fSlow3 * ((((fVec27[((IOTA - std::min<int>(65537, std::max<int>(0, iTemp100))) & 131071)] * (fTemp101 + (1.0f - fRec70[0]))) + ((fRec70[0] - fTemp101) * fVec27[((IOTA - std::min<int>(65537, std::max<int>(0, (iTemp100 + 1)))) & 131071)])) * fTemp102) + (((fVec27[((IOTA - std::min<int>(65537, std::max<int>(0, iTemp105))) & 131071)] * (fTemp106 + (-8191.0f - fTemp103))) + ((fTemp103 + (8192.0f - fTemp106)) * fVec27[((IOTA - std::min<int>(65537, std::max<int>(0, (iTemp105 + 1)))) & 131071)])) * (1.0f - fTemp102))))));
 			float fTemp107 = (fRec1[1] + fRec3[1]);
 			float fTemp108 = (fRec5[1] + fRec7[1]);
 			fRec84[0] = ((fRec23[0] * ((fRec4[1] + (fRec2[1] + fTemp107)) - (fRec8[1] + (fRec6[1] + fTemp108)))) - (((fTemp4 * fRec84[2]) + (2.0f * (fTemp5 * fRec84[1]))) / fTemp6));
@@ -1197,7 +1199,7 @@ class faust_wormhole : public dsp {
 			float fTemp116 = (1933.0f * fTemp12);
 			int iTemp117 = int(fTemp116);
 			float fTemp118 = std::floor(fTemp116);
-			fRec5[0] = (0.353553385f * ((fVec34[((IOTA - std::min(8193, std::max(0, iTemp117))) & 2047)] * (fTemp118 + (1.0f - fTemp116))) + ((fTemp116 - fTemp118) * fVec34[((IOTA - std::min(8193, std::max(0, (iTemp117 + 1)))) & 2047)])));
+			fRec5[0] = (0.353553385f * ((fVec34[((IOTA - std::min<int>(8193, std::max<int>(0, iTemp117))) & 2047)] * (fTemp118 + (1.0f - fTemp116))) + ((fTemp116 - fTemp118) * fVec34[((IOTA - std::min<int>(8193, std::max<int>(0, (iTemp117 + 1)))) & 2047)])));
 			fRec98[0] = ((fRec23[0] * ((fRec8[1] + (fRec6[1] + fTemp107)) - (fRec4[1] + (fRec2[1] + fTemp108)))) - (((fTemp4 * fRec98[2]) + (2.0f * (fTemp5 * fRec98[1]))) / fTemp6));
 			fRec97[0] = (((fRec98[2] + (fRec98[0] + (2.0f * fRec98[1]))) / fTemp6) - (((fTemp7 * fRec97[2]) + (2.0f * (fTemp5 * fRec97[1]))) / fTemp8));
 			float fTemp119 = ((((0.600000024f * fRec95[1]) + ((fRec97[2] + (fRec97[0] + (2.0f * fRec97[1]))) / fTemp8)) + fTemp9) + fTemp10);
@@ -1229,7 +1231,7 @@ class faust_wormhole : public dsp {
 			float fTemp126 = (2401.0f * fTemp12);
 			int iTemp127 = int(fTemp126);
 			float fTemp128 = std::floor(fTemp126);
-			fRec6[0] = (0.353553385f * ((fVec41[((IOTA - std::min(8193, std::max(0, iTemp127))) & 4095)] * (fTemp128 + (1.0f - fTemp126))) + ((fTemp126 - fTemp128) * fVec41[((IOTA - std::min(8193, std::max(0, (iTemp127 + 1)))) & 4095)])));
+			fRec6[0] = (0.353553385f * ((fVec41[((IOTA - std::min<int>(8193, std::max<int>(0, iTemp127))) & 4095)] * (fTemp128 + (1.0f - fTemp126))) + ((fTemp126 - fTemp128) * fVec41[((IOTA - std::min<int>(8193, std::max<int>(0, (iTemp127 + 1)))) & 4095)])));
 			float fTemp129 = (fRec1[1] + fRec7[1]);
 			float fTemp130 = (fRec5[1] + fRec3[1]);
 			fRec112[0] = ((fRec23[0] * ((fRec8[1] + (fRec2[1] + fTemp129)) - (fRec4[1] + (fRec6[1] + fTemp130)))) - (((fTemp4 * fRec112[2]) + (2.0f * (fTemp5 * fRec112[1]))) / fTemp6));
@@ -1263,7 +1265,7 @@ class faust_wormhole : public dsp {
 			float fTemp138 = (3125.0f * fTemp12);
 			int iTemp139 = int(fTemp138);
 			float fTemp140 = std::floor(fTemp138);
-			fRec7[0] = (0.353553385f * ((fVec48[((IOTA - std::min(8193, std::max(0, iTemp139))) & 4095)] * (fTemp140 + (1.0f - fTemp138))) + ((fTemp138 - fTemp140) * fVec48[((IOTA - std::min(8193, std::max(0, (iTemp139 + 1)))) & 4095)])));
+			fRec7[0] = (0.353553385f * ((fVec48[((IOTA - std::min<int>(8193, std::max<int>(0, iTemp139))) & 4095)] * (fTemp140 + (1.0f - fTemp138))) + ((fTemp138 - fTemp140) * fVec48[((IOTA - std::min<int>(8193, std::max<int>(0, (iTemp139 + 1)))) & 4095)])));
 			fRec126[0] = ((fRec23[0] * ((fRec4[1] + (fRec6[1] + fTemp129)) - (fRec8[1] + (fRec2[1] + fTemp130)))) - (((fTemp4 * fRec126[2]) + (2.0f * (fTemp5 * fRec126[1]))) / fTemp6));
 			fRec125[0] = (((fRec126[2] + (fRec126[0] + (2.0f * fRec126[1]))) / fTemp6) - (((fTemp7 * fRec125[2]) + (2.0f * (fTemp5 * fRec125[1]))) / fTemp8));
 			float fTemp141 = ((((0.600000024f * fRec123[1]) + ((fRec125[2] + (fRec125[0] + (2.0f * fRec125[1]))) / fTemp8)) + fTemp9) + fTemp10);
@@ -1295,7 +1297,7 @@ class faust_wormhole : public dsp {
 			float fTemp148 = (6561.0f * fTemp12);
 			int iTemp149 = int(fTemp148);
 			float fTemp150 = std::floor(fTemp148);
-			fRec8[0] = (0.353553385f * ((fVec55[((IOTA - std::min(8193, std::max(0, iTemp149))) & 8191)] * (fTemp150 + (1.0f - fTemp148))) + ((fTemp148 - fTemp150) * fVec55[((IOTA - std::min(8193, std::max(0, (iTemp149 + 1)))) & 8191)])));
+			fRec8[0] = (0.353553385f * ((fVec55[((IOTA - std::min<int>(8193, std::max<int>(0, iTemp149))) & 8191)] * (fTemp150 + (1.0f - fTemp148))) + ((fTemp148 - fTemp150) * fVec55[((IOTA - std::min<int>(8193, std::max<int>(0, (iTemp149 + 1)))) & 8191)])));
 			float fTemp151 = (((fTemp3 + -1.41421354f) / fTemp2) + 1.0f);
 			float fTemp152 = (((fTemp3 + 1.41421354f) / fTemp2) + 1.0f);
 			fRec0[0] = ((((fRec1[0] + fRec3[0]) + fRec5[0]) + fRec7[0]) - (((fRec0[2] * fTemp151) + (2.0f * (fTemp5 * fRec0[1]))) / fTemp152));

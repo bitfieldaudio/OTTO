@@ -6,7 +6,7 @@ process = hgroup("voices", vgroup("0", voice) + vgroup("3", voice) +
                            vgroup("1", voice) + vgroup("4", voice) +
                            vgroup("2", voice) + vgroup("5", voice)) :  _ ;
 
-voice = hgroup("midi", (pipe0(midifreq), pipe1(midifreq), pipe2(midifreq), pipe3(midifreq)) :> modulator : *(envelope))
+voice = hgroup("midi", (pipe0(midifreq), pipe1(midifreq), pipe2(midifreq), pipe3(midifreq), noise_att) :> modulator : *(envelope))
 with {
   midigate	= button ("trigger");
   midifreq	= hslider("freq", 440, 20, 1000, 1);
@@ -20,21 +20,35 @@ with {
 
   mastergain = 0.5;
 
-  pipe0(fr) = os.osc(fr);
+  //Pitch modulation
+  pitch_mod_amnt = 0.02; //Adjust to taste
+  leslie_speed_tr = leslie*10;
+  pitch_mod = pitch_mod_amnt*leslie*os.osc(leslie_speed_tr);
+
+  pipe0(fr) = os.osc(fr*(1+pitch_mod));
   pipe1(fr) = os.osc(fr/2) : *(drawbar1);
-  pipe2(fr) = os.osc(1.334839854*fr) : *(drawbar2); //Perfect fifth above the fundamental
-  pipe3(fr) = os.osc(2*fr) : *(drawbar3);
+  pipe2(fr) = os.osc(1.334839854*fr : *(1+pitch_mod) ) : *(drawbar2); //Perfect fifth above the fundamental
+  pipe3(fr) = os.osc(2*fr : *(1+pitch_mod) ) : *(drawbar3);
   modulator = _ : *(mastergain) <: (fi.lowpass(2,center_freq), fi.highpass(2,center_freq)) : (*(1+os.osc(leslie_speed_tr)*(leslie_amnt_tr)) , *(1+os.osc(leslie_speed_bs)*(leslie_amnt_bs))) :> _
     with {
-        leslie_speed_tr = leslie*7;
-        leslie_speed_bs   = leslie*3;
+
+        leslie_speed_bs   = leslie*4;
 
         leslie_amnt_tr = leslie*(0.5);
-        leslie_amnt_bs = leslie*(0.5);
+        leslie_amnt_bs = leslie*(0.0);
 
-        center_freq = 2000;
+        center_freq = 1800;
+
     };
 
+  noise_att = no.pink_noise : *(decay_env(0.02,ba.impulsify(midigate))) : *(0.05*leslie);
+
+
+  //Decay envelope
+  decay_env(d,t) = ba.countdown(decSamps,t) : /(decSamps)
+  with{
+          decSamps = ba.sec2samp(d);
+  };
 
   //ADSR envelope----------------------------
   envelope = adsre_OTTO(a,d,s,r,midigate)*(midigain);

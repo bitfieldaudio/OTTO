@@ -1,9 +1,9 @@
-#include "hammond.hpp"
+#include "dxotto.hpp"
 
 #include "core/globals.hpp"
 #include "core/ui/vector_graphics.hpp"
 
-#include "hammond.faust.hpp"
+#include "dxotto.faust.hpp"
 
 namespace otto::engines {
 
@@ -14,24 +14,24 @@ namespace otto::engines {
    * Declarations
    */
 
-  struct HammondSynthScreen : EngineScreen<HammondSynth> {
+  struct DXOTTOSynthScreen : EngineScreen<DXOTTOSynth> {
     void draw(Canvas& ctx) override;
     bool keypress(Key key) override;
     void rotary(RotaryEvent e) override;
 
-    using EngineScreen<HammondSynth>::EngineScreen;
+    using EngineScreen<DXOTTOSynth>::EngineScreen;
 
   };
 
-  // HammondSynth ////////////////////////////////////////////////////////////////
+  // DXOTTOSynth ////////////////////////////////////////////////////////////////
 
-  HammondSynth::HammondSynth()
-    : SynthEngine("Woody", props, std::make_unique<HammondSynthScreen>(this)),
+  DXOTTOSynth::DXOTTOSynth()
+    : SynthEngine("DXOTTO", props, std::make_unique<DXOTTOSynthScreen>(this)),
       voice_mgr_(props),
       faust_(std::make_unique<FAUSTCLASS>(), props)
   {}
 
-  audio::ProcessData<1> HammondSynth::process(audio::ProcessData<1> data)
+  audio::ProcessData<1> DXOTTOSynth::process(audio::ProcessData<1> data)
   {
     voice_mgr_.process_before(data.midi_only());
     auto res = faust_.process(data.midi_only());
@@ -40,33 +40,33 @@ namespace otto::engines {
   }
 
   /*
-   * HammondSynthScreen
+   * DXOTTOSynthScreen
    */
 
-  bool HammondSynthScreen::keypress(Key key)
+  bool DXOTTOSynthScreen::keypress(Key key)
   {
     return false;
   }
 
-  void HammondSynthScreen::rotary(RotaryEvent e)
+  void DXOTTOSynthScreen::rotary(RotaryEvent e)
   {
     switch (e.rotary) {
     case Rotary::Blue:
-      engine.props.drawbar1.step(e.clicks);
+      engine.props.preset.step(e.clicks);
       break;
     case Rotary::Green:
-      engine.props.drawbar2.step(e.clicks);
+      engine.props.variable1.step(e.clicks);
       break;
     case Rotary::White:
-      engine.props.drawbar3.step(e.clicks);
+      engine.props.variable2.step(e.clicks);
       break;
     case Rotary::Red:
-      engine.props.leslie.step(e.clicks);
+      engine.props.variable3.step(e.clicks);
       break;
     }
   }
 
-  void HammondSynthScreen::draw(ui::vg::Canvas& ctx)
+  void DXOTTOSynthScreen::draw(ui::vg::Canvas& ctx)
   {
     using namespace ui::vg;
 
@@ -84,7 +84,7 @@ namespace otto::engines {
     ctx.beginPath();
     ctx.fillStyle(Colours::Blue);
     ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:1.2}", engine.props.drawbar1), {width - x_pad, y_pad});
+    ctx.fillText(fmt::format("{:1.2}", engine.props.preset), {width - x_pad, y_pad});
 
     ctx.beginPath();
     ctx.fillStyle(Colours::Green);
@@ -94,7 +94,7 @@ namespace otto::engines {
     ctx.beginPath();
     ctx.fillStyle(Colours::Green);
     ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:1.2}", engine.props.drawbar2), {width - x_pad, y_pad + space});
+    ctx.fillText(fmt::format("{:1.2}", engine.props.variable1), {width - x_pad, y_pad + space});
 
     ctx.beginPath();
     ctx.fillStyle(Colours::Yellow);
@@ -104,7 +104,7 @@ namespace otto::engines {
     ctx.beginPath();
     ctx.fillStyle(Colours::Yellow);
     ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:1.2}", engine.props.drawbar3), {width - x_pad, y_pad + 2 * space});
+    ctx.fillText(fmt::format("{:1.2}", engine.props.variable2), {width - x_pad, y_pad + 2 * space});
 
     ctx.beginPath();
     ctx.fillStyle(Colours::Red);
@@ -114,7 +114,7 @@ namespace otto::engines {
     ctx.beginPath();
     ctx.fillStyle(Colours::Red);
     ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:1.2}", engine.props.leslie), {width - x_pad, y_pad + 3 * space});
+    ctx.fillText(fmt::format("{:1.2}", engine.props.variable3), {width - x_pad, y_pad + 3 * space});
   }
 
 } // namespace otto::engines
