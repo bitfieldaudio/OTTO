@@ -7,6 +7,7 @@
 #include "engines/seq/euclid/euclid.hpp"
 #include "engines/synths/nuke/nuke.hpp"
 #include "engines/synths/hammond/hammond.hpp"
+#include "engines/synths/sacred/sacred.hpp"
 #include "engines/synths/vocoder/vocoder.hpp"
 #include "engines/fx/wormhole/wormhole.hpp"
 #include "engines/misc/master/master.hpp"
@@ -39,6 +40,7 @@ namespace otto::service::engines {
     register_engine<otto::engines::Euclid>();
     register_engine<otto::engines::NukeSynth>();
     register_engine<otto::engines::HammondSynth>();
+    register_engine<otto::engines::SacredSynth>();
     register_engine<otto::engines::VocoderSynth>();
     register_engine<otto::engines::Wormhole>();
     register_engine<otto::engines::External>();

@@ -7,67 +7,67 @@
 
 namespace otto::engines {
 
-  using namespace ui;
-  using namespace ui::vg;
+using namespace ui;
+using namespace ui::vg;
 
-  /*
+/*
    * Declarations
    */
 
-  struct HammondSynthScreen : EngineScreen<HammondSynth> {
+struct HammondSynthScreen : EngineScreen<HammondSynth> {
     void draw(Canvas& ctx) override;
     bool keypress(Key key) override;
     void rotary(RotaryEvent e) override;
 
     using EngineScreen<HammondSynth>::EngineScreen;
 
-  };
+};
 
-  // HammondSynth ////////////////////////////////////////////////////////////////
+// HammondSynth ////////////////////////////////////////////////////////////////
 
-  HammondSynth::HammondSynth()
+HammondSynth::HammondSynth()
     : SynthEngine("Woody", props, std::make_unique<HammondSynthScreen>(this)),
       voice_mgr_(props),
       faust_(std::make_unique<FAUSTCLASS>(), props)
-  {}
+{}
 
-  audio::ProcessData<1> HammondSynth::process(audio::ProcessData<1> data)
-  {
+audio::ProcessData<1> HammondSynth::process(audio::ProcessData<1> data)
+{
     voice_mgr_.process_before(data.midi_only());
     auto res = faust_.process(data.midi_only());
     voice_mgr_.process_after(data.midi_only());
     return res;
-  }
+}
 
-  /*
+/*
    * HammondSynthScreen
    */
 
-  bool HammondSynthScreen::keypress(Key key)
-  {
+bool HammondSynthScreen::keypress(Key key)
+{
     return false;
-  }
+}
 
-  void HammondSynthScreen::rotary(RotaryEvent e)
-  {
+void HammondSynthScreen::rotary(RotaryEvent e)
+{
     switch (e.rotary) {
     case Rotary::Blue:
-      engine.props.drawbar1.step(e.clicks);
-      break;
+        engine.props.drawbar1.step(e.clicks);
+        break;
     case Rotary::Green:
-      engine.props.drawbar2.step(e.clicks);
-      break;
+        engine.props.drawbar2.step(e.clicks);
+        break;
     case Rotary::White:
-      engine.props.drawbar3.step(e.clicks);
-      break;
+        engine.props.drawbar3.step(e.clicks);
+        break;
     case Rotary::Red:
-      engine.props.leslie.step(e.clicks);
-      break;
+        engine.props.leslie.step(e.clicks);
+        break;
     }
-  }
+}
 
-  void HammondSynthScreen::draw(ui::vg::Canvas& ctx)
-  {
+void HammondSynthScreen::draw(ui::vg::Canvas& ctx)
+{
     using namespace ui::vg;
 
     ctx.font(Fonts::Norm, 35);
@@ -76,45 +76,69 @@ namespace otto::engines {
     constexpr float y_pad = 50;
     constexpr float space = (height - 2.f * y_pad) / 3.f;
 
-    ctx.beginPath();
-    ctx.fillStyle(Colours::Blue);
-    ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
-    ctx.fillText("Drawbar 1", {x_pad, y_pad});
+    // Gray Base Layers
+    ctx.group([&]{
+        // Ring 1 Base
+        ctx.beginPath();
+        ctx.circle({160,120},55);
+        ctx.lineWidth(6.0);
+        ctx.strokeStyle(Colours::Gray50);
+        ctx.lineCap(Canvas::LineCap::ROUND);
+        ctx.lineJoin(Canvas::LineJoin::ROUND);
+        ctx.stroke();
 
-    ctx.beginPath();
-    ctx.fillStyle(Colours::Blue);
-    ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:1.2}", engine.props.drawbar1), {width - x_pad, y_pad});
+        // Ring 2 Base
+        ctx.save();
+        ctx.beginPath();
+        ctx.circle({160,120},75);
+        ctx.stroke();
 
-    ctx.beginPath();
-    ctx.fillStyle(Colours::Green);
-    ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
-    ctx.fillText("Drawbar 2", {x_pad, y_pad + space});
+        // Ring 3 Base
+        ctx.save();
+        ctx.beginPath();
+        ctx.circle({160,120},95);
+        ctx.stroke();
+    });
 
-    ctx.beginPath();
-    ctx.fillStyle(Colours::Green);
-    ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:1.2}", engine.props.drawbar2), {width - x_pad, y_pad + space});
+    // Coloured Parameters
+    ctx.group([&]{
+        // Ring 1
+        ctx.beginPath();
+        ctx.rotateAround(55,{160,120});
+        ctx.arc(160,120,55,0,{2*M_PI*engine.props.drawbar3},false);
+        ctx.lineWidth(6.0);
+        ctx.strokeStyle(Colours::Yellow);
+        ctx.lineCap(Canvas::LineCap::ROUND);
+        ctx.lineJoin(Canvas::LineJoin::ROUND);
+        ctx.stroke();
 
-    ctx.beginPath();
-    ctx.fillStyle(Colours::Yellow);
-    ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
-    ctx.fillText("Drawbar 3", {x_pad, y_pad + 2 * space});
+        // Ring 2
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(160,120,75,0,{2*M_PI*engine.props.drawbar2},false);
+        ctx.strokeStyle(Colours::Green);
+        ctx.stroke();
 
-    ctx.beginPath();
-    ctx.fillStyle(Colours::Yellow);
-    ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:1.2}", engine.props.drawbar3), {width - x_pad, y_pad + 2 * space});
+        // Ring 3
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(160,120,95,0,{2*M_PI*engine.props.drawbar1},false);
+        ctx.strokeStyle(Colours::Blue);
+        ctx.stroke();
+    });
 
-    ctx.beginPath();
-    ctx.fillStyle(Colours::Red);
-    ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
-    ctx.fillText("Leslie", {x_pad, y_pad + 3 * space});
+    // Red Ring Dial
+    ctx.group([&]{
+        float rotation = -2.15 + engine.props.leslie * 4.3;
 
-    ctx.beginPath();
-    ctx.fillStyle(Colours::Red);
-    ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:1.2}", engine.props.leslie), {width - x_pad, y_pad + 3 * space});
-  }
-
+        ctx.save();
+        ctx.rotateAround(rotation,{160,120});
+        ctx.beginPath();
+        ctx.moveTo(160.0, 120);
+        ctx.lineTo(160.0, 95);
+        ctx.strokeStyle(Colours::Red);
+        ctx.stroke();
+    });
+    ///
+}
 } // namespace otto::engines
