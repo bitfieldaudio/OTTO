@@ -52,10 +52,10 @@ namespace otto::engines {
   {
     switch (e.rotary) {
     case Rotary::Blue:
-      engine.props.attTime.step(e.clicks);
+      engine.props.mix.step(e.clicks);
       break;
     case Rotary::Green:
-      engine.props.decTime.step(e.clicks);
+      engine.props.noise.step(e.clicks);
       break;
     case Rotary::White:
       engine.props.ratio.step(e.clicks);
@@ -79,22 +79,22 @@ namespace otto::engines {
     ctx.beginPath();
     ctx.fillStyle(Colours::Blue);
     ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
-    ctx.fillText("Attack", {x_pad, y_pad});
+    ctx.fillText("Dry", {x_pad, y_pad});
 
     ctx.beginPath();
     ctx.fillStyle(Colours::Blue);
     ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:1.2}", engine.props.attTime), {width - x_pad, y_pad});
+    ctx.fillText(fmt::format("{:1.2}", engine.props.mix), {width - x_pad, y_pad});
 
     ctx.beginPath();
     ctx.fillStyle(Colours::Green);
     ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
-    ctx.fillText("Decay", {x_pad, y_pad + space});
+    ctx.fillText("Sibilance", {x_pad, y_pad + space});
 
     ctx.beginPath();
     ctx.fillStyle(Colours::Green);
     ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:1.2}", engine.props.decTime), {width - x_pad, y_pad + space});
+    ctx.fillText(fmt::format("{:1.2}", engine.props.noise), {width - x_pad, y_pad + space});
 
     ctx.beginPath();
     ctx.fillStyle(Colours::Yellow);

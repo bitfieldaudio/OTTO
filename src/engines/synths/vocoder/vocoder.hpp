@@ -15,8 +15,8 @@ namespace otto::engines {
 
     struct Props : Properties<> {
 
-      Property<float> attTime      = {this, "attTime",    0,   has_limits::init(0, 1),    steppable::init(0.01)};
-      Property<float> decTime      = {this, "decTime",    0,   has_limits::init(0, 1),    steppable::init(0.01)};
+      Property<float> mix      = {this, "mix",    0,   has_limits::init(0, 1),    steppable::init(0.01)};
+      Property<float> noise      = {this, "noise",    0,   has_limits::init(0, 1),    steppable::init(0.01)};
       Property<float> ratio        = {this, "ratio",      0.1,   has_limits::init(0.1, 2),  steppable::init(0.01)};
       Property<float> gateamount     = {this, "gateamount",   0.3, has_limits::init(0, 1),    steppable::init(0.01)};
 
