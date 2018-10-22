@@ -1,7 +1,10 @@
-#!/bin/sed -f
+#!/bin/sh
+
+sed '
 s/ = \(.*\);/(\1);/
 s/"rgb(\(.*\))"/Colour::bytes(\1)/g
 s/lineCap("\(.*\)")/lineCap(Canvas::LineCap::\U\1)/
 s/lineJoin("\(.*\)")/lineJoin(Canvas::LineJoin::\U\1)/
 s/font("\([A-Z][a-z]*\) ?\([0-9\.]*\)px .*")/font(Fonts::\1\, \2)/
 s/\/\/ [a-z]/\U&/
+' "$@"

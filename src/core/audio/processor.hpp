@@ -87,7 +87,7 @@ namespace otto::core::audio {
     static constexpr int channels = N;
 
     gsl::span<std::array<float, channels>> audio;
-    gsl::span<midi::AnyMidiEvent> midi;
+    std::vector<midi::AnyMidiEvent> midi;
 
     long nframes;
     long offset = 0;

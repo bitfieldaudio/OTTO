@@ -156,6 +156,7 @@ namespace otto::service::ui {
       glfwSwapBuffers(window);
 
       glfwPollEvents();
+      ui::impl::flush_events();
 
       debug_ui::draw_frame();
 

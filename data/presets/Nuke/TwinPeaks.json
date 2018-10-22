@@ -1,0 +1,22 @@
+{
+  "engine": "Nuke",
+  "name": "TwinPeaks",
+  "props": {
+    "Filter": 0.210000693798065,
+    "Relation": 2.34999966621399,
+    "Sub": 1.0,
+    "Wave": 2.07999849319458,
+    "envelope": {
+      "Attack": 0.0599999986588955,
+      "Decay": 0.619999945163727,
+      "Release": 0.200000002980232,
+      "Sustain": 0.360000401735306
+    },
+    "voice_settings": {
+      "Octave": 3,
+      "Play Mode": 0,
+      "Portamento": 0.0,
+      "Transpose": 0
+    }
+  }
+}

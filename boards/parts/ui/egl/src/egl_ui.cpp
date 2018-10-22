@@ -75,9 +75,12 @@ namespace otto::service::ui {
     float fps;
     duration<double> lastFrameTime;
 
+    std::thread kbd_thread = std::thread(otto::service::ui::read_keyboard);
+
     while (global::running()) {
-      otto::service::ui::read_keyboard();
       t0 = clock::now();
+
+      otto::service::ui::impl::flush_events();
 
       // Update and render
       egl.beginFrame();

@@ -26,6 +26,7 @@
     return lhs = (lhs | rhs);                                           \
   }
 
+#define FIELD_GETTER(name) [] (auto& obj) { return obj.name; }
 
 // Overload macros based on argument count
 #define GET_MACRO_1(_1,NAME) NAME

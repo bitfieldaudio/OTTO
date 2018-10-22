@@ -28,15 +28,15 @@ namespace otto::core::ui {
       if (idx == _selected_item) {
         ctx.beginPath();
         ctx.rect({0, i * options.item_height}, {size.w, options.item_height});
-        ctx.fill(options.item_colour);
-        ctx.fillStyle(Colours::Black);
+        // ctx.fill(Colours::Black); - in case you want the background back
+        ctx.fillStyle(options.selected_item_colour);
       } else {
         ctx.fillStyle(options.item_colour);
       }
       ctx.beginPath();
       ctx.textAlign(TextAlign::Left, TextAlign::Middle);
-      ctx.font(Fonts::Light, options.font_size);
-      ctx.fillText((*_items)[idx], {5.f, (i + 0.5f) * options.item_height},
+      ctx.font(Fonts::Norm, options.font_size);
+      ctx.fillText((*_items)[idx], {5.f, (i + 1.f) * options.item_height},
                    size.w - 10.f);
     }
   }

@@ -16,13 +16,15 @@ namespace otto::core::ui {
     struct Options {
       /// Invoked with the newly selected index.
       std::function<void(int idx)> on_select = [](int) {};
-      /// Text colour. Inverted for current item
-      vg::Colour item_colour = vg::Colours::Blue;
+      /// Unselected text colour.
+      vg::Colour item_colour = vg::Colours::Gray50;
+      /// Selected text colour.
+      vg::Colour selected_item_colour = vg::Colours::Blue;
       /// Height of each item
-      float item_height = 20.f;
-      float font_size = 15.f;
+      float item_height = 35.f;
+      float font_size = 30.f;
       /// Dimensions of the widget. Initializes [Widget::size]()
-      vg::Size size = {160, 240};
+      vg::Size size = {300, 240};
       /// Initial value for `_selected_item`
       int initial_selection = 0;
     } const options;
@@ -48,7 +50,7 @@ namespace otto::core::ui {
     /// be taken, the maximum possible steps are taken instead. In that case,
     /// returns `false`
     ///
-    /// \returns `true` on success, otherwie `false`
+    /// \returns `true` on success, otherwise `false`
     bool next(int n = 1) noexcept;
 
     /// Select an item by index

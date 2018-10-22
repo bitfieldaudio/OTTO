@@ -1191,6 +1191,9 @@ namespace otto::filesystem {
       _data = std::make_shared<std::vector<DIter>>();
       std::error_code ec;
       _data->emplace_back(p, ec);
+      if (_data->front() == DIter()) {
+        _data = nullptr;
+      }
       if (ec.value() != 0) {
         throw filesystem_error("Error constructing recursive_directory_iterator", p, ec);
       }

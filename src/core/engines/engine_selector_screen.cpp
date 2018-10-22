@@ -17,7 +17,7 @@ namespace otto::core::engines {
           preset_wid.items(service::presets::preset_names(eg.name()));
           preset_wid.select(eg.current_preset(), true);
         };
-        opts.item_colour = Colours::Blue;
+        opts.item_colour = Colours::Gray50;
         opts.size = {120, vg::height};
         return opts;
   }
@@ -29,8 +29,9 @@ namespace otto::core::engines {
         opts.on_select = [cur_eg = std::move(cur_eg)](int idx) {
             service::presets::apply_preset(cur_eg(), idx);
           };
-        opts.item_colour = Colours::Green;
-        opts.size = {120, vg::height};
+        opts.item_colour = Colours::Gray50;
+        opts.selected_item_colour=Colours::Green;
+        opts.size = {140, 200};
         return opts;
   }
 
@@ -49,7 +50,7 @@ namespace otto::core::engines {
 
   void EngineSelectorScreen::draw(vg::Canvas& ctx)
   {
-    ctx.drawAt({40, 0}, engine_wid);
+    ctx.drawAt({10, 0}, engine_wid);
     ctx.drawAt({160, 0}, preset_wid);
   }
 

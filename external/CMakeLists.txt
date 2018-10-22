@@ -25,6 +25,8 @@ if (APPLE)
   find_package(OpenGL)
   target_include_directories(nanovg SYSTEM INTERFACE ${OPENGL_INCLUDE_DIR})
   target_link_libraries(nanovg INTERFACE ${OPENGL_LIBRARIES})
+  find_library(CORE_FOUNDATION CoreFoundation)
+  target_link_libraries(external ${CORE_FOUNDATION})
 endif()
 
 # NanoCanvas

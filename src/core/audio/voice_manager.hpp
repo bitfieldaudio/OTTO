@@ -44,11 +44,11 @@ namespace otto::core::audio {
 
   struct EnvelopeProps : props::Properties<> {
     props::Property<float> attack = {this, "Attack", 0,
-                                     props::has_limits::init(0, 2),
+                                     props::has_limits::init(0, 6),
                                      props::steppable::init(0.02)};
 
     props::Property<float> decay = {this, "Decay", 0,
-                                    props::has_limits::init(0, 2),
+                                    props::has_limits::init(0, 4),
                                     props::steppable::init(0.02)};
 
     props::Property<float> sustain = {this, "Sustain", 1,
@@ -56,7 +56,7 @@ namespace otto::core::audio {
                                       props::steppable::init(0.02)};
 
     props::Property<float> release = {this, "Release", 0.2,
-                                      props::has_limits::init(0, 2),
+                                      props::has_limits::init(0, 4),
                                       props::steppable::init(0.02)};
 
     using Properties::Properties;
@@ -70,7 +70,7 @@ namespace otto::core::audio {
 
   struct SettingsProps : props::Properties<> {
 
-		props::Property<PlayMode, props::wrap> play_mode = {this, "Play Mode", PlayMode::poly,
+        props::Property<PlayMode, props::wrap> play_mode = {this, "Play Mode", PlayMode::poly,
                                            props::has_limits::init(PlayMode::poly, PlayMode::unison)};
 
     props::Property<float> portamento = {this, "Portamento", 0,
@@ -105,6 +105,7 @@ namespace otto::core::audio {
     VoiceManager(props::properties_base& parent)
       : voices_props(&parent, "voices"),
         envelope_props(&parent, "envelope"),
+        settings_props(&parent, "voice_settings"),
         envelope_screen_(detail::make_envelope_screen(envelope_props)),
         settings_screen_(detail::make_settings_screen(settings_props))
     {
@@ -187,7 +188,7 @@ namespace otto::core::audio {
         DLOGI("Stealing voice {} from key {}", v, found->note);
         return v;
       } else {
-        LOGE("No voice found. Using voice 0");
+        DLOGE("No voice found. Using voice 0");
         return Voice{0};
       }
     }
@@ -233,7 +234,7 @@ namespace otto::core::audio {
                     vp.midi.freq     = midi::note_freq(ev.key + settings_props.octave * 12 + settings_props.transpose);
                     vp.midi.velocity = ev.velocity / 127.f;
                     vp.midi.trigger  = 1;
-                    LOGI("Voice {} begin key {} {}Hz velocity: {}", v, ev.key, vp.midi.freq, vp.midi.velocity);
+                    DLOGI("Voice {} begin key {} {}Hz velocity: {}", v, ev.key, vp.midi.freq, vp.midi.velocity);
                   },
                   [](auto&&) {});
     }

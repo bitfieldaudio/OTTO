@@ -7,14 +7,14 @@
 #include <jack/jack.h>
 #include <jack/midiport.h>
 
-#include "util/timer.hpp"
 #include "util/algorithm.hpp"
+#include "util/timer.hpp"
 
-#include "core/globals.hpp"
 #include "core/audio/processor.hpp"
+#include "core/globals.hpp"
 
-#include "services/engines.hpp"
 #include "services/audio.hpp"
+#include "services/engines.hpp"
 #include "services/logger.hpp"
 
 namespace otto::service::audio {
@@ -37,7 +37,7 @@ namespace otto::service::audio {
 
   JackAudioDriver& JackAudioDriver::get() noexcept
   {
-    static JackAudioDriver instance {};
+    static JackAudioDriver instance{};
     return instance;
   }
 
@@ -49,20 +49,18 @@ namespace otto::service::audio {
     client = jack_client_open(clientName, JackNullOption, &jackStatus);
 
     if ((!jackStatus) & JackServerStarted) {
-      throw global::exception(global::ErrorCode::audio_error,
-                              "Failed to start jack server");
+      throw global::exception(global::ErrorCode::audio_error, "Failed to start jack server");
     }
 
-    LOG_F(INFO, "Jack server started");
-    LOG_F(INFO, "Jack client status: {}", jackStatus);
+    LOGI("Jack server started");
+    LOGI("Jack client status: {}", jackStatus);
 
-    jack_set_process_callback(
-      client,
-      [](jack_nframes_t nframes, void* arg) {
-        (static_cast<JackAudioDriver*>(arg))->process(nframes);
-        return 0;
-      },
-      this);
+    jack_set_process_callback(client,
+                              [](jack_nframes_t nframes, void* arg) {
+                                (static_cast<JackAudioDriver*>(arg))->process(nframes);
+                                return 0;
+                              },
+                              this);
 
     jack_set_sample_rate_callback(
       client,
@@ -80,13 +78,19 @@ namespace otto::service::audio {
       },
       this);
 
+    jack_set_port_registration_callback(
+      client,
+      [](jack_port_id_t id, int is_register, void* data) {
+        if (is_register) (static_cast<JackAudioDriver*>(data))->new_ports.push_back(id);
+      },
+      this);
+
     jack_on_shutdown(client, jackShutdown, nullptr);
 
     bufferSize = jack_get_buffer_size(client);
 
     if (jack_activate(client)) {
-      throw global::exception(global::ErrorCode::audio_error,
-                              "Cannot activate jack client");
+      throw global::exception(global::ErrorCode::audio_error, "Cannot activate jack client");
     }
 
     setupPorts();
@@ -108,20 +112,18 @@ namespace otto::service::audio {
   void JackAudioDriver::setupPorts()
   {
     // Audio ports
-    ports.input = jack_port_register(client, "input", JACK_DEFAULT_AUDIO_TYPE,
-                                     JackPortIsInput, 0);
+    ports.input = jack_port_register(client, "input", JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0);
 
     if (ports.input == NULL) {
-      throw global::exception(global::ErrorCode::audio_error,
-                              "Couldn't register input port");
+      throw global::exception(global::ErrorCode::audio_error, "Couldn't register input port");
     }
 
-    ports.outL = jack_port_register(client, "outLeft", JACK_DEFAULT_AUDIO_TYPE,
-                                    JackPortIsOutput, 0);
-    ports.outR = jack_port_register(client, "outRight", JACK_DEFAULT_AUDIO_TYPE,
-                                    JackPortIsOutput, 0);
+    ports.outL =
+      jack_port_register(client, "outLeft", JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
+    ports.outR =
+      jack_port_register(client, "outRight", JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
 
-    auto inputs  = findPorts(JackPortIsPhysical | JackPortIsOutput);
+    auto inputs = findPorts(JackPortIsPhysical | JackPortIsOutput);
     auto outputs = findPorts(JackPortIsPhysical | JackPortIsInput);
 
     if (outputs.empty()) {
@@ -131,8 +133,8 @@ namespace otto::service::audio {
 
     bool s;
 
-    if (!inputs.empty()) {
-      s = connectPorts(jack_port_name(ports.input), inputs[0]);
+    for (auto& p : inputs) {
+      s = connectPorts(jack_port_name(ports.input), p);
       if (!s) {
         global::exit(global::ErrorCode::audio_error);
         return;
@@ -152,43 +154,38 @@ namespace otto::service::audio {
     }
 
     // Midi ports
-    ports.midiIn = jack_port_register(client, "midiIn", JACK_DEFAULT_MIDI_TYPE,
-                                      JackPortIsInput, 0);
+    ports.midiIn = jack_port_register(client, "midiIn", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
 
     if (ports.midiIn == NULL) {
-      throw global::exception(global::ErrorCode::audio_error,
-                              "Couldn't register midi_in port");
+      throw global::exception(global::ErrorCode::audio_error, "Couldn't register midi_in port");
     }
 
-    ports.midiOut = jack_port_register(
-      client, "midiOut", JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput, 0);
+    ports.midiOut =
+      jack_port_register(client, "midiOut", JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput, 0);
 
-    auto midiIn =
-      findPorts(JackPortIsPhysical | JackPortIsOutput, PortType::Midi);
-    auto midiOut =
-      findPorts(JackPortIsPhysical | JackPortIsInput, PortType::Midi);
+    auto midiIn = findPorts(JackPortIsPhysical | JackPortIsOutput, PortType::Midi);
+    auto midiOut = findPorts(JackPortIsPhysical | JackPortIsInput, PortType::Midi);
 
     if (midiIn.empty()) {
-      LOG_F(ERROR, "Couldn't find physical midi input port");
+      LOGE("Couldn't find physical midi input port");
       return;
     }
     if (midiOut.empty()) {
-      LOG_F(ERROR, "Couldn't find physical midi output port");
+      LOGE("Couldn't find physical midi output port");
       return;
     }
 
     s = connectPorts(jack_port_name(ports.midiIn), midiIn[0]);
-    LOG_IF_F(ERROR, !s, "Couldn't connect midi input");
+    LOGE_IF(!s, "Couldn't connect midi input");
 
     s = connectPorts(midiOut[0], jack_port_name(ports.midiOut));
-    LOG_IF_F(ERROR, !s, "Couldn't connect midi output");
+    LOGE_IF(!s, "Couldn't connect midi output");
   }
 
-  std::vector<std::string> JackAudioDriver::findPorts(int criteria,
-                                                      PortType type)
+  std::vector<std::string> JackAudioDriver::findPorts(int criteria, PortType type)
   {
-    const char** ports = jack_get_ports(
-      client, nullptr, (type == PortType::Audio) ? "audio" : "midi", criteria);
+    const char** ports =
+      jack_get_ports(client, nullptr, (type == PortType::Audio) ? "audio" : "midi", criteria);
     std::vector<std::string> ret;
     if (ports == nullptr) return ret;
     for (int i = 0; ports[i] != nullptr; i++) {
@@ -199,8 +196,7 @@ namespace otto::service::audio {
   }
 
   /// Helper function for connections
-  bool JackAudioDriver::connectPorts(const std::string& src,
-                                     const std::string& dest)
+  bool JackAudioDriver::connectPorts(const std::string& src, const std::string& dest)
   {
     return !jack_connect(client, dest.c_str(), src.c_str());
   }
@@ -219,12 +215,32 @@ namespace otto::service::audio {
     audio::events::buffersize_change().fire(buffsize);
   }
 
-  void JackAudioDriver::gatherMidiInput(int nframes) {
+  void JackAudioDriver::new_port_callback(jack_port_id_t id)
+  {
+    DLOGI("New port");
+    auto* port = jack_port_by_id(client, id);
+    auto flags = jack_port_flags(port);
+    auto type = jack_port_type(port);
+    if (type != nullptr && strcmp(type, JACK_DEFAULT_MIDI_TYPE) == 0) {
+      if (flags & JackPortIsInput) {
+        auto portname = jack_port_name(port);
+        auto port2name = jack_port_name(ports.midiOut);
+        if (portname && port2name) connectPorts(portname, port2name);
+      } else if (flags & JackPortIsOutput) {
+        auto portname = jack_port_name(port);
+        auto port2name = jack_port_name(ports.midiIn);
+        if (portname && port2name) connectPorts(port2name, portname);
+      }
+    }
+  }
+
+  void JackAudioDriver::gatherMidiInput(int nframes)
+  {
     midi_bufs.swap();
 
     // Get new midi events
     void* midiBuf = jack_port_get_buffer(ports.midiIn, nframes);
-    int nevents   = jack_midi_get_event_count(midiBuf);
+    int nevents = jack_midi_get_event_count(midiBuf);
 
     jack_midi_event_t event;
     for (int i = 0; i < nevents; i++) {
@@ -234,8 +250,9 @@ namespace otto::service::audio {
       MidiEvent mEvent;
 
       mEvent.channel = event.buffer[0] & 0b00001111;
-      std::copy_n(event.buffer + 1, std::min(event.size - 1, mEvent.max_data_size), mEvent.data.begin());
-      mEvent.time    = event.time;
+      std::copy_n(event.buffer + 1, std::min(event.size - 1, mEvent.max_data_size),
+                  mEvent.data.begin());
+      mEvent.time = event.time;
 
       auto type = MidiEvent::Type(event.buffer[0] >> 4);
       switch (type) {
@@ -262,6 +279,13 @@ namespace otto::service::audio {
       return;
     }
 
+    if (!new_ports.empty()) {
+      for (auto port : new_ports) {
+        new_port_callback(port);
+      }
+      new_ports.clear();
+    }
+
     TIME_SCOPE("JackAudio::Process");
 
     if ((size_t) nframes > bufferSize) {
@@ -273,12 +297,12 @@ namespace otto::service::audio {
 
     float* outLData = (float*) jack_port_get_buffer(ports.outL, nframes);
     float* outRData = (float*) jack_port_get_buffer(ports.outR, nframes);
-    float* inData   = (float*) jack_port_get_buffer(ports.input, nframes);
+    float* inData = (float*) jack_port_get_buffer(ports.input, nframes);
 
-    auto out_data = engines::process(
-      {{reinterpret_cast<util::audio::AudioFrame<1>*>(inData), nframes},
-       {midi_bufs.inner()},
-       nframes});
+    auto out_data =
+      engines::process({{reinterpret_cast<util::audio::AudioFrame<1>*>(inData), nframes},
+                        {midi_bufs.inner()},
+                        nframes});
 
     audio::process_audio_output(out_data);
 
@@ -290,4 +314,4 @@ namespace otto::service::audio {
       outRData[i] = out_data.audio[i][1];
     }
   }
-} // namespace otto::audio
+} // namespace otto::service::audio

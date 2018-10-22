@@ -7,6 +7,7 @@
 #include <jack/jack.h>
 #include <jack/midiport.h>
 #include "core/audio/midi.hpp"
+#include "util/locked.hpp"
 
 #include "util/locked.hpp"
 
@@ -56,8 +57,12 @@ namespace otto::service::audio {
     bool connectPorts(const std::string& src, const std::string& dest);
     void samplerateCallback(unsigned srate);
     void buffersizeCallback(unsigned buffsize);
+    void new_port_callback(jack_port_id_t id);
     void gatherMidiInput(int nFrames);
     void process(int nframes);
+
+    /// Jack cannot connect to a port from the notification thread, so we just add them here, and process them from the main one instead.
+    std::vector<jack_port_id_t> new_ports;
   };
 
   using AudioDriver = JackAudioDriver;

@@ -4,9 +4,8 @@
 #include <functional>
 
 namespace otto::util {
-  /*
-   * An event registry and dispatcher
-   */
+
+  /// An event registry and dispatcher
   template<typename... Args>
   struct Event {
     using handler_type = std::function<void(Args...)>;
@@ -15,13 +14,13 @@ namespace otto::util {
 
     int subscribe(handler_type handler)
     {
-      handlers.push_back(handler);
+      handlers.emplace_back(std::move(handler));
       return handlers.size() - 1;
     }
 
     void fire(Args... args)
     {
-      for (auto handler : handlers) {
+      for (auto& handler : handlers) {
         handler(args...);
       }
     }

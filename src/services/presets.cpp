@@ -100,6 +100,9 @@ namespace otto::service::presets {
     }
     DLOGI("Loading presets");
     for (auto&& de : fs::recursive_directory_iterator(presets_dir)) {
+      if (de.is_directory()) continue;
+      auto filename = de.path().filename().string();
+      if (filename.size() == 0 || filename.c_str()[0] == '.') continue;
       LOGI_SCOPE("Loading preset file {}", de.path());
       if (de.is_regular_file() || de.is_symlink()) {
         util::JsonFile jf{de.path()};

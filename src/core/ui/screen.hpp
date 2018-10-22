@@ -8,51 +8,27 @@ namespace otto::core::ui {
   enum struct Key {
     none = 0,
 
-    red_up,
-    red_down,
     red_click,
-    blue_up,
-    blue_down,
     blue_click,
-    white_up,
-    white_down,
     white_click,
-    green_up,
-    green_down,
     green_click,
 
-    left,
-    right,
     shift,
+    oct_up,
+    oct_down,
 
     play,
-    rec,
-    track_1,
-    track_2,
-    track_3,
-    track_4,
 
     // Globals:
     quit,
 
-    tape,
-    mixer,
-    metronome,
+    sequencer,
+    fx1,
     synth,
-    drums,
-    sampler,
-    looper,
     envelope,
+    voices,
 
-    loop,
-    loop_in,
-    loop_out,
-
-    ret,
-
-    lift,
-    drop,
-    cut,
+    master,
 
     /// Number of keys
     n_keys,

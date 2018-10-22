@@ -5,8 +5,9 @@
 #include <functional>
 #include <type_traits>
 #include <tuple>
+#include <memory>
 
-#include "util/type_traits.hpp"
+#include "type_traits.hpp"
 
 namespace otto::util {
 
@@ -54,7 +55,7 @@ namespace otto::util {
 
     template<typename Impl, typename T = void>
     struct reference {
-      using type = typename value_type<Impl>::type&;
+      using type = typename std::iterator_traits<Impl>::reference;
     };
 
     template<typename Impl>
@@ -109,6 +110,9 @@ namespace otto::util {
       : Impl {static_cast<Impl>(std::move(r))} {}
 
     virtual ~iterator_adaptor_impl() = default;
+
+    iterator_adaptor_impl& operator=(const iterator_adaptor_impl&) = default;
+    iterator_adaptor_impl& operator=(iterator_adaptor_impl&&) = default;
 
     using Impl::operator=;
 
@@ -181,6 +185,8 @@ namespace otto::util {
 
     iterator_adaptor_impl(const iterator_adaptor_impl&) = default;
     iterator_adaptor_impl(iterator_adaptor_impl&&) = default;
+    iterator_adaptor_impl& operator=(const iterator_adaptor_impl&) = default;
+    iterator_adaptor_impl& operator=(iterator_adaptor_impl&&) = default;
 
     using Super::operator=;
 
@@ -224,6 +230,8 @@ namespace otto::util {
 
     iterator_adaptor_impl(const iterator_adaptor_impl&) = default;
     iterator_adaptor_impl(iterator_adaptor_impl&&) = default;
+    iterator_adaptor_impl& operator=(const iterator_adaptor_impl&) = default;
+    iterator_adaptor_impl& operator=(iterator_adaptor_impl&&) = default;
 
     using Super::operator=;
 
@@ -918,4 +926,141 @@ namespace otto::util {
   auto adjacent_pairs(BIter f, EIter l) {
     return AdjacentRange{util::sequence(f, l)};
   }
+
+  ///
+  /// Transform iterator
+  ///
+  template<typename WrappedIter, typename Callable>
+  class TransformIteratorImpl{
+  public:
+    using reference = util::invoke_result_t<Callable, typename detail::reference<WrappedIter>::type>;
+    using value_type = typename std::decay_t<reference>;
+    using iterator_category = detail::iterator_category<WrappedIter>;
+
+    TransformIteratorImpl(WrappedIter iter, Callable callable)
+      : iter (std::move(iter)), callable {std::make_shared<Callable>(std::move(callable))}
+    {}
+
+    TransformIteratorImpl(WrappedIter iter, TransformIteratorImpl other)
+      : iter (std::move(iter)), callable {other.callable}
+    {}
+
+    void advance(int n)
+    {
+      std::advance(iter, 1);
+    }
+
+    reference dereference()
+    {
+      return std::invoke(*callable, *iter);
+    }
+
+    bool equal(const TransformIteratorImpl& o) const
+    {
+      return iter == o.iter;
+    }
+
+    auto difference(const TransformIteratorImpl& o) const
+    {
+      return iter - o.iter;
+    }
+
+    WrappedIter iter;
+    std::shared_ptr<Callable> callable;
+  };
+
+  ///
+  /// Transforming Iterator
+  ///
+  template<typename WrappedIter, typename Callable>
+  using transform_iterator = iterator_adaptor<TransformIteratorImpl<WrappedIter, Callable>>;
+
+  namespace view {
+
+    template<typename Range, typename Callable>
+    auto transform(Range&& r, Callable&& c) {
+      using std::begin, std::end;
+      using transformiter = transform_iterator<decltype(begin(r)), std::decay_t<Callable>>;
+      auto first = transformiter(begin(r), std::forward<Callable>(c));
+      auto last = transformiter(end(r), first);
+      return sequence(first, last);
+    }
+  }
+
+  ///
+  /// Filter iterator
+  ///
+  template<typename WrappedIter, typename Predicate>
+  class FilterIterImpl{
+  public:
+
+    using value_type = typename detail::value_type<WrappedIter>::type;
+    using reference = typename detail::reference<WrappedIter>::type;
+    using iterator_category = typename detail::iterator_category<WrappedIter>::type;
+
+    static_assert(std::is_same_v<std::decay_t<decltype(*std::declval<WrappedIter>())>, value_type>);
+
+    FilterIterImpl(WrappedIter iter, WrappedIter last, Predicate callable)
+      : iter (std::move(iter)), last(last), callable {std::make_shared<Predicate>(std::move(callable))}
+    {
+      nextvalid();
+    }
+
+    FilterIterImpl(WrappedIter iter, WrappedIter last, FilterIterImpl other)
+      : iter (std::move(iter)), last(last), callable {other.callable}
+    {
+      nextvalid();
+    }
+
+    void nextvalid() {
+      while(iter != last && !std::invoke(*callable, *iter)){
+	++iter;
+      }
+    }
+
+    void advance(int n)
+    {
+      for (int i = 0; i < n; i++) {
+        while (++iter != last && !std::invoke(*callable, *iter) );
+      }
+    }
+
+    reference dereference()
+    {
+      return *iter;
+    }
+
+    bool equal(const FilterIterImpl& o) const
+    {
+      return iter == o.iter;
+    }
+
+    auto difference(const FilterIterImpl& o) const
+    {
+      return iter - o.iter;
+    }
+
+    WrappedIter iter;
+    WrappedIter last;
+    std::shared_ptr<Predicate> callable;
+  };
+
+  ///
+  /// Filter Iterator
+  ///
+  template<typename WrappedIter, typename Predicate>
+  using filter_iterator = iterator_adaptor<FilterIterImpl<WrappedIter, Predicate>>;
+
+  namespace view {
+
+    template<typename Range, typename Predicate>
+    auto filter(Range&& r, Predicate&& c) {
+      using std::begin, std::end;
+      using filteriter = filter_iterator<decltype(begin(r)), std::decay_t<Predicate>>;
+      auto first = filteriter(begin(r), end(r), std::forward<Predicate>(c));
+      auto last = filteriter(end(r), end(r), first);
+      return sequence(first, last);
+    }
+  }
+
 }
