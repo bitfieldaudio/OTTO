@@ -22,3 +22,6 @@
 [submodule "external/tiny-process-library"]
 	path = external/tiny-process-library
 	url = https://github.com/eidheim/tiny-process-library
+[submodule "external/standardese"]
+	path = external/standardese
+	url = https://github.com/foonathan/standardese

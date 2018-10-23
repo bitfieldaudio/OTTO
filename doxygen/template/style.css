@@ -1,0 +1,231 @@
+div#top {
+  margin-top: 50px;
+}
+
+.navbar-brand>img {
+  display: inline;
+}
+
+.page-header {
+  border: none;
+  margin: 70px 0 20px;
+}
+
+.n-hidden{
+  display: none;
+}
+
+
+td.mlabels-right {
+  padding: 10px;
+}
+
+.memname{
+  font-size: 16px;
+}
+
+img {
+    max-width: 100%;
+}
+
+.icon {
+    width: 1.5em;
+    height: 1.5em;
+    padding: 0.2em;
+    vertical-align: middle;
+}
+
+.memdoc.panel-body {
+    box-shadow: none;
+    border: none;
+    background: none;
+}
+
+.memproto.panel-heading {
+    box-shadow: none;
+    text-shadow: none;
+    background: #F4F4F4;
+    border-radius: 0px;
+    border: none;
+    border-bottom: 1px solid #ddd;
+    padding: 6px;
+    padding-left: 10px;
+}
+
+.memtitle {
+    background: #F4F4F4;
+    border: 1px solid #ddd;
+    border-radius: 0px;
+    font-size: 1.8em;
+    font-weight: 500;
+    font-family: monospace;
+}
+
+.memitem.panel.panel-default {
+    box-shadow: none;
+    border-radius: 0px;
+}
+
+.memname td, .memtemplate {
+    font-family: monospace;
+    margin-left: 0px;
+    color: black;
+}
+
+.memname table, table.memname {
+    width: 0px;
+}
+
+.memdoc p.definition, .memdoc p.reference {
+    font-size: 0.8em;
+}
+
+.memdoc p.definition {
+    border-top: 1px solid #ddd;
+    margin: 0px -10px;
+    padding: 10px;
+    padding-bottom: 0px;
+}
+
+.ah.btn.btn-default {
+    background-color: white;
+    background-image: none;
+    box-shadow: none;
+    border-radius: 0px;
+    margin-left: 0px;
+    border: 1px solid #ddd;
+    color: black;
+    transition: color 100ms;
+}
+
+.ah.btn.btn-default:hover {
+    color: #ddd;
+}
+
+table.fieldtable {
+    border: 1px solid #ddd;
+    width: 100%;
+    margin: 0px;
+    margin-bottom: 10px;
+    box-shadow: none;
+}
+
+.fieldtable th {
+    background: #E2E8F2;
+    border-bottom: 1px solid #ddd;
+}
+
+.fieldtable td.fieldtype, .fieldtable td.fieldname {
+    border-right: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+}
+
+.fieldtable td.fielddoc {
+    border-bottom: 1px solid #ddd;
+}
+
+span.mlabel.label.label-info {
+    text-shadow: none;
+    border: none;
+    border-radius: 0px;
+    background: #516da7;
+    padding: 0.3em 0.7em;
+    font-size: 8pt;
+}
+
+div.header {
+    background: white;
+    border-bottom: 1px solid #BBB;
+}
+
+div.contents {
+    margin-left: 0px;
+    margin-right: 0px;
+}
+
+.directory .levels {
+    margin: 0px !important;
+    padding: 0.5em;
+}
+
+.content table {
+    width: 100%;
+    margin-left: 0px;
+}
+
+.icon {
+    border-radius: 0;
+}
+
+.directory td.entry, .directory td.desc {
+    padding: 6px;
+    vertical-align: middle;
+}
+
+li.navelem {
+    background: none;
+    padding: 0px;
+}
+
+.navpath ul.breadcrumb {
+    background: none;
+    border: none;
+}
+
+.navpath li.navelem a.el {
+    float: right;
+}
+
+.dyncontent img {
+    width: auto;
+    max-width: 1000%;
+}
+
+.dyncontent {
+    overflow: scroll;
+}
+
+div.fragment {
+    box-shadow: none;
+    background: #F4F4F4;
+    border-radius: 0px;
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+
+code {
+    background: #F4F4F4;
+    color: inherit;
+    border-radius: 0px;
+}
+
+a#details + h2.groupheader {
+    display:none;
+}
+
+dl.warning, dl.attention {
+    border-left: 5px solid;
+    border-color: #ff4444;
+    background: #f5dada;
+    border-radius: 2px;
+    padding: 10px;
+    padding-left: 15px;
+    margin: 0px;
+}
+
+.attention code {
+    background: #ffededf4;
+}
+
+dl.note {
+    border-left: 5px solid;
+    border-color: #ffa700;
+    background: #fff1d1;
+    border-radius: 2px;
+    padding: 10px;
+    padding-left: 15px;
+    margin: 0px;
+}
+dl.note code {
+    background: #fffcedf4;
+}

@@ -67,3 +67,12 @@ target_include_directories(range-v3 SYSTEM INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}
 execute_process(COMMAND git submodule update --init -- tiny-process-library WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tiny-process-library)
 
+# Standardese documentation
+if(OTTO_BUILD_DOCS) 
+  execute_process(COMMAND git submodule update --init -- standardese WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}) 
+  set(standardese_DIR ${CMAKE_CURRENT_SOURCE_DIR}/standardese)  
+  set(STANDARDESE_BUILD_TEST OFF CACHE BOOL "Build standardese tests")  
+  add_subdirectory(${standardese_DIR})  
+  set(STANDARDESE_TOOL "${CMAKE_CURRENT_BINARY_DIR}/bin/standardese")   
+  include(${standardese_DIR}/standardese-config.cmake)  
+endif()

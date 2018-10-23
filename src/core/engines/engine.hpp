@@ -27,7 +27,6 @@ namespace otto::core::engines {
     sequencer,
     /// Twist engines - Not really engines in the same sense
     twist,
-
     /// Misc engines - used for stuff like the Master screen.
     misc
   };

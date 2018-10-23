@@ -8,8 +8,8 @@
 #include "util/algorithm.hpp"
 #include "util/exception.hpp"
 
-#include "util/utility.hpp"
 #include "services/logger.hpp"
+#include "util/utility.hpp"
 
 namespace otto::core::midi {
 
@@ -56,16 +56,25 @@ namespace otto::core::midi {
       ControlChange = 0b1011,
     };
 
+    std::array<byte, 1> to_bytes()
+    {
+      return {(byte(type) << 4) | byte(channel)};
+    }
+
+    static MidiEvent from_bytes(gsl::span<byte> bytes, int time = 0)
+    {
+      return {Type{bytes[0] >> 4}, bytes[0] & 0b1111, time};
+    }
+
     Type type;
 
-    std::array<byte, max_data_size> data;
     int channel;
     int time;
   };
 
   struct NoteEvent : MidiEvent {
-    byte key = data[0];
-    byte velocity = data[1];
+    byte key = 0;
+    byte velocity = 0;
 
     constexpr NoteEvent(const MidiEvent& event) noexcept : MidiEvent(event) {}
 
@@ -84,37 +93,83 @@ namespace otto::core::midi {
     /// and channels
     ///
     /// \throws `util::exception` if `note` is not in `detail::note_names`
-    constexpr NoteEvent(MidiEvent::Type type, int note, float velocity = 1, byte channel = 0)
-      : MidiEvent{type, {}, channel, 0},
+    constexpr NoteEvent(MidiEvent::Type type, int note, float velocity = 1, byte channel = 0, int time = 0)
+      : MidiEvent{type, channel, time},
         key{gsl::narrow_cast<byte>(note)},
         velocity{gsl::narrow_cast<byte>(std::min(127.f, velocity * 127))}
     {}
+
+    std::array<byte, 3> to_bytes()
+    {
+      return {(byte(type) << 4) | byte(channel), key, velocity};
+    }
+
+    static NoteEvent from_bytes(gsl::span<byte> bytes, int time = 0)
+    {
+      return {Type{bytes[0] >> 4}, bytes[1], bytes[2] / 127.f, bytes[0] & 0b1111, time};
+    }
   };
 
   struct NoteOnEvent : NoteEvent {
     NoteOnEvent(const MidiEvent& event) : NoteEvent(event){};
 
-    constexpr NoteOnEvent(int note, float velocity = 1.f, byte channel = 0)
-      : NoteEvent{MidiEvent::Type::NoteOn, note, velocity, channel}
+    constexpr NoteOnEvent(int note, float velocity = 1.f, byte channel = 0, int time = 0)
+      : NoteEvent{MidiEvent::Type::NoteOn, note, velocity, channel, time}
     {}
+
+    static NoteOnEvent from_bytes(gsl::span<byte> bytes, int time = 0)
+    {
+      return {bytes[1], bytes[2] / 127.f, bytes[0] & 0b1111, time};
+    }
   };
 
   struct NoteOffEvent : NoteEvent {
     NoteOffEvent(const MidiEvent& event) : NoteEvent(event){};
 
-    constexpr NoteOffEvent(int note, float velocity = 1, byte channel = 0)
-      : NoteEvent{MidiEvent::Type::NoteOff, note, velocity, channel}
+    constexpr NoteOffEvent(int note, float velocity = 1, byte channel = 0, int time = 0)
+      : NoteEvent{MidiEvent::Type::NoteOff, note, velocity, channel, time}
     {}
+
+    static NoteOffEvent from_bytes(gsl::span<byte> bytes, int time = 0)
+    {
+      return {bytes[1], bytes[2] / 127.f, bytes[0] & 0b1111, time};
+    }
   };
 
   struct ControlChangeEvent : public MidiEvent {
-    int controler = data[0];
-    int value = data[1];
+    int controler = 0;
+    int value = 0;
 
     ControlChangeEvent(const MidiEvent& event) : MidiEvent(event){};
+
+    std::array<byte, 3> to_bytes()
+    {
+      return {(byte(type) << 4) | byte(channel), controler, value};
+    }
+
+    static ControlChangeEvent from_bytes(gsl::span<byte> bytes, int time = 0)
+    {
+      auto res = ControlChangeEvent(MidiEvent::from_bytes(bytes, time));
+      res.controler = bytes[1];
+      res.value = bytes[2];
+      return res;
+    }
   };
 
   using AnyMidiEvent = mpark::variant<NoteOnEvent, NoteOffEvent, ControlChangeEvent>;
+
+  inline AnyMidiEvent from_bytes(gsl::span<unsigned char> bytes, int time = 0)
+  {
+    auto type = MidiEvent::Type(bytes[0] >> 4);
+    switch (type) {
+    case MidiEvent::Type::NoteOff:
+      return NoteOffEvent::from_bytes(bytes, time);
+    case MidiEvent::Type::NoteOn: //
+      return NoteOnEvent::from_bytes(bytes, time);
+    case MidiEvent::Type::ControlChange:
+      return ControlChangeEvent::from_bytes(bytes, time);
+    }
+  }
 
   inline void generateFreqTable(double tuning = 440)
   {
@@ -140,11 +195,11 @@ namespace otto::core::midi {
     shared_vector() = default;
 
     shared_vector(std::vector<value_type>&& other)
-      : _data (std::make_shared<std::vector<value_type>>(std::move(other)))
+      : _data(std::make_shared<std::vector<value_type>>(std::move(other)))
     {}
 
     shared_vector(const std::vector<value_type>& other)
-      : _data (std::make_shared<std::vector<value_type>>(other))
+      : _data(std::make_shared<std::vector<value_type>>(other))
     {}
 
     auto begin()

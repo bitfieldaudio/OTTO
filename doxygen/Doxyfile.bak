@@ -1,0 +1,9 @@
+PROJECT_NAME           = "@CMAKE_PROJECT_NAME@"
+PROJECT_NUMBER         = @VERSION_MAJOR@.@VERSION_MINOR@.@VERSION_PATCH@
+STRIP_FROM_PATH        = @PROJECT_SOURCE_DIR@ \
+                         @PROJECT_BINARY_DIR@
+FILE_PATTERNS          = *.hpp \
+                         *.cpp
+RECURSIVE              = YES
+OUTPUT_DIRECTORY       = @OTTO_BINARY_DIR@/doc_doxygen/
+INPUT                  = @OTTO_SOURCE_DIR@/src/ @OTTO_SOURCE_DIR@/boards @OTTO_SOURCE_DIR@/docs 

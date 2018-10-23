@@ -127,6 +127,7 @@ namespace otto::util {
            typename Enable = void>
   struct is_iterator : std::false_type {};
 
+  /// \privatesection
   template<typename iter, typename type, typename category>
   struct is_iterator<
     iter,

@@ -176,6 +176,7 @@ namespace otto::core::props {
     using hook_t = HookTag::impl_t<HT, typename Mixin::value_type, HO>;
 
     /// Check if Mixin has a handler for Hook
+    /// \privatesection
     template<typename Mixin, typename HT, HookOrder HO, typename = void>
     struct has_handler : std::false_type {
       CONCEPT_ASSERT(cpts::models<MixinImpl, Mixin>() &&
@@ -183,6 +184,7 @@ namespace otto::core::props {
     };
 
     /// Check if Mixin has a handler for Hook
+    /// \privatesection
     template<typename Mixin, typename HT, HookOrder HO>
     struct has_handler<Mixin,
                        HT,

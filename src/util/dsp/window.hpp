@@ -19,7 +19,7 @@ namespace otto::util::dsp {
           blackman_harris
       };
 
-      /// Instantiates the Window, and computes the window samples.
+      /// Instantiates the Window, and computes the window samples. $math_test$
       Window (int size, WindowType type, bool normalize = true);
 
       /// Recomputes the window samples, given the new size, window type, and normalization settings.

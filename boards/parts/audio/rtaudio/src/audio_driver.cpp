@@ -30,18 +30,27 @@ namespace otto::service::audio {
 
   void RTAudioDriver::init()
   {
+    init_audio();
+    try {
+      init_midi();
+    } catch (const RtMidiError& error) {
+      LOGE("Midi error: {}", error.getMessage());
+      LOGE("Ignoring error and continuing");
+    }
+  }
+
+  void RTAudioDriver::init_audio()
+  {
     std::vector<RtAudio::Api> apis;
     client.getCompiledApi(apis);
 
     for (auto& api : apis) {
       DLOGI("RtApi: {}", api);
     }
-
     RtAudio::StreamParameters outParameters;
     outParameters.deviceId = client.getDefaultOutputDevice();
     outParameters.nChannels = 2;
     outParameters.firstChannel = 0;
-
     RtAudio::StreamParameters inParameters;
     inParameters.deviceId = client.getDefaultInputDevice();
     inParameters.nChannels = 1;
@@ -61,6 +70,39 @@ namespace otto::service::audio {
       e.printMessage();
       throw;
     }
+  }
+
+  void RTAudioDriver::init_midi()
+  {
+    midi_in = RtMidiIn();
+    midi_out = RtMidiOut();
+    midi_out->setClientName("OTTO");
+    midi_out->setPortName("otto_out");
+    midi_in->setClientName("OTTO");
+    midi_in->setPortName("otto_in");
+
+    for (int i = 0; i < midi_out->getPortCount(); i++) {
+      auto port = midi_out->getPortName(i);
+      if (port != "otto_in") {
+        midi_out->openPort(i);
+      }
+      DLOGI("Connected otto_out to midi port {}", port);
+    }
+
+    for (int i = 0; i < midi_in->getPortCount(); i++) {
+      auto port = midi_in->getPortName(i);
+      if (port != "otto_out") {
+        midi_in->openPort(i);
+      }
+      DLOGI("Connected otto_in to midi port {}", port);
+    }
+
+    midi_in->setCallback(
+      [](double timeStamp, std::vector<unsigned char>* message, void* userData) {
+        auto& self = *static_cast<RTAudioDriver*>(userData);
+        self.send_midi_event(core::midi::from_bytes(*message));
+      },
+      this);
   }
 
   void RTAudioDriver::shutdown()
@@ -92,7 +134,6 @@ namespace otto::service::audio {
       return 0;
     }
 
-    //gatherMidiInput(nframes);
     midi_bufs.swap();
 
     int ref_count = 0;
@@ -107,6 +148,15 @@ namespace otto::service::audio {
     for (int i = 0; i < nframes; i++) {
       out_data[i * 2] = std::get<0>(out.audio[i]);
       out_data[i * 2 + 1] = std::get<1>(out.audio[i]);
+    }
+
+    if (midi_out) {
+      for (auto& ev : out.midi) {
+        util::match(ev, [this](auto& ev) {
+          auto bytes = ev.to_bytes();
+          midi_out->sendMessage(bytes.data(), bytes.size());
+        });
+      }
     }
     return 0;
   }

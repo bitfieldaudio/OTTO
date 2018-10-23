@@ -130,6 +130,7 @@ namespace otto::core::props {
   template<typename Initializer, typename = void>
   struct is_initializer : std::false_type {};
 
+  /// \privatesection
   template<typename Initializer>
   struct is_initializer<
     Initializer,
