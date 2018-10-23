@@ -1,0 +1,22 @@
+{
+  "engine": "Nuke",
+  "name": "Rohirrim",
+  "props": {
+    "Filter": 0.270000696182251,
+    "Relation": 1.42999911308289,
+    "Sub": 1.0,
+    "Wave": 2.96999764442444,
+    "envelope": {
+      "Attack": 6.05999612808228,
+      "Decay": 0.300000011920929,
+      "Release": 3.11999893188477,
+      "Sustain": 1.0
+    },
+    "voice_settings": {
+      "Octave": 3,
+      "Play Mode": 0,
+      "Portamento": 0.0,
+      "Transpose": 0
+    }
+  }
+}
