@@ -5,6 +5,7 @@
 #include "core/globals.hpp"
 
 #include "engines/synths/hammond/hammond.hpp"
+#include "engines/synths/vocoder/vocoder.hpp"
 #include "engines/fx/wormhole/wormhole.hpp"
 #include "engines/misc/master/master.hpp"
 #include "engines/seq/euclid/euclid.hpp"
@@ -37,6 +38,7 @@ namespace otto::service::engines {
     register_engine<otto::engines::Euclid>();
     register_engine<otto::engines::NukeSynth>();
     register_engine<otto::engines::HammondSynth>();
+    register_engine<otto::engines::VocoderSynth>();
     register_engine<otto::engines::Wormhole>();
     register_engine<otto::engines::External>();
 
