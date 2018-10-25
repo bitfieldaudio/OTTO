@@ -5,12 +5,12 @@
 #include "core/audio/midi.hpp"
 #include "core/globals.hpp"
 
-#include "services/engines.hpp"
-#include "services/presets.hpp"
-#include "services/ui.hpp"
-#include "services/logger.hpp"
-#include "services/state.hpp"
 #include "services/audio.hpp"
+#include "services/engines.hpp"
+#include "services/logger.hpp"
+#include "services/presets.hpp"
+#include "services/state.hpp"
+#include "services/ui.hpp"
 
 using namespace otto;
 
@@ -21,7 +21,6 @@ int handle_exception();
 
 int main(int argc, char* argv[])
 {
-
   try {
     service::logger::init(argc, argv);
 

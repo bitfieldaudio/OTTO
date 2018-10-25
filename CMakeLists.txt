@@ -22,6 +22,14 @@ if (OTTO_ENABLE_ASAN)
   set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
 endif()
 
+if (DEFINED CMAKE_CXX_FLAGS_DEBUG_INIT AND  
+    "${CMAKE_CXX_FLAGS_DEBUG_INIT}" STREQUAL "${CMAKE_CXX_FLAGS_DEBUG}")
+    # Overwrite the init values choosen by CMake
+    if (CMAKE_COMPILER_IS_GNUCXX)
+        set(CMAKE_CXX_FLAGS_DEBUG "-ggdb3 -O0" CACHE STRING "" FORCE)
+    endif()
+endif()
+
 set(OTTO_BOARD "desktop" CACHE STRING "The board configuration to use")
 
 file(GLOB OTTO_BOARDS RELATIVE ${OTTO_SOURCE_DIR}/boards/ ${OTTO_SOURCE_DIR}/boards/* )

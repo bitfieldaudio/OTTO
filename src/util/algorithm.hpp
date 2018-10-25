@@ -9,22 +9,22 @@
 
 #include "util/type_traits.hpp"
 
-/// \file 
+/// \file
 /// This file contains the \ref otto::util::algorithm namespace
 
 namespace otto::util {
 
-  /// Inline namespace with algorithms similar to the ones found in the standard `<algorithm>` header.
-  /// 
-  /// Also, this namespace includes container-based wrappers for all standard algorithms. For more on
-  /// those, see \ref container_algos
-  /// 
-  /// \attention `otto::util::algorithm` is an inline namespace, meaning all members can and should be
-  /// accessed directly from the `otto::util` namespace i.e. as `util::find_if(...)`, not 
+  /// Inline namespace with algorithms similar to the ones found in the standard `<algorithm>`
+  /// header.
+  ///
+  /// Also, this namespace includes container-based wrappers for all standard algorithms. For more
+  /// on those, see \ref container_algos
+  ///
+  /// \attention `otto::util::algorithm` is an inline namespace, meaning all members can and should
+  /// be accessed directly from the `otto::util` namespace i.e. as `util::find_if(...)`, not
   /// `util::algorithm::find_if(...)`. It is only a separate namespace for clarification of
   /// documentation and name resolution.
   inline namespace algorithm {
-
     /// Joins a sequence of strings, separating them using `js`
     template<class StrIterator> // Models InputIterator<std::string>
     std::string join_strings(StrIterator b, StrIterator e, std::string_view js = ", ")
@@ -37,6 +37,16 @@ namespace otto::util {
         result.append(s);
       });
       return result;
+    }
+
+    /// Find/Replace
+    inline void string_replace(std::string& str, const std::string& oldStr, const std::string& newStr)
+    {
+      std::string::size_type pos = 0u;
+      while ((pos = str.find(oldStr, pos)) != std::string::npos) {
+        str.replace(pos, oldStr.length(), newStr);
+        pos += newStr.length();
+      }
     }
 
     /// Joins a sequence of strings, separating them using `js`
@@ -53,7 +63,7 @@ namespace otto::util {
         return std::array<std::decay_t<decltype(std::invoke(gen, std::declval<int>()))>,
                           sizeof...(ns)>{{std::invoke(gen, ns)...}};
       }
-    } // namespace algo_detail
+    } // namespace detail
 
     template<int n, class Func>
     constexpr auto generate_array(Func&& gen)
@@ -62,6 +72,18 @@ namespace otto::util {
       return detail::generate_array_impl(std::move(intseq), std::forward<Func>(gen));
     }
 
+    template<typename Container, typename T>
+    bool erase(Container&& cont, T&& t)
+    {
+      cont.erase(std::remove(std::begin(cont), std::end(cont), std::forward<T>(t)), std::end(cont));
+    }
+
+    template<typename Container, typename Pred>
+    bool erase_if(Container&& cont, Pred&& pred)
+    {
+      cont.erase(std::remove_if(std::begin(cont), std::end(cont), std::forward<Pred>(pred)),
+                 std::end(cont));
+    }
 
     /*
      * Range algorithms
@@ -148,10 +170,10 @@ namespace otto::util {
     }
 
     /// \defgroup container_algos Container Standard Algorithms
-    /// 
-    /// These are the standard library algorithms wrapped in container-based interfaces, instead of iterator
-    /// based ones.
-    /// 
+    ///
+    /// These are the standard library algorithms wrapped in container-based interfaces, instead of
+    /// iterator based ones.
+    ///
     /// What this basically means is, this code
     /// ```cpp
     /// auto found = std::find(std::begin(vec), std::end(vec), 42);
@@ -160,14 +182,16 @@ namespace otto::util {
     /// ```cpp
     /// auto found = util::find(vec, 42);
     /// ```
-    /// 
-    /// The wrappers call `std::begin` and `std::end` or use [ADL](https://en.cppreference.com/w/cpp/language/adl)
-    /// to find free `begin(cont)` and `end(cont)` functions.
-    /// 
-    /// For documentation for the individual algorithms, refer to https://en.cppreference.com/w/cpp/header/algorithm
-    /// 
-    /// All of these are defined in the \ref otto::util::algorithm namespace, which also includes some custom algorithms,
-    /// matching a similar interface.
+    ///
+    /// The wrappers call `std::begin` and `std::end` or use
+    /// [ADL](https://en.cppreference.com/w/cpp/language/adl) to find free `begin(cont)` and
+    /// `end(cont)` functions.
+    ///
+    /// For documentation for the individual algorithms, refer to
+    /// https://en.cppreference.com/w/cpp/header/algorithm
+    ///
+    /// All of these are defined in the \ref otto::util::algorithm namespace, which also includes
+    /// some custom algorithms, matching a similar interface.
     /// \{
 
     /// Container based wrapper for \ref std::accumulate()
@@ -811,7 +835,7 @@ namespace otto::util {
 
 
     /// \}
-    /// 
+    ///
   } // namespace algorithm
 
 } // namespace otto::util

@@ -134,7 +134,7 @@ namespace otto::core::audio {
     AudioBufferHandle slice(int idx, int length = -1)
     {
       length = length < 0 ? _length - idx : length;
-      return {_data + idx, length, *_reference_count};
+      return {_data + idx, std::size_t(length), *_reference_count};
     }
 
     float* data()

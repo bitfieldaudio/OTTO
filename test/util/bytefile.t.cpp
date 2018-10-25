@@ -2,8 +2,8 @@
 
 #include <iterator>
 
-#include "util/bytefile.hpp"
 #include "util/algorithm.hpp"
+#include "util/bytefile.hpp"
 
 namespace otto::util {
 
@@ -11,15 +11,13 @@ namespace otto::util {
   using Path = ByteFile::Path;
   using Error = ByteFile::Error;
 
-  TEST_CASE("Bytefile", "[util]") {
-
+  TEST_CASE ("Bytefile", "[util]") {
     Path somePath = test::dir / "test1.bytes";
 
     ByteFile f;
     fs::remove(somePath);
 
-    SECTION("Open / close") {
-
+    SECTION ("Open / close") {
       REQUIRE(!f.is_open());
       REQUIRE_NOTHROW(f.open(somePath));
 
@@ -30,11 +28,10 @@ namespace otto::util {
       REQUIRE(fs::is_regular_file(somePath));
     }
 
-    SECTION("Create file") {
-
+    SECTION ("Create file") {
       REQUIRE_NOTHROW(f.open(somePath));
 
-      bytes<12> data {42, 5, 3, 5, 12, 32, 65, 2, 8, 89, 123, 255};
+      bytes<12> data{42, 5, 3, 5, 12, 32, 65, 2, 8, 89, 123, 255};
 
       f.write_bytes(data);
       f.close();
@@ -47,8 +44,7 @@ namespace otto::util {
       REQUIRE(data == got);
     }
 
-    SECTION("seek") {
-
+    SECTION ("seek") {
       ByteFile::Position somePos = 10;
 
       REQUIRE(!f.is_open());
@@ -64,9 +60,8 @@ namespace otto::util {
       }
     }
 
-    SECTION("Write / Read bytes") {
-
-      SECTION("Using iterators") {
+    SECTION ("Write / Read bytes") {
+      SECTION ("Using iterators") {
         constexpr std::size_t someSize = 2048;
 
         REQUIRE_NOTHROW(f.open(somePath));
@@ -91,12 +86,12 @@ namespace otto::util {
         REQUIRE(f.read_bytes(readBytes.begin(), 10).is_err());
       }
 
-      SECTION("Using otto::bytes") {
+      SECTION ("Using otto::bytes") {
         REQUIRE_NOTHROW(f.open(somePath));
 
         REQUIRE(f.position() == 0);
 
-        bytes<4> data {1, 2, 3, 4};
+        bytes<4> data{1, 2, 3, 4};
 
         f.write_bytes(data);
         REQUIRE(f.position() == 4);
@@ -110,8 +105,7 @@ namespace otto::util {
       }
     }
 
-    SECTION("Chunks") {
-
+    SECTION ("Chunks") {
       Path somePath2 = test::dir / "test2.bytes";
       int someLength = 4096;
 
@@ -122,12 +116,14 @@ namespace otto::util {
         SomeChunk() : Chunk("Chu1") {}
         SomeChunk(Chunk& c) : Chunk(c) {}
 
-        void write_fields(ByteFile& file) override {
+        void write_fields(ByteFile& file) override
+        {
           file.write_bytes(field1);
           file.write_bytes(field2);
         }
 
-        void read_fields(ByteFile& file) override {
+        void read_fields(ByteFile& file) override
+        {
           REQUIRE(file.read_bytes(field1).is_ok());
           REQUIRE(file.read_bytes(field2).is_ok());
         }
@@ -140,12 +136,14 @@ namespace otto::util {
         SomeOtherChunk() : Chunk("Chu2") {}
         SomeOtherChunk(Chunk& c) : Chunk(c) {}
 
-        void write_fields(ByteFile& file) override {
+        void write_fields(ByteFile& file) override
+        {
           file.write_bytes(field1);
           file.write_bytes(dynField.begin(), dynField.end());
         }
 
-        void read_fields(ByteFile& file) override {
+        void read_fields(ByteFile& file) override
+        {
           file.read_bytes(field1).unwrap_ok();
           file.read_bytes(std::back_inserter(dynField), size.as_u() - 4).unwrap_ok();
         }
@@ -158,14 +156,13 @@ namespace otto::util {
       SomeOtherChunk soc;
 
       sc.field1.as_u() = 0x52F93DAA;
-      sc.field2 = {0xFF, 0x25, 0x54, 0x20, 0x99, 0xD3,
-                   0xFF, 0x25, 0x54, 0x20, 0x99, 0xD3,};
+      sc.field2 = {
+        0xFF, 0x25, 0x54, 0x20, 0x99, 0xD3, 0xFF, 0x25, 0x54, 0x20, 0x99, 0xD3,
+      };
 
       soc.field1.as_u() = 0x852B2C3;
       std::generate_n(std::back_inserter(soc.dynField), someLength,
-        [&] () {
-          return std::byte(Random::get<unsigned char>());
-        });
+                      [&]() { return std::byte(Random::get<unsigned char>()); });
 
       sc.write(f);
       soc.write(f);
@@ -177,52 +174,42 @@ namespace otto::util {
       REQUIRE(f.is_open());
 
       SECTION ("for_chunks_in_range") {
-
-        REQUIRE_NOTHROW(f.for_chunks_in_range(0, f.size(),
-            [&] (auto&& c) {
-              if (c.id == "Chu1") {
-                SomeChunk rsc(c);
-                rsc.read(f);
-                if (rsc.field1 != sc.field1) throw "Chunk mismatch";
-                if (rsc.field2 != sc.field2) throw "Chunk mismatch";
-              } else if (c.id == "Chu2") {
-                SomeOtherChunk rsoc(c);
-                rsoc.read(f);
-                if (rsoc.field1 != soc.field1) throw "Chunk mismatch";
-                if (!std::equal(soc.dynField.begin(), soc.dynField.end(),
-                    rsoc.dynField.begin())) throw "Chunk mismatch";
-              }
-            }));
+        REQUIRE_NOTHROW(f.for_chunks_in_range(0, f.size(), [&](auto&& c) {
+          if (c.id == "Chu1") {
+            SomeChunk rsc(c);
+            rsc.read(f);
+            if (rsc.field1 != sc.field1) throw "Chunk mismatch";
+            if (rsc.field2 != sc.field2) throw "Chunk mismatch";
+          } else if (c.id == "Chu2") {
+            SomeOtherChunk rsoc(c);
+            rsoc.read(f);
+            if (rsoc.field1 != soc.field1) throw "Chunk mismatch";
+            if (!std::equal(soc.dynField.begin(), soc.dynField.end(), rsoc.dynField.begin()))
+              throw "Chunk mismatch";
+          }
+        }));
 
         // out of bounds
 
-        REQUIRE_NOTHROW(f.for_chunks_in_range(0, f.size() + 4,
-            [&] (auto&& c) {}));
-
+        REQUIRE_NOTHROW(f.for_chunks_in_range(0, f.size() + 4, [&](auto&& c) {}));
       }
     }
   }
 
-  TEST_CASE("ByteFile Performance", "[util] [ByteFile]") {
-
+  TEST_CASE ("ByteFile Performance", "[util] [ByteFile]") {
     std::size_t someSize = 10000;
-    fs::path somePath {test::dir / "perf.bytes"};
-    ByteFile f {somePath};
+    fs::path somePath{test::dir / "perf.bytes"};
+    ByteFile f{somePath};
 
     REQUIRE(f.is_open());
 
     SECTION ("Write with pointers vs iterators") {
-
       auto data = std::vector<std::byte>(someSize);
-      std::generate_n(std::begin(data), someSize, [] {return std::byte{0};});
+      std::generate_n(std::begin(data), someSize, [] { return std::byte{0}; });
 
-      auto iterTime = test::measure::execution([&] {
-          f.write_bytes(std::begin(data), someSize);
-        });
+      auto iterTime = test::measure::execution([&] { f.write_bytes(std::begin(data), someSize); });
 
-      auto ptrTime = test::measure::execution([&] {
-          f.write_bytes(data.data(), someSize);
-        });
+      auto ptrTime = test::measure::execution([&] { f.write_bytes(data.data(), someSize); });
 
       LOGI("Iterators: {}ns", iterTime.count());
       LOGI("Pointers:  {}ns", ptrTime.count());
@@ -230,4 +217,4 @@ namespace otto::util {
     }
   }
 
-}
+} // namespace otto::util

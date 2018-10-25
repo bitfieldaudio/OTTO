@@ -1,11 +1,11 @@
 #!/bin/bash
 set -e # Exit with nonzero exit code if anything fails
 
-SOURCE_BRANCH="master"
+SOURCE_BRANCH="develop-topisani"
 TARGET_BRANCH="gh-pages"
 
 function buildDocs {
-    make docs
+    cmake --build build -- docs
 }
 
 echo "=== Building Docs ==="

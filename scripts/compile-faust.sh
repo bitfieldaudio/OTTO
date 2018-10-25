@@ -18,7 +18,7 @@ echo "================================="
 echo "===== Compiling Faust files ====="
 echo "================================="
 echo ""
-find . -name "*.dsp" -type f -exec bash -c "compile '{}'" \;
+find . -name ".dsp" -type f -exec bash -c "compile '{}'" \;
 
 echo ""
 echo "===== Faust Compilation done ===="

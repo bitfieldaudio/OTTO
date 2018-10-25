@@ -152,13 +152,4 @@ namespace otto::core::props {
     };
   }
 
-  template<typename... Tags>
-  struct Properties : meta::_t<detail::properties_for_list<meta::_t<get_tag_list<void, Tags...>>>> {
-    using Super = meta::_t<detail::properties_for_list<meta::_t<get_tag_list<void, Tags...>>>>;
-
-    using typename Super::tag_list;
-
-    using Super::Super;
-  };
-
 } // namespace otto::core::props

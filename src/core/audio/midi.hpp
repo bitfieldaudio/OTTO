@@ -58,7 +58,7 @@ namespace otto::core::midi {
 
     std::array<byte, 1> to_bytes()
     {
-      return {(byte(type) << 4) | byte(channel)};
+      return {byte((byte(type) << 4) | channel)};
     }
 
     static MidiEvent from_bytes(gsl::span<byte> bytes, int time = 0)
@@ -101,12 +101,12 @@ namespace otto::core::midi {
 
     std::array<byte, 3> to_bytes()
     {
-      return {(byte(type) << 4) | byte(channel), key, velocity};
+      return {byte((byte(type) << 4) | channel), key, velocity};
     }
 
     static NoteEvent from_bytes(gsl::span<byte> bytes, int time = 0)
     {
-      return {Type{bytes[0] >> 4}, bytes[1], bytes[2] / 127.f, bytes[0] & 0b1111, time};
+      return {Type{bytes[0] >> 4}, bytes[1], bytes[2] / 127.f, byte(bytes[0] & 0b1111), time};
     }
   };
 
@@ -119,7 +119,7 @@ namespace otto::core::midi {
 
     static NoteOnEvent from_bytes(gsl::span<byte> bytes, int time = 0)
     {
-      return {bytes[1], bytes[2] / 127.f, bytes[0] & 0b1111, time};
+      return {bytes[1], bytes[2] / 127.f, byte(bytes[0] & 0b1111), time};
     }
   };
 
@@ -132,7 +132,7 @@ namespace otto::core::midi {
 
     static NoteOffEvent from_bytes(gsl::span<byte> bytes, int time = 0)
     {
-      return {bytes[1], bytes[2] / 127.f, bytes[0] & 0b1111, time};
+      return {bytes[1], bytes[2] / 127.f, byte(bytes[0] & 0b1111), time};
     }
   };
 
@@ -144,7 +144,7 @@ namespace otto::core::midi {
 
     std::array<byte, 3> to_bytes()
     {
-      return {(byte(type) << 4) | byte(channel), controler, value};
+      return {byte((byte(type) << 4) | channel), byte(controler), byte(value)};
     }
 
     static ControlChangeEvent from_bytes(gsl::span<byte> bytes, int time = 0)

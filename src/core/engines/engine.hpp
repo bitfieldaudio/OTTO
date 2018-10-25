@@ -211,7 +211,7 @@ public:                                                                        \
   /// Register an engine.
   ///
   /// \effects Store a function which constructs an `REngine` in a
-  /// [std::unique_ptr]() with `args` forwarded.
+  /// std::unique_ptr with `args` forwarded.
   template<typename REngine, typename... Args>
   void register_engine(Args&&... args);
 
@@ -228,7 +228,7 @@ public:                                                                        \
 
   // EngineScreen /////////////////////////////////////////////////////////////
 
-  /// A [ui::Screen]() with a reference to the engine it belongs to.
+  /// A ui::Screen with a reference to the engine it belongs to.
   ///
   /// Screens for engines should inherit from this. They can then access the
   /// engine from the `engine` reference.
@@ -261,7 +261,7 @@ public:                                                                        \
 namespace otto::core::engines {
   // EngineDispatcher Implementations ///////////////////////////////////////////
 
-  /// \exclude
+  /// \private
   namespace internal {
     template<EngineType ET>
     inline std::vector<std::function<std::unique_ptr<Engine<ET>>()>> engines {};
@@ -289,7 +289,7 @@ namespace otto::core::engines {
     }
   } // namespace internal
 
-  /// \exclude
+  /// \private
   template<typename Eg, typename... Args>
   void register_engine(Args&&... args)
   {
@@ -304,7 +304,7 @@ namespace otto::core::engines {
     internal::engines<engine_type_v<Eg>>.push_back(lambda);
   }
 
-  /// \exclude
+  /// \private
   template<EngineType ET>
   std::vector<std::unique_ptr<Engine<ET>>> create_engines()
   {

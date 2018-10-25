@@ -74,10 +74,11 @@ namespace otto::service::audio {
 
   void RTAudioDriver::init_midi()
   {
-    midi_in = RtMidiIn();
-    midi_out = RtMidiOut();
+    midi_out.emplace();
     midi_out->setClientName("OTTO");
     midi_out->setPortName("otto_out");
+
+    midi_in.emplace();
     midi_in->setClientName("OTTO");
     midi_in->setPortName("otto_in");
 

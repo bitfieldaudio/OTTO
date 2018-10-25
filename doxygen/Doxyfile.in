@@ -11,7 +11,7 @@
 # spaces. See also FILE_PATTERNS and EXTENSION_MAPPING
 # Note: If this tag is empty the current directory is searched.
 
-INPUT                  = @OTTO_SOURCE_DIR@/src/ @OTTO_SOURCE_DIR@/boards @OTTO_SOURCE_DIR@/doc
+INPUT                  = @OTTO_SOURCE_DIR@/src/ @OTTO_SOURCE_DIR@/boards @OTTO_SOURCE_DIR@/doc @OTTO_SOURCE_DIR@/test
 
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute) path
@@ -300,7 +300,7 @@ TAB_SIZE               = 4
 # "Side Effects:". You can put \n's in the value part of an alias to insert
 # newlines.
 
-ALIASES                = footnote{1}="\latexonly\footnote\{\1\}\endlatexonly\htmlonly<sup title=\"\1\">*</sup>\endhtmlonly"
+ALIASES               += footnote{1}="\latexonly\footnote\{\1\}\endlatexonly\htmlonly<sup title=\"\1\">*</sup>\endhtmlonly"
 
 # This tag can be used to specify a number of word-keyword mappings (TCL only).
 # A mapping has the form "name=value". For example adding "class=itcl::class"
@@ -2182,7 +2182,7 @@ EXPAND_AS_DEFINED      =
 # The default value is: YES.
 # This tag requires that the tag ENABLE_PREPROCESSING is set to YES.
 
-SKIP_FUNCTION_MACROS   = YES
+SKIP_FUNCTION_MACROS   = NO
 
 #---------------------------------------------------------------------------
 # Configuration options related to external references
