@@ -31,7 +31,7 @@ matrix:
             - libxcursor-dev
             - libxi-dev
       env:
-        - CC=clang-7.0 CXX=clang++-7.0
+        - CC=clang-7 CXX=clang++-7
         - BUILD_TYPE=Debug
         - USE_LIBCXX=1
         - DEPLOY_DOCS=1
@@ -105,9 +105,9 @@ before_script:
 script:
   - cd "${TRAVIS_BUILD_DIR}"
   - cmake --build build -- -j${JOBS}
-  - [[ "$DEPLOY_DOCS" == "1" ]] && script/deploy-docs
-  - build/bin/test -s || RESULT=$?
   - |
+    [[ "$DEPLOY_DOCS" == "1" ]] && script/deploy-docs
+  - build/bin/test -s || RESULT=$?
     if [[ -n "$RESULT" ]]; then
     echo "Tests failed, running in GDB for stacktrace"
     gdb -return-child-result -batch -ex "run -s" -ex "thread apply all bt" -ex "quit" --args build/bin/test
