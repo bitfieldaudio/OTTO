@@ -3,6 +3,7 @@
 #include <atomic>
 #include <string>
 #include <vector>
+#include <optional>
 
 #include "core/audio/midi.hpp"
 #include "core/audio/processor.hpp"
