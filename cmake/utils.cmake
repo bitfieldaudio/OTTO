@@ -63,6 +63,8 @@ macro(otto_include_board BOARD)
         target_sources(otto PRIVATE ${BOARD_SOURCES})
     endif()
 
-    include(${BOARD_DIR}/config.cmake)
+    if (EXISTS ${BOARD_DIR}/config.cmake)
+        include(${BOARD_DIR}/config.cmake)
+    endif()
 
 endmacro(otto_include_board)
