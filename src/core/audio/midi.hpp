@@ -156,7 +156,7 @@ namespace otto::core::midi {
     }
   };
 
-  using AnyMidiEvent = mpark::variant<NoteOnEvent, NoteOffEvent, ControlChangeEvent>;
+  using AnyMidiEvent = mpark::variant<MidiEvent, NoteOnEvent, NoteOffEvent, ControlChangeEvent>;
 
   inline AnyMidiEvent from_bytes(gsl::span<unsigned char> bytes, int time = 0)
   {
@@ -168,6 +168,8 @@ namespace otto::core::midi {
       return NoteOnEvent::from_bytes(bytes, time);
     case MidiEvent::Type::ControlChange:
       return ControlChangeEvent::from_bytes(bytes, time);
+    default:
+      return MidiEvent::from_bytes(bytes, time);
     }
   }
 
