@@ -24,19 +24,19 @@ SHA=`git rev-parse --verify HEAD`
 
 # Clone the existing gh-pages for this repo into out/
 # Create a new empty branch if gh-pages doesn't exist yet (should only happen on first deploy)
-git clone $REPO docs
-cd docs
-git checkout $TARGET_BRANCH || git checkout --orphan $TARGET_BRANCH
-cd ..
+git clone $REPO gh-pages
+(cd gh-pages; git checkout $TARGET_BRANCH || git checkout --orphan $TARGET_BRANCH)
 
 # Clean out existing contents
-rm -rf docs/**/* || exit 0
+rm -rf gh-pages/**/* || exit 0
 
 # Run our compile script
 buildDocs
 
+cp -r build/docs/html/* gh-pages/
+
 # Now let's go have some fun with the cloned repo
-cd docs
+cd gh-pages
 git config user.name "Travis CI"
 git config user.email "$COMMIT_AUTHOR_EMAIL"
 

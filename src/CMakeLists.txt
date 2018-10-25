@@ -6,8 +6,8 @@ list(REMOVE_ITEM sources ${OTTO_SOURCE_DIR}/src/main.cpp)
 
 find_package (Threads)
 # Library
-add_library(otto ${sources} ${BACKWARD_ENABLE})
-target_link_libraries(otto PUBLIC ${CMAKE_THREAD_LIBS_INIT})
+add_library(otto ${sources})
+target_link_libraries(otto PUBLIC ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
 target_include_directories(otto PUBLIC ./)
 
 # This updates configurations and includes board specific files
@@ -19,7 +19,7 @@ if (NOT OTTO_USE_LIBCXX)
 endif()
 
 # Executable
-add_executable(otto_exec ${OTTO_SOURCE_DIR}/src/main.cpp ${BACKWARD_ENABLE})
+add_executable(otto_exec ${OTTO_SOURCE_DIR}/src/main.cpp)
 target_link_libraries(otto_exec PUBLIC otto)
 set_target_properties(otto_exec PROPERTIES OUTPUT_NAME otto)
 
@@ -40,7 +40,7 @@ if(MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
   endif()
 elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long -Wpedantic -Wno-c++14-compat -Wno-psabi -Wno-unknown-pragmas")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long -Wpedantic -Wno-c++14-compat -Wno-psabi -Wno-unknown-pragmas -Wno-vla")
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long -Wpedantic \
 -Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wc++17-compat \
@@ -48,6 +48,7 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 -Wno-documentation-unknown-command \
 -Wno-unknown-pragmas \
 -Wno-missing-braces \
+-Wno-vla-extension \
 ")
 endif()
 

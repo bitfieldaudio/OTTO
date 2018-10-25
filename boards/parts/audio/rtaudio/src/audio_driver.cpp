@@ -41,12 +41,14 @@ namespace otto::service::audio {
 
   void RTAudioDriver::init_audio()
   {
+#ifndef NDEBUG
     std::vector<RtAudio::Api> apis;
     client.getCompiledApi(apis);
 
     for (auto& api : apis) {
       DLOGI("RtApi: {}", api);
     }
+#endif
     RtAudio::StreamParameters outParameters;
     outParameters.deviceId = client.getDefaultOutputDevice();
     outParameters.nChannels = 2;
@@ -82,7 +84,7 @@ namespace otto::service::audio {
     midi_in->setClientName("OTTO");
     midi_in->setPortName("otto_in");
 
-    for (int i = 0; i < midi_out->getPortCount(); i++) {
+    for (unsigned i = 0; i < midi_out->getPortCount(); i++) {
       auto port = midi_out->getPortName(i);
       if (port != "otto_in") {
         midi_out->openPort(i);
@@ -90,7 +92,7 @@ namespace otto::service::audio {
       DLOGI("Connected otto_out to midi port {}", port);
     }
 
-    for (int i = 0; i < midi_in->getPortCount(); i++) {
+    for (unsigned i = 0; i < midi_in->getPortCount(); i++) {
       auto port = midi_in->getPortName(i);
       if (port != "otto_out") {
         midi_in->openPort(i);

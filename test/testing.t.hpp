@@ -118,8 +118,8 @@ namespace otto::test {
     void report(std::string prefix = "")
     {
       printf(" %s%-*s %12ld ns %12ld ns %12.0f ns\n", prefix.c_str(), 53 - (int) prefix.size() / 2,
-             name.c_str(), std::chrono::nanoseconds(time_min).count(),
-             std::chrono::nanoseconds(time_max).count(),
+             name.c_str(), (long) std::chrono::nanoseconds(time_min).count(),
+             (long) std::chrono::nanoseconds(time_max).count(),
              std::chrono::nanoseconds(time_sum).count() / double(count));
       for (int i = 0; i < children.size(); i++) {
         util::string_replace(prefix, "├", "│");

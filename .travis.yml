@@ -14,8 +14,8 @@ cache:
 matrix:
   include:
 
-    # Linux, Clang 5.0, Debug, libc++
-    - os: linux
+    - name: "Linux, Clang 5.0, Debug, libc++"
+      os: linux
       addons:
         apt:
           sources:
@@ -23,14 +23,15 @@ matrix:
           packages:
             - clang-5.0
             - gdb-minimal
+            - libasound-dev
       env:
         - CC=clang-5.0 CXX=clang++-5.0
         - BUILD_TYPE=Debug
         - USE_LIBCXX=1
-        - DEPLOY_DOCS=1
+        - DEPLOY_DOCS=OFF
 
-    # Linux, Clang 5.0, Release, libstdc++
-    - os: linux
+    - name: "Linux, Clang 5.0, Release, libstdc++"
+      os: linux
       addons:
         apt:
           sources:
@@ -40,28 +41,15 @@ matrix:
             - clang-5.0
             - libstdc++-7-dev
             - gdb-minimal
+            - libasound-dev
       env:
         - CC=clang-5.0 CXX=clang++-5.0
         - BUILD_TYPE=Release
         - USE_LIBCXX=0
-        - DEPLOY_DOCS=0
+        - DEPLOY_DOCS=OFF
 
-    # Linux, GCC, Debug, libstdc++
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-7
-            - gdb-minimal
-      env:
-        - CC=gcc-7 CXX=g++-7
-        - BUILD_TYPE=Debug
-        - USE_LIBCXX=0
-
-    # OSX, GCC, Debug, libc++
-    - os: osx
+    - name: "OSX, GCC, Debug, libc++"
+      os: osx
       osx_image: xcode9.1
       env:
         - CC=clang CXX=clang++
@@ -69,10 +57,24 @@ matrix:
         - LDFLAGS="-L/usr/local/opt/llvm/lib -Wl,-rpath,/usr/local/opt/llvm/lib"
         - PATH="/usr/local/opt/llvm/bin:$PATH"
         - USE_LIBCXX=1
+        - DEPLOY_DOCS=OFF
+
+    - name: "Deploy Docs"
+      os: linux
+      sudo: true
+      branches:
+        only:
+          - develop-topisani
+      env:
+        - MATRIX_EVAL="sudo add-apt-repository ppa:rakhimov/doxygen; sudo apt update; sudo apt install -y doxygen"
+        - BUILD_TYPE=Debug
+        - USE_LIBCXX=0
+        - DEPLOY_DOCS=ON
 
   allow_failures:
-    # OSX is set to allowed failure, as it often takes a very long time to build
-    - os: osx
+    - name: "Deploy Docs"
+
+  fast_finish: true
 
 before_install:
   - eval $MATRIX_EVAL
@@ -136,16 +138,16 @@ before_script:
 
 script:
   - cd "${TRAVIS_BUILD_DIR}"
-  - cmake --build build -- -j${JOBS}
   - |
-    cd build
-    [[ "$DEPLOY_DOCS" == "ON" ]] && ../scripts/deploy-docs
-    cd "${TRAVIS_BUILD_DIR}"
-  - build/bin/test -s || RESULT=$?
-  - |
+    if [[ "$DEPLOY_DOCS" == "ON" ]]; then
+    scripts/deploy-docs
+    else
+    cmake --build build -- -j${JOBS}
+    build/bin/test -s || RESULT=$?
     if [[ -n "$RESULT" ]]; then
     echo "Tests failed, running in GDB for stacktrace"
     gdb -return-child-result -batch -ex "run -s" -ex "thread apply all bt" -ex "quit" --args build/bin/test
+    fi
     fi
 
 notifications:
