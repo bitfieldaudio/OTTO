@@ -14,26 +14,48 @@ cache:
 matrix:
   include:
 
-    # Linux, Clang 7, Debug, libc++
+    # Linux, Clang 5.0, Debug, libc++
     - os: linux
       addons:
         apt:
           sources:
-            - llvm-toolchain-trusty-7
+            - llvm-toolchain-trusty-5.0
           packages:
-            - clang-7
-            - libc++-7-dev
+            - clang-5.0
             - gdb-minimal
+            - libjack-jackd2-dev
             - libgles2-mesa-dev
             - libxrandr-dev
             - libxinerama-dev
             - libxcursor-dev
             - libxi-dev
       env:
-        - CC=clang-7 CXX=clang++-7
+        - CC=clang-5.0 CXX=clang++-5.0
         - BUILD_TYPE=Debug
         - USE_LIBCXX=1
         - DEPLOY_DOCS=1
+
+    # Linux, Clang 5.0, Release, libstdc++
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - llvm-toolchain-trusty-5.0
+            - ubuntu-toolchain-r-test
+          packages:
+            - clang-5.0
+            - libstdc++-7-dev
+            - gdb-minimal
+            - libjack-jackd2-dev
+            - libgles2-mesa-dev
+            - libxrandr-dev
+            - libxinerama-dev
+            - libxcursor-dev
+            - libxi-dev
+      env:
+        - CC=clang-5.0 CXX=clang++-5.0
+        - BUILD_TYPE=Release
+        - USE_LIBCXX=0
 
     # Linux, GCC, Debug, libstdc++
     - os: linux
@@ -65,6 +87,10 @@ matrix:
         - PATH="/usr/local/opt/llvm/bin:$PATH"
         - USE_LIBCXX=1
 
+  allow_failures:
+    # OSX is set to allowed failure, as it often takes a very long time to build
+    - os: osx
+
 before_install:
   - eval $MATRIX_EVAL
 
@@ -89,7 +115,35 @@ install:
     else
       brew install cmake || brew upgrade cmake
     fi
+
   - cmake --version
+
+  # [linux]: Install the right version of libc++
+  - |
+    LLVM_INSTALL=${DEPS_DIR}/llvm/install
+    # if in linux and compiler clang and llvm not installed
+    if [[ "${TRAVIS_OS_NAME}" == "linux" && "$USE_LIBCXX" == "1" && ! -d $LLVM_INSTALL ]]; then
+    if   [[ "${CXX}" == "clang++-5.0" ]]; then LLVM_VERSION="5.0.0";
+    fi
+    LLVM_URL="http://llvm.org/releases/${LLVM_VERSION}/llvm-${LLVM_VERSION}.src.tar.xz"
+    LIBCXX_URL="http://llvm.org/releases/${LLVM_VERSION}/libcxx-${LLVM_VERSION}.src.tar.xz"
+    LIBCXXABI_URL="http://llvm.org/releases/${LLVM_VERSION}/libcxxabi-${LLVM_VERSION}.src.tar.xz"
+    mkdir -p llvm llvm/build llvm/projects/libcxx llvm/projects/libcxxabi
+    travis_retry wget -O - ${LLVM_URL} | tar --strip-components=1 -xJ -C llvm
+    travis_retry wget -O - ${LIBCXX_URL} | tar --strip-components=1 -xJ -C llvm/projects/libcxx
+    travis_retry wget -O - ${LIBCXXABI_URL} | tar --strip-components=1 -xJ -C llvm/projects/libcxxabi
+    (cd llvm/build && cmake .. -DCMAKE_INSTALL_PREFIX=${LLVM_INSTALL})
+    (cd llvm/build/projects/libcxx && make install -j2)
+    (cd llvm/build/projects/libcxxabi && make install -j2)
+    fi
+  - |
+    if [[ "${TRAVIS_OS_NAME}" == "linux" && "$USE_LIBCXX" == "1" ]]; then
+    export CXXFLAGS="-isystem ${LLVM_INSTALL}/include/c++/v1"
+    export LDFLAGS="-L ${LLVM_INSTALL}/lib -l c++ -l c++abi"
+    export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${LLVM_INSTALL}/lib"
+    echo "Testing libc++: "
+    echo "int main() { return 0; }" | $CXX -x c++ -stdlib=libc++ -L $LLVM_INSTALL/lib -
+    fi
 
 before_script:
   - cd "${TRAVIS_BUILD_DIR}"
@@ -101,8 +155,9 @@ script:
   - cd "${TRAVIS_BUILD_DIR}"
   - cmake --build build -- -j${JOBS}
   - |
-    [[ "$DEPLOY_DOCS" == "1" ]] && script/deploy-docs
+    [[ -n "$DEPLOY_DOCS" ]] && scripts/deploy-docs
   - build/bin/test -s || RESULT=$?
+  - |
     if [[ -n "$RESULT" ]]; then
     echo "Tests failed, running in GDB for stacktrace"
     gdb -return-child-result -batch -ex "run -s" -ex "thread apply all bt" -ex "quit" --args build/bin/test
