@@ -23,7 +23,6 @@ matrix:
           packages:
             - clang-7
             - libc++-7-dev
-            - libc++-7-abi-dev
             - gdb-minimal
             - libgles2-mesa-dev
             - libxrandr-dev

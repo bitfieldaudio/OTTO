@@ -8,23 +8,6 @@
 
 namespace otto::util {
 
-  namespace detail {
-    
-    template<typename T>
-    auto to_str_or_empty(T&& t) ->
-      std::enable_if_t<std::is_constructible_v<std::string, T>,
-        std::string>
-    {
-      return std::string(std::forward<T>(t));
-    }
-
-    template<typename T>
-    auto to_str_or_empty(T&& t) -> std::string
-    {
-      return {};
-    }
-  }
-
   struct exception : public std::exception {
 
     /// String formatting constructor. Models `fmt::format`
@@ -85,7 +68,7 @@ namespace otto::util {
         _data (std::forward<DataRef>(dr))
     {
       using namespace std::literals;
-      auto str_data = detail::to_str_or_empty(_data);
+      auto str_data = to_str_or_empty(_data);
       if (!str_data.empty()) {
         message.append("\nData: ");
         message.append(str_data);
@@ -109,6 +92,21 @@ namespace otto::util {
 
   private:
     data_type _data;
+
+    template<typename T>
+    static auto to_str_or_empty(T&& t) ->
+      std::enable_if_t<std::is_constructible_v<std::string, T>,
+        std::string>
+    {
+      return std::string(std::forward<T>(t));
+    }
+
+    template<typename T>
+    static auto to_str_or_empty(T&& t) -> std::string
+    {
+      return {};
+    }
+
   };
 
 
