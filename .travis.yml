@@ -23,11 +23,6 @@ matrix:
           packages:
             - clang-5.0
             - gdb-minimal
-            - libgles2-mesa-dev
-            - libxrandr-dev
-            - libxinerama-dev
-            - libxcursor-dev
-            - libxi-dev
       env:
         - CC=clang-5.0 CXX=clang++-5.0
         - BUILD_TYPE=Debug
@@ -45,7 +40,6 @@ matrix:
             - clang-5.0
             - libstdc++-7-dev
             - gdb-minimal
-            - libgles2-mesa-dev
       env:
         - CC=clang-5.0 CXX=clang++-5.0
         - BUILD_TYPE=Release
@@ -61,7 +55,6 @@ matrix:
           packages:
             - g++-7
             - gdb-minimal
-            - libgles2-mesa-dev
       env:
         - CC=gcc-7 CXX=g++-7
         - BUILD_TYPE=Debug
@@ -139,7 +132,7 @@ before_script:
   - cd "${TRAVIS_BUILD_DIR}"
   - mkdir build && cd build
   - export CXXFLAGS="$CXXFLAGS -Werror -Wno-missing-braces"
-  - cmake .. -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DOTTO_USE_LIBCXX=$USE_LIBCXX -DOTTO_BUILD_DOCS=$DEPLOY_DOCS $CMAKE_OPTIONS
+  - cmake .. -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DOTTO_USE_LIBCXX=$USE_LIBCXX -DOTTO_BUILD_DOCS=$DEPLOY_DOCS -DOTTO_BOARD=dummy $CMAKE_OPTIONS
 
 script:
   - cd "${TRAVIS_BUILD_DIR}"

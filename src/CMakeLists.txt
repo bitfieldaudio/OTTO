@@ -47,6 +47,7 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 -Wno-shadow-field-in-constructor \
 -Wno-documentation-unknown-command \
 -Wno-unknown-pragmas \
+-Wno-missing-braces \
 ")
 endif()
 
