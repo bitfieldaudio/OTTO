@@ -90,7 +90,6 @@ matrix:
             - gdb-minimal
             - libasound-dev
       env:
-        - MATRIX_EVAL="sudo add-apt-repository ppa:rakhimov/doxygen -y; sudo apt-get update -y; sudo apt-get install -y doxygen"
         - CC=clang-5.0 CXX=clang++-5.0
         - BUILD_TYPE=Debug
         - USE_LIBCXX=1
@@ -153,6 +152,12 @@ install:
     export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${LLVM_INSTALL}/lib"
     echo "Testing libc++: "
     echo "int main() { return 0; }" | $CXX -x c++ -stdlib=libc++ -L $LLVM_INSTALL/lib -
+    fi
+  - |
+    if [[ "$DEPLOY_DOCS" == "ON" ]]; then
+    DOXYGEN_DIR=${DEPS_DIR}/doxygen
+    mkdir -p $DOXYGEN_DIR && travis_retry wget -O - "http://ftp.stack.nl/pub/users/dimitri/doxygen-1.8.14.linux.bin.tar.gz" | tar --strip-components=1 -xz -C $DOXYGEN_DIR
+    export PATH="${DOXYGEN_DIR}/bin:$PATH"
     fi
 
 before_script:
