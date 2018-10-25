@@ -1,2 +1,6 @@
 target_link_libraries(otto PUBLIC asound)
-target_compile_definitions(otto PUBLIC "__LINUX_ALSA__")
+if(APPLE) 
+    target_compile_definitions(otto PUBLIC "__MACOSX_CORE__")
+else()
+    target_compile_definitions(otto PUBLIC "__LINUX_ALSA__")
+endif()

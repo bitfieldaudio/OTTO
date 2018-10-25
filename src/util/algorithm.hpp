@@ -40,7 +40,9 @@ namespace otto::util {
     }
 
     /// Find/Replace
-    inline void string_replace(std::string& str, const std::string& oldStr, const std::string& newStr)
+    inline void string_replace(std::string& str,
+                               const std::string& oldStr,
+                               const std::string& newStr)
     {
       std::string::size_type pos = 0u;
       while ((pos = str.find(oldStr, pos)) != std::string::npos) {
@@ -72,14 +74,27 @@ namespace otto::util {
       return detail::generate_array_impl(std::move(intseq), std::forward<Func>(gen));
     }
 
+    /// Erase elements from container
+    ///
+    /// @param cont Must be a container with a `erase(Iter, Iter)` member function, erasing the
+    /// items between the two iterators. Most mutable standard containers qualify.
+    ///
+    /// @param t elements will be erased if they compare equal to this
     template<typename Container, typename T>
-    bool erase(Container&& cont, T&& t)
+    void erase(Container&& cont, T&& t)
     {
       cont.erase(std::remove(std::begin(cont), std::end(cont), std::forward<T>(t)), std::end(cont));
     }
 
+    /// Erase elements from container by predicate
+    ///
+    /// @param cont Must be a container with a `erase(Iter, Iter)` member function, erasing the
+    /// items between the two iterators. Most mutable standard containers qualify.
+    ///
+    /// @param pred A predicate that takes a element in the container. Each element for which this
+    /// predicate returns true will be erased from the container.
     template<typename Container, typename Pred>
-    bool erase_if(Container&& cont, Pred&& pred)
+    void erase_if(Container&& cont, Pred&& pred)
     {
       cont.erase(std::remove_if(std::begin(cont), std::end(cont), std::forward<Pred>(pred)),
                  std::end(cont));
