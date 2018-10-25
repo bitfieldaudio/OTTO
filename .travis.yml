@@ -19,7 +19,7 @@ matrix:
       addons:
         apt:
           sources:
-            - llvm-toolchain-trusty-7.0
+            - llvm-toolchain-trusty-7
           packages:
             - clang-7
             - libc++-7-dev
@@ -65,10 +65,6 @@ matrix:
         - LDFLAGS="-L/usr/local/opt/llvm/lib -Wl,-rpath,/usr/local/opt/llvm/lib"
         - PATH="/usr/local/opt/llvm/bin:$PATH"
         - USE_LIBCXX=1
-
-  allow_failures:
-    # OSX is set to allowed failure, as it often takes a very long time to build
-    - os: osx
 
 before_install:
   - eval $MATRIX_EVAL

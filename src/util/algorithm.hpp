@@ -80,10 +80,14 @@ namespace otto::util {
     /// items between the two iterators. Most mutable standard containers qualify.
     ///
     /// @param t elements will be erased if they compare equal to this
+    ///
+    /// @returns whatever `cont.erase()` returns. For standard containers, this is the iterator
+    /// pointing to the element after the last erased one.
     template<typename Container, typename T>
-    void erase(Container&& cont, T&& t)
+    auto erase(Container&& cont, T&& t)
     {
-      cont.erase(std::remove(std::begin(cont), std::end(cont), std::forward<T>(t)), std::end(cont));
+      return cont.erase(std::remove(std::begin(cont), std::end(cont), std::forward<T>(t)),
+                        std::end(cont));
     }
 
     /// Erase elements from container by predicate
@@ -93,11 +97,14 @@ namespace otto::util {
     ///
     /// @param pred A predicate that takes a element in the container. Each element for which this
     /// predicate returns true will be erased from the container.
+    /// 
+    /// @returns whatever `cont.erase()` returns. For standard containers, this is the iterator
+    /// pointing to the element after the last erased one.
     template<typename Container, typename Pred>
-    void erase_if(Container&& cont, Pred&& pred)
+    auto erase_if(Container&& cont, Pred&& pred)
     {
-      cont.erase(std::remove_if(std::begin(cont), std::end(cont), std::forward<Pred>(pred)),
-                 std::end(cont));
+      return cont.erase(std::remove_if(std::begin(cont), std::end(cont), std::forward<Pred>(pred)),
+                        std::end(cont));
     }
 
     /*
