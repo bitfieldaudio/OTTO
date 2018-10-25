@@ -298,7 +298,7 @@ namespace otto::core::audio {
 
     AudioBufferHandle allocate()
     {
-      for (int i = 0; i < reference_counts.size(); i++) {
+      for (std::size_t i = 0; i < reference_counts.size(); i++) {
         if (reference_counts[i] < 1) {
           if (i > _max_val) {
             LOGI("Using {} buffers", i + 1);

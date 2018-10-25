@@ -23,7 +23,6 @@ matrix:
           packages:
             - clang-5.0
             - gdb-minimal
-            - libjack-jackd2-dev
             - libgles2-mesa-dev
             - libxrandr-dev
             - libxinerama-dev
@@ -46,16 +45,12 @@ matrix:
             - clang-5.0
             - libstdc++-7-dev
             - gdb-minimal
-            - libjack-jackd2-dev
             - libgles2-mesa-dev
-            - libxrandr-dev
-            - libxinerama-dev
-            - libxcursor-dev
-            - libxi-dev
       env:
         - CC=clang-5.0 CXX=clang++-5.0
         - BUILD_TYPE=Release
         - USE_LIBCXX=0
+        - DEPLOY_DOCS=0
 
     # Linux, GCC, Debug, libstdc++
     - os: linux
@@ -66,12 +61,7 @@ matrix:
           packages:
             - g++-7
             - gdb-minimal
-            - libjack-jackd2-dev
             - libgles2-mesa-dev
-            - libxrandr-dev
-            - libxinerama-dev
-            - libxcursor-dev
-            - libxi-dev
       env:
         - CC=gcc-7 CXX=g++-7
         - BUILD_TYPE=Debug
@@ -148,14 +138,16 @@ install:
 before_script:
   - cd "${TRAVIS_BUILD_DIR}"
   - mkdir build && cd build
-  - export CXXFLAGS="$CXXFLAGS -Werror"
-  - cmake .. -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DOTTO_USE_LIBCXX=$USE_LIBCXX $CMAKE_OPTIONS
+  - export CXXFLAGS="$CXXFLAGS -Werror -Wno-missing-braces"
+  - cmake .. -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DOTTO_USE_LIBCXX=$USE_LIBCXX -DOTTO_BUILD_DOCS=$DEPLOY_DOCS $CMAKE_OPTIONS
 
 script:
   - cd "${TRAVIS_BUILD_DIR}"
   - cmake --build build -- -j${JOBS}
   - |
-    [[ -n "$DEPLOY_DOCS" ]] && scripts/deploy-docs
+    cd build
+    [[ "$DEPLOY_DOCS" == "ON" ]] && ../scripts/deploy-docs
+    cd "${TRAVIS_BUILD_DIR}"
   - build/bin/test -s || RESULT=$?
   - |
     if [[ -n "$RESULT" ]]; then

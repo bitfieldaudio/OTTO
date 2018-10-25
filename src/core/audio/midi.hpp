@@ -283,7 +283,7 @@ namespace otto::core::midi {
     auto&& emplace_back(Ref&&... args)
     {
       return _data->emplace_back(std::forward<Ref>(args)...);
-    };
+    }
 
     std::shared_ptr<std::vector<value_type>> _data = std::make_shared<std::vector<value_type>>();
 
