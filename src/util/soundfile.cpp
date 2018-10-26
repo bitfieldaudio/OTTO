@@ -1,5 +1,5 @@
 #include "util/soundfile.hpp"
-#include "services/logger.hpp"
+#include "services/log_manager.hpp"
 
 namespace otto::util {
 

@@ -1,16 +1,13 @@
 #include <csignal>
 
-#include "util/timer.hpp"
-
 #include "core/audio/midi.hpp"
-#include "core/globals.hpp"
 
-#include "services/audio.hpp"
-#include "services/engines.hpp"
-#include "services/logger.hpp"
-#include "services/presets.hpp"
-#include "services/state.hpp"
-#include "services/ui.hpp"
+#include "services/audio_manager.hpp"
+#include "services/engine_manager.hpp"
+#include "services/log_manager.hpp"
+#include "services/preset_manager.hpp"
+#include "services/state_manager.hpp"
+#include "services/ui_manager.hpp"
 
 using namespace otto;
 

@@ -1,14 +1,13 @@
 #include "euclid.hpp"
 
-#include "core/globals.hpp"
 #include "core/ui/vector_graphics.hpp"
 
 #include "util/cache.hpp"
 #include "util/iterator.hpp"
 #include "util/utility.hpp"
 
-#include "services/logger.hpp"
-#include "services/state.hpp"
+#include "services/log_manager.hpp"
+#include "services/state_manager.hpp"
 
 namespace otto::engines {
 

@@ -2,21 +2,23 @@
 
 #include "util/filesystem.hpp"
 
+#include "core/service.hpp"
+
 #define LOGURU_USE_FMTLIB 1
 #include <loguru.hpp>
+#include "services/application.hpp"
 
-namespace otto::service::logger {
+namespace otto::services {
 
-  /// Initialize the logger
-  void init(int argc,
-            char** argv,
-            bool enable_console     = true,
-            const char* logFilePath = nullptr);
+  struct LogManager : core::Service {
+    /// Initialize the logger
+    void init(int argc, char** argv, bool enable_console = true, const char* logFilePath = nullptr);
 
-  /// Set how the current thread appears in the log
-  void set_thread_name(const std::string& name);
+    /// Set how the current thread appears in the log
+    void set_thread_name(const std::string& name);
+  };
 
-} // namespace otto::services::logger
+} // namespace otto::services
 
 /// Shorthand to the loguru macro LOG_F(INFO, ...)
 #define LOGI(...) LOG_F(INFO, __VA_ARGS__)

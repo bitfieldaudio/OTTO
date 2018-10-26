@@ -1,10 +1,10 @@
 #include "engine_dispatcher.hpp"
 
 #include "engine_selector_screen.hpp"
-#include "services/engines.hpp"
-#include "services/presets.hpp"
+#include "services/engine_manager.hpp"
+#include "services/preset_manager.hpp"
 
-namespace otto::core::engines {
+namespace otto::core::engine {
 
   // EngineDispatcher Implementations /////////////////////////////////////////
   template<EngineType ET>
@@ -19,8 +19,8 @@ namespace otto::core::engines {
       // Apply default presets to all engines
       try {
         int idx = engine->current_preset();
-        service::presets::apply_preset(*engine, std::max(idx, 0), true);
-      } catch (service::presets::exception& e) {
+        Application::current().preset_manager.apply_preset(*engine, std::max(idx, 0), true);
+      } catch (services::PresetManager::exception& e) {
         DLOGI(e.what());
       }
     }

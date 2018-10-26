@@ -8,7 +8,7 @@
 #include "util/algorithm.hpp"
 #include "util/exception.hpp"
 
-#include "services/logger.hpp"
+#include "services/log_manager.hpp"
 #include "util/utility.hpp"
 
 namespace otto::core::midi {

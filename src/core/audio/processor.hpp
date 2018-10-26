@@ -296,7 +296,7 @@ namespace otto::core::audio {
       reserve(4);
     }
 
-    AudioBufferHandle allocate()
+    AudioBufferHandle allocate() noexcept
     {
       for (std::size_t i = 0; i < reference_counts.size(); i++) {
         if (reference_counts[i] < 1) {
@@ -309,13 +309,13 @@ namespace otto::core::audio {
           return {data.get() + index, buffer_size, reference_counts[i]};
         }
       }
-      DLOGI("Allocating a new audio buffer. this pool now has {} buffers", _avaliable_buffers);
-      reserve(_avaliable_buffers + 1);
-      return allocate();
+      // TODO: handle this reasonably
+      LOGF("No free audio buffers found. This shouldn't happen");
+      std::terminate();
     }
 
     template<std::size_t N>
-    MultiChannelAudioBufferHandle<N> allocate_multi()
+    MultiChannelAudioBufferHandle<N> allocate_multi() noexcept
     {
       if constexpr (N == 1) return allocate();
       if constexpr (N == 2) return {allocate(), allocate()};
@@ -329,27 +329,27 @@ namespace otto::core::audio {
     }
 
     template<std::size_t N>
-    MultiChannelAudioBufferHandle<N> allocate_multi_clear()
+    MultiChannelAudioBufferHandle<N> allocate_multi_clear() noexcept
     {
       if constexpr (N == 1) return allocate_clear();
       if constexpr (N == 2) return {allocate_clear(), allocate_clear()};
     }
 
-    void reserve(std::size_t n)
-    {
-      if (_avaliable_buffers > 0) {
-        LOGF("Requested {} buffers. only {} avaliable", n, _avaliable_buffers);
-        return;
-      }
-      if (n > _avaliable_buffers) {
-        data = std::make_unique<float[]>(n * buffer_size);
-        _avaliable_buffers = n;
-        reference_counts.resize(_avaliable_buffers, 0);
-      }
+    void set_buffer_size(std::size_t bs) noexcept {
+      buffer_size = bs;
+      reserve(4);
     }
 
   private:
-    const std::size_t buffer_size;
+
+    void reserve(std::size_t n) noexcept
+    {
+      data = std::make_unique<float[]>(n * buffer_size);
+      _avaliable_buffers = n;
+      reference_counts.resize(_avaliable_buffers, 0);
+    }
+
+    std::size_t buffer_size;
     std::vector<int> reference_counts;
     std::size_t _avaliable_buffers = 0;
     std::unique_ptr<float[]> data;

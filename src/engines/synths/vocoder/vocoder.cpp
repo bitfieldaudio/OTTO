@@ -1,6 +1,5 @@
 #include "vocoder.hpp"
 
-#include "core/globals.hpp"
 #include "core/ui/vector_graphics.hpp"
 
 #include "vocoder.faust.hpp"

@@ -1,9 +1,8 @@
 #pragma once
 
-#include "core/engines/engine.hpp"
+#include "core/engine/engine.hpp"
 
-
-namespace otto::core::engines {
+namespace otto::core::engine {
 
   // Implementation is in engine_dispatcher.cpp, with explicit instantiations at
   // the bottom.

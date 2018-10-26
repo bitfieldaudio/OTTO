@@ -7,7 +7,7 @@
 #include "../internal/mixin_macros.hpp"
 #include "../internal/property.hpp"
 
-#include "services/logger.hpp"
+#include "services/log_manager.hpp"
 #include "util/algorithm.hpp"
 
 namespace otto::core::props {

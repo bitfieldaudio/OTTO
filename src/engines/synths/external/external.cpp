@@ -1,10 +1,11 @@
 #include "external.hpp"
 
-#include "core/globals.hpp"
 #include "core/ui/vector_graphics.hpp"
 
 #include "util/iterator.hpp"
 #include "util/utility.hpp"
+
+#include "services/application.hpp"
 
 namespace otto::engines {
 

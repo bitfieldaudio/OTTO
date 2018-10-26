@@ -79,7 +79,7 @@ matrix:
       os: linux
       branches:
         only:
-          - develop-topisani
+          - develop
       addons:
         apt:
           sources:

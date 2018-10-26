@@ -6,7 +6,6 @@
 #include <fmt/format.h>
 
 #include "util/algorithm.hpp"
-#include "util/timer.hpp"
 
 #include "core/audio/processor.hpp"
 #include "core/globals.hpp"
@@ -129,8 +128,6 @@ namespace otto::service::audio {
     if (!running) {
       return 0;
     }
-
-    TIME_SCOPE("RTAudio::Process");
 
     if ((unsigned) nframes > buffer_size) {
       LOGE("RTAudio requested more frames than expected");

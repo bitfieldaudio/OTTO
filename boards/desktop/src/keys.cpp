@@ -1,9 +1,9 @@
 #include "board/ui/keys.hpp"
 
-#include "services/audio.hpp"
-#include "services/ui.hpp"
+#include "services/audio_manager.hpp"
+#include "services/ui_manager.hpp"
 
-#include "services/logger.hpp"
+#include "services/log_manager.hpp"
 
 namespace otto::board::ui {
 
@@ -12,10 +12,10 @@ namespace otto::board::ui {
     auto send_midi = [action](int note) {
       if (action == Action::press) {
         auto evt = core::midi::NoteOnEvent{note};
-        service::audio::send_midi_event(evt);
+        Application::current().audio_manager.send_midi_event(evt);
         LOGI("Press key {}", evt.key);
       } else if (action == Action::release) {
-        service::audio::send_midi_event(core::midi::NoteOffEvent{note});
+        Application::current().audio_manager.send_midi_event(core::midi::NoteOffEvent{note});
         LOGI("Release key {}", note);
       }
     };
@@ -24,14 +24,14 @@ namespace otto::board::ui {
 
     auto send_key = [action](OKey k, bool repeat = false) {
       if (action == Action::press || (action == Action::repeat && repeat))
-        service::ui::impl::keypress(k);
+        Application::current().ui_manager.keypress(k);
       else if (action == Action::release)
-        service::ui::impl::keyrelease(k);
+        Application::current().ui_manager.keyrelease(k);
     };
 
     auto send_rotary = [action](core::ui::Rotary rot, int n) {
       if (action == Action::press || (action == Action::repeat))
-        service::ui::impl::rotary({rot, n});
+        Application::current().ui_manager.rotary({rot, n});
     };
 
 

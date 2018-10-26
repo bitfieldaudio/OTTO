@@ -6,7 +6,7 @@
 #include <fstream>
 #include <random.hpp>
 
-#include "services/logger.hpp"
+#include "services/log_manager.hpp"
 #include "util/algorithm.hpp"
 #include "util/filesystem.hpp"
 

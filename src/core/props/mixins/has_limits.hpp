@@ -1,6 +1,6 @@
 #pragma once
 
-#include "services/logger.hpp"
+#include "services/log_manager.hpp"
 
 #include "../internal/mixin_macros.hpp"
 #include "../internal/property.hpp"

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/engines/engine.hpp"
+#include "core/engine/engine.hpp"
 
 #include "core/audio/faust.hpp"
 #include "core/audio/voice_manager.hpp"
@@ -11,7 +11,7 @@
 namespace otto::engines {
 
   using namespace core;
-  using namespace core::engines;
+  using namespace core::engine;
   using namespace props;
 
   struct Euclid : SequencerEngine {

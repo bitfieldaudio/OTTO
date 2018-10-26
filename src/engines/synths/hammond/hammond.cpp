@@ -1,6 +1,5 @@
 #include "hammond.hpp"
 
-#include "core/globals.hpp"
 #include "core/ui/vector_graphics.hpp"
 
 #include "hammond.faust.hpp"
@@ -20,7 +19,6 @@ namespace otto::engines {
     void rotary(RotaryEvent e) override;
 
     using EngineScreen<HammondSynth>::EngineScreen;
-
   };
 
   // HammondSynth ////////////////////////////////////////////////////////////////
@@ -51,18 +49,10 @@ namespace otto::engines {
   void HammondSynthScreen::rotary(RotaryEvent e)
   {
     switch (e.rotary) {
-    case Rotary::Blue:
-      engine.props.drawbar1.step(e.clicks);
-      break;
-    case Rotary::Green:
-      engine.props.drawbar2.step(e.clicks);
-      break;
-    case Rotary::White:
-      engine.props.drawbar3.step(e.clicks);
-      break;
-    case Rotary::Red:
-      engine.props.leslie.step(e.clicks);
-      break;
+    case Rotary::Blue: engine.props.drawbar1.step(e.clicks); break;
+    case Rotary::Green: engine.props.drawbar2.step(e.clicks); break;
+    case Rotary::White: engine.props.drawbar3.step(e.clicks); break;
+    case Rotary::Red: engine.props.leslie.step(e.clicks); break;
     }
   }
 
