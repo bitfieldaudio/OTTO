@@ -83,13 +83,15 @@ matrix:
       addons:
         apt:
           sources:
-            - llvm-toolchain-trusty-5.0
+            - llvm-toolchain-trusty-6.0
+            - ubuntu-toolchain-r-test
           packages:
-            - clang-5.0
-            - gdb-minimal
+            - clang-6.0
+            - libclang-6.0-dev
             - libasound-dev
+            - libtinfo-dev
       env:
-        - CC=clang-5.0 CXX=clang++-5.0
+        - CC=clang-6.0 CXX=clang++-6.0
         - BUILD_TYPE=Debug
         - USE_LIBCXX=1
         - DEPLOY_DOCS=ON
@@ -131,8 +133,8 @@ install:
     LLVM_INSTALL=${DEPS_DIR}/llvm/install
     # if in linux and compiler clang and llvm not installed
     if [[ "${TRAVIS_OS_NAME}" == "linux" && "$USE_LIBCXX" == "1" && ! -d $LLVM_INSTALL ]]; then
-    if   [[ "${CXX}" == "clang++-5.0" ]]; then LLVM_VERSION="5.0.0";
-    fi
+    [[ "${CXX}" == "clang++-5.0" ]] && LLVM_VERSION="5.0.0";
+    [[ "${CXX}" == "clang++-6.0" ]] && LLVM_VERSION="6.0.0";
     LLVM_URL="http://llvm.org/releases/${LLVM_VERSION}/llvm-${LLVM_VERSION}.src.tar.xz"
     LIBCXX_URL="http://llvm.org/releases/${LLVM_VERSION}/libcxx-${LLVM_VERSION}.src.tar.xz"
     LIBCXXABI_URL="http://llvm.org/releases/${LLVM_VERSION}/libcxxabi-${LLVM_VERSION}.src.tar.xz"
@@ -154,9 +156,11 @@ install:
     fi
   - |
     if [[ "$DEPLOY_DOCS" == "ON" ]]; then
-    DOXYGEN_DIR=${DEPS_DIR}/doxygen
-    mkdir -p $DOXYGEN_DIR && travis_retry wget -O - "http://ftp.stack.nl/pub/users/dimitri/doxygen-1.8.14.linux.bin.tar.gz" | tar --strip-components=1 -xz -C $DOXYGEN_DIR
-    export PATH="${DOXYGEN_DIR}/bin:$PATH"
+    if [[ ! -d doxygen ]]; then
+    git clone https://github.com/doxygen/doxygen.git
+    (cd doxygen; cmake .; make -j2)
+    fi
+    export PATH="${DEPS_DIR}/doxygen/bin:$PATH"
     fi
 
 before_script:
