@@ -1,12 +1,23 @@
-/* ------------------------------------------------------------
-name: "nuke"
-Code generated with Faust 2.11.10 (https://faust.grame.fr)
-Compilation options: cpp, -scal -ftz 0
------------------------------------------------------------- */
+//----------------------------------------------------------
+// name: "nuke"
+//
+// Code generated with Faust 2.11.10 (https://faust.grame.fr)
+//----------------------------------------------------------
 
-#ifndef  __faust_nuke_H__
-#define  __faust_nuke_H__
-
+/* link with  */
+#include <math.h>
+#ifndef FAUSTPOWER
+#define FAUSTPOWER
+#include <cmath>
+template <int N> inline int faustpower(int x)              { return faustpower<N/2>(x) * faustpower<N-N/2>(x); } 
+template <> 	 inline int faustpower<0>(int x)            { return 1; }
+template <> 	 inline int faustpower<1>(int x)            { return x; }
+template <> 	 inline int faustpower<2>(int x)            { return x*x; }
+template <int N> inline float faustpower(float x)            { return faustpower<N/2>(x) * faustpower<N-N/2>(x); } 
+template <> 	 inline float faustpower<0>(float x)          { return 1; }
+template <> 	 inline float faustpower<1>(float x)          { return x; }
+template <> 	 inline float faustpower<2>(float x)          { return x*x; }
+#endif
 #include <math.h>
 #include <algorithm>
 
@@ -30,290 +41,588 @@ using std::min;
 #define FAUSTFLOAT float
 #endif 
 
-#include <algorithm>
-#include <cmath>
-#include <math.h>
-
-static float faust_nuke_faustpower2_f(float value) {
-	return (value * value);
-	
-}
 
 #ifndef FAUSTCLASS 
 #define FAUSTCLASS faust_nuke
 #endif
-#ifdef __APPLE__ 
-#define exp10f __exp10f
-#define exp10 __exp10
-#endif
 
 class faust_nuke : public dsp {
-	
- private:
-	
-	FAUSTFLOAT fHslider0;
-	int iVec0[2];
+  private:
+	int 	iVec0[2];
+	FAUSTFLOAT 	fslider0;
+	float 	fRec0[2];
+	float 	fConst0;
+	float 	fConst1;
+	float 	fTempPerm0;
+	float 	fTempPerm1;
+	float 	fTempPerm2;
+	float 	fTempPerm3;
+	float 	fTempPerm4;
+	FAUSTFLOAT 	fslider1;
+	float 	fRec3[2];
+	float 	fTempPerm5;
+	float 	fTempPerm6;
+	float 	fVec1[2];
+	FAUSTFLOAT 	fslider2;
+	float 	fConst2;
+	int 	iRec5[2];
+	float 	fTempPerm7;
+	float 	fRec4[2];
+	float 	fTempPerm8;
+	float 	fVec2[2];
+	float 	fTempPerm9;
+	float 	fTempPerm10;
+	float 	fTempPerm11;
+	float 	fVec3[2];
+	float 	fTempPerm12;
+	float 	fRec7[2];
+	float 	fTempPerm13;
+	float 	fVec4[2];
+	float 	fTempPerm14;
+	float 	fConst3;
+	float 	fTempPerm15;
+	int 	IOTA;
+	float 	fVec5[4096];
+	float 	fConst4;
+	float 	fRec6[2];
+	float 	fConst5;
+	float 	fTempPerm16;
+	float 	fTempPerm17;
+	int 	iTempPerm18;
+	float 	fTempPerm19;
+	FAUSTFLOAT 	fslider3;
+	float 	fRec8[2];
+	float 	fTempPerm20;
+	FAUSTFLOAT 	fslider4;
+	float 	fRec9[2];
+	int 	iTempPerm21;
+	float 	fTempPerm22;
+	float 	fTempPerm23;
+	float 	fTempPerm24;
+	float 	fTempPerm25;
+	float 	fTempPerm26;
+	float 	fVec6[2];
+	float 	fTempPerm27;
+	float 	fRec10[2];
+	float 	fTempPerm28;
+	float 	fVec7[2];
+	float 	fTempPerm29;
+	float 	fVec8[4096];
+	float 	fTempPerm30;
+	int 	iTempPerm31;
+	float 	fTempPerm32;
+	float 	fTempPerm33;
+	float 	fTempPerm34;
+	int 	iRec12[2];
+	float 	fTempPerm35;
+	float 	fRec11[2];
+	float 	fTempPerm36;
+	float 	fVec9[2];
+	float 	fTempPerm37;
+	float 	fTempPerm38;
+	int 	iTempPerm39;
+	float 	fTempPerm40;
+	float 	fRec13[2];
+	float 	fTempPerm41;
+	float 	fTempPerm42;
+	float 	fTempPerm43;
+	float 	fTempPerm44;
+	float 	fTempPerm45;
+	float 	fVec10[2];
+	float 	fTempPerm46;
+	float 	fRec14[2];
+	float 	fTempPerm47;
+	float 	fVec11[2];
+	float 	fTempPerm48;
+	float 	fVec12[4096];
+	float 	fTempPerm49;
+	int 	iTempPerm50;
+	float 	fTempPerm51;
+	float 	fTempPerm52;
+	int 	iRec16[2];
+	float 	fTempPerm53;
+	float 	fRec15[2];
+	float 	fTempPerm54;
+	float 	fVec13[2];
+	float 	fTempPerm55;
+	float 	fTempPerm56;
+	int 	iTempPerm57;
+	float 	fTempPerm58;
+	float 	fRec17[2];
+	float 	fTempPerm59;
+	float 	fTempPerm60;
+	float 	fTempPerm61;
+	float 	fTempPerm62;
+	float 	fConst6;
+	int 	iRec19[2];
+	float 	fTempPerm63;
+	float 	fRec18[2];
+	float 	fTempPerm64;
+	float 	fVec14[2];
+	float 	fVec15[2];
+	float 	fTempPerm65;
+	float 	fRec21[2];
+	float 	fTempPerm66;
+	float 	fVec16[2];
+	float 	fTempPerm67;
+	float 	fVec17[4096];
+	float 	fRec20[2];
+	float 	fConst7;
+	float 	fTempPerm68;
+	int 	iTempPerm69;
+	float 	fTempPerm70;
+	float 	fRec2[3];
+	float 	fRec1[3];
+	FAUSTFLOAT 	fslider5;
+	FAUSTFLOAT 	fslider6;
+	FAUSTFLOAT 	fslider7;
+	FAUSTFLOAT 	fbutton0;
+	int 	iRec23[2];
+	int 	iTempPerm71;
+	float 	fConst8;
+	float 	fTempPerm72;
+	FAUSTFLOAT 	fslider8;
+	float 	fRec22[2];
+	FAUSTFLOAT 	fslider9;
+	FAUSTFLOAT 	fslider10;
+	int 	iRec27[2];
+	float 	fTempPerm73;
+	float 	fRec26[2];
+	float 	fTempPerm74;
+	float 	fVec18[2];
+	float 	fVec19[2];
+	float 	fTempPerm75;
+	float 	fRec29[2];
+	float 	fTempPerm76;
+	float 	fVec20[2];
+	float 	fTempPerm77;
+	float 	fVec21[4096];
+	float 	fRec28[2];
+	float 	fTempPerm78;
+	int 	iTempPerm79;
+	float 	fTempPerm80;
+	float 	fTempPerm81;
+	float 	fTempPerm82;
+	float 	fVec22[2];
+	float 	fTempPerm83;
+	float 	fRec30[2];
+	float 	fTempPerm84;
+	float 	fVec23[2];
+	float 	fTempPerm85;
+	float 	fVec24[4096];
+	float 	fTempPerm86;
+	int 	iTempPerm87;
+	float 	fTempPerm88;
+	int 	iRec32[2];
+	float 	fTempPerm89;
+	float 	fRec31[2];
+	float 	fTempPerm90;
+	float 	fVec25[2];
+	float 	fTempPerm91;
+	float 	fTempPerm92;
+	int 	iTempPerm93;
+	float 	fTempPerm94;
+	float 	fRec33[2];
+	float 	fTempPerm95;
+	float 	fTempPerm96;
+	float 	fTempPerm97;
+	float 	fVec26[2];
+	float 	fTempPerm98;
+	float 	fRec34[2];
+	float 	fTempPerm99;
+	float 	fVec27[2];
+	float 	fTempPerm100;
+	float 	fVec28[4096];
+	float 	fTempPerm101;
+	int 	iTempPerm102;
+	float 	fTempPerm103;
+	int 	iRec36[2];
+	float 	fTempPerm104;
+	float 	fRec35[2];
+	float 	fTempPerm105;
+	float 	fVec29[2];
+	float 	fTempPerm106;
+	float 	fTempPerm107;
+	int 	iTempPerm108;
+	float 	fTempPerm109;
+	float 	fRec37[2];
+	float 	fTempPerm110;
+	int 	iRec39[2];
+	float 	fTempPerm111;
+	float 	fRec38[2];
+	float 	fTempPerm112;
+	float 	fVec30[2];
+	float 	fVec31[2];
+	float 	fTempPerm113;
+	float 	fRec41[2];
+	float 	fTempPerm114;
+	float 	fVec32[2];
+	float 	fTempPerm115;
+	float 	fVec33[4096];
+	float 	fRec40[2];
+	float 	fTempPerm116;
+	int 	iTempPerm117;
+	float 	fTempPerm118;
+	float 	fRec25[3];
+	float 	fRec24[3];
+	FAUSTFLOAT 	fbutton1;
+	int 	iRec43[2];
+	int 	iTempPerm119;
+	float 	fTempPerm120;
+	float 	fRec42[2];
+	FAUSTFLOAT 	fslider11;
+	FAUSTFLOAT 	fslider12;
+	int 	iRec47[2];
+	float 	fTempPerm121;
+	float 	fRec46[2];
+	float 	fTempPerm122;
+	float 	fVec34[2];
+	float 	fVec35[2];
+	float 	fTempPerm123;
+	float 	fRec49[2];
+	float 	fTempPerm124;
+	float 	fVec36[2];
+	float 	fTempPerm125;
+	float 	fVec37[4096];
+	float 	fRec48[2];
+	float 	fTempPerm126;
+	int 	iTempPerm127;
+	float 	fTempPerm128;
+	float 	fTempPerm129;
+	float 	fTempPerm130;
+	float 	fVec38[2];
+	float 	fTempPerm131;
+	float 	fRec50[2];
+	float 	fTempPerm132;
+	float 	fVec39[2];
+	float 	fTempPerm133;
+	float 	fVec40[4096];
+	float 	fTempPerm134;
+	int 	iTempPerm135;
+	float 	fTempPerm136;
+	int 	iRec52[2];
+	float 	fTempPerm137;
+	float 	fRec51[2];
+	float 	fTempPerm138;
+	float 	fVec41[2];
+	float 	fTempPerm139;
+	float 	fTempPerm140;
+	int 	iTempPerm141;
+	float 	fTempPerm142;
+	float 	fRec53[2];
+	float 	fTempPerm143;
+	float 	fTempPerm144;
+	float 	fTempPerm145;
+	float 	fVec42[2];
+	float 	fTempPerm146;
+	float 	fRec54[2];
+	float 	fTempPerm147;
+	float 	fVec43[2];
+	float 	fTempPerm148;
+	float 	fVec44[4096];
+	float 	fTempPerm149;
+	int 	iTempPerm150;
+	float 	fTempPerm151;
+	int 	iRec56[2];
+	float 	fTempPerm152;
+	float 	fRec55[2];
+	float 	fTempPerm153;
+	float 	fVec45[2];
+	float 	fTempPerm154;
+	float 	fTempPerm155;
+	int 	iTempPerm156;
+	float 	fTempPerm157;
+	float 	fRec57[2];
+	float 	fTempPerm158;
+	int 	iRec59[2];
+	float 	fTempPerm159;
+	float 	fRec58[2];
+	float 	fTempPerm160;
+	float 	fVec46[2];
+	float 	fVec47[2];
+	float 	fTempPerm161;
+	float 	fRec61[2];
+	float 	fTempPerm162;
+	float 	fVec48[2];
+	float 	fTempPerm163;
+	float 	fVec49[4096];
+	float 	fRec60[2];
+	float 	fTempPerm164;
+	int 	iTempPerm165;
+	float 	fTempPerm166;
+	float 	fRec45[3];
+	float 	fRec44[3];
+	FAUSTFLOAT 	fbutton2;
+	int 	iRec63[2];
+	int 	iTempPerm167;
+	float 	fTempPerm168;
+	float 	fRec62[2];
+	FAUSTFLOAT 	fslider13;
+	FAUSTFLOAT 	fslider14;
+	int 	iRec67[2];
+	float 	fTempPerm169;
+	float 	fRec66[2];
+	float 	fTempPerm170;
+	float 	fVec50[2];
+	float 	fVec51[2];
+	float 	fTempPerm171;
+	float 	fRec69[2];
+	float 	fTempPerm172;
+	float 	fVec52[2];
+	float 	fTempPerm173;
+	float 	fVec53[4096];
+	float 	fRec68[2];
+	float 	fTempPerm174;
+	int 	iTempPerm175;
+	float 	fTempPerm176;
+	float 	fTempPerm177;
+	float 	fTempPerm178;
+	float 	fVec54[2];
+	float 	fTempPerm179;
+	float 	fRec70[2];
+	float 	fTempPerm180;
+	float 	fVec55[2];
+	float 	fTempPerm181;
+	float 	fVec56[4096];
+	float 	fTempPerm182;
+	int 	iTempPerm183;
+	float 	fTempPerm184;
+	int 	iRec72[2];
+	float 	fTempPerm185;
+	float 	fRec71[2];
+	float 	fTempPerm186;
+	float 	fVec57[2];
+	float 	fTempPerm187;
+	float 	fTempPerm188;
+	int 	iTempPerm189;
+	float 	fTempPerm190;
+	float 	fRec73[2];
+	float 	fTempPerm191;
+	float 	fTempPerm192;
+	float 	fTempPerm193;
+	float 	fVec58[2];
+	float 	fTempPerm194;
+	float 	fRec74[2];
+	float 	fTempPerm195;
+	float 	fVec59[2];
+	float 	fTempPerm196;
+	float 	fVec60[4096];
+	float 	fTempPerm197;
+	int 	iTempPerm198;
+	float 	fTempPerm199;
+	int 	iRec76[2];
+	float 	fTempPerm200;
+	float 	fRec75[2];
+	float 	fTempPerm201;
+	float 	fVec61[2];
+	float 	fTempPerm202;
+	float 	fTempPerm203;
+	int 	iTempPerm204;
+	float 	fTempPerm205;
+	float 	fRec77[2];
+	float 	fTempPerm206;
+	int 	iRec79[2];
+	float 	fTempPerm207;
+	float 	fRec78[2];
+	float 	fTempPerm208;
+	float 	fVec62[2];
+	float 	fVec63[2];
+	float 	fTempPerm209;
+	float 	fRec81[2];
+	float 	fTempPerm210;
+	float 	fVec64[2];
+	float 	fTempPerm211;
+	float 	fVec65[4096];
+	float 	fRec80[2];
+	float 	fTempPerm212;
+	int 	iTempPerm213;
+	float 	fTempPerm214;
+	float 	fRec65[3];
+	float 	fRec64[3];
+	FAUSTFLOAT 	fbutton3;
+	int 	iRec83[2];
+	int 	iTempPerm215;
+	float 	fTempPerm216;
+	float 	fRec82[2];
+	FAUSTFLOAT 	fslider15;
+	FAUSTFLOAT 	fslider16;
+	int 	iRec87[2];
+	float 	fTempPerm217;
+	float 	fRec86[2];
+	float 	fTempPerm218;
+	float 	fVec66[2];
+	float 	fVec67[2];
+	float 	fTempPerm219;
+	float 	fRec89[2];
+	float 	fTempPerm220;
+	float 	fVec68[2];
+	float 	fTempPerm221;
+	float 	fVec69[4096];
+	float 	fRec88[2];
+	float 	fTempPerm222;
+	int 	iTempPerm223;
+	float 	fTempPerm224;
+	float 	fTempPerm225;
+	float 	fTempPerm226;
+	float 	fVec70[2];
+	float 	fTempPerm227;
+	float 	fRec90[2];
+	float 	fTempPerm228;
+	float 	fVec71[2];
+	float 	fTempPerm229;
+	float 	fVec72[4096];
+	float 	fTempPerm230;
+	int 	iTempPerm231;
+	float 	fTempPerm232;
+	int 	iRec92[2];
+	float 	fTempPerm233;
+	float 	fRec91[2];
+	float 	fTempPerm234;
+	float 	fVec73[2];
+	float 	fTempPerm235;
+	float 	fTempPerm236;
+	int 	iTempPerm237;
+	float 	fTempPerm238;
+	float 	fRec93[2];
+	float 	fTempPerm239;
+	float 	fTempPerm240;
+	float 	fTempPerm241;
+	float 	fVec74[2];
+	float 	fTempPerm242;
+	float 	fRec94[2];
+	float 	fTempPerm243;
+	float 	fVec75[2];
+	float 	fTempPerm244;
+	float 	fVec76[4096];
+	float 	fTempPerm245;
+	int 	iTempPerm246;
+	float 	fTempPerm247;
+	int 	iRec96[2];
+	float 	fTempPerm248;
+	float 	fRec95[2];
+	float 	fTempPerm249;
+	float 	fVec77[2];
+	float 	fTempPerm250;
+	float 	fTempPerm251;
+	int 	iTempPerm252;
+	float 	fTempPerm253;
+	float 	fRec97[2];
+	float 	fTempPerm254;
+	int 	iRec99[2];
+	float 	fTempPerm255;
+	float 	fRec98[2];
+	float 	fTempPerm256;
+	float 	fVec78[2];
+	float 	fVec79[2];
+	float 	fTempPerm257;
+	float 	fRec101[2];
+	float 	fTempPerm258;
+	float 	fVec80[2];
+	float 	fTempPerm259;
+	float 	fVec81[4096];
+	float 	fRec100[2];
+	float 	fTempPerm260;
+	int 	iTempPerm261;
+	float 	fTempPerm262;
+	float 	fRec85[3];
+	float 	fRec84[3];
+	FAUSTFLOAT 	fbutton4;
+	int 	iRec103[2];
+	int 	iTempPerm263;
+	float 	fTempPerm264;
+	float 	fRec102[2];
+	FAUSTFLOAT 	fslider17;
+	FAUSTFLOAT 	fslider18;
+	int 	iRec107[2];
+	float 	fTempPerm265;
+	float 	fRec106[2];
+	float 	fTempPerm266;
+	float 	fVec82[2];
+	float 	fVec83[2];
+	float 	fTempPerm267;
+	float 	fRec109[2];
+	float 	fTempPerm268;
+	float 	fVec84[2];
+	float 	fTempPerm269;
+	float 	fVec85[4096];
+	float 	fRec108[2];
+	float 	fTempPerm270;
+	int 	iTempPerm271;
+	float 	fTempPerm272;
+	float 	fTempPerm273;
+	float 	fTempPerm274;
+	float 	fVec86[2];
+	float 	fTempPerm275;
+	float 	fRec110[2];
+	float 	fTempPerm276;
+	float 	fVec87[2];
+	float 	fTempPerm277;
+	float 	fVec88[4096];
+	float 	fTempPerm278;
+	int 	iTempPerm279;
+	float 	fTempPerm280;
+	int 	iRec112[2];
+	float 	fTempPerm281;
+	float 	fRec111[2];
+	float 	fTempPerm282;
+	float 	fVec89[2];
+	float 	fTempPerm283;
+	float 	fTempPerm284;
+	int 	iTempPerm285;
+	float 	fTempPerm286;
+	float 	fRec113[2];
+	float 	fTempPerm287;
+	float 	fTempPerm288;
+	float 	fTempPerm289;
+	float 	fVec90[2];
+	float 	fTempPerm290;
+	float 	fRec114[2];
+	float 	fTempPerm291;
+	float 	fVec91[2];
+	float 	fTempPerm292;
+	float 	fVec92[4096];
+	float 	fTempPerm293;
+	int 	iTempPerm294;
+	float 	fTempPerm295;
+	int 	iRec116[2];
+	float 	fTempPerm296;
+	float 	fRec115[2];
+	float 	fTempPerm297;
+	float 	fVec93[2];
+	float 	fTempPerm298;
+	float 	fTempPerm299;
+	int 	iTempPerm300;
+	float 	fTempPerm301;
+	float 	fRec117[2];
+	float 	fTempPerm302;
+	int 	iRec119[2];
+	float 	fTempPerm303;
+	float 	fRec118[2];
+	float 	fTempPerm304;
+	float 	fVec94[2];
+	float 	fVec95[2];
+	float 	fTempPerm305;
+	float 	fRec121[2];
+	float 	fTempPerm306;
+	float 	fVec96[2];
+	float 	fTempPerm307;
+	float 	fVec97[4096];
+	float 	fRec120[2];
+	float 	fTempPerm308;
+	int 	iTempPerm309;
+	float 	fTempPerm310;
+	float 	fRec105[3];
+	float 	fRec104[3];
+	FAUSTFLOAT 	fbutton5;
+	int 	iRec123[2];
+	int 	iTempPerm311;
+	float 	fTempPerm312;
+	float 	fRec122[2];
+	FAUSTFLOAT 	fslider19;
 	int fSamplingFreq;
-	float fConst0;
-	float fConst1;
-	FAUSTFLOAT fButton0;
-	FAUSTFLOAT fHslider1;
-	int iRec1[2];
-	FAUSTFLOAT fHslider2;
-	FAUSTFLOAT fHslider3;
-	FAUSTFLOAT fHslider4;
-	float fRec0[2];
-	FAUSTFLOAT fHslider5;
-	float fRec4[2];
-	FAUSTFLOAT fHslider6;
-	float fRec5[2];
-	float fVec1[2];
-	float fConst2;
-	FAUSTFLOAT fHslider7;
-	float fVec2[2];
-	float fConst3;
-	float fRec6[2];
-	float fVec3[2];
-	int IOTA;
-	float fVec4[4096];
-	float fConst4;
-	float fConst5;
-	float fRec7[2];
-	float fConst6;
-	int iRec9[2];
-	float fRec8[2];
-	float fVec5[2];
-	FAUSTFLOAT fHslider8;
-	float fRec10[2];
-	int iRec12[2];
-	float fRec11[2];
-	float fVec6[2];
-	float fVec7[2];
-	float fRec13[2];
-	float fVec8[2];
-	float fVec9[4096];
-	int iRec15[2];
-	float fRec14[2];
-	float fVec10[2];
-	float fVec11[2];
-	float fRec16[2];
-	float fVec12[2];
-	float fVec13[4096];
-	float fConst7;
-	float fRec17[2];
-	float fRec18[2];
-	float fVec14[2];
-	float fRec19[2];
-	float fVec15[2];
-	float fVec16[4096];
-	float fRec20[2];
-	int iRec22[2];
-	float fRec21[2];
-	float fVec17[2];
-	float fConst8;
-	FAUSTFLOAT fHslider9;
-	float fRec23[2];
-	float fRec3[3];
-	float fRec2[3];
-	FAUSTFLOAT fHslider10;
-	FAUSTFLOAT fButton1;
-	int iRec25[2];
-	float fRec24[2];
-	FAUSTFLOAT fHslider11;
-	float fVec18[2];
-	float fRec28[2];
-	float fVec19[2];
-	float fVec20[4096];
-	float fRec29[2];
-	int iRec31[2];
-	float fRec30[2];
-	float fVec21[2];
-	int iRec33[2];
-	float fRec32[2];
-	float fVec22[2];
-	float fVec23[2];
-	float fRec34[2];
-	float fVec24[2];
-	float fVec25[4096];
-	int iRec36[2];
-	float fRec35[2];
-	float fVec26[2];
-	float fVec27[2];
-	float fRec37[2];
-	float fVec28[2];
-	float fVec29[4096];
-	float fRec38[2];
-	float fRec39[2];
-	float fVec30[2];
-	float fRec40[2];
-	float fVec31[2];
-	float fVec32[4096];
-	float fRec41[2];
-	int iRec43[2];
-	float fRec42[2];
-	float fVec33[2];
-	float fRec27[3];
-	float fRec26[3];
-	FAUSTFLOAT fHslider12;
-	FAUSTFLOAT fButton2;
-	int iRec45[2];
-	float fRec44[2];
-	FAUSTFLOAT fHslider13;
-	float fVec34[2];
-	float fRec48[2];
-	float fVec35[2];
-	float fVec36[4096];
-	float fRec49[2];
-	int iRec51[2];
-	float fRec50[2];
-	float fVec37[2];
-	int iRec53[2];
-	float fRec52[2];
-	float fVec38[2];
-	float fVec39[2];
-	float fRec54[2];
-	float fVec40[2];
-	float fVec41[4096];
-	int iRec56[2];
-	float fRec55[2];
-	float fVec42[2];
-	float fVec43[2];
-	float fRec57[2];
-	float fVec44[2];
-	float fVec45[4096];
-	float fRec58[2];
-	float fRec59[2];
-	float fVec46[2];
-	float fRec60[2];
-	float fVec47[2];
-	float fVec48[4096];
-	float fRec61[2];
-	int iRec63[2];
-	float fRec62[2];
-	float fVec49[2];
-	float fRec47[3];
-	float fRec46[3];
-	FAUSTFLOAT fHslider14;
-	FAUSTFLOAT fButton3;
-	int iRec65[2];
-	float fRec64[2];
-	FAUSTFLOAT fHslider15;
-	float fVec50[2];
-	float fRec68[2];
-	float fVec51[2];
-	float fVec52[4096];
-	float fRec69[2];
-	int iRec71[2];
-	float fRec70[2];
-	float fVec53[2];
-	int iRec73[2];
-	float fRec72[2];
-	float fVec54[2];
-	float fVec55[2];
-	float fRec74[2];
-	float fVec56[2];
-	float fVec57[4096];
-	int iRec76[2];
-	float fRec75[2];
-	float fVec58[2];
-	float fVec59[2];
-	float fRec77[2];
-	float fVec60[2];
-	float fVec61[4096];
-	float fRec78[2];
-	float fRec79[2];
-	float fVec62[2];
-	float fRec80[2];
-	float fVec63[2];
-	float fVec64[4096];
-	float fRec81[2];
-	int iRec83[2];
-	float fRec82[2];
-	float fVec65[2];
-	float fRec67[3];
-	float fRec66[3];
-	FAUSTFLOAT fHslider16;
-	FAUSTFLOAT fButton4;
-	int iRec85[2];
-	float fRec84[2];
-	FAUSTFLOAT fHslider17;
-	float fVec66[2];
-	float fRec88[2];
-	float fVec67[2];
-	float fVec68[4096];
-	float fRec89[2];
-	int iRec91[2];
-	float fRec90[2];
-	float fVec69[2];
-	int iRec93[2];
-	float fRec92[2];
-	float fVec70[2];
-	float fVec71[2];
-	float fRec94[2];
-	float fVec72[2];
-	float fVec73[4096];
-	int iRec96[2];
-	float fRec95[2];
-	float fVec74[2];
-	float fVec75[2];
-	float fRec97[2];
-	float fVec76[2];
-	float fVec77[4096];
-	float fRec98[2];
-	float fRec99[2];
-	float fVec78[2];
-	float fRec100[2];
-	float fVec79[2];
-	float fVec80[4096];
-	float fRec101[2];
-	int iRec103[2];
-	float fRec102[2];
-	float fVec81[2];
-	float fRec87[3];
-	float fRec86[3];
-	FAUSTFLOAT fHslider18;
-	FAUSTFLOAT fButton5;
-	int iRec105[2];
-	float fRec104[2];
-	FAUSTFLOAT fHslider19;
-	float fVec82[2];
-	float fRec108[2];
-	float fVec83[2];
-	float fVec84[4096];
-	float fRec109[2];
-	int iRec111[2];
-	float fRec110[2];
-	float fVec85[2];
-	int iRec113[2];
-	float fRec112[2];
-	float fVec86[2];
-	float fVec87[2];
-	float fRec114[2];
-	float fVec88[2];
-	float fVec89[4096];
-	int iRec116[2];
-	float fRec115[2];
-	float fVec90[2];
-	float fVec91[2];
-	float fRec117[2];
-	float fVec92[2];
-	float fVec93[4096];
-	float fRec118[2];
-	float fRec119[2];
-	float fVec94[2];
-	float fRec120[2];
-	float fVec95[2];
-	float fVec96[4096];
-	float fRec121[2];
-	int iRec123[2];
-	float fRec122[2];
-	float fVec97[2];
-	float fRec107[3];
-	float fRec106[3];
-	
- public:
-	
-	void metadata(Meta* m) { 
+
+  public:
+	virtual void metadata(Meta* m) { 
 		m->declare("basics.lib/name", "Faust Basic Element Library");
 		m->declare("basics.lib/version", "0.0");
 		m->declare("filename", "nuke");
@@ -331,984 +640,588 @@ class faust_nuke : public dsp {
 		m->declare("signals.lib/version", "0.0");
 	}
 
-	virtual int getNumInputs() {
-		return 0;
-		
-	}
-	virtual int getNumOutputs() {
-		return 1;
-		
-	}
-	virtual int getInputRate(int channel) {
-		int rate;
-		switch (channel) {
-			default: {
-				rate = -1;
-				break;
-			}
-			
-		}
-		return rate;
-		
-	}
-	virtual int getOutputRate(int channel) {
-		int rate;
-		switch (channel) {
-			case 0: {
-				rate = 1;
-				break;
-			}
-			default: {
-				rate = -1;
-				break;
-			}
-			
-		}
-		return rate;
-		
-	}
-	
+	virtual int getNumInputs() { return 0; }
+	virtual int getNumOutputs() { return 1; }
 	static void classInit(int samplingFreq) {
-		
 	}
-	
 	virtual void instanceConstants(int samplingFreq) {
 		fSamplingFreq = samplingFreq;
-		fConst0 = std::min<float>(192000.0f, std::max<float>(1.0f, float(fSamplingFreq)));
-		fConst1 = (6.90999985f / fConst0);
-		fConst2 = (0.25f * fConst0);
-		fConst3 = (1.0f / fConst0);
-		fConst4 = (3.0f / fConst0);
-		fConst5 = (0.5f * fConst0);
+		fConst0 = min(192000.0f, max(1.0f, (float)fSamplingFreq));
+		fConst1 = (3.1415926535897931f / fConst0);
+		fTempPerm0 = 0;
+		fTempPerm1 = 0;
+		fTempPerm2 = 0;
+		fTempPerm3 = 0;
+		fTempPerm4 = 0;
+		fTempPerm5 = 0;
+		fTempPerm6 = 0;
+		fConst2 = (1.0f / fConst0);
+		fTempPerm7 = 0;
+		fTempPerm8 = 0;
+		fTempPerm9 = 0;
+		fTempPerm10 = 0;
+		fTempPerm11 = 0;
+		fTempPerm12 = 0;
+		fTempPerm13 = 0;
+		fTempPerm14 = 0;
+		fConst3 = (0.25f * fConst0);
+		fTempPerm15 = 0;
+		fConst4 = (0.5f * fConst0);
+		fConst5 = (6.0f / fConst0);
+		fTempPerm16 = 0;
+		fTempPerm17 = 0;
+		iTempPerm18 = 0;
+		fTempPerm19 = 0;
+		fTempPerm20 = 0;
+		iTempPerm21 = 0;
+		fTempPerm22 = 0;
+		fTempPerm23 = 0;
+		fTempPerm24 = 0;
+		fTempPerm25 = 0;
+		fTempPerm26 = 0;
+		fTempPerm27 = 0;
+		fTempPerm28 = 0;
+		fTempPerm29 = 0;
+		fTempPerm30 = 0;
+		iTempPerm31 = 0;
+		fTempPerm32 = 0;
+		fTempPerm33 = 0;
+		fTempPerm34 = 0;
+		fTempPerm35 = 0;
+		fTempPerm36 = 0;
+		fTempPerm37 = 0;
+		fTempPerm38 = 0;
+		iTempPerm39 = 0;
+		fTempPerm40 = 0;
+		fTempPerm41 = 0;
+		fTempPerm42 = 0;
+		fTempPerm43 = 0;
+		fTempPerm44 = 0;
+		fTempPerm45 = 0;
+		fTempPerm46 = 0;
+		fTempPerm47 = 0;
+		fTempPerm48 = 0;
+		fTempPerm49 = 0;
+		iTempPerm50 = 0;
+		fTempPerm51 = 0;
+		fTempPerm52 = 0;
+		fTempPerm53 = 0;
+		fTempPerm54 = 0;
+		fTempPerm55 = 0;
+		fTempPerm56 = 0;
+		iTempPerm57 = 0;
+		fTempPerm58 = 0;
+		fTempPerm59 = 0;
+		fTempPerm60 = 0;
+		fTempPerm61 = 0;
+		fTempPerm62 = 0;
 		fConst6 = (2.0f * fConst0);
-		fConst7 = (6.0f / fConst0);
-		fConst8 = (3.14159274f / fConst0);
-		
+		fTempPerm63 = 0;
+		fTempPerm64 = 0;
+		fTempPerm65 = 0;
+		fTempPerm66 = 0;
+		fTempPerm67 = 0;
+		fConst7 = (3.0f / fConst0);
+		fTempPerm68 = 0;
+		iTempPerm69 = 0;
+		fTempPerm70 = 0;
+		iTempPerm71 = 0;
+		fConst8 = (6.9100000000000001f / fConst0);
+		fTempPerm72 = 0;
+		fTempPerm73 = 0;
+		fTempPerm74 = 0;
+		fTempPerm75 = 0;
+		fTempPerm76 = 0;
+		fTempPerm77 = 0;
+		fTempPerm78 = 0;
+		iTempPerm79 = 0;
+		fTempPerm80 = 0;
+		fTempPerm81 = 0;
+		fTempPerm82 = 0;
+		fTempPerm83 = 0;
+		fTempPerm84 = 0;
+		fTempPerm85 = 0;
+		fTempPerm86 = 0;
+		iTempPerm87 = 0;
+		fTempPerm88 = 0;
+		fTempPerm89 = 0;
+		fTempPerm90 = 0;
+		fTempPerm91 = 0;
+		fTempPerm92 = 0;
+		iTempPerm93 = 0;
+		fTempPerm94 = 0;
+		fTempPerm95 = 0;
+		fTempPerm96 = 0;
+		fTempPerm97 = 0;
+		fTempPerm98 = 0;
+		fTempPerm99 = 0;
+		fTempPerm100 = 0;
+		fTempPerm101 = 0;
+		iTempPerm102 = 0;
+		fTempPerm103 = 0;
+		fTempPerm104 = 0;
+		fTempPerm105 = 0;
+		fTempPerm106 = 0;
+		fTempPerm107 = 0;
+		iTempPerm108 = 0;
+		fTempPerm109 = 0;
+		fTempPerm110 = 0;
+		fTempPerm111 = 0;
+		fTempPerm112 = 0;
+		fTempPerm113 = 0;
+		fTempPerm114 = 0;
+		fTempPerm115 = 0;
+		fTempPerm116 = 0;
+		iTempPerm117 = 0;
+		fTempPerm118 = 0;
+		iTempPerm119 = 0;
+		fTempPerm120 = 0;
+		fTempPerm121 = 0;
+		fTempPerm122 = 0;
+		fTempPerm123 = 0;
+		fTempPerm124 = 0;
+		fTempPerm125 = 0;
+		fTempPerm126 = 0;
+		iTempPerm127 = 0;
+		fTempPerm128 = 0;
+		fTempPerm129 = 0;
+		fTempPerm130 = 0;
+		fTempPerm131 = 0;
+		fTempPerm132 = 0;
+		fTempPerm133 = 0;
+		fTempPerm134 = 0;
+		iTempPerm135 = 0;
+		fTempPerm136 = 0;
+		fTempPerm137 = 0;
+		fTempPerm138 = 0;
+		fTempPerm139 = 0;
+		fTempPerm140 = 0;
+		iTempPerm141 = 0;
+		fTempPerm142 = 0;
+		fTempPerm143 = 0;
+		fTempPerm144 = 0;
+		fTempPerm145 = 0;
+		fTempPerm146 = 0;
+		fTempPerm147 = 0;
+		fTempPerm148 = 0;
+		fTempPerm149 = 0;
+		iTempPerm150 = 0;
+		fTempPerm151 = 0;
+		fTempPerm152 = 0;
+		fTempPerm153 = 0;
+		fTempPerm154 = 0;
+		fTempPerm155 = 0;
+		iTempPerm156 = 0;
+		fTempPerm157 = 0;
+		fTempPerm158 = 0;
+		fTempPerm159 = 0;
+		fTempPerm160 = 0;
+		fTempPerm161 = 0;
+		fTempPerm162 = 0;
+		fTempPerm163 = 0;
+		fTempPerm164 = 0;
+		iTempPerm165 = 0;
+		fTempPerm166 = 0;
+		iTempPerm167 = 0;
+		fTempPerm168 = 0;
+		fTempPerm169 = 0;
+		fTempPerm170 = 0;
+		fTempPerm171 = 0;
+		fTempPerm172 = 0;
+		fTempPerm173 = 0;
+		fTempPerm174 = 0;
+		iTempPerm175 = 0;
+		fTempPerm176 = 0;
+		fTempPerm177 = 0;
+		fTempPerm178 = 0;
+		fTempPerm179 = 0;
+		fTempPerm180 = 0;
+		fTempPerm181 = 0;
+		fTempPerm182 = 0;
+		iTempPerm183 = 0;
+		fTempPerm184 = 0;
+		fTempPerm185 = 0;
+		fTempPerm186 = 0;
+		fTempPerm187 = 0;
+		fTempPerm188 = 0;
+		iTempPerm189 = 0;
+		fTempPerm190 = 0;
+		fTempPerm191 = 0;
+		fTempPerm192 = 0;
+		fTempPerm193 = 0;
+		fTempPerm194 = 0;
+		fTempPerm195 = 0;
+		fTempPerm196 = 0;
+		fTempPerm197 = 0;
+		iTempPerm198 = 0;
+		fTempPerm199 = 0;
+		fTempPerm200 = 0;
+		fTempPerm201 = 0;
+		fTempPerm202 = 0;
+		fTempPerm203 = 0;
+		iTempPerm204 = 0;
+		fTempPerm205 = 0;
+		fTempPerm206 = 0;
+		fTempPerm207 = 0;
+		fTempPerm208 = 0;
+		fTempPerm209 = 0;
+		fTempPerm210 = 0;
+		fTempPerm211 = 0;
+		fTempPerm212 = 0;
+		iTempPerm213 = 0;
+		fTempPerm214 = 0;
+		iTempPerm215 = 0;
+		fTempPerm216 = 0;
+		fTempPerm217 = 0;
+		fTempPerm218 = 0;
+		fTempPerm219 = 0;
+		fTempPerm220 = 0;
+		fTempPerm221 = 0;
+		fTempPerm222 = 0;
+		iTempPerm223 = 0;
+		fTempPerm224 = 0;
+		fTempPerm225 = 0;
+		fTempPerm226 = 0;
+		fTempPerm227 = 0;
+		fTempPerm228 = 0;
+		fTempPerm229 = 0;
+		fTempPerm230 = 0;
+		iTempPerm231 = 0;
+		fTempPerm232 = 0;
+		fTempPerm233 = 0;
+		fTempPerm234 = 0;
+		fTempPerm235 = 0;
+		fTempPerm236 = 0;
+		iTempPerm237 = 0;
+		fTempPerm238 = 0;
+		fTempPerm239 = 0;
+		fTempPerm240 = 0;
+		fTempPerm241 = 0;
+		fTempPerm242 = 0;
+		fTempPerm243 = 0;
+		fTempPerm244 = 0;
+		fTempPerm245 = 0;
+		iTempPerm246 = 0;
+		fTempPerm247 = 0;
+		fTempPerm248 = 0;
+		fTempPerm249 = 0;
+		fTempPerm250 = 0;
+		fTempPerm251 = 0;
+		iTempPerm252 = 0;
+		fTempPerm253 = 0;
+		fTempPerm254 = 0;
+		fTempPerm255 = 0;
+		fTempPerm256 = 0;
+		fTempPerm257 = 0;
+		fTempPerm258 = 0;
+		fTempPerm259 = 0;
+		fTempPerm260 = 0;
+		iTempPerm261 = 0;
+		fTempPerm262 = 0;
+		iTempPerm263 = 0;
+		fTempPerm264 = 0;
+		fTempPerm265 = 0;
+		fTempPerm266 = 0;
+		fTempPerm267 = 0;
+		fTempPerm268 = 0;
+		fTempPerm269 = 0;
+		fTempPerm270 = 0;
+		iTempPerm271 = 0;
+		fTempPerm272 = 0;
+		fTempPerm273 = 0;
+		fTempPerm274 = 0;
+		fTempPerm275 = 0;
+		fTempPerm276 = 0;
+		fTempPerm277 = 0;
+		fTempPerm278 = 0;
+		iTempPerm279 = 0;
+		fTempPerm280 = 0;
+		fTempPerm281 = 0;
+		fTempPerm282 = 0;
+		fTempPerm283 = 0;
+		fTempPerm284 = 0;
+		iTempPerm285 = 0;
+		fTempPerm286 = 0;
+		fTempPerm287 = 0;
+		fTempPerm288 = 0;
+		fTempPerm289 = 0;
+		fTempPerm290 = 0;
+		fTempPerm291 = 0;
+		fTempPerm292 = 0;
+		fTempPerm293 = 0;
+		iTempPerm294 = 0;
+		fTempPerm295 = 0;
+		fTempPerm296 = 0;
+		fTempPerm297 = 0;
+		fTempPerm298 = 0;
+		fTempPerm299 = 0;
+		iTempPerm300 = 0;
+		fTempPerm301 = 0;
+		fTempPerm302 = 0;
+		fTempPerm303 = 0;
+		fTempPerm304 = 0;
+		fTempPerm305 = 0;
+		fTempPerm306 = 0;
+		fTempPerm307 = 0;
+		fTempPerm308 = 0;
+		iTempPerm309 = 0;
+		fTempPerm310 = 0;
+		iTempPerm311 = 0;
+		fTempPerm312 = 0;
 	}
-	
 	virtual void instanceResetUserInterface() {
-		fHslider0 = FAUSTFLOAT(1.0f);
-		fButton0 = FAUSTFLOAT(0.0f);
-		fHslider1 = FAUSTFLOAT(0.0f);
-		fHslider2 = FAUSTFLOAT(0.001f);
-		fHslider3 = FAUSTFLOAT(0.0f);
-		fHslider4 = FAUSTFLOAT(1.0f);
-		fHslider5 = FAUSTFLOAT(0.0f);
-		fHslider6 = FAUSTFLOAT(1.0f);
-		fHslider7 = FAUSTFLOAT(440.0f);
-		fHslider8 = FAUSTFLOAT(2.0f);
-		fHslider9 = FAUSTFLOAT(0.5f);
-		fHslider10 = FAUSTFLOAT(1.0f);
-		fButton1 = FAUSTFLOAT(0.0f);
-		fHslider11 = FAUSTFLOAT(440.0f);
-		fHslider12 = FAUSTFLOAT(1.0f);
-		fButton2 = FAUSTFLOAT(0.0f);
-		fHslider13 = FAUSTFLOAT(440.0f);
-		fHslider14 = FAUSTFLOAT(1.0f);
-		fButton3 = FAUSTFLOAT(0.0f);
-		fHslider15 = FAUSTFLOAT(440.0f);
-		fHslider16 = FAUSTFLOAT(1.0f);
-		fButton4 = FAUSTFLOAT(0.0f);
-		fHslider17 = FAUSTFLOAT(440.0f);
-		fHslider18 = FAUSTFLOAT(1.0f);
-		fButton5 = FAUSTFLOAT(0.0f);
-		fHslider19 = FAUSTFLOAT(440.0f);
-		
+		fslider0 = 0.5f;
+		fslider1 = 1.0f;
+		fslider2 = 440.0f;
+		fslider3 = 0.0f;
+		fslider4 = 2.0f;
+		fslider5 = 0.0f;
+		fslider6 = 0.0f;
+		fslider7 = 0.001f;
+		fbutton0 = 0.0;
+		fslider8 = 1.0f;
+		fslider9 = 1.0f;
+		fslider10 = 440.0f;
+		fbutton1 = 0.0;
+		fslider11 = 1.0f;
+		fslider12 = 440.0f;
+		fbutton2 = 0.0;
+		fslider13 = 1.0f;
+		fslider14 = 440.0f;
+		fbutton3 = 0.0;
+		fslider15 = 1.0f;
+		fslider16 = 440.0f;
+		fbutton4 = 0.0;
+		fslider17 = 1.0f;
+		fslider18 = 440.0f;
+		fbutton5 = 0.0;
+		fslider19 = 1.0f;
 	}
-	
 	virtual void instanceClear() {
-		for (int l0 = 0; (l0 < 2); l0 = (l0 + 1)) {
-			iVec0[l0] = 0;
-			
-		}
-		for (int l1 = 0; (l1 < 2); l1 = (l1 + 1)) {
-			iRec1[l1] = 0;
-			
-		}
-		for (int l2 = 0; (l2 < 2); l2 = (l2 + 1)) {
-			fRec0[l2] = 0.0f;
-			
-		}
-		for (int l3 = 0; (l3 < 2); l3 = (l3 + 1)) {
-			fRec4[l3] = 0.0f;
-			
-		}
-		for (int l4 = 0; (l4 < 2); l4 = (l4 + 1)) {
-			fRec5[l4] = 0.0f;
-			
-		}
-		for (int l5 = 0; (l5 < 2); l5 = (l5 + 1)) {
-			fVec1[l5] = 0.0f;
-			
-		}
-		for (int l6 = 0; (l6 < 2); l6 = (l6 + 1)) {
-			fVec2[l6] = 0.0f;
-			
-		}
-		for (int l7 = 0; (l7 < 2); l7 = (l7 + 1)) {
-			fRec6[l7] = 0.0f;
-			
-		}
-		for (int l8 = 0; (l8 < 2); l8 = (l8 + 1)) {
-			fVec3[l8] = 0.0f;
-			
-		}
+		for (int i=0; i<2; i++) iVec0[i] = 0;
+		for (int i=0; i<2; i++) fRec0[i] = 0;
+		for (int i=0; i<2; i++) fRec3[i] = 0;
+		for (int i=0; i<2; i++) fVec1[i] = 0;
+		for (int i=0; i<2; i++) iRec5[i] = 0;
+		for (int i=0; i<2; i++) fRec4[i] = 0;
+		for (int i=0; i<2; i++) fVec2[i] = 0;
+		for (int i=0; i<2; i++) fVec3[i] = 0;
+		for (int i=0; i<2; i++) fRec7[i] = 0;
+		for (int i=0; i<2; i++) fVec4[i] = 0;
 		IOTA = 0;
-		for (int l9 = 0; (l9 < 4096); l9 = (l9 + 1)) {
-			fVec4[l9] = 0.0f;
-			
-		}
-		for (int l10 = 0; (l10 < 2); l10 = (l10 + 1)) {
-			fRec7[l10] = 0.0f;
-			
-		}
-		for (int l11 = 0; (l11 < 2); l11 = (l11 + 1)) {
-			iRec9[l11] = 0;
-			
-		}
-		for (int l12 = 0; (l12 < 2); l12 = (l12 + 1)) {
-			fRec8[l12] = 0.0f;
-			
-		}
-		for (int l13 = 0; (l13 < 2); l13 = (l13 + 1)) {
-			fVec5[l13] = 0.0f;
-			
-		}
-		for (int l14 = 0; (l14 < 2); l14 = (l14 + 1)) {
-			fRec10[l14] = 0.0f;
-			
-		}
-		for (int l15 = 0; (l15 < 2); l15 = (l15 + 1)) {
-			iRec12[l15] = 0;
-			
-		}
-		for (int l16 = 0; (l16 < 2); l16 = (l16 + 1)) {
-			fRec11[l16] = 0.0f;
-			
-		}
-		for (int l17 = 0; (l17 < 2); l17 = (l17 + 1)) {
-			fVec6[l17] = 0.0f;
-			
-		}
-		for (int l18 = 0; (l18 < 2); l18 = (l18 + 1)) {
-			fVec7[l18] = 0.0f;
-			
-		}
-		for (int l19 = 0; (l19 < 2); l19 = (l19 + 1)) {
-			fRec13[l19] = 0.0f;
-			
-		}
-		for (int l20 = 0; (l20 < 2); l20 = (l20 + 1)) {
-			fVec8[l20] = 0.0f;
-			
-		}
-		for (int l21 = 0; (l21 < 4096); l21 = (l21 + 1)) {
-			fVec9[l21] = 0.0f;
-			
-		}
-		for (int l22 = 0; (l22 < 2); l22 = (l22 + 1)) {
-			iRec15[l22] = 0;
-			
-		}
-		for (int l23 = 0; (l23 < 2); l23 = (l23 + 1)) {
-			fRec14[l23] = 0.0f;
-			
-		}
-		for (int l24 = 0; (l24 < 2); l24 = (l24 + 1)) {
-			fVec10[l24] = 0.0f;
-			
-		}
-		for (int l25 = 0; (l25 < 2); l25 = (l25 + 1)) {
-			fVec11[l25] = 0.0f;
-			
-		}
-		for (int l26 = 0; (l26 < 2); l26 = (l26 + 1)) {
-			fRec16[l26] = 0.0f;
-			
-		}
-		for (int l27 = 0; (l27 < 2); l27 = (l27 + 1)) {
-			fVec12[l27] = 0.0f;
-			
-		}
-		for (int l28 = 0; (l28 < 4096); l28 = (l28 + 1)) {
-			fVec13[l28] = 0.0f;
-			
-		}
-		for (int l29 = 0; (l29 < 2); l29 = (l29 + 1)) {
-			fRec17[l29] = 0.0f;
-			
-		}
-		for (int l30 = 0; (l30 < 2); l30 = (l30 + 1)) {
-			fRec18[l30] = 0.0f;
-			
-		}
-		for (int l31 = 0; (l31 < 2); l31 = (l31 + 1)) {
-			fVec14[l31] = 0.0f;
-			
-		}
-		for (int l32 = 0; (l32 < 2); l32 = (l32 + 1)) {
-			fRec19[l32] = 0.0f;
-			
-		}
-		for (int l33 = 0; (l33 < 2); l33 = (l33 + 1)) {
-			fVec15[l33] = 0.0f;
-			
-		}
-		for (int l34 = 0; (l34 < 4096); l34 = (l34 + 1)) {
-			fVec16[l34] = 0.0f;
-			
-		}
-		for (int l35 = 0; (l35 < 2); l35 = (l35 + 1)) {
-			fRec20[l35] = 0.0f;
-			
-		}
-		for (int l36 = 0; (l36 < 2); l36 = (l36 + 1)) {
-			iRec22[l36] = 0;
-			
-		}
-		for (int l37 = 0; (l37 < 2); l37 = (l37 + 1)) {
-			fRec21[l37] = 0.0f;
-			
-		}
-		for (int l38 = 0; (l38 < 2); l38 = (l38 + 1)) {
-			fVec17[l38] = 0.0f;
-			
-		}
-		for (int l39 = 0; (l39 < 2); l39 = (l39 + 1)) {
-			fRec23[l39] = 0.0f;
-			
-		}
-		for (int l40 = 0; (l40 < 3); l40 = (l40 + 1)) {
-			fRec3[l40] = 0.0f;
-			
-		}
-		for (int l41 = 0; (l41 < 3); l41 = (l41 + 1)) {
-			fRec2[l41] = 0.0f;
-			
-		}
-		for (int l42 = 0; (l42 < 2); l42 = (l42 + 1)) {
-			iRec25[l42] = 0;
-			
-		}
-		for (int l43 = 0; (l43 < 2); l43 = (l43 + 1)) {
-			fRec24[l43] = 0.0f;
-			
-		}
-		for (int l44 = 0; (l44 < 2); l44 = (l44 + 1)) {
-			fVec18[l44] = 0.0f;
-			
-		}
-		for (int l45 = 0; (l45 < 2); l45 = (l45 + 1)) {
-			fRec28[l45] = 0.0f;
-			
-		}
-		for (int l46 = 0; (l46 < 2); l46 = (l46 + 1)) {
-			fVec19[l46] = 0.0f;
-			
-		}
-		for (int l47 = 0; (l47 < 4096); l47 = (l47 + 1)) {
-			fVec20[l47] = 0.0f;
-			
-		}
-		for (int l48 = 0; (l48 < 2); l48 = (l48 + 1)) {
-			fRec29[l48] = 0.0f;
-			
-		}
-		for (int l49 = 0; (l49 < 2); l49 = (l49 + 1)) {
-			iRec31[l49] = 0;
-			
-		}
-		for (int l50 = 0; (l50 < 2); l50 = (l50 + 1)) {
-			fRec30[l50] = 0.0f;
-			
-		}
-		for (int l51 = 0; (l51 < 2); l51 = (l51 + 1)) {
-			fVec21[l51] = 0.0f;
-			
-		}
-		for (int l52 = 0; (l52 < 2); l52 = (l52 + 1)) {
-			iRec33[l52] = 0;
-			
-		}
-		for (int l53 = 0; (l53 < 2); l53 = (l53 + 1)) {
-			fRec32[l53] = 0.0f;
-			
-		}
-		for (int l54 = 0; (l54 < 2); l54 = (l54 + 1)) {
-			fVec22[l54] = 0.0f;
-			
-		}
-		for (int l55 = 0; (l55 < 2); l55 = (l55 + 1)) {
-			fVec23[l55] = 0.0f;
-			
-		}
-		for (int l56 = 0; (l56 < 2); l56 = (l56 + 1)) {
-			fRec34[l56] = 0.0f;
-			
-		}
-		for (int l57 = 0; (l57 < 2); l57 = (l57 + 1)) {
-			fVec24[l57] = 0.0f;
-			
-		}
-		for (int l58 = 0; (l58 < 4096); l58 = (l58 + 1)) {
-			fVec25[l58] = 0.0f;
-			
-		}
-		for (int l59 = 0; (l59 < 2); l59 = (l59 + 1)) {
-			iRec36[l59] = 0;
-			
-		}
-		for (int l60 = 0; (l60 < 2); l60 = (l60 + 1)) {
-			fRec35[l60] = 0.0f;
-			
-		}
-		for (int l61 = 0; (l61 < 2); l61 = (l61 + 1)) {
-			fVec26[l61] = 0.0f;
-			
-		}
-		for (int l62 = 0; (l62 < 2); l62 = (l62 + 1)) {
-			fVec27[l62] = 0.0f;
-			
-		}
-		for (int l63 = 0; (l63 < 2); l63 = (l63 + 1)) {
-			fRec37[l63] = 0.0f;
-			
-		}
-		for (int l64 = 0; (l64 < 2); l64 = (l64 + 1)) {
-			fVec28[l64] = 0.0f;
-			
-		}
-		for (int l65 = 0; (l65 < 4096); l65 = (l65 + 1)) {
-			fVec29[l65] = 0.0f;
-			
-		}
-		for (int l66 = 0; (l66 < 2); l66 = (l66 + 1)) {
-			fRec38[l66] = 0.0f;
-			
-		}
-		for (int l67 = 0; (l67 < 2); l67 = (l67 + 1)) {
-			fRec39[l67] = 0.0f;
-			
-		}
-		for (int l68 = 0; (l68 < 2); l68 = (l68 + 1)) {
-			fVec30[l68] = 0.0f;
-			
-		}
-		for (int l69 = 0; (l69 < 2); l69 = (l69 + 1)) {
-			fRec40[l69] = 0.0f;
-			
-		}
-		for (int l70 = 0; (l70 < 2); l70 = (l70 + 1)) {
-			fVec31[l70] = 0.0f;
-			
-		}
-		for (int l71 = 0; (l71 < 4096); l71 = (l71 + 1)) {
-			fVec32[l71] = 0.0f;
-			
-		}
-		for (int l72 = 0; (l72 < 2); l72 = (l72 + 1)) {
-			fRec41[l72] = 0.0f;
-			
-		}
-		for (int l73 = 0; (l73 < 2); l73 = (l73 + 1)) {
-			iRec43[l73] = 0;
-			
-		}
-		for (int l74 = 0; (l74 < 2); l74 = (l74 + 1)) {
-			fRec42[l74] = 0.0f;
-			
-		}
-		for (int l75 = 0; (l75 < 2); l75 = (l75 + 1)) {
-			fVec33[l75] = 0.0f;
-			
-		}
-		for (int l76 = 0; (l76 < 3); l76 = (l76 + 1)) {
-			fRec27[l76] = 0.0f;
-			
-		}
-		for (int l77 = 0; (l77 < 3); l77 = (l77 + 1)) {
-			fRec26[l77] = 0.0f;
-			
-		}
-		for (int l78 = 0; (l78 < 2); l78 = (l78 + 1)) {
-			iRec45[l78] = 0;
-			
-		}
-		for (int l79 = 0; (l79 < 2); l79 = (l79 + 1)) {
-			fRec44[l79] = 0.0f;
-			
-		}
-		for (int l80 = 0; (l80 < 2); l80 = (l80 + 1)) {
-			fVec34[l80] = 0.0f;
-			
-		}
-		for (int l81 = 0; (l81 < 2); l81 = (l81 + 1)) {
-			fRec48[l81] = 0.0f;
-			
-		}
-		for (int l82 = 0; (l82 < 2); l82 = (l82 + 1)) {
-			fVec35[l82] = 0.0f;
-			
-		}
-		for (int l83 = 0; (l83 < 4096); l83 = (l83 + 1)) {
-			fVec36[l83] = 0.0f;
-			
-		}
-		for (int l84 = 0; (l84 < 2); l84 = (l84 + 1)) {
-			fRec49[l84] = 0.0f;
-			
-		}
-		for (int l85 = 0; (l85 < 2); l85 = (l85 + 1)) {
-			iRec51[l85] = 0;
-			
-		}
-		for (int l86 = 0; (l86 < 2); l86 = (l86 + 1)) {
-			fRec50[l86] = 0.0f;
-			
-		}
-		for (int l87 = 0; (l87 < 2); l87 = (l87 + 1)) {
-			fVec37[l87] = 0.0f;
-			
-		}
-		for (int l88 = 0; (l88 < 2); l88 = (l88 + 1)) {
-			iRec53[l88] = 0;
-			
-		}
-		for (int l89 = 0; (l89 < 2); l89 = (l89 + 1)) {
-			fRec52[l89] = 0.0f;
-			
-		}
-		for (int l90 = 0; (l90 < 2); l90 = (l90 + 1)) {
-			fVec38[l90] = 0.0f;
-			
-		}
-		for (int l91 = 0; (l91 < 2); l91 = (l91 + 1)) {
-			fVec39[l91] = 0.0f;
-			
-		}
-		for (int l92 = 0; (l92 < 2); l92 = (l92 + 1)) {
-			fRec54[l92] = 0.0f;
-			
-		}
-		for (int l93 = 0; (l93 < 2); l93 = (l93 + 1)) {
-			fVec40[l93] = 0.0f;
-			
-		}
-		for (int l94 = 0; (l94 < 4096); l94 = (l94 + 1)) {
-			fVec41[l94] = 0.0f;
-			
-		}
-		for (int l95 = 0; (l95 < 2); l95 = (l95 + 1)) {
-			iRec56[l95] = 0;
-			
-		}
-		for (int l96 = 0; (l96 < 2); l96 = (l96 + 1)) {
-			fRec55[l96] = 0.0f;
-			
-		}
-		for (int l97 = 0; (l97 < 2); l97 = (l97 + 1)) {
-			fVec42[l97] = 0.0f;
-			
-		}
-		for (int l98 = 0; (l98 < 2); l98 = (l98 + 1)) {
-			fVec43[l98] = 0.0f;
-			
-		}
-		for (int l99 = 0; (l99 < 2); l99 = (l99 + 1)) {
-			fRec57[l99] = 0.0f;
-			
-		}
-		for (int l100 = 0; (l100 < 2); l100 = (l100 + 1)) {
-			fVec44[l100] = 0.0f;
-			
-		}
-		for (int l101 = 0; (l101 < 4096); l101 = (l101 + 1)) {
-			fVec45[l101] = 0.0f;
-			
-		}
-		for (int l102 = 0; (l102 < 2); l102 = (l102 + 1)) {
-			fRec58[l102] = 0.0f;
-			
-		}
-		for (int l103 = 0; (l103 < 2); l103 = (l103 + 1)) {
-			fRec59[l103] = 0.0f;
-			
-		}
-		for (int l104 = 0; (l104 < 2); l104 = (l104 + 1)) {
-			fVec46[l104] = 0.0f;
-			
-		}
-		for (int l105 = 0; (l105 < 2); l105 = (l105 + 1)) {
-			fRec60[l105] = 0.0f;
-			
-		}
-		for (int l106 = 0; (l106 < 2); l106 = (l106 + 1)) {
-			fVec47[l106] = 0.0f;
-			
-		}
-		for (int l107 = 0; (l107 < 4096); l107 = (l107 + 1)) {
-			fVec48[l107] = 0.0f;
-			
-		}
-		for (int l108 = 0; (l108 < 2); l108 = (l108 + 1)) {
-			fRec61[l108] = 0.0f;
-			
-		}
-		for (int l109 = 0; (l109 < 2); l109 = (l109 + 1)) {
-			iRec63[l109] = 0;
-			
-		}
-		for (int l110 = 0; (l110 < 2); l110 = (l110 + 1)) {
-			fRec62[l110] = 0.0f;
-			
-		}
-		for (int l111 = 0; (l111 < 2); l111 = (l111 + 1)) {
-			fVec49[l111] = 0.0f;
-			
-		}
-		for (int l112 = 0; (l112 < 3); l112 = (l112 + 1)) {
-			fRec47[l112] = 0.0f;
-			
-		}
-		for (int l113 = 0; (l113 < 3); l113 = (l113 + 1)) {
-			fRec46[l113] = 0.0f;
-			
-		}
-		for (int l114 = 0; (l114 < 2); l114 = (l114 + 1)) {
-			iRec65[l114] = 0;
-			
-		}
-		for (int l115 = 0; (l115 < 2); l115 = (l115 + 1)) {
-			fRec64[l115] = 0.0f;
-			
-		}
-		for (int l116 = 0; (l116 < 2); l116 = (l116 + 1)) {
-			fVec50[l116] = 0.0f;
-			
-		}
-		for (int l117 = 0; (l117 < 2); l117 = (l117 + 1)) {
-			fRec68[l117] = 0.0f;
-			
-		}
-		for (int l118 = 0; (l118 < 2); l118 = (l118 + 1)) {
-			fVec51[l118] = 0.0f;
-			
-		}
-		for (int l119 = 0; (l119 < 4096); l119 = (l119 + 1)) {
-			fVec52[l119] = 0.0f;
-			
-		}
-		for (int l120 = 0; (l120 < 2); l120 = (l120 + 1)) {
-			fRec69[l120] = 0.0f;
-			
-		}
-		for (int l121 = 0; (l121 < 2); l121 = (l121 + 1)) {
-			iRec71[l121] = 0;
-			
-		}
-		for (int l122 = 0; (l122 < 2); l122 = (l122 + 1)) {
-			fRec70[l122] = 0.0f;
-			
-		}
-		for (int l123 = 0; (l123 < 2); l123 = (l123 + 1)) {
-			fVec53[l123] = 0.0f;
-			
-		}
-		for (int l124 = 0; (l124 < 2); l124 = (l124 + 1)) {
-			iRec73[l124] = 0;
-			
-		}
-		for (int l125 = 0; (l125 < 2); l125 = (l125 + 1)) {
-			fRec72[l125] = 0.0f;
-			
-		}
-		for (int l126 = 0; (l126 < 2); l126 = (l126 + 1)) {
-			fVec54[l126] = 0.0f;
-			
-		}
-		for (int l127 = 0; (l127 < 2); l127 = (l127 + 1)) {
-			fVec55[l127] = 0.0f;
-			
-		}
-		for (int l128 = 0; (l128 < 2); l128 = (l128 + 1)) {
-			fRec74[l128] = 0.0f;
-			
-		}
-		for (int l129 = 0; (l129 < 2); l129 = (l129 + 1)) {
-			fVec56[l129] = 0.0f;
-			
-		}
-		for (int l130 = 0; (l130 < 4096); l130 = (l130 + 1)) {
-			fVec57[l130] = 0.0f;
-			
-		}
-		for (int l131 = 0; (l131 < 2); l131 = (l131 + 1)) {
-			iRec76[l131] = 0;
-			
-		}
-		for (int l132 = 0; (l132 < 2); l132 = (l132 + 1)) {
-			fRec75[l132] = 0.0f;
-			
-		}
-		for (int l133 = 0; (l133 < 2); l133 = (l133 + 1)) {
-			fVec58[l133] = 0.0f;
-			
-		}
-		for (int l134 = 0; (l134 < 2); l134 = (l134 + 1)) {
-			fVec59[l134] = 0.0f;
-			
-		}
-		for (int l135 = 0; (l135 < 2); l135 = (l135 + 1)) {
-			fRec77[l135] = 0.0f;
-			
-		}
-		for (int l136 = 0; (l136 < 2); l136 = (l136 + 1)) {
-			fVec60[l136] = 0.0f;
-			
-		}
-		for (int l137 = 0; (l137 < 4096); l137 = (l137 + 1)) {
-			fVec61[l137] = 0.0f;
-			
-		}
-		for (int l138 = 0; (l138 < 2); l138 = (l138 + 1)) {
-			fRec78[l138] = 0.0f;
-			
-		}
-		for (int l139 = 0; (l139 < 2); l139 = (l139 + 1)) {
-			fRec79[l139] = 0.0f;
-			
-		}
-		for (int l140 = 0; (l140 < 2); l140 = (l140 + 1)) {
-			fVec62[l140] = 0.0f;
-			
-		}
-		for (int l141 = 0; (l141 < 2); l141 = (l141 + 1)) {
-			fRec80[l141] = 0.0f;
-			
-		}
-		for (int l142 = 0; (l142 < 2); l142 = (l142 + 1)) {
-			fVec63[l142] = 0.0f;
-			
-		}
-		for (int l143 = 0; (l143 < 4096); l143 = (l143 + 1)) {
-			fVec64[l143] = 0.0f;
-			
-		}
-		for (int l144 = 0; (l144 < 2); l144 = (l144 + 1)) {
-			fRec81[l144] = 0.0f;
-			
-		}
-		for (int l145 = 0; (l145 < 2); l145 = (l145 + 1)) {
-			iRec83[l145] = 0;
-			
-		}
-		for (int l146 = 0; (l146 < 2); l146 = (l146 + 1)) {
-			fRec82[l146] = 0.0f;
-			
-		}
-		for (int l147 = 0; (l147 < 2); l147 = (l147 + 1)) {
-			fVec65[l147] = 0.0f;
-			
-		}
-		for (int l148 = 0; (l148 < 3); l148 = (l148 + 1)) {
-			fRec67[l148] = 0.0f;
-			
-		}
-		for (int l149 = 0; (l149 < 3); l149 = (l149 + 1)) {
-			fRec66[l149] = 0.0f;
-			
-		}
-		for (int l150 = 0; (l150 < 2); l150 = (l150 + 1)) {
-			iRec85[l150] = 0;
-			
-		}
-		for (int l151 = 0; (l151 < 2); l151 = (l151 + 1)) {
-			fRec84[l151] = 0.0f;
-			
-		}
-		for (int l152 = 0; (l152 < 2); l152 = (l152 + 1)) {
-			fVec66[l152] = 0.0f;
-			
-		}
-		for (int l153 = 0; (l153 < 2); l153 = (l153 + 1)) {
-			fRec88[l153] = 0.0f;
-			
-		}
-		for (int l154 = 0; (l154 < 2); l154 = (l154 + 1)) {
-			fVec67[l154] = 0.0f;
-			
-		}
-		for (int l155 = 0; (l155 < 4096); l155 = (l155 + 1)) {
-			fVec68[l155] = 0.0f;
-			
-		}
-		for (int l156 = 0; (l156 < 2); l156 = (l156 + 1)) {
-			fRec89[l156] = 0.0f;
-			
-		}
-		for (int l157 = 0; (l157 < 2); l157 = (l157 + 1)) {
-			iRec91[l157] = 0;
-			
-		}
-		for (int l158 = 0; (l158 < 2); l158 = (l158 + 1)) {
-			fRec90[l158] = 0.0f;
-			
-		}
-		for (int l159 = 0; (l159 < 2); l159 = (l159 + 1)) {
-			fVec69[l159] = 0.0f;
-			
-		}
-		for (int l160 = 0; (l160 < 2); l160 = (l160 + 1)) {
-			iRec93[l160] = 0;
-			
-		}
-		for (int l161 = 0; (l161 < 2); l161 = (l161 + 1)) {
-			fRec92[l161] = 0.0f;
-			
-		}
-		for (int l162 = 0; (l162 < 2); l162 = (l162 + 1)) {
-			fVec70[l162] = 0.0f;
-			
-		}
-		for (int l163 = 0; (l163 < 2); l163 = (l163 + 1)) {
-			fVec71[l163] = 0.0f;
-			
-		}
-		for (int l164 = 0; (l164 < 2); l164 = (l164 + 1)) {
-			fRec94[l164] = 0.0f;
-			
-		}
-		for (int l165 = 0; (l165 < 2); l165 = (l165 + 1)) {
-			fVec72[l165] = 0.0f;
-			
-		}
-		for (int l166 = 0; (l166 < 4096); l166 = (l166 + 1)) {
-			fVec73[l166] = 0.0f;
-			
-		}
-		for (int l167 = 0; (l167 < 2); l167 = (l167 + 1)) {
-			iRec96[l167] = 0;
-			
-		}
-		for (int l168 = 0; (l168 < 2); l168 = (l168 + 1)) {
-			fRec95[l168] = 0.0f;
-			
-		}
-		for (int l169 = 0; (l169 < 2); l169 = (l169 + 1)) {
-			fVec74[l169] = 0.0f;
-			
-		}
-		for (int l170 = 0; (l170 < 2); l170 = (l170 + 1)) {
-			fVec75[l170] = 0.0f;
-			
-		}
-		for (int l171 = 0; (l171 < 2); l171 = (l171 + 1)) {
-			fRec97[l171] = 0.0f;
-			
-		}
-		for (int l172 = 0; (l172 < 2); l172 = (l172 + 1)) {
-			fVec76[l172] = 0.0f;
-			
-		}
-		for (int l173 = 0; (l173 < 4096); l173 = (l173 + 1)) {
-			fVec77[l173] = 0.0f;
-			
-		}
-		for (int l174 = 0; (l174 < 2); l174 = (l174 + 1)) {
-			fRec98[l174] = 0.0f;
-			
-		}
-		for (int l175 = 0; (l175 < 2); l175 = (l175 + 1)) {
-			fRec99[l175] = 0.0f;
-			
-		}
-		for (int l176 = 0; (l176 < 2); l176 = (l176 + 1)) {
-			fVec78[l176] = 0.0f;
-			
-		}
-		for (int l177 = 0; (l177 < 2); l177 = (l177 + 1)) {
-			fRec100[l177] = 0.0f;
-			
-		}
-		for (int l178 = 0; (l178 < 2); l178 = (l178 + 1)) {
-			fVec79[l178] = 0.0f;
-			
-		}
-		for (int l179 = 0; (l179 < 4096); l179 = (l179 + 1)) {
-			fVec80[l179] = 0.0f;
-			
-		}
-		for (int l180 = 0; (l180 < 2); l180 = (l180 + 1)) {
-			fRec101[l180] = 0.0f;
-			
-		}
-		for (int l181 = 0; (l181 < 2); l181 = (l181 + 1)) {
-			iRec103[l181] = 0;
-			
-		}
-		for (int l182 = 0; (l182 < 2); l182 = (l182 + 1)) {
-			fRec102[l182] = 0.0f;
-			
-		}
-		for (int l183 = 0; (l183 < 2); l183 = (l183 + 1)) {
-			fVec81[l183] = 0.0f;
-			
-		}
-		for (int l184 = 0; (l184 < 3); l184 = (l184 + 1)) {
-			fRec87[l184] = 0.0f;
-			
-		}
-		for (int l185 = 0; (l185 < 3); l185 = (l185 + 1)) {
-			fRec86[l185] = 0.0f;
-			
-		}
-		for (int l186 = 0; (l186 < 2); l186 = (l186 + 1)) {
-			iRec105[l186] = 0;
-			
-		}
-		for (int l187 = 0; (l187 < 2); l187 = (l187 + 1)) {
-			fRec104[l187] = 0.0f;
-			
-		}
-		for (int l188 = 0; (l188 < 2); l188 = (l188 + 1)) {
-			fVec82[l188] = 0.0f;
-			
-		}
-		for (int l189 = 0; (l189 < 2); l189 = (l189 + 1)) {
-			fRec108[l189] = 0.0f;
-			
-		}
-		for (int l190 = 0; (l190 < 2); l190 = (l190 + 1)) {
-			fVec83[l190] = 0.0f;
-			
-		}
-		for (int l191 = 0; (l191 < 4096); l191 = (l191 + 1)) {
-			fVec84[l191] = 0.0f;
-			
-		}
-		for (int l192 = 0; (l192 < 2); l192 = (l192 + 1)) {
-			fRec109[l192] = 0.0f;
-			
-		}
-		for (int l193 = 0; (l193 < 2); l193 = (l193 + 1)) {
-			iRec111[l193] = 0;
-			
-		}
-		for (int l194 = 0; (l194 < 2); l194 = (l194 + 1)) {
-			fRec110[l194] = 0.0f;
-			
-		}
-		for (int l195 = 0; (l195 < 2); l195 = (l195 + 1)) {
-			fVec85[l195] = 0.0f;
-			
-		}
-		for (int l196 = 0; (l196 < 2); l196 = (l196 + 1)) {
-			iRec113[l196] = 0;
-			
-		}
-		for (int l197 = 0; (l197 < 2); l197 = (l197 + 1)) {
-			fRec112[l197] = 0.0f;
-			
-		}
-		for (int l198 = 0; (l198 < 2); l198 = (l198 + 1)) {
-			fVec86[l198] = 0.0f;
-			
-		}
-		for (int l199 = 0; (l199 < 2); l199 = (l199 + 1)) {
-			fVec87[l199] = 0.0f;
-			
-		}
-		for (int l200 = 0; (l200 < 2); l200 = (l200 + 1)) {
-			fRec114[l200] = 0.0f;
-			
-		}
-		for (int l201 = 0; (l201 < 2); l201 = (l201 + 1)) {
-			fVec88[l201] = 0.0f;
-			
-		}
-		for (int l202 = 0; (l202 < 4096); l202 = (l202 + 1)) {
-			fVec89[l202] = 0.0f;
-			
-		}
-		for (int l203 = 0; (l203 < 2); l203 = (l203 + 1)) {
-			iRec116[l203] = 0;
-			
-		}
-		for (int l204 = 0; (l204 < 2); l204 = (l204 + 1)) {
-			fRec115[l204] = 0.0f;
-			
-		}
-		for (int l205 = 0; (l205 < 2); l205 = (l205 + 1)) {
-			fVec90[l205] = 0.0f;
-			
-		}
-		for (int l206 = 0; (l206 < 2); l206 = (l206 + 1)) {
-			fVec91[l206] = 0.0f;
-			
-		}
-		for (int l207 = 0; (l207 < 2); l207 = (l207 + 1)) {
-			fRec117[l207] = 0.0f;
-			
-		}
-		for (int l208 = 0; (l208 < 2); l208 = (l208 + 1)) {
-			fVec92[l208] = 0.0f;
-			
-		}
-		for (int l209 = 0; (l209 < 4096); l209 = (l209 + 1)) {
-			fVec93[l209] = 0.0f;
-			
-		}
-		for (int l210 = 0; (l210 < 2); l210 = (l210 + 1)) {
-			fRec118[l210] = 0.0f;
-			
-		}
-		for (int l211 = 0; (l211 < 2); l211 = (l211 + 1)) {
-			fRec119[l211] = 0.0f;
-			
-		}
-		for (int l212 = 0; (l212 < 2); l212 = (l212 + 1)) {
-			fVec94[l212] = 0.0f;
-			
-		}
-		for (int l213 = 0; (l213 < 2); l213 = (l213 + 1)) {
-			fRec120[l213] = 0.0f;
-			
-		}
-		for (int l214 = 0; (l214 < 2); l214 = (l214 + 1)) {
-			fVec95[l214] = 0.0f;
-			
-		}
-		for (int l215 = 0; (l215 < 4096); l215 = (l215 + 1)) {
-			fVec96[l215] = 0.0f;
-			
-		}
-		for (int l216 = 0; (l216 < 2); l216 = (l216 + 1)) {
-			fRec121[l216] = 0.0f;
-			
-		}
-		for (int l217 = 0; (l217 < 2); l217 = (l217 + 1)) {
-			iRec123[l217] = 0;
-			
-		}
-		for (int l218 = 0; (l218 < 2); l218 = (l218 + 1)) {
-			fRec122[l218] = 0.0f;
-			
-		}
-		for (int l219 = 0; (l219 < 2); l219 = (l219 + 1)) {
-			fVec97[l219] = 0.0f;
-			
-		}
-		for (int l220 = 0; (l220 < 3); l220 = (l220 + 1)) {
-			fRec107[l220] = 0.0f;
-			
-		}
-		for (int l221 = 0; (l221 < 3); l221 = (l221 + 1)) {
-			fRec106[l221] = 0.0f;
-			
-		}
-		
+		for (int i=0; i<4096; i++) fVec5[i] = 0;
+		for (int i=0; i<2; i++) fRec6[i] = 0;
+		for (int i=0; i<2; i++) fRec8[i] = 0;
+		for (int i=0; i<2; i++) fRec9[i] = 0;
+		for (int i=0; i<2; i++) fVec6[i] = 0;
+		for (int i=0; i<2; i++) fRec10[i] = 0;
+		for (int i=0; i<2; i++) fVec7[i] = 0;
+		for (int i=0; i<4096; i++) fVec8[i] = 0;
+		for (int i=0; i<2; i++) iRec12[i] = 0;
+		for (int i=0; i<2; i++) fRec11[i] = 0;
+		for (int i=0; i<2; i++) fVec9[i] = 0;
+		for (int i=0; i<2; i++) fRec13[i] = 0;
+		for (int i=0; i<2; i++) fVec10[i] = 0;
+		for (int i=0; i<2; i++) fRec14[i] = 0;
+		for (int i=0; i<2; i++) fVec11[i] = 0;
+		for (int i=0; i<4096; i++) fVec12[i] = 0;
+		for (int i=0; i<2; i++) iRec16[i] = 0;
+		for (int i=0; i<2; i++) fRec15[i] = 0;
+		for (int i=0; i<2; i++) fVec13[i] = 0;
+		for (int i=0; i<2; i++) fRec17[i] = 0;
+		for (int i=0; i<2; i++) iRec19[i] = 0;
+		for (int i=0; i<2; i++) fRec18[i] = 0;
+		for (int i=0; i<2; i++) fVec14[i] = 0;
+		for (int i=0; i<2; i++) fVec15[i] = 0;
+		for (int i=0; i<2; i++) fRec21[i] = 0;
+		for (int i=0; i<2; i++) fVec16[i] = 0;
+		for (int i=0; i<4096; i++) fVec17[i] = 0;
+		for (int i=0; i<2; i++) fRec20[i] = 0;
+		for (int i=0; i<3; i++) fRec2[i] = 0;
+		for (int i=0; i<3; i++) fRec1[i] = 0;
+		for (int i=0; i<2; i++) iRec23[i] = 0;
+		for (int i=0; i<2; i++) fRec22[i] = 0;
+		for (int i=0; i<2; i++) iRec27[i] = 0;
+		for (int i=0; i<2; i++) fRec26[i] = 0;
+		for (int i=0; i<2; i++) fVec18[i] = 0;
+		for (int i=0; i<2; i++) fVec19[i] = 0;
+		for (int i=0; i<2; i++) fRec29[i] = 0;
+		for (int i=0; i<2; i++) fVec20[i] = 0;
+		for (int i=0; i<4096; i++) fVec21[i] = 0;
+		for (int i=0; i<2; i++) fRec28[i] = 0;
+		for (int i=0; i<2; i++) fVec22[i] = 0;
+		for (int i=0; i<2; i++) fRec30[i] = 0;
+		for (int i=0; i<2; i++) fVec23[i] = 0;
+		for (int i=0; i<4096; i++) fVec24[i] = 0;
+		for (int i=0; i<2; i++) iRec32[i] = 0;
+		for (int i=0; i<2; i++) fRec31[i] = 0;
+		for (int i=0; i<2; i++) fVec25[i] = 0;
+		for (int i=0; i<2; i++) fRec33[i] = 0;
+		for (int i=0; i<2; i++) fVec26[i] = 0;
+		for (int i=0; i<2; i++) fRec34[i] = 0;
+		for (int i=0; i<2; i++) fVec27[i] = 0;
+		for (int i=0; i<4096; i++) fVec28[i] = 0;
+		for (int i=0; i<2; i++) iRec36[i] = 0;
+		for (int i=0; i<2; i++) fRec35[i] = 0;
+		for (int i=0; i<2; i++) fVec29[i] = 0;
+		for (int i=0; i<2; i++) fRec37[i] = 0;
+		for (int i=0; i<2; i++) iRec39[i] = 0;
+		for (int i=0; i<2; i++) fRec38[i] = 0;
+		for (int i=0; i<2; i++) fVec30[i] = 0;
+		for (int i=0; i<2; i++) fVec31[i] = 0;
+		for (int i=0; i<2; i++) fRec41[i] = 0;
+		for (int i=0; i<2; i++) fVec32[i] = 0;
+		for (int i=0; i<4096; i++) fVec33[i] = 0;
+		for (int i=0; i<2; i++) fRec40[i] = 0;
+		for (int i=0; i<3; i++) fRec25[i] = 0;
+		for (int i=0; i<3; i++) fRec24[i] = 0;
+		for (int i=0; i<2; i++) iRec43[i] = 0;
+		for (int i=0; i<2; i++) fRec42[i] = 0;
+		for (int i=0; i<2; i++) iRec47[i] = 0;
+		for (int i=0; i<2; i++) fRec46[i] = 0;
+		for (int i=0; i<2; i++) fVec34[i] = 0;
+		for (int i=0; i<2; i++) fVec35[i] = 0;
+		for (int i=0; i<2; i++) fRec49[i] = 0;
+		for (int i=0; i<2; i++) fVec36[i] = 0;
+		for (int i=0; i<4096; i++) fVec37[i] = 0;
+		for (int i=0; i<2; i++) fRec48[i] = 0;
+		for (int i=0; i<2; i++) fVec38[i] = 0;
+		for (int i=0; i<2; i++) fRec50[i] = 0;
+		for (int i=0; i<2; i++) fVec39[i] = 0;
+		for (int i=0; i<4096; i++) fVec40[i] = 0;
+		for (int i=0; i<2; i++) iRec52[i] = 0;
+		for (int i=0; i<2; i++) fRec51[i] = 0;
+		for (int i=0; i<2; i++) fVec41[i] = 0;
+		for (int i=0; i<2; i++) fRec53[i] = 0;
+		for (int i=0; i<2; i++) fVec42[i] = 0;
+		for (int i=0; i<2; i++) fRec54[i] = 0;
+		for (int i=0; i<2; i++) fVec43[i] = 0;
+		for (int i=0; i<4096; i++) fVec44[i] = 0;
+		for (int i=0; i<2; i++) iRec56[i] = 0;
+		for (int i=0; i<2; i++) fRec55[i] = 0;
+		for (int i=0; i<2; i++) fVec45[i] = 0;
+		for (int i=0; i<2; i++) fRec57[i] = 0;
+		for (int i=0; i<2; i++) iRec59[i] = 0;
+		for (int i=0; i<2; i++) fRec58[i] = 0;
+		for (int i=0; i<2; i++) fVec46[i] = 0;
+		for (int i=0; i<2; i++) fVec47[i] = 0;
+		for (int i=0; i<2; i++) fRec61[i] = 0;
+		for (int i=0; i<2; i++) fVec48[i] = 0;
+		for (int i=0; i<4096; i++) fVec49[i] = 0;
+		for (int i=0; i<2; i++) fRec60[i] = 0;
+		for (int i=0; i<3; i++) fRec45[i] = 0;
+		for (int i=0; i<3; i++) fRec44[i] = 0;
+		for (int i=0; i<2; i++) iRec63[i] = 0;
+		for (int i=0; i<2; i++) fRec62[i] = 0;
+		for (int i=0; i<2; i++) iRec67[i] = 0;
+		for (int i=0; i<2; i++) fRec66[i] = 0;
+		for (int i=0; i<2; i++) fVec50[i] = 0;
+		for (int i=0; i<2; i++) fVec51[i] = 0;
+		for (int i=0; i<2; i++) fRec69[i] = 0;
+		for (int i=0; i<2; i++) fVec52[i] = 0;
+		for (int i=0; i<4096; i++) fVec53[i] = 0;
+		for (int i=0; i<2; i++) fRec68[i] = 0;
+		for (int i=0; i<2; i++) fVec54[i] = 0;
+		for (int i=0; i<2; i++) fRec70[i] = 0;
+		for (int i=0; i<2; i++) fVec55[i] = 0;
+		for (int i=0; i<4096; i++) fVec56[i] = 0;
+		for (int i=0; i<2; i++) iRec72[i] = 0;
+		for (int i=0; i<2; i++) fRec71[i] = 0;
+		for (int i=0; i<2; i++) fVec57[i] = 0;
+		for (int i=0; i<2; i++) fRec73[i] = 0;
+		for (int i=0; i<2; i++) fVec58[i] = 0;
+		for (int i=0; i<2; i++) fRec74[i] = 0;
+		for (int i=0; i<2; i++) fVec59[i] = 0;
+		for (int i=0; i<4096; i++) fVec60[i] = 0;
+		for (int i=0; i<2; i++) iRec76[i] = 0;
+		for (int i=0; i<2; i++) fRec75[i] = 0;
+		for (int i=0; i<2; i++) fVec61[i] = 0;
+		for (int i=0; i<2; i++) fRec77[i] = 0;
+		for (int i=0; i<2; i++) iRec79[i] = 0;
+		for (int i=0; i<2; i++) fRec78[i] = 0;
+		for (int i=0; i<2; i++) fVec62[i] = 0;
+		for (int i=0; i<2; i++) fVec63[i] = 0;
+		for (int i=0; i<2; i++) fRec81[i] = 0;
+		for (int i=0; i<2; i++) fVec64[i] = 0;
+		for (int i=0; i<4096; i++) fVec65[i] = 0;
+		for (int i=0; i<2; i++) fRec80[i] = 0;
+		for (int i=0; i<3; i++) fRec65[i] = 0;
+		for (int i=0; i<3; i++) fRec64[i] = 0;
+		for (int i=0; i<2; i++) iRec83[i] = 0;
+		for (int i=0; i<2; i++) fRec82[i] = 0;
+		for (int i=0; i<2; i++) iRec87[i] = 0;
+		for (int i=0; i<2; i++) fRec86[i] = 0;
+		for (int i=0; i<2; i++) fVec66[i] = 0;
+		for (int i=0; i<2; i++) fVec67[i] = 0;
+		for (int i=0; i<2; i++) fRec89[i] = 0;
+		for (int i=0; i<2; i++) fVec68[i] = 0;
+		for (int i=0; i<4096; i++) fVec69[i] = 0;
+		for (int i=0; i<2; i++) fRec88[i] = 0;
+		for (int i=0; i<2; i++) fVec70[i] = 0;
+		for (int i=0; i<2; i++) fRec90[i] = 0;
+		for (int i=0; i<2; i++) fVec71[i] = 0;
+		for (int i=0; i<4096; i++) fVec72[i] = 0;
+		for (int i=0; i<2; i++) iRec92[i] = 0;
+		for (int i=0; i<2; i++) fRec91[i] = 0;
+		for (int i=0; i<2; i++) fVec73[i] = 0;
+		for (int i=0; i<2; i++) fRec93[i] = 0;
+		for (int i=0; i<2; i++) fVec74[i] = 0;
+		for (int i=0; i<2; i++) fRec94[i] = 0;
+		for (int i=0; i<2; i++) fVec75[i] = 0;
+		for (int i=0; i<4096; i++) fVec76[i] = 0;
+		for (int i=0; i<2; i++) iRec96[i] = 0;
+		for (int i=0; i<2; i++) fRec95[i] = 0;
+		for (int i=0; i<2; i++) fVec77[i] = 0;
+		for (int i=0; i<2; i++) fRec97[i] = 0;
+		for (int i=0; i<2; i++) iRec99[i] = 0;
+		for (int i=0; i<2; i++) fRec98[i] = 0;
+		for (int i=0; i<2; i++) fVec78[i] = 0;
+		for (int i=0; i<2; i++) fVec79[i] = 0;
+		for (int i=0; i<2; i++) fRec101[i] = 0;
+		for (int i=0; i<2; i++) fVec80[i] = 0;
+		for (int i=0; i<4096; i++) fVec81[i] = 0;
+		for (int i=0; i<2; i++) fRec100[i] = 0;
+		for (int i=0; i<3; i++) fRec85[i] = 0;
+		for (int i=0; i<3; i++) fRec84[i] = 0;
+		for (int i=0; i<2; i++) iRec103[i] = 0;
+		for (int i=0; i<2; i++) fRec102[i] = 0;
+		for (int i=0; i<2; i++) iRec107[i] = 0;
+		for (int i=0; i<2; i++) fRec106[i] = 0;
+		for (int i=0; i<2; i++) fVec82[i] = 0;
+		for (int i=0; i<2; i++) fVec83[i] = 0;
+		for (int i=0; i<2; i++) fRec109[i] = 0;
+		for (int i=0; i<2; i++) fVec84[i] = 0;
+		for (int i=0; i<4096; i++) fVec85[i] = 0;
+		for (int i=0; i<2; i++) fRec108[i] = 0;
+		for (int i=0; i<2; i++) fVec86[i] = 0;
+		for (int i=0; i<2; i++) fRec110[i] = 0;
+		for (int i=0; i<2; i++) fVec87[i] = 0;
+		for (int i=0; i<4096; i++) fVec88[i] = 0;
+		for (int i=0; i<2; i++) iRec112[i] = 0;
+		for (int i=0; i<2; i++) fRec111[i] = 0;
+		for (int i=0; i<2; i++) fVec89[i] = 0;
+		for (int i=0; i<2; i++) fRec113[i] = 0;
+		for (int i=0; i<2; i++) fVec90[i] = 0;
+		for (int i=0; i<2; i++) fRec114[i] = 0;
+		for (int i=0; i<2; i++) fVec91[i] = 0;
+		for (int i=0; i<4096; i++) fVec92[i] = 0;
+		for (int i=0; i<2; i++) iRec116[i] = 0;
+		for (int i=0; i<2; i++) fRec115[i] = 0;
+		for (int i=0; i<2; i++) fVec93[i] = 0;
+		for (int i=0; i<2; i++) fRec117[i] = 0;
+		for (int i=0; i<2; i++) iRec119[i] = 0;
+		for (int i=0; i<2; i++) fRec118[i] = 0;
+		for (int i=0; i<2; i++) fVec94[i] = 0;
+		for (int i=0; i<2; i++) fVec95[i] = 0;
+		for (int i=0; i<2; i++) fRec121[i] = 0;
+		for (int i=0; i<2; i++) fVec96[i] = 0;
+		for (int i=0; i<4096; i++) fVec97[i] = 0;
+		for (int i=0; i<2; i++) fRec120[i] = 0;
+		for (int i=0; i<3; i++) fRec105[i] = 0;
+		for (int i=0; i<3; i++) fRec104[i] = 0;
+		for (int i=0; i<2; i++) iRec123[i] = 0;
+		for (int i=0; i<2; i++) fRec122[i] = 0;
 	}
-	
 	virtual void init(int samplingFreq) {
 		classInit(samplingFreq);
 		instanceInit(samplingFreq);
@@ -1318,1027 +1231,1018 @@ class faust_nuke : public dsp {
 		instanceResetUserInterface();
 		instanceClear();
 	}
-	
 	virtual faust_nuke* clone() {
 		return new faust_nuke();
 	}
 	virtual int getSampleRate() {
 		return fSamplingFreq;
-		
 	}
-	
 	virtual void buildUserInterface(UI* ui_interface) {
 		ui_interface->openVerticalBox("nuke");
-		ui_interface->addHorizontalSlider("Filter", &fHslider9, 0.5f, 0.0f, 1.0f, 0.00999999978f);
-		ui_interface->addHorizontalSlider("Relation", &fHslider8, 2.0f, 0.0f, 3.00099993f, 0.00100000005f);
-		ui_interface->addHorizontalSlider("Sub", &fHslider5, 0.0f, 0.0f, 1.0f, 0.00100000005f);
-		ui_interface->addHorizontalSlider("Wave", &fHslider6, 1.0f, 0.0799999982f, 4.0f, 0.00999999978f);
+		ui_interface->addHorizontalSlider("Filter", &fslider0, 0.5f, 0.0f, 1.0f, 0.01f);
+		ui_interface->addHorizontalSlider("Relation", &fslider4, 2.0f, 0.0f, 3.0009999999999999f, 0.001f);
+		ui_interface->addHorizontalSlider("Sub", &fslider3, 0.0f, 0.0f, 1.0f, 0.001f);
+		ui_interface->addHorizontalSlider("Wave", &fslider1, 1.0f, 0.080000000000000002f, 4.0f, 0.01f);
 		ui_interface->openVerticalBox("envelope");
-		ui_interface->addHorizontalSlider("Attack", &fHslider2, 0.00100000005f, 0.00100000005f, 4.0f, 0.00100000005f);
-		ui_interface->addHorizontalSlider("Decay", &fHslider3, 0.0f, 0.0f, 4.0f, 0.00100000005f);
-		ui_interface->addHorizontalSlider("Release", &fHslider1, 0.0f, 0.0f, 4.0f, 0.00999999978f);
-		ui_interface->addHorizontalSlider("Sustain", &fHslider4, 1.0f, 0.0f, 1.0f, 0.00999999978f);
+		ui_interface->addHorizontalSlider("Attack", &fslider7, 0.001f, 0.001f, 4.0f, 0.001f);
+		ui_interface->addHorizontalSlider("Decay", &fslider6, 0.0f, 0.0f, 4.0f, 0.001f);
+		ui_interface->addHorizontalSlider("Release", &fslider5, 0.0f, 0.0f, 4.0f, 0.01f);
+		ui_interface->addHorizontalSlider("Sustain", &fslider8, 1.0f, 0.0f, 1.0f, 0.01f);
 		ui_interface->closeBox();
 		ui_interface->openHorizontalBox("voices");
 		ui_interface->openVerticalBox("0");
 		ui_interface->openHorizontalBox("midi");
-		ui_interface->addHorizontalSlider("freq", &fHslider7, 440.0f, 20.0f, 1000.0f, 1.0f);
-		ui_interface->addButton("trigger", &fButton0);
-		ui_interface->addHorizontalSlider("velocity", &fHslider0, 1.0f, 0.0f, 1.0f, 0.00787401572f);
+		ui_interface->addHorizontalSlider("freq", &fslider18, 440.0f, 20.0f, 1000.0f, 1.0f);
+		ui_interface->addButton("trigger", &fbutton5);
+		ui_interface->addHorizontalSlider("velocity", &fslider19, 1.0f, 0.0f, 1.0f, 0.007874015748031496f);
 		ui_interface->closeBox();
 		ui_interface->closeBox();
 		ui_interface->openVerticalBox("1");
 		ui_interface->openHorizontalBox("midi");
-		ui_interface->addHorizontalSlider("freq", &fHslider13, 440.0f, 20.0f, 1000.0f, 1.0f);
-		ui_interface->addButton("trigger", &fButton2);
-		ui_interface->addHorizontalSlider("velocity", &fHslider12, 1.0f, 0.0f, 1.0f, 0.00787401572f);
+		ui_interface->addHorizontalSlider("freq", &fslider14, 440.0f, 20.0f, 1000.0f, 1.0f);
+		ui_interface->addButton("trigger", &fbutton3);
+		ui_interface->addHorizontalSlider("velocity", &fslider15, 1.0f, 0.0f, 1.0f, 0.007874015748031496f);
 		ui_interface->closeBox();
 		ui_interface->closeBox();
 		ui_interface->openVerticalBox("2");
 		ui_interface->openHorizontalBox("midi");
-		ui_interface->addHorizontalSlider("freq", &fHslider17, 440.0f, 20.0f, 1000.0f, 1.0f);
-		ui_interface->addButton("trigger", &fButton4);
-		ui_interface->addHorizontalSlider("velocity", &fHslider16, 1.0f, 0.0f, 1.0f, 0.00787401572f);
+		ui_interface->addHorizontalSlider("freq", &fslider10, 440.0f, 20.0f, 1000.0f, 1.0f);
+		ui_interface->addButton("trigger", &fbutton1);
+		ui_interface->addHorizontalSlider("velocity", &fslider11, 1.0f, 0.0f, 1.0f, 0.007874015748031496f);
 		ui_interface->closeBox();
 		ui_interface->closeBox();
 		ui_interface->openVerticalBox("3");
 		ui_interface->openHorizontalBox("midi");
-		ui_interface->addHorizontalSlider("freq", &fHslider11, 440.0f, 20.0f, 1000.0f, 1.0f);
-		ui_interface->addButton("trigger", &fButton1);
-		ui_interface->addHorizontalSlider("velocity", &fHslider10, 1.0f, 0.0f, 1.0f, 0.00787401572f);
+		ui_interface->addHorizontalSlider("freq", &fslider16, 440.0f, 20.0f, 1000.0f, 1.0f);
+		ui_interface->addButton("trigger", &fbutton4);
+		ui_interface->addHorizontalSlider("velocity", &fslider17, 1.0f, 0.0f, 1.0f, 0.007874015748031496f);
 		ui_interface->closeBox();
 		ui_interface->closeBox();
 		ui_interface->openVerticalBox("4");
 		ui_interface->openHorizontalBox("midi");
-		ui_interface->addHorizontalSlider("freq", &fHslider15, 440.0f, 20.0f, 1000.0f, 1.0f);
-		ui_interface->addButton("trigger", &fButton3);
-		ui_interface->addHorizontalSlider("velocity", &fHslider14, 1.0f, 0.0f, 1.0f, 0.00787401572f);
+		ui_interface->addHorizontalSlider("freq", &fslider12, 440.0f, 20.0f, 1000.0f, 1.0f);
+		ui_interface->addButton("trigger", &fbutton2);
+		ui_interface->addHorizontalSlider("velocity", &fslider13, 1.0f, 0.0f, 1.0f, 0.007874015748031496f);
 		ui_interface->closeBox();
 		ui_interface->closeBox();
 		ui_interface->openVerticalBox("5");
 		ui_interface->openHorizontalBox("midi");
-		ui_interface->addHorizontalSlider("freq", &fHslider19, 440.0f, 20.0f, 1000.0f, 1.0f);
-		ui_interface->addButton("trigger", &fButton5);
-		ui_interface->addHorizontalSlider("velocity", &fHslider18, 1.0f, 0.0f, 1.0f, 0.00787401572f);
+		ui_interface->addHorizontalSlider("freq", &fslider2, 440.0f, 20.0f, 1000.0f, 1.0f);
+		ui_interface->addButton("trigger", &fbutton0);
+		ui_interface->addHorizontalSlider("velocity", &fslider9, 1.0f, 0.0f, 1.0f, 0.007874015748031496f);
 		ui_interface->closeBox();
 		ui_interface->closeBox();
 		ui_interface->closeBox();
 		ui_interface->closeBox();
-		
 	}
-	
-	virtual void compute(int count, FAUSTFLOAT** inputs, FAUSTFLOAT** outputs) {
-		FAUSTFLOAT* output0 = outputs[0];
-		float fSlow0 = float(fHslider0);
-		int iSlow1 = (float(fButton0) > 0.0f);
-		float fSlow2 = float(fHslider1);
-		float fSlow3 = float(fHslider2);
-		int iSlow4 = int((fConst0 * fSlow3));
-		float fSlow5 = float(fHslider3);
-		float fSlow6 = (6.90999985f * fSlow3);
-		float fSlow7 = float(fHslider4);
-		float fSlow8 = (float(iSlow1) * fSlow7);
-		float fSlow9 = (0.00100000005f * float(fHslider5));
-		float fSlow10 = (0.00100000005f * float(fHslider6));
-		float fSlow11 = float(fHslider7);
-		float fSlow12 = std::max<float>((0.5f * fSlow11), 23.4489498f);
-		float fSlow13 = std::max<float>(20.0f, std::fabs(fSlow12));
-		float fSlow14 = (fConst2 / fSlow13);
-		float fSlow15 = (fConst0 / fSlow12);
-		float fSlow16 = (fConst4 * fSlow11);
-		float fSlow17 = std::max<float>(0.0f, std::min<float>(2047.0f, (fConst5 / fSlow12)));
-		float fSlow18 = std::floor(fSlow17);
-		float fSlow19 = (fSlow18 + (1.0f - fSlow17));
-		int iSlow20 = int(fSlow17);
-		float fSlow21 = (fSlow17 - fSlow18);
-		int iSlow22 = (iSlow20 + 1);
-		float fSlow23 = (fConst0 / fSlow11);
-		int iSlow24 = int((fConst6 / fSlow11));
-		float fSlow25 = (fConst3 * fSlow11);
-		float fSlow26 = (0.00100000005f * float(fHslider8));
-		float fSlow27 = (1.0f / fSlow11);
-		float fSlow28 = (fConst7 * fSlow11);
-		float fSlow29 = std::max<float>(fSlow11, 23.4489498f);
-		float fSlow30 = std::max<float>(20.0f, std::fabs(fSlow29));
-		float fSlow31 = (fConst2 / fSlow30);
-		float fSlow32 = (fConst0 / fSlow29);
-		float fSlow33 = std::max<float>(0.0f, std::min<float>(2047.0f, (fConst5 / fSlow29)));
-		float fSlow34 = std::floor(fSlow33);
-		float fSlow35 = (fSlow34 + (1.0f - fSlow33));
-		int iSlow36 = int(fSlow33);
-		float fSlow37 = (fSlow33 - fSlow34);
-		int iSlow38 = (iSlow36 + 1);
-		int iSlow39 = int(fSlow23);
-		float fSlow40 = (0.00100000005f * float(fHslider9));
-		float fSlow41 = float(fHslider10);
-		int iSlow42 = (float(fButton1) > 0.0f);
-		float fSlow43 = (float(iSlow42) * fSlow7);
-		float fSlow44 = float(fHslider11);
-		float fSlow45 = std::max<float>((0.5f * fSlow44), 23.4489498f);
-		float fSlow46 = std::max<float>(20.0f, std::fabs(fSlow45));
-		float fSlow47 = (fConst2 / fSlow46);
-		float fSlow48 = (fConst0 / fSlow45);
-		float fSlow49 = (fConst4 * fSlow44);
-		float fSlow50 = std::max<float>(0.0f, std::min<float>(2047.0f, (fConst5 / fSlow45)));
-		float fSlow51 = std::floor(fSlow50);
-		float fSlow52 = (fSlow51 + (1.0f - fSlow50));
-		int iSlow53 = int(fSlow50);
-		float fSlow54 = (fSlow50 - fSlow51);
-		int iSlow55 = (iSlow53 + 1);
-		float fSlow56 = (fConst0 / fSlow44);
-		int iSlow57 = int((fConst6 / fSlow44));
-		float fSlow58 = (fConst3 * fSlow44);
-		float fSlow59 = (1.0f / fSlow44);
-		float fSlow60 = (fConst7 * fSlow44);
-		float fSlow61 = std::max<float>(fSlow44, 23.4489498f);
-		float fSlow62 = std::max<float>(20.0f, std::fabs(fSlow61));
-		float fSlow63 = (fConst2 / fSlow62);
-		float fSlow64 = (fConst0 / fSlow61);
-		float fSlow65 = std::max<float>(0.0f, std::min<float>(2047.0f, (fConst5 / fSlow61)));
-		float fSlow66 = std::floor(fSlow65);
-		float fSlow67 = (fSlow66 + (1.0f - fSlow65));
-		int iSlow68 = int(fSlow65);
-		float fSlow69 = (fSlow65 - fSlow66);
-		int iSlow70 = (iSlow68 + 1);
-		int iSlow71 = int(fSlow56);
-		float fSlow72 = float(fHslider12);
-		int iSlow73 = (float(fButton2) > 0.0f);
-		float fSlow74 = (float(iSlow73) * fSlow7);
-		float fSlow75 = float(fHslider13);
-		float fSlow76 = std::max<float>((0.5f * fSlow75), 23.4489498f);
-		float fSlow77 = std::max<float>(20.0f, std::fabs(fSlow76));
-		float fSlow78 = (fConst2 / fSlow77);
-		float fSlow79 = (fConst0 / fSlow76);
-		float fSlow80 = (fConst4 * fSlow75);
-		float fSlow81 = std::max<float>(0.0f, std::min<float>(2047.0f, (fConst5 / fSlow76)));
-		float fSlow82 = std::floor(fSlow81);
-		float fSlow83 = (fSlow82 + (1.0f - fSlow81));
-		int iSlow84 = int(fSlow81);
-		float fSlow85 = (fSlow81 - fSlow82);
-		int iSlow86 = (iSlow84 + 1);
-		float fSlow87 = (fConst0 / fSlow75);
-		int iSlow88 = int((fConst6 / fSlow75));
-		float fSlow89 = (fConst3 * fSlow75);
-		float fSlow90 = (1.0f / fSlow75);
-		float fSlow91 = (fConst7 * fSlow75);
-		float fSlow92 = std::max<float>(fSlow75, 23.4489498f);
-		float fSlow93 = std::max<float>(20.0f, std::fabs(fSlow92));
-		float fSlow94 = (fConst2 / fSlow93);
-		float fSlow95 = (fConst0 / fSlow92);
-		float fSlow96 = std::max<float>(0.0f, std::min<float>(2047.0f, (fConst5 / fSlow92)));
-		float fSlow97 = std::floor(fSlow96);
-		float fSlow98 = (fSlow97 + (1.0f - fSlow96));
-		int iSlow99 = int(fSlow96);
-		float fSlow100 = (fSlow96 - fSlow97);
-		int iSlow101 = (iSlow99 + 1);
-		int iSlow102 = int(fSlow87);
-		float fSlow103 = float(fHslider14);
-		int iSlow104 = (float(fButton3) > 0.0f);
-		float fSlow105 = (float(iSlow104) * fSlow7);
-		float fSlow106 = float(fHslider15);
-		float fSlow107 = std::max<float>((0.5f * fSlow106), 23.4489498f);
-		float fSlow108 = std::max<float>(20.0f, std::fabs(fSlow107));
-		float fSlow109 = (fConst2 / fSlow108);
-		float fSlow110 = (fConst0 / fSlow107);
-		float fSlow111 = (fConst4 * fSlow106);
-		float fSlow112 = std::max<float>(0.0f, std::min<float>(2047.0f, (fConst5 / fSlow107)));
-		float fSlow113 = std::floor(fSlow112);
-		float fSlow114 = (fSlow113 + (1.0f - fSlow112));
-		int iSlow115 = int(fSlow112);
-		float fSlow116 = (fSlow112 - fSlow113);
-		int iSlow117 = (iSlow115 + 1);
-		float fSlow118 = (fConst0 / fSlow106);
-		int iSlow119 = int((fConst6 / fSlow106));
-		float fSlow120 = (fConst3 * fSlow106);
-		float fSlow121 = (1.0f / fSlow106);
-		float fSlow122 = (fConst7 * fSlow106);
-		float fSlow123 = std::max<float>(fSlow106, 23.4489498f);
-		float fSlow124 = std::max<float>(20.0f, std::fabs(fSlow123));
-		float fSlow125 = (fConst2 / fSlow124);
-		float fSlow126 = (fConst0 / fSlow123);
-		float fSlow127 = std::max<float>(0.0f, std::min<float>(2047.0f, (fConst5 / fSlow123)));
-		float fSlow128 = std::floor(fSlow127);
-		float fSlow129 = (fSlow128 + (1.0f - fSlow127));
-		int iSlow130 = int(fSlow127);
-		float fSlow131 = (fSlow127 - fSlow128);
-		int iSlow132 = (iSlow130 + 1);
-		int iSlow133 = int(fSlow118);
-		float fSlow134 = float(fHslider16);
-		int iSlow135 = (float(fButton4) > 0.0f);
-		float fSlow136 = (float(iSlow135) * fSlow7);
-		float fSlow137 = float(fHslider17);
-		float fSlow138 = std::max<float>((0.5f * fSlow137), 23.4489498f);
-		float fSlow139 = std::max<float>(20.0f, std::fabs(fSlow138));
-		float fSlow140 = (fConst2 / fSlow139);
-		float fSlow141 = (fConst0 / fSlow138);
-		float fSlow142 = (fConst4 * fSlow137);
-		float fSlow143 = std::max<float>(0.0f, std::min<float>(2047.0f, (fConst5 / fSlow138)));
-		float fSlow144 = std::floor(fSlow143);
-		float fSlow145 = (fSlow144 + (1.0f - fSlow143));
-		int iSlow146 = int(fSlow143);
-		float fSlow147 = (fSlow143 - fSlow144);
-		int iSlow148 = (iSlow146 + 1);
-		float fSlow149 = (fConst0 / fSlow137);
-		int iSlow150 = int((fConst6 / fSlow137));
-		float fSlow151 = (fConst3 * fSlow137);
-		float fSlow152 = (1.0f / fSlow137);
-		float fSlow153 = (fConst7 * fSlow137);
-		float fSlow154 = std::max<float>(fSlow137, 23.4489498f);
-		float fSlow155 = std::max<float>(20.0f, std::fabs(fSlow154));
-		float fSlow156 = (fConst2 / fSlow155);
-		float fSlow157 = (fConst0 / fSlow154);
-		float fSlow158 = std::max<float>(0.0f, std::min<float>(2047.0f, (fConst5 / fSlow154)));
-		float fSlow159 = std::floor(fSlow158);
-		float fSlow160 = (fSlow159 + (1.0f - fSlow158));
-		int iSlow161 = int(fSlow158);
-		float fSlow162 = (fSlow158 - fSlow159);
-		int iSlow163 = (iSlow161 + 1);
-		int iSlow164 = int(fSlow149);
-		float fSlow165 = float(fHslider18);
-		int iSlow166 = (float(fButton5) > 0.0f);
-		float fSlow167 = (float(iSlow166) * fSlow7);
-		float fSlow168 = float(fHslider19);
-		float fSlow169 = std::max<float>((0.5f * fSlow168), 23.4489498f);
-		float fSlow170 = std::max<float>(20.0f, std::fabs(fSlow169));
-		float fSlow171 = (fConst2 / fSlow170);
-		float fSlow172 = (fConst0 / fSlow169);
-		float fSlow173 = (fConst4 * fSlow168);
-		float fSlow174 = std::max<float>(0.0f, std::min<float>(2047.0f, (fConst5 / fSlow169)));
-		float fSlow175 = std::floor(fSlow174);
-		float fSlow176 = (fSlow175 + (1.0f - fSlow174));
-		int iSlow177 = int(fSlow174);
-		float fSlow178 = (fSlow174 - fSlow175);
-		int iSlow179 = (iSlow177 + 1);
-		float fSlow180 = (fConst0 / fSlow168);
-		int iSlow181 = int((fConst6 / fSlow168));
-		float fSlow182 = (fConst3 * fSlow168);
-		float fSlow183 = (1.0f / fSlow168);
-		float fSlow184 = (fConst7 * fSlow168);
-		float fSlow185 = std::max<float>(fSlow168, 23.4489498f);
-		float fSlow186 = std::max<float>(20.0f, std::fabs(fSlow185));
-		float fSlow187 = (fConst2 / fSlow186);
-		float fSlow188 = (fConst0 / fSlow185);
-		float fSlow189 = std::max<float>(0.0f, std::min<float>(2047.0f, (fConst5 / fSlow185)));
-		float fSlow190 = std::floor(fSlow189);
-		float fSlow191 = (fSlow190 + (1.0f - fSlow189));
-		int iSlow192 = int(fSlow189);
-		float fSlow193 = (fSlow189 - fSlow190);
-		int iSlow194 = (iSlow192 + 1);
-		int iSlow195 = int(fSlow180);
-		for (int i = 0; (i < count); i = (i + 1)) {
+	virtual void compute (int count, FAUSTFLOAT** input, FAUSTFLOAT** output) {
+		//zone1
+		//zone2
+		float 	fSlow0 = (0.0010000000000000009f * float(fslider0));
+		float 	fSlow1 = (0.0010000000000000009f * float(fslider1));
+		float 	fSlow2 = float(fslider2);
+		float 	fSlow3 = (fConst2 * fSlow2);
+		float 	fSlow4 = (fConst0 / fSlow2);
+		int 	iSlow5 = int(fSlow4);
+		float 	fSlow6 = max(fSlow2, 23.448949682462139f);
+		float 	fSlow7 = max(20.0f, fabsf(fSlow6));
+		float 	fSlow8 = (fConst3 / fSlow7);
+		float 	fSlow9 = max((float)0, min((float)2047, (fConst4 / fSlow6)));
+		int 	iSlow10 = int(fSlow9);
+		int 	iSlow11 = int((iSlow10 + 1));
+		float 	fSlow12 = floorf(fSlow9);
+		float 	fSlow13 = (fSlow9 - fSlow12);
+		float 	fSlow14 = (fSlow12 + (1.0f - fSlow9));
+		float 	fSlow15 = (fConst5 * fSlow2);
+		float 	fSlow16 = (fConst0 / fSlow6);
+		float 	fSlow17 = (0.0010000000000000009f * float(fslider3));
+		float 	fSlow18 = (0.0010000000000000009f * float(fslider4));
+		float 	fSlow19 = (1.0f / fSlow2);
+		int 	iSlow20 = int((fConst6 / fSlow2));
+		float 	fSlow21 = max((0.5f * fSlow2), 23.448949682462139f);
+		float 	fSlow22 = max(20.0f, fabsf(fSlow21));
+		float 	fSlow23 = (fConst3 / fSlow22);
+		float 	fSlow24 = max((float)0, min((float)2047, (fConst4 / fSlow21)));
+		int 	iSlow25 = int(fSlow24);
+		int 	iSlow26 = int((iSlow25 + 1));
+		float 	fSlow27 = floorf(fSlow24);
+		float 	fSlow28 = (fSlow24 - fSlow27);
+		float 	fSlow29 = (fSlow27 + (1.0f - fSlow24));
+		float 	fSlow30 = (fConst7 * fSlow2);
+		float 	fSlow31 = (fConst0 / fSlow21);
+		float 	fSlow32 = float(fslider5);
+		float 	fSlow33 = float(fslider6);
+		float 	fSlow34 = float(fslider7);
+		float 	fSlow35 = (6.9100000000000001f * fSlow34);
+		int 	iSlow36 = int((fConst0 * fSlow34));
+		int 	iSlow37 = (float(fbutton0) > 0.0f);
+		int 	iSlow38 = int(iSlow37);
+		float 	fSlow39 = float(fslider8);
+		float 	fSlow40 = (float(iSlow37) * fSlow39);
+		float 	fSlow41 = float(fslider9);
+		float 	fSlow42 = float(fslider10);
+		float 	fSlow43 = (fConst2 * fSlow42);
+		float 	fSlow44 = (fConst0 / fSlow42);
+		int 	iSlow45 = int(fSlow44);
+		float 	fSlow46 = max(fSlow42, 23.448949682462139f);
+		float 	fSlow47 = max(20.0f, fabsf(fSlow46));
+		float 	fSlow48 = (fConst3 / fSlow47);
+		float 	fSlow49 = max((float)0, min((float)2047, (fConst4 / fSlow46)));
+		int 	iSlow50 = int(fSlow49);
+		int 	iSlow51 = int((iSlow50 + 1));
+		float 	fSlow52 = floorf(fSlow49);
+		float 	fSlow53 = (fSlow49 - fSlow52);
+		float 	fSlow54 = (fSlow52 + (1.0f - fSlow49));
+		float 	fSlow55 = (fConst5 * fSlow42);
+		float 	fSlow56 = (fConst0 / fSlow46);
+		float 	fSlow57 = (1.0f / fSlow42);
+		int 	iSlow58 = int((fConst6 / fSlow42));
+		float 	fSlow59 = max((0.5f * fSlow42), 23.448949682462139f);
+		float 	fSlow60 = max(20.0f, fabsf(fSlow59));
+		float 	fSlow61 = (fConst3 / fSlow60);
+		float 	fSlow62 = max((float)0, min((float)2047, (fConst4 / fSlow59)));
+		int 	iSlow63 = int(fSlow62);
+		int 	iSlow64 = int((iSlow63 + 1));
+		float 	fSlow65 = floorf(fSlow62);
+		float 	fSlow66 = (fSlow62 - fSlow65);
+		float 	fSlow67 = (fSlow65 + (1.0f - fSlow62));
+		float 	fSlow68 = (fConst7 * fSlow42);
+		float 	fSlow69 = (fConst0 / fSlow59);
+		int 	iSlow70 = (float(fbutton1) > 0.0f);
+		int 	iSlow71 = int(iSlow70);
+		float 	fSlow72 = (float(iSlow70) * fSlow39);
+		float 	fSlow73 = float(fslider11);
+		float 	fSlow74 = float(fslider12);
+		float 	fSlow75 = (fConst2 * fSlow74);
+		float 	fSlow76 = (fConst0 / fSlow74);
+		int 	iSlow77 = int(fSlow76);
+		float 	fSlow78 = max(fSlow74, 23.448949682462139f);
+		float 	fSlow79 = max(20.0f, fabsf(fSlow78));
+		float 	fSlow80 = (fConst3 / fSlow79);
+		float 	fSlow81 = max((float)0, min((float)2047, (fConst4 / fSlow78)));
+		int 	iSlow82 = int(fSlow81);
+		int 	iSlow83 = int((iSlow82 + 1));
+		float 	fSlow84 = floorf(fSlow81);
+		float 	fSlow85 = (fSlow81 - fSlow84);
+		float 	fSlow86 = (fSlow84 + (1.0f - fSlow81));
+		float 	fSlow87 = (fConst5 * fSlow74);
+		float 	fSlow88 = (fConst0 / fSlow78);
+		float 	fSlow89 = (1.0f / fSlow74);
+		int 	iSlow90 = int((fConst6 / fSlow74));
+		float 	fSlow91 = max((0.5f * fSlow74), 23.448949682462139f);
+		float 	fSlow92 = max(20.0f, fabsf(fSlow91));
+		float 	fSlow93 = (fConst3 / fSlow92);
+		float 	fSlow94 = max((float)0, min((float)2047, (fConst4 / fSlow91)));
+		int 	iSlow95 = int(fSlow94);
+		int 	iSlow96 = int((iSlow95 + 1));
+		float 	fSlow97 = floorf(fSlow94);
+		float 	fSlow98 = (fSlow94 - fSlow97);
+		float 	fSlow99 = (fSlow97 + (1.0f - fSlow94));
+		float 	fSlow100 = (fConst7 * fSlow74);
+		float 	fSlow101 = (fConst0 / fSlow91);
+		int 	iSlow102 = (float(fbutton2) > 0.0f);
+		int 	iSlow103 = int(iSlow102);
+		float 	fSlow104 = (float(iSlow102) * fSlow39);
+		float 	fSlow105 = float(fslider13);
+		float 	fSlow106 = float(fslider14);
+		float 	fSlow107 = (fConst2 * fSlow106);
+		float 	fSlow108 = (fConst0 / fSlow106);
+		int 	iSlow109 = int(fSlow108);
+		float 	fSlow110 = max(fSlow106, 23.448949682462139f);
+		float 	fSlow111 = max(20.0f, fabsf(fSlow110));
+		float 	fSlow112 = (fConst3 / fSlow111);
+		float 	fSlow113 = max((float)0, min((float)2047, (fConst4 / fSlow110)));
+		int 	iSlow114 = int(fSlow113);
+		int 	iSlow115 = int((iSlow114 + 1));
+		float 	fSlow116 = floorf(fSlow113);
+		float 	fSlow117 = (fSlow113 - fSlow116);
+		float 	fSlow118 = (fSlow116 + (1.0f - fSlow113));
+		float 	fSlow119 = (fConst5 * fSlow106);
+		float 	fSlow120 = (fConst0 / fSlow110);
+		float 	fSlow121 = (1.0f / fSlow106);
+		int 	iSlow122 = int((fConst6 / fSlow106));
+		float 	fSlow123 = max((0.5f * fSlow106), 23.448949682462139f);
+		float 	fSlow124 = max(20.0f, fabsf(fSlow123));
+		float 	fSlow125 = (fConst3 / fSlow124);
+		float 	fSlow126 = max((float)0, min((float)2047, (fConst4 / fSlow123)));
+		int 	iSlow127 = int(fSlow126);
+		int 	iSlow128 = int((iSlow127 + 1));
+		float 	fSlow129 = floorf(fSlow126);
+		float 	fSlow130 = (fSlow126 - fSlow129);
+		float 	fSlow131 = (fSlow129 + (1.0f - fSlow126));
+		float 	fSlow132 = (fConst7 * fSlow106);
+		float 	fSlow133 = (fConst0 / fSlow123);
+		int 	iSlow134 = (float(fbutton3) > 0.0f);
+		int 	iSlow135 = int(iSlow134);
+		float 	fSlow136 = (float(iSlow134) * fSlow39);
+		float 	fSlow137 = float(fslider15);
+		float 	fSlow138 = float(fslider16);
+		float 	fSlow139 = (fConst2 * fSlow138);
+		float 	fSlow140 = (fConst0 / fSlow138);
+		int 	iSlow141 = int(fSlow140);
+		float 	fSlow142 = max(fSlow138, 23.448949682462139f);
+		float 	fSlow143 = max(20.0f, fabsf(fSlow142));
+		float 	fSlow144 = (fConst3 / fSlow143);
+		float 	fSlow145 = max((float)0, min((float)2047, (fConst4 / fSlow142)));
+		int 	iSlow146 = int(fSlow145);
+		int 	iSlow147 = int((iSlow146 + 1));
+		float 	fSlow148 = floorf(fSlow145);
+		float 	fSlow149 = (fSlow145 - fSlow148);
+		float 	fSlow150 = (fSlow148 + (1.0f - fSlow145));
+		float 	fSlow151 = (fConst5 * fSlow138);
+		float 	fSlow152 = (fConst0 / fSlow142);
+		float 	fSlow153 = (1.0f / fSlow138);
+		int 	iSlow154 = int((fConst6 / fSlow138));
+		float 	fSlow155 = max((0.5f * fSlow138), 23.448949682462139f);
+		float 	fSlow156 = max(20.0f, fabsf(fSlow155));
+		float 	fSlow157 = (fConst3 / fSlow156);
+		float 	fSlow158 = max((float)0, min((float)2047, (fConst4 / fSlow155)));
+		int 	iSlow159 = int(fSlow158);
+		int 	iSlow160 = int((iSlow159 + 1));
+		float 	fSlow161 = floorf(fSlow158);
+		float 	fSlow162 = (fSlow158 - fSlow161);
+		float 	fSlow163 = (fSlow161 + (1.0f - fSlow158));
+		float 	fSlow164 = (fConst7 * fSlow138);
+		float 	fSlow165 = (fConst0 / fSlow155);
+		int 	iSlow166 = (float(fbutton4) > 0.0f);
+		int 	iSlow167 = int(iSlow166);
+		float 	fSlow168 = (float(iSlow166) * fSlow39);
+		float 	fSlow169 = float(fslider17);
+		float 	fSlow170 = float(fslider18);
+		float 	fSlow171 = (fConst2 * fSlow170);
+		float 	fSlow172 = (fConst0 / fSlow170);
+		int 	iSlow173 = int(fSlow172);
+		float 	fSlow174 = max(fSlow170, 23.448949682462139f);
+		float 	fSlow175 = max(20.0f, fabsf(fSlow174));
+		float 	fSlow176 = (fConst3 / fSlow175);
+		float 	fSlow177 = max((float)0, min((float)2047, (fConst4 / fSlow174)));
+		int 	iSlow178 = int(fSlow177);
+		int 	iSlow179 = int((iSlow178 + 1));
+		float 	fSlow180 = floorf(fSlow177);
+		float 	fSlow181 = (fSlow177 - fSlow180);
+		float 	fSlow182 = (fSlow180 + (1.0f - fSlow177));
+		float 	fSlow183 = (fConst5 * fSlow170);
+		float 	fSlow184 = (fConst0 / fSlow174);
+		float 	fSlow185 = (1.0f / fSlow170);
+		int 	iSlow186 = int((fConst6 / fSlow170));
+		float 	fSlow187 = max((0.5f * fSlow170), 23.448949682462139f);
+		float 	fSlow188 = max(20.0f, fabsf(fSlow187));
+		float 	fSlow189 = (fConst3 / fSlow188);
+		float 	fSlow190 = max((float)0, min((float)2047, (fConst4 / fSlow187)));
+		int 	iSlow191 = int(fSlow190);
+		int 	iSlow192 = int((iSlow191 + 1));
+		float 	fSlow193 = floorf(fSlow190);
+		float 	fSlow194 = (fSlow190 - fSlow193);
+		float 	fSlow195 = (fSlow193 + (1.0f - fSlow190));
+		float 	fSlow196 = (fConst7 * fSlow170);
+		float 	fSlow197 = (fConst0 / fSlow187);
+		int 	iSlow198 = (float(fbutton5) > 0.0f);
+		int 	iSlow199 = int(iSlow198);
+		float 	fSlow200 = (float(iSlow198) * fSlow39);
+		float 	fSlow201 = float(fslider19);
+		//zone2b
+		//zone3
+		FAUSTFLOAT* output0 = output[0];
+		//LoopGraphScalar
+		for (int i=0; i<count; i++) {
 			iVec0[0] = 1;
-			iRec1[0] = (iSlow1 * (iRec1[1] + 1));
-			int iTemp0 = (iRec1[0] < iSlow4);
-			float fTemp1 = std::exp((0.0f - (fConst1 / (iSlow1?(iTemp0?fSlow6:fSlow5):fSlow2))));
-			fRec0[0] = ((fRec0[1] * fTemp1) + ((iSlow1?(iTemp0?1.58730161f:fSlow8):0.0f) * (1.0f - fTemp1)));
-			fRec4[0] = (fSlow9 + (0.999000013f * fRec4[1]));
-			fRec5[0] = (fSlow10 + (0.999000013f * fRec5[1]));
-			float fTemp2 = std::min<float>(1.0f, std::max<float>(0.0f, (2.0f - fRec5[0])));
+			fRec0[0] = (fSlow0 + (0.999f * fRec0[1]));
+			fTempPerm0 = tanf((fConst1 * ((10000.0f * faustpower<2>(fRec0[0])) + 100.0f)));
+			fTempPerm1 = (1.0f / fTempPerm0);
+			fTempPerm2 = (((fTempPerm1 + 0.80000000000000004f) / fTempPerm0) + 1.0f);
+			fTempPerm3 = (1.0f - (1.0f / faustpower<2>(fTempPerm0)));
+			fTempPerm4 = (((fTempPerm1 + -0.80000000000000004f) / fTempPerm0) + 1.0f);
+			fRec3[0] = (fSlow1 + (0.999f * fRec3[1]));
+			fTempPerm5 = (0.10000000000000001f * (max((float)3, fRec3[0]) + -3.0f));
+			fTempPerm6 = (fTempPerm5 + 1);
 			fVec1[0] = 0.25f;
-			fVec2[0] = fSlow13;
-			float fTemp3 = float(iVec0[1]);
-			float fTemp4 = (fRec6[1] + (fConst3 * fVec2[1]));
-			fRec6[0] = (fTemp4 - std::floor(fTemp4));
-			float fTemp5 = faust_nuke_faustpower2_f(((2.0f * fRec6[0]) + -1.0f));
-			fVec3[0] = fTemp5;
-			float fTemp6 = (fSlow14 * (fTemp3 * (fTemp5 - fVec3[1])));
-			fVec4[(IOTA & 4095)] = fTemp6;
-			float fTemp7 = std::min<float>(0.5f, (0.5f * fRec5[0]));
-			float fTemp8 = std::max<float>(0.0f, std::min<float>(2047.0f, (fSlow15 * fTemp7)));
-			int iTemp9 = int(fTemp8);
-			float fTemp10 = std::floor(fTemp8);
-			fRec7[0] = ((fTemp6 + (0.999000013f * fRec7[1])) - ((fSlow19 * fVec4[((IOTA - iSlow20) & 4095)]) + (fSlow21 * fVec4[((IOTA - iSlow22) & 4095)])));
-			float fTemp11 = std::min<float>(1.0f, std::max<float>(0.0f, (fRec5[0] + -2.0f)));
-			float fTemp12 = (1.0f - (fTemp2 + fTemp11));
-			iRec9[0] = ((iRec9[1] + iVec0[1]) % iSlow24);
-			float fTemp13 = (0.100000001f * (std::max<float>(3.0f, fRec5[0]) + -3.0f));
-			float fTemp14 = (fTemp13 + 0.5f);
-			float fTemp15 = ((fRec8[1] * (1.0f - float(((iRec9[0] == 0) > 0)))) + (fSlow25 * fTemp14));
-			fRec8[0] = (fTemp15 - std::floor(fTemp15));
-			float fTemp16 = faust_nuke_faustpower2_f(((2.0f * fRec8[0]) + -1.0f));
-			fVec5[0] = fTemp16;
-			fRec10[0] = (fSlow26 + (0.999000013f * fRec10[1]));
-			float fTemp17 = float((fRec10[0] >= 2.0f));
-			int iTemp18 = (fRec10[0] >= 3.0f);
-			float fTemp19 = ((iTemp18 + (fRec10[0] == 0.0f))?1.0f:std::max<float>(std::max<float>(1.0f, ((0.0199999996f * (fRec10[0] + -2.0999999f)) + 1.0f)), ((0.0199999996f * (1.0f - fRec10[0])) + 1.0f)));
-			iRec12[0] = ((iRec12[1] + iVec0[1]) % int((fSlow23 / fTemp19)));
-			float fTemp20 = (fTemp19 + fTemp13);
-			float fTemp21 = ((fRec11[1] * (1.0f - float(((iRec12[0] == 0) > 0)))) + (fSlow25 * fTemp20));
-			fRec11[0] = (fTemp21 - std::floor(fTemp21));
-			float fTemp22 = faust_nuke_faustpower2_f(((2.0f * fRec11[0]) + -1.0f));
-			fVec6[0] = fTemp22;
-			float fTemp23 = std::max<float>((fSlow11 * fTemp19), 23.4489498f);
-			float fTemp24 = std::max<float>(20.0f, std::fabs(fTemp23));
-			fVec7[0] = fTemp24;
-			float fTemp25 = (fRec13[1] + (fConst3 * fVec7[1]));
-			fRec13[0] = (fTemp25 - std::floor(fTemp25));
-			float fTemp26 = faust_nuke_faustpower2_f(((2.0f * fRec13[0]) + -1.0f));
-			fVec8[0] = fTemp26;
-			float fTemp27 = ((fTemp3 * (fTemp26 - fVec8[1])) / fTemp24);
-			fVec9[(IOTA & 4095)] = fTemp27;
-			float fTemp28 = std::max<float>(0.0f, std::min<float>(2047.0f, (fConst0 * (fTemp7 / fTemp23))));
-			int iTemp29 = int(fTemp28);
-			float fTemp30 = std::floor(fTemp28);
-			float fTemp31 = ((fSlow27 * (((fTemp11 * (fTemp22 - fVec6[1])) * fVec1[1]) / fTemp20)) + (0.25f * (fTemp2 * ((fTemp27 - (fVec9[((IOTA - iTemp29) & 4095)] * (fTemp30 + (1.0f - fTemp28)))) - ((fTemp28 - fTemp30) * fVec9[((IOTA - (iTemp29 + 1)) & 4095)])))));
-			float fTemp32 = (iTemp18?1.49829996f:1.0f);
-			float fTemp33 = (fTemp19 / fTemp32);
-			iRec15[0] = ((iRec15[1] + iVec0[1]) % int((fSlow23 * fTemp33)));
-			float fTemp34 = (fTemp32 / fTemp19);
-			float fTemp35 = (fTemp13 + fTemp34);
-			float fTemp36 = ((fRec14[1] * (1.0f - float(((iRec15[0] == 0) > 0)))) + (fSlow25 * fTemp35));
-			fRec14[0] = (fTemp36 - std::floor(fTemp36));
-			float fTemp37 = faust_nuke_faustpower2_f(((2.0f * fRec14[0]) + -1.0f));
-			fVec10[0] = fTemp37;
-			float fTemp38 = std::max<float>((fSlow11 * fTemp34), 23.4489498f);
-			float fTemp39 = std::max<float>(20.0f, std::fabs(fTemp38));
-			fVec11[0] = fTemp39;
-			float fTemp40 = (fRec16[1] + (fConst3 * fVec11[1]));
-			fRec16[0] = (fTemp40 - std::floor(fTemp40));
-			float fTemp41 = faust_nuke_faustpower2_f(((2.0f * fRec16[0]) + -1.0f));
-			fVec12[0] = fTemp41;
-			float fTemp42 = ((fTemp3 * (fTemp41 - fVec12[1])) / fTemp39);
-			fVec13[(IOTA & 4095)] = fTemp42;
-			float fTemp43 = std::max<float>(0.0f, std::min<float>(2047.0f, (fConst0 * (fTemp7 / fTemp38))));
-			int iTemp44 = int(fTemp43);
-			float fTemp45 = std::floor(fTemp43);
-			float fTemp46 = ((fSlow27 * (((fTemp11 * (fTemp37 - fVec10[1])) * fVec1[1]) / fTemp35)) + (0.25f * (fTemp2 * ((fTemp42 - (fVec13[((IOTA - iTemp44) & 4095)] * (fTemp45 + (1.0f - fTemp43)))) - ((fTemp43 - fTemp45) * fVec13[((IOTA - (iTemp44 + 1)) & 4095)])))));
-			float fTemp47 = std::max<float>(0.0f, std::min<float>(2047.0f, (fConst5 / fTemp23)));
-			int iTemp48 = int(fTemp47);
-			float fTemp49 = std::floor(fTemp47);
-			fRec17[0] = ((0.999000013f * fRec17[1]) + (fConst2 * ((fTemp27 - (fVec9[((IOTA - iTemp48) & 4095)] * (fTemp49 + (1.0f - fTemp47)))) - ((fTemp47 - fTemp49) * fVec9[((IOTA - (iTemp48 + 1)) & 4095)]))));
-			float fTemp50 = (fRec17[0] * fTemp19);
-			float fTemp51 = std::max<float>(0.0f, std::min<float>(2047.0f, (fConst5 / fTemp38)));
-			int iTemp52 = int(fTemp51);
-			float fTemp53 = std::floor(fTemp51);
-			fRec18[0] = ((0.999000013f * fRec18[1]) + (fConst2 * ((fTemp42 - (fVec13[((IOTA - iTemp52) & 4095)] * (fTemp53 + (1.0f - fTemp51)))) - ((fTemp51 - fTemp53) * fVec13[((IOTA - (iTemp52 + 1)) & 4095)]))));
-			float fTemp54 = (fRec18[0] * fTemp32);
-			float fTemp55 = float((fRec10[0] < 2.0f));
-			float fTemp56 = std::min<float>(1.0f, std::max<float>(0.0f, (2.0f - fRec10[0])));
-			float fTemp57 = (1.0f - fTemp56);
-			float fTemp58 = (1.0f - fRec4[0]);
-			fVec14[0] = fSlow30;
-			float fTemp59 = (fRec19[1] + (fConst3 * fVec14[1]));
-			fRec19[0] = (fTemp59 - std::floor(fTemp59));
-			float fTemp60 = faust_nuke_faustpower2_f(((2.0f * fRec19[0]) + -1.0f));
-			fVec15[0] = fTemp60;
-			float fTemp61 = (fSlow31 * (fTemp3 * (fTemp60 - fVec15[1])));
-			fVec16[(IOTA & 4095)] = fTemp61;
-			float fTemp62 = std::max<float>(0.0f, std::min<float>(2047.0f, (fSlow32 * fTemp7)));
-			int iTemp63 = int(fTemp62);
-			float fTemp64 = std::floor(fTemp62);
-			fRec20[0] = ((fTemp61 + (0.999000013f * fRec20[1])) - ((fSlow35 * fVec16[((IOTA - iSlow36) & 4095)]) + (fSlow37 * fVec16[((IOTA - iSlow38) & 4095)])));
-			iRec22[0] = ((iRec22[1] + iVec0[1]) % iSlow39);
-			float fTemp65 = (fTemp13 + 1.0f);
-			float fTemp66 = ((fRec21[1] * (1.0f - float(((iRec22[0] == 0) > 0)))) + (fSlow25 * fTemp65));
-			fRec21[0] = (fTemp66 - std::floor(fTemp66));
-			float fTemp67 = faust_nuke_faustpower2_f(((2.0f * fRec21[0]) + -1.0f));
-			fVec17[0] = fTemp67;
-			fRec23[0] = (fSlow40 + (0.999000013f * fRec23[1]));
-			float fTemp68 = std::tan((fConst8 * ((10000.0f * faust_nuke_faustpower2_f(fRec23[0])) + 100.0f)));
-			float fTemp69 = (1.0f / fTemp68);
-			float fTemp70 = (((fTemp69 + -0.800000012f) / fTemp68) + 1.0f);
-			float fTemp71 = (1.0f - (1.0f / faust_nuke_faustpower2_f(fTemp68)));
-			float fTemp72 = (((fTemp69 + 0.800000012f) / fTemp68) + 1.0f);
-			fRec3[0] = (((fRec4[0] * (((fTemp2 * (fTemp6 - ((fVec4[((IOTA - iTemp9) & 4095)] * (fTemp10 + (1.0f - fTemp8))) + ((fTemp8 - fTemp10) * fVec4[((IOTA - (iTemp9 + 1)) & 4095)])))) + (fSlow16 * (fRec7[0] * fTemp12))) + (fSlow23 * (((fTemp11 * (fTemp16 - fVec5[1])) * fVec1[1]) / fTemp14)))) + (((fTemp17 * ((fConst0 * (fTemp31 + fTemp46)) + (fSlow28 * (fTemp12 * (fTemp50 + (fTemp54 / fTemp19)))))) + ((fTemp55 * ((fSlow28 * (fTemp50 * fTemp12)) + (fConst0 * fTemp31))) * (fTemp57 + (fTemp56 * ((fSlow28 * ((fTemp54 * fTemp12) / fTemp19)) + (fConst0 * fTemp46)))))) + (fTemp58 * (((fTemp2 * (fTemp61 - ((fVec16[((IOTA - iTemp63) & 4095)] * (fTemp64 + (1.0f - fTemp62))) + ((fTemp62 - fTemp64) * fVec16[((IOTA - (iTemp63 + 1)) & 4095)])))) + (fSlow28 * (fRec20[0] * fTemp12))) + (fSlow23 * (((fTemp11 * (fTemp67 - fVec17[1])) * fVec1[1]) / fTemp65)))))) - (((fRec3[2] * fTemp70) + (2.0f * (fRec3[1] * fTemp71))) / fTemp72));
-			fRec2[0] = ((((fRec3[1] + (0.5f * fRec3[0])) + (0.5f * fRec3[2])) - ((fTemp70 * fRec2[2]) + (2.0f * (fTemp71 * fRec2[1])))) / fTemp72);
-			iRec25[0] = (iSlow42 * (iRec25[1] + 1));
-			int iTemp73 = (iRec25[0] < iSlow4);
-			float fTemp74 = std::exp((0.0f - (fConst1 / (iSlow42?(iTemp73?fSlow6:fSlow5):fSlow2))));
-			fRec24[0] = ((fRec24[1] * fTemp74) + ((iSlow42?(iTemp73?1.58730161f:fSlow43):0.0f) * (1.0f - fTemp74)));
-			fVec18[0] = fSlow46;
-			float fTemp75 = (fRec28[1] + (fConst3 * fVec18[1]));
-			fRec28[0] = (fTemp75 - std::floor(fTemp75));
-			float fTemp76 = faust_nuke_faustpower2_f(((2.0f * fRec28[0]) + -1.0f));
-			fVec19[0] = fTemp76;
-			float fTemp77 = (fSlow47 * (fTemp3 * (fTemp76 - fVec19[1])));
-			fVec20[(IOTA & 4095)] = fTemp77;
-			float fTemp78 = std::max<float>(0.0f, std::min<float>(2047.0f, (fSlow48 * fTemp7)));
-			int iTemp79 = int(fTemp78);
-			float fTemp80 = std::floor(fTemp78);
-			fRec29[0] = ((fTemp77 + (0.999000013f * fRec29[1])) - ((fSlow52 * fVec20[((IOTA - iSlow53) & 4095)]) + (fSlow54 * fVec20[((IOTA - iSlow55) & 4095)])));
-			iRec31[0] = ((iRec31[1] + iVec0[1]) % iSlow57);
-			float fTemp81 = ((fRec30[1] * (1.0f - float(((iRec31[0] == 0) > 0)))) + (fSlow58 * fTemp14));
-			fRec30[0] = (fTemp81 - std::floor(fTemp81));
-			float fTemp82 = faust_nuke_faustpower2_f(((2.0f * fRec30[0]) + -1.0f));
-			fVec21[0] = fTemp82;
-			iRec33[0] = ((iRec33[1] + iVec0[1]) % int((fSlow56 / fTemp19)));
-			float fTemp83 = ((fRec32[1] * (1.0f - float(((iRec33[0] == 0) > 0)))) + (fSlow58 * fTemp20));
-			fRec32[0] = (fTemp83 - std::floor(fTemp83));
-			float fTemp84 = faust_nuke_faustpower2_f(((2.0f * fRec32[0]) + -1.0f));
-			fVec22[0] = fTemp84;
-			float fTemp85 = std::max<float>((fSlow44 * fTemp19), 23.4489498f);
-			float fTemp86 = std::max<float>(20.0f, std::fabs(fTemp85));
-			fVec23[0] = fTemp86;
-			float fTemp87 = (fRec34[1] + (fConst3 * fVec23[1]));
-			fRec34[0] = (fTemp87 - std::floor(fTemp87));
-			float fTemp88 = faust_nuke_faustpower2_f(((2.0f * fRec34[0]) + -1.0f));
-			fVec24[0] = fTemp88;
-			float fTemp89 = ((fTemp3 * (fTemp88 - fVec24[1])) / fTemp86);
-			fVec25[(IOTA & 4095)] = fTemp89;
-			float fTemp90 = std::max<float>(0.0f, std::min<float>(2047.0f, (fConst0 * (fTemp7 / fTemp85))));
-			int iTemp91 = int(fTemp90);
-			float fTemp92 = std::floor(fTemp90);
-			float fTemp93 = ((fSlow59 * (((fTemp11 * (fTemp84 - fVec22[1])) * fVec1[1]) / fTemp20)) + (0.25f * (fTemp2 * ((fTemp89 - (fVec25[((IOTA - iTemp91) & 4095)] * (fTemp92 + (1.0f - fTemp90)))) - ((fTemp90 - fTemp92) * fVec25[((IOTA - (iTemp91 + 1)) & 4095)])))));
-			iRec36[0] = ((iRec36[1] + iVec0[1]) % int((fSlow56 * fTemp33)));
-			float fTemp94 = ((fRec35[1] * (1.0f - float(((iRec36[0] == 0) > 0)))) + (fSlow58 * fTemp35));
-			fRec35[0] = (fTemp94 - std::floor(fTemp94));
-			float fTemp95 = faust_nuke_faustpower2_f(((2.0f * fRec35[0]) + -1.0f));
-			fVec26[0] = fTemp95;
-			float fTemp96 = std::max<float>((fSlow44 * fTemp34), 23.4489498f);
-			float fTemp97 = std::max<float>(20.0f, std::fabs(fTemp96));
-			fVec27[0] = fTemp97;
-			float fTemp98 = (fRec37[1] + (fConst3 * fVec27[1]));
-			fRec37[0] = (fTemp98 - std::floor(fTemp98));
-			float fTemp99 = faust_nuke_faustpower2_f(((2.0f * fRec37[0]) + -1.0f));
-			fVec28[0] = fTemp99;
-			float fTemp100 = ((fTemp3 * (fTemp99 - fVec28[1])) / fTemp97);
-			fVec29[(IOTA & 4095)] = fTemp100;
-			float fTemp101 = std::max<float>(0.0f, std::min<float>(2047.0f, (fConst0 * (fTemp7 / fTemp96))));
-			int iTemp102 = int(fTemp101);
-			float fTemp103 = std::floor(fTemp101);
-			float fTemp104 = ((fSlow59 * (((fTemp11 * (fTemp95 - fVec26[1])) * fVec1[1]) / fTemp35)) + (0.25f * (fTemp2 * ((fTemp100 - (fVec29[((IOTA - iTemp102) & 4095)] * (fTemp103 + (1.0f - fTemp101)))) - ((fTemp101 - fTemp103) * fVec29[((IOTA - (iTemp102 + 1)) & 4095)])))));
-			float fTemp105 = std::max<float>(0.0f, std::min<float>(2047.0f, (fConst5 / fTemp85)));
-			int iTemp106 = int(fTemp105);
-			float fTemp107 = std::floor(fTemp105);
-			fRec38[0] = ((0.999000013f * fRec38[1]) + (fConst2 * ((fTemp89 - (fVec25[((IOTA - iTemp106) & 4095)] * (fTemp107 + (1.0f - fTemp105)))) - ((fTemp105 - fTemp107) * fVec25[((IOTA - (iTemp106 + 1)) & 4095)]))));
-			float fTemp108 = (fRec38[0] * fTemp19);
-			float fTemp109 = std::max<float>(0.0f, std::min<float>(2047.0f, (fConst5 / fTemp96)));
-			int iTemp110 = int(fTemp109);
-			float fTemp111 = std::floor(fTemp109);
-			fRec39[0] = ((0.999000013f * fRec39[1]) + (fConst2 * ((fTemp100 - (fVec29[((IOTA - iTemp110) & 4095)] * (fTemp111 + (1.0f - fTemp109)))) - ((fTemp109 - fTemp111) * fVec29[((IOTA - (iTemp110 + 1)) & 4095)]))));
-			float fTemp112 = (fRec39[0] * fTemp32);
-			fVec30[0] = fSlow62;
-			float fTemp113 = (fRec40[1] + (fConst3 * fVec30[1]));
-			fRec40[0] = (fTemp113 - std::floor(fTemp113));
-			float fTemp114 = faust_nuke_faustpower2_f(((2.0f * fRec40[0]) + -1.0f));
-			fVec31[0] = fTemp114;
-			float fTemp115 = (fSlow63 * (fTemp3 * (fTemp114 - fVec31[1])));
-			fVec32[(IOTA & 4095)] = fTemp115;
-			float fTemp116 = std::max<float>(0.0f, std::min<float>(2047.0f, (fSlow64 * fTemp7)));
-			int iTemp117 = int(fTemp116);
-			float fTemp118 = std::floor(fTemp116);
-			fRec41[0] = ((fTemp115 + (0.999000013f * fRec41[1])) - ((fSlow67 * fVec32[((IOTA - iSlow68) & 4095)]) + (fSlow69 * fVec32[((IOTA - iSlow70) & 4095)])));
-			iRec43[0] = ((iRec43[1] + iVec0[1]) % iSlow71);
-			float fTemp119 = ((fRec42[1] * (1.0f - float(((iRec43[0] == 0) > 0)))) + (fSlow58 * fTemp65));
-			fRec42[0] = (fTemp119 - std::floor(fTemp119));
-			float fTemp120 = faust_nuke_faustpower2_f(((2.0f * fRec42[0]) + -1.0f));
-			fVec33[0] = fTemp120;
-			fRec27[0] = (((fRec4[0] * (((fTemp2 * (fTemp77 - ((fVec20[((IOTA - iTemp79) & 4095)] * (fTemp80 + (1.0f - fTemp78))) + ((fTemp78 - fTemp80) * fVec20[((IOTA - (iTemp79 + 1)) & 4095)])))) + (fSlow49 * (fRec29[0] * fTemp12))) + (fSlow56 * (((fTemp11 * (fTemp82 - fVec21[1])) * fVec1[1]) / fTemp14)))) + (((fTemp17 * ((fConst0 * (fTemp93 + fTemp104)) + (fSlow60 * (fTemp12 * (fTemp108 + (fTemp112 / fTemp19)))))) + ((fTemp55 * ((fSlow60 * (fTemp108 * fTemp12)) + (fConst0 * fTemp93))) * (fTemp57 + (fTemp56 * ((fSlow60 * ((fTemp112 * fTemp12) / fTemp19)) + (fConst0 * fTemp104)))))) + (fTemp58 * (((fTemp2 * (fTemp115 - ((fVec32[((IOTA - iTemp117) & 4095)] * (fTemp118 + (1.0f - fTemp116))) + ((fTemp116 - fTemp118) * fVec32[((IOTA - (iTemp117 + 1)) & 4095)])))) + (fSlow60 * (fRec41[0] * fTemp12))) + (fSlow56 * (((fTemp11 * (fTemp120 - fVec33[1])) * fVec1[1]) / fTemp65)))))) - (((fTemp70 * fRec27[2]) + (2.0f * (fTemp71 * fRec27[1]))) / fTemp72));
-			fRec26[0] = ((((fRec27[1] + (0.5f * fRec27[0])) + (0.5f * fRec27[2])) - ((fTemp70 * fRec26[2]) + (2.0f * (fTemp71 * fRec26[1])))) / fTemp72);
-			iRec45[0] = (iSlow73 * (iRec45[1] + 1));
-			int iTemp121 = (iRec45[0] < iSlow4);
-			float fTemp122 = std::exp((0.0f - (fConst1 / (iSlow73?(iTemp121?fSlow6:fSlow5):fSlow2))));
-			fRec44[0] = ((fRec44[1] * fTemp122) + ((iSlow73?(iTemp121?1.58730161f:fSlow74):0.0f) * (1.0f - fTemp122)));
-			fVec34[0] = fSlow77;
-			float fTemp123 = (fRec48[1] + (fConst3 * fVec34[1]));
-			fRec48[0] = (fTemp123 - std::floor(fTemp123));
-			float fTemp124 = faust_nuke_faustpower2_f(((2.0f * fRec48[0]) + -1.0f));
-			fVec35[0] = fTemp124;
-			float fTemp125 = (fSlow78 * (fTemp3 * (fTemp124 - fVec35[1])));
-			fVec36[(IOTA & 4095)] = fTemp125;
-			float fTemp126 = std::max<float>(0.0f, std::min<float>(2047.0f, (fSlow79 * fTemp7)));
-			int iTemp127 = int(fTemp126);
-			float fTemp128 = std::floor(fTemp126);
-			fRec49[0] = ((fTemp125 + (0.999000013f * fRec49[1])) - ((fSlow83 * fVec36[((IOTA - iSlow84) & 4095)]) + (fSlow85 * fVec36[((IOTA - iSlow86) & 4095)])));
-			iRec51[0] = ((iRec51[1] + iVec0[1]) % iSlow88);
-			float fTemp129 = ((fRec50[1] * (1.0f - float(((iRec51[0] == 0) > 0)))) + (fSlow89 * fTemp14));
-			fRec50[0] = (fTemp129 - std::floor(fTemp129));
-			float fTemp130 = faust_nuke_faustpower2_f(((2.0f * fRec50[0]) + -1.0f));
-			fVec37[0] = fTemp130;
-			iRec53[0] = ((iRec53[1] + iVec0[1]) % int((fSlow87 / fTemp19)));
-			float fTemp131 = ((fRec52[1] * (1.0f - float(((iRec53[0] == 0) > 0)))) + (fSlow89 * fTemp20));
-			fRec52[0] = (fTemp131 - std::floor(fTemp131));
-			float fTemp132 = faust_nuke_faustpower2_f(((2.0f * fRec52[0]) + -1.0f));
-			fVec38[0] = fTemp132;
-			float fTemp133 = std::max<float>((fSlow75 * fTemp19), 23.4489498f);
-			float fTemp134 = std::max<float>(20.0f, std::fabs(fTemp133));
-			fVec39[0] = fTemp134;
-			float fTemp135 = (fRec54[1] + (fConst3 * fVec39[1]));
-			fRec54[0] = (fTemp135 - std::floor(fTemp135));
-			float fTemp136 = faust_nuke_faustpower2_f(((2.0f * fRec54[0]) + -1.0f));
-			fVec40[0] = fTemp136;
-			float fTemp137 = ((fTemp3 * (fTemp136 - fVec40[1])) / fTemp134);
-			fVec41[(IOTA & 4095)] = fTemp137;
-			float fTemp138 = std::max<float>(0.0f, std::min<float>(2047.0f, (fConst0 * (fTemp7 / fTemp133))));
-			int iTemp139 = int(fTemp138);
-			float fTemp140 = std::floor(fTemp138);
-			float fTemp141 = ((fSlow90 * (((fTemp11 * (fTemp132 - fVec38[1])) * fVec1[1]) / fTemp20)) + (0.25f * (fTemp2 * ((fTemp137 - (fVec41[((IOTA - iTemp139) & 4095)] * (fTemp140 + (1.0f - fTemp138)))) - ((fTemp138 - fTemp140) * fVec41[((IOTA - (iTemp139 + 1)) & 4095)])))));
-			iRec56[0] = ((iRec56[1] + iVec0[1]) % int((fSlow87 * fTemp33)));
-			float fTemp142 = ((fRec55[1] * (1.0f - float(((iRec56[0] == 0) > 0)))) + (fSlow89 * fTemp35));
-			fRec55[0] = (fTemp142 - std::floor(fTemp142));
-			float fTemp143 = faust_nuke_faustpower2_f(((2.0f * fRec55[0]) + -1.0f));
-			fVec42[0] = fTemp143;
-			float fTemp144 = std::max<float>((fSlow75 * fTemp34), 23.4489498f);
-			float fTemp145 = std::max<float>(20.0f, std::fabs(fTemp144));
-			fVec43[0] = fTemp145;
-			float fTemp146 = (fRec57[1] + (fConst3 * fVec43[1]));
-			fRec57[0] = (fTemp146 - std::floor(fTemp146));
-			float fTemp147 = faust_nuke_faustpower2_f(((2.0f * fRec57[0]) + -1.0f));
-			fVec44[0] = fTemp147;
-			float fTemp148 = ((fTemp3 * (fTemp147 - fVec44[1])) / fTemp145);
-			fVec45[(IOTA & 4095)] = fTemp148;
-			float fTemp149 = std::max<float>(0.0f, std::min<float>(2047.0f, (fConst0 * (fTemp7 / fTemp144))));
-			int iTemp150 = int(fTemp149);
-			float fTemp151 = std::floor(fTemp149);
-			float fTemp152 = ((fSlow90 * (((fTemp11 * (fTemp143 - fVec42[1])) * fVec1[1]) / fTemp35)) + (0.25f * (fTemp2 * ((fTemp148 - (fVec45[((IOTA - iTemp150) & 4095)] * (fTemp151 + (1.0f - fTemp149)))) - ((fTemp149 - fTemp151) * fVec45[((IOTA - (iTemp150 + 1)) & 4095)])))));
-			float fTemp153 = std::max<float>(0.0f, std::min<float>(2047.0f, (fConst5 / fTemp133)));
-			int iTemp154 = int(fTemp153);
-			float fTemp155 = std::floor(fTemp153);
-			fRec58[0] = ((0.999000013f * fRec58[1]) + (fConst2 * ((fTemp137 - (fVec41[((IOTA - iTemp154) & 4095)] * (fTemp155 + (1.0f - fTemp153)))) - ((fTemp153 - fTemp155) * fVec41[((IOTA - (iTemp154 + 1)) & 4095)]))));
-			float fTemp156 = (fRec58[0] * fTemp19);
-			float fTemp157 = std::max<float>(0.0f, std::min<float>(2047.0f, (fConst5 / fTemp144)));
-			int iTemp158 = int(fTemp157);
-			float fTemp159 = std::floor(fTemp157);
-			fRec59[0] = ((0.999000013f * fRec59[1]) + (fConst2 * ((fTemp148 - (fVec45[((IOTA - iTemp158) & 4095)] * (fTemp159 + (1.0f - fTemp157)))) - ((fTemp157 - fTemp159) * fVec45[((IOTA - (iTemp158 + 1)) & 4095)]))));
-			float fTemp160 = (fRec59[0] * fTemp32);
-			fVec46[0] = fSlow93;
-			float fTemp161 = (fRec60[1] + (fConst3 * fVec46[1]));
-			fRec60[0] = (fTemp161 - std::floor(fTemp161));
-			float fTemp162 = faust_nuke_faustpower2_f(((2.0f * fRec60[0]) + -1.0f));
-			fVec47[0] = fTemp162;
-			float fTemp163 = (fSlow94 * (fTemp3 * (fTemp162 - fVec47[1])));
-			fVec48[(IOTA & 4095)] = fTemp163;
-			float fTemp164 = std::max<float>(0.0f, std::min<float>(2047.0f, (fSlow95 * fTemp7)));
-			int iTemp165 = int(fTemp164);
-			float fTemp166 = std::floor(fTemp164);
-			fRec61[0] = ((fTemp163 + (0.999000013f * fRec61[1])) - ((fSlow98 * fVec48[((IOTA - iSlow99) & 4095)]) + (fSlow100 * fVec48[((IOTA - iSlow101) & 4095)])));
-			iRec63[0] = ((iRec63[1] + iVec0[1]) % iSlow102);
-			float fTemp167 = ((fRec62[1] * (1.0f - float(((iRec63[0] == 0) > 0)))) + (fSlow89 * fTemp65));
-			fRec62[0] = (fTemp167 - std::floor(fTemp167));
-			float fTemp168 = faust_nuke_faustpower2_f(((2.0f * fRec62[0]) + -1.0f));
-			fVec49[0] = fTemp168;
-			fRec47[0] = (((fRec4[0] * (((fTemp2 * (fTemp125 - ((fVec36[((IOTA - iTemp127) & 4095)] * (fTemp128 + (1.0f - fTemp126))) + ((fTemp126 - fTemp128) * fVec36[((IOTA - (iTemp127 + 1)) & 4095)])))) + (fSlow80 * (fRec49[0] * fTemp12))) + (fSlow87 * (((fTemp11 * (fTemp130 - fVec37[1])) * fVec1[1]) / fTemp14)))) + (((fTemp17 * ((fConst0 * (fTemp141 + fTemp152)) + (fSlow91 * (fTemp12 * (fTemp156 + (fTemp160 / fTemp19)))))) + ((fTemp55 * ((fSlow91 * (fTemp156 * fTemp12)) + (fConst0 * fTemp141))) * (fTemp57 + (fTemp56 * ((fSlow91 * ((fTemp160 * fTemp12) / fTemp19)) + (fConst0 * fTemp152)))))) + (fTemp58 * (((fTemp2 * (fTemp163 - ((fVec48[((IOTA - iTemp165) & 4095)] * (fTemp166 + (1.0f - fTemp164))) + ((fTemp164 - fTemp166) * fVec48[((IOTA - (iTemp165 + 1)) & 4095)])))) + (fSlow91 * (fRec61[0] * fTemp12))) + (fSlow87 * (((fTemp11 * (fTemp168 - fVec49[1])) * fVec1[1]) / fTemp65)))))) - (((fTemp70 * fRec47[2]) + (2.0f * (fTemp71 * fRec47[1]))) / fTemp72));
-			fRec46[0] = ((((fRec47[1] + (0.5f * fRec47[0])) + (0.5f * fRec47[2])) - ((fTemp70 * fRec46[2]) + (2.0f * (fTemp71 * fRec46[1])))) / fTemp72);
-			iRec65[0] = (iSlow104 * (iRec65[1] + 1));
-			int iTemp169 = (iRec65[0] < iSlow4);
-			float fTemp170 = std::exp((0.0f - (fConst1 / (iSlow104?(iTemp169?fSlow6:fSlow5):fSlow2))));
-			fRec64[0] = ((fRec64[1] * fTemp170) + ((iSlow104?(iTemp169?1.58730161f:fSlow105):0.0f) * (1.0f - fTemp170)));
-			fVec50[0] = fSlow108;
-			float fTemp171 = (fRec68[1] + (fConst3 * fVec50[1]));
-			fRec68[0] = (fTemp171 - std::floor(fTemp171));
-			float fTemp172 = faust_nuke_faustpower2_f(((2.0f * fRec68[0]) + -1.0f));
-			fVec51[0] = fTemp172;
-			float fTemp173 = (fSlow109 * (fTemp3 * (fTemp172 - fVec51[1])));
-			fVec52[(IOTA & 4095)] = fTemp173;
-			float fTemp174 = std::max<float>(0.0f, std::min<float>(2047.0f, (fSlow110 * fTemp7)));
-			int iTemp175 = int(fTemp174);
-			float fTemp176 = std::floor(fTemp174);
-			fRec69[0] = ((fTemp173 + (0.999000013f * fRec69[1])) - ((fSlow114 * fVec52[((IOTA - iSlow115) & 4095)]) + (fSlow116 * fVec52[((IOTA - iSlow117) & 4095)])));
-			iRec71[0] = ((iRec71[1] + iVec0[1]) % iSlow119);
-			float fTemp177 = ((fRec70[1] * (1.0f - float(((iRec71[0] == 0) > 0)))) + (fSlow120 * fTemp14));
-			fRec70[0] = (fTemp177 - std::floor(fTemp177));
-			float fTemp178 = faust_nuke_faustpower2_f(((2.0f * fRec70[0]) + -1.0f));
-			fVec53[0] = fTemp178;
-			iRec73[0] = ((iRec73[1] + iVec0[1]) % int((fSlow118 / fTemp19)));
-			float fTemp179 = ((fRec72[1] * (1.0f - float(((iRec73[0] == 0) > 0)))) + (fSlow120 * fTemp20));
-			fRec72[0] = (fTemp179 - std::floor(fTemp179));
-			float fTemp180 = faust_nuke_faustpower2_f(((2.0f * fRec72[0]) + -1.0f));
-			fVec54[0] = fTemp180;
-			float fTemp181 = std::max<float>((fSlow106 * fTemp19), 23.4489498f);
-			float fTemp182 = std::max<float>(20.0f, std::fabs(fTemp181));
-			fVec55[0] = fTemp182;
-			float fTemp183 = (fRec74[1] + (fConst3 * fVec55[1]));
-			fRec74[0] = (fTemp183 - std::floor(fTemp183));
-			float fTemp184 = faust_nuke_faustpower2_f(((2.0f * fRec74[0]) + -1.0f));
-			fVec56[0] = fTemp184;
-			float fTemp185 = ((fTemp3 * (fTemp184 - fVec56[1])) / fTemp182);
-			fVec57[(IOTA & 4095)] = fTemp185;
-			float fTemp186 = std::max<float>(0.0f, std::min<float>(2047.0f, (fConst0 * (fTemp7 / fTemp181))));
-			int iTemp187 = int(fTemp186);
-			float fTemp188 = std::floor(fTemp186);
-			float fTemp189 = ((fSlow121 * (((fTemp11 * (fTemp180 - fVec54[1])) * fVec1[1]) / fTemp20)) + (0.25f * (fTemp2 * ((fTemp185 - (fVec57[((IOTA - iTemp187) & 4095)] * (fTemp188 + (1.0f - fTemp186)))) - ((fTemp186 - fTemp188) * fVec57[((IOTA - (iTemp187 + 1)) & 4095)])))));
-			iRec76[0] = ((iRec76[1] + iVec0[1]) % int((fSlow118 * fTemp33)));
-			float fTemp190 = ((fRec75[1] * (1.0f - float(((iRec76[0] == 0) > 0)))) + (fSlow120 * fTemp35));
-			fRec75[0] = (fTemp190 - std::floor(fTemp190));
-			float fTemp191 = faust_nuke_faustpower2_f(((2.0f * fRec75[0]) + -1.0f));
-			fVec58[0] = fTemp191;
-			float fTemp192 = std::max<float>((fSlow106 * fTemp34), 23.4489498f);
-			float fTemp193 = std::max<float>(20.0f, std::fabs(fTemp192));
-			fVec59[0] = fTemp193;
-			float fTemp194 = (fRec77[1] + (fConst3 * fVec59[1]));
-			fRec77[0] = (fTemp194 - std::floor(fTemp194));
-			float fTemp195 = faust_nuke_faustpower2_f(((2.0f * fRec77[0]) + -1.0f));
-			fVec60[0] = fTemp195;
-			float fTemp196 = ((fTemp3 * (fTemp195 - fVec60[1])) / fTemp193);
-			fVec61[(IOTA & 4095)] = fTemp196;
-			float fTemp197 = std::max<float>(0.0f, std::min<float>(2047.0f, (fConst0 * (fTemp7 / fTemp192))));
-			int iTemp198 = int(fTemp197);
-			float fTemp199 = std::floor(fTemp197);
-			float fTemp200 = ((fSlow121 * (((fTemp11 * (fTemp191 - fVec58[1])) * fVec1[1]) / fTemp35)) + (0.25f * (fTemp2 * ((fTemp196 - (fVec61[((IOTA - iTemp198) & 4095)] * (fTemp199 + (1.0f - fTemp197)))) - ((fTemp197 - fTemp199) * fVec61[((IOTA - (iTemp198 + 1)) & 4095)])))));
-			float fTemp201 = std::max<float>(0.0f, std::min<float>(2047.0f, (fConst5 / fTemp181)));
-			int iTemp202 = int(fTemp201);
-			float fTemp203 = std::floor(fTemp201);
-			fRec78[0] = ((0.999000013f * fRec78[1]) + (fConst2 * ((fTemp185 - (fVec57[((IOTA - iTemp202) & 4095)] * (fTemp203 + (1.0f - fTemp201)))) - ((fTemp201 - fTemp203) * fVec57[((IOTA - (iTemp202 + 1)) & 4095)]))));
-			float fTemp204 = (fRec78[0] * fTemp19);
-			float fTemp205 = std::max<float>(0.0f, std::min<float>(2047.0f, (fConst5 / fTemp192)));
-			int iTemp206 = int(fTemp205);
-			float fTemp207 = std::floor(fTemp205);
-			fRec79[0] = ((0.999000013f * fRec79[1]) + (fConst2 * ((fTemp196 - (fVec61[((IOTA - iTemp206) & 4095)] * (fTemp207 + (1.0f - fTemp205)))) - ((fTemp205 - fTemp207) * fVec61[((IOTA - (iTemp206 + 1)) & 4095)]))));
-			float fTemp208 = (fRec79[0] * fTemp32);
-			fVec62[0] = fSlow124;
-			float fTemp209 = (fRec80[1] + (fConst3 * fVec62[1]));
-			fRec80[0] = (fTemp209 - std::floor(fTemp209));
-			float fTemp210 = faust_nuke_faustpower2_f(((2.0f * fRec80[0]) + -1.0f));
-			fVec63[0] = fTemp210;
-			float fTemp211 = (fSlow125 * (fTemp3 * (fTemp210 - fVec63[1])));
-			fVec64[(IOTA & 4095)] = fTemp211;
-			float fTemp212 = std::max<float>(0.0f, std::min<float>(2047.0f, (fSlow126 * fTemp7)));
-			int iTemp213 = int(fTemp212);
-			float fTemp214 = std::floor(fTemp212);
-			fRec81[0] = ((fTemp211 + (0.999000013f * fRec81[1])) - ((fSlow129 * fVec64[((IOTA - iSlow130) & 4095)]) + (fSlow131 * fVec64[((IOTA - iSlow132) & 4095)])));
-			iRec83[0] = ((iRec83[1] + iVec0[1]) % iSlow133);
-			float fTemp215 = ((fRec82[1] * (1.0f - float(((iRec83[0] == 0) > 0)))) + (fSlow120 * fTemp65));
-			fRec82[0] = (fTemp215 - std::floor(fTemp215));
-			float fTemp216 = faust_nuke_faustpower2_f(((2.0f * fRec82[0]) + -1.0f));
-			fVec65[0] = fTemp216;
-			fRec67[0] = (((fRec4[0] * (((fTemp2 * (fTemp173 - ((fVec52[((IOTA - iTemp175) & 4095)] * (fTemp176 + (1.0f - fTemp174))) + ((fTemp174 - fTemp176) * fVec52[((IOTA - (iTemp175 + 1)) & 4095)])))) + (fSlow111 * (fRec69[0] * fTemp12))) + (fSlow118 * (((fTemp11 * (fTemp178 - fVec53[1])) * fVec1[1]) / fTemp14)))) + (((fTemp17 * ((fConst0 * (fTemp189 + fTemp200)) + (fSlow122 * (fTemp12 * (fTemp204 + (fTemp208 / fTemp19)))))) + ((fTemp55 * ((fSlow122 * (fTemp204 * fTemp12)) + (fConst0 * fTemp189))) * (fTemp57 + (fTemp56 * ((fSlow122 * ((fTemp208 * fTemp12) / fTemp19)) + (fConst0 * fTemp200)))))) + (fTemp58 * (((fTemp2 * (fTemp211 - ((fVec64[((IOTA - iTemp213) & 4095)] * (fTemp214 + (1.0f - fTemp212))) + ((fTemp212 - fTemp214) * fVec64[((IOTA - (iTemp213 + 1)) & 4095)])))) + (fSlow122 * (fRec81[0] * fTemp12))) + (fSlow118 * (((fTemp11 * (fTemp216 - fVec65[1])) * fVec1[1]) / fTemp65)))))) - (((fTemp70 * fRec67[2]) + (2.0f * (fTemp71 * fRec67[1]))) / fTemp72));
-			fRec66[0] = ((((fRec67[1] + (0.5f * fRec67[0])) + (0.5f * fRec67[2])) - ((fTemp70 * fRec66[2]) + (2.0f * (fTemp71 * fRec66[1])))) / fTemp72);
-			iRec85[0] = (iSlow135 * (iRec85[1] + 1));
-			int iTemp217 = (iRec85[0] < iSlow4);
-			float fTemp218 = std::exp((0.0f - (fConst1 / (iSlow135?(iTemp217?fSlow6:fSlow5):fSlow2))));
-			fRec84[0] = ((fRec84[1] * fTemp218) + ((iSlow135?(iTemp217?1.58730161f:fSlow136):0.0f) * (1.0f - fTemp218)));
-			fVec66[0] = fSlow139;
-			float fTemp219 = (fRec88[1] + (fConst3 * fVec66[1]));
-			fRec88[0] = (fTemp219 - std::floor(fTemp219));
-			float fTemp220 = faust_nuke_faustpower2_f(((2.0f * fRec88[0]) + -1.0f));
-			fVec67[0] = fTemp220;
-			float fTemp221 = (fSlow140 * (fTemp3 * (fTemp220 - fVec67[1])));
-			fVec68[(IOTA & 4095)] = fTemp221;
-			float fTemp222 = std::max<float>(0.0f, std::min<float>(2047.0f, (fSlow141 * fTemp7)));
-			int iTemp223 = int(fTemp222);
-			float fTemp224 = std::floor(fTemp222);
-			fRec89[0] = ((fTemp221 + (0.999000013f * fRec89[1])) - ((fSlow145 * fVec68[((IOTA - iSlow146) & 4095)]) + (fSlow147 * fVec68[((IOTA - iSlow148) & 4095)])));
-			iRec91[0] = ((iRec91[1] + iVec0[1]) % iSlow150);
-			float fTemp225 = ((fRec90[1] * (1.0f - float(((iRec91[0] == 0) > 0)))) + (fSlow151 * fTemp14));
-			fRec90[0] = (fTemp225 - std::floor(fTemp225));
-			float fTemp226 = faust_nuke_faustpower2_f(((2.0f * fRec90[0]) + -1.0f));
-			fVec69[0] = fTemp226;
-			iRec93[0] = ((iRec93[1] + iVec0[1]) % int((fSlow149 / fTemp19)));
-			float fTemp227 = ((fRec92[1] * (1.0f - float(((iRec93[0] == 0) > 0)))) + (fSlow151 * fTemp20));
-			fRec92[0] = (fTemp227 - std::floor(fTemp227));
-			float fTemp228 = faust_nuke_faustpower2_f(((2.0f * fRec92[0]) + -1.0f));
-			fVec70[0] = fTemp228;
-			float fTemp229 = std::max<float>((fSlow137 * fTemp19), 23.4489498f);
-			float fTemp230 = std::max<float>(20.0f, std::fabs(fTemp229));
-			fVec71[0] = fTemp230;
-			float fTemp231 = (fRec94[1] + (fConst3 * fVec71[1]));
-			fRec94[0] = (fTemp231 - std::floor(fTemp231));
-			float fTemp232 = faust_nuke_faustpower2_f(((2.0f * fRec94[0]) + -1.0f));
-			fVec72[0] = fTemp232;
-			float fTemp233 = ((fTemp3 * (fTemp232 - fVec72[1])) / fTemp230);
-			fVec73[(IOTA & 4095)] = fTemp233;
-			float fTemp234 = std::max<float>(0.0f, std::min<float>(2047.0f, (fConst0 * (fTemp7 / fTemp229))));
-			int iTemp235 = int(fTemp234);
-			float fTemp236 = std::floor(fTemp234);
-			float fTemp237 = ((fSlow152 * (((fTemp11 * (fTemp228 - fVec70[1])) * fVec1[1]) / fTemp20)) + (0.25f * (fTemp2 * ((fTemp233 - (fVec73[((IOTA - iTemp235) & 4095)] * (fTemp236 + (1.0f - fTemp234)))) - ((fTemp234 - fTemp236) * fVec73[((IOTA - (iTemp235 + 1)) & 4095)])))));
-			iRec96[0] = ((iRec96[1] + iVec0[1]) % int((fSlow149 * fTemp33)));
-			float fTemp238 = ((fRec95[1] * (1.0f - float(((iRec96[0] == 0) > 0)))) + (fSlow151 * fTemp35));
-			fRec95[0] = (fTemp238 - std::floor(fTemp238));
-			float fTemp239 = faust_nuke_faustpower2_f(((2.0f * fRec95[0]) + -1.0f));
-			fVec74[0] = fTemp239;
-			float fTemp240 = std::max<float>((fSlow137 * fTemp34), 23.4489498f);
-			float fTemp241 = std::max<float>(20.0f, std::fabs(fTemp240));
-			fVec75[0] = fTemp241;
-			float fTemp242 = (fRec97[1] + (fConst3 * fVec75[1]));
-			fRec97[0] = (fTemp242 - std::floor(fTemp242));
-			float fTemp243 = faust_nuke_faustpower2_f(((2.0f * fRec97[0]) + -1.0f));
-			fVec76[0] = fTemp243;
-			float fTemp244 = ((fTemp3 * (fTemp243 - fVec76[1])) / fTemp241);
-			fVec77[(IOTA & 4095)] = fTemp244;
-			float fTemp245 = std::max<float>(0.0f, std::min<float>(2047.0f, (fConst0 * (fTemp7 / fTemp240))));
-			int iTemp246 = int(fTemp245);
-			float fTemp247 = std::floor(fTemp245);
-			float fTemp248 = ((fSlow152 * (((fTemp11 * (fTemp239 - fVec74[1])) * fVec1[1]) / fTemp35)) + (0.25f * (fTemp2 * ((fTemp244 - (fVec77[((IOTA - iTemp246) & 4095)] * (fTemp247 + (1.0f - fTemp245)))) - ((fTemp245 - fTemp247) * fVec77[((IOTA - (iTemp246 + 1)) & 4095)])))));
-			float fTemp249 = std::max<float>(0.0f, std::min<float>(2047.0f, (fConst5 / fTemp229)));
-			int iTemp250 = int(fTemp249);
-			float fTemp251 = std::floor(fTemp249);
-			fRec98[0] = ((0.999000013f * fRec98[1]) + (fConst2 * ((fTemp233 - (fVec73[((IOTA - iTemp250) & 4095)] * (fTemp251 + (1.0f - fTemp249)))) - ((fTemp249 - fTemp251) * fVec73[((IOTA - (iTemp250 + 1)) & 4095)]))));
-			float fTemp252 = (fRec98[0] * fTemp19);
-			float fTemp253 = std::max<float>(0.0f, std::min<float>(2047.0f, (fConst5 / fTemp240)));
-			int iTemp254 = int(fTemp253);
-			float fTemp255 = std::floor(fTemp253);
-			fRec99[0] = ((0.999000013f * fRec99[1]) + (fConst2 * ((fTemp244 - (fVec77[((IOTA - iTemp254) & 4095)] * (fTemp255 + (1.0f - fTemp253)))) - ((fTemp253 - fTemp255) * fVec77[((IOTA - (iTemp254 + 1)) & 4095)]))));
-			float fTemp256 = (fRec99[0] * fTemp32);
-			fVec78[0] = fSlow155;
-			float fTemp257 = (fRec100[1] + (fConst3 * fVec78[1]));
-			fRec100[0] = (fTemp257 - std::floor(fTemp257));
-			float fTemp258 = faust_nuke_faustpower2_f(((2.0f * fRec100[0]) + -1.0f));
-			fVec79[0] = fTemp258;
-			float fTemp259 = (fSlow156 * (fTemp3 * (fTemp258 - fVec79[1])));
-			fVec80[(IOTA & 4095)] = fTemp259;
-			float fTemp260 = std::max<float>(0.0f, std::min<float>(2047.0f, (fSlow157 * fTemp7)));
-			int iTemp261 = int(fTemp260);
-			float fTemp262 = std::floor(fTemp260);
-			fRec101[0] = ((fTemp259 + (0.999000013f * fRec101[1])) - ((fSlow160 * fVec80[((IOTA - iSlow161) & 4095)]) + (fSlow162 * fVec80[((IOTA - iSlow163) & 4095)])));
-			iRec103[0] = ((iRec103[1] + iVec0[1]) % iSlow164);
-			float fTemp263 = ((fRec102[1] * (1.0f - float(((iRec103[0] == 0) > 0)))) + (fSlow151 * fTemp65));
-			fRec102[0] = (fTemp263 - std::floor(fTemp263));
-			float fTemp264 = faust_nuke_faustpower2_f(((2.0f * fRec102[0]) + -1.0f));
-			fVec81[0] = fTemp264;
-			fRec87[0] = (((fRec4[0] * (((fTemp2 * (fTemp221 - ((fVec68[((IOTA - iTemp223) & 4095)] * (fTemp224 + (1.0f - fTemp222))) + ((fTemp222 - fTemp224) * fVec68[((IOTA - (iTemp223 + 1)) & 4095)])))) + (fSlow142 * (fRec89[0] * fTemp12))) + (fSlow149 * (((fTemp11 * (fTemp226 - fVec69[1])) * fVec1[1]) / fTemp14)))) + (((fTemp17 * ((fConst0 * (fTemp237 + fTemp248)) + (fSlow153 * (fTemp12 * (fTemp252 + (fTemp256 / fTemp19)))))) + ((fTemp55 * ((fSlow153 * (fTemp252 * fTemp12)) + (fConst0 * fTemp237))) * (fTemp57 + (fTemp56 * ((fSlow153 * ((fTemp256 * fTemp12) / fTemp19)) + (fConst0 * fTemp248)))))) + (fTemp58 * (((fTemp2 * (fTemp259 - ((fVec80[((IOTA - iTemp261) & 4095)] * (fTemp262 + (1.0f - fTemp260))) + ((fTemp260 - fTemp262) * fVec80[((IOTA - (iTemp261 + 1)) & 4095)])))) + (fSlow153 * (fRec101[0] * fTemp12))) + (fSlow149 * (((fTemp11 * (fTemp264 - fVec81[1])) * fVec1[1]) / fTemp65)))))) - (((fTemp70 * fRec87[2]) + (2.0f * (fTemp71 * fRec87[1]))) / fTemp72));
-			fRec86[0] = ((((fRec87[1] + (0.5f * fRec87[0])) + (0.5f * fRec87[2])) - ((fTemp70 * fRec86[2]) + (2.0f * (fTemp71 * fRec86[1])))) / fTemp72);
-			iRec105[0] = (iSlow166 * (iRec105[1] + 1));
-			int iTemp265 = (iRec105[0] < iSlow4);
-			float fTemp266 = std::exp((0.0f - (fConst1 / (iSlow166?(iTemp265?fSlow6:fSlow5):fSlow2))));
-			fRec104[0] = ((fRec104[1] * fTemp266) + ((iSlow166?(iTemp265?1.58730161f:fSlow167):0.0f) * (1.0f - fTemp266)));
-			fVec82[0] = fSlow170;
-			float fTemp267 = (fRec108[1] + (fConst3 * fVec82[1]));
-			fRec108[0] = (fTemp267 - std::floor(fTemp267));
-			float fTemp268 = faust_nuke_faustpower2_f(((2.0f * fRec108[0]) + -1.0f));
-			fVec83[0] = fTemp268;
-			float fTemp269 = (fSlow171 * (fTemp3 * (fTemp268 - fVec83[1])));
-			fVec84[(IOTA & 4095)] = fTemp269;
-			float fTemp270 = std::max<float>(0.0f, std::min<float>(2047.0f, (fSlow172 * fTemp7)));
-			int iTemp271 = int(fTemp270);
-			float fTemp272 = std::floor(fTemp270);
-			fRec109[0] = ((fTemp269 + (0.999000013f * fRec109[1])) - ((fSlow176 * fVec84[((IOTA - iSlow177) & 4095)]) + (fSlow178 * fVec84[((IOTA - iSlow179) & 4095)])));
-			iRec111[0] = ((iRec111[1] + iVec0[1]) % iSlow181);
-			float fTemp273 = ((fRec110[1] * (1.0f - float(((iRec111[0] == 0) > 0)))) + (fSlow182 * fTemp14));
-			fRec110[0] = (fTemp273 - std::floor(fTemp273));
-			float fTemp274 = faust_nuke_faustpower2_f(((2.0f * fRec110[0]) + -1.0f));
-			fVec85[0] = fTemp274;
-			iRec113[0] = ((iRec113[1] + iVec0[1]) % int((fSlow180 / fTemp19)));
-			float fTemp275 = ((fRec112[1] * (1.0f - float(((iRec113[0] == 0) > 0)))) + (fSlow182 * fTemp20));
-			fRec112[0] = (fTemp275 - std::floor(fTemp275));
-			float fTemp276 = faust_nuke_faustpower2_f(((2.0f * fRec112[0]) + -1.0f));
-			fVec86[0] = fTemp276;
-			float fTemp277 = std::max<float>((fSlow168 * fTemp19), 23.4489498f);
-			float fTemp278 = std::max<float>(20.0f, std::fabs(fTemp277));
-			fVec87[0] = fTemp278;
-			float fTemp279 = (fRec114[1] + (fConst3 * fVec87[1]));
-			fRec114[0] = (fTemp279 - std::floor(fTemp279));
-			float fTemp280 = faust_nuke_faustpower2_f(((2.0f * fRec114[0]) + -1.0f));
-			fVec88[0] = fTemp280;
-			float fTemp281 = ((fTemp3 * (fTemp280 - fVec88[1])) / fTemp278);
-			fVec89[(IOTA & 4095)] = fTemp281;
-			float fTemp282 = std::max<float>(0.0f, std::min<float>(2047.0f, (fConst0 * (fTemp7 / fTemp277))));
-			int iTemp283 = int(fTemp282);
-			float fTemp284 = std::floor(fTemp282);
-			float fTemp285 = ((fSlow183 * (((fTemp11 * (fTemp276 - fVec86[1])) * fVec1[1]) / fTemp20)) + (0.25f * (fTemp2 * ((fTemp281 - (fVec89[((IOTA - iTemp283) & 4095)] * (fTemp284 + (1.0f - fTemp282)))) - ((fTemp282 - fTemp284) * fVec89[((IOTA - (iTemp283 + 1)) & 4095)])))));
-			iRec116[0] = ((iRec116[1] + iVec0[1]) % int((fSlow180 * fTemp33)));
-			float fTemp286 = ((fRec115[1] * (1.0f - float(((iRec116[0] == 0) > 0)))) + (fSlow182 * fTemp35));
-			fRec115[0] = (fTemp286 - std::floor(fTemp286));
-			float fTemp287 = faust_nuke_faustpower2_f(((2.0f * fRec115[0]) + -1.0f));
-			fVec90[0] = fTemp287;
-			float fTemp288 = std::max<float>((fSlow168 * fTemp34), 23.4489498f);
-			float fTemp289 = std::max<float>(20.0f, std::fabs(fTemp288));
-			fVec91[0] = fTemp289;
-			float fTemp290 = (fRec117[1] + (fConst3 * fVec91[1]));
-			fRec117[0] = (fTemp290 - std::floor(fTemp290));
-			float fTemp291 = faust_nuke_faustpower2_f(((2.0f * fRec117[0]) + -1.0f));
-			fVec92[0] = fTemp291;
-			float fTemp292 = ((fTemp3 * (fTemp291 - fVec92[1])) / fTemp289);
-			fVec93[(IOTA & 4095)] = fTemp292;
-			float fTemp293 = std::max<float>(0.0f, std::min<float>(2047.0f, (fConst0 * (fTemp7 / fTemp288))));
-			int iTemp294 = int(fTemp293);
-			float fTemp295 = std::floor(fTemp293);
-			float fTemp296 = ((fSlow183 * (((fTemp11 * (fTemp287 - fVec90[1])) * fVec1[1]) / fTemp35)) + (0.25f * (fTemp2 * ((fTemp292 - (fVec93[((IOTA - iTemp294) & 4095)] * (fTemp295 + (1.0f - fTemp293)))) - ((fTemp293 - fTemp295) * fVec93[((IOTA - (iTemp294 + 1)) & 4095)])))));
-			float fTemp297 = std::max<float>(0.0f, std::min<float>(2047.0f, (fConst5 / fTemp277)));
-			int iTemp298 = int(fTemp297);
-			float fTemp299 = std::floor(fTemp297);
-			fRec118[0] = ((0.999000013f * fRec118[1]) + (fConst2 * ((fTemp281 - (fVec89[((IOTA - iTemp298) & 4095)] * (fTemp299 + (1.0f - fTemp297)))) - ((fTemp297 - fTemp299) * fVec89[((IOTA - (iTemp298 + 1)) & 4095)]))));
-			float fTemp300 = (fRec118[0] * fTemp19);
-			float fTemp301 = std::max<float>(0.0f, std::min<float>(2047.0f, (fConst5 / fTemp288)));
-			int iTemp302 = int(fTemp301);
-			float fTemp303 = std::floor(fTemp301);
-			fRec119[0] = ((0.999000013f * fRec119[1]) + (fConst2 * ((fTemp292 - (fVec93[((IOTA - iTemp302) & 4095)] * (fTemp303 + (1.0f - fTemp301)))) - ((fTemp301 - fTemp303) * fVec93[((IOTA - (iTemp302 + 1)) & 4095)]))));
-			float fTemp304 = (fRec119[0] * fTemp32);
-			fVec94[0] = fSlow186;
-			float fTemp305 = (fRec120[1] + (fConst3 * fVec94[1]));
-			fRec120[0] = (fTemp305 - std::floor(fTemp305));
-			float fTemp306 = faust_nuke_faustpower2_f(((2.0f * fRec120[0]) + -1.0f));
-			fVec95[0] = fTemp306;
-			float fTemp307 = (fSlow187 * (fTemp3 * (fTemp306 - fVec95[1])));
-			fVec96[(IOTA & 4095)] = fTemp307;
-			float fTemp308 = std::max<float>(0.0f, std::min<float>(2047.0f, (fSlow188 * fTemp7)));
-			int iTemp309 = int(fTemp308);
-			float fTemp310 = std::floor(fTemp308);
-			fRec121[0] = ((fTemp307 + (0.999000013f * fRec121[1])) - ((fSlow191 * fVec96[((IOTA - iSlow192) & 4095)]) + (fSlow193 * fVec96[((IOTA - iSlow194) & 4095)])));
-			iRec123[0] = ((iRec123[1] + iVec0[1]) % iSlow195);
-			float fTemp311 = ((fRec122[1] * (1.0f - float(((iRec123[0] == 0) > 0)))) + (fSlow182 * fTemp65));
-			fRec122[0] = (fTemp311 - std::floor(fTemp311));
-			float fTemp312 = faust_nuke_faustpower2_f(((2.0f * fRec122[0]) + -1.0f));
-			fVec97[0] = fTemp312;
-			fRec107[0] = (((fRec4[0] * (((fTemp2 * (fTemp269 - ((fVec84[((IOTA - iTemp271) & 4095)] * (fTemp272 + (1.0f - fTemp270))) + ((fTemp270 - fTemp272) * fVec84[((IOTA - (iTemp271 + 1)) & 4095)])))) + (fSlow173 * (fRec109[0] * fTemp12))) + (fSlow180 * (((fTemp11 * (fTemp274 - fVec85[1])) * fVec1[1]) / fTemp14)))) + (((fTemp17 * ((fConst0 * (fTemp285 + fTemp296)) + (fSlow184 * (fTemp12 * (fTemp300 + (fTemp304 / fTemp19)))))) + ((fTemp55 * ((fSlow184 * (fTemp300 * fTemp12)) + (fConst0 * fTemp285))) * (fTemp57 + (fTemp56 * ((fSlow184 * ((fTemp304 * fTemp12) / fTemp19)) + (fConst0 * fTemp296)))))) + (fTemp58 * (((fTemp2 * (fTemp307 - ((fVec96[((IOTA - iTemp309) & 4095)] * (fTemp310 + (1.0f - fTemp308))) + ((fTemp308 - fTemp310) * fVec96[((IOTA - (iTemp309 + 1)) & 4095)])))) + (fSlow184 * (fRec121[0] * fTemp12))) + (fSlow180 * (((fTemp11 * (fTemp312 - fVec97[1])) * fVec1[1]) / fTemp65)))))) - (((fTemp70 * fRec107[2]) + (2.0f * (fTemp71 * fRec107[1]))) / fTemp72));
-			fRec106[0] = ((((fRec107[1] + (0.5f * fRec107[0])) + (0.5f * fRec107[2])) - ((fTemp70 * fRec106[2]) + (2.0f * (fTemp71 * fRec106[1])))) / fTemp72);
-			output0[i] = FAUSTFLOAT((((((((fSlow0 * (std::min<float>(1.0f, fRec0[0]) * ((fRec2[1] + (0.5f * fRec2[0])) + (0.5f * fRec2[2])))) + (fSlow41 * (std::min<float>(1.0f, fRec24[0]) * ((fRec26[1] + (0.5f * fRec26[0])) + (0.5f * fRec26[2]))))) + (fSlow72 * (std::min<float>(1.0f, fRec44[0]) * ((fRec46[1] + (0.5f * fRec46[0])) + (0.5f * fRec46[2]))))) + (fSlow103 * (std::min<float>(1.0f, fRec64[0]) * ((fRec66[1] + (0.5f * fRec66[0])) + (0.5f * fRec66[2]))))) + (fSlow134 * (std::min<float>(1.0f, fRec84[0]) * ((fRec86[1] + (0.5f * fRec86[0])) + (0.5f * fRec86[2]))))) + (fSlow165 * (std::min<float>(1.0f, fRec104[0]) * ((fRec106[1] + (0.5f * fRec106[0])) + (0.5f * fRec106[2]))))) / fTemp72));
-			iVec0[1] = iVec0[0];
-			iRec1[1] = iRec1[0];
-			fRec0[1] = fRec0[0];
-			fRec4[1] = fRec4[0];
-			fRec5[1] = fRec5[0];
-			fVec1[1] = fVec1[0];
-			fVec2[1] = fVec2[0];
-			fRec6[1] = fRec6[0];
-			fVec3[1] = fVec3[0];
-			IOTA = (IOTA + 1);
-			fRec7[1] = fRec7[0];
-			iRec9[1] = iRec9[0];
-			fRec8[1] = fRec8[0];
-			fVec5[1] = fVec5[0];
-			fRec10[1] = fRec10[0];
-			iRec12[1] = iRec12[0];
-			fRec11[1] = fRec11[0];
-			fVec6[1] = fVec6[0];
-			fVec7[1] = fVec7[0];
-			fRec13[1] = fRec13[0];
-			fVec8[1] = fVec8[0];
-			iRec15[1] = iRec15[0];
+			iRec5[0] = ((iRec5[1] + iVec0[1]) % iSlow5);
+			fTempPerm7 = ((fRec4[1] * (1 - float(((iRec5[0] == 0) > 0)))) + (fSlow3 * fTempPerm6));
+			fRec4[0] = (fTempPerm7 - floorf(fTempPerm7));
+			fTempPerm8 = faustpower<2>(((2.0f * fRec4[0]) + -1.0f));
+			fVec2[0] = fTempPerm8;
+			fTempPerm9 = min((float)1, max((float)0, (fRec3[0] + -2.0f)));
+			fTempPerm10 = min((float)1, max((float)0, (2.0f - fRec3[0])));
+			fTempPerm11 = (1.0f - (fTempPerm10 + fTempPerm9));
+			fVec3[0] = fSlow7;
+			fTempPerm12 = (fRec7[1] + (fConst2 * fVec3[1]));
+			fRec7[0] = (fTempPerm12 - floorf(fTempPerm12));
+			fTempPerm13 = faustpower<2>(((2.0f * fRec7[0]) + -1.0f));
+			fVec4[0] = fTempPerm13;
+			fTempPerm14 = float(iVec0[1]);
+			fTempPerm15 = (fSlow8 * (fTempPerm14 * (fVec4[0] - fVec4[1])));
+			fVec5[IOTA&4095] = fTempPerm15;
+			fRec6[0] = ((fVec5[IOTA&4095] + (0.999f * fRec6[1])) - ((fSlow14 * fVec5[(IOTA-iSlow10)&4095]) + (fSlow13 * fVec5[(IOTA-iSlow11)&4095])));
+			fTempPerm16 = min(0.5f, (0.5f * fRec3[0]));
+			fTempPerm17 = max((float)0, min((float)2047, (fSlow16 * fTempPerm16)));
+			iTempPerm18 = int(fTempPerm17);
+			fTempPerm19 = floorf(fTempPerm17);
+			fRec8[0] = (fSlow17 + (0.999f * fRec8[1]));
+			fTempPerm20 = (1.0f - fRec8[0]);
+			fRec9[0] = (fSlow18 + (0.999f * fRec9[1]));
+			iTempPerm21 = (fRec9[0] >= 3.0f);
+			fTempPerm22 = ((int((iTempPerm21 + (fRec9[0] == 0.0f))))?1.0f:max(max((float)1, ((0.02f * (fRec9[0] + -2.1000000000000001f)) + 1.0f)), ((0.02f * (1.0f - fRec9[0])) + 1.0f)));
+			fTempPerm23 = ((int(iTempPerm21))?1.4983f:1.0f);
+			fTempPerm24 = (fTempPerm23 / fTempPerm22);
+			fTempPerm25 = max((fSlow2 * fTempPerm24), 23.448949682462139f);
+			fTempPerm26 = max(20.0f, fabsf(fTempPerm25));
+			fVec6[0] = fTempPerm26;
+			fTempPerm27 = (fRec10[1] + (fConst2 * fVec6[1]));
+			fRec10[0] = (fTempPerm27 - floorf(fTempPerm27));
+			fTempPerm28 = faustpower<2>(((2.0f * fRec10[0]) + -1.0f));
+			fVec7[0] = fTempPerm28;
+			fTempPerm29 = ((fTempPerm14 * (fVec7[0] - fVec7[1])) / fVec6[0]);
+			fVec8[IOTA&4095] = fTempPerm29;
+			fTempPerm30 = max((float)0, min((float)2047, (fConst0 * (fTempPerm16 / fTempPerm25))));
+			iTempPerm31 = int(fTempPerm30);
+			fTempPerm32 = floorf(fTempPerm30);
+			fTempPerm33 = (fTempPerm5 + fTempPerm24);
+			fTempPerm34 = (fTempPerm22 / fTempPerm23);
+			iRec12[0] = ((iRec12[1] + iVec0[1]) % int((fSlow4 * fTempPerm34)));
+			fTempPerm35 = ((fRec11[1] * (1 - float(((iRec12[0] == 0) > 0)))) + (fSlow3 * fTempPerm33));
+			fRec11[0] = (fTempPerm35 - floorf(fTempPerm35));
+			fTempPerm36 = faustpower<2>(((2.0f * fRec11[0]) + -1.0f));
+			fVec9[0] = fTempPerm36;
+			fTempPerm37 = ((fSlow19 * (((fTempPerm9 * (fVec9[0] - fVec9[1])) * fVec1[1]) / fTempPerm33)) + (0.25f * (fTempPerm10 * ((fVec8[IOTA&4095] - (fVec8[(IOTA-iTempPerm31)&4095] * (fTempPerm32 + (1.0f - fTempPerm30)))) - ((fTempPerm30 - fTempPerm32) * fVec8[(IOTA-int((iTempPerm31 + 1)))&4095])))));
+			fTempPerm38 = max((float)0, min((float)2047, (fConst4 / fTempPerm25)));
+			iTempPerm39 = int(fTempPerm38);
+			fTempPerm40 = floorf(fTempPerm38);
+			fRec13[0] = ((0.999f * fRec13[1]) + (fConst3 * ((fVec8[IOTA&4095] - (fVec8[(IOTA-iTempPerm39)&4095] * (fTempPerm40 + (1.0f - fTempPerm38)))) - ((fTempPerm38 - fTempPerm40) * fVec8[(IOTA-int((iTempPerm39 + 1)))&4095]))));
+			fTempPerm41 = (fRec13[0] * fTempPerm23);
+			fTempPerm42 = min((float)1, max((float)0, (2.0f - fRec9[0])));
+			fTempPerm43 = (1.0f - fTempPerm42);
+			fTempPerm44 = max((fSlow2 * fTempPerm22), 23.448949682462139f);
+			fTempPerm45 = max(20.0f, fabsf(fTempPerm44));
+			fVec10[0] = fTempPerm45;
+			fTempPerm46 = (fRec14[1] + (fConst2 * fVec10[1]));
+			fRec14[0] = (fTempPerm46 - floorf(fTempPerm46));
+			fTempPerm47 = faustpower<2>(((2.0f * fRec14[0]) + -1.0f));
+			fVec11[0] = fTempPerm47;
+			fTempPerm48 = ((fTempPerm14 * (fVec11[0] - fVec11[1])) / fVec10[0]);
+			fVec12[IOTA&4095] = fTempPerm48;
+			fTempPerm49 = max((float)0, min((float)2047, (fConst0 * (fTempPerm16 / fTempPerm44))));
+			iTempPerm50 = int(fTempPerm49);
+			fTempPerm51 = floorf(fTempPerm49);
+			fTempPerm52 = (fTempPerm22 + fTempPerm5);
+			iRec16[0] = ((iRec16[1] + iVec0[1]) % int((fSlow4 / fTempPerm22)));
+			fTempPerm53 = ((fRec15[1] * (1 - float(((iRec16[0] == 0) > 0)))) + (fSlow3 * fTempPerm52));
+			fRec15[0] = (fTempPerm53 - floorf(fTempPerm53));
+			fTempPerm54 = faustpower<2>(((2.0f * fRec15[0]) + -1.0f));
+			fVec13[0] = fTempPerm54;
+			fTempPerm55 = ((fSlow19 * (((fTempPerm9 * (fVec13[0] - fVec13[1])) * fVec1[1]) / fTempPerm52)) + (0.25f * (fTempPerm10 * ((fVec12[IOTA&4095] - (fVec12[(IOTA-iTempPerm50)&4095] * (fTempPerm51 + (1.0f - fTempPerm49)))) - ((fTempPerm49 - fTempPerm51) * fVec12[(IOTA-int((iTempPerm50 + 1)))&4095])))));
+			fTempPerm56 = max((float)0, min((float)2047, (fConst4 / fTempPerm44)));
+			iTempPerm57 = int(fTempPerm56);
+			fTempPerm58 = floorf(fTempPerm56);
+			fRec17[0] = ((0.999f * fRec17[1]) + (fConst3 * ((fVec12[IOTA&4095] - (fVec12[(IOTA-iTempPerm57)&4095] * (fTempPerm58 + (1.0f - fTempPerm56)))) - ((fTempPerm56 - fTempPerm58) * fVec12[(IOTA-int((iTempPerm57 + 1)))&4095]))));
+			fTempPerm59 = (fRec17[0] * fTempPerm22);
+			fTempPerm60 = float((fRec9[0] < 2.0f));
+			fTempPerm61 = float((fRec9[0] >= 2.0f));
+			fTempPerm62 = (fTempPerm5 + 0.5f);
+			iRec19[0] = ((iRec19[1] + iVec0[1]) % iSlow20);
+			fTempPerm63 = ((fRec18[1] * (1 - float(((iRec19[0] == 0) > 0)))) + (fSlow3 * fTempPerm62));
+			fRec18[0] = (fTempPerm63 - floorf(fTempPerm63));
+			fTempPerm64 = faustpower<2>(((2.0f * fRec18[0]) + -1.0f));
+			fVec14[0] = fTempPerm64;
+			fVec15[0] = fSlow22;
+			fTempPerm65 = (fRec21[1] + (fConst2 * fVec15[1]));
+			fRec21[0] = (fTempPerm65 - floorf(fTempPerm65));
+			fTempPerm66 = faustpower<2>(((2.0f * fRec21[0]) + -1.0f));
+			fVec16[0] = fTempPerm66;
+			fTempPerm67 = (fSlow23 * (fTempPerm14 * (fVec16[0] - fVec16[1])));
+			fVec17[IOTA&4095] = fTempPerm67;
+			fRec20[0] = ((fVec17[IOTA&4095] + (0.999f * fRec20[1])) - ((fSlow29 * fVec17[(IOTA-iSlow25)&4095]) + (fSlow28 * fVec17[(IOTA-iSlow26)&4095])));
+			fTempPerm68 = max((float)0, min((float)2047, (fSlow31 * fTempPerm16)));
+			iTempPerm69 = int(fTempPerm68);
+			fTempPerm70 = floorf(fTempPerm68);
+			fRec2[0] = (((fRec8[0] * (((fTempPerm10 * (fVec17[IOTA&4095] - ((fVec17[(IOTA-iTempPerm69)&4095] * (fTempPerm70 + (1.0f - fTempPerm68))) + ((fTempPerm68 - fTempPerm70) * fVec17[(IOTA-int((iTempPerm69 + 1)))&4095])))) + (fSlow30 * (fRec20[0] * fTempPerm11))) + (fSlow4 * (((fTempPerm9 * (fVec14[0] - fVec14[1])) * fVec1[1]) / fTempPerm62)))) + (((fTempPerm61 * ((fConst0 * (fTempPerm55 + fTempPerm37)) + (fSlow15 * (fTempPerm11 * (fTempPerm59 + (fTempPerm41 / fTempPerm22)))))) + ((fTempPerm60 * ((fSlow15 * (fTempPerm59 * fTempPerm11)) + (fConst0 * fTempPerm55))) * (fTempPerm43 + (fTempPerm42 * ((fSlow15 * ((fTempPerm41 * fTempPerm11) / fTempPerm22)) + (fConst0 * fTempPerm37)))))) + (fTempPerm20 * (((fTempPerm10 * (fVec5[IOTA&4095] - ((fVec5[(IOTA-iTempPerm18)&4095] * (fTempPerm19 + (1.0f - fTempPerm17))) + ((fTempPerm17 - fTempPerm19) * fVec5[(IOTA-int((iTempPerm18 + 1)))&4095])))) + (fSlow15 * (fRec6[0] * fTempPerm11))) + (fSlow4 * (((fTempPerm9 * (fVec2[0] - fVec2[1])) * fVec1[1]) / fTempPerm6)))))) - (((fTempPerm4 * fRec2[2]) + (2.0f * (fTempPerm3 * fRec2[1]))) / fTempPerm2));
+			fRec1[0] = ((((fRec2[1] + (0.5f * fRec2[0])) + (0.5f * fRec2[2])) - ((fTempPerm4 * fRec1[2]) + (2.0f * (fTempPerm3 * fRec1[1])))) / fTempPerm2);
+			iRec23[0] = (iSlow37 * (iRec23[1] + 1));
+			iTempPerm71 = int((iRec23[0] < iSlow36));
+			fTempPerm72 = expf((0 - (fConst8 / ((iSlow38)?((iTempPerm71)?fSlow35:fSlow33):fSlow32))));
+			fRec22[0] = ((fRec22[1] * fTempPerm72) + (((iSlow38)?((iTempPerm71)?1.5873015873015872f:fSlow40):0.0f) * (1.0f - fTempPerm72)));
+			iRec27[0] = ((iRec27[1] + iVec0[1]) % iSlow45);
+			fTempPerm73 = ((fRec26[1] * (1 - float(((iRec27[0] == 0) > 0)))) + (fSlow43 * fTempPerm6));
+			fRec26[0] = (fTempPerm73 - floorf(fTempPerm73));
+			fTempPerm74 = faustpower<2>(((2.0f * fRec26[0]) + -1.0f));
+			fVec18[0] = fTempPerm74;
+			fVec19[0] = fSlow47;
+			fTempPerm75 = (fRec29[1] + (fConst2 * fVec19[1]));
+			fRec29[0] = (fTempPerm75 - floorf(fTempPerm75));
+			fTempPerm76 = faustpower<2>(((2.0f * fRec29[0]) + -1.0f));
+			fVec20[0] = fTempPerm76;
+			fTempPerm77 = (fSlow48 * (fTempPerm14 * (fVec20[0] - fVec20[1])));
+			fVec21[IOTA&4095] = fTempPerm77;
+			fRec28[0] = ((fVec21[IOTA&4095] + (0.999f * fRec28[1])) - ((fSlow54 * fVec21[(IOTA-iSlow50)&4095]) + (fSlow53 * fVec21[(IOTA-iSlow51)&4095])));
+			fTempPerm78 = max((float)0, min((float)2047, (fSlow56 * fTempPerm16)));
+			iTempPerm79 = int(fTempPerm78);
+			fTempPerm80 = floorf(fTempPerm78);
+			fTempPerm81 = max((fSlow42 * fTempPerm24), 23.448949682462139f);
+			fTempPerm82 = max(20.0f, fabsf(fTempPerm81));
+			fVec22[0] = fTempPerm82;
+			fTempPerm83 = (fRec30[1] + (fConst2 * fVec22[1]));
+			fRec30[0] = (fTempPerm83 - floorf(fTempPerm83));
+			fTempPerm84 = faustpower<2>(((2.0f * fRec30[0]) + -1.0f));
+			fVec23[0] = fTempPerm84;
+			fTempPerm85 = ((fTempPerm14 * (fVec23[0] - fVec23[1])) / fVec22[0]);
+			fVec24[IOTA&4095] = fTempPerm85;
+			fTempPerm86 = max((float)0, min((float)2047, (fConst0 * (fTempPerm16 / fTempPerm81))));
+			iTempPerm87 = int(fTempPerm86);
+			fTempPerm88 = floorf(fTempPerm86);
+			iRec32[0] = ((iRec32[1] + iVec0[1]) % int((fSlow44 * fTempPerm34)));
+			fTempPerm89 = ((fRec31[1] * (1 - float(((iRec32[0] == 0) > 0)))) + (fSlow43 * fTempPerm33));
+			fRec31[0] = (fTempPerm89 - floorf(fTempPerm89));
+			fTempPerm90 = faustpower<2>(((2.0f * fRec31[0]) + -1.0f));
+			fVec25[0] = fTempPerm90;
+			fTempPerm91 = ((fSlow57 * (((fTempPerm9 * (fVec25[0] - fVec25[1])) * fVec1[1]) / fTempPerm33)) + (0.25f * (fTempPerm10 * ((fVec24[IOTA&4095] - (fVec24[(IOTA-iTempPerm87)&4095] * (fTempPerm88 + (1.0f - fTempPerm86)))) - ((fTempPerm86 - fTempPerm88) * fVec24[(IOTA-int((iTempPerm87 + 1)))&4095])))));
+			fTempPerm92 = max((float)0, min((float)2047, (fConst4 / fTempPerm81)));
+			iTempPerm93 = int(fTempPerm92);
+			fTempPerm94 = floorf(fTempPerm92);
+			fRec33[0] = ((0.999f * fRec33[1]) + (fConst3 * ((fVec24[IOTA&4095] - (fVec24[(IOTA-iTempPerm93)&4095] * (fTempPerm94 + (1.0f - fTempPerm92)))) - ((fTempPerm92 - fTempPerm94) * fVec24[(IOTA-int((iTempPerm93 + 1)))&4095]))));
+			fTempPerm95 = (fRec33[0] * fTempPerm23);
+			fTempPerm96 = max((fSlow42 * fTempPerm22), 23.448949682462139f);
+			fTempPerm97 = max(20.0f, fabsf(fTempPerm96));
+			fVec26[0] = fTempPerm97;
+			fTempPerm98 = (fRec34[1] + (fConst2 * fVec26[1]));
+			fRec34[0] = (fTempPerm98 - floorf(fTempPerm98));
+			fTempPerm99 = faustpower<2>(((2.0f * fRec34[0]) + -1.0f));
+			fVec27[0] = fTempPerm99;
+			fTempPerm100 = ((fTempPerm14 * (fVec27[0] - fVec27[1])) / fVec26[0]);
+			fVec28[IOTA&4095] = fTempPerm100;
+			fTempPerm101 = max((float)0, min((float)2047, (fConst0 * (fTempPerm16 / fTempPerm96))));
+			iTempPerm102 = int(fTempPerm101);
+			fTempPerm103 = floorf(fTempPerm101);
+			iRec36[0] = ((iRec36[1] + iVec0[1]) % int((fSlow44 / fTempPerm22)));
+			fTempPerm104 = ((fRec35[1] * (1 - float(((iRec36[0] == 0) > 0)))) + (fSlow43 * fTempPerm52));
+			fRec35[0] = (fTempPerm104 - floorf(fTempPerm104));
+			fTempPerm105 = faustpower<2>(((2.0f * fRec35[0]) + -1.0f));
+			fVec29[0] = fTempPerm105;
+			fTempPerm106 = ((fSlow57 * (((fTempPerm9 * (fVec29[0] - fVec29[1])) * fVec1[1]) / fTempPerm52)) + (0.25f * (fTempPerm10 * ((fVec28[IOTA&4095] - (fVec28[(IOTA-iTempPerm102)&4095] * (fTempPerm103 + (1.0f - fTempPerm101)))) - ((fTempPerm101 - fTempPerm103) * fVec28[(IOTA-int((iTempPerm102 + 1)))&4095])))));
+			fTempPerm107 = max((float)0, min((float)2047, (fConst4 / fTempPerm96)));
+			iTempPerm108 = int(fTempPerm107);
+			fTempPerm109 = floorf(fTempPerm107);
+			fRec37[0] = ((0.999f * fRec37[1]) + (fConst3 * ((fVec28[IOTA&4095] - (fVec28[(IOTA-iTempPerm108)&4095] * (fTempPerm109 + (1.0f - fTempPerm107)))) - ((fTempPerm107 - fTempPerm109) * fVec28[(IOTA-int((iTempPerm108 + 1)))&4095]))));
+			fTempPerm110 = (fRec37[0] * fTempPerm22);
+			iRec39[0] = ((iRec39[1] + iVec0[1]) % iSlow58);
+			fTempPerm111 = ((fRec38[1] * (1 - float(((iRec39[0] == 0) > 0)))) + (fSlow43 * fTempPerm62));
+			fRec38[0] = (fTempPerm111 - floorf(fTempPerm111));
+			fTempPerm112 = faustpower<2>(((2.0f * fRec38[0]) + -1.0f));
+			fVec30[0] = fTempPerm112;
+			fVec31[0] = fSlow60;
+			fTempPerm113 = (fRec41[1] + (fConst2 * fVec31[1]));
+			fRec41[0] = (fTempPerm113 - floorf(fTempPerm113));
+			fTempPerm114 = faustpower<2>(((2.0f * fRec41[0]) + -1.0f));
+			fVec32[0] = fTempPerm114;
+			fTempPerm115 = (fSlow61 * (fTempPerm14 * (fVec32[0] - fVec32[1])));
+			fVec33[IOTA&4095] = fTempPerm115;
+			fRec40[0] = ((fVec33[IOTA&4095] + (0.999f * fRec40[1])) - ((fSlow67 * fVec33[(IOTA-iSlow63)&4095]) + (fSlow66 * fVec33[(IOTA-iSlow64)&4095])));
+			fTempPerm116 = max((float)0, min((float)2047, (fSlow69 * fTempPerm16)));
+			iTempPerm117 = int(fTempPerm116);
+			fTempPerm118 = floorf(fTempPerm116);
+			fRec25[0] = (((fRec8[0] * (((fTempPerm10 * (fVec33[IOTA&4095] - ((fVec33[(IOTA-iTempPerm117)&4095] * (fTempPerm118 + (1.0f - fTempPerm116))) + ((fTempPerm116 - fTempPerm118) * fVec33[(IOTA-int((iTempPerm117 + 1)))&4095])))) + (fSlow68 * (fRec40[0] * fTempPerm11))) + (fSlow44 * (((fTempPerm9 * (fVec30[0] - fVec30[1])) * fVec1[1]) / fTempPerm62)))) + (((fTempPerm61 * ((fConst0 * (fTempPerm106 + fTempPerm91)) + (fSlow55 * (fTempPerm11 * (fTempPerm110 + (fTempPerm95 / fTempPerm22)))))) + ((fTempPerm60 * ((fSlow55 * (fTempPerm110 * fTempPerm11)) + (fConst0 * fTempPerm106))) * (fTempPerm43 + (fTempPerm42 * ((fSlow55 * ((fTempPerm95 * fTempPerm11) / fTempPerm22)) + (fConst0 * fTempPerm91)))))) + (fTempPerm20 * (((fTempPerm10 * (fVec21[IOTA&4095] - ((fVec21[(IOTA-iTempPerm79)&4095] * (fTempPerm80 + (1.0f - fTempPerm78))) + ((fTempPerm78 - fTempPerm80) * fVec21[(IOTA-int((iTempPerm79 + 1)))&4095])))) + (fSlow55 * (fRec28[0] * fTempPerm11))) + (fSlow44 * (((fTempPerm9 * (fVec18[0] - fVec18[1])) * fVec1[1]) / fTempPerm6)))))) - (((fTempPerm4 * fRec25[2]) + (2.0f * (fTempPerm3 * fRec25[1]))) / fTempPerm2));
+			fRec24[0] = ((((fRec25[1] + (0.5f * fRec25[0])) + (0.5f * fRec25[2])) - ((fTempPerm4 * fRec24[2]) + (2.0f * (fTempPerm3 * fRec24[1])))) / fTempPerm2);
+			iRec43[0] = (iSlow70 * (iRec43[1] + 1));
+			iTempPerm119 = int((iRec43[0] < iSlow36));
+			fTempPerm120 = expf((0 - (fConst8 / ((iSlow71)?((iTempPerm119)?fSlow35:fSlow33):fSlow32))));
+			fRec42[0] = ((fRec42[1] * fTempPerm120) + (((iSlow71)?((iTempPerm119)?1.5873015873015872f:fSlow72):0.0f) * (1.0f - fTempPerm120)));
+			iRec47[0] = ((iRec47[1] + iVec0[1]) % iSlow77);
+			fTempPerm121 = ((fRec46[1] * (1 - float(((iRec47[0] == 0) > 0)))) + (fSlow75 * fTempPerm6));
+			fRec46[0] = (fTempPerm121 - floorf(fTempPerm121));
+			fTempPerm122 = faustpower<2>(((2.0f * fRec46[0]) + -1.0f));
+			fVec34[0] = fTempPerm122;
+			fVec35[0] = fSlow79;
+			fTempPerm123 = (fRec49[1] + (fConst2 * fVec35[1]));
+			fRec49[0] = (fTempPerm123 - floorf(fTempPerm123));
+			fTempPerm124 = faustpower<2>(((2.0f * fRec49[0]) + -1.0f));
+			fVec36[0] = fTempPerm124;
+			fTempPerm125 = (fSlow80 * (fTempPerm14 * (fVec36[0] - fVec36[1])));
+			fVec37[IOTA&4095] = fTempPerm125;
+			fRec48[0] = ((fVec37[IOTA&4095] + (0.999f * fRec48[1])) - ((fSlow86 * fVec37[(IOTA-iSlow82)&4095]) + (fSlow85 * fVec37[(IOTA-iSlow83)&4095])));
+			fTempPerm126 = max((float)0, min((float)2047, (fSlow88 * fTempPerm16)));
+			iTempPerm127 = int(fTempPerm126);
+			fTempPerm128 = floorf(fTempPerm126);
+			fTempPerm129 = max((fSlow74 * fTempPerm24), 23.448949682462139f);
+			fTempPerm130 = max(20.0f, fabsf(fTempPerm129));
+			fVec38[0] = fTempPerm130;
+			fTempPerm131 = (fRec50[1] + (fConst2 * fVec38[1]));
+			fRec50[0] = (fTempPerm131 - floorf(fTempPerm131));
+			fTempPerm132 = faustpower<2>(((2.0f * fRec50[0]) + -1.0f));
+			fVec39[0] = fTempPerm132;
+			fTempPerm133 = ((fTempPerm14 * (fVec39[0] - fVec39[1])) / fVec38[0]);
+			fVec40[IOTA&4095] = fTempPerm133;
+			fTempPerm134 = max((float)0, min((float)2047, (fConst0 * (fTempPerm16 / fTempPerm129))));
+			iTempPerm135 = int(fTempPerm134);
+			fTempPerm136 = floorf(fTempPerm134);
+			iRec52[0] = ((iRec52[1] + iVec0[1]) % int((fSlow76 * fTempPerm34)));
+			fTempPerm137 = ((fRec51[1] * (1 - float(((iRec52[0] == 0) > 0)))) + (fSlow75 * fTempPerm33));
+			fRec51[0] = (fTempPerm137 - floorf(fTempPerm137));
+			fTempPerm138 = faustpower<2>(((2.0f * fRec51[0]) + -1.0f));
+			fVec41[0] = fTempPerm138;
+			fTempPerm139 = ((fSlow89 * (((fTempPerm9 * (fVec41[0] - fVec41[1])) * fVec1[1]) / fTempPerm33)) + (0.25f * (fTempPerm10 * ((fVec40[IOTA&4095] - (fVec40[(IOTA-iTempPerm135)&4095] * (fTempPerm136 + (1.0f - fTempPerm134)))) - ((fTempPerm134 - fTempPerm136) * fVec40[(IOTA-int((iTempPerm135 + 1)))&4095])))));
+			fTempPerm140 = max((float)0, min((float)2047, (fConst4 / fTempPerm129)));
+			iTempPerm141 = int(fTempPerm140);
+			fTempPerm142 = floorf(fTempPerm140);
+			fRec53[0] = ((0.999f * fRec53[1]) + (fConst3 * ((fVec40[IOTA&4095] - (fVec40[(IOTA-iTempPerm141)&4095] * (fTempPerm142 + (1.0f - fTempPerm140)))) - ((fTempPerm140 - fTempPerm142) * fVec40[(IOTA-int((iTempPerm141 + 1)))&4095]))));
+			fTempPerm143 = (fRec53[0] * fTempPerm23);
+			fTempPerm144 = max((fSlow74 * fTempPerm22), 23.448949682462139f);
+			fTempPerm145 = max(20.0f, fabsf(fTempPerm144));
+			fVec42[0] = fTempPerm145;
+			fTempPerm146 = (fRec54[1] + (fConst2 * fVec42[1]));
+			fRec54[0] = (fTempPerm146 - floorf(fTempPerm146));
+			fTempPerm147 = faustpower<2>(((2.0f * fRec54[0]) + -1.0f));
+			fVec43[0] = fTempPerm147;
+			fTempPerm148 = ((fTempPerm14 * (fVec43[0] - fVec43[1])) / fVec42[0]);
+			fVec44[IOTA&4095] = fTempPerm148;
+			fTempPerm149 = max((float)0, min((float)2047, (fConst0 * (fTempPerm16 / fTempPerm144))));
+			iTempPerm150 = int(fTempPerm149);
+			fTempPerm151 = floorf(fTempPerm149);
+			iRec56[0] = ((iRec56[1] + iVec0[1]) % int((fSlow76 / fTempPerm22)));
+			fTempPerm152 = ((fRec55[1] * (1 - float(((iRec56[0] == 0) > 0)))) + (fSlow75 * fTempPerm52));
+			fRec55[0] = (fTempPerm152 - floorf(fTempPerm152));
+			fTempPerm153 = faustpower<2>(((2.0f * fRec55[0]) + -1.0f));
+			fVec45[0] = fTempPerm153;
+			fTempPerm154 = ((fSlow89 * (((fTempPerm9 * (fVec45[0] - fVec45[1])) * fVec1[1]) / fTempPerm52)) + (0.25f * (fTempPerm10 * ((fVec44[IOTA&4095] - (fVec44[(IOTA-iTempPerm150)&4095] * (fTempPerm151 + (1.0f - fTempPerm149)))) - ((fTempPerm149 - fTempPerm151) * fVec44[(IOTA-int((iTempPerm150 + 1)))&4095])))));
+			fTempPerm155 = max((float)0, min((float)2047, (fConst4 / fTempPerm144)));
+			iTempPerm156 = int(fTempPerm155);
+			fTempPerm157 = floorf(fTempPerm155);
+			fRec57[0] = ((0.999f * fRec57[1]) + (fConst3 * ((fVec44[IOTA&4095] - (fVec44[(IOTA-iTempPerm156)&4095] * (fTempPerm157 + (1.0f - fTempPerm155)))) - ((fTempPerm155 - fTempPerm157) * fVec44[(IOTA-int((iTempPerm156 + 1)))&4095]))));
+			fTempPerm158 = (fRec57[0] * fTempPerm22);
+			iRec59[0] = ((iRec59[1] + iVec0[1]) % iSlow90);
+			fTempPerm159 = ((fRec58[1] * (1 - float(((iRec59[0] == 0) > 0)))) + (fSlow75 * fTempPerm62));
+			fRec58[0] = (fTempPerm159 - floorf(fTempPerm159));
+			fTempPerm160 = faustpower<2>(((2.0f * fRec58[0]) + -1.0f));
+			fVec46[0] = fTempPerm160;
+			fVec47[0] = fSlow92;
+			fTempPerm161 = (fRec61[1] + (fConst2 * fVec47[1]));
+			fRec61[0] = (fTempPerm161 - floorf(fTempPerm161));
+			fTempPerm162 = faustpower<2>(((2.0f * fRec61[0]) + -1.0f));
+			fVec48[0] = fTempPerm162;
+			fTempPerm163 = (fSlow93 * (fTempPerm14 * (fVec48[0] - fVec48[1])));
+			fVec49[IOTA&4095] = fTempPerm163;
+			fRec60[0] = ((fVec49[IOTA&4095] + (0.999f * fRec60[1])) - ((fSlow99 * fVec49[(IOTA-iSlow95)&4095]) + (fSlow98 * fVec49[(IOTA-iSlow96)&4095])));
+			fTempPerm164 = max((float)0, min((float)2047, (fSlow101 * fTempPerm16)));
+			iTempPerm165 = int(fTempPerm164);
+			fTempPerm166 = floorf(fTempPerm164);
+			fRec45[0] = (((fRec8[0] * (((fTempPerm10 * (fVec49[IOTA&4095] - ((fVec49[(IOTA-iTempPerm165)&4095] * (fTempPerm166 + (1.0f - fTempPerm164))) + ((fTempPerm164 - fTempPerm166) * fVec49[(IOTA-int((iTempPerm165 + 1)))&4095])))) + (fSlow100 * (fRec60[0] * fTempPerm11))) + (fSlow76 * (((fTempPerm9 * (fVec46[0] - fVec46[1])) * fVec1[1]) / fTempPerm62)))) + (((fTempPerm61 * ((fConst0 * (fTempPerm154 + fTempPerm139)) + (fSlow87 * (fTempPerm11 * (fTempPerm158 + (fTempPerm143 / fTempPerm22)))))) + ((fTempPerm60 * ((fSlow87 * (fTempPerm158 * fTempPerm11)) + (fConst0 * fTempPerm154))) * (fTempPerm43 + (fTempPerm42 * ((fSlow87 * ((fTempPerm143 * fTempPerm11) / fTempPerm22)) + (fConst0 * fTempPerm139)))))) + (fTempPerm20 * (((fTempPerm10 * (fVec37[IOTA&4095] - ((fVec37[(IOTA-iTempPerm127)&4095] * (fTempPerm128 + (1.0f - fTempPerm126))) + ((fTempPerm126 - fTempPerm128) * fVec37[(IOTA-int((iTempPerm127 + 1)))&4095])))) + (fSlow87 * (fRec48[0] * fTempPerm11))) + (fSlow76 * (((fTempPerm9 * (fVec34[0] - fVec34[1])) * fVec1[1]) / fTempPerm6)))))) - (((fTempPerm4 * fRec45[2]) + (2.0f * (fTempPerm3 * fRec45[1]))) / fTempPerm2));
+			fRec44[0] = ((((fRec45[1] + (0.5f * fRec45[0])) + (0.5f * fRec45[2])) - ((fTempPerm4 * fRec44[2]) + (2.0f * (fTempPerm3 * fRec44[1])))) / fTempPerm2);
+			iRec63[0] = (iSlow102 * (iRec63[1] + 1));
+			iTempPerm167 = int((iRec63[0] < iSlow36));
+			fTempPerm168 = expf((0 - (fConst8 / ((iSlow103)?((iTempPerm167)?fSlow35:fSlow33):fSlow32))));
+			fRec62[0] = ((fRec62[1] * fTempPerm168) + (((iSlow103)?((iTempPerm167)?1.5873015873015872f:fSlow104):0.0f) * (1.0f - fTempPerm168)));
+			iRec67[0] = ((iRec67[1] + iVec0[1]) % iSlow109);
+			fTempPerm169 = ((fRec66[1] * (1 - float(((iRec67[0] == 0) > 0)))) + (fSlow107 * fTempPerm6));
+			fRec66[0] = (fTempPerm169 - floorf(fTempPerm169));
+			fTempPerm170 = faustpower<2>(((2.0f * fRec66[0]) + -1.0f));
+			fVec50[0] = fTempPerm170;
+			fVec51[0] = fSlow111;
+			fTempPerm171 = (fRec69[1] + (fConst2 * fVec51[1]));
+			fRec69[0] = (fTempPerm171 - floorf(fTempPerm171));
+			fTempPerm172 = faustpower<2>(((2.0f * fRec69[0]) + -1.0f));
+			fVec52[0] = fTempPerm172;
+			fTempPerm173 = (fSlow112 * (fTempPerm14 * (fVec52[0] - fVec52[1])));
+			fVec53[IOTA&4095] = fTempPerm173;
+			fRec68[0] = ((fVec53[IOTA&4095] + (0.999f * fRec68[1])) - ((fSlow118 * fVec53[(IOTA-iSlow114)&4095]) + (fSlow117 * fVec53[(IOTA-iSlow115)&4095])));
+			fTempPerm174 = max((float)0, min((float)2047, (fSlow120 * fTempPerm16)));
+			iTempPerm175 = int(fTempPerm174);
+			fTempPerm176 = floorf(fTempPerm174);
+			fTempPerm177 = max((fSlow106 * fTempPerm24), 23.448949682462139f);
+			fTempPerm178 = max(20.0f, fabsf(fTempPerm177));
+			fVec54[0] = fTempPerm178;
+			fTempPerm179 = (fRec70[1] + (fConst2 * fVec54[1]));
+			fRec70[0] = (fTempPerm179 - floorf(fTempPerm179));
+			fTempPerm180 = faustpower<2>(((2.0f * fRec70[0]) + -1.0f));
+			fVec55[0] = fTempPerm180;
+			fTempPerm181 = ((fTempPerm14 * (fVec55[0] - fVec55[1])) / fVec54[0]);
+			fVec56[IOTA&4095] = fTempPerm181;
+			fTempPerm182 = max((float)0, min((float)2047, (fConst0 * (fTempPerm16 / fTempPerm177))));
+			iTempPerm183 = int(fTempPerm182);
+			fTempPerm184 = floorf(fTempPerm182);
+			iRec72[0] = ((iRec72[1] + iVec0[1]) % int((fSlow108 * fTempPerm34)));
+			fTempPerm185 = ((fRec71[1] * (1 - float(((iRec72[0] == 0) > 0)))) + (fSlow107 * fTempPerm33));
+			fRec71[0] = (fTempPerm185 - floorf(fTempPerm185));
+			fTempPerm186 = faustpower<2>(((2.0f * fRec71[0]) + -1.0f));
+			fVec57[0] = fTempPerm186;
+			fTempPerm187 = ((fSlow121 * (((fTempPerm9 * (fVec57[0] - fVec57[1])) * fVec1[1]) / fTempPerm33)) + (0.25f * (fTempPerm10 * ((fVec56[IOTA&4095] - (fVec56[(IOTA-iTempPerm183)&4095] * (fTempPerm184 + (1.0f - fTempPerm182)))) - ((fTempPerm182 - fTempPerm184) * fVec56[(IOTA-int((iTempPerm183 + 1)))&4095])))));
+			fTempPerm188 = max((float)0, min((float)2047, (fConst4 / fTempPerm177)));
+			iTempPerm189 = int(fTempPerm188);
+			fTempPerm190 = floorf(fTempPerm188);
+			fRec73[0] = ((0.999f * fRec73[1]) + (fConst3 * ((fVec56[IOTA&4095] - (fVec56[(IOTA-iTempPerm189)&4095] * (fTempPerm190 + (1.0f - fTempPerm188)))) - ((fTempPerm188 - fTempPerm190) * fVec56[(IOTA-int((iTempPerm189 + 1)))&4095]))));
+			fTempPerm191 = (fRec73[0] * fTempPerm23);
+			fTempPerm192 = max((fSlow106 * fTempPerm22), 23.448949682462139f);
+			fTempPerm193 = max(20.0f, fabsf(fTempPerm192));
+			fVec58[0] = fTempPerm193;
+			fTempPerm194 = (fRec74[1] + (fConst2 * fVec58[1]));
+			fRec74[0] = (fTempPerm194 - floorf(fTempPerm194));
+			fTempPerm195 = faustpower<2>(((2.0f * fRec74[0]) + -1.0f));
+			fVec59[0] = fTempPerm195;
+			fTempPerm196 = ((fTempPerm14 * (fVec59[0] - fVec59[1])) / fVec58[0]);
+			fVec60[IOTA&4095] = fTempPerm196;
+			fTempPerm197 = max((float)0, min((float)2047, (fConst0 * (fTempPerm16 / fTempPerm192))));
+			iTempPerm198 = int(fTempPerm197);
+			fTempPerm199 = floorf(fTempPerm197);
+			iRec76[0] = ((iRec76[1] + iVec0[1]) % int((fSlow108 / fTempPerm22)));
+			fTempPerm200 = ((fRec75[1] * (1 - float(((iRec76[0] == 0) > 0)))) + (fSlow107 * fTempPerm52));
+			fRec75[0] = (fTempPerm200 - floorf(fTempPerm200));
+			fTempPerm201 = faustpower<2>(((2.0f * fRec75[0]) + -1.0f));
+			fVec61[0] = fTempPerm201;
+			fTempPerm202 = ((fSlow121 * (((fTempPerm9 * (fVec61[0] - fVec61[1])) * fVec1[1]) / fTempPerm52)) + (0.25f * (fTempPerm10 * ((fVec60[IOTA&4095] - (fVec60[(IOTA-iTempPerm198)&4095] * (fTempPerm199 + (1.0f - fTempPerm197)))) - ((fTempPerm197 - fTempPerm199) * fVec60[(IOTA-int((iTempPerm198 + 1)))&4095])))));
+			fTempPerm203 = max((float)0, min((float)2047, (fConst4 / fTempPerm192)));
+			iTempPerm204 = int(fTempPerm203);
+			fTempPerm205 = floorf(fTempPerm203);
+			fRec77[0] = ((0.999f * fRec77[1]) + (fConst3 * ((fVec60[IOTA&4095] - (fVec60[(IOTA-iTempPerm204)&4095] * (fTempPerm205 + (1.0f - fTempPerm203)))) - ((fTempPerm203 - fTempPerm205) * fVec60[(IOTA-int((iTempPerm204 + 1)))&4095]))));
+			fTempPerm206 = (fRec77[0] * fTempPerm22);
+			iRec79[0] = ((iRec79[1] + iVec0[1]) % iSlow122);
+			fTempPerm207 = ((fRec78[1] * (1 - float(((iRec79[0] == 0) > 0)))) + (fSlow107 * fTempPerm62));
+			fRec78[0] = (fTempPerm207 - floorf(fTempPerm207));
+			fTempPerm208 = faustpower<2>(((2.0f * fRec78[0]) + -1.0f));
+			fVec62[0] = fTempPerm208;
+			fVec63[0] = fSlow124;
+			fTempPerm209 = (fRec81[1] + (fConst2 * fVec63[1]));
+			fRec81[0] = (fTempPerm209 - floorf(fTempPerm209));
+			fTempPerm210 = faustpower<2>(((2.0f * fRec81[0]) + -1.0f));
+			fVec64[0] = fTempPerm210;
+			fTempPerm211 = (fSlow125 * (fTempPerm14 * (fVec64[0] - fVec64[1])));
+			fVec65[IOTA&4095] = fTempPerm211;
+			fRec80[0] = ((fVec65[IOTA&4095] + (0.999f * fRec80[1])) - ((fSlow131 * fVec65[(IOTA-iSlow127)&4095]) + (fSlow130 * fVec65[(IOTA-iSlow128)&4095])));
+			fTempPerm212 = max((float)0, min((float)2047, (fSlow133 * fTempPerm16)));
+			iTempPerm213 = int(fTempPerm212);
+			fTempPerm214 = floorf(fTempPerm212);
+			fRec65[0] = (((fRec8[0] * (((fTempPerm10 * (fVec65[IOTA&4095] - ((fVec65[(IOTA-iTempPerm213)&4095] * (fTempPerm214 + (1.0f - fTempPerm212))) + ((fTempPerm212 - fTempPerm214) * fVec65[(IOTA-int((iTempPerm213 + 1)))&4095])))) + (fSlow132 * (fRec80[0] * fTempPerm11))) + (fSlow108 * (((fTempPerm9 * (fVec62[0] - fVec62[1])) * fVec1[1]) / fTempPerm62)))) + (((fTempPerm61 * ((fConst0 * (fTempPerm202 + fTempPerm187)) + (fSlow119 * (fTempPerm11 * (fTempPerm206 + (fTempPerm191 / fTempPerm22)))))) + ((fTempPerm60 * ((fSlow119 * (fTempPerm206 * fTempPerm11)) + (fConst0 * fTempPerm202))) * (fTempPerm43 + (fTempPerm42 * ((fSlow119 * ((fTempPerm191 * fTempPerm11) / fTempPerm22)) + (fConst0 * fTempPerm187)))))) + (fTempPerm20 * (((fTempPerm10 * (fVec53[IOTA&4095] - ((fVec53[(IOTA-iTempPerm175)&4095] * (fTempPerm176 + (1.0f - fTempPerm174))) + ((fTempPerm174 - fTempPerm176) * fVec53[(IOTA-int((iTempPerm175 + 1)))&4095])))) + (fSlow119 * (fRec68[0] * fTempPerm11))) + (fSlow108 * (((fTempPerm9 * (fVec50[0] - fVec50[1])) * fVec1[1]) / fTempPerm6)))))) - (((fTempPerm4 * fRec65[2]) + (2.0f * (fTempPerm3 * fRec65[1]))) / fTempPerm2));
+			fRec64[0] = ((((fRec65[1] + (0.5f * fRec65[0])) + (0.5f * fRec65[2])) - ((fTempPerm4 * fRec64[2]) + (2.0f * (fTempPerm3 * fRec64[1])))) / fTempPerm2);
+			iRec83[0] = (iSlow134 * (iRec83[1] + 1));
+			iTempPerm215 = int((iRec83[0] < iSlow36));
+			fTempPerm216 = expf((0 - (fConst8 / ((iSlow135)?((iTempPerm215)?fSlow35:fSlow33):fSlow32))));
+			fRec82[0] = ((fRec82[1] * fTempPerm216) + (((iSlow135)?((iTempPerm215)?1.5873015873015872f:fSlow136):0.0f) * (1.0f - fTempPerm216)));
+			iRec87[0] = ((iRec87[1] + iVec0[1]) % iSlow141);
+			fTempPerm217 = ((fRec86[1] * (1 - float(((iRec87[0] == 0) > 0)))) + (fSlow139 * fTempPerm6));
+			fRec86[0] = (fTempPerm217 - floorf(fTempPerm217));
+			fTempPerm218 = faustpower<2>(((2.0f * fRec86[0]) + -1.0f));
+			fVec66[0] = fTempPerm218;
+			fVec67[0] = fSlow143;
+			fTempPerm219 = (fRec89[1] + (fConst2 * fVec67[1]));
+			fRec89[0] = (fTempPerm219 - floorf(fTempPerm219));
+			fTempPerm220 = faustpower<2>(((2.0f * fRec89[0]) + -1.0f));
+			fVec68[0] = fTempPerm220;
+			fTempPerm221 = (fSlow144 * (fTempPerm14 * (fVec68[0] - fVec68[1])));
+			fVec69[IOTA&4095] = fTempPerm221;
+			fRec88[0] = ((fVec69[IOTA&4095] + (0.999f * fRec88[1])) - ((fSlow150 * fVec69[(IOTA-iSlow146)&4095]) + (fSlow149 * fVec69[(IOTA-iSlow147)&4095])));
+			fTempPerm222 = max((float)0, min((float)2047, (fSlow152 * fTempPerm16)));
+			iTempPerm223 = int(fTempPerm222);
+			fTempPerm224 = floorf(fTempPerm222);
+			fTempPerm225 = max((fSlow138 * fTempPerm24), 23.448949682462139f);
+			fTempPerm226 = max(20.0f, fabsf(fTempPerm225));
+			fVec70[0] = fTempPerm226;
+			fTempPerm227 = (fRec90[1] + (fConst2 * fVec70[1]));
+			fRec90[0] = (fTempPerm227 - floorf(fTempPerm227));
+			fTempPerm228 = faustpower<2>(((2.0f * fRec90[0]) + -1.0f));
+			fVec71[0] = fTempPerm228;
+			fTempPerm229 = ((fTempPerm14 * (fVec71[0] - fVec71[1])) / fVec70[0]);
+			fVec72[IOTA&4095] = fTempPerm229;
+			fTempPerm230 = max((float)0, min((float)2047, (fConst0 * (fTempPerm16 / fTempPerm225))));
+			iTempPerm231 = int(fTempPerm230);
+			fTempPerm232 = floorf(fTempPerm230);
+			iRec92[0] = ((iRec92[1] + iVec0[1]) % int((fSlow140 * fTempPerm34)));
+			fTempPerm233 = ((fRec91[1] * (1 - float(((iRec92[0] == 0) > 0)))) + (fSlow139 * fTempPerm33));
+			fRec91[0] = (fTempPerm233 - floorf(fTempPerm233));
+			fTempPerm234 = faustpower<2>(((2.0f * fRec91[0]) + -1.0f));
+			fVec73[0] = fTempPerm234;
+			fTempPerm235 = ((fSlow153 * (((fTempPerm9 * (fVec73[0] - fVec73[1])) * fVec1[1]) / fTempPerm33)) + (0.25f * (fTempPerm10 * ((fVec72[IOTA&4095] - (fVec72[(IOTA-iTempPerm231)&4095] * (fTempPerm232 + (1.0f - fTempPerm230)))) - ((fTempPerm230 - fTempPerm232) * fVec72[(IOTA-int((iTempPerm231 + 1)))&4095])))));
+			fTempPerm236 = max((float)0, min((float)2047, (fConst4 / fTempPerm225)));
+			iTempPerm237 = int(fTempPerm236);
+			fTempPerm238 = floorf(fTempPerm236);
+			fRec93[0] = ((0.999f * fRec93[1]) + (fConst3 * ((fVec72[IOTA&4095] - (fVec72[(IOTA-iTempPerm237)&4095] * (fTempPerm238 + (1.0f - fTempPerm236)))) - ((fTempPerm236 - fTempPerm238) * fVec72[(IOTA-int((iTempPerm237 + 1)))&4095]))));
+			fTempPerm239 = (fRec93[0] * fTempPerm23);
+			fTempPerm240 = max((fSlow138 * fTempPerm22), 23.448949682462139f);
+			fTempPerm241 = max(20.0f, fabsf(fTempPerm240));
+			fVec74[0] = fTempPerm241;
+			fTempPerm242 = (fRec94[1] + (fConst2 * fVec74[1]));
+			fRec94[0] = (fTempPerm242 - floorf(fTempPerm242));
+			fTempPerm243 = faustpower<2>(((2.0f * fRec94[0]) + -1.0f));
+			fVec75[0] = fTempPerm243;
+			fTempPerm244 = ((fTempPerm14 * (fVec75[0] - fVec75[1])) / fVec74[0]);
+			fVec76[IOTA&4095] = fTempPerm244;
+			fTempPerm245 = max((float)0, min((float)2047, (fConst0 * (fTempPerm16 / fTempPerm240))));
+			iTempPerm246 = int(fTempPerm245);
+			fTempPerm247 = floorf(fTempPerm245);
+			iRec96[0] = ((iRec96[1] + iVec0[1]) % int((fSlow140 / fTempPerm22)));
+			fTempPerm248 = ((fRec95[1] * (1 - float(((iRec96[0] == 0) > 0)))) + (fSlow139 * fTempPerm52));
+			fRec95[0] = (fTempPerm248 - floorf(fTempPerm248));
+			fTempPerm249 = faustpower<2>(((2.0f * fRec95[0]) + -1.0f));
+			fVec77[0] = fTempPerm249;
+			fTempPerm250 = ((fSlow153 * (((fTempPerm9 * (fVec77[0] - fVec77[1])) * fVec1[1]) / fTempPerm52)) + (0.25f * (fTempPerm10 * ((fVec76[IOTA&4095] - (fVec76[(IOTA-iTempPerm246)&4095] * (fTempPerm247 + (1.0f - fTempPerm245)))) - ((fTempPerm245 - fTempPerm247) * fVec76[(IOTA-int((iTempPerm246 + 1)))&4095])))));
+			fTempPerm251 = max((float)0, min((float)2047, (fConst4 / fTempPerm240)));
+			iTempPerm252 = int(fTempPerm251);
+			fTempPerm253 = floorf(fTempPerm251);
+			fRec97[0] = ((0.999f * fRec97[1]) + (fConst3 * ((fVec76[IOTA&4095] - (fVec76[(IOTA-iTempPerm252)&4095] * (fTempPerm253 + (1.0f - fTempPerm251)))) - ((fTempPerm251 - fTempPerm253) * fVec76[(IOTA-int((iTempPerm252 + 1)))&4095]))));
+			fTempPerm254 = (fRec97[0] * fTempPerm22);
+			iRec99[0] = ((iRec99[1] + iVec0[1]) % iSlow154);
+			fTempPerm255 = ((fRec98[1] * (1 - float(((iRec99[0] == 0) > 0)))) + (fSlow139 * fTempPerm62));
+			fRec98[0] = (fTempPerm255 - floorf(fTempPerm255));
+			fTempPerm256 = faustpower<2>(((2.0f * fRec98[0]) + -1.0f));
+			fVec78[0] = fTempPerm256;
+			fVec79[0] = fSlow156;
+			fTempPerm257 = (fRec101[1] + (fConst2 * fVec79[1]));
+			fRec101[0] = (fTempPerm257 - floorf(fTempPerm257));
+			fTempPerm258 = faustpower<2>(((2.0f * fRec101[0]) + -1.0f));
+			fVec80[0] = fTempPerm258;
+			fTempPerm259 = (fSlow157 * (fTempPerm14 * (fVec80[0] - fVec80[1])));
+			fVec81[IOTA&4095] = fTempPerm259;
+			fRec100[0] = ((fVec81[IOTA&4095] + (0.999f * fRec100[1])) - ((fSlow163 * fVec81[(IOTA-iSlow159)&4095]) + (fSlow162 * fVec81[(IOTA-iSlow160)&4095])));
+			fTempPerm260 = max((float)0, min((float)2047, (fSlow165 * fTempPerm16)));
+			iTempPerm261 = int(fTempPerm260);
+			fTempPerm262 = floorf(fTempPerm260);
+			fRec85[0] = (((fRec8[0] * (((fTempPerm10 * (fVec81[IOTA&4095] - ((fVec81[(IOTA-iTempPerm261)&4095] * (fTempPerm262 + (1.0f - fTempPerm260))) + ((fTempPerm260 - fTempPerm262) * fVec81[(IOTA-int((iTempPerm261 + 1)))&4095])))) + (fSlow164 * (fRec100[0] * fTempPerm11))) + (fSlow140 * (((fTempPerm9 * (fVec78[0] - fVec78[1])) * fVec1[1]) / fTempPerm62)))) + (((fTempPerm61 * ((fConst0 * (fTempPerm250 + fTempPerm235)) + (fSlow151 * (fTempPerm11 * (fTempPerm254 + (fTempPerm239 / fTempPerm22)))))) + ((fTempPerm60 * ((fSlow151 * (fTempPerm254 * fTempPerm11)) + (fConst0 * fTempPerm250))) * (fTempPerm43 + (fTempPerm42 * ((fSlow151 * ((fTempPerm239 * fTempPerm11) / fTempPerm22)) + (fConst0 * fTempPerm235)))))) + (fTempPerm20 * (((fTempPerm10 * (fVec69[IOTA&4095] - ((fVec69[(IOTA-iTempPerm223)&4095] * (fTempPerm224 + (1.0f - fTempPerm222))) + ((fTempPerm222 - fTempPerm224) * fVec69[(IOTA-int((iTempPerm223 + 1)))&4095])))) + (fSlow151 * (fRec88[0] * fTempPerm11))) + (fSlow140 * (((fTempPerm9 * (fVec66[0] - fVec66[1])) * fVec1[1]) / fTempPerm6)))))) - (((fTempPerm4 * fRec85[2]) + (2.0f * (fTempPerm3 * fRec85[1]))) / fTempPerm2));
+			fRec84[0] = ((((fRec85[1] + (0.5f * fRec85[0])) + (0.5f * fRec85[2])) - ((fTempPerm4 * fRec84[2]) + (2.0f * (fTempPerm3 * fRec84[1])))) / fTempPerm2);
+			iRec103[0] = (iSlow166 * (iRec103[1] + 1));
+			iTempPerm263 = int((iRec103[0] < iSlow36));
+			fTempPerm264 = expf((0 - (fConst8 / ((iSlow167)?((iTempPerm263)?fSlow35:fSlow33):fSlow32))));
+			fRec102[0] = ((fRec102[1] * fTempPerm264) + (((iSlow167)?((iTempPerm263)?1.5873015873015872f:fSlow168):0.0f) * (1.0f - fTempPerm264)));
+			iRec107[0] = ((iRec107[1] + iVec0[1]) % iSlow173);
+			fTempPerm265 = ((fRec106[1] * (1 - float(((iRec107[0] == 0) > 0)))) + (fSlow171 * fTempPerm6));
+			fRec106[0] = (fTempPerm265 - floorf(fTempPerm265));
+			fTempPerm266 = faustpower<2>(((2.0f * fRec106[0]) + -1.0f));
+			fVec82[0] = fTempPerm266;
+			fVec83[0] = fSlow175;
+			fTempPerm267 = (fRec109[1] + (fConst2 * fVec83[1]));
+			fRec109[0] = (fTempPerm267 - floorf(fTempPerm267));
+			fTempPerm268 = faustpower<2>(((2.0f * fRec109[0]) + -1.0f));
+			fVec84[0] = fTempPerm268;
+			fTempPerm269 = (fSlow176 * (fTempPerm14 * (fVec84[0] - fVec84[1])));
+			fVec85[IOTA&4095] = fTempPerm269;
+			fRec108[0] = ((fVec85[IOTA&4095] + (0.999f * fRec108[1])) - ((fSlow182 * fVec85[(IOTA-iSlow178)&4095]) + (fSlow181 * fVec85[(IOTA-iSlow179)&4095])));
+			fTempPerm270 = max((float)0, min((float)2047, (fSlow184 * fTempPerm16)));
+			iTempPerm271 = int(fTempPerm270);
+			fTempPerm272 = floorf(fTempPerm270);
+			fTempPerm273 = max((fSlow170 * fTempPerm24), 23.448949682462139f);
+			fTempPerm274 = max(20.0f, fabsf(fTempPerm273));
+			fVec86[0] = fTempPerm274;
+			fTempPerm275 = (fRec110[1] + (fConst2 * fVec86[1]));
+			fRec110[0] = (fTempPerm275 - floorf(fTempPerm275));
+			fTempPerm276 = faustpower<2>(((2.0f * fRec110[0]) + -1.0f));
+			fVec87[0] = fTempPerm276;
+			fTempPerm277 = ((fTempPerm14 * (fVec87[0] - fVec87[1])) / fVec86[0]);
+			fVec88[IOTA&4095] = fTempPerm277;
+			fTempPerm278 = max((float)0, min((float)2047, (fConst0 * (fTempPerm16 / fTempPerm273))));
+			iTempPerm279 = int(fTempPerm278);
+			fTempPerm280 = floorf(fTempPerm278);
+			iRec112[0] = ((iRec112[1] + iVec0[1]) % int((fSlow172 * fTempPerm34)));
+			fTempPerm281 = ((fRec111[1] * (1 - float(((iRec112[0] == 0) > 0)))) + (fSlow171 * fTempPerm33));
+			fRec111[0] = (fTempPerm281 - floorf(fTempPerm281));
+			fTempPerm282 = faustpower<2>(((2.0f * fRec111[0]) + -1.0f));
+			fVec89[0] = fTempPerm282;
+			fTempPerm283 = ((fSlow185 * (((fTempPerm9 * (fVec89[0] - fVec89[1])) * fVec1[1]) / fTempPerm33)) + (0.25f * (fTempPerm10 * ((fVec88[IOTA&4095] - (fVec88[(IOTA-iTempPerm279)&4095] * (fTempPerm280 + (1.0f - fTempPerm278)))) - ((fTempPerm278 - fTempPerm280) * fVec88[(IOTA-int((iTempPerm279 + 1)))&4095])))));
+			fTempPerm284 = max((float)0, min((float)2047, (fConst4 / fTempPerm273)));
+			iTempPerm285 = int(fTempPerm284);
+			fTempPerm286 = floorf(fTempPerm284);
+			fRec113[0] = ((0.999f * fRec113[1]) + (fConst3 * ((fVec88[IOTA&4095] - (fVec88[(IOTA-iTempPerm285)&4095] * (fTempPerm286 + (1.0f - fTempPerm284)))) - ((fTempPerm284 - fTempPerm286) * fVec88[(IOTA-int((iTempPerm285 + 1)))&4095]))));
+			fTempPerm287 = (fRec113[0] * fTempPerm23);
+			fTempPerm288 = max((fSlow170 * fTempPerm22), 23.448949682462139f);
+			fTempPerm289 = max(20.0f, fabsf(fTempPerm288));
+			fVec90[0] = fTempPerm289;
+			fTempPerm290 = (fRec114[1] + (fConst2 * fVec90[1]));
+			fRec114[0] = (fTempPerm290 - floorf(fTempPerm290));
+			fTempPerm291 = faustpower<2>(((2.0f * fRec114[0]) + -1.0f));
+			fVec91[0] = fTempPerm291;
+			fTempPerm292 = ((fTempPerm14 * (fVec91[0] - fVec91[1])) / fVec90[0]);
+			fVec92[IOTA&4095] = fTempPerm292;
+			fTempPerm293 = max((float)0, min((float)2047, (fConst0 * (fTempPerm16 / fTempPerm288))));
+			iTempPerm294 = int(fTempPerm293);
+			fTempPerm295 = floorf(fTempPerm293);
+			iRec116[0] = ((iRec116[1] + iVec0[1]) % int((fSlow172 / fTempPerm22)));
+			fTempPerm296 = ((fRec115[1] * (1 - float(((iRec116[0] == 0) > 0)))) + (fSlow171 * fTempPerm52));
+			fRec115[0] = (fTempPerm296 - floorf(fTempPerm296));
+			fTempPerm297 = faustpower<2>(((2.0f * fRec115[0]) + -1.0f));
+			fVec93[0] = fTempPerm297;
+			fTempPerm298 = ((fSlow185 * (((fTempPerm9 * (fVec93[0] - fVec93[1])) * fVec1[1]) / fTempPerm52)) + (0.25f * (fTempPerm10 * ((fVec92[IOTA&4095] - (fVec92[(IOTA-iTempPerm294)&4095] * (fTempPerm295 + (1.0f - fTempPerm293)))) - ((fTempPerm293 - fTempPerm295) * fVec92[(IOTA-int((iTempPerm294 + 1)))&4095])))));
+			fTempPerm299 = max((float)0, min((float)2047, (fConst4 / fTempPerm288)));
+			iTempPerm300 = int(fTempPerm299);
+			fTempPerm301 = floorf(fTempPerm299);
+			fRec117[0] = ((0.999f * fRec117[1]) + (fConst3 * ((fVec92[IOTA&4095] - (fVec92[(IOTA-iTempPerm300)&4095] * (fTempPerm301 + (1.0f - fTempPerm299)))) - ((fTempPerm299 - fTempPerm301) * fVec92[(IOTA-int((iTempPerm300 + 1)))&4095]))));
+			fTempPerm302 = (fRec117[0] * fTempPerm22);
+			iRec119[0] = ((iRec119[1] + iVec0[1]) % iSlow186);
+			fTempPerm303 = ((fRec118[1] * (1 - float(((iRec119[0] == 0) > 0)))) + (fSlow171 * fTempPerm62));
+			fRec118[0] = (fTempPerm303 - floorf(fTempPerm303));
+			fTempPerm304 = faustpower<2>(((2.0f * fRec118[0]) + -1.0f));
+			fVec94[0] = fTempPerm304;
+			fVec95[0] = fSlow188;
+			fTempPerm305 = (fRec121[1] + (fConst2 * fVec95[1]));
+			fRec121[0] = (fTempPerm305 - floorf(fTempPerm305));
+			fTempPerm306 = faustpower<2>(((2.0f * fRec121[0]) + -1.0f));
+			fVec96[0] = fTempPerm306;
+			fTempPerm307 = (fSlow189 * (fTempPerm14 * (fVec96[0] - fVec96[1])));
+			fVec97[IOTA&4095] = fTempPerm307;
+			fRec120[0] = ((fVec97[IOTA&4095] + (0.999f * fRec120[1])) - ((fSlow195 * fVec97[(IOTA-iSlow191)&4095]) + (fSlow194 * fVec97[(IOTA-iSlow192)&4095])));
+			fTempPerm308 = max((float)0, min((float)2047, (fSlow197 * fTempPerm16)));
+			iTempPerm309 = int(fTempPerm308);
+			fTempPerm310 = floorf(fTempPerm308);
+			fRec105[0] = (((fRec8[0] * (((fTempPerm10 * (fVec97[IOTA&4095] - ((fVec97[(IOTA-iTempPerm309)&4095] * (fTempPerm310 + (1.0f - fTempPerm308))) + ((fTempPerm308 - fTempPerm310) * fVec97[(IOTA-int((iTempPerm309 + 1)))&4095])))) + (fSlow196 * (fRec120[0] * fTempPerm11))) + (fSlow172 * (((fTempPerm9 * (fVec94[0] - fVec94[1])) * fVec1[1]) / fTempPerm62)))) + (((fTempPerm61 * ((fConst0 * (fTempPerm298 + fTempPerm283)) + (fSlow183 * (fTempPerm11 * (fTempPerm302 + (fTempPerm287 / fTempPerm22)))))) + ((fTempPerm60 * ((fSlow183 * (fTempPerm302 * fTempPerm11)) + (fConst0 * fTempPerm298))) * (fTempPerm43 + (fTempPerm42 * ((fSlow183 * ((fTempPerm287 * fTempPerm11) / fTempPerm22)) + (fConst0 * fTempPerm283)))))) + (fTempPerm20 * (((fTempPerm10 * (fVec85[IOTA&4095] - ((fVec85[(IOTA-iTempPerm271)&4095] * (fTempPerm272 + (1.0f - fTempPerm270))) + ((fTempPerm270 - fTempPerm272) * fVec85[(IOTA-int((iTempPerm271 + 1)))&4095])))) + (fSlow183 * (fRec108[0] * fTempPerm11))) + (fSlow172 * (((fTempPerm9 * (fVec82[0] - fVec82[1])) * fVec1[1]) / fTempPerm6)))))) - (((fRec105[2] * fTempPerm4) + (2.0f * (fRec105[1] * fTempPerm3))) / fTempPerm2));
+			fRec104[0] = ((((fRec105[1] + (0.5f * fRec105[0])) + (0.5f * fRec105[2])) - ((fTempPerm4 * fRec104[2]) + (2.0f * (fTempPerm3 * fRec104[1])))) / fTempPerm2);
+			iRec123[0] = (iSlow198 * (iRec123[1] + 1));
+			iTempPerm311 = int((iRec123[0] < iSlow36));
+			fTempPerm312 = expf((0 - (fConst8 / ((iSlow199)?((iTempPerm311)?fSlow35:fSlow33):fSlow32))));
+			fRec122[0] = ((fRec122[1] * fTempPerm312) + (((iSlow199)?((iTempPerm311)?1.5873015873015872f:fSlow200):0.0f) * (1.0f - fTempPerm312)));
+			output0[i] = (FAUSTFLOAT)(((((((fSlow201 * (min(1.0f, fRec122[0]) * ((fRec104[1] + (0.5f * fRec104[0])) + (0.5f * fRec104[2])))) + (fSlow169 * (min(1.0f, fRec102[0]) * ((fRec84[1] + (0.5f * fRec84[0])) + (0.5f * fRec84[2]))))) + (fSlow137 * (min(1.0f, fRec82[0]) * ((fRec64[1] + (0.5f * fRec64[0])) + (0.5f * fRec64[2]))))) + (fSlow105 * (min(1.0f, fRec62[0]) * ((fRec44[1] + (0.5f * fRec44[0])) + (0.5f * fRec44[2]))))) + (fSlow73 * (min(1.0f, fRec42[0]) * ((fRec24[1] + (0.5f * fRec24[0])) + (0.5f * fRec24[2]))))) + (fSlow41 * (min(1.0f, fRec22[0]) * ((fRec1[1] + (0.5f * fRec1[0])) + (0.5f * fRec1[2]))))) / fTempPerm2);
+			// post processing
+			fRec122[1] = fRec122[0];
+			iRec123[1] = iRec123[0];
+			fRec104[2] = fRec104[1]; fRec104[1] = fRec104[0];
+			fRec105[2] = fRec105[1]; fRec105[1] = fRec105[0];
+			fRec120[1] = fRec120[0];
+			fVec96[1] = fVec96[0];
+			fRec121[1] = fRec121[0];
+			fVec95[1] = fVec95[0];
+			fVec94[1] = fVec94[0];
+			fRec118[1] = fRec118[0];
+			iRec119[1] = iRec119[0];
+			fRec117[1] = fRec117[0];
+			fVec93[1] = fVec93[0];
+			fRec115[1] = fRec115[0];
+			iRec116[1] = iRec116[0];
+			fVec91[1] = fVec91[0];
+			fRec114[1] = fRec114[0];
+			fVec90[1] = fVec90[0];
+			fRec113[1] = fRec113[0];
+			fVec89[1] = fVec89[0];
+			fRec111[1] = fRec111[0];
+			iRec112[1] = iRec112[0];
+			fVec87[1] = fVec87[0];
+			fRec110[1] = fRec110[0];
+			fVec86[1] = fVec86[0];
+			fRec108[1] = fRec108[0];
+			fVec84[1] = fVec84[0];
+			fRec109[1] = fRec109[0];
+			fVec83[1] = fVec83[0];
+			fVec82[1] = fVec82[0];
+			fRec106[1] = fRec106[0];
+			iRec107[1] = iRec107[0];
+			fRec102[1] = fRec102[0];
+			iRec103[1] = iRec103[0];
+			fRec84[2] = fRec84[1]; fRec84[1] = fRec84[0];
+			fRec85[2] = fRec85[1]; fRec85[1] = fRec85[0];
+			fRec100[1] = fRec100[0];
+			fVec80[1] = fVec80[0];
+			fRec101[1] = fRec101[0];
+			fVec79[1] = fVec79[0];
+			fVec78[1] = fVec78[0];
+			fRec98[1] = fRec98[0];
+			iRec99[1] = iRec99[0];
+			fRec97[1] = fRec97[0];
+			fVec77[1] = fVec77[0];
+			fRec95[1] = fRec95[0];
+			iRec96[1] = iRec96[0];
+			fVec75[1] = fVec75[0];
+			fRec94[1] = fRec94[0];
+			fVec74[1] = fVec74[0];
+			fRec93[1] = fRec93[0];
+			fVec73[1] = fVec73[0];
+			fRec91[1] = fRec91[0];
+			iRec92[1] = iRec92[0];
+			fVec71[1] = fVec71[0];
+			fRec90[1] = fRec90[0];
+			fVec70[1] = fVec70[0];
+			fRec88[1] = fRec88[0];
+			fVec68[1] = fVec68[0];
+			fRec89[1] = fRec89[0];
+			fVec67[1] = fVec67[0];
+			fVec66[1] = fVec66[0];
+			fRec86[1] = fRec86[0];
+			iRec87[1] = iRec87[0];
+			fRec82[1] = fRec82[0];
+			iRec83[1] = iRec83[0];
+			fRec64[2] = fRec64[1]; fRec64[1] = fRec64[0];
+			fRec65[2] = fRec65[1]; fRec65[1] = fRec65[0];
+			fRec80[1] = fRec80[0];
+			fVec64[1] = fVec64[0];
+			fRec81[1] = fRec81[0];
+			fVec63[1] = fVec63[0];
+			fVec62[1] = fVec62[0];
+			fRec78[1] = fRec78[0];
+			iRec79[1] = iRec79[0];
+			fRec77[1] = fRec77[0];
+			fVec61[1] = fVec61[0];
+			fRec75[1] = fRec75[0];
+			iRec76[1] = iRec76[0];
+			fVec59[1] = fVec59[0];
+			fRec74[1] = fRec74[0];
+			fVec58[1] = fVec58[0];
+			fRec73[1] = fRec73[0];
+			fVec57[1] = fVec57[0];
+			fRec71[1] = fRec71[0];
+			iRec72[1] = iRec72[0];
+			fVec55[1] = fVec55[0];
+			fRec70[1] = fRec70[0];
+			fVec54[1] = fVec54[0];
+			fRec68[1] = fRec68[0];
+			fVec52[1] = fVec52[0];
+			fRec69[1] = fRec69[0];
+			fVec51[1] = fVec51[0];
+			fVec50[1] = fVec50[0];
+			fRec66[1] = fRec66[0];
+			iRec67[1] = iRec67[0];
+			fRec62[1] = fRec62[0];
+			iRec63[1] = iRec63[0];
+			fRec44[2] = fRec44[1]; fRec44[1] = fRec44[0];
+			fRec45[2] = fRec45[1]; fRec45[1] = fRec45[0];
+			fRec60[1] = fRec60[0];
+			fVec48[1] = fVec48[0];
+			fRec61[1] = fRec61[0];
+			fVec47[1] = fVec47[0];
+			fVec46[1] = fVec46[0];
+			fRec58[1] = fRec58[0];
+			iRec59[1] = iRec59[0];
+			fRec57[1] = fRec57[0];
+			fVec45[1] = fVec45[0];
+			fRec55[1] = fRec55[0];
+			iRec56[1] = iRec56[0];
+			fVec43[1] = fVec43[0];
+			fRec54[1] = fRec54[0];
+			fVec42[1] = fVec42[0];
+			fRec53[1] = fRec53[0];
+			fVec41[1] = fVec41[0];
+			fRec51[1] = fRec51[0];
+			iRec52[1] = iRec52[0];
+			fVec39[1] = fVec39[0];
+			fRec50[1] = fRec50[0];
+			fVec38[1] = fVec38[0];
+			fRec48[1] = fRec48[0];
+			fVec36[1] = fVec36[0];
+			fRec49[1] = fRec49[0];
+			fVec35[1] = fVec35[0];
+			fVec34[1] = fVec34[0];
+			fRec46[1] = fRec46[0];
+			iRec47[1] = iRec47[0];
+			fRec42[1] = fRec42[0];
+			iRec43[1] = iRec43[0];
+			fRec24[2] = fRec24[1]; fRec24[1] = fRec24[0];
+			fRec25[2] = fRec25[1]; fRec25[1] = fRec25[0];
+			fRec40[1] = fRec40[0];
+			fVec32[1] = fVec32[0];
+			fRec41[1] = fRec41[0];
+			fVec31[1] = fVec31[0];
+			fVec30[1] = fVec30[0];
+			fRec38[1] = fRec38[0];
+			iRec39[1] = iRec39[0];
+			fRec37[1] = fRec37[0];
+			fVec29[1] = fVec29[0];
+			fRec35[1] = fRec35[0];
+			iRec36[1] = iRec36[0];
+			fVec27[1] = fVec27[0];
+			fRec34[1] = fRec34[0];
+			fVec26[1] = fVec26[0];
+			fRec33[1] = fRec33[0];
+			fVec25[1] = fVec25[0];
+			fRec31[1] = fRec31[0];
+			iRec32[1] = iRec32[0];
+			fVec23[1] = fVec23[0];
+			fRec30[1] = fRec30[0];
+			fVec22[1] = fVec22[0];
+			fRec28[1] = fRec28[0];
+			fVec20[1] = fVec20[0];
+			fRec29[1] = fRec29[0];
+			fVec19[1] = fVec19[0];
+			fVec18[1] = fVec18[0];
+			fRec26[1] = fRec26[0];
+			iRec27[1] = iRec27[0];
+			fRec22[1] = fRec22[0];
+			iRec23[1] = iRec23[0];
+			fRec1[2] = fRec1[1]; fRec1[1] = fRec1[0];
+			fRec2[2] = fRec2[1]; fRec2[1] = fRec2[0];
+			fRec20[1] = fRec20[0];
+			fVec16[1] = fVec16[0];
+			fRec21[1] = fRec21[0];
+			fVec15[1] = fVec15[0];
+			fVec14[1] = fVec14[0];
+			fRec18[1] = fRec18[0];
+			iRec19[1] = iRec19[0];
+			fRec17[1] = fRec17[0];
+			fVec13[1] = fVec13[0];
+			fRec15[1] = fRec15[0];
+			iRec16[1] = iRec16[0];
+			fVec11[1] = fVec11[0];
 			fRec14[1] = fRec14[0];
 			fVec10[1] = fVec10[0];
-			fVec11[1] = fVec11[0];
-			fRec16[1] = fRec16[0];
-			fVec12[1] = fVec12[0];
-			fRec17[1] = fRec17[0];
-			fRec18[1] = fRec18[0];
-			fVec14[1] = fVec14[0];
-			fRec19[1] = fRec19[0];
-			fVec15[1] = fVec15[0];
-			fRec20[1] = fRec20[0];
-			iRec22[1] = iRec22[0];
-			fRec21[1] = fRec21[0];
-			fVec17[1] = fVec17[0];
-			fRec23[1] = fRec23[0];
-			fRec3[2] = fRec3[1];
+			fRec13[1] = fRec13[0];
+			fVec9[1] = fVec9[0];
+			fRec11[1] = fRec11[0];
+			iRec12[1] = iRec12[0];
+			fVec7[1] = fVec7[0];
+			fRec10[1] = fRec10[0];
+			fVec6[1] = fVec6[0];
+			fRec9[1] = fRec9[0];
+			fRec8[1] = fRec8[0];
+			fRec6[1] = fRec6[0];
+			IOTA = IOTA+1;
+			fVec4[1] = fVec4[0];
+			fRec7[1] = fRec7[0];
+			fVec3[1] = fVec3[0];
+			fVec2[1] = fVec2[0];
+			fRec4[1] = fRec4[0];
+			iRec5[1] = iRec5[0];
+			fVec1[1] = fVec1[0];
 			fRec3[1] = fRec3[0];
-			fRec2[2] = fRec2[1];
-			fRec2[1] = fRec2[0];
-			iRec25[1] = iRec25[0];
-			fRec24[1] = fRec24[0];
-			fVec18[1] = fVec18[0];
-			fRec28[1] = fRec28[0];
-			fVec19[1] = fVec19[0];
-			fRec29[1] = fRec29[0];
-			iRec31[1] = iRec31[0];
-			fRec30[1] = fRec30[0];
-			fVec21[1] = fVec21[0];
-			iRec33[1] = iRec33[0];
-			fRec32[1] = fRec32[0];
-			fVec22[1] = fVec22[0];
-			fVec23[1] = fVec23[0];
-			fRec34[1] = fRec34[0];
-			fVec24[1] = fVec24[0];
-			iRec36[1] = iRec36[0];
-			fRec35[1] = fRec35[0];
-			fVec26[1] = fVec26[0];
-			fVec27[1] = fVec27[0];
-			fRec37[1] = fRec37[0];
-			fVec28[1] = fVec28[0];
-			fRec38[1] = fRec38[0];
-			fRec39[1] = fRec39[0];
-			fVec30[1] = fVec30[0];
-			fRec40[1] = fRec40[0];
-			fVec31[1] = fVec31[0];
-			fRec41[1] = fRec41[0];
-			iRec43[1] = iRec43[0];
-			fRec42[1] = fRec42[0];
-			fVec33[1] = fVec33[0];
-			fRec27[2] = fRec27[1];
-			fRec27[1] = fRec27[0];
-			fRec26[2] = fRec26[1];
-			fRec26[1] = fRec26[0];
-			iRec45[1] = iRec45[0];
-			fRec44[1] = fRec44[0];
-			fVec34[1] = fVec34[0];
-			fRec48[1] = fRec48[0];
-			fVec35[1] = fVec35[0];
-			fRec49[1] = fRec49[0];
-			iRec51[1] = iRec51[0];
-			fRec50[1] = fRec50[0];
-			fVec37[1] = fVec37[0];
-			iRec53[1] = iRec53[0];
-			fRec52[1] = fRec52[0];
-			fVec38[1] = fVec38[0];
-			fVec39[1] = fVec39[0];
-			fRec54[1] = fRec54[0];
-			fVec40[1] = fVec40[0];
-			iRec56[1] = iRec56[0];
-			fRec55[1] = fRec55[0];
-			fVec42[1] = fVec42[0];
-			fVec43[1] = fVec43[0];
-			fRec57[1] = fRec57[0];
-			fVec44[1] = fVec44[0];
-			fRec58[1] = fRec58[0];
-			fRec59[1] = fRec59[0];
-			fVec46[1] = fVec46[0];
-			fRec60[1] = fRec60[0];
-			fVec47[1] = fVec47[0];
-			fRec61[1] = fRec61[0];
-			iRec63[1] = iRec63[0];
-			fRec62[1] = fRec62[0];
-			fVec49[1] = fVec49[0];
-			fRec47[2] = fRec47[1];
-			fRec47[1] = fRec47[0];
-			fRec46[2] = fRec46[1];
-			fRec46[1] = fRec46[0];
-			iRec65[1] = iRec65[0];
-			fRec64[1] = fRec64[0];
-			fVec50[1] = fVec50[0];
-			fRec68[1] = fRec68[0];
-			fVec51[1] = fVec51[0];
-			fRec69[1] = fRec69[0];
-			iRec71[1] = iRec71[0];
-			fRec70[1] = fRec70[0];
-			fVec53[1] = fVec53[0];
-			iRec73[1] = iRec73[0];
-			fRec72[1] = fRec72[0];
-			fVec54[1] = fVec54[0];
-			fVec55[1] = fVec55[0];
-			fRec74[1] = fRec74[0];
-			fVec56[1] = fVec56[0];
-			iRec76[1] = iRec76[0];
-			fRec75[1] = fRec75[0];
-			fVec58[1] = fVec58[0];
-			fVec59[1] = fVec59[0];
-			fRec77[1] = fRec77[0];
-			fVec60[1] = fVec60[0];
-			fRec78[1] = fRec78[0];
-			fRec79[1] = fRec79[0];
-			fVec62[1] = fVec62[0];
-			fRec80[1] = fRec80[0];
-			fVec63[1] = fVec63[0];
-			fRec81[1] = fRec81[0];
-			iRec83[1] = iRec83[0];
-			fRec82[1] = fRec82[0];
-			fVec65[1] = fVec65[0];
-			fRec67[2] = fRec67[1];
-			fRec67[1] = fRec67[0];
-			fRec66[2] = fRec66[1];
-			fRec66[1] = fRec66[0];
-			iRec85[1] = iRec85[0];
-			fRec84[1] = fRec84[0];
-			fVec66[1] = fVec66[0];
-			fRec88[1] = fRec88[0];
-			fVec67[1] = fVec67[0];
-			fRec89[1] = fRec89[0];
-			iRec91[1] = iRec91[0];
-			fRec90[1] = fRec90[0];
-			fVec69[1] = fVec69[0];
-			iRec93[1] = iRec93[0];
-			fRec92[1] = fRec92[0];
-			fVec70[1] = fVec70[0];
-			fVec71[1] = fVec71[0];
-			fRec94[1] = fRec94[0];
-			fVec72[1] = fVec72[0];
-			iRec96[1] = iRec96[0];
-			fRec95[1] = fRec95[0];
-			fVec74[1] = fVec74[0];
-			fVec75[1] = fVec75[0];
-			fRec97[1] = fRec97[0];
-			fVec76[1] = fVec76[0];
-			fRec98[1] = fRec98[0];
-			fRec99[1] = fRec99[0];
-			fVec78[1] = fVec78[0];
-			fRec100[1] = fRec100[0];
-			fVec79[1] = fVec79[0];
-			fRec101[1] = fRec101[0];
-			iRec103[1] = iRec103[0];
-			fRec102[1] = fRec102[0];
-			fVec81[1] = fVec81[0];
-			fRec87[2] = fRec87[1];
-			fRec87[1] = fRec87[0];
-			fRec86[2] = fRec86[1];
-			fRec86[1] = fRec86[0];
-			iRec105[1] = iRec105[0];
-			fRec104[1] = fRec104[0];
-			fVec82[1] = fVec82[0];
-			fRec108[1] = fRec108[0];
-			fVec83[1] = fVec83[0];
-			fRec109[1] = fRec109[0];
-			iRec111[1] = iRec111[0];
-			fRec110[1] = fRec110[0];
-			fVec85[1] = fVec85[0];
-			iRec113[1] = iRec113[0];
-			fRec112[1] = fRec112[0];
-			fVec86[1] = fVec86[0];
-			fVec87[1] = fVec87[0];
-			fRec114[1] = fRec114[0];
-			fVec88[1] = fVec88[0];
-			iRec116[1] = iRec116[0];
-			fRec115[1] = fRec115[0];
-			fVec90[1] = fVec90[0];
-			fVec91[1] = fVec91[0];
-			fRec117[1] = fRec117[0];
-			fVec92[1] = fVec92[0];
-			fRec118[1] = fRec118[0];
-			fRec119[1] = fRec119[0];
-			fVec94[1] = fVec94[0];
-			fRec120[1] = fRec120[0];
-			fVec95[1] = fVec95[0];
-			fRec121[1] = fRec121[0];
-			iRec123[1] = iRec123[0];
-			fRec122[1] = fRec122[0];
-			fVec97[1] = fVec97[0];
-			fRec107[2] = fRec107[1];
-			fRec107[1] = fRec107[0];
-			fRec106[2] = fRec106[1];
-			fRec106[1] = fRec106[0];
-			
+			fRec0[1] = fRec0[0];
+			iVec0[1] = iVec0[0];
 		}
-		
 	}
-
-	
 };
 
-#endif
+

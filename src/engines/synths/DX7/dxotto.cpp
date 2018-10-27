@@ -26,7 +26,7 @@ namespace otto::engines {
   // DXOTTOSynth ////////////////////////////////////////////////////////////////
 
   DXOTTOSynth::DXOTTOSynth()
-    : SynthEngine("DXOTTO", props, std::make_unique<DXOTTOSynthScreen>(this)),
+    : SynthEngine("DX7", props, std::make_unique<DXOTTOSynthScreen>(this)),
       voice_mgr_(props),
       faust_(std::make_unique<FAUSTCLASS>(), props)
   {}
@@ -52,8 +52,26 @@ namespace otto::engines {
   {
     switch (e.rotary) {
     case Rotary::Blue:
-      engine.props.preset.step(e.clicks);
-      break;
+      {
+          engine.props.preset.step(e.clicks);
+          //Find name of appropriate JSON file depending on preset variable
+
+          //Read appropriate JSON file
+          //std::ifstream i("patches/analog-2.json");
+          util::JsonFile patch{global::data_dir / "dx7patches/analog-2.json"};
+          patch.read();
+          engine.props.algN.set(patch.data()["algorithm"]);
+          engine.props.feedback.set(patch.data()["feedback"]);
+
+          engine.props.opRateScale_0.set(patch.data()["operators"][0]["keyboardRateScaling"]);
+          engine.props.opRateScale_1.set(patch.data()["operators"][1]["keyboardRateScaling"]);
+          engine.props.opRateScale_2.set(patch.data()["operators"][2]["keyboardRateScaling"]);
+          engine.props.opRateScale_3.set(patch.data()["operators"][3]["keyboardRateScaling"]);
+          engine.props.opRateScale_4.set(patch.data()["operators"][4]["keyboardRateScaling"]);
+          engine.props.opRateScale_5.set(patch.data()["operators"][5]["keyboardRateScaling"]);
+
+          break;
+      }
     case Rotary::Green:
       engine.props.variable1.step(e.clicks);
       break;
@@ -79,27 +97,27 @@ namespace otto::engines {
     ctx.beginPath();
     ctx.fillStyle(Colours::Blue);
     ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
-    ctx.fillText("Drawbar 1", {x_pad, y_pad});
+    ctx.fillText("Preset", {x_pad, y_pad});
 
     ctx.beginPath();
     ctx.fillStyle(Colours::Blue);
     ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:1.2}", engine.props.preset), {width - x_pad, y_pad});
+    ctx.fillText(fmt::format("{:1}", engine.props.preset), {width - x_pad, y_pad});
 
     ctx.beginPath();
     ctx.fillStyle(Colours::Green);
     ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
-    ctx.fillText("Drawbar 2", {x_pad, y_pad + space});
+    ctx.fillText("Algo", {x_pad, y_pad + space});
 
     ctx.beginPath();
     ctx.fillStyle(Colours::Green);
     ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:1.2}", engine.props.variable1), {width - x_pad, y_pad + space});
+    ctx.fillText(fmt::format("{:1}", engine.props.algN), {width - x_pad, y_pad + space});
 
     ctx.beginPath();
     ctx.fillStyle(Colours::Yellow);
     ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
-    ctx.fillText("Drawbar 3", {x_pad, y_pad + 2 * space});
+    ctx.fillText("Variable 2", {x_pad, y_pad + 2 * space});
 
     ctx.beginPath();
     ctx.fillStyle(Colours::Yellow);
@@ -109,7 +127,7 @@ namespace otto::engines {
     ctx.beginPath();
     ctx.fillStyle(Colours::Red);
     ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
-    ctx.fillText("Leslie", {x_pad, y_pad + 3 * space});
+    ctx.fillText("Variable 3", {x_pad, y_pad + 3 * space});
 
     ctx.beginPath();
     ctx.fillStyle(Colours::Red);
