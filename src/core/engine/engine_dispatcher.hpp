@@ -81,8 +81,8 @@ namespace otto::core::engine {
 
   private:
     std::vector<std::unique_ptr<Engine<ET>>> _engines;
-    std::unique_ptr<ui::Screen> _selector_screen;
-    Engine<ET>* _current;
+    std::unique_ptr<ui::Screen> _selector_screen = nullptr;
+    Engine<ET>* _current = nullptr;
   };
 
 } // namespace otto::core::engines

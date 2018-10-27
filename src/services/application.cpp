@@ -2,22 +2,36 @@
 #include <condition_variable>
 #include "application.hpp"
 
+#include "services/audio_manager.hpp"
+#include "services/engine_manager.hpp"
+#include "services/log_manager.hpp"
+#include "services/preset_manager.hpp"
+#include "services/state_manager.hpp"
+#include "services/ui_manager.hpp"
+
 namespace otto::services {
 
-  Application::Application(AudioManager& audio_manager,
-                           EngineManager& engine_manager,
-                           LogManager& log_manager,
-                           PresetManager& preset_manager,
-                           UIManager& ui_manager,
-                           StateManager& state_manager)
-    : audio_manager(audio_manager),
-      engine_manager(engine_manager),
-      log_manager(log_manager),
-      preset_manager(preset_manager),
-      ui_manager(ui_manager),
-      state_manager(state_manager)
+  Application::Application(ServiceStorage<LogManager>::Factory log_fact,
+                           ServiceStorage<StateManager>::Factory state_fact,
+                           ServiceStorage<PresetManager>::Factory preset_fact,
+                           ServiceStorage<EngineManager>::Factory engine_fact,
+                           ServiceStorage<AudioManager>::Factory audio_fact,
+                           ServiceStorage<UIManager>::Factory ui_fact)
   {
     _current = this;
+    log_manager = std::move(log_fact);
+    state_manager = std::move(state_fact);
+    preset_manager = std::move(preset_fact);
+    audio_manager = std::move(audio_fact);
+    ui_manager = std::move(ui_fact);
+    engine_manager = std::move(engine_fact);
+
+    events.post_init.fire();
+  }
+
+  Application::~Application()
+  {
+    events.pre_exit.fire();
   }
 
   void Application::exit(ErrorCode ec) noexcept
@@ -38,8 +52,8 @@ namespace otto::services {
 
   void Application::handle_signal(int signal) noexcept
   {
-    _is_running = false;
-    _error_code = ErrorCode::signal_recieved;
+    Application::current()._is_running = false;
+    Application::current()._error_code = ErrorCode::signal_recieved;
   }
 
   Application& Application::current() noexcept

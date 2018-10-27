@@ -123,7 +123,7 @@ namespace otto::services {
 
 // Debug UI /////////////////////////////////////////////////////////////////
 
-#if OTTO_DEBUG_UI
+#if false
 
 #include "services/engines.hpp"
 #include "services/ui.hpp"

@@ -9,6 +9,13 @@
 #include "core/ui/screen.hpp"
 #include "services/application.hpp"
 
+namespace otto::board::ui {
+  enum struct Action;
+  struct Modifiers;
+  enum struct Key;
+  void handle_keyevent(board::ui::Action, board::ui::Modifiers, board::ui::Key);
+} // namespace otto::board::ui
+
 namespace otto::services {
 
   struct UIManager : core::Service {
@@ -52,18 +59,18 @@ namespace otto::services {
     ///
     /// Calls @ref Screen::on_hide for the old screen, and then @ref Screen::on_show
     /// for the new screen
-    virtual void display(core::ui::Screen& screen) = 0;
+    void display(core::ui::Screen& screen);
 
     /// Select an engine
-    virtual void select_engine(core::engine::AnyEngine& engine) = 0;
+    void select_engine(core::engine::AnyEngine& engine);
 
     /// Select an engine by name
-    virtual void select_engine(const std::string& engine_name) = 0;
+    void select_engine(const std::string& engine_name);
 
-    virtual core::ui::Screen* current_screen() = 0;
+    core::ui::Screen* current_screen();
 
     /// Get the currently selected engine
-    virtual const std::string& selected_engine_name() = 0;
+    const std::string& selected_engine_name();
 
   protected:
     /// Draws the current screen and overlays.
@@ -88,6 +95,13 @@ namespace otto::services {
 
     /// Actually executes the key and rotary events
     void flush_events();
+
+    /// Temporary solution
+    ///
+    /// @TODO replace with something cleaner
+    friend void ::otto::board::ui::handle_keyevent(board::ui::Action,
+                                                   board::ui::Modifiers,
+                                                   board::ui::Key);
 
   private:
     bool handle_global(core::ui::Key key, bool is_press = true);

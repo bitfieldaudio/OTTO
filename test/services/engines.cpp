@@ -1,7 +1,7 @@
 #include "../testing.t.hpp"
 
-#include "services/engines.hpp"
-#include "services/audio.hpp"
+#include "services/engine_manager.hpp"
+#include "services/audio_manager.hpp"
 
 using namespace otto;
 

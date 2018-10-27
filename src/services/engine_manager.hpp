@@ -14,7 +14,6 @@
 #include "services/ui_manager.hpp"
 #include "services/application.hpp"
 
-
 namespace otto::services {
 
   struct EngineManager : core::Service {
@@ -55,6 +54,11 @@ namespace otto::services {
     ///
     /// \returns `nullptr` if no such engine was found
     virtual core::engine::AnyEngine* by_name(const std::string& name) noexcept = 0;
+
+    /// For now, this is the way to get the default EngineManager implementation
+    /// 
+    /// This is very likely to be changed in the future
+    static std::unique_ptr<EngineManager> create_default();
   };
 
 } // namespace otto::services

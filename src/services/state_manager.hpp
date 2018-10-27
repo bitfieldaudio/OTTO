@@ -33,6 +33,8 @@ namespace otto::services {
     /// \throws [otto::util::exception]() If no such handler is attached
     virtual void detach(std::string name) = 0;
 
+    static std::unique_ptr<StateManager> create_default();
+
   protected:
 
     struct Client {

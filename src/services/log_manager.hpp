@@ -12,7 +12,7 @@ namespace otto::services {
 
   struct LogManager : core::Service {
     /// Initialize the logger
-    void init(int argc, char** argv, bool enable_console = true, const char* logFilePath = nullptr);
+    LogManager(int argc, char** argv, bool enable_console = true, const char* logFilePath = nullptr);
 
     /// Set how the current thread appears in the log
     void set_thread_name(const std::string& name);

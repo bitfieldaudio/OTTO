@@ -9,9 +9,12 @@
 #include "services/state_manager.hpp"
 #include "services/ui_manager.hpp"
 
-using namespace otto;
+#include "board/audio_driver.hpp"
+#include "board/ui/glfw_ui_manager.hpp"
 
-void cleanup();
+using namespace otto;
+using namespace otto::services;
+
 int handle_exception(const char* e);
 int handle_exception(std::exception& e);
 int handle_exception();
@@ -19,24 +22,24 @@ int handle_exception();
 int main(int argc, char* argv[])
 {
   try {
-    service::logger::init(argc, argv);
+    Application app {
+      [&] { return std::make_unique<LogManager>(argc, argv); },
+      StateManager::create_default,
+      std::make_unique<PresetManager>,
+      EngineManager::create_default,
+      std::make_unique<RTAudioAudioManager>,
+      std::make_unique<GLFWUIManager>
+    };
 
     // Overwrite the logger signal handlers
-    std::signal(SIGABRT, global::handle_signal);
-    std::signal(SIGTERM, global::handle_signal);
-    std::signal(SIGINT, global::handle_signal);
+    std::signal(SIGABRT, Application::handle_signal);
+    std::signal(SIGTERM, Application::handle_signal);
+    std::signal(SIGINT, Application::handle_signal);
 
-    service::state::load();
+    app.engine_manager->start();
+    app.audio_manager->start();
+    app.ui_manager->main_ui_loop();
 
-    service::presets::init();
-    service::engines::init();
-    service::audio::init();
-
-    service::engines::start();
-    service::audio::start();
-
-    service::ui::init();
-    service::ui::main_ui_loop();
   } catch (const char* e) {
     return handle_exception(e);
   } catch (std::exception& e) {
@@ -46,7 +49,6 @@ int main(int argc, char* argv[])
   }
 
   LOG_F(INFO, "Exiting");
-  cleanup();
   return 0;
 }
 
@@ -54,7 +56,6 @@ int handle_exception(const char* e)
 {
   LOGE(e);
   LOGE("Exception thrown, exitting!");
-  cleanup();
   return 1;
 }
 
@@ -62,22 +63,11 @@ int handle_exception(std::exception& e)
 {
   LOGE(e.what());
   LOGE("Exception thrown, exitting!");
-  cleanup();
   return 1;
 }
 
 int handle_exception()
 {
   LOGE("Unknown exception thrown, exitting!");
-  cleanup();
   return 1;
-}
-
-void cleanup()
-{
-  service::engines::shutdown();
-  service::audio::shutdown();
-  service::state::save();
-
-  util::timer::save_data();
 }

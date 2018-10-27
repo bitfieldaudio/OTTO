@@ -12,23 +12,15 @@
 #include <RtAudio.h>
 #include <RtMidi.h>
 
-namespace otto::service::audio {
-  struct RTAudioDriver {
-    static RTAudioDriver& get() noexcept;
+#include "services/audio_manager.hpp"
 
-    void init();
-    void shutdown();
+namespace otto::services {
 
-    std::atomic_int samplerate = 48000;
+  struct RTAudioAudioManager final : AudioManager {
 
-    void send_midi_event(core::midi::AnyMidiEvent) noexcept;
+    RTAudioAudioManager();
 
-    core::audio::AudioBufferPool& buffer_pool();
-
-  private:
-    RTAudioDriver() = default;
-    ~RTAudioDriver() noexcept = default;
-
+  protected:
     int process(float* out_buf,
                  float* in_buf,
                  int nframes,
@@ -44,13 +36,8 @@ namespace otto::service::audio {
     std::optional<RtMidiOut> midi_out = std::nullopt;
 
     unsigned buffer_size = 256;
-
-    util::atomic_swap<core::midi::shared_vector<core::midi::AnyMidiEvent>> midi_bufs = {{}, {}};
-
-    std::unique_ptr<core::audio::AudioBufferPool> _buffer_pool;
   };
 
-  using AudioDriver = RTAudioDriver;
 } // namespace otto::service::audio
 
 // kak: other_file=../../src/audio_driver.cpp

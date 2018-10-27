@@ -8,26 +8,14 @@
 #include "util/algorithm.hpp"
 
 #include "core/audio/processor.hpp"
-#include "core/globals.hpp"
 
-#include "services/audio.hpp"
-#include "services/engines.hpp"
-#include "services/logger.hpp"
+#include "services/audio_manager.hpp"
+#include "services/engine_manager.hpp"
+#include "services/log_manager.hpp"
 
-namespace otto::service::audio {
+namespace otto::services {
 
-  RTAudioDriver& RTAudioDriver::get() noexcept
-  {
-    static RTAudioDriver instance{};
-    return instance;
-  }
-
-  core::audio::AudioBufferPool& RTAudioDriver::buffer_pool()
-  {
-    return *_buffer_pool;
-  }
-
-  void RTAudioDriver::init()
+  RTAudioAudioManager::RTAudioAudioManager()
   {
     init_audio();
     try {
@@ -38,7 +26,7 @@ namespace otto::service::audio {
     }
   }
 
-  void RTAudioDriver::init_audio()
+  void RTAudioAudioManager::init_audio()
   {
 #ifndef NDEBUG
     std::vector<RtAudio::Api> apis;
@@ -58,14 +46,14 @@ namespace otto::service::audio {
     inParameters.firstChannel = 0;
 
     try {
-      client.openStream(&outParameters, &inParameters, RTAUDIO_FLOAT32, samplerate, &buffer_size,
+      client.openStream(&outParameters, &inParameters, RTAUDIO_FLOAT32, _samplerate, &buffer_size,
                         [](void* out, void* in, unsigned int nframes, double time,
                            RtAudioStreamStatus status, void* self) {
-                          return static_cast<RTAudioDriver*>(self)->process(
+                          return static_cast<RTAudioAudioManager*>(self)->process(
                             (float*) out, (float*) in, nframes, time, status);
                         },
                         this);
-      _buffer_pool = std::make_unique<AudioBufferPool>(buffer_size);
+      buffer_pool().set_buffer_size(buffer_size);
       client.startStream();
     } catch (RtAudioError& e) {
       e.printMessage();
@@ -73,7 +61,7 @@ namespace otto::service::audio {
     }
   }
 
-  void RTAudioDriver::init_midi()
+  void RTAudioAudioManager::init_midi()
   {
     midi_out.emplace();
     midi_out->setClientName("OTTO");
@@ -101,30 +89,19 @@ namespace otto::service::audio {
 
     midi_in->setCallback(
       [](double timeStamp, std::vector<unsigned char>* message, void* userData) {
-        auto& self = *static_cast<RTAudioDriver*>(userData);
+        auto& self = *static_cast<RTAudioAudioManager*>(userData);
         self.send_midi_event(core::midi::from_bytes(*message));
       },
       this);
   }
 
-  void RTAudioDriver::shutdown()
+  int RTAudioAudioManager::process(float* out_data,
+                                   float* in_data,
+                                   int nframes,
+                                   double stream_time,
+                                   RtAudioStreamStatus stream_status)
   {
-    if (client.isStreamOpen()) client.closeStream();
-  }
-
-  void RTAudioDriver::send_midi_event(core::midi::AnyMidiEvent evt) noexcept
-  {
-    midi_bufs.outer().emplace_back(std::move(evt));
-  }
-
-
-  int RTAudioDriver::process(float* out_data,
-                             float* in_data,
-                             int nframes,
-                             double stream_time,
-                             RtAudioStreamStatus stream_status)
-  {
-    auto running = audio::running() && global::running();
+    auto running = this->running() && Application::current().running();
     if (!running) {
       return 0;
     }
@@ -137,10 +114,11 @@ namespace otto::service::audio {
     midi_bufs.swap();
 
     int ref_count = 0;
-    auto in_buf = AudioBufferHandle(in_data, nframes, ref_count);
-    auto out = engines::process({in_buf, {midi_bufs.inner()}, nframes});
+    auto in_buf = core::audio::AudioBufferHandle(in_data, nframes, ref_count);
+    auto out =
+      Application::current().engine_manager->process({in_buf, {midi_bufs.inner()}, nframes});
 
-    audio::process_audio_output(out);
+    //process_audio_output(out);
 
     LOGW_IF(out.nframes != nframes, "Frames went missing!");
 
@@ -160,6 +138,6 @@ namespace otto::service::audio {
     }
     return 0;
   }
-} // namespace otto::service::audio
+} // namespace otto::services
 
 // kak: other_file=../include/board/audio_driver.hpp

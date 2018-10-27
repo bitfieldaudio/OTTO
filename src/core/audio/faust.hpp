@@ -18,10 +18,7 @@
 
 #include "core/props/mixins/faust_link.hpp"
 
-namespace otto::service::audio {
-  using core::audio::AudioBufferPool;
-  AudioBufferPool& buffer_pool() noexcept;
-}
+#include "services/audio_manager.hpp"
 
 namespace otto::core::audio {
 
@@ -175,7 +172,7 @@ namespace otto::core::audio {
 
     audio::ProcessData<Cout> process(audio::ProcessData<Cin> data)
     {
-      auto out = service::audio::buffer_pool().allocate_multi<Cout>();
+      auto out = Application::current().audio_manager->buffer_pool().allocate_multi<Cout>();
       auto in_bufs = data.audio.data();
       auto out_bufs = out.data();
       fDSP->compute(data.nframes, in_bufs.data(), out_bufs.data());

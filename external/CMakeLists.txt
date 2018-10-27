@@ -36,20 +36,6 @@ add_library(nanocanvas ${nanocanvas_src})
 target_link_libraries(nanocanvas nanovg)
 target_include_directories(nanocanvas SYSTEM INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/NanoCanvas/src)
 
-if (OTTO_DEBUG_UI)
-	# Imgui
-	execute_process(COMMAND git submodule update --init -- imgui WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-	file(GLOB imgui_src
-	  "${CMAKE_CURRENT_SOURCE_DIR}/imgui/imgui.cpp"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/imgui/imgui_draw.cpp"
-	  )
-else()
-	set(imgui_src "${CMAKE_CURRENT_SOURCE_DIR}/src/none.cpp")
-endif()
-
-add_library(imgui ${imgui_src})
-target_include_directories(imgui SYSTEM INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/imgui)
-
 # fmtlib
 execute_process(COMMAND git submodule update --init -- fmt WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/fmt)

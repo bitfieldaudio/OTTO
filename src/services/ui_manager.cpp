@@ -16,9 +16,9 @@ namespace otto::services {
   {
     _selected_engine_name = engine_name;
 
-    auto engine = Application::current().engine_manager.by_name(engine_name);
+    auto engine = Application::current().engine_manager->by_name(engine_name);
     if (!engine) {
-      engine = Application::current().engine_manager.by_name(initial_engine);
+      engine = Application::current().engine_manager->by_name(initial_engine);
     }
     if (engine != nullptr) {
       display(engine->screen());
@@ -48,7 +48,7 @@ namespace otto::services {
 
     auto save = [this]() { return nlohmann::json({{"SelectedEngine", _selected_engine_name}}); };
 
-    Application::current().state_manager.attach("UI", load, save);
+    Application::current().state_manager->attach("UI", load, save);
   }
 
   void UIManager::display(Screen& screen)

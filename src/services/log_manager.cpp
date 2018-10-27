@@ -6,7 +6,7 @@
 
 namespace otto::services {
 
-  void LogManager::init(int argc, char* argv[], bool enable_console, const char* logFilePath)
+  LogManager::LogManager(int argc, char* argv[], bool enable_console, const char* logFilePath)
   {
     std::string def_path = Application::current().data_dir / "log.txt";
     if (logFilePath == nullptr) {

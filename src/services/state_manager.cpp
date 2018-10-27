@@ -9,7 +9,8 @@
 namespace otto::services {
 
   struct DefaultStateManager : StateManager {
-    DefaultStateManager(Application& app);
+    DefaultStateManager();
+    ~DefaultStateManager();
 
     util::JsonFile data_file;
 
@@ -20,9 +21,19 @@ namespace otto::services {
     void detach(std::string name) override;
   };
 
-  DefaultStateManager::DefaultStateManager(Application& app)
-    : data_file(app.data_dir / "state.json")
-  {}
+  std::unique_ptr<StateManager> StateManager::create_default()
+  {
+    return std::make_unique<DefaultStateManager>();
+  }
+
+  DefaultStateManager::DefaultStateManager()
+    : data_file(Application::current().data_dir / "state.json")
+  {
+    Application::current().events.post_init.subscribe([this] { load(); });
+    Application::current().events.pre_exit.subscribe([this] { save(); });
+  }
+
+  DefaultStateManager::~DefaultStateManager() {}
 
   void DefaultStateManager::load()
   {

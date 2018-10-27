@@ -2,7 +2,6 @@ set(CMAKE_CXX_STANDARD 17)
 
 file(GLOB_RECURSE headers ${OTTO_SOURCE_DIR}/src/*.hpp)
 file(GLOB_RECURSE sources ${OTTO_SOURCE_DIR}/src/*.cpp)
-list(REMOVE_ITEM sources ${OTTO_SOURCE_DIR}/src/main.cpp)
 
 find_package (Threads)
 # Library
@@ -10,25 +9,26 @@ add_library(otto ${sources})
 target_link_libraries(otto PUBLIC ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
 target_include_directories(otto PUBLIC ./)
 
+# Executable
+add_executable(otto_exec ${OTTO_SOURCE_DIR}/boards/${OTTO_BOARD}/src/main.cpp)
+target_link_libraries(otto_exec PUBLIC otto)
+set_target_properties(otto_exec PROPERTIES OUTPUT_NAME otto)
+
+add_subdirectory(${OTTO_EXTERNAL_DIR} ${OTTO_BINARY_DIR}/external)
+
 # This updates configurations and includes board specific files
 otto_include_board(${OTTO_BOARD})
 otto_add_definitions(otto)
+otto_add_definitions(otto_exec)
 
 if (NOT OTTO_USE_LIBCXX)
   target_link_libraries(otto PUBLIC atomic)
 endif()
 
-# Executable
-add_executable(otto_exec ${OTTO_SOURCE_DIR}/src/main.cpp)
-target_link_libraries(otto_exec PUBLIC otto)
-set_target_properties(otto_exec PROPERTIES OUTPUT_NAME otto)
-
-add_subdirectory(${OTTO_EXTERNAL_DIR} ${OTTO_BINARY_DIR}/external)
 target_link_libraries(otto PUBLIC external)
 target_link_libraries(otto PUBLIC nanocanvas)
 target_link_libraries(otto PUBLIC GSL)
 target_link_libraries(otto PUBLIC fmt)
-target_link_libraries(otto PUBLIC imgui)
 target_link_libraries(otto PUBLIC range-v3)
 target_link_libraries(otto PUBLIC tiny-process-library)
 

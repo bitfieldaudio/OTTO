@@ -14,7 +14,7 @@ namespace otto::core::engine {
     SelectorWidget::Options opts;
     opts.on_select = [this, sl = std::move(select_eg)](int idx) {
       auto& eg = sl(idx);
-      preset_wid.items(Application::current().preset_manager.preset_names(eg.name()));
+      preset_wid.items(Application::current().preset_manager->preset_names(eg.name()));
       preset_wid.select(eg.current_preset(), true);
     };
     opts.item_colour = Colours::Gray50;
@@ -27,7 +27,7 @@ namespace otto::core::engine {
   {
     SelectorWidget::Options opts;
     opts.on_select = [cur_eg = std::move(cur_eg)](int idx) {
-      Application::current().preset_manager.apply_preset(cur_eg(), idx);
+      Application::current().preset_manager->apply_preset(cur_eg(), idx);
     };
     opts.item_colour = Colours::Gray50;
     opts.selected_item_colour = Colours::Green;

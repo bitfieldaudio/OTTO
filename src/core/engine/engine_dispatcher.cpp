@@ -19,7 +19,7 @@ namespace otto::core::engine {
       // Apply default presets to all engines
       try {
         int idx = engine->current_preset();
-        Application::current().preset_manager.apply_preset(*engine, std::max(idx, 0), true);
+        Application::current().preset_manager->apply_preset(*engine, std::max(idx, 0), true);
       } catch (services::PresetManager::exception& e) {
         DLOGI(e.what());
       }

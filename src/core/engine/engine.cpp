@@ -1,6 +1,6 @@
 #include "engine.hpp"
 
-#include "services/application.hpp"
+#include "services/preset_manager.hpp"
 
 namespace otto::core::engine {
 
@@ -56,7 +56,7 @@ namespace otto::core::engine {
     if (props().is<props::serializable>()) {
       j["props"] = props().as<props::serializable>().to_json();
       try {
-        j["preset"] = Application::current().preset_manager.name_of_idx(_name, _current_preset);
+        j["preset"] = Application::current().preset_manager->name_of_idx(_name, _current_preset);
       } catch (services::PresetManager::exception& e) {
         // no preset set, all is good
       }
@@ -69,7 +69,7 @@ namespace otto::core::engine {
     if (j.is_object()) {
       auto iter = j.find("preset");
       if (iter != j.end()) {
-        Application::current().preset_manager.apply_preset(*this, iter->get<std::string>(), true);
+        Application::current().preset_manager->apply_preset(*this, iter->get<std::string>(), true);
       }
       if (props().is<props::serializable>())
         props().as<props::serializable>().from_json(j["props"]);

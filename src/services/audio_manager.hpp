@@ -6,27 +6,13 @@
 #include "core/service.hpp"
 #include "services/debug_ui.hpp"
 #include "util/event.hpp"
+#include "util/locked.hpp"
 
 #include "services/application.hpp"
 
 namespace otto::services {
 
   struct AudioManager : core::Service {
-    struct Events {
-      util::Event<> pre_init;
-    } events;
-
-    /// Use this to get audio buffers. There are currently a maximum of 4 avaliable, so make sure to
-    /// release them when you're done with them!
-    core::audio::AudioBufferPool& buffer_pool() noexcept;
-
-    /// Get the current samplerate
-    virtual int samplerate() noexcept = 0;
-
-    /// Process the final output
-    ///
-    /// Currently only used for debugging
-    virtual void process_audio_output(core::audio::ProcessData<2> audio_output);
 
     /// Fires Events::pre_init and generates midi frequency table.
     ///
@@ -35,23 +21,42 @@ namespace otto::services {
     /// AudioBufferPool::set_buffer_size as soon as possible
     AudioManager();
 
-    /// Start audio processing
-    ///
-    /// \postconditions `running() == true`
-    virtual void start() noexcept;
-
-    /// Check if audio should be processed
-    ///
-    /// \returns `true` if start() has been called
-    virtual bool running() noexcept;
+    /// Use this to get audio buffers. There are currently a maximum of 4 avaliable, so make sure to
+    /// release them when you're done with them!
+    core::audio::AudioBufferPool& buffer_pool() noexcept;
 
     /// Send a midi event into the system.
     ///
     /// The `core::midi` namespace has some nice utils for constructing events.
-    virtual void send_midi_event(core::midi::AnyMidiEvent) noexcept = 0;
+    void send_midi_event(core::midi::AnyMidiEvent) noexcept;
+
+    /// Get the current samplerate
+    int samplerate() noexcept { return _samplerate; }
+
+    /// Process the final output
+    ///
+    /// Currently only used for debugging
+    void process_audio_output(core::audio::ProcessData<2> audio_output);
+
+    /// Start audio processing
+    ///
+    /// \postconditions `running() == true`
+    void start() noexcept;
+
+    /// Check if audio should be processed
+    ///
+    /// \returns `true` if start() has been called
+    bool running() noexcept;
+
+    struct Events {
+      util::Event<> pre_init;
+    } events;
 
   protected:
-    core::audio::AudioBufferPool _buffer_pool {1};
+    util::atomic_swap<core::midi::shared_vector<core::midi::AnyMidiEvent>> midi_bufs = {{}, {}};
+    int _samplerate = 41000;
+  private:
+    core::audio::AudioBufferPool _buffer_pool{1};
     std::atomic_bool _running{false};
   };
 

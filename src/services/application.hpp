@@ -1,8 +1,10 @@
 #pragma once
 
-#include <memory>
 #include <atomic>
+#include <functional>
+#include <memory>
 
+#include "util/event.hpp"
 #include "util/exception.hpp"
 #include "util/filesystem.hpp"
 
@@ -14,6 +16,37 @@ namespace otto::services {
   struct PresetManager;
   struct UIManager;
   struct StateManager;
+  struct Application;
+
+  template<typename Service>
+  struct ServiceStorage {
+    using Factory = std::function<std::unique_ptr<Service>()>;
+
+    Service* operator->() noexcept
+    {
+      return _storage.get();
+    }
+
+    Service& operator*() noexcept 
+    {
+      return *_storage;
+    }
+
+    operator Service&() noexcept
+    {
+      return *_storage;
+    }
+
+  protected:
+    friend struct Application;
+    ServiceStorage& operator=(Factory f)
+    {
+      _storage = f();
+      return *this;
+    }
+
+    std::unique_ptr<Service> _storage;
+  };
 
   struct Application {
     enum struct ErrorCode {
@@ -33,9 +66,18 @@ namespace otto::services {
     ///
     /// When an Application is constructed, this function will be pointed to it. The one who
     /// constructs the application still has to destruct it when done with it.
-    /// 
+    ///
     /// There should obviously only ever be one Application instance in the process.
     static Application& current() noexcept;
+
+    Application(ServiceStorage<LogManager>::Factory log_factory,
+                ServiceStorage<StateManager>::Factory state_factory,
+                ServiceStorage<PresetManager>::Factory preset_factory,
+                ServiceStorage<EngineManager>::Factory engine_factory,
+                ServiceStorage<AudioManager>::Factory audio_factory,
+                ServiceStorage<UIManager>::Factory ui_factory);
+
+    virtual ~Application();
 
     void exit(ErrorCode ec) noexcept;
 
@@ -43,29 +85,25 @@ namespace otto::services {
 
     ErrorCode error() noexcept;
 
-    void handle_signal(int signal) noexcept;
+    static void handle_signal(int signal) noexcept;
 
-    AudioManager& audio_manager;
-    EngineManager& engine_manager;
-    LogManager& log_manager;
-    PresetManager& preset_manager;
-    UIManager& ui_manager;
-    StateManager& state_manager;
+    ServiceStorage<LogManager> log_manager;
+    ServiceStorage<StateManager> state_manager;
+    ServiceStorage<PresetManager> preset_manager;
+    ServiceStorage<AudioManager> audio_manager;
+    ServiceStorage<EngineManager> engine_manager;
+    ServiceStorage<UIManager> ui_manager;
 
-  protected:
-    Application(AudioManager& audio_manager,
-                EngineManager& engine_manager,
-                LogManager& log_manager,
-                PresetManager& preset_manager,
-                UIManager& ui_manager,
-                StateManager& state_manager);
-
-    virtual ~Application();
+    struct Events {
+      util::Event<> post_init;
+      util::Event<> pre_exit;
+    } events;
 
   private:
     std::atomic_bool _is_running{true};
     std::atomic<ErrorCode> _error_code;
-    static Application* _current;
+
+    static inline Application* _current = nullptr;
   };
 
 } // namespace otto::services

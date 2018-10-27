@@ -12,10 +12,10 @@ namespace otto::board::ui {
     auto send_midi = [action](int note) {
       if (action == Action::press) {
         auto evt = core::midi::NoteOnEvent{note};
-        Application::current().audio_manager.send_midi_event(evt);
+        Application::current().audio_manager->send_midi_event(evt);
         LOGI("Press key {}", evt.key);
       } else if (action == Action::release) {
-        Application::current().audio_manager.send_midi_event(core::midi::NoteOffEvent{note});
+        Application::current().audio_manager->send_midi_event(core::midi::NoteOffEvent{note});
         LOGI("Release key {}", note);
       }
     };
@@ -24,14 +24,14 @@ namespace otto::board::ui {
 
     auto send_key = [action](OKey k, bool repeat = false) {
       if (action == Action::press || (action == Action::repeat && repeat))
-        Application::current().ui_manager.keypress(k);
+        Application::current().ui_manager->keypress(k);
       else if (action == Action::release)
-        Application::current().ui_manager.keyrelease(k);
+        Application::current().ui_manager->keyrelease(k);
     };
 
     auto send_rotary = [action](core::ui::Rotary rot, int n) {
       if (action == Action::press || (action == Action::repeat))
-        Application::current().ui_manager.rotary({rot, n});
+        Application::current().ui_manager->rotary({rot, n});
     };
 
 
