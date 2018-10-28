@@ -55,10 +55,18 @@ namespace otto::engines {
       {
           engine.props.preset.step(e.clicks);
           //Find name of appropriate JSON file depending on preset variable
-
+          std::istringstream patchlist(global::data_dir / "dx7patches_list.txt");
+          std::string path;
+          std::string correct_path;
+          int idx = 0;
+          while(!patchlist.eof()) {
+             std::getline(patchlist,path);
+             if (idx==engine.props.preset) correct_path = path;
+             idx++;
+          }
           //Read appropriate JSON file
-          //std::ifstream i("patches/analog-2.json");
-          util::JsonFile patch{global::data_dir / "dx7patches/analog-2.json"};
+          //util::JsonFile patch{global::data_dir / "dx7patches/analog-2.json"};
+          util::JsonFile patch{global::data_dir / "dx7patches" / correct_path};
           patch.read();
           engine.props.algN.set(patch.data()["algorithm"]);
           engine.props.feedback.set(patch.data()["feedback"]);

@@ -15,7 +15,7 @@ namespace otto::engines {
 
     struct Props : Properties<> {
 
-      Property<int> preset      = {this, "preset",    1,   has_limits::init(1, 32),    steppable::init(1)};
+      Property<int> preset      = {this, "preset",    1,   has_limits::init(1, 20),    steppable::init(1)};
       Property<float> variable1      = {this, "variable1",    0,   has_limits::init(0, 1),    steppable::init(0.01)};
       Property<float> variable2      = {this, "variable2",    0,   has_limits::init(0, 1),    steppable::init(0.01)};
       Property<float> variable3       = {this, "variable3",      0.3, has_limits::init(0, 1),    steppable::init(0.01)};
