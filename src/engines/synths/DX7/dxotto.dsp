@@ -73,7 +73,7 @@ with {
   opMode(n) = ba.take(n+1, opModeUI);
   opFreqUI = par(i,6, hslider("/opFreq_%i", 1, 0, 99, 1));
   opFreq(n) = ba.take(n+1,opFreqUI);
-  opDetuneUI = par(i,6, hslider("/opDetune_%i", 0, 0, 99, 1));
+  opDetuneUI = par(i,6, hslider("/opDetune_%i", 0, -7, 7, 1));
   opDetune(n) = ba.take(n+1,opDetuneUI);
   opRateScaleUI = par(i,6, hslider("/opRateScale_%i", 3, 0, 99, 1)); //Might also be called the 'keyboardRateScaling'.
   opRateScale(n) = ba.take(n+1,opRateScaleUI);

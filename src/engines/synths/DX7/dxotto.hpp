@@ -30,12 +30,12 @@ namespace otto::engines {
       Property<int,no_serialize> opRateScale_4 = {this, "opRateScale_4", 1,    has_limits::init(0, 99),    steppable::init(1)};
       Property<int,no_serialize> opRateScale_5 = {this, "opRateScale_5", 1,    has_limits::init(0, 99),    steppable::init(1)};
 
-      Property<int,no_serialize> opDetune_0 = {this, "opDetune_0", 1,    has_limits::init(0, 99),    steppable::init(1)};
-      Property<int,no_serialize> opDetune_1 = {this, "opDetune_1", 1,    has_limits::init(0, 99),    steppable::init(1)};
-      Property<int,no_serialize> opDetune_2 = {this, "opDetune_2", 1,    has_limits::init(0, 99),    steppable::init(1)};
-      Property<int,no_serialize> opDetune_3 = {this, "opDetune_3", 1,    has_limits::init(0, 99),    steppable::init(1)};
-      Property<int,no_serialize> opDetune_4 = {this, "opDetune_4", 1,    has_limits::init(0, 99),    steppable::init(1)};
-      Property<int,no_serialize> opDetune_5 = {this, "opDetune_5", 1,    has_limits::init(0, 99),    steppable::init(1)};
+      Property<int,no_serialize> opDetune_0 = {this, "opDetune_0", 1,    has_limits::init(-7, 7),    steppable::init(1)};
+      Property<int,no_serialize> opDetune_1 = {this, "opDetune_1", 1,    has_limits::init(-7, 7),    steppable::init(1)};
+      Property<int,no_serialize> opDetune_2 = {this, "opDetune_2", 1,    has_limits::init(-7, 7),    steppable::init(1)};
+      Property<int,no_serialize> opDetune_3 = {this, "opDetune_3", 1,    has_limits::init(-7, 7),    steppable::init(1)};
+      Property<int,no_serialize> opDetune_4 = {this, "opDetune_4", 1,    has_limits::init(-7, 7),    steppable::init(1)};
+      Property<int,no_serialize> opDetune_5 = {this, "opDetune_5", 1,    has_limits::init(-7, 7),    steppable::init(1)};
 
       Property<int,no_serialize> opFreq_0 = {this, "opFreq_0", 1,    has_limits::init(0, 99),    steppable::init(1)};
       Property<int,no_serialize> opFreq_1 = {this, "opFreq_1", 1,    has_limits::init(0, 99),    steppable::init(1)};
