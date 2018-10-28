@@ -1,5 +1,5 @@
 #include "dxotto.hpp"
-
+#include <fstream>
 #include "core/globals.hpp"
 #include "core/ui/vector_graphics.hpp"
 
@@ -55,13 +55,14 @@ namespace otto::engines {
       {
           engine.props.preset.step(e.clicks);
           //Find name of appropriate JSON file depending on preset variable
-          std::istringstream patchlist(global::data_dir / "dx7patches_list.txt");
+          std::ifstream patchlist(global::data_dir / "dx7patches_list.txt");
           std::string path;
           std::string correct_path;
           int idx = 0;
-          while(!patchlist.eof()) {
-             std::getline(patchlist,path);
-             if (idx==engine.props.preset) correct_path = path;
+          while(std::getline(patchlist,path)) {
+              if (idx==engine.props.preset) {
+                  correct_path = path;
+              }
              idx++;
           }
           //Read appropriate JSON file
@@ -77,6 +78,104 @@ namespace otto::engines {
           engine.props.opRateScale_3.set(patch.data()["operators"][3]["keyboardRateScaling"]);
           engine.props.opRateScale_4.set(patch.data()["operators"][4]["keyboardRateScaling"]);
           engine.props.opRateScale_5.set(patch.data()["operators"][5]["keyboardRateScaling"]);
+
+          engine.props.opDetune_0.set(patch.data()["operators"][0]["detune"]);
+          engine.props.opDetune_1.set(patch.data()["operators"][1]["detune"]);
+          engine.props.opDetune_2.set(patch.data()["operators"][2]["detune"]);
+          engine.props.opDetune_3.set(patch.data()["operators"][3]["detune"]);
+          engine.props.opDetune_4.set(patch.data()["operators"][4]["detune"]);
+          engine.props.opDetune_5.set(patch.data()["operators"][5]["detune"]);
+
+          engine.props.opFreq_0.set(patch.data()["operators"][0]["frequency"]);
+          engine.props.opFreq_1.set(patch.data()["operators"][1]["frequency"]);
+          engine.props.opFreq_2.set(patch.data()["operators"][2]["frequency"]);
+          engine.props.opFreq_3.set(patch.data()["operators"][3]["frequency"]);
+          engine.props.opFreq_4.set(patch.data()["operators"][4]["frequency"]);
+          engine.props.opFreq_5.set(patch.data()["operators"][5]["frequency"]);
+
+          engine.props.opMode_0.set( (patch.data()["operators"][0]["oscillatorMode"]=="fixed") ? 1 : 0);
+          engine.props.opMode_1.set( (patch.data()["operators"][1]["oscillatorMode"]=="fixed") ? 1 : 0);
+          engine.props.opMode_2.set( (patch.data()["operators"][2]["oscillatorMode"]=="fixed") ? 1 : 0);
+          engine.props.opMode_3.set( (patch.data()["operators"][3]["oscillatorMode"]=="fixed") ? 1 : 0);
+          engine.props.opMode_4.set( (patch.data()["operators"][4]["oscillatorMode"]=="fixed") ? 1 : 0);
+          engine.props.opMode_5.set( (patch.data()["operators"][5]["oscillatorMode"]=="fixed") ? 1 : 0);
+
+          engine.props.ampModSens_0.set(patch.data()["operators"][0]["amSensitivity"]);
+          engine.props.ampModSens_1.set(patch.data()["operators"][1]["amSensitivity"]);
+          engine.props.ampModSens_2.set(patch.data()["operators"][2]["amSensitivity"]);
+          engine.props.ampModSens_3.set(patch.data()["operators"][3]["amSensitivity"]);
+          engine.props.ampModSens_4.set(patch.data()["operators"][4]["amSensitivity"]);
+          engine.props.ampModSens_5.set(patch.data()["operators"][5]["amSensitivity"]);
+
+          engine.props.keyVelSens_0.set(patch.data()["operators"][0]["keyVelocitySensitivity"]);
+          engine.props.keyVelSens_1.set(patch.data()["operators"][1]["keyVelocitySensitivity"]);
+          engine.props.keyVelSens_2.set(patch.data()["operators"][2]["keyVelocitySensitivity"]);
+          engine.props.keyVelSens_3.set(patch.data()["operators"][3]["keyVelocitySensitivity"]);
+          engine.props.keyVelSens_4.set(patch.data()["operators"][4]["keyVelocitySensitivity"]);
+          engine.props.keyVelSens_5.set(patch.data()["operators"][5]["keyVelocitySensitivity"]);
+
+          engine.props.outLevel_0.set(patch.data()["operators"][0]["outputLevel"]);
+          engine.props.outLevel_1.set(patch.data()["operators"][1]["outputLevel"]);
+          engine.props.outLevel_2.set(patch.data()["operators"][2]["outputLevel"]);
+          engine.props.outLevel_3.set(patch.data()["operators"][3]["outputLevel"]);
+          engine.props.outLevel_4.set(patch.data()["operators"][4]["outputLevel"]);
+          engine.props.outLevel_5.set(patch.data()["operators"][5]["outputLevel"]);
+
+          engine.props.egR1_0.set(patch.data()["operators"][0]["eg"]["rate1"]);
+          engine.props.egR1_1.set(patch.data()["operators"][1]["eg"]["rate1"]);
+          engine.props.egR1_2.set(patch.data()["operators"][2]["eg"]["rate1"]);
+          engine.props.egR1_3.set(patch.data()["operators"][3]["eg"]["rate1"]);
+          engine.props.egR1_4.set(patch.data()["operators"][4]["eg"]["rate1"]);
+          engine.props.egR1_5.set(patch.data()["operators"][5]["eg"]["rate1"]);
+
+          engine.props.egR2_0.set(patch.data()["operators"][0]["eg"]["rate2"]);
+          engine.props.egR2_1.set(patch.data()["operators"][1]["eg"]["rate2"]);
+          engine.props.egR2_2.set(patch.data()["operators"][2]["eg"]["rate2"]);
+          engine.props.egR2_3.set(patch.data()["operators"][3]["eg"]["rate2"]);
+          engine.props.egR2_4.set(patch.data()["operators"][4]["eg"]["rate2"]);
+          engine.props.egR2_5.set(patch.data()["operators"][5]["eg"]["rate2"]);
+
+          engine.props.egR3_0.set(patch.data()["operators"][0]["eg"]["rate3"]);
+          engine.props.egR3_1.set(patch.data()["operators"][1]["eg"]["rate3"]);
+          engine.props.egR3_2.set(patch.data()["operators"][2]["eg"]["rate3"]);
+          engine.props.egR3_3.set(patch.data()["operators"][3]["eg"]["rate3"]);
+          engine.props.egR3_4.set(patch.data()["operators"][4]["eg"]["rate3"]);
+          engine.props.egR3_5.set(patch.data()["operators"][5]["eg"]["rate3"]);
+
+          engine.props.egR4_0.set(patch.data()["operators"][0]["eg"]["rate4"]);
+          engine.props.egR4_1.set(patch.data()["operators"][1]["eg"]["rate4"]);
+          engine.props.egR4_2.set(patch.data()["operators"][2]["eg"]["rate4"]);
+          engine.props.egR4_3.set(patch.data()["operators"][3]["eg"]["rate4"]);
+          engine.props.egR4_4.set(patch.data()["operators"][4]["eg"]["rate4"]);
+          engine.props.egR4_5.set(patch.data()["operators"][5]["eg"]["rate4"]);
+
+          engine.props.egL1_0.set(patch.data()["operators"][0]["eg"]["level1"]);
+          engine.props.egL1_1.set(patch.data()["operators"][1]["eg"]["level1"]);
+          engine.props.egL1_2.set(patch.data()["operators"][2]["eg"]["level1"]);
+          engine.props.egL1_3.set(patch.data()["operators"][3]["eg"]["level1"]);
+          engine.props.egL1_4.set(patch.data()["operators"][4]["eg"]["level1"]);
+          engine.props.egL1_5.set(patch.data()["operators"][5]["eg"]["level1"]);
+
+          engine.props.egL2_0.set(patch.data()["operators"][0]["eg"]["level2"]);
+          engine.props.egL2_1.set(patch.data()["operators"][1]["eg"]["level2"]);
+          engine.props.egL2_2.set(patch.data()["operators"][2]["eg"]["level2"]);
+          engine.props.egL2_3.set(patch.data()["operators"][3]["eg"]["level2"]);
+          engine.props.egL2_4.set(patch.data()["operators"][4]["eg"]["level2"]);
+          engine.props.egL2_5.set(patch.data()["operators"][5]["eg"]["level2"]);
+
+          engine.props.egL3_0.set(patch.data()["operators"][0]["eg"]["level3"]);
+          engine.props.egL3_1.set(patch.data()["operators"][1]["eg"]["level3"]);
+          engine.props.egL3_2.set(patch.data()["operators"][2]["eg"]["level3"]);
+          engine.props.egL3_3.set(patch.data()["operators"][3]["eg"]["level3"]);
+          engine.props.egL3_4.set(patch.data()["operators"][4]["eg"]["level3"]);
+          engine.props.egL3_5.set(patch.data()["operators"][5]["eg"]["level3"]);
+
+          engine.props.egL4_0.set(patch.data()["operators"][0]["eg"]["level4"]);
+          engine.props.egL4_1.set(patch.data()["operators"][1]["eg"]["level4"]);
+          engine.props.egL4_2.set(patch.data()["operators"][2]["eg"]["level4"]);
+          engine.props.egL4_3.set(patch.data()["operators"][3]["eg"]["level4"]);
+          engine.props.egL4_4.set(patch.data()["operators"][4]["eg"]["level4"]);
+          engine.props.egL4_5.set(patch.data()["operators"][5]["eg"]["level4"]);
 
           break;
       }

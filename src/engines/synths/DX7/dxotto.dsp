@@ -29,14 +29,14 @@ with {
 
   out = par(i, 32, control( dx.dx7_algo(i,egR1,egR2,egR3,egR4,egL1,egL2,egL3,egL4,outLevel,keyVelSens,ampModSens,opMode,opFreq,opDetune,opRateScale,feedback,0,0,0,midifreq,midigain,midigate) , algN==i)) :> _;
 
-  //egR1UI = par(i,6, hslider("/egR1_%i", 1, 0, 99, 1)); //Creates 6 different variables to hook into. egR1_0, egR1_1, etc. Where the last index refers to the operator and is 0-indexed.
-  //egR2UI = par(i,6, hslider("/egR2_%i", 1, 0, 99, 1));
-  //egR3UI = par(i,6, hslider("/egR3_%i", 1, 0, 99, 1));
-  //egR4UI = par(i,6, hslider("/egR4_%i", 1, 0, 99, 1));
-  //egL1UI = par(i,6, hslider("/egL1_%i", 1, 0, 99, 1));
-  //egL2UI = par(i,6, hslider("/egL2_%i", 1, 0, 99, 1));
-  //egL3UI = par(i,6, hslider("/egL3_%i", 1, 0, 99, 1));
-  //egL4UI = par(i,6, hslider("/egL4_%i", 1, 0, 99, 1));
+  egR1UI = par(i,6, hslider("/egR1_%i", 1, 0, 99, 1)); //Creates 6 different variables to hook into. egR1_0, egR1_1, etc. Where the last index refers to the operator and is 0-indexed.
+  egR2UI = par(i,6, hslider("/egR2_%i", 1, 0, 99, 1));
+  egR3UI = par(i,6, hslider("/egR3_%i", 1, 0, 99, 1));
+  egR4UI = par(i,6, hslider("/egR4_%i", 1, 0, 99, 1));
+  egL1UI = par(i,6, hslider("/egL1_%i", 1, 0, 99, 1));
+  egL2UI = par(i,6, hslider("/egL2_%i", 1, 0, 99, 1));
+  egL3UI = par(i,6, hslider("/egL3_%i", 1, 0, 99, 1));
+  egL4UI = par(i,6, hslider("/egL4_%i", 1, 0, 99, 1));
   egR1(n) = ba.take(n+1, egR1UI);
   egR2(n) = ba.take(n+1, egR2UI);
   egR3(n) = ba.take(n+1, egR3UI);
@@ -46,34 +46,34 @@ with {
   egL3(n) = ba.take(n+1, egL3UI);
   egL4(n) = ba.take(n+1, egL4UI);
 
-    egR1UI = (96, 95, 95, 95, 95, 95);
-    egR2UI = (25, 50, 20, 29, 20, 29);
-    egR3UI = (25, 35, 20, 20, 20, 20);
-    egR4UI = (67, 78, 50, 50, 50, 50);
-    egL1UI = (99, 99, 99, 99, 99, 99);
-    egL2UI = (75, 75, 95, 95, 95, 95);
-    egL3UI = (0, 0, 0, 0, 0, 0);
-    egL4UI = (0, 0, 0, 0, 0, 0);
-    outLevelUI = (99, 58, 99, 89, 99, 79);
-    keyVelSensUI = (2,7,2,6,0,6);
-    ampModSensUI = (0,0,0,0,0,0);
-    opModeUI = (0,0,0,0,0,0);
-    opFreqUI = (1, 14, 1, 1, 1, 1);
-    opDetuneUI = (3, 0, 0, 0, -7, 7);
+    //egR1UI = (96, 95, 95, 95, 95, 95);
+    //egR2UI = (25, 50, 20, 29, 20, 29);
+    //egR3UI = (25, 35, 20, 20, 20, 20);
+    //egR4UI = (67, 78, 50, 50, 50, 50);
+    //egL1UI = (99, 99, 99, 99, 99, 99);
+    //egL2UI = (75, 75, 95, 95, 95, 95);
+    //egL3UI = (0, 0, 0, 0, 0, 0);
+    //egL4UI = (0, 0, 0, 0, 0, 0);
+    //outLevelUI = (99, 58, 99, 89, 99, 79);
+    //keyVelSensUI = (2,7,2,6,0,6);
+    //ampModSensUI = (0,0,0,0,0,0);
+    //opModeUI = (0,0,0,0,0,0);
+    //opFreqUI = (1, 14, 1, 1, 1, 1);
+    //opDetuneUI = (3, 0, 0, 0, -7, 7);
     //opRateScaleUI = (3, 3,3, 3, 3, 3);
     //feedback = 6;
 
-  //outLevelUI = par(i,6, hslider("/outLevel_%i", 99, 0, 99, 1));
+  outLevelUI = par(i,6, hslider("/outLevel_%i", 99, 0, 99, 1));
   outLevel(n) = ba.take(n+1, outLevelUI);
-  //keyVelSensUI = par(i,6, hslider("/keyVelSens_%i", 99, 0, 99, 1));
+  keyVelSensUI = par(i,6, hslider("/keyVelSens_%i", 99, 0, 99, 1));
   keyVelSens(n) = ba.take(n+1, keyVelSensUI);
-  //ampModSensUI = par(i,6, hslider("/ampModSens_%i", 99, 0, 99, 1));
+  ampModSensUI = par(i,6, hslider("/ampModSens_%i", 99, 0, 99, 1));
   ampModSens(n) = ba.take(n+1,ampModSensUI);
-  //opModeUI = par(i,6, hslider("/opMode_%i", 0, 0, 1, 1) : int ); //0 is ratio, 1 is fixed frequency (Perhaps it should  be cast as int)
+  opModeUI = par(i,6, hslider("/opMode_%i", 0, 0, 1, 1) : int ); //0 is ratio, 1 is fixed frequency (Perhaps it should  be cast as int)
   opMode(n) = ba.take(n+1, opModeUI);
-  //opFreqUI = par(i,6, hslider("/opFreq_%i", 1, 0, 99, 1));
+  opFreqUI = par(i,6, hslider("/opFreq_%i", 1, 0, 99, 1));
   opFreq(n) = ba.take(n+1,opFreqUI);
-  //opDetuneUI = par(i,6, hslider("/opDetune_%i", 0, 0, 99, 1));
+  opDetuneUI = par(i,6, hslider("/opDetune_%i", 0, 0, 99, 1));
   opDetune(n) = ba.take(n+1,opDetuneUI);
   opRateScaleUI = par(i,6, hslider("/opRateScale_%i", 3, 0, 99, 1)); //Might also be called the 'keyboardRateScaling'.
   opRateScale(n) = ba.take(n+1,opRateScaleUI);
