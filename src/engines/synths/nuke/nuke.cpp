@@ -70,199 +70,184 @@ using namespace ui::vg;
 
 void NukeSynthScreen::draw(Canvas& ctx)
 {
-    // Nuke/StaticGraphics
+    // dots
     ctx.group([&]{
-        // Nuke/StaticGraphics/Tubing
         ctx.beginPath();
-        ctx.moveTo(242.2, 180.5);
-        ctx.lineTo(206.6, 180.5);
-        ctx.bezierCurveTo(203.4, 180.5, 200.7, 177.9, 200.7, 174.6);
-        ctx.lineTo(200.7, 154.0);
+        ctx.moveTo(286.6, 29.2);
+        ctx.lineTo(287.0, 29.2);
+        ctx.strokeStyle(Colours::Gray50);
+        ctx.lineWidth(6.0);
+        ctx.stroke();
+
+        // Nuke/Dots/Dot
+        ctx.beginPath();
+        ctx.moveTo(193.4, 29.2);
+        ctx.lineTo(193.7, 29.2);
+        ctx.stroke();
+
+        // Nuke/Dots/Dot
+        ctx.beginPath();
+        ctx.moveTo(286.6, 79.4);
+        ctx.lineTo(287.0, 79.4);
+        ctx.stroke();
+
+        // Nuke/Dots/Dot
+        ctx.beginPath();
+        ctx.moveTo(193.4, 79.4);
+        ctx.lineTo(193.7, 79.4);
+        ctx.stroke();
+
+        // Nuke/Dots/Dot
+        ctx.beginPath();
+        ctx.moveTo(286.6, 110.7);
+        ctx.lineTo(287.0, 110.7);
+        ctx.stroke();
+
+        // Nuke/Dots/Dot
+        ctx.beginPath();
+        ctx.moveTo(193.4, 110.7);
+        ctx.lineTo(193.7, 110.7);
+        ctx.stroke();
+
+        // Nuke/Dots/Dot
+        ctx.beginPath();
+        ctx.moveTo(286.6, 202.0);
+        ctx.lineTo(287.0, 202.0);
+        ctx.stroke();
+
+        // Nuke/Dots/Dot
+        ctx.beginPath();
+        ctx.moveTo(193.4, 202.0);
+        ctx.lineTo(193.7, 202.0);
+        ctx.stroke();
+
+        // Nuke/Dots/Dot
+        ctx.beginPath();
+        ctx.moveTo(153.8, 217.5);
+        ctx.lineTo(154.1, 217.5);
+        ctx.stroke();
+
+        // Nuke/Dots/Dot
+        ctx.beginPath();
+        ctx.moveTo(33.0, 217.5);
+        ctx.lineTo(33.4, 217.5);
+        ctx.stroke();
+
+        // Nuke/Dots/Dot
+        ctx.beginPath();
+        ctx.moveTo(153.8, 82.3);
+        ctx.lineTo(154.1, 82.3);
+        ctx.stroke();
+
+        // Nuke/Dots/Dot
+        ctx.beginPath();
+        ctx.moveTo(33.0, 82.3);
+        ctx.lineTo(33.4, 82.3);
+        ctx.stroke();
+
+        // Nuke/Dots/Dot
+        ctx.beginPath();
+        ctx.moveTo(153.8, 22.3);
+        ctx.lineTo(154.1, 22.3);
+        ctx.stroke();
+
+        // Nuke/Dots/Dot
+        ctx.beginPath();
+        ctx.moveTo(33.0, 22.3);
+        ctx.lineTo(33.4, 22.3);
+        ctx.stroke();
+    });
+
+    // gray boxes
+    ctx.group([&]{
+        // Nuke/Boxes/KeyBox
+        ctx.beginPath();
+        ctx.moveTo(269.3, 76.4);
+        ctx.lineTo(211.0, 76.4);
+        ctx.bezierCurveTo(203.0, 76.4, 196.5, 70.0, 196.5, 62.0);
+        ctx.lineTo(196.5, 47.6);
+        ctx.bezierCurveTo(196.5, 39.6, 203.0, 33.2, 211.0, 33.2);
+        ctx.lineTo(269.3, 33.2);
+        ctx.bezierCurveTo(277.3, 33.2, 283.8, 39.6, 283.8, 47.6);
+        ctx.lineTo(283.8, 62.0);
+        ctx.bezierCurveTo(283.8, 70.0, 277.3, 76.4, 269.3, 76.4);
+        ctx.closePath();
         ctx.lineWidth(6.0);
         ctx.strokeStyle(Colours::Gray50);
         ctx.lineCap(Canvas::LineCap::ROUND);
         ctx.lineJoin(Canvas::LineJoin::ROUND);
         ctx.stroke();
 
-        // Nuke/StaticGraphics/Tubing
+        // Nuke/Boxes/FilterBox
         ctx.beginPath();
-        ctx.moveTo(148.4, 123.0);
-        ctx.lineTo(165.0, 123.0);
-        ctx.lineTo(165.0, 73.0);
-        ctx.lineTo(165.0, 52.9);
-        ctx.bezierCurveTo(165.0, 43.1, 173.0, 35.1, 182.9, 35.1);
-        ctx.lineTo(182.9, 35.1);
-        ctx.bezierCurveTo(192.7, 35.1, 200.7, 43.1, 200.7, 52.9);
-        ctx.lineTo(200.7, 154.0);
-        ctx.stroke();
-
-        // Nuke/StaticGraphics/Tubing
-        ctx.beginPath();
-        ctx.moveTo(149.5, 63.9);
-        ctx.lineTo(165.0, 63.9);
-        ctx.stroke();
-
-        // Nuke/StaticGraphics/Tubing
-        ctx.beginPath();
-        ctx.moveTo(68.3, 123.0);
-        ctx.lineTo(96.6, 123.0);
-        ctx.stroke();
-
-        // Nuke/StaticGraphics/Tubing
-        ctx.beginPath();
-        ctx.moveTo(68.3, 63.9);
-        ctx.lineTo(96.6, 63.9);
-        ctx.stroke();
-
-        // Nuke/StaticGraphics/Glass
-        ctx.beginPath();
-        ctx.moveTo(113.0, 35.1);
-        ctx.lineTo(113.0, 39.0);
-        ctx.bezierCurveTo(103.1, 42.9, 96.2, 52.8, 96.7, 64.3);
-        ctx.bezierCurveTo(97.3, 77.3, 107.7, 88.0, 120.7, 88.9);
-        ctx.bezierCurveTo(135.8, 89.9, 148.4, 78.0, 148.4, 63.1);
-        ctx.bezierCurveTo(148.4, 52.1, 141.6, 42.8, 132.1, 39.0);
-        ctx.lineTo(132.1, 35.1);
-        ctx.strokeStyle(Colours::White);
-        ctx.stroke();
-
-        // Nuke/StaticGraphics/Glass
-        ctx.beginPath();
-        ctx.moveTo(291.5, 35.1);
-        ctx.lineTo(291.5, 197.2);
-        ctx.bezierCurveTo(291.5, 201.2, 288.2, 204.5, 284.2, 204.5);
-        ctx.lineTo(249.5, 204.5);
-        ctx.bezierCurveTo(245.5, 204.5, 242.2, 201.2, 242.2, 197.2);
-        ctx.lineTo(242.2, 35.1);
-        ctx.stroke();
-
-        // Nuke/StaticGraphics/BlueGlass
-        ctx.beginPath();
-        ctx.moveTo(29.0, 49.7);
-        ctx.bezierCurveTo(29.0, 41.6, 35.5, 35.1, 43.6, 35.1);
-        ctx.lineTo(48.6, 35.1);
-        ctx.bezierCurveTo(56.7, 35.1, 63.2, 41.6, 63.2, 49.7);
-        ctx.lineTo(63.2, 189.9);
-        ctx.bezierCurveTo(63.2, 197.9, 56.7, 204.5, 48.6, 204.5);
-        ctx.lineTo(43.6, 204.5);
-        ctx.bezierCurveTo(35.5, 204.5, 29.0, 197.9, 29.0, 189.9);
-        ctx.lineTo(29.0, 49.7);
+        ctx.moveTo(269.3, 199.0);
+        ctx.lineTo(211.0, 199.0);
+        ctx.bezierCurveTo(203.0, 199.0, 196.5, 192.5, 196.5, 184.5);
+        ctx.lineTo(196.5, 129.2);
+        ctx.bezierCurveTo(196.5, 121.2, 203.0, 114.7, 211.0, 114.7);
+        ctx.lineTo(269.3, 114.7);
+        ctx.bezierCurveTo(277.3, 114.7, 283.8, 121.2, 283.8, 129.2);
+        ctx.lineTo(283.8, 184.5);
+        ctx.bezierCurveTo(283.8, 192.5, 277.3, 199.0, 269.3, 199.0);
         ctx.closePath();
         ctx.stroke();
 
-        // Nuke/StaticGraphics/BlueEndTubing
+        // Nuke/Boxes/WaveBox
         ctx.beginPath();
-        ctx.moveTo(73.3, 69.0);
-        ctx.lineTo(73.3, 58.6);
-        ctx.stroke();
-
-        // Nuke/StaticGraphics/BlueTubing
-        ctx.beginPath();
-        ctx.moveTo(73.3, 65.7);
-        ctx.lineTo(63.2, 65.7);
-        ctx.lineTo(63.2, 61.7);
-        ctx.lineTo(73.3, 61.7);
-        ctx.stroke();
-
-        // Nuke/StaticGraphics/BlueEndTubing
-        ctx.beginPath();
-        ctx.moveTo(73.3, 128.2);
-        ctx.lineTo(73.3, 117.8);
-        ctx.stroke();
-
-        // Nuke/StaticGraphics/BlueTubing
-        ctx.beginPath();
-        ctx.moveTo(73.3, 125.0);
-        ctx.lineTo(63.2, 125.0);
-        ctx.lineTo(63.2, 121.0);
-        ctx.lineTo(73.3, 121.0);
-        ctx.stroke();
-
-        // Nuke/StaticGraphics/YellowGlass
-        ctx.beginPath();
-        ctx.moveTo(210.5, 64.0);
-        ctx.bezierCurveTo(214.7, 64.0, 218.0, 67.3, 218.0, 71.5);
-        ctx.lineTo(218.0, 151.5);
-        ctx.bezierCurveTo(218.0, 155.7, 214.7, 159.0, 210.5, 159.0);
-        ctx.lineTo(191.0, 159.0);
-        ctx.bezierCurveTo(186.8, 159.0, 183.5, 155.7, 183.5, 151.5);
-        ctx.lineTo(183.5, 71.5);
-        ctx.bezierCurveTo(183.5, 67.3, 186.8, 64.0, 191.0, 64.0);
-        ctx.stroke();
-
-        // Nuke/StaticGraphics/GreenBox
-        ctx.beginPath();
-        ctx.moveTo(148.4, 101.0);
-        ctx.lineTo(148.4, 195.0);
-        ctx.bezierCurveTo(148.4, 200.1, 144.3, 204.3, 139.2, 204.3);
-        ctx.lineTo(105.9, 204.3);
-        ctx.bezierCurveTo(100.8, 204.3, 96.7, 200.1, 96.7, 195.0);
-        ctx.lineTo(96.7, 101.0);
+        ctx.moveTo(136.5, 214.5);
+        ctx.lineTo(50.7, 214.5);
+        ctx.bezierCurveTo(42.7, 214.5, 36.2, 208.1, 36.2, 200.1);
+        ctx.lineTo(36.2, 100.7);
+        ctx.bezierCurveTo(36.2, 92.7, 42.7, 86.3, 50.7, 86.3);
+        ctx.lineTo(136.5, 86.3);
+        ctx.bezierCurveTo(144.5, 86.3, 151.0, 92.7, 151.0, 100.7);
+        ctx.lineTo(151.0, 200.1);
+        ctx.bezierCurveTo(151.0, 208.1, 144.5, 214.5, 136.5, 214.5);
+        ctx.closePath();
         ctx.stroke();
     });
 
-    // temporary float
-    // needs some love to get the animation working.
-    float pivalue1 = 1.2 * M_PI * engine.props.relation ;
-    float pivalue2 = 1.8 * M_PI / engine.props.relation ;
+    //dial
+    ctx.group([&]{
+        // Nuke/Dial/Low
+        ctx.beginPath();
+        ctx.moveTo(59.0, 57.5);
+        ctx.bezierCurveTo(59.0, 38.5, 74.5, 23.0, 93.6, 23.0);
+        ctx.lineWidth(6.0);
+        ctx.strokeStyle(Colours::White);
+        ctx.lineCap(Canvas::LineCap::ROUND);
+        ctx.lineJoin(Canvas::LineJoin::ROUND);
+        ctx.stroke();
 
-    //green circle
-    ctx.beginPath();
-    ctx.lineWidth(6.0);
-    ctx.arc(122.5,63,14,pivalue1,pivalue2,true);
-    ctx.closePath();
-    ctx.fill(Colours::Green);
-    ctx.stroke(Colours::Green);
+        // Nuke/Dial/High
+        ctx.beginPath();
+        ctx.moveTo(93.6, 23.0);
+        ctx.bezierCurveTo(112.7, 23.0, 128.1, 38.5, 128.1, 57.5);
+        ctx.strokeStyle(Colours::Red);
+        ctx.stroke();
 
-    // Nuke/FullBGLayer
-    ctx.beginPath();
-    ctx.moveTo(254.0, 193.0);
-    ctx.lineTo(254.0, 64.9);
-    ctx.lineTo(279.5, 64.9);
-    ctx.lineTo(279.5, 193.0);
-    ctx.lineTo(254.0, 193.0);
-    ctx.closePath();
-    ctx.fillStyle(Colours::Gray50);
-    ctx.fill();
-    ctx.strokeStyle(Colours::Gray50);
-    ctx.stroke();
+        // Nuke/Dial/Base
+        ctx.beginPath();
+        ctx.moveTo(95.4, 57.5);
+        ctx.bezierCurveTo(95.4, 58.5, 94.6, 59.3, 93.6, 59.3);
+        ctx.bezierCurveTo(92.6, 59.3, 91.8, 58.5, 91.8, 57.5);
+        ctx.bezierCurveTo(91.8, 56.6, 92.6, 55.8, 93.6, 55.8);
+        ctx.bezierCurveTo(94.6, 55.8, 95.4, 56.6, 95.4, 57.5);
+        ctx.closePath();
+        ctx.stroke();
 
-    // Nuke/RedLayer
-    ctx.beginPath();
-    ctx.moveTo(279.5, 193.5);
-    ctx.lineTo(254.0, 193.5);
-    ctx.lineTo(254.0, 84.3 + engine.props.filter * 1.1);
-    ctx.lineTo(279.5, 84.3 + engine.props.filter * 1.1);
-    ctx.lineTo(279.5, 193.5);
-    ctx.closePath();
-    ctx.fillStyle(Colours::Red);
-    ctx.fill();
-    ctx.strokeStyle(Colours::Red);
-    ctx.stroke();
+        float rotation = -1.57 + engine.props.aux * M_PI;
 
-    // Nuke/BlueLayer
-    ctx.beginPath();
-    ctx.moveTo(279.5, 79.9 + engine.props.filter);
-    ctx.lineTo(254.0, 79.9 + engine.props.filter);
-    ctx.lineTo(254.0, 77.8 + engine.props.filter * 0.80);
-    ctx.lineTo(279.5, 77.8 + engine.props.filter * 0.80);
-    ctx.lineTo(279.5, 79.9 + engine.props.filter);
-    ctx.closePath();
-    ctx.strokeStyle(Colours::Blue);
-    ctx.fillStyle(Colours::Blue);
-    ctx.fill();
-    ctx.stroke();
-
-    // Nuke/PinkLayer
-    ctx.beginPath();
-    ctx.moveTo(254.0, 64.9 + engine.props.filter * 0.55);
-    ctx.lineTo(279.5, 64.9 + engine.props.filter * 0.55);
-    ctx.strokeStyle(Colours::Pink);
-    ctx.stroke();
+        // Nuke/Dial/Line
+        ctx.beginPath();
+        ctx.rotateAround(rotation,{93.58,57.54});
+        ctx.moveTo(93.6, 57.5);
+        ctx.lineTo(93.6, 37.3);
+        ctx.stroke();
+    });
 
     //waveform
     ctx.group([&]{
-        ctx.rotateAround(0.5 * M_PI,{0,52});
         float dial = engine.props.wave.normalize() * 4.f;
         //  Dial takes values between 0 and 4 and returns a list of line endpoints
         //  Position at integer values are hardcoded. In between, they are
@@ -313,46 +298,130 @@ void NukeSynthScreen::draw(Canvas& ctx)
         points = points * vec{65.f / 4.f, 12.f};
 
         ctx.beginPath();
-        ctx.plotLines(std::begin(points), std::end(points));
-        points = points + vec{65.f, 0};
+        ctx.lineWidth(6.0);
         ctx.plotLines(std::begin(points), std::end(points));
         ctx.stroke(Colours::Blue);
     });
 
-    // Nuke/GreenValueBox
+    // hazard sign
+    ctx.group([&]{
+        // Nuke/NukeHazard/Segments/3
+        ctx.beginPath();
+        ctx.moveTo(96.5, 165.2);
+        ctx.bezierCurveTo(99.5, 166.4, 101.6, 169.2, 101.6, 172.6);
+        ctx.bezierCurveTo(101.6, 173.0, 101.6, 173.3, 101.5, 173.7);
+        ctx.lineTo(118.9, 175.6);
+        ctx.bezierCurveTo(119.0, 174.6, 119.0, 173.6, 119.0, 172.6);
+        ctx.bezierCurveTo(119.0, 161.8, 112.3, 152.6, 102.8, 148.9);
+        ctx.lineTo(96.5, 165.2);
+        ctx.closePath();
+        ctx.lineWidth(6.0);
+        ctx.strokeStyle(Colours::Yellow);
+        ctx.lineCap(Canvas::LineCap::ROUND);
+        ctx.lineJoin(Canvas::LineJoin::ROUND);
+        ctx.stroke();
+
+        // Nuke/NukeHazard/Segments/2
+        ctx.beginPath();
+        ctx.moveTo(85.7, 173.7);
+        ctx.bezierCurveTo(85.6, 173.3, 85.6, 173.0, 85.6, 172.6);
+        ctx.bezierCurveTo(85.6, 169.2, 87.7, 166.4, 90.6, 165.2);
+        ctx.lineTo(84.3, 148.9);
+        ctx.bezierCurveTo(74.8, 152.6, 68.1, 161.8, 68.1, 172.6);
+        ctx.bezierCurveTo(68.1, 173.6, 68.2, 174.6, 68.3, 175.6);
+        ctx.lineTo(85.7, 173.7);
+        ctx.closePath();
+        ctx.stroke();
+
+        // Nuke/NukeHazard/Segments/1
+        ctx.beginPath();
+        ctx.moveTo(98.8, 178.7);
+        ctx.bezierCurveTo(97.4, 179.9, 95.6, 180.6, 93.6, 180.6);
+        ctx.bezierCurveTo(91.6, 180.6, 89.8, 179.9, 88.4, 178.7);
+        ctx.lineTo(76.9, 191.8);
+        ctx.bezierCurveTo(81.4, 195.7, 87.2, 198.1, 93.6, 198.1);
+        ctx.bezierCurveTo(100.0, 198.1, 105.8, 195.7, 110.3, 191.8);
+        ctx.lineTo(98.8, 178.7);
+        ctx.closePath();
+        ctx.stroke();
+
+        // Nuke/NukeHazard/MiddleCircle
+        ctx.restore();
+        ctx.beginPath();
+        ctx.moveTo(101.6, 172.6);
+        ctx.bezierCurveTo(101.6, 177.0, 98.0, 180.6, 93.6, 180.6);
+        ctx.bezierCurveTo(89.2, 180.6, 85.6, 177.0, 85.6, 172.6);
+        ctx.bezierCurveTo(85.6, 168.2, 89.2, 164.6, 93.6, 164.6);
+        ctx.bezierCurveTo(98.0, 164.6, 101.6, 168.2, 101.6, 172.6);
+        ctx.closePath();
+        ctx.lineWidth(6.0);
+        ctx.strokeStyle(Colour::bytes(250, 184, 22));
+        ctx.lineCap(Canvas::LineCap::ROUND);
+        ctx.lineJoin(Canvas::LineJoin::ROUND);
+        ctx.stroke();
+    });
+
+    // key
+    ctx.group([&]{
+        // Nuke/Key
+        ctx.beginPath();
+        ctx.moveTo(228.8, 54.5);
+        ctx.bezierCurveTo(228.8, 59.2, 225.0, 63.0, 220.3, 63.0);
+        ctx.bezierCurveTo(215.6, 63.0, 211.8, 59.2, 211.8, 54.5);
+        ctx.bezierCurveTo(211.8, 49.8, 215.6, 46.0, 220.3, 46.0);
+        ctx.bezierCurveTo(225.0, 46.0, 228.8, 49.8, 228.8, 54.5);
+        ctx.closePath();
+        ctx.lineWidth(6.0);
+        ctx.strokeStyle(Colours::Pink);
+        ctx.lineCap(Canvas::LineCap::ROUND);
+        ctx.lineJoin(Canvas::LineJoin::ROUND);
+        ctx.stroke();
+
+        // Nuke/Key/Base
+        ctx.beginPath();
+        ctx.moveTo(228.8, 54.5);
+        ctx.lineTo(268.6, 54.5);
+        ctx.stroke();
+
+        // Nuke/Key/Tooth 2
+        ctx.beginPath();
+        ctx.moveTo(260.6, 54.5);
+        ctx.lineTo(260.6, 63.0);
+        ctx.stroke();
+
+        // Nuke/Key/Tooth 1
+        ctx.beginPath();
+        ctx.moveTo(249.6, 54.5);
+        ctx.lineTo(249.6, 63.0);
+        ctx.stroke();
+
+        // Nuke/Key/Fill
+        ctx.beginPath();
+        ctx.moveTo(225.4, 47.7);
+        ctx.lineTo(225.4, 61.1);
+        ctx.stroke();
+    });
+
+    // Nuke/Separator
     ctx.beginPath();
-    ctx.moveTo(136.9, 193.0);
-    ctx.lineTo(108.1, 193.0);
-    ctx.lineTo(108.1, 112.0 + engine.props.relation * 26.5);
-    ctx.lineTo(136.9, 112.0 + engine.props.relation * 26.5);
-    ctx.lineTo(136.9, 193.0);
-    ctx.closePath();
-    ctx.fillStyle(Colours::Green);
-    ctx.fill();
+    ctx.moveTo(55.1, 131.6);
+    ctx.lineTo(132.0, 131.6);
+    ctx.lineWidth(6.0);
+    ctx.strokeStyle(Colours::Gray50);
+    ctx.lineCap(Canvas::LineCap::ROUND);
+    ctx.lineJoin(Canvas::LineJoin::ROUND);
+    ctx.stroke();
+
+    // Nuke/Green
+    ctx.beginPath();
+    ctx.moveTo(210.1, 157.2);
+    ctx.lineTo(240.8, 162.8);
+    ctx.bezierCurveTo(251.1, 164.7, 259.2, 173.3, 259.7, 183.8);
+    ctx.bezierCurveTo(259.7, 184.3, 259.8, 184.7, 259.8, 185.2);
+    ctx.lineTo(259.8, 187.3);
     ctx.strokeStyle(Colours::Green);
     ctx.stroke();
-
-    // Nuke/YellowValue
-    ctx.beginPath();
-    ctx.moveTo(206.5, 148.6);
-    ctx.lineTo(195.0, 148.6);
-    ctx.lineTo(195.0, 88.9 + engine.props.aux * 20);
-    ctx.lineTo(206.5, 88.9 + engine.props.aux * 20);
-    ctx.lineTo(206.5, 148.6);
-    ctx.closePath();
-    ctx.fillStyle(Colours::Yellow);
-    ctx.fill();
-    ctx.strokeStyle(Colours::Yellow);
-    ctx.stroke();
-
-    // Nuke/WhiteLine
-    ctx.beginPath();
-    ctx.moveTo(200.7, 166.0);
-    ctx.lineTo(200.7, 127.0);
-    ctx.strokeStyle(Colours::White);
-    ctx.stroke();
+}
 }
 
-
-}
 // namespace otto::engines

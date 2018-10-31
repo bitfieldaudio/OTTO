@@ -88,13 +88,11 @@ void HammondSynthScreen::draw(ui::vg::Canvas& ctx)
         ctx.stroke();
 
         // Ring 2 Base
-        ctx.save();
         ctx.beginPath();
         ctx.circle({160,120},75);
         ctx.stroke();
 
         // Ring 3 Base
-        ctx.save();
         ctx.beginPath();
         ctx.circle({160,120},95);
         ctx.stroke();
@@ -113,30 +111,35 @@ void HammondSynthScreen::draw(ui::vg::Canvas& ctx)
         ctx.stroke();
 
         // Ring 2
-        ctx.save();
         ctx.beginPath();
         ctx.arc(160,120,75,0,{2*M_PI*engine.props.drawbar2},false);
         ctx.strokeStyle(Colours::Green);
         ctx.stroke();
 
         // Ring 3
-        ctx.save();
         ctx.beginPath();
         ctx.arc(160,120,95,0,{2*M_PI*engine.props.drawbar1},false);
         ctx.strokeStyle(Colours::Blue);
         ctx.stroke();
     });
 
-    // Red Ring Dial
+    //middle red ring
     ctx.group([&]{
-        float rotation = -2.15 + engine.props.leslie * 4.3;
-
-        ctx.save();
-        ctx.rotateAround(rotation,{160,120});
+        // Ring Base
         ctx.beginPath();
-        ctx.moveTo(160.0, 120);
-        ctx.lineTo(160.0, 95);
+        ctx.circle({160,120},25);
+        ctx.lineWidth(6.0);
         ctx.strokeStyle(Colours::Red);
+        ctx.lineCap(Canvas::LineCap::ROUND);
+        ctx.lineJoin(Canvas::LineJoin::ROUND);
+        ctx.stroke();
+
+        float rotation = engine.props.leslie * 2*M_PI;
+
+        // Inner Ring Base
+        ctx.beginPath();
+        ctx.rotateAround(rotation,{160,120});
+        ctx.circle({160,107.5},12.5);
         ctx.stroke();
     });
     ///
