@@ -14,18 +14,17 @@ namespace otto::services {
   Application::Application(ServiceStorage<LogManager>::Factory log_fact,
                            ServiceStorage<StateManager>::Factory state_fact,
                            ServiceStorage<PresetManager>::Factory preset_fact,
-                           ServiceStorage<EngineManager>::Factory engine_fact,
                            ServiceStorage<AudioManager>::Factory audio_fact,
-                           ServiceStorage<UIManager>::Factory ui_fact)
+                           ServiceStorage<UIManager>::Factory ui_fact,
+                           ServiceStorage<EngineManager>::Factory engine_fact)
+    : log_manager(std::move(log_fact)),
+      state_manager(std::move(state_fact)),
+      preset_manager(std::move(preset_fact)),
+      audio_manager(std::move(audio_fact)),
+      ui_manager(std::move(ui_fact)),
+      engine_manager(std::move(engine_fact))
   {
     _current = this;
-    log_manager = std::move(log_fact);
-    state_manager = std::move(state_fact);
-    preset_manager = std::move(preset_fact);
-    audio_manager = std::move(audio_fact);
-    ui_manager = std::move(ui_fact);
-    engine_manager = std::move(engine_fact);
-
     events.post_init.fire();
   }
 
@@ -58,6 +57,6 @@ namespace otto::services {
 
   Application& Application::current() noexcept
   {
-    return *_current;
+    return static_cast<Application&>(*_current);
   }
 } // namespace otto::services

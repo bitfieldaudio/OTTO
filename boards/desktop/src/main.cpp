@@ -26,9 +26,9 @@ int main(int argc, char* argv[])
       [&] { return std::make_unique<LogManager>(argc, argv); },
       StateManager::create_default,
       std::make_unique<PresetManager>,
-      EngineManager::create_default,
       std::make_unique<RTAudioAudioManager>,
-      std::make_unique<GLFWUIManager>
+      std::make_unique<GLFWUIManager>,
+      EngineManager::create_default
     };
 
     // Overwrite the logger signal handlers

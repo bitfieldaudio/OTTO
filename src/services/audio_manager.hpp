@@ -54,7 +54,7 @@ namespace otto::services {
 
   protected:
     util::atomic_swap<core::midi::shared_vector<core::midi::AnyMidiEvent>> midi_bufs = {{}, {}};
-    int _samplerate = 41000;
+    int _samplerate = 48000;
   private:
     core::audio::AudioBufferPool _buffer_pool{1};
     std::atomic_bool _running{false};

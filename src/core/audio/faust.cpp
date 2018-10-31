@@ -6,7 +6,7 @@
 namespace otto::core::audio::detail {
   void register_faust_wrapper_events(dsp& _dsp, FaustOptions& opts)
   {
-    Application::current().audio_manager->events.pre_init.subscribe([&]() {
+    Application::current().events.post_init.subscribe([&]() {
       _dsp.init(Application::current().audio_manager->samplerate());
       _dsp.buildUserInterface(&opts);
     });

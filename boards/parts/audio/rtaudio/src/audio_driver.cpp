@@ -63,28 +63,25 @@ namespace otto::services {
 
   void RTAudioAudioManager::init_midi()
   {
-    midi_out.emplace();
-    midi_out->setClientName("OTTO");
-    midi_out->setPortName("otto_out");
-
-    midi_in.emplace();
-    midi_in->setClientName("OTTO");
-    midi_in->setPortName("otto_in");
+    midi_out.emplace(RtMidi::Api::UNSPECIFIED, "OTTO");
+    midi_in.emplace(RtMidi::Api::UNSPECIFIED, "OTTO");
 
     for (unsigned i = 0; i < midi_out->getPortCount(); i++) {
       auto port = midi_out->getPortName(i);
-      if (port != "otto_in") {
-        midi_out->openPort(i);
+      if (util::starts_with(port, "OTTO:") &&
+          !util::starts_with(port, "Midi Through:Midi Through")) {
+        midi_out->openPort(i, "out");
+        DLOGI("Connected OTTO:out to midi port {}", port);
       }
-      DLOGI("Connected otto_out to midi port {}", port);
     }
 
     for (unsigned i = 0; i < midi_in->getPortCount(); i++) {
       auto port = midi_in->getPortName(i);
-      if (port != "otto_out") {
-        midi_in->openPort(i);
+      if (util::starts_with(port, "OTTO:") &&
+          !util::starts_with(port, "Midi Through:Midi Through")) {
+        midi_in->openPort(i, "in");
+        DLOGI("Connected OTTO:in to midi port {}", port);
       }
-      DLOGI("Connected otto_in to midi port {}", port);
     }
 
     midi_in->setCallback(
@@ -115,10 +112,9 @@ namespace otto::services {
 
     int ref_count = 0;
     auto in_buf = core::audio::AudioBufferHandle(in_data, nframes, ref_count);
-    auto out =
-      Application::current().engine_manager->process({in_buf, {midi_bufs.inner()}, nframes});
+    auto out = Application::current().engine_manager->process({in_buf, {midi_bufs.inner()}, nframes});
 
-    //process_audio_output(out);
+    // process_audio_output(out);
 
     LOGW_IF(out.nframes != nframes, "Frames went missing!");
 

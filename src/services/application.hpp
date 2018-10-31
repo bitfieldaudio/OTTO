@@ -22,12 +22,14 @@ namespace otto::services {
   struct ServiceStorage {
     using Factory = std::function<std::unique_ptr<Service>()>;
 
+    ServiceStorage(Factory f) noexcept(std::is_nothrow_invocable_v<Factory>) : _storage(f()) {}
+
     Service* operator->() noexcept
     {
       return _storage.get();
     }
 
-    Service& operator*() noexcept 
+    Service& operator*() noexcept
     {
       return *_storage;
     }
@@ -37,18 +39,22 @@ namespace otto::services {
       return *_storage;
     }
 
-  protected:
-    friend struct Application;
-    ServiceStorage& operator=(Factory f)
-    {
-      _storage = f();
-      return *this;
-    }
-
-    std::unique_ptr<Service> _storage;
+    const std::unique_ptr<Service> _storage;
   };
 
-  struct Application {
+  struct ApplicationHandler {
+    static inline ApplicationHandler* _current = nullptr;
+
+    ApplicationHandler() {
+      _current = this;
+    }
+
+    ~ApplicationHandler() {
+      _current = nullptr;
+    }
+  };
+
+  struct Application : private ApplicationHandler {
     enum struct ErrorCode {
       none = 0,
       ui_closed,
@@ -73,9 +79,9 @@ namespace otto::services {
     Application(ServiceStorage<LogManager>::Factory log_factory,
                 ServiceStorage<StateManager>::Factory state_factory,
                 ServiceStorage<PresetManager>::Factory preset_factory,
-                ServiceStorage<EngineManager>::Factory engine_factory,
                 ServiceStorage<AudioManager>::Factory audio_factory,
-                ServiceStorage<UIManager>::Factory ui_factory);
+                ServiceStorage<UIManager>::Factory ui_factory,
+                ServiceStorage<EngineManager>::Factory engine_factory);
 
     virtual ~Application();
 
@@ -87,23 +93,21 @@ namespace otto::services {
 
     static void handle_signal(int signal) noexcept;
 
-    ServiceStorage<LogManager> log_manager;
-    ServiceStorage<StateManager> state_manager;
-    ServiceStorage<PresetManager> preset_manager;
-    ServiceStorage<AudioManager> audio_manager;
-    ServiceStorage<EngineManager> engine_manager;
-    ServiceStorage<UIManager> ui_manager;
-
     struct Events {
       util::Event<> post_init;
       util::Event<> pre_exit;
     } events;
 
+    ServiceStorage<LogManager> log_manager;
+    ServiceStorage<StateManager> state_manager;
+    ServiceStorage<PresetManager> preset_manager;
+    ServiceStorage<AudioManager> audio_manager;
+    ServiceStorage<UIManager> ui_manager;
+    ServiceStorage<EngineManager> engine_manager;
+
   private:
     std::atomic_bool _is_running{true};
     std::atomic<ErrorCode> _error_code;
-
-    static inline Application* _current = nullptr;
   };
 
 } // namespace otto::services

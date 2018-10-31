@@ -51,6 +51,12 @@ namespace otto::util {
       }
     }
 
+    /// Check if string `str` starts with `prefix`
+    inline bool starts_with(std::string_view str, std::string_view prefix)
+    {
+      return str.compare(0, prefix.size(), prefix) == 0;
+    }
+
     /// Joins a sequence of strings, separating them using `js`
     template<typename Container>
     std::string join_strings(Container&& cont, std::string_view js = ", ")

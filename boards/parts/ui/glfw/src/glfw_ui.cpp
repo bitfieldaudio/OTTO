@@ -19,6 +19,165 @@
 #include <GLFW/glfw3.h>
 #include <nanovg_gl.h>
 
+namespace otto::glfw {
+
+  Window::Window(int width, int height, const std::string& name)
+  {
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+
+    _glfw_win = glfwCreateWindow(width, height, name.c_str(), NULL, NULL);
+    if (!_glfw_win) {
+      throw util::exception("Failed to create GLFW window {}", name);
+    }
+    glfwSetWindowUserPointer(_glfw_win, this);
+
+#if GLFW_VERSION_MINOR > 2
+    glfwSetKeyboardCallback(_glfw_win, [](GLFWwindow* window, int key, int scancode, int action,
+                                          int mods, const char* str, int) {
+      if (auto* win = get_for(window); win) {
+        if (win->key_callback) {
+          win->key_callback(board::ui::Action{action}, board::ui::Modifiers{mods},
+                            board::ui::Key{key});
+        }
+        if (win->char_callback && strlen(str) == 1) {
+          win->char_callback(str[0]);
+        }
+      }
+    });
+#else
+    glfwSetKeyCallback(window, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
+      if (auto* win = get_for(window); win && win->key_callback) {
+        win->key_callback(board::ui::Action{action}, board::ui::Modifiers{mods},
+                          board::ui::Key{key});
+      }
+    });
+
+    glfwSetCharCallback(window, [](GLFWwindow* window, char ch) {
+      if (auto* win = get_for(window); win && win->char_callback) {
+        win->char_callback(ch);
+      }
+    });
+#endif
+
+    make_current();
+    gl3wInit();
+  }
+
+  Window::~Window() noexcept {}
+
+  GLFWwindow* Window::unwrap()
+  {
+    return _glfw_win;
+  }
+
+  Window::operator GLFWwindow*()
+  {
+    return _glfw_win;
+  }
+
+  Window* Window::get_for(GLFWwindow* glfw_win)
+  {
+    return static_cast<Window*>(glfwGetWindowUserPointer(glfw_win));
+  }
+
+  void Window::make_current()
+  {
+    glfwMakeContextCurrent(_glfw_win);
+  }
+
+  void Window::swap_buffers()
+  {
+    glfwSwapBuffers(_glfw_win);
+  }
+
+  void Window::set_window_aspect_ration(int x, int y)
+  {
+    glfwSetWindowAspectRatio(_glfw_win, x, y);
+  }
+
+  void Window::set_window_size_limits(int min_x, int min_y, int max_x, int max_y)
+  {
+    glfwSetWindowSizeLimits(_glfw_win, min_x, min_y, max_x, max_y);
+  }
+
+  bool Window::should_close()
+  {
+    return glfwWindowShouldClose(_glfw_win);
+  }
+
+  vg::Point Window::cursor_pos()
+  {
+    double x, y;
+    glfwGetCursorPos(_glfw_win, &x, &y);
+    return vg::Point{x, y};
+  }
+
+  std::pair<int, int> Window::window_size()
+  {
+    int x, y;
+    glfwGetWindowSize(_glfw_win, &x, &y);
+    return {x, y};
+  }
+
+  std::pair<int, int> Window::framebuffer_size()
+  {
+    int x, y;
+    glfwGetFramebufferSize(_glfw_win, &x, &y);
+    return {x, y};
+  }
+
+
+  NVGWindow::NVGWindow(int width, int height, const std::string& name)
+    : Window(width, height, name),
+      _vg(OTTO_NVG_CREATE(NVG_ANTIALIAS | NVG_STENCIL_STROKES | NVG_DEBUG)),
+      _canvas(_vg, width, height)
+  {}
+
+  NVGWindow::~NVGWindow() noexcept
+  {
+    OTTO_NVG_DELETE(_vg);
+  }
+
+  vg::Canvas& NVGWindow::canvas()
+  {
+    return _canvas;
+  }
+
+  void NVGWindow::begin_frame()
+  {
+    make_current();
+    auto [winWidth, winHeight] = window_size();
+    auto [fbWidth, fbHeight] = framebuffer_size();
+
+    _canvas.setSize(winWidth, winHeight);
+
+    // Update and render
+    glViewport(0, 0, fbWidth, fbHeight);
+
+    glClearColor(0, 0, 0, 0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_CULL_FACE);
+    glDisable(GL_DEPTH_TEST);
+
+    _canvas.clearColor(vg::Colours::Black);
+    _canvas.begineFrame(winWidth, winHeight);
+  }
+
+  void NVGWindow::end_frame()
+  {
+    _canvas.endFrame();
+    glEnable(GL_DEPTH_TEST);
+    swap_buffers();
+  }
+
+} // namespace otto::glfw
+
 namespace otto::services {
 
   using namespace core::ui;
@@ -35,90 +194,37 @@ namespace otto::services {
     if (!glfwInit()) {
       LOG_F(ERROR, "Failed to init GLFW.");
     }
+    gsl::final_act terminate_glfw(glfwTerminate);
+    gsl::final_act exit_application(
+      [] { Application::current().exit(Application::ErrorCode::ui_closed); });
 
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfw::NVGWindow main_win(vg::width, vg::height, "OTTO");
 
-    GLFWwindow* window = glfwCreateWindow(vg::width, vg::height, "OTTO", NULL, NULL);
-    if (!window) {
-      glfwTerminate();
-      return;
-    }
+    main_win.set_window_aspect_ration(4, 3);
+    main_win.set_window_size_limits(320, 240, GLFW_DONT_CARE, GLFW_DONT_CARE);
 
-    glfwMakeContextCurrent(window);
-    glfwSwapInterval(1);
-    gl3wInit();
+    main_win.key_callback = board::ui::handle_keyevent;
 
-    glfwSetWindowAspectRatio(window, 4, 3);
-    glfwSetWindowSizeLimits(window, 320, 240, GLFW_DONT_CARE, GLFW_DONT_CARE);
-
-#if GLFW_VERSION_MINOR > 2
-    glfwSetKeyboardCallback(window, [](GLFWwindow* window, int key, int scancode, int action,
-                                       int mods, const char*, int) {
-      board::ui::handle_keyevent(board::ui::Action{action}, board::ui::Modifiers{mods},
-                                 board::ui::Key{key});
-    });
-#else
-    glfwSetKeyCallback(window, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
-      board::ui::handle_keyevent(board::ui::Action{action}, board::ui::Modifiers{mods},
-                                 board::ui::Key{key});
-    });
-#endif
-
-    NVGcontext* vg = OTTO_NVG_CREATE(NVG_ANTIALIAS | NVG_STENCIL_STROKES | NVG_DEBUG);
-    if (vg == NULL) {
-      printf("Could not init nanovg.\n");
-      return;
-    }
-
-    vg::Canvas canvas(vg, vg::width, vg::height);
-    vg::initUtils(canvas);
-
-    LOG_F(INFO, "Opening GLFW Window");
+    vg::initUtils(main_win.canvas());
 
     glfwSetTime(0);
 
-    double mx, my, t, spent;
-    while (!glfwWindowShouldClose(window) && Application::current().running()) {
-      int winWidth, winHeight;
-      int fbWidth, fbHeight;
+    double t, spent;
+    while (!main_win.should_close() && Application::current().running()) {
       float scale;
 
       t = glfwGetTime();
 
-      glfwGetCursorPos(window, &mx, &my);
-      glfwGetWindowSize(window, &winWidth, &winHeight);
-      glfwGetFramebufferSize(window, &fbWidth, &fbHeight);
-
+      auto [winWidth, winHeight] = main_win.window_size();
       // Calculate pixel ration for hi-dpi devices.
+       
+      main_win.begin_frame();
       scale =
         std::min((float) winWidth / (float) vg::width, (float) winHeight / (float) vg::height);
-      canvas.setSize(winWidth, winHeight);
+      main_win.canvas().scale(scale, scale);
 
-      // Update and render
-      glViewport(0, 0, fbWidth, fbHeight);
-
-      glClearColor(0, 0, 0, 0);
-      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-      glEnable(GL_BLEND);
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-      glEnable(GL_CULL_FACE);
-      glDisable(GL_DEPTH_TEST);
-
-      canvas.clearColor(vg::Colours::Black);
-      canvas.begineFrame(winWidth, winHeight);
-
-      canvas.scale(scale, scale);
-      draw_frame(canvas);
-
-      canvas.endFrame();
-
-      glEnable(GL_DEPTH_TEST);
-
-      glfwSwapBuffers(window);
+      draw_frame(main_win.canvas());
+      main_win.end_frame();
 
       glfwPollEvents();
       flush_events();
@@ -127,11 +233,7 @@ namespace otto::services {
 
       std::this_thread::sleep_for(std::chrono::milliseconds(int(1000 / 60 - spent * 1000)));
     }
-
-    OTTO_NVG_DELETE(vg);
-
-    glfwTerminate();
-
-    Application::current().exit(Application::ErrorCode::ui_closed);
   }
 } // namespace otto::services
+
+// kak: other_file=../include/board/ui/glfw_ui_manager.hpp
