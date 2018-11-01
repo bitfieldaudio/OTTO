@@ -28,6 +28,7 @@ namespace otto::engines {
   struct OTTOFMSynthScreen : EngineScreen<OTTOFMSynth> {
     void draw(Canvas& ctx) override;
     bool keypress(Key key) override;
+    bool keyrelease(Key key) override;
     void rotary(RotaryEvent e) override;
 
     std::array<Fraction, 19> fractions = {{{1, 1},
@@ -79,28 +80,55 @@ namespace otto::engines {
     case ui::Key::green_click: engine.props.cur_op = 1;
     case ui::Key::white_click: engine.props.cur_op = 2;
     case ui::Key::red_click: engine.props.cur_op = 3;
+    case ui::Key::shift: engine.props.shift = true;
     default: return false; ;
     }
   }
 
+  bool OTTOFMSynthScreen::keyrelease(Key key)
+  {
+    switch (key) {
+    case ui::Key::shift: engine.props.shift = false;
+    default: return false; ;
+    }
+  }
   void OTTOFMSynthScreen::rotary(RotaryEvent e)
   {
     auto& props = engine.props;
     auto& current = props.operators.at(props.cur_op);
     switch (e.rotary) {
     case Rotary::Blue:
-      current.ratio_idx.step(e.clicks);
-      current.ratio.set(float(fractions[current.ratio_idx]));
+      if (!props.shift) {
+        current.ratio_idx.step(e.clicks);
+        current.ratio.set(float(fractions[current.ratio_idx]));
+      } else{
+        current.detune.step(e.clicks);
+      }
       break;
     case Rotary::Green:
-      current.cAtt.step(e.clicks);
-      current.mAtt.step(e.clicks);
+      if (!props.shift) {
+        current.cAtt.step(e.clicks);
+        current.mAtt.step(e.clicks);
+      } else {
+        current.cSus.step(e.clicks);
+        current.mSuspos.step(e.clicks);
+      }
       break;
     case Rotary::White:
-      current.cRel.step(e.clicks);
-      current.mDecrel.step(e.clicks);
+      if (!props.shift) {
+        current.cRel.step(e.clicks);
+        current.mDecrel.step(e.clicks);
+      } else {
+        current.outLev.step(e.clicks);
+      }
       break;
-    case Rotary::Red: props.algN.step(e.clicks); break;
+    case Rotary::Red:
+      if (!props.shift) {
+        props.fmAmount.step(e.clicks);
+      } else {
+        props.algN.step(e.clicks);
+      }
+      break;
     }
   }
 

@@ -29,15 +29,18 @@ namespace otto::engines {
       //Amp
       Property<float> outLev = {this, "outLev",    1,   has_limits::init(0, 1),    steppable::init(0.01)};
 
+
     };
 
     struct Props : Properties<> {
 
       Property<int> algN = {this, "algN",    1,   has_limits::init(0, 11),    steppable::init(1)};
+      Property<float> fmAmount = {this, "fmAmount",    1,   has_limits::init(0, 1),    steppable::init(0.01)};
 
       std::array<Operator,4> operators = {{{this,"op0"}, {this,"op1"}, {this,"op2"}, {this,"op3"}}};
       Property<int> cur_op = {this, "Curent_operator",    0,   has_limits::init(0, 3)};
-
+      //Shift key
+      Property<bool,no<faust_link>,no_serialize> shift = {this, "shift"};
 
     } props;
 
