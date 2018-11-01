@@ -22,7 +22,7 @@ namespace otto::services {
   struct ServiceStorage {
     using Factory = std::function<std::unique_ptr<Service>()>;
 
-    ServiceStorage(Factory f) noexcept(std::is_nothrow_invocable_v<Factory>) : _storage(f()) {}
+    ServiceStorage(Factory f) : _storage(f()) {}
 
     Service* operator->() noexcept
     {
