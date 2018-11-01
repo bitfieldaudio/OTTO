@@ -1,12 +1,15 @@
 #include "engine_manager.hpp"
 
-#include "engines/synths/hammond/hammond.hpp"
-#include "engines/synths/vocoder/vocoder.hpp"
 #include "engines/fx/wormhole/wormhole.hpp"
 #include "engines/misc/master/master.hpp"
+#include "engines/seq/arp/arp.hpp"
 #include "engines/seq/euclid/euclid.hpp"
+#include "engines/synths/DX7/dxotto.hpp"
+#include "engines/synths/OTTOFM/ottofm.hpp"
 #include "engines/synths/external/external.hpp"
+#include "engines/synths/hammond/hammond.hpp"
 #include "engines/synths/nuke/nuke.hpp"
+#include "engines/synths/vocoder/vocoder.hpp"
 
 #include "services/application.hpp"
 
@@ -16,7 +19,6 @@ namespace otto::services {
   using namespace core::engine;
 
   struct DefaultEngineManager final : EngineManager {
-
     DefaultEngineManager();
 
     void start() override;
@@ -48,11 +50,17 @@ namespace otto::services {
     engineGetters.try_emplace("Sequencer", [&]() { return dynamic_cast<AnyEngine*>(&*sequencer); });
 
     register_engine<engines::Euclid>();
-    register_engine<engines::NukeSynth>();
+    register_engine<engines::External>();
     register_engine<engines::HammondSynth>();
+    register_engine<engines::NukeSynth>();
     register_engine<engines::VocoderSynth>();
     register_engine<engines::Wormhole>();
-    register_engine<engines::External>();
+    register_engine<engines::Arp>();
+    register_engine<engines::DXOTTOSynth>();
+    register_engine<engines::OTTOFMSynth>();
+    register_engine<engines::VocoderSynth>();
+    register_engine<engines::Wormhole>();
+
 
     sequencer.init();
     synth.init();
@@ -104,14 +112,14 @@ namespace otto::services {
     static ui::Screen* master_last_screen = nullptr;
 
     ui_manager.register_key_handler(ui::Key::master,
-                                      [&](ui::Key k) {
-                                        master_last_screen = ui_manager.current_screen();
-                                        ui_manager.display(master.screen());
-                                      },
-                                      [&](ui::Key k) {
-                                        if (master_last_screen)
-                                          ui_manager.display(*master_last_screen);
-                                      });
+                                    [&](ui::Key k) {
+                                      master_last_screen = ui_manager.current_screen();
+                                      ui_manager.display(master.screen());
+                                    },
+                                    [&](ui::Key k) {
+                                      if (master_last_screen)
+                                        ui_manager.display(*master_last_screen);
+                                    });
 
     auto load = [&](nlohmann::json& data) {
       synth.from_json(data["Synth"]);
@@ -164,4 +172,4 @@ namespace otto::services {
     return getter->second();
   }
 
-} // namespace otto::service::engines
+} // namespace otto::services
