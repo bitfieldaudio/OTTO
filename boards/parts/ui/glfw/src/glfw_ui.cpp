@@ -34,7 +34,7 @@ namespace otto::glfw {
     }
     glfwSetWindowUserPointer(_glfw_win, this);
 
-#if GLFW_VERSION_MINOR > 2
+#if GLFW_VERSION_MINOR >= 3
     glfwSetKeyboardCallback(_glfw_win, [](GLFWwindow* window, int key, int scancode, int action,
                                           int mods, const char* str, int) {
       if (auto* win = get_for(window); win) {
@@ -48,16 +48,16 @@ namespace otto::glfw {
       }
     });
 #else
-    glfwSetKeyCallback(window, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
+    glfwSetKeyCallback(_glfw_win, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
       if (auto* win = get_for(window); win && win->key_callback) {
         win->key_callback(board::ui::Action{action}, board::ui::Modifiers{mods},
                           board::ui::Key{key});
       }
     });
 
-    glfwSetCharCallback(window, [](GLFWwindow* window, char ch) {
+    glfwSetCharCallback(_glfw_win, [](GLFWwindow* window, unsigned ch) {
       if (auto* win = get_for(window); win && win->char_callback) {
-        win->char_callback(ch);
+        win->char_callback((char) ch);
       }
     });
 #endif

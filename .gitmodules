@@ -22,6 +22,3 @@
 [submodule "external/tiny-process-library"]
 	path = external/tiny-process-library
 	url = https://github.com/eidheim/tiny-process-library
-[submodule "external/nanogui"]
-	path = external/nanogui
-	url = https://github.com/topisani/nanogui

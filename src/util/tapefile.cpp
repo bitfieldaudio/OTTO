@@ -21,12 +21,12 @@ namespace otto::util {
     void read_fields(ByteFile& f) override {
       auto& tf = dynamic_cast<TapeFile&>(f);
       bytes<2> temp;
-      f.read_bytes(temp).unwrap_ok();
+      f.read_bytes(temp);
       index = temp.as_u();
-      f.read_bytes(temp).unwrap_ok();
+      f.read_bytes(temp);
       tf.slices[index].count = temp.as_u();
       f.read_bytes((std::byte*) tf.slices[index].array.data(),
-        2048 * sizeof(SliceData)).unwrap_ok();
+        2048 * sizeof(SliceData));
     }
   };
 
@@ -45,7 +45,7 @@ namespace otto::util {
     }
 
     void read_fields(ByteFile& f) override {
-      f.read_bytes(version).unwrap_ok();
+      f.read_bytes(version);
       for (auto&& trck : tracks) {
         trck.read(f);
       }

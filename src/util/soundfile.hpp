@@ -110,14 +110,14 @@ namespace otto::util {
     if constexpr (std::is_pointer_v<OutIter>) {
         auto r = ByteFile::read_bytes(reinterpret_cast<std::byte*>(f),
           reinterpret_cast<std::byte*>(l));
-        r.if_err([&] (auto&& e) {
+        r.map_error([&] (auto&& e) {
             std::generate(e, l, [] { return 0; });
           });
       } else {
       bytes<sample_size> buf;
       int i = 0;
       for (auto iter = f; iter != l; iter++, i++) {
-        if (ByteFile::read_bytes(buf).is_err()) {
+        if (!ByteFile::read_bytes(buf).has_value()) {
           std::generate(iter, l, [] { return 0; });
           break;
         }
@@ -130,7 +130,7 @@ namespace otto::util {
     void SoundFile::read_samples(OutIter&& iter, int n) {
     if constexpr (std::is_pointer_v<OutIter>) {
         ByteFile::read_bytes(reinterpret_cast<std::byte*>(iter),
-          n * sample_size).if_err(
+          n * sample_size).map_error(
             [&] (auto&& e) {
               std::generate_n(iter + e, n - e, [] { return 0; });
             });
@@ -139,8 +139,8 @@ namespace otto::util {
       int i = 0;
       for (auto cur = iter; i < n; iter++, i++) {
         auto r = ByteFile::read_bytes(buf);
-        if (r.is_err()) {
-          std::generate_n(cur, n - r.unwrap_err(), [] { return 0; });
+        if (!r.has_value()) {
+          std::generate_n(cur, n - r.error(), [] { return 0; });
           break;
         }
         *cur = bytes_to_sample(buf);

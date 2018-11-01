@@ -49,18 +49,15 @@ namespace otto::services {
     engineGetters.try_emplace("Effect", [&]() { return dynamic_cast<AnyEngine*>(&*effect); });
     engineGetters.try_emplace("Sequencer", [&]() { return dynamic_cast<AnyEngine*>(&*sequencer); });
 
+    register_engine<engines::Arp>();
+    register_engine<engines::DXOTTOSynth>();
     register_engine<engines::Euclid>();
     register_engine<engines::External>();
     register_engine<engines::HammondSynth>();
     register_engine<engines::NukeSynth>();
-    register_engine<engines::VocoderSynth>();
-    register_engine<engines::Wormhole>();
-    register_engine<engines::Arp>();
-    register_engine<engines::DXOTTOSynth>();
     register_engine<engines::OTTOFMSynth>();
     register_engine<engines::VocoderSynth>();
     register_engine<engines::Wormhole>();
-
 
     sequencer.init();
     synth.init();

@@ -39,7 +39,7 @@ namespace otto::util {
       REQUIRE_NOTHROW(f.open(somePath));
 
       bytes<12> got;
-      REQUIRE(f.read_bytes(got).is_ok());
+      REQUIRE(f.read_bytes(got).has_value());
 
       REQUIRE(data == got);
     }
@@ -75,7 +75,7 @@ namespace otto::util {
 
         std::array<std::byte, someSize> readBytes;
         REQUIRE_NOTHROW(f.open(somePath));
-        REQUIRE(f.read_bytes(readBytes.begin(), readBytes.end()).is_ok());
+        REQUIRE(f.read_bytes(readBytes.begin(), readBytes.end()).has_value());
 
         REQUIRE(f.position() == someSize);
         REQUIRE(f.size() == someSize);
@@ -83,7 +83,7 @@ namespace otto::util {
         // Compare arrays
         REQUIRE(std::equal(readBytes.begin(), readBytes.end(), bytes.begin()));
 
-        REQUIRE(f.read_bytes(readBytes.begin(), 10).is_err());
+        REQUIRE(!f.read_bytes(readBytes.begin(), 10).has_value());
       }
 
       SECTION ("Using otto::bytes") {
@@ -98,7 +98,7 @@ namespace otto::util {
 
         f.seek(0);
         bytes<4> actual;
-        REQUIRE(f.read_bytes(actual).is_ok());
+        REQUIRE(f.read_bytes(actual).has_value());
         REQUIRE(f.position() == 4);
 
         REQUIRE(data == actual);
@@ -124,8 +124,8 @@ namespace otto::util {
 
         void read_fields(ByteFile& file) override
         {
-          REQUIRE(file.read_bytes(field1).is_ok());
-          REQUIRE(file.read_bytes(field2).is_ok());
+          REQUIRE(file.read_bytes(field1).has_value());
+          REQUIRE(file.read_bytes(field2).has_value());
         }
       };
 
@@ -144,8 +144,8 @@ namespace otto::util {
 
         void read_fields(ByteFile& file) override
         {
-          file.read_bytes(field1).unwrap_ok();
-          file.read_bytes(std::back_inserter(dynField), size.as_u() - 4).unwrap_ok();
+          file.read_bytes(field1);
+          file.read_bytes(std::back_inserter(dynField), size.as_u() - 4);
         }
       };
 

@@ -4,9 +4,9 @@
 #include <iterator>
 #include <utility>
 #include <fstream>
+#include <tl/expected.hpp>
 
 #include "util/filesystem.hpp"
-#include "util/result.hpp"
 #include "util/type_traits.hpp"
 
 namespace otto::util {
@@ -175,8 +175,8 @@ namespace otto::util {
 
       void read(ByteFile& file) {
         offset = file.position();
-        file.read_bytes(id).unwrap_ok();
-        file.read_bytes(size).unwrap_ok();
+        file.read_bytes(id);
+        file.read_bytes(size);
         read_fields(file);
       }
 
@@ -216,15 +216,15 @@ namespace otto::util {
     template<typename OutIter,
       typename = std::enable_if<is_iterator_v<OutIter, std::byte,
                                   std::output_iterator_tag>>>
-    result<void, OutIter> read_bytes(OutIter, OutIter);
+    tl::expected<void, OutIter> read_bytes(OutIter, OutIter);
 
     template<typename OutIter,
       typename = std::enable_if<is_iterator_v<OutIter, std::byte,
                                   std::output_iterator_tag>>>
-    result<void, std::streampos> read_bytes(OutIter, int);
+    tl::expected<void, std::streampos> read_bytes(OutIter, int);
 
     template<std::size_t N>
-    result<void, std::streampos> read_bytes(bytes<N>&);
+    tl::expected<void, std::streampos> read_bytes(bytes<N>&);
 
     template<typename InIter,
       typename = std::enable_if<is_iterator_v<InIter, std::byte,
@@ -253,14 +253,14 @@ namespace otto::util {
    */
 
   template<typename OutIter, typename>
-  result<void, OutIter> ByteFile::read_bytes(OutIter f, OutIter l) {
+  tl::expected<void, OutIter> ByteFile::read_bytes(OutIter f, OutIter l) {
     if (!is_open()) throw Error(Error::Type::FileNotOpen);
-    result<void, OutIter> res {std::monostate()};
+    tl::expected<void, OutIter> res {};
     // If OutIter is a pointer, copy everything at once
     if constexpr (std::is_pointer_v<OutIter>) {
       fstream.read((char*) f, l - f);
       if (fstream.eof()) {
-        res = f + fstream.gcount() / sizeof(std::remove_pointer_t<OutIter>);
+        res = tl::unexpected<OutIter>(f + fstream.gcount() / sizeof(std::remove_pointer_t<OutIter>));
         fstream.clear();
       }
     } else {
@@ -280,7 +280,7 @@ namespace otto::util {
   }
 
   template<typename OutIter, typename>
-  result<void, std::streampos> ByteFile::read_bytes(OutIter iter, int n) {
+  tl::expected<void, std::streampos> ByteFile::read_bytes(OutIter iter, int n) {
     if (!is_open()) throw Error(Error::Type::FileNotOpen);
     // If OutIter is a pointer, copy everything at once
     if constexpr (std::is_pointer_v<OutIter>) {
@@ -294,19 +294,19 @@ namespace otto::util {
     }
     if (fstream.eof()) {
       fstream.clear();
-      return {fstream.tellg()};
+      return tl::unexpected{fstream.tellg()};
     }
-    return result<void, std::streampos>::Ok();
+    return {};
   }
 
   template<std::size_t N>
-  result<void, std::streampos> ByteFile::read_bytes(bytes<N>& bs) {
+  tl::expected<void, std::streampos> ByteFile::read_bytes(bytes<N>& bs) {
     fstream.read((char*)bs, N);
     if (fstream.eof()) {
       fstream.clear();
-      return {fstream.tellg()};
+      return tl::unexpected{fstream.tellg()};
     }
-    return result<void, std::streampos>::Ok();
+    return {};
   }
 
   template<typename InIter, typename>
