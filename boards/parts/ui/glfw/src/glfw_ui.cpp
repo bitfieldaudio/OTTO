@@ -55,9 +55,9 @@ namespace otto::glfw {
       }
     });
 
-    glfwSetCharCallback(_glfw_win, [](GLFWwindow* window, char ch) {
+    glfwSetCharCallback(_glfw_win, [](GLFWwindow* window, unsigned ch) {
       if (auto* win = get_for(window); win && win->char_callback) {
-        win->char_callback(ch);
+        win->char_callback((char) ch);
       }
     });
 #endif
