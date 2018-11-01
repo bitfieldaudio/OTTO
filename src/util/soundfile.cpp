@@ -14,7 +14,7 @@ namespace otto::util {
     std::vector<std::unique_ptr<Chunk>> chunks;
 
     void read_fields(ByteFile& file) override {
-      file.read_bytes(format).unwrap_ok();
+      file.read_bytes(format);
       file.for_chunks_in_range(offset + 12, offset + 8 + size.as_u(),
         [&](Chunk& c) {
           chunks.emplace_back(new Chunk(c));
@@ -43,12 +43,12 @@ namespace otto::util {
     void read_fields(ByteFile& file) override {
       auto& sf = (SoundFile&)file;
 
-      file.read_bytes(audioFormat).unwrap_ok();
-      file.read_bytes(numChannels).unwrap_ok();
-      file.read_bytes(sampleRate).unwrap_ok();
-      file.read_bytes(byteRate).unwrap_ok();
-      file.read_bytes(blockAlign).unwrap_ok();
-      file.read_bytes(bitsPerSample).unwrap_ok();
+      file.read_bytes(audioFormat);
+      file.read_bytes(numChannels);
+      file.read_bytes(sampleRate);
+      file.read_bytes(byteRate);
+      file.read_bytes(blockAlign);
+      file.read_bytes(bitsPerSample);
 
       if (audioFormat.as_u() != 3) {
         throw "Unsupported audio format. \

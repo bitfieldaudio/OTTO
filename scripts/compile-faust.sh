@@ -9,7 +9,7 @@ function compile {
     dir=$(dirname $1)
     classname=faust_${bn//-/_}
 
-    faust -scal -exp10 -lang ocpp -es 1 $1 -o "${dir}/${bn}.faust.hpp" -cn $classname -a $ARCH_DIR/$ARCH_FILE
+    faust -scal -lang ocpp -es 1 $1 -o "${dir}/${bn}.faust.hpp" -cn $classname -a $ARCH_DIR/$ARCH_FILE
 }
 
 if [[ $# == 1 ]]; then

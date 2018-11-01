@@ -8,8 +8,6 @@
 
 #include "core/audio/processor.hpp"
 
-#include "util/result.hpp"
-
 #include "services/state_manager.hpp"
 #include "services/ui_manager.hpp"
 #include "services/application.hpp"
