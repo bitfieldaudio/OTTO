@@ -1973,12 +1973,12 @@ class faust_dxotto : public dsp {
 		ui_interface->addHorizontalSlider("keyVelSens_3", &fslider50, 99.0f, 0.0f, 99.0f, 1.0f);
 		ui_interface->addHorizontalSlider("keyVelSens_4", &fslider64, 99.0f, 0.0f, 99.0f, 1.0f);
 		ui_interface->addHorizontalSlider("keyVelSens_5", &fslider78, 99.0f, 0.0f, 99.0f, 1.0f);
-		ui_interface->addHorizontalSlider("opDetune_0", &fslider4, 0.0f, 0.0f, 99.0f, 1.0f);
-		ui_interface->addHorizontalSlider("opDetune_1", &fslider19, 0.0f, 0.0f, 99.0f, 1.0f);
-		ui_interface->addHorizontalSlider("opDetune_2", &fslider33, 0.0f, 0.0f, 99.0f, 1.0f);
-		ui_interface->addHorizontalSlider("opDetune_3", &fslider47, 0.0f, 0.0f, 99.0f, 1.0f);
-		ui_interface->addHorizontalSlider("opDetune_4", &fslider61, 0.0f, 0.0f, 99.0f, 1.0f);
-		ui_interface->addHorizontalSlider("opDetune_5", &fslider75, 0.0f, 0.0f, 99.0f, 1.0f);
+		ui_interface->addHorizontalSlider("opDetune_0", &fslider4, 0.0f, -7.0f, 7.0f, 1.0f);
+		ui_interface->addHorizontalSlider("opDetune_1", &fslider19, 0.0f, -7.0f, 7.0f, 1.0f);
+		ui_interface->addHorizontalSlider("opDetune_2", &fslider33, 0.0f, -7.0f, 7.0f, 1.0f);
+		ui_interface->addHorizontalSlider("opDetune_3", &fslider47, 0.0f, -7.0f, 7.0f, 1.0f);
+		ui_interface->addHorizontalSlider("opDetune_4", &fslider61, 0.0f, -7.0f, 7.0f, 1.0f);
+		ui_interface->addHorizontalSlider("opDetune_5", &fslider75, 0.0f, -7.0f, 7.0f, 1.0f);
 		ui_interface->addHorizontalSlider("opFreq_0", &fslider1, 1.0f, 0.0f, 99.0f, 1.0f);
 		ui_interface->addHorizontalSlider("opFreq_1", &fslider17, 1.0f, 0.0f, 99.0f, 1.0f);
 		ui_interface->addHorizontalSlider("opFreq_2", &fslider31, 1.0f, 0.0f, 99.0f, 1.0f);

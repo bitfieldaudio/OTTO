@@ -10,6 +10,7 @@
 #include "engines/synths/hammond/hammond.hpp"
 #include "engines/synths/vocoder/vocoder.hpp"
 #include "engines/synths/DX7/dxotto.hpp"
+#include "engines/synths/OTTOFM/ottofm.hpp"
 #include "engines/fx/wormhole/wormhole.hpp"
 #include "engines/misc/master/master.hpp"
 #include "engines/synths/external/external.hpp"
@@ -44,6 +45,7 @@ namespace otto::service::engines {
     register_engine<otto::engines::HammondSynth>();
     register_engine<otto::engines::VocoderSynth>();
     register_engine<otto::engines::DXOTTOSynth>();
+    register_engine<otto::engines::OTTOFMSynth>();
     register_engine<otto::engines::Wormhole>();
     register_engine<otto::engines::External>();
 
