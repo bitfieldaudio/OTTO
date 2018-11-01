@@ -62,49 +62,72 @@ namespace otto::engines {
 
     ctx.font(Fonts::Norm, 35);
 
-    constexpr float x_pad = 30;
-    constexpr float y_pad = 50;
-    constexpr float space = (height - 2.f * y_pad) / 3.f;
+    // Gray Base Layers
+    ctx.group([&] {
+      // Ring 1 Base
+      ctx.beginPath();
+      ctx.circle({160, 120}, 55);
+      ctx.lineWidth(6.0);
+      ctx.strokeStyle(Colours::Gray50);
+      ctx.lineCap(Canvas::LineCap::ROUND);
+      ctx.lineJoin(Canvas::LineJoin::ROUND);
+      ctx.stroke();
 
-    ctx.beginPath();
-    ctx.fillStyle(Colours::Blue);
-    ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
-    ctx.fillText("Drawbar 1", {x_pad, y_pad});
+      // Ring 2 Base
+      ctx.beginPath();
+      ctx.circle({160, 120}, 75);
+      ctx.stroke();
 
-    ctx.beginPath();
-    ctx.fillStyle(Colours::Blue);
-    ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:1.2}", engine.props.drawbar1), {width - x_pad, y_pad});
+      // Ring 3 Base
+      ctx.beginPath();
+      ctx.circle({160, 120}, 95);
+      ctx.stroke();
+    });
 
-    ctx.beginPath();
-    ctx.fillStyle(Colours::Green);
-    ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
-    ctx.fillText("Drawbar 2", {x_pad, y_pad + space});
+    // Coloured Parameters
+    ctx.group([&] {
+      // Ring 1
+      ctx.beginPath();
+      ctx.rotateAround(55, {160, 120});
+      ctx.arc(160, 120, 55, 0, (2 * M_PI * engine.props.drawbar3), false);
+      ctx.lineWidth(6.0);
+      ctx.strokeStyle(Colours::Yellow);
+      ctx.lineCap(Canvas::LineCap::ROUND);
+      ctx.lineJoin(Canvas::LineJoin::ROUND);
+      ctx.stroke();
 
-    ctx.beginPath();
-    ctx.fillStyle(Colours::Green);
-    ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:1.2}", engine.props.drawbar2), {width - x_pad, y_pad + space});
+      // Ring 2
+      ctx.beginPath();
+      ctx.arc(160, 120, 75, 0, (2 * M_PI * engine.props.drawbar2), false);
+      ctx.strokeStyle(Colours::Green);
+      ctx.stroke();
 
-    ctx.beginPath();
-    ctx.fillStyle(Colours::Yellow);
-    ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
-    ctx.fillText("Drawbar 3", {x_pad, y_pad + 2 * space});
+      // Ring 3
+      ctx.beginPath();
+      ctx.arc(160, 120, 95, 0, (2 * M_PI * engine.props.drawbar1), false);
+      ctx.strokeStyle(Colours::Blue);
+      ctx.stroke();
+    });
 
-    ctx.beginPath();
-    ctx.fillStyle(Colours::Yellow);
-    ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:1.2}", engine.props.drawbar3), {width - x_pad, y_pad + 2 * space});
+    // middle red ring
+    ctx.group([&] {
+      // Ring Base
+      ctx.beginPath();
+      ctx.circle({160, 120}, 25);
+      ctx.lineWidth(6.0);
+      ctx.strokeStyle(Colours::Red);
+      ctx.lineCap(Canvas::LineCap::ROUND);
+      ctx.lineJoin(Canvas::LineJoin::ROUND);
+      ctx.stroke();
 
-    ctx.beginPath();
-    ctx.fillStyle(Colours::Red);
-    ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
-    ctx.fillText("Leslie", {x_pad, y_pad + 3 * space});
+      float rotation = engine.props.leslie * 2 * M_PI;
 
-    ctx.beginPath();
-    ctx.fillStyle(Colours::Red);
-    ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:1.2}", engine.props.leslie), {width - x_pad, y_pad + 3 * space});
+      // Inner Ring Base
+      ctx.beginPath();
+      ctx.rotateAround(rotation, {160, 120});
+      ctx.circle({160, 107.5}, 12.5);
+      ctx.stroke();
+    });
+    ///
   }
-
 } // namespace otto::engines
