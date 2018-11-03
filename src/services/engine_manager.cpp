@@ -133,14 +133,13 @@ namespace otto::services {
     };
 
     state_manager.attach("Engines", load, save);
-  }
 
-  void DefaultEngineManager::start()
-  {
     sequencer.select(std::size_t(0));
     synth.select(std::size_t(0));
     effect.select(std::size_t(0));
   }
+
+  void DefaultEngineManager::start() {}
 
   audio::ProcessData<2> DefaultEngineManager::process(audio::ProcessData<1> external_in)
   {
