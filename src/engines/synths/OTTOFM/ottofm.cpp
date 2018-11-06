@@ -150,7 +150,7 @@ namespace otto::engines {
     ctx.beginPath();
     ctx.fillStyle(Colours::Blue);
     ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:1}", engine.props.algN), {width - x_pad, y_pad});
+    ctx.fillText(fmt::format("{}", engine.props.algN), {width - x_pad, y_pad});
 
     ctx.beginPath();
     ctx.fillStyle(Colours::Green);
@@ -160,7 +160,7 @@ namespace otto::engines {
     ctx.beginPath();
     ctx.fillStyle(Colours::Green);
     ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:1}", engine.props.cur_op), {width - x_pad, y_pad + space});
+    ctx.fillText(fmt::format("{}", engine.props.cur_op), {width - x_pad, y_pad + space});
 
     ctx.beginPath();
     ctx.fillStyle(Colours::Yellow);
@@ -170,7 +170,7 @@ namespace otto::engines {
     ctx.beginPath();
     ctx.fillStyle(Colours::Yellow);
     ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:1.2}", engine.props.operators.at(engine.props.cur_op).ratio_idx),
+    ctx.fillText(fmt::format("{}", engine.props.operators.at(engine.props.cur_op).ratio_idx),
                  {width - x_pad, y_pad + 2 * space});
 
     ctx.beginPath();

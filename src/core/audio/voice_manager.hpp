@@ -236,6 +236,9 @@ namespace otto::core::audio {
                     vp.midi.trigger  = 1;
                     DLOGI("Voice {} begin key {} {}Hz velocity: {}", v, ev.key, vp.midi.freq, vp.midi.velocity);
                   },
+                  [this](midi::NoteOffEvent& ev) {
+                    stop_voice(gsl::narrow_cast<char>(ev.key));
+                  },
                   [](auto&&) {});
     }
   }
@@ -245,9 +248,6 @@ namespace otto::core::audio {
   {
     for (auto&& ev : data.midi) {
       util::match(ev,
-                  [this](midi::NoteOffEvent& ev) {
-                    stop_voice(gsl::narrow_cast<char>(ev.key));
-                  },
                   [](auto&&) {});
     }
   }

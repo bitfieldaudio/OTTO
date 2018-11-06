@@ -28,7 +28,7 @@ namespace otto::engines {
 
 
     struct State {
-      Point center = {127, 120};
+      const Point center = {127, 120};
       int max_length = 16;
 
       struct ChannelState {
@@ -102,6 +102,11 @@ namespace otto::engines {
     if (!running) return data;
 
     if (!_should_run && running) {
+      for (auto& channel : props.channels) {
+        for (auto&& note : channel.notes.get()) {
+          if (note >= 0) data.midi.push_back(midi::NoteOffEvent(note));
+        }
+      }
       _counter = _samples_per_beat;
       running = false;
       return data;
@@ -114,11 +119,13 @@ namespace otto::engines {
         if (channel.length > 0) {
           channel._beat_counter++;
           channel._beat_counter %= channel.length;
+          for (auto& note : channel.notes.get()) {
+            if (note >= 0) data.midi.push_back(midi::NoteOffEvent(note));
+          }
           if (running && channel._hits_enabled.at(channel._beat_counter)) {
             for (auto note : channel.notes.get()) {
               if (note >= 0) {
                 data.midi.push_back(midi::NoteOnEvent(note));
-                data.midi.push_back(midi::NoteOffEvent(note));
               }
             }
           }
@@ -260,8 +267,9 @@ namespace otto::engines {
   {
     using namespace ui::vg;
 
-    auto hit_colour = chan.is_current ? Colour(Colours::Blue) : Colour::bytes(0x88, 0x72, 0x8E);
-    auto len_colour = chan.is_current ? Colour(Colours::Green) : hit_colour;
+    const auto hit_colour =
+      chan.is_current ? Colour(Colours::Blue) : Colour::bytes(0x88, 0x72, 0x8E);
+    const auto len_colour = chan.is_current ? Colour(Colours::Green) : hit_colour;
 
     if (chan.length == 0) {
       ctx.lineWidth(6);
@@ -290,11 +298,16 @@ namespace otto::engines {
     auto& hit =
       chan.hits.at((chan.channel->_beat_counter + (engine.running ? 0 : 1)) % chan.length);
 
-    ctx.beginPath();
-    float r = (hit.active ? 7 : 3);
-    if (engine.running) r *= (1 - (engine._counter / float(engine._samples_per_beat)));
-    ctx.circle(hit.point, r);
-    ctx.fill(Colours::Red);
+    ctx.group([&] {
+      ctx.beginPath();
+      float r = 3;
+      if (engine.running) {
+        float x = engine._counter / float(engine._samples_per_beat);
+        ctx.rotateAround(x * M_PI * 2 / float(state.max_length), state.center);
+      }
+      ctx.circle(hit.point, r);
+      ctx.fill(Colours::Red);
+    });
   }
 
   void EuclidScreen::refresh_state()

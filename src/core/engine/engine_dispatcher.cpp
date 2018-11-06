@@ -12,8 +12,7 @@ namespace otto::core::engine {
   {
     _engines = create_engines<ET>();
     if (_engines.empty()) {
-      throw util::exception(
-        "No engines registered. Can't construct EngineDispatcher");
+      throw util::exception("No engines registered. Can't construct EngineDispatcher");
     }
     for (auto&& engine : _engines) {
       // Apply default presets to all engines
@@ -66,8 +65,7 @@ namespace otto::core::engine {
   template<EngineType ET>
   Engine<ET>& EngineDispatcher<ET>::select(const std::string& name)
   {
-    auto iter = util::find_if(
-      _engines, [&name](auto&& eg) { return eg->name() == name; });
+    auto iter = util::find_if(_engines, [&name](auto&& eg) { return eg->name() == name; });
     if (iter != _engines.end()) {
       select((*iter).get());
     } else {
@@ -105,8 +103,7 @@ namespace otto::core::engine {
   }
 
   template<EngineType ET>
-  const std::vector<std::unique_ptr<Engine<ET>>>&
-  EngineDispatcher<ET>::engines() const noexcept
+  const std::vector<std::unique_ptr<Engine<ET>>>& EngineDispatcher<ET>::engines() const noexcept
   {
     return _engines;
   }
@@ -118,6 +115,7 @@ namespace otto::core::engine {
     for (auto&& engine : _engines) {
       j[engine->name()] = engine->to_json();
     }
+    j["current_engine"] = current().name();
     return j;
   }
 
@@ -126,13 +124,21 @@ namespace otto::core::engine {
   {
     if (j.is_object()) {
       for (auto iter = j.begin(); iter != j.end(); iter++) {
-        auto found = util::find_if(_engines, [name = iter.key()](auto&& eptr) {
-          return eptr->name() == name;
-        });
-        if (found == _engines.end()) {
-          throw exception(ErrorCode::engine_not_found);
+        if (iter.key() == "current_engine") {
+          auto found = util::find_if(
+            _engines, [name = iter.value().get<std::string>()](auto&& eptr) { return eptr->name() == name; });
+          if (found == _engines.end()) {
+            throw exception(ErrorCode::engine_not_found);
+          }
+          select(**found);
+        } else {
+          auto found = util::find_if(
+            _engines, [name = iter.key()](auto&& eptr) { return eptr->name() == name; });
+          if (found == _engines.end()) {
+            throw exception(ErrorCode::engine_not_found);
+          }
+          (*found)->from_json(iter.value());
         }
-        (*found)->from_json(iter.value());
       }
     }
   }
@@ -143,4 +149,4 @@ namespace otto::core::engine {
   template struct EngineDispatcher<EngineType::sequencer>;
   template struct EngineDispatcher<EngineType::effect>;
 
-} // namespace otto::core::engines
+} // namespace otto::core::engine
