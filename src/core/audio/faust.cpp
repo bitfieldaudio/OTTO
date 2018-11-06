@@ -9,6 +9,7 @@ namespace otto::core::audio::detail {
     Application::current().events.post_init.subscribe([&]() {
       _dsp.init(Application::current().audio_manager->samplerate());
       _dsp.buildUserInterface(&opts);
+      opts.client.refresh_links();
     });
   }
 } // namespace otto::core::audio::detail

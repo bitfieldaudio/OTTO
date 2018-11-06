@@ -68,7 +68,7 @@ namespace otto::services {
 
     for (unsigned i = 0; i < midi_out->getPortCount(); i++) {
       auto port = midi_out->getPortName(i);
-      if (util::starts_with(port, "OTTO:") &&
+      if (!util::starts_with(port, "OTTO:") &&
           !util::starts_with(port, "Midi Through:Midi Through")) {
         midi_out->openPort(i, "out");
         DLOGI("Connected OTTO:out to midi port {}", port);
@@ -77,7 +77,7 @@ namespace otto::services {
 
     for (unsigned i = 0; i < midi_in->getPortCount(); i++) {
       auto port = midi_in->getPortName(i);
-      if (util::starts_with(port, "OTTO:") &&
+      if (!util::starts_with(port, "OTTO:") &&
           !util::starts_with(port, "Midi Through:Midi Through")) {
         midi_in->openPort(i, "in");
         DLOGI("Connected OTTO:in to midi port {}", port);
