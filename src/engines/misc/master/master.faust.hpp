@@ -131,7 +131,7 @@ class faust_master : public dsp {
 			fRec2[0] = ((fRec2[1] * fTempPerm3) + (fTempPerm2 * (1.0f - fTempPerm3)));
 			fRec1[0] = fRec2[0];
 			fRec0[0] = ((fConst3 * fRec0[1]) + (fConst4 * (0 - (0.75f * max(((20.0f * log10f(fRec1[0])) + 6.0f), 0.0f)))));
-			fTempPerm4 = pow(10.f, (0.050000000000000003f * fRec0[0]));
+			fTempPerm4 = powf(10,(0.050000000000000003f * fRec0[0]));
 			output0[i] = (FAUSTFLOAT)(fTempPerm4 * fTempPerm0);
 			output1[i] = (FAUSTFLOAT)(fTempPerm4 * fTempPerm1);
 			// post processing

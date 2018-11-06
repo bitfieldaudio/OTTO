@@ -29,7 +29,7 @@ with {
 };
 
 //------------------------------`DXOTTO_modulator_op`---------------------------
-// FM carrier operator for OTTO. Implements a phase-modulable sine wave oscillator connected
+// FM carrier operator for OTTO1:2. Implements a phase-modulable sine wave oscillator connected
 // to an ADSR envelope generator.
 // ```
 // DXOTTO_modulator_op(freq, fmAmount, phaseMod,outLev,att,dec,sus,rel,gain,gate) : _
@@ -48,7 +48,7 @@ with{
   sineWave = rdtable(tablesize, os.sinwaveform(tablesize), ma.modulo(int(os.phasor(tablesize,freq) + phaseMod*tablesize),tablesize));
   freq =  hslider("ratio",1,0.25,4,0.01)*basefreq + hslider("detune",0,-1,1,0.01)*25;
 
-  outLev = hslider("outLev",0,0,1,0.01)*fmAmount;
+  outLev = hslider("outLev",1,0,1,0.01)*fmAmount;
   //Envelope
   attack = hslider("mAtt", 0, 0, 1, 0.01)*3;
   decrel = hslider("mDecrel", 0, 0, 1, 0.01)*3;
@@ -126,10 +126,10 @@ with{
 DXOTTO_algo(0, att, dec, sus, rel, fmAmount,freq, gain, gate) =
 op4 : op3 : op2 : op1 : _
 with{
-  op4 = vgroup("op3", DXOTTO_modulator_op(freq, fmAmount, 0,gate) );
-  op3 = vgroup("op2", DXOTTO_modulator_op(freq, fmAmount, _,gate) );
-  op2 = vgroup("op1", DXOTTO_modulator_op(freq, fmAmount, _,gate) );
-  op1 = vgroup("op0", DXOTTO_carrier_op(freq, _,att,dec,sus,rel,gain,gate) );
+  op4 = vgroup("/op3", DXOTTO_modulator_op(freq, fmAmount, 0,gate) );
+  op3 = vgroup("/op2", DXOTTO_modulator_op(freq, fmAmount, _,gate) );
+  op2 = vgroup("/op1", DXOTTO_modulator_op(freq, fmAmount, _,gate) );
+  op1 = vgroup("/op0", DXOTTO_carrier_op(freq, _,att,dec,sus,rel,gain,gate) );
 };
 // Alg 1
 DXOTTO_algo(1, att, dec, sus, rel, fmAmount, freq, gain, gate) =
