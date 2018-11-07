@@ -91,7 +91,7 @@ with{
   sineWave = rdtable(tablesize, os.sinwaveform(tablesize), ma.modulo(int(os.phasor(tablesize,freq) + phaseMod*tablesize),tablesize));
   freq =  hslider("/v:op%j/ratio",1,0.25,4,0.01)*basefreq + hslider("/v:op%j/detune",0,-1,1,0.01)*25;
 
-  outLev = hslider("/v:op%j/outLev",0,0,1,0.01);
+  outLev = hslider("/v:op%j/outLev",1,0,1,0.01);
   //Envelope
   attack = att + hslider("/v:op%j/cAtt", 0, -1, 1, 0.01) : max(0);
   sustain = sus + hslider("/v:op%j/cSus", 0, -1, 1, 0.01)*0.5 : max(0);

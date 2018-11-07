@@ -279,17 +279,15 @@ class faust_ottofm : public dsp {
 	FAUSTFLOAT 	fslider43;
 	float 	fRec77[2];
 	float 	fTempPerm84;
-	FAUSTFLOAT 	fslider44;
 	float 	fRec79[2];
 	float 	fTempPerm85;
+	FAUSTFLOAT 	fslider44;
 	FAUSTFLOAT 	fslider45;
-	FAUSTFLOAT 	fslider46;
 	int 	iTempPerm86;
 	float 	fTempPerm87;
-	FAUSTFLOAT 	fslider47;
+	FAUSTFLOAT 	fslider46;
 	float 	fRec80[2];
 	float 	fTempPerm88;
-	FAUSTFLOAT 	fslider48;
 	float 	fTempPerm89;
 	float 	fRec81[2];
 	float 	fTempPerm90;
@@ -300,24 +298,22 @@ class faust_ottofm : public dsp {
 	float 	fTempPerm94;
 	float 	fRec83[2];
 	float 	fTempPerm95;
-	FAUSTFLOAT 	fslider49;
-	FAUSTFLOAT 	fslider50;
+	FAUSTFLOAT 	fslider47;
+	FAUSTFLOAT 	fslider48;
 	int 	iTempPerm96;
 	float 	fTempPerm97;
-	FAUSTFLOAT 	fslider51;
+	FAUSTFLOAT 	fslider49;
 	float 	fRec84[2];
-	FAUSTFLOAT 	fslider52;
 	float 	fTempPerm98;
-	FAUSTFLOAT 	fslider53;
+	FAUSTFLOAT 	fslider50;
 	float 	fTempPerm99;
-	FAUSTFLOAT 	fslider54;
-	FAUSTFLOAT 	fslider55;
-	FAUSTFLOAT 	fslider56;
+	FAUSTFLOAT 	fslider51;
+	FAUSTFLOAT 	fslider52;
+	FAUSTFLOAT 	fslider53;
 	float 	fRec86[2];
 	int 	iTempPerm100;
 	float 	fRec85[2];
 	float 	fRec87[2];
-	FAUSTFLOAT 	fslider57;
 	float 	fTempPerm101;
 	float 	fRec89[2];
 	int 	iTempPerm102;
@@ -875,7 +871,7 @@ class faust_ottofm : public dsp {
 		fslider27 = 0.001f;
 		fslider28 = 0.0f;
 		fslider29 = 1.0f;
-		fslider30 = 0.0f;
+		fslider30 = 1.0f;
 		fslider31 = 1.0f;
 		fslider32 = 440.0f;
 		fbutton1 = 0.0;
@@ -900,14 +896,10 @@ class faust_ottofm : public dsp {
 		fslider47 = 0.0f;
 		fslider48 = 0.0f;
 		fslider49 = 0.0f;
-		fslider50 = 0.0f;
+		fslider50 = 1.0f;
 		fslider51 = 0.0f;
 		fslider52 = 0.0f;
-		fslider53 = 1.0f;
-		fslider54 = 0.0f;
-		fslider55 = 0.0f;
-		fslider56 = 0.0f;
-		fslider57 = 1.0f;
+		fslider53 = 0.0f;
 	}
 	virtual void instanceClear() {
 		for (int i=0; i<2; i++) fRec1[i] = 0;
@@ -1067,23 +1059,21 @@ class faust_ottofm : public dsp {
 		ui_interface->addHorizontalSlider("cRel", &fslider23, 0.0f, -1.0f, 1.0f, 0.01f);
 		ui_interface->addHorizontalSlider("cSus", &fslider28, 0.0f, -1.0f, 1.0f, 0.01f);
 		ui_interface->addHorizontalSlider("detune", &fslider22, 0.0f, -1.0f, 1.0f, 0.01f);
-		ui_interface->addHorizontalSlider("mAtt", &fslider55, 0.0f, 0.0f, 1.0f, 0.01f);
-		ui_interface->addHorizontalSlider("mDecrel", &fslider56, 0.0f, 0.0f, 1.0f, 0.01f);
-		ui_interface->addHorizontalSlider("mSuspos", &fslider54, 0.0f, 0.0f, 1.0f, 0.01f);
-		ui_interface->addHorizontalSlider("outLev", &fslider30, 0.0f, 0.0f, 1.0f, 0.01f);
-		ui_interface->addHorizontalSlider("outLev", &fslider57, 1.0f, 0.0f, 1.0f, 0.01f);
+		ui_interface->addHorizontalSlider("mAtt", &fslider52, 0.0f, 0.0f, 1.0f, 0.01f);
+		ui_interface->addHorizontalSlider("mDecrel", &fslider53, 0.0f, 0.0f, 1.0f, 0.01f);
+		ui_interface->addHorizontalSlider("mSuspos", &fslider51, 0.0f, 0.0f, 1.0f, 0.01f);
+		ui_interface->addHorizontalSlider("outLev", &fslider30, 1.0f, 0.0f, 1.0f, 0.01f);
 		ui_interface->addHorizontalSlider("ratio", &fslider21, 1.0f, 0.25f, 4.0f, 0.01f);
 		ui_interface->closeBox();
 		ui_interface->openVerticalBox("op1");
-		ui_interface->addHorizontalSlider("cAtt", &fslider46, 0.0f, -1.0f, 1.0f, 0.01f);
-		ui_interface->addHorizontalSlider("cRel", &fslider45, 0.0f, -1.0f, 1.0f, 0.01f);
-		ui_interface->addHorizontalSlider("cSus", &fslider47, 0.0f, -1.0f, 1.0f, 0.01f);
+		ui_interface->addHorizontalSlider("cAtt", &fslider45, 0.0f, -1.0f, 1.0f, 0.01f);
+		ui_interface->addHorizontalSlider("cRel", &fslider44, 0.0f, -1.0f, 1.0f, 0.01f);
+		ui_interface->addHorizontalSlider("cSus", &fslider46, 0.0f, -1.0f, 1.0f, 0.01f);
 		ui_interface->addHorizontalSlider("detune", &fslider16, 0.0f, -1.0f, 1.0f, 0.01f);
 		ui_interface->addHorizontalSlider("mAtt", &fslider18, 0.0f, 0.0f, 1.0f, 0.01f);
 		ui_interface->addHorizontalSlider("mDecrel", &fslider19, 0.0f, 0.0f, 1.0f, 0.01f);
 		ui_interface->addHorizontalSlider("mSuspos", &fslider17, 0.0f, 0.0f, 1.0f, 0.01f);
 		ui_interface->addHorizontalSlider("outLev", &fslider20, 1.0f, 0.0f, 1.0f, 0.01f);
-		ui_interface->addHorizontalSlider("outLev", &fslider48, 0.0f, 0.0f, 1.0f, 0.01f);
 		ui_interface->addHorizontalSlider("ratio", &fslider15, 1.0f, 0.25f, 4.0f, 0.01f);
 		ui_interface->closeBox();
 		ui_interface->openVerticalBox("op2");
@@ -1095,19 +1085,17 @@ class faust_ottofm : public dsp {
 		ui_interface->addHorizontalSlider("mDecrel", &fslider13, 0.0f, 0.0f, 1.0f, 0.01f);
 		ui_interface->addHorizontalSlider("mSuspos", &fslider11, 0.0f, 0.0f, 1.0f, 0.01f);
 		ui_interface->addHorizontalSlider("outLev", &fslider14, 1.0f, 0.0f, 1.0f, 0.01f);
-		ui_interface->addHorizontalSlider("outLev", &fslider44, 0.0f, 0.0f, 1.0f, 0.01f);
 		ui_interface->addHorizontalSlider("ratio", &fslider9, 1.0f, 0.25f, 4.0f, 0.01f);
 		ui_interface->closeBox();
 		ui_interface->openVerticalBox("op3");
-		ui_interface->addHorizontalSlider("cAtt", &fslider50, 0.0f, -1.0f, 1.0f, 0.01f);
-		ui_interface->addHorizontalSlider("cRel", &fslider49, 0.0f, -1.0f, 1.0f, 0.01f);
-		ui_interface->addHorizontalSlider("cSus", &fslider51, 0.0f, -1.0f, 1.0f, 0.01f);
+		ui_interface->addHorizontalSlider("cAtt", &fslider48, 0.0f, -1.0f, 1.0f, 0.01f);
+		ui_interface->addHorizontalSlider("cRel", &fslider47, 0.0f, -1.0f, 1.0f, 0.01f);
+		ui_interface->addHorizontalSlider("cSus", &fslider49, 0.0f, -1.0f, 1.0f, 0.01f);
 		ui_interface->addHorizontalSlider("detune", &fslider3, 0.0f, -1.0f, 1.0f, 0.01f);
 		ui_interface->addHorizontalSlider("mAtt", &fslider5, 0.0f, 0.0f, 1.0f, 0.01f);
 		ui_interface->addHorizontalSlider("mDecrel", &fslider6, 0.0f, 0.0f, 1.0f, 0.01f);
 		ui_interface->addHorizontalSlider("mSuspos", &fslider4, 0.0f, 0.0f, 1.0f, 0.01f);
 		ui_interface->addHorizontalSlider("outLev", &fslider7, 1.0f, 0.0f, 1.0f, 0.01f);
-		ui_interface->addHorizontalSlider("outLev", &fslider52, 0.0f, 0.0f, 1.0f, 0.01f);
 		ui_interface->addHorizontalSlider("ratio", &fslider2, 1.0f, 0.25f, 4.0f, 0.01f);
 		ui_interface->closeBox();
 		ui_interface->openHorizontalBox("voices");
@@ -1115,7 +1103,7 @@ class faust_ottofm : public dsp {
 		ui_interface->openHorizontalBox("midi");
 		ui_interface->addHorizontalSlider("freq", &fslider40, 440.0f, 20.0f, 1000.0f, 1.0f);
 		ui_interface->addButton("trigger", &fbutton5);
-		ui_interface->addHorizontalSlider("velocity", &fslider53, 1.0f, 0.0f, 1.0f, 0.007874015748031496f);
+		ui_interface->addHorizontalSlider("velocity", &fslider50, 1.0f, 0.0f, 1.0f, 0.007874015748031496f);
 		ui_interface->closeBox();
 		ui_interface->closeBox();
 		ui_interface->openVerticalBox("1");
@@ -1338,73 +1326,70 @@ class faust_ottofm : public dsp {
 		float 	fSlow176 = max((float)0, (fSlow81 + (0.5f * float(fslider43))));
 		float 	fSlow177 = float(iSlow174);
 		float 	fSlow178 = (fSlow177 * fSlow176);
-		float 	fSlow179 = float(fslider44);
-		float 	fSlow180 = (fConst1 * (fSlow55 + (fSlow54 * fSlow167)));
-		float 	fSlow181 = max((float)0, (fSlow74 + float(fslider45)));
-		float 	fSlow182 = max((float)0, (fSlow77 + float(fslider46)));
-		float 	fSlow183 = (6.9100000000000001f * fSlow182);
-		int 	iSlow184 = int((fConst0 * fSlow182));
-		float 	fSlow185 = max((float)0, (fSlow81 + (0.5f * float(fslider47))));
-		float 	fSlow186 = (fSlow177 * fSlow185);
-		float 	fSlow187 = float(fslider48);
-		float 	fSlow188 = (fConst1 * (fSlow72 + (fSlow71 * fSlow167)));
-		float 	fSlow189 = (fSlow177 * fSlow82);
-		float 	fSlow190 = (fConst1 * (fSlow14 + (fSlow13 * fSlow167)));
-		float 	fSlow191 = max((float)0, (fSlow74 + float(fslider49)));
-		float 	fSlow192 = max((float)0, (fSlow77 + float(fslider50)));
-		float 	fSlow193 = (6.9100000000000001f * fSlow192);
-		int 	iSlow194 = int((fConst0 * fSlow192));
-		float 	fSlow195 = max((float)0, (fSlow81 + (0.5f * float(fslider51))));
-		float 	fSlow196 = (fSlow177 * fSlow195);
-		float 	fSlow197 = float(fslider52);
-		float 	fSlow198 = float(fslider53);
-		float 	fSlow199 = float(fslider54);
-		float 	fSlow200 = (fSlow199 * fSlow173);
-		float 	fSlow201 = float(fslider55);
+		float 	fSlow179 = (fConst1 * (fSlow55 + (fSlow54 * fSlow167)));
+		float 	fSlow180 = max((float)0, (fSlow74 + float(fslider44)));
+		float 	fSlow181 = max((float)0, (fSlow77 + float(fslider45)));
+		float 	fSlow182 = (6.9100000000000001f * fSlow181);
+		int 	iSlow183 = int((fConst0 * fSlow181));
+		float 	fSlow184 = max((float)0, (fSlow81 + (0.5f * float(fslider46))));
+		float 	fSlow185 = (fSlow177 * fSlow184);
+		float 	fSlow186 = (fConst1 * (fSlow72 + (fSlow71 * fSlow167)));
+		float 	fSlow187 = (fSlow177 * fSlow82);
+		float 	fSlow188 = (fConst1 * (fSlow14 + (fSlow13 * fSlow167)));
+		float 	fSlow189 = max((float)0, (fSlow74 + float(fslider47)));
+		float 	fSlow190 = max((float)0, (fSlow77 + float(fslider48)));
+		float 	fSlow191 = (6.9100000000000001f * fSlow190);
+		int 	iSlow192 = int((fConst0 * fSlow190));
+		float 	fSlow193 = max((float)0, (fSlow81 + (0.5f * float(fslider49))));
+		float 	fSlow194 = (fSlow177 * fSlow193);
+		float 	fSlow195 = float(fslider50);
+		float 	fSlow196 = float(fslider51);
+		float 	fSlow197 = (fSlow196 * fSlow173);
+		float 	fSlow198 = float(fslider52);
+		float 	fSlow199 = (fConst2 * fSlow198);
+		float 	fSlow200 = float(fslider53);
+		float 	fSlow201 = (((1.0f - fSlow196) * fSlow200) + fSlow198);
 		float 	fSlow202 = (fConst2 * fSlow201);
-		float 	fSlow203 = float(fslider56);
-		float 	fSlow204 = (((1.0f - fSlow199) * fSlow203) + fSlow201);
-		float 	fSlow205 = (fConst2 * fSlow204);
-		int 	iSlow206 = int(((fSlow173 == 0.0f) > 0));
-		float 	fSlow207 = (fSlow204 - fSlow201);
-		float 	fSlow208 = (fConst3 * ((fSlow200 + -1.0f) / fSlow207));
-		float 	fSlow209 = (fConst3 / fSlow201);
-		float 	fSlow210 = max(0.001f, (fConst2 * (fSlow199 * fSlow203)));
-		int 	iSlow211 = int((iSlow174 > 0));
-		float 	fSlow212 = (1.0f / fSlow210);
-		float 	fSlow213 = (fSlow35 * float(fslider57));
-		float 	fSlow214 = (fSlow17 * fSlow173);
-		float 	fSlow215 = (fConst3 * ((fSlow214 + -1.0f) / fSlow25));
-		float 	fSlow216 = (fSlow57 * fSlow173);
-		float 	fSlow217 = (fConst3 * ((fSlow216 + -1.0f) / fSlow64));
-		float 	fSlow218 = (fSlow40 * fSlow173);
-		float 	fSlow219 = (fConst3 * ((fSlow218 + -1.0f) / fSlow47));
-		float 	fSlow220 = (fSlow84 * fSlow198);
-		float 	fSlow221 = (fSlow154 * fSlow185);
-		float 	fSlow222 = (fSlow154 * fSlow176);
-		float 	fSlow223 = (fSlow199 * fSlow149);
-		float 	fSlow224 = (fConst3 * ((fSlow223 + -1.0f) / fSlow207));
-		float 	fSlow225 = (fSlow154 * fSlow195);
-		float 	fSlow226 = (fSlow134 * fSlow185);
-		float 	fSlow227 = (fSlow134 * fSlow176);
-		float 	fSlow228 = (fSlow199 * fSlow129);
-		float 	fSlow229 = (fConst3 * ((fSlow228 + -1.0f) / fSlow207));
-		float 	fSlow230 = (fSlow134 * fSlow195);
-		float 	fSlow231 = (fSlow114 * fSlow185);
-		float 	fSlow232 = (fSlow114 * fSlow176);
-		float 	fSlow233 = (fSlow199 * fSlow109);
-		float 	fSlow234 = (fConst3 * ((fSlow233 + -1.0f) / fSlow207));
-		float 	fSlow235 = (fSlow114 * fSlow195);
-		float 	fSlow236 = (fSlow94 * fSlow185);
-		float 	fSlow237 = (fSlow94 * fSlow176);
-		float 	fSlow238 = (fSlow199 * fSlow89);
-		float 	fSlow239 = (fConst3 * ((fSlow238 + -1.0f) / fSlow207));
-		float 	fSlow240 = (fSlow94 * fSlow195);
-		float 	fSlow241 = (fSlow29 * fSlow185);
-		float 	fSlow242 = (fSlow29 * fSlow176);
-		float 	fSlow243 = (fSlow199 * fSlow16);
-		float 	fSlow244 = (fConst3 * ((fSlow243 + -1.0f) / fSlow207));
-		float 	fSlow245 = (fSlow29 * fSlow195);
+		int 	iSlow203 = int(((fSlow173 == 0.0f) > 0));
+		float 	fSlow204 = (fSlow201 - fSlow198);
+		float 	fSlow205 = (fConst3 * ((fSlow197 + -1.0f) / fSlow204));
+		float 	fSlow206 = (fConst3 / fSlow198);
+		float 	fSlow207 = max(0.001f, (fConst2 * (fSlow196 * fSlow200)));
+		int 	iSlow208 = int((iSlow174 > 0));
+		float 	fSlow209 = (1.0f / fSlow207);
+		float 	fSlow210 = (fSlow35 * fSlow84);
+		float 	fSlow211 = (fSlow17 * fSlow173);
+		float 	fSlow212 = (fConst3 * ((fSlow211 + -1.0f) / fSlow25));
+		float 	fSlow213 = (fSlow57 * fSlow173);
+		float 	fSlow214 = (fConst3 * ((fSlow213 + -1.0f) / fSlow64));
+		float 	fSlow215 = (fSlow40 * fSlow173);
+		float 	fSlow216 = (fConst3 * ((fSlow215 + -1.0f) / fSlow47));
+		float 	fSlow217 = (fSlow84 * fSlow195);
+		float 	fSlow218 = (fSlow154 * fSlow184);
+		float 	fSlow219 = (fSlow154 * fSlow176);
+		float 	fSlow220 = (fSlow196 * fSlow149);
+		float 	fSlow221 = (fConst3 * ((fSlow220 + -1.0f) / fSlow204));
+		float 	fSlow222 = (fSlow154 * fSlow193);
+		float 	fSlow223 = (fSlow134 * fSlow184);
+		float 	fSlow224 = (fSlow134 * fSlow176);
+		float 	fSlow225 = (fSlow196 * fSlow129);
+		float 	fSlow226 = (fConst3 * ((fSlow225 + -1.0f) / fSlow204));
+		float 	fSlow227 = (fSlow134 * fSlow193);
+		float 	fSlow228 = (fSlow114 * fSlow184);
+		float 	fSlow229 = (fSlow114 * fSlow176);
+		float 	fSlow230 = (fSlow196 * fSlow109);
+		float 	fSlow231 = (fConst3 * ((fSlow230 + -1.0f) / fSlow204));
+		float 	fSlow232 = (fSlow114 * fSlow193);
+		float 	fSlow233 = (fSlow94 * fSlow184);
+		float 	fSlow234 = (fSlow94 * fSlow176);
+		float 	fSlow235 = (fSlow196 * fSlow89);
+		float 	fSlow236 = (fConst3 * ((fSlow235 + -1.0f) / fSlow204));
+		float 	fSlow237 = (fSlow94 * fSlow193);
+		float 	fSlow238 = (fSlow29 * fSlow184);
+		float 	fSlow239 = (fSlow29 * fSlow176);
+		float 	fSlow240 = (fSlow196 * fSlow16);
+		float 	fSlow241 = (fConst3 * ((fSlow240 + -1.0f) / fSlow204));
+		float 	fSlow242 = (fSlow29 * fSlow193);
 		//zone2b
 		//zone3
 		FAUSTFLOAT* output0 = output[0];
@@ -1721,22 +1706,22 @@ class faust_ottofm : public dsp {
 				fTempPerm84 = min(1.0f, fRec77[0]);
 			}
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow8 || iSlow7 || iSlow6 || iSlow5 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
-				fRec79[0] = (fSlow180 + (fRec79[1] - floorf((fSlow180 + fRec79[1]))));
+				fRec79[0] = (fSlow179 + (fRec79[1] - floorf((fSlow179 + fRec79[1]))));
 			}
 			if (iSlow11 || iSlow10 || iSlow8 || iSlow7) {
 				fTempPerm85 = ftbl0[(((int((65536.0f * fRec79[0])) % 65536) + 65536) % 65536)];
 			}
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow6 || iSlow5) {
-				iTempPerm86 = int((iRec78[0] < iSlow184));
-				fTempPerm87 = expf((0 - (fConst4 / ((iSlow175)?((iTempPerm86)?fSlow183:fSlow76):fSlow181))));
-				fRec80[0] = ((fRec80[1] * fTempPerm87) + (((iSlow175)?((iTempPerm86)?1.5873015873015872f:fSlow186):0.0f) * (1.0f - fTempPerm87)));
+				iTempPerm86 = int((iRec78[0] < iSlow183));
+				fTempPerm87 = expf((0 - (fConst4 / ((iSlow175)?((iTempPerm86)?fSlow182:fSlow76):fSlow180))));
+				fRec80[0] = ((fRec80[1] * fTempPerm87) + (((iSlow175)?((iTempPerm86)?1.5873015873015872f:fSlow185):0.0f) * (1.0f - fTempPerm87)));
 				fTempPerm88 = min(1.0f, fRec80[0]);
 			}
 			if (iSlow11 || iSlow10) {
-				fTempPerm89 = (fSlow187 * (fTempPerm88 * fTempPerm85));
+				fTempPerm89 = (fSlow69 * (fTempPerm88 * fTempPerm85));
 			}
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow8 || iSlow7 || iSlow6 || iSlow5 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
-				fRec81[0] = (fSlow188 + (fRec81[1] - floorf((fSlow188 + fRec81[1]))));
+				fRec81[0] = (fSlow186 + (fRec81[1] - floorf((fSlow186 + fRec81[1]))));
 			}
 			if (iSlow11 || iSlow10 || iSlow6) {
 				fTempPerm90 = ftbl0[(((int((65536.0f * fRec81[0])) % 65536) + 65536) % 65536)];
@@ -1744,37 +1729,37 @@ class faust_ottofm : public dsp {
 			if (iSlow11 || iSlow9 || iSlow8 || iSlow7 || iSlow6 || iSlow5 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
 				iTempPerm91 = int((iRec78[0] < iSlow80));
 				fTempPerm92 = expf((0 - (fConst4 / ((iSlow175)?((iTempPerm91)?fSlow79:fSlow76):fSlow75))));
-				fRec82[0] = ((fRec82[1] * fTempPerm92) + (((iSlow175)?((iTempPerm91)?1.5873015873015872f:fSlow189):0.0f) * (1.0f - fTempPerm92)));
+				fRec82[0] = ((fRec82[1] * fTempPerm92) + (((iSlow175)?((iTempPerm91)?1.5873015873015872f:fSlow187):0.0f) * (1.0f - fTempPerm92)));
 				fTempPerm93 = min(1.0f, fRec82[0]);
 			}
 			if (iSlow11 || iSlow6) {
 				fTempPerm94 = (fSlow84 * (fTempPerm93 * fTempPerm90));
 			}
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow8 || iSlow7 || iSlow6 || iSlow5 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
-				fRec83[0] = (fSlow190 + (fRec83[1] - floorf((fSlow190 + fRec83[1]))));
+				fRec83[0] = (fSlow188 + (fRec83[1] - floorf((fSlow188 + fRec83[1]))));
 				fTempPerm95 = ftbl0[(((int((65536.0f * fRec83[0])) % 65536) + 65536) % 65536)];
 			}
 			if (iSlow11 || iSlow10) {
-				iTempPerm96 = int((iRec78[0] < iSlow194));
-				fTempPerm97 = expf((0 - (fConst4 / ((iSlow175)?((iTempPerm96)?fSlow193:fSlow76):fSlow191))));
-				fRec84[0] = ((fRec84[1] * fTempPerm97) + (((iSlow175)?((iTempPerm96)?1.5873015873015872f:fSlow196):0.0f) * (1.0f - fTempPerm97)));
-				fTempPerm98 = (fSlow197 * (min(1.0f, fRec84[0]) * fTempPerm95));
+				iTempPerm96 = int((iRec78[0] < iSlow192));
+				fTempPerm97 = expf((0 - (fConst4 / ((iSlow175)?((iTempPerm96)?fSlow191:fSlow76):fSlow189))));
+				fRec84[0] = ((fRec84[1] * fTempPerm97) + (((iSlow175)?((iTempPerm96)?1.5873015873015872f:fSlow194):0.0f) * (1.0f - fTempPerm97)));
+				fTempPerm98 = (fSlow34 * (min(1.0f, fRec84[0]) * fTempPerm95));
 			}
 			if (iSlow11) {
-				fTempPerm99 = (fSlow198 * (fTempPerm98 + ((fTempPerm94 + fTempPerm89) + (fSlow179 * (fTempPerm84 * fTempPerm81)))));
+				fTempPerm99 = (fSlow195 * (fTempPerm98 + ((fTempPerm94 + fTempPerm89) + (fSlow52 * (fTempPerm84 * fTempPerm81)))));
 			}
 			if (iSlow10) {
-				fRec86[0] = ((iSlow206)?0.0f:min(fSlow205, (fRec86[1] + 1.0f)));
-				iTempPerm100 = int((fRec86[0] < fSlow202));
-				fRec85[0] = ((iSlow175)?(fSlow177 * ((iTempPerm100)?((int((fRec86[0] < 0.0f)))?0.0f:((iTempPerm100)?(fSlow209 * fRec86[0]):1.0f)):((int((fRec86[0] < fSlow205)))?((fSlow208 * (fRec86[0] - fSlow202)) + 1.0f):fSlow200))):fRec85[1]);
-				fRec87[0] = ((iSlow211)?0.0f:min(fSlow210, (fRec87[1] + 1.0f)));
-				fTempPerm101 = (fSlow198 * ((fTempPerm98 + fTempPerm89) + (fSlow179 * (fTempPerm84 * ftbl0[(((int((65536.0f * (fRec76[0] + (fSlow213 * (fTempPerm90 * ((int((fRec87[0] < 0.0f)))?fRec85[0]:((int((fRec87[0] < fSlow210)))?(fRec85[0] + (fSlow212 * (0 - (fRec87[0] * fRec85[0])))):0.0f))))))) % 65536) + 65536) % 65536)]))));
+				fRec86[0] = ((iSlow203)?0.0f:min(fSlow202, (fRec86[1] + 1.0f)));
+				iTempPerm100 = int((fRec86[0] < fSlow199));
+				fRec85[0] = ((iSlow175)?(fSlow177 * ((iTempPerm100)?((int((fRec86[0] < 0.0f)))?0.0f:((iTempPerm100)?(fSlow206 * fRec86[0]):1.0f)):((int((fRec86[0] < fSlow202)))?((fSlow205 * (fRec86[0] - fSlow199)) + 1.0f):fSlow197))):fRec85[1]);
+				fRec87[0] = ((iSlow208)?0.0f:min(fSlow207, (fRec87[1] + 1.0f)));
+				fTempPerm101 = (fSlow195 * ((fTempPerm98 + fTempPerm89) + (fSlow52 * (fTempPerm84 * ftbl0[(((int((65536.0f * (fRec76[0] + (fSlow210 * (fTempPerm90 * ((int((fRec87[0] < 0.0f)))?fRec85[0]:((int((fRec87[0] < fSlow207)))?(fRec85[0] + (fSlow209 * (0 - (fRec87[0] * fRec85[0])))):0.0f))))))) % 65536) + 65536) % 65536)]))));
 			}
 			if (iSlow9 || iSlow8 || iSlow7 || iSlow6 || iSlow5 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
-				fRec89[0] = ((iSlow206)?0.0f:min(fSlow23, (fRec89[1] + 1.0f)));
+				fRec89[0] = ((iSlow203)?0.0f:min(fSlow23, (fRec89[1] + 1.0f)));
 				iTempPerm102 = int((fRec89[0] < fSlow20));
-				fRec88[0] = ((iSlow175)?(fSlow177 * ((iTempPerm102)?((int((fRec89[0] < 0.0f)))?0.0f:((iTempPerm102)?(fSlow27 * fRec89[0]):1.0f)):((int((fRec89[0] < fSlow23)))?((fSlow215 * (fRec89[0] - fSlow20)) + 1.0f):fSlow214))):fRec88[1]);
-				fRec90[0] = ((iSlow211)?0.0f:min(fSlow31, (fRec90[1] + 1.0f)));
+				fRec88[0] = ((iSlow175)?(fSlow177 * ((iTempPerm102)?((int((fRec89[0] < 0.0f)))?0.0f:((iTempPerm102)?(fSlow27 * fRec89[0]):1.0f)):((int((fRec89[0] < fSlow23)))?((fSlow212 * (fRec89[0] - fSlow20)) + 1.0f):fSlow211))):fRec88[1]);
+				fRec90[0] = ((iSlow208)?0.0f:min(fSlow31, (fRec90[1] + 1.0f)));
 				fTempPerm103 = (((int((fRec90[0] < 0.0f)))?fRec88[0]:((int((fRec90[0] < fSlow31)))?(fRec88[0] + (fSlow33 * (0 - (fRec90[0] * fRec88[0])))):0.0f)) * fTempPerm95);
 			}
 			if (iSlow9 || iSlow8 || iSlow6 || iSlow5 || iSlow4 || iSlow2 || iSlow1) {
@@ -1787,29 +1772,29 @@ class faust_ottofm : public dsp {
 				fTempPerm106 = ftbl0[(((int((65536.0f * (fRec76[0] + fTempPerm104))) % 65536) + 65536) % 65536)];
 			}
 			if (iSlow9 || iSlow8) {
-				fTempPerm107 = (fSlow179 * (fTempPerm84 * fTempPerm106));
+				fTempPerm107 = (fSlow52 * (fTempPerm84 * fTempPerm106));
 			}
 			if (iSlow9) {
-				fTempPerm108 = (fSlow198 * (fTempPerm107 + ((fSlow84 * (fTempPerm93 * ftbl0[(((int((65536.0f * (fRec81[0] + fTempPerm104))) % 65536) + 65536) % 65536)])) + (fSlow187 * (fTempPerm88 * fTempPerm105)))));
+				fTempPerm108 = (fSlow195 * (fTempPerm107 + ((fSlow84 * (fTempPerm93 * ftbl0[(((int((65536.0f * (fRec81[0] + fTempPerm104))) % 65536) + 65536) % 65536)])) + (fSlow69 * (fTempPerm88 * fTempPerm105)))));
 			}
 			if (iSlow8 || iSlow7 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
-				fRec92[0] = ((iSlow206)?0.0f:min(fSlow63, (fRec92[1] + 1.0f)));
+				fRec92[0] = ((iSlow203)?0.0f:min(fSlow63, (fRec92[1] + 1.0f)));
 				iTempPerm109 = int((fRec92[0] < fSlow60));
-				fRec91[0] = ((iSlow175)?(fSlow177 * ((iTempPerm109)?((int((fRec92[0] < 0.0f)))?0.0f:((iTempPerm109)?(fSlow66 * fRec92[0]):1.0f)):((int((fRec92[0] < fSlow63)))?((fSlow217 * (fRec92[0] - fSlow60)) + 1.0f):fSlow216))):fRec91[1]);
-				fRec93[0] = ((iSlow211)?0.0f:min(fSlow67, (fRec93[1] + 1.0f)));
+				fRec91[0] = ((iSlow175)?(fSlow177 * ((iTempPerm109)?((int((fRec92[0] < 0.0f)))?0.0f:((iTempPerm109)?(fSlow66 * fRec92[0]):1.0f)):((int((fRec92[0] < fSlow63)))?((fSlow214 * (fRec92[0] - fSlow60)) + 1.0f):fSlow213))):fRec91[1]);
+				fRec93[0] = ((iSlow208)?0.0f:min(fSlow67, (fRec93[1] + 1.0f)));
 				fTempPerm110 = ((int((fRec93[0] < 0.0f)))?fRec91[0]:((int((fRec93[0] < fSlow67)))?(fRec91[0] + (fSlow68 * (0 - (fRec93[0] * fRec91[0])))):0.0f));
 			}
 			if (iSlow8 || iSlow7) {
 				fTempPerm111 = (fTempPerm110 * fTempPerm85);
 			}
 			if (iSlow8) {
-				fTempPerm112 = (fSlow198 * ((fSlow84 * (fTempPerm93 * ftbl0[(((int((65536.0f * (fRec81[0] + (fSlow70 * fTempPerm111)))) % 65536) + 65536) % 65536)])) + fTempPerm107));
+				fTempPerm112 = (fSlow195 * ((fSlow84 * (fTempPerm93 * ftbl0[(((int((65536.0f * (fRec81[0] + (fSlow70 * fTempPerm111)))) % 65536) + 65536) % 65536)])) + fTempPerm107));
 			}
 			if (iSlow7 || iSlow6 || iSlow5 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
-				fRec95[0] = ((iSlow206)?0.0f:min(fSlow46, (fRec95[1] + 1.0f)));
+				fRec95[0] = ((iSlow203)?0.0f:min(fSlow46, (fRec95[1] + 1.0f)));
 				iTempPerm113 = int((fRec95[0] < fSlow43));
-				fRec94[0] = ((iSlow175)?(fSlow177 * ((iTempPerm113)?((int((fRec95[0] < 0.0f)))?0.0f:((iTempPerm113)?(fSlow49 * fRec95[0]):1.0f)):((int((fRec95[0] < fSlow46)))?((fSlow219 * (fRec95[0] - fSlow43)) + 1.0f):fSlow218))):fRec94[1]);
-				fRec96[0] = ((iSlow211)?0.0f:min(fSlow50, (fRec96[1] + 1.0f)));
+				fRec94[0] = ((iSlow175)?(fSlow177 * ((iTempPerm113)?((int((fRec95[0] < 0.0f)))?0.0f:((iTempPerm113)?(fSlow49 * fRec95[0]):1.0f)):((int((fRec95[0] < fSlow46)))?((fSlow216 * (fRec95[0] - fSlow43)) + 1.0f):fSlow215))):fRec94[1]);
+				fRec96[0] = ((iSlow208)?0.0f:min(fSlow50, (fRec96[1] + 1.0f)));
 				fTempPerm114 = ((int((fRec96[0] < 0.0f)))?fRec94[0]:((int((fRec96[0] < fSlow50)))?(fRec94[0] + (fSlow51 * (0 - (fRec96[0] * fRec94[0])))):0.0f));
 			}
 			if (iSlow7 || iSlow3) {
@@ -1817,7 +1802,7 @@ class faust_ottofm : public dsp {
 				fTempPerm116 = (fSlow34 * fTempPerm103);
 			}
 			if (iSlow7) {
-				fTempPerm117 = (fSlow220 * (fTempPerm93 * ftbl0[(((int((65536.0f * (fRec81[0] + (fSlow35 * ((fTempPerm116 + (fSlow52 * fTempPerm115)) + (fSlow69 * fTempPerm111)))))) % 65536) + 65536) % 65536)]));
+				fTempPerm117 = (fSlow217 * (fTempPerm93 * ftbl0[(((int((65536.0f * (fRec81[0] + (fSlow35 * ((fTempPerm116 + (fSlow52 * fTempPerm115)) + (fSlow69 * fTempPerm111)))))) % 65536) + 65536) % 65536)]));
 			}
 			if (iSlow6 || iSlow5 || iSlow4 || iSlow2 || iSlow1) {
 				fTempPerm118 = (fTempPerm114 * fTempPerm106);
@@ -1827,22 +1812,22 @@ class faust_ottofm : public dsp {
 				fTempPerm120 = ftbl0[(((int((65536.0f * (fRec79[0] + fTempPerm119))) % 65536) + 65536) % 65536)];
 			}
 			if (iSlow6 || iSlow5) {
-				fTempPerm121 = (fSlow187 * (fTempPerm88 * fTempPerm120));
+				fTempPerm121 = (fSlow69 * (fTempPerm88 * fTempPerm120));
 			}
 			if (iSlow6) {
-				fTempPerm122 = (fSlow198 * (fTempPerm121 + fTempPerm94));
+				fTempPerm122 = (fSlow195 * (fTempPerm121 + fTempPerm94));
 			}
 			if (iSlow5) {
-				fTempPerm123 = (fSlow198 * ((fSlow84 * (fTempPerm93 * ftbl0[(((int((65536.0f * (fRec81[0] + fTempPerm119))) % 65536) + 65536) % 65536)])) + fTempPerm121));
+				fTempPerm123 = (fSlow195 * ((fSlow84 * (fTempPerm93 * ftbl0[(((int((65536.0f * (fRec81[0] + fTempPerm119))) % 65536) + 65536) % 65536)])) + fTempPerm121));
 			}
 			if (iSlow4) {
-				fTempPerm124 = (fSlow220 * (fTempPerm93 * ftbl0[(((int((65536.0f * (fRec81[0] + (fSlow35 * ((fSlow52 * fTempPerm118) + (fSlow69 * (fTempPerm110 * fTempPerm105))))))) % 65536) + 65536) % 65536)]));
+				fTempPerm124 = (fSlow217 * (fTempPerm93 * ftbl0[(((int((65536.0f * (fRec81[0] + (fSlow35 * ((fSlow52 * fTempPerm118) + (fSlow69 * (fTempPerm110 * fTempPerm105))))))) % 65536) + 65536) % 65536)]));
 			}
 			if (iSlow3) {
-				fTempPerm125 = (fSlow220 * (fTempPerm93 * ftbl0[(((int((65536.0f * (fRec81[0] + (fSlow35 * (fTempPerm116 + (fSlow69 * (fTempPerm110 * ftbl0[(((int((65536.0f * (fRec79[0] + (fSlow53 * fTempPerm115)))) % 65536) + 65536) % 65536)]))))))) % 65536) + 65536) % 65536)]));
+				fTempPerm125 = (fSlow217 * (fTempPerm93 * ftbl0[(((int((65536.0f * (fRec81[0] + (fSlow35 * (fTempPerm116 + (fSlow69 * (fTempPerm110 * ftbl0[(((int((65536.0f * (fRec79[0] + (fSlow53 * fTempPerm115)))) % 65536) + 65536) % 65536)]))))))) % 65536) + 65536) % 65536)]));
 			}
 			if (iSlow2 || iSlow1) {
-				fTempPerm126 = (fSlow220 * (fTempPerm93 * ftbl0[(((int((65536.0f * (fRec81[0] + (fSlow70 * (fTempPerm110 * fTempPerm120))))) % 65536) + 65536) % 65536)]));
+				fTempPerm126 = (fSlow217 * (fTempPerm93 * ftbl0[(((int((65536.0f * (fRec81[0] + (fSlow70 * (fTempPerm110 * fTempPerm120))))) % 65536) + 65536) % 65536)]));
 			}
 			if (iSlow11 || iSlow7 || iSlow3) {
 				fTempPerm127 = ftbl0[(((int((65536.0f * fRec65[0])) % 65536) + 65536) % 65536)];
@@ -1861,13 +1846,13 @@ class faust_ottofm : public dsp {
 				fTempPerm132 = (fSlow166 * (fTempPerm79 * ftbl0[(((int((65536.0f * (fRec73[0] + (fSlow35 * ((fSlow52 * fTempPerm72) + (fSlow69 * (fTempPerm76 * fTempPerm131))))))) % 65536) + 65536) % 65536)]));
 			}
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow6 || iSlow5) {
-				iTempPerm133 = int((iRec75[0] < iSlow184));
-				fTempPerm134 = expf((0 - (fConst4 / ((iSlow155)?((iTempPerm133)?fSlow183:fSlow76):fSlow181))));
-				fRec97[0] = ((fRec97[1] * fTempPerm134) + (((iSlow155)?((iTempPerm133)?1.5873015873015872f:fSlow221):0.0f) * (1.0f - fTempPerm134)));
+				iTempPerm133 = int((iRec75[0] < iSlow183));
+				fTempPerm134 = expf((0 - (fConst4 / ((iSlow155)?((iTempPerm133)?fSlow182:fSlow76):fSlow180))));
+				fRec97[0] = ((fRec97[1] * fTempPerm134) + (((iSlow155)?((iTempPerm133)?1.5873015873015872f:fSlow218):0.0f) * (1.0f - fTempPerm134)));
 				fTempPerm135 = min(1.0f, fRec97[0]);
 			}
 			if (iSlow6 || iSlow5) {
-				fTempPerm136 = (fSlow187 * (fTempPerm135 * fTempPerm74));
+				fTempPerm136 = (fSlow69 * (fTempPerm135 * fTempPerm74));
 			}
 			if (iSlow5) {
 				fTempPerm137 = (fSlow165 * ((fSlow84 * (fTempPerm79 * ftbl0[(((int((65536.0f * (fRec73[0] + fTempPerm73))) % 65536) + 65536) % 65536)])) + fTempPerm136));
@@ -1893,36 +1878,36 @@ class faust_ottofm : public dsp {
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow8) {
 				iTempPerm144 = int((iRec75[0] < iSlow172));
 				fTempPerm145 = expf((0 - (fConst4 / ((iSlow155)?((iTempPerm144)?fSlow171:fSlow76):fSlow169))));
-				fRec98[0] = ((fRec98[1] * fTempPerm145) + (((iSlow155)?((iTempPerm144)?1.5873015873015872f:fSlow222):0.0f) * (1.0f - fTempPerm145)));
+				fRec98[0] = ((fRec98[1] * fTempPerm145) + (((iSlow155)?((iTempPerm144)?1.5873015873015872f:fSlow219):0.0f) * (1.0f - fTempPerm145)));
 				fTempPerm146 = min(1.0f, fRec98[0]);
 			}
 			if (iSlow9 || iSlow8) {
-				fTempPerm147 = (fSlow179 * (fTempPerm146 * fTempPerm69));
+				fTempPerm147 = (fSlow52 * (fTempPerm146 * fTempPerm69));
 			}
 			if (iSlow8) {
 				fTempPerm148 = (fSlow165 * ((fSlow84 * (fTempPerm79 * ftbl0[(((int((65536.0f * (fRec73[0] + (fSlow70 * fTempPerm142)))) % 65536) + 65536) % 65536)])) + fTempPerm147));
 			}
 			if (iSlow9) {
-				fTempPerm149 = (fSlow165 * (fTempPerm147 + ((fSlow84 * (fTempPerm79 * ftbl0[(((int((65536.0f * (fRec73[0] + fTempPerm68))) % 65536) + 65536) % 65536)])) + (fSlow187 * (fTempPerm135 * fTempPerm131)))));
+				fTempPerm149 = (fSlow165 * (fTempPerm147 + ((fSlow84 * (fTempPerm79 * ftbl0[(((int((65536.0f * (fRec73[0] + fTempPerm68))) % 65536) + 65536) % 65536)])) + (fSlow69 * (fTempPerm135 * fTempPerm131)))));
 			}
 			if (iSlow10) {
-				fRec100[0] = ((iSlow151)?0.0f:min(fSlow205, (fRec100[1] + 1.0f)));
-				iTempPerm150 = int((fRec100[0] < fSlow202));
-				fRec99[0] = ((iSlow155)?(fSlow154 * ((iTempPerm150)?((int((fRec100[0] < 0.0f)))?0.0f:((iTempPerm150)?(fSlow209 * fRec100[0]):1.0f)):((int((fRec100[0] < fSlow205)))?((fSlow224 * (fRec100[0] - fSlow202)) + 1.0f):fSlow223))):fRec99[1]);
-				fRec101[0] = ((iSlow156)?0.0f:min(fSlow210, (fRec101[1] + 1.0f)));
+				fRec100[0] = ((iSlow151)?0.0f:min(fSlow202, (fRec100[1] + 1.0f)));
+				iTempPerm150 = int((fRec100[0] < fSlow199));
+				fRec99[0] = ((iSlow155)?(fSlow154 * ((iTempPerm150)?((int((fRec100[0] < 0.0f)))?0.0f:((iTempPerm150)?(fSlow206 * fRec100[0]):1.0f)):((int((fRec100[0] < fSlow202)))?((fSlow221 * (fRec100[0] - fSlow199)) + 1.0f):fSlow220))):fRec99[1]);
+				fRec101[0] = ((iSlow156)?0.0f:min(fSlow207, (fRec101[1] + 1.0f)));
 			}
 			if (iSlow11 || iSlow10) {
-				fTempPerm151 = (fSlow187 * (fTempPerm135 * fTempPerm141));
-				iTempPerm152 = int((iRec75[0] < iSlow194));
-				fTempPerm153 = expf((0 - (fConst4 / ((iSlow155)?((iTempPerm152)?fSlow193:fSlow76):fSlow191))));
-				fRec102[0] = ((fRec102[1] * fTempPerm153) + (((iSlow155)?((iTempPerm152)?1.5873015873015872f:fSlow225):0.0f) * (1.0f - fTempPerm153)));
-				fTempPerm154 = (fSlow197 * (min(1.0f, fRec102[0]) * fTempPerm65));
+				fTempPerm151 = (fSlow69 * (fTempPerm135 * fTempPerm141));
+				iTempPerm152 = int((iRec75[0] < iSlow192));
+				fTempPerm153 = expf((0 - (fConst4 / ((iSlow155)?((iTempPerm152)?fSlow191:fSlow76):fSlow189))));
+				fRec102[0] = ((fRec102[1] * fTempPerm153) + (((iSlow155)?((iTempPerm152)?1.5873015873015872f:fSlow222):0.0f) * (1.0f - fTempPerm153)));
+				fTempPerm154 = (fSlow34 * (min(1.0f, fRec102[0]) * fTempPerm65));
 			}
 			if (iSlow10) {
-				fTempPerm155 = (fSlow165 * ((fTempPerm154 + fTempPerm151) + (fSlow179 * (fTempPerm146 * ftbl0[(((int((65536.0f * (fRec65[0] + (fSlow213 * (fTempPerm138 * ((int((fRec101[0] < 0.0f)))?fRec99[0]:((int((fRec101[0] < fSlow210)))?(fRec99[0] + (fSlow212 * (0 - (fRec101[0] * fRec99[0])))):0.0f))))))) % 65536) + 65536) % 65536)]))));
+				fTempPerm155 = (fSlow165 * ((fTempPerm154 + fTempPerm151) + (fSlow52 * (fTempPerm146 * ftbl0[(((int((65536.0f * (fRec65[0] + (fSlow210 * (fTempPerm138 * ((int((fRec101[0] < 0.0f)))?fRec99[0]:((int((fRec101[0] < fSlow207)))?(fRec99[0] + (fSlow209 * (0 - (fRec101[0] * fRec99[0])))):0.0f))))))) % 65536) + 65536) % 65536)]))));
 			}
 			if (iSlow11) {
-				fTempPerm156 = (fSlow165 * (fTempPerm154 + ((fTempPerm139 + fTempPerm151) + (fSlow179 * (fTempPerm146 * fTempPerm127)))));
+				fTempPerm156 = (fSlow165 * (fTempPerm154 + ((fTempPerm139 + fTempPerm151) + (fSlow52 * (fTempPerm146 * fTempPerm127)))));
 			}
 			if (iSlow11 || iSlow7 || iSlow3) {
 				fTempPerm157 = ftbl0[(((int((65536.0f * fRec50[0])) % 65536) + 65536) % 65536)];
@@ -1938,16 +1923,16 @@ class faust_ottofm : public dsp {
 				fTempPerm161 = ftbl0[(((int((65536.0f * (fRec54[0] + fTempPerm52))) % 65536) + 65536) % 65536)];
 			}
 			if (iSlow4) {
-				fTempPerm162 = (fSlow146 * (fTempPerm63 * ftbl0[(((int((65536.0f * (fRec58[0] + (fSlow35 * ((fSlow69 * (fTempPerm60 * fTempPerm161)) + (fSlow52 * fTempPerm56)))))) % 65536) + 65536) % 65536)]));
+				fTempPerm162 = (fSlow146 * (fTempPerm63 * ftbl0[(((int((65536.0f * (fRec58[0] + (fSlow35 * ((fSlow52 * fTempPerm56) + (fSlow69 * (fTempPerm60 * fTempPerm161))))))) % 65536) + 65536) % 65536)]));
 			}
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow6 || iSlow5) {
-				iTempPerm163 = int((iRec60[0] < iSlow184));
-				fTempPerm164 = expf((0 - (fConst4 / ((iSlow135)?((iTempPerm163)?fSlow183:fSlow76):fSlow181))));
-				fRec103[0] = ((fRec103[1] * fTempPerm164) + (((iSlow135)?((iTempPerm163)?1.5873015873015872f:fSlow226):0.0f) * (1.0f - fTempPerm164)));
+				iTempPerm163 = int((iRec60[0] < iSlow183));
+				fTempPerm164 = expf((0 - (fConst4 / ((iSlow135)?((iTempPerm163)?fSlow182:fSlow76):fSlow180))));
+				fRec103[0] = ((fRec103[1] * fTempPerm164) + (((iSlow135)?((iTempPerm163)?1.5873015873015872f:fSlow223):0.0f) * (1.0f - fTempPerm164)));
 				fTempPerm165 = min(1.0f, fRec103[0]);
 			}
 			if (iSlow6 || iSlow5) {
-				fTempPerm166 = (fSlow187 * (fTempPerm165 * fTempPerm58));
+				fTempPerm166 = (fSlow69 * (fTempPerm165 * fTempPerm58));
 			}
 			if (iSlow5) {
 				fTempPerm167 = (fSlow145 * ((fSlow84 * (fTempPerm63 * ftbl0[(((int((65536.0f * (fRec58[0] + fTempPerm57))) % 65536) + 65536) % 65536)])) + fTempPerm166));
@@ -1973,36 +1958,36 @@ class faust_ottofm : public dsp {
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow8) {
 				iTempPerm174 = int((iRec60[0] < iSlow172));
 				fTempPerm175 = expf((0 - (fConst4 / ((iSlow135)?((iTempPerm174)?fSlow171:fSlow76):fSlow169))));
-				fRec104[0] = ((fRec104[1] * fTempPerm175) + (((iSlow135)?((iTempPerm174)?1.5873015873015872f:fSlow227):0.0f) * (1.0f - fTempPerm175)));
+				fRec104[0] = ((fRec104[1] * fTempPerm175) + (((iSlow135)?((iTempPerm174)?1.5873015873015872f:fSlow224):0.0f) * (1.0f - fTempPerm175)));
 				fTempPerm176 = min(1.0f, fRec104[0]);
 			}
 			if (iSlow9 || iSlow8) {
-				fTempPerm177 = (fSlow179 * (fTempPerm176 * fTempPerm53));
+				fTempPerm177 = (fSlow52 * (fTempPerm176 * fTempPerm53));
 			}
 			if (iSlow8) {
 				fTempPerm178 = (fSlow145 * ((fSlow84 * (fTempPerm63 * ftbl0[(((int((65536.0f * (fRec58[0] + (fSlow70 * fTempPerm172)))) % 65536) + 65536) % 65536)])) + fTempPerm177));
 			}
 			if (iSlow9) {
-				fTempPerm179 = (fSlow145 * (fTempPerm177 + ((fSlow84 * (fTempPerm63 * ftbl0[(((int((65536.0f * (fRec58[0] + fTempPerm52))) % 65536) + 65536) % 65536)])) + (fSlow187 * (fTempPerm165 * fTempPerm161)))));
+				fTempPerm179 = (fSlow145 * (fTempPerm177 + ((fSlow84 * (fTempPerm63 * ftbl0[(((int((65536.0f * (fRec58[0] + fTempPerm52))) % 65536) + 65536) % 65536)])) + (fSlow69 * (fTempPerm165 * fTempPerm161)))));
 			}
 			if (iSlow10) {
-				fRec106[0] = ((iSlow131)?0.0f:min(fSlow205, (fRec106[1] + 1.0f)));
-				iTempPerm180 = int((fRec106[0] < fSlow202));
-				fRec105[0] = ((iSlow135)?(fSlow134 * ((iTempPerm180)?((int((fRec106[0] < 0.0f)))?0.0f:((iTempPerm180)?(fSlow209 * fRec106[0]):1.0f)):((int((fRec106[0] < fSlow205)))?((fSlow229 * (fRec106[0] - fSlow202)) + 1.0f):fSlow228))):fRec105[1]);
-				fRec107[0] = ((iSlow136)?0.0f:min(fSlow210, (fRec107[1] + 1.0f)));
+				fRec106[0] = ((iSlow131)?0.0f:min(fSlow202, (fRec106[1] + 1.0f)));
+				iTempPerm180 = int((fRec106[0] < fSlow199));
+				fRec105[0] = ((iSlow135)?(fSlow134 * ((iTempPerm180)?((int((fRec106[0] < 0.0f)))?0.0f:((iTempPerm180)?(fSlow206 * fRec106[0]):1.0f)):((int((fRec106[0] < fSlow202)))?((fSlow226 * (fRec106[0] - fSlow199)) + 1.0f):fSlow225))):fRec105[1]);
+				fRec107[0] = ((iSlow136)?0.0f:min(fSlow207, (fRec107[1] + 1.0f)));
 			}
 			if (iSlow11 || iSlow10) {
-				fTempPerm181 = (fSlow187 * (fTempPerm165 * fTempPerm171));
-				iTempPerm182 = int((iRec60[0] < iSlow194));
-				fTempPerm183 = expf((0 - (fConst4 / ((iSlow135)?((iTempPerm182)?fSlow193:fSlow76):fSlow191))));
-				fRec108[0] = ((fRec108[1] * fTempPerm183) + (((iSlow135)?((iTempPerm182)?1.5873015873015872f:fSlow230):0.0f) * (1.0f - fTempPerm183)));
-				fTempPerm184 = (fSlow197 * (min(1.0f, fRec108[0]) * fTempPerm49));
+				fTempPerm181 = (fSlow69 * (fTempPerm165 * fTempPerm171));
+				iTempPerm182 = int((iRec60[0] < iSlow192));
+				fTempPerm183 = expf((0 - (fConst4 / ((iSlow135)?((iTempPerm182)?fSlow191:fSlow76):fSlow189))));
+				fRec108[0] = ((fRec108[1] * fTempPerm183) + (((iSlow135)?((iTempPerm182)?1.5873015873015872f:fSlow227):0.0f) * (1.0f - fTempPerm183)));
+				fTempPerm184 = (fSlow34 * (min(1.0f, fRec108[0]) * fTempPerm49));
 			}
 			if (iSlow10) {
-				fTempPerm185 = (fSlow145 * ((fTempPerm184 + fTempPerm181) + (fSlow179 * (fTempPerm176 * ftbl0[(((int((65536.0f * (fRec50[0] + (fSlow213 * (fTempPerm168 * ((int((fRec107[0] < 0.0f)))?fRec105[0]:((int((fRec107[0] < fSlow210)))?(fRec105[0] + (fSlow212 * (0 - (fRec107[0] * fRec105[0])))):0.0f))))))) % 65536) + 65536) % 65536)]))));
+				fTempPerm185 = (fSlow145 * ((fTempPerm184 + fTempPerm181) + (fSlow52 * (fTempPerm176 * ftbl0[(((int((65536.0f * (fRec50[0] + (fSlow210 * (fTempPerm168 * ((int((fRec107[0] < 0.0f)))?fRec105[0]:((int((fRec107[0] < fSlow207)))?(fRec105[0] + (fSlow209 * (0 - (fRec107[0] * fRec105[0])))):0.0f))))))) % 65536) + 65536) % 65536)]))));
 			}
 			if (iSlow11) {
-				fTempPerm186 = (fSlow145 * (fTempPerm184 + ((fTempPerm169 + fTempPerm181) + (fSlow179 * (fTempPerm176 * fTempPerm157)))));
+				fTempPerm186 = (fSlow145 * (fTempPerm184 + ((fTempPerm169 + fTempPerm181) + (fSlow52 * (fTempPerm176 * fTempPerm157)))));
 			}
 			if (iSlow11 || iSlow7 || iSlow3) {
 				fTempPerm187 = ftbl0[(((int((65536.0f * fRec35[0])) % 65536) + 65536) % 65536)];
@@ -2021,13 +2006,13 @@ class faust_ottofm : public dsp {
 				fTempPerm192 = (fSlow126 * (fTempPerm47 * ftbl0[(((int((65536.0f * (fRec43[0] + (fSlow35 * ((fSlow52 * fTempPerm40) + (fSlow69 * (fTempPerm44 * fTempPerm191))))))) % 65536) + 65536) % 65536)]));
 			}
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow6 || iSlow5) {
-				iTempPerm193 = int((iRec45[0] < iSlow184));
-				fTempPerm194 = expf((0 - (fConst4 / ((iSlow115)?((iTempPerm193)?fSlow183:fSlow76):fSlow181))));
-				fRec109[0] = ((fRec109[1] * fTempPerm194) + (((iSlow115)?((iTempPerm193)?1.5873015873015872f:fSlow231):0.0f) * (1.0f - fTempPerm194)));
+				iTempPerm193 = int((iRec45[0] < iSlow183));
+				fTempPerm194 = expf((0 - (fConst4 / ((iSlow115)?((iTempPerm193)?fSlow182:fSlow76):fSlow180))));
+				fRec109[0] = ((fRec109[1] * fTempPerm194) + (((iSlow115)?((iTempPerm193)?1.5873015873015872f:fSlow228):0.0f) * (1.0f - fTempPerm194)));
 				fTempPerm195 = min(1.0f, fRec109[0]);
 			}
 			if (iSlow6 || iSlow5) {
-				fTempPerm196 = (fSlow187 * (fTempPerm195 * fTempPerm42));
+				fTempPerm196 = (fSlow69 * (fTempPerm195 * fTempPerm42));
 			}
 			if (iSlow5) {
 				fTempPerm197 = (fSlow125 * ((fSlow84 * (fTempPerm47 * ftbl0[(((int((65536.0f * (fRec43[0] + fTempPerm41))) % 65536) + 65536) % 65536)])) + fTempPerm196));
@@ -2053,36 +2038,36 @@ class faust_ottofm : public dsp {
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow8) {
 				iTempPerm204 = int((iRec45[0] < iSlow172));
 				fTempPerm205 = expf((0 - (fConst4 / ((iSlow115)?((iTempPerm204)?fSlow171:fSlow76):fSlow169))));
-				fRec110[0] = ((fRec110[1] * fTempPerm205) + (((iSlow115)?((iTempPerm204)?1.5873015873015872f:fSlow232):0.0f) * (1.0f - fTempPerm205)));
+				fRec110[0] = ((fRec110[1] * fTempPerm205) + (((iSlow115)?((iTempPerm204)?1.5873015873015872f:fSlow229):0.0f) * (1.0f - fTempPerm205)));
 				fTempPerm206 = min(1.0f, fRec110[0]);
 			}
 			if (iSlow9 || iSlow8) {
-				fTempPerm207 = (fSlow179 * (fTempPerm206 * fTempPerm37));
+				fTempPerm207 = (fSlow52 * (fTempPerm206 * fTempPerm37));
 			}
 			if (iSlow8) {
 				fTempPerm208 = (fSlow125 * ((fSlow84 * (fTempPerm47 * ftbl0[(((int((65536.0f * (fRec43[0] + (fSlow70 * fTempPerm202)))) % 65536) + 65536) % 65536)])) + fTempPerm207));
 			}
 			if (iSlow9) {
-				fTempPerm209 = (fSlow125 * (fTempPerm207 + ((fSlow84 * (fTempPerm47 * ftbl0[(((int((65536.0f * (fRec43[0] + fTempPerm36))) % 65536) + 65536) % 65536)])) + (fSlow187 * (fTempPerm195 * fTempPerm191)))));
+				fTempPerm209 = (fSlow125 * (fTempPerm207 + ((fSlow84 * (fTempPerm47 * ftbl0[(((int((65536.0f * (fRec43[0] + fTempPerm36))) % 65536) + 65536) % 65536)])) + (fSlow69 * (fTempPerm195 * fTempPerm191)))));
 			}
 			if (iSlow10) {
-				fRec112[0] = ((iSlow111)?0.0f:min(fSlow205, (fRec112[1] + 1.0f)));
-				iTempPerm210 = int((fRec112[0] < fSlow202));
-				fRec111[0] = ((iSlow115)?(fSlow114 * ((iTempPerm210)?((int((fRec112[0] < 0.0f)))?0.0f:((iTempPerm210)?(fSlow209 * fRec112[0]):1.0f)):((int((fRec112[0] < fSlow205)))?((fSlow234 * (fRec112[0] - fSlow202)) + 1.0f):fSlow233))):fRec111[1]);
-				fRec113[0] = ((iSlow116)?0.0f:min(fSlow210, (fRec113[1] + 1.0f)));
+				fRec112[0] = ((iSlow111)?0.0f:min(fSlow202, (fRec112[1] + 1.0f)));
+				iTempPerm210 = int((fRec112[0] < fSlow199));
+				fRec111[0] = ((iSlow115)?(fSlow114 * ((iTempPerm210)?((int((fRec112[0] < 0.0f)))?0.0f:((iTempPerm210)?(fSlow206 * fRec112[0]):1.0f)):((int((fRec112[0] < fSlow202)))?((fSlow231 * (fRec112[0] - fSlow199)) + 1.0f):fSlow230))):fRec111[1]);
+				fRec113[0] = ((iSlow116)?0.0f:min(fSlow207, (fRec113[1] + 1.0f)));
 			}
 			if (iSlow11 || iSlow10) {
-				fTempPerm211 = (fSlow187 * (fTempPerm195 * fTempPerm201));
-				iTempPerm212 = int((iRec45[0] < iSlow194));
-				fTempPerm213 = expf((0 - (fConst4 / ((iSlow115)?((iTempPerm212)?fSlow193:fSlow76):fSlow191))));
-				fRec114[0] = ((fRec114[1] * fTempPerm213) + (((iSlow115)?((iTempPerm212)?1.5873015873015872f:fSlow235):0.0f) * (1.0f - fTempPerm213)));
-				fTempPerm214 = (fSlow197 * (min(1.0f, fRec114[0]) * fTempPerm33));
+				fTempPerm211 = (fSlow69 * (fTempPerm195 * fTempPerm201));
+				iTempPerm212 = int((iRec45[0] < iSlow192));
+				fTempPerm213 = expf((0 - (fConst4 / ((iSlow115)?((iTempPerm212)?fSlow191:fSlow76):fSlow189))));
+				fRec114[0] = ((fRec114[1] * fTempPerm213) + (((iSlow115)?((iTempPerm212)?1.5873015873015872f:fSlow232):0.0f) * (1.0f - fTempPerm213)));
+				fTempPerm214 = (fSlow34 * (min(1.0f, fRec114[0]) * fTempPerm33));
 			}
 			if (iSlow10) {
-				fTempPerm215 = (fSlow125 * ((fTempPerm214 + fTempPerm211) + (fSlow179 * (fTempPerm206 * ftbl0[(((int((65536.0f * (fRec35[0] + (fSlow213 * (fTempPerm198 * ((int((fRec113[0] < 0.0f)))?fRec111[0]:((int((fRec113[0] < fSlow210)))?(fRec111[0] + (fSlow212 * (0 - (fRec113[0] * fRec111[0])))):0.0f))))))) % 65536) + 65536) % 65536)]))));
+				fTempPerm215 = (fSlow125 * ((fTempPerm214 + fTempPerm211) + (fSlow52 * (fTempPerm206 * ftbl0[(((int((65536.0f * (fRec35[0] + (fSlow210 * (fTempPerm198 * ((int((fRec113[0] < 0.0f)))?fRec111[0]:((int((fRec113[0] < fSlow207)))?(fRec111[0] + (fSlow209 * (0 - (fRec113[0] * fRec111[0])))):0.0f))))))) % 65536) + 65536) % 65536)]))));
 			}
 			if (iSlow11) {
-				fTempPerm216 = (fSlow125 * (fTempPerm214 + ((fTempPerm199 + fTempPerm211) + (fSlow179 * (fTempPerm206 * fTempPerm187)))));
+				fTempPerm216 = (fSlow125 * (fTempPerm214 + ((fTempPerm199 + fTempPerm211) + (fSlow52 * (fTempPerm206 * fTempPerm187)))));
 			}
 			if (iSlow11 || iSlow7 || iSlow3) {
 				fTempPerm217 = ftbl0[(((int((65536.0f * fRec20[0])) % 65536) + 65536) % 65536)];
@@ -2101,13 +2086,13 @@ class faust_ottofm : public dsp {
 				fTempPerm222 = (fSlow106 * (fTempPerm31 * ftbl0[(((int((65536.0f * (fRec28[0] + (fSlow35 * ((fSlow52 * fTempPerm24) + (fSlow69 * (fTempPerm28 * fTempPerm221))))))) % 65536) + 65536) % 65536)]));
 			}
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow6 || iSlow5) {
-				iTempPerm223 = int((iRec30[0] < iSlow184));
-				fTempPerm224 = expf((0 - (fConst4 / ((iSlow95)?((iTempPerm223)?fSlow183:fSlow76):fSlow181))));
-				fRec115[0] = ((fRec115[1] * fTempPerm224) + (((iSlow95)?((iTempPerm223)?1.5873015873015872f:fSlow236):0.0f) * (1.0f - fTempPerm224)));
+				iTempPerm223 = int((iRec30[0] < iSlow183));
+				fTempPerm224 = expf((0 - (fConst4 / ((iSlow95)?((iTempPerm223)?fSlow182:fSlow76):fSlow180))));
+				fRec115[0] = ((fRec115[1] * fTempPerm224) + (((iSlow95)?((iTempPerm223)?1.5873015873015872f:fSlow233):0.0f) * (1.0f - fTempPerm224)));
 				fTempPerm225 = min(1.0f, fRec115[0]);
 			}
 			if (iSlow6 || iSlow5) {
-				fTempPerm226 = (fSlow187 * (fTempPerm225 * fTempPerm26));
+				fTempPerm226 = (fSlow69 * (fTempPerm225 * fTempPerm26));
 			}
 			if (iSlow5) {
 				fTempPerm227 = (fSlow105 * ((fSlow84 * (fTempPerm31 * ftbl0[(((int((65536.0f * (fRec28[0] + fTempPerm25))) % 65536) + 65536) % 65536)])) + fTempPerm226));
@@ -2133,36 +2118,36 @@ class faust_ottofm : public dsp {
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow8) {
 				iTempPerm234 = int((iRec30[0] < iSlow172));
 				fTempPerm235 = expf((0 - (fConst4 / ((iSlow95)?((iTempPerm234)?fSlow171:fSlow76):fSlow169))));
-				fRec116[0] = ((fRec116[1] * fTempPerm235) + (((iSlow95)?((iTempPerm234)?1.5873015873015872f:fSlow237):0.0f) * (1.0f - fTempPerm235)));
+				fRec116[0] = ((fRec116[1] * fTempPerm235) + (((iSlow95)?((iTempPerm234)?1.5873015873015872f:fSlow234):0.0f) * (1.0f - fTempPerm235)));
 				fTempPerm236 = min(1.0f, fRec116[0]);
 			}
 			if (iSlow9 || iSlow8) {
-				fTempPerm237 = (fSlow179 * (fTempPerm236 * fTempPerm21));
+				fTempPerm237 = (fSlow52 * (fTempPerm236 * fTempPerm21));
 			}
 			if (iSlow8) {
 				fTempPerm238 = (fSlow105 * ((fSlow84 * (fTempPerm31 * ftbl0[(((int((65536.0f * (fRec28[0] + (fSlow70 * fTempPerm232)))) % 65536) + 65536) % 65536)])) + fTempPerm237));
 			}
 			if (iSlow9) {
-				fTempPerm239 = (fSlow105 * (fTempPerm237 + ((fSlow84 * (fTempPerm31 * ftbl0[(((int((65536.0f * (fRec28[0] + fTempPerm20))) % 65536) + 65536) % 65536)])) + (fSlow187 * (fTempPerm225 * fTempPerm221)))));
+				fTempPerm239 = (fSlow105 * (fTempPerm237 + ((fSlow84 * (fTempPerm31 * ftbl0[(((int((65536.0f * (fRec28[0] + fTempPerm20))) % 65536) + 65536) % 65536)])) + (fSlow69 * (fTempPerm225 * fTempPerm221)))));
 			}
 			if (iSlow10) {
-				fRec118[0] = ((iSlow91)?0.0f:min(fSlow205, (fRec118[1] + 1.0f)));
-				iTempPerm240 = int((fRec118[0] < fSlow202));
-				fRec117[0] = ((iSlow95)?(fSlow94 * ((iTempPerm240)?((int((fRec118[0] < 0.0f)))?0.0f:((iTempPerm240)?(fSlow209 * fRec118[0]):1.0f)):((int((fRec118[0] < fSlow205)))?((fSlow239 * (fRec118[0] - fSlow202)) + 1.0f):fSlow238))):fRec117[1]);
-				fRec119[0] = ((iSlow96)?0.0f:min(fSlow210, (fRec119[1] + 1.0f)));
+				fRec118[0] = ((iSlow91)?0.0f:min(fSlow202, (fRec118[1] + 1.0f)));
+				iTempPerm240 = int((fRec118[0] < fSlow199));
+				fRec117[0] = ((iSlow95)?(fSlow94 * ((iTempPerm240)?((int((fRec118[0] < 0.0f)))?0.0f:((iTempPerm240)?(fSlow206 * fRec118[0]):1.0f)):((int((fRec118[0] < fSlow202)))?((fSlow236 * (fRec118[0] - fSlow199)) + 1.0f):fSlow235))):fRec117[1]);
+				fRec119[0] = ((iSlow96)?0.0f:min(fSlow207, (fRec119[1] + 1.0f)));
 			}
 			if (iSlow11 || iSlow10) {
-				fTempPerm241 = (fSlow187 * (fTempPerm225 * fTempPerm231));
-				iTempPerm242 = int((iRec30[0] < iSlow194));
-				fTempPerm243 = expf((0 - (fConst4 / ((iSlow95)?((iTempPerm242)?fSlow193:fSlow76):fSlow191))));
-				fRec120[0] = ((fRec120[1] * fTempPerm243) + (((iSlow95)?((iTempPerm242)?1.5873015873015872f:fSlow240):0.0f) * (1.0f - fTempPerm243)));
-				fTempPerm244 = (fSlow197 * (min(1.0f, fRec120[0]) * fTempPerm17));
+				fTempPerm241 = (fSlow69 * (fTempPerm225 * fTempPerm231));
+				iTempPerm242 = int((iRec30[0] < iSlow192));
+				fTempPerm243 = expf((0 - (fConst4 / ((iSlow95)?((iTempPerm242)?fSlow191:fSlow76):fSlow189))));
+				fRec120[0] = ((fRec120[1] * fTempPerm243) + (((iSlow95)?((iTempPerm242)?1.5873015873015872f:fSlow237):0.0f) * (1.0f - fTempPerm243)));
+				fTempPerm244 = (fSlow34 * (min(1.0f, fRec120[0]) * fTempPerm17));
 			}
 			if (iSlow10) {
-				fTempPerm245 = (fSlow105 * ((fTempPerm244 + fTempPerm241) + (fSlow179 * (fTempPerm236 * ftbl0[(((int((65536.0f * (fRec20[0] + (fSlow213 * (fTempPerm228 * ((int((fRec119[0] < 0.0f)))?fRec117[0]:((int((fRec119[0] < fSlow210)))?(fRec117[0] + (fSlow212 * (0 - (fRec119[0] * fRec117[0])))):0.0f))))))) % 65536) + 65536) % 65536)]))));
+				fTempPerm245 = (fSlow105 * ((fTempPerm244 + fTempPerm241) + (fSlow52 * (fTempPerm236 * ftbl0[(((int((65536.0f * (fRec20[0] + (fSlow210 * (fTempPerm228 * ((int((fRec119[0] < 0.0f)))?fRec117[0]:((int((fRec119[0] < fSlow207)))?(fRec117[0] + (fSlow209 * (0 - (fRec119[0] * fRec117[0])))):0.0f))))))) % 65536) + 65536) % 65536)]))));
 			}
 			if (iSlow11) {
-				fTempPerm246 = (fSlow105 * (fTempPerm244 + ((fTempPerm229 + fTempPerm241) + (fSlow179 * (fTempPerm236 * fTempPerm217)))));
+				fTempPerm246 = (fSlow105 * (fTempPerm244 + ((fTempPerm229 + fTempPerm241) + (fSlow52 * (fTempPerm236 * fTempPerm217)))));
 			}
 			if (iSlow11 || iSlow7 || iSlow3) {
 				fTempPerm247 = ftbl0[(((int((65536.0f * fRec5[0])) % 65536) + 65536) % 65536)];
@@ -2181,13 +2166,13 @@ class faust_ottofm : public dsp {
 				fTempPerm252 = (fSlow86 * (fTempPerm15 * ftbl0[(((int((65536.0f * (fRec13[0] + (fSlow35 * ((fSlow52 * fTempPerm8) + (fSlow69 * (fTempPerm12 * fTempPerm251))))))) % 65536) + 65536) % 65536)]));
 			}
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow6 || iSlow5) {
-				iTempPerm253 = int((iRec15[0] < iSlow184));
-				fTempPerm254 = expf((0 - (fConst4 / ((iSlow30)?((iTempPerm253)?fSlow183:fSlow76):fSlow181))));
-				fRec121[0] = ((fRec121[1] * fTempPerm254) + (((iSlow30)?((iTempPerm253)?1.5873015873015872f:fSlow241):0.0f) * (1.0f - fTempPerm254)));
+				iTempPerm253 = int((iRec15[0] < iSlow183));
+				fTempPerm254 = expf((0 - (fConst4 / ((iSlow30)?((iTempPerm253)?fSlow182:fSlow76):fSlow180))));
+				fRec121[0] = ((fRec121[1] * fTempPerm254) + (((iSlow30)?((iTempPerm253)?1.5873015873015872f:fSlow238):0.0f) * (1.0f - fTempPerm254)));
 				fTempPerm255 = min(1.0f, fRec121[0]);
 			}
 			if (iSlow6 || iSlow5) {
-				fTempPerm256 = (fSlow187 * (fTempPerm255 * fTempPerm10));
+				fTempPerm256 = (fSlow69 * (fTempPerm255 * fTempPerm10));
 			}
 			if (iSlow5) {
 				fTempPerm257 = (fSlow85 * ((fSlow84 * (fTempPerm15 * ftbl0[(((int((65536.0f * (fRec13[0] + fTempPerm9))) % 65536) + 65536) % 65536)])) + fTempPerm256));
@@ -2213,36 +2198,36 @@ class faust_ottofm : public dsp {
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow8) {
 				iTempPerm264 = int((iRec15[0] < iSlow172));
 				fTempPerm265 = expf((0 - (fConst4 / ((iSlow30)?((iTempPerm264)?fSlow171:fSlow76):fSlow169))));
-				fRec122[0] = ((fRec122[1] * fTempPerm265) + (((iSlow30)?((iTempPerm264)?1.5873015873015872f:fSlow242):0.0f) * (1.0f - fTempPerm265)));
+				fRec122[0] = ((fRec122[1] * fTempPerm265) + (((iSlow30)?((iTempPerm264)?1.5873015873015872f:fSlow239):0.0f) * (1.0f - fTempPerm265)));
 				fTempPerm266 = min(1.0f, fRec122[0]);
 			}
 			if (iSlow9 || iSlow8) {
-				fTempPerm267 = (fSlow179 * (fTempPerm266 * fTempPerm5));
+				fTempPerm267 = (fSlow52 * (fTempPerm266 * fTempPerm5));
 			}
 			if (iSlow8) {
 				fTempPerm268 = (fSlow85 * ((fSlow84 * (fTempPerm15 * ftbl0[(((int((65536.0f * (fRec13[0] + (fSlow70 * fTempPerm262)))) % 65536) + 65536) % 65536)])) + fTempPerm267));
 			}
 			if (iSlow9) {
-				fTempPerm269 = (fSlow85 * (fTempPerm267 + ((fSlow84 * (fTempPerm15 * ftbl0[(((int((65536.0f * (fRec13[0] + fTempPerm4))) % 65536) + 65536) % 65536)])) + (fSlow187 * (fTempPerm255 * fTempPerm251)))));
+				fTempPerm269 = (fSlow85 * (fTempPerm267 + ((fSlow84 * (fTempPerm15 * ftbl0[(((int((65536.0f * (fRec13[0] + fTempPerm4))) % 65536) + 65536) % 65536)])) + (fSlow69 * (fTempPerm255 * fTempPerm251)))));
 			}
 			if (iSlow10) {
-				fRec124[0] = ((iSlow24)?0.0f:min(fSlow205, (fRec124[1] + 1.0f)));
-				iTempPerm270 = int((fRec124[0] < fSlow202));
-				fRec123[0] = ((iSlow30)?(fSlow29 * ((iTempPerm270)?((int((fRec124[0] < 0.0f)))?0.0f:((iTempPerm270)?(fSlow209 * fRec124[0]):1.0f)):((int((fRec124[0] < fSlow205)))?((fSlow244 * (fRec124[0] - fSlow202)) + 1.0f):fSlow243))):fRec123[1]);
-				fRec125[0] = ((iSlow32)?0.0f:min(fSlow210, (fRec125[1] + 1.0f)));
+				fRec124[0] = ((iSlow24)?0.0f:min(fSlow202, (fRec124[1] + 1.0f)));
+				iTempPerm270 = int((fRec124[0] < fSlow199));
+				fRec123[0] = ((iSlow30)?(fSlow29 * ((iTempPerm270)?((int((fRec124[0] < 0.0f)))?0.0f:((iTempPerm270)?(fSlow206 * fRec124[0]):1.0f)):((int((fRec124[0] < fSlow202)))?((fSlow241 * (fRec124[0] - fSlow199)) + 1.0f):fSlow240))):fRec123[1]);
+				fRec125[0] = ((iSlow32)?0.0f:min(fSlow207, (fRec125[1] + 1.0f)));
 			}
 			if (iSlow11 || iSlow10) {
-				fTempPerm271 = (fSlow187 * (fTempPerm255 * fTempPerm261));
-				iTempPerm272 = int((iRec15[0] < iSlow194));
-				fTempPerm273 = expf((0 - (fConst4 / ((iSlow30)?((iTempPerm272)?fSlow193:fSlow76):fSlow191))));
-				fRec126[0] = ((fRec126[1] * fTempPerm273) + (((iSlow30)?((iTempPerm272)?1.5873015873015872f:fSlow245):0.0f) * (1.0f - fTempPerm273)));
-				fTempPerm274 = (fSlow197 * (min(1.0f, fRec126[0]) * fTempPerm1));
+				fTempPerm271 = (fSlow69 * (fTempPerm255 * fTempPerm261));
+				iTempPerm272 = int((iRec15[0] < iSlow192));
+				fTempPerm273 = expf((0 - (fConst4 / ((iSlow30)?((iTempPerm272)?fSlow191:fSlow76):fSlow189))));
+				fRec126[0] = ((fRec126[1] * fTempPerm273) + (((iSlow30)?((iTempPerm272)?1.5873015873015872f:fSlow242):0.0f) * (1.0f - fTempPerm273)));
+				fTempPerm274 = (fSlow34 * (min(1.0f, fRec126[0]) * fTempPerm1));
 			}
 			if (iSlow10) {
-				fTempPerm275 = (fSlow85 * ((fTempPerm274 + fTempPerm271) + (fSlow179 * (fTempPerm266 * ftbl0[(((int((65536.0f * (fRec5[0] + (fSlow213 * (fTempPerm258 * ((int((fRec125[0] < 0.0f)))?fRec123[0]:((int((fRec125[0] < fSlow210)))?(fRec123[0] + (fSlow212 * (0 - (fRec125[0] * fRec123[0])))):0.0f))))))) % 65536) + 65536) % 65536)]))));
+				fTempPerm275 = (fSlow85 * ((fTempPerm274 + fTempPerm271) + (fSlow52 * (fTempPerm266 * ftbl0[(((int((65536.0f * (fRec5[0] + (fSlow210 * (fTempPerm258 * ((int((fRec125[0] < 0.0f)))?fRec123[0]:((int((fRec125[0] < fSlow207)))?(fRec123[0] + (fSlow209 * (0 - (fRec125[0] * fRec123[0])))):0.0f))))))) % 65536) + 65536) % 65536)]))));
 			}
 			if (iSlow11) {
-				fTempPerm276 = (fSlow85 * (fTempPerm274 + ((fTempPerm259 + fTempPerm271) + (fSlow179 * (fTempPerm266 * fTempPerm247)))));
+				fTempPerm276 = (fSlow85 * (fTempPerm274 + ((fTempPerm259 + fTempPerm271) + (fSlow52 * (fTempPerm266 * fTempPerm247)))));
 			}
 			output0[i] = (FAUSTFLOAT)(fTempPerm276 + (fTempPerm275 + (fTempPerm269 + (fTempPerm268 + (fTempPerm263 + (fTempPerm260 + (fTempPerm257 + (fTempPerm252 + (fTempPerm250 + (fTempPerm16 + ((fTempPerm246 + (fTempPerm245 + (fTempPerm239 + (fTempPerm238 + (fTempPerm233 + (fTempPerm230 + (fTempPerm227 + (fTempPerm222 + (fTempPerm220 + (fTempPerm32 + ((fTempPerm216 + (fTempPerm215 + (fTempPerm209 + (fTempPerm208 + (fTempPerm203 + (fTempPerm200 + (fTempPerm197 + (fTempPerm192 + (fTempPerm190 + (fTempPerm48 + ((fTempPerm186 + (fTempPerm185 + (fTempPerm179 + (fTempPerm178 + (fTempPerm173 + (fTempPerm170 + (fTempPerm167 + (fTempPerm162 + (fTempPerm160 + (fTempPerm64 + ((fTempPerm156 + (fTempPerm155 + (fTempPerm149 + (fTempPerm148 + (fTempPerm143 + (fTempPerm140 + (fTempPerm137 + (fTempPerm132 + (fTempPerm130 + (fTempPerm80 + (((((((((((fTempPerm126 + fTempPerm126) + fTempPerm125) + fTempPerm124) + fTempPerm123) + fTempPerm122) + fTempPerm117) + fTempPerm112) + fTempPerm108) + fTempPerm101) + fTempPerm99) + fTempPerm80))))))))))) + fTempPerm64))))))))))) + fTempPerm48))))))))))) + fTempPerm32))))))))))) + fTempPerm16)))))))))));
 			// post processing
