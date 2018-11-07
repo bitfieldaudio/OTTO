@@ -15,7 +15,6 @@
 #include "./egl_connection.hpp"
 #include "./egl_deps.hpp"
 #include "./fbcp.hpp"
-#include "./rpi_input.hpp"
 #include "board/ui/egl_ui_manager.hpp"
 
 static nlohmann::json config = {{"FPS", 60.f}, {"Debug", true}};
@@ -29,7 +28,7 @@ namespace otto::services {
   {
     EGLConnection egl;
     egl.init();
-    #if OTTO_USE_FBCP
+#if OTTO_USE_FBCP
     auto fbcp = RpiFBCP{egl.eglData};
     bool use_fbcp = true;
     try {
@@ -40,10 +39,9 @@ namespace otto::services {
       LOGI("FBCP has been disabled. /dev/fb0 will not be copied to /dev/fb1");
       use_fbcp = false;
     }
-    #endif
+#endif
 
-    NVGcontext* nvg =
-      nvgCreateGLES2(NVG_ANTIALIAS | NVG_STENCIL_STROKES | NVG_DEBUG);
+    NVGcontext* nvg = nvgCreateGLES2(NVG_ANTIALIAS | NVG_STENCIL_STROKES | NVG_DEBUG);
     if (nvg == NULL) {
       LOGF("Could not init nanovg.\n");
       Application::current().exit(Application::ErrorCode::graphics_error);
@@ -75,7 +73,7 @@ namespace otto::services {
     float fps;
     duration<double> lastFrameTime;
 
-    std::thread kbd_thread = std::thread(otto::service::ui::read_keyboard);
+    std::thread kbd_thread = std::thread([this] { read_keyboard(); });
 
     while (Application::current().running()) {
       t0 = clock::now();
@@ -101,9 +99,9 @@ namespace otto::services {
       canvas.endFrame();
       egl.endFrame();
 
-      #if OTTO_USE_FBCP
+#if OTTO_USE_FBCP
       if (use_fbcp) fbcp.copy();
-      #endif
+#endif
 
       lastFrameTime = clock::now() - t0;
       std::this_thread::sleep_for(waitTime - lastFrameTime);
@@ -118,4 +116,4 @@ namespace otto::services {
 
     Application::current().exit(Application::ErrorCode::ui_closed);
   }
-} // namespace otto::service::ui
+} // namespace otto::services

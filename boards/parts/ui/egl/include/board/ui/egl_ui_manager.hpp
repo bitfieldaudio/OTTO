@@ -12,6 +12,11 @@ namespace otto::services {
     EGLUIManager() = default;
 
     void main_ui_loop() override;
+
+  private:
+
+    void read_encoders();
+    void read_keyboard();
   };
 
 } // namespace otto::services

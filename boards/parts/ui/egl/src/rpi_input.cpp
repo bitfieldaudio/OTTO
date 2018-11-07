@@ -5,16 +5,17 @@
 #include <thread>
 #include <vector>
 
-#include "core/globals.hpp"
-#include "services/logger.hpp"
-#include "services/ui.hpp"
+#include "services/log_manager.hpp"
+#include "services/ui_manager.hpp"
 #include "util/filesystem.hpp"
 
 #include "board/ui/keys.hpp"
+#include "board/ui/egl_ui_manager.hpp"
 
-namespace otto::board::ui {
+namespace otto::services {
 
   using namespace otto::core::ui;
+  using namespace otto::board::ui;
 
   static auto constexpr key_release = 0;
   static auto constexpr key_press = 1;
@@ -75,7 +76,7 @@ namespace otto::board::ui {
     static int mouse = open_device("event-mouse");
 
     if (mouse == -1) {
-      throw global::exception(global::ErrorCode::input_error,
+      throw Application::exception(Application::ErrorCode::input_error,
                               "Could not find a mouse or touchscreen!");
     }
 
@@ -101,7 +102,7 @@ namespace otto::board::ui {
     }
   }
 
-  void read_encoders()
+  void EGLUIManager::read_encoders()
   {
     auto file = fopen("/dev/ttyACM0", "r");
     if (file == nullptr) {
@@ -113,15 +114,15 @@ namespace otto::board::ui {
     std::size_t len;
     std::size_t read;
 
-    while (global::running()) {
+    while (Application::current().running()) {
       read = getline(&line, &len, file);
       if (len >= 2) {
         if (line[1] == 'P') {
           switch (line[0]) {
-          case 'B': service::ui::impl::keypress(core::ui::Key::blue_click); break;
-          case 'G': service::ui::impl::keypress(core::ui::Key::green_click); break;
-          case 'Y': service::ui::impl::keypress(core::ui::Key::white_click); break;
-          case 'R': service::ui::impl::keypress(core::ui::Key::red_click); break;
+          case 'B': keypress(core::ui::Key::blue_click); break;
+          case 'G': keypress(core::ui::Key::green_click); break;
+          case 'Y': keypress(core::ui::Key::white_click); break;
+          case 'R': keypress(core::ui::Key::red_click); break;
           default: break;
           }
           continue;
@@ -137,12 +138,12 @@ namespace otto::board::ui {
         if (rot.rotary == Rotary{-1}) continue;
         char* end = line + len;
         rot.clicks = std::strtol(line + 1, &end, 10);
-        service::ui::impl::rotary(rot);
+        rotary(rot);
       }
     }
   }
 
-  void read_keyboard()
+  void EGLUIManager::read_keyboard()
   {
     Modifiers left;
     Modifiers right;
@@ -151,13 +152,13 @@ namespace otto::board::ui {
       if (dev < 0) dev = open_device("event-kbd", true);
       return dev;
     }();
-    std::thread encoder_thread = std::thread{[] { read_encoders(); }};
+    std::thread encoder_thread = std::thread{[this] { read_encoders(); }};
 
     if (keyboard == -1) {
-      throw global::exception(global::ErrorCode::input_error, "Could not find a keyboard!");
+      throw Application::exception(Application::ErrorCode::input_error, "Could not find a keyboard!");
     }
 
-    while (global::running()) {
+    while (Application::current().running()) {
       auto events = read_events(keyboard);
       for (const auto& event : events) {
         if (event.type == EV_KEY) {
@@ -183,7 +184,7 @@ namespace otto::board::ui {
             }
           }();
 
-          handle_keyevent(action, left | right, board::ui::Key(event.code));
+          board::ui::handle_keyevent(action, left | right, board::ui::Key(event.code));
         }
       }
     }
