@@ -24,7 +24,7 @@ namespace otto::engines {
       Property<float> mSuspos                 = {this, "mSuspos",   0.5, has_limits::init(0,    1),  steppable::init(0.01)};
       //Oscillator
       Property<float> detune                  = {this, "detune",    0,   has_limits::init(-1,   1),  steppable::init(0.01)};
-      Property<float, no_serialize> ratio     = {this, "ratio",     0,   has_limits::init(0.25, 4),  steppable::init(0.01)};
+      Property<float, no_serialize> ratio     = {this, "ratio",     1,   has_limits::init(0.25, 4),  steppable::init(0.01)};
       Property<int, no<faust_link>> ratio_idx = {this, "ratio_idx", 0,   has_limits::init(0,    18), steppable::init(1)};
       //Amp
       Property<float> outLev                  = {this, "outLev",    1,   has_limits::init(0, 1),    steppable::init(0.01)};

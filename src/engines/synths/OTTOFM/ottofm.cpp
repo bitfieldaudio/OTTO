@@ -193,7 +193,7 @@ namespace otto::engines {
     ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
     ctx.fillText(fractions[engine.props.operators.at(cur_op).ratio_idx].to_string(), {width - x_pad, y_pad});
 
-    //Attack release. Drawn stuff depends on if cur_op is a modulator or carrier.
+    //Attack and Release. Drawn stuff depends on if cur_op is a modulator or carrier.
     if (algorithms[engine.props.algN].modulator_flags[cur_op]) { //Modulator
       //Attack
       ctx.beginPath();
