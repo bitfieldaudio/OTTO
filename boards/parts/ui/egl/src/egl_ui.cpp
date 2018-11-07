@@ -6,10 +6,9 @@
 #include <string>
 #include <thread>
 
-#include "core/globals.hpp"
 #include "core/ui/canvas.hpp"
 #include "core/ui/vector_graphics.hpp"
-#include "services/ui.hpp"
+#include "services/ui_manager.hpp"
 
 #define NANOVG_GLES2_IMPLEMENTATION
 
@@ -17,15 +16,16 @@
 #include "./egl_deps.hpp"
 #include "./fbcp.hpp"
 #include "./rpi_input.hpp"
+#include "board/ui/egl_ui_manager.hpp"
 
 static nlohmann::json config = {{"FPS", 60.f}, {"Debug", true}};
 
-namespace otto::service::ui {
+namespace otto::services {
 
   using namespace core::ui;
   using namespace board::ui;
 
-  void main_ui_loop()
+  void EGLUIManager::main_ui_loop()
   {
     EGLConnection egl;
     egl.init();
@@ -46,7 +46,7 @@ namespace otto::service::ui {
       nvgCreateGLES2(NVG_ANTIALIAS | NVG_STENCIL_STROKES | NVG_DEBUG);
     if (nvg == NULL) {
       LOGF("Could not init nanovg.\n");
-      global::exit(global::ErrorCode::graphics_error);
+      Application::current().exit(Application::ErrorCode::graphics_error);
       return;
     }
 
@@ -77,17 +77,17 @@ namespace otto::service::ui {
 
     std::thread kbd_thread = std::thread(otto::service::ui::read_keyboard);
 
-    while (global::running()) {
+    while (Application::current().running()) {
       t0 = clock::now();
 
-      otto::service::ui::impl::flush_events();
+      flush_events();
 
       // Update and render
       egl.beginFrame();
       canvas.clearColor(vg::Colours::Black);
       canvas.begineFrame(egl.draw_size.width, egl.draw_size.height);
       canvas.scale(xscale, yscale);
-      ui::impl::draw_frame(canvas);
+      draw_frame(canvas);
 
       if (showFps) {
         canvas.beginPath();
@@ -116,6 +116,6 @@ namespace otto::service::ui {
 
     egl.exit();
 
-    global::exit(global::ErrorCode::ui_closed);
+    Application::current().exit(Application::ErrorCode::ui_closed);
   }
 } // namespace otto::service::ui
