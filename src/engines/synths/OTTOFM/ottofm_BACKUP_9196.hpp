@@ -24,7 +24,7 @@ namespace otto::engines {
       Property<float> mSuspos                 = {this, "mSuspos",   0.5, has_limits::init(0,    1),  steppable::init(0.01)};
       //Oscillator
       Property<float> detune                  = {this, "detune",    0,   has_limits::init(-1,   1),  steppable::init(0.01)};
-      Property<float, no_serialize> ratio     = {this, "ratio",     1,   has_limits::init(0.25, 4),  steppable::init(0.01)};
+      Property<float, no_serialize> ratio     = {this, "ratio",     0,   has_limits::init(0.25, 4),  steppable::init(0.01)};
       Property<int, no<faust_link>> ratio_idx = {this, "ratio_idx", 0,   has_limits::init(0,    18), steppable::init(1)};
       //Amp
       Property<float> outLev                  = {this, "outLev",    1,   has_limits::init(0, 1),    steppable::init(0.01)};
@@ -32,10 +32,13 @@ namespace otto::engines {
     };
 
     struct Props : Properties<> {
-      Property<int> algN = {this, "algN",    0,   has_limits::init(0, 11),    steppable::init(1)};
-      Property<float> fmAmount = {this, "fmAmount",    1,   has_limits::init(0, 1),    steppable::init(0.01)};
+      Property<int> algN = {this, "algN", 1, has_limits::init(0, 11), steppable::init(1)};
 
-      std::array<Operator,4> operators = {{{this,"op0"}, {this,"op1"}, {this,"op2"}, {this,"op3"}}};
+      std::array<Operator, 4> operators = {
+        {{this, "op0"}, {this, "op1"}, {this, "op2"}, {this, "op3"}}};
+      Property<float> fmAmount = {this, "fmAmount",    1,   has_limits::init(0, 1),    steppable::init(0.01)};
+      Property<int> cur_op =     {this, "Current_operator", 0, has_limits::init(0, 3)};
+      Property<bool,no<faust_link>,no_serialize> shift = {this, "shift"};
 
     } props;
 

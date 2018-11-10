@@ -29,7 +29,7 @@ with {
   pipe1(fr) = os.osc(fr/2) : *(drawbar1);
   pipe2(fr) = os.osc(1.334839854*fr : *(1+pitch_mod) ) : *(drawbar2); //Perfect fifth above the fundamental
   pipe3(fr) = os.osc(2*fr : *(1+pitch_mod) ) : *(drawbar3);
-  modulator = _ : *(mastergain) <: (fi.lowpass(2,center_freq), fi.highpass(2,center_freq)) : (*(1+os.osc(leslie_speed_tr)*(leslie_amnt_tr)) , *(1+os.osc(leslie_speed_bs)*(leslie_amnt_bs))) :> _
+  modulator = _ : attach(phasor) : *(mastergain) <: (fi.lowpass(2,center_freq), fi.highpass(2,center_freq)) : (*(1+os.osc(leslie_speed_tr)*(leslie_amnt_tr)) , *(1+os.osc(leslie_speed_bs)*(leslie_amnt_bs))) :> _
     with {
 
         leslie_speed_bs   = leslie*4;
@@ -40,6 +40,9 @@ with {
         center_freq = 1800;
 
     };
+
+  //Phasor
+  phasor = os.lf_sawpos(leslie_speed_tr/2) : hbargraph("/phasor",0,1) ;
 
   noise_att = no.pink_noise : *(decay_env(0.02,ba.impulsify(midigate))) : *(0.05*leslie);
 

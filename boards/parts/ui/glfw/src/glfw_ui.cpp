@@ -34,7 +34,7 @@ namespace otto::glfw {
     }
     glfwSetWindowUserPointer(_glfw_win, this);
 
-#if GLFW_VERSION_MINOR >= 3
+#if false
     glfwSetKeyboardCallback(_glfw_win, [](GLFWwindow* window, int key, int scancode, int action,
                                           int mods, const char* str, int) {
       if (auto* win = get_for(window); win) {

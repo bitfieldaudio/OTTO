@@ -19,7 +19,7 @@ namespace otto::engines {
       Property<float> drawbar2      = {this, "drawbar2",    0,   has_limits::init(0, 1),    steppable::init(0.01)};
       Property<float> drawbar3      = {this, "drawbar3",    0,   has_limits::init(0, 1),    steppable::init(0.01)};
       Property<float> leslie        = {this, "leslie",      0.3, has_limits::init(0, 1),    steppable::init(0.01)};
-
+      Property<float, no_serialize> phasor        = {this, "phasor",      0.5,   has_limits::init(0, 1),  faust_link::init(FaustLink::Type::FromFaust)};
     } props;
 
     HammondSynth();

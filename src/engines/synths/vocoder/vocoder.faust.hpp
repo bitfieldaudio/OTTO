@@ -995,7 +995,7 @@ class faust_vocoder : public dsp {
 			fTempPerm0 = (float)input0[i];
 			fRec0[0] = (fSlow0 + (0.999f * fRec0[1]));
 			fRec3[0] = (fSlow1 + (0.999f * fRec3[1]));
-			fTempPerm1 = pow(10.f, (0.050000000000000003f * ((20.0f * fRec3[0]) + -40.0f)));
+			fTempPerm1 = powf(10,(0.050000000000000003f * ((20.0f * fRec3[0]) + -40.0f)));
 			fRec7[0] = (fTempPerm0 - (fConst6 * ((fConst4 * fRec7[2]) + (fConst2 * fRec7[1]))));
 			fTempPerm2 = fabsf(((fConst8 * fRec7[0]) + (fConst9 * fRec7[2])));
 			fRec6[0] = max(fTempPerm2, ((fConst10 * fRec6[1]) + (fConst11 * fTempPerm2)));
