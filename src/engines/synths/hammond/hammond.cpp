@@ -120,7 +120,8 @@ namespace otto::engines {
       ctx.lineJoin(Canvas::LineJoin::ROUND);
       ctx.stroke();
 
-      float rotation = engine.props.leslie * 2 * M_PI;
+      engine.props.phasor.refresh_links();
+      float rotation = engine.props.phasor * 2 * M_PI;
 
       // Inner Ring Base
       ctx.beginPath();
