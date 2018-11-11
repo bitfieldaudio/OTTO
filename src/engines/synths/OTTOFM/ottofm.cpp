@@ -31,10 +31,30 @@ namespace otto::engines {
 
   };
 
+  enum struct Drawside {
+    left,
+    middle,
+    right,
+    //Number of sides
+    n_sides,
+  };
+
+  struct Operatorline {
+    int start;
+    int end;
+    Drawside side;
+
+    constexpr Operatorline(int st = 1, int en = 2, Drawside si = Drawside::middle)
+                                                  : start(st), end(en), side(si) {}
+  };
+
   struct Algorithm {
     std::array<bool,4> modulator_flags = {false,false,false,false};
+    std::vector<Operatorline> operator_lines;
 
-    constexpr Algorithm(std::initializer_list<int> modulator_idx = {}) {
+    Algorithm(std::initializer_list<int> modulator_idx = {},
+                        std::vector<Operatorline> op_lines = {})
+                                 : operator_lines(op_lines) {
       for(auto&& idx : modulator_idx){
         modulator_flags[idx] = true;
       }
@@ -76,16 +96,43 @@ namespace otto::engines {
                                            {7, 16},
                                            {7, 2}}};
 
-    std::array<Algorithm,11> algorithms = {{Algorithm({1,2,3}),
-                                            Algorithm({1,2,3}),
-                                            Algorithm({1,2,3}),
-                                            Algorithm({1,2,3}),
-                                            Algorithm({2,3}),
-                                            Algorithm({2,3}),
-                                            Algorithm({1,2,3}),
-                                            Algorithm({1,3}),
-                                            Algorithm({3}),
-                                            Algorithm({3}),
+    std::array<Algorithm,11> algorithms = {{Algorithm({1,2,3},
+                                            {Operatorline(3,2,Drawside::middle),
+                                             Operatorline(2,1,Drawside::middle),
+                                             Operatorline(1,0,Drawside::middle)}),
+                                            Algorithm({1,2,3},
+                                            {Operatorline(3,1,Drawside::left),
+                                             Operatorline(2,1,Drawside::right),
+                                             Operatorline(1,0,Drawside::middle)}),
+                                            Algorithm({1,2,3},
+                                            {Operatorline(3,1,Drawside::left),
+                                             Operatorline(2,1,Drawside::middle),
+                                             Operatorline(1,0,Drawside::middle)}),
+                                            Algorithm({1,2,3},
+                                            {Operatorline(3,2,Drawside::left),
+                                             Operatorline(3,1,Drawside::left),
+                                             Operatorline(2,0,Drawside::right),
+                                             Operatorline(1,0,Drawside::right)}),
+                                            Algorithm({2,3},
+                                            {Operatorline(3,2,Drawside::middle),
+                                             Operatorline(2,1,Drawside::left),
+                                             Operatorline(2,0,Drawside::left)}),
+                                            Algorithm({2,3},
+                                            {Operatorline(3,2,Drawside::middle),
+                                             Operatorline(2,1,Drawside::middle)}),
+                                            Algorithm({1,2,3},
+                                            {Operatorline(3,0,Drawside::left),
+                                             Operatorline(2,0,Drawside::right),
+                                             Operatorline(1,0,Drawside::middle)}),
+                                            Algorithm({1,3},
+                                            {Operatorline(3,2,Drawside::middle),
+                                             Operatorline(1,0,Drawside::middle)}),
+                                            Algorithm({3},
+                                            {Operatorline(3,2,Drawside::middle),
+                                             Operatorline(3,1,Drawside::right),
+                                             Operatorline(3,0,Drawside::left)}),
+                                            Algorithm({3},
+                                             {Operatorline(3,2,Drawside::middle)}),
                                             Algorithm({})}};
 
     using EngineScreen<OTTOFMSynth>::EngineScreen;
@@ -206,7 +253,7 @@ namespace otto::engines {
     ctx.fillText("FM", {x_pad_left, y_pad + 3 * space});
 
     ctx.lineWidth(6.f);
-    constexpr float x_left = width - 4 * x_pad;
+    constexpr float x_left = width - 6 * x_pad;
     constexpr float x_right = width - x_pad;
     constexpr float y_low =  y_pad + 3 * space + 10;
     constexpr float y_high = y_pad + 3 * space - 10;
@@ -378,7 +425,7 @@ namespace otto::engines {
                engine.props.operators.at(cur_op).mSuspos.normalize()));
     } else {
       aw = max_width * engine.props.operators.at(cur_op).cAtt.normalize();
-      //dw = max_width * otto::core::audio::EnvelopeScreen::props.sustain.normalize();
+      //dw = max_width * engine.voice_mgr_.props.sustain.normalize();
       dw = max_width * 0.2;
       sh = b.height * engine.props.operators.at(cur_op).cSus.normalize();
       rw = max_width * engine.props.operators.at(cur_op).cRel.normalize();
@@ -437,7 +484,7 @@ namespace otto::engines {
     ctx.beginPath();
     ctx.fillStyle(Colours::Red);
     ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
-    ctx.fillText("Algo", {x_pad_left, y_pad + 3 * space});
+    ctx.fillText("Algorithm", {x_pad_left, y_pad + 3 * space});
 
     ctx.beginPath();
     ctx.fillStyle(Colours::Red);
@@ -451,6 +498,52 @@ namespace otto::engines {
     constexpr float x_pad = 35;
     constexpr float y_pad = 50;
     constexpr float space = (height - 2.f * y_pad) / 3.f;
+
+    //Draw lines between operators
+    for(auto&& line : algorithms[engine.props.algN].operator_lines){
+      int x_middle = x_pad + 12;
+      int mid_to_side = 15;
+      int vertical_length = 10;
+
+      if (line.side == Drawside::left) {
+        int x_close = x_middle - mid_to_side;
+        int x_far = x_close - vertical_length;
+
+        int y_start = y_pad + line.start * space;
+        int y_end = y_pad + line.end * space;
+
+        ctx.beginPath();
+        ctx.moveTo(x_close, y_start);
+        ctx.lineTo(x_far, y_start);
+        ctx.lineTo(x_far, y_end);
+        ctx.lineTo(x_close, y_end);
+        ctx.stroke(Colours::White);
+      }
+      else if (line.side == Drawside::right) {
+        int x_close = x_middle + mid_to_side;
+        int x_far = x_close + vertical_length;
+
+        int y_start = y_pad + line.start * space;
+        int y_end = y_pad + line.end * space;
+
+        ctx.beginPath();
+        ctx.moveTo(x_close, y_start);
+        ctx.lineTo(x_far, y_start);
+        ctx.lineTo(x_far, y_end);
+        ctx.lineTo(x_close, y_end);
+        ctx.stroke(Colours::White);
+      } else {
+        int y_start = y_pad + line.start * space - 16;
+        int y_end = y_pad + line.end * space + 16;
+
+        ctx.beginPath();
+        ctx.moveTo(x_middle, y_start);
+        ctx.lineTo(x_middle, y_end);
+        ctx.lineTo(x_middle, y_end);
+        ctx.lineTo(x_middle, y_end);
+        ctx.stroke(Colours::White);
+      }
+    }
 
     //draw operators
     for(int i=0;i<4;i++){
@@ -480,6 +573,8 @@ namespace otto::engines {
       }
 
     }
+
+
 
 
   }
