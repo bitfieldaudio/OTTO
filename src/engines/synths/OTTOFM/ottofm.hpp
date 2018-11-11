@@ -32,7 +32,7 @@ namespace otto::engines {
     };
 
     struct Props : Properties<> {
-      Property<int> algN = {this, "algN",    0,   has_limits::init(0, 11),    steppable::init(1)};
+      Property<int> algN = {this, "algN",    0,   has_limits::init(0, 10),    steppable::init(1)};
       Property<float> fmAmount = {this, "fmAmount",    1,   has_limits::init(0, 1),    steppable::init(0.01)};
 
       std::array<Operator,4> operators = {{{this,"op0"}, {this,"op1"}, {this,"op2"}, {this,"op3"}}};
