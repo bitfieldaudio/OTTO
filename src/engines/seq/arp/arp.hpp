@@ -29,7 +29,7 @@ namespace otto::engines {
         audio::ProcessData<0> process(audio::ProcessData<0> data);
 
 
-        std::vector<int> notes = {-1};
+        std::vector<int> notes = {21 ,21, 22, 24};
 
     private:
         int _samples_per_beat = 22050 / 4;

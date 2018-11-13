@@ -56,6 +56,7 @@ namespace otto::engines {
     }
 
   private:
+    friend struct OTTOFMSynthScreen;
     audio::VoiceManager<6> voice_mgr_;
     audio::FaustWrapper<0, 1> faust_;
   };

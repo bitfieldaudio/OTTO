@@ -18,9 +18,9 @@ namespace otto::engines {
         auto next_beat = _samples_per_beat - _counter;
 
         if (next_beat <= data.nframes) {
+            if (note != -1) data.midi.push_back(midi::NoteOffEvent(note));
             note = notes[_current_note];
             data.midi.push_back(midi::NoteOnEvent(note));
-            data.midi.push_back(midi::NoteOffEvent(note));
             _current_note += 1;
             _current_note %= 4;
 
