@@ -3,9 +3,9 @@
 
 #include "services/application.hpp"
 
+#include "core/audio/voice_manager.hpp"
 #include "ottofm.faust.hpp"
 #include "services/ui_manager.hpp"
-#include "core/audio/voice_manager.hpp"
 
 namespace otto::engines {
 
@@ -26,9 +26,8 @@ namespace otto::engines {
 
     std::string to_string() const
     {
-        return fmt::format("{}/{}",numerator,denominator);
+      return fmt::format("{}/{}", numerator, denominator);
     }
-
   };
 
   /// Used for graphics.
@@ -36,7 +35,7 @@ namespace otto::engines {
     left,
     middle,
     right,
-    //Number of sides
+    // Number of sides
     n_sides,
   };
 
@@ -46,17 +45,19 @@ namespace otto::engines {
     Drawside side;
 
     constexpr Operatorline(int st = 1, int en = 2, Drawside si = Drawside::middle)
-                                                  : start(st), end(en), side(si) {}
+      : start(st), end(en), side(si)
+    {}
   };
 
   struct Algorithm {
-    std::array<bool,4> modulator_flags = {false,false,false,false};
+    std::array<bool, 4> modulator_flags = {false, false, false, false};
     std::vector<Operatorline> operator_lines;
 
     Algorithm(std::initializer_list<int> modulator_idx = {},
-                        std::vector<Operatorline> op_lines = {})
-                                 : operator_lines(op_lines) {
-      for(auto&& idx : modulator_idx){
+              std::vector<Operatorline> op_lines = {})
+      : operator_lines(op_lines)
+    {
+      for (auto&& idx : modulator_idx) {
         modulator_flags[idx] = true;
       }
     }
@@ -99,44 +100,33 @@ namespace otto::engines {
                                            {7, 16},
                                            {7, 2}}};
 
-    std::array<Algorithm,11> algorithms = {{Algorithm({1,2,3},
-                                            {Operatorline(3,2,Drawside::middle),
-                                             Operatorline(2,1,Drawside::middle),
-                                             Operatorline(1,0,Drawside::middle)}),
-                                            Algorithm({1,2,3},
-                                            {Operatorline(3,1,Drawside::left),
-                                             Operatorline(2,1,Drawside::right),
-                                             Operatorline(1,0,Drawside::middle)}),
-                                            Algorithm({1,2,3},
-                                            {Operatorline(3,0,Drawside::left),
-                                             Operatorline(2,1,Drawside::middle),
-                                             Operatorline(1,0,Drawside::middle)}),
-                                            Algorithm({1,2,3},
-                                            {Operatorline(3,2,Drawside::left),
-                                             Operatorline(3,1,Drawside::left),
-                                             Operatorline(2,0,Drawside::right),
-                                             Operatorline(1,0,Drawside::right)}),
-                                            Algorithm({2,3},
-                                            {Operatorline(3,2,Drawside::middle),
-                                             Operatorline(2,1,Drawside::left),
-                                             Operatorline(2,0,Drawside::left)}),
-                                            Algorithm({2,3},
-                                            {Operatorline(3,2,Drawside::middle),
-                                             Operatorline(2,1,Drawside::middle)}),
-                                            Algorithm({1,2,3},
-                                            {Operatorline(3,0,Drawside::left),
-                                             Operatorline(2,0,Drawside::right),
-                                             Operatorline(1,0,Drawside::middle)}),
-                                            Algorithm({1,3},
-                                            {Operatorline(3,2,Drawside::middle),
-                                             Operatorline(1,0,Drawside::middle)}),
-                                            Algorithm({3},
-                                            {Operatorline(3,2,Drawside::middle),
-                                             Operatorline(3,1,Drawside::right),
-                                             Operatorline(3,0,Drawside::left)}),
-                                            Algorithm({3},
-                                             {Operatorline(3,2,Drawside::middle)}),
-                                            Algorithm({})}};
+    std::array<Algorithm, 11> algorithms = {
+      {Algorithm({1, 2, 3},
+                 {Operatorline(3, 2, Drawside::middle), Operatorline(2, 1, Drawside::middle),
+                  Operatorline(1, 0, Drawside::middle)}),
+       Algorithm({1, 2, 3},
+                 {Operatorline(3, 1, Drawside::left), Operatorline(2, 1, Drawside::right),
+                  Operatorline(1, 0, Drawside::middle)}),
+       Algorithm({1, 2, 3},
+                 {Operatorline(3, 0, Drawside::left), Operatorline(2, 1, Drawside::middle),
+                  Operatorline(1, 0, Drawside::middle)}),
+       Algorithm({1, 2, 3},
+                 {Operatorline(3, 2, Drawside::left), Operatorline(3, 1, Drawside::left),
+                  Operatorline(2, 0, Drawside::right), Operatorline(1, 0, Drawside::right)}),
+       Algorithm({2, 3},
+                 {Operatorline(3, 2, Drawside::middle), Operatorline(2, 1, Drawside::left),
+                  Operatorline(2, 0, Drawside::left)}),
+       Algorithm({2, 3},
+                 {Operatorline(3, 2, Drawside::middle), Operatorline(2, 1, Drawside::middle)}),
+       Algorithm({1, 2, 3},
+                 {Operatorline(3, 0, Drawside::left), Operatorline(2, 0, Drawside::right),
+                  Operatorline(1, 0, Drawside::middle)}),
+       Algorithm({1, 3},
+                 {Operatorline(3, 2, Drawside::middle), Operatorline(1, 0, Drawside::middle)}),
+       Algorithm({3},
+                 {Operatorline(3, 2, Drawside::middle), Operatorline(3, 1, Drawside::right),
+                  Operatorline(3, 0, Drawside::left)}),
+       Algorithm({3}, {Operatorline(3, 2, Drawside::middle)}), Algorithm({})}};
 
     using EngineScreen<OTTOFMSynth>::EngineScreen;
   };
@@ -180,7 +170,7 @@ namespace otto::engines {
       if (!shift) {
         current.ratio_idx.step(e.clicks);
         current.ratio.set(float(fractions[current.ratio_idx]));
-      } else{
+      } else {
         current.detune.step(e.clicks);
       }
       break;
@@ -219,15 +209,13 @@ namespace otto::engines {
     shift = Application::current().ui_manager->is_pressed(ui::Key::shift);
     ctx.font(Fonts::Norm, 35);
 
-    if(shift)
-        draw_with_shift(ctx);
+    if (shift)
+      draw_with_shift(ctx);
     else
-        draw_no_shift(ctx);
+      draw_no_shift(ctx);
 
     draw_envelope(ctx);
     draw_operators(ctx);
-
-
   }
 
   void OTTOFMSynthScreen::draw_no_shift(ui::vg::Canvas& ctx)
@@ -239,7 +227,7 @@ namespace otto::engines {
     constexpr float x_pad = 30;
     constexpr float y_pad = 50;
     constexpr float space = (height - 2.f * y_pad) / 3.f;
-    //Ratio and Detune
+    // Ratio and Detune
     ctx.beginPath();
     ctx.fillStyle(Colours::Blue);
     ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
@@ -248,9 +236,10 @@ namespace otto::engines {
     ctx.beginPath();
     ctx.fillStyle(Colours::Blue);
     ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fractions[engine.props.operators.at(cur_op).ratio_idx].to_string(), {width - x_pad, y_pad});
+    ctx.fillText(fractions[engine.props.operators.at(cur_op).ratio_idx].to_string(),
+                 {width - x_pad, y_pad});
 
-    //FM Amount
+    // FM Amount
     ctx.beginPath();
     ctx.fillStyle(Colours::Red);
     ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
@@ -259,7 +248,7 @@ namespace otto::engines {
     ctx.lineWidth(6.f);
     constexpr float x_left = width - 6 * x_pad;
     constexpr float x_right = width - x_pad;
-    constexpr float y_low =  y_pad + 3 * space + 10;
+    constexpr float y_low = y_pad + 3 * space + 10;
     constexpr float y_high = y_pad + 3 * space - 10;
     ctx.beginPath();
     ctx.moveTo(x_left, y_low);
@@ -278,11 +267,11 @@ namespace otto::engines {
     ctx.closePath();
     ctx.fill(Colours::Red);
 
-    //Operator level
-    //vertical line
+    // Operator level
+    // vertical line
     float line_top = y_pad + 0.7 * space;
-    float line_bot = line_top + 1.5*space;
-    float line_x = width - 1.5*x_pad;
+    float line_bot = line_top + 1.5 * space;
+    float line_x = width - 1.5 * x_pad;
     float bar_width = 20.f;
     ctx.beginPath();
     ctx.moveTo(line_x, line_top);
@@ -290,16 +279,20 @@ namespace otto::engines {
     ctx.lineWidth(6.0);
     ctx.lineCap(Canvas::LineCap::ROUND);
     ctx.closePath();
-    //shift not held
+    // shift not held
     ctx.stroke(Colours::Gray60);
-    //Horizontal line
+    // Horizontal line
     ctx.beginPath();
-    ctx.moveTo(line_x - 0.5*bar_width , line_bot - engine.props.operators.at(cur_op).outLev.normalize() * (line_bot-line_top));
-    ctx.lineTo(line_x + 0.5*bar_width , line_bot - engine.props.operators.at(cur_op).outLev.normalize() * (line_bot-line_top));
+    ctx.moveTo(
+      line_x - 0.5 * bar_width,
+      line_bot - engine.props.operators.at(cur_op).outLev.normalize() * (line_bot - line_top));
+    ctx.lineTo(
+      line_x + 0.5 * bar_width,
+      line_bot - engine.props.operators.at(cur_op).outLev.normalize() * (line_bot - line_top));
     ctx.lineWidth(6.0);
     ctx.lineCap(Canvas::LineCap::ROUND);
     ctx.closePath();
-    //shift not held
+    // shift not held
     ctx.stroke(Colours::Gray60);
   }
 
@@ -311,7 +304,7 @@ namespace otto::engines {
     constexpr float x_pad = 30;
     constexpr float y_pad = 50;
     constexpr float space = (height - 2.f * y_pad) / 3.f;
-    //Ratio and Detune
+    // Ratio and Detune
     ctx.beginPath();
     ctx.fillStyle(Colours::Blue);
     ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
@@ -320,13 +313,14 @@ namespace otto::engines {
     ctx.beginPath();
     ctx.fillStyle(Colours::Blue);
     ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:2}",engine.props.operators.at(cur_op).detune), {width - x_pad, y_pad});
+    ctx.fillText(fmt::format("{:2}", engine.props.operators.at(cur_op).detune),
+                 {width - x_pad, y_pad});
 
-    //Operator level
-    //vertical line
+    // Operator level
+    // vertical line
     float line_top = y_pad + 0.7 * space;
-    float line_bot = line_top + 1.5*space;
-    float line_x = width - 1.5*x_pad;
+    float line_bot = line_top + 1.5 * space;
+    float line_x = width - 1.5 * x_pad;
     float bar_width = 20.f;
     ctx.beginPath();
     ctx.moveTo(line_x, line_top);
@@ -334,19 +328,23 @@ namespace otto::engines {
     ctx.lineWidth(6.0);
     ctx.lineCap(Canvas::LineCap::ROUND);
     ctx.closePath();
-    //shift is held
+    // shift is held
     ctx.stroke(Colours::Yellow);
-    //Horizontal line
+    // Horizontal line
     ctx.beginPath();
-    ctx.moveTo(line_x - 0.5*bar_width , line_bot - engine.props.operators.at(cur_op).outLev.normalize() * (line_bot-line_top));
-    ctx.lineTo(line_x + 0.5*bar_width , line_bot - engine.props.operators.at(cur_op).outLev.normalize() * (line_bot-line_top));
+    ctx.moveTo(
+      line_x - 0.5 * bar_width,
+      line_bot - engine.props.operators.at(cur_op).outLev.normalize() * (line_bot - line_top));
+    ctx.lineTo(
+      line_x + 0.5 * bar_width,
+      line_bot - engine.props.operators.at(cur_op).outLev.normalize() * (line_bot - line_top));
     ctx.lineWidth(6.0);
     ctx.lineCap(Canvas::LineCap::ROUND);
     ctx.closePath();
-    //shift not held
+    // shift not held
     ctx.stroke(Colours::Yellow);
 
-    //Algorithm
+    // Algorithm
     ctx.beginPath();
     ctx.fillStyle(Colours::Red);
     ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
@@ -355,31 +353,30 @@ namespace otto::engines {
     ctx.beginPath();
     ctx.fillStyle(Colours::Red);
     ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{}", engine.props.algN),{width - x_pad, y_pad + 3 * space});
+    ctx.fillText(fmt::format("{}", engine.props.algN), {width - x_pad, y_pad + 3 * space});
   }
 
-  void OTTOFMSynthScreen::draw_envelope(Canvas &ctx)
+  void OTTOFMSynthScreen::draw_envelope(Canvas& ctx)
   {
     constexpr float x_pad_left = 90;
     constexpr float x_pad = 30;
     constexpr float y_pad = 50;
     constexpr float space = (height - 2.f * y_pad) / 3.f;
 
-    //Operator envelope
-    constexpr auto b = vg::Box{ x_pad_left, y_pad + 0.7 * space, width - x_pad_left - x_pad - 35.f , space*1.5};
+    // Operator envelope
+    constexpr auto b =
+      vg::Box{x_pad_left, y_pad + 0.7 * space, width - x_pad_left - x_pad - 35.f, space * 1.5};
     const float spacing = 10.f;
     const float max_width = (b.width - 3 * spacing) / 3.f;
     float aw, dw, sh, rw;
     bool is_modulator = algorithms[engine.props.algN].modulator_flags[cur_op];
     if (is_modulator) {
       aw = max_width * engine.props.operators.at(cur_op).mAtt.normalize();
-      dw = max_width * std::max(0.f, (
-                        engine.props.operators.at(cur_op).mDecrel.normalize()*
-                        (1 - engine.props.operators.at(cur_op).mSuspos.normalize())));
+      dw = max_width * std::max(0.f, (engine.props.operators.at(cur_op).mDecrel.normalize() *
+                                      (1 - engine.props.operators.at(cur_op).mSuspos.normalize())));
       sh = b.height * engine.props.operators.at(cur_op).mSuspos.normalize();
-      rw = max_width * std::max(0.f, (
-               engine.props.operators.at(cur_op).mDecrel.normalize()*
-               engine.props.operators.at(cur_op).mSuspos.normalize()));
+      rw = max_width * std::max(0.f, (engine.props.operators.at(cur_op).mDecrel.normalize() *
+                                      engine.props.operators.at(cur_op).mSuspos.normalize()));
     } else {
       aw = max_width * engine.props.operators.at(cur_op).cAtt.normalize();
       dw = max_width * engine.voice_mgr_.envelope_props.decay.normalize();
@@ -390,17 +387,18 @@ namespace otto::engines {
     ctx.lineWidth(6.f);
 
     const float arc_size = 0.9;
-    //Drawing. Colors depend on whether or not shift is held
-    //Attack
+    // Drawing. Colors depend on whether or not shift is held
+    // Attack
     ctx.beginPath();
     ctx.moveTo(b.x, b.y + b.height);
     if (is_modulator)
       ctx.lineTo(b.x + aw, b.y);
     else
-      ctx.quadraticCurveTo({b.x + aw * arc_size, b.y + b.height * arc_size}, {b.x + aw, b.y}); // curve
+      ctx.quadraticCurveTo({b.x + aw * arc_size, b.y + b.height * arc_size},
+                           {b.x + aw, b.y}); // curve
     ctx.lineTo(b.x + aw, b.y + b.height);
     ctx.closePath();
-    //Choose colour
+    // Choose colour
     if (shift) {
       ctx.stroke(Colours::Gray60);
       ctx.fill(Colours::Gray60);
@@ -409,21 +407,22 @@ namespace otto::engines {
       ctx.fill(Colours::Green);
     }
 
-    //Decay
+    // Decay
     ctx.beginPath();
     ctx.moveTo(b.x + aw + spacing, b.y + b.height);
     ctx.lineTo(b.x + aw + spacing, b.y);
     if (is_modulator)
       ctx.lineTo(b.x + aw + spacing + dw, b.y + b.height - sh);
     else
-      ctx.quadraticCurveTo({b.x + aw + spacing + dw * (1 - arc_size), b.y + (b.height - sh) * arc_size}, {b.x + aw + spacing + dw, b.y + b.height - sh}); // curve
+      ctx.quadraticCurveTo(
+        {b.x + aw + spacing + dw * (1 - arc_size), b.y + (b.height - sh) * arc_size},
+        {b.x + aw + spacing + dw, b.y + b.height - sh}); // curve
     ctx.lineTo(b.x + aw + spacing + dw, b.y + b.height);
     ctx.closePath();
     if (is_modulator && !shift) {
       ctx.stroke(Colours::Yellow);
       ctx.fill(Colours::Yellow);
-    }
-    else if (is_modulator && shift) {
+    } else if (is_modulator && shift) {
       ctx.stroke(Colours::Green);
       ctx.fill(Colours::Green);
     } else {
@@ -431,9 +430,9 @@ namespace otto::engines {
       ctx.fill(Colours::Gray60);
     }
 
-    //Sustain
+    // Sustain
     ctx.beginPath();
-    ctx.moveTo(b.x + aw + spacing + dw + spacing,      b.y + b.height - sh);
+    ctx.moveTo(b.x + aw + spacing + dw + spacing, b.y + b.height - sh);
     ctx.lineTo(b.x + b.width - spacing - rw, b.y + b.height - sh);
     ctx.lineTo(b.x + b.width - spacing - rw, b.y + b.height);
     ctx.lineTo(b.x + aw + spacing + dw + spacing, b.y + b.height);
@@ -446,19 +445,20 @@ namespace otto::engines {
       ctx.fill(Colours::Gray60);
     }
 
-    //Release
+    // Release
     ctx.beginPath();
     ctx.moveTo(b.x + b.width - rw, b.y + b.height);
     ctx.lineTo(b.x + b.width - rw, b.y + b.height - sh);
-    if (is_modulator) ctx.lineTo(b.x + b.width, b.y + b.height);
+    if (is_modulator)
+      ctx.lineTo(b.x + b.width, b.y + b.height);
     else
-      ctx.quadraticCurveTo({b.x + b.width - rw * arc_size, b.y + b.height - sh * (1 - arc_size)}, {b.x + b.width,      b.y + b.height});
+      ctx.quadraticCurveTo({b.x + b.width - rw * arc_size, b.y + b.height - sh * (1 - arc_size)},
+                           {b.x + b.width, b.y + b.height});
     ctx.closePath();
     if (!shift) {
       ctx.stroke(Colours::Yellow);
       ctx.fill(Colours::Yellow);
-    }
-    else if (is_modulator) {
+    } else if (is_modulator) {
       ctx.stroke(Colours::Green);
       ctx.fill(Colours::Green);
     } else {
@@ -474,8 +474,8 @@ namespace otto::engines {
     constexpr float y_pad = 50;
     constexpr float space = (height - 2.f * y_pad) / 3.f;
 
-    //Draw lines between operators
-    for(auto&& line : algorithms[engine.props.algN].operator_lines){
+    // Draw lines between operators
+    for (auto&& line : algorithms[engine.props.algN].operator_lines) {
       int x_middle = x_pad + 12;
       int mid_to_side = 15;
       int horizontal_length = 13;
@@ -493,8 +493,7 @@ namespace otto::engines {
         ctx.lineTo(x_far, y_end);
         ctx.lineTo(x_close, y_end);
         ctx.stroke(Colours::White);
-      }
-      else if (line.side == Drawside::right) {
+      } else if (line.side == Drawside::right) {
         int x_close = x_middle + mid_to_side;
         int x_far = x_close + horizontal_length;
 
@@ -520,37 +519,33 @@ namespace otto::engines {
       }
     }
 
-    //draw operators
-    for(int i=0;i<4;i++){
+    // draw operators
+    for (int i = 0; i < 4; i++) {
       ctx.beginPath();
-      if(algorithms[engine.props.algN].modulator_flags[i]){ //draw modulator
-        ctx.rect({x_pad, y_pad + (3 - i)*space - 13}, {25, 25});
+      if (algorithms[engine.props.algN].modulator_flags[i]) { // draw modulator
+        ctx.rect({x_pad, y_pad + (3 - i) * space - 13}, {25, 25});
       } else { // draw carrier
-        ctx.circle({x_pad + 12, y_pad + (3 - i)*space}, 15);
+        ctx.circle({x_pad + 12, y_pad + (3 - i) * space}, 15);
       }
       ctx.closePath();
-      //Choose colour
+      // Choose colour
       if (i == 3) {
         ctx.stroke(Colours::Blue);
-        if(i == cur_op) ctx.fill(Colours::Blue);
-      }
-      else if (i == 2) {
+        if (i == cur_op) ctx.fill(Colours::Blue);
+      } else if (i == 2) {
         ctx.stroke(Colours::Green);
-        if(i == cur_op) ctx.fill(Colours::Green);
-      }
-      else if (i == 1) {
+        if (i == cur_op) ctx.fill(Colours::Green);
+      } else if (i == 1) {
         ctx.stroke(Colours::Yellow);
-        if(i == cur_op) ctx.fill(Colours::Yellow);
-      }
-      else if (i == 0) {
+        if (i == cur_op) ctx.fill(Colours::Yellow);
+      } else if (i == 0) {
         ctx.stroke(Colours::Red);
-        if(i == cur_op) ctx.fill(Colours::Red);
+        if (i == cur_op) ctx.fill(Colours::Red);
       }
-
     }
 
-    //draw arrowheads
-    for(auto&& line : algorithms[engine.props.algN].operator_lines){
+    // draw arrowheads
+    for (auto&& line : algorithms[engine.props.algN].operator_lines) {
       int x_middle = x_pad + 12;
       int mid_to_side = 15;
       int side_length = 5;
@@ -571,8 +566,7 @@ namespace otto::engines {
           ctx.stroke(Colours::White);
           ctx.fill(Colours::White);
         });
-      }
-      else if (line.side == Drawside::right) {
+      } else if (line.side == Drawside::right) {
         int x = x_middle + mid_to_side;
         int y = y_pad + (3 - line.end) * space;
 
