@@ -12,7 +12,7 @@ namespace otto::engines {
   using namespace ui;
   using namespace ui::vg;
 
-  // Usefuls structs
+  /// Useful structs
   struct Fraction {
     int numerator;
     int denominator;
@@ -31,6 +31,7 @@ namespace otto::engines {
 
   };
 
+  /// Used for graphics.
   enum struct Drawside {
     left,
     middle,
@@ -61,15 +62,17 @@ namespace otto::engines {
     }
   };
 
+
   /*
    * Declarations
    */
 
   struct OTTOFMSynthScreen : EngineScreen<OTTOFMSynth> {
     void draw(Canvas& ctx) override;
-    void drawWithShift(Canvas& ctx);
-    void drawNoShift(Canvas& ctx);
-    void drawOperators(Canvas& ctx);
+    void draw_with_shift(Canvas& ctx);
+    void draw_no_shift(Canvas& ctx);
+    void draw_operators(Canvas& ctx);
+    void draw_envelope(Canvas& ctx);
     bool keypress(Key key) override;
     void rotary(RotaryEvent e) override;
 
@@ -105,7 +108,7 @@ namespace otto::engines {
                                              Operatorline(2,1,Drawside::right),
                                              Operatorline(1,0,Drawside::middle)}),
                                             Algorithm({1,2,3},
-                                            {Operatorline(3,1,Drawside::left),
+                                            {Operatorline(3,0,Drawside::left),
                                              Operatorline(2,1,Drawside::middle),
                                              Operatorline(1,0,Drawside::middle)}),
                                             Algorithm({1,2,3},
@@ -160,10 +163,10 @@ namespace otto::engines {
   bool OTTOFMSynthScreen::keypress(Key key)
   {
     switch (key) {
-    case ui::Key::blue_click: cur_op = 0; break;
-    case ui::Key::green_click: cur_op = 1; break;
-    case ui::Key::white_click: cur_op = 2; break;
-    case ui::Key::red_click: cur_op = 3; break;
+    case ui::Key::blue_click: cur_op = 3; break;
+    case ui::Key::green_click: cur_op = 2; break;
+    case ui::Key::white_click: cur_op = 1; break;
+    case ui::Key::red_click: cur_op = 0; break;
     default: return false; ;
     }
   }
@@ -217,16 +220,17 @@ namespace otto::engines {
     ctx.font(Fonts::Norm, 35);
 
     if(shift)
-        drawWithShift(ctx);
+        draw_with_shift(ctx);
     else
-        drawNoShift(ctx);
+        draw_no_shift(ctx);
 
-    drawOperators(ctx);
+    draw_envelope(ctx);
+    draw_operators(ctx);
 
 
   }
 
-  void OTTOFMSynthScreen::drawNoShift(ui::vg::Canvas& ctx)
+  void OTTOFMSynthScreen::draw_no_shift(ui::vg::Canvas& ctx)
   {
     using namespace ui::vg;
     ctx.font(Fonts::Norm, 35);
@@ -297,76 +301,9 @@ namespace otto::engines {
     ctx.closePath();
     //shift not held
     ctx.stroke(Colours::Gray60);
-
-    //Operator envelope
-    constexpr auto b = vg::Box{ x_pad_left, y_pad + 0.7 * space, width - x_pad_left - x_pad - 35.f , space*1.5};
-    const float spacing = 10.f;
-    const float max_width = (b.width - 3 * spacing) / 3.f;
-    float aw, dw, sh, rw;
-    if (algorithms[engine.props.algN].modulator_flags[cur_op]) {
-      aw = max_width * engine.props.operators.at(cur_op).mAtt.normalize();
-      dw = max_width * std::max(0.f, (
-                        engine.props.operators.at(cur_op).mDecrel.normalize()*
-                        (1 - engine.props.operators.at(cur_op).mSuspos.normalize())));
-      sh = b.height * engine.props.operators.at(cur_op).mSuspos.normalize();
-      rw = max_width * std::max(0.f, (
-               engine.props.operators.at(cur_op).mDecrel.normalize()*
-               engine.props.operators.at(cur_op).mSuspos.normalize()));
-    } else {
-      aw = max_width * engine.props.operators.at(cur_op).cAtt.normalize();
-      //dw = max_width * otto::core::audio::EnvelopeScreen::props.sustain.normalize();
-      dw = max_width * 0.2;
-      sh = b.height * engine.props.operators.at(cur_op).cSus.normalize();
-      rw = max_width * engine.props.operators.at(cur_op).cRel.normalize();
-    }
-
-    ctx.lineWidth(6.f);
-
-    const float arc_size = 0.9;
-    //Drawing. Colors depend on whether or not shift is held
-    ctx.beginPath();
-    ctx.moveTo(b.x, b.y + b.height);
-    ctx.quadraticCurveTo({b.x + aw * arc_size, b.y + b.height * arc_size}, {b.x + aw, b.y}); // curve
-    ctx.lineTo(b.x + aw, b.y + b.height);
-    ctx.closePath();
-    //Shift is not held
-    ctx.stroke(Colours::Green);
-    ctx.fill(Colours::Green);
-
-    ctx.beginPath();
-    ctx.moveTo(b.x + aw + spacing, b.y + b.height);
-    ctx.lineTo(b.x + aw + spacing, b.y);
-    ctx.quadraticCurveTo({b.x + aw + spacing + dw * (1 - arc_size), b.y + (b.height - sh) * arc_size}, {b.x + aw + spacing + dw, b.y + b.height - sh}); // curve
-    ctx.lineTo(b.x + aw + spacing + dw, b.y + b.height);
-    ctx.closePath();
-    if (algorithms[engine.props.algN].modulator_flags[cur_op]) {
-      ctx.stroke(Colours::Yellow);
-      ctx.fill(Colours::Yellow);
-    } else {
-      ctx.stroke(Colours::Gray60);
-      ctx.fill(Colours::Gray60);
-    }
-
-    ctx.beginPath();
-    ctx.moveTo(b.x + aw + spacing + dw + spacing,      b.y + b.height - sh);
-    ctx.lineTo(b.x + b.width - spacing - rw, b.y + b.height - sh);
-    ctx.lineTo(b.x + b.width - spacing - rw, b.y + b.height);
-    ctx.lineTo(b.x + aw + spacing + dw + spacing, b.y + b.height);
-    ctx.closePath();
-    ctx.stroke(Colours::Gray60);
-    ctx.fill(Colours::Gray60);
-
-    ctx.beginPath();
-    ctx.moveTo(b.x + b.width - rw, b.y + b.height);
-    ctx.lineTo(b.x + b.width - rw, b.y + b.height - sh);
-    ctx.quadraticCurveTo({b.x + b.width - rw * arc_size, b.y + b.height - sh * (1 - arc_size)}, {b.x + b.width,      b.y + b.height});
-    ctx.closePath();
-    ctx.stroke(Colours::Yellow);
-    ctx.fill(Colours::Yellow);
-
   }
 
-  void OTTOFMSynthScreen::drawWithShift(ui::vg::Canvas& ctx)
+  void OTTOFMSynthScreen::draw_with_shift(ui::vg::Canvas& ctx)
   {
     using namespace ui::vg;
     ctx.font(Fonts::Norm, 35);
@@ -409,77 +346,6 @@ namespace otto::engines {
     //shift not held
     ctx.stroke(Colours::Yellow);
 
-    //Operator envelope
-    constexpr auto b = vg::Box{ x_pad_left, y_pad + 0.7 * space, width - x_pad_left - x_pad - 35.f , space*1.5};
-    const float spacing = 10.f;
-    const float max_width = (b.width - 3 * spacing) / 3.f;
-    float aw, dw, sh, rw;
-    if (algorithms[engine.props.algN].modulator_flags[cur_op]) {
-      aw = max_width * engine.props.operators.at(cur_op).mAtt.normalize();
-      dw = max_width * std::max(0.f, (
-                        engine.props.operators.at(cur_op).mDecrel.normalize()*
-                        (1 - engine.props.operators.at(cur_op).mSuspos.normalize())));
-      sh = b.height * engine.props.operators.at(cur_op).mSuspos.normalize();
-      rw = max_width * std::max(0.f, (
-               engine.props.operators.at(cur_op).mDecrel.normalize()*
-               engine.props.operators.at(cur_op).mSuspos.normalize()));
-    } else {
-      aw = max_width * engine.props.operators.at(cur_op).cAtt.normalize();
-      //dw = max_width * engine.voice_mgr_.props.sustain.normalize();
-      dw = max_width * 0.2;
-      sh = b.height * engine.props.operators.at(cur_op).cSus.normalize();
-      rw = max_width * engine.props.operators.at(cur_op).cRel.normalize();
-    }
-
-    ctx.lineWidth(6.f);
-
-    const float arc_size = 0.9;
-    //Drawing. Colors depend on whether or not shift is held
-    ctx.beginPath();
-    ctx.moveTo(b.x, b.y + b.height);
-    ctx.quadraticCurveTo({b.x + aw * arc_size, b.y + b.height * arc_size}, {b.x + aw, b.y}); // curve
-    ctx.lineTo(b.x + aw, b.y + b.height);
-    ctx.closePath();
-    //Shift is held
-    ctx.stroke(Colours::Gray60);
-    ctx.fill(Colours::Gray60);
-
-    ctx.beginPath();
-    ctx.moveTo(b.x + aw + spacing, b.y + b.height);
-    ctx.lineTo(b.x + aw + spacing, b.y);
-    ctx.quadraticCurveTo({b.x + aw + spacing + dw * (1 - arc_size), b.y + (b.height - sh) * arc_size}, {b.x + aw + spacing + dw, b.y + b.height - sh}); // curve
-    ctx.lineTo(b.x + aw + spacing + dw, b.y + b.height);
-    ctx.closePath();
-    if (algorithms[engine.props.algN].modulator_flags[cur_op]) {
-      ctx.stroke(Colours::Green);
-      ctx.fill(Colours::Green);
-    } else {
-      ctx.stroke(Colours::Gray60);
-      ctx.fill(Colours::Gray60);
-    }
-
-    ctx.beginPath();
-    ctx.moveTo(b.x + aw + spacing + dw + spacing,      b.y + b.height - sh);
-    ctx.lineTo(b.x + b.width - spacing - rw, b.y + b.height - sh);
-    ctx.lineTo(b.x + b.width - spacing - rw, b.y + b.height);
-    ctx.lineTo(b.x + aw + spacing + dw + spacing, b.y + b.height);
-    ctx.closePath();
-    ctx.stroke(Colours::Green);
-    ctx.fill(Colours::Green);
-
-    ctx.beginPath();
-    ctx.moveTo(b.x + b.width - rw, b.y + b.height);
-    ctx.lineTo(b.x + b.width - rw, b.y + b.height - sh);
-    ctx.quadraticCurveTo({b.x + b.width - rw * arc_size, b.y + b.height - sh * (1 - arc_size)}, {b.x + b.width,      b.y + b.height});
-    ctx.closePath();
-    if (algorithms[engine.props.algN].modulator_flags[cur_op]) {
-      ctx.stroke(Colours::Green);
-      ctx.fill(Colours::Green);
-    } else {
-      ctx.stroke(Colours::Gray60);
-      ctx.fill(Colours::Gray60);
-    }
-
     //Algorithm
     ctx.beginPath();
     ctx.fillStyle(Colours::Red);
@@ -492,7 +358,116 @@ namespace otto::engines {
     ctx.fillText(fmt::format("{}", engine.props.algN),{width - x_pad, y_pad + 3 * space});
   }
 
-  void OTTOFMSynthScreen::drawOperators(ui::vg::Canvas& ctx)
+  void OTTOFMSynthScreen::draw_envelope(Canvas &ctx)
+  {
+    constexpr float x_pad_left = 90;
+    constexpr float x_pad = 30;
+    constexpr float y_pad = 50;
+    constexpr float space = (height - 2.f * y_pad) / 3.f;
+
+    //Operator envelope
+    constexpr auto b = vg::Box{ x_pad_left, y_pad + 0.7 * space, width - x_pad_left - x_pad - 35.f , space*1.5};
+    const float spacing = 10.f;
+    const float max_width = (b.width - 3 * spacing) / 3.f;
+    float aw, dw, sh, rw;
+    bool is_modulator = algorithms[engine.props.algN].modulator_flags[cur_op];
+    if (is_modulator) {
+      aw = max_width * engine.props.operators.at(cur_op).mAtt.normalize();
+      dw = max_width * std::max(0.f, (
+                        engine.props.operators.at(cur_op).mDecrel.normalize()*
+                        (1 - engine.props.operators.at(cur_op).mSuspos.normalize())));
+      sh = b.height * engine.props.operators.at(cur_op).mSuspos.normalize();
+      rw = max_width * std::max(0.f, (
+               engine.props.operators.at(cur_op).mDecrel.normalize()*
+               engine.props.operators.at(cur_op).mSuspos.normalize()));
+    } else {
+      aw = max_width * engine.props.operators.at(cur_op).cAtt.normalize();
+      dw = max_width * engine.voice_mgr_.envelope_props.decay.normalize();
+      sh = b.height * engine.props.operators.at(cur_op).cSus.normalize();
+      rw = max_width * engine.props.operators.at(cur_op).cRel.normalize();
+    }
+
+    ctx.lineWidth(6.f);
+
+    const float arc_size = 0.9;
+    //Drawing. Colors depend on whether or not shift is held
+    //Attack
+    ctx.beginPath();
+    ctx.moveTo(b.x, b.y + b.height);
+    if (is_modulator)
+      ctx.lineTo(b.x + aw, b.y);
+    else
+      ctx.quadraticCurveTo({b.x + aw * arc_size, b.y + b.height * arc_size}, {b.x + aw, b.y}); // curve
+    ctx.lineTo(b.x + aw, b.y + b.height);
+    ctx.closePath();
+    //Choose colour
+    if (shift) {
+      ctx.stroke(Colours::Gray60);
+      ctx.fill(Colours::Gray60);
+    } else {
+      ctx.stroke(Colours::Green);
+      ctx.fill(Colours::Green);
+    }
+
+    //Decay
+    ctx.beginPath();
+    ctx.moveTo(b.x + aw + spacing, b.y + b.height);
+    ctx.lineTo(b.x + aw + spacing, b.y);
+    if (is_modulator)
+      ctx.lineTo(b.x + aw + spacing + dw, b.y + b.height - sh);
+    else
+      ctx.quadraticCurveTo({b.x + aw + spacing + dw * (1 - arc_size), b.y + (b.height - sh) * arc_size}, {b.x + aw + spacing + dw, b.y + b.height - sh}); // curve
+    ctx.lineTo(b.x + aw + spacing + dw, b.y + b.height);
+    ctx.closePath();
+    if (is_modulator && !shift) {
+      ctx.stroke(Colours::Yellow);
+      ctx.fill(Colours::Yellow);
+    }
+    else if (is_modulator && shift) {
+      ctx.stroke(Colours::Green);
+      ctx.fill(Colours::Green);
+    } else {
+      ctx.stroke(Colours::Gray60);
+      ctx.fill(Colours::Gray60);
+    }
+
+    //Sustain
+    ctx.beginPath();
+    ctx.moveTo(b.x + aw + spacing + dw + spacing,      b.y + b.height - sh);
+    ctx.lineTo(b.x + b.width - spacing - rw, b.y + b.height - sh);
+    ctx.lineTo(b.x + b.width - spacing - rw, b.y + b.height);
+    ctx.lineTo(b.x + aw + spacing + dw + spacing, b.y + b.height);
+    ctx.closePath();
+    if (shift) {
+      ctx.stroke(Colours::Green);
+      ctx.fill(Colours::Green);
+    } else {
+      ctx.stroke(Colours::Gray60);
+      ctx.fill(Colours::Gray60);
+    }
+
+    //Release
+    ctx.beginPath();
+    ctx.moveTo(b.x + b.width - rw, b.y + b.height);
+    ctx.lineTo(b.x + b.width - rw, b.y + b.height - sh);
+    if (is_modulator) ctx.lineTo(b.x + b.width, b.y + b.height);
+    else
+      ctx.quadraticCurveTo({b.x + b.width - rw * arc_size, b.y + b.height - sh * (1 - arc_size)}, {b.x + b.width,      b.y + b.height});
+    ctx.closePath();
+    if (!shift) {
+      ctx.stroke(Colours::Yellow);
+      ctx.fill(Colours::Yellow);
+    }
+    else if (is_modulator) {
+      ctx.stroke(Colours::Green);
+      ctx.fill(Colours::Green);
+    } else {
+      ctx.stroke(Colours::Gray60);
+      ctx.fill(Colours::Gray60);
+    }
+  }
+
+  void OTTOFMSynthScreen::draw_operators(ui::vg::Canvas& ctx)
   {
     ctx.lineWidth(6.f);
     constexpr float x_pad = 35;
@@ -503,14 +478,14 @@ namespace otto::engines {
     for(auto&& line : algorithms[engine.props.algN].operator_lines){
       int x_middle = x_pad + 12;
       int mid_to_side = 15;
-      int vertical_length = 10;
+      int horizontal_length = 13;
 
       if (line.side == Drawside::left) {
         int x_close = x_middle - mid_to_side;
-        int x_far = x_close - vertical_length;
+        int x_far = x_close - horizontal_length;
 
-        int y_start = y_pad + line.start * space;
-        int y_end = y_pad + line.end * space;
+        int y_start = y_pad + (3 - line.start) * space;
+        int y_end = y_pad + (3 - line.end) * space;
 
         ctx.beginPath();
         ctx.moveTo(x_close, y_start);
@@ -521,10 +496,10 @@ namespace otto::engines {
       }
       else if (line.side == Drawside::right) {
         int x_close = x_middle + mid_to_side;
-        int x_far = x_close + vertical_length;
+        int x_far = x_close + horizontal_length;
 
-        int y_start = y_pad + line.start * space;
-        int y_end = y_pad + line.end * space;
+        int y_start = y_pad + (3 - line.start) * space;
+        int y_end = y_pad + (3 - line.end) * space;
 
         ctx.beginPath();
         ctx.moveTo(x_close, y_start);
@@ -533,8 +508,8 @@ namespace otto::engines {
         ctx.lineTo(x_close, y_end);
         ctx.stroke(Colours::White);
       } else {
-        int y_start = y_pad + line.start * space - 16;
-        int y_end = y_pad + line.end * space + 16;
+        int y_start = y_pad + (3 - line.start) * space + 16;
+        int y_end = y_pad + (3 - line.end) * space - 16;
 
         ctx.beginPath();
         ctx.moveTo(x_middle, y_start);
@@ -549,35 +524,84 @@ namespace otto::engines {
     for(int i=0;i<4;i++){
       ctx.beginPath();
       if(algorithms[engine.props.algN].modulator_flags[i]){ //draw modulator
-        ctx.rect({x_pad, y_pad + i*space - 13}, {25, 25});
+        ctx.rect({x_pad, y_pad + (3 - i)*space - 13}, {25, 25});
       } else { // draw carrier
-        ctx.circle({x_pad + 12, y_pad + i*space}, 15);
+        ctx.circle({x_pad + 12, y_pad + (3 - i)*space}, 15);
       }
       ctx.closePath();
       //Choose colour
-      if (i == 0) {
+      if (i == 3) {
         ctx.stroke(Colours::Blue);
         if(i == cur_op) ctx.fill(Colours::Blue);
       }
-      else if (i == 1) {
+      else if (i == 2) {
         ctx.stroke(Colours::Green);
         if(i == cur_op) ctx.fill(Colours::Green);
       }
-      else if (i == 2) {
+      else if (i == 1) {
         ctx.stroke(Colours::Yellow);
         if(i == cur_op) ctx.fill(Colours::Yellow);
       }
-      else if (i == 3) {
+      else if (i == 0) {
         ctx.stroke(Colours::Red);
         if(i == cur_op) ctx.fill(Colours::Red);
       }
 
     }
 
+    //draw arrowheads
+    for(auto&& line : algorithms[engine.props.algN].operator_lines){
+      int x_middle = x_pad + 12;
+      int mid_to_side = 15;
+      int side_length = 5;
 
 
 
+      if (line.side == Drawside::left) {
+        int x = x_middle - mid_to_side;
+        int y = y_pad + (3 - line.end) * space;
+
+        ctx.group([&] {
+          ctx.lineWidth(4.f);
+          ctx.beginPath();
+          ctx.moveTo(x, y);
+          ctx.lineTo(x - side_length, y - side_length);
+          ctx.lineTo(x - side_length, y + side_length);
+          ctx.closePath();
+          ctx.stroke(Colours::White);
+          ctx.fill(Colours::White);
+        });
+      }
+      else if (line.side == Drawside::right) {
+        int x = x_middle + mid_to_side;
+        int y = y_pad + (3 - line.end) * space;
+
+        ctx.group([&] {
+          ctx.lineWidth(4.f);
+          ctx.beginPath();
+          ctx.moveTo(x, y);
+          ctx.lineTo(x + side_length, y - side_length);
+          ctx.lineTo(x + side_length, y + side_length);
+          ctx.closePath();
+          ctx.stroke(Colours::White);
+          ctx.fill(Colours::White);
+        });
+      } else {
+        int x = x_middle;
+        int y = y_pad + (3 - line.end) * space - mid_to_side;
+
+        ctx.group([&] {
+          ctx.lineWidth(4.f);
+          ctx.beginPath();
+          ctx.moveTo(x, y);
+          ctx.lineTo(x + side_length, y - side_length);
+          ctx.lineTo(x - side_length, y - side_length);
+          ctx.closePath();
+          ctx.stroke(Colours::White);
+          ctx.fill(Colours::White);
+        });
+      }
+    }
   }
-
 
 } // namespace otto::engines
