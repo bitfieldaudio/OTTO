@@ -70,8 +70,8 @@ class faust_ottofm : public dsp {
 	float 	fConst1;
 	float 	fRec1[2];
 	float 	fTempPerm1;
-	FAUSTFLOAT 	fbutton0;
 	FAUSTFLOAT 	fslider4;
+	FAUSTFLOAT 	fbutton0;
 	FAUSTFLOAT 	fslider5;
 	float 	fConst2;
 	FAUSTFLOAT 	fslider6;
@@ -81,36 +81,42 @@ class faust_ottofm : public dsp {
 	float 	fRec2[2];
 	float 	fRec4[2];
 	float 	fTempPerm3;
+	FAUSTFLOAT 	fbargraph0;
+	float 	fTempPerm4;
 	FAUSTFLOAT 	fslider7;
 	FAUSTFLOAT 	fslider8;
-	float 	fTempPerm4;
+	float 	fTempPerm5;
 	FAUSTFLOAT 	fslider9;
 	FAUSTFLOAT 	fslider10;
 	float 	fRec5[2];
-	float 	fTempPerm5;
+	float 	fTempPerm6;
 	FAUSTFLOAT 	fslider11;
 	FAUSTFLOAT 	fslider12;
 	FAUSTFLOAT 	fslider13;
 	float 	fRec7[2];
-	int 	iTempPerm6;
+	int 	iTempPerm7;
 	float 	fRec6[2];
 	float 	fRec8[2];
-	float 	fTempPerm7;
 	float 	fTempPerm8;
-	FAUSTFLOAT 	fslider14;
+	FAUSTFLOAT 	fbargraph1;
 	float 	fTempPerm9;
+	float 	fTempPerm10;
+	FAUSTFLOAT 	fslider14;
+	float 	fTempPerm11;
 	FAUSTFLOAT 	fslider15;
 	FAUSTFLOAT 	fslider16;
 	float 	fRec9[2];
-	float 	fTempPerm10;
+	float 	fTempPerm12;
 	FAUSTFLOAT 	fslider17;
 	FAUSTFLOAT 	fslider18;
 	FAUSTFLOAT 	fslider19;
 	float 	fRec11[2];
-	int 	iTempPerm11;
+	int 	iTempPerm13;
 	float 	fRec10[2];
 	float 	fRec12[2];
-	float 	fTempPerm12;
+	float 	fTempPerm14;
+	FAUSTFLOAT 	fbargraph2;
+	float 	fTempPerm15;
 	FAUSTFLOAT 	fslider20;
 	FAUSTFLOAT 	fslider21;
 	FAUSTFLOAT 	fslider22;
@@ -121,267 +127,283 @@ class faust_ottofm : public dsp {
 	FAUSTFLOAT 	fslider26;
 	FAUSTFLOAT 	fslider27;
 	int 	iRec15[2];
-	int 	iTempPerm13;
+	int 	iTempPerm16;
 	float 	fConst4;
-	float 	fTempPerm14;
+	float 	fTempPerm17;
 	FAUSTFLOAT 	fslider28;
 	FAUSTFLOAT 	fslider29;
 	float 	fRec14[2];
-	float 	fTempPerm15;
+	float 	fTempPerm18;
+	FAUSTFLOAT 	fbargraph3;
+	float 	fTempPerm19;
 	FAUSTFLOAT 	fslider30;
 	FAUSTFLOAT 	fslider31;
-	float 	fTempPerm16;
+	float 	fTempPerm20;
 	FAUSTFLOAT 	fslider32;
 	float 	fRec16[2];
-	float 	fTempPerm17;
+	float 	fTempPerm21;
 	FAUSTFLOAT 	fbutton1;
 	float 	fRec18[2];
-	int 	iTempPerm18;
+	int 	iTempPerm22;
 	float 	fRec17[2];
 	float 	fRec19[2];
-	float 	fTempPerm19;
-	float 	fTempPerm20;
-	float 	fRec20[2];
-	float 	fTempPerm21;
-	float 	fRec22[2];
-	int 	iTempPerm22;
-	float 	fRec21[2];
-	float 	fRec23[2];
 	float 	fTempPerm23;
+	FAUSTFLOAT 	fbargraph4;
 	float 	fTempPerm24;
 	float 	fTempPerm25;
-	float 	fRec24[2];
+	float 	fRec20[2];
 	float 	fTempPerm26;
-	float 	fRec26[2];
+	float 	fRec22[2];
 	int 	iTempPerm27;
+	float 	fRec21[2];
+	float 	fRec23[2];
+	float 	fTempPerm28;
+	FAUSTFLOAT 	fbargraph5;
+	float 	fTempPerm29;
+	float 	fTempPerm30;
+	float 	fTempPerm31;
+	float 	fRec24[2];
+	float 	fTempPerm32;
+	float 	fRec26[2];
+	int 	iTempPerm33;
 	float 	fRec25[2];
 	float 	fRec27[2];
-	float 	fTempPerm28;
+	float 	fTempPerm34;
+	FAUSTFLOAT 	fbargraph6;
+	float 	fTempPerm35;
 	float 	fRec28[2];
 	int 	iRec30[2];
-	int 	iTempPerm29;
-	float 	fTempPerm30;
+	int 	iTempPerm36;
+	float 	fTempPerm37;
 	float 	fRec29[2];
-	float 	fTempPerm31;
+	float 	fTempPerm38;
+	FAUSTFLOAT 	fbargraph7;
+	float 	fTempPerm39;
 	FAUSTFLOAT 	fslider33;
-	float 	fTempPerm32;
+	float 	fTempPerm40;
 	FAUSTFLOAT 	fslider34;
 	float 	fRec31[2];
-	float 	fTempPerm33;
+	float 	fTempPerm41;
 	FAUSTFLOAT 	fbutton2;
 	float 	fRec33[2];
-	int 	iTempPerm34;
+	int 	iTempPerm42;
 	float 	fRec32[2];
 	float 	fRec34[2];
-	float 	fTempPerm35;
-	float 	fTempPerm36;
+	float 	fTempPerm43;
+	FAUSTFLOAT 	fbargraph8;
+	float 	fTempPerm44;
+	float 	fTempPerm45;
 	float 	fRec35[2];
-	float 	fTempPerm37;
+	float 	fTempPerm46;
 	float 	fRec37[2];
-	int 	iTempPerm38;
+	int 	iTempPerm47;
 	float 	fRec36[2];
 	float 	fRec38[2];
-	float 	fTempPerm39;
-	float 	fTempPerm40;
-	float 	fTempPerm41;
+	float 	fTempPerm48;
+	FAUSTFLOAT 	fbargraph9;
+	float 	fTempPerm49;
+	float 	fTempPerm50;
+	float 	fTempPerm51;
 	float 	fRec39[2];
-	float 	fTempPerm42;
+	float 	fTempPerm52;
 	float 	fRec41[2];
-	int 	iTempPerm43;
+	int 	iTempPerm53;
 	float 	fRec40[2];
 	float 	fRec42[2];
-	float 	fTempPerm44;
+	float 	fTempPerm54;
+	FAUSTFLOAT 	fbargraph10;
+	float 	fTempPerm55;
 	float 	fRec43[2];
 	int 	iRec45[2];
-	int 	iTempPerm45;
-	float 	fTempPerm46;
+	int 	iTempPerm56;
+	float 	fTempPerm57;
 	float 	fRec44[2];
-	float 	fTempPerm47;
+	float 	fTempPerm58;
+	FAUSTFLOAT 	fbargraph11;
+	float 	fTempPerm59;
 	FAUSTFLOAT 	fslider35;
-	float 	fTempPerm48;
+	float 	fTempPerm60;
 	FAUSTFLOAT 	fslider36;
 	float 	fRec46[2];
-	float 	fTempPerm49;
+	float 	fTempPerm61;
 	FAUSTFLOAT 	fbutton3;
 	float 	fRec48[2];
-	int 	iTempPerm50;
+	int 	iTempPerm62;
 	float 	fRec47[2];
 	float 	fRec49[2];
-	float 	fTempPerm51;
-	float 	fTempPerm52;
+	float 	fTempPerm63;
+	FAUSTFLOAT 	fbargraph12;
+	float 	fTempPerm64;
+	float 	fTempPerm65;
 	float 	fRec50[2];
-	float 	fTempPerm53;
+	float 	fTempPerm66;
 	float 	fRec52[2];
-	int 	iTempPerm54;
+	int 	iTempPerm67;
 	float 	fRec51[2];
 	float 	fRec53[2];
-	float 	fTempPerm55;
-	float 	fTempPerm56;
-	float 	fTempPerm57;
+	float 	fTempPerm68;
+	FAUSTFLOAT 	fbargraph13;
+	float 	fTempPerm69;
+	float 	fTempPerm70;
+	float 	fTempPerm71;
 	float 	fRec54[2];
-	float 	fTempPerm58;
+	float 	fTempPerm72;
 	float 	fRec56[2];
-	int 	iTempPerm59;
+	int 	iTempPerm73;
 	float 	fRec55[2];
 	float 	fRec57[2];
-	float 	fTempPerm60;
+	float 	fTempPerm74;
+	FAUSTFLOAT 	fbargraph14;
+	float 	fTempPerm75;
 	float 	fRec58[2];
 	int 	iRec60[2];
-	int 	iTempPerm61;
-	float 	fTempPerm62;
+	int 	iTempPerm76;
+	float 	fTempPerm77;
 	float 	fRec59[2];
-	float 	fTempPerm63;
+	float 	fTempPerm78;
+	FAUSTFLOAT 	fbargraph15;
+	float 	fTempPerm79;
 	FAUSTFLOAT 	fslider37;
-	float 	fTempPerm64;
+	float 	fTempPerm80;
 	FAUSTFLOAT 	fslider38;
 	float 	fRec61[2];
-	float 	fTempPerm65;
+	float 	fTempPerm81;
 	FAUSTFLOAT 	fbutton4;
 	float 	fRec63[2];
-	int 	iTempPerm66;
+	int 	iTempPerm82;
 	float 	fRec62[2];
 	float 	fRec64[2];
-	float 	fTempPerm67;
-	float 	fTempPerm68;
+	float 	fTempPerm83;
+	FAUSTFLOAT 	fbargraph16;
+	float 	fTempPerm84;
+	float 	fTempPerm85;
 	float 	fRec65[2];
-	float 	fTempPerm69;
+	float 	fTempPerm86;
 	float 	fRec67[2];
-	int 	iTempPerm70;
+	int 	iTempPerm87;
 	float 	fRec66[2];
 	float 	fRec68[2];
-	float 	fTempPerm71;
-	float 	fTempPerm72;
-	float 	fTempPerm73;
+	float 	fTempPerm88;
+	FAUSTFLOAT 	fbargraph17;
+	float 	fTempPerm89;
+	float 	fTempPerm90;
+	float 	fTempPerm91;
 	float 	fRec69[2];
-	float 	fTempPerm74;
+	float 	fTempPerm92;
 	float 	fRec71[2];
-	int 	iTempPerm75;
+	int 	iTempPerm93;
 	float 	fRec70[2];
 	float 	fRec72[2];
-	float 	fTempPerm76;
+	float 	fTempPerm94;
+	FAUSTFLOAT 	fbargraph18;
+	float 	fTempPerm95;
 	float 	fRec73[2];
 	int 	iRec75[2];
-	int 	iTempPerm77;
-	float 	fTempPerm78;
+	int 	iTempPerm96;
+	float 	fTempPerm97;
 	float 	fRec74[2];
-	float 	fTempPerm79;
+	float 	fTempPerm98;
+	FAUSTFLOAT 	fbargraph19;
+	float 	fTempPerm99;
 	FAUSTFLOAT 	fslider39;
-	float 	fTempPerm80;
+	float 	fTempPerm100;
 	FAUSTFLOAT 	fslider40;
 	float 	fRec76[2];
-	float 	fTempPerm81;
+	float 	fTempPerm101;
 	FAUSTFLOAT 	fslider41;
 	FAUSTFLOAT 	fslider42;
 	FAUSTFLOAT 	fbutton5;
 	int 	iRec78[2];
-	int 	iTempPerm82;
-	float 	fTempPerm83;
+	int 	iTempPerm102;
+	float 	fTempPerm103;
 	FAUSTFLOAT 	fslider43;
 	float 	fRec77[2];
-	float 	fTempPerm84;
+	float 	fTempPerm104;
+	FAUSTFLOAT 	fbargraph20;
+	float 	fTempPerm105;
 	float 	fRec79[2];
-	float 	fTempPerm85;
+	float 	fTempPerm106;
 	FAUSTFLOAT 	fslider44;
 	FAUSTFLOAT 	fslider45;
-	int 	iTempPerm86;
-	float 	fTempPerm87;
+	int 	iTempPerm107;
+	float 	fTempPerm108;
 	FAUSTFLOAT 	fslider46;
 	float 	fRec80[2];
-	float 	fTempPerm88;
-	float 	fTempPerm89;
+	float 	fTempPerm109;
+	FAUSTFLOAT 	fbargraph21;
+	float 	fTempPerm110;
+	float 	fTempPerm111;
 	float 	fRec81[2];
-	float 	fTempPerm90;
-	int 	iTempPerm91;
-	float 	fTempPerm92;
+	float 	fTempPerm112;
+	int 	iTempPerm113;
+	float 	fTempPerm114;
 	float 	fRec82[2];
-	float 	fTempPerm93;
-	float 	fTempPerm94;
+	float 	fTempPerm115;
+	FAUSTFLOAT 	fbargraph22;
+	float 	fTempPerm116;
+	float 	fTempPerm117;
 	float 	fRec83[2];
-	float 	fTempPerm95;
+	float 	fTempPerm118;
 	FAUSTFLOAT 	fslider47;
 	FAUSTFLOAT 	fslider48;
-	int 	iTempPerm96;
-	float 	fTempPerm97;
+	int 	iTempPerm119;
+	float 	fTempPerm120;
 	FAUSTFLOAT 	fslider49;
 	float 	fRec84[2];
-	float 	fTempPerm98;
+	float 	fTempPerm121;
+	FAUSTFLOAT 	fbargraph23;
+	float 	fTempPerm122;
 	FAUSTFLOAT 	fslider50;
-	float 	fTempPerm99;
+	float 	fTempPerm123;
 	FAUSTFLOAT 	fslider51;
 	FAUSTFLOAT 	fslider52;
 	FAUSTFLOAT 	fslider53;
 	float 	fRec86[2];
-	int 	iTempPerm100;
+	int 	iTempPerm124;
 	float 	fRec85[2];
 	float 	fRec87[2];
-	float 	fTempPerm101;
+	float 	fTempPerm125;
+	FAUSTFLOAT 	fbargraph24;
+	float 	fTempPerm126;
 	float 	fRec89[2];
-	int 	iTempPerm102;
+	int 	iTempPerm127;
 	float 	fRec88[2];
 	float 	fRec90[2];
-	float 	fTempPerm103;
-	float 	fTempPerm104;
-	float 	fTempPerm105;
-	float 	fTempPerm106;
-	float 	fTempPerm107;
-	float 	fTempPerm108;
-	float 	fRec92[2];
-	int 	iTempPerm109;
-	float 	fRec91[2];
-	float 	fRec93[2];
-	float 	fTempPerm110;
-	float 	fTempPerm111;
-	float 	fTempPerm112;
-	float 	fRec95[2];
-	int 	iTempPerm113;
-	float 	fRec94[2];
-	float 	fRec96[2];
-	float 	fTempPerm114;
-	float 	fTempPerm115;
-	float 	fTempPerm116;
-	float 	fTempPerm117;
-	float 	fTempPerm118;
-	float 	fTempPerm119;
-	float 	fTempPerm120;
-	float 	fTempPerm121;
-	float 	fTempPerm122;
-	float 	fTempPerm123;
-	float 	fTempPerm124;
-	float 	fTempPerm125;
-	float 	fTempPerm126;
-	float 	fTempPerm127;
 	float 	fTempPerm128;
+	FAUSTFLOAT 	fbargraph25;
 	float 	fTempPerm129;
 	float 	fTempPerm130;
 	float 	fTempPerm131;
 	float 	fTempPerm132;
-	int 	iTempPerm133;
+	float 	fTempPerm133;
 	float 	fTempPerm134;
-	float 	fRec97[2];
-	float 	fTempPerm135;
+	float 	fRec92[2];
+	int 	iTempPerm135;
+	float 	fRec91[2];
+	float 	fRec93[2];
 	float 	fTempPerm136;
+	FAUSTFLOAT 	fbargraph26;
 	float 	fTempPerm137;
 	float 	fTempPerm138;
 	float 	fTempPerm139;
-	float 	fTempPerm140;
+	float 	fRec95[2];
+	int 	iTempPerm140;
+	float 	fRec94[2];
+	float 	fRec96[2];
 	float 	fTempPerm141;
+	FAUSTFLOAT 	fbargraph27;
 	float 	fTempPerm142;
 	float 	fTempPerm143;
-	int 	iTempPerm144;
+	float 	fTempPerm144;
 	float 	fTempPerm145;
-	float 	fRec98[2];
 	float 	fTempPerm146;
 	float 	fTempPerm147;
 	float 	fTempPerm148;
 	float 	fTempPerm149;
-	float 	fRec100[2];
-	int 	iTempPerm150;
-	float 	fRec99[2];
-	float 	fRec101[2];
+	float 	fTempPerm150;
 	float 	fTempPerm151;
-	int 	iTempPerm152;
+	float 	fTempPerm152;
 	float 	fTempPerm153;
-	float 	fRec102[2];
 	float 	fTempPerm154;
 	float 	fTempPerm155;
 	float 	fTempPerm156;
@@ -389,11 +411,12 @@ class faust_ottofm : public dsp {
 	float 	fTempPerm158;
 	float 	fTempPerm159;
 	float 	fTempPerm160;
-	float 	fTempPerm161;
+	int 	iTempPerm161;
 	float 	fTempPerm162;
-	int 	iTempPerm163;
+	float 	fRec97[2];
+	float 	fTempPerm163;
+	FAUSTFLOAT 	fbargraph28;
 	float 	fTempPerm164;
-	float 	fRec103[2];
 	float 	fTempPerm165;
 	float 	fTempPerm166;
 	float 	fTempPerm167;
@@ -402,24 +425,27 @@ class faust_ottofm : public dsp {
 	float 	fTempPerm170;
 	float 	fTempPerm171;
 	float 	fTempPerm172;
-	float 	fTempPerm173;
-	int 	iTempPerm174;
+	int 	iTempPerm173;
+	float 	fTempPerm174;
+	float 	fRec98[2];
 	float 	fTempPerm175;
-	float 	fRec104[2];
+	FAUSTFLOAT 	fbargraph29;
 	float 	fTempPerm176;
 	float 	fTempPerm177;
 	float 	fTempPerm178;
 	float 	fTempPerm179;
-	float 	fRec106[2];
+	float 	fRec100[2];
 	int 	iTempPerm180;
-	float 	fRec105[2];
-	float 	fRec107[2];
+	float 	fRec99[2];
+	float 	fRec101[2];
 	float 	fTempPerm181;
-	int 	iTempPerm182;
-	float 	fTempPerm183;
-	float 	fRec108[2];
+	FAUSTFLOAT 	fbargraph30;
+	float 	fTempPerm182;
+	int 	iTempPerm183;
 	float 	fTempPerm184;
+	float 	fRec102[2];
 	float 	fTempPerm185;
+	FAUSTFLOAT 	fbargraph31;
 	float 	fTempPerm186;
 	float 	fTempPerm187;
 	float 	fTempPerm188;
@@ -427,81 +453,88 @@ class faust_ottofm : public dsp {
 	float 	fTempPerm190;
 	float 	fTempPerm191;
 	float 	fTempPerm192;
-	int 	iTempPerm193;
+	float 	fTempPerm193;
 	float 	fTempPerm194;
-	float 	fRec109[2];
-	float 	fTempPerm195;
+	int 	iTempPerm195;
 	float 	fTempPerm196;
+	float 	fRec103[2];
 	float 	fTempPerm197;
+	FAUSTFLOAT 	fbargraph32;
 	float 	fTempPerm198;
 	float 	fTempPerm199;
 	float 	fTempPerm200;
 	float 	fTempPerm201;
 	float 	fTempPerm202;
 	float 	fTempPerm203;
-	int 	iTempPerm204;
+	float 	fTempPerm204;
 	float 	fTempPerm205;
-	float 	fRec110[2];
 	float 	fTempPerm206;
-	float 	fTempPerm207;
+	int 	iTempPerm207;
 	float 	fTempPerm208;
+	float 	fRec104[2];
 	float 	fTempPerm209;
-	float 	fRec112[2];
-	int 	iTempPerm210;
-	float 	fRec111[2];
-	float 	fRec113[2];
+	FAUSTFLOAT 	fbargraph33;
+	float 	fTempPerm210;
 	float 	fTempPerm211;
-	int 	iTempPerm212;
+	float 	fTempPerm212;
 	float 	fTempPerm213;
-	float 	fRec114[2];
-	float 	fTempPerm214;
+	float 	fRec106[2];
+	int 	iTempPerm214;
+	float 	fRec105[2];
+	float 	fRec107[2];
 	float 	fTempPerm215;
+	FAUSTFLOAT 	fbargraph34;
 	float 	fTempPerm216;
-	float 	fTempPerm217;
+	int 	iTempPerm217;
 	float 	fTempPerm218;
+	float 	fRec108[2];
 	float 	fTempPerm219;
+	FAUSTFLOAT 	fbargraph35;
 	float 	fTempPerm220;
 	float 	fTempPerm221;
 	float 	fTempPerm222;
-	int 	iTempPerm223;
+	float 	fTempPerm223;
 	float 	fTempPerm224;
-	float 	fRec115[2];
 	float 	fTempPerm225;
 	float 	fTempPerm226;
 	float 	fTempPerm227;
 	float 	fTempPerm228;
-	float 	fTempPerm229;
+	int 	iTempPerm229;
 	float 	fTempPerm230;
+	float 	fRec109[2];
 	float 	fTempPerm231;
+	FAUSTFLOAT 	fbargraph36;
 	float 	fTempPerm232;
 	float 	fTempPerm233;
-	int 	iTempPerm234;
+	float 	fTempPerm234;
 	float 	fTempPerm235;
-	float 	fRec116[2];
 	float 	fTempPerm236;
 	float 	fTempPerm237;
 	float 	fTempPerm238;
 	float 	fTempPerm239;
-	float 	fRec118[2];
-	int 	iTempPerm240;
-	float 	fRec117[2];
-	float 	fRec119[2];
-	float 	fTempPerm241;
-	int 	iTempPerm242;
+	float 	fTempPerm240;
+	int 	iTempPerm241;
+	float 	fTempPerm242;
+	float 	fRec110[2];
 	float 	fTempPerm243;
-	float 	fRec120[2];
+	FAUSTFLOAT 	fbargraph37;
 	float 	fTempPerm244;
 	float 	fTempPerm245;
 	float 	fTempPerm246;
 	float 	fTempPerm247;
-	float 	fTempPerm248;
+	float 	fRec112[2];
+	int 	iTempPerm248;
+	float 	fRec111[2];
+	float 	fRec113[2];
 	float 	fTempPerm249;
+	FAUSTFLOAT 	fbargraph38;
 	float 	fTempPerm250;
-	float 	fTempPerm251;
+	int 	iTempPerm251;
 	float 	fTempPerm252;
-	int 	iTempPerm253;
+	float 	fRec114[2];
+	float 	fTempPerm253;
+	FAUSTFLOAT 	fbargraph39;
 	float 	fTempPerm254;
-	float 	fRec121[2];
 	float 	fTempPerm255;
 	float 	fTempPerm256;
 	float 	fTempPerm257;
@@ -510,25 +543,88 @@ class faust_ottofm : public dsp {
 	float 	fTempPerm260;
 	float 	fTempPerm261;
 	float 	fTempPerm262;
-	float 	fTempPerm263;
-	int 	iTempPerm264;
+	int 	iTempPerm263;
+	float 	fTempPerm264;
+	float 	fRec115[2];
 	float 	fTempPerm265;
-	float 	fRec122[2];
+	FAUSTFLOAT 	fbargraph40;
 	float 	fTempPerm266;
 	float 	fTempPerm267;
 	float 	fTempPerm268;
 	float 	fTempPerm269;
+	float 	fTempPerm270;
+	float 	fTempPerm271;
+	float 	fTempPerm272;
+	float 	fTempPerm273;
+	float 	fTempPerm274;
+	int 	iTempPerm275;
+	float 	fTempPerm276;
+	float 	fRec116[2];
+	float 	fTempPerm277;
+	FAUSTFLOAT 	fbargraph41;
+	float 	fTempPerm278;
+	float 	fTempPerm279;
+	float 	fTempPerm280;
+	float 	fTempPerm281;
+	float 	fRec118[2];
+	int 	iTempPerm282;
+	float 	fRec117[2];
+	float 	fRec119[2];
+	float 	fTempPerm283;
+	FAUSTFLOAT 	fbargraph42;
+	float 	fTempPerm284;
+	int 	iTempPerm285;
+	float 	fTempPerm286;
+	float 	fRec120[2];
+	float 	fTempPerm287;
+	FAUSTFLOAT 	fbargraph43;
+	float 	fTempPerm288;
+	float 	fTempPerm289;
+	float 	fTempPerm290;
+	float 	fTempPerm291;
+	float 	fTempPerm292;
+	float 	fTempPerm293;
+	float 	fTempPerm294;
+	float 	fTempPerm295;
+	float 	fTempPerm296;
+	int 	iTempPerm297;
+	float 	fTempPerm298;
+	float 	fRec121[2];
+	float 	fTempPerm299;
+	FAUSTFLOAT 	fbargraph44;
+	float 	fTempPerm300;
+	float 	fTempPerm301;
+	float 	fTempPerm302;
+	float 	fTempPerm303;
+	float 	fTempPerm304;
+	float 	fTempPerm305;
+	float 	fTempPerm306;
+	float 	fTempPerm307;
+	float 	fTempPerm308;
+	int 	iTempPerm309;
+	float 	fTempPerm310;
+	float 	fRec122[2];
+	float 	fTempPerm311;
+	FAUSTFLOAT 	fbargraph45;
+	float 	fTempPerm312;
+	float 	fTempPerm313;
+	float 	fTempPerm314;
+	float 	fTempPerm315;
 	float 	fRec124[2];
-	int 	iTempPerm270;
+	int 	iTempPerm316;
 	float 	fRec123[2];
 	float 	fRec125[2];
-	float 	fTempPerm271;
-	int 	iTempPerm272;
-	float 	fTempPerm273;
+	float 	fTempPerm317;
+	FAUSTFLOAT 	fbargraph46;
+	float 	fTempPerm318;
+	int 	iTempPerm319;
+	float 	fTempPerm320;
 	float 	fRec126[2];
-	float 	fTempPerm274;
-	float 	fTempPerm275;
-	float 	fTempPerm276;
+	float 	fTempPerm321;
+	FAUSTFLOAT 	fbargraph47;
+	float 	fTempPerm322;
+	float 	fTempPerm323;
+	float 	fTempPerm324;
 	int fSamplingFreq;
 
   public:
@@ -566,20 +662,20 @@ class faust_ottofm : public dsp {
 		fTempPerm3 = 0;
 		fTempPerm4 = 0;
 		fTempPerm5 = 0;
-		iTempPerm6 = 0;
-		fTempPerm7 = 0;
+		fTempPerm6 = 0;
+		iTempPerm7 = 0;
 		fTempPerm8 = 0;
 		fTempPerm9 = 0;
 		fTempPerm10 = 0;
-		iTempPerm11 = 0;
+		fTempPerm11 = 0;
 		fTempPerm12 = 0;
 		iTempPerm13 = 0;
-		fConst4 = (6.9100000000000001f / fConst0);
 		fTempPerm14 = 0;
 		fTempPerm15 = 0;
-		fTempPerm16 = 0;
+		iTempPerm16 = 0;
+		fConst4 = (6.9100000000000001f / fConst0);
 		fTempPerm17 = 0;
-		iTempPerm18 = 0;
+		fTempPerm18 = 0;
 		fTempPerm19 = 0;
 		fTempPerm20 = 0;
 		fTempPerm21 = 0;
@@ -590,55 +686,55 @@ class faust_ottofm : public dsp {
 		fTempPerm26 = 0;
 		iTempPerm27 = 0;
 		fTempPerm28 = 0;
-		iTempPerm29 = 0;
+		fTempPerm29 = 0;
 		fTempPerm30 = 0;
 		fTempPerm31 = 0;
 		fTempPerm32 = 0;
-		fTempPerm33 = 0;
-		iTempPerm34 = 0;
+		iTempPerm33 = 0;
+		fTempPerm34 = 0;
 		fTempPerm35 = 0;
-		fTempPerm36 = 0;
+		iTempPerm36 = 0;
 		fTempPerm37 = 0;
-		iTempPerm38 = 0;
+		fTempPerm38 = 0;
 		fTempPerm39 = 0;
 		fTempPerm40 = 0;
 		fTempPerm41 = 0;
-		fTempPerm42 = 0;
-		iTempPerm43 = 0;
+		iTempPerm42 = 0;
+		fTempPerm43 = 0;
 		fTempPerm44 = 0;
-		iTempPerm45 = 0;
+		fTempPerm45 = 0;
 		fTempPerm46 = 0;
-		fTempPerm47 = 0;
+		iTempPerm47 = 0;
 		fTempPerm48 = 0;
 		fTempPerm49 = 0;
-		iTempPerm50 = 0;
+		fTempPerm50 = 0;
 		fTempPerm51 = 0;
 		fTempPerm52 = 0;
-		fTempPerm53 = 0;
-		iTempPerm54 = 0;
+		iTempPerm53 = 0;
+		fTempPerm54 = 0;
 		fTempPerm55 = 0;
-		fTempPerm56 = 0;
+		iTempPerm56 = 0;
 		fTempPerm57 = 0;
 		fTempPerm58 = 0;
-		iTempPerm59 = 0;
+		fTempPerm59 = 0;
 		fTempPerm60 = 0;
-		iTempPerm61 = 0;
-		fTempPerm62 = 0;
+		fTempPerm61 = 0;
+		iTempPerm62 = 0;
 		fTempPerm63 = 0;
 		fTempPerm64 = 0;
 		fTempPerm65 = 0;
-		iTempPerm66 = 0;
-		fTempPerm67 = 0;
+		fTempPerm66 = 0;
+		iTempPerm67 = 0;
 		fTempPerm68 = 0;
 		fTempPerm69 = 0;
-		iTempPerm70 = 0;
+		fTempPerm70 = 0;
 		fTempPerm71 = 0;
 		fTempPerm72 = 0;
-		fTempPerm73 = 0;
+		iTempPerm73 = 0;
 		fTempPerm74 = 0;
-		iTempPerm75 = 0;
-		fTempPerm76 = 0;
-		iTempPerm77 = 0;
+		fTempPerm75 = 0;
+		iTempPerm76 = 0;
+		fTempPerm77 = 0;
 		fTempPerm78 = 0;
 		fTempPerm79 = 0;
 		fTempPerm80 = 0;
@@ -647,30 +743,30 @@ class faust_ottofm : public dsp {
 		fTempPerm83 = 0;
 		fTempPerm84 = 0;
 		fTempPerm85 = 0;
-		iTempPerm86 = 0;
-		fTempPerm87 = 0;
+		fTempPerm86 = 0;
+		iTempPerm87 = 0;
 		fTempPerm88 = 0;
 		fTempPerm89 = 0;
 		fTempPerm90 = 0;
-		iTempPerm91 = 0;
+		fTempPerm91 = 0;
 		fTempPerm92 = 0;
-		fTempPerm93 = 0;
+		iTempPerm93 = 0;
 		fTempPerm94 = 0;
 		fTempPerm95 = 0;
 		iTempPerm96 = 0;
 		fTempPerm97 = 0;
 		fTempPerm98 = 0;
 		fTempPerm99 = 0;
-		iTempPerm100 = 0;
+		fTempPerm100 = 0;
 		fTempPerm101 = 0;
 		iTempPerm102 = 0;
 		fTempPerm103 = 0;
 		fTempPerm104 = 0;
 		fTempPerm105 = 0;
 		fTempPerm106 = 0;
-		fTempPerm107 = 0;
+		iTempPerm107 = 0;
 		fTempPerm108 = 0;
-		iTempPerm109 = 0;
+		fTempPerm109 = 0;
 		fTempPerm110 = 0;
 		fTempPerm111 = 0;
 		fTempPerm112 = 0;
@@ -680,40 +776,40 @@ class faust_ottofm : public dsp {
 		fTempPerm116 = 0;
 		fTempPerm117 = 0;
 		fTempPerm118 = 0;
-		fTempPerm119 = 0;
+		iTempPerm119 = 0;
 		fTempPerm120 = 0;
 		fTempPerm121 = 0;
 		fTempPerm122 = 0;
 		fTempPerm123 = 0;
-		fTempPerm124 = 0;
+		iTempPerm124 = 0;
 		fTempPerm125 = 0;
 		fTempPerm126 = 0;
-		fTempPerm127 = 0;
+		iTempPerm127 = 0;
 		fTempPerm128 = 0;
 		fTempPerm129 = 0;
 		fTempPerm130 = 0;
 		fTempPerm131 = 0;
 		fTempPerm132 = 0;
-		iTempPerm133 = 0;
+		fTempPerm133 = 0;
 		fTempPerm134 = 0;
-		fTempPerm135 = 0;
+		iTempPerm135 = 0;
 		fTempPerm136 = 0;
 		fTempPerm137 = 0;
 		fTempPerm138 = 0;
 		fTempPerm139 = 0;
-		fTempPerm140 = 0;
+		iTempPerm140 = 0;
 		fTempPerm141 = 0;
 		fTempPerm142 = 0;
 		fTempPerm143 = 0;
-		iTempPerm144 = 0;
+		fTempPerm144 = 0;
 		fTempPerm145 = 0;
 		fTempPerm146 = 0;
 		fTempPerm147 = 0;
 		fTempPerm148 = 0;
 		fTempPerm149 = 0;
-		iTempPerm150 = 0;
+		fTempPerm150 = 0;
 		fTempPerm151 = 0;
-		iTempPerm152 = 0;
+		fTempPerm152 = 0;
 		fTempPerm153 = 0;
 		fTempPerm154 = 0;
 		fTempPerm155 = 0;
@@ -722,9 +818,9 @@ class faust_ottofm : public dsp {
 		fTempPerm158 = 0;
 		fTempPerm159 = 0;
 		fTempPerm160 = 0;
-		fTempPerm161 = 0;
+		iTempPerm161 = 0;
 		fTempPerm162 = 0;
-		iTempPerm163 = 0;
+		fTempPerm163 = 0;
 		fTempPerm164 = 0;
 		fTempPerm165 = 0;
 		fTempPerm166 = 0;
@@ -734,8 +830,8 @@ class faust_ottofm : public dsp {
 		fTempPerm170 = 0;
 		fTempPerm171 = 0;
 		fTempPerm172 = 0;
-		fTempPerm173 = 0;
-		iTempPerm174 = 0;
+		iTempPerm173 = 0;
+		fTempPerm174 = 0;
 		fTempPerm175 = 0;
 		fTempPerm176 = 0;
 		fTempPerm177 = 0;
@@ -743,8 +839,8 @@ class faust_ottofm : public dsp {
 		fTempPerm179 = 0;
 		iTempPerm180 = 0;
 		fTempPerm181 = 0;
-		iTempPerm182 = 0;
-		fTempPerm183 = 0;
+		fTempPerm182 = 0;
+		iTempPerm183 = 0;
 		fTempPerm184 = 0;
 		fTempPerm185 = 0;
 		fTempPerm186 = 0;
@@ -754,9 +850,9 @@ class faust_ottofm : public dsp {
 		fTempPerm190 = 0;
 		fTempPerm191 = 0;
 		fTempPerm192 = 0;
-		iTempPerm193 = 0;
+		fTempPerm193 = 0;
 		fTempPerm194 = 0;
-		fTempPerm195 = 0;
+		iTempPerm195 = 0;
 		fTempPerm196 = 0;
 		fTempPerm197 = 0;
 		fTempPerm198 = 0;
@@ -765,56 +861,56 @@ class faust_ottofm : public dsp {
 		fTempPerm201 = 0;
 		fTempPerm202 = 0;
 		fTempPerm203 = 0;
-		iTempPerm204 = 0;
+		fTempPerm204 = 0;
 		fTempPerm205 = 0;
 		fTempPerm206 = 0;
-		fTempPerm207 = 0;
+		iTempPerm207 = 0;
 		fTempPerm208 = 0;
 		fTempPerm209 = 0;
-		iTempPerm210 = 0;
+		fTempPerm210 = 0;
 		fTempPerm211 = 0;
-		iTempPerm212 = 0;
+		fTempPerm212 = 0;
 		fTempPerm213 = 0;
-		fTempPerm214 = 0;
+		iTempPerm214 = 0;
 		fTempPerm215 = 0;
 		fTempPerm216 = 0;
-		fTempPerm217 = 0;
+		iTempPerm217 = 0;
 		fTempPerm218 = 0;
 		fTempPerm219 = 0;
 		fTempPerm220 = 0;
 		fTempPerm221 = 0;
 		fTempPerm222 = 0;
-		iTempPerm223 = 0;
+		fTempPerm223 = 0;
 		fTempPerm224 = 0;
 		fTempPerm225 = 0;
 		fTempPerm226 = 0;
 		fTempPerm227 = 0;
 		fTempPerm228 = 0;
-		fTempPerm229 = 0;
+		iTempPerm229 = 0;
 		fTempPerm230 = 0;
 		fTempPerm231 = 0;
 		fTempPerm232 = 0;
 		fTempPerm233 = 0;
-		iTempPerm234 = 0;
+		fTempPerm234 = 0;
 		fTempPerm235 = 0;
 		fTempPerm236 = 0;
 		fTempPerm237 = 0;
 		fTempPerm238 = 0;
 		fTempPerm239 = 0;
-		iTempPerm240 = 0;
-		fTempPerm241 = 0;
-		iTempPerm242 = 0;
+		fTempPerm240 = 0;
+		iTempPerm241 = 0;
+		fTempPerm242 = 0;
 		fTempPerm243 = 0;
 		fTempPerm244 = 0;
 		fTempPerm245 = 0;
 		fTempPerm246 = 0;
 		fTempPerm247 = 0;
-		fTempPerm248 = 0;
+		iTempPerm248 = 0;
 		fTempPerm249 = 0;
 		fTempPerm250 = 0;
-		fTempPerm251 = 0;
+		iTempPerm251 = 0;
 		fTempPerm252 = 0;
-		iTempPerm253 = 0;
+		fTempPerm253 = 0;
 		fTempPerm254 = 0;
 		fTempPerm255 = 0;
 		fTempPerm256 = 0;
@@ -824,28 +920,76 @@ class faust_ottofm : public dsp {
 		fTempPerm260 = 0;
 		fTempPerm261 = 0;
 		fTempPerm262 = 0;
-		fTempPerm263 = 0;
-		iTempPerm264 = 0;
+		iTempPerm263 = 0;
+		fTempPerm264 = 0;
 		fTempPerm265 = 0;
 		fTempPerm266 = 0;
 		fTempPerm267 = 0;
 		fTempPerm268 = 0;
 		fTempPerm269 = 0;
-		iTempPerm270 = 0;
+		fTempPerm270 = 0;
 		fTempPerm271 = 0;
-		iTempPerm272 = 0;
+		fTempPerm272 = 0;
 		fTempPerm273 = 0;
 		fTempPerm274 = 0;
-		fTempPerm275 = 0;
+		iTempPerm275 = 0;
 		fTempPerm276 = 0;
+		fTempPerm277 = 0;
+		fTempPerm278 = 0;
+		fTempPerm279 = 0;
+		fTempPerm280 = 0;
+		fTempPerm281 = 0;
+		iTempPerm282 = 0;
+		fTempPerm283 = 0;
+		fTempPerm284 = 0;
+		iTempPerm285 = 0;
+		fTempPerm286 = 0;
+		fTempPerm287 = 0;
+		fTempPerm288 = 0;
+		fTempPerm289 = 0;
+		fTempPerm290 = 0;
+		fTempPerm291 = 0;
+		fTempPerm292 = 0;
+		fTempPerm293 = 0;
+		fTempPerm294 = 0;
+		fTempPerm295 = 0;
+		fTempPerm296 = 0;
+		iTempPerm297 = 0;
+		fTempPerm298 = 0;
+		fTempPerm299 = 0;
+		fTempPerm300 = 0;
+		fTempPerm301 = 0;
+		fTempPerm302 = 0;
+		fTempPerm303 = 0;
+		fTempPerm304 = 0;
+		fTempPerm305 = 0;
+		fTempPerm306 = 0;
+		fTempPerm307 = 0;
+		fTempPerm308 = 0;
+		iTempPerm309 = 0;
+		fTempPerm310 = 0;
+		fTempPerm311 = 0;
+		fTempPerm312 = 0;
+		fTempPerm313 = 0;
+		fTempPerm314 = 0;
+		fTempPerm315 = 0;
+		iTempPerm316 = 0;
+		fTempPerm317 = 0;
+		fTempPerm318 = 0;
+		iTempPerm319 = 0;
+		fTempPerm320 = 0;
+		fTempPerm321 = 0;
+		fTempPerm322 = 0;
+		fTempPerm323 = 0;
+		fTempPerm324 = 0;
 	}
 	virtual void instanceResetUserInterface() {
 		fslider0 = 0.0f;
-		fslider1 = 440.0f;
-		fslider2 = 1.0f;
+		fslider1 = 1.0f;
+		fslider2 = 440.0f;
 		fslider3 = 0.0f;
-		fbutton0 = 0.0;
 		fslider4 = 0.0f;
+		fbutton0 = 0.0;
 		fslider5 = 0.0f;
 		fslider6 = 0.0f;
 		fslider7 = 1.0f;
@@ -1053,7 +1197,7 @@ class faust_ottofm : public dsp {
 		ui_interface->addHorizontalSlider("Release", &fslider24, 0.0f, 0.0f, 4.0f, 0.01f);
 		ui_interface->addHorizontalSlider("Sustain", &fslider29, 1.0f, 0.0f, 1.0f, 0.01f);
 		ui_interface->closeBox();
-		ui_interface->addHorizontalSlider("fmAmount", &fslider8, 1.0f, 0.0f, 1.0f, 0.01f);
+		ui_interface->addHorizontalSlider("fmAmount", &fslider7, 1.0f, 0.0f, 1.0f, 0.01f);
 		ui_interface->openVerticalBox("op0");
 		ui_interface->addHorizontalSlider("cAtt", &fslider26, 0.0f, -1.0f, 1.0f, 0.01f);
 		ui_interface->addHorizontalSlider("cRel", &fslider23, 0.0f, -1.0f, 1.0f, 0.01f);
@@ -1095,48 +1239,156 @@ class faust_ottofm : public dsp {
 		ui_interface->addHorizontalSlider("mAtt", &fslider5, 0.0f, 0.0f, 1.0f, 0.01f);
 		ui_interface->addHorizontalSlider("mDecrel", &fslider6, 0.0f, 0.0f, 1.0f, 0.01f);
 		ui_interface->addHorizontalSlider("mSuspos", &fslider4, 0.0f, 0.0f, 1.0f, 0.01f);
-		ui_interface->addHorizontalSlider("outLev", &fslider7, 1.0f, 0.0f, 1.0f, 0.01f);
-		ui_interface->addHorizontalSlider("ratio", &fslider2, 1.0f, 0.25f, 4.0f, 0.01f);
+		ui_interface->addHorizontalSlider("outLev", &fslider8, 1.0f, 0.0f, 1.0f, 0.01f);
+		ui_interface->addHorizontalSlider("ratio", &fslider1, 1.0f, 0.25f, 4.0f, 0.01f);
 		ui_interface->closeBox();
-		ui_interface->openHorizontalBox("voices");
+		ui_interface->openVerticalBox("v0");
+		ui_interface->openVerticalBox("op0");
+		ui_interface->addHorizontalBargraph("carrier", &fbargraph22, 0.0f, 1.0f);
+		ui_interface->addHorizontalBargraph("modulator", &fbargraph24, 0.0f, 1.0f);
+		ui_interface->closeBox();
+		ui_interface->openVerticalBox("op1");
+		ui_interface->addHorizontalBargraph("carrier", &fbargraph21, 0.0f, 1.0f);
+		ui_interface->addHorizontalBargraph("modulator", &fbargraph26, 0.0f, 1.0f);
+		ui_interface->closeBox();
+		ui_interface->openVerticalBox("op2");
+		ui_interface->addHorizontalBargraph("carrier", &fbargraph20, 0.0f, 1.0f);
+		ui_interface->addHorizontalBargraph("modulator", &fbargraph27, 0.0f, 1.0f);
+		ui_interface->closeBox();
+		ui_interface->openVerticalBox("op3");
+		ui_interface->addHorizontalBargraph("carrier", &fbargraph23, 0.0f, 1.0f);
+		ui_interface->addHorizontalBargraph("modulator", &fbargraph25, 0.0f, 1.0f);
+		ui_interface->closeBox();
+		ui_interface->closeBox();
+		ui_interface->openVerticalBox("v1");
+		ui_interface->openVerticalBox("op0");
+		ui_interface->addHorizontalBargraph("carrier", &fbargraph19, 0.0f, 1.0f);
+		ui_interface->addHorizontalBargraph("modulator", &fbargraph30, 0.0f, 1.0f);
+		ui_interface->closeBox();
+		ui_interface->openVerticalBox("op1");
+		ui_interface->addHorizontalBargraph("carrier", &fbargraph28, 0.0f, 1.0f);
+		ui_interface->addHorizontalBargraph("modulator", &fbargraph18, 0.0f, 1.0f);
+		ui_interface->closeBox();
+		ui_interface->openVerticalBox("op2");
+		ui_interface->addHorizontalBargraph("carrier", &fbargraph29, 0.0f, 1.0f);
+		ui_interface->addHorizontalBargraph("modulator", &fbargraph17, 0.0f, 1.0f);
+		ui_interface->closeBox();
+		ui_interface->openVerticalBox("op3");
+		ui_interface->addHorizontalBargraph("carrier", &fbargraph31, 0.0f, 1.0f);
+		ui_interface->addHorizontalBargraph("modulator", &fbargraph16, 0.0f, 1.0f);
+		ui_interface->closeBox();
+		ui_interface->closeBox();
+		ui_interface->openVerticalBox("v2");
+		ui_interface->openVerticalBox("op0");
+		ui_interface->addHorizontalBargraph("carrier", &fbargraph15, 0.0f, 1.0f);
+		ui_interface->addHorizontalBargraph("modulator", &fbargraph34, 0.0f, 1.0f);
+		ui_interface->closeBox();
+		ui_interface->openVerticalBox("op1");
+		ui_interface->addHorizontalBargraph("carrier", &fbargraph32, 0.0f, 1.0f);
+		ui_interface->addHorizontalBargraph("modulator", &fbargraph14, 0.0f, 1.0f);
+		ui_interface->closeBox();
+		ui_interface->openVerticalBox("op2");
+		ui_interface->addHorizontalBargraph("carrier", &fbargraph33, 0.0f, 1.0f);
+		ui_interface->addHorizontalBargraph("modulator", &fbargraph13, 0.0f, 1.0f);
+		ui_interface->closeBox();
+		ui_interface->openVerticalBox("op3");
+		ui_interface->addHorizontalBargraph("carrier", &fbargraph35, 0.0f, 1.0f);
+		ui_interface->addHorizontalBargraph("modulator", &fbargraph12, 0.0f, 1.0f);
+		ui_interface->closeBox();
+		ui_interface->closeBox();
+		ui_interface->openVerticalBox("v3");
+		ui_interface->openVerticalBox("op0");
+		ui_interface->addHorizontalBargraph("carrier", &fbargraph11, 0.0f, 1.0f);
+		ui_interface->addHorizontalBargraph("modulator", &fbargraph38, 0.0f, 1.0f);
+		ui_interface->closeBox();
+		ui_interface->openVerticalBox("op1");
+		ui_interface->addHorizontalBargraph("carrier", &fbargraph36, 0.0f, 1.0f);
+		ui_interface->addHorizontalBargraph("modulator", &fbargraph10, 0.0f, 1.0f);
+		ui_interface->closeBox();
+		ui_interface->openVerticalBox("op2");
+		ui_interface->addHorizontalBargraph("carrier", &fbargraph37, 0.0f, 1.0f);
+		ui_interface->addHorizontalBargraph("modulator", &fbargraph9, 0.0f, 1.0f);
+		ui_interface->closeBox();
+		ui_interface->openVerticalBox("op3");
+		ui_interface->addHorizontalBargraph("carrier", &fbargraph39, 0.0f, 1.0f);
+		ui_interface->addHorizontalBargraph("modulator", &fbargraph8, 0.0f, 1.0f);
+		ui_interface->closeBox();
+		ui_interface->closeBox();
+		ui_interface->openVerticalBox("v4");
+		ui_interface->openVerticalBox("op0");
+		ui_interface->addHorizontalBargraph("carrier", &fbargraph7, 0.0f, 1.0f);
+		ui_interface->addHorizontalBargraph("modulator", &fbargraph42, 0.0f, 1.0f);
+		ui_interface->closeBox();
+		ui_interface->openVerticalBox("op1");
+		ui_interface->addHorizontalBargraph("carrier", &fbargraph40, 0.0f, 1.0f);
+		ui_interface->addHorizontalBargraph("modulator", &fbargraph6, 0.0f, 1.0f);
+		ui_interface->closeBox();
+		ui_interface->openVerticalBox("op2");
+		ui_interface->addHorizontalBargraph("carrier", &fbargraph41, 0.0f, 1.0f);
+		ui_interface->addHorizontalBargraph("modulator", &fbargraph5, 0.0f, 1.0f);
+		ui_interface->closeBox();
+		ui_interface->openVerticalBox("op3");
+		ui_interface->addHorizontalBargraph("carrier", &fbargraph43, 0.0f, 1.0f);
+		ui_interface->addHorizontalBargraph("modulator", &fbargraph4, 0.0f, 1.0f);
+		ui_interface->closeBox();
+		ui_interface->closeBox();
+		ui_interface->openVerticalBox("v5");
+		ui_interface->openVerticalBox("op0");
+		ui_interface->addHorizontalBargraph("carrier", &fbargraph3, 0.0f, 1.0f);
+		ui_interface->addHorizontalBargraph("modulator", &fbargraph46, 0.0f, 1.0f);
+		ui_interface->closeBox();
+		ui_interface->openVerticalBox("op1");
+		ui_interface->addHorizontalBargraph("carrier", &fbargraph44, 0.0f, 1.0f);
+		ui_interface->addHorizontalBargraph("modulator", &fbargraph2, 0.0f, 1.0f);
+		ui_interface->closeBox();
+		ui_interface->openVerticalBox("op2");
+		ui_interface->addHorizontalBargraph("carrier", &fbargraph45, 0.0f, 1.0f);
+		ui_interface->addHorizontalBargraph("modulator", &fbargraph1, 0.0f, 1.0f);
+		ui_interface->closeBox();
+		ui_interface->openVerticalBox("op3");
+		ui_interface->addHorizontalBargraph("carrier", &fbargraph47, 0.0f, 1.0f);
+		ui_interface->addHorizontalBargraph("modulator", &fbargraph0, 0.0f, 1.0f);
+		ui_interface->closeBox();
+		ui_interface->closeBox();
+		ui_interface->openVerticalBox("voices");
 		ui_interface->openVerticalBox("0");
-		ui_interface->openHorizontalBox("midi");
+		ui_interface->openVerticalBox("midi");
 		ui_interface->addHorizontalSlider("freq", &fslider40, 440.0f, 20.0f, 1000.0f, 1.0f);
 		ui_interface->addButton("trigger", &fbutton5);
 		ui_interface->addHorizontalSlider("velocity", &fslider50, 1.0f, 0.0f, 1.0f, 0.007874015748031496f);
 		ui_interface->closeBox();
 		ui_interface->closeBox();
 		ui_interface->openVerticalBox("1");
-		ui_interface->openHorizontalBox("midi");
-		ui_interface->addHorizontalSlider("freq", &fslider36, 440.0f, 20.0f, 1000.0f, 1.0f);
-		ui_interface->addButton("trigger", &fbutton3);
-		ui_interface->addHorizontalSlider("velocity", &fslider37, 1.0f, 0.0f, 1.0f, 0.007874015748031496f);
-		ui_interface->closeBox();
-		ui_interface->closeBox();
-		ui_interface->openVerticalBox("2");
-		ui_interface->openHorizontalBox("midi");
-		ui_interface->addHorizontalSlider("freq", &fslider32, 440.0f, 20.0f, 1000.0f, 1.0f);
-		ui_interface->addButton("trigger", &fbutton1);
-		ui_interface->addHorizontalSlider("velocity", &fslider33, 1.0f, 0.0f, 1.0f, 0.007874015748031496f);
-		ui_interface->closeBox();
-		ui_interface->closeBox();
-		ui_interface->openVerticalBox("3");
-		ui_interface->openHorizontalBox("midi");
+		ui_interface->openVerticalBox("midi");
 		ui_interface->addHorizontalSlider("freq", &fslider38, 440.0f, 20.0f, 1000.0f, 1.0f);
 		ui_interface->addButton("trigger", &fbutton4);
 		ui_interface->addHorizontalSlider("velocity", &fslider39, 1.0f, 0.0f, 1.0f, 0.007874015748031496f);
 		ui_interface->closeBox();
 		ui_interface->closeBox();
-		ui_interface->openVerticalBox("4");
-		ui_interface->openHorizontalBox("midi");
+		ui_interface->openVerticalBox("2");
+		ui_interface->openVerticalBox("midi");
+		ui_interface->addHorizontalSlider("freq", &fslider36, 440.0f, 20.0f, 1000.0f, 1.0f);
+		ui_interface->addButton("trigger", &fbutton3);
+		ui_interface->addHorizontalSlider("velocity", &fslider37, 1.0f, 0.0f, 1.0f, 0.007874015748031496f);
+		ui_interface->closeBox();
+		ui_interface->closeBox();
+		ui_interface->openVerticalBox("3");
+		ui_interface->openVerticalBox("midi");
 		ui_interface->addHorizontalSlider("freq", &fslider34, 440.0f, 20.0f, 1000.0f, 1.0f);
 		ui_interface->addButton("trigger", &fbutton2);
 		ui_interface->addHorizontalSlider("velocity", &fslider35, 1.0f, 0.0f, 1.0f, 0.007874015748031496f);
 		ui_interface->closeBox();
 		ui_interface->closeBox();
+		ui_interface->openVerticalBox("4");
+		ui_interface->openVerticalBox("midi");
+		ui_interface->addHorizontalSlider("freq", &fslider32, 440.0f, 20.0f, 1000.0f, 1.0f);
+		ui_interface->addButton("trigger", &fbutton1);
+		ui_interface->addHorizontalSlider("velocity", &fslider33, 1.0f, 0.0f, 1.0f, 0.007874015748031496f);
+		ui_interface->closeBox();
+		ui_interface->closeBox();
 		ui_interface->openVerticalBox("5");
-		ui_interface->openHorizontalBox("midi");
-		ui_interface->addHorizontalSlider("freq", &fslider1, 440.0f, 20.0f, 1000.0f, 1.0f);
+		ui_interface->openVerticalBox("midi");
+		ui_interface->addHorizontalSlider("freq", &fslider2, 440.0f, 20.0f, 1000.0f, 1.0f);
 		ui_interface->addButton("trigger", &fbutton0);
 		ui_interface->addHorizontalSlider("velocity", &fslider31, 1.0f, 0.0f, 1.0f, 0.007874015748031496f);
 		ui_interface->closeBox();
@@ -1163,22 +1415,22 @@ class faust_ottofm : public dsp {
 		float 	fSlow13 = float(fslider2);
 		float 	fSlow14 = (25.0f * float(fslider3));
 		float 	fSlow15 = (fConst1 * (fSlow14 + (fSlow13 * fSlow12)));
-		float 	fSlow16 = float(fbutton0);
-		float 	fSlow17 = float(fslider4);
+		float 	fSlow16 = float(fslider4);
+		float 	fSlow17 = float(fbutton0);
 		float 	fSlow18 = (fSlow17 * fSlow16);
 		float 	fSlow19 = float(fslider5);
 		float 	fSlow20 = (fConst2 * fSlow19);
 		float 	fSlow21 = float(fslider6);
-		float 	fSlow22 = (((1.0f - fSlow17) * fSlow21) + fSlow19);
+		float 	fSlow22 = (((1.0f - fSlow16) * fSlow21) + fSlow19);
 		float 	fSlow23 = (fConst2 * fSlow22);
-		int 	iSlow24 = int(((fSlow16 == 0.0f) > 0));
+		int 	iSlow24 = int(((fSlow17 == 0.0f) > 0));
 		float 	fSlow25 = (fSlow22 - fSlow19);
 		float 	fSlow26 = (fConst3 * ((fSlow18 + -1.0f) / fSlow25));
 		float 	fSlow27 = (fConst3 / fSlow19);
-		int 	iSlow28 = (fSlow16 > 0.0f);
+		int 	iSlow28 = (fSlow17 > 0.0f);
 		float 	fSlow29 = float(iSlow28);
 		int 	iSlow30 = int(iSlow28);
-		float 	fSlow31 = max(0.001f, (fConst2 * (fSlow17 * fSlow21)));
+		float 	fSlow31 = max(0.001f, (fConst2 * (fSlow16 * fSlow21)));
 		int 	iSlow32 = int((iSlow28 > 0));
 		float 	fSlow33 = (1.0f / fSlow31);
 		float 	fSlow34 = float(fslider7);
@@ -1186,9 +1438,9 @@ class faust_ottofm : public dsp {
 		float 	fSlow36 = (fSlow35 * fSlow34);
 		float 	fSlow37 = float(fslider9);
 		float 	fSlow38 = (25.0f * float(fslider10));
-		float 	fSlow39 = (fConst1 * (fSlow38 + (fSlow37 * fSlow12)));
+		float 	fSlow39 = (fConst1 * (fSlow38 + (fSlow13 * fSlow37)));
 		float 	fSlow40 = float(fslider11);
-		float 	fSlow41 = (fSlow40 * fSlow16);
+		float 	fSlow41 = (fSlow17 * fSlow40);
 		float 	fSlow42 = float(fslider12);
 		float 	fSlow43 = (fConst2 * fSlow42);
 		float 	fSlow44 = float(fslider13);
@@ -1200,12 +1452,12 @@ class faust_ottofm : public dsp {
 		float 	fSlow50 = max(0.001f, (fConst2 * (fSlow40 * fSlow44)));
 		float 	fSlow51 = (1.0f / fSlow50);
 		float 	fSlow52 = float(fslider14);
-		float 	fSlow53 = (fSlow35 * fSlow52);
+		float 	fSlow53 = (fSlow52 * fSlow34);
 		float 	fSlow54 = float(fslider15);
 		float 	fSlow55 = (25.0f * float(fslider16));
-		float 	fSlow56 = (fConst1 * (fSlow55 + (fSlow54 * fSlow12)));
+		float 	fSlow56 = (fConst1 * (fSlow55 + (fSlow13 * fSlow54)));
 		float 	fSlow57 = float(fslider17);
-		float 	fSlow58 = (fSlow57 * fSlow16);
+		float 	fSlow58 = (fSlow17 * fSlow57);
 		float 	fSlow59 = float(fslider18);
 		float 	fSlow60 = (fConst2 * fSlow59);
 		float 	fSlow61 = float(fslider19);
@@ -1217,10 +1469,10 @@ class faust_ottofm : public dsp {
 		float 	fSlow67 = max(0.001f, (fConst2 * (fSlow57 * fSlow61)));
 		float 	fSlow68 = (1.0f / fSlow67);
 		float 	fSlow69 = float(fslider20);
-		float 	fSlow70 = (fSlow35 * fSlow69);
+		float 	fSlow70 = (fSlow69 * fSlow34);
 		float 	fSlow71 = float(fslider21);
 		float 	fSlow72 = (25.0f * float(fslider22));
-		float 	fSlow73 = (fConst1 * (fSlow72 + (fSlow71 * fSlow12)));
+		float 	fSlow73 = (fConst1 * (fSlow72 + (fSlow13 * fSlow71)));
 		float 	fSlow74 = float(fslider24);
 		float 	fSlow75 = max((float)0, (fSlow74 + float(fslider23)));
 		float 	fSlow76 = float(fslider25);
@@ -1235,87 +1487,87 @@ class faust_ottofm : public dsp {
 		float 	fSlow85 = float(fslider31);
 		float 	fSlow86 = (fSlow85 * fSlow84);
 		float 	fSlow87 = float(fslider32);
-		float 	fSlow88 = (fConst1 * (fSlow14 + (fSlow13 * fSlow87)));
+		float 	fSlow88 = (fConst1 * (fSlow14 + (fSlow87 * fSlow12)));
 		float 	fSlow89 = float(fbutton1);
-		float 	fSlow90 = (fSlow17 * fSlow89);
+		float 	fSlow90 = (fSlow89 * fSlow16);
 		int 	iSlow91 = int(((fSlow89 == 0.0f) > 0));
 		float 	fSlow92 = (fConst3 * ((fSlow90 + -1.0f) / fSlow25));
 		int 	iSlow93 = (fSlow89 > 0.0f);
 		float 	fSlow94 = float(iSlow93);
 		int 	iSlow95 = int(iSlow93);
 		int 	iSlow96 = int((iSlow93 > 0));
-		float 	fSlow97 = (fConst1 * (fSlow38 + (fSlow37 * fSlow87)));
-		float 	fSlow98 = (fSlow40 * fSlow89);
+		float 	fSlow97 = (fConst1 * (fSlow38 + (fSlow87 * fSlow37)));
+		float 	fSlow98 = (fSlow89 * fSlow40);
 		float 	fSlow99 = (fConst3 * ((fSlow98 + -1.0f) / fSlow47));
-		float 	fSlow100 = (fConst1 * (fSlow55 + (fSlow54 * fSlow87)));
-		float 	fSlow101 = (fSlow57 * fSlow89);
+		float 	fSlow100 = (fConst1 * (fSlow55 + (fSlow87 * fSlow54)));
+		float 	fSlow101 = (fSlow89 * fSlow57);
 		float 	fSlow102 = (fConst3 * ((fSlow101 + -1.0f) / fSlow64));
-		float 	fSlow103 = (fConst1 * (fSlow72 + (fSlow71 * fSlow87)));
+		float 	fSlow103 = (fConst1 * (fSlow72 + (fSlow87 * fSlow71)));
 		float 	fSlow104 = (fSlow94 * fSlow82);
 		float 	fSlow105 = float(fslider33);
 		float 	fSlow106 = (fSlow84 * fSlow105);
 		float 	fSlow107 = float(fslider34);
-		float 	fSlow108 = (fConst1 * (fSlow14 + (fSlow13 * fSlow107)));
+		float 	fSlow108 = (fConst1 * (fSlow14 + (fSlow107 * fSlow12)));
 		float 	fSlow109 = float(fbutton2);
-		float 	fSlow110 = (fSlow17 * fSlow109);
+		float 	fSlow110 = (fSlow109 * fSlow16);
 		int 	iSlow111 = int(((fSlow109 == 0.0f) > 0));
 		float 	fSlow112 = (fConst3 * ((fSlow110 + -1.0f) / fSlow25));
 		int 	iSlow113 = (fSlow109 > 0.0f);
 		float 	fSlow114 = float(iSlow113);
 		int 	iSlow115 = int(iSlow113);
 		int 	iSlow116 = int((iSlow113 > 0));
-		float 	fSlow117 = (fConst1 * (fSlow38 + (fSlow37 * fSlow107)));
-		float 	fSlow118 = (fSlow40 * fSlow109);
+		float 	fSlow117 = (fConst1 * (fSlow38 + (fSlow107 * fSlow37)));
+		float 	fSlow118 = (fSlow109 * fSlow40);
 		float 	fSlow119 = (fConst3 * ((fSlow118 + -1.0f) / fSlow47));
-		float 	fSlow120 = (fConst1 * (fSlow55 + (fSlow54 * fSlow107)));
-		float 	fSlow121 = (fSlow57 * fSlow109);
+		float 	fSlow120 = (fConst1 * (fSlow55 + (fSlow107 * fSlow54)));
+		float 	fSlow121 = (fSlow109 * fSlow57);
 		float 	fSlow122 = (fConst3 * ((fSlow121 + -1.0f) / fSlow64));
-		float 	fSlow123 = (fConst1 * (fSlow72 + (fSlow71 * fSlow107)));
+		float 	fSlow123 = (fConst1 * (fSlow72 + (fSlow107 * fSlow71)));
 		float 	fSlow124 = (fSlow114 * fSlow82);
 		float 	fSlow125 = float(fslider35);
 		float 	fSlow126 = (fSlow84 * fSlow125);
 		float 	fSlow127 = float(fslider36);
-		float 	fSlow128 = (fConst1 * (fSlow14 + (fSlow13 * fSlow127)));
+		float 	fSlow128 = (fConst1 * (fSlow14 + (fSlow127 * fSlow12)));
 		float 	fSlow129 = float(fbutton3);
-		float 	fSlow130 = (fSlow17 * fSlow129);
+		float 	fSlow130 = (fSlow129 * fSlow16);
 		int 	iSlow131 = int(((fSlow129 == 0.0f) > 0));
 		float 	fSlow132 = (fConst3 * ((fSlow130 + -1.0f) / fSlow25));
 		int 	iSlow133 = (fSlow129 > 0.0f);
 		float 	fSlow134 = float(iSlow133);
 		int 	iSlow135 = int(iSlow133);
 		int 	iSlow136 = int((iSlow133 > 0));
-		float 	fSlow137 = (fConst1 * (fSlow38 + (fSlow37 * fSlow127)));
-		float 	fSlow138 = (fSlow40 * fSlow129);
+		float 	fSlow137 = (fConst1 * (fSlow38 + (fSlow127 * fSlow37)));
+		float 	fSlow138 = (fSlow129 * fSlow40);
 		float 	fSlow139 = (fConst3 * ((fSlow138 + -1.0f) / fSlow47));
-		float 	fSlow140 = (fConst1 * (fSlow55 + (fSlow54 * fSlow127)));
-		float 	fSlow141 = (fSlow57 * fSlow129);
+		float 	fSlow140 = (fConst1 * (fSlow55 + (fSlow127 * fSlow54)));
+		float 	fSlow141 = (fSlow129 * fSlow57);
 		float 	fSlow142 = (fConst3 * ((fSlow141 + -1.0f) / fSlow64));
-		float 	fSlow143 = (fConst1 * (fSlow72 + (fSlow71 * fSlow127)));
+		float 	fSlow143 = (fConst1 * (fSlow72 + (fSlow127 * fSlow71)));
 		float 	fSlow144 = (fSlow134 * fSlow82);
 		float 	fSlow145 = float(fslider37);
 		float 	fSlow146 = (fSlow84 * fSlow145);
 		float 	fSlow147 = float(fslider38);
-		float 	fSlow148 = (fConst1 * (fSlow14 + (fSlow13 * fSlow147)));
+		float 	fSlow148 = (fConst1 * (fSlow14 + (fSlow147 * fSlow12)));
 		float 	fSlow149 = float(fbutton4);
-		float 	fSlow150 = (fSlow17 * fSlow149);
+		float 	fSlow150 = (fSlow149 * fSlow16);
 		int 	iSlow151 = int(((fSlow149 == 0.0f) > 0));
 		float 	fSlow152 = (fConst3 * ((fSlow150 + -1.0f) / fSlow25));
 		int 	iSlow153 = (fSlow149 > 0.0f);
 		float 	fSlow154 = float(iSlow153);
 		int 	iSlow155 = int(iSlow153);
 		int 	iSlow156 = int((iSlow153 > 0));
-		float 	fSlow157 = (fConst1 * (fSlow38 + (fSlow37 * fSlow147)));
-		float 	fSlow158 = (fSlow40 * fSlow149);
+		float 	fSlow157 = (fConst1 * (fSlow38 + (fSlow147 * fSlow37)));
+		float 	fSlow158 = (fSlow149 * fSlow40);
 		float 	fSlow159 = (fConst3 * ((fSlow158 + -1.0f) / fSlow47));
-		float 	fSlow160 = (fConst1 * (fSlow55 + (fSlow54 * fSlow147)));
-		float 	fSlow161 = (fSlow57 * fSlow149);
+		float 	fSlow160 = (fConst1 * (fSlow55 + (fSlow147 * fSlow54)));
+		float 	fSlow161 = (fSlow149 * fSlow57);
 		float 	fSlow162 = (fConst3 * ((fSlow161 + -1.0f) / fSlow64));
-		float 	fSlow163 = (fConst1 * (fSlow72 + (fSlow71 * fSlow147)));
+		float 	fSlow163 = (fConst1 * (fSlow72 + (fSlow147 * fSlow71)));
 		float 	fSlow164 = (fSlow154 * fSlow82);
 		float 	fSlow165 = float(fslider39);
 		float 	fSlow166 = (fSlow84 * fSlow165);
 		float 	fSlow167 = float(fslider40);
-		float 	fSlow168 = (fConst1 * (fSlow38 + (fSlow37 * fSlow167)));
+		float 	fSlow168 = (fConst1 * ((fSlow167 * fSlow37) + fSlow38));
 		float 	fSlow169 = max((float)0, (fSlow74 + float(fslider41)));
 		float 	fSlow170 = max((float)0, (fSlow77 + float(fslider42)));
 		float 	fSlow171 = (6.9100000000000001f * fSlow170);
@@ -1326,16 +1578,16 @@ class faust_ottofm : public dsp {
 		float 	fSlow176 = max((float)0, (fSlow81 + (0.5f * float(fslider43))));
 		float 	fSlow177 = float(iSlow174);
 		float 	fSlow178 = (fSlow177 * fSlow176);
-		float 	fSlow179 = (fConst1 * (fSlow55 + (fSlow54 * fSlow167)));
+		float 	fSlow179 = (fConst1 * ((fSlow167 * fSlow54) + fSlow55));
 		float 	fSlow180 = max((float)0, (fSlow74 + float(fslider44)));
 		float 	fSlow181 = max((float)0, (fSlow77 + float(fslider45)));
 		float 	fSlow182 = (6.9100000000000001f * fSlow181);
 		int 	iSlow183 = int((fConst0 * fSlow181));
 		float 	fSlow184 = max((float)0, (fSlow81 + (0.5f * float(fslider46))));
 		float 	fSlow185 = (fSlow177 * fSlow184);
-		float 	fSlow186 = (fConst1 * (fSlow72 + (fSlow71 * fSlow167)));
+		float 	fSlow186 = (fConst1 * ((fSlow167 * fSlow71) + fSlow72));
 		float 	fSlow187 = (fSlow177 * fSlow82);
-		float 	fSlow188 = (fConst1 * (fSlow14 + (fSlow13 * fSlow167)));
+		float 	fSlow188 = (fConst1 * ((fSlow167 * fSlow12) + fSlow14));
 		float 	fSlow189 = max((float)0, (fSlow74 + float(fslider47)));
 		float 	fSlow190 = max((float)0, (fSlow77 + float(fslider48)));
 		float 	fSlow191 = (6.9100000000000001f * fSlow190);
@@ -1344,7 +1596,7 @@ class faust_ottofm : public dsp {
 		float 	fSlow194 = (fSlow177 * fSlow193);
 		float 	fSlow195 = float(fslider50);
 		float 	fSlow196 = float(fslider51);
-		float 	fSlow197 = (fSlow196 * fSlow173);
+		float 	fSlow197 = (fSlow173 * fSlow196);
 		float 	fSlow198 = float(fslider52);
 		float 	fSlow199 = (fConst2 * fSlow198);
 		float 	fSlow200 = float(fslider53);
@@ -1357,37 +1609,37 @@ class faust_ottofm : public dsp {
 		float 	fSlow207 = max(0.001f, (fConst2 * (fSlow196 * fSlow200)));
 		int 	iSlow208 = int((iSlow174 > 0));
 		float 	fSlow209 = (1.0f / fSlow207);
-		float 	fSlow210 = (fSlow35 * fSlow84);
-		float 	fSlow211 = (fSlow17 * fSlow173);
+		float 	fSlow210 = (fSlow84 * fSlow34);
+		float 	fSlow211 = (fSlow173 * fSlow16);
 		float 	fSlow212 = (fConst3 * ((fSlow211 + -1.0f) / fSlow25));
-		float 	fSlow213 = (fSlow57 * fSlow173);
+		float 	fSlow213 = (fSlow173 * fSlow57);
 		float 	fSlow214 = (fConst3 * ((fSlow213 + -1.0f) / fSlow64));
-		float 	fSlow215 = (fSlow40 * fSlow173);
+		float 	fSlow215 = (fSlow173 * fSlow40);
 		float 	fSlow216 = (fConst3 * ((fSlow215 + -1.0f) / fSlow47));
 		float 	fSlow217 = (fSlow84 * fSlow195);
 		float 	fSlow218 = (fSlow154 * fSlow184);
 		float 	fSlow219 = (fSlow154 * fSlow176);
-		float 	fSlow220 = (fSlow196 * fSlow149);
+		float 	fSlow220 = (fSlow149 * fSlow196);
 		float 	fSlow221 = (fConst3 * ((fSlow220 + -1.0f) / fSlow204));
 		float 	fSlow222 = (fSlow154 * fSlow193);
 		float 	fSlow223 = (fSlow134 * fSlow184);
 		float 	fSlow224 = (fSlow134 * fSlow176);
-		float 	fSlow225 = (fSlow196 * fSlow129);
+		float 	fSlow225 = (fSlow129 * fSlow196);
 		float 	fSlow226 = (fConst3 * ((fSlow225 + -1.0f) / fSlow204));
 		float 	fSlow227 = (fSlow134 * fSlow193);
 		float 	fSlow228 = (fSlow114 * fSlow184);
 		float 	fSlow229 = (fSlow114 * fSlow176);
-		float 	fSlow230 = (fSlow196 * fSlow109);
+		float 	fSlow230 = (fSlow109 * fSlow196);
 		float 	fSlow231 = (fConst3 * ((fSlow230 + -1.0f) / fSlow204));
 		float 	fSlow232 = (fSlow114 * fSlow193);
 		float 	fSlow233 = (fSlow94 * fSlow184);
 		float 	fSlow234 = (fSlow94 * fSlow176);
-		float 	fSlow235 = (fSlow196 * fSlow89);
+		float 	fSlow235 = (fSlow89 * fSlow196);
 		float 	fSlow236 = (fConst3 * ((fSlow235 + -1.0f) / fSlow204));
 		float 	fSlow237 = (fSlow94 * fSlow193);
 		float 	fSlow238 = (fSlow29 * fSlow184);
 		float 	fSlow239 = (fSlow29 * fSlow176);
-		float 	fSlow240 = (fSlow196 * fSlow16);
+		float 	fSlow240 = (fSlow17 * fSlow196);
 		float 	fSlow241 = (fConst3 * ((fSlow240 + -1.0f) / fSlow204));
 		float 	fSlow242 = (fSlow29 * fSlow193);
 		//zone2b
@@ -1404,832 +1656,928 @@ class faust_ottofm : public dsp {
 				iTempPerm2 = int((fRec3[0] < fSlow20));
 				fRec2[0] = ((iSlow30)?(fSlow29 * ((iTempPerm2)?((int((fRec3[0] < 0.0f)))?0.0f:((iTempPerm2)?(fSlow27 * fRec3[0]):1.0f)):((int((fRec3[0] < fSlow23)))?((fSlow26 * (fRec3[0] - fSlow20)) + 1.0f):fSlow18))):fRec2[1]);
 				fRec4[0] = ((iSlow32)?0.0f:min(fSlow31, (fRec4[1] + 1.0f)));
-				fTempPerm3 = (((int((fRec4[0] < 0.0f)))?fRec2[0]:((int((fRec4[0] < fSlow31)))?(fRec2[0] + (fSlow33 * (0 - (fRec4[0] * fRec2[0])))):0.0f)) * fTempPerm1);
+				fTempPerm3 = ((int((fRec4[0] < 0.0f)))?fRec2[0]:((int((fRec4[0] < fSlow31)))?(fRec2[0] + (fSlow33 * (0 - (fRec4[0] * fRec2[0])))):0.0f));
+				fbargraph0 = fTempPerm3;
+				fTempPerm4 = (fTempPerm3 * fTempPerm1);
 			}
 			if (iSlow9 || iSlow8 || iSlow6 || iSlow5 || iSlow4 || iSlow2 || iSlow1) {
-				fTempPerm4 = (fSlow36 * fTempPerm3);
+				fTempPerm5 = (fSlow36 * fTempPerm4);
 			}
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow8 || iSlow7 || iSlow6 || iSlow5 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
 				fRec5[0] = (fSlow39 + (fRec5[1] - floorf((fSlow39 + fRec5[1]))));
 			}
 			if (iSlow9 || iSlow8 || iSlow6 || iSlow5 || iSlow4 || iSlow2 || iSlow1) {
-				fTempPerm5 = ftbl0[(((int((65536.0f * (fRec5[0] + fTempPerm4))) % 65536) + 65536) % 65536)];
+				fTempPerm6 = ftbl0[(((int((65536.0f * (fRec5[0] + fTempPerm5))) % 65536) + 65536) % 65536)];
 			}
 			if (iSlow7 || iSlow6 || iSlow5 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
 				fRec7[0] = ((iSlow24)?0.0f:min(fSlow46, (fRec7[1] + 1.0f)));
-				iTempPerm6 = int((fRec7[0] < fSlow43));
-				fRec6[0] = ((iSlow30)?(fSlow29 * ((iTempPerm6)?((int((fRec7[0] < 0.0f)))?0.0f:((iTempPerm6)?(fSlow49 * fRec7[0]):1.0f)):((int((fRec7[0] < fSlow46)))?((fSlow48 * (fRec7[0] - fSlow43)) + 1.0f):fSlow41))):fRec6[1]);
+				iTempPerm7 = int((fRec7[0] < fSlow43));
+				fRec6[0] = ((iSlow30)?(fSlow29 * ((iTempPerm7)?((int((fRec7[0] < 0.0f)))?0.0f:((iTempPerm7)?(fSlow49 * fRec7[0]):1.0f)):((int((fRec7[0] < fSlow46)))?((fSlow48 * (fRec7[0] - fSlow43)) + 1.0f):fSlow41))):fRec6[1]);
 				fRec8[0] = ((iSlow32)?0.0f:min(fSlow50, (fRec8[1] + 1.0f)));
-				fTempPerm7 = ((int((fRec8[0] < 0.0f)))?fRec6[0]:((int((fRec8[0] < fSlow50)))?(fRec6[0] + (fSlow51 * (0 - (fRec8[0] * fRec6[0])))):0.0f));
+				fTempPerm8 = ((int((fRec8[0] < 0.0f)))?fRec6[0]:((int((fRec8[0] < fSlow50)))?(fRec6[0] + (fSlow51 * (0 - (fRec8[0] * fRec6[0])))):0.0f));
+				fbargraph1 = fTempPerm8;
+				fTempPerm9 = fTempPerm8;
 			}
 			if (iSlow6 || iSlow5 || iSlow4 || iSlow2 || iSlow1) {
-				fTempPerm8 = (fTempPerm7 * fTempPerm5);
+				fTempPerm10 = (fTempPerm9 * fTempPerm6);
 			}
 			if (iSlow6 || iSlow5 || iSlow2 || iSlow1) {
-				fTempPerm9 = (fSlow53 * fTempPerm8);
+				fTempPerm11 = (fSlow53 * fTempPerm10);
 			}
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow8 || iSlow7 || iSlow6 || iSlow5 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
 				fRec9[0] = (fSlow56 + (fRec9[1] - floorf((fSlow56 + fRec9[1]))));
 			}
 			if (iSlow6 || iSlow5 || iSlow2 || iSlow1) {
-				fTempPerm10 = ftbl0[(((int((65536.0f * (fRec9[0] + fTempPerm9))) % 65536) + 65536) % 65536)];
+				fTempPerm12 = ftbl0[(((int((65536.0f * (fRec9[0] + fTempPerm11))) % 65536) + 65536) % 65536)];
 			}
 			if (iSlow8 || iSlow7 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
 				fRec11[0] = ((iSlow24)?0.0f:min(fSlow63, (fRec11[1] + 1.0f)));
-				iTempPerm11 = int((fRec11[0] < fSlow60));
-				fRec10[0] = ((iSlow30)?(fSlow29 * ((iTempPerm11)?((int((fRec11[0] < 0.0f)))?0.0f:((iTempPerm11)?(fSlow66 * fRec11[0]):1.0f)):((int((fRec11[0] < fSlow63)))?((fSlow65 * (fRec11[0] - fSlow60)) + 1.0f):fSlow58))):fRec10[1]);
+				iTempPerm13 = int((fRec11[0] < fSlow60));
+				fRec10[0] = ((iSlow30)?(fSlow29 * ((iTempPerm13)?((int((fRec11[0] < 0.0f)))?0.0f:((iTempPerm13)?(fSlow66 * fRec11[0]):1.0f)):((int((fRec11[0] < fSlow63)))?((fSlow65 * (fRec11[0] - fSlow60)) + 1.0f):fSlow58))):fRec10[1]);
 				fRec12[0] = ((iSlow32)?0.0f:min(fSlow67, (fRec12[1] + 1.0f)));
-				fTempPerm12 = ((int((fRec12[0] < 0.0f)))?fRec10[0]:((int((fRec12[0] < fSlow67)))?(fRec10[0] + (fSlow68 * (0 - (fRec12[0] * fRec10[0])))):0.0f));
+				fTempPerm14 = ((int((fRec12[0] < 0.0f)))?fRec10[0]:((int((fRec12[0] < fSlow67)))?(fRec10[0] + (fSlow68 * (0 - (fRec12[0] * fRec10[0])))):0.0f));
+				fbargraph2 = fTempPerm14;
+				fTempPerm15 = fTempPerm14;
 			}
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow8 || iSlow7 || iSlow6 || iSlow5 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
 				fRec13[0] = (fSlow73 + (fRec13[1] - floorf((fSlow73 + fRec13[1]))));
 				iRec15[0] = (iSlow28 * (iRec15[1] + 1));
 			}
 			if (iSlow11 || iSlow9 || iSlow8 || iSlow7 || iSlow6 || iSlow5 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
-				iTempPerm13 = int((iRec15[0] < iSlow80));
-				fTempPerm14 = expf((0 - (fConst4 / ((iSlow30)?((iTempPerm13)?fSlow79:fSlow76):fSlow75))));
-				fRec14[0] = ((fRec14[1] * fTempPerm14) + (((iSlow30)?((iTempPerm13)?1.5873015873015872f:fSlow83):0.0f) * (1.0f - fTempPerm14)));
-				fTempPerm15 = min(1.0f, fRec14[0]);
+				iTempPerm16 = int((iRec15[0] < iSlow80));
+				fTempPerm17 = expf((0 - (fConst4 / ((iSlow30)?((iTempPerm16)?fSlow79:fSlow76):fSlow75))));
+				fRec14[0] = ((fRec14[1] * fTempPerm17) + (((iSlow30)?((iTempPerm16)?1.5873015873015872f:fSlow83):0.0f) * (1.0f - fTempPerm17)));
+				fTempPerm18 = min(1.0f, fRec14[0]);
+				fbargraph3 = fTempPerm18;
+				fTempPerm19 = fTempPerm18;
 			}
 			if (iSlow2 || iSlow1) {
-				fTempPerm16 = (fSlow86 * (fTempPerm15 * ftbl0[(((int((65536.0f * (fRec13[0] + (fSlow70 * (fTempPerm12 * fTempPerm10))))) % 65536) + 65536) % 65536)]));
+				fTempPerm20 = (fSlow86 * (fTempPerm19 * ftbl0[(((int((65536.0f * (fRec13[0] + (fSlow70 * (fTempPerm15 * fTempPerm12))))) % 65536) + 65536) % 65536)]));
 			}
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow8 || iSlow7 || iSlow6 || iSlow5 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
 				fRec16[0] = (fSlow88 + (fRec16[1] - floorf((fSlow88 + fRec16[1]))));
-				fTempPerm17 = ftbl0[(((int((65536.0f * fRec16[0])) % 65536) + 65536) % 65536)];
+				fTempPerm21 = ftbl0[(((int((65536.0f * fRec16[0])) % 65536) + 65536) % 65536)];
 			}
 			if (iSlow9 || iSlow8 || iSlow7 || iSlow6 || iSlow5 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
 				fRec18[0] = ((iSlow91)?0.0f:min(fSlow23, (fRec18[1] + 1.0f)));
-				iTempPerm18 = int((fRec18[0] < fSlow20));
-				fRec17[0] = ((iSlow95)?(fSlow94 * ((iTempPerm18)?((int((fRec18[0] < 0.0f)))?0.0f:((iTempPerm18)?(fSlow27 * fRec18[0]):1.0f)):((int((fRec18[0] < fSlow23)))?((fSlow92 * (fRec18[0] - fSlow20)) + 1.0f):fSlow90))):fRec17[1]);
+				iTempPerm22 = int((fRec18[0] < fSlow20));
+				fRec17[0] = ((iSlow95)?(fSlow94 * ((iTempPerm22)?((int((fRec18[0] < 0.0f)))?0.0f:((iTempPerm22)?(fSlow27 * fRec18[0]):1.0f)):((int((fRec18[0] < fSlow23)))?((fSlow92 * (fRec18[0] - fSlow20)) + 1.0f):fSlow90))):fRec17[1]);
 				fRec19[0] = ((iSlow96)?0.0f:min(fSlow31, (fRec19[1] + 1.0f)));
-				fTempPerm19 = (((int((fRec19[0] < 0.0f)))?fRec17[0]:((int((fRec19[0] < fSlow31)))?(fRec17[0] + (fSlow33 * (0 - (fRec19[0] * fRec17[0])))):0.0f)) * fTempPerm17);
+				fTempPerm23 = ((int((fRec19[0] < 0.0f)))?fRec17[0]:((int((fRec19[0] < fSlow31)))?(fRec17[0] + (fSlow33 * (0 - (fRec19[0] * fRec17[0])))):0.0f));
+				fbargraph4 = fTempPerm23;
+				fTempPerm24 = (fTempPerm23 * fTempPerm21);
 			}
 			if (iSlow9 || iSlow8 || iSlow6 || iSlow5 || iSlow4 || iSlow2 || iSlow1) {
-				fTempPerm20 = (fSlow36 * fTempPerm19);
+				fTempPerm25 = (fSlow36 * fTempPerm24);
 			}
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow8 || iSlow7 || iSlow6 || iSlow5 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
 				fRec20[0] = (fSlow97 + (fRec20[1] - floorf((fSlow97 + fRec20[1]))));
 			}
 			if (iSlow9 || iSlow8 || iSlow6 || iSlow5 || iSlow4 || iSlow2 || iSlow1) {
-				fTempPerm21 = ftbl0[(((int((65536.0f * (fRec20[0] + fTempPerm20))) % 65536) + 65536) % 65536)];
+				fTempPerm26 = ftbl0[(((int((65536.0f * (fRec20[0] + fTempPerm25))) % 65536) + 65536) % 65536)];
 			}
 			if (iSlow7 || iSlow6 || iSlow5 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
 				fRec22[0] = ((iSlow91)?0.0f:min(fSlow46, (fRec22[1] + 1.0f)));
-				iTempPerm22 = int((fRec22[0] < fSlow43));
-				fRec21[0] = ((iSlow95)?(fSlow94 * ((iTempPerm22)?((int((fRec22[0] < 0.0f)))?0.0f:((iTempPerm22)?(fSlow49 * fRec22[0]):1.0f)):((int((fRec22[0] < fSlow46)))?((fSlow99 * (fRec22[0] - fSlow43)) + 1.0f):fSlow98))):fRec21[1]);
+				iTempPerm27 = int((fRec22[0] < fSlow43));
+				fRec21[0] = ((iSlow95)?(fSlow94 * ((iTempPerm27)?((int((fRec22[0] < 0.0f)))?0.0f:((iTempPerm27)?(fSlow49 * fRec22[0]):1.0f)):((int((fRec22[0] < fSlow46)))?((fSlow99 * (fRec22[0] - fSlow43)) + 1.0f):fSlow98))):fRec21[1]);
 				fRec23[0] = ((iSlow96)?0.0f:min(fSlow50, (fRec23[1] + 1.0f)));
-				fTempPerm23 = ((int((fRec23[0] < 0.0f)))?fRec21[0]:((int((fRec23[0] < fSlow50)))?(fRec21[0] + (fSlow51 * (0 - (fRec23[0] * fRec21[0])))):0.0f));
+				fTempPerm28 = ((int((fRec23[0] < 0.0f)))?fRec21[0]:((int((fRec23[0] < fSlow50)))?(fRec21[0] + (fSlow51 * (0 - (fRec23[0] * fRec21[0])))):0.0f));
+				fbargraph5 = fTempPerm28;
+				fTempPerm29 = fTempPerm28;
 			}
 			if (iSlow6 || iSlow5 || iSlow4 || iSlow2 || iSlow1) {
-				fTempPerm24 = (fTempPerm23 * fTempPerm21);
+				fTempPerm30 = (fTempPerm29 * fTempPerm26);
 			}
 			if (iSlow6 || iSlow5 || iSlow2 || iSlow1) {
-				fTempPerm25 = (fSlow53 * fTempPerm24);
+				fTempPerm31 = (fSlow53 * fTempPerm30);
 			}
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow8 || iSlow7 || iSlow6 || iSlow5 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
 				fRec24[0] = (fSlow100 + (fRec24[1] - floorf((fSlow100 + fRec24[1]))));
 			}
 			if (iSlow6 || iSlow5 || iSlow2 || iSlow1) {
-				fTempPerm26 = ftbl0[(((int((65536.0f * (fRec24[0] + fTempPerm25))) % 65536) + 65536) % 65536)];
+				fTempPerm32 = ftbl0[(((int((65536.0f * (fRec24[0] + fTempPerm31))) % 65536) + 65536) % 65536)];
 			}
 			if (iSlow8 || iSlow7 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
 				fRec26[0] = ((iSlow91)?0.0f:min(fSlow63, (fRec26[1] + 1.0f)));
-				iTempPerm27 = int((fRec26[0] < fSlow60));
-				fRec25[0] = ((iSlow95)?(fSlow94 * ((iTempPerm27)?((int((fRec26[0] < 0.0f)))?0.0f:((iTempPerm27)?(fSlow66 * fRec26[0]):1.0f)):((int((fRec26[0] < fSlow63)))?((fSlow102 * (fRec26[0] - fSlow60)) + 1.0f):fSlow101))):fRec25[1]);
+				iTempPerm33 = int((fRec26[0] < fSlow60));
+				fRec25[0] = ((iSlow95)?(fSlow94 * ((iTempPerm33)?((int((fRec26[0] < 0.0f)))?0.0f:((iTempPerm33)?(fSlow66 * fRec26[0]):1.0f)):((int((fRec26[0] < fSlow63)))?((fSlow102 * (fRec26[0] - fSlow60)) + 1.0f):fSlow101))):fRec25[1]);
 				fRec27[0] = ((iSlow96)?0.0f:min(fSlow67, (fRec27[1] + 1.0f)));
-				fTempPerm28 = ((int((fRec27[0] < 0.0f)))?fRec25[0]:((int((fRec27[0] < fSlow67)))?(fRec25[0] + (fSlow68 * (0 - (fRec27[0] * fRec25[0])))):0.0f));
+				fTempPerm34 = ((int((fRec27[0] < 0.0f)))?fRec25[0]:((int((fRec27[0] < fSlow67)))?(fRec25[0] + (fSlow68 * (0 - (fRec27[0] * fRec25[0])))):0.0f));
+				fbargraph6 = fTempPerm34;
+				fTempPerm35 = fTempPerm34;
 			}
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow8 || iSlow7 || iSlow6 || iSlow5 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
 				fRec28[0] = (fSlow103 + (fRec28[1] - floorf((fSlow103 + fRec28[1]))));
 				iRec30[0] = (iSlow93 * (iRec30[1] + 1));
 			}
 			if (iSlow11 || iSlow9 || iSlow8 || iSlow7 || iSlow6 || iSlow5 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
-				iTempPerm29 = int((iRec30[0] < iSlow80));
-				fTempPerm30 = expf((0 - (fConst4 / ((iSlow95)?((iTempPerm29)?fSlow79:fSlow76):fSlow75))));
-				fRec29[0] = ((fRec29[1] * fTempPerm30) + (((iSlow95)?((iTempPerm29)?1.5873015873015872f:fSlow104):0.0f) * (1.0f - fTempPerm30)));
-				fTempPerm31 = min(1.0f, fRec29[0]);
+				iTempPerm36 = int((iRec30[0] < iSlow80));
+				fTempPerm37 = expf((0 - (fConst4 / ((iSlow95)?((iTempPerm36)?fSlow79:fSlow76):fSlow75))));
+				fRec29[0] = ((fRec29[1] * fTempPerm37) + (((iSlow95)?((iTempPerm36)?1.5873015873015872f:fSlow104):0.0f) * (1.0f - fTempPerm37)));
+				fTempPerm38 = min(1.0f, fRec29[0]);
+				fbargraph7 = fTempPerm38;
+				fTempPerm39 = fTempPerm38;
 			}
 			if (iSlow2 || iSlow1) {
-				fTempPerm32 = (fSlow106 * (fTempPerm31 * ftbl0[(((int((65536.0f * (fRec28[0] + (fSlow70 * (fTempPerm28 * fTempPerm26))))) % 65536) + 65536) % 65536)]));
+				fTempPerm40 = (fSlow106 * (fTempPerm39 * ftbl0[(((int((65536.0f * (fRec28[0] + (fSlow70 * (fTempPerm35 * fTempPerm32))))) % 65536) + 65536) % 65536)]));
 			}
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow8 || iSlow7 || iSlow6 || iSlow5 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
 				fRec31[0] = (fSlow108 + (fRec31[1] - floorf((fSlow108 + fRec31[1]))));
-				fTempPerm33 = ftbl0[(((int((65536.0f * fRec31[0])) % 65536) + 65536) % 65536)];
+				fTempPerm41 = ftbl0[(((int((65536.0f * fRec31[0])) % 65536) + 65536) % 65536)];
 			}
 			if (iSlow9 || iSlow8 || iSlow7 || iSlow6 || iSlow5 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
 				fRec33[0] = ((iSlow111)?0.0f:min(fSlow23, (fRec33[1] + 1.0f)));
-				iTempPerm34 = int((fRec33[0] < fSlow20));
-				fRec32[0] = ((iSlow115)?(fSlow114 * ((iTempPerm34)?((int((fRec33[0] < 0.0f)))?0.0f:((iTempPerm34)?(fSlow27 * fRec33[0]):1.0f)):((int((fRec33[0] < fSlow23)))?((fSlow112 * (fRec33[0] - fSlow20)) + 1.0f):fSlow110))):fRec32[1]);
+				iTempPerm42 = int((fRec33[0] < fSlow20));
+				fRec32[0] = ((iSlow115)?(fSlow114 * ((iTempPerm42)?((int((fRec33[0] < 0.0f)))?0.0f:((iTempPerm42)?(fSlow27 * fRec33[0]):1.0f)):((int((fRec33[0] < fSlow23)))?((fSlow112 * (fRec33[0] - fSlow20)) + 1.0f):fSlow110))):fRec32[1]);
 				fRec34[0] = ((iSlow116)?0.0f:min(fSlow31, (fRec34[1] + 1.0f)));
-				fTempPerm35 = (((int((fRec34[0] < 0.0f)))?fRec32[0]:((int((fRec34[0] < fSlow31)))?(fRec32[0] + (fSlow33 * (0 - (fRec34[0] * fRec32[0])))):0.0f)) * fTempPerm33);
+				fTempPerm43 = ((int((fRec34[0] < 0.0f)))?fRec32[0]:((int((fRec34[0] < fSlow31)))?(fRec32[0] + (fSlow33 * (0 - (fRec34[0] * fRec32[0])))):0.0f));
+				fbargraph8 = fTempPerm43;
+				fTempPerm44 = (fTempPerm43 * fTempPerm41);
 			}
 			if (iSlow9 || iSlow8 || iSlow6 || iSlow5 || iSlow4 || iSlow2 || iSlow1) {
-				fTempPerm36 = (fSlow36 * fTempPerm35);
+				fTempPerm45 = (fSlow36 * fTempPerm44);
 			}
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow8 || iSlow7 || iSlow6 || iSlow5 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
 				fRec35[0] = (fSlow117 + (fRec35[1] - floorf((fSlow117 + fRec35[1]))));
 			}
 			if (iSlow9 || iSlow8 || iSlow6 || iSlow5 || iSlow4 || iSlow2 || iSlow1) {
-				fTempPerm37 = ftbl0[(((int((65536.0f * (fRec35[0] + fTempPerm36))) % 65536) + 65536) % 65536)];
+				fTempPerm46 = ftbl0[(((int((65536.0f * (fRec35[0] + fTempPerm45))) % 65536) + 65536) % 65536)];
 			}
 			if (iSlow7 || iSlow6 || iSlow5 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
 				fRec37[0] = ((iSlow111)?0.0f:min(fSlow46, (fRec37[1] + 1.0f)));
-				iTempPerm38 = int((fRec37[0] < fSlow43));
-				fRec36[0] = ((iSlow115)?(fSlow114 * ((iTempPerm38)?((int((fRec37[0] < 0.0f)))?0.0f:((iTempPerm38)?(fSlow49 * fRec37[0]):1.0f)):((int((fRec37[0] < fSlow46)))?((fSlow119 * (fRec37[0] - fSlow43)) + 1.0f):fSlow118))):fRec36[1]);
+				iTempPerm47 = int((fRec37[0] < fSlow43));
+				fRec36[0] = ((iSlow115)?(fSlow114 * ((iTempPerm47)?((int((fRec37[0] < 0.0f)))?0.0f:((iTempPerm47)?(fSlow49 * fRec37[0]):1.0f)):((int((fRec37[0] < fSlow46)))?((fSlow119 * (fRec37[0] - fSlow43)) + 1.0f):fSlow118))):fRec36[1]);
 				fRec38[0] = ((iSlow116)?0.0f:min(fSlow50, (fRec38[1] + 1.0f)));
-				fTempPerm39 = ((int((fRec38[0] < 0.0f)))?fRec36[0]:((int((fRec38[0] < fSlow50)))?(fRec36[0] + (fSlow51 * (0 - (fRec38[0] * fRec36[0])))):0.0f));
+				fTempPerm48 = ((int((fRec38[0] < 0.0f)))?fRec36[0]:((int((fRec38[0] < fSlow50)))?(fRec36[0] + (fSlow51 * (0 - (fRec38[0] * fRec36[0])))):0.0f));
+				fbargraph9 = fTempPerm48;
+				fTempPerm49 = fTempPerm48;
 			}
 			if (iSlow6 || iSlow5 || iSlow4 || iSlow2 || iSlow1) {
-				fTempPerm40 = (fTempPerm39 * fTempPerm37);
+				fTempPerm50 = (fTempPerm49 * fTempPerm46);
 			}
 			if (iSlow6 || iSlow5 || iSlow2 || iSlow1) {
-				fTempPerm41 = (fSlow53 * fTempPerm40);
+				fTempPerm51 = (fSlow53 * fTempPerm50);
 			}
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow8 || iSlow7 || iSlow6 || iSlow5 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
 				fRec39[0] = (fSlow120 + (fRec39[1] - floorf((fSlow120 + fRec39[1]))));
 			}
 			if (iSlow6 || iSlow5 || iSlow2 || iSlow1) {
-				fTempPerm42 = ftbl0[(((int((65536.0f * (fRec39[0] + fTempPerm41))) % 65536) + 65536) % 65536)];
+				fTempPerm52 = ftbl0[(((int((65536.0f * (fRec39[0] + fTempPerm51))) % 65536) + 65536) % 65536)];
 			}
 			if (iSlow8 || iSlow7 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
 				fRec41[0] = ((iSlow111)?0.0f:min(fSlow63, (fRec41[1] + 1.0f)));
-				iTempPerm43 = int((fRec41[0] < fSlow60));
-				fRec40[0] = ((iSlow115)?(fSlow114 * ((iTempPerm43)?((int((fRec41[0] < 0.0f)))?0.0f:((iTempPerm43)?(fSlow66 * fRec41[0]):1.0f)):((int((fRec41[0] < fSlow63)))?((fSlow122 * (fRec41[0] - fSlow60)) + 1.0f):fSlow121))):fRec40[1]);
+				iTempPerm53 = int((fRec41[0] < fSlow60));
+				fRec40[0] = ((iSlow115)?(fSlow114 * ((iTempPerm53)?((int((fRec41[0] < 0.0f)))?0.0f:((iTempPerm53)?(fSlow66 * fRec41[0]):1.0f)):((int((fRec41[0] < fSlow63)))?((fSlow122 * (fRec41[0] - fSlow60)) + 1.0f):fSlow121))):fRec40[1]);
 				fRec42[0] = ((iSlow116)?0.0f:min(fSlow67, (fRec42[1] + 1.0f)));
-				fTempPerm44 = ((int((fRec42[0] < 0.0f)))?fRec40[0]:((int((fRec42[0] < fSlow67)))?(fRec40[0] + (fSlow68 * (0 - (fRec42[0] * fRec40[0])))):0.0f));
+				fTempPerm54 = ((int((fRec42[0] < 0.0f)))?fRec40[0]:((int((fRec42[0] < fSlow67)))?(fRec40[0] + (fSlow68 * (0 - (fRec42[0] * fRec40[0])))):0.0f));
+				fbargraph10 = fTempPerm54;
+				fTempPerm55 = fTempPerm54;
 			}
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow8 || iSlow7 || iSlow6 || iSlow5 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
 				fRec43[0] = (fSlow123 + (fRec43[1] - floorf((fSlow123 + fRec43[1]))));
 				iRec45[0] = (iSlow113 * (iRec45[1] + 1));
 			}
 			if (iSlow11 || iSlow9 || iSlow8 || iSlow7 || iSlow6 || iSlow5 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
-				iTempPerm45 = int((iRec45[0] < iSlow80));
-				fTempPerm46 = expf((0 - (fConst4 / ((iSlow115)?((iTempPerm45)?fSlow79:fSlow76):fSlow75))));
-				fRec44[0] = ((fRec44[1] * fTempPerm46) + (((iSlow115)?((iTempPerm45)?1.5873015873015872f:fSlow124):0.0f) * (1.0f - fTempPerm46)));
-				fTempPerm47 = min(1.0f, fRec44[0]);
+				iTempPerm56 = int((iRec45[0] < iSlow80));
+				fTempPerm57 = expf((0 - (fConst4 / ((iSlow115)?((iTempPerm56)?fSlow79:fSlow76):fSlow75))));
+				fRec44[0] = ((fRec44[1] * fTempPerm57) + (((iSlow115)?((iTempPerm56)?1.5873015873015872f:fSlow124):0.0f) * (1.0f - fTempPerm57)));
+				fTempPerm58 = min(1.0f, fRec44[0]);
+				fbargraph11 = fTempPerm58;
+				fTempPerm59 = fTempPerm58;
 			}
 			if (iSlow2 || iSlow1) {
-				fTempPerm48 = (fSlow126 * (fTempPerm47 * ftbl0[(((int((65536.0f * (fRec43[0] + (fSlow70 * (fTempPerm44 * fTempPerm42))))) % 65536) + 65536) % 65536)]));
+				fTempPerm60 = (fSlow126 * (fTempPerm59 * ftbl0[(((int((65536.0f * (fRec43[0] + (fSlow70 * (fTempPerm55 * fTempPerm52))))) % 65536) + 65536) % 65536)]));
 			}
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow8 || iSlow7 || iSlow6 || iSlow5 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
 				fRec46[0] = (fSlow128 + (fRec46[1] - floorf((fSlow128 + fRec46[1]))));
-				fTempPerm49 = ftbl0[(((int((65536.0f * fRec46[0])) % 65536) + 65536) % 65536)];
+				fTempPerm61 = ftbl0[(((int((65536.0f * fRec46[0])) % 65536) + 65536) % 65536)];
 			}
 			if (iSlow9 || iSlow8 || iSlow7 || iSlow6 || iSlow5 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
 				fRec48[0] = ((iSlow131)?0.0f:min(fSlow23, (fRec48[1] + 1.0f)));
-				iTempPerm50 = int((fRec48[0] < fSlow20));
-				fRec47[0] = ((iSlow135)?(fSlow134 * ((iTempPerm50)?((int((fRec48[0] < 0.0f)))?0.0f:((iTempPerm50)?(fSlow27 * fRec48[0]):1.0f)):((int((fRec48[0] < fSlow23)))?((fSlow132 * (fRec48[0] - fSlow20)) + 1.0f):fSlow130))):fRec47[1]);
+				iTempPerm62 = int((fRec48[0] < fSlow20));
+				fRec47[0] = ((iSlow135)?(fSlow134 * ((iTempPerm62)?((int((fRec48[0] < 0.0f)))?0.0f:((iTempPerm62)?(fSlow27 * fRec48[0]):1.0f)):((int((fRec48[0] < fSlow23)))?((fSlow132 * (fRec48[0] - fSlow20)) + 1.0f):fSlow130))):fRec47[1]);
 				fRec49[0] = ((iSlow136)?0.0f:min(fSlow31, (fRec49[1] + 1.0f)));
-				fTempPerm51 = (((int((fRec49[0] < 0.0f)))?fRec47[0]:((int((fRec49[0] < fSlow31)))?(fRec47[0] + (fSlow33 * (0 - (fRec49[0] * fRec47[0])))):0.0f)) * fTempPerm49);
+				fTempPerm63 = ((int((fRec49[0] < 0.0f)))?fRec47[0]:((int((fRec49[0] < fSlow31)))?(fRec47[0] + (fSlow33 * (0 - (fRec49[0] * fRec47[0])))):0.0f));
+				fbargraph12 = fTempPerm63;
+				fTempPerm64 = (fTempPerm63 * fTempPerm61);
 			}
 			if (iSlow9 || iSlow8 || iSlow6 || iSlow5 || iSlow4 || iSlow2 || iSlow1) {
-				fTempPerm52 = (fSlow36 * fTempPerm51);
+				fTempPerm65 = (fSlow36 * fTempPerm64);
 			}
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow8 || iSlow7 || iSlow6 || iSlow5 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
 				fRec50[0] = (fSlow137 + (fRec50[1] - floorf((fSlow137 + fRec50[1]))));
 			}
 			if (iSlow9 || iSlow8 || iSlow6 || iSlow5 || iSlow4 || iSlow2 || iSlow1) {
-				fTempPerm53 = ftbl0[(((int((65536.0f * (fRec50[0] + fTempPerm52))) % 65536) + 65536) % 65536)];
+				fTempPerm66 = ftbl0[(((int((65536.0f * (fRec50[0] + fTempPerm65))) % 65536) + 65536) % 65536)];
 			}
 			if (iSlow7 || iSlow6 || iSlow5 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
 				fRec52[0] = ((iSlow131)?0.0f:min(fSlow46, (fRec52[1] + 1.0f)));
-				iTempPerm54 = int((fRec52[0] < fSlow43));
-				fRec51[0] = ((iSlow135)?(fSlow134 * ((iTempPerm54)?((int((fRec52[0] < 0.0f)))?0.0f:((iTempPerm54)?(fSlow49 * fRec52[0]):1.0f)):((int((fRec52[0] < fSlow46)))?((fSlow139 * (fRec52[0] - fSlow43)) + 1.0f):fSlow138))):fRec51[1]);
+				iTempPerm67 = int((fRec52[0] < fSlow43));
+				fRec51[0] = ((iSlow135)?(fSlow134 * ((iTempPerm67)?((int((fRec52[0] < 0.0f)))?0.0f:((iTempPerm67)?(fSlow49 * fRec52[0]):1.0f)):((int((fRec52[0] < fSlow46)))?((fSlow139 * (fRec52[0] - fSlow43)) + 1.0f):fSlow138))):fRec51[1]);
 				fRec53[0] = ((iSlow136)?0.0f:min(fSlow50, (fRec53[1] + 1.0f)));
-				fTempPerm55 = ((int((fRec53[0] < 0.0f)))?fRec51[0]:((int((fRec53[0] < fSlow50)))?(fRec51[0] + (fSlow51 * (0 - (fRec53[0] * fRec51[0])))):0.0f));
+				fTempPerm68 = ((int((fRec53[0] < 0.0f)))?fRec51[0]:((int((fRec53[0] < fSlow50)))?(fRec51[0] + (fSlow51 * (0 - (fRec53[0] * fRec51[0])))):0.0f));
+				fbargraph13 = fTempPerm68;
+				fTempPerm69 = fTempPerm68;
 			}
 			if (iSlow6 || iSlow5 || iSlow4 || iSlow2 || iSlow1) {
-				fTempPerm56 = (fTempPerm55 * fTempPerm53);
+				fTempPerm70 = (fTempPerm69 * fTempPerm66);
 			}
 			if (iSlow6 || iSlow5 || iSlow2 || iSlow1) {
-				fTempPerm57 = (fSlow53 * fTempPerm56);
+				fTempPerm71 = (fSlow53 * fTempPerm70);
 			}
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow8 || iSlow7 || iSlow6 || iSlow5 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
 				fRec54[0] = (fSlow140 + (fRec54[1] - floorf((fSlow140 + fRec54[1]))));
 			}
 			if (iSlow6 || iSlow5 || iSlow2 || iSlow1) {
-				fTempPerm58 = ftbl0[(((int((65536.0f * (fRec54[0] + fTempPerm57))) % 65536) + 65536) % 65536)];
+				fTempPerm72 = ftbl0[(((int((65536.0f * (fRec54[0] + fTempPerm71))) % 65536) + 65536) % 65536)];
 			}
 			if (iSlow8 || iSlow7 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
 				fRec56[0] = ((iSlow131)?0.0f:min(fSlow63, (fRec56[1] + 1.0f)));
-				iTempPerm59 = int((fRec56[0] < fSlow60));
-				fRec55[0] = ((iSlow135)?(fSlow134 * ((iTempPerm59)?((int((fRec56[0] < 0.0f)))?0.0f:((iTempPerm59)?(fSlow66 * fRec56[0]):1.0f)):((int((fRec56[0] < fSlow63)))?((fSlow142 * (fRec56[0] - fSlow60)) + 1.0f):fSlow141))):fRec55[1]);
+				iTempPerm73 = int((fRec56[0] < fSlow60));
+				fRec55[0] = ((iSlow135)?(fSlow134 * ((iTempPerm73)?((int((fRec56[0] < 0.0f)))?0.0f:((iTempPerm73)?(fSlow66 * fRec56[0]):1.0f)):((int((fRec56[0] < fSlow63)))?((fSlow142 * (fRec56[0] - fSlow60)) + 1.0f):fSlow141))):fRec55[1]);
 				fRec57[0] = ((iSlow136)?0.0f:min(fSlow67, (fRec57[1] + 1.0f)));
-				fTempPerm60 = ((int((fRec57[0] < 0.0f)))?fRec55[0]:((int((fRec57[0] < fSlow67)))?(fRec55[0] + (fSlow68 * (0 - (fRec57[0] * fRec55[0])))):0.0f));
+				fTempPerm74 = ((int((fRec57[0] < 0.0f)))?fRec55[0]:((int((fRec57[0] < fSlow67)))?(fRec55[0] + (fSlow68 * (0 - (fRec57[0] * fRec55[0])))):0.0f));
+				fbargraph14 = fTempPerm74;
+				fTempPerm75 = fTempPerm74;
 			}
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow8 || iSlow7 || iSlow6 || iSlow5 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
 				fRec58[0] = (fSlow143 + (fRec58[1] - floorf((fSlow143 + fRec58[1]))));
 				iRec60[0] = (iSlow133 * (iRec60[1] + 1));
 			}
 			if (iSlow11 || iSlow9 || iSlow8 || iSlow7 || iSlow6 || iSlow5 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
-				iTempPerm61 = int((iRec60[0] < iSlow80));
-				fTempPerm62 = expf((0 - (fConst4 / ((iSlow135)?((iTempPerm61)?fSlow79:fSlow76):fSlow75))));
-				fRec59[0] = ((fRec59[1] * fTempPerm62) + (((iSlow135)?((iTempPerm61)?1.5873015873015872f:fSlow144):0.0f) * (1.0f - fTempPerm62)));
-				fTempPerm63 = min(1.0f, fRec59[0]);
+				iTempPerm76 = int((iRec60[0] < iSlow80));
+				fTempPerm77 = expf((0 - (fConst4 / ((iSlow135)?((iTempPerm76)?fSlow79:fSlow76):fSlow75))));
+				fRec59[0] = ((fRec59[1] * fTempPerm77) + (((iSlow135)?((iTempPerm76)?1.5873015873015872f:fSlow144):0.0f) * (1.0f - fTempPerm77)));
+				fTempPerm78 = min(1.0f, fRec59[0]);
+				fbargraph15 = fTempPerm78;
+				fTempPerm79 = fTempPerm78;
 			}
 			if (iSlow2 || iSlow1) {
-				fTempPerm64 = (fSlow146 * (fTempPerm63 * ftbl0[(((int((65536.0f * (fRec58[0] + (fSlow70 * (fTempPerm60 * fTempPerm58))))) % 65536) + 65536) % 65536)]));
+				fTempPerm80 = (fSlow146 * (fTempPerm79 * ftbl0[(((int((65536.0f * (fRec58[0] + (fSlow70 * (fTempPerm75 * fTempPerm72))))) % 65536) + 65536) % 65536)]));
 			}
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow8 || iSlow7 || iSlow6 || iSlow5 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
 				fRec61[0] = (fSlow148 + (fRec61[1] - floorf((fSlow148 + fRec61[1]))));
-				fTempPerm65 = ftbl0[(((int((65536.0f * fRec61[0])) % 65536) + 65536) % 65536)];
+				fTempPerm81 = ftbl0[(((int((65536.0f * fRec61[0])) % 65536) + 65536) % 65536)];
 			}
 			if (iSlow9 || iSlow8 || iSlow7 || iSlow6 || iSlow5 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
 				fRec63[0] = ((iSlow151)?0.0f:min(fSlow23, (fRec63[1] + 1.0f)));
-				iTempPerm66 = int((fRec63[0] < fSlow20));
-				fRec62[0] = ((iSlow155)?(fSlow154 * ((iTempPerm66)?((int((fRec63[0] < 0.0f)))?0.0f:((iTempPerm66)?(fSlow27 * fRec63[0]):1.0f)):((int((fRec63[0] < fSlow23)))?((fSlow152 * (fRec63[0] - fSlow20)) + 1.0f):fSlow150))):fRec62[1]);
+				iTempPerm82 = int((fRec63[0] < fSlow20));
+				fRec62[0] = ((iSlow155)?(fSlow154 * ((iTempPerm82)?((int((fRec63[0] < 0.0f)))?0.0f:((iTempPerm82)?(fSlow27 * fRec63[0]):1.0f)):((int((fRec63[0] < fSlow23)))?((fSlow152 * (fRec63[0] - fSlow20)) + 1.0f):fSlow150))):fRec62[1]);
 				fRec64[0] = ((iSlow156)?0.0f:min(fSlow31, (fRec64[1] + 1.0f)));
-				fTempPerm67 = (((int((fRec64[0] < 0.0f)))?fRec62[0]:((int((fRec64[0] < fSlow31)))?(fRec62[0] + (fSlow33 * (0 - (fRec64[0] * fRec62[0])))):0.0f)) * fTempPerm65);
+				fTempPerm83 = ((int((fRec64[0] < 0.0f)))?fRec62[0]:((int((fRec64[0] < fSlow31)))?(fRec62[0] + (fSlow33 * (0 - (fRec64[0] * fRec62[0])))):0.0f));
+				fbargraph16 = fTempPerm83;
+				fTempPerm84 = (fTempPerm83 * fTempPerm81);
 			}
 			if (iSlow9 || iSlow8 || iSlow6 || iSlow5 || iSlow4 || iSlow2 || iSlow1) {
-				fTempPerm68 = (fSlow36 * fTempPerm67);
+				fTempPerm85 = (fSlow36 * fTempPerm84);
 			}
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow8 || iSlow7 || iSlow6 || iSlow5 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
 				fRec65[0] = (fSlow157 + (fRec65[1] - floorf((fSlow157 + fRec65[1]))));
 			}
 			if (iSlow9 || iSlow8 || iSlow6 || iSlow5 || iSlow4 || iSlow2 || iSlow1) {
-				fTempPerm69 = ftbl0[(((int((65536.0f * (fRec65[0] + fTempPerm68))) % 65536) + 65536) % 65536)];
+				fTempPerm86 = ftbl0[(((int((65536.0f * (fRec65[0] + fTempPerm85))) % 65536) + 65536) % 65536)];
 			}
 			if (iSlow7 || iSlow6 || iSlow5 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
 				fRec67[0] = ((iSlow151)?0.0f:min(fSlow46, (fRec67[1] + 1.0f)));
-				iTempPerm70 = int((fRec67[0] < fSlow43));
-				fRec66[0] = ((iSlow155)?(fSlow154 * ((iTempPerm70)?((int((fRec67[0] < 0.0f)))?0.0f:((iTempPerm70)?(fSlow49 * fRec67[0]):1.0f)):((int((fRec67[0] < fSlow46)))?((fSlow159 * (fRec67[0] - fSlow43)) + 1.0f):fSlow158))):fRec66[1]);
+				iTempPerm87 = int((fRec67[0] < fSlow43));
+				fRec66[0] = ((iSlow155)?(fSlow154 * ((iTempPerm87)?((int((fRec67[0] < 0.0f)))?0.0f:((iTempPerm87)?(fSlow49 * fRec67[0]):1.0f)):((int((fRec67[0] < fSlow46)))?((fSlow159 * (fRec67[0] - fSlow43)) + 1.0f):fSlow158))):fRec66[1]);
 				fRec68[0] = ((iSlow156)?0.0f:min(fSlow50, (fRec68[1] + 1.0f)));
-				fTempPerm71 = ((int((fRec68[0] < 0.0f)))?fRec66[0]:((int((fRec68[0] < fSlow50)))?(fRec66[0] + (fSlow51 * (0 - (fRec68[0] * fRec66[0])))):0.0f));
+				fTempPerm88 = ((int((fRec68[0] < 0.0f)))?fRec66[0]:((int((fRec68[0] < fSlow50)))?(fRec66[0] + (fSlow51 * (0 - (fRec68[0] * fRec66[0])))):0.0f));
+				fbargraph17 = fTempPerm88;
+				fTempPerm89 = fTempPerm88;
 			}
 			if (iSlow6 || iSlow5 || iSlow4 || iSlow2 || iSlow1) {
-				fTempPerm72 = (fTempPerm71 * fTempPerm69);
+				fTempPerm90 = (fTempPerm89 * fTempPerm86);
 			}
 			if (iSlow6 || iSlow5 || iSlow2 || iSlow1) {
-				fTempPerm73 = (fSlow53 * fTempPerm72);
+				fTempPerm91 = (fSlow53 * fTempPerm90);
 			}
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow8 || iSlow7 || iSlow6 || iSlow5 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
 				fRec69[0] = (fSlow160 + (fRec69[1] - floorf((fSlow160 + fRec69[1]))));
 			}
 			if (iSlow6 || iSlow5 || iSlow2 || iSlow1) {
-				fTempPerm74 = ftbl0[(((int((65536.0f * (fRec69[0] + fTempPerm73))) % 65536) + 65536) % 65536)];
+				fTempPerm92 = ftbl0[(((int((65536.0f * (fRec69[0] + fTempPerm91))) % 65536) + 65536) % 65536)];
 			}
 			if (iSlow8 || iSlow7 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
 				fRec71[0] = ((iSlow151)?0.0f:min(fSlow63, (fRec71[1] + 1.0f)));
-				iTempPerm75 = int((fRec71[0] < fSlow60));
-				fRec70[0] = ((iSlow155)?(fSlow154 * ((iTempPerm75)?((int((fRec71[0] < 0.0f)))?0.0f:((iTempPerm75)?(fSlow66 * fRec71[0]):1.0f)):((int((fRec71[0] < fSlow63)))?((fSlow162 * (fRec71[0] - fSlow60)) + 1.0f):fSlow161))):fRec70[1]);
+				iTempPerm93 = int((fRec71[0] < fSlow60));
+				fRec70[0] = ((iSlow155)?(fSlow154 * ((iTempPerm93)?((int((fRec71[0] < 0.0f)))?0.0f:((iTempPerm93)?(fSlow66 * fRec71[0]):1.0f)):((int((fRec71[0] < fSlow63)))?((fSlow162 * (fRec71[0] - fSlow60)) + 1.0f):fSlow161))):fRec70[1]);
 				fRec72[0] = ((iSlow156)?0.0f:min(fSlow67, (fRec72[1] + 1.0f)));
-				fTempPerm76 = ((int((fRec72[0] < 0.0f)))?fRec70[0]:((int((fRec72[0] < fSlow67)))?(fRec70[0] + (fSlow68 * (0 - (fRec72[0] * fRec70[0])))):0.0f));
+				fTempPerm94 = ((int((fRec72[0] < 0.0f)))?fRec70[0]:((int((fRec72[0] < fSlow67)))?(fRec70[0] + (fSlow68 * (0 - (fRec72[0] * fRec70[0])))):0.0f));
+				fbargraph18 = fTempPerm94;
+				fTempPerm95 = fTempPerm94;
 			}
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow8 || iSlow7 || iSlow6 || iSlow5 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
 				fRec73[0] = (fSlow163 + (fRec73[1] - floorf((fSlow163 + fRec73[1]))));
 				iRec75[0] = (iSlow153 * (iRec75[1] + 1));
 			}
 			if (iSlow11 || iSlow9 || iSlow8 || iSlow7 || iSlow6 || iSlow5 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
-				iTempPerm77 = int((iRec75[0] < iSlow80));
-				fTempPerm78 = expf((0 - (fConst4 / ((iSlow155)?((iTempPerm77)?fSlow79:fSlow76):fSlow75))));
-				fRec74[0] = ((fRec74[1] * fTempPerm78) + (((iSlow155)?((iTempPerm77)?1.5873015873015872f:fSlow164):0.0f) * (1.0f - fTempPerm78)));
-				fTempPerm79 = min(1.0f, fRec74[0]);
+				iTempPerm96 = int((iRec75[0] < iSlow80));
+				fTempPerm97 = expf((0 - (fConst4 / ((iSlow155)?((iTempPerm96)?fSlow79:fSlow76):fSlow75))));
+				fRec74[0] = ((fRec74[1] * fTempPerm97) + (((iSlow155)?((iTempPerm96)?1.5873015873015872f:fSlow164):0.0f) * (1.0f - fTempPerm97)));
+				fTempPerm98 = min(1.0f, fRec74[0]);
+				fbargraph19 = fTempPerm98;
+				fTempPerm99 = fTempPerm98;
 			}
 			if (iSlow2 || iSlow1) {
-				fTempPerm80 = (fSlow166 * (fTempPerm79 * ftbl0[(((int((65536.0f * (fRec73[0] + (fSlow70 * (fTempPerm76 * fTempPerm74))))) % 65536) + 65536) % 65536)]));
+				fTempPerm100 = (fSlow166 * (fTempPerm99 * ftbl0[(((int((65536.0f * (fRec73[0] + (fSlow70 * (fTempPerm95 * fTempPerm92))))) % 65536) + 65536) % 65536)]));
 			}
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow8 || iSlow7 || iSlow6 || iSlow5 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
 				fRec76[0] = (fSlow168 + (fRec76[1] - floorf((fSlow168 + fRec76[1]))));
 			}
 			if (iSlow11 || iSlow7 || iSlow3) {
-				fTempPerm81 = ftbl0[(((int((65536.0f * fRec76[0])) % 65536) + 65536) % 65536)];
+				fTempPerm101 = ftbl0[(((int((65536.0f * fRec76[0])) % 65536) + 65536) % 65536)];
 			}
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow8 || iSlow7 || iSlow6 || iSlow5 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
 				iRec78[0] = (iSlow174 * (iRec78[1] + 1));
 			}
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow8) {
-				iTempPerm82 = int((iRec78[0] < iSlow172));
-				fTempPerm83 = expf((0 - (fConst4 / ((iSlow175)?((iTempPerm82)?fSlow171:fSlow76):fSlow169))));
-				fRec77[0] = ((fRec77[1] * fTempPerm83) + (((iSlow175)?((iTempPerm82)?1.5873015873015872f:fSlow178):0.0f) * (1.0f - fTempPerm83)));
-				fTempPerm84 = min(1.0f, fRec77[0]);
+				iTempPerm102 = int((iRec78[0] < iSlow172));
+				fTempPerm103 = expf((0 - (fConst4 / ((iSlow175)?((iTempPerm102)?fSlow171:fSlow76):fSlow169))));
+				fRec77[0] = ((fRec77[1] * fTempPerm103) + (((iSlow175)?((iTempPerm102)?1.5873015873015872f:fSlow178):0.0f) * (1.0f - fTempPerm103)));
+				fTempPerm104 = min(1.0f, fRec77[0]);
+				fbargraph20 = fTempPerm104;
+				fTempPerm105 = fTempPerm104;
 			}
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow8 || iSlow7 || iSlow6 || iSlow5 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
 				fRec79[0] = (fSlow179 + (fRec79[1] - floorf((fSlow179 + fRec79[1]))));
 			}
 			if (iSlow11 || iSlow10 || iSlow8 || iSlow7) {
-				fTempPerm85 = ftbl0[(((int((65536.0f * fRec79[0])) % 65536) + 65536) % 65536)];
+				fTempPerm106 = ftbl0[(((int((65536.0f * fRec79[0])) % 65536) + 65536) % 65536)];
 			}
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow6 || iSlow5) {
-				iTempPerm86 = int((iRec78[0] < iSlow183));
-				fTempPerm87 = expf((0 - (fConst4 / ((iSlow175)?((iTempPerm86)?fSlow182:fSlow76):fSlow180))));
-				fRec80[0] = ((fRec80[1] * fTempPerm87) + (((iSlow175)?((iTempPerm86)?1.5873015873015872f:fSlow185):0.0f) * (1.0f - fTempPerm87)));
-				fTempPerm88 = min(1.0f, fRec80[0]);
+				iTempPerm107 = int((iRec78[0] < iSlow183));
+				fTempPerm108 = expf((0 - (fConst4 / ((iSlow175)?((iTempPerm107)?fSlow182:fSlow76):fSlow180))));
+				fRec80[0] = ((fRec80[1] * fTempPerm108) + (((iSlow175)?((iTempPerm107)?1.5873015873015872f:fSlow185):0.0f) * (1.0f - fTempPerm108)));
+				fTempPerm109 = min(1.0f, fRec80[0]);
+				fbargraph21 = fTempPerm109;
+				fTempPerm110 = fTempPerm109;
 			}
 			if (iSlow11 || iSlow10) {
-				fTempPerm89 = (fSlow69 * (fTempPerm88 * fTempPerm85));
+				fTempPerm111 = (fSlow69 * (fTempPerm110 * fTempPerm106));
 			}
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow8 || iSlow7 || iSlow6 || iSlow5 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
 				fRec81[0] = (fSlow186 + (fRec81[1] - floorf((fSlow186 + fRec81[1]))));
 			}
 			if (iSlow11 || iSlow10 || iSlow6) {
-				fTempPerm90 = ftbl0[(((int((65536.0f * fRec81[0])) % 65536) + 65536) % 65536)];
+				fTempPerm112 = ftbl0[(((int((65536.0f * fRec81[0])) % 65536) + 65536) % 65536)];
 			}
 			if (iSlow11 || iSlow9 || iSlow8 || iSlow7 || iSlow6 || iSlow5 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
-				iTempPerm91 = int((iRec78[0] < iSlow80));
-				fTempPerm92 = expf((0 - (fConst4 / ((iSlow175)?((iTempPerm91)?fSlow79:fSlow76):fSlow75))));
-				fRec82[0] = ((fRec82[1] * fTempPerm92) + (((iSlow175)?((iTempPerm91)?1.5873015873015872f:fSlow187):0.0f) * (1.0f - fTempPerm92)));
-				fTempPerm93 = min(1.0f, fRec82[0]);
+				iTempPerm113 = int((iRec78[0] < iSlow80));
+				fTempPerm114 = expf((0 - (fConst4 / ((iSlow175)?((iTempPerm113)?fSlow79:fSlow76):fSlow75))));
+				fRec82[0] = ((fRec82[1] * fTempPerm114) + (((iSlow175)?((iTempPerm113)?1.5873015873015872f:fSlow187):0.0f) * (1.0f - fTempPerm114)));
+				fTempPerm115 = min(1.0f, fRec82[0]);
+				fbargraph22 = fTempPerm115;
+				fTempPerm116 = fTempPerm115;
 			}
 			if (iSlow11 || iSlow6) {
-				fTempPerm94 = (fSlow84 * (fTempPerm93 * fTempPerm90));
+				fTempPerm117 = (fSlow84 * (fTempPerm116 * fTempPerm112));
 			}
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow8 || iSlow7 || iSlow6 || iSlow5 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
 				fRec83[0] = (fSlow188 + (fRec83[1] - floorf((fSlow188 + fRec83[1]))));
-				fTempPerm95 = ftbl0[(((int((65536.0f * fRec83[0])) % 65536) + 65536) % 65536)];
+				fTempPerm118 = ftbl0[(((int((65536.0f * fRec83[0])) % 65536) + 65536) % 65536)];
 			}
 			if (iSlow11 || iSlow10) {
-				iTempPerm96 = int((iRec78[0] < iSlow192));
-				fTempPerm97 = expf((0 - (fConst4 / ((iSlow175)?((iTempPerm96)?fSlow191:fSlow76):fSlow189))));
-				fRec84[0] = ((fRec84[1] * fTempPerm97) + (((iSlow175)?((iTempPerm96)?1.5873015873015872f:fSlow194):0.0f) * (1.0f - fTempPerm97)));
-				fTempPerm98 = (fSlow34 * (min(1.0f, fRec84[0]) * fTempPerm95));
+				iTempPerm119 = int((iRec78[0] < iSlow192));
+				fTempPerm120 = expf((0 - (fConst4 / ((iSlow175)?((iTempPerm119)?fSlow191:fSlow76):fSlow189))));
+				fRec84[0] = ((fRec84[1] * fTempPerm120) + (((iSlow175)?((iTempPerm119)?1.5873015873015872f:fSlow194):0.0f) * (1.0f - fTempPerm120)));
+				fTempPerm121 = min(1.0f, fRec84[0]);
+				fbargraph23 = fTempPerm121;
+				fTempPerm122 = (fSlow35 * (fTempPerm121 * fTempPerm118));
 			}
 			if (iSlow11) {
-				fTempPerm99 = (fSlow195 * (fTempPerm98 + ((fTempPerm94 + fTempPerm89) + (fSlow52 * (fTempPerm84 * fTempPerm81)))));
+				fTempPerm123 = (fSlow195 * (fTempPerm122 + ((fTempPerm117 + fTempPerm111) + (fSlow52 * (fTempPerm105 * fTempPerm101)))));
 			}
 			if (iSlow10) {
 				fRec86[0] = ((iSlow203)?0.0f:min(fSlow202, (fRec86[1] + 1.0f)));
-				iTempPerm100 = int((fRec86[0] < fSlow199));
-				fRec85[0] = ((iSlow175)?(fSlow177 * ((iTempPerm100)?((int((fRec86[0] < 0.0f)))?0.0f:((iTempPerm100)?(fSlow206 * fRec86[0]):1.0f)):((int((fRec86[0] < fSlow202)))?((fSlow205 * (fRec86[0] - fSlow199)) + 1.0f):fSlow197))):fRec85[1]);
+				iTempPerm124 = int((fRec86[0] < fSlow199));
+				fRec85[0] = ((iSlow175)?(fSlow177 * ((iTempPerm124)?((int((fRec86[0] < 0.0f)))?0.0f:((iTempPerm124)?(fSlow206 * fRec86[0]):1.0f)):((int((fRec86[0] < fSlow202)))?((fSlow205 * (fRec86[0] - fSlow199)) + 1.0f):fSlow197))):fRec85[1]);
 				fRec87[0] = ((iSlow208)?0.0f:min(fSlow207, (fRec87[1] + 1.0f)));
-				fTempPerm101 = (fSlow195 * ((fTempPerm98 + fTempPerm89) + (fSlow52 * (fTempPerm84 * ftbl0[(((int((65536.0f * (fRec76[0] + (fSlow210 * (fTempPerm90 * ((int((fRec87[0] < 0.0f)))?fRec85[0]:((int((fRec87[0] < fSlow207)))?(fRec85[0] + (fSlow209 * (0 - (fRec87[0] * fRec85[0])))):0.0f))))))) % 65536) + 65536) % 65536)]))));
+				fTempPerm125 = ((int((fRec87[0] < 0.0f)))?fRec85[0]:((int((fRec87[0] < fSlow207)))?(fRec85[0] + (fSlow209 * (0 - (fRec87[0] * fRec85[0])))):0.0f));
+				fbargraph24 = fTempPerm125;
+				fTempPerm126 = (fSlow195 * ((fTempPerm122 + fTempPerm111) + (fSlow52 * (fTempPerm105 * ftbl0[(((int((65536.0f * (fRec76[0] + (fSlow210 * (fTempPerm112 * fTempPerm125))))) % 65536) + 65536) % 65536)]))));
 			}
 			if (iSlow9 || iSlow8 || iSlow7 || iSlow6 || iSlow5 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
 				fRec89[0] = ((iSlow203)?0.0f:min(fSlow23, (fRec89[1] + 1.0f)));
-				iTempPerm102 = int((fRec89[0] < fSlow20));
-				fRec88[0] = ((iSlow175)?(fSlow177 * ((iTempPerm102)?((int((fRec89[0] < 0.0f)))?0.0f:((iTempPerm102)?(fSlow27 * fRec89[0]):1.0f)):((int((fRec89[0] < fSlow23)))?((fSlow212 * (fRec89[0] - fSlow20)) + 1.0f):fSlow211))):fRec88[1]);
+				iTempPerm127 = int((fRec89[0] < fSlow20));
+				fRec88[0] = ((iSlow175)?(fSlow177 * ((iTempPerm127)?((int((fRec89[0] < 0.0f)))?0.0f:((iTempPerm127)?(fSlow27 * fRec89[0]):1.0f)):((int((fRec89[0] < fSlow23)))?((fSlow212 * (fRec89[0] - fSlow20)) + 1.0f):fSlow211))):fRec88[1]);
 				fRec90[0] = ((iSlow208)?0.0f:min(fSlow31, (fRec90[1] + 1.0f)));
-				fTempPerm103 = (((int((fRec90[0] < 0.0f)))?fRec88[0]:((int((fRec90[0] < fSlow31)))?(fRec88[0] + (fSlow33 * (0 - (fRec90[0] * fRec88[0])))):0.0f)) * fTempPerm95);
+				fTempPerm128 = ((int((fRec90[0] < 0.0f)))?fRec88[0]:((int((fRec90[0] < fSlow31)))?(fRec88[0] + (fSlow33 * (0 - (fRec90[0] * fRec88[0])))):0.0f));
+				fbargraph25 = fTempPerm128;
+				fTempPerm129 = (fTempPerm128 * fTempPerm118);
 			}
 			if (iSlow9 || iSlow8 || iSlow6 || iSlow5 || iSlow4 || iSlow2 || iSlow1) {
-				fTempPerm104 = (fSlow36 * fTempPerm103);
+				fTempPerm130 = (fSlow36 * fTempPerm129);
 			}
 			if (iSlow9 || iSlow4) {
-				fTempPerm105 = ftbl0[(((int((65536.0f * (fRec79[0] + fTempPerm104))) % 65536) + 65536) % 65536)];
+				fTempPerm131 = ftbl0[(((int((65536.0f * (fRec79[0] + fTempPerm130))) % 65536) + 65536) % 65536)];
 			}
 			if (iSlow9 || iSlow8 || iSlow6 || iSlow5 || iSlow4 || iSlow2 || iSlow1) {
-				fTempPerm106 = ftbl0[(((int((65536.0f * (fRec76[0] + fTempPerm104))) % 65536) + 65536) % 65536)];
+				fTempPerm132 = ftbl0[(((int((65536.0f * (fRec76[0] + fTempPerm130))) % 65536) + 65536) % 65536)];
 			}
 			if (iSlow9 || iSlow8) {
-				fTempPerm107 = (fSlow52 * (fTempPerm84 * fTempPerm106));
+				fTempPerm133 = (fSlow52 * (fTempPerm105 * fTempPerm132));
 			}
 			if (iSlow9) {
-				fTempPerm108 = (fSlow195 * (fTempPerm107 + ((fSlow84 * (fTempPerm93 * ftbl0[(((int((65536.0f * (fRec81[0] + fTempPerm104))) % 65536) + 65536) % 65536)])) + (fSlow69 * (fTempPerm88 * fTempPerm105)))));
+				fTempPerm134 = (fSlow195 * (fTempPerm133 + ((fSlow84 * (fTempPerm116 * ftbl0[(((int((65536.0f * (fRec81[0] + fTempPerm130))) % 65536) + 65536) % 65536)])) + (fSlow69 * (fTempPerm110 * fTempPerm131)))));
 			}
 			if (iSlow8 || iSlow7 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
 				fRec92[0] = ((iSlow203)?0.0f:min(fSlow63, (fRec92[1] + 1.0f)));
-				iTempPerm109 = int((fRec92[0] < fSlow60));
-				fRec91[0] = ((iSlow175)?(fSlow177 * ((iTempPerm109)?((int((fRec92[0] < 0.0f)))?0.0f:((iTempPerm109)?(fSlow66 * fRec92[0]):1.0f)):((int((fRec92[0] < fSlow63)))?((fSlow214 * (fRec92[0] - fSlow60)) + 1.0f):fSlow213))):fRec91[1]);
+				iTempPerm135 = int((fRec92[0] < fSlow60));
+				fRec91[0] = ((iSlow175)?(fSlow177 * ((iTempPerm135)?((int((fRec92[0] < 0.0f)))?0.0f:((iTempPerm135)?(fSlow66 * fRec92[0]):1.0f)):((int((fRec92[0] < fSlow63)))?((fSlow214 * (fRec92[0] - fSlow60)) + 1.0f):fSlow213))):fRec91[1]);
 				fRec93[0] = ((iSlow208)?0.0f:min(fSlow67, (fRec93[1] + 1.0f)));
-				fTempPerm110 = ((int((fRec93[0] < 0.0f)))?fRec91[0]:((int((fRec93[0] < fSlow67)))?(fRec91[0] + (fSlow68 * (0 - (fRec93[0] * fRec91[0])))):0.0f));
+				fTempPerm136 = ((int((fRec93[0] < 0.0f)))?fRec91[0]:((int((fRec93[0] < fSlow67)))?(fRec91[0] + (fSlow68 * (0 - (fRec93[0] * fRec91[0])))):0.0f));
+				fbargraph26 = fTempPerm136;
+				fTempPerm137 = fTempPerm136;
 			}
 			if (iSlow8 || iSlow7) {
-				fTempPerm111 = (fTempPerm110 * fTempPerm85);
+				fTempPerm138 = (fTempPerm137 * fTempPerm106);
 			}
 			if (iSlow8) {
-				fTempPerm112 = (fSlow195 * ((fSlow84 * (fTempPerm93 * ftbl0[(((int((65536.0f * (fRec81[0] + (fSlow70 * fTempPerm111)))) % 65536) + 65536) % 65536)])) + fTempPerm107));
+				fTempPerm139 = (fSlow195 * ((fSlow84 * (fTempPerm116 * ftbl0[(((int((65536.0f * (fRec81[0] + (fSlow70 * fTempPerm138)))) % 65536) + 65536) % 65536)])) + fTempPerm133));
 			}
 			if (iSlow7 || iSlow6 || iSlow5 || iSlow4 || iSlow3 || iSlow2 || iSlow1) {
 				fRec95[0] = ((iSlow203)?0.0f:min(fSlow46, (fRec95[1] + 1.0f)));
-				iTempPerm113 = int((fRec95[0] < fSlow43));
-				fRec94[0] = ((iSlow175)?(fSlow177 * ((iTempPerm113)?((int((fRec95[0] < 0.0f)))?0.0f:((iTempPerm113)?(fSlow49 * fRec95[0]):1.0f)):((int((fRec95[0] < fSlow46)))?((fSlow216 * (fRec95[0] - fSlow43)) + 1.0f):fSlow215))):fRec94[1]);
+				iTempPerm140 = int((fRec95[0] < fSlow43));
+				fRec94[0] = ((iSlow175)?(fSlow177 * ((iTempPerm140)?((int((fRec95[0] < 0.0f)))?0.0f:((iTempPerm140)?(fSlow49 * fRec95[0]):1.0f)):((int((fRec95[0] < fSlow46)))?((fSlow216 * (fRec95[0] - fSlow43)) + 1.0f):fSlow215))):fRec94[1]);
 				fRec96[0] = ((iSlow208)?0.0f:min(fSlow50, (fRec96[1] + 1.0f)));
-				fTempPerm114 = ((int((fRec96[0] < 0.0f)))?fRec94[0]:((int((fRec96[0] < fSlow50)))?(fRec94[0] + (fSlow51 * (0 - (fRec96[0] * fRec94[0])))):0.0f));
+				fTempPerm141 = ((int((fRec96[0] < 0.0f)))?fRec94[0]:((int((fRec96[0] < fSlow50)))?(fRec94[0] + (fSlow51 * (0 - (fRec96[0] * fRec94[0])))):0.0f));
+				fbargraph27 = fTempPerm141;
+				fTempPerm142 = fTempPerm141;
 			}
 			if (iSlow7 || iSlow3) {
-				fTempPerm115 = (fTempPerm114 * fTempPerm81);
-				fTempPerm116 = (fSlow34 * fTempPerm103);
+				fTempPerm143 = (fTempPerm142 * fTempPerm101);
+				fTempPerm144 = (fSlow35 * fTempPerm129);
 			}
 			if (iSlow7) {
-				fTempPerm117 = (fSlow217 * (fTempPerm93 * ftbl0[(((int((65536.0f * (fRec81[0] + (fSlow35 * ((fTempPerm116 + (fSlow52 * fTempPerm115)) + (fSlow69 * fTempPerm111)))))) % 65536) + 65536) % 65536)]));
+				fTempPerm145 = (fSlow217 * (fTempPerm116 * ftbl0[(((int((65536.0f * (fRec81[0] + (fSlow34 * ((fTempPerm144 + (fSlow52 * fTempPerm143)) + (fSlow69 * fTempPerm138)))))) % 65536) + 65536) % 65536)]));
 			}
 			if (iSlow6 || iSlow5 || iSlow4 || iSlow2 || iSlow1) {
-				fTempPerm118 = (fTempPerm114 * fTempPerm106);
+				fTempPerm146 = (fTempPerm142 * fTempPerm132);
 			}
 			if (iSlow6 || iSlow5 || iSlow2 || iSlow1) {
-				fTempPerm119 = (fSlow53 * fTempPerm118);
-				fTempPerm120 = ftbl0[(((int((65536.0f * (fRec79[0] + fTempPerm119))) % 65536) + 65536) % 65536)];
+				fTempPerm147 = (fSlow53 * fTempPerm146);
+				fTempPerm148 = ftbl0[(((int((65536.0f * (fRec79[0] + fTempPerm147))) % 65536) + 65536) % 65536)];
 			}
 			if (iSlow6 || iSlow5) {
-				fTempPerm121 = (fSlow69 * (fTempPerm88 * fTempPerm120));
+				fTempPerm149 = (fSlow69 * (fTempPerm110 * fTempPerm148));
 			}
 			if (iSlow6) {
-				fTempPerm122 = (fSlow195 * (fTempPerm121 + fTempPerm94));
+				fTempPerm150 = (fSlow195 * (fTempPerm149 + fTempPerm117));
 			}
 			if (iSlow5) {
-				fTempPerm123 = (fSlow195 * ((fSlow84 * (fTempPerm93 * ftbl0[(((int((65536.0f * (fRec81[0] + fTempPerm119))) % 65536) + 65536) % 65536)])) + fTempPerm121));
+				fTempPerm151 = (fSlow195 * ((fSlow84 * (fTempPerm116 * ftbl0[(((int((65536.0f * (fRec81[0] + fTempPerm147))) % 65536) + 65536) % 65536)])) + fTempPerm149));
 			}
 			if (iSlow4) {
-				fTempPerm124 = (fSlow217 * (fTempPerm93 * ftbl0[(((int((65536.0f * (fRec81[0] + (fSlow35 * ((fSlow52 * fTempPerm118) + (fSlow69 * (fTempPerm110 * fTempPerm105))))))) % 65536) + 65536) % 65536)]));
+				fTempPerm152 = (fSlow217 * (fTempPerm116 * ftbl0[(((int((65536.0f * (fRec81[0] + (fSlow34 * ((fSlow52 * fTempPerm146) + (fSlow69 * (fTempPerm137 * fTempPerm131))))))) % 65536) + 65536) % 65536)]));
 			}
 			if (iSlow3) {
-				fTempPerm125 = (fSlow217 * (fTempPerm93 * ftbl0[(((int((65536.0f * (fRec81[0] + (fSlow35 * (fTempPerm116 + (fSlow69 * (fTempPerm110 * ftbl0[(((int((65536.0f * (fRec79[0] + (fSlow53 * fTempPerm115)))) % 65536) + 65536) % 65536)]))))))) % 65536) + 65536) % 65536)]));
+				fTempPerm153 = (fSlow217 * (fTempPerm116 * ftbl0[(((int((65536.0f * (fRec81[0] + (fSlow34 * (fTempPerm144 + (fSlow69 * (fTempPerm137 * ftbl0[(((int((65536.0f * (fRec79[0] + (fSlow53 * fTempPerm143)))) % 65536) + 65536) % 65536)]))))))) % 65536) + 65536) % 65536)]));
 			}
 			if (iSlow2 || iSlow1) {
-				fTempPerm126 = (fSlow217 * (fTempPerm93 * ftbl0[(((int((65536.0f * (fRec81[0] + (fSlow70 * (fTempPerm110 * fTempPerm120))))) % 65536) + 65536) % 65536)]));
+				fTempPerm154 = (fSlow217 * (fTempPerm116 * ftbl0[(((int((65536.0f * (fRec81[0] + (fSlow70 * (fTempPerm137 * fTempPerm148))))) % 65536) + 65536) % 65536)]));
 			}
 			if (iSlow11 || iSlow7 || iSlow3) {
-				fTempPerm127 = ftbl0[(((int((65536.0f * fRec65[0])) % 65536) + 65536) % 65536)];
+				fTempPerm155 = ftbl0[(((int((65536.0f * fRec65[0])) % 65536) + 65536) % 65536)];
 			}
 			if (iSlow7 || iSlow3) {
-				fTempPerm128 = (fTempPerm71 * fTempPerm127);
-				fTempPerm129 = (fSlow34 * fTempPerm67);
+				fTempPerm156 = (fTempPerm89 * fTempPerm155);
+				fTempPerm157 = (fSlow35 * fTempPerm84);
 			}
 			if (iSlow3) {
-				fTempPerm130 = (fSlow166 * (fTempPerm79 * ftbl0[(((int((65536.0f * (fRec73[0] + (fSlow35 * (fTempPerm129 + (fSlow69 * (fTempPerm76 * ftbl0[(((int((65536.0f * (fRec69[0] + (fSlow53 * fTempPerm128)))) % 65536) + 65536) % 65536)]))))))) % 65536) + 65536) % 65536)]));
+				fTempPerm158 = (fSlow166 * (fTempPerm99 * ftbl0[(((int((65536.0f * (fRec73[0] + (fSlow34 * (fTempPerm157 + (fSlow69 * (fTempPerm95 * ftbl0[(((int((65536.0f * (fRec69[0] + (fSlow53 * fTempPerm156)))) % 65536) + 65536) % 65536)]))))))) % 65536) + 65536) % 65536)]));
 			}
 			if (iSlow9 || iSlow4) {
-				fTempPerm131 = ftbl0[(((int((65536.0f * (fRec69[0] + fTempPerm68))) % 65536) + 65536) % 65536)];
+				fTempPerm159 = ftbl0[(((int((65536.0f * (fRec69[0] + fTempPerm85))) % 65536) + 65536) % 65536)];
 			}
 			if (iSlow4) {
-				fTempPerm132 = (fSlow166 * (fTempPerm79 * ftbl0[(((int((65536.0f * (fRec73[0] + (fSlow35 * ((fSlow52 * fTempPerm72) + (fSlow69 * (fTempPerm76 * fTempPerm131))))))) % 65536) + 65536) % 65536)]));
+				fTempPerm160 = (fSlow166 * (fTempPerm99 * ftbl0[(((int((65536.0f * (fRec73[0] + (fSlow34 * ((fSlow52 * fTempPerm90) + (fSlow69 * (fTempPerm95 * fTempPerm159))))))) % 65536) + 65536) % 65536)]));
 			}
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow6 || iSlow5) {
-				iTempPerm133 = int((iRec75[0] < iSlow183));
-				fTempPerm134 = expf((0 - (fConst4 / ((iSlow155)?((iTempPerm133)?fSlow182:fSlow76):fSlow180))));
-				fRec97[0] = ((fRec97[1] * fTempPerm134) + (((iSlow155)?((iTempPerm133)?1.5873015873015872f:fSlow218):0.0f) * (1.0f - fTempPerm134)));
-				fTempPerm135 = min(1.0f, fRec97[0]);
+				iTempPerm161 = int((iRec75[0] < iSlow183));
+				fTempPerm162 = expf((0 - (fConst4 / ((iSlow155)?((iTempPerm161)?fSlow182:fSlow76):fSlow180))));
+				fRec97[0] = ((fRec97[1] * fTempPerm162) + (((iSlow155)?((iTempPerm161)?1.5873015873015872f:fSlow218):0.0f) * (1.0f - fTempPerm162)));
+				fTempPerm163 = min(1.0f, fRec97[0]);
+				fbargraph28 = fTempPerm163;
+				fTempPerm164 = fTempPerm163;
 			}
 			if (iSlow6 || iSlow5) {
-				fTempPerm136 = (fSlow69 * (fTempPerm135 * fTempPerm74));
+				fTempPerm165 = (fSlow69 * (fTempPerm164 * fTempPerm92));
 			}
 			if (iSlow5) {
-				fTempPerm137 = (fSlow165 * ((fSlow84 * (fTempPerm79 * ftbl0[(((int((65536.0f * (fRec73[0] + fTempPerm73))) % 65536) + 65536) % 65536)])) + fTempPerm136));
+				fTempPerm166 = (fSlow165 * ((fSlow84 * (fTempPerm99 * ftbl0[(((int((65536.0f * (fRec73[0] + fTempPerm91))) % 65536) + 65536) % 65536)])) + fTempPerm165));
 			}
 			if (iSlow11 || iSlow10 || iSlow6) {
-				fTempPerm138 = ftbl0[(((int((65536.0f * fRec73[0])) % 65536) + 65536) % 65536)];
+				fTempPerm167 = ftbl0[(((int((65536.0f * fRec73[0])) % 65536) + 65536) % 65536)];
 			}
 			if (iSlow11 || iSlow6) {
-				fTempPerm139 = (fSlow84 * (fTempPerm79 * fTempPerm138));
+				fTempPerm168 = (fSlow84 * (fTempPerm99 * fTempPerm167));
 			}
 			if (iSlow6) {
-				fTempPerm140 = (fSlow165 * (fTempPerm136 + fTempPerm139));
+				fTempPerm169 = (fSlow165 * (fTempPerm165 + fTempPerm168));
 			}
 			if (iSlow11 || iSlow10 || iSlow8 || iSlow7) {
-				fTempPerm141 = ftbl0[(((int((65536.0f * fRec69[0])) % 65536) + 65536) % 65536)];
+				fTempPerm170 = ftbl0[(((int((65536.0f * fRec69[0])) % 65536) + 65536) % 65536)];
 			}
 			if (iSlow8 || iSlow7) {
-				fTempPerm142 = (fTempPerm76 * fTempPerm141);
+				fTempPerm171 = (fTempPerm95 * fTempPerm170);
 			}
 			if (iSlow7) {
-				fTempPerm143 = (fSlow166 * (fTempPerm79 * ftbl0[(((int((65536.0f * (fRec73[0] + (fSlow35 * ((fTempPerm129 + (fSlow52 * fTempPerm128)) + (fSlow69 * fTempPerm142)))))) % 65536) + 65536) % 65536)]));
+				fTempPerm172 = (fSlow166 * (fTempPerm99 * ftbl0[(((int((65536.0f * (fRec73[0] + (fSlow34 * ((fTempPerm157 + (fSlow52 * fTempPerm156)) + (fSlow69 * fTempPerm171)))))) % 65536) + 65536) % 65536)]));
 			}
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow8) {
-				iTempPerm144 = int((iRec75[0] < iSlow172));
-				fTempPerm145 = expf((0 - (fConst4 / ((iSlow155)?((iTempPerm144)?fSlow171:fSlow76):fSlow169))));
-				fRec98[0] = ((fRec98[1] * fTempPerm145) + (((iSlow155)?((iTempPerm144)?1.5873015873015872f:fSlow219):0.0f) * (1.0f - fTempPerm145)));
-				fTempPerm146 = min(1.0f, fRec98[0]);
+				iTempPerm173 = int((iRec75[0] < iSlow172));
+				fTempPerm174 = expf((0 - (fConst4 / ((iSlow155)?((iTempPerm173)?fSlow171:fSlow76):fSlow169))));
+				fRec98[0] = ((fRec98[1] * fTempPerm174) + (((iSlow155)?((iTempPerm173)?1.5873015873015872f:fSlow219):0.0f) * (1.0f - fTempPerm174)));
+				fTempPerm175 = min(1.0f, fRec98[0]);
+				fbargraph29 = fTempPerm175;
+				fTempPerm176 = fTempPerm175;
 			}
 			if (iSlow9 || iSlow8) {
-				fTempPerm147 = (fSlow52 * (fTempPerm146 * fTempPerm69));
+				fTempPerm177 = (fSlow52 * (fTempPerm176 * fTempPerm86));
 			}
 			if (iSlow8) {
-				fTempPerm148 = (fSlow165 * ((fSlow84 * (fTempPerm79 * ftbl0[(((int((65536.0f * (fRec73[0] + (fSlow70 * fTempPerm142)))) % 65536) + 65536) % 65536)])) + fTempPerm147));
+				fTempPerm178 = (fSlow165 * ((fSlow84 * (fTempPerm99 * ftbl0[(((int((65536.0f * (fRec73[0] + (fSlow70 * fTempPerm171)))) % 65536) + 65536) % 65536)])) + fTempPerm177));
 			}
 			if (iSlow9) {
-				fTempPerm149 = (fSlow165 * (fTempPerm147 + ((fSlow84 * (fTempPerm79 * ftbl0[(((int((65536.0f * (fRec73[0] + fTempPerm68))) % 65536) + 65536) % 65536)])) + (fSlow69 * (fTempPerm135 * fTempPerm131)))));
+				fTempPerm179 = (fSlow165 * (fTempPerm177 + ((fSlow84 * (fTempPerm99 * ftbl0[(((int((65536.0f * (fRec73[0] + fTempPerm85))) % 65536) + 65536) % 65536)])) + (fSlow69 * (fTempPerm164 * fTempPerm159)))));
 			}
 			if (iSlow10) {
 				fRec100[0] = ((iSlow151)?0.0f:min(fSlow202, (fRec100[1] + 1.0f)));
-				iTempPerm150 = int((fRec100[0] < fSlow199));
-				fRec99[0] = ((iSlow155)?(fSlow154 * ((iTempPerm150)?((int((fRec100[0] < 0.0f)))?0.0f:((iTempPerm150)?(fSlow206 * fRec100[0]):1.0f)):((int((fRec100[0] < fSlow202)))?((fSlow221 * (fRec100[0] - fSlow199)) + 1.0f):fSlow220))):fRec99[1]);
+				iTempPerm180 = int((fRec100[0] < fSlow199));
+				fRec99[0] = ((iSlow155)?(fSlow154 * ((iTempPerm180)?((int((fRec100[0] < 0.0f)))?0.0f:((iTempPerm180)?(fSlow206 * fRec100[0]):1.0f)):((int((fRec100[0] < fSlow202)))?((fSlow221 * (fRec100[0] - fSlow199)) + 1.0f):fSlow220))):fRec99[1]);
 				fRec101[0] = ((iSlow156)?0.0f:min(fSlow207, (fRec101[1] + 1.0f)));
+				fTempPerm181 = ((int((fRec101[0] < 0.0f)))?fRec99[0]:((int((fRec101[0] < fSlow207)))?(fRec99[0] + (fSlow209 * (0 - (fRec101[0] * fRec99[0])))):0.0f));
+				fbargraph30 = fTempPerm181;
 			}
 			if (iSlow11 || iSlow10) {
-				fTempPerm151 = (fSlow69 * (fTempPerm135 * fTempPerm141));
-				iTempPerm152 = int((iRec75[0] < iSlow192));
-				fTempPerm153 = expf((0 - (fConst4 / ((iSlow155)?((iTempPerm152)?fSlow191:fSlow76):fSlow189))));
-				fRec102[0] = ((fRec102[1] * fTempPerm153) + (((iSlow155)?((iTempPerm152)?1.5873015873015872f:fSlow222):0.0f) * (1.0f - fTempPerm153)));
-				fTempPerm154 = (fSlow34 * (min(1.0f, fRec102[0]) * fTempPerm65));
+				fTempPerm182 = (fSlow69 * (fTempPerm164 * fTempPerm170));
+				iTempPerm183 = int((iRec75[0] < iSlow192));
+				fTempPerm184 = expf((0 - (fConst4 / ((iSlow155)?((iTempPerm183)?fSlow191:fSlow76):fSlow189))));
+				fRec102[0] = ((fRec102[1] * fTempPerm184) + (((iSlow155)?((iTempPerm183)?1.5873015873015872f:fSlow222):0.0f) * (1.0f - fTempPerm184)));
+				fTempPerm185 = min(1.0f, fRec102[0]);
+				fbargraph31 = fTempPerm185;
+				fTempPerm186 = (fSlow35 * (fTempPerm185 * fTempPerm81));
 			}
 			if (iSlow10) {
-				fTempPerm155 = (fSlow165 * ((fTempPerm154 + fTempPerm151) + (fSlow52 * (fTempPerm146 * ftbl0[(((int((65536.0f * (fRec65[0] + (fSlow210 * (fTempPerm138 * ((int((fRec101[0] < 0.0f)))?fRec99[0]:((int((fRec101[0] < fSlow207)))?(fRec99[0] + (fSlow209 * (0 - (fRec101[0] * fRec99[0])))):0.0f))))))) % 65536) + 65536) % 65536)]))));
+				fTempPerm187 = (fSlow165 * ((fTempPerm186 + fTempPerm182) + (fSlow52 * (fTempPerm176 * ftbl0[(((int((65536.0f * (fRec65[0] + (fSlow210 * (fTempPerm167 * fTempPerm181))))) % 65536) + 65536) % 65536)]))));
 			}
 			if (iSlow11) {
-				fTempPerm156 = (fSlow165 * (fTempPerm154 + ((fTempPerm139 + fTempPerm151) + (fSlow52 * (fTempPerm146 * fTempPerm127)))));
+				fTempPerm188 = (fSlow165 * (fTempPerm186 + ((fTempPerm168 + fTempPerm182) + (fSlow52 * (fTempPerm176 * fTempPerm155)))));
 			}
 			if (iSlow11 || iSlow7 || iSlow3) {
-				fTempPerm157 = ftbl0[(((int((65536.0f * fRec50[0])) % 65536) + 65536) % 65536)];
+				fTempPerm189 = ftbl0[(((int((65536.0f * fRec50[0])) % 65536) + 65536) % 65536)];
 			}
 			if (iSlow7 || iSlow3) {
-				fTempPerm158 = (fTempPerm55 * fTempPerm157);
-				fTempPerm159 = (fSlow34 * fTempPerm51);
+				fTempPerm190 = (fTempPerm69 * fTempPerm189);
+				fTempPerm191 = (fSlow35 * fTempPerm64);
 			}
 			if (iSlow3) {
-				fTempPerm160 = (fSlow146 * (fTempPerm63 * ftbl0[(((int((65536.0f * (fRec58[0] + (fSlow35 * (fTempPerm159 + (fSlow69 * (fTempPerm60 * ftbl0[(((int((65536.0f * (fRec54[0] + (fSlow53 * fTempPerm158)))) % 65536) + 65536) % 65536)]))))))) % 65536) + 65536) % 65536)]));
+				fTempPerm192 = (fSlow146 * (fTempPerm79 * ftbl0[(((int((65536.0f * (fRec58[0] + (fSlow34 * (fTempPerm191 + (fSlow69 * (fTempPerm75 * ftbl0[(((int((65536.0f * (fRec54[0] + (fSlow53 * fTempPerm190)))) % 65536) + 65536) % 65536)]))))))) % 65536) + 65536) % 65536)]));
 			}
 			if (iSlow9 || iSlow4) {
-				fTempPerm161 = ftbl0[(((int((65536.0f * (fRec54[0] + fTempPerm52))) % 65536) + 65536) % 65536)];
+				fTempPerm193 = ftbl0[(((int((65536.0f * (fRec54[0] + fTempPerm65))) % 65536) + 65536) % 65536)];
 			}
 			if (iSlow4) {
-				fTempPerm162 = (fSlow146 * (fTempPerm63 * ftbl0[(((int((65536.0f * (fRec58[0] + (fSlow35 * ((fSlow52 * fTempPerm56) + (fSlow69 * (fTempPerm60 * fTempPerm161))))))) % 65536) + 65536) % 65536)]));
+				fTempPerm194 = (fSlow146 * (fTempPerm79 * ftbl0[(((int((65536.0f * (fRec58[0] + (fSlow34 * ((fSlow52 * fTempPerm70) + (fSlow69 * (fTempPerm75 * fTempPerm193))))))) % 65536) + 65536) % 65536)]));
 			}
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow6 || iSlow5) {
-				iTempPerm163 = int((iRec60[0] < iSlow183));
-				fTempPerm164 = expf((0 - (fConst4 / ((iSlow135)?((iTempPerm163)?fSlow182:fSlow76):fSlow180))));
-				fRec103[0] = ((fRec103[1] * fTempPerm164) + (((iSlow135)?((iTempPerm163)?1.5873015873015872f:fSlow223):0.0f) * (1.0f - fTempPerm164)));
-				fTempPerm165 = min(1.0f, fRec103[0]);
+				iTempPerm195 = int((iRec60[0] < iSlow183));
+				fTempPerm196 = expf((0 - (fConst4 / ((iSlow135)?((iTempPerm195)?fSlow182:fSlow76):fSlow180))));
+				fRec103[0] = ((fRec103[1] * fTempPerm196) + (((iSlow135)?((iTempPerm195)?1.5873015873015872f:fSlow223):0.0f) * (1.0f - fTempPerm196)));
+				fTempPerm197 = min(1.0f, fRec103[0]);
+				fbargraph32 = fTempPerm197;
+				fTempPerm198 = fTempPerm197;
 			}
 			if (iSlow6 || iSlow5) {
-				fTempPerm166 = (fSlow69 * (fTempPerm165 * fTempPerm58));
+				fTempPerm199 = (fSlow69 * (fTempPerm198 * fTempPerm72));
 			}
 			if (iSlow5) {
-				fTempPerm167 = (fSlow145 * ((fSlow84 * (fTempPerm63 * ftbl0[(((int((65536.0f * (fRec58[0] + fTempPerm57))) % 65536) + 65536) % 65536)])) + fTempPerm166));
+				fTempPerm200 = (fSlow145 * ((fSlow84 * (fTempPerm79 * ftbl0[(((int((65536.0f * (fRec58[0] + fTempPerm71))) % 65536) + 65536) % 65536)])) + fTempPerm199));
 			}
 			if (iSlow11 || iSlow10 || iSlow6) {
-				fTempPerm168 = ftbl0[(((int((65536.0f * fRec58[0])) % 65536) + 65536) % 65536)];
+				fTempPerm201 = ftbl0[(((int((65536.0f * fRec58[0])) % 65536) + 65536) % 65536)];
 			}
 			if (iSlow11 || iSlow6) {
-				fTempPerm169 = (fSlow84 * (fTempPerm63 * fTempPerm168));
+				fTempPerm202 = (fSlow84 * (fTempPerm79 * fTempPerm201));
 			}
 			if (iSlow6) {
-				fTempPerm170 = (fSlow145 * (fTempPerm166 + fTempPerm169));
+				fTempPerm203 = (fSlow145 * (fTempPerm199 + fTempPerm202));
 			}
 			if (iSlow11 || iSlow10 || iSlow8 || iSlow7) {
-				fTempPerm171 = ftbl0[(((int((65536.0f * fRec54[0])) % 65536) + 65536) % 65536)];
+				fTempPerm204 = ftbl0[(((int((65536.0f * fRec54[0])) % 65536) + 65536) % 65536)];
 			}
 			if (iSlow8 || iSlow7) {
-				fTempPerm172 = (fTempPerm60 * fTempPerm171);
+				fTempPerm205 = (fTempPerm75 * fTempPerm204);
 			}
 			if (iSlow7) {
-				fTempPerm173 = (fSlow146 * (fTempPerm63 * ftbl0[(((int((65536.0f * (fRec58[0] + (fSlow35 * ((fTempPerm159 + (fSlow52 * fTempPerm158)) + (fSlow69 * fTempPerm172)))))) % 65536) + 65536) % 65536)]));
+				fTempPerm206 = (fSlow146 * (fTempPerm79 * ftbl0[(((int((65536.0f * (fRec58[0] + (fSlow34 * ((fTempPerm191 + (fSlow52 * fTempPerm190)) + (fSlow69 * fTempPerm205)))))) % 65536) + 65536) % 65536)]));
 			}
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow8) {
-				iTempPerm174 = int((iRec60[0] < iSlow172));
-				fTempPerm175 = expf((0 - (fConst4 / ((iSlow135)?((iTempPerm174)?fSlow171:fSlow76):fSlow169))));
-				fRec104[0] = ((fRec104[1] * fTempPerm175) + (((iSlow135)?((iTempPerm174)?1.5873015873015872f:fSlow224):0.0f) * (1.0f - fTempPerm175)));
-				fTempPerm176 = min(1.0f, fRec104[0]);
+				iTempPerm207 = int((iRec60[0] < iSlow172));
+				fTempPerm208 = expf((0 - (fConst4 / ((iSlow135)?((iTempPerm207)?fSlow171:fSlow76):fSlow169))));
+				fRec104[0] = ((fRec104[1] * fTempPerm208) + (((iSlow135)?((iTempPerm207)?1.5873015873015872f:fSlow224):0.0f) * (1.0f - fTempPerm208)));
+				fTempPerm209 = min(1.0f, fRec104[0]);
+				fbargraph33 = fTempPerm209;
+				fTempPerm210 = fTempPerm209;
 			}
 			if (iSlow9 || iSlow8) {
-				fTempPerm177 = (fSlow52 * (fTempPerm176 * fTempPerm53));
+				fTempPerm211 = (fSlow52 * (fTempPerm210 * fTempPerm66));
 			}
 			if (iSlow8) {
-				fTempPerm178 = (fSlow145 * ((fSlow84 * (fTempPerm63 * ftbl0[(((int((65536.0f * (fRec58[0] + (fSlow70 * fTempPerm172)))) % 65536) + 65536) % 65536)])) + fTempPerm177));
+				fTempPerm212 = (fSlow145 * ((fSlow84 * (fTempPerm79 * ftbl0[(((int((65536.0f * (fRec58[0] + (fSlow70 * fTempPerm205)))) % 65536) + 65536) % 65536)])) + fTempPerm211));
 			}
 			if (iSlow9) {
-				fTempPerm179 = (fSlow145 * (fTempPerm177 + ((fSlow84 * (fTempPerm63 * ftbl0[(((int((65536.0f * (fRec58[0] + fTempPerm52))) % 65536) + 65536) % 65536)])) + (fSlow69 * (fTempPerm165 * fTempPerm161)))));
+				fTempPerm213 = (fSlow145 * (fTempPerm211 + ((fSlow84 * (fTempPerm79 * ftbl0[(((int((65536.0f * (fRec58[0] + fTempPerm65))) % 65536) + 65536) % 65536)])) + (fSlow69 * (fTempPerm198 * fTempPerm193)))));
 			}
 			if (iSlow10) {
 				fRec106[0] = ((iSlow131)?0.0f:min(fSlow202, (fRec106[1] + 1.0f)));
-				iTempPerm180 = int((fRec106[0] < fSlow199));
-				fRec105[0] = ((iSlow135)?(fSlow134 * ((iTempPerm180)?((int((fRec106[0] < 0.0f)))?0.0f:((iTempPerm180)?(fSlow206 * fRec106[0]):1.0f)):((int((fRec106[0] < fSlow202)))?((fSlow226 * (fRec106[0] - fSlow199)) + 1.0f):fSlow225))):fRec105[1]);
+				iTempPerm214 = int((fRec106[0] < fSlow199));
+				fRec105[0] = ((iSlow135)?(fSlow134 * ((iTempPerm214)?((int((fRec106[0] < 0.0f)))?0.0f:((iTempPerm214)?(fSlow206 * fRec106[0]):1.0f)):((int((fRec106[0] < fSlow202)))?((fSlow226 * (fRec106[0] - fSlow199)) + 1.0f):fSlow225))):fRec105[1]);
 				fRec107[0] = ((iSlow136)?0.0f:min(fSlow207, (fRec107[1] + 1.0f)));
+				fTempPerm215 = ((int((fRec107[0] < 0.0f)))?fRec105[0]:((int((fRec107[0] < fSlow207)))?(fRec105[0] + (fSlow209 * (0 - (fRec107[0] * fRec105[0])))):0.0f));
+				fbargraph34 = fTempPerm215;
 			}
 			if (iSlow11 || iSlow10) {
-				fTempPerm181 = (fSlow69 * (fTempPerm165 * fTempPerm171));
-				iTempPerm182 = int((iRec60[0] < iSlow192));
-				fTempPerm183 = expf((0 - (fConst4 / ((iSlow135)?((iTempPerm182)?fSlow191:fSlow76):fSlow189))));
-				fRec108[0] = ((fRec108[1] * fTempPerm183) + (((iSlow135)?((iTempPerm182)?1.5873015873015872f:fSlow227):0.0f) * (1.0f - fTempPerm183)));
-				fTempPerm184 = (fSlow34 * (min(1.0f, fRec108[0]) * fTempPerm49));
+				fTempPerm216 = (fSlow69 * (fTempPerm198 * fTempPerm204));
+				iTempPerm217 = int((iRec60[0] < iSlow192));
+				fTempPerm218 = expf((0 - (fConst4 / ((iSlow135)?((iTempPerm217)?fSlow191:fSlow76):fSlow189))));
+				fRec108[0] = ((fRec108[1] * fTempPerm218) + (((iSlow135)?((iTempPerm217)?1.5873015873015872f:fSlow227):0.0f) * (1.0f - fTempPerm218)));
+				fTempPerm219 = min(1.0f, fRec108[0]);
+				fbargraph35 = fTempPerm219;
+				fTempPerm220 = (fSlow35 * (fTempPerm219 * fTempPerm61));
 			}
 			if (iSlow10) {
-				fTempPerm185 = (fSlow145 * ((fTempPerm184 + fTempPerm181) + (fSlow52 * (fTempPerm176 * ftbl0[(((int((65536.0f * (fRec50[0] + (fSlow210 * (fTempPerm168 * ((int((fRec107[0] < 0.0f)))?fRec105[0]:((int((fRec107[0] < fSlow207)))?(fRec105[0] + (fSlow209 * (0 - (fRec107[0] * fRec105[0])))):0.0f))))))) % 65536) + 65536) % 65536)]))));
+				fTempPerm221 = (fSlow145 * ((fTempPerm220 + fTempPerm216) + (fSlow52 * (fTempPerm210 * ftbl0[(((int((65536.0f * (fRec50[0] + (fSlow210 * (fTempPerm201 * fTempPerm215))))) % 65536) + 65536) % 65536)]))));
 			}
 			if (iSlow11) {
-				fTempPerm186 = (fSlow145 * (fTempPerm184 + ((fTempPerm169 + fTempPerm181) + (fSlow52 * (fTempPerm176 * fTempPerm157)))));
+				fTempPerm222 = (fSlow145 * (fTempPerm220 + ((fTempPerm202 + fTempPerm216) + (fSlow52 * (fTempPerm210 * fTempPerm189)))));
 			}
 			if (iSlow11 || iSlow7 || iSlow3) {
-				fTempPerm187 = ftbl0[(((int((65536.0f * fRec35[0])) % 65536) + 65536) % 65536)];
+				fTempPerm223 = ftbl0[(((int((65536.0f * fRec35[0])) % 65536) + 65536) % 65536)];
 			}
 			if (iSlow7 || iSlow3) {
-				fTempPerm188 = (fTempPerm39 * fTempPerm187);
-				fTempPerm189 = (fSlow34 * fTempPerm35);
+				fTempPerm224 = (fTempPerm49 * fTempPerm223);
+				fTempPerm225 = (fSlow35 * fTempPerm44);
 			}
 			if (iSlow3) {
-				fTempPerm190 = (fSlow126 * (fTempPerm47 * ftbl0[(((int((65536.0f * (fRec43[0] + (fSlow35 * (fTempPerm189 + (fSlow69 * (fTempPerm44 * ftbl0[(((int((65536.0f * (fRec39[0] + (fSlow53 * fTempPerm188)))) % 65536) + 65536) % 65536)]))))))) % 65536) + 65536) % 65536)]));
+				fTempPerm226 = (fSlow126 * (fTempPerm59 * ftbl0[(((int((65536.0f * (fRec43[0] + (fSlow34 * (fTempPerm225 + (fSlow69 * (ftbl0[(((int((65536.0f * (fRec39[0] + (fSlow53 * fTempPerm224)))) % 65536) + 65536) % 65536)] * fTempPerm55))))))) % 65536) + 65536) % 65536)]));
 			}
 			if (iSlow9 || iSlow4) {
-				fTempPerm191 = ftbl0[(((int((65536.0f * (fRec39[0] + fTempPerm36))) % 65536) + 65536) % 65536)];
+				fTempPerm227 = ftbl0[(((int((65536.0f * (fRec39[0] + fTempPerm45))) % 65536) + 65536) % 65536)];
 			}
 			if (iSlow4) {
-				fTempPerm192 = (fSlow126 * (fTempPerm47 * ftbl0[(((int((65536.0f * (fRec43[0] + (fSlow35 * ((fSlow52 * fTempPerm40) + (fSlow69 * (fTempPerm44 * fTempPerm191))))))) % 65536) + 65536) % 65536)]));
+				fTempPerm228 = (fSlow126 * (fTempPerm59 * ftbl0[(((int((65536.0f * (fRec43[0] + (fSlow34 * ((fSlow52 * fTempPerm50) + (fSlow69 * (fTempPerm55 * fTempPerm227))))))) % 65536) + 65536) % 65536)]));
 			}
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow6 || iSlow5) {
-				iTempPerm193 = int((iRec45[0] < iSlow183));
-				fTempPerm194 = expf((0 - (fConst4 / ((iSlow115)?((iTempPerm193)?fSlow182:fSlow76):fSlow180))));
-				fRec109[0] = ((fRec109[1] * fTempPerm194) + (((iSlow115)?((iTempPerm193)?1.5873015873015872f:fSlow228):0.0f) * (1.0f - fTempPerm194)));
-				fTempPerm195 = min(1.0f, fRec109[0]);
+				iTempPerm229 = int((iRec45[0] < iSlow183));
+				fTempPerm230 = expf((0 - (fConst4 / ((iSlow115)?((iTempPerm229)?fSlow182:fSlow76):fSlow180))));
+				fRec109[0] = ((fRec109[1] * fTempPerm230) + (((iSlow115)?((iTempPerm229)?1.5873015873015872f:fSlow228):0.0f) * (1.0f - fTempPerm230)));
+				fTempPerm231 = min(1.0f, fRec109[0]);
+				fbargraph36 = fTempPerm231;
+				fTempPerm232 = fTempPerm231;
 			}
 			if (iSlow6 || iSlow5) {
-				fTempPerm196 = (fSlow69 * (fTempPerm195 * fTempPerm42));
+				fTempPerm233 = (fSlow69 * (fTempPerm232 * fTempPerm52));
 			}
 			if (iSlow5) {
-				fTempPerm197 = (fSlow125 * ((fSlow84 * (fTempPerm47 * ftbl0[(((int((65536.0f * (fRec43[0] + fTempPerm41))) % 65536) + 65536) % 65536)])) + fTempPerm196));
+				fTempPerm234 = (fSlow125 * ((fSlow84 * (fTempPerm59 * ftbl0[(((int((65536.0f * (fRec43[0] + fTempPerm51))) % 65536) + 65536) % 65536)])) + fTempPerm233));
 			}
 			if (iSlow11 || iSlow10 || iSlow6) {
-				fTempPerm198 = ftbl0[(((int((65536.0f * fRec43[0])) % 65536) + 65536) % 65536)];
+				fTempPerm235 = ftbl0[(((int((65536.0f * fRec43[0])) % 65536) + 65536) % 65536)];
 			}
 			if (iSlow11 || iSlow6) {
-				fTempPerm199 = (fSlow84 * (fTempPerm47 * fTempPerm198));
+				fTempPerm236 = (fSlow84 * (fTempPerm59 * fTempPerm235));
 			}
 			if (iSlow6) {
-				fTempPerm200 = (fSlow125 * (fTempPerm196 + fTempPerm199));
+				fTempPerm237 = (fSlow125 * (fTempPerm233 + fTempPerm236));
 			}
 			if (iSlow11 || iSlow10 || iSlow8 || iSlow7) {
-				fTempPerm201 = ftbl0[(((int((65536.0f * fRec39[0])) % 65536) + 65536) % 65536)];
+				fTempPerm238 = ftbl0[(((int((65536.0f * fRec39[0])) % 65536) + 65536) % 65536)];
 			}
 			if (iSlow8 || iSlow7) {
-				fTempPerm202 = (fTempPerm44 * fTempPerm201);
+				fTempPerm239 = (fTempPerm55 * fTempPerm238);
 			}
 			if (iSlow7) {
-				fTempPerm203 = (fSlow126 * (fTempPerm47 * ftbl0[(((int((65536.0f * (fRec43[0] + (fSlow35 * ((fTempPerm189 + (fSlow52 * fTempPerm188)) + (fSlow69 * fTempPerm202)))))) % 65536) + 65536) % 65536)]));
+				fTempPerm240 = (fSlow126 * (fTempPerm59 * ftbl0[(((int((65536.0f * (fRec43[0] + (fSlow34 * ((fTempPerm225 + (fSlow52 * fTempPerm224)) + (fSlow69 * fTempPerm239)))))) % 65536) + 65536) % 65536)]));
 			}
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow8) {
-				iTempPerm204 = int((iRec45[0] < iSlow172));
-				fTempPerm205 = expf((0 - (fConst4 / ((iSlow115)?((iTempPerm204)?fSlow171:fSlow76):fSlow169))));
-				fRec110[0] = ((fRec110[1] * fTempPerm205) + (((iSlow115)?((iTempPerm204)?1.5873015873015872f:fSlow229):0.0f) * (1.0f - fTempPerm205)));
-				fTempPerm206 = min(1.0f, fRec110[0]);
+				iTempPerm241 = int((iRec45[0] < iSlow172));
+				fTempPerm242 = expf((0 - (fConst4 / ((iSlow115)?((iTempPerm241)?fSlow171:fSlow76):fSlow169))));
+				fRec110[0] = ((fRec110[1] * fTempPerm242) + (((iSlow115)?((iTempPerm241)?1.5873015873015872f:fSlow229):0.0f) * (1.0f - fTempPerm242)));
+				fTempPerm243 = min(1.0f, fRec110[0]);
+				fbargraph37 = fTempPerm243;
+				fTempPerm244 = fTempPerm243;
 			}
 			if (iSlow9 || iSlow8) {
-				fTempPerm207 = (fSlow52 * (fTempPerm206 * fTempPerm37));
+				fTempPerm245 = (fSlow52 * (fTempPerm244 * fTempPerm46));
 			}
 			if (iSlow8) {
-				fTempPerm208 = (fSlow125 * ((fSlow84 * (fTempPerm47 * ftbl0[(((int((65536.0f * (fRec43[0] + (fSlow70 * fTempPerm202)))) % 65536) + 65536) % 65536)])) + fTempPerm207));
+				fTempPerm246 = (fSlow125 * ((fSlow84 * (fTempPerm59 * ftbl0[(((int((65536.0f * (fRec43[0] + (fSlow70 * fTempPerm239)))) % 65536) + 65536) % 65536)])) + fTempPerm245));
 			}
 			if (iSlow9) {
-				fTempPerm209 = (fSlow125 * (fTempPerm207 + ((fSlow84 * (fTempPerm47 * ftbl0[(((int((65536.0f * (fRec43[0] + fTempPerm36))) % 65536) + 65536) % 65536)])) + (fSlow69 * (fTempPerm195 * fTempPerm191)))));
+				fTempPerm247 = (fSlow125 * (fTempPerm245 + ((fSlow84 * (fTempPerm59 * ftbl0[(((int((65536.0f * (fRec43[0] + fTempPerm45))) % 65536) + 65536) % 65536)])) + (fSlow69 * (fTempPerm232 * fTempPerm227)))));
 			}
 			if (iSlow10) {
 				fRec112[0] = ((iSlow111)?0.0f:min(fSlow202, (fRec112[1] + 1.0f)));
-				iTempPerm210 = int((fRec112[0] < fSlow199));
-				fRec111[0] = ((iSlow115)?(fSlow114 * ((iTempPerm210)?((int((fRec112[0] < 0.0f)))?0.0f:((iTempPerm210)?(fSlow206 * fRec112[0]):1.0f)):((int((fRec112[0] < fSlow202)))?((fSlow231 * (fRec112[0] - fSlow199)) + 1.0f):fSlow230))):fRec111[1]);
+				iTempPerm248 = int((fRec112[0] < fSlow199));
+				fRec111[0] = ((iSlow115)?(fSlow114 * ((iTempPerm248)?((int((fRec112[0] < 0.0f)))?0.0f:((iTempPerm248)?(fSlow206 * fRec112[0]):1.0f)):((int((fRec112[0] < fSlow202)))?((fSlow231 * (fRec112[0] - fSlow199)) + 1.0f):fSlow230))):fRec111[1]);
 				fRec113[0] = ((iSlow116)?0.0f:min(fSlow207, (fRec113[1] + 1.0f)));
+				fTempPerm249 = ((int((fRec113[0] < 0.0f)))?fRec111[0]:((int((fRec113[0] < fSlow207)))?(fRec111[0] + (fSlow209 * (0 - (fRec113[0] * fRec111[0])))):0.0f));
+				fbargraph38 = fTempPerm249;
 			}
 			if (iSlow11 || iSlow10) {
-				fTempPerm211 = (fSlow69 * (fTempPerm195 * fTempPerm201));
-				iTempPerm212 = int((iRec45[0] < iSlow192));
-				fTempPerm213 = expf((0 - (fConst4 / ((iSlow115)?((iTempPerm212)?fSlow191:fSlow76):fSlow189))));
-				fRec114[0] = ((fRec114[1] * fTempPerm213) + (((iSlow115)?((iTempPerm212)?1.5873015873015872f:fSlow232):0.0f) * (1.0f - fTempPerm213)));
-				fTempPerm214 = (fSlow34 * (min(1.0f, fRec114[0]) * fTempPerm33));
+				fTempPerm250 = (fSlow69 * (fTempPerm232 * fTempPerm238));
+				iTempPerm251 = int((iRec45[0] < iSlow192));
+				fTempPerm252 = expf((0 - (fConst4 / ((iSlow115)?((iTempPerm251)?fSlow191:fSlow76):fSlow189))));
+				fRec114[0] = ((fRec114[1] * fTempPerm252) + (((iSlow115)?((iTempPerm251)?1.5873015873015872f:fSlow232):0.0f) * (1.0f - fTempPerm252)));
+				fTempPerm253 = min(1.0f, fRec114[0]);
+				fbargraph39 = fTempPerm253;
+				fTempPerm254 = (fSlow35 * (fTempPerm253 * fTempPerm41));
 			}
 			if (iSlow10) {
-				fTempPerm215 = (fSlow125 * ((fTempPerm214 + fTempPerm211) + (fSlow52 * (fTempPerm206 * ftbl0[(((int((65536.0f * (fRec35[0] + (fSlow210 * (fTempPerm198 * ((int((fRec113[0] < 0.0f)))?fRec111[0]:((int((fRec113[0] < fSlow207)))?(fRec111[0] + (fSlow209 * (0 - (fRec113[0] * fRec111[0])))):0.0f))))))) % 65536) + 65536) % 65536)]))));
+				fTempPerm255 = (fSlow125 * ((fTempPerm254 + fTempPerm250) + (fSlow52 * (fTempPerm244 * ftbl0[(((int((65536.0f * (fRec35[0] + (fSlow210 * (fTempPerm235 * fTempPerm249))))) % 65536) + 65536) % 65536)]))));
 			}
 			if (iSlow11) {
-				fTempPerm216 = (fSlow125 * (fTempPerm214 + ((fTempPerm199 + fTempPerm211) + (fSlow52 * (fTempPerm206 * fTempPerm187)))));
+				fTempPerm256 = (fSlow125 * (fTempPerm254 + ((fTempPerm236 + fTempPerm250) + (fSlow52 * (fTempPerm244 * fTempPerm223)))));
 			}
 			if (iSlow11 || iSlow7 || iSlow3) {
-				fTempPerm217 = ftbl0[(((int((65536.0f * fRec20[0])) % 65536) + 65536) % 65536)];
+				fTempPerm257 = ftbl0[(((int((65536.0f * fRec20[0])) % 65536) + 65536) % 65536)];
 			}
 			if (iSlow7 || iSlow3) {
-				fTempPerm218 = (fTempPerm23 * fTempPerm217);
-				fTempPerm219 = (fSlow34 * fTempPerm19);
+				fTempPerm258 = (fTempPerm29 * fTempPerm257);
+				fTempPerm259 = (fSlow35 * fTempPerm24);
 			}
 			if (iSlow3) {
-				fTempPerm220 = (fSlow106 * (fTempPerm31 * ftbl0[(((int((65536.0f * (fRec28[0] + (fSlow35 * (fTempPerm219 + (fSlow69 * (fTempPerm28 * ftbl0[(((int((65536.0f * (fRec24[0] + (fSlow53 * fTempPerm218)))) % 65536) + 65536) % 65536)]))))))) % 65536) + 65536) % 65536)]));
+				fTempPerm260 = (fSlow106 * (fTempPerm39 * ftbl0[(((int((65536.0f * (fRec28[0] + (fSlow34 * (fTempPerm259 + (fSlow69 * (fTempPerm35 * ftbl0[(((int((65536.0f * (fRec24[0] + (fSlow53 * fTempPerm258)))) % 65536) + 65536) % 65536)]))))))) % 65536) + 65536) % 65536)]));
 			}
 			if (iSlow9 || iSlow4) {
-				fTempPerm221 = ftbl0[(((int((65536.0f * (fRec24[0] + fTempPerm20))) % 65536) + 65536) % 65536)];
+				fTempPerm261 = ftbl0[(((int((65536.0f * (fRec24[0] + fTempPerm25))) % 65536) + 65536) % 65536)];
 			}
 			if (iSlow4) {
-				fTempPerm222 = (fSlow106 * (fTempPerm31 * ftbl0[(((int((65536.0f * (fRec28[0] + (fSlow35 * ((fSlow52 * fTempPerm24) + (fSlow69 * (fTempPerm28 * fTempPerm221))))))) % 65536) + 65536) % 65536)]));
+				fTempPerm262 = (fSlow106 * (fTempPerm39 * ftbl0[(((int((65536.0f * (fRec28[0] + (fSlow34 * ((fSlow52 * fTempPerm30) + (fSlow69 * (fTempPerm35 * fTempPerm261))))))) % 65536) + 65536) % 65536)]));
 			}
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow6 || iSlow5) {
-				iTempPerm223 = int((iRec30[0] < iSlow183));
-				fTempPerm224 = expf((0 - (fConst4 / ((iSlow95)?((iTempPerm223)?fSlow182:fSlow76):fSlow180))));
-				fRec115[0] = ((fRec115[1] * fTempPerm224) + (((iSlow95)?((iTempPerm223)?1.5873015873015872f:fSlow233):0.0f) * (1.0f - fTempPerm224)));
-				fTempPerm225 = min(1.0f, fRec115[0]);
+				iTempPerm263 = int((iRec30[0] < iSlow183));
+				fTempPerm264 = expf((0 - (fConst4 / ((iSlow95)?((iTempPerm263)?fSlow182:fSlow76):fSlow180))));
+				fRec115[0] = ((fRec115[1] * fTempPerm264) + (((iSlow95)?((iTempPerm263)?1.5873015873015872f:fSlow233):0.0f) * (1.0f - fTempPerm264)));
+				fTempPerm265 = min(1.0f, fRec115[0]);
+				fbargraph40 = fTempPerm265;
+				fTempPerm266 = fTempPerm265;
 			}
 			if (iSlow6 || iSlow5) {
-				fTempPerm226 = (fSlow69 * (fTempPerm225 * fTempPerm26));
+				fTempPerm267 = (fSlow69 * (fTempPerm266 * fTempPerm32));
 			}
 			if (iSlow5) {
-				fTempPerm227 = (fSlow105 * ((fSlow84 * (fTempPerm31 * ftbl0[(((int((65536.0f * (fRec28[0] + fTempPerm25))) % 65536) + 65536) % 65536)])) + fTempPerm226));
+				fTempPerm268 = (fSlow105 * ((fSlow84 * (fTempPerm39 * ftbl0[(((int((65536.0f * (fRec28[0] + fTempPerm31))) % 65536) + 65536) % 65536)])) + fTempPerm267));
 			}
 			if (iSlow11 || iSlow10 || iSlow6) {
-				fTempPerm228 = ftbl0[(((int((65536.0f * fRec28[0])) % 65536) + 65536) % 65536)];
+				fTempPerm269 = ftbl0[(((int((65536.0f * fRec28[0])) % 65536) + 65536) % 65536)];
 			}
 			if (iSlow11 || iSlow6) {
-				fTempPerm229 = (fSlow84 * (fTempPerm31 * fTempPerm228));
+				fTempPerm270 = (fSlow84 * (fTempPerm39 * fTempPerm269));
 			}
 			if (iSlow6) {
-				fTempPerm230 = (fSlow105 * (fTempPerm226 + fTempPerm229));
+				fTempPerm271 = (fSlow105 * (fTempPerm267 + fTempPerm270));
 			}
 			if (iSlow11 || iSlow10 || iSlow8 || iSlow7) {
-				fTempPerm231 = ftbl0[(((int((65536.0f * fRec24[0])) % 65536) + 65536) % 65536)];
+				fTempPerm272 = ftbl0[(((int((65536.0f * fRec24[0])) % 65536) + 65536) % 65536)];
 			}
 			if (iSlow8 || iSlow7) {
-				fTempPerm232 = (fTempPerm28 * fTempPerm231);
+				fTempPerm273 = (fTempPerm35 * fTempPerm272);
 			}
 			if (iSlow7) {
-				fTempPerm233 = (fSlow106 * (fTempPerm31 * ftbl0[(((int((65536.0f * (fRec28[0] + (fSlow35 * ((fTempPerm219 + (fSlow52 * fTempPerm218)) + (fSlow69 * fTempPerm232)))))) % 65536) + 65536) % 65536)]));
+				fTempPerm274 = (fSlow106 * (fTempPerm39 * ftbl0[(((int((65536.0f * (fRec28[0] + (fSlow34 * ((fTempPerm259 + (fSlow52 * fTempPerm258)) + (fSlow69 * fTempPerm273)))))) % 65536) + 65536) % 65536)]));
 			}
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow8) {
-				iTempPerm234 = int((iRec30[0] < iSlow172));
-				fTempPerm235 = expf((0 - (fConst4 / ((iSlow95)?((iTempPerm234)?fSlow171:fSlow76):fSlow169))));
-				fRec116[0] = ((fRec116[1] * fTempPerm235) + (((iSlow95)?((iTempPerm234)?1.5873015873015872f:fSlow234):0.0f) * (1.0f - fTempPerm235)));
-				fTempPerm236 = min(1.0f, fRec116[0]);
+				iTempPerm275 = int((iRec30[0] < iSlow172));
+				fTempPerm276 = expf((0 - (fConst4 / ((iSlow95)?((iTempPerm275)?fSlow171:fSlow76):fSlow169))));
+				fRec116[0] = ((fRec116[1] * fTempPerm276) + (((iSlow95)?((iTempPerm275)?1.5873015873015872f:fSlow234):0.0f) * (1.0f - fTempPerm276)));
+				fTempPerm277 = min(1.0f, fRec116[0]);
+				fbargraph41 = fTempPerm277;
+				fTempPerm278 = fTempPerm277;
 			}
 			if (iSlow9 || iSlow8) {
-				fTempPerm237 = (fSlow52 * (fTempPerm236 * fTempPerm21));
+				fTempPerm279 = (fSlow52 * (fTempPerm278 * fTempPerm26));
 			}
 			if (iSlow8) {
-				fTempPerm238 = (fSlow105 * ((fSlow84 * (fTempPerm31 * ftbl0[(((int((65536.0f * (fRec28[0] + (fSlow70 * fTempPerm232)))) % 65536) + 65536) % 65536)])) + fTempPerm237));
+				fTempPerm280 = (fSlow105 * ((fSlow84 * (fTempPerm39 * ftbl0[(((int((65536.0f * (fRec28[0] + (fSlow70 * fTempPerm273)))) % 65536) + 65536) % 65536)])) + fTempPerm279));
 			}
 			if (iSlow9) {
-				fTempPerm239 = (fSlow105 * (fTempPerm237 + ((fSlow84 * (fTempPerm31 * ftbl0[(((int((65536.0f * (fRec28[0] + fTempPerm20))) % 65536) + 65536) % 65536)])) + (fSlow69 * (fTempPerm225 * fTempPerm221)))));
+				fTempPerm281 = (fSlow105 * (fTempPerm279 + ((fSlow84 * (fTempPerm39 * ftbl0[(((int((65536.0f * (fRec28[0] + fTempPerm25))) % 65536) + 65536) % 65536)])) + (fSlow69 * (fTempPerm266 * fTempPerm261)))));
 			}
 			if (iSlow10) {
 				fRec118[0] = ((iSlow91)?0.0f:min(fSlow202, (fRec118[1] + 1.0f)));
-				iTempPerm240 = int((fRec118[0] < fSlow199));
-				fRec117[0] = ((iSlow95)?(fSlow94 * ((iTempPerm240)?((int((fRec118[0] < 0.0f)))?0.0f:((iTempPerm240)?(fSlow206 * fRec118[0]):1.0f)):((int((fRec118[0] < fSlow202)))?((fSlow236 * (fRec118[0] - fSlow199)) + 1.0f):fSlow235))):fRec117[1]);
+				iTempPerm282 = int((fRec118[0] < fSlow199));
+				fRec117[0] = ((iSlow95)?(fSlow94 * ((iTempPerm282)?((int((fRec118[0] < 0.0f)))?0.0f:((iTempPerm282)?(fSlow206 * fRec118[0]):1.0f)):((int((fRec118[0] < fSlow202)))?((fSlow236 * (fRec118[0] - fSlow199)) + 1.0f):fSlow235))):fRec117[1]);
 				fRec119[0] = ((iSlow96)?0.0f:min(fSlow207, (fRec119[1] + 1.0f)));
+				fTempPerm283 = ((int((fRec119[0] < 0.0f)))?fRec117[0]:((int((fRec119[0] < fSlow207)))?(fRec117[0] + (fSlow209 * (0 - (fRec119[0] * fRec117[0])))):0.0f));
+				fbargraph42 = fTempPerm283;
 			}
 			if (iSlow11 || iSlow10) {
-				fTempPerm241 = (fSlow69 * (fTempPerm225 * fTempPerm231));
-				iTempPerm242 = int((iRec30[0] < iSlow192));
-				fTempPerm243 = expf((0 - (fConst4 / ((iSlow95)?((iTempPerm242)?fSlow191:fSlow76):fSlow189))));
-				fRec120[0] = ((fRec120[1] * fTempPerm243) + (((iSlow95)?((iTempPerm242)?1.5873015873015872f:fSlow237):0.0f) * (1.0f - fTempPerm243)));
-				fTempPerm244 = (fSlow34 * (min(1.0f, fRec120[0]) * fTempPerm17));
+				fTempPerm284 = (fSlow69 * (fTempPerm266 * fTempPerm272));
+				iTempPerm285 = int((iRec30[0] < iSlow192));
+				fTempPerm286 = expf((0 - (fConst4 / ((iSlow95)?((iTempPerm285)?fSlow191:fSlow76):fSlow189))));
+				fRec120[0] = ((fRec120[1] * fTempPerm286) + (((iSlow95)?((iTempPerm285)?1.5873015873015872f:fSlow237):0.0f) * (1.0f - fTempPerm286)));
+				fTempPerm287 = min(1.0f, fRec120[0]);
+				fbargraph43 = fTempPerm287;
+				fTempPerm288 = (fSlow35 * (fTempPerm287 * fTempPerm21));
 			}
 			if (iSlow10) {
-				fTempPerm245 = (fSlow105 * ((fTempPerm244 + fTempPerm241) + (fSlow52 * (fTempPerm236 * ftbl0[(((int((65536.0f * (fRec20[0] + (fSlow210 * (fTempPerm228 * ((int((fRec119[0] < 0.0f)))?fRec117[0]:((int((fRec119[0] < fSlow207)))?(fRec117[0] + (fSlow209 * (0 - (fRec119[0] * fRec117[0])))):0.0f))))))) % 65536) + 65536) % 65536)]))));
+				fTempPerm289 = (fSlow105 * ((fTempPerm288 + fTempPerm284) + (fSlow52 * (fTempPerm278 * ftbl0[(((int((65536.0f * (fRec20[0] + (fSlow210 * (fTempPerm269 * fTempPerm283))))) % 65536) + 65536) % 65536)]))));
 			}
 			if (iSlow11) {
-				fTempPerm246 = (fSlow105 * (fTempPerm244 + ((fTempPerm229 + fTempPerm241) + (fSlow52 * (fTempPerm236 * fTempPerm217)))));
+				fTempPerm290 = (fSlow105 * (fTempPerm288 + ((fTempPerm270 + fTempPerm284) + (fSlow52 * (fTempPerm278 * fTempPerm257)))));
 			}
 			if (iSlow11 || iSlow7 || iSlow3) {
-				fTempPerm247 = ftbl0[(((int((65536.0f * fRec5[0])) % 65536) + 65536) % 65536)];
+				fTempPerm291 = ftbl0[(((int((65536.0f * fRec5[0])) % 65536) + 65536) % 65536)];
 			}
 			if (iSlow7 || iSlow3) {
-				fTempPerm248 = (fTempPerm7 * fTempPerm247);
-				fTempPerm249 = (fSlow34 * fTempPerm3);
+				fTempPerm292 = (fTempPerm9 * fTempPerm291);
+				fTempPerm293 = (fSlow35 * fTempPerm4);
 			}
 			if (iSlow3) {
-				fTempPerm250 = (fSlow86 * (fTempPerm15 * ftbl0[(((int((65536.0f * (fRec13[0] + (fSlow35 * (fTempPerm249 + (fSlow69 * (fTempPerm12 * ftbl0[(((int((65536.0f * (fRec9[0] + (fSlow53 * fTempPerm248)))) % 65536) + 65536) % 65536)]))))))) % 65536) + 65536) % 65536)]));
+				fTempPerm294 = (fSlow86 * (fTempPerm19 * ftbl0[(((int((65536.0f * (fRec13[0] + (fSlow34 * (fTempPerm293 + (fSlow69 * (fTempPerm15 * ftbl0[(((int((65536.0f * (fRec9[0] + (fSlow53 * fTempPerm292)))) % 65536) + 65536) % 65536)]))))))) % 65536) + 65536) % 65536)]));
 			}
 			if (iSlow9 || iSlow4) {
-				fTempPerm251 = ftbl0[(((int((65536.0f * (fRec9[0] + fTempPerm4))) % 65536) + 65536) % 65536)];
+				fTempPerm295 = ftbl0[(((int((65536.0f * (fRec9[0] + fTempPerm5))) % 65536) + 65536) % 65536)];
 			}
 			if (iSlow4) {
-				fTempPerm252 = (fSlow86 * (fTempPerm15 * ftbl0[(((int((65536.0f * (fRec13[0] + (fSlow35 * ((fSlow52 * fTempPerm8) + (fSlow69 * (fTempPerm12 * fTempPerm251))))))) % 65536) + 65536) % 65536)]));
+				fTempPerm296 = (fSlow86 * (fTempPerm19 * ftbl0[(((int((65536.0f * (fRec13[0] + (fSlow34 * ((fSlow52 * fTempPerm10) + (fSlow69 * (fTempPerm15 * fTempPerm295))))))) % 65536) + 65536) % 65536)]));
 			}
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow6 || iSlow5) {
-				iTempPerm253 = int((iRec15[0] < iSlow183));
-				fTempPerm254 = expf((0 - (fConst4 / ((iSlow30)?((iTempPerm253)?fSlow182:fSlow76):fSlow180))));
-				fRec121[0] = ((fRec121[1] * fTempPerm254) + (((iSlow30)?((iTempPerm253)?1.5873015873015872f:fSlow238):0.0f) * (1.0f - fTempPerm254)));
-				fTempPerm255 = min(1.0f, fRec121[0]);
+				iTempPerm297 = int((iRec15[0] < iSlow183));
+				fTempPerm298 = expf((0 - (fConst4 / ((iSlow30)?((iTempPerm297)?fSlow182:fSlow76):fSlow180))));
+				fRec121[0] = ((fRec121[1] * fTempPerm298) + (((iSlow30)?((iTempPerm297)?1.5873015873015872f:fSlow238):0.0f) * (1.0f - fTempPerm298)));
+				fTempPerm299 = min(1.0f, fRec121[0]);
+				fbargraph44 = fTempPerm299;
+				fTempPerm300 = fTempPerm299;
 			}
 			if (iSlow6 || iSlow5) {
-				fTempPerm256 = (fSlow69 * (fTempPerm255 * fTempPerm10));
+				fTempPerm301 = (fSlow69 * (fTempPerm300 * fTempPerm12));
 			}
 			if (iSlow5) {
-				fTempPerm257 = (fSlow85 * ((fSlow84 * (fTempPerm15 * ftbl0[(((int((65536.0f * (fRec13[0] + fTempPerm9))) % 65536) + 65536) % 65536)])) + fTempPerm256));
+				fTempPerm302 = (fSlow85 * ((fSlow84 * (fTempPerm19 * ftbl0[(((int((65536.0f * (fRec13[0] + fTempPerm11))) % 65536) + 65536) % 65536)])) + fTempPerm301));
 			}
 			if (iSlow11 || iSlow10 || iSlow6) {
-				fTempPerm258 = ftbl0[(((int((65536.0f * fRec13[0])) % 65536) + 65536) % 65536)];
+				fTempPerm303 = ftbl0[(((int((65536.0f * fRec13[0])) % 65536) + 65536) % 65536)];
 			}
 			if (iSlow11 || iSlow6) {
-				fTempPerm259 = (fSlow84 * (fTempPerm15 * fTempPerm258));
+				fTempPerm304 = (fSlow84 * (fTempPerm19 * fTempPerm303));
 			}
 			if (iSlow6) {
-				fTempPerm260 = (fSlow85 * (fTempPerm256 + fTempPerm259));
+				fTempPerm305 = (fSlow85 * (fTempPerm301 + fTempPerm304));
 			}
 			if (iSlow11 || iSlow10 || iSlow8 || iSlow7) {
-				fTempPerm261 = ftbl0[(((int((65536.0f * fRec9[0])) % 65536) + 65536) % 65536)];
+				fTempPerm306 = ftbl0[(((int((65536.0f * fRec9[0])) % 65536) + 65536) % 65536)];
 			}
 			if (iSlow8 || iSlow7) {
-				fTempPerm262 = (fTempPerm12 * fTempPerm261);
+				fTempPerm307 = (fTempPerm15 * fTempPerm306);
 			}
 			if (iSlow7) {
-				fTempPerm263 = (fSlow86 * (fTempPerm15 * ftbl0[(((int((65536.0f * (fRec13[0] + (fSlow35 * ((fTempPerm249 + (fSlow52 * fTempPerm248)) + (fSlow69 * fTempPerm262)))))) % 65536) + 65536) % 65536)]));
+				fTempPerm308 = (fSlow86 * (fTempPerm19 * ftbl0[(((int((65536.0f * (fRec13[0] + (fSlow34 * ((fTempPerm293 + (fSlow52 * fTempPerm292)) + (fSlow69 * fTempPerm307)))))) % 65536) + 65536) % 65536)]));
 			}
 			if (iSlow11 || iSlow10 || iSlow9 || iSlow8) {
-				iTempPerm264 = int((iRec15[0] < iSlow172));
-				fTempPerm265 = expf((0 - (fConst4 / ((iSlow30)?((iTempPerm264)?fSlow171:fSlow76):fSlow169))));
-				fRec122[0] = ((fRec122[1] * fTempPerm265) + (((iSlow30)?((iTempPerm264)?1.5873015873015872f:fSlow239):0.0f) * (1.0f - fTempPerm265)));
-				fTempPerm266 = min(1.0f, fRec122[0]);
+				iTempPerm309 = int((iRec15[0] < iSlow172));
+				fTempPerm310 = expf((0 - (fConst4 / ((iSlow30)?((iTempPerm309)?fSlow171:fSlow76):fSlow169))));
+				fRec122[0] = ((fRec122[1] * fTempPerm310) + (((iSlow30)?((iTempPerm309)?1.5873015873015872f:fSlow239):0.0f) * (1.0f - fTempPerm310)));
+				fTempPerm311 = min(1.0f, fRec122[0]);
+				fbargraph45 = fTempPerm311;
+				fTempPerm312 = fTempPerm311;
 			}
 			if (iSlow9 || iSlow8) {
-				fTempPerm267 = (fSlow52 * (fTempPerm266 * fTempPerm5));
+				fTempPerm313 = (fSlow52 * (fTempPerm312 * fTempPerm6));
 			}
 			if (iSlow8) {
-				fTempPerm268 = (fSlow85 * ((fSlow84 * (fTempPerm15 * ftbl0[(((int((65536.0f * (fRec13[0] + (fSlow70 * fTempPerm262)))) % 65536) + 65536) % 65536)])) + fTempPerm267));
+				fTempPerm314 = (fSlow85 * ((fSlow84 * (fTempPerm19 * ftbl0[(((int((65536.0f * (fRec13[0] + (fSlow70 * fTempPerm307)))) % 65536) + 65536) % 65536)])) + fTempPerm313));
 			}
 			if (iSlow9) {
-				fTempPerm269 = (fSlow85 * (fTempPerm267 + ((fSlow84 * (fTempPerm15 * ftbl0[(((int((65536.0f * (fRec13[0] + fTempPerm4))) % 65536) + 65536) % 65536)])) + (fSlow69 * (fTempPerm255 * fTempPerm251)))));
+				fTempPerm315 = (fSlow85 * (fTempPerm313 + ((fSlow84 * (fTempPerm19 * ftbl0[(((int((65536.0f * (fRec13[0] + fTempPerm5))) % 65536) + 65536) % 65536)])) + (fSlow69 * (fTempPerm300 * fTempPerm295)))));
 			}
 			if (iSlow10) {
 				fRec124[0] = ((iSlow24)?0.0f:min(fSlow202, (fRec124[1] + 1.0f)));
-				iTempPerm270 = int((fRec124[0] < fSlow199));
-				fRec123[0] = ((iSlow30)?(fSlow29 * ((iTempPerm270)?((int((fRec124[0] < 0.0f)))?0.0f:((iTempPerm270)?(fSlow206 * fRec124[0]):1.0f)):((int((fRec124[0] < fSlow202)))?((fSlow241 * (fRec124[0] - fSlow199)) + 1.0f):fSlow240))):fRec123[1]);
+				iTempPerm316 = int((fRec124[0] < fSlow199));
+				fRec123[0] = ((iSlow30)?(fSlow29 * ((iTempPerm316)?((int((fRec124[0] < 0.0f)))?0.0f:((iTempPerm316)?(fSlow206 * fRec124[0]):1.0f)):((int((fRec124[0] < fSlow202)))?((fSlow241 * (fRec124[0] - fSlow199)) + 1.0f):fSlow240))):fRec123[1]);
 				fRec125[0] = ((iSlow32)?0.0f:min(fSlow207, (fRec125[1] + 1.0f)));
+				fTempPerm317 = ((int((fRec125[0] < 0.0f)))?fRec123[0]:((int((fRec125[0] < fSlow207)))?(fRec123[0] + (fSlow209 * (0 - (fRec125[0] * fRec123[0])))):0.0f));
+				fbargraph46 = fTempPerm317;
 			}
 			if (iSlow11 || iSlow10) {
-				fTempPerm271 = (fSlow69 * (fTempPerm255 * fTempPerm261));
-				iTempPerm272 = int((iRec15[0] < iSlow192));
-				fTempPerm273 = expf((0 - (fConst4 / ((iSlow30)?((iTempPerm272)?fSlow191:fSlow76):fSlow189))));
-				fRec126[0] = ((fRec126[1] * fTempPerm273) + (((iSlow30)?((iTempPerm272)?1.5873015873015872f:fSlow242):0.0f) * (1.0f - fTempPerm273)));
-				fTempPerm274 = (fSlow34 * (min(1.0f, fRec126[0]) * fTempPerm1));
+				fTempPerm318 = (fSlow69 * (fTempPerm300 * fTempPerm306));
+				iTempPerm319 = int((iRec15[0] < iSlow192));
+				fTempPerm320 = expf((0 - (fConst4 / ((iSlow30)?((iTempPerm319)?fSlow191:fSlow76):fSlow189))));
+				fRec126[0] = ((fRec126[1] * fTempPerm320) + (((iSlow30)?((iTempPerm319)?1.5873015873015872f:fSlow242):0.0f) * (1.0f - fTempPerm320)));
+				fTempPerm321 = min(1.0f, fRec126[0]);
+				fbargraph47 = fTempPerm321;
+				fTempPerm322 = (fSlow35 * (fTempPerm321 * fTempPerm1));
 			}
 			if (iSlow10) {
-				fTempPerm275 = (fSlow85 * ((fTempPerm274 + fTempPerm271) + (fSlow52 * (fTempPerm266 * ftbl0[(((int((65536.0f * (fRec5[0] + (fSlow210 * (fTempPerm258 * ((int((fRec125[0] < 0.0f)))?fRec123[0]:((int((fRec125[0] < fSlow207)))?(fRec123[0] + (fSlow209 * (0 - (fRec125[0] * fRec123[0])))):0.0f))))))) % 65536) + 65536) % 65536)]))));
+				fTempPerm323 = (fSlow85 * ((fTempPerm322 + fTempPerm318) + (fSlow52 * (fTempPerm312 * ftbl0[(((int((65536.0f * (fRec5[0] + (fSlow210 * (fTempPerm303 * fTempPerm317))))) % 65536) + 65536) % 65536)]))));
 			}
 			if (iSlow11) {
-				fTempPerm276 = (fSlow85 * (fTempPerm274 + ((fTempPerm259 + fTempPerm271) + (fSlow52 * (fTempPerm266 * fTempPerm247)))));
+				fTempPerm324 = (fSlow85 * (fTempPerm322 + ((fTempPerm304 + fTempPerm318) + (fSlow52 * (fTempPerm312 * fTempPerm291)))));
 			}
-			output0[i] = (FAUSTFLOAT)(fTempPerm276 + (fTempPerm275 + (fTempPerm269 + (fTempPerm268 + (fTempPerm263 + (fTempPerm260 + (fTempPerm257 + (fTempPerm252 + (fTempPerm250 + (fTempPerm16 + ((fTempPerm246 + (fTempPerm245 + (fTempPerm239 + (fTempPerm238 + (fTempPerm233 + (fTempPerm230 + (fTempPerm227 + (fTempPerm222 + (fTempPerm220 + (fTempPerm32 + ((fTempPerm216 + (fTempPerm215 + (fTempPerm209 + (fTempPerm208 + (fTempPerm203 + (fTempPerm200 + (fTempPerm197 + (fTempPerm192 + (fTempPerm190 + (fTempPerm48 + ((fTempPerm186 + (fTempPerm185 + (fTempPerm179 + (fTempPerm178 + (fTempPerm173 + (fTempPerm170 + (fTempPerm167 + (fTempPerm162 + (fTempPerm160 + (fTempPerm64 + ((fTempPerm156 + (fTempPerm155 + (fTempPerm149 + (fTempPerm148 + (fTempPerm143 + (fTempPerm140 + (fTempPerm137 + (fTempPerm132 + (fTempPerm130 + (fTempPerm80 + (((((((((((fTempPerm126 + fTempPerm126) + fTempPerm125) + fTempPerm124) + fTempPerm123) + fTempPerm122) + fTempPerm117) + fTempPerm112) + fTempPerm108) + fTempPerm101) + fTempPerm99) + fTempPerm80))))))))))) + fTempPerm64))))))))))) + fTempPerm48))))))))))) + fTempPerm32))))))))))) + fTempPerm16)))))))))));
+			output0[i] = (FAUSTFLOAT)(fTempPerm324 + (fTempPerm323 + (fTempPerm315 + (fTempPerm314 + (fTempPerm308 + (fTempPerm305 + (fTempPerm302 + (fTempPerm296 + (fTempPerm294 + (fTempPerm20 + ((fTempPerm290 + (fTempPerm289 + (fTempPerm281 + (fTempPerm280 + (fTempPerm274 + (fTempPerm271 + (fTempPerm268 + (fTempPerm262 + (fTempPerm260 + (fTempPerm40 + ((fTempPerm256 + (fTempPerm255 + (fTempPerm247 + (fTempPerm246 + (fTempPerm240 + (fTempPerm237 + (fTempPerm234 + (fTempPerm228 + (fTempPerm226 + (fTempPerm60 + ((fTempPerm222 + (fTempPerm221 + (fTempPerm213 + (fTempPerm212 + (fTempPerm206 + (fTempPerm203 + (fTempPerm200 + (fTempPerm194 + (fTempPerm192 + (fTempPerm80 + ((fTempPerm188 + (fTempPerm187 + (fTempPerm179 + (fTempPerm178 + (fTempPerm172 + (fTempPerm169 + (fTempPerm166 + (fTempPerm160 + (fTempPerm158 + (fTempPerm100 + (((((((((((fTempPerm154 + fTempPerm154) + fTempPerm153) + fTempPerm152) + fTempPerm151) + fTempPerm150) + fTempPerm145) + fTempPerm139) + fTempPerm134) + fTempPerm126) + fTempPerm123) + fTempPerm100))))))))))) + fTempPerm80))))))))))) + fTempPerm60))))))))))) + fTempPerm40))))))))))) + fTempPerm20)))))))))));
 			// post processing
 			if (iSlow11 || iSlow10) {
 				fRec126[1] = fRec126[0];

@@ -31,11 +31,24 @@ namespace otto::engines {
       // clang-format on
     };
 
+    struct OperatorEnvelope : Properties<> {
+      using Properties::Properties;
+      Property<float> carrier   = {this, "carrier",      0,   has_limits::init(0,   1), faust_link::init(FaustLink::Type::FromFaust)};
+      Property<float> modulator = {this, "modulator",    0,   has_limits::init(0,   1), faust_link::init(FaustLink::Type::FromFaust)};
+
+    };
+
+    struct VoiceEnvelope : Properties<> {
+      using Properties::Properties;
+      std::array<OperatorEnvelope,4> ops = {{{this,"op0"}, {this,"op1"}, {this,"op2"}, {this,"op3"}}};
+    };
+
     struct Props : Properties<> {
       Property<int> algN = {this, "algN",    0,   has_limits::init(0, 10),    steppable::init(1)};
       Property<float> fmAmount = {this, "fmAmount",    1,   has_limits::init(0, 1),    steppable::init(0.01)};
 
       std::array<Operator,4> operators = {{{this,"op0"}, {this,"op1"}, {this,"op2"}, {this,"op3"}}};
+      std::array<VoiceEnvelope,6> voice_envelopes = {{{this,"v0"}, {this,"v1"}, {this,"v2"}, {this,"v3"}, {this,"v4"}, {this,"v5"}}};
 
     } props;
 

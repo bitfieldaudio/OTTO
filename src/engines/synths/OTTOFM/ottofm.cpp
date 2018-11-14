@@ -547,6 +547,8 @@ namespace otto::engines {
         if(i == cur_op) ctx.fill(Colours::Red);
       }
 
+      //Draw activity levels
+
     }
 
     //draw arrowheads
