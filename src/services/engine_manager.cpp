@@ -1,6 +1,7 @@
 #include "engine_manager.hpp"
 
 #include "engines/fx/wormhole/wormhole.hpp"
+#include "engines/fx/pingpong/pingpong.hpp"
 #include "engines/misc/master/master.hpp"
 #include "engines/seq/arp/arp.hpp"
 #include "engines/seq/euclid/euclid.hpp"
@@ -58,6 +59,7 @@ namespace otto::services {
     register_engine<engines::OTTOFMSynth>();
     register_engine<engines::VocoderSynth>();
     register_engine<engines::Wormhole>();
+    register_engine<engines::Pingpong>();
 
     sequencer.init();
     synth.init();
