@@ -67,65 +67,33 @@ namespace otto::engines {
     constexpr float x_pad = 30;
     constexpr float y_pad = 50;
     constexpr float space = (height - 2.f * y_pad) / 3.f;
-    /*
-    ctx.beginPath();
-    ctx.fillStyle(Colours::Blue);
-    ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
-    ctx.fillText("Time", {x_pad, y_pad});
 
-    ctx.beginPath();
-    ctx.fillStyle(Colours::Blue);
-    ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:1}", engine.props.delaytime), {width - x_pad, y_pad});
-
-    ctx.beginPath();
-    ctx.fillStyle(Colours::Green);
-    ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
-    ctx.fillText("Feedback", {x_pad, y_pad + space});
-
-    ctx.beginPath();
-    ctx.fillStyle(Colours::Green);
-    ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:1}", engine.props.feedback), {width - x_pad, y_pad + space});
-
-    ctx.beginPath();
-    ctx.fillStyle(Colours::Yellow);
-    ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
-    ctx.fillText("Tone", {x_pad, y_pad + 2 * space});
-
-    ctx.beginPath();
-    ctx.fillStyle(Colours::Yellow);
-    ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:1.2}", engine.props.tone), {width - x_pad, y_pad + 2 * space});
-
-    ctx.beginPath();
-    ctx.fillStyle(Colours::Red);
-    ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
-    ctx.fillText("Spread", {x_pad, y_pad + 3 * space});
-
-    ctx.beginPath();
-    ctx.fillStyle(Colours::Red);
-    ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:1.2}", engine.props.spread), {width - x_pad, y_pad + 3 * space});
-
-    if (engine.props.bpm_follow) {
-      ctx.beginPath();
-      ctx.fillStyle(Colours::Red);
-      ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
-      ctx.fillText("Following!", {x_pad, y_pad + 3 * space - 20});
-    }
-    */
-    int x_spacing = width/12;
-    int y_scale = 50;
-    int y_base = height - 30;
-    int line_length = 20;
+    int x_spacing_min = width/25;
+    int x_scaling = 50;
+    int y_base = height/2;
+    int line_length = 1;
     ctx.lineWidth(6.0f);
-    for (int i=0;i<10;i++) {
+    int x_pos;
+
+    int feedbackLimit = floor(20.0*engine.props.feedback);
+    int y_height_top = 100;
+    int y_height_bot = 100;
+    float dim_scale_top = engine.props.feedback - 0.01 - 0.2*max(0.0, 0.5 - engine.props.tone);
+    float dim_scale_bot = engine.props.feedback - 0.01 - 0.2*max(0.0, engine.props.tone - 0.5);
+    for (int i=0;i<20;i++) {
+      ctx.beginPath();
+      x_pos = x_pad + i*(x_spacing_min+x_scaling*engine.props.delaytime);
+      ctx.moveTo(x_pos, y_base - y_height_top);
+      ctx.lineTo(x_pos, y_base + y_height_bot);
+      ctx.stroke(Colours::Gray50);
+
       ctx.beginPath();
       engine.props.delay_level[i].level.refresh_links();
-      ctx.moveTo(x_pad + i*x_spacing, y_base - engine.props.delay_level[i].level*y_scale);
-      ctx.lineTo(x_pad + i*x_spacing, y_base - engine.props.delay_level[i].level*y_scale - line_length);
+      ctx.moveTo(x_pos, y_base - y_height_top*engine.props.delay_level[i].level);
+      ctx.lineTo(x_pos, y_base + y_height_bot*engine.props.delay_level[i].level);
       ctx.stroke(Colours::Blue);
+      y_height_top *= dim_scale_top;
+      y_height_bot *= dim_scale_bot;
     }
 
 

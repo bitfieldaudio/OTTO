@@ -186,8 +186,7 @@ namespace otto::engines {
       break;
     case Rotary::Green:
       if (!shift) {
-        current.cAtt.step(e.clicks);
-        current.mAtt.step(e.clicks);
+        current.outLev.step(e.clicks);
       } else {
         current.cSus.step(e.clicks);
         current.mSuspos.step(e.clicks);
@@ -195,10 +194,11 @@ namespace otto::engines {
       break;
     case Rotary::White:
       if (!shift) {
+        current.cAtt.step(e.clicks);
+        current.mAtt.step(e.clicks);
+      } else {
         current.cRel.step(e.clicks);
         current.mDecrel.step(e.clicks);
-      } else {
-        current.outLev.step(e.clicks);
       }
       break;
     case Rotary::Red:
@@ -291,7 +291,7 @@ namespace otto::engines {
     ctx.lineCap(Canvas::LineCap::ROUND);
     ctx.closePath();
     //shift not held
-    ctx.stroke(Colours::Gray60);
+    ctx.stroke(Colours::Green);
     //Horizontal line
     ctx.beginPath();
     ctx.moveTo(line_x - 0.5*bar_width , line_bot - engine.props.operators.at(cur_op).outLev.normalize() * (line_bot-line_top));
@@ -300,7 +300,7 @@ namespace otto::engines {
     ctx.lineCap(Canvas::LineCap::ROUND);
     ctx.closePath();
     //shift not held
-    ctx.stroke(Colours::Gray60);
+    ctx.stroke(Colours::Green);
   }
 
   void OTTOFMSynthScreen::draw_with_shift(ui::vg::Canvas& ctx)
@@ -335,7 +335,7 @@ namespace otto::engines {
     ctx.lineCap(Canvas::LineCap::ROUND);
     ctx.closePath();
     //shift is held
-    ctx.stroke(Colours::Yellow);
+    ctx.stroke(Colours::Gray60);
     //Horizontal line
     ctx.beginPath();
     ctx.moveTo(line_x - 0.5*bar_width , line_bot - engine.props.operators.at(cur_op).outLev.normalize() * (line_bot-line_top));
@@ -344,7 +344,7 @@ namespace otto::engines {
     ctx.lineCap(Canvas::LineCap::ROUND);
     ctx.closePath();
     //shift not held
-    ctx.stroke(Colours::Yellow);
+    ctx.stroke(Colours::Gray60);
 
     //Algorithm
     ctx.beginPath();
@@ -405,8 +405,8 @@ namespace otto::engines {
       ctx.stroke(Colours::Gray60);
       ctx.fill(Colours::Gray60);
     } else {
-      ctx.stroke(Colours::Green);
-      ctx.fill(Colours::Green);
+      ctx.stroke(Colours::Yellow);
+      ctx.fill(Colours::Yellow);
     }
 
     //Decay
@@ -420,12 +420,12 @@ namespace otto::engines {
     ctx.lineTo(b.x + aw + spacing + dw, b.y + b.height);
     ctx.closePath();
     if (is_modulator && !shift) {
-      ctx.stroke(Colours::Yellow);
-      ctx.fill(Colours::Yellow);
+      ctx.stroke(Colours::Gray60);
+      ctx.fill(Colours::Gray60);
     }
     else if (is_modulator && shift) {
-      ctx.stroke(Colours::Green);
-      ctx.fill(Colours::Green);
+      ctx.stroke(Colours::Yellow);
+      ctx.fill(Colours::Yellow);
     } else {
       ctx.stroke(Colours::Gray60);
       ctx.fill(Colours::Gray60);
@@ -531,24 +531,65 @@ namespace otto::engines {
       ctx.closePath();
       //Choose colour
       if (i == 3) {
-        ctx.stroke(Colours::Blue);
-        if(i == cur_op) ctx.fill(Colours::Blue);
+        if(i == cur_op) {
+          ctx.stroke(Colours::White);
+          ctx.fill(Colours::White);
+        } else {
+          ctx.stroke(Colours::Blue);
+        }
       }
       else if (i == 2) {
-        ctx.stroke(Colours::Green);
-        if(i == cur_op) ctx.fill(Colours::Green);
+        if(i == cur_op) {
+          ctx.stroke(Colours::White);
+          ctx.fill(Colours::White);
+        } else {
+          ctx.stroke(Colours::Green);
+        }
       }
       else if (i == 1) {
-        ctx.stroke(Colours::Yellow);
-        if(i == cur_op) ctx.fill(Colours::Yellow);
+        if(i == cur_op) {
+          ctx.stroke(Colours::White);
+          ctx.fill(Colours::White);
+        } else {
+          ctx.stroke(Colours::Yellow);
+        }
       }
       else if (i == 0) {
-        ctx.stroke(Colours::Red);
-        if(i == cur_op) ctx.fill(Colours::Red);
+        if(i == cur_op) {
+          ctx.stroke(Colours::White);
+          ctx.fill(Colours::White);
+        } else {
+          ctx.stroke(Colours::Red);
+        }
       }
 
       //Draw activity levels
-
+      ctx.beginPath();
+      float op_level;
+      if(algorithms[engine.props.algN].modulator_flags[i]){
+        engine.props.voice_envelopes.at(engine.voice_mgr_.last_voice).ops.at(i).modulator.refresh_links();
+        op_level = engine.props.voice_envelopes.at(engine.voice_mgr_.last_voice).ops.at(i).modulator*
+            engine.props.operators.at(i).outLev;
+      } else {
+        engine.props.voice_envelopes.at(engine.voice_mgr_.last_voice).ops.at(i).carrier.refresh_links();
+        op_level = engine.props.voice_envelopes.at(engine.voice_mgr_.last_voice).ops.at(i).carrier*
+            engine.props.operators.at(i).outLev;
+      }
+      if(algorithms[engine.props.algN].modulator_flags[i]){ //draw modulator
+        ctx.rect({x_pad + 12.5*(1 - op_level), y_pad + (3 - i)*space - 13 + 12.5*(1 - op_level)}, {25*op_level, 25*op_level});
+      } else { // draw carrier
+        ctx.circle({x_pad + 12, y_pad + (3 - i)*space}, 15*op_level);
+      }
+      //Choose colour
+      if (i == 3) {
+        ctx.fill(Colours::Blue);
+      } else if (i == 2) {
+        ctx.fill(Colours::Green);
+      } else if (i == 1) {
+        ctx.fill(Colours::Yellow);
+      } else if (i == 0) {
+        ctx.fill(Colours::Red);
+      }
     }
 
     //draw arrowheads

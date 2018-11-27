@@ -120,7 +120,7 @@ namespace otto::engines {
       engine.props.phasor.refresh_links();
       float rotation = engine.props.phasor * 2 * M_PI;
       ctx.rotateAround(rotation, {160, 120});
-      ctx.circle({160, height/2 + engine.props.leslie*20}, 12.5);
+      ctx.circle({160, height/2 + engine.props.leslie*25}, 12.5);
       ctx.stroke();
     });
     ///

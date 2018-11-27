@@ -42,7 +42,7 @@ with {
     };
 
   //Phasor
-  phasor = os.lf_sawpos(leslie_speed_tr/2) : hbargraph("/phasor",0,1) ;
+  phasor = os.lf_sawpos(leslie_speed_tr/4) : hbargraph("/phasor",0,1) ;
 
   noise_att = no.pink_noise : *(decay_env(0.02,ba.impulsify(midigate))) : *(0.05*leslie);
 

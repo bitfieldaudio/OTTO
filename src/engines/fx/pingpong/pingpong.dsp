@@ -19,7 +19,7 @@ TO-DO:
 //Controls
 //BPM = hbargraph("/bpm",1,400); // NOTE: Should be removed and replaced by some variable so Faust knows what the BPM is...
 BPM = 120;
-delaySlider = hslider("/delaytime", 0.5, 0.01, 0.999, 0.001):min(1):max(0.01); // We need to settle on a scale. Is it 1 to 99? Right now, it is in units of seconds when bpmFollow==0.
+delaySlider = hslider("/delaytime", 0.5, 0.01, 0.999, 0.001):min(1):max(0.01);
 bpmFollow = checkbox("/bpm_follow");
 feedback = hslider("/feedback", 0.5, 0, 1, 1);
 freq = hslider("/tone", 0.5, 0, 1, 0.01)*freqScale+freq_lower :si.smoo;
@@ -30,7 +30,7 @@ spreadScale = 1000;
 freqScale = 1900;
 freq_lower = 100;
 
-process = _,_ : echo : (levelOutputBlock, _) ;
+process = levelOutputBlock,_ : echo : (_, _) ;
 
 //Routing
 echoIN = _,_  <: _,_,_, si.block(1) : *(1-pp), *(pp),_ : _,ro.cross(2) : _,_,_ ; //In: L,R -- Out: L_i, R_i, L_pp	
@@ -70,4 +70,4 @@ spread = spreadSlider*(spreadScale):int;
 pp = spreadSlider==1;
 
 //Level output for graphics
-levelOutputBlock =  _ <: attach(_, an.amp_follower(0.01) <: par(t, 10, @(t*delayTime/10 : int) : hbargraph("/v:delayline%t/level",0,5)) :> _) ;
+levelOutputBlock =  _ <: attach(_, an.amp_follower(0.2) <: par(t, 20, @(t*delayTime : int) : hbargraph("/v:delayline%t/level",0,5)) :> _) ;

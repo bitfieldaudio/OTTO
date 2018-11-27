@@ -25,7 +25,7 @@ namespace otto::engines {
       Property<float> tone        = {this, "tone",  0.5, has_limits::init(0, 1),   steppable::init(0.01)};
       Property<float> spread      = {this, "spread",  0, has_limits::init(0, 1),   steppable::init(0.01)};
 
-      std::array<DelayLine, 10> delay_level = {{{this, "delayline0"},
+      std::array<DelayLine, 20> delay_level = {{{this, "delayline0"},
                                                 {this, "delayline1"},
                                                 {this, "delayline2"},
                                                 {this, "delayline3"},
@@ -34,7 +34,17 @@ namespace otto::engines {
                                                 {this, "delayline6"},
                                                 {this, "delayline7"},
                                                 {this, "delayline8"},
-                                                {this, "delayline9"}}};
+                                                {this, "delayline9"},
+                                                {this, "delayline10"},
+                                                {this, "delayline11"},
+                                                {this, "delayline12"},
+                                                {this, "delayline13"},
+                                                {this, "delayline14"},
+                                                {this, "delayline15"},
+                                                {this, "delayline16"},
+                                                {this, "delayline17"},
+                                                {this, "delayline18"},
+                                                {this, "delayline19"}}};
 
     } props;
 
