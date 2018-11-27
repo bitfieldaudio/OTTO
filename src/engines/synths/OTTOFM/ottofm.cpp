@@ -155,7 +155,7 @@ namespace otto::engines {
     switch (key) {
     case ui::Key::blue_click: cur_op = 3; break;
     case ui::Key::green_click: cur_op = 2; break;
-    case ui::Key::white_click: cur_op = 1; break;
+    case ui::Key::yellow_click: cur_op = 1; break;
     case ui::Key::red_click: cur_op = 0; break;
     default: return false; ;
     }
@@ -166,7 +166,7 @@ namespace otto::engines {
     auto& props = engine.props;
     auto& current = props.operators.at(cur_op);
     switch (e.rotary) {
-    case Rotary::Blue:
+    case Rotary::blue:
       if (!shift) {
         current.ratio_idx.step(e.clicks);
         current.ratio.set(float(fractions[current.ratio_idx]));
@@ -174,7 +174,7 @@ namespace otto::engines {
         current.detune.step(e.clicks);
       }
       break;
-    case Rotary::Green:
+    case Rotary::green:
       if (!shift) {
         current.cAtt.step(e.clicks);
         current.mAtt.step(e.clicks);
@@ -183,7 +183,7 @@ namespace otto::engines {
         current.mSuspos.step(e.clicks);
       }
       break;
-    case Rotary::White:
+    case Rotary::yellow:
       if (!shift) {
         current.cRel.step(e.clicks);
         current.mDecrel.step(e.clicks);
@@ -191,7 +191,7 @@ namespace otto::engines {
         current.outLev.step(e.clicks);
       }
       break;
-    case Rotary::Red:
+    case Rotary::red:
       if (!shift) {
         props.fmAmount.step(e.clicks);
       } else {

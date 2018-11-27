@@ -32,9 +32,7 @@ namespace otto::engines {
   audio::ProcessData<1> HammondSynth::process(audio::ProcessData<1> data)
   {
     voice_mgr_.process_before(data.midi_only());
-    auto res = faust_.process(data.midi_only());
-    voice_mgr_.process_after(data.midi_only());
-    return res;
+    return faust_.process(data.midi_only());
   }
 
   /*
@@ -49,10 +47,10 @@ namespace otto::engines {
   void HammondSynthScreen::rotary(RotaryEvent e)
   {
     switch (e.rotary) {
-    case Rotary::Blue: engine.props.drawbar1.step(e.clicks); break;
-    case Rotary::Green: engine.props.drawbar2.step(e.clicks); break;
-    case Rotary::White: engine.props.drawbar3.step(e.clicks); break;
-    case Rotary::Red: engine.props.leslie.step(e.clicks); break;
+    case Rotary::blue: engine.props.drawbar1.step(e.clicks); break;
+    case Rotary::green: engine.props.drawbar2.step(e.clicks); break;
+    case Rotary::yellow: engine.props.drawbar3.step(e.clicks); break;
+    case Rotary::red: engine.props.leslie.step(e.clicks); break;
     }
   }
 

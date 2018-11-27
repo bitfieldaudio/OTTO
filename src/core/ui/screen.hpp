@@ -10,7 +10,7 @@ namespace otto::core::ui {
 
     red_click,
     blue_click,
-    white_click,
+    yellow_click,
     green_click,
 
     shift,
@@ -49,7 +49,7 @@ namespace otto::core::ui {
     {}
   };
 
-  enum struct Rotary { Blue, Green, White, Red };
+  enum struct Rotary { blue, green, yellow, red };
 
   /// Passed to `Screen::rotary`
   struct RotaryEvent {

@@ -57,16 +57,16 @@ namespace otto::core::audio {
 
   void EnvelopeScreen::rotary(RotaryEvent ctx) {
     switch (ctx.rotary) {
-    case Rotary::Blue:
+    case Rotary::blue:
       props.attack.step(ctx.clicks);
       break;
-    case Rotary::Green:
+    case Rotary::green:
       props.decay.step(ctx.clicks);
       break;
-    case Rotary::White:
+    case Rotary::yellow:
       props.sustain.step(ctx.clicks);
       break;
-    case Rotary::Red:
+    case Rotary::red:
       props.release.step(ctx.clicks);
       break;
     }
@@ -131,10 +131,10 @@ namespace otto::core::audio {
   void SettingsScreen::rotary(ui::RotaryEvent ev)
   {
     switch (ev.rotary) {
-      case Rotary::Blue: props.play_mode.step(ev.clicks); break;
-      case Rotary::Green: props.portamento.step(ev.clicks); break;
-      case Rotary::White: props.octave.step(ev.clicks); break;
-      case Rotary::Red: props.transpose.step(ev.clicks); break;
+      case Rotary::blue: props.play_mode.step(ev.clicks); break;
+      case Rotary::green: props.portamento.step(ev.clicks); break;
+      case Rotary::yellow: props.octave.step(ev.clicks); break;
+      case Rotary::red: props.transpose.step(ev.clicks); break;
     }
   }
 

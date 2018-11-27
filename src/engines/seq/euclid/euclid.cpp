@@ -158,10 +158,10 @@ namespace otto::engines {
     auto& current = props.channels.at(props.channel);
 
     switch (ev.rotary) {
-    case Rotary::Blue: props.channel.step(ev.clicks); break;
-    case Rotary::Green: current.length.step(ev.clicks); break;
-    case Rotary::White: current.hits.step(ev.clicks); break;
-    case Rotary::Red: current.rotation.step(ev.clicks); break;
+    case Rotary::blue: props.channel.step(ev.clicks); break;
+    case Rotary::green: current.length.step(ev.clicks); break;
+    case Rotary::yellow: current.hits.step(ev.clicks); break;
+    case Rotary::red: current.rotation.step(ev.clicks); break;
     }
     current.update_notes();
     refresh_state();
@@ -172,7 +172,7 @@ namespace otto::engines {
     switch (key) {
     case ui::Key::blue_click: [[fallthrough]];
     case ui::Key::green_click: [[fallthrough]];
-    case ui::Key::white_click: [[fallthrough]];
+    case ui::Key::yellow_click: [[fallthrough]];
     case ui::Key::red_click:
       if (engine.recording) {
         engine.recording = std::nullopt;

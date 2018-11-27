@@ -49,10 +49,10 @@ namespace otto::engines {
   void NukeSynthScreen::rotary(RotaryEvent e)
   {
     switch (e.rotary) {
-    case Rotary::Blue: engine.props.wave.step(e.clicks); break;
-    case Rotary::Green: engine.props.aux.step(e.clicks); break;
-    case Rotary::White: engine.props.relation.step(e.clicks); break;
-    case Rotary::Red: engine.props.filter.step(e.clicks); break;
+    case Rotary::blue: engine.props.wave.step(e.clicks); break;
+    case Rotary::green: engine.props.aux.step(e.clicks); break;
+    case Rotary::yellow: engine.props.relation.step(e.clicks); break;
+    case Rotary::red: engine.props.filter.step(e.clicks); break;
     }
   }
 
