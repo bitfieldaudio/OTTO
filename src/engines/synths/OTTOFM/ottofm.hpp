@@ -16,9 +16,7 @@ namespace otto::engines {
       using Properties::Properties;
       // clang-format off
       //Envelopes
-      Property<float> cAtt                    = {this, "cAtt",      0,   has_limits::init(-1,   1),  steppable::init(0.01)};
-      Property<float> cSus                    = {this, "cSus",      0,   has_limits::init(-1,   1),  steppable::init(0.01)};
-      Property<float> cRel                    = {this, "cRel",      0,   has_limits::init(-1,   1),  steppable::init(0.01)};
+      Property<float> feedback                = {this, "feedback",  0,   has_limits::init(0, 0.4),  steppable::init(0.01)};
       Property<float> mAtt                    = {this, "mAtt",      0.2, has_limits::init(0,    1),  steppable::init(0.01)};
       Property<float> mDecrel                 = {this, "mDecrel",   0.5, has_limits::init(0,    1),  steppable::init(0.01)};
       Property<float> mSuspos                 = {this, "mSuspos",   0.5, has_limits::init(0,    1),  steppable::init(0.01)};
