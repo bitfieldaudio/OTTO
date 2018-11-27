@@ -121,7 +121,7 @@ namespace otto::services {
           switch (line[0]) {
           case 'B': keypress(core::ui::Key::blue_click); break;
           case 'G': keypress(core::ui::Key::green_click); break;
-          case 'Y': keypress(core::ui::Key::white_click); break;
+          case 'Y': keypress(core::ui::Key::yellow_click); break;
           case 'R': keypress(core::ui::Key::red_click); break;
           default: break;
           }
@@ -129,10 +129,10 @@ namespace otto::services {
         }
         RotaryEvent rot;
         switch (line[0]) {
-        case 'B': rot.rotary = Rotary::Blue; break;
-        case 'G': rot.rotary = Rotary::Green; break;
-        case 'Y': rot.rotary = Rotary::White; break;
-        case 'R': rot.rotary = Rotary::Red; break;
+        case 'B': rot.rotary = Rotary::blue; break;
+        case 'G': rot.rotary = Rotary::green; break;
+        case 'Y': rot.rotary = Rotary::yellow; break;
+        case 'R': rot.rotary = Rotary::red; break;
         default: rot.rotary = Rotary{-1};
         }
         if (rot.rotary == Rotary{-1}) continue;

@@ -17,7 +17,7 @@
 #include "./fbcp.hpp"
 #include "board/ui/egl_ui_manager.hpp"
 
-static nlohmann::json config = {{"FPS", 60.f}, {"Debug", true}};
+static nlohmann::json config = {{"FPS", 30.f}, {"Debug", false}};
 
 namespace otto::services {
 

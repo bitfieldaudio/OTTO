@@ -45,6 +45,11 @@ namespace otto::services {
     inParameters.nChannels = 1;
     inParameters.firstChannel = 0;
 
+    RtAudio::StreamOptions options;
+    options.flags = RTAUDIO_SCHEDULE_REALTIME;
+    options.numberOfBuffers = 1;
+    options.streamName = "OTTO";
+
     try {
       client.openStream(&outParameters, &inParameters, RTAUDIO_FLOAT32, _samplerate, &buffer_size,
                         [](void* out, void* in, unsigned int nframes, double time,
@@ -52,7 +57,8 @@ namespace otto::services {
                           return static_cast<RTAudioAudioManager*>(self)->process(
                             (float*) out, (float*) in, nframes, time, status);
                         },
-                        this);
+                        this,
+			&options);
       buffer_pool().set_buffer_size(buffer_size);
       client.startStream();
     } catch (RtAudioError& e) {

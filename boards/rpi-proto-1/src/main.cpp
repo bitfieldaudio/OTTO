@@ -35,10 +35,14 @@ int main(int argc, char* argv[])
     std::signal(SIGABRT, Application::handle_signal);
     std::signal(SIGTERM, Application::handle_signal);
     std::signal(SIGINT, Application::handle_signal);
+    std::signal(SIGKILL, Application::handle_signal);
 
     app.engine_manager->start();
     app.audio_manager->start();
     app.ui_manager->main_ui_loop();
+    if (app.error() == Application::ErrorCode::ui_closed) {
+      std::system("shutdown -h now");
+    }
 
   } catch (const char* e) {
     return handle_exception(e);

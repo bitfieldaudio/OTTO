@@ -16,10 +16,10 @@ namespace otto::board::ui {
       if (action == Action::press) {
         auto evt = core::midi::NoteOnEvent{note};
         Application::current().audio_manager->send_midi_event(evt);
-        LOGI("Press key {}", evt.key);
+        DLOGI("Press key {}", evt.key);
       } else if (action == Action::release) {
         Application::current().audio_manager->send_midi_event(core::midi::NoteOffEvent{note});
-        LOGI("Release key {}", note);
+        DLOGI("Release key {}", note);
       }
     };
 
@@ -38,7 +38,7 @@ namespace otto::board::ui {
     };
 
     auto shutdown = [action] {
-      if (action == Action::press) std::system("shutdown -h now");
+      if (action == Action::press) Application::current().exit(Application::ErrorCode::ui_closed); 
     };
 
     switch (key) {
