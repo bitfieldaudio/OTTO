@@ -50,7 +50,7 @@ void SolveToeplitz(unsigned int size, const float* toeplitz, const float* y, flo
 	x[0] = y[0] * inv;
 
 	//NOTE(martin): Loop to compute our induction variables until we reach the appropriate vector size
-	for(int n = 2; n <= size; n++)
+	for(unsigned int n = 2; n <= size; n++)
 	{
 		//NOTE(martin): Compute forward and backward vectors from previous versions
 
@@ -58,7 +58,7 @@ void SolveToeplitz(unsigned int size, const float* toeplitz, const float* y, flo
 		float ef = 0;
 		float eb = 0;
 
-		for(int i=0; i< n-1; i++)
+		for(unsigned int i=0; i< n-1; i++)
 		{
 			ef += toeplitz[firstB+i] * forwardPrev[i];
 			eb += toeplitz[size+i] * backwardPrev[firstB+i+1];
@@ -69,7 +69,7 @@ void SolveToeplitz(unsigned int size, const float* toeplitz, const float* y, flo
 		float alphaB =  -eb*alphaF;
 		float betaB = alphaF;
 
-		for(int i=0; i<n; i++)
+		for(unsigned int i=0; i<n; i++)
 		{
 			forward[i] = alphaF * forwardPrev[i] + betaF * backwardPrev[firstB+i];
 			backward[firstB+i] = alphaB * forwardPrev[i] + betaB * backwardPrev[firstB+i];
@@ -78,12 +78,12 @@ void SolveToeplitz(unsigned int size, const float* toeplitz, const float* y, flo
 		//NOTE(martin): Compute x error and update x accordingly
 
 		float ex = 0;
-		for(int i=0; i<n-1; i++)
+		for(unsigned int i=0; i<n-1; i++)
 		{
 			ex += toeplitz[firstB+i] * x[i] ;
 		}
 
-		for(int i=0; i<n; i++)
+		for(unsigned int i=0; i<n; i++)
 		{
 			x[i] = x[i] + (y[n-1] - ex) * backward[firstB+i];
 		}
