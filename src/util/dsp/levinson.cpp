@@ -7,7 +7,7 @@
 //
 //**************************************************************************
 
-#include<strings.h> // memset()
+#include<string.h> // memset()
 
 namespace otto::dsp
 {
