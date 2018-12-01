@@ -65,33 +65,6 @@ void SolveYuleWalker(unsigned int size, const float* acov, float* sigmaAndCoeffs
 			backward[firstB+i] = alpha * backwardPrev[lastB-i] + beta * backwardPrev[firstB+i];
 		}
 
-		#if 0
-		float check[1024];
-
-		for(int i=0; i<n; i++)
-		{
-			check[i] = 0;
-			for(int j=0; j<n; j++)
-			{
-				unsigned int index = abs(i-j);
-				check[i] += acov[index] * backward[firstB+j];
-			}
-		}
-		printf("\ncb[%i] = ", n);
-		double mse = 0;
-		for(int i=0; i<n; i++)
-		{
-			double diff = (double)check[i] - ((i==n-1) ? 1 : 0);
-
-			mse += diff*diff;
-			printf("\t%.3f", check[i]);
-		}
-		printf("\nmse = %e\n", mse/n);
-		printf("\n");
-		printf("\n\n");
-
-		#endif
-
 		//NOTE(martin): Compute x error and update x accordingly
 
 		float ex = 0;
