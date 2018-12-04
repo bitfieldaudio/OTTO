@@ -159,6 +159,7 @@ namespace otto::engines {
     case ui::Key::red_click: cur_op = 0; break;
     default: return false; ;
     }
+    return true;
   }
 
   void OTTOFMSynthScreen::rotary(RotaryEvent e)
@@ -176,19 +177,17 @@ namespace otto::engines {
       break;
     case Rotary::green:
       if (!shift) {
-        current.cAtt.step(e.clicks);
-        current.mAtt.step(e.clicks);
+        current.outLev.step(e.clicks);
       } else {
-        current.cSus.step(e.clicks);
         current.mSuspos.step(e.clicks);
       }
       break;
     case Rotary::yellow:
       if (!shift) {
-        current.cRel.step(e.clicks);
-        current.mDecrel.step(e.clicks);
+        current.feedback.step(e.clicks);
+        current.mAtt.step(e.clicks);
       } else {
-        current.outLev.step(e.clicks);
+        current.mDecrel.step(e.clicks);
       }
       break;
     case Rotary::red:
@@ -279,9 +278,9 @@ namespace otto::engines {
     ctx.lineWidth(6.0);
     ctx.lineCap(Canvas::LineCap::ROUND);
     ctx.closePath();
-    // shift not held
-    ctx.stroke(Colours::Gray60);
-    // Horizontal line
+    //shift not held
+    ctx.stroke(Colours::Green);
+    //Horizontal line
     ctx.beginPath();
     ctx.moveTo(
       line_x - 0.5 * bar_width,
@@ -292,8 +291,9 @@ namespace otto::engines {
     ctx.lineWidth(6.0);
     ctx.lineCap(Canvas::LineCap::ROUND);
     ctx.closePath();
-    // shift not held
-    ctx.stroke(Colours::Gray60);
+    //shift not held
+    ctx.stroke(Colours::Green);
+
   }
 
   void OTTOFMSynthScreen::draw_with_shift(ui::vg::Canvas& ctx)
@@ -328,9 +328,9 @@ namespace otto::engines {
     ctx.lineWidth(6.0);
     ctx.lineCap(Canvas::LineCap::ROUND);
     ctx.closePath();
-    // shift is held
-    ctx.stroke(Colours::Yellow);
-    // Horizontal line
+    //shift is held
+    ctx.stroke(Colours::Gray60);
+    //Horizontal line
     ctx.beginPath();
     ctx.moveTo(
       line_x - 0.5 * bar_width,
@@ -341,8 +341,8 @@ namespace otto::engines {
     ctx.lineWidth(6.0);
     ctx.lineCap(Canvas::LineCap::ROUND);
     ctx.closePath();
-    // shift not held
-    ctx.stroke(Colours::Yellow);
+    //shift not held
+    ctx.stroke(Colours::Gray60);
 
     // Algorithm
     ctx.beginPath();
@@ -368,103 +368,117 @@ namespace otto::engines {
       vg::Box{x_pad_left, y_pad + 0.7 * space, width - x_pad_left - x_pad - 35.f, space * 1.5};
     const float spacing = 10.f;
     const float max_width = (b.width - 3 * spacing) / 3.f;
-    float aw, dw, sh, rw;
+
     bool is_modulator = algorithms[engine.props.algN].modulator_flags[cur_op];
+
     if (is_modulator) {
+      float aw, dw, sh, rw;
       aw = max_width * engine.props.operators.at(cur_op).mAtt.normalize();
       dw = max_width * std::max(0.f, (engine.props.operators.at(cur_op).mDecrel.normalize() *
                                       (1 - engine.props.operators.at(cur_op).mSuspos.normalize())));
       sh = b.height * engine.props.operators.at(cur_op).mSuspos.normalize();
-      rw = max_width * std::max(0.f, (engine.props.operators.at(cur_op).mDecrel.normalize() *
-                                      engine.props.operators.at(cur_op).mSuspos.normalize()));
-    } else {
-      aw = max_width * engine.props.operators.at(cur_op).cAtt.normalize();
-      dw = max_width * engine.voice_mgr_.envelope_props.decay.normalize();
-      sh = b.height * engine.props.operators.at(cur_op).cSus.normalize();
-      rw = max_width * engine.props.operators.at(cur_op).cRel.normalize();
-    }
+      rw = max_width * std::max(0.f, (
+               engine.props.operators.at(cur_op).mDecrel.normalize()*
+               engine.props.operators.at(cur_op).mSuspos.normalize()));
 
-    ctx.lineWidth(6.f);
-
-    const float arc_size = 0.9;
-    // Drawing. Colors depend on whether or not shift is held
-    // Attack
-    ctx.beginPath();
-    ctx.moveTo(b.x, b.y + b.height);
-    if (is_modulator)
+      ctx.lineWidth(6.f);
+      //Drawing. Colors depend on whether or not shift is held
+      //Attack
+      ctx.beginPath();
+      ctx.moveTo(b.x, b.y + b.height);
       ctx.lineTo(b.x + aw, b.y);
-    else
-      ctx.quadraticCurveTo({b.x + aw * arc_size, b.y + b.height * arc_size},
-                           {b.x + aw, b.y}); // curve
-    ctx.lineTo(b.x + aw, b.y + b.height);
-    ctx.closePath();
-    // Choose colour
-    if (shift) {
-      ctx.stroke(Colours::Gray60);
-      ctx.fill(Colours::Gray60);
-    } else {
-      ctx.stroke(Colours::Green);
-      ctx.fill(Colours::Green);
-    }
+      ctx.lineTo(b.x + aw, b.y + b.height);
+      ctx.closePath();
+      //Choose colour
+      if (shift) {
+        ctx.stroke(Colours::Gray60);
+        ctx.fill(Colours::Gray60);
+      } else {
+        ctx.stroke(Colours::Yellow);
+        ctx.fill(Colours::Yellow);
+      }
 
-    // Decay
-    ctx.beginPath();
-    ctx.moveTo(b.x + aw + spacing, b.y + b.height);
-    ctx.lineTo(b.x + aw + spacing, b.y);
-    if (is_modulator)
+      //Decay
+      ctx.beginPath();
+      ctx.moveTo(b.x + aw + spacing, b.y + b.height);
+      ctx.lineTo(b.x + aw + spacing, b.y);
       ctx.lineTo(b.x + aw + spacing + dw, b.y + b.height - sh);
-    else
-      ctx.quadraticCurveTo(
-        {b.x + aw + spacing + dw * (1 - arc_size), b.y + (b.height - sh) * arc_size},
-        {b.x + aw + spacing + dw, b.y + b.height - sh}); // curve
-    ctx.lineTo(b.x + aw + spacing + dw, b.y + b.height);
-    ctx.closePath();
-    if (is_modulator && !shift) {
-      ctx.stroke(Colours::Yellow);
-      ctx.fill(Colours::Yellow);
-    } else if (is_modulator && shift) {
-      ctx.stroke(Colours::Green);
-      ctx.fill(Colours::Green);
-    } else {
-      ctx.stroke(Colours::Gray60);
-      ctx.fill(Colours::Gray60);
-    }
+      ctx.lineTo(b.x + aw + spacing + dw, b.y + b.height);
+      ctx.closePath();
+      if (!shift) {
+        ctx.stroke(Colours::Gray60);
+        ctx.fill(Colours::Gray60);
+      } else {
+        ctx.stroke(Colours::Yellow);
+        ctx.fill(Colours::Yellow);
+      }
 
-    // Sustain
-    ctx.beginPath();
-    ctx.moveTo(b.x + aw + spacing + dw + spacing, b.y + b.height - sh);
-    ctx.lineTo(b.x + b.width - spacing - rw, b.y + b.height - sh);
-    ctx.lineTo(b.x + b.width - spacing - rw, b.y + b.height);
-    ctx.lineTo(b.x + aw + spacing + dw + spacing, b.y + b.height);
-    ctx.closePath();
-    if (shift) {
-      ctx.stroke(Colours::Green);
-      ctx.fill(Colours::Green);
-    } else {
-      ctx.stroke(Colours::Gray60);
-      ctx.fill(Colours::Gray60);
-    }
+      //Sustain
+      ctx.beginPath();
+      ctx.moveTo(b.x + aw + spacing + dw + spacing,      b.y + b.height - sh);
+      ctx.lineTo(b.x + b.width - spacing - rw, b.y + b.height - sh);
+      ctx.lineTo(b.x + b.width - spacing - rw, b.y + b.height);
+      ctx.lineTo(b.x + aw + spacing + dw + spacing, b.y + b.height);
+      ctx.closePath();
+      if (shift) {
+        ctx.stroke(Colours::Green);
+        ctx.fill(Colours::Green);
+      } else {
+        ctx.stroke(Colours::Gray60);
+        ctx.fill(Colours::Gray60);
+      }
 
-    // Release
-    ctx.beginPath();
-    ctx.moveTo(b.x + b.width - rw, b.y + b.height);
-    ctx.lineTo(b.x + b.width - rw, b.y + b.height - sh);
-    if (is_modulator)
+      //Release
+      ctx.beginPath();
+      ctx.moveTo(b.x + b.width - rw, b.y + b.height);
+      ctx.lineTo(b.x + b.width - rw, b.y + b.height - sh);
       ctx.lineTo(b.x + b.width, b.y + b.height);
-    else
-      ctx.quadraticCurveTo({b.x + b.width - rw * arc_size, b.y + b.height - sh * (1 - arc_size)},
-                           {b.x + b.width, b.y + b.height});
-    ctx.closePath();
-    if (!shift) {
-      ctx.stroke(Colours::Yellow);
-      ctx.fill(Colours::Yellow);
-    } else if (is_modulator) {
-      ctx.stroke(Colours::Green);
-      ctx.fill(Colours::Green);
+      ctx.closePath();
+      if (shift) {
+        ctx.stroke(Colours::Yellow);
+        ctx.fill(Colours::Yellow);
+      } else {
+        ctx.stroke(Colours::Gray60);
+        ctx.fill(Colours::Gray60);
+      }
     } else {
+
+      //Feedback
+      ctx.beginPath();
+      if (!shift)
+        ctx.fillStyle(Colours::Yellow);
+      else
+        ctx.fillStyle(Colours::Gray60);
+
+      ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
+      ctx.fillText("Self-mod", {x_pad_left, y_pad + 100});
+
+      int circ_x = 2 * x_pad_left;
+      int circ_y = 2.2 * y_pad;
+      int rad = 15;
+
+
+      ctx.beginPath();
+      ctx.moveTo(circ_x - rad, circ_y);
+      ctx.lineTo(circ_x - rad - 20, circ_y);
+      ctx.arc(circ_x, circ_y, rad + 20, -M_PI, 0, false);
       ctx.stroke(Colours::Gray60);
-      ctx.fill(Colours::Gray60);
+
+      ctx.beginPath();
+      ctx.arc(circ_x, circ_y, rad + 20, -engine.props.operators.at(cur_op).feedback/0.4 * M_PI, 0, false);
+      ctx.lineTo(circ_x + rad, circ_y);
+      if (!shift)
+        ctx.stroke(Colours::Yellow);
+      else
+        ctx.stroke(Colours::White);
+
+      //Inner circle
+      ctx.beginPath();
+      ctx.circle({circ_x, circ_y}, rad);
+      ctx.stroke(Colours::Gray60);
+
     }
+
   }
 
   void OTTOFMSynthScreen::draw_operators(ui::vg::Canvas& ctx)
@@ -530,17 +544,64 @@ namespace otto::engines {
       ctx.closePath();
       // Choose colour
       if (i == 3) {
-        ctx.stroke(Colours::Blue);
-        if (i == cur_op) ctx.fill(Colours::Blue);
+        if(i == cur_op) {
+          ctx.stroke(Colours::White);
+          ctx.fill(Colours::White);
+        } else {
+          ctx.stroke(Colours::Blue);
+        }
+      }
+      else if (i == 2) {
+        if(i == cur_op) {
+          ctx.stroke(Colours::White);
+          ctx.fill(Colours::White);
+        } else {
+          ctx.stroke(Colours::Green);
+        }
+      }
+      else if (i == 1) {
+        if(i == cur_op) {
+          ctx.stroke(Colours::White);
+          ctx.fill(Colours::White);
+        } else {
+          ctx.stroke(Colours::Yellow);
+        }
+      }
+      else if (i == 0) {
+        if(i == cur_op) {
+          ctx.stroke(Colours::White);
+          ctx.fill(Colours::White);
+        } else {
+          ctx.stroke(Colours::Red);
+        }
+      }
+
+      //Draw activity levels
+      ctx.beginPath();
+      float op_level;
+      if(algorithms[engine.props.algN].modulator_flags[i]){
+        engine.props.voice_envelopes.at(engine.voice_mgr_.last_voice).ops.at(i).modulator.refresh_links();
+        op_level = engine.props.voice_envelopes.at(engine.voice_mgr_.last_voice).ops.at(i).modulator*
+            engine.props.operators.at(i).outLev;
+      } else {
+        engine.props.voice_envelopes.at(engine.voice_mgr_.last_voice).ops.at(i).carrier.refresh_links();
+        op_level = engine.props.voice_envelopes.at(engine.voice_mgr_.last_voice).ops.at(i).carrier*
+            engine.props.operators.at(i).outLev;
+      }
+      if(algorithms[engine.props.algN].modulator_flags[i]){ //draw modulator
+        ctx.rect({x_pad + 12.5*(1 - op_level), y_pad + (3 - i)*space - 13 + 12.5*(1 - op_level)}, {25*op_level, 25*op_level});
+      } else { // draw carrier
+        ctx.circle({x_pad + 12, y_pad + (3 - i)*space}, 15*op_level);
+      }
+      //Choose colour
+      if (i == 3) {
+        ctx.fill(Colours::Blue);
       } else if (i == 2) {
-        ctx.stroke(Colours::Green);
-        if (i == cur_op) ctx.fill(Colours::Green);
+        ctx.fill(Colours::Green);
       } else if (i == 1) {
-        ctx.stroke(Colours::Yellow);
-        if (i == cur_op) ctx.fill(Colours::Yellow);
+        ctx.fill(Colours::Yellow);
       } else if (i == 0) {
-        ctx.stroke(Colours::Red);
-        if (i == cur_op) ctx.fill(Colours::Red);
+        ctx.fill(Colours::Red);
       }
     }
 

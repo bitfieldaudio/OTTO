@@ -109,22 +109,16 @@ namespace otto::engines {
 
     // middle red ring
     ctx.group([&] {
+
       // Ring Base
       ctx.beginPath();
-      ctx.circle({160, 120}, 25);
       ctx.lineWidth(6.0);
       ctx.strokeStyle(Colours::Red);
-      ctx.lineCap(Canvas::LineCap::ROUND);
-      ctx.lineJoin(Canvas::LineJoin::ROUND);
-      ctx.stroke();
 
       engine.props.phasor.refresh_links();
       float rotation = engine.props.phasor * 2 * M_PI;
-
-      // Inner Ring Base
-      ctx.beginPath();
       ctx.rotateAround(rotation, {160, 120});
-      ctx.circle({160, 107.5}, 12.5);
+      ctx.circle({160, height/2 + engine.props.leslie*25}, 12.5);
       ctx.stroke();
     });
     ///
