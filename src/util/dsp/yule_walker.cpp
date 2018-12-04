@@ -8,7 +8,7 @@
 //**************************************************************************
 
 #include <gsl/span>
-#include <utility>
+#include "util/algorithm.hpp"
 
 namespace otto::dsp
 {
@@ -36,8 +36,8 @@ void solve_yule_walker(gsl::span<const float> acov, gsl::span<float> sigma_and_c
 	util::fill(sigma_and_coeffs, 0.f);
 	util::fill(scratch_buffer, 0.f);
 
-	gsl::span<float> backward_prev = {scratch_buffer.begin(), scratch_buffer.begin() + acov.size()};
-	gsl::span<float> backward = {scratch_buffer.begin() + acov.size(), scratch_buffer.end()};
+	gsl::span<float> backward_prev = scratch_buffer.subspan(0, acov.size());
+	gsl::span<float> backward = scratch_buffer.subspan(acov.size(), acov.size());
 
 	//NOTE(martin): Initialize our first induction variables
 	float inv = 1./acov[0];
@@ -89,7 +89,7 @@ void solve_yule_walker(gsl::span<const float> acov, gsl::span<float> sigma_and_c
 	//NOTE(martin): get sigma and renormalize filter coefficients
 
 	float sigma = 1./sigma_and_coeffs[0];
-	for(int i=1; i<size; i++)
+	for(int i=1; i<acov.size(); i++)
 	{
 		sigma_and_coeffs[i] = - sigma * sigma_and_coeffs[i];
 	}
