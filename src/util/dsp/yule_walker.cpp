@@ -8,6 +8,7 @@
 //**************************************************************************
 
 #include <gsl/span>
+#include <utility>
 
 namespace otto::dsp
 {
