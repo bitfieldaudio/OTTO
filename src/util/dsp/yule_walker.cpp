@@ -7,7 +7,7 @@
 //
 //**************************************************************************
 
-#include<string.h> // memset()
+#include <gsl/span>
 
 namespace otto::dsp
 {
