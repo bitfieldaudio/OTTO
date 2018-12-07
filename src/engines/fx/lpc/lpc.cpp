@@ -2,7 +2,7 @@
 #include "util/algorithm.hpp"
 #include "util/dsp/yule_walker.hpp"
 
-#include "LPC.hpp"
+#include "lpc.hpp"
 
 namespace otto::engines {
 

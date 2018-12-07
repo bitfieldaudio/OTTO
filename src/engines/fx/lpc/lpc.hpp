@@ -31,7 +31,7 @@ namespace otto::engines {
     audio::ProcessData<2> process(audio::ProcessData<2>) override;
 
   private:
-    void makeSha(gsl::span<float> buffer, float sha_frequency, int lag);
+    void makeSha(gsl::span<float> buffer, float sha_period, int lag);
   };
 
 } // namespace otto::engines
