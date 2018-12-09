@@ -1,10 +1,10 @@
 #include "engine_manager.hpp"
 
 #include "engines/fx/wormhole/wormhole.hpp"
+#include "engines/fx/pingpong/pingpong.hpp"
 #include "engines/misc/master/master.hpp"
 #include "engines/seq/arp/arp.hpp"
 #include "engines/seq/euclid/euclid.hpp"
-#include "engines/synths/DX7/dxotto.hpp"
 #include "engines/synths/OTTOFM/ottofm.hpp"
 #include "engines/synths/external/external.hpp"
 #include "engines/synths/hammond/hammond.hpp"
@@ -45,19 +45,19 @@ namespace otto::services {
     auto& ui_manager = *Application::current().ui_manager;
     auto& state_manager = *Application::current().state_manager;
 
-    engineGetters.try_emplace("Synth", [&]() { return dynamic_cast<AnyEngine*>(&*synth); });
-    engineGetters.try_emplace("Effect", [&]() { return dynamic_cast<AnyEngine*>(&*effect); });
-    engineGetters.try_emplace("Sequencer", [&]() { return dynamic_cast<AnyEngine*>(&*sequencer); });
+    engineGetters.try_emplace("Synth", [&]() { return dynamic_cast<AnyEngine*>(synth.current()); });
+    engineGetters.try_emplace("Effect", [&]() { return dynamic_cast<AnyEngine*>(effect.current()); });
+    engineGetters.try_emplace("Sequencer", [&]() { return dynamic_cast<AnyEngine*>(sequencer.current()); });
 
-    register_engine<engines::Arp>();
-    register_engine<engines::DXOTTOSynth>();
-    register_engine<engines::Euclid>();
-    register_engine<engines::External>();
-    register_engine<engines::HammondSynth>();
-    register_engine<engines::NukeSynth>();
-    register_engine<engines::OTTOFMSynth>();
-    register_engine<engines::VocoderSynth>();
-    register_engine<engines::Wormhole>();
+    sequencer.register_engine<engines::Arp>("Arp");
+    sequencer.register_engine<engines::Euclid>("Euclid");
+    synth.register_engine<engines::External>("External");
+    synth.register_engine<engines::HammondSynth>("Hammond");
+    synth.register_engine<engines::NukeSynth>("Nuke");
+    synth.register_engine<engines::OTTOFMSynth>("OTTOFM");
+    synth.register_engine<engines::VocoderSynth>("Vocoder");
+    effect.register_engine<engines::Wormhole>("Wormhole");
+    effect.register_engine<engines::Pingpong>("Pingpong");
 
     sequencer.init();
     synth.init();
@@ -81,7 +81,7 @@ namespace otto::services {
     });
 
     ui_manager.register_key_handler(ui::Key::envelope, [&](ui::Key k) {
-      auto* owner = dynamic_cast<engines::EngineWithEnvelope*>(&synth.current());
+      auto* owner = dynamic_cast<engines::EngineWithEnvelope*>(synth.current());
       if (owner) {
         if (ui_manager.is_pressed(ui::Key::shift)) {
           ui_manager.display(owner->voices_screen());
@@ -92,7 +92,7 @@ namespace otto::services {
     });
 
     ui_manager.register_key_handler(ui::Key::voices, [&](ui::Key k) {
-      auto* owner = dynamic_cast<engines::EngineWithEnvelope*>(&synth.current());
+      auto* owner = dynamic_cast<engines::EngineWithEnvelope*>(synth.current());
       if (owner) {
         ui_manager.display(owner->voices_screen());
       }

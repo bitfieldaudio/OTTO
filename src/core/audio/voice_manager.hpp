@@ -93,6 +93,7 @@ namespace otto::core::audio {
 
   template<int N>
   struct VoiceManager {
+    int last_voice;
 
     props::Properties<props::no_serialize> voices_props;
 
@@ -235,6 +236,7 @@ namespace otto::core::audio {
                     vp.midi.velocity = ev.velocity / 127.f;
                     vp.midi.trigger  = 1;
                     DLOGI("Voice {} begin key {} {}Hz velocity: {}", v, ev.key, vp.midi.freq, vp.midi.velocity);
+                    last_voice = v;
                   },
                   [this](midi::NoteOffEvent& ev) {
                     stop_voice(gsl::narrow_cast<char>(ev.key));

@@ -38,11 +38,11 @@ namespace otto::core::engine {
     : engine_wid(engine_names, eng_opts([&ed](int idx) -> AnyEngine& {
                    return ed.select(static_cast<std::size_t>(idx));
                  })),
-      preset_wid(preset_names, prst_opts([&ed]() -> AnyEngine& { return ed.current(); }))
+      preset_wid(preset_names, prst_opts([&ed]() -> AnyEngine& { return *ed.current(); }))
   {
-    engine_names.reserve(ed.engines().size());
-    util::transform(ed.engines(), std::back_inserter(engine_names),
-                    [](auto&& e) { return e->name(); });
+    engine_names.reserve(ed.engine_factories().size());
+    util::transform(ed.engine_factories(), std::back_inserter(engine_names),
+                    [](auto&& e) { return e.name; });
   }
 
 }

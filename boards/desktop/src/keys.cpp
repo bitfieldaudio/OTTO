@@ -65,49 +65,49 @@ namespace otto::board::ui {
       if (ctrl)
         send_key(OKey::blue_click);
       else
-        send_rotary(core::ui::Rotary::Blue, 1);
+        send_rotary(core::ui::Rotary::blue, 1);
       break;
     case Key::a:
       if (ctrl)
         send_key(OKey::blue_click);
       else
-        send_rotary(core::ui::Rotary::Blue, -1);
+        send_rotary(core::ui::Rotary::blue, -1);
       break;
     case Key::w:
       if (ctrl)
         send_key(OKey::green_click);
       else
-        send_rotary(core::ui::Rotary::Green, 1);
+        send_rotary(core::ui::Rotary::green, 1);
       break;
     case Key::s:
       if (ctrl)
         send_key(OKey::green_click);
       else
-        send_rotary(core::ui::Rotary::Green, -1);
+        send_rotary(core::ui::Rotary::green, -1);
       break;
     case Key::e:
       if (ctrl)
-        send_key(OKey::white_click);
+        send_key(OKey::yellow_click);
       else
-        send_rotary(core::ui::Rotary::White, 1);
+        send_rotary(core::ui::Rotary::yellow, 1);
       break;
     case Key::d:
       if (ctrl)
-        send_key(OKey::white_click);
+        send_key(OKey::yellow_click);
       else
-        send_rotary(core::ui::Rotary::White, -1);
+        send_rotary(core::ui::Rotary::yellow, -1);
       break;
     case Key::r:
       if (ctrl)
         send_key(OKey::red_click);
       else
-        send_rotary(core::ui::Rotary::Red, 1);
+        send_rotary(core::ui::Rotary::red, 1);
       break;
     case Key::f:
       if (ctrl)
         send_key(OKey::red_click);
       else
-        send_rotary(core::ui::Rotary::Red, -1);
+        send_rotary(core::ui::Rotary::red, -1);
       break;
 
     // Engines

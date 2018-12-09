@@ -2,18 +2,21 @@
 
 import("stdfaust.lib");
 
-process = hgroup("voices", vgroup("0", voice) + vgroup("3", voice) +
-                           vgroup("1", voice) + vgroup("4", voice) +
-                           vgroup("2", voice) + vgroup("5", voice)) :  _ ;
+//process = hgroup("voices", vgroup("0", voice) + vgroup("3", voice) +
+//                           vgroup("1", voice) + vgroup("4", voice) +
+//                           vgroup("2", voice) + vgroup("5", voice)) :  _ ;
 
-voice = hgroup("midi", out)
+process = vgroup("voices", par(n, 6, vgroup("%n", voice(n)))) :> _ ;
+
+voice(vnum) = out
 with {
-  midigate	= button ("trigger");
-  midifreq	= hslider("freq", 440, 20, 1000, 1);
-  midigain	= hslider("velocity", 1, 0, 1, 1/127);
+  midigate	= button ("v:midi/trigger");
+  midifreq	= hslider("v:midi/freq", 440, 20, 1000, 1);
+  midigain	= hslider("v:midi/velocity", 1, 0, 1, 1/127);
 
-  //Voice definition
+  //Properties for all operators
   algN = hslider("/algN", 0, 0 ,11, 1) : int;
+  fmAmount = hslider("/fmAmount", 1, 0 ,1, 0.01);
 
 
 
@@ -24,14 +27,14 @@ with {
   r = hslider("/v:envelope/Release", 0.0, 0.0, 4.0, 0.01);
 
 
-  out = par(i, 11, control( DXOTTO_algo(i, a,d,s,r,midifreq,midigain,midigate) , algN==i)) :> _;
+  out = par(i, 11, control( DXOTTO_algo(vnum,i, a,d,s,r, fmAmount, midifreq, midigain, midigate) , algN==i)) :> _;
 };
 
 //------------------------------`DXOTTO_modulator_op`---------------------------
 // FM carrier operator for OTTO. Implements a phase-modulable sine wave oscillator connected
 // to an ADSR envelope generator.
 // ```
-// DXOTTO_modulator_op(freq,phaseMod,outLev,att,dec,sus,rel,gain,gate) : _
+// DXOTTO_modulator_op(freq, fmAmount, phaseMod,outLev,att,dec,sus,rel,gain,gate) : _
 // ```
 // * `freq`: frequency of the oscillator
 // * `phaseMod`: phase deviation (-1 - 1) (The 'input' of an operator. It is 0 for the top of a stack without self-modulation, and _ otherwise)
@@ -39,22 +42,22 @@ with {
 // * `att, rel` : AR parameters
 // * `gate`: trigger signal
 //-----------------------------------------------------------------
-DXOTTO_modulator_op(basefreq,phaseMod,gate) =
+DXOTTO_modulator_op(vnum, j, basefreq,fmAmount,phaseMod,gate) =
 adsr_OTTO(attack,dec,suspos,rel,gate)*outLev*sineWave
 with{
   //Sine oscillator
   tablesize = 1 << 16;
   sineWave = rdtable(tablesize, os.sinwaveform(tablesize), ma.modulo(int(os.phasor(tablesize,freq) + phaseMod*tablesize),tablesize));
-  freq =  hslider("ratio",1,0.25,4,0.01)*basefreq + hslider("detune",0,-1,1,0.01)*25;
+  freq =  hslider("/v:op%j/ratio",1,0.25,4,0.01)*basefreq + hslider("/v:op%j/detune",0,-1,1,0.01)*25;
 
-  outLev = hslider("outLev",0,0,1,0.01);
+  outLev = hslider("/v:op%j/outLev",1,0,1,0.01)*fmAmount;
   //Envelope
-  attack = hslider("mAtt", 0, 0, 1, 0.01)*3;
-  decrel = hslider("mDecrel", 0, 0, 1, 0.01)*3;
-  suspos = hslider("mSuspos", 0, 0, 1, 0.01);
+  attack = hslider("/v:op%j/mAtt", 0, 0, 1, 0.01)*3;
+  decrel = hslider("/v:op%j/mDecrel", 0, 0, 1, 0.01)*3;
+  suspos = hslider("/v:op%j/mSuspos", 0, 0, 1, 0.01);
   dec = decrel*(1 - suspos);
   rel = decrel*suspos;
-  adsr_OTTO(a,d,s,r,t) = on*(ads) : ba.sAndH(on) : rel
+  adsr_OTTO(a,d,s,r,t) = on*(ads) : ba.sAndH(on) : rel <: attach(hbargraph("/v:v%vnum/v:op%j/modulator",0,1))
   with{
         on = t>0;
         off = t==0;
@@ -73,7 +76,7 @@ with{
 // FM carrier operator for OTTO. Implements a phase-modulable sine wave oscillator connected
 // to an ADSR envelope generator.
 // ```
-// DXOTTO_carrier_op(freq,phaseMod,outLev,att,dec,sus,rel,gain,gate) : _
+// DXOTTO_carrier_op(freq, phaseMod,outLev,att,dec,sus,rel,gain,gate) : _
 // ```
 // * `freq`: frequency of the oscillator
 // * `phaseMod`: phase deviation (-1 - 1) (The 'input' of an operator. It is 0 for the top of a stack without self-modulation, and _ otherwise)
@@ -82,20 +85,20 @@ with{
 // * `gain`: Gain from MIDI velocity
 // * `gate`: trigger signal
 //-----------------------------------------------------------------
-DXOTTO_carrier_op(basefreq,phaseMod,att,dec,sus,rel,gain,gate) =
+DXOTTO_carrier_op(vnum, j, basefreq,phaseMod,att,dec,sus,rel,gain,gate) =
 adsre_OTTO(attack,dec,sustain,release,gate)*outLev*gain*sineWave
 with{
   //Sine oscillator
   tablesize = 1 << 16;
   sineWave = rdtable(tablesize, os.sinwaveform(tablesize), ma.modulo(int(os.phasor(tablesize,freq) + phaseMod*tablesize),tablesize));
-  freq =  hslider("ratio",1,0.25,4,0.01)*basefreq + hslider("detune",0,-1,1,0.01)*25;
+  freq =  hslider("/v:op%j/ratio",1,0.25,4,0.01)*basefreq + hslider("/v:op%j/detune",0,-1,1,0.01)*25;
 
-  outLev = hslider("outLev",0,0,1,0.01);
+  outLev = hslider("/v:op%j/outLev",1,0,1,0.01);
   //Envelope
-  attack = att + hslider("cAtt", 0, -1, 1, 0.01) : max(0);
-  sustain = sus + hslider("cSus", 0, -1, 1, 0.01)*0.5 : max(0);
-  release = rel + hslider("cRel", 0, -1, 1, 0.01) : max(0);
-  adsre_OTTO(attT60,decT60,susLvl,relT60,gate) = envel
+  attack = att;
+  sustain = sus;
+  release = rel;
+  adsre_OTTO(attT60,decT60,susLvl,relT60,gate) = envel <: attach(hbargraph("/v:v%vnum/v:op%j/carrier",0,1))
   with {
     ugate = gate>0;
     samps = ugate : +~(*(ugate)); // ramp time in samples
@@ -116,111 +119,128 @@ with{
 // DXOTTO_algo(algN,att,dec,sus,rel,outLevel,opFreq,opDetune,feedback,freq,gain,gate) : _
 // ```
 // * `algN`: algorithm number (0-11, should be an int...)
-// * `att, dec, sus, rel` : Carrier ADSR parameters (each a list of four values)
-// * `cAtt, cRel` : Modulator AR parameters (a list of 4 values between 0-1. Those not needed are ignored)
-// * `outLev`: Operator output levels (a list of 4 values between 0-1)
-// * `opDetune`: Operator detunings (a list of 4 values between 0-1)
-// * `opFreq`: Operator frequency ratios (a list of 4 values)
+// * `att, dec, sus, rel` : Carrier ADSR parameters (default)
 // * `freq`: fundamental frequency
 // * `gain`: general gain
 // * `gate`: trigger signal
 //-----------------------------------------------------------------
 // Alg 0
-DXOTTO_algo(0, att, dec, sus, rel, freq, gain, gate) =
+DXOTTO_algo(vnum, 0, att, dec, sus, rel, fmAmount,freq, gain, gate) =
 op4 : op3 : op2 : op1 : _
 with{
-  op4 = vgroup("op3", DXOTTO_modulator_op(freq,0,gate) );
-  op3 = vgroup("op2", DXOTTO_modulator_op(freq,_,gate) );
-  op2 = vgroup("op1", DXOTTO_modulator_op(freq,_,gate) );
-  op1 = vgroup("op0", DXOTTO_carrier_op(freq,_,att,dec,sus,rel,gain,gate) );
+  op4 = DXOTTO_modulator_op(vnum, 3, freq, fmAmount, 0,gate);
+  op3 = DXOTTO_modulator_op(vnum, 2, freq, fmAmount, _,gate);
+  op2 = DXOTTO_modulator_op(vnum, 1, freq, fmAmount, _,gate);
+  op1 = ( + : DXOTTO_carrier_op(vnum, 0, freq, _,att,dec,sus,rel,gain,gate))~*(feedback1);
+  feedback1 = hslider("/v:op0/feedback", 0, -0.5, 0.5, 0.01) : si.smoo;
 };
 // Alg 1
-DXOTTO_algo(1, att, dec, sus, rel, freq, gain, gate) =
-(op4 : op3) :> op2 :op1 : _
+DXOTTO_algo(vnum, 1, att, dec, sus, rel, fmAmount, freq, gain, gate) =
+(op4 , op3) :> op2 :op1 : _
 with{
-  op4 = vgroup("op3", DXOTTO_modulator_op(freq,0,gate) );
-  op3 = vgroup("op2", DXOTTO_modulator_op(freq,_,gate) );
-  op2 = vgroup("op1", DXOTTO_modulator_op(freq,_,gate) );
-  op1 = vgroup("op0", DXOTTO_carrier_op(freq,_,att,dec,sus,rel,gain,gate) );
+  op4 = DXOTTO_modulator_op(vnum, 3, freq, fmAmount, 0,gate);
+  op3 = DXOTTO_modulator_op(vnum, 2, freq, fmAmount, 0,gate);
+  op2 = DXOTTO_modulator_op(vnum, 1, freq, fmAmount, _,gate);
+  op1 = ( + : DXOTTO_carrier_op(vnum, 0, freq, _,att,dec,sus,rel,gain,gate))~*(feedback1);
+  feedback1 = hslider("/v:op0/feedback", 0, -0.5, 0.5, 0.01) : si.smoo;
 };
 // Alg 2
-DXOTTO_algo(2, att, dec, sus, rel, freq, gain, gate) =
+DXOTTO_algo(vnum, 2, att, dec, sus, rel, fmAmount, freq, gain, gate) =
 op3 : (op2, op4) :> op1 : _
 with{
-  op4 = vgroup("op3", DXOTTO_modulator_op(freq,0,gate) );
-  op3 = vgroup("op2", DXOTTO_modulator_op(freq,0,gate) );
-  op2 = vgroup("op1", DXOTTO_modulator_op(freq,_,gate) );
-  op1 = vgroup("op0", DXOTTO_carrier_op(freq,_,att,dec,sus,rel,gain,gate) );
+  op4 = DXOTTO_modulator_op(vnum, 3, freq, fmAmount, 0,gate);
+  op3 = DXOTTO_modulator_op(vnum, 2, freq, fmAmount, 0,gate);
+  op2 = DXOTTO_modulator_op(vnum, 1, freq, fmAmount, _,gate);
+  op1 = ( + : DXOTTO_carrier_op(vnum, 0, freq, _,att,dec,sus,rel,gain,gate))~*(feedback1);
+  feedback1 = hslider("/v:op0/feedback", 0, -0.5, 0.5, 0.01) : si.smoo;
 };
 // Alg 3
-DXOTTO_algo(3, att, dec, sus, rel, freq, gain, gate) =
+DXOTTO_algo(vnum, 3, att, dec, sus, rel, fmAmount, freq, gain, gate) =
 op4 <: (op2, op3) :> op1 : _
 with{
-  op4 = vgroup("op3", DXOTTO_modulator_op(freq,0,gate) );
-  op3 = vgroup("op2", DXOTTO_modulator_op(freq,_,gate) );
-  op2 = vgroup("op1", DXOTTO_modulator_op(freq,_,gate) );
-  op1 = vgroup("op0", DXOTTO_carrier_op(freq,_,att,dec,sus,rel,gain,gate) );
+  op4 = DXOTTO_modulator_op(vnum, 3, freq, fmAmount, 0,gate);
+  op3 = DXOTTO_modulator_op(vnum, 2, freq, fmAmount, _,gate);
+  op2 = DXOTTO_modulator_op(vnum, 1, freq, fmAmount, _,gate);
+  op1 = ( + : DXOTTO_carrier_op(vnum, 0, freq, _,att,dec,sus,rel,gain,gate))~*(feedback1);
+  feedback1 = hslider("/v:op0/feedback", 0, -0.5, 0.5, 0.01) : si.smoo;
 };
 // Alg 4
-DXOTTO_algo(4, att, dec, sus, rel, freq, gain, gate) =
+DXOTTO_algo(vnum, 4, att, dec, sus, rel, fmAmount, freq, gain, gate) =
 op4 : op3 <: (op1, op2) :> _
 with{
-  op4 = vgroup("op3", DXOTTO_modulator_op(freq,0,gate) );
-  op3 = vgroup("op2", DXOTTO_modulator_op(freq,_,gate) );
-  op2 = vgroup("op1", DXOTTO_carrier_op(freq,_,att,dec,sus,rel,gain,gate) );
-  op1 = vgroup("op0", DXOTTO_carrier_op(freq,_,att,dec,sus,rel,gain,gate) );
+  op4 = DXOTTO_modulator_op(vnum, 3, freq, fmAmount, 0,gate);
+  op3 = DXOTTO_modulator_op(vnum, 2, freq, fmAmount, _,gate);
+  op2 = ( + : DXOTTO_carrier_op(vnum, 1, freq, _,att,dec,sus,rel,gain,gate))~*(feedback2);
+  op1 = ( + : DXOTTO_carrier_op(vnum, 0, freq, _,att,dec,sus,rel,gain,gate))~*(feedback1);
+  feedback1 = hslider("/v:op0/feedback", 0, -0.5, 0.5, 0.01) : si.smoo;
+  feedback2 = hslider("/v:op1/feedback", 0, -0.5, 0.5, 0.01) : si.smoo;
 };
 // Alg 5
-DXOTTO_algo(5, att, dec, sus, rel, freq, gain, gate) =
+DXOTTO_algo(vnum, 5, att, dec, sus, rel, fmAmount, freq, gain, gate) =
 op4 : op3 : (op1, op2) :> _
 with{
-  op4 = vgroup("op3", DXOTTO_modulator_op(freq,0,gate) );
-  op3 = vgroup("op2", DXOTTO_modulator_op(freq,_,gate) );
-  op2 = vgroup("op1", DXOTTO_carrier_op(freq,_,att,dec,sus,rel,gain,gate) );
-  op1 = vgroup("op0", DXOTTO_carrier_op(freq,0,att,dec,sus,rel,gain,gate) );
+  op4 = DXOTTO_modulator_op(vnum, 3, freq, fmAmount, 0,gate);
+  op3 = DXOTTO_modulator_op(vnum, 2, freq, fmAmount, _,gate);
+  op2 = ( + : DXOTTO_carrier_op(vnum, 1, freq, _,att,dec,sus,rel,gain,gate))~*(feedback2);
+  op1 = DXOTTO_carrier_op(vnum, 0, freq, _,att,dec,sus,rel,gain,gate)~*(feedback1);
+  feedback1 = hslider("/v:op0/feedback", 0, -0.5, 0.5, 0.01) : si.smoo;
+  feedback2 = hslider("/v:op1/feedback", 0, -0.5, 0.5, 0.01) : si.smoo;
 };
 // Alg 6
-DXOTTO_algo(6, att, dec, sus, rel, freq, gain, gate) =
+DXOTTO_algo(vnum, 6, att, dec, sus, rel, fmAmount, freq, gain, gate) =
 (op4, op3, op2) :> op1 : _
 with{
-  op4 = vgroup("op3", DXOTTO_modulator_op(freq,0,gate) );
-  op3 = vgroup("op2", DXOTTO_modulator_op(freq,0,gate) );
-  op2 = vgroup("op1", DXOTTO_modulator_op(freq,0,gate) );
-  op1 = vgroup("op0", DXOTTO_carrier_op(freq,_,att,dec,sus,rel,gain,gate) );
+  op4 = DXOTTO_modulator_op(vnum, 3, freq, fmAmount, 0,gate);
+  op3 = DXOTTO_modulator_op(vnum, 2, freq, fmAmount, 0,gate);
+  op2 = DXOTTO_modulator_op(vnum, 1, freq, fmAmount, 0,gate);
+  op1 = ( + : DXOTTO_carrier_op(vnum, 0, freq, _,att,dec,sus,rel,gain,gate))~*(feedback1);
+  feedback1 = hslider("/v:op0/feedback", 0, -0.5, 0.5, 0.01) : si.smoo;
 };
 // Alg 7
-DXOTTO_algo(7, att, dec, sus, rel, freq, gain, gate) =
+DXOTTO_algo(vnum, 7, att, dec, sus, rel, fmAmount, freq, gain, gate) =
 (op2 : op1),(op4 : op3) :> _
 with{
-  op4 = vgroup("op3", DXOTTO_modulator_op(freq,0,gate) );
-  op3 = vgroup("op2", DXOTTO_carrier_op(freq,_,att,dec,sus,rel,gain,gate) );
-  op2 = vgroup("op1", DXOTTO_modulator_op(freq,0,gate) );
-  op1 = vgroup("op0", DXOTTO_carrier_op(freq,_,att,dec,sus,rel,gain,gate) );
+  op4 = DXOTTO_modulator_op(vnum, 3, freq, fmAmount, 0,gate);
+  op3 = ( + : DXOTTO_carrier_op(vnum, 2, freq, _,att,dec,sus,rel,gain,gate))~*(feedback3);
+  op2 = DXOTTO_modulator_op(vnum, 1, freq, fmAmount, 0,gate);
+  op1 = ( + : DXOTTO_carrier_op(vnum, 0, freq, _,att,dec,sus,rel,gain,gate))~*(feedback1);
+  feedback1 = hslider("/v:op0/feedback", 0, -0.5, 0.5, 0.01) : si.smoo;
+  feedback3 = hslider("/v:op2/feedback", 0, -0.5, 0.5, 0.01) : si.smoo;
 };
 // Alg 8
-DXOTTO_algo(8, att, dec, sus, rel, freq, gain, gate) =
+DXOTTO_algo(vnum, 8, att, dec, sus, rel, fmAmount, freq, gain, gate) =
 op4 <: (op1, op2, op3) :> _
 with{
-  op4 = vgroup("op3", DXOTTO_modulator_op(freq,0,gate) );
-  op3 = vgroup("op2", DXOTTO_carrier_op(freq,_,att,dec,sus,rel,gain,gate) );
-  op2 = vgroup("op1", DXOTTO_carrier_op(freq,_,att,dec,sus,rel,gain,gate) );
-  op1 = vgroup("op0", DXOTTO_carrier_op(freq,_,att,dec,sus,rel,gain,gate) );
+  op4 = DXOTTO_modulator_op(vnum, 3, freq, fmAmount, 0,gate);
+  op3 = ( + : DXOTTO_carrier_op(vnum, 2, freq, _,att,dec,sus,rel,gain,gate))~*(feedback3);
+  op2 = ( + : DXOTTO_carrier_op(vnum, 1, freq, _,att,dec,sus,rel,gain,gate))~*(feedback2);
+  op1 = ( + : DXOTTO_carrier_op(vnum, 0, freq, _,att,dec,sus,rel,gain,gate))~*(feedback1);
+  feedback1 = hslider("/v:op0/feedback", 0, -0.5, 0.5, 0.01) : si.smoo;
+  feedback2 = hslider("/v:op1/feedback", 0, -0.5, 0.5, 0.01) : si.smoo;
+  feedback3 = hslider("/v:op2/feedback", 0, -0.5, 0.5, 0.01) : si.smoo;
 };
 // Alg 9
-DXOTTO_algo(9, att, dec, sus, rel, freq, gain, gate) =
-op4 : (op1, op2, op3) :> _
+DXOTTO_algo(vnum, 9, att, dec, sus, rel, fmAmount, freq, gain, gate) =
+op1 : (op4, op2, op3) :> _
 with{
-  op4 = vgroup("op3", DXOTTO_modulator_op(freq,0,gate) );
-  op3 = vgroup("op2", DXOTTO_carrier_op(freq,_,att,dec,sus,rel,gain,gate) );
-  op2 = vgroup("op1", DXOTTO_carrier_op(freq,0,att,dec,sus,rel,gain,gate) );
-  op1 = vgroup("op0", DXOTTO_carrier_op(freq,0,att,dec,sus,rel,gain,gate) );
+  op4 = DXOTTO_carrier_op(vnum, 3, freq, _,att,dec,sus,rel,gain,gate)~*(feedback4);
+  op3 = DXOTTO_carrier_op(vnum, 2, freq, _,att,dec,sus,rel,gain,gate)~*(feedback3);
+  op2 = ( + : DXOTTO_carrier_op(vnum, 1, freq, _,att,dec,sus,rel,gain,gate))~*(feedback2);
+  op1 = DXOTTO_modulator_op(vnum, 0, freq, fmAmount, 0,gate);
+  feedback2 = hslider("/v:op1/feedback", 0, -0.5, 0.5, 0.01) : si.smoo;
+  feedback3 = hslider("/v:op2/feedback", 0, -0.5, 0.5, 0.01) : si.smoo;
+  feedback4 = hslider("/v:op3/feedback", 0, -0.5, 0.5, 0.01) : si.smoo;
 };
 // Alg 10
-DXOTTO_algo(10, att, dec, sus, rel, freq, gain, gate) =
+DXOTTO_algo(vnum, 10, att, dec, sus, rel, fmAmount, freq, gain, gate) =
 (op1, op2, op3, op4) :> _
 with{
-  op4 = vgroup("op3", DXOTTO_carrier_op(freq,0,att,dec,sus,rel,gain,gate) );
-  op3 = vgroup("op2", DXOTTO_carrier_op(freq,0,att,dec,sus,rel,gain,gate) );
-  op2 = vgroup("op1", DXOTTO_carrier_op(freq,0,att,dec,sus,rel,gain,gate) );
-  op1 = vgroup("op0", DXOTTO_carrier_op(freq,0,att,dec,sus,rel,gain,gate) );
+  op4 = DXOTTO_carrier_op(vnum, 3, freq, _,att,dec,sus,rel,gain,gate)~*(feedback4);
+  op3 = DXOTTO_carrier_op(vnum, 2, freq, _,att,dec,sus,rel,gain,gate)~*(feedback3);
+  op2 = DXOTTO_carrier_op(vnum, 1, freq, _,att,dec,sus,rel,gain,gate)~*(feedback2);
+  op1 = DXOTTO_carrier_op(vnum, 0, freq, _,att,dec,sus,rel,gain,gate)~*(feedback1);
+  feedback1 = hslider("/v:op0/feedback", 0, -0.5, 0.5, 0.01) : si.smoo;
+  feedback2 = hslider("/v:op1/feedback", 0, -0.5, 0.5, 0.01) : si.smoo;
+  feedback3 = hslider("/v:op2/feedback", 0, -0.5, 0.5, 0.01) : si.smoo;
+  feedback4 = hslider("/v:op3/feedback", 0, -0.5, 0.5, 0.01) : si.smoo;
 };

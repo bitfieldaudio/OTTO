@@ -2,8 +2,10 @@
 
 #include "board/ui/keys.hpp"
 
-#include "services/audio.hpp"
-#include "services/ui.hpp"
+#include "services/audio_manager.hpp"
+#include "services/ui_manager.hpp"
+
+#include "services/log_manager.hpp"
 
 namespace otto::board::ui {
 
@@ -13,25 +15,30 @@ namespace otto::board::ui {
       note += 36;
       if (action == Action::press) {
         auto evt = core::midi::NoteOnEvent{note};
-        service::audio::send_midi_event(evt);
-        LOGI("Press key {}", evt.key);
+        Application::current().audio_manager->send_midi_event(evt);
+        DLOGI("Press key {}", evt.key);
       } else if (action == Action::release) {
-        service::audio::send_midi_event(core::midi::NoteOffEvent{note});
-        LOGI("Release key {}", note);
+        Application::current().audio_manager->send_midi_event(core::midi::NoteOffEvent{note});
+        DLOGI("Release key {}", note);
       }
     };
 
-    using OKey = otto::core::ui::Key;
+    using OKey = core::ui::Key;
 
     auto send_key = [action](OKey k, bool repeat = false) {
       if (action == Action::press || (action == Action::repeat && repeat))
-        service::ui::impl::keypress(k);
+        Application::current().ui_manager->keypress(k);
       else if (action == Action::release)
-        service::ui::impl::keyrelease(k);
+        Application::current().ui_manager->keyrelease(k);
+    };
+
+    auto send_rotary = [action](core::ui::Rotary rot, int n) {
+      if (action == Action::press || (action == Action::repeat))
+        Application::current().ui_manager->rotary({rot, n});
     };
 
     auto shutdown = [action] {
-      if (action == Action::press) std::system("shutdown -h now");
+      if (action == Action::press) Application::current().exit(Application::ErrorCode::ui_closed); 
     };
 
     switch (key) {
@@ -78,7 +85,7 @@ namespace otto::board::ui {
     case Key::left_shift: send_key(OKey::shift); break;
 
     case Key::enter:
-      if (service::ui::is_pressed(OKey::shift))
+      if (Application::current().ui_manager->is_pressed(OKey::shift))
         shutdown();
       else
         send_key(OKey::master);

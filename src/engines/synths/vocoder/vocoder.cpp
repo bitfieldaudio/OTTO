@@ -50,16 +50,16 @@ namespace otto::engines {
   void VocoderSynthScreen::rotary(RotaryEvent e)
   {
     switch (e.rotary) {
-    case Rotary::Blue:
+    case Rotary::blue:
       engine.props.mix.step(e.clicks);
       break;
-    case Rotary::Green:
+    case Rotary::green:
       engine.props.noise.step(e.clicks);
       break;
-    case Rotary::White:
+    case Rotary::yellow:
       engine.props.ratio.step(e.clicks);
       break;
-    case Rotary::Red:
+    case Rotary::red:
       engine.props.gateamount.step(e.clicks);
       break;
     }

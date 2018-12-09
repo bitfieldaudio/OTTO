@@ -10,64 +10,46 @@ namespace otto::core::engine {
   template<EngineType ET>
   void EngineDispatcher<ET>::init()
   {
-    _engines = create_engines<ET>();
-    if (_engines.empty()) {
-      throw util::exception("No engines registered. Can't construct EngineDispatcher");
-    }
-    for (auto&& engine : _engines) {
-      // Apply default presets to all engines
-      try {
-        int idx = engine->current_preset();
-        Application::current().preset_manager->apply_preset(*engine, std::max(idx, 0), true);
-      } catch (services::PresetManager::exception& e) {
-        DLOGI(e.what());
-      }
-    }
     _selector_screen = std::make_unique<EngineSelectorScreen>(*this);
   }
 
   template<EngineType ET>
-  Engine<ET>& EngineDispatcher<ET>::current() noexcept
+  Engine<ET>* EngineDispatcher<ET>::current() noexcept
   {
-    return *_current;
+    return _current.get();
   }
 
   template<EngineType ET>
-  const Engine<ET>& EngineDispatcher<ET>::current() const noexcept
+  const Engine<ET>* EngineDispatcher<ET>::current() const noexcept
   {
-    return *_current;
-  }
-
-  template<EngineType ET>
-  Engine<ET>& EngineDispatcher<ET>::operator*() noexcept
-  {
-    return *_current;
-  }
-
-  template<EngineType ET>
-  const Engine<ET>& EngineDispatcher<ET>::operator*() const noexcept
-  {
-    return *_current;
+    return _current.get();
   }
 
   template<EngineType ET>
   Engine<ET>* EngineDispatcher<ET>::operator->() noexcept
   {
-    return _current;
+    return _current.get();
   }
 
   template<EngineType ET>
   const Engine<ET>* EngineDispatcher<ET>::operator->() const noexcept
   {
-    return _current;
+    return _current.get();
+  }
+
+  template<EngineType ET>
+  Engine<ET>& EngineDispatcher<ET>::select(const EngineFactory& fact)
+  {
+    _current = fact.construct();
+    return *_current;
   }
 
   template<EngineType ET>
   Engine<ET>& EngineDispatcher<ET>::select(const std::string& name)
   {
-    auto iter = util::find_if(_engines, [&name](auto&& eg) { return eg->name() == name; });
-    if (iter != _engines.end()) {
-      select((*iter).get());
+    auto iter = util::find_if(_factories, [&name](auto&& f) { return f.name == name; });
+    if (iter != _factories.end()) {
+      select(*iter);
     } else {
       throw util::exception("Engine '{}' not found", name);
     }
@@ -75,25 +57,9 @@ namespace otto::core::engine {
   }
 
   template<EngineType ET>
-  Engine<ET>& EngineDispatcher<ET>::select(Engine<ET>* ptr)
-  {
-    if (_current == ptr && ptr != nullptr) return *_current;
-    if (_current != nullptr) _current->on_disable();
-    _current = ptr;
-    _current->on_enable();
-    return *_current;
-  }
-
-  template<EngineType ET>
-  Engine<ET>& EngineDispatcher<ET>::select(Engine<ET>& ref)
-  {
-    return select(&ref);
-  }
-
-  template<EngineType ET>
   Engine<ET>& EngineDispatcher<ET>::select(std::size_t idx)
   {
-    return select((_engines.begin().base() + idx)->get());
+    return select(_factories.at(idx));
   }
 
   template<EngineType ET>
@@ -103,44 +69,37 @@ namespace otto::core::engine {
   }
 
   template<EngineType ET>
-  const std::vector<std::unique_ptr<Engine<ET>>>& EngineDispatcher<ET>::engines() const noexcept
+  auto EngineDispatcher<ET>::engine_factories() const noexcept -> const std::vector<EngineFactory>&
   {
-    return _engines;
+    return _factories;
+  }
+
+  template<EngineType Et>
+  void EngineDispatcher<Et>::register_factory(EngineFactory fact)
+  {
+    _factories.push_back(std::move(fact));
   }
 
   template<EngineType ET>
   nlohmann::json EngineDispatcher<ET>::to_json() const
   {
     nlohmann::json j = nlohmann::json::object();
-    for (auto&& engine : _engines) {
-      j[engine->name()] = engine->to_json();
-    }
-    j["current_engine"] = current().name();
+    j["current_engine"] = current()->name();
+    j["props"] = current()->to_json();
     return j;
   }
 
   template<EngineType ET>
   void EngineDispatcher<ET>::from_json(const nlohmann::json& j)
   {
-    if (j.is_object()) {
-      for (auto iter = j.begin(); iter != j.end(); iter++) {
-        if (iter.key() == "current_engine") {
-          auto found = util::find_if(
-            _engines, [name = iter.value().get<std::string>()](auto&& eptr) { return eptr->name() == name; });
-          if (found == _engines.end()) {
-            throw exception(ErrorCode::engine_not_found);
-          }
-          select(**found);
-        } else {
-          auto found = util::find_if(
-            _engines, [name = iter.key()](auto&& eptr) { return eptr->name() == name; });
-          if (found == _engines.end()) {
-            throw exception(ErrorCode::engine_not_found);
-          }
-          (*found)->from_json(iter.value());
-        }
-      }
+    const auto found =
+      util::find_if(_factories, [name = j["current_engine"].get<std::string>()](
+                                  EngineFactory& fact) { return fact.name == name; });
+    if (found == _factories.end()) {
+      throw exception(ErrorCode::engine_not_found);
     }
+    select(*found);
+    current()->from_json(j["props"]);
   }
 
   // Explicit instantiations

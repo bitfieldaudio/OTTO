@@ -16,6 +16,11 @@ namespace otto::core::engine {
 
     static constexpr const EngineType type = ET;
 
+    struct EngineFactory {
+      std::string name;
+      std::function<std::unique_ptr<Engine<ET>>()> construct;
+    };
+
     // Initialization
 
     /// Construct all registered engines
@@ -27,39 +32,23 @@ namespace otto::core::engine {
     void init();
 
     /// Access the currently selected engine
-    Engine<ET>& current() noexcept;
-    const Engine<ET>& current() const noexcept;
+    Engine<ET>* current() noexcept;
+    const Engine<ET>* current() const noexcept;
 
     /// Access the currently selected engine
-    Engine<ET>& operator*() noexcept;
+    //Engine<ET>& operator*() noexcept;
     /// Access the currently selected engine
-    const Engine<ET>& operator*() const noexcept;
+    //const Engine<ET>& operator*() const noexcept;
 
     /// Access the currently selected engine
     Engine<ET> const* operator->() const noexcept;
     /// Access the currently selected engine
     Engine<ET>* operator->() noexcept;
 
-    /// Select engine
-    ///
-    /// \requires `ptr >= _engines.begin() && ptr < _engines.end()`
-    ///
-    /// \effects If `_current` is not null, `_current->on_disable()`. Then,
-    /// assign `ptr` to `_current`, and invoke `ptr->on_enable()`
-    ///
-    /// \postconditions `current() == *ptr`
-    ///
-    /// \returns `current()`
-    Engine<ET>& select(Engine<ET>* ptr);
-
-    /// Select engine
-    ///
-    /// \effects `select(&ref)`
-    Engine<ET>& select(Engine<ET>& ref);
+    /// Create an engine and select it by factory
+    Engine<ET>& select(const EngineFactory&);
 
     /// Select engine by index
-    ///
-    /// \effects `select(_engines.begin() + idx)`
     Engine<ET>& select(std::size_t idx);
 
     /// Select engine by name
@@ -74,15 +63,28 @@ namespace otto::core::engine {
     /// \preconditions [init]() has previously been called
     ui::Screen& selector_screen() noexcept;
 
-    const std::vector<std::unique_ptr<Engine<ET>>>& engines() const noexcept;
+    void register_factory(EngineFactory factory);
+
+    template<typename Eg>
+    void register_engine(std::string name);
+
+    const std::vector<EngineFactory>& engine_factories() const noexcept;
 
     nlohmann::json to_json() const;
     void from_json(const nlohmann::json&);
 
+
   private:
-    std::vector<std::unique_ptr<Engine<ET>>> _engines;
+    std::vector<EngineFactory> _factories;
+    std::unique_ptr<Engine<ET>> _current = nullptr;
     std::unique_ptr<ui::Screen> _selector_screen = nullptr;
-    Engine<ET>* _current = nullptr;
   };
 
-} // namespace otto::core::engines
+  template<EngineType Et>
+  template<typename Eg>
+  void EngineDispatcher<Et>::register_engine(std::string name)
+  {
+    register_factory({std::move(name), [] { return std::make_unique<Eg>(); }});    
+  }
+
+} // namespace otto::core::engine

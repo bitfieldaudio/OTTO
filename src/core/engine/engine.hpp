@@ -205,27 +205,6 @@ public:                                                                        \
   constexpr EngineType engine_type_v =
     decltype(internal::engine_type_impl_func(std::declval<E>()))::value;
 
-
-  // Engine Registry ///////////////////////////////////////////////////////////
-
-  /// Register an engine.
-  ///
-  /// \effects Store a function which constructs an `REngine` in a
-  /// std::unique_ptr with `args` forwarded.
-  template<typename REngine, typename... Args>
-  void register_engine(Args&&... args);
-
-
-  /// Construct all registered engines of type `ET`
-  ///
-  /// This is mostly useful for [EngineDispatcher<ET>]()
-  ///
-  /// \effects Call all the stored constructors for type `ET`, and move the
-  /// resulting `unique_ptr`s into a vector, which is returned.
-  template<EngineType ET>
-  std::vector<std::unique_ptr<Engine<ET>>> create_engines();
-
-
   // EngineScreen /////////////////////////////////////////////////////////////
 
   /// A ui::Screen with a reference to the engine it belongs to.
@@ -251,68 +230,3 @@ public:                                                                        \
   };
 
 } // namespace otto::core::engines
-
-
-
-// ////////////////////////////////////////////////////////////////////////////
-// Template definitions ///////////////////////////////////////////////////////
-// ////////////////////////////////////////////////////////////////////////////
-
-namespace otto::core::engine {
-  // EngineDispatcher Implementations ///////////////////////////////////////////
-
-  /// \private
-  namespace internal {
-    template<EngineType ET>
-    inline std::vector<std::function<std::unique_ptr<Engine<ET>>()>> engines {};
-
-    /// Wrapper for capturing parameter packs by forwarding
-    template<typename T>
-    struct wrapper {
-
-      T value;
-
-      template<typename X, typename = std::enable_if_t<std::is_convertible_v<T, X>>>
-      wrapper(X&& x) : value(std::forward<X>(x))
-      {}
-
-      T get() const
-      {
-        return std::move(value);
-      }
-    };
-
-    template<class T>
-    auto make_wrapper(T&& x)
-    {
-      return wrapper<T>(std::forward<T>(x));
-    }
-  } // namespace internal
-
-  /// \private
-  template<typename Eg, typename... Args>
-  void register_engine(Args&&... args)
-  {
-    // trickery to forward capture args
-    auto lambda = [] (auto... args) {
-        return [=]()
-        {
-          // This is the actual lambda thats registered
-          return std::make_unique<Eg>(args.get()...);
-        };
-      } (make_wrapper(std::forward<Args>(args))...);
-    internal::engines<engine_type_v<Eg>>.push_back(lambda);
-  }
-
-  /// \private
-  template<EngineType ET>
-  std::vector<std::unique_ptr<Engine<ET>>> create_engines()
-  {
-    std::vector<std::unique_ptr<Engine<ET>>> res;
-    res.reserve(internal::engines<ET>.size());
-    for (auto&& func : internal::engines<ET>) {
-      res.emplace_back(func());
-    }
-    return res;
-  }
-}

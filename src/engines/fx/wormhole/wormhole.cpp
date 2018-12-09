@@ -37,10 +37,10 @@ namespace otto::engines {
   {
     auto& props = engine.props;
     switch (ev.rotary) {
-    case Rotary::Blue: props.mix.step(ev.clicks); break;
-    case Rotary::Green: props.shimmer.step(ev.clicks); break;
-    case Rotary::White: props.length.step(ev.clicks); break;
-    case Rotary::Red: props.shape.step(ev.clicks); break;
+    case Rotary::blue: props.mix.step(ev.clicks); break;
+    case Rotary::green: props.shimmer.step(ev.clicks); break;
+    case Rotary::yellow: props.length.step(ev.clicks); break;
+    case Rotary::red: props.shape.step(ev.clicks); break;
     }
   }
 

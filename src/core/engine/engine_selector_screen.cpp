@@ -14,8 +14,11 @@ namespace otto::core::engine {
     SelectorWidget::Options opts;
     opts.on_select = [this, sl = std::move(select_eg)](int idx) {
       auto& eg = sl(idx);
-      preset_wid.items(Application::current().preset_manager->preset_names(eg.name()));
-      preset_wid.select(eg.current_preset(), true);
+      try {
+        preset_wid.items(Application::current().preset_manager->preset_names(eg.name()));
+        preset_wid.select(eg.current_preset(), true);
+      } catch (services::PresetManager::exception& e) {
+      }
     };
     opts.item_colour = Colours::Gray50;
     opts.size = {120, vg::height};
@@ -38,8 +41,8 @@ namespace otto::core::engine {
   void EngineSelectorScreen::rotary(RotaryEvent e)
   {
     switch (e.rotary) {
-    case Rotary::Blue: engine_wid.prev(e.clicks); break;
-    case Rotary::Green: preset_wid.prev(e.clicks); break;
+    case Rotary::blue: engine_wid.prev(e.clicks); break;
+    case Rotary::green: preset_wid.prev(e.clicks); break;
     default:;
     }
   }

@@ -1,5 +1,5 @@
 #include "./egl_connection.hpp"
-#include "services/logger.hpp"
+#include "services/log_manager.hpp"
 
 namespace otto::board::ui {
 
