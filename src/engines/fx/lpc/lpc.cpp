@@ -52,7 +52,8 @@ namespace otto::engines {
     // Filter the source
 
 
-    // return the filter output as the engine output
+    // TODO :return the filter output as the engine output
+    return data;
   }
 
   // SCREEN //
@@ -62,10 +63,10 @@ namespace otto::engines {
     // TODO: add shift + encoder behaviour
     auto& props = engine.props;
     switch (ev.rotary) {
-    case Rotary::Blue: props.pitch.step(ev.clicks); break;
-    case Rotary::Green: props.pitch_tracking.step(ev.clicks); break;
-    case Rotary::White: props.detune.step(ev.clicks); break;
-    case Rotary::Red: props.snr.step(ev.clicks); break;
+    case Rotary::blue: props.pitch.step(ev.clicks); break;
+    case Rotary::green: props.pitch_tracking.step(ev.clicks); break;
+    case Rotary::yellow: props.detune.step(ev.clicks); break;
+    case Rotary::red: props.snr.step(ev.clicks); break;
     }
   }
 
