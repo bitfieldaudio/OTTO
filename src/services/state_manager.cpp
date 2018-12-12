@@ -52,7 +52,7 @@ namespace otto::services {
     for (const auto& [name, client] : _clients) {
       try {
         client.load(data[name]);
-      } catch (util::exception& e) {
+      } catch (std::exception& e) {
         LOGE("Exception while loading state for {}: {}", name, e.what());
       }
     }

@@ -9,7 +9,6 @@
 namespace otto::core::engine {
 
   struct EngineSelectorScreen : ui::Screen {
-
     template<EngineType ET>
     EngineSelectorScreen(EngineDispatcher<ET>&);
 
@@ -26,6 +25,8 @@ namespace otto::core::engine {
     ui::SelectorWidget engine_wid;
     ui::SelectorWidget preset_wid;
 
+    std::function<void()> _on_show = nullptr;
+
     ui::SelectorWidget::Options eng_opts(std::function<AnyEngine&(int)>&&) noexcept;
     ui::SelectorWidget::Options prst_opts(std::function<AnyEngine&()>&&) noexcept;
   };
@@ -36,13 +37,15 @@ namespace otto::core::engine {
   template<EngineType ET>
   EngineSelectorScreen::EngineSelectorScreen(EngineDispatcher<ET>& ed)
     : engine_wid(engine_names, eng_opts([&ed](int idx) -> AnyEngine& {
+                   if (ed.engine_factories()[idx].name == ed.current()->name()) return *ed.current();
                    return ed.select(static_cast<std::size_t>(idx));
                  })),
-      preset_wid(preset_names, prst_opts([&ed]() -> AnyEngine& { return *ed.current(); }))
+      preset_wid(preset_names, prst_opts([&ed]() -> AnyEngine& { return *ed.current(); })),
+      _on_show([this, &ed] { engine_wid.select(ed.current_idx()); })
   {
     engine_names.reserve(ed.engine_factories().size());
     util::transform(ed.engine_factories(), std::back_inserter(engine_names),
                     [](auto&& e) { return e.name; });
   }
 
-}
+} // namespace otto::core::engine

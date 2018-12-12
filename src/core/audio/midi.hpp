@@ -93,7 +93,11 @@ namespace otto::core::midi {
     /// and channels
     ///
     /// \throws `util::exception` if `note` is not in `detail::note_names`
-    constexpr NoteEvent(MidiEvent::Type type, int note, float velocity = 1, byte channel = 0, int time = 0)
+    constexpr NoteEvent(MidiEvent::Type type,
+                        int note,
+                        float velocity = 1,
+                        byte channel = 0,
+                        int time = 0)
       : MidiEvent{type, channel, time},
         key{gsl::narrow_cast<byte>(note)},
         velocity{gsl::narrow_cast<byte>(std::min(127.f, velocity * 127))}
@@ -162,14 +166,11 @@ namespace otto::core::midi {
   {
     auto type = MidiEvent::Type(bytes[0] >> 4);
     switch (type) {
-    case MidiEvent::Type::NoteOff:
-      return NoteOffEvent::from_bytes(bytes, time);
+    case MidiEvent::Type::NoteOff: return NoteOffEvent::from_bytes(bytes, time);
     case MidiEvent::Type::NoteOn: //
       return NoteOnEvent::from_bytes(bytes, time);
-    case MidiEvent::Type::ControlChange:
-      return ControlChangeEvent::from_bytes(bytes, time);
-    default:
-      return MidiEvent::from_bytes(bytes, time);
+    case MidiEvent::Type::ControlChange: return ControlChangeEvent::from_bytes(bytes, time);
+    default: return MidiEvent::from_bytes(bytes, time);
     }
   }
 
@@ -190,19 +191,20 @@ namespace otto::core::midi {
     return detail::freq_table[key];
   }
 
-  template<typename T>
+  template<typename T, typename Allocator = std::allocator<T>>
   struct shared_vector {
     using value_type = T;
+    using vector_type = std::vector<T, Allocator>;
+    using allocator_type = Allocator;
+    using iterator = typename vector_type::iterator;
 
     shared_vector() = default;
 
-    shared_vector(std::vector<value_type>&& other)
-      : _data(std::make_shared<std::vector<value_type>>(std::move(other)))
-    {}
+    shared_vector(vector_type&& other) : _data(std::make_shared<vector_type>(std::move(other))) {}
 
-    shared_vector(const std::vector<value_type>& other)
-      : _data(std::make_shared<std::vector<value_type>>(other))
-    {}
+    shared_vector(const vector_type& other) : _data(std::make_shared<vector_type>(other)) {}
+
+    shared_vector(const allocator_type& alloc) : _data(std::make_shared<vector_type>(alloc)) {}
 
     auto begin()
     {
@@ -285,12 +287,12 @@ namespace otto::core::midi {
       return _data->emplace_back(std::forward<Ref>(args)...);
     }
 
-    std::shared_ptr<std::vector<value_type>> _data = std::make_shared<std::vector<value_type>>();
+    auto&& move_vector_out() {
+      return std::move(*_data);
+    }
 
-    int _test_field = [] {
-      DLOGI("Constructed a shared_vector");
-      return 0;
-    }();
+  private:
+    std::shared_ptr<vector_type> _data = std::make_shared<vector_type>();
   };
 
 

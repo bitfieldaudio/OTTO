@@ -91,6 +91,7 @@ namespace otto::services {
         jf.read();
         std::string engine = jf.data()["engine"];
         std::string name = jf.data()["name"];
+        // map::operator[] creates the entry if it doesnt exist
         auto& pd = _preset_data[engine];
         if (auto found = util::find(pd.names, name); found != pd.names.end()) {
           pd.data[found - pd.names.begin()] = std::move(jf.data()["props"]);
