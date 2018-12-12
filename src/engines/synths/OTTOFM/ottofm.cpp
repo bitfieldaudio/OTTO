@@ -584,8 +584,8 @@ namespace otto::engines {
         op_level = engine.props.voice_envelopes.at(engine.voice_mgr_.last_voice).ops.at(i).modulator*
             engine.props.operators.at(i).outLev;
       } else {
-        engine.props.voice_envelopes.at(engine.voice_mgr_.last_voice).ops.at(i).carrier.refresh_links();
-        op_level = engine.props.voice_envelopes.at(engine.voice_mgr_.last_voice).ops.at(i).carrier*
+        engine.props.voice_envelopes.at(engine.voice_mgr_.last_voice).carrier.refresh_links();
+        op_level = engine.props.voice_envelopes.at(engine.voice_mgr_.last_voice).carrier*
             engine.props.operators.at(i).outLev;
       }
       if(algorithms[engine.props.algN].modulator_flags[i]){ //draw modulator

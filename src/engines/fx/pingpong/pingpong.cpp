@@ -26,7 +26,7 @@ namespace otto::engines {
   {}
 
 
-  audio::ProcessData<2> Pingpong::process(audio::ProcessData<2> data)
+  audio::ProcessData<2> Pingpong::process(audio::ProcessData<1> data)
   {
     return faust_.process(data);
   }

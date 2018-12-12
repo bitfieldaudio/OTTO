@@ -1,0 +1,985 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="OTTO"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="gcc"/>
+		<Option virtualFolders="CMake Files\;CMake Files\external\;CMake Files\external\fmt\;CMake Files\external\fmt\support\;CMake Files\external\fmt\support\cmake\;CMake Files\external\fmt\fmt\;CMake Files\external\glfw\;CMake Files\external\glfw\CMake\;CMake Files\external\glfw\CMake\modules\;CMake Files\external\glfw\src\;CMake Files\external\GSL\;CMake Files\external\tiny-process-library\;CMake Files\cmake\;CMake Files\src\;CMake Files\boards\;CMake Files\boards\desktop\;CMake Files\boards\parts\;CMake Files\boards\parts\audio\;CMake Files\boards\parts\audio\rtaudio\;CMake Files\boards\parts\ui\;CMake Files\boards\parts\ui\glfw\;CMake Files\test\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="/home/jonatan/Documents/OTTO"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="install/strip">
+				<Option working_dir="/home/jonatan/Documents/OTTO"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/Makefile&quot;  VERBOSE=1 install/strip"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="install">
+				<Option working_dir="/home/jonatan/Documents/OTTO"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/Makefile&quot;  VERBOSE=1 install"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="install/local">
+				<Option working_dir="/home/jonatan/Documents/OTTO"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/Makefile&quot;  VERBOSE=1 install/local"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="list_install_components">
+				<Option working_dir="/home/jonatan/Documents/OTTO"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/Makefile&quot;  VERBOSE=1 list_install_components"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="edit_cache">
+				<Option working_dir="/home/jonatan/Documents/OTTO"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="rebuild_cache">
+				<Option working_dir="/home/jonatan/Documents/OTTO"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="otto">
+				<Option output="/home/jonatan/Documents/OTTO/bin/libotto.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/jonatan/Documents/OTTO/src"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-D__LINUX_ALSA__"/>
+					<Add option="-DOTTO_BUILD_DOCS=0"/>
+					<Add option="-DOTTO_BUILD_TESTS=1"/>
+					<Add option="-DOTTO_USE_LIBCXX=0"/>
+					<Add option="-DOTTO_ENABLE_ASAN=0"/>
+					<Add option="-DOTTO_ENABLE_TIMERS=0"/>
+					<Add option="-DOTTO_DEBUG_UI=0"/>
+					<Add directory="/home/jonatan/Documents/OTTO/src/."/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/glfw/include"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/GSL"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/GSL/include"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/fmt"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/tiny-process-library"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/include"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/NanoCanvas/src"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/nanovg/src"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/range-v3/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/src/Makefile&quot;  VERBOSE=1 otto"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/src/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/src/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/src/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="otto/fast">
+				<Option output="/home/jonatan/Documents/OTTO/bin/libotto.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/jonatan/Documents/OTTO/src"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-D__LINUX_ALSA__"/>
+					<Add option="-DOTTO_BUILD_DOCS=0"/>
+					<Add option="-DOTTO_BUILD_TESTS=1"/>
+					<Add option="-DOTTO_USE_LIBCXX=0"/>
+					<Add option="-DOTTO_ENABLE_ASAN=0"/>
+					<Add option="-DOTTO_ENABLE_TIMERS=0"/>
+					<Add option="-DOTTO_DEBUG_UI=0"/>
+					<Add directory="/home/jonatan/Documents/OTTO/src/."/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/glfw/include"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/GSL"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/GSL/include"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/fmt"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/tiny-process-library"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/include"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/NanoCanvas/src"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/nanovg/src"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/range-v3/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/src/Makefile&quot;  VERBOSE=1 otto/fast"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/src/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/src/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/src/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="otto_exec">
+				<Option output="/home/jonatan/Documents/OTTO/bin/otto" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/jonatan/Documents/OTTO/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DOTTO_BOARD_"/>
+					<Add option="-DOTTO_BUILD_DOCS=0"/>
+					<Add option="-DOTTO_BUILD_TESTS=1"/>
+					<Add option="-DOTTO_USE_LIBCXX=0"/>
+					<Add option="-DOTTO_ENABLE_ASAN=0"/>
+					<Add option="-DOTTO_ENABLE_TIMERS=0"/>
+					<Add option="-DOTTO_DEBUG_UI=0"/>
+					<Add option="-D__LINUX_ALSA__"/>
+					<Add directory="/home/jonatan/Documents/OTTO/boards/desktop/include"/>
+					<Add directory="/home/jonatan/Documents/OTTO/boards/parts/audio/rtaudio/include"/>
+					<Add directory="/home/jonatan/Documents/OTTO/boards/parts/ui/glfw/include"/>
+					<Add directory="/home/jonatan/Documents/OTTO/src/."/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/glfw/include"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/GSL"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/GSL/include"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/fmt"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/tiny-process-library"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/include"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/NanoCanvas/src"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/nanovg/src"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/range-v3/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/src/Makefile&quot;  VERBOSE=1 otto_exec"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/src/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/src/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/src/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="otto_exec/fast">
+				<Option output="/home/jonatan/Documents/OTTO/bin/otto" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/jonatan/Documents/OTTO/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DOTTO_BOARD_"/>
+					<Add option="-DOTTO_BUILD_DOCS=0"/>
+					<Add option="-DOTTO_BUILD_TESTS=1"/>
+					<Add option="-DOTTO_USE_LIBCXX=0"/>
+					<Add option="-DOTTO_ENABLE_ASAN=0"/>
+					<Add option="-DOTTO_ENABLE_TIMERS=0"/>
+					<Add option="-DOTTO_DEBUG_UI=0"/>
+					<Add option="-D__LINUX_ALSA__"/>
+					<Add directory="/home/jonatan/Documents/OTTO/boards/desktop/include"/>
+					<Add directory="/home/jonatan/Documents/OTTO/boards/parts/audio/rtaudio/include"/>
+					<Add directory="/home/jonatan/Documents/OTTO/boards/parts/ui/glfw/include"/>
+					<Add directory="/home/jonatan/Documents/OTTO/src/."/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/glfw/include"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/GSL"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/GSL/include"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/fmt"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/tiny-process-library"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/include"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/NanoCanvas/src"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/nanovg/src"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/range-v3/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/src/Makefile&quot;  VERBOSE=1 otto_exec/fast"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/src/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/src/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/src/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="external">
+				<Option output="/home/jonatan/Documents/OTTO/bin/libexternal.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/jonatan/Documents/OTTO/external"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/jonatan/Documents/OTTO/external/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/Makefile&quot;  VERBOSE=1 external"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="external/fast">
+				<Option output="/home/jonatan/Documents/OTTO/bin/libexternal.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/jonatan/Documents/OTTO/external"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/jonatan/Documents/OTTO/external/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/Makefile&quot;  VERBOSE=1 external/fast"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="nanovg">
+				<Option output="/home/jonatan/Documents/OTTO/bin/libnanovg.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/jonatan/Documents/OTTO/external"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/Makefile&quot;  VERBOSE=1 nanovg"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="nanovg/fast">
+				<Option output="/home/jonatan/Documents/OTTO/bin/libnanovg.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/jonatan/Documents/OTTO/external"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/Makefile&quot;  VERBOSE=1 nanovg/fast"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="nanocanvas">
+				<Option output="/home/jonatan/Documents/OTTO/bin/libnanocanvas.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/jonatan/Documents/OTTO/external"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/jonatan/Documents/OTTO/external/nanovg/src"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/Makefile&quot;  VERBOSE=1 nanocanvas"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="nanocanvas/fast">
+				<Option output="/home/jonatan/Documents/OTTO/bin/libnanocanvas.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/jonatan/Documents/OTTO/external"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/jonatan/Documents/OTTO/external/nanovg/src"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/Makefile&quot;  VERBOSE=1 nanocanvas/fast"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="fmt">
+				<Option output="/home/jonatan/Documents/OTTO/bin/libfmt.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/jonatan/Documents/OTTO/external/fmt/fmt"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/jonatan/Documents/OTTO/external/fmt"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/fmt/fmt/Makefile&quot;  VERBOSE=1 fmt"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/fmt/fmt/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/fmt/fmt/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/fmt/fmt/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="fmt/fast">
+				<Option output="/home/jonatan/Documents/OTTO/bin/libfmt.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/jonatan/Documents/OTTO/external/fmt/fmt"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/jonatan/Documents/OTTO/external/fmt"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/fmt/fmt/Makefile&quot;  VERBOSE=1 fmt/fast"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/fmt/fmt/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/fmt/fmt/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/fmt/fmt/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="tiny-process-library">
+				<Option output="/home/jonatan/Documents/OTTO/bin/libtiny-process-library.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/jonatan/Documents/OTTO/external/tiny-process-library"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/jonatan/Documents/OTTO/external/tiny-process-library"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/tiny-process-library/Makefile&quot;  VERBOSE=1 tiny-process-library"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/tiny-process-library/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/tiny-process-library/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/tiny-process-library/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="tiny-process-library/fast">
+				<Option output="/home/jonatan/Documents/OTTO/bin/libtiny-process-library.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/jonatan/Documents/OTTO/external/tiny-process-library"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/jonatan/Documents/OTTO/external/tiny-process-library"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/tiny-process-library/Makefile&quot;  VERBOSE=1 tiny-process-library/fast"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/tiny-process-library/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/tiny-process-library/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/tiny-process-library/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="uninstall">
+				<Option working_dir="/home/jonatan/Documents/OTTO/external/glfw"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/glfw/Makefile&quot;  VERBOSE=1 uninstall"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/glfw/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/glfw/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/glfw/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="glfw">
+				<Option output="/home/jonatan/Documents/OTTO/bin/libglfw3.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/jonatan/Documents/OTTO/external/glfw/src"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-D_GLFW_USE_CONFIG_H"/>
+					<Add option="-D_XOPEN_SOURCE=600"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/glfw/include"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/glfw/src"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/glfw/src/Makefile&quot;  VERBOSE=1 glfw"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/glfw/src/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/glfw/src/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/glfw/src/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="glfw/fast">
+				<Option output="/home/jonatan/Documents/OTTO/bin/libglfw3.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/jonatan/Documents/OTTO/external/glfw/src"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-D_GLFW_USE_CONFIG_H"/>
+					<Add option="-D_XOPEN_SOURCE=600"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/glfw/include"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/glfw/src"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/glfw/src/Makefile&quot;  VERBOSE=1 glfw/fast"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/glfw/src/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/glfw/src/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/external/glfw/src/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="otto_test">
+				<Option output="/home/jonatan/Documents/OTTO/bin/test" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/jonatan/Documents/OTTO/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DOTTO_BUILD_DOCS=0"/>
+					<Add option="-DOTTO_BUILD_TESTS=1"/>
+					<Add option="-DOTTO_USE_LIBCXX=0"/>
+					<Add option="-DOTTO_ENABLE_ASAN=0"/>
+					<Add option="-DOTTO_ENABLE_TIMERS=0"/>
+					<Add option="-DOTTO_DEBUG_UI=0"/>
+					<Add option="-D__LINUX_ALSA__"/>
+					<Add directory="/home/jonatan/Documents/OTTO/test"/>
+					<Add directory="/home/jonatan/Documents/OTTO/src/."/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/glfw/include"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/GSL"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/GSL/include"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/fmt"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/tiny-process-library"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/include"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/NanoCanvas/src"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/nanovg/src"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/range-v3/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/test/Makefile&quot;  VERBOSE=1 otto_test"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/test/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/test/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/test/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="otto_test/fast">
+				<Option output="/home/jonatan/Documents/OTTO/bin/test" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/jonatan/Documents/OTTO/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DOTTO_BUILD_DOCS=0"/>
+					<Add option="-DOTTO_BUILD_TESTS=1"/>
+					<Add option="-DOTTO_USE_LIBCXX=0"/>
+					<Add option="-DOTTO_ENABLE_ASAN=0"/>
+					<Add option="-DOTTO_ENABLE_TIMERS=0"/>
+					<Add option="-DOTTO_DEBUG_UI=0"/>
+					<Add option="-D__LINUX_ALSA__"/>
+					<Add directory="/home/jonatan/Documents/OTTO/test"/>
+					<Add directory="/home/jonatan/Documents/OTTO/src/."/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/glfw/include"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/GSL"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/GSL/include"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/fmt"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/tiny-process-library"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/include"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/NanoCanvas/src"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/nanovg/src"/>
+					<Add directory="/home/jonatan/Documents/OTTO/external/range-v3/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/test/Makefile&quot;  VERBOSE=1 otto_test/fast"/>
+					<CompileFile command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/test/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/test/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/home/jonatan/Documents/OTTO/test/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="/home/jonatan/Documents/OTTO/boards/desktop/src/keys.cpp">
+			<Option target="otto_exec"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/boards/desktop/src/main.cpp">
+			<Option target="otto_exec"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/boards/parts/audio/rtaudio/src/RtAudio.cpp">
+			<Option target="otto_exec"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/boards/parts/audio/rtaudio/src/RtMidi.cpp">
+			<Option target="otto_exec"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/boards/parts/audio/rtaudio/src/audio_driver.cpp">
+			<Option target="otto_exec"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/boards/parts/ui/glfw/src/glfw_ui.cpp">
+			<Option target="otto_exec"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/GSL/GSL.natvis">
+			<Option target="otto"/>
+			<Option target="otto_exec"/>
+			<Option target="otto_test"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/NanoCanvas/src/Canvas.cpp">
+			<Option target="nanocanvas"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/NanoCanvas/src/Canvas.h">
+			<Option target="nanocanvas"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/NanoCanvas/src/Image.cpp">
+			<Option target="nanocanvas"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/NanoCanvas/src/Image.h">
+			<Option target="nanocanvas"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/NanoCanvas/src/Text.cpp">
+			<Option target="nanocanvas"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/NanoCanvas/src/Text.h">
+			<Option target="nanocanvas"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/fmt/ChangeLog.rst">
+			<Option target="fmt"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/fmt/README.rst">
+			<Option target="fmt"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/fmt/fmt/container.h">
+			<Option target="fmt"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/fmt/fmt/format.cc">
+			<Option target="fmt"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/fmt/fmt/format.h">
+			<Option target="fmt"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/fmt/fmt/ostream.cc">
+			<Option target="fmt"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/fmt/fmt/ostream.h">
+			<Option target="fmt"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/fmt/fmt/posix.cc">
+			<Option target="fmt"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/fmt/fmt/posix.h">
+			<Option target="fmt"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/fmt/fmt/printf.cc">
+			<Option target="fmt"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/fmt/fmt/printf.h">
+			<Option target="fmt"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/fmt/fmt/string.h">
+			<Option target="fmt"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/fmt/fmt/time.h">
+			<Option target="fmt"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/glfw/include/GLFW/glfw3.h">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/glfw/include/GLFW/glfw3native.h">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/glfw/src/context.c">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/glfw/src/egl_context.c">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/glfw/src/egl_context.h">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/glfw/src/glfw_config.h">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/glfw/src/glx_context.c">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/glfw/src/glx_context.h">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/glfw/src/init.c">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/glfw/src/input.c">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/glfw/src/internal.h">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/glfw/src/linux_joystick.c">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/glfw/src/linux_joystick.h">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/glfw/src/mappings.h">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/glfw/src/monitor.c">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/glfw/src/osmesa_context.c">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/glfw/src/osmesa_context.h">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/glfw/src/posix_thread.c">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/glfw/src/posix_thread.h">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/glfw/src/posix_time.c">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/glfw/src/posix_time.h">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/glfw/src/vulkan.c">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/glfw/src/window.c">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/glfw/src/x11_init.c">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/glfw/src/x11_monitor.c">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/glfw/src/x11_platform.h">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/glfw/src/x11_window.c">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/glfw/src/xkb_unicode.c">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/glfw/src/xkb_unicode.h">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/nanovg/src/nanovg.c">
+			<Option target="nanovg"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/nanovg/src/nanovg.h">
+			<Option target="nanovg"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/src/gl3w.c">
+			<Option target="external"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/src/none.cpp">
+			<Option target="external"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/tiny-process-library/process.cpp">
+			<Option target="tiny-process-library"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/tiny-process-library/process.hpp">
+			<Option target="tiny-process-library"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/tiny-process-library/process_unix.cpp">
+			<Option target="tiny-process-library"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/core/audio/faust.cpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/core/audio/faust.hpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/core/audio/processor.cpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/core/audio/processor.hpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/core/audio/voice_manager.cpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/core/audio/voice_manager.hpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/core/engine/engine.cpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/core/engine/engine.hpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/core/engine/engine_dispatcher.cpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/core/engine/engine_dispatcher.hpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/core/engine/engine_selector_screen.cpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/core/engine/engine_selector_screen.hpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/core/props/internal/base.cpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/core/props/internal/base.hpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/core/ui/icons.cpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/core/ui/icons.hpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/core/ui/screen.cpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/core/ui/screen.hpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/core/ui/widgets/selector_widget.cpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/core/ui/widgets/selector_widget.hpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/engines/fx/pingpong/pingpong.cpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/engines/fx/pingpong/pingpong.hpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/engines/fx/wormhole/wormhole.cpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/engines/fx/wormhole/wormhole.hpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/engines/misc/master/master.cpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/engines/misc/master/master.hpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/engines/seq/accord/accord.cpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/engines/seq/accord/accord.hpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/engines/seq/arp/arp.cpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/engines/seq/arp/arp.hpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/engines/seq/euclid/euclid.cpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/engines/seq/euclid/euclid.hpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/engines/synths/OTTOFM/ottofm.cpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/engines/synths/OTTOFM/ottofm.hpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/engines/synths/external/external.cpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/engines/synths/external/external.hpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/engines/synths/hammond/hammond.cpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/engines/synths/hammond/hammond.hpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/engines/synths/nuke/nuke.cpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/engines/synths/nuke/nuke.hpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/engines/synths/sacred/sacred.cpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/engines/synths/sacred/sacred.hpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/engines/synths/vocoder/vocoder.cpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/engines/synths/vocoder/vocoder.hpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/services/application.cpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/services/application.hpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/services/audio_manager.cpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/services/audio_manager.hpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/services/engine_manager.cpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/services/engine_manager.hpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/services/log_manager.cpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/services/log_manager.hpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/services/preset_manager.cpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/services/preset_manager.hpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/services/state_manager.cpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/services/state_manager.hpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/services/ui_manager.cpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/services/ui_manager.hpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/util/bytefile.cpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/util/bytefile.hpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/util/dsp/log_slider.cpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/util/dsp/log_slider.hpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/util/dsp/window.cpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/util/dsp/window.hpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/util/filesystem.cpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/util/filesystem.hpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/util/jsonfile.cpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/util/jsonfile.hpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/util/soundfile.cpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/util/soundfile.hpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/util/tapefile.cpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/util/tapefile.hpp">
+			<Option target="otto"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/test/core/props/props.t.cpp">
+			<Option target="otto_test"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/test/main.t.cpp">
+			<Option target="otto_test"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/test/services/engines.cpp">
+			<Option target="otto_test"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/test/util/algorithm.t.cpp">
+			<Option target="otto_test"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/test/util/bytefile.t.cpp">
+			<Option target="otto_test"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/test/util/dyn-array.t.cpp">
+			<Option target="otto_test"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/test/util/iterator.t.cpp">
+			<Option target="otto_test"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/test/util/meta.t.cpp">
+			<Option target="otto_test"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/test/util/soundfile.t.cpp">
+			<Option target="otto_test"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/test/util/tapefile.t.cpp">
+			<Option target="otto_test"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\external\"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/gl3w_gen.cmake">
+			<Option virtualFolder="CMake Files\external\"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/fmt/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\external\fmt\"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/fmt/support/cmake/cxx11.cmake">
+			<Option virtualFolder="CMake Files\external\fmt\support\cmake\"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/fmt/fmt/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\external\fmt\fmt\"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/glfw/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\external\glfw\"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/glfw/cmake_uninstall.cmake.in">
+			<Option virtualFolder="CMake Files\external\glfw\"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/glfw/CMake/modules/FindVulkan.cmake">
+			<Option virtualFolder="CMake Files\external\glfw\CMake\modules\"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/glfw/src/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\external\glfw\src\"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/glfw/src/glfw3.pc.in">
+			<Option virtualFolder="CMake Files\external\glfw\src\"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/glfw/src/glfw3Config.cmake.in">
+			<Option virtualFolder="CMake Files\external\glfw\src\"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/glfw/src/glfw_config.h.in">
+			<Option virtualFolder="CMake Files\external\glfw\src\"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/GSL/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\external\GSL\"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/external/tiny-process-library/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\external\tiny-process-library\"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/cmake/utils.cmake">
+			<Option virtualFolder="CMake Files\cmake\"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/src/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/boards/desktop/config.cmake">
+			<Option virtualFolder="CMake Files\boards\desktop\"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/boards/parts/audio/rtaudio/config.cmake">
+			<Option virtualFolder="CMake Files\boards\parts\audio\rtaudio\"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/boards/parts/ui/glfw/config.cmake">
+			<Option virtualFolder="CMake Files\boards\parts\ui\glfw\"/>
+		</Unit>
+		<Unit filename="/home/jonatan/Documents/OTTO/test/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\test\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>

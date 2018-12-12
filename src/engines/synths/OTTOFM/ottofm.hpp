@@ -31,13 +31,13 @@ namespace otto::engines {
 
     struct OperatorEnvelope : Properties<> {
       using Properties::Properties;
-      Property<float> carrier   = {this, "carrier",      0,   has_limits::init(0,   1), faust_link::init(FaustLink::Type::FromFaust)};
       Property<float> modulator = {this, "modulator",    0,   has_limits::init(0,   1), faust_link::init(FaustLink::Type::FromFaust)};
 
     };
 
     struct VoiceEnvelope : Properties<> {
       using Properties::Properties;
+      Property<float> carrier   = {this, "carrier",      0,   has_limits::init(0,   1), faust_link::init(FaustLink::Type::FromFaust)};
       std::array<OperatorEnvelope,4> ops = {{{this,"op0"}, {this,"op1"}, {this,"op2"}, {this,"op3"}}};
     };
 
