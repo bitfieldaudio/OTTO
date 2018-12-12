@@ -21,6 +21,7 @@ int handle_exception();
 
 int main(int argc, char* argv[])
 {
+  int result = 0;
   try {
     Application app {
       [&] { return std::make_unique<LogManager>(argc, argv); },
@@ -40,20 +41,20 @@ int main(int argc, char* argv[])
     app.engine_manager->start();
     app.audio_manager->start();
     app.ui_manager->main_ui_loop();
+
     if (app.error() == Application::ErrorCode::ui_closed) {
       std::system("shutdown -h now");
     }
-
   } catch (const char* e) {
-    return handle_exception(e);
+    result = handle_exception(e);
   } catch (std::exception& e) {
-    return handle_exception(e);
+    result = handle_exception(e);
   } catch (...) {
-    return handle_exception();
+    result = handle_exception();
   }
 
   LOG_F(INFO, "Exiting");
-  return 0;
+  return result;
 }
 
 int handle_exception(const char* e)

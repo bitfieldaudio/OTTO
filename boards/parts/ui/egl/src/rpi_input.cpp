@@ -161,6 +161,7 @@ namespace otto::services {
     while (Application::current().running()) {
       auto events = read_events(keyboard);
       for (const auto& event : events) {
+       if (!Application::current().running()) break;
         if (event.type == EV_KEY) {
           auto pressed = event.value != 0;
 
@@ -188,5 +189,6 @@ namespace otto::services {
         }
       }
     }
+    encoder_thread.join();
   }
 } // namespace otto::board::ui

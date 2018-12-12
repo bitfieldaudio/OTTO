@@ -114,6 +114,6 @@ namespace otto::services {
 
     egl.exit();
 
-    Application::current().exit(Application::ErrorCode::ui_closed);
+    kbd_thread.join();
   }
 } // namespace otto::services

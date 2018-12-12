@@ -37,6 +37,7 @@ namespace otto::services {
   {
     _is_running = false;
     _error_code = ec;
+    LOGI("Exit called with code {}", util::underlying(ec));
   }
 
   bool Application::running() noexcept

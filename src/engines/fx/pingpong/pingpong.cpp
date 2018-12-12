@@ -50,8 +50,7 @@ namespace otto::engines {
     case ui::Key::blue_click: [[fallthrough]];
     case ui::Key::green_click: [[fallthrough]];
     case ui::Key::yellow_click: [[fallthrough]];
-    case ui::Key::red_click:
-      engine.props.bpm_follow = !engine.props.bpm_follow; break;
+    case ui::Key::red_click: engine.props.bpm_follow = !engine.props.bpm_follow; break;
     default: return false; ;
     }
     return true;
@@ -65,38 +64,31 @@ namespace otto::engines {
     ctx.font(Fonts::Norm, 35);
 
     constexpr float x_pad = 30;
-    constexpr float y_pad = 50;
-    constexpr float space = (height - 2.f * y_pad) / 3.f;
 
-    int x_spacing_min = width/25;
+    int x_spacing_min = width / 25;
     int x_scaling = 50;
-    int y_base = height/2;
-    int line_length = 1;
+    int y_base = height / 2;
     ctx.lineWidth(6.0f);
-    int x_pos;
 
-    int feedbackLimit = floor(20.0*engine.props.feedback);
     int y_height_top = 100;
     int y_height_bot = 100;
-    float dim_scale_top = engine.props.feedback - 0.01 - 0.2*max(0.0, 0.5 - engine.props.tone);
-    float dim_scale_bot = engine.props.feedback - 0.01 - 0.2*max(0.0, engine.props.tone - 0.5);
-    for (int i=0;i<20;i++) {
+    float dim_scale_top = engine.props.feedback - 0.01 - 0.2 * max(0.0, 0.5 - engine.props.tone);
+    float dim_scale_bot = engine.props.feedback - 0.01 - 0.2 * max(0.0, engine.props.tone - 0.5);
+    for (int i = 0; i < 20; i++) {
       ctx.beginPath();
-      x_pos = x_pad + i*(x_spacing_min+x_scaling*engine.props.delaytime);
+      int x_pos = x_pad + i * (x_spacing_min + x_scaling * engine.props.delaytime);
       ctx.moveTo(x_pos, y_base - y_height_top);
       ctx.lineTo(x_pos, y_base + y_height_bot);
       ctx.stroke(Colours::Gray50);
 
       ctx.beginPath();
       engine.props.delay_level[i].level.refresh_links();
-      ctx.moveTo(x_pos, y_base - y_height_top*engine.props.delay_level[i].level);
-      ctx.lineTo(x_pos, y_base + y_height_bot*engine.props.delay_level[i].level);
+      ctx.moveTo(x_pos, y_base - y_height_top * engine.props.delay_level[i].level);
+      ctx.lineTo(x_pos, y_base + y_height_bot * engine.props.delay_level[i].level);
       ctx.stroke(Colours::Blue);
       y_height_top *= dim_scale_top;
       y_height_bot *= dim_scale_bot;
     }
-
-
   }
 
 } // namespace otto::engines
