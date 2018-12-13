@@ -2,13 +2,9 @@
 
 import("stdfaust.lib");
 
-//process = hgroup("voices", vgroup("0", voice) + vgroup("3", voice) +
-//                           vgroup("1", voice) + vgroup("4", voice) +
-//                           vgroup("2", voice) + vgroup("5", voice)) :  _ ;
-
 process = vgroup("voices", par(n, 6, vgroup("%n", voice(n)))) :> _ ;
 
-voice(vnum) = out
+voice(vnum) = control(out : *(adsre_OTTO(a,d,s,r,midigate)), adsre_OTTO(a,d,s,r,midigate)>0.001)
 with {
   midigate	= button ("v:midi/trigger");
   midifreq	= hslider("v:midi/freq", 440, 20, 1000, 1);
@@ -26,8 +22,20 @@ with {
   s = hslider("/v:envelope/Sustain", 1.0, 0.0, 1.0, 0.01);
   r = hslider("/v:envelope/Release", 0.0, 0.0, 4.0, 0.01);
 
+  adsre_OTTO(attT60,decT60,susLvl,relT60,gate) = envel <: attach(hbargraph("/v:v%vnum/carrier",0,1))
+  with {
+    ugate = gate>0;
+    samps = ugate : +~(*(ugate)); // ramp time in samples
+    attSamps = int(attT60 * ma.SR);
+    target = select2(ugate, 0.0,
+                select2(samps<attSamps, (susLvl)*float(ugate), 1/0.63));
+    t60 = select2(ugate, relT60, select2(samps<attSamps, decT60, attT60*6.91));
+    pole = ba.tau2pole(t60/6.91);
+    envel = target : si.smooth(pole) : min(1.0);
+  };
 
-  out = par(i, 11, control( DXOTTO_algo(vnum,i, a,d,s,r, fmAmount, midifreq, midigain, midigate) , algN==i)) :> _;
+
+  out = par(i, 11, control( DXOTTO_algo(vnum,i, a,d,s,r, fmAmount, midifreq, midigain, midigate) , algN==i)) :> *(adsre_OTTO(a,d,s,r,midigate));
 };
 
 //------------------------------`DXOTTO_modulator_op`---------------------------
@@ -85,8 +93,7 @@ with{
 // * `gain`: Gain from MIDI velocity
 // * `gate`: trigger signal
 //-----------------------------------------------------------------
-DXOTTO_carrier_op(vnum, j, basefreq,phaseMod,att,dec,sus,rel,gain,gate) =
-adsre_OTTO(attack,dec,sustain,release,gate)*outLev*gain*sineWave
+DXOTTO_carrier_op(vnum, j, basefreq,phaseMod,att,dec,sus,rel,gain,gate) = outLev*gain*sineWave
 with{
   //Sine oscillator
   tablesize = 1 << 16;
@@ -94,22 +101,6 @@ with{
   freq =  hslider("/v:op%j/ratio",1,0.25,4,0.01)*basefreq + hslider("/v:op%j/detune",0,-1,1,0.01)*25;
 
   outLev = hslider("/v:op%j/outLev",1,0,1,0.01);
-  //Envelope
-  attack = att;
-  sustain = sus;
-  release = rel;
-  adsre_OTTO(attT60,decT60,susLvl,relT60,gate) = envel <: attach(hbargraph("/v:v%vnum/v:op%j/carrier",0,1))
-  with {
-    ugate = gate>0;
-    samps = ugate : +~(*(ugate)); // ramp time in samples
-    attSamps = int(attT60 * ma.SR);
-    target = select2(ugate, 0.0,
-             select2(samps<attSamps, (susLvl)*float(ugate), 1/0.63));
-    t60 = select2(ugate, relT60, select2(samps<attSamps, decT60, attT60*6.91));
-    pole = ba.tau2pole(t60/6.91);
-    envel = target : si.smooth(pole) : min(1.0);
-  };
-
 
 };
 

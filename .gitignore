@@ -25,3 +25,4 @@ imgui.ini
 CMakeLists.txt.user
 .local.kak
 .idea
+*.cbp

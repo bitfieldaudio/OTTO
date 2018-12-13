@@ -30,7 +30,7 @@ spreadScale = 1000;
 freqScale = 1900;
 freq_lower = 100;
 
-process = levelOutputBlock,_ : echo : (_, _) ;
+process = levelOutputBlock <: echo : (_, _) ;
 
 //Routing
 echoIN = _,_  <: _,_,_, si.block(1) : *(1-pp), *(pp),_ : _,ro.cross(2) : _,_,_ ; //In: L,R -- Out: L_i, R_i, L_pp	

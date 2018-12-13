@@ -3,12 +3,9 @@
 
 import("stdfaust.lib");
 
-process = hgroup("voices", vgroup("0", voice) + vgroup("3", voice) +
-                           vgroup("1", voice) + vgroup("4", voice) +
-                           vgroup("2", voice) + vgroup("5", voice)) :  _ ;
+process = vgroup("voices", par(n, 6, vgroup("%n", voice))) :> _ ;
 
-//voice = hgroup("midi", envelope) //Only for testing. Can be used to draw the envelope on the debug build.
-voice = hgroup("midi", ( multi_osc(osc1_freq) , multi_osc(osc2_freq) ) <: mixer :> VCF : *(envelope))
+voice = hgroup("midi", control(( multi_osc(osc1_freq) , multi_osc(osc2_freq) ) <: mixer :> VCF :  *(envelope), envelope>0.001))
 with {
   midigate	= button ("trigger");
   midifreq	= hslider("freq", 440, 20, 1000, 1);
