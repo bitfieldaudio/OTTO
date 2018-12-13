@@ -118,7 +118,8 @@ namespace otto::services {
 
     int ref_count = 0;
     auto in_buf = core::audio::AudioBufferHandle(in_data, nframes, ref_count);
-    auto out = Application::current().engine_manager->process({in_buf, {midi_bufs.inner()}, nframes});
+    // steal the inner midi buffer
+    auto out = Application::current().engine_manager->process({in_buf, {std::move(midi_bufs.inner())}, nframes});
 
     // process_audio_output(out);
 
@@ -138,6 +139,10 @@ namespace otto::services {
         });
       }
     }
+
+    // return the midi buffer
+    midi_bufs.inner() = out.midi.move_vector_out();
+
     return 0;
   }
 } // namespace otto::services

@@ -49,15 +49,14 @@ namespace otto::services {
     engineGetters.try_emplace("Effect", [&]() { return dynamic_cast<AnyEngine*>(effect.current()); });
     engineGetters.try_emplace("Sequencer", [&]() { return dynamic_cast<AnyEngine*>(sequencer.current()); });
 
-    sequencer.register_engine<engines::Arp>("Arp");
     sequencer.register_engine<engines::Euclid>("Euclid");
     synth.register_engine<engines::External>("External");
-    synth.register_engine<engines::HammondSynth>("Hammond");
+    synth.register_engine<engines::HammondSynth>("Woody");
     synth.register_engine<engines::NukeSynth>("Nuke");
-    synth.register_engine<engines::OTTOFMSynth>("OTTOFM");
-    synth.register_engine<engines::VocoderSynth>("Vocoder");
+    synth.register_engine<engines::OTTOFMSynth>("OTTO.FM");
+    synth.register_engine<engines::VocoderSynth>("Robot");
     effect.register_engine<engines::Wormhole>("Wormhole");
-    effect.register_engine<engines::Pingpong>("Pingpong");
+    effect.register_engine<engines::Pingpong>("PingPong");
 
     sequencer.init();
     synth.init();

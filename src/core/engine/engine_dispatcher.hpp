@@ -19,6 +19,7 @@ namespace otto::core::engine {
     struct EngineFactory {
       std::string name;
       std::function<std::unique_ptr<Engine<ET>>()> construct;
+      nlohmann::json data;
     };
 
     // Initialization
@@ -36,16 +37,16 @@ namespace otto::core::engine {
     const Engine<ET>* current() const noexcept;
 
     /// Access the currently selected engine
-    //Engine<ET>& operator*() noexcept;
-    /// Access the currently selected engine
-    //const Engine<ET>& operator*() const noexcept;
-
-    /// Access the currently selected engine
     Engine<ET> const* operator->() const noexcept;
     /// Access the currently selected engine
     Engine<ET>* operator->() noexcept;
 
+    /// Get the index of the currently selected engine.
+    int current_idx() const noexcept;
+
     /// Create an engine and select it by factory
+    /// 
+    /// If the name is the same as the already selected engine, that engine is returned instead.
     Engine<ET>& select(const EngineFactory&);
 
     /// Select engine by index
@@ -76,7 +77,8 @@ namespace otto::core::engine {
 
   private:
     std::vector<EngineFactory> _factories;
-    std::unique_ptr<Engine<ET>> _current = nullptr;
+    const EngineFactory* _current_factory = nullptr;
+    std::shared_ptr<Engine<ET>> _current = nullptr;
     std::unique_ptr<ui::Screen> _selector_screen = nullptr;
   };
 

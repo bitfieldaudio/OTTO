@@ -12,11 +12,11 @@ namespace otto::core::engine {
     std::function<AnyEngine&(int)>&& select_eg) noexcept
   {
     SelectorWidget::Options opts;
-    opts.on_select = [this, sl = std::move(select_eg)](int idx) {
+    opts.on_select = [this, sl = std::move(select_eg), empty_vec = std::vector<std::string>()](int idx) {
       auto& eg = sl(idx);
       try {
+        preset_wid.items(empty_vec);
         preset_wid.items(Application::current().preset_manager->preset_names(eg.name()));
-        preset_wid.select(eg.current_preset(), true);
       } catch (services::PresetManager::exception& e) {
       }
     };
@@ -55,7 +55,7 @@ namespace otto::core::engine {
 
   void EngineSelectorScreen::on_show()
   {
-    engine_wid.options.on_select(engine_wid.selected_item());
+    if (_on_show) _on_show();
   }
 
   void EngineSelectorScreen::on_hide() {}

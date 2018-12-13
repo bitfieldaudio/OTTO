@@ -238,6 +238,9 @@ namespace otto::engines {
 
     // waveform
     ctx.group([&] {
+      // move the entire group to point x,y
+      ctx.translate(60, 102);
+      //
       float dial = engine.props.wave.normalize() * 4.f;
       //  Dial takes values between 0 and 4 and returns a list of line endpoints
       //  Position at integer values are hardcoded. In between, they are
@@ -293,45 +296,168 @@ namespace otto::engines {
 
     // hazard sign
     ctx.group([&] {
-      // Nuke/NukeHazard/Segments/3
-      ctx.beginPath();
-      ctx.moveTo(96.5, 165.2);
-      ctx.bezierCurveTo(99.5, 166.4, 101.6, 169.2, 101.6, 172.6);
-      ctx.bezierCurveTo(101.6, 173.0, 101.6, 173.3, 101.5, 173.7);
-      ctx.lineTo(118.9, 175.6);
-      ctx.bezierCurveTo(119.0, 174.6, 119.0, 173.6, 119.0, 172.6);
-      ctx.bezierCurveTo(119.0, 161.8, 112.3, 152.6, 102.8, 148.9);
-      ctx.lineTo(96.5, 165.2);
-      ctx.closePath();
-      ctx.lineWidth(6.0);
-      ctx.strokeStyle(Colours::Yellow);
-      ctx.lineCap(Canvas::LineCap::ROUND);
-      ctx.lineJoin(Canvas::LineJoin::ROUND);
-      ctx.stroke();
+      // b=bottom l=left r=right
+      // rotation value
+      float hazardrotationvalueL = 0 + engine.props.relation * 0.3;
+      float hazardrotationvalueR = 0 - engine.props.relation * 0.3;
 
-      // Nuke/NukeHazard/Segments/2
-      ctx.beginPath();
-      ctx.moveTo(85.7, 173.7);
-      ctx.bezierCurveTo(85.6, 173.3, 85.6, 173.0, 85.6, 172.6);
-      ctx.bezierCurveTo(85.6, 169.2, 87.7, 166.4, 90.6, 165.2);
-      ctx.lineTo(84.3, 148.9);
-      ctx.bezierCurveTo(74.8, 152.6, 68.1, 161.8, 68.1, 172.6);
-      ctx.bezierCurveTo(68.1, 173.6, 68.2, 174.6, 68.3, 175.6);
-      ctx.lineTo(85.7, 173.7);
-      ctx.closePath();
-      ctx.stroke();
+      // nuke/B > L
+      ctx.group([&] {
+        ctx.beginPath();
+        ctx.rotateAround(hazardrotationvalueL, {93.6, 172.6});
+        ctx.moveTo(93.6, 180.6);
+        ctx.lineTo(93.6, 198.1);
+        ctx.closePath();
+        ctx.lineWidth(6.0);
+        ctx.strokeStyle(Colours::Yellow);
+        ctx.lineCap(Canvas::LineCap::ROUND);
+        ctx.lineJoin(Canvas::LineJoin::ROUND);
+        ctx.stroke();
+      });
+      // nuke/B > R
+      ctx.group([&] {
+        ctx.beginPath();
+        ctx.rotateAround(hazardrotationvalueR, {93.6, 172.6});
+        ctx.moveTo(93.6, 180.6);
+        ctx.lineTo(93.6, 198.1);
+        ctx.closePath();
+        ctx.lineWidth(6.0);
+        ctx.strokeStyle(Colours::Yellow);
+        ctx.lineCap(Canvas::LineCap::ROUND);
+        ctx.lineJoin(Canvas::LineJoin::ROUND);
+        ctx.stroke();
+      });
 
-      // Nuke/NukeHazard/Segments/1
-      ctx.beginPath();
-      ctx.moveTo(98.8, 178.7);
-      ctx.bezierCurveTo(97.4, 179.9, 95.6, 180.6, 93.6, 180.6);
-      ctx.bezierCurveTo(91.6, 180.6, 89.8, 179.9, 88.4, 178.7);
-      ctx.lineTo(76.9, 191.8);
-      ctx.bezierCurveTo(81.4, 195.7, 87.2, 198.1, 93.6, 198.1);
-      ctx.bezierCurveTo(100.0, 198.1, 105.8, 195.7, 110.3, 191.8);
-      ctx.lineTo(98.8, 178.7);
-      ctx.closePath();
-      ctx.stroke();
+      // nuke/R > L
+      ctx.group([&] {
+        ctx.beginPath();
+        ctx.rotateAround(hazardrotationvalueL, {93.6, 172.6});
+        ctx.moveTo(100.5, 168.6);
+        ctx.lineTo(115.6, 159.9);
+        ctx.lineWidth(6.0);
+        ctx.strokeStyle(Colours::Yellow);
+        ctx.lineCap(Canvas::LineCap::ROUND);
+        ctx.lineJoin(Canvas::LineJoin::ROUND);
+        ctx.stroke();
+      });
+
+      // nuke/R > R
+      ctx.group([&] {
+        ctx.beginPath();
+        ctx.rotateAround(hazardrotationvalueR, {93.6, 172.6});
+        ctx.moveTo(100.5, 168.6);
+        ctx.lineTo(115.6, 159.9);
+        ctx.lineWidth(6.0);
+        ctx.strokeStyle(Colours::Yellow);
+        ctx.lineCap(Canvas::LineCap::ROUND);
+        ctx.lineJoin(Canvas::LineJoin::ROUND);
+        ctx.stroke();
+      });
+
+      // nuke/L > L
+      ctx.group([&] {
+        ctx.beginPath();
+        ctx.rotateAround(hazardrotationvalueL, {93.6, 172.6});
+        ctx.moveTo(86.7, 168.6);
+        ctx.lineTo(71.5, 159.9);
+        ctx.lineWidth(6.0);
+        ctx.strokeStyle(Colours::Yellow);
+        ctx.lineCap(Canvas::LineCap::ROUND);
+        ctx.lineJoin(Canvas::LineJoin::ROUND);
+        ctx.stroke();
+      });
+
+      // nuke/L > R
+      ctx.group([&] {
+        ctx.beginPath();
+        ctx.rotateAround(hazardrotationvalueR, {93.6, 172.6});
+        ctx.moveTo(86.7, 168.6);
+        ctx.lineTo(71.5, 159.9);
+        ctx.lineWidth(6.0);
+        ctx.strokeStyle(Colours::Yellow);
+        ctx.lineCap(Canvas::LineCap::ROUND);
+        ctx.lineJoin(Canvas::LineJoin::ROUND);
+        ctx.stroke();
+      });
+
+      // outer ring B-L
+      ctx.group([&] {
+        ctx.beginPath();
+        // ctx.circle({93.6,172.6},26);
+        ctx.rotateAround(55, {93.6, 172.6});
+        ctx.arc(93.6, 172.6, 26, M_PI, (M_PI + 0.29 * engine.props.relation), false);
+        ctx.lineWidth(6.0);
+        ctx.strokeStyle(Colours::Yellow);
+        ctx.lineCap(Canvas::LineCap::ROUND);
+        ctx.lineJoin(Canvas::LineJoin::ROUND);
+        ctx.stroke();
+      });
+
+      // outer ring B-R
+      ctx.group([&] {
+        ctx.beginPath();
+        // ctx.circle({93.6,172.6},26);
+        ctx.rotateAround(55, {93.6, 172.6});
+        ctx.arc(93.6, 172.6, 26, M_PI, (M_PI - 0.29 * engine.props.relation), true);
+        ctx.lineWidth(6.0);
+        ctx.strokeStyle(Colours::Yellow);
+        ctx.lineCap(Canvas::LineCap::ROUND);
+        ctx.lineJoin(Canvas::LineJoin::ROUND);
+        ctx.stroke();
+      });
+
+      // outer ring L-L
+      ctx.group([&] {
+        ctx.beginPath();
+        // ctx.circle({93.6,172.6},26);
+        ctx.rotateAround(119.9, {93.6, 172.6});
+        ctx.arc(93.6, 172.6, 26, M_PI, (M_PI + 0.29 * engine.props.relation), false);
+        ctx.lineWidth(6.0);
+        ctx.strokeStyle(Colours::Yellow);
+        ctx.lineCap(Canvas::LineCap::ROUND);
+        ctx.lineJoin(Canvas::LineJoin::ROUND);
+        ctx.stroke();
+      });
+
+      // outer ring L-R
+      ctx.group([&] {
+        ctx.beginPath();
+        // ctx.circle({93.6,172.6},26);
+        ctx.rotateAround(119.9, {93.6, 172.6});
+        ctx.arc(93.6, 172.6, 26, M_PI, (M_PI - 0.29 * engine.props.relation), true);
+        ctx.lineWidth(6.0);
+        ctx.strokeStyle(Colours::Yellow);
+        ctx.lineCap(Canvas::LineCap::ROUND);
+        ctx.lineJoin(Canvas::LineJoin::ROUND);
+        ctx.stroke();
+      });
+
+
+      // outer ring R-L
+      ctx.group([&] {
+        ctx.beginPath();
+        // ctx.circle({93.6,172.6},26);
+        ctx.rotateAround(122, {93.6, 172.6});
+        ctx.arc(93.6, 172.6, 26, M_PI, (M_PI + 0.29 * engine.props.relation), false);
+        ctx.lineWidth(6.0);
+        ctx.strokeStyle(Colours::Yellow);
+        ctx.lineCap(Canvas::LineCap::ROUND);
+        ctx.lineJoin(Canvas::LineJoin::ROUND);
+        ctx.stroke();
+      });
+
+      // outer ring R-R
+      ctx.group([&] {
+        ctx.beginPath();
+        // ctx.circle({93.6,172.6},26);
+        ctx.rotateAround(122, {93.6, 172.6});
+        ctx.arc(93.6, 172.6, 26, M_PI, (M_PI - 0.29 * engine.props.relation), true);
+        ctx.lineWidth(6.0);
+        ctx.strokeStyle(Colours::Yellow);
+        ctx.lineCap(Canvas::LineCap::ROUND);
+        ctx.lineJoin(Canvas::LineJoin::ROUND);
+        ctx.stroke();
+      });
 
       // Nuke/NukeHazard/MiddleCircle
       ctx.restore();
@@ -343,7 +469,7 @@ namespace otto::engines {
       ctx.bezierCurveTo(98.0, 164.6, 101.6, 168.2, 101.6, 172.6);
       ctx.closePath();
       ctx.lineWidth(6.0);
-      ctx.strokeStyle(Colour::bytes(250, 184, 22));
+      ctx.strokeStyle(Colours::Yellow);
       ctx.lineCap(Canvas::LineCap::ROUND);
       ctx.lineJoin(Canvas::LineJoin::ROUND);
       ctx.stroke();
