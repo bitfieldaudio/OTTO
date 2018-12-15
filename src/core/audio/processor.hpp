@@ -293,7 +293,7 @@ namespace otto::core::audio {
     {
       // For now this is hardcoded, which is nice, cause we notice if we suddenly are using too many
       // buffers
-      reserve(4);
+      reserve(8);
     }
 
     AudioBufferHandle allocate() noexcept

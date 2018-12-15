@@ -30,6 +30,8 @@ namespace otto::core::ui {
 
     master,
 
+    send,
+
     /// Number of keys
     n_keys,
   };

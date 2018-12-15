@@ -37,7 +37,7 @@ namespace otto::engines {
   {
     auto& props = engine.props;
     switch (ev.rotary) {
-    case Rotary::blue: props.mix.step(ev.clicks); break;
+    case Rotary::blue: props.spread.step(ev.clicks); break;
     case Rotary::green: props.length.step(ev.clicks); break;
     case Rotary::yellow: props.shimmer.step(ev.clicks); break;
     case Rotary::red: props.shape.step(ev.clicks); break;
@@ -265,12 +265,12 @@ namespace otto::engines {
     ctx.save();
     ctx.font(Fonts::Norm, 40);
     ctx.fillStyle(Colours::Blue);
-    ctx.fillText(fmt::format("{}", std::round(props.mix * 100)), 22.9, 76.2);
+    ctx.fillText(fmt::format("{}", std::round(props.spread * 100)), 22.9, 76.2);
 
     // mass text
     ctx.font(Fonts::Norm, 25);
     ctx.fillStyle(Colours::White);
-    ctx.fillText("mass", 22.9, 35.4);
+    ctx.fillText("spread", 22.9, 35.4);
 
     ctx.restore();
 
