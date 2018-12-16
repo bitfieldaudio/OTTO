@@ -289,11 +289,12 @@ namespace otto::core::audio {
   };
 
   struct AudioBufferPool {
+    static constexpr int number_of_buffers = 8;
     AudioBufferPool(std::size_t buffer_size) : buffer_size(buffer_size)
     {
       // For now this is hardcoded, which is nice, cause we notice if we suddenly are using too many
       // buffers
-      reserve(8);
+      reserve(number_of_buffers);
     }
 
     AudioBufferHandle allocate() noexcept
@@ -337,7 +338,7 @@ namespace otto::core::audio {
 
     void set_buffer_size(std::size_t bs) noexcept {
       buffer_size = bs;
-      reserve(4);
+      reserve(number_of_buffers);
     }
 
   private:

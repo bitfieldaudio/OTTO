@@ -116,7 +116,7 @@ namespace otto::board::ui {
     case Key::n3: send_key(OKey::envelope); break;
     case Key::n4: send_key(OKey::voices); break;
     case Key::n5: send_key(OKey::fx1); break;
-
+    case Key::n6: send_key(OKey::fx2); break;
     case Key::p: send_key(OKey::play); break;
     case Key::m: send_key(OKey::master); break;
 

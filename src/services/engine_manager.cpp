@@ -2,6 +2,7 @@
 
 #include "engines/fx/wormhole/wormhole.hpp"
 #include "engines/fx/pingpong/pingpong.hpp"
+#include "engines/fx/chorus/chorus.hpp"
 #include "engines/misc/master/master.hpp"
 #include "engines/seq/arp/arp.hpp"
 #include "engines/seq/euclid/euclid.hpp"
@@ -32,17 +33,18 @@ namespace otto::services {
 
     EngineDispatcher<EngineType::sequencer> sequencer;
     EngineDispatcher<EngineType::synth> synth;
-    EngineDispatcher<EngineType::effect> effect;
+    EngineDispatcher<EngineType::effect> effect1;
+    EngineDispatcher<EngineType::effect> effect2;
 
     engines::Master master;
   };
 
   struct EffectSend {
       struct Props : engines::Properties<> {
-          engines::Property<float> to_FX1      = {this, "to_FX1",      0,  engines::has_limits::init(0, 1),    engines::steppable::init(0.01)};
+          engines::Property<float> to_FX1      = {this, "to_FX1",      0.5,  engines::has_limits::init(0, 1),    engines::steppable::init(0.01)};
           engines::Property<float> to_FX2      = {this, "to_FX2",      0,  engines::has_limits::init(0, 1),    engines::steppable::init(0.01)};
           engines::Property<float> dry         = {this, "dry",         1,  engines::has_limits::init(0, 1),    engines::steppable::init(0.01)};
-          engines::Property<float> dry_pan     = {this, "dry_balance", 1,  engines::has_limits::init(0, 2),    engines::steppable::init(0.01)};
+          engines::Property<float> dry_pan     = {this, "dry_pan", 0,  engines::has_limits::init(-1, 1),    engines::steppable::init(0.01)};
       } props;
 
       struct Screen : ui::Screen {
@@ -128,7 +130,8 @@ namespace otto::services {
     auto& state_manager = *Application::current().state_manager;
 
     engineGetters.try_emplace("Synth", [&]() { return dynamic_cast<AnyEngine*>(synth.current()); });
-    engineGetters.try_emplace("Effect", [&]() { return dynamic_cast<AnyEngine*>(effect.current()); });
+    engineGetters.try_emplace("Effect1", [&]() { return dynamic_cast<AnyEngine*>(effect1.current()); });
+    engineGetters.try_emplace("Effect2", [&]() { return dynamic_cast<AnyEngine*>(effect2.current()); });
     engineGetters.try_emplace("Sequencer", [&]() { return dynamic_cast<AnyEngine*>(sequencer.current()); });
 
     sequencer.register_engine<engines::Euclid>("Euclid");
@@ -137,12 +140,17 @@ namespace otto::services {
     synth.register_engine<engines::NukeSynth>("Nuke");
     synth.register_engine<engines::OTTOFMSynth>("OTTO.FM");
     synth.register_engine<engines::VocoderSynth>("Robot");
-    effect.register_engine<engines::Wormhole>("Wormhole");
-    effect.register_engine<engines::Pingpong>("PingPong");
+    effect1.register_engine<engines::Wormhole>("Wormhole");
+    effect2.register_engine<engines::Wormhole>("Wormhole");
+    effect1.register_engine<engines::Pingpong>("PingPong");
+    effect2.register_engine<engines::Pingpong>("PingPong");
+    effect1.register_engine<engines::Chorus>("Chorus");
+    effect2.register_engine<engines::Chorus>("Chorus");
 
     sequencer.init();
     synth.init();
-    effect.init();
+    effect1.init();
+    effect2.init();
 
     ui_manager.register_key_handler(ui::Key::sequencer, [&](ui::Key k) {
       if (ui_manager.is_pressed(ui::Key::shift)) {
@@ -181,9 +189,17 @@ namespace otto::services {
 
     ui_manager.register_key_handler(ui::Key::fx1, [&](ui::Key k) {
       if (ui_manager.is_pressed(ui::Key::shift)) {
-        ui_manager.display(effect.selector_screen());
+        ui_manager.display(effect1.selector_screen());
       } else {
-        ui_manager.select_engine("Effect");
+        ui_manager.select_engine("Effect1");
+      }
+    });
+
+    ui_manager.register_key_handler(ui::Key::fx2, [&](ui::Key k) {
+      if (ui_manager.is_pressed(ui::Key::shift)) {
+        ui_manager.display(effect2.selector_screen());
+      } else {
+        ui_manager.select_engine("Effect2");
       }
     });
 
@@ -213,14 +229,16 @@ namespace otto::services {
 
     auto load = [&](nlohmann::json& data) {
       synth.from_json(data["Synth"]);
-      effect.from_json(data["Effect"]);
+      effect1.from_json(data["Effect1"]);
+      effect2.from_json(data["Effect2"]);
       master.from_json(data["Master"]);
       sequencer.from_json(data["Sequencer"]);
     };
 
     auto save = [&] {
       return nlohmann::json({{"Synth", synth.to_json()},
-                             {"Effect", effect.to_json()},
+                             {"Effect1", effect1.to_json()},
+                             {"Effect2", effect2.to_json()},
                              {"Master", master.to_json()},
                              {"Sequencer", sequencer.to_json()}});
     };
@@ -229,7 +247,8 @@ namespace otto::services {
 
     sequencer.select(std::size_t(0));
     synth.select(std::size_t(0));
-    effect.select(std::size_t(0));
+    effect1.select(std::size_t(0));
+    effect2.select(std::size_t(0));
   }
 
   void DefaultEngineManager::start() {}
@@ -240,9 +259,23 @@ namespace otto::services {
       auto midi_in = external_in.midi_only();
       auto seq_out = sequencer->process(midi_in);
       auto synth_out = synth->process({external_in.audio, seq_out.midi, external_in.nframes});
-      auto fx_out = effect->process(synth_out);
+      auto fx1_bus = Application::current().audio_manager->buffer_pool().allocate_multi<1>();
+      auto fx2_bus = Application::current().audio_manager->buffer_pool().allocate_multi<1>();
+      for (auto&& [snth, fx1, fx2] : util::zip(synth_out, fx1_bus, fx2_bus)) {
+          std::get<0>(fx1) = std::get<0>(snth) * synth_send.props.to_FX1;
+          std::get<0>(fx2) = std::get<0>(snth) * synth_send.props.to_FX2;
+      }
+      auto fx1_out = effect1->process(external_in.redirect(fx1_bus));
+      auto fx2_out = effect2->process(external_in.redirect(fx2_bus));
+      for (auto&& [snth, fx1, fx2] : util::zip(synth_out, fx1_out, fx2_out)) {
+          std::get<0>(fx1) += std::get<0>(fx2) + std::get<0>(snth) * synth_send.props.dry * (1 - synth_send.props.dry_pan);
+          std::get<1>(fx1) += std::get<1>(fx2) + std::get<0>(snth) * synth_send.props.dry * (1 + synth_send.props.dry_pan);
+      }
       synth_out.audio.release();
-      return master.process(std::move(fx_out));
+      fx2_out.audio.release();
+      fx1_bus.release();
+      fx2_bus.release();
+      return master.process(std::move(fx1_out));
   }
 
   AnyEngine* DefaultEngineManager::by_name(const std::string& name) noexcept

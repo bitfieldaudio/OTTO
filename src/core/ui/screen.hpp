@@ -24,6 +24,7 @@ namespace otto::core::ui {
 
     sequencer,
     fx1,
+    fx2,
     synth,
     envelope,
     voices,
