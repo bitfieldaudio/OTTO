@@ -10,6 +10,7 @@
 #include "engines/synths/external/external.hpp"
 #include "engines/synths/hammond/hammond.hpp"
 #include "engines/synths/nuke/nuke.hpp"
+#include "engines/synths/tsar/tsar.hpp"
 #include "engines/synths/vocoder/vocoder.hpp"
 
 #include "services/application.hpp"
@@ -41,7 +42,7 @@ namespace otto::services {
 
   struct EffectSend {
       struct Props : engines::Properties<> {
-          engines::Property<float> to_FX1      = {this, "to_FX1",      0.5,  engines::has_limits::init(0, 1),    engines::steppable::init(0.01)};
+          engines::Property<float> to_FX1      = {this, "to_FX1",      0,  engines::has_limits::init(0, 1),    engines::steppable::init(0.01)};
           engines::Property<float> to_FX2      = {this, "to_FX2",      0,  engines::has_limits::init(0, 1),    engines::steppable::init(0.01)};
           engines::Property<float> dry         = {this, "dry",         1,  engines::has_limits::init(0, 1),    engines::steppable::init(0.01)};
           engines::Property<float> dry_pan     = {this, "dry_pan", 0,  engines::has_limits::init(-1, 1),    engines::steppable::init(0.01)};
@@ -138,6 +139,7 @@ namespace otto::services {
     synth.register_engine<engines::External>("External");
     synth.register_engine<engines::HammondSynth>("Woody");
     synth.register_engine<engines::NukeSynth>("Nuke");
+    synth.register_engine<engines::TsarSynth>("Tsar");
     synth.register_engine<engines::OTTOFMSynth>("OTTO.FM");
     synth.register_engine<engines::VocoderSynth>("Robot");
     effect1.register_engine<engines::Wormhole>("Wormhole");

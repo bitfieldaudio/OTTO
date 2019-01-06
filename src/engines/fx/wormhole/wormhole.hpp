@@ -16,7 +16,7 @@ namespace otto::engines {
 
       Property<float> spread     = {this, "SPREAD",     0,  has_limits::init(0, 1),    steppable::init(0.01)};
       Property<float> shimmer = {this, "SHIMMER", 0,  has_limits::init(0, 0.8), steppable::init(0.01)};
-      Property<float> length  = {this, "LENGTH",  1,  has_limits::init(0, 1),    steppable::init(0.01)};
+      Property<float> length  = {this, "LENGTH",  0.5,  has_limits::init(0, 1),    steppable::init(0.01)};
       Property<float> shape   = {this, "SHAPE",  1, has_limits::init(0, 2),   steppable::init(0.01)};
 
     } props;

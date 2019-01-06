@@ -56,7 +56,7 @@ namespace otto::core::audio {
                                       props::steppable::init(0.02)};
 
     props::Property<float> release = {this, "Release", 0.2,
-                                      props::has_limits::init(0, 6),
+                                      props::has_limits::init(0, 8),
                                       props::steppable::init(0.02)};
 
     using Properties::Properties;
