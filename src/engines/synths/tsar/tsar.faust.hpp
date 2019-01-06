@@ -2233,7 +2233,7 @@ class faust_tsar : public dsp {
 			if ((float(((fSlow34 * fTempPerm47) > 0.001f)) != 0.0f) || (float(((fSlow30 * fTempPerm44) > 0.001f)) != 0.0f) || (float(((fSlow26 * fTempPerm41) > 0.001f)) != 0.0f) || (float(((fSlow22 * fTempPerm38) > 0.001f)) != 0.0f) || (float(((fSlow18 * fTempPerm35) > 0.001f)) != 0.0f) || (float(((fSlow10 * fTempPerm27) > 0.001f)) != 0.0f)) {
 				fRec25[0] = (fSlow55 + (0.999f * fRec25[1]));
 				fRec26[0] = (fSlow56 + (0.999f * fRec26[1]));
-				fTempPerm61 = (1.0f - (0.056125687309999998f * fRec26[0]));
+				fTempPerm61 = (1.0f - (0.016837706192999999f * fRec26[0]));
 			}
 			if ((float(((fSlow10 * fTempPerm27) > 0.001f)) != 0.0f)) {
 				fTempPerm62 = (fSlow11 * fTempPerm61);
@@ -2254,7 +2254,7 @@ class faust_tsar : public dsp {
 				fRec27[0] = ((0.999f * fRec27[1]) + (fConst6 * ((fVec12[IOTA&4095] - (fVec12[(IOTA-iTempPerm71)&4095] * (fTempPerm72 + (1.0f - fTempPerm70)))) - ((fTempPerm70 - fTempPerm72) * fVec12[(IOTA-int((iTempPerm71 + 1)))&4095]))));
 			}
 			if ((float(((fSlow34 * fTempPerm47) > 0.001f)) != 0.0f) || (float(((fSlow30 * fTempPerm44) > 0.001f)) != 0.0f) || (float(((fSlow26 * fTempPerm41) > 0.001f)) != 0.0f) || (float(((fSlow22 * fTempPerm38) > 0.001f)) != 0.0f) || (float(((fSlow18 * fTempPerm35) > 0.001f)) != 0.0f) || (float(((fSlow10 * fTempPerm27) > 0.001f)) != 0.0f)) {
-				fTempPerm73 = ((0.059463094360000003f * fRec26[0]) + 1.0f);
+				fTempPerm73 = ((0.017838928308000001f * fRec26[0]) + 1.0f);
 			}
 			if ((float(((fSlow10 * fTempPerm27) > 0.001f)) != 0.0f)) {
 				fTempPerm74 = (fSlow11 * fTempPerm73);
@@ -2853,7 +2853,7 @@ class faust_tsar : public dsp {
 				fTempPerm427 = (fSlow222 * (fTempPerm426 + (1.0f - (fTempPerm425 + fVec182[1]))));
 				fVec183[0] = fTempPerm427;
 				fVec184[0] = fSlow225;
-				fTempPerm428 = (fRec86[1] + (fConst3 * fVec184[1]));
+				fTempPerm428 = ((fConst3 * fVec184[1]) + fRec86[1]);
 				fRec86[0] = (fTempPerm428 - floorf(fTempPerm428));
 				fTempPerm429 = (2.0f * fRec86[0]);
 				fTempPerm430 = (fTempPerm429 + -1.0f);

@@ -1,0 +1,22 @@
+{
+  "engine": "Tsar",
+  "name": "Preset2",
+  "props": {
+    "Filter": 0.539999783039093,
+    "Relation": 0.510000467300415,
+    "Sub": 1.0,
+    "Wave": 0.170603454113007,
+    "envelope": {
+      "Attack": 7.94000005722046,
+      "Decay": 0.819999754428864,
+      "Release": 0.779999852180481,
+      "Sustain": 0.680000305175781
+    },
+    "voice_settings": {
+      "Octave": 2,
+      "Play Mode": 2,
+      "Portamento": 0.0,
+      "Transpose": 0
+    }
+  }
+}

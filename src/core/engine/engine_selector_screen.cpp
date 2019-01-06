@@ -47,6 +47,23 @@ namespace otto::core::engine {
     }
   }
 
+  bool EngineSelectorScreen::keypress(Key key)
+  {
+    switch (key) {
+      case ui::Key::blue_click: [[fallthrough]];
+      case ui::Key::green_click: [[fallthrough]];
+      case ui::Key::yellow_click: [[fallthrough]];
+      case ui::Key::red_click: {
+        std::string name = "Preset" + std::to_string(preset_wid.nitems() + 1);
+        Application::current().preset_manager->create_preset(_engine_dispatcher.current()->name(),  name, _engine_dispatcher.current()->to_json()["props"]);
+        preset_wid.select(preset_wid.nitems() - 1, true);
+        break;
+      }
+      default: return false;
+    }
+    return true;
+  }
+
   void EngineSelectorScreen::draw(vg::Canvas& ctx)
   {
     ctx.drawAt({10, 0}, engine_wid);

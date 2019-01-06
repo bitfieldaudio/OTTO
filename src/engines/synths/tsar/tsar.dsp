@@ -22,7 +22,7 @@ with {
 
   //Oscillator relations
   relation = hslider("/Relation", 0, 0, 1, 0.001) : si.smoo ;
-  detune = relation;
+  detune = relation *(0.3);
 
   semitone_up  = 0.05946309436;
   semitone_down = -0.05612568731;
