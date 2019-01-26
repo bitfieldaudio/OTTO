@@ -131,7 +131,7 @@ namespace otto::engines {
     using EngineScreen<OTTOFMSynth>::EngineScreen;
   };
 
-  // DXOTTOSynth ////////////////////////////////////////////////////////////////
+  // OTTOFMSynth ////////////////////////////////////////////////////////////////
 
   OTTOFMSynth::OTTOFMSynth()
     : SynthEngine("OTTO.FM", props, std::make_unique<OTTOFMSynthScreen>(this)),

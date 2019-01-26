@@ -11,6 +11,7 @@
 #include "engines/synths/hammond/hammond.hpp"
 #include "engines/synths/nuke/nuke.hpp"
 #include "engines/synths/tsar/tsar.hpp"
+#include "engines/synths/potion/potion.hpp"
 #include "engines/synths/vocoder/vocoder.hpp"
 
 #include "services/application.hpp"
@@ -139,6 +140,7 @@ namespace otto::services {
     synth.register_engine<engines::External>("External");
     synth.register_engine<engines::HammondSynth>("Woody");
     synth.register_engine<engines::NukeSynth>("Nuke");
+    synth.register_engine<engines::PotionSynth>("Potion");
     synth.register_engine<engines::TsarSynth>("Tsar");
     synth.register_engine<engines::OTTOFMSynth>("OTTO.FM");
     synth.register_engine<engines::VocoderSynth>("Robot");
