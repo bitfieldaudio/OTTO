@@ -10,6 +10,7 @@
 #include "engines/synths/hammond/hammond.hpp"
 #include "engines/synths/nuke/nuke.hpp"
 #include "engines/synths/vocoder/vocoder.hpp"
+#include "engines/synths/sampler/sampler.hpp"
 
 #include "services/application.hpp"
 
@@ -55,6 +56,7 @@ namespace otto::services {
     synth.register_engine<engines::NukeSynth>("Nuke");
     synth.register_engine<engines::OTTOFMSynth>("OTTO.FM");
     synth.register_engine<engines::VocoderSynth>("Robot");
+    synth.register_engine<engines::Sampler>("Sampler");
     effect.register_engine<engines::Wormhole>("Wormhole");
     effect.register_engine<engines::Pingpong>("PingPong");
 
