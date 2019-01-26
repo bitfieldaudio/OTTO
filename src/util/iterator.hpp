@@ -12,16 +12,17 @@
 namespace otto::util {
 
   /// \namespace otto::util::iterator
-  /// This namespace contains custom iterator types and general helper classes for working with containers
-  /// 
-  /// \attention `otto::util::iterator` is an inline namespace, meaning all members can and should be
-  /// accessed directly from the `otto::util` namespace i.e. as `util::float_step(...)`, not 
-  /// `util::iterator::float_step(...)`. It is only a separate namespace for clarification of
+  /// This namespace contains custom iterator types and general helper classes for working with
+  /// containers
+  ///
+  /// \attention `otto::util::iterator` is an inline namespace, meaning all members can and should
+  /// be/// accessed directly from the `otto::util` namespace i.e. as `util::float_step(...)`, not
+  /// /// `util::iterator::float_step(...)`. It is only a separate namespace for clarification of
   /// documentation and name resolution.
 
 
   /// \namespace otto::util::iterator::view
-  /// 
+  ///
   /// This namespace contains lazily evaluated "views" into containers.
 
   inline namespace iterator {
@@ -39,6 +40,9 @@ namespace otto::util {
         using type = typename Impl::difference_type;
       };
 
+      template<typename Impl>
+      using difference_type_t = typename difference_type<Impl>::type;
+
       // Value type
 
       template<typename Impl, typename T = void>
@@ -51,11 +55,14 @@ namespace otto::util {
         using type = typename Impl::value_type;
       };
 
+      template<typename Impl>
+      using value_type_t = typename value_type<Impl>::type;
+
       // Pointer type
 
       template<typename Impl, typename T = void>
       struct pointer {
-        using type = typename value_type<Impl>::type*;
+        using type = value_type_t<Impl>*;
       };
 
       template<typename Impl>
@@ -63,17 +70,33 @@ namespace otto::util {
         using type = typename Impl::pointer;
       };
 
+      template<typename Impl>
+      using pointer_t = typename pointer<Impl>::type;
+
       // Reference type
 
       template<typename Impl, typename T = void>
-      struct reference {
+      struct reference_impl {
+        using type = value_type_t<Impl>&;
+      };
+
+      template<typename Impl>
+      struct reference_impl<Impl, std::void_t<typename std::iterator_traits<Impl>::reference>> {
         using type = typename std::iterator_traits<Impl>::reference;
+      };
+
+      template<typename Impl, typename T = void>
+      struct reference {
+        using type = typename reference_impl<Impl>::type;
       };
 
       template<typename Impl>
       struct reference<Impl, std::void_t<typename Impl::reference>> {
         using type = typename Impl::reference;
       };
+
+      template<typename Impl>
+      using reference_t = typename reference<Impl>::type;
 
       // Iterator category
 
@@ -86,117 +109,132 @@ namespace otto::util {
       struct iterator_category<Impl, std::void_t<typename Impl::iterator_category>> {
         using type = typename Impl::iterator_category;
       };
+
+      template<typename Impl>
+      using iterator_category_t = typename iterator_category<Impl>::type;
     } // namespace detail
 
-
-    /*
-     * Iterator Adaptor
-     */
-
-    /// \private
-    template<typename Impl, typename Category = void>
-    class iterator_adaptor_impl : public Impl {
-    public:
-      // For std::type_traits
-      using difference_type = typename detail::difference_type<Impl>::type;
-      using value_type = typename detail::value_type<Impl>::type;
-      using pointer = typename detail::pointer<Impl>::type;
-      using reference = typename detail::reference<Impl>::type;
-      using iterator_category = typename detail::iterator_category<Impl>::type;
-
-      /* Initialization */
-
-      using Impl::Impl;
-
-      template<typename... Args>
-      iterator_adaptor_impl(Args&&... args) : Impl{std::forward<Args>(args)...}
-      {}
-
-      iterator_adaptor_impl(const iterator_adaptor_impl& r) : Impl{static_cast<Impl>(r)} {}
-
-      iterator_adaptor_impl(iterator_adaptor_impl&& r) : Impl{static_cast<Impl>(std::move(r))} {}
-
-      virtual ~iterator_adaptor_impl() = default;
-
-      iterator_adaptor_impl& operator=(const iterator_adaptor_impl&) = default;
-      iterator_adaptor_impl& operator=(iterator_adaptor_impl&&) = default;
-
-      using Impl::operator=;
+    ///
+    /// Zero overhead wrapper to create iterators
+    ///
+    /// \tparam Impl must define the following member functions:
+    /// ```
+    /// void           Impl::advance(difference_type);
+    /// reference      Impl::dereference();
+    /// bool           Impl::equal(const Impl&);
+    /// ```
+    /// For random access iterators, it must also define
+    /// ```
+    /// std::ptrdiff_t Impl::difference(const Impl&);
+    /// ```
+    /// Other than those, it must define a copy constructor, and the member
+    /// types `iterator_category` and `value_type`, Any other of the five
+    /// `iterator_traits` types will also be used from `Impl` if avaliable
+    template<typename Derived,
+             typename ValueType,
+             typename Category,
+             typename Reference = ValueType&,
+             typename Pointer = ValueType*,
+             typename Difference = std::ptrdiff_t>
+    struct iterator_facade {
+      // For std::iterator_traits
+      using value_type = ValueType;
+      using iterator_category = Category;
+      using reference = Reference;
+      using pointer = Pointer;
+      using difference_type = Difference;
 
       /* Operators */
 
       // Increment (Any)
 
-      iterator_adaptor_impl& operator++()
+      Derived& operator++()
       {
-        Impl::advance(1);
-        return *this;
+        derived().advance(1);
+        return derived();
       }
 
-      iterator_adaptor_impl operator++(int)
+      Derived operator++(int)
       {
-        auto old = *this;
-        Impl::advance(1);
+        auto old = derived();
+        derived().advance(1);
         return old;
       }
 
       // Dereference (Any)
       decltype(auto) operator*()
       {
-        return Impl::dereference();
+        return derived().dereference();
       }
 
       decltype(auto) operator*() const
       {
-        return Impl::dereference();
+        return derived().dereference();
       }
 
       decltype(auto) operator-> ()
       {
-        return Impl::dereference();
+        return derived().dereference();
       }
 
       decltype(auto) operator-> () const
       {
-        return Impl::dereference();
+        return derived().dereference();
       }
 
       // Comparison (Any)
-      bool operator==(const iterator_adaptor_impl& r) const
+      bool operator==(const Derived& r) const
       {
-        return Impl::equal(r);
+        return derived().equal(r);
       }
 
-      bool operator!=(const iterator_adaptor_impl& r) const
+      bool operator!=(const Derived& r) const
       {
-        return !Impl::equal(r);
+        return !derived().equal(r);
+      }
+
+    private:
+      Derived& derived()
+      {
+        return static_cast<Derived&>(*this);
+      }
+
+      const Derived& derived() const
+      {
+        return static_cast<const Derived&>(*this);
       }
     };
 
-    /// \private
-    template<typename Impl>
-    class iterator_adaptor_impl<Impl, std::bidirectional_iterator_tag>
-      : public iterator_adaptor_impl<Impl, void> {
-      using Super = iterator_adaptor_impl<Impl, void>;
+    template<typename Derived,
+             typename ValueType,
+             typename Reference,
+             typename Pointer,
+             typename Difference>
+    struct iterator_facade<Derived,
+                           ValueType,
+                           std::bidirectional_iterator_tag,
+                           Reference,
+                           Pointer,
+                           Difference> : iterator_facade<Derived,
+                                                         ValueType,
+                                                         std::input_iterator_tag,
+                                                         Reference,
+                                                         Pointer,
+                                                         Difference> {
+      using Super = iterator_facade<Derived,
+                                    ValueType,
+                                    std::input_iterator_tag,
+                                    Reference,
+                                    Pointer,
+                                    Difference>;
 
-    public:
       using typename Super::difference_type;
-      using typename Super::iterator_category;
+      using iterator_category = std::bidirectional_iterator_tag;
       using typename Super::pointer;
       using typename Super::reference;
       using typename Super::value_type;
 
-      template<typename... Args>
-      iterator_adaptor_impl(Args&&... args) : Super{std::forward<Args>(args)...}
-      {}
-
-      iterator_adaptor_impl(const iterator_adaptor_impl&) = default;
-      iterator_adaptor_impl(iterator_adaptor_impl&&) = default;
-      iterator_adaptor_impl& operator=(const iterator_adaptor_impl&) = default;
-      iterator_adaptor_impl& operator=(iterator_adaptor_impl&&) = default;
-
       using Super::operator=;
-
       using Super::operator++;
       using Super::operator*;
       using Super::operator->;
@@ -205,41 +243,41 @@ namespace otto::util {
 
       // Decrement (Bidirectional)
 
-      iterator_adaptor_impl& operator--()
+      Derived& operator--()
       {
-        Impl::advance(-1);
-        return *this;
+        derived().advance(-1);
+        return derived();
       }
 
-      iterator_adaptor_impl operator--(int)
+      Derived operator--(int)
       {
-        auto old = *this;
-        Impl::advance(-1);
+        auto old = derived();
+        derived().advance(-1);
         return old;
+      }
+
+    private:
+      Derived& derived()
+      {
+        return static_cast<Derived&>(*this);
+      }
+
+      const Derived& derived() const
+      {
+        return static_cast<const Derived&>(*this);
       }
     };
 
-    /// \private
-    template<typename Impl>
-    class iterator_adaptor_impl<Impl, std::random_access_iterator_tag>
-      : public iterator_adaptor_impl<Impl, std::bidirectional_iterator_tag> {
-      using Super = iterator_adaptor_impl<Impl, std::bidirectional_iterator_tag>;
+    template<typename Derived, typename Va, typename Re, typename Po, typename Di>
+    struct iterator_facade<Derived, Va, std::random_access_iterator_tag, Re, Po, Di>
+      : iterator_facade<Derived, Va, std::bidirectional_iterator_tag, Re, Po, Di> {
+      using Super = iterator_facade<Derived, Va, std::bidirectional_iterator_tag, Re, Po, Di>;
 
-    public:
       using typename Super::difference_type;
-      using typename Super::iterator_category;
+      using iterator_category = std::random_access_iterator_tag;
       using typename Super::pointer;
       using typename Super::reference;
       using typename Super::value_type;
-
-      template<typename... Args>
-      iterator_adaptor_impl(Args&&... args) : Super{std::forward<Args>(args)...}
-      {}
-
-      iterator_adaptor_impl(const iterator_adaptor_impl&) = default;
-      iterator_adaptor_impl(iterator_adaptor_impl&&) = default;
-      iterator_adaptor_impl& operator=(const iterator_adaptor_impl&) = default;
-      iterator_adaptor_impl& operator=(iterator_adaptor_impl&&) = default;
 
       using Super::operator=;
 
@@ -253,59 +291,59 @@ namespace otto::util {
 
       // Arithmetics (Random access)
 
-      iterator_adaptor_impl operator+(difference_type d) const
+      Derived operator+(difference_type d) const
       {
-        iterator_adaptor_impl res{*this};
-        res.Impl::advance(d);
+        Derived res{derived()};
+        res.derived().advance(d);
         return res;
       }
 
-      iterator_adaptor_impl operator-(difference_type d) const
+      Derived operator-(difference_type d) const
       {
-        iterator_adaptor_impl res{*this};
-        res.Impl::advance(-d);
+        Derived res{derived()};
+        res.derived().advance(-d);
         return res;
       }
 
-      difference_type operator-(const iterator_adaptor_impl& d) const
+      difference_type operator-(const Derived& d) const
       {
-        return Impl::difference(d);
+        return derived().difference(d);
       }
 
       // Inequality (Random access)
 
-      bool operator<(const iterator_adaptor_impl& d) const
+      bool operator<(const Derived& d) const
       {
-        return Impl::difference(d) < 0;
+        return derived().difference(d) < 0;
       }
 
-      bool operator>(const iterator_adaptor_impl& d) const
+      bool operator>(const Derived& d) const
       {
-        return Impl::difference(d) > 0;
+        return derived().difference(d) > 0;
       }
 
-      bool operator<=(const iterator_adaptor_impl& d) const
+      bool operator<=(const Derived& d) const
       {
-        return Impl::difference(d) <= 0;
+        return derived().difference(d) <= 0;
       }
 
-      bool operator>=(const iterator_adaptor_impl& d) const
+      bool operator>=(const Derived& d) const
       {
-        return Impl::difference(d) >= 0;
+        return derived().difference(d) >= 0;
       }
 
       // Compound assignment (Random access)
 
-      iterator_adaptor_impl& operator+=(difference_type d)
+      Derived& operator+=(difference_type d)
       {
-        Impl::advance(d);
-        return *this;
+        derived().advance(d);
+        return derived();
       }
 
-      iterator_adaptor_impl& operator-=(difference_type d)
+      Derived& operator-=(difference_type d)
       {
-        Impl::advance(-d);
-        return *this;
+        derived().advance(-d);
+        return derived();
       }
 
       // Offset dereference (Random access)
@@ -315,13 +353,24 @@ namespace otto::util {
         return *(*this + d);
       }
 
-    }; // iterator_adaptor_impl
+    private:
+      Derived& derived()
+      {
+        return static_cast<Derived&>(*this);
+      }
+
+      const Derived& derived() const
+      {
+        return static_cast<const Derived&>(*this);
+      }
+
+    }; // iterator_facade
 
 
     /// A simple sequence of data, defined by a pair of iterators.
-    /// 
+    ///
     /// This simple class lets you use a pair of iterators where a container
-    /// is expected. 
+    /// is expected.
     template<typename BIter, typename EIter>
     struct sequence {
       using iterator = std::common_type_t<BIter, EIter>;
@@ -341,28 +390,6 @@ namespace otto::util {
       BIter first;
       EIter last;
     };
-
-    ///
-    /// Zero overhead wrapper to create iterators
-    ///
-    /// \tparam Impl must define the following member functions:
-    /// ```
-    /// void           Impl::advance(difference_type);
-    /// reference      Impl::dereference();
-    /// bool           Impl::equal(const Impl&);
-    /// ```
-    /// For random access iterators, it must also define
-    /// ```
-    /// std::ptrdiff_t Impl::difference(const Impl&);
-    /// ```
-    /// Other than those, it must define a copy constructor, and the member
-    /// types `iterator_category` and `value_type`, Any other of the five
-    /// `iterator_traits` types will also be used from `Impl` if avaliable
-    template<typename Impl>
-    using iterator_adaptor =
-      iterator_adaptor_impl<Impl, typename detail::iterator_category<Impl>::type>;
-
-
 
     /// \class float_step_iterator
     /// An iterator wrapper to iterate with a non-integer ratio
@@ -514,7 +541,7 @@ namespace otto::util {
       /// the remainder in `error`.
       ///
       /// \returns A reference to this
-      float_step_iterator& operator+=(int n)
+      float_step_iterator& operator+=(difference_type n)
       {
         float intPart;
         _error = std::modf(_error + step * n, &intPart);
@@ -524,6 +551,13 @@ namespace otto::util {
         }
         std::advance(iter, intPart);
         return *this;
+      }
+
+      float_step_iterator operator+(difference_type d)
+      {
+        auto res = *this;
+        res += d;
+        return res;
       }
 
       /// Increment this by one
@@ -553,12 +587,22 @@ namespace otto::util {
       /// \returns A reference to this
       /// \requires `wrapped_type` shall be at least a Bidirectional Iterator, or
       /// this function will not exist.
-      auto operator-=(int n)
+      auto operator-=(difference_type n)
         -> std::enable_if_t<std::is_base_of_v<std::bidirectional_iterator_tag, iterator_category>,
                             float_step_iterator&>
       {
         return *this += -n;
       }
+
+      auto operator-(difference_type d)
+        -> std::enable_if_t<std::is_base_of_v<std::bidirectional_iterator_tag, iterator_category>,
+                            float_step_iterator>
+      {
+        auto res = *this;
+        res -= d;
+        return res;
+      }
+
 
       /// Decrement this by one
       ///
@@ -656,36 +700,7 @@ namespace otto::util {
 
     /// Generating iterator
 
-    namespace detail {
-      template<typename Generator>
-      class GeneratingIterImpl {
-      public:
-        using value_type = util::invoke_result_t<Generator>;
-        using iterator_category = std::input_iterator_tag;
-
-        GeneratingIterImpl(Generator generator) : generator{generator} {}
-
-        void advance(int n)
-        {
-          for (int i = 0; i < n; i++) {
-            val = std::invoke(generator);
-          }
-        }
-
-        value_type& dereference()
-        {
-          return val;
-        }
-
-        bool equal(const GeneratingIterImpl& o) const
-        {
-          return o.val == val;
-        }
-
-        value_type val;
-        Generator generator;
-      };
-    } // namespace detail
+    namespace detail {} // namespace detail
 
 
     ///
@@ -695,7 +710,35 @@ namespace otto::util {
     /// each time its called.
     ///
     template<typename Generator>
-    using generating_iterator = iterator_adaptor<detail::GeneratingIterImpl<Generator>>;
+    struct generating_iterator : iterator_facade<generating_iterator<Generator>,
+                                                 util::invoke_result_t<Generator>,
+                                                 std::input_iterator_tag> {
+      using value_type = util::invoke_result_t<Generator>;
+      using iterator_category = std::input_iterator_tag;
+
+      generating_iterator(Generator generator) : generator{std::move(generator)} {}
+
+      void advance(int n)
+      {
+        for (int i = 0; i < n; i++) {
+          val = std::invoke(generator);
+        }
+      }
+
+      value_type& dereference()
+      {
+        return val;
+      }
+
+      bool equal(const generating_iterator& o) const
+      {
+        return o.val == val;
+      }
+
+    private:
+      value_type val;
+      Generator generator;
+    };
 
     ///
     /// Create a generating iterator
@@ -706,80 +749,6 @@ namespace otto::util {
       return generating_iterator<Generator>(std::forward<Generator>(gen));
     }
 
-    /// Zipped iterator
-
-    namespace detail {
-      template<typename... Iterators>
-      class ZippedIteratorImpl {
-        template<std::size_t N, typename Tuple>
-        static bool tuple_equals_impl(const Tuple& t1, const Tuple& t2)
-        {
-          if constexpr (N < std::tuple_size_v<Tuple>) {
-            auto res = std::get<N>(t1) == std::get<N>(t2);
-            if (res) return true;
-            return tuple_equals_impl<N + 1>(t1, t2);
-          }
-          return false;
-        }
-
-        template<std::size_t N, typename Tuple>
-        static void tuple_advnc_impl(Tuple& t, int n)
-        {
-          if constexpr (N < std::tuple_size_v<Tuple>) {
-            std::advance(std::get<N>(t), n);
-            tuple_advnc_impl<N + 1>(t, n);
-          }
-        }
-
-        template<std::size_t N, typename Tuple, typename Tuple2 = std::tuple<>>
-        static auto tuple_deref_impl(const Tuple& iters, Tuple2&& t2 = {})
-        {
-          if constexpr (N < std::tuple_size_v<Tuple>) {
-            return tuple_deref_impl<N + 1>(
-              iters, std::tuple_cat(std::move(t2), std::tuple<std::tuple_element_t<N, reference>>(
-                                                     *(std::get<N>(iters)))));
-          } else {
-            // NRVO does not apply since its recieved as an rvalue refference
-            return std::move(t2);
-          }
-        }
-
-      public:
-        using value_type = std::tuple<typename detail::value_type<Iterators>::type...>;
-        using reference = std::tuple<typename detail::reference<Iterators>::type...>;
-        using iterator_category =
-          std::common_type_t<typename detail::iterator_category<Iterators>::type...>;
-
-        ZippedIteratorImpl(Iterators... iterators) : iterators{iterators...} {}
-
-        ZippedIteratorImpl(std::tuple<Iterators...> iterators) : iterators{iterators} {}
-
-        void advance(int n)
-        {
-          tuple_advnc_impl<0>(iterators, n);
-        }
-
-        reference dereference()
-        {
-          return tuple_deref_impl<0>(iterators);
-        }
-
-        reference dereference() const
-        {
-          return tuple_deref_impl<0>(iterators);
-        }
-
-        bool equal(const ZippedIteratorImpl& o) const
-        {
-          return tuple_equals_impl<0>(iterators, o.iterators);
-        }
-
-        std::tuple<Iterators...> iterators;
-      };
-    } // namespace detail
-
-
-    ///
     /// Zipped iterator
     ///
     /// Iterates over multiple iterators at the same time
@@ -793,7 +762,76 @@ namespace otto::util {
     /// }
     /// ```
     template<typename... Iterators>
-    using zipped_iterator = iterator_adaptor<detail::ZippedIteratorImpl<Iterators...>>;
+    struct zipped_iterator
+      : iterator_facade<zipped_iterator<Iterators...>,
+                        std::tuple<detail::value_type_t<Iterators>...>,
+                        std::common_type_t<typename detail::iterator_category<Iterators>::type...>,
+                        std::tuple<detail::reference_t<Iterators>...>> {
+    private:
+      template<std::size_t N, typename Tuple>
+      static bool tuple_equals_impl(const Tuple& t1, const Tuple& t2)
+      {
+        if constexpr (N < std::tuple_size_v<Tuple>) {
+          auto res = std::get<N>(t1) == std::get<N>(t2);
+          if (res) return true;
+          return tuple_equals_impl<N + 1>(t1, t2);
+        }
+        return false;
+      }
+
+      template<std::size_t N, typename Tuple>
+      static void tuple_advnc_impl(Tuple& t, int n)
+      {
+        if constexpr (N < std::tuple_size_v<Tuple>) {
+          std::advance(std::get<N>(t), n);
+          tuple_advnc_impl<N + 1>(t, n);
+        }
+      }
+
+      template<std::size_t N, typename Tuple, typename Tuple2 = std::tuple<>>
+      static auto tuple_deref_impl(const Tuple& iters, Tuple2&& t2 = {})
+      {
+        if constexpr (N < std::tuple_size_v<Tuple>) {
+          return tuple_deref_impl<N + 1>(
+            iters, std::tuple_cat(std::move(t2), std::tuple<std::tuple_element_t<N, reference>>(
+                                                   *(std::get<N>(iters)))));
+        } else {
+          // NRVO does not apply since its recieved as an rvalue refference
+          return std::move(t2);
+        }
+      }
+
+    public:
+      using value_type = std::tuple<detail::value_type_t<Iterators>...>;
+      using reference = std::tuple<detail::reference_t<Iterators>...>;
+      using iterator_category = std::common_type_t<detail::iterator_category_t<Iterators>...>;
+
+      zipped_iterator(Iterators... iterators) : iterators{std::move(iterators)...} {}
+
+      zipped_iterator(std::tuple<Iterators...> iterators) : iterators{iterators} {}
+
+      void advance(int n)
+      {
+        tuple_advnc_impl<0>(iterators, n);
+      }
+
+      reference dereference()
+      {
+        return tuple_deref_impl<0>(iterators);
+      }
+
+      reference dereference() const
+      {
+        return tuple_deref_impl<0>(iterators);
+      }
+
+      bool equal(const zipped_iterator& o) const
+      {
+        return tuple_equals_impl<0>(iterators, o.iterators);
+      }
+
+      std::tuple<Iterators...> iterators;
+    };
 
     /// Create a zipped iterator from iterators
     template<typename... Iterators>
@@ -851,42 +889,37 @@ namespace otto::util {
     /* ADJACENT PAIR ITERATORS                                                  */
     /****************************************************************************/
 
-    namespace detail {
-
-      template<typename Iter>
-      struct AdjacentIterImpl {
-        using iter_value_type = typename detail::value_type<Iter>::type;
-        using value_type = std::pair<iter_value_type, iter_value_type>;
-        using iter_reference = typename detail::reference<Iter>::type;
-        using reference = std::pair<iter_reference, iter_reference>;
-        using iterator_category = typename detail::iterator_category<Iter>::type;
-
-        AdjacentIterImpl(Iter iter) : prev{iter}, cur{std::next(iter)} {}
-
-        void advance(int n)
-        {
-          std::advance(cur, n);
-          std::advance(prev, n);
-        }
-
-        reference dereference()
-        {
-          return {*prev, *cur};
-        }
-
-        bool equal(const AdjacentIterImpl& o) const
-        {
-          return cur == o.cur;
-        }
-
-        Iter prev;
-        Iter cur;
-      };
-
-    } // namespace detail
-
     template<typename Iter>
-    using adjacent_pair_iterator = iterator_adaptor<detail::AdjacentIterImpl<Iter>>;
+    struct adjacent_pair_iterator
+      : iterator_facade<adjacent_pair_iterator<Iter>,
+                        std::pair<detail::value_type_t<Iter>, detail::value_type_t<Iter>>,
+                        detail::iterator_category_t<Iter>,
+                        std::pair<detail::reference_t<Iter>, detail::reference_t<Iter>>> {
+      using value_type = std::pair<detail::value_type_t<Iter>, detail::value_type_t<Iter>>;
+      using reference = std::pair<detail::reference_t<Iter>, detail::reference_t<Iter>>;
+      using iterator_category = typename detail::iterator_category<Iter>::type;
+
+      adjacent_pair_iterator(Iter iter) : prev{iter}, cur{std::next(iter)} {}
+
+      void advance(int n)
+      {
+        std::advance(cur, n);
+        std::advance(prev, n);
+      }
+
+      reference dereference()
+      {
+        return {*prev, *cur};
+      }
+
+      bool equal(const adjacent_pair_iterator& o) const
+      {
+        return cur == o.cur;
+      }
+
+      Iter prev;
+      Iter cur;
+    };
 
     template<typename Range>
     struct AdjacentRange {
@@ -935,156 +968,133 @@ namespace otto::util {
       return AdjacentRange{util::sequence(f, l)};
     }
 
-    namespace detail {
-
-      ///
-      /// Transform iterator
-      ///
-      template<typename WrappedIter, typename Callable>
-      class TransformIteratorImpl {
-      public:
-        using reference =
-          util::invoke_result_t<Callable, typename detail::reference<WrappedIter>::type>;
-        using value_type = typename std::decay_t<reference>;
-        using iterator_category = detail::iterator_category<WrappedIter>;
-
-        TransformIteratorImpl(WrappedIter iter, Callable callable)
-          : iter(std::move(iter)), callable{std::make_shared<Callable>(std::move(callable))}
-        {}
-
-        TransformIteratorImpl(WrappedIter iter, TransformIteratorImpl other)
-          : iter(std::move(iter)), callable{other.callable}
-        {}
-
-        void advance(int n)
-        {
-          std::advance(iter, 1);
-        }
-
-        reference dereference()
-        {
-          return std::invoke(*callable, *iter);
-        }
-
-        bool equal(const TransformIteratorImpl& o) const
-        {
-          return iter == o.iter;
-        }
-
-        auto difference(const TransformIteratorImpl& o) const
-        {
-          return iter - o.iter;
-        }
-
-        WrappedIter iter;
-        std::shared_ptr<Callable> callable;
-      };
-
-    } // namespace detail
-
     ///
-    /// Transforming Iterator
+    /// Transform iterator
     ///
     template<typename WrappedIter, typename Callable>
-    using transform_iterator =
-      iterator_adaptor<detail::TransformIteratorImpl<WrappedIter, Callable>>;
+    struct transform_iterator
+      : iterator_facade<
+          transform_iterator<WrappedIter, Callable>,
+          std::decay_t<util::invoke_result_t<Callable, detail::reference_t<WrappedIter>>>,
+          detail::iterator_category_t<WrappedIter>,
+          util::invoke_result_t<Callable, detail::reference_t<WrappedIter>>> {
+      transform_iterator(WrappedIter iter, Callable callable)
+        : iter(std::move(iter)), callable{std::make_shared<Callable>(std::move(callable))}
+      {}
 
-    namespace view {
+      transform_iterator(WrappedIter iter, transform_iterator other)
+        : iter(std::move(iter)), callable{other.callable}
+      {}
 
-      template<typename Range, typename Callable>
-      auto transform(Range&& r, Callable&& c)
+      void advance(int n)
       {
-        using std::begin, std::end;
-        using transformiter = transform_iterator<decltype(begin(r)), std::decay_t<Callable>>;
-        auto first = transformiter(begin(r), std::forward<Callable>(c));
-        auto last = transformiter(end(r), first);
-        return sequence(first, last);
+        std::advance(iter, 1);
       }
-    } // namespace view
 
-    namespace detail {
+      auto dereference()
+      {
+        return std::invoke(*callable, *iter);
+      }
 
-      ///
-      /// Filter iterator
-      ///
-      template<typename WrappedIter, typename Predicate>
-      class FilterIterImpl {
-      public:
-        using value_type = typename detail::value_type<WrappedIter>::type;
-        using reference = typename detail::reference<WrappedIter>::type;
-        using iterator_category = typename detail::iterator_category<WrappedIter>::type;
+      bool equal(const transform_iterator& o) const
+      {
+        return iter == o.iter;
+      }
 
-        static_assert(
-          std::is_same_v<std::decay_t<decltype(*std::declval<WrappedIter>())>, value_type>);
+      auto difference(const transform_iterator& o) const
+      {
+        return iter - o.iter;
+      }
 
-        FilterIterImpl(WrappedIter iter, WrappedIter last, Predicate callable)
-          : iter(std::move(iter)),
-            last(last),
-            callable{std::make_shared<Predicate>(std::move(callable))}
-        {
-          nextvalid();
-        }
-
-        FilterIterImpl(WrappedIter iter, WrappedIter last, FilterIterImpl other)
-          : iter(std::move(iter)), last(last), callable{other.callable}
-        {
-          nextvalid();
-        }
-
-        void nextvalid()
-        {
-          while (iter != last && !std::invoke(*callable, *iter)) {
-            ++iter;
-          }
-        }
-
-        void advance(int n)
-        {
-          for (int i = 0; i < n; i++) {
-            while (++iter != last && !std::invoke(*callable, *iter))
-              ;
-          }
-        }
-
-        reference dereference()
-        {
-          return *iter;
-        }
-
-        bool equal(const FilterIterImpl& o) const
-        {
-          return iter == o.iter;
-        }
-
-        auto difference(const FilterIterImpl& o) const
-        {
-          return iter - o.iter;
-        }
-
-        WrappedIter iter;
-        WrappedIter last;
-        std::shared_ptr<Predicate> callable;
-      };
-    } // namespace detail
+      WrappedIter iter;
+      std::shared_ptr<Callable> callable;
+    };
 
     ///
-    /// Filter Iterator
+    /// Filter iterator
     ///
     template<typename WrappedIter, typename Predicate>
-    using filter_iterator = iterator_adaptor<detail::FilterIterImpl<WrappedIter, Predicate>>;
+    struct filter_iterator : iterator_facade<filter_iterator<WrappedIter, Predicate>,
+                                             detail::value_type_t<WrappedIter>,
+                                             detail::iterator_category_t<WrappedIter>,
+                                             detail::reference_t<WrappedIter>> {
+      static_assert(std::is_same_v<std::decay_t<decltype(*std::declval<WrappedIter>())>,
+                                   detail::value_type_t<WrappedIter>>);
 
-    namespace view {
-
-      template<typename Range, typename Predicate>
-      auto filter(Range&& r, Predicate&& c)
+      filter_iterator(WrappedIter iter, WrappedIter last, Predicate callable)
+        : iter(std::move(iter)),
+          last(last),
+          callable{std::make_shared<Predicate>(std::move(callable))}
       {
-        using std::begin, std::end;
-        using filteriter = filter_iterator<decltype(begin(r)), std::decay_t<Predicate>>;
-        auto first = filteriter(begin(r), end(r), std::forward<Predicate>(c));
-        auto last = filteriter(end(r), end(r), first);
-        return sequence(first, last);
+        nextvalid();
       }
-    } // namespace view
-  }   // namespace iterator
+
+      filter_iterator(WrappedIter iter, WrappedIter last, filter_iterator other)
+        : iter(std::move(iter)), last(last), callable{other.callable}
+      {
+        nextvalid();
+      }
+
+      void nextvalid()
+      {
+        while (iter != last && !std::invoke(*callable, *iter)) {
+          ++iter;
+        }
+      }
+
+      void advance(int n)
+      {
+        for (int i = 0; i < n; i++) {
+          while (++iter != last && !std::invoke(*callable, *iter))
+            ;
+        }
+      }
+
+      auto dereference()
+      {
+        return *iter;
+      }
+
+      bool equal(const filter_iterator& o) const
+      {
+        return iter == o.iter;
+      }
+
+      auto difference(const filter_iterator& o) const
+      {
+        return iter - o.iter;
+      }
+
+      WrappedIter iter;
+      WrappedIter last;
+      std::shared_ptr<Predicate> callable;
+    };
+  } // namespace iterator
+
+  namespace view {
+
+    template<typename Range, typename Callable>
+    auto transform(Range&& r, Callable&& c)
+    {
+      using std::begin, std::end;
+      using transformiter = transform_iterator<decltype(begin(r)), std::decay_t<Callable>>;
+      auto first = transformiter(begin(r), std::forward<Callable>(c));
+      auto last = transformiter(end(r), first);
+      return sequence(first, last);
+    }
+  } // namespace view
+
+  namespace view {
+
+    template<typename Range, typename Predicate>
+    auto filter(Range&& r, Predicate&& c)
+    {
+      using std::begin, std::end;
+      using filteriter = filter_iterator<decltype(begin(r)), std::decay_t<Predicate>>;
+      auto first = filteriter(begin(r), end(r), std::forward<Predicate>(c));
+      auto last = filteriter(end(r), end(r), first);
+      return sequence(first, last);
+    }
+  } // namespace view
 
 } // namespace otto::util

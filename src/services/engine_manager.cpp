@@ -13,6 +13,7 @@
 #include "engines/synths/tsar/tsar.hpp"
 #include "engines/synths/potion/potion.hpp"
 #include "engines/synths/vocoder/vocoder.hpp"
+#include "engines/synths/sampler/sampler.hpp"
 
 #include "services/application.hpp"
 
@@ -144,6 +145,7 @@ namespace otto::services {
     synth.register_engine<engines::TsarSynth>("Tsar");
     synth.register_engine<engines::OTTOFMSynth>("OTTO.FM");
     synth.register_engine<engines::VocoderSynth>("Robot");
+    synth.register_engine<engines::Sampler>("Sampler");
     effect1.register_engine<engines::Wormhole>("Wormhole");
     effect2.register_engine<engines::Wormhole>("Wormhole");
     effect1.register_engine<engines::Pingpong>("PingPong");

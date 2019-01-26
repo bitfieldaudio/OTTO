@@ -72,6 +72,22 @@ namespace otto::util::audio {
     }
   };
 
+  /// Envelope follower
+  struct EnvelopeFollower {
+    const float k = 0.001;
+    float value = 0;
+
+    float operator()(float x) {
+      auto abs = std::abs(x);
+      if (abs > value) {
+        value = abs;
+      } else {
+        value -= k * (value - abs);
+      }
+      return value;
+    }
+  };
+
   /// Agregate of an in and an out point, providing operations to compare and
   /// mutate one dimensional sections.
   ///
