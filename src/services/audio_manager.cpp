@@ -1,5 +1,7 @@
 #include "audio_manager.hpp"
 
+#include <Gamma/Domain.h>
+
 namespace otto::services {
 
   AudioManager::AudioManager()
@@ -20,6 +22,7 @@ namespace otto::services {
 
   bool AudioManager::running() noexcept
   {
+    gam::sampleRate(samplerate());
     return _running;
   }
 

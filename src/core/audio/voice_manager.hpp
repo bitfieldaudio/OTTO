@@ -1,12 +1,12 @@
 #pragma once
 
 #include <array>
-#include <stack>
-#include <queue>
 #include <gsl/gsl_util>
+#include <queue>
+#include <stack>
 
-#include "util/utility.hpp"
 #include "util/algorithm.hpp"
+#include "util/utility.hpp"
 
 #include "core/audio/faust.hpp"
 #include "core/audio/processor.hpp"
@@ -31,10 +31,9 @@ namespace otto::core::audio {
 
   struct VoiceProps : props::Properties<props::no_serialize> {
     struct Midi : props::Properties<props::no_serialize> {
-      props::Property<float> freq     = {this, "freq", 440};
-      props::Property<float> velocity = {this, "velocity", 1.0,
-                                         props::has_limits::init(0.f, 1.f)};
-      props::Property<bool> trigger   = {this, "trigger", false};
+      props::Property<float> freq = {this, "freq", 440};
+      props::Property<float> velocity = {this, "velocity", 1.0, props::has_limits::init(0.f, 1.f)};
+      props::Property<bool> trigger = {this, "trigger", false};
 
       using Properties::Properties;
     } midi = {this, "midi"};
@@ -42,46 +41,41 @@ namespace otto::core::audio {
     using Properties::Properties;
   };
 
+  struct VoiceIdxAndProps {
+    int index;
+    VoiceProps& props;
+  };
+
   struct EnvelopeProps : props::Properties<> {
-    props::Property<float> attack = {this, "Attack", 0,
-                                     props::has_limits::init(0, 8),
+    props::Property<float> attack = {this, "Attack", 0, props::has_limits::init(0, 8),
                                      props::steppable::init(0.02)};
 
-    props::Property<float> decay = {this, "Decay", 0,
-                                    props::has_limits::init(0, 4),
+    props::Property<float> decay = {this, "Decay", 0, props::has_limits::init(0, 4),
                                     props::steppable::init(0.02)};
 
-    props::Property<float> sustain = {this, "Sustain", 1,
-                                      props::has_limits::init(0, 1),
+    props::Property<float> sustain = {this, "Sustain", 1, props::has_limits::init(0, 1),
                                       props::steppable::init(0.02)};
 
-    props::Property<float> release = {this, "Release", 0.2,
-                                      props::has_limits::init(0, 8),
+    props::Property<float> release = {this, "Release", 0.2, props::has_limits::init(0, 8),
                                       props::steppable::init(0.02)};
 
     using Properties::Properties;
   };
 
-  enum struct PlayMode {
-		poly, mono, unison
-  };
+  enum struct PlayMode { poly, mono, unison };
 
   std::string to_string(PlayMode) noexcept;
 
   struct SettingsProps : props::Properties<> {
+    props::Property<PlayMode, props::wrap> play_mode = {
+      this, "Play Mode", PlayMode::poly, props::has_limits::init(PlayMode::poly, PlayMode::unison)};
 
-        props::Property<PlayMode, props::wrap> play_mode = {this, "Play Mode", PlayMode::poly,
-                                           props::has_limits::init(PlayMode::poly, PlayMode::unison)};
-
-    props::Property<float> portamento = {this, "Portamento", 0,
-                                     	   props::has_limits::init(0, 1),
+    props::Property<float> portamento = {this, "Portamento", 0, props::has_limits::init(0, 1),
                                          props::steppable::init(0.01)};
 
-    props::Property<int> octave = {this, "Octave", 0,
-                                   props::has_limits::init(-2, 7)};
+    props::Property<int> octave = {this, "Octave", 0, props::has_limits::init(-2, 7)};
 
-    props::Property<int> transpose = {this, "Transpose", 0,
-                                      props::has_limits::init(-12, 12)};
+    props::Property<int> transpose = {this, "Transpose", 0, props::has_limits::init(-12, 12)};
     using Properties::Properties;
   };
 
@@ -89,7 +83,7 @@ namespace otto::core::audio {
   namespace detail {
     std::unique_ptr<ui::Screen> make_envelope_screen(EnvelopeProps& props);
     std::unique_ptr<ui::Screen> make_settings_screen(SettingsProps& props);
-  }
+  } // namespace detail
 
   template<int N>
   struct VoiceManager {
@@ -110,10 +104,12 @@ namespace otto::core::audio {
         envelope_screen_(detail::make_envelope_screen(envelope_props)),
         settings_screen_(detail::make_settings_screen(settings_props))
     {
-      for (int i = 0; i < N; ++i){
+      for (int i = 0; i < N; ++i) {
         free_voices.push_back(i);
       }
     }
+
+    VoiceIdxAndProps handle_midi_event(const midi::AnyMidiEvent&);
 
     void process_before(audio::ProcessData<0> data);
     void process_after(audio::ProcessData<0> data);
@@ -130,7 +126,6 @@ namespace otto::core::audio {
     // Voice managagement //
 
   private:
-
     auto get_voice(char key) -> Voice;
     void stop_voice(char key);
 
@@ -174,14 +169,13 @@ namespace otto::core::audio {
   auto VoiceManager<N>::get_voice(char key) -> Voice
   {
     if (free_voices.size() > 0) {
-      auto it = util::find_if(note_stack, [key] (auto& nvp) { return nvp.note == key; });
+      auto it = util::find_if(note_stack, [key](auto& nvp) { return nvp.note == key; });
       auto fvit = it == note_stack.end() ? free_voices.begin() : util::find(free_voices, it->voice);
       auto v = *fvit;
       free_voices.erase(fvit);
       return v;
     } else {
-      auto found =
-        util::find_if(note_stack, [](auto& nvp) { return nvp.has_voice(); });
+      auto found = util::find_if(note_stack, [](auto& nvp) { return nvp.has_voice(); });
       if (found != note_stack.end()) {
         Voice v = found->voice;
         found->voice = Voice{-1};
@@ -205,7 +199,8 @@ namespace otto::core::audio {
         found->voice = v;
         auto& vp = voices[v];
         vp.midi.trigger = true;
-        vp.midi.freq     = midi::note_freq(found->note + settings_props.octave * 12 + settings_props.transpose);
+        vp.midi.freq =
+          midi::note_freq(found->note + settings_props.octave * 12 + settings_props.transpose);
       } else {
         auto& vp = voices[v];
         free_voices.push_back(v);
@@ -223,6 +218,27 @@ namespace otto::core::audio {
   }
 
   template<int N>
+  VoiceIdxAndProps VoiceManager<N>::handle_midi_event(const midi::AnyMidiEvent& ev)
+  {
+    util::match(ev,
+                [this](midi::NoteOnEvent ev) {
+                  stop_voice(gsl::narrow_cast<char>(ev.key));
+                  Voice v = get_voice(ev.key);
+                  note_stack.push_back({gsl::narrow_cast<char>(ev.key), v});
+                  auto& vp = voices[v];
+                  vp.midi.freq =
+                    midi::note_freq(ev.key + settings_props.octave * 12 + settings_props.transpose);
+                  vp.midi.velocity = ev.velocity / 127.f;
+                  vp.midi.trigger = 1;
+                  DLOGI("Voice {} begin key {} {}Hz velocity: {}", v, ev.key, vp.midi.freq,
+                        vp.midi.velocity);
+                  last_voice = v;
+                },
+                [this](midi::NoteOffEvent& ev) { stop_voice(gsl::narrow_cast<char>(ev.key)); },
+                [](auto&&) {});
+  }
+
+  template<int N>
   void VoiceManager<N>::process_before(audio::ProcessData<0> data)
   {
     for (auto&& ev : data.midi) {
@@ -231,16 +247,16 @@ namespace otto::core::audio {
                     stop_voice(gsl::narrow_cast<char>(ev.key));
                     Voice v = get_voice(ev.key);
                     note_stack.push_back({gsl::narrow_cast<char>(ev.key), v});
-                    auto& vp         = voices[v];
-                    vp.midi.freq     = midi::note_freq(ev.key + settings_props.octave * 12 + settings_props.transpose);
+                    auto& vp = voices[v];
+                    vp.midi.freq = midi::note_freq(ev.key + settings_props.octave * 12 +
+                                                   settings_props.transpose);
                     vp.midi.velocity = ev.velocity / 127.f;
-                    vp.midi.trigger  = 1;
-                    DLOGI("Voice {} begin key {} {}Hz velocity: {}", v, ev.key, vp.midi.freq, vp.midi.velocity);
+                    vp.midi.trigger = 1;
+                    DLOGI("Voice {} begin key {} {}Hz velocity: {}", v, ev.key, vp.midi.freq,
+                          vp.midi.velocity);
                     last_voice = v;
                   },
-                  [this](midi::NoteOffEvent& ev) {
-                    stop_voice(gsl::narrow_cast<char>(ev.key));
-                  },
+                  [this](midi::NoteOffEvent& ev) { stop_voice(gsl::narrow_cast<char>(ev.key)); },
                   [](auto&&) {});
     }
   }
@@ -249,8 +265,7 @@ namespace otto::core::audio {
   void VoiceManager<N>::process_after(audio::ProcessData<0> data)
   {
     for (auto&& ev : data.midi) {
-      util::match(ev,
-                  [](auto&&) {});
+      util::match(ev, [](auto&&) {});
     }
   }
 

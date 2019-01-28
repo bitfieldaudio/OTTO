@@ -6,8 +6,6 @@
 
 #include "util/iterator.hpp"
 
-#include "list"
-
 namespace otto::engines {
 
   using namespace core;
