@@ -3,6 +3,8 @@
  *  @author Adam Stark
  *  @copyright Copyright (C) 2017  Adam Stark
  *
+ * https://github.com/adamstark/AudioFile/
+ *
  * This file is part of the 'AudioFile' library
  *
  * This program is free software: you can redistribute it and/or modify

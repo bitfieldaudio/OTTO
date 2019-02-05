@@ -185,6 +185,7 @@ public:                                                                        \
   };
   using TwistEngine = Engine<EngineType::twist>;
 
+  using MiscEngine = Engine<EngineType::misc>;
 
   #undef OTTO_ENGINE_COMMON_CONTENT
 

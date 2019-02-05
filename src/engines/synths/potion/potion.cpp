@@ -1,11 +1,11 @@
+
 #include "potion.hpp"
 
 #include "core/ui/vector_graphics.hpp"
 
-#include "potion.faust.hpp"
-
 //WAV parser by Adam Stark: https://github.com/adamstark/AudioFile
 #include "AudioFile.h"
+
 
 
 namespace otto::engines {
@@ -32,30 +32,40 @@ namespace otto::engines {
 
   PotionSynth::PotionSynth()
     : SynthEngine("Potion", props, std::make_unique<PotionSynthScreen>(this)),
-      voice_mgr_(props),
-      faust_(std::make_unique<FAUSTCLASS>(), props)
+      voice_mgr_(props)
   {
     ///Load waveforms into vectors.
-    AudioFile<double> audioFile;
-    audioFile.load( Application::current().data_dir / "wavetables/wt1.wav" );
-    std::vector<double> wave1;
+    gam::SoundFile sf(Application::current().data_dir / "wavetables/wt1.wav");
+    sf.openRead();// open file in read mode
+    int framesA1 = sf.frames();
+    props.wavetables[0].allocate(framesA1);
+    sf.read(props.wavetables[0].wave, framesA1);
 
-    for (int i = 0; i < numSamples; i++)
-    {
-      wave1.push_back(audioFile.samples[0][i]);
-    }
-    ///Get number of samples for Faust
-    props.oscillators.at(0).numSamples = audioFile.getNumSamplesPerChannel();
-
-
+    /*
+    AudioFile<float> wave1_1, wave1_2, wave2_1, wave2_2;
+    wave1_1.load( Application::current().data_dir / "wavetables/wt1.wav" );
+    wave1_2.load( Application::current().data_dir / "wavetables/wt2.wav" );
+    wave2_1.load( Application::current().data_dir / "wavetables/wt3.wav" );
+    wave2_2.load( Application::current().data_dir / "wavetables/wt4.wav" );
+*/
   }
 
   audio::ProcessData<1> PotionSynth::process(audio::ProcessData<1> data)
   {
-    voice_mgr_.process_before(data.midi_only());
-    auto res = faust_.process(data.midi_only());
-    voice_mgr_.process_after(data.midi_only());
-    return res;
+    auto buf = Application::current().audio_manager->buffer_pool().allocate_multi<1>();
+    for (auto&& [frm] : buf) {
+      frm = voices[0]();
+    }
+    return data.redirect(buf);
+  }
+
+  float PotionSynth::Voice::remapping(float remap, float in) {
+    return in;
+  }
+
+  float PotionSynth::Voice::operator()() noexcept {
+    int sample = (int) props.wavetables[0].frames*remapping(0, phase());
+    return props.wavetables[0].wave[sample];
   }
 
   /*
@@ -80,9 +90,9 @@ namespace otto::engines {
     break;
     case Rotary::green:
       if (!shift) {
-        props.oscillators.at(0).remap_amount.step(e.clicks);
+        props.oscillators.at(0).remap.step(e.clicks);
       } else {
-        props.oscillators.at(0).remap_type.step(e.clicks);
+
       }
     break;
     case Rotary::yellow:
@@ -94,9 +104,9 @@ namespace otto::engines {
     break;
     case Rotary::red:
       if (!shift) {
-        props.oscillators.at(1).remap_amount.step(e.clicks);
+        props.oscillators.at(1).remap.step(e.clicks);
       } else {
-        props.oscillators.at(1).remap_type.step(e.clicks);
+        props.oscillators.at(1).remap.step(e.clicks);
       }
     break;
     }
