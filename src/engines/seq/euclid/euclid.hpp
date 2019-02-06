@@ -14,7 +14,7 @@ namespace otto::engines {
   using namespace core::engine;
   using namespace props;
 
-  struct Euclid : SequencerEngine {
+  struct Euclid : ArpeggiatorEngine {
     static constexpr int max_length = 16;
 
     struct Channel : Properties<> {
@@ -69,6 +69,7 @@ namespace otto::engines {
 
     int _samples_per_beat = 22050 / 4;
     int _counter = _samples_per_beat;
+    //Used to make sure NoteOff events are sent when stopped
     bool _should_run = false;
 
     // Used in recording to clear the current value when the first keyonevent is sent

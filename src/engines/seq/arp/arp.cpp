@@ -1,3 +1,4 @@
+#if false
 #include "arp.hpp"
 
 #include "core/ui/vector_graphics.hpp"
@@ -33,3 +34,4 @@ namespace otto::engines {
 
   Arp::Arp() : SequencerEngine("Arp", props, std::make_unique<ArpScreen>(this)) {}
 } // namespace otto::engines
+#endif

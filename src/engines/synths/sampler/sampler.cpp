@@ -227,6 +227,18 @@ namespace otto::engines {
     load_file(Application::current().data_dir / "samples" / "sample.wav");
   }
 
+  void Sampler::restart()
+  {
+    sample.begin(props.speed);
+  }
+
+  float Sampler::operator()() noexcept
+  {
+    float frm = *play_position;
+    play_position++;
+    return frm;
+  }
+
   void Sampler::load_file(fs::path path)
   {
     sample = Sample(std::move(path));

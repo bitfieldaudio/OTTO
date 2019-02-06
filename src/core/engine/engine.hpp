@@ -24,7 +24,7 @@ namespace otto::core::engine {
     /// FX engines
     effect,
     /// Sequencer engines
-    sequencer,
+    arpeggiator,
     /// Twist engines - Not really engines in the same sense
     twist,
     /// Misc engines - used for stuff like the Master screen.
@@ -168,13 +168,13 @@ public:                                                                        \
   using EffectEngine = Engine<EngineType::effect>;
 
   template<>
-  struct Engine<EngineType::sequencer> : AnyEngine {
+  struct Engine<EngineType::arpeggiator> : AnyEngine {
 
-    OTTO_ENGINE_COMMON_CONTENT(EngineType::sequencer)
+    OTTO_ENGINE_COMMON_CONTENT(EngineType::arpeggiator)
 
     virtual audio::ProcessData<0> process(audio::ProcessData<0>) = 0;
   };
-  using SequencerEngine = Engine<EngineType::sequencer>;
+  using ArpeggiatorEngine = Engine<EngineType::arpeggiator>;
 
   template<>
   struct Engine<EngineType::twist> : AnyEngine {

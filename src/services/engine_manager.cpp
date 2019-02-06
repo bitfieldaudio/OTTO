@@ -4,14 +4,15 @@
 #include "engines/fx/pingpong/pingpong.hpp"
 #include "engines/fx/chorus/chorus.hpp"
 #include "engines/misc/master/master.hpp"
-#include "engines/seq/arp/arp.hpp"
+#include "core/engine/sequencer.hpp"
+//#include "engines/seq/arp/arp.hpp"
 #include "engines/seq/euclid/euclid.hpp"
 #include "engines/synths/OTTOFM/ottofm.hpp"
 #include "engines/synths/external/external.hpp"
 #include "engines/synths/hammond/hammond.hpp"
 #include "engines/synths/nuke/nuke.hpp"
 #include "engines/synths/tsar/tsar.hpp"
-#include <engines/synths/goss/goss.hpp>
+//#include <engines/synths/goss/goss.hpp>
 //#include "engines/synths/potion/potion.hpp"
 #include "engines/synths/vocoder/vocoder.hpp"
 #include "engines/synths/sampler/sampler.hpp"
@@ -35,12 +36,13 @@ namespace otto::services {
   private:
     std::unordered_map<std::string, std::function<AnyEngine*()>> engineGetters;
 
-    EngineDispatcher<EngineType::sequencer> sequencer;
+    EngineDispatcher<EngineType::arpeggiator> arpeggiator;
     EngineDispatcher<EngineType::synth> synth;
     EngineDispatcher<EngineType::effect> effect1;
     EngineDispatcher<EngineType::effect> effect2;
 
     engines::Master master;
+    engines::Sequencer sequencer;
   };
 
   struct EffectSend {
@@ -136,13 +138,13 @@ namespace otto::services {
     engineGetters.try_emplace("Synth", [&]() { return dynamic_cast<AnyEngine*>(synth.current()); });
     engineGetters.try_emplace("Effect1", [&]() { return dynamic_cast<AnyEngine*>(effect1.current()); });
     engineGetters.try_emplace("Effect2", [&]() { return dynamic_cast<AnyEngine*>(effect2.current()); });
-    engineGetters.try_emplace("Sequencer", [&]() { return dynamic_cast<AnyEngine*>(sequencer.current()); });
+    engineGetters.try_emplace("Arpeggiator", [&]() { return dynamic_cast<AnyEngine*>(arpeggiator.current()); });
 
-    sequencer.register_engine<engines::Euclid>("Euclid");
+    arpeggiator.register_engine<engines::Euclid>("Euclid");
     synth.register_engine<engines::External>("External");
     synth.register_engine<engines::HammondSynth>("Woody");
     synth.register_engine<engines::NukeSynth>("Nuke");
-    synth.register_engine<engines::GossSynth>("Goss");
+    //synth.register_engine<engines::GossSynth>("Goss");
     //synth.register_engine<engines::PotionSynth>("Potion");
     synth.register_engine<engines::TsarSynth>("Tsar");
     synth.register_engine<engines::OTTOFMSynth>("OTTO.FM");
@@ -155,17 +157,19 @@ namespace otto::services {
     effect1.register_engine<engines::Chorus>("Chorus");
     effect2.register_engine<engines::Chorus>("Chorus");
 
-    sequencer.init();
+    arpeggiator.init();
     synth.init();
     effect1.init();
     effect2.init();
 
-    ui_manager.register_key_handler(ui::Key::sequencer, [&](ui::Key k) {
+
+
+    ui_manager.register_key_handler(ui::Key::arpeggiator, [&](ui::Key k) {
       if (ui_manager.is_pressed(ui::Key::shift)) {
-        ui_manager.display(sequencer.selector_screen());
+        ui_manager.display(arpeggiator.selector_screen());
       } else {
         ui_manager.select_engine("Sequencer");
-        ui_manager.display(sequencer->screen());
+        ui_manager.display(arpeggiator->screen());
       }
     });
 
@@ -211,6 +215,10 @@ namespace otto::services {
       }
     });
 
+    ui_manager.register_key_handler(ui::Key::sequencer, [&](ui::Key k) {
+        ui_manager.display(sequencer.screen());
+    });
+
     static ui::Screen* master_last_screen = nullptr;
     static ui::Screen* send_last_screen = nullptr;
 
@@ -240,7 +248,7 @@ namespace otto::services {
       effect1.from_json(data["Effect1"]);
       effect2.from_json(data["Effect2"]);
       master.from_json(data["Master"]);
-      sequencer.from_json(data["Sequencer"]);
+      arpeggiator.from_json(data["Sequencer"]);
     };
 
     auto save = [&] {
@@ -248,12 +256,12 @@ namespace otto::services {
                              {"Effect1", effect1.to_json()},
                              {"Effect2", effect2.to_json()},
                              {"Master", master.to_json()},
-                             {"Sequencer", sequencer.to_json()}});
+                             {"Arpeggiator", arpeggiator.to_json()}});
     };
 
     state_manager.attach("Engines", load, save);
 
-    sequencer.select(std::size_t(0));
+    arpeggiator.select(std::size_t(0));
     synth.select(std::size_t(0));
     effect1.select(std::size_t(0));
     effect2.select(std::size_t(0));
@@ -265,8 +273,9 @@ namespace otto::services {
   {
       // Main processor function
       auto midi_in = external_in.midi_only();
-      auto seq_out = sequencer->process(midi_in);
-      auto synth_out = synth->process({external_in.audio, seq_out.midi, external_in.nframes});
+      auto arp_out = arpeggiator->process(midi_in);
+      auto synth_out = synth->process({external_in.audio, arp_out.midi, external_in.nframes});
+      auto seq_out = sequencer.process(midi_in);
       auto fx1_bus = Application::current().audio_manager->buffer_pool().allocate_multi<1>();
       auto fx2_bus = Application::current().audio_manager->buffer_pool().allocate_multi<1>();
       for (auto&& [snth, fx1, fx2] : util::zip(synth_out, fx1_bus, fx2_bus)) {
@@ -283,7 +292,13 @@ namespace otto::services {
       fx2_out.audio.release();
       fx1_bus.release();
       fx2_bus.release();
-      return master.process(std::move(fx1_out));
+      //return master.process(std::move(fx1_out));
+      auto temp = Application::current().audio_manager->buffer_pool().allocate_multi_clear<2>();
+      for (auto&& [in, tmp] : util::zip(seq_out, temp)) {
+          std::get<0>(tmp) += std::get<0>(in);
+          std::get<1>(tmp) += std::get<0>(in);
+      }
+      return master.process({std::move(temp),external_in.midi,external_in.nframes});
   }
 
   AnyEngine* DefaultEngineManager::by_name(const std::string& name) noexcept

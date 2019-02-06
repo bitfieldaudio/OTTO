@@ -97,6 +97,10 @@ namespace otto::engines {
 
     Sampler();
 
+    void restart();
+
+    float operator()() noexcept;
+
     audio::ProcessData<1> process(audio::ProcessData<1>) override;
 
     ui::Screen& envelope_screen() override;

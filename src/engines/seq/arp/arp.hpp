@@ -8,7 +8,7 @@ namespace otto::engines {
   using namespace core::engine;
   using namespace props;
 
-  struct Arp : SequencerEngine {
+  struct Arp : ArpeggiatorEngine {
     enum struct Playmode {
       up,
       down,

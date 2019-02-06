@@ -51,7 +51,7 @@ namespace otto::engines {
     void draw_channel(ui::vg::Canvas& ctx, State::ChannelState& chan);
   };
 
-  Euclid::Euclid() : SequencerEngine("Euclid", props, std::make_unique<EuclidScreen>(this))
+  Euclid::Euclid() : ArpeggiatorEngine("Euclid", props, std::make_unique<EuclidScreen>(this))
   {
     static_cast<EuclidScreen*>(&screen())->refresh_state();
   }

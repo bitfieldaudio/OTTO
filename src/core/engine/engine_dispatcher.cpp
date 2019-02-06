@@ -147,7 +147,7 @@ namespace otto::core::engine {
   // Explicit instantiations
   // If you need an EngineDispatcher for any other engine type, add it here
   template struct EngineDispatcher<EngineType::synth>;
-  template struct EngineDispatcher<EngineType::sequencer>;
+  template struct EngineDispatcher<EngineType::arpeggiator>;
   template struct EngineDispatcher<EngineType::effect>;
 
 } // namespace otto::core::engine
