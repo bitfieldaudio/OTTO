@@ -1,4 +1,3 @@
-#if false
 #include "goss.hpp"
 
 #include "core/ui/vector_graphics.hpp"
@@ -162,4 +161,3 @@ namespace otto::engines {
     ///
   }
 } // namespace otto::engines
-#endif
