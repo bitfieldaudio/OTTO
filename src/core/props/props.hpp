@@ -19,28 +19,28 @@ namespace otto::core::props {
   template<typename T, typename Enable>
   struct default_mixins {
     using type = std::conditional_t<std::is_enum_v<T>,
-                                    tag_list<serializable, has_limits, steppable>,
-                                    tag_list<serializable>>;
+                                    tag_list<serializable, change_hook, has_limits, steppable>,
+                                    tag_list<serializable, change_hook>>;
   };
 
   template<>
   struct default_mixins<int> {
-    using type = tag_list<serializable, faust_link, has_limits, steppable>;
+    using type = tag_list<serializable, faust_link, change_hook, has_limits, steppable>;
   };
 
   template<>
   struct default_mixins<bool> {
-    using type = tag_list<serializable, faust_link, steppable>;
+    using type = tag_list<serializable, faust_link, change_hook, steppable>;
   };
 
   template<>
   struct default_mixins<float> {
-    using type = tag_list<serializable, faust_link, has_limits, steppable>;
+    using type = tag_list<serializable, faust_link, change_hook, has_limits, steppable>;
   };
 
   template<>
   struct default_mixins<double> {
-    using type = tag_list<serializable, faust_link, has_limits, steppable>;
+    using type = tag_list<serializable, faust_link, change_hook, has_limits, steppable>;
   };
 
   // Void is for branches

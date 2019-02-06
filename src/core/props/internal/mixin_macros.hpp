@@ -24,6 +24,16 @@
     return ::otto::core::props::contains_tag_v<tag_list, Tag>;                                     \
   }                                                                                                \
                                                                                                    \
+  constexpr auto as_prop()->property_type&                                                         \
+  {                                                                                                \
+    return static_cast<property_type&>(*this);                                                     \
+  }                                                                                                \
+                                                                                                   \
+  constexpr auto as_prop() const->const property_type&                                             \
+  {                                                                                                \
+    return static_cast<const property_type&>(*this);                                               \
+  }                                                                                                \
+                                                                                                   \
   template<typename Tag>                                                                           \
   constexpr auto as()                                                                              \
     ->::std::enable_if_t<self_type::is<Tag>(),                                                     \
