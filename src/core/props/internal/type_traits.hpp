@@ -4,8 +4,8 @@
 
 #include <range/v3/utility/concepts.hpp>
 
-#include "util/type_traits.hpp"
 #include "util/meta.hpp"
+#include "util/type_traits.hpp"
 
 #include "base.hpp"
 
@@ -48,7 +48,7 @@ namespace otto::core::props {
       template<typename HookTag, typename Val, HookOrder HO>
       struct type {
         using value_type = Val;
-        using arg_type   = Argument;
+        using arg_type = Argument;
 
         type(const arg_type& a) : _arg(a) {}
         type(arg_type&& a) : _arg(std::move(a)) {}
@@ -83,7 +83,8 @@ namespace otto::core::props {
       template<typename HookTag, typename Val, ::otto::core::props::HookOrder HO>
       struct type {
         using value_type = Val;
-        using arg_type   = void;
+        using arg_type = void;
+        type() = default;
         template<::otto::core::props::HookOrder HO1>
         type(type<HookTag, Val, HO1>&& rhs)
         {}
@@ -95,7 +96,7 @@ namespace otto::core::props {
       template<typename HookTag, typename Val, ::otto::core::props::HookOrder HO>
       using type = typename hook<Val>::template type<HookTag, Val, HO>;
     };
-  }
+  } // namespace mixin
 
   // Concepts //
 
@@ -123,7 +124,6 @@ namespace otto::core::props {
 
   /// Concept of a Hook with a value
   struct HookWithValue : cpts::refines<Hook> {
-
     /// The value type of the property this belongs to
     template<typename H>
     using value_type = typename H::value_type;
@@ -134,17 +134,15 @@ namespace otto::core::props {
 
     template<typename T>
     auto requires_(T&& t) -> decltype( //
-      cpts::valid_expr(
-        cpts::model_of<MixinValue, value_type<T>>(),
-        cpts::model_of<NonVoid, arg_type<T>>(),
-        cpts::has_type<arg_type<T>&>(t.value()),
-        cpts::model_of<cpts::ConvertibleTo, T, arg_type<T>&>(),
-        cpts::model_of<cpts::Constructible, T, const arg_type<T>&>()));
+      cpts::valid_expr(cpts::model_of<MixinValue, value_type<T>>(),
+                       cpts::model_of<NonVoid, arg_type<T>>(),
+                       cpts::has_type<arg_type<T>&>(t.value()),
+                       cpts::model_of<cpts::ConvertibleTo, T, arg_type<T>&>(),
+                       cpts::model_of<cpts::Constructible, T, const arg_type<T>&>()));
   };
 
   /// Concept of a hook tag type
   struct HookTag {
-
     /// Get the hook type from a tag and a value type
     template<typename HT, typename VT, HookOrder HO = HookOrder::Middle>
     using impl_t = typename HT::template type<HT, VT, HO>;
@@ -160,7 +158,7 @@ namespace otto::core::props {
     auto requires_(T&& t) -> decltype(                       //
       cpts::valid_expr(                                      //
         cpts::model_of<NonVoid, typename T::value_type>(),   //
-        cpts::model_of<NonVoid, typename T::tag_list>(),   //
+        cpts::model_of<NonVoid, typename T::tag_list>(),     //
         cpts::model_of<NonVoid, typename T::hooks>(),        //
         cpts::model_of<NonVoid, typename T::property_type>() //
         ));                                                  //
@@ -171,8 +169,7 @@ namespace otto::core::props {
     template<typename Mixin,
              typename HT,
              HookOrder HO = HookOrder::Middle,
-             CONCEPT_REQUIRES_(
-               cpts::models<HookTag, HT, typename Mixin::value_type>())>
+             CONCEPT_REQUIRES_(cpts::models<HookTag, HT, typename Mixin::value_type>())>
     using hook_t = HookTag::impl_t<HT, typename Mixin::value_type, HO>;
 
     /// Check if Mixin has a handler for Hook
@@ -186,11 +183,11 @@ namespace otto::core::props {
     /// Check if Mixin has a handler for Hook
     /// \privatesection
     template<typename Mixin, typename HT, HookOrder HO>
-    struct has_handler<Mixin,
-                       HT,
-                       HO,
-                       std::void_t<decltype(std::declval<Mixin>().on_hook(
-                           std::declval<hook_t<Mixin, HT, HO>&>()))>>
+    struct has_handler<
+      Mixin,
+      HT,
+      HO,
+      std::void_t<decltype(std::declval<Mixin>().on_hook(std::declval<hook_t<Mixin, HT, HO>&>()))>>
       : std::true_type {
       CONCEPT_ASSERT(cpts::models<MixinImpl, Mixin>() &&
                      cpts::models<HookTag, HT, typename Mixin::value_type>());
@@ -271,8 +268,7 @@ namespace otto::core::props {
     template<typename HT,
              HookOrder HO,
              typename Mixin,
-             CONCEPT_REQUIRES_(
-               cpts::models<HookTag, HT, typename Mixin::value_type>())>
+             CONCEPT_REQUIRES_(cpts::models<HookTag, HT, typename Mixin::value_type>())>
     void run_hook_if_handler(Mixin& m, MixinImpl::hook_t<Mixin, HT, HO>& h)
     {
       if constexpr (MixinImpl::has_handler_v<Mixin, HT, HO>) {
@@ -283,52 +279,43 @@ namespace otto::core::props {
     template<typename H,
              typename Mixin,
              HookOrder HO,
-             CONCEPT_REQUIRES_(
-               cpts::models<HookTag, H, typename Mixin::value_type>())>
-    auto run_all_hooks_impl(Mixin& m, MixinImpl::hook_t<Mixin, H, HO>&& hook) {
-      meta::for_each<typename Mixin::tag_list>(
-        [&hook, &m](auto&& mtype) {
-          run_hook_if_handler<H, HO>(
-            m.template as<decltype(mtype._t())>(),
-            hook);
+             CONCEPT_REQUIRES_(cpts::models<HookTag, H, typename Mixin::value_type>())>
+    auto run_all_hooks_impl(Mixin& m, MixinImpl::hook_t<Mixin, H, HO>&& hook)
+    {
+      meta::for_each<typename Mixin::tag_list>([&hook, &m](auto&& mtype) {
+        run_hook_if_handler<H, HO>(m.template as<decltype(mtype._t())>(), hook);
       });
       return std::move(hook);
     }
 
-      /// Run handler for `Hook` for all of `Mixin`s siblings
-      template<typename H,
-               typename Mixin,
-               CONCEPT_REQUIRES_(
-                 cpts::models<HookTag, H, typename Mixin::value_type>() &&
-                 !cpts::models<HookWithValue, MixinImpl::hook_t<Mixin, H>>())>
-      void run_hook(Mixin& m)
+    /// Run handler for `Hook` for all of `Mixin`s siblings
+    template<typename H,
+             typename Mixin,
+             CONCEPT_REQUIRES_(cpts::models<HookTag, H, typename Mixin::value_type>() &&
+                               !cpts::models<HookWithValue, MixinImpl::hook_t<Mixin, H>>())>
+    void run_hook(Mixin& m)
     {
-      MixinImpl::hook_t<Mixin, H, HookOrder::Before> hook {};
-      auto h1 =
-        run_all_hooks_impl<H, Mixin, HookOrder::Before>(m, std::move(hook));
+      MixinImpl::hook_t<Mixin, H, HookOrder::Before> hook{};
+      auto h1 = run_all_hooks_impl<H, Mixin, HookOrder::Before>(m, std::move(hook));
       auto h2 = run_all_hooks_impl<H, Mixin, HookOrder::Early>(
         m, MixinImpl::hook_t<Mixin, H, HookOrder::Early>(std::move(h1)));
       auto h3 = run_all_hooks_impl<H, Mixin, HookOrder::Middle>(
         m, MixinImpl::hook_t<Mixin, H, HookOrder::Middle>(std::move(h2)));
       auto h4 = run_all_hooks_impl<H, Mixin, HookOrder::Late>(
         m, MixinImpl::hook_t<Mixin, H, HookOrder::Late>(std::move(h3)));
-      auto h5 = run_all_hooks_impl<H, Mixin, HookOrder::After>(
+      [[maybe_unused]] auto h5 = run_all_hooks_impl<H, Mixin, HookOrder::After>(
         m, MixinImpl::hook_t<Mixin, H, HookOrder::After>(std::move(h4)));
     }
 
     /// Run handler for `Hook` for all of `Mixin`s siblings
     template<typename H,
              typename Mixin,
-             CONCEPT_REQUIRES_(
-               cpts::models<HookTag, H, typename Mixin::value_type>() &&
-               cpts::models<HookWithValue, MixinImpl::hook_t<Mixin, H>>())>
-    auto run_hook(
-      Mixin& m,
-      const HookWithValue::arg_type<MixinImpl::hook_t<Mixin, H>>& arg)
+             CONCEPT_REQUIRES_(cpts::models<HookTag, H, typename Mixin::value_type>() &&
+                               cpts::models<HookWithValue, MixinImpl::hook_t<Mixin, H>>())>
+    auto run_hook(Mixin& m, const HookWithValue::arg_type<MixinImpl::hook_t<Mixin, H>>& arg)
     {
-      MixinImpl::hook_t<Mixin, H, HookOrder::Before> hook {arg};
-      auto h1 =
-        run_all_hooks_impl<H, Mixin, HookOrder::Before>(m, std::move(hook));
+      MixinImpl::hook_t<Mixin, H, HookOrder::Before> hook{arg};
+      auto h1 = run_all_hooks_impl<H, Mixin, HookOrder::Before>(m, std::move(hook));
       auto h2 = run_all_hooks_impl<H, Mixin, HookOrder::Early>(
         m, MixinImpl::hook_t<Mixin, H, HookOrder::Early>(std::move(h1)));
       auto h3 = run_all_hooks_impl<H, Mixin, HookOrder::Middle>(
@@ -341,4 +328,4 @@ namespace otto::core::props {
     }
   } // namespace detail
 
-}
+} // namespace otto::core::props

@@ -1,0 +1,327 @@
+[
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/src",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include   -Wall -Wno-long-long -Wpedantic -Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wc++17-compat -Wno-shadow-field-in-constructor -Wno-documentation-unknown-command -Wno-unknown-pragmas -Wno-missing-braces -Wno-vla-extension  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto.dir/core/audio/faust.cpp.o -c /home/topisani/dev/OTTO/src/core/audio/faust.cpp",
+  "file": "/home/topisani/dev/OTTO/src/core/audio/faust.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/src",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include   -Wall -Wno-long-long -Wpedantic -Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wc++17-compat -Wno-shadow-field-in-constructor -Wno-documentation-unknown-command -Wno-unknown-pragmas -Wno-missing-braces -Wno-vla-extension  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto.dir/core/audio/processor.cpp.o -c /home/topisani/dev/OTTO/src/core/audio/processor.cpp",
+  "file": "/home/topisani/dev/OTTO/src/core/audio/processor.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/src",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include   -Wall -Wno-long-long -Wpedantic -Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wc++17-compat -Wno-shadow-field-in-constructor -Wno-documentation-unknown-command -Wno-unknown-pragmas -Wno-missing-braces -Wno-vla-extension  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto.dir/core/audio/voice_manager.cpp.o -c /home/topisani/dev/OTTO/src/core/audio/voice_manager.cpp",
+  "file": "/home/topisani/dev/OTTO/src/core/audio/voice_manager.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/src",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include   -Wall -Wno-long-long -Wpedantic -Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wc++17-compat -Wno-shadow-field-in-constructor -Wno-documentation-unknown-command -Wno-unknown-pragmas -Wno-missing-braces -Wno-vla-extension  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto.dir/core/engine/engine.cpp.o -c /home/topisani/dev/OTTO/src/core/engine/engine.cpp",
+  "file": "/home/topisani/dev/OTTO/src/core/engine/engine.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/src",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include   -Wall -Wno-long-long -Wpedantic -Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wc++17-compat -Wno-shadow-field-in-constructor -Wno-documentation-unknown-command -Wno-unknown-pragmas -Wno-missing-braces -Wno-vla-extension  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto.dir/core/engine/engine_dispatcher.cpp.o -c /home/topisani/dev/OTTO/src/core/engine/engine_dispatcher.cpp",
+  "file": "/home/topisani/dev/OTTO/src/core/engine/engine_dispatcher.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/src",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include   -Wall -Wno-long-long -Wpedantic -Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wc++17-compat -Wno-shadow-field-in-constructor -Wno-documentation-unknown-command -Wno-unknown-pragmas -Wno-missing-braces -Wno-vla-extension  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto.dir/core/engine/engine_selector_screen.cpp.o -c /home/topisani/dev/OTTO/src/core/engine/engine_selector_screen.cpp",
+  "file": "/home/topisani/dev/OTTO/src/core/engine/engine_selector_screen.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/src",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include   -Wall -Wno-long-long -Wpedantic -Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wc++17-compat -Wno-shadow-field-in-constructor -Wno-documentation-unknown-command -Wno-unknown-pragmas -Wno-missing-braces -Wno-vla-extension  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto.dir/core/props/internal/base.cpp.o -c /home/topisani/dev/OTTO/src/core/props/internal/base.cpp",
+  "file": "/home/topisani/dev/OTTO/src/core/props/internal/base.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/src",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include   -Wall -Wno-long-long -Wpedantic -Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wc++17-compat -Wno-shadow-field-in-constructor -Wno-documentation-unknown-command -Wno-unknown-pragmas -Wno-missing-braces -Wno-vla-extension  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto.dir/core/ui/icons.cpp.o -c /home/topisani/dev/OTTO/src/core/ui/icons.cpp",
+  "file": "/home/topisani/dev/OTTO/src/core/ui/icons.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/src",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include   -Wall -Wno-long-long -Wpedantic -Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wc++17-compat -Wno-shadow-field-in-constructor -Wno-documentation-unknown-command -Wno-unknown-pragmas -Wno-missing-braces -Wno-vla-extension  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto.dir/core/ui/screen.cpp.o -c /home/topisani/dev/OTTO/src/core/ui/screen.cpp",
+  "file": "/home/topisani/dev/OTTO/src/core/ui/screen.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/src",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include   -Wall -Wno-long-long -Wpedantic -Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wc++17-compat -Wno-shadow-field-in-constructor -Wno-documentation-unknown-command -Wno-unknown-pragmas -Wno-missing-braces -Wno-vla-extension  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto.dir/core/ui/widgets/selector_widget.cpp.o -c /home/topisani/dev/OTTO/src/core/ui/widgets/selector_widget.cpp",
+  "file": "/home/topisani/dev/OTTO/src/core/ui/widgets/selector_widget.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/src",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include   -Wall -Wno-long-long -Wpedantic -Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wc++17-compat -Wno-shadow-field-in-constructor -Wno-documentation-unknown-command -Wno-unknown-pragmas -Wno-missing-braces -Wno-vla-extension  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto.dir/engines/fx/pingpong/pingpong.cpp.o -c /home/topisani/dev/OTTO/src/engines/fx/pingpong/pingpong.cpp",
+  "file": "/home/topisani/dev/OTTO/src/engines/fx/pingpong/pingpong.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/src",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include   -Wall -Wno-long-long -Wpedantic -Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wc++17-compat -Wno-shadow-field-in-constructor -Wno-documentation-unknown-command -Wno-unknown-pragmas -Wno-missing-braces -Wno-vla-extension  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto.dir/engines/fx/wormhole/wormhole.cpp.o -c /home/topisani/dev/OTTO/src/engines/fx/wormhole/wormhole.cpp",
+  "file": "/home/topisani/dev/OTTO/src/engines/fx/wormhole/wormhole.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/src",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include   -Wall -Wno-long-long -Wpedantic -Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wc++17-compat -Wno-shadow-field-in-constructor -Wno-documentation-unknown-command -Wno-unknown-pragmas -Wno-missing-braces -Wno-vla-extension  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto.dir/engines/misc/master/master.cpp.o -c /home/topisani/dev/OTTO/src/engines/misc/master/master.cpp",
+  "file": "/home/topisani/dev/OTTO/src/engines/misc/master/master.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/src",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include   -Wall -Wno-long-long -Wpedantic -Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wc++17-compat -Wno-shadow-field-in-constructor -Wno-documentation-unknown-command -Wno-unknown-pragmas -Wno-missing-braces -Wno-vla-extension  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto.dir/engines/seq/accord/accord.cpp.o -c /home/topisani/dev/OTTO/src/engines/seq/accord/accord.cpp",
+  "file": "/home/topisani/dev/OTTO/src/engines/seq/accord/accord.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/src",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include   -Wall -Wno-long-long -Wpedantic -Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wc++17-compat -Wno-shadow-field-in-constructor -Wno-documentation-unknown-command -Wno-unknown-pragmas -Wno-missing-braces -Wno-vla-extension  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto.dir/engines/seq/arp/arp.cpp.o -c /home/topisani/dev/OTTO/src/engines/seq/arp/arp.cpp",
+  "file": "/home/topisani/dev/OTTO/src/engines/seq/arp/arp.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/src",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include   -Wall -Wno-long-long -Wpedantic -Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wc++17-compat -Wno-shadow-field-in-constructor -Wno-documentation-unknown-command -Wno-unknown-pragmas -Wno-missing-braces -Wno-vla-extension  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto.dir/engines/seq/euclid/euclid.cpp.o -c /home/topisani/dev/OTTO/src/engines/seq/euclid/euclid.cpp",
+  "file": "/home/topisani/dev/OTTO/src/engines/seq/euclid/euclid.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/src",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include   -Wall -Wno-long-long -Wpedantic -Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wc++17-compat -Wno-shadow-field-in-constructor -Wno-documentation-unknown-command -Wno-unknown-pragmas -Wno-missing-braces -Wno-vla-extension  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto.dir/engines/synths/OTTOFM/ottofm.cpp.o -c /home/topisani/dev/OTTO/src/engines/synths/OTTOFM/ottofm.cpp",
+  "file": "/home/topisani/dev/OTTO/src/engines/synths/OTTOFM/ottofm.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/src",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include   -Wall -Wno-long-long -Wpedantic -Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wc++17-compat -Wno-shadow-field-in-constructor -Wno-documentation-unknown-command -Wno-unknown-pragmas -Wno-missing-braces -Wno-vla-extension  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto.dir/engines/synths/external/external.cpp.o -c /home/topisani/dev/OTTO/src/engines/synths/external/external.cpp",
+  "file": "/home/topisani/dev/OTTO/src/engines/synths/external/external.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/src",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include   -Wall -Wno-long-long -Wpedantic -Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wc++17-compat -Wno-shadow-field-in-constructor -Wno-documentation-unknown-command -Wno-unknown-pragmas -Wno-missing-braces -Wno-vla-extension  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto.dir/engines/synths/hammond/hammond.cpp.o -c /home/topisani/dev/OTTO/src/engines/synths/hammond/hammond.cpp",
+  "file": "/home/topisani/dev/OTTO/src/engines/synths/hammond/hammond.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/src",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include   -Wall -Wno-long-long -Wpedantic -Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wc++17-compat -Wno-shadow-field-in-constructor -Wno-documentation-unknown-command -Wno-unknown-pragmas -Wno-missing-braces -Wno-vla-extension  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto.dir/engines/synths/nuke/nuke.cpp.o -c /home/topisani/dev/OTTO/src/engines/synths/nuke/nuke.cpp",
+  "file": "/home/topisani/dev/OTTO/src/engines/synths/nuke/nuke.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/src",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include   -Wall -Wno-long-long -Wpedantic -Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wc++17-compat -Wno-shadow-field-in-constructor -Wno-documentation-unknown-command -Wno-unknown-pragmas -Wno-missing-braces -Wno-vla-extension  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto.dir/engines/synths/sacred/sacred.cpp.o -c /home/topisani/dev/OTTO/src/engines/synths/sacred/sacred.cpp",
+  "file": "/home/topisani/dev/OTTO/src/engines/synths/sacred/sacred.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/src",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include   -Wall -Wno-long-long -Wpedantic -Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wc++17-compat -Wno-shadow-field-in-constructor -Wno-documentation-unknown-command -Wno-unknown-pragmas -Wno-missing-braces -Wno-vla-extension  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto.dir/engines/synths/sampler/sampler.cpp.o -c /home/topisani/dev/OTTO/src/engines/synths/sampler/sampler.cpp",
+  "file": "/home/topisani/dev/OTTO/src/engines/synths/sampler/sampler.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/src",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include   -Wall -Wno-long-long -Wpedantic -Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wc++17-compat -Wno-shadow-field-in-constructor -Wno-documentation-unknown-command -Wno-unknown-pragmas -Wno-missing-braces -Wno-vla-extension  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto.dir/engines/synths/vocoder/vocoder.cpp.o -c /home/topisani/dev/OTTO/src/engines/synths/vocoder/vocoder.cpp",
+  "file": "/home/topisani/dev/OTTO/src/engines/synths/vocoder/vocoder.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/src",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include   -Wall -Wno-long-long -Wpedantic -Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wc++17-compat -Wno-shadow-field-in-constructor -Wno-documentation-unknown-command -Wno-unknown-pragmas -Wno-missing-braces -Wno-vla-extension  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto.dir/services/application.cpp.o -c /home/topisani/dev/OTTO/src/services/application.cpp",
+  "file": "/home/topisani/dev/OTTO/src/services/application.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/src",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include   -Wall -Wno-long-long -Wpedantic -Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wc++17-compat -Wno-shadow-field-in-constructor -Wno-documentation-unknown-command -Wno-unknown-pragmas -Wno-missing-braces -Wno-vla-extension  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto.dir/services/audio_manager.cpp.o -c /home/topisani/dev/OTTO/src/services/audio_manager.cpp",
+  "file": "/home/topisani/dev/OTTO/src/services/audio_manager.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/src",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include   -Wall -Wno-long-long -Wpedantic -Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wc++17-compat -Wno-shadow-field-in-constructor -Wno-documentation-unknown-command -Wno-unknown-pragmas -Wno-missing-braces -Wno-vla-extension  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto.dir/services/engine_manager.cpp.o -c /home/topisani/dev/OTTO/src/services/engine_manager.cpp",
+  "file": "/home/topisani/dev/OTTO/src/services/engine_manager.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/src",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include   -Wall -Wno-long-long -Wpedantic -Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wc++17-compat -Wno-shadow-field-in-constructor -Wno-documentation-unknown-command -Wno-unknown-pragmas -Wno-missing-braces -Wno-vla-extension  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto.dir/services/log_manager.cpp.o -c /home/topisani/dev/OTTO/src/services/log_manager.cpp",
+  "file": "/home/topisani/dev/OTTO/src/services/log_manager.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/src",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include   -Wall -Wno-long-long -Wpedantic -Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wc++17-compat -Wno-shadow-field-in-constructor -Wno-documentation-unknown-command -Wno-unknown-pragmas -Wno-missing-braces -Wno-vla-extension  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto.dir/services/preset_manager.cpp.o -c /home/topisani/dev/OTTO/src/services/preset_manager.cpp",
+  "file": "/home/topisani/dev/OTTO/src/services/preset_manager.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/src",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include   -Wall -Wno-long-long -Wpedantic -Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wc++17-compat -Wno-shadow-field-in-constructor -Wno-documentation-unknown-command -Wno-unknown-pragmas -Wno-missing-braces -Wno-vla-extension  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto.dir/services/state_manager.cpp.o -c /home/topisani/dev/OTTO/src/services/state_manager.cpp",
+  "file": "/home/topisani/dev/OTTO/src/services/state_manager.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/src",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include   -Wall -Wno-long-long -Wpedantic -Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wc++17-compat -Wno-shadow-field-in-constructor -Wno-documentation-unknown-command -Wno-unknown-pragmas -Wno-missing-braces -Wno-vla-extension  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto.dir/services/ui_manager.cpp.o -c /home/topisani/dev/OTTO/src/services/ui_manager.cpp",
+  "file": "/home/topisani/dev/OTTO/src/services/ui_manager.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/src",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include   -Wall -Wno-long-long -Wpedantic -Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wc++17-compat -Wno-shadow-field-in-constructor -Wno-documentation-unknown-command -Wno-unknown-pragmas -Wno-missing-braces -Wno-vla-extension  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto.dir/util/bytefile.cpp.o -c /home/topisani/dev/OTTO/src/util/bytefile.cpp",
+  "file": "/home/topisani/dev/OTTO/src/util/bytefile.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/src",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include   -Wall -Wno-long-long -Wpedantic -Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wc++17-compat -Wno-shadow-field-in-constructor -Wno-documentation-unknown-command -Wno-unknown-pragmas -Wno-missing-braces -Wno-vla-extension  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto.dir/util/dsp/log_slider.cpp.o -c /home/topisani/dev/OTTO/src/util/dsp/log_slider.cpp",
+  "file": "/home/topisani/dev/OTTO/src/util/dsp/log_slider.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/src",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include   -Wall -Wno-long-long -Wpedantic -Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wc++17-compat -Wno-shadow-field-in-constructor -Wno-documentation-unknown-command -Wno-unknown-pragmas -Wno-missing-braces -Wno-vla-extension  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto.dir/util/dsp/window.cpp.o -c /home/topisani/dev/OTTO/src/util/dsp/window.cpp",
+  "file": "/home/topisani/dev/OTTO/src/util/dsp/window.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/src",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include   -Wall -Wno-long-long -Wpedantic -Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wc++17-compat -Wno-shadow-field-in-constructor -Wno-documentation-unknown-command -Wno-unknown-pragmas -Wno-missing-braces -Wno-vla-extension  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto.dir/util/filesystem.cpp.o -c /home/topisani/dev/OTTO/src/util/filesystem.cpp",
+  "file": "/home/topisani/dev/OTTO/src/util/filesystem.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/src",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include   -Wall -Wno-long-long -Wpedantic -Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wc++17-compat -Wno-shadow-field-in-constructor -Wno-documentation-unknown-command -Wno-unknown-pragmas -Wno-missing-braces -Wno-vla-extension  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto.dir/util/jsonfile.cpp.o -c /home/topisani/dev/OTTO/src/util/jsonfile.cpp",
+  "file": "/home/topisani/dev/OTTO/src/util/jsonfile.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/src",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include   -Wall -Wno-long-long -Wpedantic -Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wc++17-compat -Wno-shadow-field-in-constructor -Wno-documentation-unknown-command -Wno-unknown-pragmas -Wno-missing-braces -Wno-vla-extension  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto.dir/util/soundfile.cpp.o -c /home/topisani/dev/OTTO/src/util/soundfile.cpp",
+  "file": "/home/topisani/dev/OTTO/src/util/soundfile.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/src",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include   -Wall -Wno-long-long -Wpedantic -Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wc++17-compat -Wno-shadow-field-in-constructor -Wno-documentation-unknown-command -Wno-unknown-pragmas -Wno-missing-braces -Wno-vla-extension  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto.dir/util/tapefile.cpp.o -c /home/topisani/dev/OTTO/src/util/tapefile.cpp",
+  "file": "/home/topisani/dev/OTTO/src/util/tapefile.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/src",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BOARD_ -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/boards/desktop/include -I/home/topisani/dev/OTTO/boards/parts/audio/rtaudio/include -I/home/topisani/dev/OTTO/boards/parts/ui/glfw/include -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include   -Wall -Wno-long-long -Wpedantic -Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wc++17-compat -Wno-shadow-field-in-constructor -Wno-documentation-unknown-command -Wno-unknown-pragmas -Wno-missing-braces -Wno-vla-extension  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto_exec.dir/__/boards/desktop/src/main.cpp.o -c /home/topisani/dev/OTTO/boards/desktop/src/main.cpp",
+  "file": "/home/topisani/dev/OTTO/boards/desktop/src/main.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/src",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BOARD_ -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/boards/desktop/include -I/home/topisani/dev/OTTO/boards/parts/audio/rtaudio/include -I/home/topisani/dev/OTTO/boards/parts/ui/glfw/include -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include   -Wall -Wno-long-long -Wpedantic -Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wc++17-compat -Wno-shadow-field-in-constructor -Wno-documentation-unknown-command -Wno-unknown-pragmas -Wno-missing-braces -Wno-vla-extension  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto_exec.dir/__/boards/desktop/src/keys.cpp.o -c /home/topisani/dev/OTTO/boards/desktop/src/keys.cpp",
+  "file": "/home/topisani/dev/OTTO/boards/desktop/src/keys.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/src",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BOARD_ -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/boards/desktop/include -I/home/topisani/dev/OTTO/boards/parts/audio/rtaudio/include -I/home/topisani/dev/OTTO/boards/parts/ui/glfw/include -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include   -Wall -Wno-long-long -Wpedantic -Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wc++17-compat -Wno-shadow-field-in-constructor -Wno-documentation-unknown-command -Wno-unknown-pragmas -Wno-missing-braces -Wno-vla-extension  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto_exec.dir/__/boards/parts/audio/rtaudio/src/RtAudio.cpp.o -c /home/topisani/dev/OTTO/boards/parts/audio/rtaudio/src/RtAudio.cpp",
+  "file": "/home/topisani/dev/OTTO/boards/parts/audio/rtaudio/src/RtAudio.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/src",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BOARD_ -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/boards/desktop/include -I/home/topisani/dev/OTTO/boards/parts/audio/rtaudio/include -I/home/topisani/dev/OTTO/boards/parts/ui/glfw/include -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include   -Wall -Wno-long-long -Wpedantic -Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wc++17-compat -Wno-shadow-field-in-constructor -Wno-documentation-unknown-command -Wno-unknown-pragmas -Wno-missing-braces -Wno-vla-extension  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto_exec.dir/__/boards/parts/audio/rtaudio/src/RtMidi.cpp.o -c /home/topisani/dev/OTTO/boards/parts/audio/rtaudio/src/RtMidi.cpp",
+  "file": "/home/topisani/dev/OTTO/boards/parts/audio/rtaudio/src/RtMidi.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/src",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BOARD_ -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/boards/desktop/include -I/home/topisani/dev/OTTO/boards/parts/audio/rtaudio/include -I/home/topisani/dev/OTTO/boards/parts/ui/glfw/include -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include   -Wall -Wno-long-long -Wpedantic -Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wc++17-compat -Wno-shadow-field-in-constructor -Wno-documentation-unknown-command -Wno-unknown-pragmas -Wno-missing-braces -Wno-vla-extension  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto_exec.dir/__/boards/parts/audio/rtaudio/src/audio_driver.cpp.o -c /home/topisani/dev/OTTO/boards/parts/audio/rtaudio/src/audio_driver.cpp",
+  "file": "/home/topisani/dev/OTTO/boards/parts/audio/rtaudio/src/audio_driver.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/src",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BOARD_ -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/boards/desktop/include -I/home/topisani/dev/OTTO/boards/parts/audio/rtaudio/include -I/home/topisani/dev/OTTO/boards/parts/ui/glfw/include -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include   -Wall -Wno-long-long -Wpedantic -Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wc++17-compat -Wno-shadow-field-in-constructor -Wno-documentation-unknown-command -Wno-unknown-pragmas -Wno-missing-braces -Wno-vla-extension  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto_exec.dir/__/boards/parts/ui/glfw/src/glfw_ui.cpp.o -c /home/topisani/dev/OTTO/boards/parts/ui/glfw/src/glfw_ui.cpp",
+  "file": "/home/topisani/dev/OTTO/boards/parts/ui/glfw/src/glfw_ui.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/external",
+  "command": "/usr/bin/clang  -isystem /home/topisani/dev/OTTO/external/include  -g   -o CMakeFiles/external.dir/src/gl3w.c.o   -c /home/topisani/dev/OTTO/external/src/gl3w.c",
+  "file": "/home/topisani/dev/OTTO/external/src/gl3w.c"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/external",
+  "command": "/usr/bin/clang++   -isystem /home/topisani/dev/OTTO/external/include  -g   -std=c++17 -o CMakeFiles/external.dir/src/none.cpp.o -c /home/topisani/dev/OTTO/external/src/none.cpp",
+  "file": "/home/topisani/dev/OTTO/external/src/none.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/external",
+  "command": "/usr/bin/clang   -g   -o CMakeFiles/nanovg.dir/nanovg/src/nanovg.c.o   -c /home/topisani/dev/OTTO/external/nanovg/src/nanovg.c",
+  "file": "/home/topisani/dev/OTTO/external/nanovg/src/nanovg.c"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/external",
+  "command": "/usr/bin/clang++   -isystem /home/topisani/dev/OTTO/external/nanovg/src  -g   -std=c++17 -o CMakeFiles/nanocanvas.dir/NanoCanvas/src/Canvas.cpp.o -c /home/topisani/dev/OTTO/external/NanoCanvas/src/Canvas.cpp",
+  "file": "/home/topisani/dev/OTTO/external/NanoCanvas/src/Canvas.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/external",
+  "command": "/usr/bin/clang++   -isystem /home/topisani/dev/OTTO/external/nanovg/src  -g   -std=c++17 -o CMakeFiles/nanocanvas.dir/NanoCanvas/src/Image.cpp.o -c /home/topisani/dev/OTTO/external/NanoCanvas/src/Image.cpp",
+  "file": "/home/topisani/dev/OTTO/external/NanoCanvas/src/Image.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/external",
+  "command": "/usr/bin/clang++   -isystem /home/topisani/dev/OTTO/external/nanovg/src  -g   -std=c++17 -o CMakeFiles/nanocanvas.dir/NanoCanvas/src/Text.cpp.o -c /home/topisani/dev/OTTO/external/NanoCanvas/src/Text.cpp",
+  "file": "/home/topisani/dev/OTTO/external/NanoCanvas/src/Text.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/external/fmt/fmt",
+  "command": "/usr/bin/clang++   -I/home/topisani/dev/OTTO/external/fmt  -g   -std=c++17 -o CMakeFiles/fmt.dir/posix.cc.o -c /home/topisani/dev/OTTO/external/fmt/fmt/posix.cc",
+  "file": "/home/topisani/dev/OTTO/external/fmt/fmt/posix.cc"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/external/fmt/fmt",
+  "command": "/usr/bin/clang++   -I/home/topisani/dev/OTTO/external/fmt  -g   -std=c++17 -o CMakeFiles/fmt.dir/format.cc.o -c /home/topisani/dev/OTTO/external/fmt/fmt/format.cc",
+  "file": "/home/topisani/dev/OTTO/external/fmt/fmt/format.cc"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/external/fmt/fmt",
+  "command": "/usr/bin/clang++   -I/home/topisani/dev/OTTO/external/fmt  -g   -std=c++17 -o CMakeFiles/fmt.dir/ostream.cc.o -c /home/topisani/dev/OTTO/external/fmt/fmt/ostream.cc",
+  "file": "/home/topisani/dev/OTTO/external/fmt/fmt/ostream.cc"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/external/fmt/fmt",
+  "command": "/usr/bin/clang++   -I/home/topisani/dev/OTTO/external/fmt  -g   -std=c++17 -o CMakeFiles/fmt.dir/printf.cc.o -c /home/topisani/dev/OTTO/external/fmt/fmt/printf.cc",
+  "file": "/home/topisani/dev/OTTO/external/fmt/fmt/printf.cc"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/external/tiny-process-library",
+  "command": "/usr/bin/clang++   -I/home/topisani/dev/OTTO/external/tiny-process-library  -g   -std=c++11 -Wall -Wextra -std=c++17 -o CMakeFiles/tiny-process-library.dir/process.cpp.o -c /home/topisani/dev/OTTO/external/tiny-process-library/process.cpp",
+  "file": "/home/topisani/dev/OTTO/external/tiny-process-library/process.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/external/tiny-process-library",
+  "command": "/usr/bin/clang++   -I/home/topisani/dev/OTTO/external/tiny-process-library  -g   -std=c++11 -Wall -Wextra -std=c++17 -o CMakeFiles/tiny-process-library.dir/process_unix.cpp.o -c /home/topisani/dev/OTTO/external/tiny-process-library/process_unix.cpp",
+  "file": "/home/topisani/dev/OTTO/external/tiny-process-library/process_unix.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/test",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/test -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto_test.dir/core/props/props.t.cpp.o -c /home/topisani/dev/OTTO/test/core/props/props.t.cpp",
+  "file": "/home/topisani/dev/OTTO/test/core/props/props.t.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/test",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/test -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto_test.dir/main.t.cpp.o -c /home/topisani/dev/OTTO/test/main.t.cpp",
+  "file": "/home/topisani/dev/OTTO/test/main.t.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/test",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/test -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto_test.dir/services/engines.cpp.o -c /home/topisani/dev/OTTO/test/services/engines.cpp",
+  "file": "/home/topisani/dev/OTTO/test/services/engines.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/test",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/test -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto_test.dir/util/algorithm.t.cpp.o -c /home/topisani/dev/OTTO/test/util/algorithm.t.cpp",
+  "file": "/home/topisani/dev/OTTO/test/util/algorithm.t.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/test",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/test -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto_test.dir/util/bytefile.t.cpp.o -c /home/topisani/dev/OTTO/test/util/bytefile.t.cpp",
+  "file": "/home/topisani/dev/OTTO/test/util/bytefile.t.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/test",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/test -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto_test.dir/util/dyn-array.t.cpp.o -c /home/topisani/dev/OTTO/test/util/dyn-array.t.cpp",
+  "file": "/home/topisani/dev/OTTO/test/util/dyn-array.t.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/test",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/test -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto_test.dir/util/iterator.t.cpp.o -c /home/topisani/dev/OTTO/test/util/iterator.t.cpp",
+  "file": "/home/topisani/dev/OTTO/test/util/iterator.t.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/test",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/test -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto_test.dir/util/meta.t.cpp.o -c /home/topisani/dev/OTTO/test/util/meta.t.cpp",
+  "file": "/home/topisani/dev/OTTO/test/util/meta.t.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/test",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/test -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto_test.dir/util/soundfile.t.cpp.o -c /home/topisani/dev/OTTO/test/util/soundfile.t.cpp",
+  "file": "/home/topisani/dev/OTTO/test/util/soundfile.t.cpp"
+},
+{
+  "directory": "/home/topisani/dev/OTTO/cmake-build-debug/test",
+  "command": "/usr/bin/clang++  -DGLFW_DLL -DOTTO_BUILD_DOCS=0 -DOTTO_BUILD_TESTS=1 -DOTTO_DEBUG_UI=1 -DOTTO_ENABLE_ASAN=0 -DOTTO_ENABLE_TIMERS=0 -DOTTO_USE_LIBCXX=0 -D__LINUX_ALSA__ -I/home/topisani/dev/OTTO/test -I/home/topisani/dev/OTTO/src/. -I/home/topisani/dev/OTTO/external/GSL -I/home/topisani/dev/OTTO/external/GSL/include -I/home/topisani/dev/OTTO/external/fmt -I/home/topisani/dev/OTTO/external/tiny-process-library -isystem /usr/local/include -isystem /home/topisani/dev/OTTO/external/include -isystem /home/topisani/dev/OTTO/external/NanoCanvas/src -isystem /home/topisani/dev/OTTO/external/nanovg/src -isystem /home/topisani/dev/OTTO/external/range-v3/include  -g   -std=c++14 -std=c++17 -o CMakeFiles/otto_test.dir/util/tapefile.t.cpp.o -c /home/topisani/dev/OTTO/test/util/tapefile.t.cpp",
+  "file": "/home/topisani/dev/OTTO/test/util/tapefile.t.cpp"
+}
+]

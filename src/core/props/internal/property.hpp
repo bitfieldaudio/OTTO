@@ -1,14 +1,18 @@
 #pragma once
 
+#include "../internal/mixin_macros.hpp"
 #include "base.hpp"
 #include "tag_list.hpp"
-#include "../internal/mixin_macros.hpp"
 
 namespace otto::core::props {
 
   struct common {
     struct hooks {
+      /// Allows you to change the value that is set
       struct on_set : mixin::hook<mixin::value_type> {};
+      /// Fired after the value has been changed. At this point the value can be read
+      /// using .value()
+      struct after_set : mixin::hook<void> {};
     };
   };
 
@@ -18,7 +22,8 @@ namespace otto::core::props {
   struct PropertyImpl;
 
   template<typename T, typename... Tags>
-  struct PropertyImpl<T, tag_list<Tags...>> : virtual property_base, MixinTag::leaf<Tags, T, tag_list<Tags...>>... {
+  struct PropertyImpl<T, tag_list<Tags...>> : virtual property_base,
+                                              MixinTag::leaf<Tags, T, tag_list<Tags...>>... {
     using value_type = T;
     using tag_list = tag_list<Tags...>;
 
@@ -43,7 +48,7 @@ namespace otto::core::props {
       // Clang is bugged, and marks the `this` capture as unused if the lambda
       // is inlined in the `apply` call.
       // GCC 7.2 marks the variable `lambda` as unused.
-      [[maybe_unused]] auto lambda = [this](auto&&... init_args) {this->init<Tag>(init_args...);};
+      [[maybe_unused]] auto lambda = [this](auto&&... init_args) { this->init<Tag>(init_args...); };
       std::apply(lambda, tt.args);
     }
 
@@ -53,52 +58,58 @@ namespace otto::core::props {
     {
       if constexpr ((is_initializer_v<Args> && ...)) {
         // GCC 7.2 marks this variable as unused.
-        [[maybe_unused]] auto lambda = [](PropertyImpl* obj, auto&& tuple) { obj->init_with_tuple(tuple); };
+        [[maybe_unused]] auto lambda = [](PropertyImpl* obj, auto&& tuple) {
+          obj->init_with_tuple(tuple);
+        };
         // fold expression on comma operator
         (lambda(this, std::forward<Args>(args)), ...);
       } else {
-        static_cast<inherits_from_mixins_t<T, tag_list>&>(*this) = {
-          std::forward<Args>(args)...};
+        static_cast<inherits_from_mixins_t<T, tag_list>&>(*this) = {std::forward<Args>(args)...};
       }
     }
 
     template<typename Tag>
-    constexpr static bool is =
-      ::otto::core::props::contains_tag_v<tag_list, Tag>;
+    constexpr static bool is = ::otto::core::props::contains_tag_v<tag_list, Tag>;
 
     template<typename Tag>
-    auto as() -> ::std::enable_if_t<
-      PropertyImpl::is<Tag>,
-      MixinTag::leaf<Tag, value_type, tag_list>&>
+    auto as()
+      -> ::std::enable_if_t<PropertyImpl::is<Tag>, MixinTag::leaf<Tag, value_type, tag_list>&>
     {
-      return static_cast<
-        MixinTag::leaf<Tag, value_type, tag_list>&>(*this);
+      return static_cast<MixinTag::leaf<Tag, value_type, tag_list>&>(*this);
     }
 
     template<typename Tag>
-    auto as() const -> ::std::enable_if_t<
-      PropertyImpl::is<Tag>,
-      const MixinTag::leaf<Tag, value_type, tag_list>&>
+    auto as() const
+      -> ::std::enable_if_t<PropertyImpl::is<Tag>, const MixinTag::leaf<Tag, value_type, tag_list>&>
     {
-      return static_cast<const MixinTag::leaf<Tag, value_type, tag_list>&>(
-        *this);
+      return static_cast<const MixinTag::leaf<Tag, value_type, tag_list>&>(*this);
     }
 
     template<typename Hook>
     using hook = HookTag::impl_t<Hook, value_type>;
 
     template<typename Hook>
-    typename hook<Hook>::arg_type run_hook(
-      const typename hook<Hook>::arg_type& arg)
+    typename hook<Hook>::arg_type run_hook(const typename hook<Hook>::arg_type& arg)
     {
       return ::otto::core::props::detail::run_hook<Hook>(*this, arg);
     }
 
     template<typename Hook>
-    typename hook<Hook>::arg_type run_hook(
-      const typename hook<Hook>::arg_type& arg) const
+    typename hook<Hook>::arg_type run_hook(const typename hook<Hook>::arg_type& arg) const
     {
       return ::otto::core::props::detail::run_hook<Hook>(*this, arg);
+    }
+
+    template<typename Hook>
+    typename hook<Hook>::arg_type run_hook()
+    {
+      return ::otto::core::props::detail::run_hook<Hook>(*this);
+    }
+
+    template<typename Hook>
+    typename hook<Hook>::arg_type run_hook() const
+    {
+      return ::otto::core::props::detail::run_hook<Hook>(*this);
     }
 
     const value_type& get() const
@@ -109,6 +120,7 @@ namespace otto::core::props {
     void set(const value_type& v)
     {
       value_ = run_hook<common::hooks::on_set>(v);
+      run_hook<common::hooks::after_set>();
     }
 
     PropertyImpl& operator=(const value_type& rhs)
@@ -130,7 +142,6 @@ namespace otto::core::props {
 
   template<typename... Tags>
   struct PropertiesImpl : properties_base, mixin::branch<Tags>... {
-
     using tag_list = props::tag_list<Tags...>;
 
     // Initialization //
@@ -150,6 +161,6 @@ namespace otto::core::props {
     struct properties_for_list<tag_list<Tags...>> {
       using type = PropertiesImpl<Tags...>;
     };
-  }
+  } // namespace detail
 
 } // namespace otto::core::props

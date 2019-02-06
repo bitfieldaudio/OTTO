@@ -23,62 +23,53 @@ namespace otto::engines {
   // GossSynth ////////////////////////////////////////////////////////////////
 
   GossSynth::GossSynth()
-    : SynthEngine("Woody", props, std::make_unique<GossSynthScreen>(this)),
-      voice_mgr_(props)
+    : SynthEngine("Woody", props, std::make_unique<GossSynthScreen>(this)), voice_mgr_(props)
+  {}
+
+  float GossSynth::Voice::operator()() noexcept
   {
-
-  }
-
-  float GossSynth::Voice::frequency() noexcept {
-    return 440.0;
-  }
-
-  float GossSynth::Voice::operator()() noexcept {
-
-    pitch_modulation.freq(props.leslie * 10);
-    float fundamental = frequency() * (1 + 0.025 * props.leslie * pitch_modulation.cos());
+    float fundamental = frequency() * (1 + 0.025 * props.leslie * pre.pitch_modulation.cos());
     pipes[0].freq(fundamental);
     pipes[1].freq(fundamental / 2.0);
     pipes[2].freq(fundamental * 1.334839854); // A fifth above fundamental
     return pipes[0]() * props.drawbar1 + pipes[1]() * props.drawbar2 + pipes[2]() * props.drawbar3;
   }
 
-  ///Constructor. Takes care of linking appropriate variables to props
-  GossSynth::PostProcessing::PostProcessing(Props &props) noexcept
-      : props(props)
+  GossSynth::Pre::Pre(Props& props) noexcept : PreBase(props)
   {
     leslie_filter_hi.phase(0.5);
+    props.leslie.on_change().connect([this](float leslie) {
+      leslie_filter_hi.freq(leslie * 10);
+      leslie_filter_lo.freq(leslie * 3);
+      leslie_amount_hi = leslie * 0.5;
+      leslie_amount_lo = leslie * 0.2;
+      pitch_modulation.freq(leslie * 10);
+    });
+  }
+
+  void GossSynth::Pre::operator()() noexcept {}
+
+  /// Constructor. Takes care of linking appropriate variables to props
+  GossSynth::Post::Post(Pre& pre) noexcept : PostBase(pre)
+  {
     lpf.type(gam::LOW_PASS);
     lpf.freq(1800);
     lpf.res(1);
     hpf.type(gam::HIGH_PASS);
     hpf.freq(1800);
     hpf.res(1);
-
-    /*
-    props.leslie.on_change().connect([this] (float leslie) {
-        leslie_filter_hi.freq(leslie * 10);
-        leslie_filter_lo.freq(leslie * 3);
-        leslie_amount_hi = leslie * 0.5;
-        leslie_amount_lo = leslie * 0.2;
-    }
-     */
   }
 
-  float GossSynth::PostProcessing::operator()(float in) noexcept {
-    float s_lo = lpf(in) * (1 + leslie_amount_lo * leslie_filter_lo.cos());
-    float s_hi = hpf(in) * (1 + leslie_amount_hi * leslie_filter_hi.cos());
+  float GossSynth::Post::operator()(float in) noexcept
+  {
+    float s_lo = lpf(in) * (1 + pre.leslie_amount_lo * pre.leslie_filter_lo.cos());
+    float s_hi = hpf(in) * (1 + pre.leslie_amount_hi * pre.leslie_filter_hi.cos());
     return s_lo + s_hi;
-
   }
 
   audio::ProcessData<1> GossSynth::process(audio::ProcessData<1> data)
   {
-    auto buf = Application::current().audio_manager->buffer_pool().allocate_multi<1>();
-    for (auto&& [frm] : buf) {
-      frm = post_processing(voices[0]());
-    }
-    return data.redirect(buf);
+    return voice_mgr_.process(data);
   }
 
   /*
@@ -155,20 +146,17 @@ namespace otto::engines {
 
     // middle red ring
     ctx.group([&] {
-
       // Ring Base
       ctx.beginPath();
       ctx.lineWidth(6.0);
       ctx.strokeStyle(Colours::Red);
 
-      /*
-      engine.props.phasor.refresh_links();
-      float rotation = engine.props.phasor * 2 * M_PI;
+      float rotation = engine.props.rotation * 2 * M_PI;
       ctx.rotateAround(rotation, {160, 120});
       ctx.circle({160, height/2 + engine.props.leslie*25}, 12.5);
       ctx.stroke();
-       */
-      ctx.circle({160, height/2 + engine.props.leslie*25}, 12.5);
+
+      ctx.circle({160, height / 2 + engine.props.leslie * 25}, 12.5);
       ctx.stroke();
     });
     ///
