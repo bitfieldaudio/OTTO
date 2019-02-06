@@ -17,8 +17,8 @@ namespace otto::util {
 
   template<typename... Args>
   struct SlotRef {
-    using Connection = Connection<Args...>;
-    using Signal = Signal<Args...>;
+    using Connection = otto::util::Connection<Args...>;
+    using Signal = otto::util::Signal<Args...>;
     using Function = typename Signal::Function;
     using FuncIterator = typename Signal::FuncIterator;
 
@@ -30,8 +30,8 @@ namespace otto::util {
 
   template<typename... Args>
   struct Signal {
-    using Connection = Connection<Args...>;
-    using SlotRef = SlotRef<Args...>;
+    using Connection = otto::util::Connection<Args...>;
+    using SlotRef = otto::util::SlotRef<Args...>;
     using Function = std::function<void(Args...)>;
     using FuncIterator = typename std::list<Function>::iterator;
 
@@ -55,8 +55,8 @@ namespace otto::util {
 
   template<typename... Args>
   struct Connection {
-    using Signal = Signal<Args...>;
-    using SlotRef = SlotRef<Args...>;
+    using Signal = otto::util::Signal<Args...>;
+    using SlotRef = otto::util::SlotRef<Args...>;
     using Function = typename Signal::Function;
     using FuncIterator = typename Signal::FuncIterator;
 
