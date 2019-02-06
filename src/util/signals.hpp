@@ -24,6 +24,8 @@ namespace otto::util {
 
     Signal* signal;
     FuncIterator func_iter;
+
+    void call_now(Args...);
   };
 
   template<typename... Args>
@@ -72,6 +74,15 @@ namespace otto::util {
   private:
     SlotRef slot_ref;
   };
+
+  // -- SlotRef IMPLEMENTATIONS -- //
+
+  template<typename... Args>
+  void SlotRef<Args...>::call_now(Args... args)
+  {
+    (*func_iter)(std::forward<Args>(args)...);
+  }
+
 
   // -- Signal IMPLEMENTATIONS -- //
 

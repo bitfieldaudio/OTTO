@@ -62,6 +62,7 @@ namespace otto::core::voices {
     using Props = typename Pre::PreBase::Props;
 
     VoiceBase(Pre& p) noexcept;
+    VoiceBase(const VoiceBase&) = delete;
 
     /// Implement a handler for note on events
     void on_note_on() noexcept;
@@ -96,10 +97,13 @@ namespace otto::core::voices {
     template<typename T, int N>
     friend struct VoiceManager;
 
-    bool trigger_ = false;
+    void trigger(int midi_note, float velocity) noexcept;
+    void release() noexcept;
+
     float frequency_ = 440.f;
     float velocity_ = 1.f;
     float aftertouch_ = 0.f;
+    int midi_note_ = 0;
 
     gam::ADSR<> env_;
   };
@@ -219,12 +223,26 @@ namespace otto::core::voices {
     audio::ProcessData<1> process(audio::ProcessData<1> data) noexcept;
 
   private:
-    std::deque<int> free_voices;
-    std::vector<int> note_stack;
+    Voice& get_voice(int key) noexcept;
+    Voice* stop_voice(int key) noexcept;
+
+    struct NoteVoicePair {
+      int note = 0;
+      Voice* voice = nullptr;
+
+      bool has_voice() const noexcept
+      {
+        return voice != nullptr;
+      }
+    };
+
+    std::deque<Voice*> free_voices;
+    std::vector<NoteVoicePair> note_stack;
 
     Props& props;
     Pre pre = {props};
-    std::array<Voice, voice_count> voices_ = util::generate_array<voice_count>([this] (auto) { return Voice{pre}; });
+    std::array<Voice, voice_count> voices_ =
+      util::generate_array<voice_count>([this](auto) { return Voice{pre}; });
     Post post = {pre};
 
     EnvelopeProps envelope_props = {&props, "envelope"};
@@ -233,11 +251,11 @@ namespace otto::core::voices {
     std::unique_ptr<ui::Screen> envelope_screen_ = details::make_envelope_screen(envelope_props);
     std::unique_ptr<ui::Screen> settings_screen_ = details::make_settings_screen(settings_props);
     PlayMode play_mode = PlayMode::mono;
-  };
+  }; // namespace otto::core::voices
 
 } // namespace otto::core::voices
 
 // Implementation
-#include "voice_manager.ipp"
+#include "voice_manager.impl.hpp"
 
-// kak: other_file=voice_manager.ipp
+// kak: other_file=voice_manager.impl.hpp
