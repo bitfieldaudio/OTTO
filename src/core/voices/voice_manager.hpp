@@ -65,10 +65,10 @@ namespace otto::core::voices {
     VoiceBase(const VoiceBase&) = delete;
 
     /// Implement a handler for note on events
-    void on_note_on() noexcept;
+    virtual void on_note_on() noexcept;
 
     /// Implement a handler for note off events
-    void on_note_off() noexcept;
+    virtual void on_note_off() noexcept;
 
     /// Get the current frequency this voice should play
     ///

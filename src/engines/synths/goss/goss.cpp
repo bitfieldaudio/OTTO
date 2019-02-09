@@ -22,27 +22,40 @@ namespace otto::engines {
   // GossSynth ////////////////////////////////////////////////////////////////
 
   GossSynth::GossSynth()
-    : SynthEngine("Woody", props, std::make_unique<GossSynthScreen>(this)), voice_mgr_(props)
+    : SynthEngine("Goss", props, std::make_unique<GossSynthScreen>(this)), voice_mgr_(props)
   {}
 
   float GossSynth::Voice::operator()() noexcept
   {
-    float fundamental = frequency() * (1 + 0.025 * props.leslie * pre.pitch_modulation.cos());
+    float fundamental = frequency() * (1 + 0.03 * props.leslie * pre.pitch_modulation_hi.cos());
     pipes[0].freq(fundamental);
-    pipes[1].freq(fundamental / 2.0);
+    pipes[1].freq(frequency()/2);
     pipes[2].freq(fundamental * 1.334839854); // A fifth above fundamental
-    return pipes[0]() * props.drawbar1 + pipes[1]() * props.drawbar2 + pipes[2]() * props.drawbar3;
+    pipes[3].freq(fundamental * 2);
+    return pipes[0]() + pipes[1]() * props.drawbar1 + pipes[2]() * props.drawbar2 + pipes[3]() * props.drawbar3;
+  }
+
+  GossSynth::Voice::Voice(Pre& pre) noexcept : VoiceBase(pre) {
+    pipes[0].resize(512);
+    pipes[0].addSine(1, 1, 0);
+    for (int i=1; i!=3; i++) {
+      pipes[i].source(pipes[0]);
+    }
   }
 
   GossSynth::Pre::Pre(Props& props) noexcept : PreBase(props)
   {
     leslie_filter_hi.phase(0.5);
+    leslie_filter_lo.phase(0.5);
     props.leslie.on_change().connect([this](float leslie) {
-      leslie_filter_hi.freq(leslie * 10);
-      leslie_filter_lo.freq(leslie * 3);
-      leslie_amount_hi = leslie * 0.5;
-      leslie_amount_lo = leslie * 0.2;
-      pitch_modulation.freq(leslie * 10);
+      leslie_speed_lo = leslie * 10;
+      leslie_speed_hi = leslie * 3;
+      leslie_filter_hi.freq(leslie_speed_hi);
+      leslie_filter_lo.freq(leslie_speed_lo);
+      leslie_amount_hi = leslie * 0.3;
+      leslie_amount_lo = leslie * 0.5;
+      pitch_modulation_lo.freq(leslie_speed_hi);
+      pitch_modulation_hi.freq(leslie);
     });
   }
 

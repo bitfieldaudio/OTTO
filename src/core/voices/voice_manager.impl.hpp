@@ -63,6 +63,7 @@ namespace otto::core::voices {
     midi_note_ = midi_note;
     frequency_ = midi::note_freq(midi_note);
     velocity_ = velocity;
+    on_note_on();
     env_.resetSoft();
   }
 

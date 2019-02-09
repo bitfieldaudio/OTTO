@@ -3,10 +3,11 @@
 #include "core/engine/engine.hpp"
 
 #include "core/audio/faust.hpp"
-#include "core/audio/voice_manager.hpp"
+#include "core/voices/voice_manager.hpp"
 
 #include <Gamma/Oscillator.h>
 #include <Gamma/SoundFile.h>
+#include <AudioFile.h>
 
 
 namespace otto::engines {
@@ -20,26 +21,14 @@ namespace otto::engines {
     struct OscillatorProps : Properties<> {
       using Properties::Properties;
       Property<int> wave_pair        = {this, "wave_pair",     0,  has_limits::init(0,0),     steppable::init(1)};
-      Property<float> lfo_speed     = {this, "lfo_speed",     0,  has_limits::init(0, 1),    steppable::init(0.01)};
+      Property<float> lfo_speed     = {this, "lfo_speed",     0.1,  has_limits::init(0, 1),    steppable::init(0.01)};
       Property<float> volume        = {this, "volume",        1,  has_limits::init(0, 1),    steppable::init(0.01)};
-      Property<int> remap           = {this, "remap",    0,  has_limits::init(0, 4),    steppable::init(1)};
+      Property<float> remap           = {this, "remap",    0.7,  has_limits::init(0, 0.99),    steppable::init(0.01)};
 
-    };
-
-    struct WaveTableProps {
-        int frames = 0;
-
-        float allocate(int samples) {
-            frames = samples;
-            float wave[frames];
-        }
     };
 
     struct Props : Properties<> {
-
-        std::array<OscillatorProps,2> oscillators = {{{this, "osc1"}, {this, "osc2"}}};
-        std::array<WaveTableProps,4> wavetables = {{{this, "wt1"}, {this, "wt2"}, {this, "wt3"}, {this, "wt4"}}};
-
+      std::array<OscillatorProps,2> oscillators = {{{this, "osc1"}, {this, "osc2"}}};
     } props;
 
     PotionSynth();
@@ -55,32 +44,34 @@ namespace otto::engines {
     }
 
   private:
-    audio::VoiceManager<6> voice_mgr_;
+    struct Pre : voices::PreBase<Pre, Props> {
+      std::array<AudioFile<float>,4> wavetables;
+      gam::Osc<> remap_table;
 
-
-
-    struct PreProcessing {
-        Props& props;
-
+      Pre(Props&) noexcept;
+      void operator()() noexcept;
     };
 
-    struct Voice {
-        Props& props;
-        gam::LFO<> morph;
-        gam::Sweep<> phase();
+    struct Voice : voices::VoiceBase<Voice, Pre> {
+      std::array<gam::LFO<>,2> morph;
+      gam::Sweep<> phase;
 
-        float operator()() noexcept;
 
-        float remapping(float, float);
+      float remapping(float, float);
 
+      Voice(Pre&) noexcept;
+      float operator()() noexcept;
+      void on_note_on() noexcept;
     };
-    std::array<Voice, 6> voices = {{{props}, {props}, {props}, {props}, {props}, {props}}};
 
-    struct PostProcessing {
-        Props& props;
+    struct Post : voices::PostBase<Post, Voice> {
 
+      Post(Pre&) noexcept;
+
+      float operator()(float) noexcept;
     };
-    PostProcessing post_processing = {props};
+
+    voices::VoiceManager<Post, 6> voice_mgr_;
 
   };
 } // namespace otto::engines

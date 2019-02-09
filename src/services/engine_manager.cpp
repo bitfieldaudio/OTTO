@@ -12,8 +12,8 @@
 #include "engines/synths/hammond/hammond.hpp"
 #include "engines/synths/nuke/nuke.hpp"
 #include "engines/synths/tsar/tsar.hpp"
-//#include <engines/synths/goss/goss.hpp>
-//#include "engines/synths/potion/potion.hpp"
+#include <engines/synths/goss/goss.hpp>
+#include "engines/synths/potion/potion.hpp"
 #include "engines/synths/vocoder/vocoder.hpp"
 #include "engines/synths/sampler/sampler.hpp"
 
@@ -144,8 +144,8 @@ namespace otto::services {
     synth.register_engine<engines::External>("External");
     synth.register_engine<engines::HammondSynth>("Woody");
     synth.register_engine<engines::NukeSynth>("Nuke");
-    //synth.register_engine<engines::GossSynth>("Goss");
-    //synth.register_engine<engines::PotionSynth>("Potion");
+    synth.register_engine<engines::GossSynth>("Goss");
+    synth.register_engine<engines::PotionSynth>("Potion");
     synth.register_engine<engines::TsarSynth>("Tsar");
     synth.register_engine<engines::OTTOFMSynth>("OTTO.FM");
     synth.register_engine<engines::VocoderSynth>("Robot");
@@ -292,13 +292,15 @@ namespace otto::services {
       fx2_out.audio.release();
       fx1_bus.release();
       fx2_bus.release();
-      //return master.process(std::move(fx1_out));
+      return master.process(std::move(fx1_out));
+      /*
       auto temp = Application::current().audio_manager->buffer_pool().allocate_multi_clear<2>();
       for (auto&& [in, tmp] : util::zip(seq_out, temp)) {
           std::get<0>(tmp) += std::get<0>(in);
           std::get<1>(tmp) += std::get<0>(in);
       }
       return master.process({std::move(temp),external_in.midi,external_in.nframes});
+       */
   }
 
   AnyEngine* DefaultEngineManager::by_name(const std::string& name) noexcept
