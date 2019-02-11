@@ -165,10 +165,15 @@ namespace otto::core::midi {
   inline AnyMidiEvent from_bytes(gsl::span<unsigned char> bytes, int time = 0)
   {
     auto type = MidiEvent::Type(bytes[0] >> 4);
+    auto velocity = bytes[2];
     switch (type) {
     case MidiEvent::Type::NoteOff: return NoteOffEvent::from_bytes(bytes, time);
-    case MidiEvent::Type::NoteOn: //
-      return NoteOnEvent::from_bytes(bytes, time);
+    case MidiEvent::Type::NoteOn:
+    {
+      ///Per the MIDI specification, NoteOff events are also sent as NoteOn with velocity 0.
+      if (velocity != 0) return NoteOnEvent::from_bytes(bytes, time);
+      else return NoteOffEvent::from_bytes(bytes, time);
+    }
     case MidiEvent::Type::ControlChange: return ControlChangeEvent::from_bytes(bytes, time);
     default: return MidiEvent::from_bytes(bytes, time);
     }
