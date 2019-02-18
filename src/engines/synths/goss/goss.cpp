@@ -27,7 +27,7 @@ namespace otto::engines {
 
   float GossSynth::Voice::operator()() noexcept
   {
-    float fundamental = frequency() * (1 + 0.03 * props.leslie * pre.pitch_modulation_hi.cos());
+    float fundamental = frequency() * (1 + 0.02 * props.leslie * pre.pitch_modulation_hi.cos());
     pipes[0].freq(fundamental);
     pipes[1].freq(frequency()/2);
     pipes[2].freq(fundamental * 1.334839854); // A fifth above fundamental
@@ -56,10 +56,13 @@ namespace otto::engines {
       leslie_amount_lo = leslie * 0.5;
       pitch_modulation_lo.freq(leslie_speed_hi);
       pitch_modulation_hi.freq(leslie);
+      rotation.freq(leslie_speed_hi/4.f);
     });
   }
 
-  void GossSynth::Pre::operator()() noexcept {}
+  void GossSynth::Pre::operator()() noexcept {
+    props.rotation_value = rotation.nextPhase();
+  }
 
   /// Constructor. Takes care of linking appropriate variables to props
   GossSynth::Post::Post(Pre& pre) noexcept : PostBase(pre)
@@ -163,8 +166,7 @@ namespace otto::engines {
       ctx.lineWidth(6.0);
       ctx.strokeStyle(Colours::Red);
 
-      float rotation = engine.props.rotation * 2 * M_PI;
-      ctx.rotateAround(rotation, {160, 120});
+      ctx.rotateAround(engine.props.rotation_value, {160, 120});
       ctx.circle({160, height/2 + engine.props.leslie*25}, 12.5);
       ctx.stroke();
 

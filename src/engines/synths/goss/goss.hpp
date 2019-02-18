@@ -24,7 +24,7 @@ namespace otto::engines {
                                   steppable::init(0.01)};
       Property<float> leslie = {this, "leslie", 0.3, has_limits::init(0, 1), steppable::init(0.01)};
 
-      float rotation = 0;
+      float rotation_value;
 
     } props;
 
@@ -53,6 +53,8 @@ namespace otto::engines {
       gam::LFO<> leslie_filter_lo;
       gam::LFO<> pitch_modulation_lo;
       gam::LFO<> pitch_modulation_hi;
+
+      gam::AccumPhase<> rotation;
 
       Pre(Props&) noexcept;
 
