@@ -32,9 +32,9 @@ namespace otto::engines {
     reson.freq(freq);
     float excitation = exciter() * (1 + noise());
     float orig_note = reson(excitation*hammer_strength);
-    float overdrive = tanh(lpf(15*orig_note + 3.25));
-    float hp1 = 0.25*hpf1(overdrive);
-    float hp2 = hpf2(-0.08*pow(overdrive, 10));
+    //float overdrive = tanh(lpf(15*orig_note + 3.25));
+    //float hp1 = 0.25*hpf1(overdrive);
+    //float hp2 = hpf2(-0.08*pow(overdrive, 10));
     return tanh(0.3*orig_note);
     //return orig_note;
   }
