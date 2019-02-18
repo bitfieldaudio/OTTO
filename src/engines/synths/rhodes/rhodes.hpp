@@ -17,6 +17,9 @@ namespace otto::engines {
 
   struct RhodesSynth : SynthEngine, EngineWithEnvelope {
     struct Props : Properties<> {
+
+        Property<int> pickup = {this, "pickup", 0, has_limits::init(0, 1),
+                                     steppable::init(1)};
         Property<float> lfo_speed = {this, "lfo_speed", 0.1, has_limits::init(0, 1),
                                      steppable::init(0.01)};
         Property<float> lfo_depth = {this, "lfo_depth", 0.1, has_limits::init(0, 1),
@@ -52,6 +55,8 @@ namespace otto::engines {
       gam::NoiseWhite<> noise;
 
       gam::Biquad<> lpf;
+      gam::Biquad<> pickup_lpf;
+      gam::Biquad<> pickup_hpf;
       gam::Biquad<> hpf1;
       gam::Biquad<> hpf2;
 
