@@ -90,13 +90,13 @@ namespace otto::board::ui {
       else
         send_key(OKey::master);
       break;
-    case Key::y: break;
+    case Key::y: send_key(OKey::send);
     case Key::z: break;
 
-    case Key::n1: send_key(OKey::sequencer); break;
+    case Key::n1: send_key(OKey::arpeggiator); break;
     case Key::n2: send_key(OKey::synth); break;
     case Key::n3: send_key(OKey::fx1); break;
-    case Key::n4: break; // FX 2
+    case Key::n4: send_key(OKey::fx2); break;
 
     case Key::n5: send_key(OKey::voices); break;
     case Key::n6: send_key(OKey::envelope); break;
