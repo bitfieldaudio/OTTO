@@ -49,7 +49,7 @@ namespace otto::engines {
       //Fill remap tables
       remap_table.resize(512);
       for (int i=0; i<remap_table.size(); i++) {
-        remap_table[i] = (2.0*(float)i/(float)remap_table.size() - 1.0) / 2.0;
+        remap_table[i] = (2.0*(float)i/(float)remap_table.size()) / 2.0;
       }
 
     }

@@ -164,15 +164,17 @@ namespace otto::core::midi {
 
   inline AnyMidiEvent from_bytes(gsl::span<unsigned char> bytes, int time = 0)
   {
+    if (bytes.size() < 3) throw util::exception("Midi event size must be >= 3 bytes");
     auto type = MidiEvent::Type(bytes[0] >> 4);
     auto velocity = bytes[2];
     switch (type) {
     case MidiEvent::Type::NoteOff: return NoteOffEvent::from_bytes(bytes, time);
-    case MidiEvent::Type::NoteOn:
-    {
-      ///Per the MIDI specification, NoteOff events are also sent as NoteOn with velocity 0.
-      if (velocity != 0) return NoteOnEvent::from_bytes(bytes, time);
-      else return NoteOffEvent::from_bytes(bytes, time);
+    case MidiEvent::Type::NoteOn: {
+      /// Per the MIDI specification, NoteOff events are also sent as NoteOn with velocity 0.
+      if (velocity != 0)
+        return NoteOnEvent::from_bytes(bytes, time);
+      else
+        return NoteOffEvent::from_bytes(bytes, time);
     }
     case MidiEvent::Type::ControlChange: return ControlChangeEvent::from_bytes(bytes, time);
     default: return MidiEvent::from_bytes(bytes, time);
@@ -292,7 +294,8 @@ namespace otto::core::midi {
       return _data->emplace_back(std::forward<Ref>(args)...);
     }
 
-    auto&& move_vector_out() {
+    auto&& move_vector_out()
+    {
       return std::move(*_data);
     }
 

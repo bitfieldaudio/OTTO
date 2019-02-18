@@ -43,7 +43,7 @@ namespace otto::services {
     EngineDispatcher<EngineType::effect> effect2;
 
     engines::Master master;
-    engines::Sequencer sequencer;
+    // engines::Sequencer sequencer;
   };
 
   struct EffectSend {
@@ -217,9 +217,9 @@ namespace otto::services {
       }
     });
 
-    ui_manager.register_key_handler(ui::Key::sequencer, [&](ui::Key k) {
-        ui_manager.display(sequencer.screen());
-    });
+    // ui_manager.register_key_handler(ui::Key::sequencer, [&](ui::Key k) {
+    //     ui_manager.display(sequencer.screen());
+    // });
 
     static ui::Screen* master_last_screen = nullptr;
     static ui::Screen* send_last_screen = nullptr;
@@ -277,7 +277,7 @@ namespace otto::services {
       auto midi_in = external_in.midi_only();
       auto arp_out = arpeggiator->process(midi_in);
       auto synth_out = synth->process({external_in.audio, arp_out.midi, external_in.nframes});
-      auto seq_out = sequencer.process(midi_in);
+      // auto seq_out = sequencer.process(midi_in);
       auto fx1_bus = Application::current().audio_manager->buffer_pool().allocate_multi<1>();
       auto fx2_bus = Application::current().audio_manager->buffer_pool().allocate_multi<1>();
       for (auto&& [snth, fx1, fx2] : util::zip(synth_out, fx1_bus, fx2_bus)) {

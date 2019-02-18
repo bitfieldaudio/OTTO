@@ -63,7 +63,7 @@ namespace otto::engines {
 
     ctx.beginPath();
     ctx.moveTo({40, 200});
-    ctx.lineTo({40 + 240 * engine.graph.average, 200});
+    ctx.lineTo({40 + 240 * engine.graph, 200});
     ctx.lineWidth(6);
     ctx.stroke(Colours::White);
 

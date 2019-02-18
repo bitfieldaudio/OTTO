@@ -45,13 +45,11 @@ namespace otto::util::audio {
   struct Graph {
     float sum = 0;
     int nsamples = 0;
-    float average = 0;
 
     /// Add a sample to the graph
     void add(float sample) {
       ++nsamples;
       sum += std::abs(sample);
-      average = nsamples == 0 ? 0 : sum/nsamples;
     }
 
     /// Clear the values, starting a new average
@@ -59,16 +57,15 @@ namespace otto::util::audio {
       int scale = 64;
       sum /= scale;
       nsamples /= scale;
-      average = nsamples == 0 ? 0 : sum/nsamples;
     }
 
     /// get `average` clamped to `[0, 1]`
     float clip() const {
-      return std::clamp(average, 0.f, 1.f);
+      return std::clamp(nsamples == 0 ? 0 : sum/nsamples, 0.f, 1.f);
     }
 
     operator float() const {
-      return average;
+      return nsamples == 0 ? 0 : sum/nsamples;
     }
   };
 
