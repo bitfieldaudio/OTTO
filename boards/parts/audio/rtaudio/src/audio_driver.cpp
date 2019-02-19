@@ -136,8 +136,8 @@ namespace otto::services {
 
     // Separate channels
     for (int i = 0; i < nframes; i++) {
-      out_data[i * 2] = std::get<0>(out.audio[i]);
-      out_data[i * 2 + 1] = std::get<1>(out.audio[i]);
+      out_data[i * 2] = out.audio[0][i];
+      out_data[i * 2 + 1] = out.audio[1][i];
     }
 
     if (midi_out) {

@@ -46,28 +46,47 @@ namespace otto::core::audio {
     using iterator = float*;
     using const_iterator = const float*;
 
-    AudioBufferHandle(float* data, std::size_t length, int& reference_count)
+    AudioBufferHandle(float* data, std::size_t length, int& reference_count) noexcept
       : _data(data), _length(length), _reference_count(&reference_count)
     {
       (*_reference_count)++;
     }
 
-    ~AudioBufferHandle()
+    ~AudioBufferHandle() noexcept
     {
       if (_reference_count) (*_reference_count)--;
     };
 
-    AudioBufferHandle(AudioBufferHandle&& rhs)
+    AudioBufferHandle(AudioBufferHandle&& rhs) noexcept
       : _data(rhs._data), _length(rhs._length), _reference_count(rhs._reference_count)
     {
       rhs._data = nullptr;
       rhs._reference_count = nullptr;
     }
 
-    AudioBufferHandle(const AudioBufferHandle& rhs)
+    AudioBufferHandle(const AudioBufferHandle& rhs) noexcept
       : _data(rhs._data), _length(rhs._length), _reference_count(rhs._reference_count)
     {
       (*_reference_count)++;
+    }
+
+    AudioBufferHandle& operator=(AudioBufferHandle&& rhs) noexcept
+    {
+      _data = rhs._data;
+      _length = rhs._length;
+      _reference_count = rhs._reference_count;
+      rhs._data = nullptr;
+      rhs._reference_count = nullptr;
+      return *this;
+    }
+
+    AudioBufferHandle& operator=(const AudioBufferHandle& rhs) noexcept
+    {
+      _data = rhs._data;
+      _length = rhs._length;
+      _reference_count = rhs._reference_count;
+      (*_reference_count)++;
+      return *this;
     }
 
     int reference_count() const
@@ -142,150 +161,14 @@ namespace otto::core::audio {
       return _data;
     }
 
+    operator std::array<AudioBufferHandle, 1>() const noexcept {
+      return {*this};
+    }
+
   private:
     float* _data;
-    const std::size_t _length;
+    std::size_t _length;
     int* _reference_count;
-  };
-
-  template<std::size_t Channels>
-  struct MultiChannelAudioBufferHandle;
-
-  template<>
-  struct MultiChannelAudioBufferHandle<0> {
-    void clear() {}
-
-    std::array<float*, 0> data()
-    {
-      return {};
-    }
-  };
-
-  template<>
-  struct MultiChannelAudioBufferHandle<1> {
-    static constexpr std::size_t channel_count = 1;
-
-    using iterator = util::zipped_iterator<AudioBufferHandle::iterator>;
-    using const_iterator = util::zipped_iterator<AudioBufferHandle::const_iterator>;
-
-    MultiChannelAudioBufferHandle(const AudioBufferHandle& handle) : _handle(handle) {}
-
-    std::size_t size() const
-    {
-      return _handle.size();
-    }
-
-    iterator begin()
-    {
-      return {_handle.begin()};
-    }
-    iterator end()
-    {
-      return {_handle.end()};
-    }
-    iterator begin() const
-    {
-      return {_handle.begin()};
-    }
-    iterator end() const
-    {
-      return {_handle.end()};
-    }
-
-    std::tuple<float&> operator[](std::size_t i)
-    {
-      return {_handle[i]};
-    }
-
-    std::tuple<const float&> operator[](std::size_t i) const
-    {
-      return {_handle[i]};
-    }
-
-    void release()
-    {
-      _handle.release();
-    }
-
-    void clear()
-    {
-      _handle.clear();
-    }
-
-    std::array<float*, channel_count> data()
-    {
-      return {_handle.data()};
-    }
-
-  private:
-    AudioBufferHandle _handle;
-  };
-
-  template<>
-  struct MultiChannelAudioBufferHandle<2> {
-    static constexpr std::size_t channel_count = 2;
-
-    using iterator =
-      util::zipped_iterator<AudioBufferHandle::iterator, AudioBufferHandle::iterator>;
-    using const_iterator =
-      util::zipped_iterator<AudioBufferHandle::const_iterator, AudioBufferHandle::const_iterator>;
-
-    MultiChannelAudioBufferHandle(const AudioBufferHandle& left, const AudioBufferHandle& right)
-      : _left_handle(left), _right_handle(right)
-    {}
-
-    std::size_t size() const
-    {
-      return std::min(_left_handle.size(), _right_handle.size());
-    }
-
-    iterator begin()
-    {
-      return {_left_handle.begin(), _right_handle.begin()};
-    }
-    iterator end()
-    {
-      return {_left_handle.end(), _right_handle.end()};
-    }
-    iterator begin() const
-    {
-      return {_left_handle.begin(), _right_handle.begin()};
-    }
-    iterator end() const
-    {
-      return {_left_handle.end(), _right_handle.end()};
-    }
-
-    std::pair<float&, float&> operator[](std::size_t i)
-    {
-      return {_left_handle[i], _right_handle[i]};
-    }
-
-    std::pair<const float&, const float&> operator[](std::size_t i) const
-    {
-      return {_left_handle[i], _right_handle[i]};
-    }
-
-    void release()
-    {
-      _left_handle.release();
-      _right_handle.release();
-    }
-
-    void clear()
-    {
-      _left_handle.clear();
-      _right_handle.clear();
-    }
-
-    std::array<float*, channel_count> data()
-    {
-      return {_left_handle.data(), _right_handle.data()};
-    }
-
-  private:
-    AudioBufferHandle _left_handle;
-    AudioBufferHandle _right_handle;
   };
 
   struct AudioBufferPool {
@@ -315,13 +198,6 @@ namespace otto::core::audio {
       std::terminate();
     }
 
-    template<std::size_t N>
-    MultiChannelAudioBufferHandle<N> allocate_multi() noexcept
-    {
-      if constexpr (N == 1) return allocate();
-      if constexpr (N == 2) return {allocate(), allocate()};
-    }
-
     AudioBufferHandle allocate_clear()
     {
       auto res = allocate();
@@ -329,20 +205,25 @@ namespace otto::core::audio {
       return res;
     }
 
-    template<std::size_t N>
-    MultiChannelAudioBufferHandle<N> allocate_multi_clear() noexcept
+    template<int NN>
+    std::array<AudioBufferHandle, NN> allocate_multi() noexcept
     {
-      if constexpr (N == 1) return allocate_clear();
-      if constexpr (N == 2) return {allocate_clear(), allocate_clear()};
+      return util::generate_array<NN>([this] (int) { return allocate(); });
     }
 
-    void set_buffer_size(std::size_t bs) noexcept {
+    template<int NN>
+    std::array<AudioBufferHandle, NN> allocate_multi_clear() noexcept
+    {
+      return util::generate_array<NN>([this] (int) { return allocate_clear(); });
+    }
+
+    void set_buffer_size(std::size_t bs) noexcept
+    {
       buffer_size = bs;
       reserve(number_of_buffers);
     }
 
   private:
-
     void reserve(std::size_t n) noexcept
     {
       data = std::make_unique<float[]>(n * buffer_size);
@@ -362,28 +243,27 @@ namespace otto::core::audio {
   struct ProcessData {
     static constexpr int channels = N;
 
-    MultiChannelAudioBufferHandle<channels> audio;
+    std::array<AudioBufferHandle, channels> audio;
     midi::shared_vector<midi::AnyMidiEvent> midi;
-
-
     long nframes;
 
-    template<int outN = 0>
-    ProcessData<outN> midi_only()
-    {
-      return {{}, midi, nframes};
-    }
+    ProcessData(std::array<AudioBufferHandle, channels> audio,
+                midi::shared_vector<midi::AnyMidiEvent> midi,
+                long nframes) noexcept;
 
-    ProcessData audio_only()
-    {
-      return {audio, {}, nframes};
-    }
+    ProcessData(std::array<AudioBufferHandle, channels> audio,
+                midi::shared_vector<midi::AnyMidiEvent> midi) noexcept;
+
+    ProcessData(std::array<AudioBufferHandle, channels> audio) noexcept;
+
+    ProcessData<0> midi_only();
+
+    ProcessData audio_only();
 
     template<std::size_t NN>
-    auto redirect(const MultiChannelAudioBufferHandle<NN>& buf)
-    {
-      return ProcessData<NN>{buf, midi, nframes};
-    }
+    ProcessData<NN> redirect(const std::array<AudioBufferHandle, NN>& buf);
+
+    ProcessData<1> redirect(const AudioBufferHandle& buf);
 
     /// Get only a slice of the audio.
     ///
@@ -392,33 +272,83 @@ namespace otto::core::audio {
     ///   If `length` is negative, `nframes - idx` will be used
     /// \requires parameter `idx` shall be in the range `[0, nframes)`, and
     /// `length` shall be in range `[0, nframes - idx]`
-    ProcessData slice(int idx, int length = -1)
-    {
-      auto res = *this;
-      length = length < 0 ? nframes - idx : length;
-      res.nframes = length;
-      if constexpr (channels != 0) {
-        res.audio = audio.slice(idx, length);
-      }
-      return res;
+    ProcessData slice(int idx, int length = -1);
+
+    std::array<float*, channels> raw_audio_buffers() {
+      return {util::generate_array<channels>([&] (int n) { return audio[n].data(); })};
     }
 
-    decltype(auto) begin()
-    {
-      return audio.begin();
-    }
-    decltype(auto) end()
-    {
-      return audio.end();
-    }
-    decltype(auto) begin() const
-    {
-      return audio.begin();
-    }
-    decltype(auto) end() const
-    {
-      return audio.end();
+  };
+
+
+  /// Non-owning package of data passed to audio processors
+  template<>
+  struct ProcessData<0> {
+    static constexpr int channels = 0;
+
+    midi::shared_vector<midi::AnyMidiEvent> midi;
+    long nframes;
+
+    ProcessData(midi::shared_vector<midi::AnyMidiEvent> midi, long nframes) noexcept;
+
+    template<std::size_t NN>
+    ProcessData<NN> redirect(const std::array<AudioBufferHandle, NN>& buf);
+    ProcessData<1> redirect(const AudioBufferHandle& buf);
+
+    std::array<float*, 0> raw_audio_buffers() {
+      return {};
     }
   };
 
+  /// Non-owning package of data passed to audio processors
+  template<>
+  struct ProcessData<1> {
+    static constexpr int channels = 1;
+
+    AudioBufferHandle audio;
+    midi::shared_vector<midi::AnyMidiEvent> midi;
+    long nframes;
+
+    ProcessData(std::array<AudioBufferHandle, channels> audio,
+                midi::shared_vector<midi::AnyMidiEvent> midi,
+                long nframes) noexcept;
+
+    ProcessData(std::array<AudioBufferHandle, channels> audio,
+                midi::shared_vector<midi::AnyMidiEvent> midi) noexcept;
+
+    ProcessData(std::array<AudioBufferHandle, channels> audio) noexcept;
+
+    ProcessData(AudioBufferHandle audio,
+                midi::shared_vector<midi::AnyMidiEvent> midi,
+                long nframes) noexcept;
+
+    ProcessData(AudioBufferHandle audio,
+                midi::shared_vector<midi::AnyMidiEvent> midi) noexcept;
+
+    ProcessData(AudioBufferHandle audio) noexcept;
+
+    ProcessData<0> midi_only();
+    ProcessData audio_only();
+
+    template<std::size_t NN>
+    ProcessData<NN> redirect(const std::array<AudioBufferHandle, NN>& buf);
+    ProcessData<1> redirect(const AudioBufferHandle& buf);
+
+    /// Get only a slice of the audio.
+    ///
+    /// \param idx The index to start from
+    /// \param length The number of frames to keep in the slice
+    ///   If `length` is negative, `nframes - idx` will be used
+    /// \requires parameter `idx` shall be in the range `[0, nframes)`, and
+    /// `length` shall be in range `[0, nframes - idx]`
+    ProcessData slice(int idx, int length = -1);
+
+    std::array<float*, channels> raw_audio_buffers() {
+      return {audio.data()};
+    }
+  };
+
+
 } // namespace otto::core::audio
+
+#include "processor.impl.hpp"

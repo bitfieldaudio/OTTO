@@ -1,15 +1,15 @@
 #include "engine_manager.hpp"
- 
-#include "engines/fx/wormhole/wormhole.hpp"
-#include "engines/fx/pingpong/pingpong.hpp"
-#include "engines/fx/chorus/chorus.hpp"
-#include "engines/misc/master/master.hpp"
+
+#include <engines/synths/goss/goss.hpp>
 #include "core/engine/sequencer.hpp"
+#include "engines/fx/chorus/chorus.hpp"
+#include "engines/fx/pingpong/pingpong.hpp"
+#include "engines/fx/wormhole/wormhole.hpp"
+#include "engines/misc/master/master.hpp"
 #include "engines/seq/euclid/euclid.hpp"
 #include "engines/synths/OTTOFM/ottofm.hpp"
 #include "engines/synths/hammond/hammond.hpp"
 #include "engines/synths/nuke/nuke.hpp"
-#include <engines/synths/goss/goss.hpp>
 #include "engines/synths/potion/potion.hpp"
 #include "engines/synths/rhodes/rhodes.hpp"
 #include "engines/synths/sampler/sampler.hpp"
@@ -93,8 +93,9 @@ namespace otto::services {
     } screen = {*this};
   };
 
-  void EffectSend::Screen::draw(core::ui::vg::Canvas&ctx)  {
-  using namespace core::ui::vg;
+  void EffectSend::Screen::draw(core::ui::vg::Canvas& ctx)
+  {
+    using namespace core::ui::vg;
     ctx.font(Fonts::Norm, 35);
 
     constexpr float x_pad = 30;
@@ -143,9 +144,9 @@ namespace otto::services {
     ctx.fillText(fmt::format("{:1.2}", _owner.props.dry_pan), {width - x_pad, y_pad + 3 * space});
   }
   void EffectSend::Screen::rotary(core::ui::RotaryEvent e)
-    {
+  {
     switch (e.rotary) {
-  case otto::core::ui::Rotary::blue: _owner.props.to_FX1.step(e.clicks); break;
+    case otto::core::ui::Rotary::blue: _owner.props.to_FX1.step(e.clicks); break;
     case otto::core::ui::Rotary::green: _owner.props.to_FX2.step(e.clicks); break;
     case otto::core::ui::Rotary::yellow: _owner.props.dry.step(e.clicks); break;
     case otto::core::ui::Rotary::red: _owner.props.dry_pan.step(e.clicks); break;
@@ -169,7 +170,7 @@ namespace otto::services {
 
     engineGetters.try_emplace("Synth", [&]() { return dynamic_cast<AnyEngine*>(synth.current()); });
     engineGetters.try_emplace("Effect1",
-    [&]() { return dynamic_cast<AnyEngine*>(effect1.current()); });
+                              [&]() { return dynamic_cast<AnyEngine*>(effect1.current()); });
     engineGetters.try_emplace("Effect2",
                               [&]() { return dynamic_cast<AnyEngine*>(effect2.current()); });
     engineGetters.try_emplace("Arpeggiator",
@@ -272,12 +273,11 @@ namespace otto::services {
                                     [&](ui::Key k) {
                                       send_last_screen = ui_manager.current_screen();
                                       if (ui_manager.selected_engine_name() == "Sequencer" ||
-                              ui_manager.selected_engine_name() == "Synth")
+                                          ui_manager.selected_engine_name() == "Synth")
                                         ui_manager.display(synth_send.screen);
                                     },
                                     [&](ui::Key k) {
-                                      if (send_last_screen)
-                                          ui_manager.display(*send_last_screen);
+                                      if (send_last_screen) ui_manager.display(*send_last_screen);
                                     });
 
     auto load = [&](nlohmann::json& data) {
@@ -312,22 +312,21 @@ namespace otto::services {
     auto arp_out = arpeggiator->process(midi_in);
     auto synth_out = synth->process({external_in.audio, arp_out.midi, external_in.nframes});
     // auto seq_out = sequencer.process(midi_in);
-    auto fx1_bus = Application::current().audio_manager->buffer_pool().allocate_multi<1>();
-    auto fx2_bus = Application::current().audio_manager->buffer_pool().allocate_multi<1>();
-    for (auto&& [snth, fx1, fx2] : util::zip(synth_out, fx1_bus, fx2_bus)) {
-    std::get<0>(fx1) = std::get<0>(snth) * synth_send.props.to_FX1;
-      std::get<0>(fx2) = std::get<0>(snth) * synth_send.props.to_FX2;
-      }
-    auto fx1_out = effect1->process(external_in.redirect(fx1_bus));
-    auto fx2_out = effect2->process(external_in.redirect(fx2_bus));
-    for (auto&& [snth, fx1, fx2] : util::zip(synth_out, fx1_out, fx2_out)) {
-    std::get<0>(fx1) += std::get<0>(fx2) +
-      std::get<0>(snth) * synth_send.props.dry * (1 - synth_send.props.dry_pan);
-                          std::get<1>(fx1) += std::get<1>(fx2) +
-      std::get<0>(snth) * synth_send.props.dry * (1 + synth_send.props.dry_pan);
-                          }
+    auto fx1_bus = Application::current().audio_manager->buffer_pool().allocate();
+    auto fx2_bus = Application::current().audio_manager->buffer_pool().allocate();
+    for (auto&& [snth, fx1, fx2] : util::zip(synth_out.audio, fx1_bus, fx2_bus)) {
+      fx1 = snth * synth_send.props.to_FX1;
+      fx2 = snth * synth_send.props.to_FX2;
+    }
+    auto fx1_out = effect1->process(audio::ProcessData<1>(fx1_bus));
+    auto fx2_out = effect2->process(audio::ProcessData<1>(fx2_bus));
+    for (auto&& [snth, fx1L, fx1R, fx2L, fx2R] : util::zip(synth_out.audio, fx1_out.audio[0], fx1_out.audio[1], fx2_out.audio[0], fx1_out.audio[1])) {
+      fx1L += fx2L + snth * synth_send.props.dry * (1 - synth_send.props.dry_pan);
+      fx1R += fx2R + snth * synth_send.props.dry * (1 + synth_send.props.dry_pan);
+    }
     synth_out.audio.release();
-    fx2_out.audio.release();
+    fx2_out.audio[0].release();
+    fx2_out.audio[1].release();
     fx1_bus.release();
     fx2_bus.release();
     return master.process(std::move(fx1_out));
