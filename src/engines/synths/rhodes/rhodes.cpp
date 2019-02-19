@@ -30,17 +30,11 @@ namespace otto::engines {
   {
     float freq = frequency();
     reson.freq(freq);
-    float excitation = exciter() * (1 + noise());
-    float orig_note = lpf(reson(excitation*hammer_strength));
-    switch (props.pickup) {
-      case 0: {
-        float aux = tanh(0.3*pickup_lpf(orig_note));
-        return pickup_hpf(0.01*pow(2, 10*aux));
-      }
-      case 1: {
-        return tanh(0.3*orig_note);
-      }
-    }
+    float excitation = lpf(exciter() * (1 + noise()));
+    float orig_note = reson(excitation*hammer_strength);
+    float aux = tanh(0.3*orig_note + props.pickup);
+    return pickup_hpf(0.01*pow(2, 10*aux));
+
     //float overdrive = tanh(lpf(15*orig_note + 3.25));
     //float hp1 = 0.25*hpf1(overdrive);
     //float hp2 = hpf2(-0.08*pow(overdrive, 10));
@@ -72,7 +66,7 @@ namespace otto::engines {
     exciter.decay(1.f/frequency());
     exciter.reset();
 
-    hammer_strength = pow(2, (1-(velocity())*(-4.f)));
+    hammer_strength = pow(2, (1 - velocity()*(-3.0)));
 
     noise.seed(123);
 
