@@ -28,18 +28,12 @@ namespace otto::engines {
   //Voice
   float RhodesSynth::Voice::operator()() noexcept
   {
-    float freq = frequency();
-    reson.freq(freq);
+    reson.freq(frequency());
     float excitation = lpf(exciter() * (1 + noise()));
+    float harmonics = env() * overtones();
     float orig_note = reson(excitation*hammer_strength);
-    float aux = tanh(0.3*orig_note + props.pickup);
-    return pickup_hpf(0.01*pow(2, 10*aux));
-
-    //float overdrive = tanh(lpf(15*orig_note + 3.25));
-    //float hp1 = 0.25*hpf1(overdrive);
-    //float hp2 = hpf2(-0.08*pow(overdrive, 10));
-    //return tanh(0.3*orig_note);
-    //return orig_note;
+    float aux = tanh(0.3*orig_note + props.asymmetry);
+    return pickup_hpf(pow(2, 10*aux)) + harmonics;
   }
 
   RhodesSynth::Voice::Voice(Pre& pre) noexcept : VoiceBase(pre) {
@@ -53,11 +47,13 @@ namespace otto::engines {
     pickup_lpf.type(gam::LOW_PASS);
     pickup_lpf.freq(1000);
     pickup_hpf.type(gam::HIGH_PASS);
-    //lpf.freq(150);
-    //hpf1.type(gam::HIGH_PASS);
-    //hpf2.type(gam::HIGH_PASS);
-    //hpf1.freq(250);
-    //hpf2.freq(50);
+
+    overtones.resize(1024);
+    overtones.addSine(7, 1, 0);
+    overtones.addSine(20, 0.5, 0);
+
+    env.decay(3);
+
 
   }
 
@@ -66,14 +62,17 @@ namespace otto::engines {
     exciter.decay(1.f/frequency());
     exciter.reset();
 
-    hammer_strength = pow(2, (1 - velocity()*(-3.0)));
+    hammer_strength = pow(2, (1 - props.aggro*velocity()*(-3.0)));
 
     noise.seed(123);
 
-    lpf.freq(pow(velocity()*90 + 20,2));
+    lpf.freq(pow(velocity()*90*props.aggro + 20,2));
     lpf.zero();
 
     pickup_hpf.freq(frequency());
+
+    overtones.freq(frequency());
+    env.reset(1.7);
 
   }
 
@@ -89,6 +88,7 @@ namespace otto::engines {
   /// Constructor. Takes care of linking appropriate variables to props
   RhodesSynth::Post::Post(Pre& pre) noexcept : PostBase(pre)
   {
+
     props.lfo_depth.on_change().connect([this](float depth) {
         lfo_amount = depth*0.6;
     });
@@ -99,7 +99,7 @@ namespace otto::engines {
 
   float RhodesSynth::Post::operator()(float in) noexcept
   {
-    return in*(1 + lfo_amount*lfo.tri());
+    return 0.01*in*(1 + lfo_amount*lfo.tri());
   }
 
   audio::ProcessData<1> RhodesSynth::process(audio::ProcessData<1> data)
@@ -120,8 +120,8 @@ namespace otto::engines {
   {
 
     switch (e.rotary) {
-    case Rotary::blue:  engine.props.pickup.step(e.clicks);
-    case Rotary::green:  break;
+    case Rotary::blue:  engine.props.aggro.step(e.clicks); break;
+    case Rotary::green:  engine. props.asymmetry.step(e.clicks); break;
     case Rotary::yellow: engine.props.lfo_speed.step(e.clicks); break;
     case Rotary::red: engine.props.lfo_depth.step(e.clicks); break;
     }
@@ -144,23 +144,23 @@ namespace otto::engines {
     ctx.beginPath();
     ctx.fillStyle(Colours::Blue);
     ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
-    ctx.fillText("LFO1", {x_pad, y_pad});
+    ctx.fillText("Aggro", {x_pad, y_pad});
 
     ctx.beginPath();
     ctx.fillStyle(Colours::Blue);
     ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:1}", engine.props.pickup), {width - x_pad, y_pad});
-    /*
+    ctx.fillText(fmt::format("{:1}", engine.props.aggro), {width - x_pad, y_pad});
+
     ctx.beginPath();
     ctx.fillStyle(Colours::Green);
     ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
-    ctx.fillText("Remap1", {x_pad, y_pad + space});
+    ctx.fillText("Asym", {x_pad, y_pad + space});
 
     ctx.beginPath();
     ctx.fillStyle(Colours::Green);
     ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:1.2}", engine.props.oscillators[0].remap), {width - x_pad, y_pad + space});
-*/
+    ctx.fillText(fmt::format("{:1.2}", engine.props.asymmetry), {width - x_pad, y_pad + space});
+
     ctx.beginPath();
     ctx.fillStyle(Colours::Yellow);
     ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
