@@ -70,7 +70,10 @@ namespace otto::core::voices {
   template<typename D, typename P>
   void VoiceBase<D, P>::release() noexcept
   {
-    if (is_triggered()) env_.release();
+    if (is_triggered()) {
+      env_.release();
+      on_note_off();
+    }
   }
 
   // POST BASE //

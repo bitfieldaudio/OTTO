@@ -4,7 +4,6 @@
 #include "services/application.hpp"
 
 #include "core/audio/voice_manager.hpp"
-#include "ottofm.faust.hpp"
 #include "services/ui_manager.hpp"
 
 namespace otto::engines {
@@ -12,56 +11,7 @@ namespace otto::engines {
   using namespace ui;
   using namespace ui::vg;
 
-  /// Useful structs
-  struct Fraction {
-    int numerator;
-    int denominator;
 
-    constexpr Fraction(int n = 1, int d = 1) : numerator(n), denominator(d) {}
-
-    operator float() const
-    {
-      return float(numerator) / float(denominator);
-    }
-
-    std::string to_string() const
-    {
-      return fmt::format("{}/{}", numerator, denominator);
-    }
-  };
-
-  /// Used for graphics.
-  enum struct Drawside {
-    left,
-    middle,
-    right,
-    // Number of sides
-    n_sides,
-  };
-
-  struct Operatorline {
-    int start;
-    int end;
-    Drawside side;
-
-    constexpr Operatorline(int st = 1, int en = 2, Drawside si = Drawside::middle)
-      : start(st), end(en), side(si)
-    {}
-  };
-
-  struct Algorithm {
-    std::array<bool, 4> modulator_flags = {false, false, false, false};
-    std::vector<Operatorline> operator_lines;
-
-    Algorithm(std::initializer_list<int> modulator_idx = {},
-              std::vector<Operatorline> op_lines = {})
-      : operator_lines(op_lines)
-    {
-      for (auto&& idx : modulator_idx) {
-        modulator_flags[idx] = true;
-      }
-    }
-  };
 
 
   /*
@@ -80,71 +30,156 @@ namespace otto::engines {
     bool shift = false;
     int cur_op = 0;
 
-    std::array<Fraction, 19> fractions = {{{1, 1},
-                                           {1, 64},
-                                           {1, 32},
-                                           {3, 32},
-                                           {1, 8},
-                                           {5, 16},
-                                           {1, 2},
-                                           {5, 8},
-                                           {2, 1},
-                                           {3, 2},
-                                           {3, 4},
-                                           {1, 4},
-                                           {5, 32},
-                                           {1, 16},
-                                           {5, 8},
-                                           {4, 1},
-                                           {7, 4},
-                                           {7, 16},
-                                           {7, 2}}};
 
-    std::array<Algorithm, 11> algorithms = {
-      {Algorithm({1, 2, 3},
-                 {Operatorline(3, 2, Drawside::middle), Operatorline(2, 1, Drawside::middle),
-                  Operatorline(1, 0, Drawside::middle)}),
-       Algorithm({1, 2, 3},
-                 {Operatorline(3, 1, Drawside::left), Operatorline(2, 1, Drawside::right),
-                  Operatorline(1, 0, Drawside::middle)}),
-       Algorithm({1, 2, 3},
-                 {Operatorline(3, 0, Drawside::left), Operatorline(2, 1, Drawside::middle),
-                  Operatorline(1, 0, Drawside::middle)}),
-       Algorithm({1, 2, 3},
-                 {Operatorline(3, 2, Drawside::left), Operatorline(3, 1, Drawside::left),
-                  Operatorline(2, 0, Drawside::right), Operatorline(1, 0, Drawside::right)}),
-       Algorithm({2, 3},
-                 {Operatorline(3, 2, Drawside::middle), Operatorline(2, 1, Drawside::left),
-                  Operatorline(2, 0, Drawside::left)}),
-       Algorithm({2, 3},
-                 {Operatorline(3, 2, Drawside::middle), Operatorline(2, 1, Drawside::middle)}),
-       Algorithm({1, 2, 3},
-                 {Operatorline(3, 0, Drawside::left), Operatorline(2, 0, Drawside::right),
-                  Operatorline(1, 0, Drawside::middle)}),
-       Algorithm({1, 3},
-                 {Operatorline(3, 2, Drawside::middle), Operatorline(1, 0, Drawside::middle)}),
-       Algorithm({3},
-                 {Operatorline(3, 2, Drawside::middle), Operatorline(3, 1, Drawside::right),
-                  Operatorline(3, 0, Drawside::left)}),
-       Algorithm({3}, {Operatorline(3, 2, Drawside::middle)}), Algorithm({})}};
 
     using EngineScreen<OTTOFMSynth>::EngineScreen;
   };
+
+  float OTTOFMSynth::Voice::algos(int alg) {
+    switch (alg) {
+      case 0: return operators[0](operators[1](operators[2](operators[3](0))));
+      case 1: return operators[0](operators[1](operators[2](0) + operators[3](0)));
+      case 2: return operators[0](operators[1](operators[2](0)) + operators[3](0));
+      case 3: {
+        float aux = operators[3](0);
+        return operators[0](operators[1](aux) + operators[2](aux));
+      }
+      case 4: {
+        float aux = operators[2](operators[3](0));
+        return operators[0](aux) + operators[1](aux);
+      }
+      case 5: return operators[0](0) + operators[1](operators[2](operators[3](0)));
+      case 6: return operators[0](operators[1](0) + operators[2](0) + operators[3](0));
+      case 7: return operators[0](operators[1](0)) + operators[2](operators[3](0));
+      case 8: {
+        float aux = operators[3](0);
+        return operators[0](aux) + operators[1](aux) + operators[2](aux);
+      }
+      case 9: return operators[0](0) + operators[1](0) + operators[2](operators[3](0));
+      case 10: return operators[0](0) + operators[1](0) + operators[2](0) + operators[3](0);
+      default: return 0.f;
+    }
+  }
+
+  float OTTOFMSynth::FMOperator::FMSine::operator()(float phsOffset=0) noexcept {
+    return gam::scl::sinP9(gam::scl::wrap(this->nextPhase() + phsOffset, 1.f, -1.f));
+  }
+
+  float OTTOFMSynth::FMOperator::operator()(float phaseMod = 0) {
+    if (modulator) return env() * sine(phaseMod) * outlevel * fm_amount;
+    else return sine(phaseMod) * outlevel;
+  }
+
+  void OTTOFMSynth::FMOperator::freq(float frq) {
+    sine.freq(frq);
+  }
+
+  void OTTOFMSynth::Voice::reset_envelopes() {
+    for (auto op : operators) {
+      op.env.resetSoft();
+    }
+  }
+
+  void OTTOFMSynth::Voice::release_envelopes() {
+    for (auto op : operators) {
+      op.env.release();
+    }
+  }
+
+  //Voice
+  float OTTOFMSynth::Voice::operator()() noexcept
+  {
+    set_frequencies();
+    return algos(props.algN);
+  }
+
+  OTTOFMSynth::Voice::Voice(Pre& pre) noexcept : VoiceBase(pre)
+  {
+    ///Connect appropriate voice properties
+    props.algN.on_change().connect([this](int algo) {
+      //Change modulator flags
+      for (int i = 0; i<4; i++) {
+        operators[i].modulator = props.algorithms[algo].modulator_flags[i];
+      }
+    });
+    props.fmAmount.on_change().connect([this](float fm) {
+        //Change modulator flags
+        for (int i = 0; i<4; i++) {
+          operators[i].fm_amount = fm;
+        }
+    });
+
+    //Connect properties for individual operators
+    for (int i = 0; i<4; i++) {
+      props.operators[i].outLev.on_change().connect([this,i](float level) {
+        operators[i].outlevel = level;
+      });
+      props.operators[i].detune.on_change().connect([this,i](float detune) {
+          operators[i].detune_amount = detune * 25;
+      });
+      props.operators[i].ratio_idx.on_change().connect([this,i](int idx) {
+          operators[i].freq_ratio = (float)props.fractions[idx];
+      });
+      props.operators[i].mAtt.on_change().connect([this,i](float att) {
+          operators[i].env.attack(att);
+      });
+      props.operators[i].mDecrel.on_change().connect([this,i](float decrel) {
+          operators[i].env.decay(decrel * (1 - props.operators[i].mSuspos));
+          operators[i].env.release(decrel * props.operators[i].mSuspos);
+      });
+      props.operators[i].mSuspos.on_change().connect([this,i](float suspos) {
+          operators[i].env.decay(props.operators[i].mDecrel * (1 - suspos));
+          operators[i].env.release(props.operators[i].mDecrel * suspos);
+          operators[i].env.sustain(suspos);
+      });
+      props.operators[i].feedback.on_change().connect([this,i](float fb) {
+          operators[i].feedback = fb;
+      });
+    }
+  }
+
+  void OTTOFMSynth::Voice::on_note_on() noexcept {
+    reset_envelopes();
+  }
+
+  void OTTOFMSynth::Voice::on_note_off() noexcept {
+    release_envelopes();
+  }
+
+  void OTTOFMSynth::Voice::set_frequencies() {
+    for (int i=0; i<4; i++) {
+      operators[i].freq(frequency() * operators[i].freq_ratio + operators[i].detune_amount);
+    }
+  }
+  //Preprocessor
+  OTTOFMSynth::Pre::Pre(Props& props) noexcept : PreBase(props)
+  {
+
+  }
+
+  void OTTOFMSynth::Pre::operator()() noexcept {}
+
+  //Postprocessor
+  /// Constructor. Takes care of linking appropriate variables to props
+  OTTOFMSynth::Post::Post(Pre& pre) noexcept : PostBase(pre)
+  {
+
+  }
+
+  float OTTOFMSynth::Post::operator()(float in) noexcept {
+    return in;
+  }
 
   // OTTOFMSynth ////////////////////////////////////////////////////////////////
 
   OTTOFMSynth::OTTOFMSynth()
     : SynthEngine("OTTO.FM", props, std::make_unique<OTTOFMSynthScreen>(this)),
-      voice_mgr_(props),
-      faust_(std::make_unique<FAUSTCLASS>(), props)
+      voice_mgr_(props)
   {}
 
   audio::ProcessData<1> OTTOFMSynth::process(audio::ProcessData<1> data)
   {
-    voice_mgr_.process_before(data.midi_only());
-    auto res = faust_.process(data.midi_only());
-    voice_mgr_.process_after(data.midi_only());
-    return res;
+    return voice_mgr_.process(data);
   }
 
   /*
@@ -170,7 +205,6 @@ namespace otto::engines {
     case Rotary::blue:
       if (!shift) {
         current.ratio_idx.step(e.clicks);
-        current.ratio.set(float(fractions[current.ratio_idx]));
       } else {
         current.detune.step(e.clicks);
       }
@@ -235,7 +269,7 @@ namespace otto::engines {
     ctx.beginPath();
     ctx.fillStyle(Colours::Blue);
     ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fractions[engine.props.operators.at(cur_op).ratio_idx].to_string(),
+    ctx.fillText(engine.props.fractions[engine.props.operators.at(cur_op).ratio_idx].to_string(),
                  {width - x_pad, y_pad});
 
     // FM Amount
@@ -369,7 +403,7 @@ namespace otto::engines {
     const float spacing = 10.f;
     const float max_width = (b.width - 3 * spacing) / 3.f;
 
-    bool is_modulator = algorithms[engine.props.algN].modulator_flags[cur_op];
+    bool is_modulator = engine.props.algorithms[engine.props.algN].modulator_flags[cur_op];
 
     if (is_modulator) {
       float aw, dw, sh, rw;
@@ -489,12 +523,12 @@ namespace otto::engines {
     constexpr float space = (height - 2.f * y_pad) / 3.f;
 
     // Draw lines between operators
-    for (auto&& line : algorithms[engine.props.algN].operator_lines) {
+    for (auto&& line : engine.props.algorithms[engine.props.algN].operator_lines) {
       int x_middle = x_pad + 12;
       int mid_to_side = 15;
       int horizontal_length = 13;
 
-      if (line.side == Drawside::left) {
+      if (line.side == OTTOFMSynth::Drawside::left) {
         int x_close = x_middle - mid_to_side;
         int x_far = x_close - horizontal_length;
 
@@ -507,7 +541,7 @@ namespace otto::engines {
         ctx.lineTo(x_far, y_end);
         ctx.lineTo(x_close, y_end);
         ctx.stroke(Colours::White);
-      } else if (line.side == Drawside::right) {
+      } else if (line.side == OTTOFMSynth::Drawside::right) {
         int x_close = x_middle + mid_to_side;
         int x_far = x_close + horizontal_length;
 
@@ -536,7 +570,7 @@ namespace otto::engines {
     // draw operators
     for (int i = 0; i < 4; i++) {
       ctx.beginPath();
-      if (algorithms[engine.props.algN].modulator_flags[i]) { // draw modulator
+      if (engine.props.algorithms[engine.props.algN].modulator_flags[i]) { // draw modulator
         ctx.rect({x_pad, y_pad + (3 - i) * space - 13}, {25, 25});
       } else { // draw carrier
         ctx.circle({x_pad + 12, y_pad + (3 - i) * space}, 15);
@@ -575,20 +609,18 @@ namespace otto::engines {
           ctx.stroke(Colours::Red);
         }
       }
-
+      /*
       //Draw activity levels
       ctx.beginPath();
       float op_level;
-      if(algorithms[engine.props.algN].modulator_flags[i]){
-        engine.props.voice_envelopes.at(engine.voice_mgr_.last_voice).ops.at(i).modulator.refresh_links();
+      if(engine.props.algorithms[engine.props.algN].modulator_flags[i]){
         op_level = engine.props.voice_envelopes.at(engine.voice_mgr_.last_voice).ops.at(i).modulator*
             engine.props.operators.at(i).outLev;
       } else {
-        engine.props.voice_envelopes.at(engine.voice_mgr_.last_voice).carrier.refresh_links();
-        op_level = engine.props.voice_envelopes.at(engine.voice_mgr_.last_voice).carrier*
+        op_level = engine.voice_mgr_.voices[last_voice].carrier*
             engine.props.operators.at(i).outLev;
       }
-      if(algorithms[engine.props.algN].modulator_flags[i]){ //draw modulator
+      if(engine.props.algorithms[engine.props.algN].modulator_flags[i]){ //draw modulator
         ctx.rect({x_pad + 12.5*(1 - op_level), y_pad + (3 - i)*space - 13 + 12.5*(1 - op_level)}, {25*op_level, 25*op_level});
       } else { // draw carrier
         ctx.circle({x_pad + 12, y_pad + (3 - i)*space}, 15*op_level);
@@ -603,17 +635,18 @@ namespace otto::engines {
       } else if (i == 0) {
         ctx.fill(Colours::Red);
       }
+       */
     }
 
     // draw arrowheads
-    for (auto&& line : algorithms[engine.props.algN].operator_lines) {
+    for (auto&& line : engine.props.algorithms[engine.props.algN].operator_lines) {
       int x_middle = x_pad + 12;
       int mid_to_side = 15;
       int side_length = 5;
 
 
 
-      if (line.side == Drawside::left) {
+      if (line.side == OTTOFMSynth::Drawside::left) {
         int x = x_middle - mid_to_side;
         int y = y_pad + (3 - line.end) * space;
 
@@ -627,7 +660,7 @@ namespace otto::engines {
           ctx.stroke(Colours::White);
           ctx.fill(Colours::White);
         });
-      } else if (line.side == Drawside::right) {
+      } else if (line.side == OTTOFMSynth::Drawside::right) {
         int x = x_middle + mid_to_side;
         int y = y_pad + (3 - line.end) * space;
 
