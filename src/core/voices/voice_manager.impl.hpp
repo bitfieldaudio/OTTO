@@ -161,8 +161,8 @@ namespace otto::core::voices {
       util::match(evt, [&](midi::NoteOnEvent& evt) { handle_midi_on(evt); },
                   [&](midi::NoteOffEvent& evt) { handle_midi_off(evt); }, [](auto&) {});
     }
-    auto buf = Application::current().audio_manager->buffer_pool().allocate_multi<1>();
-    for (auto&& [frm] : buf) {
+    auto buf = Application::current().audio_manager->buffer_pool().allocate();
+    for (auto& frm : buf) {
       frm = (*this)();
     }
     return data.redirect(buf);

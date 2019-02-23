@@ -91,18 +91,21 @@ namespace otto::services {
 
   void UIManager::draw_frame(vg::Canvas& ctx)
   {
-    ctx.lineWidth(2);
+    ctx.lineWidth(6);
     ctx.lineCap(vg::Canvas::LineCap::ROUND);
     ctx.lineJoin(vg::Canvas::Canvas::LineJoin::ROUND);
-    cur_screen->draw(ctx);
+    ctx.group([&] {
+      cur_screen->draw(ctx);
+    });
 
-    ctx.beginPath();
-    ctx.font(vg::Fonts::Norm, 12);
-    static std::string cpu_time = "";
-    if (_frame_count % 1 == 0)
-      cpu_time = fmt::format("{}%", int(100 * Application::current().audio_manager->cpu_time()));
-    ctx.fillText(cpu_time, {280, 220});
-    
+    ctx.group([&] {
+      ctx.beginPath();
+      ctx.fillStyle(vg::Colours::White);
+      ctx.font(vg::Fonts::Norm, 12);
+      std::string cpu_time = fmt::format("{}%", int(100 * Application::current().audio_manager->cpu_time()));
+      ctx.fillText(cpu_time, {290, 230});
+    });
+
     _frame_count++;
   }
 

@@ -173,8 +173,8 @@ namespace otto::core::audio {
     audio::ProcessData<Cout> process(audio::ProcessData<Cin> data)
     {
       auto out = Application::current().audio_manager->buffer_pool().allocate_multi<Cout>();
-      auto in_bufs = data.audio.data();
-      auto out_bufs = out.data();
+      auto in_bufs = data.raw_audio_buffers();
+      auto out_bufs = ProcessData<Cout>(out).raw_audio_buffers();
       fDSP->compute(data.nframes, in_bufs.data(), out_bufs.data());
       return data.redirect(out);
     }

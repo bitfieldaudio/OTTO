@@ -27,8 +27,10 @@ namespace otto::engines {
 
   audio::ProcessData<2> Master::process(audio::ProcessData<2> data)
   {
-    for (auto&& [l, r] : data) {
+    for (auto&& l : data.audio[0]) {
       l *= props.volume * props.volume * 0.80;
+    }
+    for (auto&& r : data.audio[1]) {
       r *= props.volume * props.volume * 0.80;
     }
     return faust_.process(data);
