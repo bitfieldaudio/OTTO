@@ -161,7 +161,8 @@ namespace otto::core::audio {
       return _data;
     }
 
-    operator std::array<AudioBufferHandle, 1>() const noexcept {
+    operator std::array<AudioBufferHandle, 1>() const noexcept
+    {
       return {*this};
     }
 
@@ -208,13 +209,13 @@ namespace otto::core::audio {
     template<int NN>
     std::array<AudioBufferHandle, NN> allocate_multi() noexcept
     {
-      return util::generate_array<NN>([this] (int) { return allocate(); });
+      return util::generate_array<NN>([this](int) { return allocate(); });
     }
 
     template<int NN>
     std::array<AudioBufferHandle, NN> allocate_multi_clear() noexcept
     {
-      return util::generate_array<NN>([this] (int) { return allocate_clear(); });
+      return util::generate_array<NN>([this](int) { return allocate_clear(); });
     }
 
     void set_buffer_size(std::size_t bs) noexcept
@@ -274,12 +275,8 @@ namespace otto::core::audio {
     /// `length` shall be in range `[0, nframes - idx]`
     ProcessData slice(int idx, int length = -1);
 
-    std::array<float*, channels> raw_audio_buffers() {
-      return {util::generate_array<channels>([&] (int n) { return audio[n].data(); })};
-    }
-
+    std::array<float*, channels> raw_audio_buffers();
   };
-
 
   /// Non-owning package of data passed to audio processors
   template<>
@@ -295,9 +292,7 @@ namespace otto::core::audio {
     ProcessData<NN> redirect(const std::array<AudioBufferHandle, NN>& buf);
     ProcessData<1> redirect(const AudioBufferHandle& buf);
 
-    std::array<float*, 0> raw_audio_buffers() {
-      return {};
-    }
+    std::array<float*, 0> raw_audio_buffers();
   };
 
   /// Non-owning package of data passed to audio processors
@@ -322,8 +317,7 @@ namespace otto::core::audio {
                 midi::shared_vector<midi::AnyMidiEvent> midi,
                 long nframes) noexcept;
 
-    ProcessData(AudioBufferHandle audio,
-                midi::shared_vector<midi::AnyMidiEvent> midi) noexcept;
+    ProcessData(AudioBufferHandle audio, midi::shared_vector<midi::AnyMidiEvent> midi) noexcept;
 
     ProcessData(AudioBufferHandle audio) noexcept;
 
@@ -343,12 +337,12 @@ namespace otto::core::audio {
     /// `length` shall be in range `[0, nframes - idx]`
     ProcessData slice(int idx, int length = -1);
 
-    std::array<float*, channels> raw_audio_buffers() {
-      return {audio.data()};
-    }
+    std::array<float*, channels> raw_audio_buffers();
   };
 
 
 } // namespace otto::core::audio
+
+// kak: other_file=processor.impl.hpp
 
 #include "processor.impl.hpp"
