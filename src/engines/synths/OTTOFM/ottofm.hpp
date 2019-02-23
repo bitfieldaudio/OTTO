@@ -187,40 +187,41 @@ namespace otto::engines {
     }
 
   private:
-      struct Pre : voices::PreBase<Pre, Props> {
+    struct Pre : voices::PreBase<Pre, Props> {
 
-          Pre(Props&) noexcept;
+        Pre(Props&) noexcept;
 
-          void operator()() noexcept;
-      };
+        void operator()() noexcept;
+    };
 
-      struct Voice : voices::VoiceBase<Voice, Pre> {
-          //The workhorse. Implements the FM algorithms.
-          float algos(int);
+    struct Voice : voices::VoiceBase<Voice, Pre> {
 
-          std::array<FMOperator,4> operators;
+        //The workhorse. Implements the FM algorithms.
+        float algos(int);
 
-          void reset_envelopes();
-          void release_envelopes();
+        std::array<FMOperator,4> operators;
 
-          void set_frequencies();
+        void reset_envelopes();
+        void release_envelopes();
 
-          Voice(Pre&) noexcept;
+        void set_frequencies();
 
-          float operator()() noexcept;
-          void on_note_on() noexcept;
-          void on_note_off() noexcept;
+        Voice(Pre&) noexcept;
 
-      private:
-          friend struct OTTOFMSynthScreen;
-      };
+        float operator()() noexcept;
+        void on_note_on() noexcept;
+        void on_note_off() noexcept;
 
-      struct Post : voices::PostBase<Post, Voice> {
+    private:
+        friend struct OTTOFMSynthScreen;
+    };
 
-          Post(Pre&) noexcept;
+    struct Post : voices::PostBase<Post, Voice> {
 
-          float operator()(float) noexcept;
-      };
+        Post(Pre&) noexcept;
+
+        float operator()(float) noexcept;
+    };
 
     voices::VoiceManager<Post, 6> voice_mgr_;
   };

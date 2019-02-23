@@ -15,6 +15,7 @@ namespace otto::engines {
   using namespace props;
 
   struct GossSynth : SynthEngine, EngineWithEnvelope {
+
     struct Props : Properties<> {
       Property<float> drawbar1 = {this, "drawbar1", 1, has_limits::init(0, 1),
                                   steppable::init(0.01)};
@@ -62,12 +63,16 @@ namespace otto::engines {
     };
 
     struct Voice : voices::VoiceBase<Voice, Pre> {
-      //std::array<gam::Sine<>, 4> pipes;
       std::array<gam::Osc<>, 4> pipes;
+      gam::Osc<> percussion;
+      gam::Decay<> perc_env;
 
       Voice(Pre&) noexcept;
 
       float operator()() noexcept;
+
+      void on_note_on() noexcept;
+
     };
 
     struct Post : voices::PostBase<Post, Voice> {

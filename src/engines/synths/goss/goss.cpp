@@ -27,20 +27,41 @@ namespace otto::engines {
 
   float GossSynth::Voice::operator()() noexcept
   {
-    float fundamental = frequency() * (1 + 0.02 * props.leslie * pre.pitch_modulation_hi.cos());
+    float fundamental = frequency() * (1 + 0.015 * props.leslie * pre.pitch_modulation_hi.cos()) * 0.5;
     pipes[0].freq(fundamental);
-    pipes[1].freq(frequency()/2);
-    pipes[2].freq(fundamental * 1.334839854); // A fifth above fundamental
-    pipes[3].freq(fundamental * 2);
-    return pipes[0]() + pipes[1]() * props.drawbar1 + pipes[2]() * props.drawbar2 + pipes[3]() * props.drawbar3;
+    pipes[1].freq(fundamental);
+    pipes[2].freq(fundamental);
+    percussion.freq(frequency());
+    return pipes[0]() + pipes[1]() * props.drawbar1 + pipes[2]() * props.drawbar2 + percussion() * perc_env();
   }
 
   GossSynth::Voice::Voice(Pre& pre) noexcept : VoiceBase(pre) {
-    pipes[0].resize(512);
+    pipes[0].resize(1024);
     pipes[0].addSine(1, 1, 0);
-    for (int i=1; i!=3; i++) {
-      pipes[i].source(pipes[0]);
-    }
+    pipes[0].addSine(3, 1, 0);
+    pipes[0].addSine(2, 1, 0);
+
+    pipes[1].resize(1024);
+    pipes[1].addSine(4, 1, 0);
+    pipes[1].addSine(16, 0.5, 0);
+
+    pipes[2].resize(1024);
+    pipes[2].addSine(6, 0.5, 0);
+    pipes[2].addSine(8, 1, 0);
+    pipes[2].addSine(10, 0.5, 0);
+    pipes[2].addSine(12, 1, 0);
+    pipes[2].addSine(16, 0.5, 0);
+
+    percussion.resize(1024);
+    percussion.addSine(4, 0.5, 0);
+    percussion.addSine(6, 1.0, 0);
+
+    perc_env.decay(0.5);
+    perc_env.finish();
+  }
+
+  void GossSynth::Voice::on_note_on() noexcept {
+    perc_env.reset(props.drawbar3 * 5);
   }
 
   GossSynth::Pre::Pre(Props& props) noexcept : PreBase(props)

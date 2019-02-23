@@ -74,15 +74,19 @@ namespace otto::engines {
     sine.freq(frq);
   }
 
+  float OTTOFMSynth::FMOperator::level() {
+    return env.value() * outlevel;
+  }
+
   void OTTOFMSynth::Voice::reset_envelopes() {
-    for (auto op : operators) {
-      op.env.resetSoft();
+    for (int i=0; i<4; i++) {
+      operators[i].env.resetSoft();
     }
   }
 
   void OTTOFMSynth::Voice::release_envelopes() {
-    for (auto op : operators) {
-      op.env.release();
+    for (int i=0; i<4; i++) {
+      operators[i].env.release();
     }
   }
 
@@ -95,6 +99,9 @@ namespace otto::engines {
 
   OTTOFMSynth::Voice::Voice(Pre& pre) noexcept : VoiceBase(pre)
   {
+    for (int i=0; i<4; i++) {
+      operators[i].env.finish();
+    }
     ///Connect appropriate voice properties
     props.algN.on_change().connect([this](int algo) {
       //Change modulator flags
@@ -121,15 +128,15 @@ namespace otto::engines {
           operators[i].freq_ratio = (float)props.fractions[idx];
       });
       props.operators[i].mAtt.on_change().connect([this,i](float att) {
-          operators[i].env.attack(att);
+          operators[i].env.attack(3 * att);
       });
       props.operators[i].mDecrel.on_change().connect([this,i](float decrel) {
-          operators[i].env.decay(decrel * (1 - props.operators[i].mSuspos));
-          operators[i].env.release(decrel * props.operators[i].mSuspos);
+          operators[i].env.decay(3 * decrel * (1 - props.operators[i].mSuspos));
+          operators[i].env.release(3 * decrel * props.operators[i].mSuspos);
       });
       props.operators[i].mSuspos.on_change().connect([this,i](float suspos) {
-          operators[i].env.decay(props.operators[i].mDecrel * (1 - suspos));
-          operators[i].env.release(props.operators[i].mDecrel * suspos);
+          operators[i].env.decay( 3 * props.operators[i].mDecrel * (1 - suspos));
+          operators[i].env.release(3 * props.operators[i].mDecrel * suspos);
           operators[i].env.sustain(suspos);
       });
       props.operators[i].feedback.on_change().connect([this,i](float fb) {

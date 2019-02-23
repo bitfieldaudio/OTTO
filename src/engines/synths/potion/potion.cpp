@@ -1,4 +1,6 @@
 #include "potion.hpp"
+#include "services/application.hpp"
+#include "services/ui_manager.hpp"
 
 #include "core/ui/vector_graphics.hpp"
 
@@ -42,14 +44,17 @@ namespace otto::engines {
       for (int i=0; i<4; i++) {
         wavetables[i].load(Application::current().data_dir / "wavetables/wt1.wav");
       }
-      wavetables[1].load(Application::current().data_dir / "wavetables/wt2.wav");
-      wavetables[2].load(Application::current().data_dir / "wavetables/wt3.wav");
-      wavetables[3].load(Application::current().data_dir / "wavetables/wt4.wav");
+      //wavetables[1].load(Application::current().data_dir / "wavetables/wt2.wav");
+      //wavetables[2].load(Application::current().data_dir / "wavetables/wt3.wav");
+      //wavetables[3].load(Application::current().data_dir / "wavetables/wt4.wav");
+
+      ///Normalize wavetables
+      ///TODO
 
       //Fill remap tables
       remap_table.resize(512);
       for (int i=0; i<remap_table.size(); i++) {
-        remap_table[i] = (2.0*(float)i/(float)remap_table.size()) / 2.0;
+        remap_table[i] = (2.f*(float)i/(float)remap_table.size()) / 2.f;
       }
 
     }
@@ -73,11 +78,12 @@ namespace otto::engines {
   }
 
   float PotionSynth::Voice::remapping(float remap, float in) {
-
+    return in;
+    /*
     pre.remap_table.phase(in);
     float temp = pre.remap_table.val() * remap + in * (1 - remap);
-    return  temp;
-
+    return  temp/2;
+*/
     /*
     if (in > 1-remap) return 1.f;
     else {
@@ -88,17 +94,27 @@ namespace otto::engines {
   }
 
   PotionSynth::Voice::Voice(Pre& pre) noexcept : VoiceBase(pre) {
-    props.oscillators[0].lfo_speed.on_change().connect([this](float speed) {
-      morph[0].freq(speed*3);
+    props.lfo_osc.lfo_speed.on_change().connect([this](float speed) {
+      lfo.freq(speed*3);
     });
-    props.oscillators[1].lfo_speed.on_change().connect([this](float speed) {
-      morph[1].freq(speed*3);
+    props.curve_osc.curve_length.on_change().connect([this](float decaytime) {
+      curve.decay(decaytime*10 + 0.2);
     });
+
+    //Let the waveplayers point to correct files
+    //Should be moved into on_change for the wave_pair property.
+    curve_osc.waves[0] = &pre.wavetables[2];
+    curve_osc.waves[1] = &pre.wavetables[0];
+    lfo_osc.waves[0] = &pre.wavetables[2];
+    lfo_osc.waves[1] = &pre.wavetables[3];
+
+    curve.finish();
   }
 
   void PotionSynth::Voice::on_note_on() noexcept {
     for (int osc=0; osc<2; osc++) {
-      morph[osc].phase(0.f);
+      lfo.phase(0.f);
+      curve.reset();
     }
   }
 
@@ -107,18 +123,25 @@ namespace otto::engines {
     ///Set frequencies, advance the phase and get next sample from wavetables
     phase.freq(frequency());
     float ph = phase();
-    for (int osc=0; osc<2; osc++) { //Runs over oscillators
-      float lfo_value = morph[osc].tri();
-      float after_remapping = remapping(props.oscillators[osc].remap, ph);
-      ///Wave 1
-      int sample = (int)  pre.wavetables[2*osc].getNumSamplesPerChannel()*after_remapping;
-      result += (lfo_value + 1) * pre.wavetables[2*osc].samples[0][sample];
-      ///Wave 2
-      sample = (int)  pre.wavetables[2*osc+1].getNumSamplesPerChannel()*after_remapping;
-      result += (1 - lfo_value) * pre.wavetables[2*osc+1].samples[0][sample];
-    }
+    //Oscillator pair 1
+    result += props.curve_osc.volume * curve_osc(remapping(props.curve_osc.remap, ph), curve());
+    //Oscillator pair 2
+    result += props.lfo_osc.volume * lfo_osc(remapping(props.lfo_osc.remap, ph), lfo.tri());
 
     return result;
+  }
+
+
+
+  float PotionSynth::DualWavePlayer::operator()(float position, float pan_position) noexcept {
+    //Get proper samples. No interpolation.
+    int s0 = (int)floorf( position * (waves[0]->getNumSamplesPerChannel()));
+    int s1 = (int)floorf( position * (waves[1]->getNumSamplesPerChannel()));
+
+    float p0 = waves[0]->samples[0][s0];
+    float p1 = waves[1]->samples[0][s1];
+
+    return pan(pan_position, p0, p1);
   }
 
   /*
@@ -136,28 +159,28 @@ namespace otto::engines {
     switch (e.rotary) {
     case Rotary::blue:
       if (!shift) {
-        props.oscillators[0].lfo_speed.step(e.clicks);
+        props.curve_osc.curve_length.step(e.clicks);
       } else {
-        props.oscillators[0].volume.step(e.clicks);
+        props.curve_osc.volume.step(e.clicks);
       }
     break;
     case Rotary::green:
       if (!shift) {
-        props.oscillators[0].remap.step(e.clicks);
+        props.curve_osc.remap.step(e.clicks);
       } else {
 
       }
     break;
     case Rotary::yellow:
       if (!shift) {
-        props.oscillators[1].lfo_speed.step(e.clicks);
+        props.lfo_osc.lfo_speed.step(e.clicks);
       } else {
-        props.oscillators[1].volume.step(e.clicks);
+        props.lfo_osc.volume.step(e.clicks);
       }
     break;
     case Rotary::red:
       if (!shift) {
-        props.oscillators[1].remap.step(e.clicks);
+        props.lfo_osc.remap.step(e.clicks);
       } else {
 
       }
@@ -172,7 +195,7 @@ namespace otto::engines {
     using namespace ui::vg;
     using namespace core::ui::vg;
 
-    //shift = Application::current().ui_manager->is_pressed(ui::Key::shift);
+    shift = Application::current().ui_manager->is_pressed(ui::Key::shift);
 
     ctx.font(Fonts::Norm, 35);
 
@@ -183,12 +206,12 @@ namespace otto::engines {
     ctx.beginPath();
     ctx.fillStyle(Colours::Blue);
     ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
-    ctx.fillText("LFO1", {x_pad, y_pad});
+    ctx.fillText("C-Length", {x_pad, y_pad});
 
     ctx.beginPath();
     ctx.fillStyle(Colours::Blue);
     ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:1.2}", engine.props.oscillators[0].lfo_speed), {width - x_pad, y_pad});
+    ctx.fillText(fmt::format("{:1.2}", engine.props.curve_osc.curve_length), {width - x_pad, y_pad});
 
     ctx.beginPath();
     ctx.fillStyle(Colours::Green);
@@ -198,17 +221,17 @@ namespace otto::engines {
     ctx.beginPath();
     ctx.fillStyle(Colours::Green);
     ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:1.2}", engine.props.oscillators[0].remap), {width - x_pad, y_pad + space});
+    ctx.fillText(fmt::format("{:1.2}", engine.props.curve_osc.remap), {width - x_pad, y_pad + space});
 
     ctx.beginPath();
     ctx.fillStyle(Colours::Yellow);
     ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
-    ctx.fillText("LFO2", {x_pad, y_pad + 2 * space});
+    ctx.fillText("LFO", {x_pad, y_pad + 2 * space});
 
     ctx.beginPath();
     ctx.fillStyle(Colours::Yellow);
     ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:1.2}", engine.props.oscillators[1].lfo_speed), {width - x_pad, y_pad + 2 * space});
+    ctx.fillText(fmt::format("{:1.2}", engine.props.lfo_osc.lfo_speed), {width - x_pad, y_pad + 2 * space});
 
     ctx.beginPath();
     ctx.fillStyle(Colours::Red);
@@ -218,7 +241,7 @@ namespace otto::engines {
     ctx.beginPath();
     ctx.fillStyle(Colours::Red);
     ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:1.2}", engine.props.oscillators[1].remap), {width - x_pad, y_pad + 3 * space});
+    ctx.fillText(fmt::format("{:1.2}", engine.props.lfo_osc.remap), {width - x_pad, y_pad + 3 * space});
 
   }
 } // namespace otto::engines
