@@ -10,6 +10,7 @@
 #include "engines/synths/hammond/hammond.hpp"
 #include "engines/synths/nuke/nuke.hpp"
 #include "engines/synths/vocoder/vocoder.hpp"
+#include "engines/synths/sampler/sampler.hpp"
 
 #include "services/application.hpp"
 
@@ -55,6 +56,7 @@ namespace otto::services {
     synth.register_engine<engines::NukeSynth>("Nuke");
     synth.register_engine<engines::OTTOFMSynth>("OTTO.FM");
     synth.register_engine<engines::VocoderSynth>("Robot");
+    synth.register_engine<engines::Sampler>("Sampler");
     effect.register_engine<engines::Wormhole>("Wormhole");
     effect.register_engine<engines::Pingpong>("PingPong");
 
@@ -145,12 +147,11 @@ namespace otto::services {
     // Main processor function
     auto midi_in = external_in.midi_only();
     auto seq_out = sequencer->process(midi_in);
-    auto audio_out = Application::current().audio_manager->buffer_pool().allocate_multi<2>();
+    auto audio_out = Application::current().audio_manager->buffer_pool().allocate_multi<1>();
     auto synth_out = synth->process({external_in.audio, seq_out.midi, external_in.nframes});
 
     for (auto&& [snth, out] : util::zip(synth_out, audio_out)) {
       std::get<0>(out) = std::get<0>(snth);
-      std::get<1>(out) = std::get<0>(snth);
     }
     synth_out.audio.release();
     auto fx_out = effect->process(seq_out.redirect(audio_out));

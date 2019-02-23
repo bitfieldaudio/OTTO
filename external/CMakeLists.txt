@@ -49,6 +49,13 @@ execute_process(COMMAND git submodule update --init -- range-v3 WORKING_DIRECTOR
 add_library(range-v3 INTERFACE)
 target_include_directories(range-v3 SYSTEM INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/range-v3/include)
 
-# Tiny Process library
-execute_process(COMMAND git submodule update --init -- tiny-process-library WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tiny-process-library)
+# Gamma
+execute_process(COMMAND git submodule update --init -- Gamma WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+execute_process(COMMAND mkdir -p "${CMAKE_CURRENT_BINARY_DIR}/include")
+execute_process(COMMAND ln -s "${CMAKE_CURRENT_SOURCE_DIR}/Gamma/Gamma" "${CMAKE_CURRENT_BINARY_DIR}/include/Gamma")
+file(GLOB_RECURSE gamma_src "${CMAKE_CURRENT_SOURCE_DIR}/Gamma/src/*.cpp")
+list(REMOVE_ITEM gamma_src 
+  "${CMAKE_CURRENT_SOURCE_DIR}/Gamma/src/SoundFile.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Gamma/src/AudioIO.cpp")
+add_library(gamma ${gamma_src})
+target_include_directories(gamma PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/include")

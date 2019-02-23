@@ -18,13 +18,13 @@ blackhole(mix,decay,hicut,pitchmix) =
     (
         _,_ <:
         (si.bus(N*2) :> networkline)~(feedbackline)
-        :> fi.lowpass(2, hicut),fi.lowpass(2, hicut) : *(mix),*(mix) //Here are the lowpass filters. Perhaps move them or make another inside the reverb? 
+        :> fi.lowpass(2, hicut),fi.lowpass(2, hicut) : *(mix),*(mix)
     ),
     (*(1-mix),*(1-mix)) :>
     _
 with {
-    N = 8; //Number of comb filters
-    earlyAPNb = 6; //Number of allpass filters.
+    N = 4; //Number of comb filters
+    earlyAPNb = 4; //Number of allpass filters.
     MAXDELAY = 8192;
       
 
@@ -38,9 +38,7 @@ with {
 
 	pitchshifter(delay, pitch, amount) = _ <: de.delay(MAXDELAY, delay)*(1-amount),(ef.transpose(delay,delay,pitch)*amount) :> _;
 	  
-    earlyreflections(i) = seq(j, earlyAPNb,
-        fi.allpass_fcomb(2048, delayval(j+1), -allpassfb)
-    )
+    earlyreflections(i) = seq(j, earlyAPNb, fi.allpass_fcomb(2048, delayval(j+1), -allpassfb))
     with{
         allpassfb = 0.6;
         delays = (243, 343, 441, 625, 727, 1331, 2403, 3119); //earlyreflections values (allpass)
@@ -60,7 +58,7 @@ with {
         earlyreflections(i) :
         latereflections(i) :
         _/sqrt(N)
-    ) : _,_,fi.highpass(2, 100),_,_,_,_,_;
+    ) : _,_,fi.highpass(2, 100),_;
 
     feedbackline = ro.hadamard(N) : par(i,N,(*(decay) : fi.lowpass(4, hicut) ));
 };
@@ -73,5 +71,5 @@ with {
     mix = hslider("MIX", 0.5, 0, 1, 0.01);
 };
 
-process = _, _ :> blackhole_master <: _ , _ ;
+process = _ : blackhole_master <: _ , _ ;
 

@@ -292,7 +292,7 @@ namespace otto::core::props {
             m.template as<decltype(mtype._t())>(),
             hook);
       });
-      return hook;
+      return std::move(hook);
     }
 
       /// Run handler for `Hook` for all of `Mixin`s siblings

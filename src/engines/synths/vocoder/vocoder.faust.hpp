@@ -1,7 +1,7 @@
 //----------------------------------------------------------
 // name: "vocoder"
 //
-// Code generated with Faust 2.11.10 (https://faust.grame.fr)
+// Code generated with Faust 2.13.11 (https://faust.grame.fr)
 //----------------------------------------------------------
 
 /* link with  */

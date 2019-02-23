@@ -26,7 +26,7 @@ namespace otto::engines {
   {}
 
 
-  audio::ProcessData<2> Wormhole::process(audio::ProcessData<2> data)
+  audio::ProcessData<2> Wormhole::process(audio::ProcessData<1> data)
   {
     return faust_.process(data);
   }
@@ -38,8 +38,8 @@ namespace otto::engines {
     auto& props = engine.props;
     switch (ev.rotary) {
     case Rotary::blue: props.mix.step(ev.clicks); break;
-    case Rotary::green: props.shimmer.step(ev.clicks); break;
-    case Rotary::yellow: props.length.step(ev.clicks); break;
+    case Rotary::green: props.length.step(ev.clicks); break;
+    case Rotary::yellow: props.shimmer.step(ev.clicks); break;
     case Rotary::red: props.shape.step(ev.clicks); break;
     }
   }

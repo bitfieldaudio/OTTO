@@ -53,10 +53,10 @@ namespace otto::engines {
     Pingpong();
 
 
-    audio::ProcessData<2> process(audio::ProcessData<2>) override;
+    audio::ProcessData<2> process(audio::ProcessData<1>) override;
 
   private:
-    audio::FaustWrapper<2, 2> faust_;
+    audio::FaustWrapper<1, 2> faust_;
   };
 
 } // namespace otto::engines

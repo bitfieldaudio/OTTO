@@ -2,11 +2,9 @@
 
 import("stdfaust.lib");
 
-process = hgroup("voices", vgroup("0", voice) + vgroup("3", voice) +
-                           vgroup("1", voice) + vgroup("4", voice) +
-                           vgroup("2", voice) + vgroup("5", voice)) :  _ ;
+process = vgroup("voices", par(n, 6, vgroup("%n", voice))) :> _ ;
 
-voice = hgroup("midi", (pipe0(midifreq), pipe1(midifreq), pipe2(midifreq), pipe3(midifreq), noise_att) :> modulator : *(envelope))
+voice = hgroup("midi", control((pipe0(midifreq), pipe1(midifreq), pipe2(midifreq), pipe3(midifreq), noise_att) :> modulator : *(envelope), envelope>0.001))
 with {
   midigate	= button ("trigger");
   midifreq	= hslider("freq", 440, 20, 1000, 1);
