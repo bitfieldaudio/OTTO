@@ -1,6 +1,8 @@
 #include "core/ui/vector_graphics.hpp"
 #include "util/algorithm.hpp"
 #include "util/dsp/yule_walker.hpp"
+#include "util/dsp/acovb.hpp"
+#include "util/dsp/detectpitch.hpp"
 
 #include "lpc.hpp"
 
@@ -25,35 +27,63 @@ namespace otto::engines {
     for (int i = lag; i < buffer.size(); i += sha_period) {
       buffer[i] = 1;
     }
+    lag = sha_period - buffer.size()%sha_period;
   }
 
   audio::ProcessData<2> LPC::process(audio::ProcessData<2> data)
   {
     // TODO: Add processing
+    #define ORDER 25
+    for(int i=0;i<ORDER;++i) acov[i] = data[i];
+    acov = acovb(acov);
 
-    // auto acov = autocovariance_estimator(data, stored_data);
-    // auto pitch = find_pitch(data);
+    // Vocal signals usually have fundamentals in the [20Hz; 600Hz] band
+    const float f_min = 20;
+    const float f_max = 600;
 
+    const float sampling_freq = 44100;
+
+    const maxT = ceil(sampling_freq/f_min);
+    const minT = floor(sampling_freq/f_max);
+
+    auto pitch = detect_pitch(gsl::span<float> data, unsigned minT, unsigned maxT);
     // Estimate coefficients
-    // auto sigma_and_coeffs = ??
-    // auto scratch_buffer = ??
-    // solve_yule_walker(acov.subspan(0, props.order - 1), sigma_and_coeffs, scratch_buffer);
 
-    // Update the filter coefficients and clear any internal state
-    // filter.update_coefficients(sigma_and_coeffs.subspan(1, sigma_and_coeffs.size()))
-    // filter.reset()
+    solve_yule_walker(acov.subspan(0, ORDER), sigma_and_coeffs, scratch_buffer);
 
     // Create the source from:
     // 1. White noise
     // 2. Sha
     // 3. Harmonized Sha
-    //
 
-    // Filter the source
+    if (pitch !=0){
+      makeSha(data, pitch, lag);
+      for(auto&& s : data) s = s*0.8 + white()*0.2;
+    }else{
+      for(auto&& s : data) s = white()*0.5;
+    }
 
+    // copy in buffer
+    auto data_out = data;
 
-    // TODO :return the filter output as the engine output
-    return data;
+    // Filtering
+    for(int i=0;i<ORDER;++i){
+      if (i < ORDER){
+        // at the start of the buffer, we have to use memorised data
+        for(int j=0; j<=i;++j){
+          data_out[i] += data[i-j] * sigma_and_coeffs[1+j];
+        }
+        for(int j=i+1; j < ORDER;++i){
+          data_out[i] += prev_audio_data[i-j] * sigma_and_coeffs[1+j];
+        }
+      }else{
+        for(int j=0; j< ORDER;++j){
+          data_out[i] += data[i-j] * sigma_and_coeffs[1+j];
+        }
+      }
+    }
+
+    return data_out;
   }
 
   // SCREEN //

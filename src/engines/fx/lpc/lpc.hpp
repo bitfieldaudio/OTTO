@@ -32,6 +32,13 @@ namespace otto::engines {
 
   private:
     void makeSha(gsl::span<float> buffer, float sha_period, int lag);
+    std::vector<float, MAXIMUM_LPC_ORDER> acov;
+    std::vector<float, MAXIMUM_LPC_ORDER> sigmaAndCoeffs;
+    std::vector<float, 2*MAXIMUM_LPC_ORDER> scratchBuffer;
+    std::vector<float, MAXIMUM_LPC_ORDER> prev_audio_data;
+
+    NoiseWhite<> white;
+    unsigned lag = 0;
   };
 
 } // namespace otto::engines

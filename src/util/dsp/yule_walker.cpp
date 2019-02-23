@@ -30,7 +30,7 @@ namespace otto::dsp {
     // Clear and organize the scratch memory
     util::fill(scratch_buffer, 0.f);
     gsl::span<float> backward_prev = scratch_buffer.subspan(0, acov.size());
-    gsl::span<float> backward = scratch_buffer.subspan(acov.size(), acov.size());
+    gsl::span<float> backward = scratch_buffer.subspan(acov.size(), 2*acov.size());
 
     // Initialize our first induction variables
     float inv = 1. / acov[0];
