@@ -8,14 +8,34 @@
 #include <Gamma/Filter.h>
 #include <Gamma/Oscillator.h>
 
+#include "util/reflection.hpp"
+
 namespace otto::engines {
 
   using namespace core;
   using namespace core::engine;
   using namespace props;
 
-  struct GossSynth : SynthEngine, EngineWithEnvelope {
+  template<typename Engine>
+  struct AudioData;
 
+  struct Goss {};
+
+  template<>
+  struct AudioData<Goss> {
+    float drawbar1 = 1;
+    float drawbar2 = 0.5;
+    float drawbar3 = 0.5;
+    float leslie = 0.3;
+
+    float rotation_value = 0;
+
+    DECL_REFLECTION(AudioData<Goss>, drawbar1, drawbar2, drawbar3, ("leslie_value", leslie))
+  };
+
+  static_assert(std::string_view(metastuff::getName<AudioData<Goss>>()) == "AudioData<Goss>");
+
+  struct GossSynth : SynthEngine, EngineWithEnvelope {
     struct Props : Properties<> {
       Property<float> drawbar1 = {this, "drawbar1", 1, has_limits::init(0, 1),
                                   steppable::init(0.01)};
@@ -72,7 +92,6 @@ namespace otto::engines {
       float operator()() noexcept;
 
       void on_note_on() noexcept;
-
     };
 
     struct Post : voices::PostBase<Post, Voice> {
@@ -82,8 +101,11 @@ namespace otto::engines {
       Post(Pre&) noexcept;
 
       float operator()(float) noexcept;
+
+      DECL_REFLECTION(Post, lpf, hpf)
     };
 
     voices::VoiceManager<Post, 6> voice_mgr_;
   };
+
 } // namespace otto::engines
