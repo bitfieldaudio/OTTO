@@ -11,19 +11,25 @@ void acovb(gsl::span<float> data){
     const int M = 2*(N -1); // FFT order
 
     // FFT is in-place and we need more space, so we first copy the data to a buffer, and zero-pad
-    float buf[M];
+    // TODO: not this
+    static std::vector<float> buf = [M] () {
+        std::vector<float> vec;
+        std::fill_n(std::back_inserter(vec), M, 0);
+        return vec;
+    }();
+
     for(int i=0; i<N; ++i) buf[i] = data[i];
     for(int i=N; i<M; ++i) buf[i] = 0;
 
     // remove the mean
-    const float mean = arr::mean(buf, N);
+    const float mean = arr::mean(buf.data(), N);
     for (auto&& x : buf) x -= mean;
 
     // compute the periodogram
     RFFT<float> fft(M); // Real-to-complex FFT
     float invN = 1.0f / N;
   	int numBins = N;
-    fft.forward(buf);
+    fft.forward(buf.data());
     // The complex sequence format for forward and inverse transforms is
     // [r0, r1, i1, ... , r(n/2-1), i(n/2-1), r(n/2)]
     // Transform each complex number c to its square norm over N, i.e. |c|²/N:
@@ -40,7 +46,7 @@ void acovb(gsl::span<float> data){
         }
     }
     // do the ifft to get the autocovariance estimator
-    fft.inverse(buf);
+    fft.inverse(buf.data());
 
     // Crop the autocovariance estimator to the first N values, and copy to the output
     for(int i=0; i<N; ++i) data[i] = buf[i];
