@@ -46,7 +46,14 @@ namespace otto::core::props {
             if (item.do_serialize) item.from_json(it.value());
           }
         } else {
-          throw util::exception("No property found matching {}", it.key());
+          // Consider:
+          // Does it make sense to throw this exception?
+          // In most cases when a property exists in json but not in the code,
+          // its because the json was saved with a different version.
+          // I cannot think of a case where we would ever handle this exception
+          // in any other way than ignoring it.
+          // 
+          // throw util::exception("No property found matching {}", it.key());
         }
       }
     }

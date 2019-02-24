@@ -22,13 +22,17 @@ namespace otto::core::ui {
     // Globals:
     quit,
 
-    sequencer,
+    arpeggiator,
     fx1,
+    fx2,
     synth,
     envelope,
     voices,
 
+    sequencer,
     master,
+
+    send,
 
     /// Number of keys
     n_keys,

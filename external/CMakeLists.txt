@@ -58,4 +58,9 @@ list(REMOVE_ITEM gamma_src
   "${CMAKE_CURRENT_SOURCE_DIR}/Gamma/src/SoundFile.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/Gamma/src/AudioIO.cpp")
 add_library(gamma ${gamma_src})
-target_include_directories(gamma PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/include")
+target_include_directories(gamma SYSTEM PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/include")
+
+# foonathan/array
+execute_process(COMMAND git submodule update --init -- foonathan_array WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+add_library(foonathan_array INTERFACE)
+target_include_directories(foonathan_array SYSTEM INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/foonathan_array/include")

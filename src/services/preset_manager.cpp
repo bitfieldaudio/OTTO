@@ -118,6 +118,8 @@ namespace otto::services {
     jf.data()["props"] = preset_data;
 
     jf.write(util::JsonFile::OpenOptions::create);
+
+    load_preset_files();
   }
 
 } // namespace otto::services

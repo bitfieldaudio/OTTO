@@ -14,6 +14,8 @@ namespace otto::core::engine {
 
     void rotary(ui::RotaryEvent) override;
 
+    bool keypress(ui::Key) override;
+
     void draw(ui::vg::Canvas&) override;
 
     void on_show() override;
@@ -26,6 +28,9 @@ namespace otto::core::engine {
     ui::SelectorWidget preset_wid;
 
     std::function<void()> _on_show = nullptr;
+
+    ///Owner
+    IEngineDispatcher& _engine_dispatcher;
 
     ui::SelectorWidget::Options eng_opts(std::function<AnyEngine&(int)>&&) noexcept;
     ui::SelectorWidget::Options prst_opts(std::function<AnyEngine&()>&&) noexcept;
@@ -41,7 +46,8 @@ namespace otto::core::engine {
                    return ed.select(static_cast<std::size_t>(idx));
                  })),
       preset_wid(preset_names, prst_opts([&ed]() -> AnyEngine& { return *ed.current(); })),
-      _on_show([this, &ed] { engine_wid.select(ed.current_idx()); })
+      _on_show([this, &ed] { engine_wid.select(ed.current_idx()); }),
+      _engine_dispatcher(ed)
   {
     engine_names.reserve(ed.engine_factories().size());
     util::transform(ed.engine_factories(), std::back_inserter(engine_names),

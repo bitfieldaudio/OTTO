@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <chrono>
 
 #include <fmt/format.h>
 
@@ -93,10 +94,16 @@ namespace otto::services {
     midi_in->setCallback(
       [](double timeStamp, std::vector<unsigned char>* message, void* userData) {
         auto& self = *static_cast<RTAudioAudioManager*>(userData);
+        try {
         self.send_midi_event(core::midi::from_bytes(*message));
+        } catch (util::exception& e) {
+          LOGE("Error parsing midi: {}", e.what());
+        }
       },
       this);
   }
+
+  using clock = std::chrono::high_resolution_clock;
 
   int RTAudioAudioManager::process(float* out_data,
                                    float* in_data,
@@ -114,6 +121,8 @@ namespace otto::services {
       return 0;
     }
 
+    clock::time_point t0 = clock::now();
+
     midi_bufs.swap();
 
     int ref_count = 0;
@@ -127,8 +136,8 @@ namespace otto::services {
 
     // Separate channels
     for (int i = 0; i < nframes; i++) {
-      out_data[i * 2] = std::get<0>(out.audio[i]);
-      out_data[i * 2 + 1] = std::get<1>(out.audio[i]);
+      out_data[i * 2] = out.audio[0][i];
+      out_data[i * 2 + 1] = out.audio[1][i];
     }
 
     if (midi_out) {
@@ -142,6 +151,10 @@ namespace otto::services {
 
     // return the midi buffer
     midi_bufs.inner() = out.midi.move_vector_out();
+
+    clock::time_point t1 = clock::now();
+
+    _cpu_time.add(std::chrono::nanoseconds(t1 - t0).count() / (1e9 / float(_samplerate) * nframes) );
 
     return 0;
   }

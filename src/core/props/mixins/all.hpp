@@ -6,3 +6,4 @@
 #include "steppable.hpp"
 #include "wrap.hpp"
 #include "pow2.hpp"
+#include "change_hook.hpp"

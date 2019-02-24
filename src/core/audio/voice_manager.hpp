@@ -56,7 +56,7 @@ namespace otto::core::audio {
     props::Property<float> sustain = {this, "Sustain", 1, props::has_limits::init(0, 1),
                                       props::steppable::init(0.02)};
 
-    props::Property<float> release = {this, "Release", 0.2, props::has_limits::init(0, 6),
+    props::Property<float> release = {this, "Release", 0.2, props::has_limits::init(0, 8),
                                       props::steppable::init(0.02)};
 
     using Properties::Properties;
@@ -108,8 +108,6 @@ namespace otto::core::audio {
         free_voices.push_back(i);
       }
     }
-
-    VoiceIdxAndProps handle_midi_event(const midi::AnyMidiEvent&);
 
     void process_before(audio::ProcessData<0> data);
     void process_after(audio::ProcessData<0> data);
@@ -215,27 +213,6 @@ namespace otto::core::audio {
       return false;
     });
     note_stack.erase(it, note_stack.end());
-  }
-
-  template<int N>
-  VoiceIdxAndProps VoiceManager<N>::handle_midi_event(const midi::AnyMidiEvent& ev)
-  {
-    util::match(ev,
-                [this](midi::NoteOnEvent ev) {
-                  stop_voice(gsl::narrow_cast<char>(ev.key));
-                  Voice v = get_voice(ev.key);
-                  note_stack.push_back({gsl::narrow_cast<char>(ev.key), v});
-                  auto& vp = voices[v];
-                  vp.midi.freq =
-                    midi::note_freq(ev.key + settings_props.octave * 12 + settings_props.transpose);
-                  vp.midi.velocity = ev.velocity / 127.f;
-                  vp.midi.trigger = 1;
-                  DLOGI("Voice {} begin key {} {}Hz velocity: {}", v, ev.key, vp.midi.freq,
-                        vp.midi.velocity);
-                  last_voice = v;
-                },
-                [this](midi::NoteOffEvent& ev) { stop_voice(gsl::narrow_cast<char>(ev.key)); },
-                [](auto&&) {});
   }
 
   template<int N>

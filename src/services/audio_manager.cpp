@@ -33,4 +33,11 @@ namespace otto::services {
 
   void AudioManager::process_audio_output(core::audio::ProcessData<2> audio_output) {}
 
+  float AudioManager::cpu_time() noexcept
+  {
+    float res = _cpu_time;
+    _cpu_time.clear();
+    return res;
+  }
+
 } // namespace otto::services

@@ -118,6 +118,8 @@ namespace otto::services {
     util::atomic_swap<std::vector<KeyEvent>> key_events;
     util::atomic_swap<std::vector<core::ui::RotaryEvent>> rotary_events;
 
+    unsigned _frame_count = 0;
+
     static constexpr const char* initial_engine = "Synth";
   };
 

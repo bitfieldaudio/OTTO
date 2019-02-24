@@ -7,9 +7,17 @@ namespace otto::core::engine {
   // Implementation is in engine_dispatcher.cpp, with explicit instantiations at
   // the bottom.
 
+  /// Interface base class for the EngineDispatcher struct
+  struct IEngineDispatcher {
+      virtual AnyEngine* current() = 0;
+      virtual const AnyEngine* current() const = 0;
+
+      virtual ~IEngineDispatcher() = default;
+  };
+
   /// Owns engines of type `ET`, and dispatches to a selected one of them
   template<EngineType ET>
-  struct EngineDispatcher {
+  struct EngineDispatcher final : IEngineDispatcher {
     enum struct ErrorCode { none = 0, engine_not_found, type_mismatch };
 
     using exception = util::as_exception<ErrorCode>;
@@ -33,8 +41,8 @@ namespace otto::core::engine {
     void init();
 
     /// Access the currently selected engine
-    Engine<ET>* current() noexcept;
-    const Engine<ET>* current() const noexcept;
+    Engine<ET>* current() noexcept override;
+    const Engine<ET>* current() const noexcept override;
 
     /// Access the currently selected engine
     Engine<ET> const* operator->() const noexcept;

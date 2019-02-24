@@ -5,12 +5,12 @@ file(GLOB_RECURSE sources ${OTTO_SOURCE_DIR}/src/*.cpp)
 
 find_package (Threads)
 # Library
-add_library(otto ${sources})
+add_library(otto ${sources} engines/fx/chorus/chorus.cpp core/engine/sequencer.hpp core/engine/sequencer.cpp)
 target_link_libraries(otto PUBLIC ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
 target_include_directories(otto PUBLIC ./)
 
 # Executable
-add_executable(otto_exec ${OTTO_SOURCE_DIR}/boards/${OTTO_BOARD}/src/main.cpp)
+add_executable(otto_exec ${OTTO_SOURCE_DIR}/boards/${OTTO_BOARD}/src/main.cpp engines/fx/chorus/chorus.cpp)
 target_link_libraries(otto_exec PUBLIC otto)
 set_target_properties(otto_exec PROPERTIES OUTPUT_NAME otto)
 

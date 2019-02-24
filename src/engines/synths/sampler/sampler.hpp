@@ -6,6 +6,8 @@
 
 #include "util/iterator.hpp"
 
+#include "list"
+
 namespace otto::engines {
 
   using namespace core;
@@ -96,6 +98,10 @@ namespace otto::engines {
     } props;
 
     Sampler();
+
+    void restart();
+
+    float operator()() noexcept;
 
     audio::ProcessData<1> process(audio::ProcessData<1>) override;
 

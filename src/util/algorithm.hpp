@@ -103,7 +103,7 @@ namespace otto::util {
     ///
     /// @param pred A predicate that takes a element in the container. Each element for which this
     /// predicate returns true will be erased from the container.
-    /// 
+    ///
     /// @returns whatever `cont.erase()` returns. For standard containers, this is the iterator
     /// pointing to the element after the last erased one.
     template<typename Container, typename Pred>
@@ -244,6 +244,16 @@ namespace otto::util {
       auto last = end(cont);
       for (; first != last; ++first) init = op(init, *first);
       return init;
+    }
+
+    /// Container based wrapper for \ref std::for_each()
+    template<typename Cont, typename UnaryOperation>
+    constexpr void for_each(Cont&& cont, UnaryOperation&& op)
+    {
+      using std::begin, std::end;
+      auto first = begin(cont);
+      auto last = end(cont);
+      for (; first != last; ++first) std::invoke(op, *first);
     }
 
     /// Container based wrapper for \ref std::adjacent_difference()

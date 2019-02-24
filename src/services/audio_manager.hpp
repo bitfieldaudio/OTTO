@@ -48,6 +48,9 @@ namespace otto::services {
     /// \returns `true` if start() has been called
     bool running() noexcept;
 
+    /// The amount of cpu time spent on average since the last call to this function
+    float cpu_time() noexcept;
+
     struct Events {
       util::Event<> pre_init;
     } events;
@@ -55,6 +58,7 @@ namespace otto::services {
   protected:
     util::atomic_swap<core::midi::shared_vector<core::midi::AnyMidiEvent>> midi_bufs = {{}, {}};
     int _samplerate = 48000;
+    util::audio::Graph _cpu_time;
   private:
     core::audio::AudioBufferPool _buffer_pool{1};
     std::atomic_bool _running{false};

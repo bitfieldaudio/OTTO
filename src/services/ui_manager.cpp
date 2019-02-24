@@ -1,7 +1,10 @@
 #include "ui_manager.hpp"
 
-#include "services/state_manager.hpp"
+#include "services/audio_manager.hpp"
 #include "services/engine_manager.hpp"
+#include "services/state_manager.hpp"
+
+#include "core/ui/vector_graphics.hpp"
 
 namespace otto::services {
 
@@ -88,10 +91,22 @@ namespace otto::services {
 
   void UIManager::draw_frame(vg::Canvas& ctx)
   {
-    ctx.lineWidth(2);
+    ctx.lineWidth(6);
     ctx.lineCap(vg::Canvas::LineCap::ROUND);
     ctx.lineJoin(vg::Canvas::Canvas::LineJoin::ROUND);
-    cur_screen->draw(ctx);
+    ctx.group([&] {
+      cur_screen->draw(ctx);
+    });
+
+    ctx.group([&] {
+      ctx.beginPath();
+      ctx.fillStyle(vg::Colours::White);
+      ctx.font(vg::Fonts::Norm, 12);
+      std::string cpu_time = fmt::format("{}%", int(100 * Application::current().audio_manager->cpu_time()));
+      ctx.fillText(cpu_time, {290, 230});
+    });
+
+    _frame_count++;
   }
 
   void UIManager::keypress(Key key)
