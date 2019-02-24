@@ -52,7 +52,7 @@ PointerAlignment: Left
 SortIncludes: true
 SpaceAfterCStyleCast: true
 SpaceAfterTemplateKeyword: false
-SpaceBeforeCpp11BracedList: false
+#SpaceBeforeCpp11BracedList: false
 SpaceBeforeAssignmentOperators: true
 SpaceBeforeParens: ControlStatements
 SpacesBeforeTrailingComments: 1
@@ -64,13 +64,13 @@ SpacesInSquareBrackets: false
 Standard: Cpp11
 UseTab: Never
 ForEachMacros: [
-    'OTTO_PROPS_MIXIN_INTERFACE', 
-    'OTTO_PROPS_MIXIN_BRANCH', 
-    'OTTO_PROPS_MIXIN_LEAF', 
-    'OBENCH_SKIP', 
-    'OBENCH', 
-    'OBENCH_SECTION', 
-    'TEST_CASE', 
+    'OTTO_PROPS_MIXIN_INTERFACE',
+    'OTTO_PROPS_MIXIN_BRANCH',
+    'OTTO_PROPS_MIXIN_LEAF',
+    'OBENCH_SKIP',
+    'OBENCH',
+    'OBENCH_SECTION',
+    'TEST_CASE',
     'SECTION'
 ]
 ...

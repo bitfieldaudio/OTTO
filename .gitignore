@@ -26,3 +26,5 @@ CMakeLists.txt.user
 .local.kak
 .idea
 *.cbp
+
+cmake-build-debug/

@@ -1,9 +1,11 @@
 #pragma once
-
+#include <vector>
+#include "core/audio/processor.hpp"
 #include "core/engine/engine.hpp"
+#include "Gamma/Noise.h"
 
 #define MAXIMUM_LPC_ORDER 50
-
+#define MAXIMUM_BLOCK_SIZE 1024
 namespace otto::engines {
 
   using namespace core;
@@ -28,17 +30,17 @@ namespace otto::engines {
 
     LPC();
 
-    audio::ProcessData<2> process(audio::ProcessData<2>) override;
+    audio::ProcessData<2> process(audio::ProcessData<1>) override;
 
   private:
-    void makeSha(gsl::span<float> buffer, float sha_period, int lag);
-    std::vector<float, MAXIMUM_LPC_ORDER> acov;
-    std::vector<float, MAXIMUM_LPC_ORDER> sigmaAndCoeffs;
-    std::vector<float, 2*MAXIMUM_LPC_ORDER> scratchBuffer;
-    std::vector<float, MAXIMUM_LPC_ORDER> prev_audio_data;
+    void makeSha(gsl::span<float> buffer, int sha_period);
+    float acov[MAXIMUM_BLOCK_SIZE];
+    float sigmaAndCoeffs[MAXIMUM_LPC_ORDER];
+    float scratchBuffer[2*MAXIMUM_LPC_ORDER];
+    float prev_exciter_data[MAXIMUM_LPC_ORDER];
 
     NoiseWhite<> white;
-    unsigned lag = 0;
+    int lag = 0;
   };
 
 } // namespace otto::engines

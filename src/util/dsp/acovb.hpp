@@ -7,8 +7,8 @@ using namespace gam;
 
 
 void acovb(gsl::span<float> data){
-    const unsigned N = data.size();
-    const unsigned M = 2*(N -1); // FFT order
+    const int N = (int) data.size();
+    const int M = 2*(N -1); // FFT order
 
     // FFT is in-place and we need more space, so we first copy the data to a buffer, and zero-pad
     float buf[M];
@@ -21,7 +21,7 @@ void acovb(gsl::span<float> data){
 
     // compute the periodogram
     RFFT<float> fft(M); // Real-to-complex FFT
-    float invN = 1.0 / N;
+    float invN = 1.0f / N;
   	int numBins = N;
     fft.forward(buf);
     // The complex sequence format for forward and inverse transforms is

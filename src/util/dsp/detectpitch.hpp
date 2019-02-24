@@ -1,18 +1,34 @@
+#pragma once
+#include <gsl/span>
 #include "acovb.hpp"
-#DEFIN THRESHOLD 0.5
+#define THRESHOLD 0.5
 
-unsigned detect_pitch(gsl::span<float> data, unsigned minT, unsigned maxT){
-  const unsigned N = data.size();
-  auto gamma = data.copy();
-  acovb(gamma);
-  for (auto&& c : gamma) c /= gamma[0];
+namespace otto::dsp {
+    ///
+    ///	\brief This is a simple pitch-detection algorithm using an autocovariance estimator.
+    /// By convention, it returns 0 if the signal is aperiodic/unvoiced or if the
+    /// detected period is out of the considered scope.
+    ///
+    ///	\param[in] data - a buffer containing the audio.
+    ///
+    /// \param[minT] minT - the minimum period in samples to consider.
+    ///
+    /// \param[in] maxT - the maximum period in samples to consider.
+    ///
+    int detect_pitch(gsl::span<float> data, int minT, int maxT){
+      const long int N = data.size();
+      float gamma_arr[N];
+      auto gamma = gsl::span(gamma_arr, N);
+      for(int i=0; i<N; ++i) gamma[i] = data[i];
+      acovb(gamma);
+      for (auto&& c : gamma) c /= gamma[0];
 
-  gamma = gamma.subspan(minT, gamma.end());
-  float max_gamma = *std::max_element(gamma.begin(), gamma.end());
-  unsigned T = std::find(gamma.begin(), gamma.end(), max_gamma);
+      int T = std::max_element(gamma.begin()+minT, gamma.end()) - gamma.begin();
 
-  if (gamma(T)*N/(N-T) < THRESHOLD || T > maxT){
-    T = 0;
-  }
-  return T;
-}
+      if (gamma[T]*N/(N-T) < THRESHOLD || T > maxT){
+        T = 0;
+      }
+      return T;
+    }
+} // namespace otto::dsp
+

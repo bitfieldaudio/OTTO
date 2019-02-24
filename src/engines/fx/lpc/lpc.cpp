@@ -3,6 +3,8 @@
 #include "util/dsp/yule_walker.hpp"
 #include "util/dsp/acovb.hpp"
 #include "util/dsp/detectpitch.hpp"
+#include "core/audio/processor.hpp"
+#include "services/audio_manager.hpp"
 
 #include "lpc.hpp"
 
@@ -10,6 +12,7 @@ namespace otto::engines {
 
   using namespace ui;
   using namespace ui::vg;
+  using namespace dsp;
 
   struct LPCScreen : EngineScreen<LPC> {
     void draw(Canvas& ctx) override;
@@ -21,21 +24,21 @@ namespace otto::engines {
 
   LPC::LPC() : EffectEngine("LPC", props, std::make_unique<LPCScreen>(this)) {}
 
-  void LPC::makeSha(gsl::span<float> buffer, float sha_period, int lag)
+  void LPC::makeSha(gsl::span<float> buffer, int sha_period)
   {
     util::fill(buffer, 0.f);
-    for (int i = lag; i < buffer.size(); i += sha_period) {
+    for (int i = this->lag; i < buffer.size(); i += sha_period) {
       buffer[i] = 1;
     }
-    lag = sha_period - buffer.size()%sha_period;
+    this->lag = sha_period - (int)(buffer.size()%sha_period);
   }
 
-  audio::ProcessData<2> LPC::process(audio::ProcessData<2> data)
+  audio::ProcessData<2> LPC::process(audio::ProcessData<1> data)
   {
-    // TODO: Add processing
-    #define ORDER 25
-    for(int i=0;i<ORDER;++i) acov[i] = data[i];
-    acov = acovb(acov);
+    auto in = data.audio;
+    int N = (int) in.size();
+    for(int i=0;i<N;++i) acov[i] = in[i];
+    acovb(acov);
 
     // Vocal signals usually have fundamentals in the [20Hz; 600Hz] band
     const float f_min = 20;
@@ -43,47 +46,51 @@ namespace otto::engines {
 
     const float sampling_freq = 44100;
 
-    const maxT = ceil(sampling_freq/f_min);
-    const minT = floor(sampling_freq/f_max);
+    const int maxT = (int) ceil(sampling_freq/f_min);
+    const int minT = (int) floor(sampling_freq/f_max);
 
-    auto pitch = detect_pitch(gsl::span<float> data, unsigned minT, unsigned maxT);
+    auto pitch = detect_pitch(gsl::span(in.begin(), in.size()), minT, maxT);
     // Estimate coefficients
-
-    solve_yule_walker(acov.subspan(0, ORDER), sigma_and_coeffs, scratch_buffer);
+    #define ORDER 25
+    solve_yule_walker(gsl::span(acov, ORDER), this->sigmaAndCoeffs, this->scratchBuffer);
 
     // Create the source from:
     // 1. White noise
     // 2. Sha
     // 3. Harmonized Sha
 
-    if (pitch !=0){
-      makeSha(data, pitch, lag);
-      for(auto&& s : data) s = s*0.8 + white()*0.2;
+    auto exciter = Application::current().audio_manager->buffer_pool().allocate();
+
+    if (pitch != 0){
+      makeSha(gsl::span(exciter.begin(), exciter.size()), pitch);
+      for(auto&& s : exciter) s = s*0.8f + white()*0.2f;
     }else{
-      for(auto&& s : data) s = white()*0.5;
+      for(auto&& s : exciter) s = white()*0.5f;
     }
 
-    // copy in buffer
-    auto data_out = data;
+    auto out = Application::current().audio_manager->buffer_pool().allocate_multi<2>();
 
     // Filtering
-    for(int i=0;i<ORDER;++i){
+    for(int i=0;i<in.size();++i){
       if (i < ORDER){
         // at the start of the buffer, we have to use memorised data
         for(int j=0; j<=i;++j){
-          data_out[i] += data[i-j] * sigma_and_coeffs[1+j];
+          out[0][i] += exciter[i-j] * this->sigmaAndCoeffs[1+j];
+          out[1][i] = out[0][i];
         }
-        for(int j=i+1; j < ORDER;++i){
-          data_out[i] += prev_audio_data[i-j] * sigma_and_coeffs[1+j];
+        for(int j=i+1; j < ORDER;++j){
+          out[0][i] += prev_exciter_data[i-j] * this->sigmaAndCoeffs[1+j];
+          out[1][i] = out[0][i];
         }
       }else{
         for(int j=0; j< ORDER;++j){
-          data_out[i] += data[i-j] * sigma_and_coeffs[1+j];
+          out[0][i] += exciter[i-j] * this->sigmaAndCoeffs[1+j];
+          out[1][i] = out[0][i];
         }
       }
     }
 
-    return data_out;
+    return out;
   }
 
   // SCREEN //
