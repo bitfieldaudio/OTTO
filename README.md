@@ -6,17 +6,17 @@ Making electronic music is awesome! But for most of us, it requires a lot of set
 
 ### Introducing the OTTO!
 
-The OTTO is a complete hardware and software solution, with synths, a sampler, effects and sequencers. The interface is modal, easy to use, simple, but most of all, it encourages experimentation. The graphics are quirky, and the workflow is minimal.
-
-At this point it might be important to mention that the OTTO is not, and will never be, a commercially aimed product. It is open source by nature, in both hardware and software. If you want an OTTO, you're going to get your hands dirty, if not with the code, at least with the hardware.
+The OTTO is a complete hardware and software solution, with synths, samplers, effects and a sequencer with an audio looper. The interface is modular, easy to use, simple, but most of all, it encourages experimentation. The graphics are quirky, and the workflow is minimal.
 
 Now that proper introductions are made, we would like to invite you to our [discord server](https://discord.gg/4cV9Ucz) where we hang out and discuss all things OTTO.
 
 # The hardware
 
 The OTTO is basically going to be a Rpi3+, a screen, a DAC, 4 encoders and some 30+ buttons/keys. Some of us are currently building the next version of prototypes. We can (so far) show you some nice renders:
-<a href="https://ibb.co/mBXmNnH"><img src="https://i.ibb.co/xsfyFnM/render1.png" alt="render1" border="0" /></a>
-<a href="https://ibb.co/17QcPHK"><img src="https://i.ibb.co/ydP2ZL5/render2.png" alt="render2" border="0" /></a>
+
+
+<a href="https://ibb.co/mBXmNnH"><img src="https://i.ibb.co/6Z12XK4/render1.png" alt="render1" width="100%" /></a>
+<a href="https://ibb.co/17QcPHK"><img src="https://i.ibb.co/HB4ZbmY/render2.png" alt="render2" width="100%" /></a>
 
 # Planned Features for v1.0
 
@@ -32,17 +32,16 @@ The OTTO is basically going to be a Rpi3+, a screen, a DAC, 4 encoders and some 
 # Screenshots:
 
 The UI tries to walk the line between clear, concise and playful:
-<a href="https://imgbb.com/"><img src="https://i.ibb.co/cDSTY1j/ottofm.png" alt="ottofm" border="0" /></a>
-<a href="https://imgbb.com/"><img src="https://i.ibb.co/sbQLRdT/envelope.png" alt="envelope" border="0" /></a>
-<a href="https://imgbb.com/"><img src="https://i.ibb.co/YQZsJHr/wormhole.png" alt="wormhole" border="0" /></a>
-<a href="https://imgbb.com/"><img src="https://i.ibb.co/HG79J5K/euclid.png" alt="euclid" border="0" /></a>
+
+
+<img src="https://i.ibb.co/cDSTY1j/ottofm.png" alt="ottofm" border="0" width="320px" style="float:left"/><img src="https://i.ibb.co/sbQLRdT/envelope.png" alt="envelope" border="0"  width="320px" style="float:left" />
+
+
+<img src="https://i.ibb.co/YQZsJHr/wormhole.png" alt="wormhole" border="0"  width="320px" style="float:left; margin: 5px"/><img src="https://i.ibb.co/HG79J5K/euclid.png" alt="euclid" border="0"   width="320px" style="float:left; margin: 5px" />
 
 # The software
 
-The software is written in modern C++, and the goal is to be as modular and flexible as possible.
-
-It is possible to run the software on the desktop, with [keybinds](https://github.com/topisani/OTTO/wiki/Keyboard-mapping) emulating the physical buttons and encoders.
-
+The main software is written in modern C++, and the goal is to be as modular and flexible as possible.
 For build instructions, check out [the wiki](https://github.com/topisani/OTTO/wiki/Compiling-and-Running).
 
 # Getting Involved
@@ -64,9 +63,7 @@ and of course, the coding itself, with areas like
 If you feel like joining the adventure, please check out the [guidelines](https://github.com/topisani/OTTO/wiki/Guidelines).
 
 # Credits
- - Audio Framework: [jack](http://jackaudio.org/)
  - DSP Framework: [faust](http://faust.grame.fr/) and [Gamma](http://w2.mat.ucsb.edu/gamma/)
  - Vector Graphics: [NanoVG](https://github.com/memononen/nanovg) with [NanoCanvas](https://github.com/Geequlim/NanoCanvas)
  - [fmtlib](http://fmtlib.net), string formatting in C++
  - [json](https://github.com/nlohmann/json/), json for modern C++
- - [mapbox/variant](https://github.com/mapbox/variant), one of the best variant implementations out there
