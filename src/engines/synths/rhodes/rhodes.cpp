@@ -53,8 +53,6 @@ namespace otto::engines {
     overtones.addSine(20, 0.5, 0);
 
     env.decay(3);
-
-
   }
 
   void RhodesSynth::Voice::on_note_on() noexcept {
@@ -73,7 +71,6 @@ namespace otto::engines {
 
     overtones.freq(frequency());
     env.reset(1.7);
-
   }
 
   //Preprocessor

@@ -21,7 +21,7 @@ namespace otto::core::engine {
       }
     };
     opts.item_colour = Colours::Gray50;
-    opts.size = {120, vg::height};
+    opts.size = {120, 200};
     return opts;
   }
 

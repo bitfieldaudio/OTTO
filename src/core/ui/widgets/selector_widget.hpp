@@ -22,7 +22,7 @@ namespace otto::core::ui {
       vg::Colour selected_item_colour = vg::Colours::Blue;
       /// Height of each item
       float item_height = 35.f;
-      float font_size = 30.f;
+      float font_size = 25.f;
       /// Dimensions of the widget. Initializes [Widget::size]()
       vg::Size size = {300, 240};
       /// Initial value for `_selected_item`

@@ -259,7 +259,7 @@ namespace otto::engines {
                   },
                   [](auto&&) {});
     }
-    for (auto&& [frm] : data.audio) {
+    for (auto&& frm : data.audio) {
       frm = *play_position;
       play_position++;
     }
