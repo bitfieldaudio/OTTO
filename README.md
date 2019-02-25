@@ -34,6 +34,7 @@ The OTTO is basically going to be a Rpi3+, a screen, a DAC, 4 encoders and some 
 The UI tries to walk the line between clear, concise and playful:
 
 <img src="https://i.ibb.co/WvKQrc3/image.png" alt="OTTO Screenshots" border="0" width="100%"/>
+<i>From top left to bottom right: FM Synth, ADSR Envelope, Reverb effect, Euclidian Sequencer</i>
 
 # The software
 
