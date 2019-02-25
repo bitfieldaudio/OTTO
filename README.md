@@ -33,11 +33,7 @@ The OTTO is basically going to be a Rpi3+, a screen, a DAC, 4 encoders and some 
 
 The UI tries to walk the line between clear, concise and playful:
 
-
-<img src="https://i.ibb.co/cDSTY1j/ottofm.png" alt="ottofm" border="0" width="320px" style="float:left"/><img src="https://i.ibb.co/sbQLRdT/envelope.png" alt="envelope" border="0"  width="320px" style="float:left" />
-
-
-<img src="https://i.ibb.co/YQZsJHr/wormhole.png" alt="wormhole" border="0"  width="320px" style="float:left; margin: 5px"/><img src="https://i.ibb.co/HG79J5K/euclid.png" alt="euclid" border="0"   width="320px" style="float:left; margin: 5px" />
+<img src="https://i.ibb.co/WvKQrc3/image.png" alt="OTTO Screenshots" border="0" width="100%"/>
 
 # The software
 
