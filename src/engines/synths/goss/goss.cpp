@@ -43,7 +43,7 @@ namespace otto::engines {
 
     pipes[1].resize(1024);
     pipes[1].addSine(4, 1, 0);
-    pipes[1].addSine(16, 0.5, 0);
+    pipes[1].addSine(16, 0.3, 0);
 
     pipes[2].resize(1024);
     pipes[2].addSine(6, 0.5, 0);
@@ -61,7 +61,7 @@ namespace otto::engines {
   }
 
   void GossSynth::Voice::on_note_on() noexcept {
-    perc_env.reset(props.drawbar3 * 5);
+    perc_env.reset(props.click * 5);
   }
 
   GossSynth::Pre::Pre(Props& props) noexcept : PreBase(props)
@@ -122,7 +122,7 @@ namespace otto::engines {
     switch (e.rotary) {
     case Rotary::blue: engine.props.drawbar1.step(e.clicks); break;
     case Rotary::green: engine.props.drawbar2.step(e.clicks); break;
-    case Rotary::yellow: engine.props.drawbar3.step(e.clicks); break;
+    case Rotary::yellow: engine.props.click.step(e.clicks); break;
     case Rotary::red: engine.props.leslie.step(e.clicks); break;
     }
   }
@@ -160,7 +160,7 @@ namespace otto::engines {
       // Ring 1
       ctx.beginPath();
       ctx.rotateAround(55, {160, 120});
-      ctx.arc(160, 120, 55, 0, (2 * M_PI * engine.props.drawbar3), false);
+      ctx.arc(160, 120, 55, 0, (2 * M_PI * engine.props.click), false);
       ctx.lineWidth(6.0);
       ctx.strokeStyle(Colours::Yellow);
       ctx.lineCap(Canvas::LineCap::ROUND);
