@@ -28,6 +28,8 @@ namespace otto::engines {
       Property<int> ratio_idx                 = {this, "ratio_idx", 0,   has_limits::init(0,    18), steppable::init(1)};
       //Amp
       Property<float> outLev                  = {this, "outLev",    1,   has_limits::init(0, 1),    steppable::init(0.01)};
+
+      float current_level = 0;
       // clang-format on
     };
 
@@ -64,6 +66,8 @@ namespace otto::engines {
       float freq_ratio;
       float detune_amount;
 
+      float previous_value = 0;
+
       float operator()(float);
 
       void freq(float); /// Set frequency
@@ -86,10 +90,14 @@ namespace otto::engines {
     }
 
   private:
+    struct Voice;
+
     struct Pre : voices::PreBase<Pre, Props> {
       Pre(Props&) noexcept;
 
       void operator()() noexcept;
+
+      Voice* last_voice = nullptr;
     };
 
     struct Voice : voices::VoiceBase<Voice, Pre> {
