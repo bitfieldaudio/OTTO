@@ -72,32 +72,24 @@ namespace otto::engines {
       for(auto&& s : exciter) s = white()*0.5f;
     }
 
-    // TODO: filter exciter in-place
-    auto l_out = Application::current().audio_manager->buffer_pool().allocate();
-
     // Filtering
+
     int N = (int) in.size();
+
     for(int i=0; i < N; ++i){
-      if (i < order){
-        // at the start of the buffer, we have to use memorised data
-        for(int j=0; j<=i;++j){
-          l_out[i] += exciter[i-j] * this->sigmaAndCoeffs[1+j];
-        }
-        for(int j=i+1; j < order;++j){
-          l_out[i] += prev_exciter_data[i-j] * this->sigmaAndCoeffs[1+j];
-        }
-      }else{
-        for(int j=0; j< order;++j){
-          l_out[i] += exciter[i-j] * this->sigmaAndCoeffs[1+j];
-        }
+      for(int j=0; j < order-i; j++){
+        exciter[i] += prev_exciter_data[i+j] * this->sigmaAndCoeffs[1+j];
+      }
+      for(int j=0; j<i; j++){
+        exciter[i] += exciter[j] * this->sigmaAndCoeffs[1+j+order-i];
       }
     }
 
     util::copy(span(exciter.end()-max_order, exciter.end()), prev_exciter_data.begin());
 
     auto r_out = Application::current().audio_manager->buffer_pool().allocate();
-    util::copy(l_out, r_out.begin());
-    return ProcessData<2>({l_out, r_out});
+    util::copy(exciter.begin(), r_out.begin());
+    return ProcessData<2>({exciter, r_out});
   }
 
   // SCREEN //
