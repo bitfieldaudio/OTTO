@@ -8,15 +8,14 @@ We would like to invite you to our **[discord server](https://discord.gg/4cV9Ucz
 
 # The hardware
 
-The OTTO is basically going to be a Rpi3+, a screen, a DAC, 4 encoders and some 30+ buttons/keys. Some of us are currently building the next version of prototypes. We can (so far) show you some nice renders:
-
+The OTTO is basically going to be a Rpi3+, a screen, a DAC, 4 encoders and some 30+ buttons/keys. Some of us are currently building the next version of prototypes. We can (so far) show you some nice renders of that, which is currently being shipped to us. Next steps will be a few revisions and _a lot_ of coding to get the existing software to work with the hardware, but then we'll be ready to share with all of you!
 
 <a href="https://ibb.co/mBXmNnH"><img src="https://i.ibb.co/6Z12XK4/render1.png" alt="render1" width="100%" /></a>
 <a href="https://ibb.co/17QcPHK"><img src="https://i.ibb.co/HB4ZbmY/render2.png" alt="render2" width="100%" /></a>
 
 # Planned Features for v1.0
 
-* A synth for live performance with midi effects (arpeggiator, etc.)
+* A synth (with swappable engines) for live performance with midi effects (arpeggiator, etc.)
 * 2 FX slots. Synths and drums send to them as a FX bus.
 *  Synths and effects are swappable "engines".
 *  For drums, a sampler will run in parallel to the sequencer-synth chain. 
