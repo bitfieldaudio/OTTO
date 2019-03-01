@@ -2,13 +2,9 @@
 
 [![Build Status](https://travis-ci.org/topisani/OTTO.svg?branch=master)](https://travis-ci.org/topisani/OTTO)
 
-Making electronic music is awesome! But for most of us, it requires a lot of setup, a lot of moving a mouse around on a laptop that's probably not quite equipped to handle realtime audio processing. Don't you wish you had one single device, which was built to do it all for you, easily and on the fly?
-
-### Introducing the OTTO!
-
 The OTTO is a complete hardware and software solution, with synths, samplers, effects and a sequencer with an audio looper. The interface is modular, easy to use, simple, but most of all, it encourages experimentation. The graphics are quirky, and the workflow is minimal.
 
-Now that proper introductions are made, we would like to invite you to our [discord server](https://discord.gg/4cV9Ucz) where we hang out and discuss all things OTTO.
+We would like to invite you to our **[discord server](https://discord.gg/4cV9Ucz)** where we hang out and discuss all things OTTO.
 
 # The hardware
 
