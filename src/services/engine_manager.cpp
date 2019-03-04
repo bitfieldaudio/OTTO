@@ -5,12 +5,10 @@
 #include "engines/fx/chorus/chorus.hpp"
 #include "engines/fx/pingpong/pingpong.hpp"
 #include "engines/fx/wormhole/wormhole.hpp"
+#include "engines/fx/FDNReverb/FDNReverb.hpp"
 #include "engines/misc/master/master.hpp"
 #include "engines/seq/euclid/euclid.hpp"
 #include "engines/synths/OTTOFM/ottofm.hpp"
-#include "engines/synths/hammond/hammond.hpp"
-#include "engines/synths/nuke/nuke.hpp"
-#include "engines/synths/potion/potion.hpp"
 #include "engines/synths/rhodes/rhodes.hpp"
 #include "engines/synths/sampler/sampler.hpp"
 
@@ -178,10 +176,7 @@ namespace otto::services {
 
     arpeggiator.register_engine<ArpOffEngine>("OFF");
     arpeggiator.register_engine<engines::Euclid>("Euclid");
-    synth.register_engine<engines::HammondSynth>("Woody");
-    synth.register_engine<engines::NukeSynth>("Nuke");
     synth.register_engine<engines::GossSynth>("Goss");
-    synth.register_engine<engines::PotionSynth>("Potion");
     synth.register_engine<engines::RhodesSynth>("Rhodes");
     synth.register_engine<engines::OTTOFMSynth>("OTTO.FM");
     synth.register_engine<engines::Sampler>("Sampler");
@@ -193,6 +188,8 @@ namespace otto::services {
     effect2.register_engine<engines::Pingpong>("PingPong");
     effect1.register_engine<engines::Chorus>("Chorus");
     effect2.register_engine<engines::Chorus>("Chorus");
+    effect1.register_engine<engines::KratosReverb>("Kratos");
+    effect2.register_engine<engines::KratosReverb>("Kratos");
 
     arpeggiator.init();
     synth.init();
