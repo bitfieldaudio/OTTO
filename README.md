@@ -10,7 +10,8 @@ We would like to invite you to our **[discord server](https://discord.gg/4cV9Ucz
 
 The OTTO is basically going to be a Rpi3+, a screen, a DAC, 4 encoders and some 30+ buttons/keys. Some of us are currently building the next version of prototypes. We can (so far) show you some nice renders of that, which is currently being shipped to us. Next steps will be a few revisions and _a lot_ of coding to get the existing software to work with the hardware, but then we'll be ready to share with all of you!
 
-<a href="https://ibb.co/mBXmNnH"><img src="https://i.ibb.co/6Z12XK4/render1.png" alt="render1" width="100%" /></a>
+<img src="https://i.ibb.co/xHShjpH/26-4.png" width="100%" />
+<img src="https://i.ibb.co/dDQJ0cn/image.png" width="100%" />
 <a href="https://ibb.co/17QcPHK"><img src="https://i.ibb.co/HB4ZbmY/render2.png" alt="render2" width="100%" /></a>
 
 # Planned Features for v1.0
