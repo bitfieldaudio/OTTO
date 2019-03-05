@@ -1,0 +1,231 @@
+#include "gammasampler.hpp"
+
+#include "core/ui/vector_graphics.hpp"
+
+#include "util/iterator.hpp"
+#include "util/utility.hpp"
+
+#include "services/audio_manager.hpp"
+
+namespace otto::engines {
+
+  using namespace ui;
+  using namespace ui::vg;
+
+  struct SamplerScreen : EngineScreen<Sampler> {
+    void draw(Canvas& ctx) override;
+    void rotary(RotaryEvent e) override;
+
+    using EngineScreen<Sampler>::EngineScreen;
+  };
+
+  struct SamplerEnvelopeScreen : EngineScreen<Sampler> {
+    SamplerEnvelopeScreen();
+    void draw(Canvas& ctx) override;
+    void rotary(RotaryEvent e) override;
+
+    using EngineScreen<Sampler>::EngineScreen;
+  };
+
+  Sampler::Sampler()
+    : Engine("Sampler", props, std::make_unique<SamplerScreen>(this)),
+      _envelope_screen(std::make_unique<SamplerEnvelopeScreen>(this))
+  {
+    samplefile.load((Application::current().data_dir / "samples" / "sample.wav").c_str());
+    samplecontainer.source(&samplefile.samples[0][0], samplefile.getNumSamplesPerChannel());
+    sample.buffer(samplecontainer, (double)samplefile.getSampleRate(), samplefile.getNumChannels());
+    finish();
+    frames = sample.frames();
+
+    _lo_filter.type(gam::LOW_PASS);
+    _lo_filter.freq(20);
+    _hi_filter.type(gam::HIGH_PASS);
+    _hi_filter.freq(20000);
+
+    //On_change handlers
+    props.startpoint.on_change().connect([this](float pt) {
+        sample.min(pt * frames);
+    });
+    props.endpoint.on_change().connect([this](float pt) {
+        sample.max(pt * frames);
+    });
+    props.fadein.on_change().connect([this](float fd) {
+        sample.fade((int) fd * 1000, (int) props.fadeout * 1000);
+    });
+    props.fadeout.on_change().connect([this](float fd) {
+        sample.fade((int) props.fadein * 1000, (int) fd * 1000);
+    });
+    props.filter.on_change().connect([this](float freq) {
+      if (freq > 10) {
+        _lo_filter.freq(20000);
+        _hi_filter.freq(freq * freq * freq * 0.2);
+      }  else {
+        _lo_filter.freq(freq * freq * 200);
+        _hi_filter.freq(20);
+      }
+
+    });
+    props.speed.on_change().connect([this](float spd) {
+        sample.rate(spd);
+    });
+  }
+
+  void Sampler::restart()
+  {
+    sample.reset();
+  }
+
+  void Sampler::finish()
+  {
+    sample.finish();
+  }
+
+  float Sampler::operator()() noexcept
+  {
+    if (props.loop) sample.loop();
+    return sample();
+  }
+
+  void Sampler::load_file(fs::path path)
+  {
+    samplefile.load((Application::current().data_dir / "samples" / "sample.wav").c_str());
+    samplecontainer.source(&samplefile.samples[0][0], samplefile.getNumSamplesPerChannel());
+    sample.buffer(samplecontainer, (double)samplefile.getSampleRate(), samplefile.getNumChannels());
+  }
+
+  audio::ProcessData<1> Sampler::process(audio::ProcessData<1> data)
+  {
+    for (auto& ev : data.midi) {
+      util::match(ev,
+                  [this](midi::NoteOnEvent& ev) {
+                    note_on = true;
+                    restart();
+                  },
+                  [this](midi::NoteOffEvent& ev) {
+                    note_on = false;
+                    if (props.cut) finish();
+                  },
+                  [](auto&&) {});
+    }
+    for (auto&& frm : data.audio) {
+      frm = _hi_filter(_lo_filter(sample())) * props.volume;
+      if (props.loop && note_on && sample.done()) restart();
+    }
+    return data;
+  }
+
+  ui::Screen& Sampler::envelope_screen()
+  {
+    return *_envelope_screen;
+  }
+
+  ui::Screen& Sampler::voices_screen()
+  {
+    return *_envelope_screen;
+  }
+
+  // MAIN SCREEN //
+
+  void SamplerScreen::rotary(ui::RotaryEvent ev)
+  {
+    auto& props = engine.props;
+    auto& sample = engine.sample;
+    switch (ev.rotary) {
+    case ui::Rotary::blue: break;
+    case ui::Rotary::green: props.filter.step(ev.clicks); break;
+    case ui::Rotary::yellow: props.speed.step(ev.clicks); break;
+    case ui::Rotary::red:
+      if (props.cut && props.loop) {
+        props.loop = false;
+      } else if (props.cut && !props.loop) {
+        props.cut = false;
+      } else if (!props.cut && !props.loop) {
+        props.loop = true;
+      } else if (!props.cut && props.loop) {
+        props.cut = true;
+      }
+    }
+  }
+
+  void SamplerScreen::draw(ui::vg::Canvas& ctx)
+  {
+    using namespace ui::vg;
+
+    auto& props = engine.props;
+    auto& sample = engine.sample;
+
+    ctx.font(Fonts::Norm, 20);
+
+    ctx.beginPath();
+    if (props.cut) ctx.fillText("CUT", {10, 40});
+    if (props.loop) ctx.fillText("LOOP", {10, 65});
+  }
+
+  // ENVELOPE SCREEN //
+
+  void SamplerEnvelopeScreen::rotary(ui::RotaryEvent ev)
+  {
+    auto& sample = engine.sample;
+    switch (ev.rotary) {
+    case ui::Rotary::blue: engine.props.startpoint.step(ev.clicks); break;
+    case ui::Rotary::green: engine.props.endpoint.step(ev.clicks); break;
+    case ui::Rotary::yellow: engine.props.fadein.step(ev.clicks); break;
+    case ui::Rotary::red: engine.props.fadeout.step(ev.clicks); break;
+    }
+  }
+
+  void SamplerEnvelopeScreen::draw(ui::vg::Canvas& ctx)
+  {
+    using namespace ui::vg;
+
+    // auto& props = engine.props;
+    auto& sample = engine.sample;
+    /*
+    if (engine.sample.size() <= 0) return;
+
+    ctx.beginPath();
+
+    ctx.moveTo(10, 120);
+    auto waveform = engine.sample.waveform();
+    float size = waveform.end() - waveform.begin();
+
+    for (float i = 0; i < 300; i += 2) {
+      float x = 10.f + i;
+      float y = *(waveform.begin() + float(i) / 300.f * size) * 50.f;
+      ctx.lineTo(x, 120.f - y);
+    }
+    for (float i = 299; i >= 0; i -= 2) {
+      float x = 10.f + i;
+      float y = *(waveform.begin() + float(i) / 300.f * size) * 50.f;
+      ctx.lineTo(x, 120.f + y);
+    }
+    ctx.closePath();
+    ctx.fill(Colours::White);
+
+    auto wfm_idx = [&] (int idx) {
+      return (idx - sample.start_point()) / sample.waveform_scale();
+    };
+
+    auto draw_line = [&] (int point, Colour c) {
+      float idx = wfm_idx(point);
+      float x = 10 + 300.f * idx / size;
+      float y = *(waveform.begin() + idx) * 50.f;
+      ctx.beginPath();
+      ctx.moveTo(x, 120);
+      ctx.lineTo(x, 120 - y);
+      ctx.circle({x, 120 - y}, 3);
+      ctx.lineWidth(3);
+      ctx.stroke(c);
+    };
+
+    if (sample.loop_start() != sample.start_point()) {
+      draw_line(sample.loop_start(), Colours::Yellow);
+    }
+
+    if (sample.loop_end() != sample.end_point()) {
+      draw_line(sample.loop_end(), Colours::Red);
+    }
+     */
+  }
+
+} // namespace otto::engines

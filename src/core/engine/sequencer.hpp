@@ -4,7 +4,7 @@
 #include "util/filesystem.hpp"
 #include "core/props/props.hpp"
 #include "engine.hpp"
-#include "engines/synths/sampler/sampler.hpp"
+#include "engines/synths/gammasampler/gammasampler.hpp"
 
 
 namespace otto::engines {
