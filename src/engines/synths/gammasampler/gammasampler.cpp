@@ -20,7 +20,6 @@ namespace otto::engines {
   };
 
   struct SamplerEnvelopeScreen : EngineScreen<Sampler> {
-    SamplerEnvelopeScreen();
     void draw(Canvas& ctx) override;
     void rotary(RotaryEvent e) override;
 
@@ -131,7 +130,7 @@ namespace otto::engines {
     auto& props = engine.props;
     auto& sample = engine.sample;
     switch (ev.rotary) {
-    case ui::Rotary::blue: break;
+    case ui::Rotary::blue: props.volume.step(ev.clicks); break;
     case ui::Rotary::green: props.filter.step(ev.clicks); break;
     case ui::Rotary::yellow: props.speed.step(ev.clicks); break;
     case ui::Rotary::red:
@@ -156,9 +155,47 @@ namespace otto::engines {
 
     ctx.font(Fonts::Norm, 20);
 
+    ctx.font(Fonts::Norm, 35);
+
+    constexpr float x_pad = 30;
+    constexpr float y_pad = 50;
+    constexpr float space = (height - 2.f * y_pad) / 3.f;
+
     ctx.beginPath();
-    if (props.cut) ctx.fillText("CUT", {10, 40});
-    if (props.loop) ctx.fillText("LOOP", {10, 65});
+    ctx.fillStyle(Colours::Blue);
+    ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
+    ctx.fillText("Volume", {x_pad, y_pad});
+
+    ctx.beginPath();
+    ctx.fillStyle(Colours::Blue);
+    ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
+    ctx.fillText(fmt::format("{:1}", engine.props.volume), {width - x_pad, y_pad});
+
+    ctx.beginPath();
+    ctx.fillStyle(Colours::Green);
+    ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
+    ctx.fillText("Filter", {x_pad, y_pad + space});
+
+    ctx.beginPath();
+    ctx.fillStyle(Colours::Green);
+    ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
+    ctx.fillText(fmt::format("{:2.2}", engine.props.filter), {width - x_pad, y_pad + space});
+
+    ctx.beginPath();
+    ctx.fillStyle(Colours::Yellow);
+    ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
+    ctx.fillText("Speed", {x_pad, y_pad + 2 * space});
+
+    ctx.beginPath();
+    ctx.fillStyle(Colours::Yellow);
+    ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
+    ctx.fillText(fmt::format("{:1.2}", engine.props.speed), {width - x_pad, y_pad + 2 * space});
+
+    if (props.cut) ctx.fillText("CUT", {100, 170});
+    if (props.loop) ctx.fillText("LOOP", {100, 195});
+
+
+
   }
 
   // ENVELOPE SCREEN //
@@ -180,6 +217,52 @@ namespace otto::engines {
 
     // auto& props = engine.props;
     auto& sample = engine.sample;
+
+    ctx.font(Fonts::Norm, 35);
+
+    constexpr float x_pad = 30;
+    constexpr float y_pad = 50;
+    constexpr float space = (height - 2.f * y_pad) / 3.f;
+
+    ctx.beginPath();
+    ctx.fillStyle(Colours::Blue);
+    ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
+    ctx.fillText("Start", {x_pad, y_pad});
+
+    ctx.beginPath();
+    ctx.fillStyle(Colours::Blue);
+    ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
+    ctx.fillText(fmt::format("{:1.2}", engine.props.startpoint), {width - x_pad, y_pad});
+
+    ctx.beginPath();
+    ctx.fillStyle(Colours::Green);
+    ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
+    ctx.fillText("End", {x_pad, y_pad + space});
+
+    ctx.beginPath();
+    ctx.fillStyle(Colours::Green);
+    ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
+    ctx.fillText(fmt::format("{:1.2}", engine.props.endpoint), {width - x_pad, y_pad + space});
+
+    ctx.beginPath();
+    ctx.fillStyle(Colours::Yellow);
+    ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
+    ctx.fillText("FadeIn", {x_pad, y_pad + 2 * space});
+
+    ctx.beginPath();
+    ctx.fillStyle(Colours::Yellow);
+    ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
+    ctx.fillText(fmt::format("{:1.2}", engine.props.fadein), {width - x_pad, y_pad + 2 * space});
+
+    ctx.beginPath();
+    ctx.fillStyle(Colours::Red);
+    ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
+    ctx.fillText("FadeOut", {x_pad, y_pad + 3 * space});
+
+    ctx.beginPath();
+    ctx.fillStyle(Colours::Red);
+    ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
+    ctx.fillText(fmt::format("{:1.2}", engine.props.fadeout), {width - x_pad, y_pad + 3 * space});
     /*
     if (engine.sample.size() <= 0) return;
 
