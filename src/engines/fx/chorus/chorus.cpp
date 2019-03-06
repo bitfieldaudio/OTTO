@@ -5,8 +5,6 @@
 #include "util/iterator.hpp"
 #include "util/utility.hpp"
 
-#include "chorus.faust.hpp"
-
 namespace otto::engines {
 
   using namespace ui;
@@ -21,14 +19,17 @@ namespace otto::engines {
   };
 
   Chorus::Chorus()
-    : EffectEngine(name, props, std::make_unique<ChorusScreen>(this)),
-      faust_(std::make_unique<faust_chorus>(), props)
-  {}
+          : EffectEngine("Chorus", props, std::make_unique<ChorusScreen>(this))
+  {
+  }
 
 
   audio::ProcessData<2> Chorus::process(audio::ProcessData<1> data)
   {
-    return faust_.process(data);
+    auto buf = Application::current().audio_manager->buffer_pool().allocate_multi<2>();
+    for (auto&& [dat, bufL, bufR] : util::zip(data.audio, buf[0], buf[1]))
+      chorus(dat, bufL, bufR);
+    return data.redirect(buf);
   }
 
   // SCREEN //

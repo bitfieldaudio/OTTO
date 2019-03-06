@@ -2,7 +2,8 @@
 
 #include "core/engine/engine.hpp"
 
-#include "core/audio/faust.hpp"
+#include <Gamma/Effects.h>
+#include "core/voices/voice_manager.hpp"
 
 namespace otto::engines {
 
@@ -26,8 +27,8 @@ namespace otto::engines {
 
     audio::ProcessData<2> process(audio::ProcessData<1>) override;
 
-  private:
-    audio::FaustWrapper<1, 2> faust_;
-  };
+    private:
+        gam::Chorus<> chorus;
+    };
 
 } // namespace otto::engines
