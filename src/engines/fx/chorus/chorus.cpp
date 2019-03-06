@@ -21,6 +21,21 @@ namespace otto::engines {
   Chorus::Chorus()
           : EffectEngine("Chorus", props, std::make_unique<ChorusScreen>(this))
   {
+    props.delay.on_change().connect([this](float delay) {
+      chorus.delay(delay);
+    });
+
+    props.rate.on_change().connect([this](float rate) {
+      chorus.freq(rate);
+    });
+
+    props.deviation.on_change().connect([this](float ffd) {
+      chorus.ffd(ffd);
+    });
+
+    props.depth.on_change().connect([this](float depth) {
+      chorus.depth(depth);
+    });
   }
 
 
