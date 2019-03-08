@@ -15,10 +15,10 @@ namespace otto::engines {
     static constexpr std::string_view name = "Chorus";
 
     struct Props : Properties<> {
-          Property<float> delay       = {this, "delay",       0.0001,        has_limits::init(0.0001, 1),     steppable::init(0.0001)};
-          Property<float> rate        = {this, "rate",        0,        has_limits::init(0, 100),   steppable::init(0.1)};
-          Property<float> deviation   = {this, "deviation",   0.01,        has_limits::init(0, 0.9),     steppable::init(0.01)};
-          Property<float> depth       = {this, "depth",       0.0001,   has_limits::init(0.0001, 1),     steppable::init(0.0001)};
+          Property<float> delay     = {this, "delay",   0.0001, has_limits::init(0.0001, 1),    steppable::init(0.0001)};
+          Property<float> depth     = {this, "depth",   0.0001, has_limits::init(0.0001, 1),    steppable::init(0.0001)};
+          Property<float> feedback  = {this, "fbk",     0.01,   has_limits::init(0, 0.9),       steppable::init(0.01)};
+          Property<float> rate      = {this, "rate",    0,      has_limits::init(0, 100),       steppable::init(0.1)};
     } props;
 
     Chorus();
