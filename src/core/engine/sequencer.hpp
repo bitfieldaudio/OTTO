@@ -35,7 +35,6 @@ namespace otto::engines {
     int _samples_per_beat = 22050 / 4;
     int _next_beat = _samples_per_beat;
     int _counter = _samples_per_beat;
-    bool _should_run [[maybe_unused]] = false;
     bool _running = false;
   };
 } // namespace otto::engines

@@ -32,20 +32,20 @@ namespace otto::engines {
     /// Audio samples per entry in @ref waveform()
     int waveform_scale() const;
 
-    std::size_t start_point() const;
-    std::size_t end_point() const;
+    int start_point() const;
+    int end_point() const;
     int loop_start() const;
     int loop_end() const;
 
-    std::size_t start_point(int val);
-    std::size_t end_point(int val);
+    int start_point(int val);
+    int end_point(int val);
     int loop_start(int val);
     int loop_end(int val);
 
     struct iterator : util::iterator_facade<iterator, float, std::forward_iterator_tag> {
       using vector_iterator = std::vector<float>::const_iterator;
 
-      iterator(const Sample& sample, std::size_t index, float stride = 1.f);
+      iterator(const Sample& sample, int index, float stride = 1.f);
       iterator(const iterator&);
       iterator& operator=(const iterator&);
 
@@ -53,7 +53,7 @@ namespace otto::engines {
       float dereference() const;
       bool equal(const iterator& rhs) const;
 
-      std::size_t index() const;
+      int index() const;
 
       const Sample& sample;
       bool do_loop = false;
@@ -65,7 +65,7 @@ namespace otto::engines {
       int loop_end() const;
       int signed_index() const;
 
-      std::size_t _index = 0;
+      int _index = 0;
       float _playback_speed = 1.f;
       float _error = 0.f;
     };
@@ -76,12 +76,12 @@ namespace otto::engines {
   private:
     std::vector<float> _audio_data;
     std::vector<float> _waveform;
-    std::size_t _size = 0;
+    int _size = 0;
 
     friend struct iterator;
 
-    std::size_t _start_point = 0;
-    std::size_t _end_point = 0;
+    int _start_point = 0;
+    int _end_point = 0;
     int _loop_start = -1;
     int _loop_end = -1;
 
