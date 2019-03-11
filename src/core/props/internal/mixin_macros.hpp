@@ -56,8 +56,8 @@
            ::otto::core::props::HookOrder HO = ::otto::core::props::HookOrder::Middle>             \
   using hook = HookTag::impl_t<HT, value_type, HO>;                                                \
                                                                                                    \
-  template<typename HT, CONCEPT_REQUIRES_(::ranges::concepts::models<::otto::core::props::HookTag, \
-                                                                     HT, value_type>())>           \
+  template<typename HT,                                                                            \
+           typename = std::enable_if_t<::otto::core::props::HookTag::is<HT, value_type>>>          \
   typename hook<HT>::arg_type run_hook(const typename hook<HT>::arg_type& arg)                     \
   {                                                                                                \
     return ::otto::core::props::detail::run_hook<HT>(*this, arg);                                  \

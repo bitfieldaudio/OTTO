@@ -112,7 +112,7 @@ namespace otto::glfw {
   {
     double x, y;
     glfwGetCursorPos(_glfw_win, &x, &y);
-    return vg::Point{x, y};
+    return vg::Point{(float)x, (float)y};
   }
 
   std::pair<int, int> Window::window_size()

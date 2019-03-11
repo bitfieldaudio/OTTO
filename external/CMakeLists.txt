@@ -44,11 +44,6 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/fmt)
 execute_process(COMMAND git submodule update --init -- GSL WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/GSL)
 
-# Ranges V3
-execute_process(COMMAND git submodule update --init -- range-v3 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-add_library(range-v3 INTERFACE)
-target_include_directories(range-v3 SYSTEM INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/range-v3/include)
-
 # Gamma
 execute_process(COMMAND git submodule update --init -- Gamma WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 execute_process(COMMAND mkdir -p "${CMAKE_CURRENT_BINARY_DIR}/include")

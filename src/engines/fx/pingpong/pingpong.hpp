@@ -11,40 +11,31 @@ namespace otto::engines {
   using namespace props;
 
   struct Pingpong : EffectEngine {
+    static constexpr std::string_view name = "Pingpong";
 
     struct DelayLine : Properties<> {
       using Properties::Properties;
-      Property<float, no_serialize> level   = {this, "level",      0,   has_limits::init(0,   5), faust_link::init(FaustLink::Type::FromFaust)};
+      Property<float, no_serialize> level = {this, "level", 0, has_limits::init(0, 5),
+                                             faust_link::init(FaustLink::Type::FromFaust)};
     };
 
     struct Props : Properties<> {
+      Property<float> delaytime = {this, "delaytime", 0.5, has_limits::init(0.01, 0.99),
+                                   steppable::init(0.01)};
+      Property<bool> bpm_follow = {this, "bpm_follow", false};
+      Property<float> feedback = {this, "feedback", 0.5, has_limits::init(0, 1),
+                                  steppable::init(0.01)};
+      Property<float> tone = {this, "tone", 0.5, has_limits::init(0, 1), steppable::init(0.01)};
+      Property<float> spread = {this, "spread", 0, has_limits::init(0, 1), steppable::init(0.01)};
 
-      Property<float> delaytime   = {this, "delaytime",     0.5,  has_limits::init(0.01, 0.99),    steppable::init(0.01)};
-      Property<bool> bpm_follow   = {this, "bpm_follow", false};
-      Property<float> feedback    = {this, "feedback",  0.5,  has_limits::init(0, 1),    steppable::init(0.01)};
-      Property<float> tone        = {this, "tone",  0.5, has_limits::init(0, 1),   steppable::init(0.01)};
-      Property<float> spread      = {this, "spread",  0, has_limits::init(0, 1),   steppable::init(0.01)};
-
-      std::array<DelayLine, 20> delay_level = {{{this, "delayline0"},
-                                                {this, "delayline1"},
-                                                {this, "delayline2"},
-                                                {this, "delayline3"},
-                                                {this, "delayline4"},
-                                                {this, "delayline5"},
-                                                {this, "delayline6"},
-                                                {this, "delayline7"},
-                                                {this, "delayline8"},
-                                                {this, "delayline9"},
-                                                {this, "delayline10"},
-                                                {this, "delayline11"},
-                                                {this, "delayline12"},
-                                                {this, "delayline13"},
-                                                {this, "delayline14"},
-                                                {this, "delayline15"},
-                                                {this, "delayline16"},
-                                                {this, "delayline17"},
-                                                {this, "delayline18"},
-                                                {this, "delayline19"}}};
+      std::array<DelayLine, 20> delay_level = {
+        {{this, "delayline0"},  {this, "delayline1"},  {this, "delayline2"},
+         {this, "delayline3"},  {this, "delayline4"},  {this, "delayline5"},
+         {this, "delayline6"},  {this, "delayline7"},  {this, "delayline8"},
+         {this, "delayline9"},  {this, "delayline10"}, {this, "delayline11"},
+         {this, "delayline12"}, {this, "delayline13"}, {this, "delayline14"},
+         {this, "delayline15"}, {this, "delayline16"}, {this, "delayline17"},
+         {this, "delayline18"}, {this, "delayline19"}}};
 
     } props;
 

@@ -8,11 +8,24 @@ namespace otto::core::engine {
   using namespace otto::core::ui;
   using namespace otto::core::ui::vg;
 
+  EngineSelectorScreen::EngineSelectorScreen(IEngineDispatcher& ed)
+    : engine_wid(engine_names, eng_opts([&ed](int idx) -> IEngine& { return ed.select((ed.allow_off) ? idx - 1 : idx); })),
+      preset_wid(preset_names, prst_opts([&ed]() -> IEngine& { return ed.current(); })),
+      _on_show([this, &ed] { engine_wid.select(ed.allow_off ? ed.current_idx() + 1 : ed.current_idx()); }),
+      _engine_dispatcher(ed)
+  {
+    if (ed.allow_off) engine_names.push_back("OFF");
+    util::transform(ed.make_name_list(), std::back_inserter(engine_names),
+                    [](auto& sv) { return std::string(sv); });
+  }
+
+
   SelectorWidget::Options EngineSelectorScreen::eng_opts(
-    std::function<AnyEngine&(int)>&& select_eg) noexcept
+    std::function<IEngine&(int)>&& select_eg) noexcept
   {
     SelectorWidget::Options opts;
-    opts.on_select = [this, sl = std::move(select_eg), empty_vec = std::vector<std::string>()](int idx) {
+    opts.on_select = [this, sl = std::move(select_eg),
+                      empty_vec = std::vector<std::string>()](int idx) {
       auto& eg = sl(idx);
       try {
         preset_wid.items(empty_vec);
@@ -26,7 +39,7 @@ namespace otto::core::engine {
   }
 
   SelectorWidget::Options EngineSelectorScreen::prst_opts(
-    std::function<AnyEngine&()>&& cur_eg) noexcept
+    std::function<IEngine&()>&& cur_eg) noexcept
   {
     SelectorWidget::Options opts;
     opts.on_select = [cur_eg = std::move(cur_eg)](int idx) {
@@ -50,16 +63,17 @@ namespace otto::core::engine {
   bool EngineSelectorScreen::keypress(Key key)
   {
     switch (key) {
-      case ui::Key::blue_click: [[fallthrough]];
-      case ui::Key::green_click: [[fallthrough]];
-      case ui::Key::yellow_click: [[fallthrough]];
-      case ui::Key::red_click: {
-        std::string name = "Preset" + std::to_string(preset_wid.nitems() + 1);
-        Application::current().preset_manager->create_preset(_engine_dispatcher.current()->name(),  name, _engine_dispatcher.current()->to_json()["props"]);
-        preset_wid.select(preset_wid.nitems() - 1, true);
-        break;
-      }
-      default: return false;
+    case ui::Key::blue_click: [[fallthrough]];
+    case ui::Key::green_click: [[fallthrough]];
+    case ui::Key::yellow_click: [[fallthrough]];
+    case ui::Key::red_click: {
+      std::string name = "Preset" + std::to_string(preset_wid.nitems() + 1);
+      Application::current().preset_manager->create_preset(
+        _engine_dispatcher.current().name(), name, _engine_dispatcher.current().to_json()["props"]);
+      preset_wid.select(preset_wid.nitems() - 1, true);
+      break;
+    }
+    default: return false;
     }
     return true;
   }

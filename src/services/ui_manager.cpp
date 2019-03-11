@@ -29,7 +29,7 @@ namespace otto::services {
     }
   }
 
-  void UIManager::select_engine(core::engine::AnyEngine& engine)
+  void UIManager::select_engine(core::engine::IEngine& engine)
   {
     display(engine.screen());
     _selected_engine_name = engine.name();

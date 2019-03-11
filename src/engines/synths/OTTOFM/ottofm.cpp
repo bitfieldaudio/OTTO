@@ -287,7 +287,7 @@ namespace otto::engines {
   };
 
   OTTOFMSynth::OTTOFMSynth()
-    : SynthEngine("OTTO.FM", props, std::make_unique<OTTOFMSynthScreen>(this)), voice_mgr_(props)
+    : SynthEngine(name, props, std::make_unique<OTTOFMSynthScreen>(this)), voice_mgr_(props)
   {}
 
   bool OTTOFMSynthScreen::keypress(Key key)
@@ -589,9 +589,9 @@ namespace otto::engines {
       ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
       ctx.fillText("Self-mod", {x_pad_left, y_pad + 100});
 
-      int circ_x = 2 * x_pad_left;
-      int circ_y = 2.2 * y_pad;
-      int rad = 15;
+      float circ_x = 2 * x_pad_left;
+      float circ_y = 2.2 * y_pad;
+      float rad = 15;
 
 
       ctx.beginPath();

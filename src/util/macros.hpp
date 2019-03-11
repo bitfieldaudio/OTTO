@@ -100,3 +100,57 @@
   GET_MACRO_15(__VA_ARGS__, FEL_15, FEL_14, FEL_13, FEL_12, FEL_11, FEL_10, FEL_09,    \
                FEL_08, FEL_07, FEL_06, FEL_05, FEL_04, FEL_03, FEL_02, FEL_01, NONE)           \
   (action, args, __VA_ARGS__)
+
+// a FOREACH macro that puts the sequence element last in a macro call with
+// other args, and places a comma separator in between the 
+#define FELS_01(WHAT, ARGS, X)      WHAT(EXPAND ARGS, X)
+#define FELS_02(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X), FELS_01(WHAT, ARGS, __VA_ARGS__)
+#define FELS_03(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X), FELS_02(WHAT, ARGS, __VA_ARGS__)
+#define FELS_04(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X), FELS_03(WHAT, ARGS, __VA_ARGS__)
+#define FELS_05(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X), FELS_04(WHAT, ARGS, __VA_ARGS__)
+#define FELS_06(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X), FELS_05(WHAT, ARGS, __VA_ARGS__)
+#define FELS_07(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X), FELS_06(WHAT, ARGS, __VA_ARGS__)
+#define FELS_08(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X), FELS_07(WHAT, ARGS, __VA_ARGS__)
+#define FELS_09(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X), FELS_08(WHAT, ARGS, __VA_ARGS__)
+#define FELS_10(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X), FELS_09(WHAT, ARGS, __VA_ARGS__)
+#define FELS_11(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X), FELS_10(WHAT, ARGS, __VA_ARGS__)
+#define FELS_12(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X), FELS_11(WHAT, ARGS, __VA_ARGS__)
+#define FELS_13(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X), FELS_12(WHAT, ARGS, __VA_ARGS__)
+#define FELS_14(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X), FELS_13(WHAT, ARGS, __VA_ARGS__)
+#define FELS_15(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X), FELS_14(WHAT, ARGS, __VA_ARGS__)
+
+#define FOR_EACH_LAST_SEP(action, args, ...)                                     \
+  GET_MACRO_15(__VA_ARGS__, FELS_15, FELS_14, FELS_13, FELS_12, FELS_11, FELS_10, FELS_09,    \
+               FELS_08, FELS_07, FELS_06, FELS_05, FELS_04, FELS_03, FELS_02, FELS_01, NONE)           \
+  (action, args, __VA_ARGS__)
+
+// a FOREACH macro that puts the sequence element last in a macro call with
+// other args, and places a comma separator in between the 
+#define FELS2_01(WHAT, ARGS, X)      WHAT(EXPAND ARGS, X)
+#define FELS2_02(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X), FELS2_01(WHAT, ARGS, __VA_ARGS__)
+#define FELS2_03(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X), FELS2_02(WHAT, ARGS, __VA_ARGS__)
+#define FELS2_04(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X), FELS2_03(WHAT, ARGS, __VA_ARGS__)
+#define FELS2_05(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X), FELS2_04(WHAT, ARGS, __VA_ARGS__)
+#define FELS2_06(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X), FELS2_05(WHAT, ARGS, __VA_ARGS__)
+#define FELS2_07(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X), FELS2_06(WHAT, ARGS, __VA_ARGS__)
+#define FELS2_08(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X), FELS2_07(WHAT, ARGS, __VA_ARGS__)
+#define FELS2_09(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X), FELS2_08(WHAT, ARGS, __VA_ARGS__)
+#define FELS2_10(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X), FELS2_09(WHAT, ARGS, __VA_ARGS__)
+#define FELS2_11(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X), FELS2_10(WHAT, ARGS, __VA_ARGS__)
+#define FELS2_12(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X), FELS2_11(WHAT, ARGS, __VA_ARGS__)
+#define FELS2_13(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X), FELS2_12(WHAT, ARGS, __VA_ARGS__)
+#define FELS2_14(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X), FELS2_13(WHAT, ARGS, __VA_ARGS__)
+#define FELS2_15(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X), FELS2_14(WHAT, ARGS, __VA_ARGS__)
+
+#define FOR_EACH_LAST_SEP2(action, args, ...)                                     \
+  GET_MACRO_15(__VA_ARGS__, FELS2_15, FELS2_14, FELS2_13, FELS2_12, FELS2_11, FELS2_10, FELS2_09,    \
+               FELS2_08, FELS2_07, FELS2_06, FELS2_05, FELS2_04, FELS2_03, FELS2_02, FELS2_01, NONE)           \
+  (action, args, __VA_ARGS__)
+
+
+// Remove parenthesis if they exist
+#define EXTRACT(...) EXTRACT __VA_ARGS__
+#define NOTHING_EXTRACT
+#define PASTE(x, ...) x ## __VA_ARGS__
+#define EVALUATING_PASTE(x, ...) PASTE(x, __VA_ARGS__)
+#define UNPAREN(x) EVALUATING_PASTE(NOTHING_, EXTRACT x)

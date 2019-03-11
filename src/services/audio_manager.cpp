@@ -17,21 +17,26 @@ namespace otto::services {
 
   void AudioManager::start() noexcept
   {
+    gam::sampleRate(samplerate());
     _running = true;
   }
 
   bool AudioManager::running() noexcept
   {
-    gam::sampleRate(samplerate());
     return _running;
+  }
+
+  void AudioManager::wait_one() const noexcept
+  {
+    auto last = buffer_number();
+    if (last == 0) return;
+    while (last >= (buffer_number() - 1));
   }
 
   void AudioManager::send_midi_event(core::midi::AnyMidiEvent evt) noexcept
   {
     midi_bufs.outer().emplace_back(std::move(evt));
   }
-
-  void AudioManager::process_audio_output(core::audio::ProcessData<2> audio_output) {}
 
   float AudioManager::cpu_time() noexcept
   {

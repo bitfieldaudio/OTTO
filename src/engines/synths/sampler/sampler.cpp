@@ -65,15 +65,13 @@ namespace otto::engines {
     return 1;
   }
 
-  std::size_t Sample::start_point() const
+  int Sample::start_point() const
   {
-    if (_start_point < 0) return 0;
     return _start_point;
   }
 
-  std::size_t Sample::end_point() const
+  int Sample::end_point() const
   {
-    if (_end_point < 0) return _size;
     return _end_point;
   }
 
@@ -89,7 +87,7 @@ namespace otto::engines {
     return _loop_end;
   }
 
-  std::size_t Sample::start_point(int val)
+  int Sample::start_point(int val)
   {
     val = std::clamp(val, 0, (int) end_point());
     _start_point = val;
@@ -98,7 +96,7 @@ namespace otto::engines {
     return _start_point;
   }
 
-  std::size_t Sample::end_point(int val)
+  int Sample::end_point(int val)
   {
     val = std::clamp(val, (int) start_point(), (int) _size);
     _end_point = val;
@@ -119,7 +117,7 @@ namespace otto::engines {
     return _loop_end;
   }
 
-  Sample::iterator::iterator(const Sample& sample, std::size_t index, float stride)
+  Sample::iterator::iterator(const Sample& sample, int index, float stride)
     : sample(sample), _index(index), _playback_speed(stride)
   {}
 
@@ -164,7 +162,7 @@ namespace otto::engines {
     return _index == rhs._index && (signed_index() == end_point() || _error == rhs._error);
   }
 
-  std::size_t Sample::iterator::index() const
+  int Sample::iterator::index() const
   {
     return _index;
   }
@@ -303,7 +301,6 @@ namespace otto::engines {
   {
     using namespace ui::vg;
 
-    auto& props = engine.props;
     auto& sample = engine.sample;
 
     ctx.font(Fonts::Norm, 20);

@@ -29,8 +29,8 @@ target_link_libraries(otto PUBLIC external)
 target_link_libraries(otto PUBLIC nanocanvas)
 target_link_libraries(otto PUBLIC GSL)
 target_link_libraries(otto PUBLIC fmt)
-target_link_libraries(otto PUBLIC range-v3)
 target_link_libraries(otto PUBLIC gamma)
+target_link_libraries(otto PUBLIC foonathan_array)
 
 # Enable warnings for local code
 if(MSVC)
