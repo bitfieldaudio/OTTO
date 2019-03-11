@@ -52,6 +52,7 @@ target_include_directories(range-v3 SYSTEM INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}
 # Gamma
 execute_process(COMMAND git submodule update --init -- Gamma WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 execute_process(COMMAND mkdir -p "${CMAKE_CURRENT_BINARY_DIR}/include")
+execute_process(COMMAND rm "${CMAKE_CURRENT_BINARY_DIR}/include/Gamma")
 execute_process(COMMAND ln -s "${CMAKE_CURRENT_SOURCE_DIR}/Gamma/Gamma" "${CMAKE_CURRENT_BINARY_DIR}/include/Gamma")
 file(GLOB_RECURSE gamma_src "${CMAKE_CURRENT_SOURCE_DIR}/Gamma/src/*.cpp")
 list(REMOVE_ITEM gamma_src 
