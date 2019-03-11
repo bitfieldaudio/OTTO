@@ -50,9 +50,10 @@ namespace otto::services {
     options.flags = RTAUDIO_SCHEDULE_REALTIME;
     options.numberOfBuffers = 1;
     options.streamName = "OTTO";
+    unsigned buf_siz = _buffer_size;
 
     try {
-      client.openStream(&outParameters, &inParameters, RTAUDIO_FLOAT32, _samplerate, &buffer_size,
+      client.openStream(&outParameters, &inParameters, RTAUDIO_FLOAT32, _samplerate, &buf_siz,
                         [](void* out, void* in, unsigned int nframes, double time,
                            RtAudioStreamStatus status, void* self) {
                           return static_cast<RTAudioAudioManager*>(self)->process(
@@ -60,7 +61,8 @@ namespace otto::services {
                         },
                         this,
 			&options);
-      buffer_pool().set_buffer_size(buffer_size);
+      _buffer_size = buf_siz;
+      buffer_pool().set_buffer_size(buf_siz);
       client.startStream();
     } catch (RtAudioError& e) {
       e.printMessage();
@@ -111,12 +113,13 @@ namespace otto::services {
                                    double stream_time,
                                    RtAudioStreamStatus stream_status)
   {
+    _buffer_number++;
     auto running = this->running() && Application::current().running();
     if (!running) {
       return 0;
     }
 
-    if ((unsigned) nframes > buffer_size) {
+    if ((unsigned) nframes > _buffer_size) {
       LOGE("RTAudio requested more frames than expected");
       return 0;
     }

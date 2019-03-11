@@ -9,23 +9,17 @@ If the class is not registered, members is std::tuple<>
 
 #include <tuple>
 
-namespace metastuff
-{
-namespace detail
-{
+namespace otto::reflect {
+  namespace detail {
 
-template <typename T, typename TupleType>
-struct MetaHolder {
-    static TupleType members;
-    static constexpr const char* name() 
-    {
-        return registerName<T>();
-    }
-};
+    template<typename T, typename TupleType>
+    struct MetaHolder {
+      static constexpr TupleType members = register_members<T>();
+      static constexpr std::string_view name()
+      {
+        return register_name<T>();
+      }
+    };
 
-template <typename T, typename TupleType>
-TupleType MetaHolder<T, TupleType>::members = registerMembers<T>();
-
-
-} // end of namespace detail
-} // end of namespace meta
+  } // end of namespace detail
+} // namespace otto::reflect

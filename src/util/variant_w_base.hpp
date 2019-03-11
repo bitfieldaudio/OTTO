@@ -99,6 +99,21 @@ namespace otto::util {
       return *this;
     }
 
+    template <class T, class... Args>
+    T& emplace(Args&&... args)
+    {
+      auto& res = m_variant.template emplace<T>(std::forward<Args>(args)...);
+      update_base();
+      return res;
+    }
+
+    template <class T, class U, class... Args>
+    T& emplace(std::initializer_list<U> il, Args&&... args)
+    {
+      auto& res = m_variant.template emplace<T>(std::move(il), std::forward<Args>(args)...);
+      update_base();
+      return res;
+    }
 
     constexpr bool operator==(const basic_variant_w_base& other) const
     {
@@ -117,6 +132,11 @@ namespace otto::util {
     const Base* base() const
     {
       return m_base;
+    }
+
+    int index() const noexcept
+    {
+      return m_variant.index();
     }
 
     const Variant& variant() const

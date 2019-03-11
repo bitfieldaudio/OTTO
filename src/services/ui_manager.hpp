@@ -62,7 +62,7 @@ namespace otto::services {
     void display(core::ui::Screen& screen);
 
     /// Select an engine
-    void select_engine(core::engine::AnyEngine& engine);
+    void select_engine(core::engine::IEngine& engine);
 
     /// Select an engine by name
     void select_engine(const std::string& engine_name);

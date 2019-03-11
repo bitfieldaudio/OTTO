@@ -3,10 +3,11 @@
 #include <MetaStuff/Meta.h>
 #include "util/macros.hpp"
 
-#define _REFLECT_STRUCT_ARGS1(Type, Name) ::metastuff::member(#Name, &Type::Name)
+#define _REFLECT_STRUCT_ARGS1(Type, Name) ::otto::reflect::member(#Name, &Type::Name)
 #define _REFLECT_STRUCT_ADD_TYPE(Type, Name) &Type::Name
 #define _REFLECT_STRUCT_ARGS2(Type, NameString, ...)                                               \
-  ::metastuff::member(NameString, FOR_EACH_LAST_SEP2(_REFLECT_STRUCT_ADD_TYPE, (Type), __VA_ARGS__))
+  ::otto::reflect::member(NameString, __VA_ARGS__)
+
 #define _REFLECT_STRUCT_ARGS_DISPATCH(Type, ...)                                                   \
   GET_MACRO_4(__VA_ARGS__, _REFLECT_STRUCT_ARGS2, _REFLECT_STRUCT_ARGS2, _REFLECT_STRUCT_ARGS2,    \
               _REFLECT_STRUCT_ARGS1, NOTHING)                                                      \
@@ -14,47 +15,44 @@
 #define _REFLECT_STRUCT_ARGS(Type, Args) _REFLECT_STRUCT_ARGS_DISPATCH(Type, UNPAREN(Args))
 
 #define DECL_REFLECTION_OUTSIDE(Type, ...)                                                         \
-  namespace metastuff {                                                                            \
+  namespace otto::reflect {                                                                        \
     template<>                                                                                     \
-    inline auto registerMembers<Type>()                                                            \
+    constexpr auto register_members<Type>()                                                        \
     {                                                                                              \
-      return ::metastuff::members(FOR_EACH_LAST_SEP(_REFLECT_STRUCT_ARGS, (Type), __VA_ARGS__));   \
+      return ::otto::reflect::members(                                                             \
+        FOR_EACH_LAST_SEP(_REFLECT_STRUCT_ARGS, (Type), __VA_ARGS__));                             \
     }                                                                                              \
     template<>                                                                                     \
-    inline auto registerName<Type>()                                                               \
+    constexpr std::string_view register_name<Type>()                                               \
     {                                                                                              \
       return #Type                                                                                 \
     }                                                                                              \
   }
 
 #define DECL_REFLECTION(Type, ...)                                                                 \
-  friend auto metastuff::registerMembers<Type>();                                                  \
-  static auto reflect_members()                                                                    \
+  friend constexpr auto otto::reflect::register_members<Type>();                                   \
+  static constexpr auto reflect_members()                                                          \
   {                                                                                                \
-    return ::metastuff::members(FOR_EACH_LAST_SEP(_REFLECT_STRUCT_ARGS, (Type), __VA_ARGS__));     \
+    return ::otto::reflect::members(FOR_EACH_LAST_SEP(_REFLECT_STRUCT_ARGS, (Type), __VA_ARGS__)); \
   }                                                                                                \
-  friend constexpr auto ::metastuff::registerName<Type>();                                         \
-  static constexpr auto reflect_name()                                                             \
+  friend constexpr std::string_view otto::reflect::register_name<Type>();                        \
+  static constexpr std::string_view reflect_name()                                                 \
   {                                                                                                \
     return #Type;                                                                                  \
   }
 
-namespace metastuff {
+namespace otto::reflect {
   // function used for registration of classes by user
-  template<typename Class>
-  inline auto registerMembers()
+  template<typename Class, typename = std::void_t<decltype(Class::reflect_members())>>
+  constexpr auto register_members()
   {
     return Class::reflect_members();
   }
 
   // function used for registration of class name by user
-  template<typename Class>
-  constexpr auto registerName()
+  template<typename Class, typename = std::void_t<decltype(Class::reflect_members())>>
+  constexpr std::string_view register_name()
   {
     return Class::reflect_name();
   }
-} // namespace metastuff
-
-namespace otto {
-  namespace reflect = ::metastuff;
-}
+} // namespace otto::reflect

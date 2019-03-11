@@ -287,7 +287,7 @@ namespace otto::engines {
   };
 
   OTTOFMSynth::OTTOFMSynth()
-    : SynthEngine("OTTO.FM", props, std::make_unique<OTTOFMSynthScreen>(this)), voice_mgr_(props)
+    : SynthEngine(name, props, std::make_unique<OTTOFMSynthScreen>(this)), voice_mgr_(props)
   {}
 
   bool OTTOFMSynthScreen::keypress(Key key)

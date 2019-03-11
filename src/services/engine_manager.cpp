@@ -1,4 +1,6 @@
 #include "engine_manager.hpp"
+#include "core/engine/engine_dispatcher.hpp"
+#include "core/engine/engine_dispatcher.impl.hpp"
 
 #include <engines/synths/goss/goss.hpp>
 #include "core/engine/sequencer.hpp"
@@ -23,50 +25,34 @@ namespace otto::services {
   using namespace core;
   using namespace core::engine;
 
-  struct OffScreen : ui::Screen {
-    void draw(ui::vg::Canvas& ctx) override
-    {
-      ctx.fillStyle(ui::vg::Colours::Red);
-      ctx.font(ui::vg::Fonts::Bold, 80);
-      ctx.beginPath();
-      ctx.textAlign(ui::vg::HorizontalAlign::Center, ui::vg::VerticalAlign::Middle);
-      ctx.fillText("OFF", {160, 120});
-    };
-  };
-
-  struct EffectOffEngine : EffectEngine {
-    props::Properties<> props;
-    EffectOffEngine() : EffectEngine("OFF", props, std::make_unique<OffScreen>()) {}
-    audio::ProcessData<2> process(audio::ProcessData<1> data) noexcept override
-    {
-      auto out = Application::current().audio_manager->buffer_pool().allocate_multi_clear<2>();
-      return data.redirect(out);
-    };
-  };
-
-  struct ArpOffEngine : ArpeggiatorEngine {
-    props::Properties<> props;
-    ArpOffEngine() : ArpeggiatorEngine("OFF", props, std::make_unique<OffScreen>()) {}
-    audio::ProcessData<0> process(audio::ProcessData<0> data) noexcept override
-    {
-      return data;
-    }
-  };
-
   struct DefaultEngineManager final : EngineManager {
     DefaultEngineManager();
 
     void start() override;
     audio::ProcessData<2> process(audio::ProcessData<1> external_in) override;
-    AnyEngine* by_name(const std::string& name) noexcept override;
+    IEngine* by_name(const std::string& name) noexcept override;
 
   private:
-    std::unordered_map<std::string, std::function<AnyEngine*()>> engineGetters;
+    std::unordered_map<std::string, std::function<IEngine*()>> engineGetters;
 
-    EngineDispatcher<EngineType::arpeggiator> arpeggiator;
-    EngineDispatcher<EngineType::synth> synth;
-    EngineDispatcher<EngineType::effect> effect1;
-    EngineDispatcher<EngineType::effect> effect2;
+    using EffectsDispatcher = EngineDispatcher< //
+      EngineType::effect,
+      engines::Wormhole,
+      engines::Pingpong,
+      engines::Chorus>;
+    using ArpDispatcher = EngineDispatcher< //
+      EngineType::arpeggiator,
+      engines::Euclid>;
+    using SynthDispatcher = EngineDispatcher< //
+      EngineType::synth,
+      engines::GossSynth,
+      engines::RhodesSynth,
+      engines::OTTOFMSynth>;
+
+    SynthDispatcher synth{false};
+    ArpDispatcher arpeggiator{true};
+    EffectsDispatcher effect1{true};
+    EffectsDispatcher effect2{true};
 
     engines::Master master;
     // engines::Sequencer sequencer;
@@ -168,44 +154,24 @@ namespace otto::services {
     auto& ui_manager = *Application::current().ui_manager;
     auto& state_manager = *Application::current().state_manager;
 
-    engineGetters.try_emplace("Synth", [&]() { return dynamic_cast<AnyEngine*>(synth.current()); });
+    engineGetters.try_emplace("Synth", [&]() { return &synth.current(); });
     engineGetters.try_emplace("Effect1",
-                              [&]() { return dynamic_cast<AnyEngine*>(effect1.current()); });
+                              [&]() { return &effect1.current(); });
     engineGetters.try_emplace("Effect2",
-                              [&]() { return dynamic_cast<AnyEngine*>(effect2.current()); });
+                              [&]() { return &effect2.current(); });
     engineGetters.try_emplace("Arpeggiator",
-                              [&]() { return dynamic_cast<AnyEngine*>(arpeggiator.current()); });
-
-    arpeggiator.register_engine<ArpOffEngine>("OFF");
-    arpeggiator.register_engine<engines::Euclid>("Euclid");
-    synth.register_engine<engines::HammondSynth>("Woody");
-    synth.register_engine<engines::NukeSynth>("Nuke");
-    synth.register_engine<engines::GossSynth>("Goss");
-    synth.register_engine<engines::PotionSynth>("Potion");
-    synth.register_engine<engines::RhodesSynth>("Rhodes");
-    synth.register_engine<engines::OTTOFMSynth>("OTTO.FM");
-    synth.register_engine<engines::Sampler>("Sampler");
-    effect1.register_engine<EffectOffEngine>("OFF");
-    effect2.register_engine<EffectOffEngine>("OFF");
-    effect1.register_engine<engines::Wormhole>("Wormhole");
-    effect2.register_engine<engines::Wormhole>("Wormhole");
-    effect1.register_engine<engines::Pingpong>("PingPong");
-    effect2.register_engine<engines::Pingpong>("PingPong");
-    effect1.register_engine<engines::Chorus>("Chorus");
-    effect2.register_engine<engines::Chorus>("Chorus");
+                              [&]() { return &arpeggiator.current(); });
 
     arpeggiator.init();
     synth.init();
     effect1.init();
     effect2.init();
 
-
-
     ui_manager.register_key_handler(ui::Key::arpeggiator, [&](ui::Key k) {
       if (ui_manager.is_pressed(ui::Key::shift)) {
         ui_manager.display(arpeggiator.selector_screen());
       } else {
-        ui_manager.select_engine("Sequencer");
+        ui_manager.select_engine("Arpeggiator");
         ui_manager.display(arpeggiator->screen());
       }
     });
@@ -219,7 +185,7 @@ namespace otto::services {
     });
 
     ui_manager.register_key_handler(ui::Key::envelope, [&](ui::Key k) {
-      auto* owner = dynamic_cast<engines::EngineWithEnvelope*>(synth.current());
+      auto* owner = dynamic_cast<engines::EngineWithEnvelope*>(&synth.current());
       if (owner) {
         if (ui_manager.is_pressed(ui::Key::shift)) {
           ui_manager.display(owner->voices_screen());
@@ -230,7 +196,7 @@ namespace otto::services {
     });
 
     ui_manager.register_key_handler(ui::Key::voices, [&](ui::Key k) {
-      auto* owner = dynamic_cast<engines::EngineWithEnvelope*>(synth.current());
+      auto* owner = dynamic_cast<engines::EngineWithEnvelope*>(&synth.current());
       if (owner) {
         ui_manager.display(owner->voices_screen());
       }
@@ -272,7 +238,7 @@ namespace otto::services {
     ui_manager.register_key_handler(ui::Key::send,
                                     [&](ui::Key k) {
                                       send_last_screen = ui_manager.current_screen();
-                                      if (ui_manager.selected_engine_name() == "Sequencer" ||
+                                      if (ui_manager.selected_engine_name() == "Arpeggiator" ||
                                           ui_manager.selected_engine_name() == "Synth")
                                         ui_manager.display(synth_send.screen);
                                     },
@@ -285,7 +251,7 @@ namespace otto::services {
       effect1.from_json(data["Effect1"]);
       effect2.from_json(data["Effect2"]);
       master.from_json(data["Master"]);
-      arpeggiator.from_json(data["Sequencer"]);
+      arpeggiator.from_json(data["Arpeggiator"]);
     };
 
     auto save = [&] {
@@ -297,11 +263,6 @@ namespace otto::services {
     };
 
     state_manager.attach("Engines", load, save);
-
-    arpeggiator.select(std::size_t(0));
-    synth.select(std::size_t(0));
-    effect1.select(std::size_t(0));
-    effect2.select(std::size_t(0));
   }
 
   void DefaultEngineManager::start() {}
@@ -320,7 +281,9 @@ namespace otto::services {
     }
     auto fx1_out = effect1->process(audio::ProcessData<1>(fx1_bus));
     auto fx2_out = effect2->process(audio::ProcessData<1>(fx2_bus));
-    for (auto&& [snth, fx1L, fx1R, fx2L, fx2R] : util::zip(synth_out.audio, fx1_out.audio[0], fx1_out.audio[1], fx2_out.audio[0], fx1_out.audio[1])) {
+    for (auto&& [snth, fx1L, fx1R, fx2L, fx2R] :
+         util::zip(synth_out.audio, fx1_out.audio[0], fx1_out.audio[1], fx2_out.audio[0],
+                   fx1_out.audio[1])) {
       fx1L += fx2L + snth * synth_send.props.dry * (1 - synth_send.props.dry_pan);
       fx1R += fx2R + snth * synth_send.props.dry * (1 + synth_send.props.dry_pan);
     }
@@ -340,7 +303,7 @@ namespace otto::services {
     */
   }
 
-  AnyEngine* DefaultEngineManager::by_name(const std::string& name) noexcept
+  IEngine* DefaultEngineManager::by_name(const std::string& name) noexcept
   {
     auto getter = engineGetters.find(name);
     if (getter == engineGetters.end()) return nullptr;

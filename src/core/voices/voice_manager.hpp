@@ -57,7 +57,7 @@ namespace otto::core::voices {
 
     static_assert(std::is_base_of_v<PreBase<Pre, typename Pre::PreBase::Props>, Pre>,
                   "VoiceBase<Derived, Pre>: Pre must inherit from PreBase<Pre, Props>");
-    static_assert(std::is_invocable_r_v<void, Pre>, "Pre must have a `void operator()()` defined");
+    static_assert(util::is_invocable_r_v<void, Pre>, "Pre must have a `void operator()()` defined");
 
     using Props = typename Pre::PreBase::Props;
 
@@ -114,7 +114,7 @@ namespace otto::core::voices {
     static_assert(std::is_base_of_v<VoiceBase<Voice, typename Voice::VoiceBase::Pre>, Voice>,
                   "PostBase<Derived, Voice>: Voice must inherit from VoiceBase<Voice, Pre>");
 
-    static_assert(std::is_invocable_r_v<float, Voice>,
+    static_assert(util::is_invocable_r_v<float, Voice>,
                   "Voice must have a `float operator()()` defined");
 
 
@@ -189,7 +189,7 @@ namespace otto::core::voices {
 
     static_assert(std::is_base_of_v<PostBase<Post, typename Post::PostBase::Voice>, Post>,
                   "PostBase<Derived, Post>: Post must inherit from PostBase<Post, Voice>");
-    static_assert(std::is_invocable_r_v<float, Post, float>,
+    static_assert(util::is_invocable_r_v<float, Post, float>,
                   "Post must have a `float operator()(float)` defined");
 
     using Voice = typename Post::PostBase::Voice;

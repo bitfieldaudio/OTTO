@@ -15,6 +15,7 @@ namespace otto::engines {
   using namespace props;
 
   struct OTTOFMSynth : SynthEngine, EngineWithEnvelope {
+    static constexpr std::string_view name = "OTTO.FM";
     struct OperatorProps : Properties<> {
       using Properties::Properties;
       // clang-format off
@@ -29,6 +30,8 @@ namespace otto::engines {
       //Amp
       Property<float> outLev                  = {this, "outLev",    1,   has_limits::init(0, 1),    steppable::init(0.01)};
       // clang-format on
+
+      
     };
 
     struct Props : Properties<> {

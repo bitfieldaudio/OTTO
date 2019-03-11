@@ -44,6 +44,7 @@ namespace otto::core::audio {
   /// A handle to an audio buffer
   struct AudioBufferHandle {
     using iterator = float*;
+    using pointer = float*;
     using const_iterator = const float*;
 
     AudioBufferHandle(float* data, std::size_t length, int& reference_count) noexcept

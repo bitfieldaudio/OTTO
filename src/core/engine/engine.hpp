@@ -34,14 +34,14 @@ namespace otto::core::engine {
   /// Abstract base class for Engines
   ///
   /// Use this when refering to a generic engine
-  struct AnyEngine {
+  struct IEngine {
 
-    AnyEngine(std::string const& name,
+    IEngine(std::string_view name,
       props::properties_base& props,
       std::unique_ptr<ui::Screen> screen);
 
-    AnyEngine() = delete;
-    virtual ~AnyEngine() = default;
+    IEngine() = delete;
+    virtual ~IEngine() = default;
 
     /* Events */
 
@@ -64,7 +64,7 @@ namespace otto::core::engine {
     /* Accessors */
 
     /// The name of this module.
-    const std::string& name() const noexcept;
+    std::string_view name() const noexcept;
 
     ui::Screen& screen() noexcept;
 
@@ -108,7 +108,7 @@ namespace otto::core::engine {
     ///
     /// \see to_json
     ///
-    /// \throws same as [presets::apply_preset(AnyEngine&, const std::string&)]
+    /// \throws same as [presets::apply_preset(IEngine&, const std::string&)]
     /// if the json contains a preset name.
     /// [nlohmann::json::exception](), see it for details.
     void from_json(const nlohmann::json& j);
@@ -118,7 +118,7 @@ namespace otto::core::engine {
 
   private:
     props::properties_base& _props;
-    std::string _name;
+    std::string_view _name;
     std::unique_ptr<ui::Screen> _screen;
     int _current_preset = -1;
   };
@@ -131,7 +131,7 @@ namespace otto::core::engine {
   /// \exclude
 #define OTTO_ENGINE_COMMON_CONTENT(Type)                                       \
 protected:                                                                     \
-  using AnyEngine::AnyEngine;                                                  \
+  using IEngine::IEngine;                                                  \
                                                                                \
 public:                                                                        \
 
@@ -143,14 +143,30 @@ public:                                                                        \
   /// When creating a new engine, extend this class, instantiated with the
   /// appropriate [EngineType]()
   template<EngineType ET>
-  struct Engine : AnyEngine {
+  struct Engine : IEngine {
     OTTO_ENGINE_COMMON_CONTENT(ET)
   };
+
+  /// Get the name of an engine.
+  /// 
+  /// Must be defined for every engine.
+  /// 
+  /// Prefer using the alias {@ref name_of_engine_v}
+  template<typename Engine>
+  struct name_of_engine {
+    static constexpr std::string_view value = Engine::name;
+  };
+
+  /// Get the name of an engine.
+  /// 
+  /// Alias of name_of_engine::value
+  template<typename Engine>
+  constexpr std::string_view name_of_engine_v = name_of_engine<Engine>::value;
 
   // Engine specializations ///////////////////////////////////////////////////
 
   template<>
-  struct Engine<EngineType::synth> : AnyEngine {
+  struct Engine<EngineType::synth> : IEngine {
 
     OTTO_ENGINE_COMMON_CONTENT(EngineType::synth)
 
@@ -159,7 +175,7 @@ public:                                                                        \
   using SynthEngine = Engine<EngineType::synth>;
 
   template<>
-  struct Engine<EngineType::effect> : AnyEngine {
+  struct Engine<EngineType::effect> : IEngine {
 
     OTTO_ENGINE_COMMON_CONTENT(EngineType::effect)
 
@@ -168,7 +184,7 @@ public:                                                                        \
   using EffectEngine = Engine<EngineType::effect>;
 
   template<>
-  struct Engine<EngineType::arpeggiator> : AnyEngine {
+  struct Engine<EngineType::arpeggiator> : IEngine {
 
     OTTO_ENGINE_COMMON_CONTENT(EngineType::arpeggiator)
 
@@ -177,7 +193,7 @@ public:                                                                        \
   using ArpeggiatorEngine = Engine<EngineType::arpeggiator>;
 
   template<>
-  struct Engine<EngineType::twist> : AnyEngine {
+  struct Engine<EngineType::twist> : IEngine {
 
     OTTO_ENGINE_COMMON_CONTENT(EngineType::twist)
 

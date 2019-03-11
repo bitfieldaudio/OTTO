@@ -21,7 +21,7 @@ namespace otto::engines {
   };
 
   Wormhole::Wormhole()
-    : EffectEngine("Wormhole", props, std::make_unique<WormholeScreen>(this)),
+    : EffectEngine(name, props, std::make_unique<WormholeScreen>(this)),
       faust_(std::make_unique<faust_wormhole>(), props)
   {}
 

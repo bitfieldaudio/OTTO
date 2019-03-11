@@ -16,6 +16,7 @@ namespace otto::engines {
   using namespace props;
 
   struct RhodesSynth : SynthEngine, EngineWithEnvelope {
+    static constexpr std::string_view name = "Rhodes";
     struct Props : Properties<> {
 
         Property<float> aggro    = {this, "pickup", 1, has_limits::init(0.5, 1),

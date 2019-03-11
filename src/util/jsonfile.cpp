@@ -1,6 +1,7 @@
 #include "jsonfile.hpp"
 
 #include <fstream>
+#include <iomanip>
 #include <json.hpp>
 
 namespace otto::util {

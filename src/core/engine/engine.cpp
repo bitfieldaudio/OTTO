@@ -6,7 +6,7 @@ namespace otto::core::engine {
 
   // AnyEngine ////////////////////////////////////////////////////////////////
 
-  AnyEngine::AnyEngine(std::string const& name,
+  IEngine::IEngine(std::string_view name,
     props::properties_base& props,
                        std::unique_ptr<ui::Screen> screen)
     : _props(props),
@@ -15,42 +15,42 @@ namespace otto::core::engine {
   {}
 
   /// The name of this module.
-  const std::string& AnyEngine::name() const noexcept
+  std::string_view IEngine::name() const noexcept
   {
     return _name;
   }
 
-  ui::Screen& AnyEngine::screen() noexcept
+  ui::Screen& IEngine::screen() noexcept
   {
     return *_screen;
   }
 
-  ui::Screen const& AnyEngine::screen() const noexcept
+  ui::Screen const& IEngine::screen() const noexcept
   {
     return *_screen;
   }
 
-  props::properties_base& AnyEngine::props() noexcept
+  props::properties_base& IEngine::props() noexcept
   {
     return _props;
   }
 
-  props::properties_base const& AnyEngine::props() const noexcept
+  props::properties_base const& IEngine::props() const noexcept
   {
     return _props;
   }
 
-  int AnyEngine::current_preset() const noexcept
+  int IEngine::current_preset() const noexcept
   {
     return _current_preset;
   }
 
-  int AnyEngine::current_preset(int new_val) noexcept
+  int IEngine::current_preset(int new_val) noexcept
   {
     return _current_preset = new_val;
   }
 
-  nlohmann::json AnyEngine::to_json() const
+  nlohmann::json IEngine::to_json() const
   {
     nlohmann::json j;
     if (props().is<props::serializable>()) {
@@ -64,7 +64,7 @@ namespace otto::core::engine {
     return j;
   }
 
-  void AnyEngine::from_json(const nlohmann::json& j)
+  void IEngine::from_json(const nlohmann::json& j)
   {
     if (j.is_object()) {
       auto iter = j.find("preset");

@@ -11,6 +11,7 @@ namespace otto::engines {
   using namespace props;
 
   struct Wormhole : EffectEngine {
+    static constexpr std::string_view name = "Wormhole";
 
     struct Props : Properties<> {
 
