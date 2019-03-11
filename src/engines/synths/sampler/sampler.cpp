@@ -67,13 +67,11 @@ namespace otto::engines {
 
   std::size_t Sample::start_point() const
   {
-    if (_start_point < 0) return 0;
     return _start_point;
   }
 
   std::size_t Sample::end_point() const
   {
-    if (_end_point < 0) return _size;
     return _end_point;
   }
 
@@ -303,7 +301,6 @@ namespace otto::engines {
   {
     using namespace ui::vg;
 
-    auto& props = engine.props;
     auto& sample = engine.sample;
 
     ctx.font(Fonts::Norm, 20);

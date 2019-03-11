@@ -115,21 +115,31 @@ namespace otto::util {
       return res;
     }
 
-    constexpr bool operator==(const basic_variant_w_base& other) const
+    constexpr bool operator==(const basic_variant_w_base& other) const noexcept
     {
       return m_variant == other.m_variant;
     }
-    constexpr bool operator!=(const basic_variant_w_base& other) const
+    constexpr bool operator!=(const basic_variant_w_base& other) const noexcept
     {
       return m_variant != other.m_variant;
     }
 
 
-    Base* base()
+    Base* base() noexcept
     {
       return m_base;
     }
-    const Base* base() const
+    const Base* base() const noexcept
+    {
+      return m_base;
+    }
+
+    Base* operator->() noexcept
+    {
+      return m_base;
+    }
+
+    Base* operator->() const noexcept
     {
       return m_base;
     }

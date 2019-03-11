@@ -114,7 +114,6 @@ namespace otto::engines {
     void load_file(fs::path file);
     Sample sample;
     Sample::iterator play_position = sample.end();
-    bool note_on = false;
 
     std::unique_ptr<ui::Screen> _envelope_screen;
   };

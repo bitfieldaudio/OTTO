@@ -1,13 +1,13 @@
 #pragma once
 #include "engine_dispatcher.hpp"
 
+#include "core/engine/engine_selector_screen.hpp"
 #include "engine_selector_screen.hpp"
 #include "services/audio_manager.hpp"
 #include "services/engine_manager.hpp"
 #include "services/preset_manager.hpp"
 #include "util/meta.hpp"
 #include "util/string_conversions.hpp"
-#include "core/engine/engine_selector_screen.hpp"
 
 #include <thread>
 
@@ -64,6 +64,8 @@ namespace otto::core::engine {
         using type = decltype(m_type._t());
         if (!done && name_of_engine_v<type> == name) {
           _engine_storage.template emplace<type>();
+          if (auto found = _engine_data.try_lookup(_engine_storage->name()); found)
+            _engine_storage.base()->from_json(*found);
           done = true;
         }
       });
@@ -85,6 +87,8 @@ namespace otto::core::engine {
         using type = decltype(m_type._t());
         if (!done && idx == index) {
           _engine_storage.template emplace<type>();
+          if (auto found = _engine_data.try_lookup(_engine_storage->name()); found)
+            _engine_storage.base()->from_json(*found);
           done = true;
         }
         idx++;
@@ -100,7 +104,7 @@ namespace otto::core::engine {
   {
     std::vector<std::string_view> res;
     res.reserve(sizeof...(Egs));
-    meta::for_each<meta::list<Egs...>>([&] (auto m_type) {
+    meta::for_each<meta::list<Egs...>>([&](auto m_type) {
       using type = decltype(m_type._t());
       res.emplace_back(name_of_engine_v<type>);
     });
@@ -127,12 +131,9 @@ namespace otto::core::engine {
     j["current_engine"] = current().name();
     auto engines = nlohmann::json::object();
     for (auto&& [key, val] : _engine_data) {
-      if (key == _current->name()) {
-        engines[std::string(key)] = _current->to_json();
-      } else {
-        engines[std::string(key)] = val;
-      }
+      engines[std::string(key)] = val;
     }
+    if (_current != &_null_engine) engines[std::string(_current->name())] = _current->to_json();
     j["engines"] = engines;
     return j;
   }
@@ -142,15 +143,8 @@ namespace otto::core::engine {
   {
     auto engines = j.find("engines");
     if (engines != j.end() && engines->is_object()) {
-      for (auto&& [key, val] : _engine_data) {
-        try {
-          auto found = engines->find(key);
-          if (found != engines->end() && found->is_object()) {
-            val = *found;
-          }
-        } catch (nlohmann::json::exception& e) {
-          LOGE(e.what());
-        }
+      for (auto&& [key, val] : (*engines).items()) {
+        _engine_data.insert_or_replace(key, val);
       }
     }
     select(j["current_engine"].get<std::string_view>());

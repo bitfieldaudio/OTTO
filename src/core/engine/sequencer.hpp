@@ -6,7 +6,6 @@
 #include "engines/synths/sampler/sampler.hpp"
 #include "util/filesystem.hpp"
 
-
 namespace otto::engines {
 
   using namespace otto::core;
@@ -36,8 +35,7 @@ namespace otto::engines {
     int _samples_per_beat = 22050 / 4;
     int _next_beat = _samples_per_beat;
     int _counter = _samples_per_beat;
-    [[maybe_unused]] //
-    bool _should_run = false;
+    bool _should_run [[maybe_unused]] = false;
     bool _running = false;
   };
-}; // namespace otto::engines
+} // namespace otto::engines

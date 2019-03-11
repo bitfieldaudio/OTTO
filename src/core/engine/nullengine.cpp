@@ -17,7 +17,7 @@ namespace otto::core::engine {
   {
     auto out = Application::current().audio_manager->buffer_pool().allocate_multi_clear<2>();
     return data.redirect(out);
-  };
+  }
 
   NullEngine<EngineType::arpeggiator>::NullEngine() : ArpeggiatorEngine("OFF", props, std::make_unique<OffScreen>()) {}
 
@@ -40,5 +40,5 @@ namespace otto::core::engine {
     ctx.beginPath();
     ctx.textAlign(ui::vg::HorizontalAlign::Center, ui::vg::VerticalAlign::Middle);
     ctx.fillText("OFF", {160, 120});
-  };
+  }
 } // namespace otto::core::engine
