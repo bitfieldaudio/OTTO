@@ -50,12 +50,13 @@ namespace otto::engines {
 
     audio::ProcessData<2> Chorus::process(audio::ProcessData<1> data)
     {
-      // Apply smoothening filter to depth param to reduce cracks in sound
-      chorus.depth(lpf(props.depth));
       // Allocate two audio buffers (left and right channels)
       auto buf = Application::current().audio_manager->buffer_pool().allocate_multi<2>();
       // Fill buffers with processed samples
       for (auto&& [dat, bufL, bufR] : util::zip(data.audio, buf[0], buf[1]))
+        // Apply smoothening filter to depth param to reduce cracks in sound
+        chorus.depth(lpf(props.depth));
+        // Get one sample from chorus effect
         chorus(dat, bufL, bufR);
       // Reassign (redirect) processed data to original data
       return data.redirect(buf);
