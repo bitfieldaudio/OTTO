@@ -23,6 +23,8 @@ namespace otto::engines {
     void draw(Canvas& ctx) override;
     void rotary(RotaryEvent e) override;
 
+    AudioFile<float> waveform;
+
     using EngineScreen<Sampler>::EngineScreen;
   };
 
@@ -62,7 +64,6 @@ namespace otto::engines {
         _lo_filter.freq(freq * freq * 200);
         _hi_filter.freq(20);
       }
-
     });
     props.speed.on_change().connect([this](float spd) {
         sample.rate(spd);

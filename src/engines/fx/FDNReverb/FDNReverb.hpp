@@ -9,6 +9,7 @@
 #include <Gamma/Delay.h>
 #include <Gamma/Filter.h>
 #include <Gamma/Spatial.h>
+#include <Gamma/Oscillator.h>
 
 /// \tparam Tv			Value (sample) type
 /// \tparam LoopFilter	Filter to insert in comb feedback loop
@@ -86,6 +87,34 @@ private:
     }
 };
 
+///Simple Pitch shifter
+template<typename Tv = gam::real>
+struct SimplePitchShift {
+
+    SimplePitchShift();
+
+    Tv operator()(Tv) noexcept;
+
+    //Sets crossfade in seconds
+    void crossfade(int);
+
+    //Sets maximum delay in seconds
+    void maxdelay(int);
+
+
+private:
+    std::array<gam::Delay<>, 2> delay;
+    std::array<gam::ADSR<>, 2> amp;
+    std::array<gam::LFO<>, 2> lfo_delay;
+
+    int _maxdelay = 10000;
+    int _crossfade = 300;
+    float _frac = 0.2;
+
+    std::array<int, 2> delay_amount = {_maxdelay + _crossfade, 0};
+    std::array<float, 2> amp_amount = {1.f, 0.f};
+};
+
 ///Reverb Engine
 namespace otto::engines {
 
@@ -97,10 +126,10 @@ namespace otto::engines {
 
         struct Props : Properties<> {
 
-            Property<float> spread     = {this, "spread",     0,  has_limits::init(0, 1),    steppable::init(0.01)};
-            Property<float> shimmer = {this, "shimmer", 0,  has_limits::init(0, 0.8), steppable::init(0.01)};
+            Property<float> filter     = {this, "spread",     0,  has_limits::init(0, 1),    steppable::init(0.01)};
+            Property<float> shimmer = {this, "shimmer", 0,  has_limits::init(0, 1), steppable::init(0.01)};
             Property<float> length  = {this, "length",  0.5,  has_limits::init(0, 1),    steppable::init(0.01)};
-            Property<float> damping   = {this, "damping",  1, has_limits::init(0, 2),   steppable::init(0.01)};
+            Property<float> damping   = {this, "damping",  0.4, has_limits::init(0, 0.99),   steppable::init(0.01)};
 
         } props;
 
@@ -111,6 +140,13 @@ namespace otto::engines {
     private:
       //FDNReverb<> reverb;
       gam::ReverbMS<> reverb;
+      SimplePitchShift<float> pitchshifter;
+      float last_sample = 0;
+      float shimmer_amount;
+      std::array<gam::Delay<>, 2> output_delay;
+      gam::Biquad<> shimmer_filter;
+      gam::BlockDC<> dc_block;
+      gam::Biquad<> pre_filter;
     };
 
 } // namespace otto::engines
