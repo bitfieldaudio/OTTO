@@ -2,8 +2,9 @@
 
 #include "core/engine/engine.hpp"
 
-#include <Gamma/Effects.h>
 #include "core/voices/voice_manager.hpp"
+#include <Gamma/Effects.h>
+#include <Gamma/Filter.h>
 
 namespace otto::engines {
 
@@ -27,6 +28,7 @@ namespace otto::engines {
 
     private:
         gam::Chorus<> chorus;
+        gam::OnePole<> lpf;
     };
 
 } // namespace otto::engines
