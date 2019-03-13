@@ -17,7 +17,7 @@ otto_option(ENABLE_UBSAN "Enable the undefined behaviour sanitizer on developmen
 otto_option(ENABLE_LTO "Enable link time optimization on release builds. Only works on clang" OFF)
 
 otto_option(ENABLE_TIMERS "Enable debugging timers" OFF)
-otto_option(DEBUG_UI "Enable the imgui based debug ui" NOT OTTO_RPI)
+otto_option(DEBUG_UI "Enable the imgui based debug ui" OFF)
 
 if (OTTO_ENABLE_ASAN) 
   set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
