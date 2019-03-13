@@ -3,7 +3,7 @@
 #include <array>
 #include <cmath>
 #include <gsl/gsl>
-#include <variant.hpp>
+#include <mpark/variant.hpp>
 
 #include "util/algorithm.hpp"
 #include "util/exception.hpp"
