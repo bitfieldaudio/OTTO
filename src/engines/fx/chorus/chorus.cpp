@@ -40,12 +40,7 @@ namespace otto::engines {
       props.depth.on_change().connect([this](float depth) {
         chorus.depth(depth);
       });
-  }
-
-  bool ChorusScreen::keypress(ui::Key key)
-  {
-    return false;
-  }
+    }
 
     audio::ProcessData<2> Chorus::process(audio::ProcessData<1> data)
     {
