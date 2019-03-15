@@ -1,8 +1,8 @@
 #include "board/audio_driver.hpp"
 
+#include <chrono>
 #include <string>
 #include <vector>
-#include <chrono>
 
 #include <fmt/format.h>
 
@@ -53,20 +53,26 @@ namespace otto::services {
     unsigned buf_siz = _buffer_size;
 
     try {
-      client.openStream(&outParameters, &inParameters, RTAUDIO_FLOAT32, _samplerate, &buf_siz,
+      client.openStream(&outParameters, enable_input ? &inParameters : nullptr, RTAUDIO_FLOAT32,
+                        _samplerate, &buf_siz,
                         [](void* out, void* in, unsigned int nframes, double time,
-                           RtAudioStreamStatus status, void* self) {
-                          return static_cast<RTAudioAudioManager*>(self)->process(
-                            (float*) out, (float*) in, nframes, time, status);
+                           RtAudioStreamStatus status, void* _self) {
+                          auto* self = static_cast<RTAudioAudioManager*>(_self);
+                          return self->process((float*) out, (float*) in , nframes, time, status);
                         },
-                        this,
-			&options);
+                        this, &options);
       _buffer_size = buf_siz;
       buffer_pool().set_buffer_size(buf_siz);
       client.startStream();
     } catch (RtAudioError& e) {
       e.printMessage();
-      throw;
+      if (enable_input) {
+        // try again without an input
+        enable_input = false;
+        init_audio();
+      } else {
+        throw;
+      }
     }
   }
 
@@ -97,7 +103,7 @@ namespace otto::services {
       [](double timeStamp, std::vector<unsigned char>* message, void* userData) {
         auto& self = *static_cast<RTAudioAudioManager*>(userData);
         try {
-        self.send_midi_event(core::midi::from_bytes(*message));
+          self.send_midi_event(core::midi::from_bytes(*message));
         } catch (util::exception& e) {
           LOGE("Error parsing midi: {}", e.what());
         }
@@ -129,9 +135,10 @@ namespace otto::services {
     midi_bufs.swap();
 
     int ref_count = 0;
-    auto in_buf = core::audio::AudioBufferHandle(in_data, nframes, ref_count);
+    auto in_buf = enable_input ? core::audio::AudioBufferHandle(in_data, nframes, ref_count) : Application::current().audio_manager->buffer_pool().allocate_clear();
     // steal the inner midi buffer
-    auto out = Application::current().engine_manager->process({in_buf, {std::move(midi_bufs.inner())}, nframes});
+    auto out = Application::current().engine_manager->process(
+      {in_buf, {std::move(midi_bufs.inner())}, nframes});
 
     // process_audio_output(out);
 
@@ -157,7 +164,7 @@ namespace otto::services {
 
     clock::time_point t1 = clock::now();
 
-    _cpu_time.add(std::chrono::nanoseconds(t1 - t0).count() / (1e9 / float(_samplerate) * nframes) );
+    _cpu_time.add(std::chrono::nanoseconds(t1 - t0).count() / (1e9 / float(_samplerate) * nframes));
 
     return 0;
   }
