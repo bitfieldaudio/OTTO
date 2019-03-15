@@ -13,20 +13,24 @@ namespace otto::engines {
   struct Pingpong : EffectEngine {
     static constexpr std::string_view name = "Pingpong";
 
-    struct DelayLine : Properties<> {
+    struct DelayLine : Properties<faust_link> {
       using Properties::Properties;
-      Property<float, no_serialize> level = {this, "level", 0, has_limits::init(0, 5),
-                                             faust_link::init(FaustLink::Type::FromFaust)};
+      Property<float, faust_link, no_serialize> level = {
+        this, "level", 0, has_limits::init(0, 5), faust_link::init(FaustLink::Type::FromFaust)};
     };
 
-    struct Props : Properties<> {
-      Property<float> delaytime = {this, "delaytime", 0.5, has_limits::init(0.01, 0.99),
-                                   steppable::init(0.01)};
-      Property<bool> bpm_follow = {this, "bpm_follow", false};
-      Property<float> feedback = {this, "feedback", 0.5, has_limits::init(0, 1),
-                                  steppable::init(0.01)};
-      Property<float> tone = {this, "tone", 0.5, has_limits::init(0, 1), steppable::init(0.01)};
-      Property<float> spread = {this, "spread", 0, has_limits::init(0, 1), steppable::init(0.01)};
+    static_assert(sizeof(Properties<>) <= 112);
+
+    struct Props : Properties<faust_link> {
+      Property<float, faust_link> delaytime = {this, "delaytime", 0.5, has_limits::init(0.01, 0.99),
+                                               steppable::init(0.01)};
+      Property<bool, faust_link> bpm_follow = {this, "bpm_follow", false};
+      Property<float, faust_link> feedback = {this, "feedback", 0.5, has_limits::init(0, 1),
+                                              steppable::init(0.01)};
+      Property<float, faust_link> tone = {this, "tone", 0.5, has_limits::init(0, 1),
+                                          steppable::init(0.01)};
+      Property<float, faust_link> spread = {this, "spread", 0, has_limits::init(0, 1),
+                                            steppable::init(0.01)};
 
       std::array<DelayLine, 20> delay_level = {
         {{this, "delayline0"},  {this, "delayline1"},  {this, "delayline2"},

@@ -11,8 +11,8 @@ namespace otto::engines {
   using namespace props;
 
   struct Master : Engine<EngineType::misc> {
-    struct Props : Properties<> {
-      Property<float> volume = {this, "VOLUME", 0.5, has_limits::init(0, 1), steppable::init(0.01)};
+    struct Props : Properties<faust_link> {
+      Property<float, faust_link> volume = {this, "VOLUME", 0.5, has_limits::init(0, 1), steppable::init(0.01)};
     } props;
 
     Master();

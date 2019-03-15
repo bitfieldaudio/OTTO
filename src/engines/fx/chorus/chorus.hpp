@@ -13,12 +13,12 @@ namespace otto::engines {
   struct Chorus : EffectEngine {
     static constexpr std::string_view name = "Chorus";
 
-    struct Props : Properties<> {
-      Property<float> delay = {this, "delay", 0, has_limits::init(0, 1), steppable::init(0.01)};
-      Property<float> rate = {this, "rate", 0, has_limits::init(0, 0.8), steppable::init(0.01)};
-      Property<float> deviation = {this, "deviation", 1, has_limits::init(0, 1),
+    struct Props : Properties<faust_link> {
+      Property<float, faust_link> delay = {this, "delay", 0, has_limits::init(0, 1), steppable::init(0.01)};
+      Property<float, faust_link> rate = {this, "rate", 0, has_limits::init(0, 0.8), steppable::init(0.01)};
+      Property<float, faust_link> deviation = {this, "deviation", 1, has_limits::init(0, 1),
                                    steppable::init(0.01)};
-      Property<float> depth = {this, "depth", 1, has_limits::init(0, 1), steppable::init(0.01)};
+      Property<float, faust_link> depth = {this, "depth", 1, has_limits::init(0, 1), steppable::init(0.01)};
 
     } props;
 

@@ -10,9 +10,6 @@
 #include "engines/misc/master/master.hpp"
 #include "engines/seq/euclid/euclid.hpp"
 #include "engines/synths/OTTOFM/ottofm.hpp"
-#include "engines/synths/hammond/hammond.hpp"
-#include "engines/synths/nuke/nuke.hpp"
-#include "engines/synths/potion/potion.hpp"
 #include "engines/synths/rhodes/rhodes.hpp"
 #include "engines/synths/sampler/sampler.hpp"
 

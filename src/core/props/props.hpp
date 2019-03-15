@@ -25,28 +25,28 @@ namespace otto::core::props {
 
   template<>
   struct default_mixins<int> {
-    using type = tag_list<serializable, faust_link, change_hook, has_limits, steppable>;
+    using type = tag_list<serializable, change_hook, has_limits, steppable>;
   };
 
   template<>
   struct default_mixins<bool> {
-    using type = tag_list<serializable, faust_link, change_hook, steppable>;
+    using type = tag_list<serializable, change_hook, steppable>;
   };
 
   template<>
   struct default_mixins<float> {
-    using type = tag_list<serializable, faust_link, change_hook, has_limits, steppable>;
+    using type = tag_list<serializable, change_hook, has_limits, steppable>;
   };
 
   template<>
   struct default_mixins<double> {
-    using type = tag_list<serializable, faust_link, change_hook, has_limits, steppable>;
+    using type = tag_list<serializable, change_hook, has_limits, steppable>;
   };
 
   // Void is for branches
   template<>
   struct default_mixins<void> {
-    using type = tag_list<serializable, faust_link>;
+    using type = tag_list<serializable>;
   };
 
   /// A property of type `ValueType` with mixins `Tags...`
