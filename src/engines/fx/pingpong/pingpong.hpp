@@ -19,8 +19,6 @@ namespace otto::engines {
         this, "level", 0, has_limits::init(0, 5), faust_link::init(FaustLink::Type::FromFaust)};
     };
 
-    static_assert(sizeof(Properties<>) <= 112);
-
     struct Props : Properties<faust_link> {
       Property<float, faust_link> delaytime = {this, "delaytime", 0.5, has_limits::init(0.01, 0.99),
                                                steppable::init(0.01)};
