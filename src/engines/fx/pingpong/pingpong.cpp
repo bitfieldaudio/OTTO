@@ -21,7 +21,7 @@ namespace otto::engines {
   };
 
   Pingpong::Pingpong()
-    : EffectEngine(name, props, std::make_unique<PingpongScreen>(this)),
+    : EffectEngine<Pingpong>(props, std::make_unique<PingpongScreen>(this)),
       faust_(std::make_unique<faust_pingpong>(), props)
   {}
 

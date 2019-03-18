@@ -7,6 +7,7 @@
 #include <json.hpp>
 
 #include "util/reflection.hpp"
+#include "util/string_conversions.hpp"
 
 using json = nlohmann::json;
 
@@ -31,6 +32,11 @@ namespace otto::util {
   template<typename Class>
   json serialize_basic(const Class& obj);
 
+  // specialization for std::array
+  template<typename T, std::size_t N>
+  json serialize_basic(const std::array<T, N>& obj);
+
+
   // specialization for std::vector
   template<typename T>
   json serialize_basic(const std::vector<T>& obj);
@@ -50,6 +56,10 @@ namespace otto::util {
            typename = void>
   void deserialize(Class& obj, const json& object);
 
+  // specialization for std::array
+  template<typename T, std::size_t N>
+  void deserialize(std::array<T, N>& obj, const json& object);
+
   // specialization for std::vector
   template<typename T>
   void deserialize(std::vector<T>& obj, const json& object);
@@ -59,3 +69,7 @@ namespace otto::util {
   void deserialize(std::unordered_map<K, V>& obj, const json& object);
 
 } // namespace otto::util
+
+#include "serialize.impl.hpp"
+
+// kak: other_file=serialize.impl.hpp

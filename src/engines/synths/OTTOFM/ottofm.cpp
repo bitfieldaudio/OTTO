@@ -2,8 +2,6 @@
 #include "ottofm.hpp"
 
 #include "services/application.hpp"
-
-#include "core/audio/voice_manager.hpp"
 #include "services/ui_manager.hpp"
 
 namespace otto::engines {
@@ -287,7 +285,7 @@ namespace otto::engines {
   };
 
   OTTOFMSynth::OTTOFMSynth()
-    : SynthEngine(name, props, std::make_unique<OTTOFMSynthScreen>(this)), voice_mgr_(props)
+    : SynthEngine<OTTOFMSynth>(props, std::make_unique<OTTOFMSynthScreen>(this)), voice_mgr_(props)
   {}
 
   bool OTTOFMSynthScreen::keypress(Key key)

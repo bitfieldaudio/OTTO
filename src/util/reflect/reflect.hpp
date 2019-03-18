@@ -41,6 +41,8 @@ to be able to get pointers to private members... Writing "friend class Meta" in 
 #include <type_traits>
 #include <utility>
 
+#include "util/string_ref.hpp"
+
 // type_list is array of types
 template<typename... Args>
 struct type_list {
@@ -55,17 +57,35 @@ namespace otto::reflect {
   template<typename... Args>
   constexpr auto members(Args&&... args);
 
+  template<typename T>
+  struct _has_reflect_member {
+    template<typename C>
+    static std::true_type test(decltype(&C::reflect_members));
+    template<typename C>
+    static std::false_type test(...);
+
+    static constexpr bool value = decltype(test<T>(nullptr))::value;
+  };
+
   // function used for registration of classes by user
-  template<typename Class>
-  constexpr auto register_members();
+  template<typename Class, typename = std::enable_if_t<_has_reflect_member<Class>::value>>
+  constexpr auto register_members()
+  {
+    return Class::reflect_members();
+  }
 
   // function used for registration of class name by user
-  template<typename Class>
-  constexpr std::string_view register_name();
+  template<typename Class, typename = std::enable_if_t<_has_reflect_member<Class>::value>>
+  constexpr util::string_ref register_name()
+  {
+    return Class::reflect_name();
+  }
+
 
   // returns set name for class
   template<typename Class>
-  constexpr std::string_view get_name();
+  constexpr util::string_ref get_name();
+
 
   // returns the number of registered members of the class
   template<typename Class>
@@ -127,4 +147,7 @@ namespace otto::reflect {
 
 } // namespace otto::reflect
 
-#include "Meta.inl"
+#include "reflect.impl.hpp"
+
+// kak: other_file=reflect.impl.hpp
+

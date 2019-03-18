@@ -1,5 +1,6 @@
 #pragma once
 
+#include "util/reflection.hpp"
 #include "../internal/mixin_macros.hpp"
 #include "base.hpp"
 #include "tag_list.hpp"
@@ -134,6 +135,7 @@ namespace otto::core::props {
       return get();
     }
 
+    DECL_REFLECTION(PropertyImpl, ("value", &PropertyImpl::get, &PropertyImpl::set))
   protected:
     value_type value_;
   };

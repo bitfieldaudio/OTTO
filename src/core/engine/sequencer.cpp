@@ -6,9 +6,9 @@
 #include "util/iterator.hpp"
 #include "util/utility.hpp"
 
-#include "core/audio/voice_manager.hpp"
 #include "services/log_manager.hpp"
 #include "services/state_manager.hpp"
+#include "services/audio_manager.hpp"
 
 namespace otto::engines {
 
@@ -25,7 +25,7 @@ namespace otto::engines {
     void rotary(RotaryEvent e) override;
   };
 
-  Sequencer::Sequencer() : MiscEngine("Sequencer", props, std::make_unique<SequencerScreen>(this))
+  Sequencer::Sequencer() : MiscEngine<Sequencer>(props, std::make_unique<SequencerScreen>(this))
   {}
 
   std::pair<bool, int> get_sequencer_number(int key)

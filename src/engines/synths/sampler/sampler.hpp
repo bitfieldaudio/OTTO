@@ -90,11 +90,13 @@ namespace otto::engines {
     float speed_modifier = 1.f;
   };
 
-  struct Sampler : SynthEngine, EngineWithEnvelope {
+  struct Sampler : SynthEngine<Sampler>, EngineWithEnvelope {
+    static constexpr std::string_view name = "Sampler";
     struct Props : Properties<> {
       Property<std::string> file = {this, "FILENAME", ""};
       Property<float> filter = {this, "FILTER", 0, has_limits::init(0, 1), steppable::init(0.01)};
       Property<float> speed = {this, "SPEED", 1, has_limits::init(-10, 10), steppable::init(0.01)};
+      DECL_REFLECTION(Props, file, filter, speed);
     } props;
 
     Sampler();

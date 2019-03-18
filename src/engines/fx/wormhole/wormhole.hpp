@@ -10,7 +10,7 @@ namespace otto::engines {
   using namespace core::engine;
   using namespace props;
 
-  struct Wormhole : EffectEngine {
+  struct Wormhole : EffectEngine<Wormhole> {
     static constexpr std::string_view name = "Wormhole";
 
     struct Props : Properties<faust_link> {
@@ -23,6 +23,7 @@ namespace otto::engines {
       Property<float, faust_link> shape = {this, "SHAPE", 1, has_limits::init(0, 2),
                                            steppable::init(0.01)};
 
+      DECL_REFLECTION(Props, spread, shimmer, length, shape);
     } props;
 
     Wormhole();

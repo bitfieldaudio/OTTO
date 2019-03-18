@@ -58,7 +58,6 @@ namespace otto::services {
     int idx = niter - pd_iter->value.names.begin();
     engine.props().as<core::props::serializable>().from_json(pd_iter->value.data[idx]);
     engine.current_preset(idx);
-    if (!no_enable_callback) engine.on_enable();
   }
 
   void PresetManager::apply_preset(core::engine::IEngine& engine, int idx, bool no_enable_callback)
@@ -75,7 +74,6 @@ namespace otto::services {
     DLOGI("Applying preset {} to engine {}", pd.names[idx], engine.name());
     engine.props().as<core::props::serializable>().from_json(pd.data[idx]);
     engine.current_preset(idx);
-    if (!no_enable_callback) engine.on_enable();
   }
 
   void PresetManager::load_preset_files()

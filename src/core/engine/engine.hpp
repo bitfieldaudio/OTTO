@@ -1,17 +1,19 @@
 #pragma once
 
+#include <functional>
 #include <memory>
 #include <string>
 #include <vector>
-#include <functional>
 
-#include "util/exception.hpp"
 #include "util/algorithm.hpp"
+#include "util/crtp.hpp"
+#include "util/exception.hpp"
 #include "util/jsonfile.hpp"
+#include "util/serialize.hpp"
 
-#include "core/ui/screen.hpp"
 #include "core/audio/processor.hpp"
 #include "core/props/props.hpp"
+#include "core/ui/screen.hpp"
 
 namespace otto::core::engine {
 
@@ -35,12 +37,8 @@ namespace otto::core::engine {
   ///
   /// Use this when refering to a generic engine
   struct IEngine {
+    IEngine(props::properties_base& props, std::unique_ptr<ui::Screen> screen);
 
-    IEngine(std::string_view name,
-      props::properties_base& props,
-      std::unique_ptr<ui::Screen> screen);
-
-    IEngine() = delete;
     virtual ~IEngine() = default;
 
     /* Events */
@@ -56,7 +54,7 @@ namespace otto::core::engine {
     /// Called when this module is disabled
     ///
     /// The samplers use this to load the sample file.
-    /// 
+    ///
     /// TODO: Define "disabled"
     /// \effects None
     virtual void on_disable() {}
@@ -64,7 +62,7 @@ namespace otto::core::engine {
     /* Accessors */
 
     /// The name of this module.
-    std::string_view name() const noexcept;
+    virtual std::string_view name() const noexcept = 0;
 
     ui::Screen& screen() noexcept;
 
@@ -86,7 +84,7 @@ namespace otto::core::engine {
     /// Serialize the engine
     ///
     /// ## Format
-    /// 
+    ///
     /// ```json
     /// {
     ///   "preset": "<preset_name>",
@@ -99,7 +97,7 @@ namespace otto::core::engine {
     /// `<props.to_json()>` is the serialized properties
     ///
     /// \throws [nlohmann::json::exception](), see it for details.
-    nlohmann::json to_json() const;
+    virtual nlohmann::json to_json() const = 0;
 
     /// Deserialize the engine
     ///
@@ -111,46 +109,49 @@ namespace otto::core::engine {
     /// \throws same as [presets::apply_preset(IEngine&, const std::string&)]
     /// if the json contains a preset name.
     /// [nlohmann::json::exception](), see it for details.
-    void from_json(const nlohmann::json& j);
+    virtual void from_json(const nlohmann::json& j) = 0;
 
     props::properties_base& props() noexcept;
     props::properties_base const& props() const noexcept;
 
   private:
     props::properties_base& _props;
-    std::string_view _name;
     std::unique_ptr<ui::Screen> _screen;
     int _current_preset = -1;
   };
 
-  // Engine class /////////////////////////////////////////////////////////////
-
-  /// Define common functions for the `Engine` specializations below
-  /// This macro is undefined a few lines down, and is only used to simplify the
-  /// generation of this function.
-  /// \exclude
-#define OTTO_ENGINE_COMMON_CONTENT(Type)                                       \
-protected:                                                                     \
-  using IEngine::IEngine;                                                  \
-                                                                               \
-public:                                                                        \
-
-  // macro end
-
-
-  /// Engine base class
-  ///
-  /// When creating a new engine, extend this class, instantiated with the
-  /// appropriate [EngineType]()
+  /// An extended engine interface including the engine type
   template<EngineType ET>
-  struct Engine : IEngine {
-    OTTO_ENGINE_COMMON_CONTENT(ET)
+  struct ITypedEngine : IEngine {
+    using IEngine::IEngine;
+  };
+
+  template<>
+  struct ITypedEngine<EngineType::synth> : IEngine {
+    using IEngine::IEngine;
+    virtual audio::ProcessData<1> process(audio::ProcessData<1>) = 0;
+  };
+
+  template<>
+  struct ITypedEngine<EngineType::effect> : IEngine {
+    using IEngine::IEngine;
+    virtual audio::ProcessData<2> process(audio::ProcessData<1>) = 0;
+  };
+  template<>
+  struct ITypedEngine<EngineType::arpeggiator> : IEngine {
+    using IEngine::IEngine;
+    virtual audio::ProcessData<0> process(audio::ProcessData<0>) = 0;
+  };
+  template<>
+  struct ITypedEngine<EngineType::twist> : IEngine {
+    using IEngine::IEngine;
+    virtual audio::ProcessData<0> process(audio::ProcessData<0>) = 0;
   };
 
   /// Get the name of an engine.
-  /// 
+  ///
   /// Must be defined for every engine.
-  /// 
+  ///
   /// Prefer using the alias {@ref name_of_engine_v}
   template<typename Engine>
   struct name_of_engine {
@@ -158,69 +159,83 @@ public:                                                                        \
   };
 
   /// Get the name of an engine.
-  /// 
+  ///
   /// Alias of name_of_engine::value
   template<typename Engine>
   constexpr std::string_view name_of_engine_v = name_of_engine<Engine>::value;
 
+  // Engine class /////////////////////////////////////////////////////////////
+
+  namespace detail {
+    template<EngineType ET, typename Derived>
+    struct EngineImpl : util::crtp<Derived, EngineImpl<ET, Derived>>, ITypedEngine<ET> {
+      std::string_view name() const noexcept override
+      {
+        return name_of_engine_v<Derived>;
+      }
+      nlohmann::json to_json() const override
+      {
+        return util::serialize(this->derived());
+      }
+      void from_json(const nlohmann::json& j) override
+      {
+        util::deserialize(this->derived(), j);
+      }
+
+      static constexpr auto reflect_name()
+      {
+        return name_of_engine_v<Derived>;
+      }
+
+      static constexpr auto reflect_members()
+      {
+        return reflect::members(reflect::member<EngineImpl>("props", [] (auto& obj) -> auto& { return obj.derived().props; }));
+      }
+
+    protected:
+      using ITypedEngine<ET>::ITypedEngine;
+      using util::crtp<Derived, EngineImpl<ET, Derived>>::derived;
+    };
+  } // namespace detail
+
+  /// CRTP Engine base class
+  ///
+  /// When creating a new engine, extend this class, instantiated with the
+  /// appropriate [EngineType]()
+  template<EngineType ET, typename Derived>
+  struct Engine : detail::EngineImpl<ET, Derived> {
+  protected:
+    using detail::EngineImpl<ET, Derived>::EngineImpl;
+  };
+
   // Engine specializations ///////////////////////////////////////////////////
 
-  template<>
-  struct Engine<EngineType::synth> : IEngine {
+  template<typename Derived>
+  using SynthEngine = Engine<EngineType::synth, Derived>;
 
-    OTTO_ENGINE_COMMON_CONTENT(EngineType::synth)
+  template<typename Derived>
+  using EffectEngine = Engine<EngineType::effect, Derived>;
 
-    virtual audio::ProcessData<1> process(audio::ProcessData<1>) = 0;
-  };
-  using SynthEngine = Engine<EngineType::synth>;
+  template<typename Derived>
+  using ArpeggiatorEngine = Engine<EngineType::arpeggiator, Derived>;
 
-  template<>
-  struct Engine<EngineType::effect> : IEngine {
+  template<typename Derived>
+  using TwistEngine = Engine<EngineType::twist, Derived>;
 
-    OTTO_ENGINE_COMMON_CONTENT(EngineType::effect)
+  template<typename Derived>
+  using MiscEngine = Engine<EngineType::misc, Derived>;
 
-    virtual audio::ProcessData<2> process(audio::ProcessData<1>) = 0;
-  };
-  using EffectEngine = Engine<EngineType::effect>;
-
-  template<>
-  struct Engine<EngineType::arpeggiator> : IEngine {
-
-    OTTO_ENGINE_COMMON_CONTENT(EngineType::arpeggiator)
-
-    virtual audio::ProcessData<0> process(audio::ProcessData<0>) = 0;
-  };
-  using ArpeggiatorEngine = Engine<EngineType::arpeggiator>;
-
-  template<>
-  struct Engine<EngineType::twist> : IEngine {
-
-    OTTO_ENGINE_COMMON_CONTENT(EngineType::twist)
-
-    virtual audio::ProcessData<0> process(audio::ProcessData<0>) = 0;
-  };
-  using TwistEngine = Engine<EngineType::twist>;
-
-  using MiscEngine = Engine<EngineType::misc>;
-
-  #undef OTTO_ENGINE_COMMON_CONTENT
-
-  namespace internal {
-    template<EngineType ET>
-    struct engine_type_impl {
-      static constexpr EngineType value = ET;
-    };
-
-    template<EngineType ET>
-    engine_type_impl<ET> engine_type_impl_func(const Engine<ET>&);
-  } // namespace internal
+  namespace detail {
+    template<EngineType ET, typename Derived>
+    meta::c<ET> engine_type_impl_func(const Engine<ET, Derived>&);
+  } // namespace detail
 
   /// Type trait to get engine type.
   ///
   /// SFINAE friendly, and will match any type that inherits from [Engine]()
   template<typename E>
   constexpr EngineType engine_type_v =
-    decltype(internal::engine_type_impl_func(std::declval<E>()))::value;
+    meta::_v<decltype(detail::engine_type_impl_func(std::declval<E>()))>;
 
   // EngineScreen /////////////////////////////////////////////////////////////
 
@@ -230,12 +245,8 @@ public:                                                                        \
   /// engine from the `engine` reference.
   template<typename Engine>
   struct EngineScreen : ui::Screen {
-
-    EngineScreen(Engine* engine)
-      : Screen(), engine(*engine)
-    {}
-
-    virtual ~EngineScreen() {}
+    EngineScreen(Engine* engine) : Screen(), engine(*engine) {}
+    virtual ~EngineScreen() = default;
 
   protected:
     Engine& engine;
@@ -246,4 +257,4 @@ public:                                                                        \
     virtual ui::Screen& voices_screen() = 0;
   };
 
-} // namespace otto::core::engines
+} // namespace otto::core::engine

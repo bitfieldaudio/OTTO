@@ -2,6 +2,8 @@
 
 #include <string_view>
 #include <tl/expected.hpp>
+#include <cerrno>
+#include <cstdlib>
 
 #include "util/exception.hpp"
 
@@ -58,7 +60,7 @@ namespace otto::util {
 
 namespace otto::util {
 
-  std::string to_lowercase(std::string_view sv) noexcept
+  inline std::string to_lowercase(std::string_view sv) noexcept
   {
     std::string res;
     res.reserve(sv.size());
@@ -66,7 +68,7 @@ namespace otto::util {
     return res;
   }
 
-  std::string to_uppercase(std::string_view sv) noexcept
+  inline std::string to_uppercase(std::string_view sv) noexcept
   {
     std::string res;
     res.reserve(sv.size());
@@ -74,55 +76,55 @@ namespace otto::util {
     return res;
   }
 
-  std::string to_string(int i) noexcept
+  inline std::string to_string(int i) noexcept
   {
     return std::to_string(i);
   }
-  std::string to_string(long i) noexcept
+  inline std::string to_string(long i) noexcept
   {
     return std::to_string(i);
   }
-  std::string to_string(long long i) noexcept
+  inline std::string to_string(long long i) noexcept
   {
     return std::to_string(i);
   }
-  std::string to_string(unsigned int i) noexcept
+  inline std::string to_string(unsigned int i) noexcept
   {
     return std::to_string(i);
   }
-  std::string to_string(unsigned long i) noexcept
+  inline std::string to_string(unsigned long i) noexcept
   {
     return std::to_string(i);
   }
-  std::string to_string(unsigned long long i) noexcept
-  {
-    return std::to_string(i);
-  }
-
-  std::string to_string(float i) noexcept
-  {
-    return std::to_string(i);
-  }
-  std::string to_string(double i) noexcept
-  {
-    return std::to_string(i);
-  }
-  std::string to_string(long double i) noexcept
+  inline std::string to_string(unsigned long long i) noexcept
   {
     return std::to_string(i);
   }
 
-  std::string_view to_string(bool b) noexcept
+  inline std::string to_string(float i) noexcept
+  {
+    return std::to_string(i);
+  }
+  inline std::string to_string(double i) noexcept
+  {
+    return std::to_string(i);
+  }
+  inline std::string to_string(long double i) noexcept
+  {
+    return std::to_string(i);
+  }
+
+  inline std::string_view to_string(bool b) noexcept
   {
     return b ? "true" : "false";
   }
-  std::string_view to_string(std::string_view sv) noexcept
+  inline std::string_view to_string(std::string_view sv) noexcept
   {
     return sv;
   }
 
   template<>
-  tl::expected<int, StringConvErr> from_string(std::string_view sv) noexcept
+  inline tl::expected<int, StringConvErr> from_string(std::string_view sv) noexcept
   {
     char* end;
     errno = 0;
@@ -137,7 +139,7 @@ namespace otto::util {
     return res;
   }
   template<>
-  tl::expected<long, StringConvErr> from_string(std::string_view sv) noexcept
+  inline tl::expected<long, StringConvErr> from_string(std::string_view sv) noexcept
   {
     char* end;
     errno = 0;
@@ -152,7 +154,7 @@ namespace otto::util {
     return res;
   }
   template<>
-  tl::expected<long long, StringConvErr> from_string(std::string_view sv) noexcept
+  inline tl::expected<long long, StringConvErr> from_string(std::string_view sv) noexcept
   {
     char* end;
     errno = 0;
@@ -167,7 +169,7 @@ namespace otto::util {
     return res;
   }
   template<>
-  tl::expected<unsigned int, StringConvErr> from_string(std::string_view sv) noexcept
+  inline tl::expected<unsigned int, StringConvErr> from_string(std::string_view sv) noexcept
   {
     char* end;
     errno = 0;
@@ -182,7 +184,7 @@ namespace otto::util {
     return res;
   }
   template<>
-  tl::expected<unsigned long, StringConvErr> from_string(std::string_view sv) noexcept
+  inline tl::expected<unsigned long, StringConvErr> from_string(std::string_view sv) noexcept
   {
     char* end;
     errno = 0;
@@ -197,7 +199,7 @@ namespace otto::util {
     return res;
   }
   template<>
-  tl::expected<unsigned long long, StringConvErr> from_string(std::string_view sv) noexcept
+  inline tl::expected<unsigned long long, StringConvErr> from_string(std::string_view sv) noexcept
   {
     char* end;
     errno = 0;
@@ -213,7 +215,7 @@ namespace otto::util {
   }
 
   template<>
-  tl::expected<float, StringConvErr> from_string(std::string_view sv) noexcept
+  inline tl::expected<float, StringConvErr> from_string(std::string_view sv) noexcept
   {
     char* end;
     errno = 0;
@@ -229,7 +231,7 @@ namespace otto::util {
   }
 
   template<>
-  tl::expected<double, StringConvErr> from_string(std::string_view sv) noexcept
+  inline tl::expected<double, StringConvErr> from_string(std::string_view sv) noexcept
   {
     char* end;
     errno = 0;
@@ -244,7 +246,7 @@ namespace otto::util {
     return res;
   }
   template<>
-  tl::expected<long double, StringConvErr> from_string(std::string_view sv) noexcept
+  inline tl::expected<long double, StringConvErr> from_string(std::string_view sv) noexcept
   {
     char* end;
     errno = 0;
@@ -260,7 +262,7 @@ namespace otto::util {
   }
 
   template<>
-  tl::expected<bool, StringConvErr> from_string(std::string_view sv) noexcept
+  inline tl::expected<bool, StringConvErr> from_string(std::string_view sv) noexcept
   {
     if (to_lowercase(sv) == "true") return true;
     if (to_lowercase(sv) == "false") return false;
@@ -268,7 +270,7 @@ namespace otto::util {
   }
 
   template<>
-  tl::expected<std::string_view, StringConvErr> from_string(std::string_view sv) noexcept
+  inline tl::expected<std::string_view, StringConvErr> from_string(std::string_view sv) noexcept
   {
     return sv;
   }

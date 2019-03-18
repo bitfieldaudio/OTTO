@@ -10,13 +10,15 @@ namespace otto::engines {
   using namespace core::engine;
   using namespace props;
 
-  struct Pingpong : EffectEngine {
+  struct Pingpong : EffectEngine<Pingpong> {
     static constexpr std::string_view name = "Pingpong";
 
     struct DelayLine : Properties<faust_link> {
       using Properties::Properties;
       Property<float, faust_link, no_serialize> level = {
         this, "level", 0, has_limits::init(0, 5), faust_link::init(FaustLink::Type::FromFaust)};
+
+      DECL_REFLECTION(DelayLine, level);
     };
 
     struct Props : Properties<faust_link> {
@@ -39,6 +41,7 @@ namespace otto::engines {
          {this, "delayline15"}, {this, "delayline16"}, {this, "delayline17"},
          {this, "delayline18"}, {this, "delayline19"}}};
 
+      DECL_REFLECTION(Props, delaytime, bpm_follow, feedback, tone, spread, delay_level);
     } props;
 
 

@@ -15,7 +15,7 @@ namespace otto::engines {
   using namespace core::engine;
   using namespace props;
 
-  struct RhodesSynth : SynthEngine, EngineWithEnvelope {
+  struct RhodesSynth : SynthEngine<RhodesSynth>, EngineWithEnvelope {
     static constexpr std::string_view name = "Rhodes";
     struct Props : Properties<> {
 
@@ -28,6 +28,7 @@ namespace otto::engines {
         Property<float> lfo_depth = {this, "lfo_depth", 0.1, has_limits::init(0, 1),
                                      steppable::init(0.01)};
 
+        DECL_REFLECTION(Props, aggro, asymmetry, lfo_speed, lfo_depth);
     } props;
 
     RhodesSynth();
@@ -43,6 +44,8 @@ namespace otto::engines {
     {
       return voice_mgr_.settings_screen();
     }
+
+    DECL_REFLECTION(RhodesSynth, props, ("voice_manager", &RhodesSynth::voice_mgr_));
 
   private:
     struct Pre : voices::PreBase<Pre, Props> {

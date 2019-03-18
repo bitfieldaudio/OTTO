@@ -14,7 +14,7 @@ namespace otto::engines {
   using namespace core::engine;
   using namespace props;
 
-  struct OTTOFMSynth : SynthEngine, EngineWithEnvelope {
+  struct OTTOFMSynth : SynthEngine<OTTOFMSynth>, EngineWithEnvelope {
     static constexpr std::string_view name = "OTTO.FM";
     struct OperatorProps : Properties<> {
       using Properties::Properties;
@@ -31,11 +31,11 @@ namespace otto::engines {
       Property<float> outLev                  = {this, "outLev",    1,   has_limits::init(0, 1),    steppable::init(0.01)};
       // clang-format on
 
-      
+      DECL_REFLECTION(OperatorProps, feedback, mAtt, mDecrel, mSuspos, detune, ratio_idx, outLev);
     };
 
     struct Props : Properties<> {
-      using Properties::Properties;
+      using Properties<>::Properties;
       Property<int> algN = {this, "algN", 0, has_limits::init(0, 10), steppable::init(1)};
       Property<float> fmAmount = {this, "fmAmount", 1, has_limits::init(0, 1),
                                   steppable::init(0.01)};
@@ -43,6 +43,7 @@ namespace otto::engines {
       std::array<OperatorProps, 4> operators = {
         {{this, "op0"}, {this, "op1"}, {this, "op2"}, {this, "op3"}}};
 
+      DECL_REFLECTION(Props, algN, fmAmount, operators);
     } props;
 
     struct FMOperator {
@@ -87,6 +88,8 @@ namespace otto::engines {
     {
       return voice_mgr_.settings_screen();
     }
+
+    DECL_REFLECTION(OTTOFMSynth, props, ("voice_manager", &OTTOFMSynth::voice_mgr_));
 
   private:
     struct Pre : voices::PreBase<Pre, Props> {

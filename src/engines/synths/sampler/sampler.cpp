@@ -219,7 +219,7 @@ namespace otto::engines {
   };
 
   Sampler::Sampler()
-    : Engine("Sampler", props, std::make_unique<SamplerScreen>(this)),
+    : SynthEngine<Sampler>(props, std::make_unique<SamplerScreen>(this)),
       _envelope_screen(std::make_unique<SamplerEnvelopeScreen>(this))
   {
     load_file(Application::current().data_dir / "samples" / "sample.wav");

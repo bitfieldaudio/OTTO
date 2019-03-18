@@ -14,7 +14,8 @@ namespace otto::core::engine {
   struct NullEngine;
 
   template<>
-  struct NullEngine<EngineType::effect> : EffectEngine {
+  struct NullEngine<EngineType::effect> : EffectEngine<NullEngine<EngineType::effect>> {
+    static constexpr std::string_view name = "OFF";
     props::Properties<> props;
     NullEngine();
 
@@ -22,14 +23,16 @@ namespace otto::core::engine {
   };
 
   template<>
-  struct NullEngine<EngineType::arpeggiator> : ArpeggiatorEngine {
+  struct NullEngine<EngineType::arpeggiator> : ArpeggiatorEngine<NullEngine<EngineType::arpeggiator>> {
+    static constexpr std::string_view name = "OFF";
     props::Properties<> props;
     NullEngine();
     audio::ProcessData<0> process(audio::ProcessData<0> data) noexcept override;
   };
 
   template<>
-  struct NullEngine<EngineType::synth> : SynthEngine{
+  struct NullEngine<EngineType::synth> : SynthEngine<NullEngine<EngineType::synth>> {
+    static constexpr std::string_view name = "OFF";
     props::Properties<> props;
     NullEngine();
     audio::ProcessData<1> process(audio::ProcessData<1> data) noexcept override;

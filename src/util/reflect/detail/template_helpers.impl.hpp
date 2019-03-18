@@ -1,3 +1,7 @@
+#pragma once
+
+#include "template_helpers.hpp"
+
 namespace otto::reflect {
   namespace detail {
 

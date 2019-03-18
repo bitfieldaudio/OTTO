@@ -19,34 +19,34 @@ namespace otto::core::props {
   template<typename T, typename Enable>
   struct default_mixins {
     using type = std::conditional_t<std::is_enum_v<T>,
-                                    tag_list<serializable, change_hook, has_limits, steppable>,
-                                    tag_list<serializable, change_hook>>;
+                                    tag_list<change_hook, has_limits, steppable>,
+                                    tag_list<change_hook>>;
   };
 
   template<>
   struct default_mixins<int> {
-    using type = tag_list<serializable, change_hook, has_limits, steppable>;
+    using type = tag_list<change_hook, has_limits, steppable>;
   };
 
   template<>
   struct default_mixins<bool> {
-    using type = tag_list<serializable, change_hook, steppable>;
+    using type = tag_list<change_hook, steppable>;
   };
 
   template<>
   struct default_mixins<float> {
-    using type = tag_list<serializable, change_hook, has_limits, steppable>;
+    using type = tag_list<change_hook, has_limits, steppable>;
   };
 
   template<>
   struct default_mixins<double> {
-    using type = tag_list<serializable, change_hook, has_limits, steppable>;
+    using type = tag_list<change_hook, has_limits, steppable>;
   };
 
   // Void is for branches
   template<>
   struct default_mixins<void> {
-    using type = tag_list<serializable>;
+    using type = tag_list<>;
   };
 
   /// A property of type `ValueType` with mixins `Tags...`
@@ -62,7 +62,11 @@ namespace otto::core::props {
 
     /// \private
     using Super::Super;
+
+    DECL_REFLECTION_EMPTY(Properties);
   };
+
+  static_assert(reflect::is_registered<Properties<>>());
 
   using no_serialize = no<serializable>;
 } // namespace otto::core::props

@@ -21,7 +21,7 @@ namespace otto::core::engine {
   }
 
   template<EngineType ET, typename... Egs>
-  Engine<ET>& EngineDispatcher<ET, Egs...>::current() noexcept
+  ITypedEngine<ET>& EngineDispatcher<ET, Egs...>::current() noexcept
   {
     return *_current;
   }
@@ -34,26 +34,26 @@ namespace otto::core::engine {
   }
 
   template<EngineType ET, typename... Egs>
-  const Engine<ET>& EngineDispatcher<ET, Egs...>::current() const noexcept
+  const ITypedEngine<ET>& EngineDispatcher<ET, Egs...>::current() const noexcept
   {
     return *_current;
   }
 
 
   template<EngineType ET, typename... Egs>
-  Engine<ET>* EngineDispatcher<ET, Egs...>::operator->() noexcept
+  ITypedEngine<ET>* EngineDispatcher<ET, Egs...>::operator->() noexcept
   {
     return _current;
   }
 
   template<EngineType ET, typename... Egs>
-  const Engine<ET>* EngineDispatcher<ET, Egs...>::operator->() const noexcept
+  const ITypedEngine<ET>* EngineDispatcher<ET, Egs...>::operator->() const noexcept
   {
     return _current;
   }
 
   template<EngineType ET, typename... Egs>
-  Engine<ET>& EngineDispatcher<ET, Egs...>::select(std::string_view name)
+  ITypedEngine<ET>& EngineDispatcher<ET, Egs...>::select(std::string_view name)
   {
     _engine_data.insert_or_replace(_current->name(), _current->to_json());
     _current = &_null_engine;
@@ -70,13 +70,13 @@ namespace otto::core::engine {
         }
       });
       _current = _engine_storage.base();
-      if (!done) throw util::exception("Engine '{}' not found", name);
+      if (!done) throw util::exception("ITypedEngine '{}' not found", name);
     }
     return *_current;
   }
 
   template<EngineType ET, typename... Egs>
-  Engine<ET>& EngineDispatcher<ET, Egs...>::select(int index)
+  ITypedEngine<ET>& EngineDispatcher<ET, Egs...>::select(int index)
   {
     _engine_data.insert_or_replace(_current->name(), _current->to_json());
     _current = &_null_engine;

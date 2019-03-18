@@ -20,7 +20,7 @@ namespace otto::engines {
   };
 
   Master::Master()
-    : Engine("Master", props, std::make_unique<MasterScreen>(this)),
+    : MiscEngine<Master>(props, std::make_unique<MasterScreen>(this)),
       faust_(std::make_unique<faust_master>(), props)
   {}
 

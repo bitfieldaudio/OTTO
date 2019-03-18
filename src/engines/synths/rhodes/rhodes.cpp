@@ -22,7 +22,7 @@ namespace otto::engines {
   // RhodesSynth ////////////////////////////////////////////////////////////////
 
   RhodesSynth::RhodesSynth()
-    : SynthEngine(name, props, std::make_unique<RhodesSynthScreen>(this)), voice_mgr_(props)
+    : SynthEngine<RhodesSynth>(props, std::make_unique<RhodesSynthScreen>(this)), voice_mgr_(props)
   {}
 
   //Voice

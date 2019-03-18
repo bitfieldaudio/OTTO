@@ -3,7 +3,6 @@
 #include "core/engine/engine.hpp"
 
 #include "core/audio/faust.hpp"
-#include "core/audio/voice_manager.hpp"
 
 #include <array>
 #include <optional>
@@ -14,7 +13,7 @@ namespace otto::engines {
   using namespace core::engine;
   using namespace props;
 
-  struct Euclid : ArpeggiatorEngine {
+  struct Euclid : ArpeggiatorEngine<Euclid> {
     static constexpr std::string_view name = "Euclid";
     static constexpr int max_length = 16;
 
@@ -33,6 +32,8 @@ namespace otto::engines {
 
       int _beat_counter = 0;
       std::array<bool, max_length> _hits_enabled;
+
+      DECL_REFLECTION(Channel, length, hits, rotation, notes);
     };
 
     struct Props : Properties<> {
@@ -47,6 +48,8 @@ namespace otto::engines {
       }
 
       Properties<> channels_props = {this, "Channels"};
+
+      DECL_REFLECTION(Props, channel, channels);
 
     } props;
 

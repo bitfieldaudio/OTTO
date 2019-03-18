@@ -145,19 +145,20 @@ namespace otto::core::voices {
     std::string to_string(PlayMode) noexcept;
 
     struct EnvelopeProps : props::Properties<> {
-      props::Property<float> attack = {this, "Attack", 0, props::has_limits::init(0, 8),
+      props::Property<float> attack = {this, "Attack", 0, props::has_limits::init(0, 1),
                                        props::steppable::init(0.02)};
 
-      props::Property<float> decay = {this, "Decay", 0, props::has_limits::init(0, 4),
+      props::Property<float> decay = {this, "Decay", 0, props::has_limits::init(0, 1),
                                       props::steppable::init(0.02)};
 
       props::Property<float> sustain = {this, "Sustain", 1, props::has_limits::init(0, 1),
                                         props::steppable::init(0.02)};
 
-      props::Property<float> release = {this, "Release", 0.2, props::has_limits::init(0, 6),
+      props::Property<float> release = {this, "Release", 0.2, props::has_limits::init(0, 1),
                                         props::steppable::init(0.02)};
 
       using Properties::Properties;
+      DECL_REFLECTION(EnvelopeProps, attack, decay, sustain, release);
     };
 
     struct SettingsProps : props::Properties<> {
@@ -172,6 +173,8 @@ namespace otto::core::voices {
 
       props::Property<int> transpose = {this, "Transpose", 0, props::has_limits::init(-12, 12)};
       using Properties::Properties;
+
+      DECL_REFLECTION(SettingsProps, play_mode, portamento, octave, transpose);
     };
 
     std::unique_ptr<ui::Screen> make_envelope_screen(EnvelopeProps& props);
@@ -222,6 +225,7 @@ namespace otto::core::voices {
     /// Process audio, applying Preprocessing, each voice and then postprocessing
     audio::ProcessData<1> process(audio::ProcessData<1> data) noexcept;
 
+    DECL_REFLECTION(VoiceManager, ("envelope", &VoiceManager::envelope_props), ("voice_settings", &VoiceManager::settings_props));
   private:
     Voice& get_voice(int key) noexcept;
     Voice* stop_voice(int key) noexcept;
@@ -251,6 +255,7 @@ namespace otto::core::voices {
     std::unique_ptr<ui::Screen> envelope_screen_ = details::make_envelope_screen(envelope_props);
     std::unique_ptr<ui::Screen> settings_screen_ = details::make_settings_screen(settings_props);
     PlayMode play_mode = PlayMode::mono;
+
   }; // namespace otto::core::voices
 
 } // namespace otto::core::voices

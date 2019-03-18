@@ -16,8 +16,9 @@ namespace otto::engines {
   using namespace core::engine;
   using namespace props;
 
-  struct GossSynth : SynthEngine, EngineWithEnvelope {
+  struct GossSynth : SynthEngine<GossSynth>, EngineWithEnvelope {
     static constexpr std::string_view name = "Goss";
+
     struct Props : Properties<> {
       Property<float> drawbar1 = {this, "drawbar1", 1, has_limits::init(0, 1),
                                   steppable::init(0.01)};
@@ -28,7 +29,7 @@ namespace otto::engines {
       Property<float> leslie = {this, "leslie", 0.3, has_limits::init(0, 1), steppable::init(0.01)};
 
       float rotation_value;
-
+      DECL_REFLECTION(Props, drawbar1, drawbar2, drawbar3, leslie);
     } props;
 
     GossSynth();
@@ -44,6 +45,8 @@ namespace otto::engines {
     {
       return voice_mgr_.settings_screen();
     }
+
+    DECL_REFLECTION(GossSynth, props, ("voice_manager", &GossSynth::voice_mgr_));
 
   private:
     struct Pre : voices::PreBase<Pre, Props> {
@@ -87,5 +90,6 @@ namespace otto::engines {
 
     voices::VoiceManager<Post, 6> voice_mgr_;
   };
+
 
 } // namespace otto::engines
