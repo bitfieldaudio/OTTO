@@ -89,7 +89,7 @@ namespace otto::util {
     /// string operations
     constexpr int compare(string_ref x) const
     {
-      return operator std::string_view().compare(std::string_view(x));
+      return operator std::string_view().compare(x.operator std::string_view());
     }
 
     constexpr bool starts_with(string_ref x) const
@@ -105,7 +105,7 @@ namespace otto::util {
 
     constexpr size_t find(string_ref s) const
     {
-      return operator std::string_view().find(std::string_view(s));
+      return operator std::string_view().find(s.operator std::string_view());
     }
 
     constexpr size_t find(char c) const
