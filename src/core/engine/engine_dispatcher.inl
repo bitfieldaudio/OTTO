@@ -53,7 +53,7 @@ namespace otto::core::engine {
   }
 
   template<EngineType ET, typename... Egs>
-  ITypedEngine<ET>& EngineDispatcher<ET, Egs...>::select(std::string_view name)
+  ITypedEngine<ET>& EngineDispatcher<ET, Egs...>::select(util::string_ref name)
   {
     _engine_data.insert_or_replace(_current->name(), _current->to_json());
     _current = &_null_engine;
@@ -100,9 +100,9 @@ namespace otto::core::engine {
   }
 
   template<EngineType ET, typename... Egs>
-  std::vector<std::string_view> EngineDispatcher<ET, Egs...>::make_name_list() const
+  std::vector<util::string_ref> EngineDispatcher<ET, Egs...>::make_name_list() const
   {
-    std::vector<std::string_view> res;
+    std::vector<util::string_ref> res;
     res.reserve(sizeof...(Egs));
     meta::for_each<meta::list<Egs...>>([&](auto m_type) {
       using type = decltype(m_type._t());
@@ -118,7 +118,7 @@ namespace otto::core::engine {
   }
 
   template<EngineType ET, typename... Egs>
-  const foonathan::array::flat_map<std::string_view, nlohmann::json>&
+  const foonathan::array::flat_map<util::string_ref, nlohmann::json>&
   EngineDispatcher<ET, Egs...>::data_of_engines() const noexcept
   {
     return _engine_data;
@@ -147,7 +147,7 @@ namespace otto::core::engine {
         _engine_data.insert_or_replace(key, val);
       }
     }
-    select(j["current_engine"].get<std::string_view>());
+    select(j["current_engine"].get<std::string>());
   }
 } // namespace otto::core::engine
 

@@ -2,6 +2,8 @@
 
 #include <string>
 #include <string_view>
+#include <iosfwd>
+#include <iostream>
 
 namespace otto::util {
 
@@ -29,19 +31,8 @@ namespace otto::util {
     }
     string_ref(const std::string& s) : data_(s.data()), length_(s.length()) {}
 
-    constexpr operator std::string_view() const noexcept
-    {
+    constexpr operator std::string_view() const noexcept {
       return {data_, length_};
-    }
-
-    constexpr operator const char*() const noexcept
-    {
-      return data_;
-    }
-
-    explicit operator std::string() const
-    {
-      return std::string(data_);
     }
 
     /// iterators
@@ -143,28 +134,32 @@ namespace otto::util {
     std::size_t length_;
   };
 
+  inline std::ostream& operator<<(std::ostream& ostream, const string_ref& sr) {
+    return ostream << sr.c_str();
+  }
+
   /// Comparison operators
-  constexpr inline bool operator==(string_ref x, string_ref y)
+  constexpr bool operator==(string_ref x, string_ref y)
   {
     return x.compare(y) == 0;
   }
-  constexpr inline bool operator!=(string_ref x, string_ref y)
+  constexpr bool operator!=(string_ref x, string_ref y)
   {
     return x.compare(y) != 0;
   }
-  constexpr inline bool operator<(string_ref x, string_ref y)
+  constexpr bool operator<(string_ref x, string_ref y)
   {
     return x.compare(y) < 0;
   }
-  constexpr inline bool operator<=(string_ref x, string_ref y)
+  constexpr bool operator<=(string_ref x, string_ref y)
   {
     return x.compare(y) <= 0;
   }
-  constexpr inline bool operator>(string_ref x, string_ref y)
+  constexpr bool operator>(string_ref x, string_ref y)
   {
     return x.compare(y) > 0;
   }
-  constexpr inline bool operator>=(string_ref x, string_ref y)
+  constexpr bool operator>=(string_ref x, string_ref y)
   {
     return x.compare(y) >= 0;
   }

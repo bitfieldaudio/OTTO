@@ -62,7 +62,7 @@ namespace otto::core::engine {
     /* Accessors */
 
     /// The name of this module.
-    virtual std::string_view name() const noexcept = 0;
+    virtual util::string_ref name() const noexcept = 0;
 
     ui::Screen& screen() noexcept;
 
@@ -151,21 +151,21 @@ namespace otto::core::engine {
   /// Prefer using the alias {@ref name_of_engine_v}
   template<typename Engine>
   struct name_of_engine {
-    static constexpr std::string_view value = Engine::name;
+    static constexpr util::string_ref value = Engine::name;
   };
 
   /// Get the name of an engine.
   ///
   /// Alias of name_of_engine::value
   template<typename Engine>
-  constexpr std::string_view name_of_engine_v = name_of_engine<Engine>::value;
+  constexpr util::string_ref name_of_engine_v = name_of_engine<Engine>::value;
 
   // Engine class /////////////////////////////////////////////////////////////
 
   namespace detail {
     template<EngineType ET, typename Derived>
     struct EngineImpl : util::crtp<Derived, EngineImpl<ET, Derived>>, ITypedEngine<ET> {
-      std::string_view name() const noexcept override
+      util::string_ref name() const noexcept override
       {
         return name_of_engine_v<Derived>;
       }

@@ -14,10 +14,10 @@ namespace otto::core::engine {
     virtual IEngine& current() = 0;
     virtual const IEngine& current() const = 0;
     virtual int current_idx() const = 0;
-    virtual IEngine& select(std::string_view name) = 0;
+    virtual IEngine& select(util::string_ref name) = 0;
     virtual IEngine& select(int index) = 0;
 
-    virtual std::vector<std::string_view> make_name_list() const = 0;
+    virtual std::vector<util::string_ref> make_name_list() const = 0;
 
     virtual ~IEngineDispatcher() = default;
 
@@ -35,7 +35,7 @@ namespace otto::core::engine {
     static constexpr const EngineType engine_type = ET;
     using ITypedEngine = engine::ITypedEngine<ET>;
     using variant = util::variant_w_base<ITypedEngine, Engines...>;
-    using DataMap = foonathan::array::flat_map<std::string_view, nlohmann::json>;
+    using DataMap = foonathan::array::flat_map<util::string_ref, nlohmann::json>;
 
     // Initialization
     EngineDispatcher(bool allow_off) : IEngineDispatcher(allow_off) {}
@@ -59,7 +59,7 @@ namespace otto::core::engine {
     ///
     /// \effects Find engine with name `name`, and `select(engine)`
     /// \throws `util::exception` when no matching engine was found
-    ITypedEngine& select(std::string_view name) override;
+    ITypedEngine& select(util::string_ref name) override;
 
     /// Select engine by index
     /// 
@@ -67,7 +67,7 @@ namespace otto::core::engine {
     /// @throws `util::exception` when `index` is out of bounds
     ITypedEngine& select(int index) override;
 
-    std::vector<std::string_view> make_name_list() const override;
+    std::vector<util::string_ref> make_name_list() const override;
 
     /// Access the screen used to select engines/presets
     ///

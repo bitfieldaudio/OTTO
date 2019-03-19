@@ -42,21 +42,21 @@ namespace otto::services {
     /// over the actual preset data. Also it makes sense for the
     /// @ref otto::engines::EngineSelectorScreen, which is probably the only place
     /// that really needs access
-    const std::vector<std::string>& preset_names(std::string_view engine_name);
+    const std::vector<std::string>& preset_names(util::string_ref engine_name);
 
     /// Get the name of preset with indx `idx`
     ///
     /// \throws @ref exception with @ref ErrorCode::no_such_preset if no matching
     /// preset was found, or @ref ErrorCode::no_such_engine if no matching engine
     /// was found
-    const std::string& name_of_idx(std::string_view engine_name, int idx);
+    const std::string& name_of_idx(util::string_ref engine_name, int idx);
 
     /// Get the index of preset with name `name`
     ///
     /// \throws @ref exception with @ref ErrorCode::no_such_preset if no matching
     /// preset was found, or @ref ErrorCode::no_such_engine if no matching engine
     /// was found
-    int idx_of_name(std::string_view engine_name, std::string_view name);
+    int idx_of_name(util::string_ref engine_name, std::string_view name);
 
     /// Apply preset to engine
     ///
@@ -76,7 +76,7 @@ namespace otto::services {
     /// preset was found.
     void apply_preset(core::engine::IEngine& engine, int idx, bool no_enable_callback = false);
 
-    void create_preset(std::string_view engine_name,
+    void create_preset(util::string_ref engine_name,
                        std::string_view preset_name,
                        const nlohmann::json& preset_data);
 

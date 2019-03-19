@@ -15,7 +15,7 @@ namespace otto::core::engine {
 
   template<>
   struct NullEngine<EngineType::effect> : EffectEngine<NullEngine<EngineType::effect>> {
-    static constexpr std::string_view name = "OFF";
+    static constexpr util::string_ref name = "OFF";
     struct Props {
       DECL_REFLECTION_EMPTY(Props);
     } props;
@@ -27,7 +27,7 @@ namespace otto::core::engine {
   template<>
   struct NullEngine<EngineType::arpeggiator>
     : ArpeggiatorEngine<NullEngine<EngineType::arpeggiator>> {
-    static constexpr std::string_view name = "OFF";
+    static constexpr util::string_ref name = "OFF";
     struct Props {
       DECL_REFLECTION_EMPTY(Props);
     } props;
@@ -37,7 +37,7 @@ namespace otto::core::engine {
 
   template<>
   struct NullEngine<EngineType::synth> : SynthEngine<NullEngine<EngineType::synth>> {
-    static constexpr std::string_view name = "OFF";
+    static constexpr util::string_ref name = "OFF";
     struct Props {
       DECL_REFLECTION_EMPTY(Props);
     } props;
