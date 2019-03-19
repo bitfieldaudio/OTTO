@@ -78,7 +78,7 @@ namespace otto::engines {
       pitch_modulation_lo.freq(leslie_speed_hi);
       pitch_modulation_hi.freq(leslie);
       rotation.freq(leslie_speed_hi/4.f);
-    });
+    }).call_now(props.leslie);
   }
 
   void GossSynth::Pre::operator()() noexcept {

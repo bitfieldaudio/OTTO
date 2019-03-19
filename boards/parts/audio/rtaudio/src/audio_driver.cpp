@@ -14,6 +14,8 @@
 #include "services/engine_manager.hpp"
 #include "services/log_manager.hpp"
 
+#include <Gamma/Domain.h>
+
 namespace otto::services {
 
   RTAudioAudioManager::RTAudioAudioManager()
@@ -64,6 +66,7 @@ namespace otto::services {
       _buffer_size = buf_siz;
       buffer_pool().set_buffer_size(buf_siz);
       client.startStream();
+      gam::sampleRate(samplerate());
     } catch (RtAudioError& e) {
       e.printMessage();
       if (enable_input) {

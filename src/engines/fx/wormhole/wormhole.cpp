@@ -11,16 +11,16 @@ namespace otto::engines {
   using namespace ui;
   using namespace ui::vg;
 
-  struct KratosReverbScreen : EngineScreen<KratosReverb> {
+  struct WormholeScreen : EngineScreen<Wormhole> {
     void draw(Canvas& ctx) override;
     bool keypress(Key key) override;
     void rotary(RotaryEvent e) override;
 
-    using EngineScreen<KratosReverb>::EngineScreen;
+    using EngineScreen<Wormhole>::EngineScreen;
   };
 
-  KratosReverb::KratosReverb()
-    : EffectEngine<KratosReverb>(std::make_unique<KratosReverbScreen>(this))
+  Wormhole::Wormhole()
+    : EffectEngine<Wormhole>(std::make_unique<WormholeScreen>(this))
   {
     // reverb.resize({1307, 1637, 1811, 1931}, {1051, 337, 113});
     reverb.resize(gam::JCREVERB);
@@ -34,14 +34,14 @@ namespace otto::engines {
     output_delay[1].maxDelay(179.f / gam::sampleRate());
 
     props.filter.on_change().connect(
-      [this](float flt) { pre_filter.freq(3000 + flt * flt * 17000); });
-    props.shimmer.on_change().connect([this](float sh) { shimmer_amount = sh * 0.03; });
-    props.length.on_change().connect([this](float len) { reverb.decay(3.f * len); });
-    props.damping.on_change().connect([this](float damp) { reverb.damping(damp); });
+      [this](float flt) { pre_filter.freq(3000 + flt * flt * 17000); }).call_now(props.filter);
+    props.shimmer.on_change().connect([this](float sh) { shimmer_amount = sh * 0.03; }).call_now(props.shimmer);
+    props.length.on_change().connect([this](float len) { reverb.decay(3.f * len); }).call_now(props.length);
+    props.damping.on_change().connect([this](float damp) { reverb.damping(damp); }).call_now(props.damping);
   }
 
 
-  audio::ProcessData<2> KratosReverb::process(audio::ProcessData<1> data)
+  audio::ProcessData<2> Wormhole::process(audio::ProcessData<1> data)
   {
     auto buf = Application::current().audio_manager->buffer_pool().allocate_multi<2>();
     for (auto&& [dat, bufL, bufR] : util::zip(data.audio, buf[0], buf[1])) {
@@ -56,7 +56,7 @@ namespace otto::engines {
 
   // SCREEN //
 
-  void KratosReverbScreen::rotary(ui::RotaryEvent ev)
+  void WormholeScreen::rotary(ui::RotaryEvent ev)
   {
     auto& props = engine.props;
     switch (ev.rotary) {
@@ -67,12 +67,12 @@ namespace otto::engines {
     }
   }
 
-  bool KratosReverbScreen::keypress(ui::Key key)
+  bool WormholeScreen::keypress(ui::Key key)
   {
     return false;
   }
 
-  void KratosReverbScreen::draw(ui::vg::Canvas& ctx)
+  void WormholeScreen::draw(ui::vg::Canvas& ctx)
   {
     {
       using namespace ui::vg;

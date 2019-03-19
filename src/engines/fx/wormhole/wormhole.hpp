@@ -14,8 +14,8 @@ namespace otto::engines {
   using namespace core::engine;
   using namespace props;
 
-  struct KratosReverb : EffectEngine<KratosReverb> {
-    static constexpr util::string_ref name = "Kratos";
+  struct Wormhole : EffectEngine<Wormhole> {
+    static constexpr util::string_ref name = "Wormhole";
     struct Props {
       Property<float> filter = {0, limits(0, 1), step_size(0.01)};
       Property<float> shimmer = {0, limits(0, 1), step_size(0.01)};
@@ -25,15 +25,15 @@ namespace otto::engines {
       DECL_REFLECTION(Props, filter, shimmer, length, damping);
     } props;
 
-    KratosReverb();
+    Wormhole();
 
     audio::ProcessData<2> process(audio::ProcessData<1>) override;
 
   private:
-    gam::ReverbMS<> reverb;
-    dsp::SimplePitchShift pitchshifter;
     float last_sample = 0;
     float shimmer_amount = 0;
+    gam::ReverbMS<> reverb;
+    dsp::SimplePitchShift pitchshifter;
     std::array<gam::Delay<>, 2> output_delay;
     gam::Biquad<> shimmer_filter;
     gam::BlockDC<> dc_block;

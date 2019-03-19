@@ -36,8 +36,8 @@ int main(int argc, char* argv[])
     std::signal(SIGTERM, Application::handle_signal);
     std::signal(SIGINT, Application::handle_signal);
 
-    app.engine_manager->start();
     app.audio_manager->start();
+    app.engine_manager->start();
     app.ui_manager->main_ui_loop();
 
   } catch (const char* e) {

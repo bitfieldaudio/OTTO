@@ -5,6 +5,7 @@
 
 #include "internal/property.hpp"
 #include "mixins/all.hpp"
+#include "util/serialize.hpp"
 
 /// The property system
 ///
@@ -52,19 +53,23 @@ namespace otto::core::props {
   /// A property of type `ValueType` with mixins `Tags...`
   template<typename ValueType, typename... Tags>
   using Property = PropertyImpl<ValueType, meta::_t<get_tag_list<ValueType, Tags...>>>;
-} // namespace otto::core::props
 
-namespace otto::reflect {
-  // reflect a property directly to its value type
-  // For serialization, this means you get { "property": 13 }
-  // instead of { "property": { "value": 13 } }
-
-  template<typename Class, typename ValueType, typename... Tags>
-  constexpr auto member(util::string_ref name,
-                        util::member_ptr<Class, core::props::Property<ValueType, Tags...>> memptr)
+  template<typename ValueType, typename... Tags>
+  inline nlohmann::json serialize(const core::props::Property<ValueType, Tags...>& prop)
   {
-    return member<Class>(
-      name, [memptr](const Class& obj) -> const ValueType& { return (obj.*memptr).get(); },
-      [memptr](Class& obj, const ValueType& val) { return (obj.*memptr).set(val); });
+    using ::otto::util::serialize;
+    return serialize(prop.get());
   }
-} // namespace otto::reflect
+
+  template<typename ValueType, typename... Tags>
+  inline void deserialize(core::props::Property<ValueType, Tags...>& prop,
+                          const nlohmann::json& json)
+  {
+    using ::otto::util::deserialize;
+    static_assert(std::is_default_constructible_v<ValueType>,
+                  "A property type must be default constructible to be deserializable");
+    ValueType v{};
+    deserialize(v, json);
+    prop.set(std::move(v));
+  }
+} // namespace otto::core::props
