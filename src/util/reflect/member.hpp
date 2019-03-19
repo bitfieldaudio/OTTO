@@ -13,6 +13,9 @@ member pointers (because why would you set them in the other place?)
 
 #pragma once
 
+// clang 5.0 has no std::is_invocable_v and similar. Use from mpark::detail namespace instead.
+#include <mpark/variant.hpp>
+
 #include "util/utility.hpp"
 
 #include "./reflect.hpp"
@@ -64,12 +67,12 @@ namespace otto::reflect {
 
   template<typename Class, typename T, AccessorType AT, typename AccessorData>
   struct Member {
-    using MemberAccessor = MemberAccessor<Class, T, AT, AccessorData>;
+    using Accessor = MemberAccessor<Class, T, AT, AccessorData>;
     using class_type = Class;
     using member_type = T;
     using type = T;
 
-    constexpr Member(util::string_ref name, const MemberAccessor& ma);
+    constexpr Member(util::string_ref name, const Accessor& ma);
 
     constexpr util::string_ref get_name() const
     {
@@ -96,7 +99,7 @@ namespace otto::reflect {
 
   private:
     util::string_ref _name;
-    MemberAccessor _accessor;
+    Accessor _accessor;
   };
 
   // useful function similar to make_pair which is used so you don't have to write this:
@@ -105,13 +108,13 @@ namespace otto::reflect {
 
   template<typename Class,
            typename Callable,
-           typename = std::enable_if_t<std::is_invocable_v<Callable, Class&>>>
+           typename = std::enable_if_t<mpark::lib::is_invocable<Callable, Class&>::value>>
   constexpr auto member(util::string_ref, Callable&& ref_getter);
 
   template<typename Class,
            typename Getter,
            typename Setter,
-           typename = std::enable_if_t<std::is_invocable_v<Getter, const Class&>>>
+           typename = std::enable_if_t<mpark::lib::is_invocable<Getter, const Class&>::value>>
   constexpr auto member(util::string_ref, Getter&& getter, Setter&& setter);
 
 } // namespace otto::reflect

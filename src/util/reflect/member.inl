@@ -7,7 +7,7 @@
 namespace otto::reflect {
 
   template<typename Class, typename T, AccessorType AT, typename AD>
-  constexpr Member<Class, T, AT, AD>::Member(util::string_ref name, const MemberAccessor& accessor)
+  constexpr Member<Class, T, AT, AD>::Member(util::string_ref name, const Accessor& accessor)
     : _name(name), _accessor(accessor)
   {}
 
@@ -48,18 +48,18 @@ namespace otto::reflect {
   template<typename Class, typename Callable, typename>
   constexpr auto member(util::string_ref name, Callable&& ref_getter)
   {
-    using Res = std::invoke_result_t<Callable, Class&>;
+    using Res = typename mpark::lib::invoke_result<Callable, Class&>::type;
     using Val = std::decay_t<Res>;
     if constexpr (std::is_lvalue_reference_v<Res> && !std::is_const_v<Res>) {
       using MemberT = Member<Class, Val, AccessorType::MutableRef, Callable>;
       return MemberT(name,
-                     typename MemberT::MemberAccessor(
+                     typename MemberT::Accessor(
                        [](const Callable& d, Class& obj) -> Val& { return std::invoke(d, obj); },
                        [](const Callable& d, const Class& obj) -> const Val& { return std::invoke(d, obj); },
                        std::forward<Callable>(ref_getter)));
     } else {
       using MemberT = Member<Class, Val, AccessorType::ReadOnly, Callable>;
-      return MemberT(name, typename MemberT::MemberAccessor(
+      return MemberT(name, typename MemberT::Accessor(
                              [](const Callable& d, const Class& obj) -> const Val& {
                                return std::invoke(d, obj);
                              },
@@ -70,14 +70,14 @@ namespace otto::reflect {
   template<typename Class, typename Getter, typename Setter, typename>
   constexpr auto member(util::string_ref name, Getter&& getter, Setter&& setter)
   {
-    using Res = std::invoke_result_t<Getter, const Class&>;
+    using Res = typename mpark::lib::invoke_result<Getter, const Class&>::type;
     using Val = std::decay_t<Res>;
-    static_assert(std::is_invocable_v<Setter, Class&, const Res&>);
+    static_assert(mpark::lib::is_invocable<Setter, Class&, const Res&>::value);
 
     using Data = std::pair<Getter, Setter>;
 
     using MemberT = Member<Class, std::decay_t<Res>, AccessorType::ReadWrite, Data>;
-    return MemberT(name, typename MemberT::MemberAccessor{
+    return MemberT(name, typename MemberT::Accessor{
                            [](const Data& d, const Class& obj) -> const Val& { return std::invoke(d.first, obj); },
                            [](const Data& d, Class& obj, const Val& val) {
                              return std::invoke(d.second, obj, val);
