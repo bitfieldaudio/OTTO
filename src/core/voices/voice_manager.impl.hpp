@@ -222,6 +222,9 @@ namespace otto::core::voices {
     return res;
   }
 
+  template<typename V, int N>
+  auto VoiceManager<V, N>::voices() -> std::array<Voice, voice_count>& {return voices_;}
+
   namespace details {
     inline std::string to_string(PlayMode pm) noexcept
     {

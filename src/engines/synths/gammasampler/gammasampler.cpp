@@ -33,7 +33,7 @@ namespace otto::engines {
       _envelope_screen(std::make_unique<SamplerEnvelopeScreen>(this))
   {
     samplefile.load((Application::current().data_dir / "samples" / "sample.wav").c_str());
-    samplecontainer.source(&samplefile.samples[0][0], samplefile.getNumSamplesPerChannel());
+    samplecontainer.source(&samplefile.samples[0][0], samplefile.getNumSamplesPerChannel(), true);
     sample.buffer(samplecontainer, (double)samplefile.getSampleRate(), samplefile.getNumChannels());
     finish();
     frames = sample.frames();

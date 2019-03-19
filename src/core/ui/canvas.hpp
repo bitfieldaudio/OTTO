@@ -322,6 +322,11 @@ namespace otto::core::ui::vg {
       return *this;
     }
 
+    Canvas& centeredSquare(Point p, float side_length) {
+      Super::rect(p.x - side_length/2, p.y - side_length/2, side_length,side_length);
+      return *this;
+    }
+
     using Super::roundedRect;
     Canvas& roundedRect(Point p, Size s,float r) {
       Super::roundedRect(p.x, p.y, s.w, s.h, r);

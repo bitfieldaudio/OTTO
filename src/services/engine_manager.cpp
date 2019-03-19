@@ -1,6 +1,7 @@
 #include "engine_manager.hpp"
 
 #include <engines/synths/goss/goss.hpp>
+#include <engines/synths/potion/potion.hpp>
 #include "core/engine/sequencer.hpp"
 #include "engines/fx/chorus/chorus.hpp"
 #include "engines/fx/pingpong/pingpong.hpp"
@@ -11,6 +12,7 @@
 #include "engines/synths/OTTOFM/ottofm.hpp"
 #include "engines/synths/rhodes/rhodes.hpp"
 #include "engines/synths/gammasampler/gammasampler.hpp"
+#include "engines/synths/potion/potion.hpp"
 
 #include "services/application.hpp"
 
@@ -431,6 +433,7 @@ namespace otto::services {
     synth.register_engine<engines::RhodesSynth>("Rhodes");
     synth.register_engine<engines::OTTOFMSynth>("OTTO.FM");
     synth.register_engine<engines::Sampler>("Sampler");
+    synth.register_engine<engines::PotionSynth>("Potion");
     effect1.register_engine<EffectOffEngine>("OFF");
     effect2.register_engine<EffectOffEngine>("OFF");
     effect1.register_engine<engines::Wormhole>("Wormhole");

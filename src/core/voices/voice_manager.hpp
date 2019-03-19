@@ -222,6 +222,9 @@ namespace otto::core::voices {
     /// Process audio, applying Preprocessing, each voice and then postprocessing
     audio::ProcessData<1> process(audio::ProcessData<1> data) noexcept;
 
+    ///Return list of voices
+    std::array<Voice, voice_count>& voices();
+
   private:
     Voice& get_voice(int key) noexcept;
     Voice* stop_voice(int key) noexcept;
