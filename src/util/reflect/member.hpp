@@ -116,6 +116,6 @@ namespace otto::reflect {
 
 } // namespace otto::reflect
 
-#include "member.impl.hpp"
+#include "member.inl"
 
-// kak: other_file=member.impl.hpp
+// kak: other_file=member.inl

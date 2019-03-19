@@ -70,6 +70,6 @@ namespace otto::util {
 
 } // namespace otto::util
 
-#include "serialize.impl.hpp"
+#include "serialize.inl"
 
-// kak: other_file=serialize.impl.hpp
+// kak: other_file=serialize.inl

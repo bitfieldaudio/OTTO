@@ -250,6 +250,6 @@ namespace otto::core::voices {
 } // namespace otto::core::voices
 
 // Implementation
-#include "voice_manager.impl.hpp"
+#include "voice_manager.inl"
 
-// kak: other_file=voice_manager.impl.hpp
+// kak: other_file=voice_manager.inl

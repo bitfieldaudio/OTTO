@@ -13,7 +13,7 @@ namespace otto::engines {
   using namespace props;
 
   struct Chorus : EffectEngine<Chorus> {
-    static constexpr std::string_view name = "Chorus";
+    static constexpr util::string_ref name = "Chorus";
 
     struct Props {
       Property<float> delay = {0.0001, limits(0.0001, 0.01), step_size(0.0001)};

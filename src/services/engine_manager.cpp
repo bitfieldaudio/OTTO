@@ -1,12 +1,12 @@
 #include "engine_manager.hpp"
 #include "core/engine/engine_dispatcher.hpp"
-#include "core/engine/engine_dispatcher.impl.hpp"
+#include "core/engine/engine_dispatcher.inl"
 
 #include <engines/synths/goss/goss.hpp>
 #include <engines/synths/potion/potion.hpp>
 #include "core/engine/sequencer.hpp"
-#include "engines/fx/FDNReverb/FDNReverb.hpp"
 #include "engines/fx/chorus/chorus.hpp"
+#include "engines/fx/wormhole/wormhole.hpp"
 #include "engines/misc/master/master.hpp"
 #include "engines/seq/euclid/euclid.hpp"
 #include "engines/synths/OTTOFM/ottofm.hpp"
@@ -430,6 +430,7 @@ namespace otto::services {
         if (ui_manager.is_pressed(ui::Key::shift)) {
           ui_manager.display(owner->voices_screen());
         } else {
+          ui_manager.select_engine("Synth");
           ui_manager.display(owner->envelope_screen());
         }
       }

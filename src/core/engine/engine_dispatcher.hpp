@@ -89,4 +89,4 @@ namespace otto::core::engine {
   };
 } // namespace otto::core::engine
 
-// kak: other_file=engine_dispatcher.impl.hpp
+// kak: other_file=engine_dispatcher.inl

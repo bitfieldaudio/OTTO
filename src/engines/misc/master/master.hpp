@@ -9,7 +9,7 @@ namespace otto::engines {
   using namespace props;
 
   struct Master : MiscEngine<Master> {
-    static constexpr std::string_view name = "Master";
+    static constexpr util::string_ref name = "Master";
 
     struct Props {
       Property<float> volume = {0.5, limits(0, 1), step_size(0.01)};

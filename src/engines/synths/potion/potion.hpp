@@ -23,17 +23,17 @@ namespace otto::engines {
   using namespace props;
 
   struct PotionSynth : SynthEngine<PotionSynth>, EngineWithEnvelope {
-    static constexpr std::string_view name = "Potion";
+    static constexpr util::string_ref name = "Potion";
 
     struct WaveProps {
       Property<std::string> file = "";
-      Property<float> volume = {0.5, has_limits::init(0, 1), steppable::init(0.01)};
+      Property<float> volume = {0.5, limits(0, 1), step_size(0.01)};
 
       DECL_REFLECTION(WaveProps, file, volume);
     };
 
     struct CurveOscProps {
-      Property<float> curve_length = {0.5, has_limits::init(0, 0.99), steppable::init(0.01)};
+      Property<float> curve_length = {0.5, limits(0, 0.99), step_size(0.01)};
       WaveProps wave1;
       WaveProps wave2;
 
@@ -41,7 +41,7 @@ namespace otto::engines {
     };
 
     struct LFOOscProps {
-      Property<float> lfo_speed = {0.5, has_limits::init(0, 0.99), steppable::init(0.01)};
+      Property<float> lfo_speed = {0.5, limits(0, 0.99), step_size(0.01)};
       WaveProps wave1;
       WaveProps wave2;
 

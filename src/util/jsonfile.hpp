@@ -83,4 +83,4 @@ namespace otto::util {
   MAKE_ENUM_OPERATORS(JsonFile::OpenOptions)
 }
 
-#include "util/serialize.impl.hpp"
+#include "util/serialize.inl"

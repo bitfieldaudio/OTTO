@@ -12,7 +12,7 @@ namespace otto::engines {
   using namespace props;
 
   struct Euclid : ArpeggiatorEngine<Euclid> {
-    static constexpr std::string_view name = "Euclid";
+    static constexpr util::string_ref name = "Euclid";
     static constexpr int max_length = 16;
 
     struct Channel {

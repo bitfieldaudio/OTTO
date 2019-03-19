@@ -147,7 +147,7 @@ namespace otto::reflect {
 
 } // namespace otto::reflect
 
-#include "reflect.impl.hpp"
+#include "reflect.inl"
 
-// kak: other_file=reflect.impl.hpp
+// kak: other_file=reflect.inl
 

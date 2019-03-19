@@ -16,7 +16,7 @@ namespace otto::engines {
 
 
   struct Sampler : SynthEngine<Sampler>, EngineWithEnvelope {
-    static constexpr std::string_view name = "Sampler";
+    static constexpr util::string_ref name = "Sampler";
     struct Props {
       Property<std::string> file = "";
       Property<float> volume = {1, limits(0, 4), step_size(0.01)};

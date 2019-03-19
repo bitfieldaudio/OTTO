@@ -344,6 +344,6 @@ namespace otto::core::audio {
 
 } // namespace otto::core::audio
 
-// kak: other_file=processor.impl.hpp
+// kak: other_file=processor.inl
 
-#include "processor.impl.hpp"
+#include "processor.inl"

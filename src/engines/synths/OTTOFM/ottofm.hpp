@@ -13,7 +13,7 @@ namespace otto::engines {
   using namespace props;
 
   struct OTTOFMSynth : SynthEngine<OTTOFMSynth>, EngineWithEnvelope {
-    static constexpr std::string_view name = "OTTO.FM";
+    static constexpr util::string_ref name = "OTTO.FM";
     struct OperatorProps {
       // Envelopes
       Property<float> feedback = {0, limits(0, 0.4), step_size(0.01)};

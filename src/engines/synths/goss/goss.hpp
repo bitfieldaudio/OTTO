@@ -16,7 +16,7 @@ namespace otto::engines {
   using namespace props;
 
   struct GossSynth : SynthEngine<GossSynth>, EngineWithEnvelope {
-    static constexpr std::string_view name = "Goss";
+    static constexpr util::string_ref name = "Goss";
 
     struct Props {
       Property<float> drawbar1 = {1, limits(0, 1), step_size(0.01)};

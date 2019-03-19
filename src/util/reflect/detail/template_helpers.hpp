@@ -38,4 +38,4 @@ namespace otto::reflect {
   } // end of namespace detail
 } // namespace otto::reflect
 
-#include "template_helpers.impl.hpp"
+#include "template_helpers.inl"
