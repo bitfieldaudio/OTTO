@@ -1,14 +1,15 @@
 #pragma once
 
 #include <string>
+#include <string_view>
 
 namespace otto::util {
 
   /// This class is a non owning reference to a null terminated string.
   struct string_ref {
     /// types
-    typedef const char* const_iterator;
-    typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
+    using  const_iterator = const char*;
+    using  const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
     /// constants
     const static size_t npos;
@@ -27,6 +28,21 @@ namespace otto::util {
       for (auto c = s; *c != '\0'; c++) length_++;
     }
     string_ref(const std::string& s) : data_(s.data()), length_(s.length()) {}
+
+    constexpr operator std::string_view() const noexcept
+    {
+      return {data_, length_};
+    }
+
+    constexpr operator const char*() const noexcept
+    {
+      return data_;
+    }
+
+    explicit operator std::string() const
+    {
+      return std::string(data_);
+    }
 
     /// iterators
     constexpr const_iterator begin() const
@@ -89,53 +105,37 @@ namespace otto::util {
     /// string operations
     constexpr int compare(string_ref x) const
     {
-      return operator std::string_view().compare(x.operator std::string_view());
+      return std::string_view(*this).compare(std::string_view(x));
     }
 
     constexpr bool starts_with(string_ref x) const
     {
-      return length_ >= x.length_ && (memcmp(data_, x.data_, x.length_) == 0);
+      return length_ >= x.length_ && substr(0, x.size()) == std::string_view(x);
     }
 
     constexpr bool ends_with(string_ref x) const
     {
-      return length_ >= x.length_ &&
-             (memcmp(data_ + (length_ - x.length_), x.data_, x.length_) == 0);
+      return length_ >= x.length_ && substr(length_ - x.size(), x.size()) == std::string_view(x);
     }
 
     constexpr size_t find(string_ref s) const
     {
-      return operator std::string_view().find(s.operator std::string_view());
+      return std::string_view(*this).find(std::string_view(s));
     }
 
     constexpr size_t find(char c) const
     {
-      return operator std::string_view().find(c);
+      return std::string_view(*this).find(c);
     }
 
     constexpr std::string_view substr(size_t pos, size_t n = npos) const
     {
-      return operator std::string_view().substr(pos, n);
+      return std::string_view(*this).substr(pos, n);
     }
 
     constexpr const char* c_str() const noexcept
     {
       return data_;
-    }
-
-    constexpr operator const char*() const noexcept
-    {
-      return data_;
-    }
-
-    constexpr operator std::string_view() const noexcept
-    {
-      return std::string_view(data_, length_);
-    }
-
-    explicit operator std::string() const
-    {
-      return std::string(data_);
     }
 
   private:
