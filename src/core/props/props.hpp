@@ -52,21 +52,19 @@ namespace otto::core::props {
   /// A property of type `ValueType` with mixins `Tags...`
   template<typename ValueType, typename... Tags>
   using Property = PropertyImpl<ValueType, meta::_t<get_tag_list<ValueType, Tags...>>>;
-
-  template<typename... Tags>
-  struct Properties : meta::_t<detail::properties_for_list<meta::_t<get_tag_list<void, Tags...>>>> {
-    /// \private
-    using Super = meta::_t<detail::properties_for_list<meta::_t<get_tag_list<void, Tags...>>>>;
-
-    using typename Super::tag_list;
-
-    /// \private
-    using Super::Super;
-
-    DECL_REFLECTION_EMPTY(Properties);
-  };
-
-  static_assert(reflect::is_registered<Properties<>>());
-
-  using no_serialize = no<serializable>;
 } // namespace otto::core::props
+
+// reflect a property directly to its value type
+// For serialization, this means you get { "property": 13 }
+// instead of { "property": { "value": 13 } }
+
+namespace otto::reflect {
+  template<typename Class, typename ValueType, typename... Tags>
+  constexpr auto member(util::string_ref name,
+                        util::member_ptr<Class, core::props::Property<ValueType, Tags...>> memptr)
+  {
+    return member<Class>(
+      name, [memptr](const Class& obj) -> const ValueType& { return (obj.*memptr).get(); },
+      [memptr](Class& obj, const ValueType& val) { return (obj.*memptr).set(val); });
+  }
+} // namespace otto::reflect

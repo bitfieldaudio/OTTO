@@ -2,7 +2,6 @@
 
 #include "core/engine/engine.hpp"
 
-#include "core/audio/faust.hpp"
 #include "core/voices/voice_manager.hpp"
 
 #include <AudioFile.h>
@@ -21,33 +20,27 @@ namespace otto::engines {
   struct PotionSynth : SynthEngine<PotionSynth>, EngineWithEnvelope {
     static constexpr std::string_view name = "Potion";
 
-    struct CurveOscProps : Properties<> {
-      using Properties::Properties;
-      Property<float> curve_length = {this, "curve_length", 0.5, has_limits::init(0, 1),
-                                      steppable::init(0.01)};
-      Property<int> wave_pair = {this, "wave_pair", 0, has_limits::init(0, 0), steppable::init(1)};
-      Property<float> volume = {this, "volume", 1, has_limits::init(0, 1), steppable::init(0.01)};
-      Property<float> remap = {this, "remap", 0.7, has_limits::init(0, 0.99),
-                               steppable::init(0.01)};
+    struct CurveOscProps {
+      Property<float> curve_length = {0.5, limits(0, 1), step_size(0.01)};
+      Property<int> wave_pair = {0, limits(0, 0), step_size(1)};
+      Property<float> volume = {1, limits(0, 1), step_size(0.01)};
+      Property<float> remap = {0.7, limits(0, 0.99), step_size(0.01)};
 
       DECL_REFLECTION(CurveOscProps, curve_length, wave_pair, volume, remap);
     };
 
-    struct LFOOscProps : Properties<> {
-      using Properties::Properties;
-      Property<float> lfo_speed = {this, "lfo_speed", 0.5, has_limits::init(0, 1),
-                                   steppable::init(0.01)};
-      Property<int> wave_pair = {this, "wave_pair", 0, has_limits::init(0, 0), steppable::init(1)};
-      Property<float> volume = {this, "volume", 1, has_limits::init(0, 1), steppable::init(0.01)};
-      Property<float> remap = {this, "remap", 0.7, has_limits::init(0, 0.99),
-                               steppable::init(0.01)};
+    struct LFOOscProps {
+      Property<float> lfo_speed = {0.5, limits(0, 1), step_size(0.01)};
+      Property<int> wave_pair = {0, limits(0, 0), step_size(1)};
+      Property<float> volume = {1, limits(0, 1), step_size(0.01)};
+      Property<float> remap = {0.7, limits(0, 0.99), step_size(0.01)};
 
       DECL_REFLECTION(LFOOscProps, lfo_speed, wave_pair, volume, remap);
     };
 
-    struct Props : Properties<> {
-      CurveOscProps curve_osc = {this, "curve_osc"};
-      LFOOscProps lfo_osc = {this, "lfo_osc"};
+    struct Props {
+      CurveOscProps curve_osc;
+      LFOOscProps lfo_osc;
 
       DECL_REFLECTION(Props, curve_osc, lfo_osc);
     } props;

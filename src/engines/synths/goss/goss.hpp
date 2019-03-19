@@ -2,7 +2,6 @@
 
 #include "core/engine/engine.hpp"
 
-#include "core/audio/faust.hpp"
 #include "core/voices/voice_manager.hpp"
 
 #include <Gamma/Filter.h>
@@ -19,14 +18,11 @@ namespace otto::engines {
   struct GossSynth : SynthEngine<GossSynth>, EngineWithEnvelope {
     static constexpr std::string_view name = "Goss";
 
-    struct Props : Properties<> {
-      Property<float> drawbar1 = {this, "drawbar1", 1, has_limits::init(0, 1),
-                                  steppable::init(0.01)};
-      Property<float> drawbar2 = {this, "drawbar2", 0.5, has_limits::init(0, 1),
-                                  steppable::init(0.01)};
-      Property<float> drawbar3 = {this, "drawbar3", 0.5, has_limits::init(0, 1),
-                                  steppable::init(0.01)};
-      Property<float> leslie = {this, "leslie", 0.3, has_limits::init(0, 1), steppable::init(0.01)};
+    struct Props {
+      Property<float> drawbar1 = {1, limits(0, 1), step_size(0.01)};
+      Property<float> drawbar2 = {0.5, limits(0, 1), step_size(0.01)};
+      Property<float> drawbar3 = {0.5, limits(0, 1), step_size(0.01)};
+      Property<float> leslie   = {0.3, limits(0, 1), step_size(0.01)};
 
       float rotation_value;
       DECL_REFLECTION(Props, drawbar1, drawbar2, drawbar3, leslie);

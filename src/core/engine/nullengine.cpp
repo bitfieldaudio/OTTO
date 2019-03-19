@@ -10,7 +10,7 @@ namespace otto::core::engine {
   };
 
   NullEngine<EngineType::effect>::NullEngine()
-    : EffectEngine<NullEngine<EngineType::effect>>(props, std::make_unique<OffScreen>())
+    : EffectEngine<NullEngine<EngineType::effect>>(std::make_unique<OffScreen>())
   {}
 
   audio::ProcessData<2> NullEngine<EngineType::effect>::process(audio::ProcessData<1> data) noexcept
@@ -20,7 +20,7 @@ namespace otto::core::engine {
   }
 
   NullEngine<EngineType::arpeggiator>::NullEngine()
-    : ArpeggiatorEngine<NullEngine<EngineType::arpeggiator>>(props, std::make_unique<OffScreen>())
+    : ArpeggiatorEngine<NullEngine<EngineType::arpeggiator>>(std::make_unique<OffScreen>())
   {}
 
   audio::ProcessData<0> NullEngine<EngineType::arpeggiator>::process(
@@ -30,7 +30,7 @@ namespace otto::core::engine {
   }
 
   NullEngine<EngineType::synth>::NullEngine()
-    : SynthEngine<NullEngine<EngineType::synth>>(props, std::make_unique<OffScreen>())
+    : SynthEngine<NullEngine<EngineType::synth>>(std::make_unique<OffScreen>())
   {}
 
   audio::ProcessData<1> NullEngine<EngineType::synth>::process(audio::ProcessData<1> data) noexcept

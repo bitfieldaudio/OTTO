@@ -22,7 +22,7 @@ namespace otto::engines {
   // GossSynth ////////////////////////////////////////////////////////////////
 
   GossSynth::GossSynth()
-    : SynthEngine<GossSynth>(props, std::make_unique<GossSynthScreen>(this)), voice_mgr_(props)
+    : SynthEngine<GossSynth>(std::make_unique<GossSynthScreen>(this)), voice_mgr_(props)
   {}
 
   float GossSynth::Voice::operator()() noexcept

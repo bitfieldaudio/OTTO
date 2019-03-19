@@ -148,6 +148,9 @@
   (action, args, __VA_ARGS__)
 
 
+#define _FIRST_ARG(X, ...) X
+#define FIRST_ARG(...) _FIRST_ARG(__VA_ARGS__, NONE)
+
 // Remove parenthesis if they exist
 #define EXTRACT(...) EXTRACT __VA_ARGS__
 #define NOTHING_EXTRACT

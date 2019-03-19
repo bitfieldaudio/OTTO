@@ -1,8 +1,6 @@
 #pragma once
 
 #include "core/engine/engine.hpp"
-
-#include "core/audio/faust.hpp"
 #include "core/voices/voice_manager.hpp"
 
 #include <Gamma/Envelope.h>
@@ -16,32 +14,26 @@ namespace otto::engines {
 
   struct OTTOFMSynth : SynthEngine<OTTOFMSynth>, EngineWithEnvelope {
     static constexpr std::string_view name = "OTTO.FM";
-    struct OperatorProps : Properties<> {
-      using Properties::Properties;
-      // clang-format off
-      //Envelopes
-      Property<float> feedback                = {this, "feedback",  0,   has_limits::init(0, 0.4),  steppable::init(0.01)};
-      Property<float> mAtt                    = {this, "mAtt",      0.2, has_limits::init(0,    1),  steppable::init(0.01)};
-      Property<float> mDecrel                 = {this, "mDecrel",   0.5, has_limits::init(0,    1),  steppable::init(0.01)};
-      Property<float> mSuspos                 = {this, "mSuspos",   0.5, has_limits::init(0,    1),  steppable::init(0.01)};
-      //Oscillator
-      Property<float> detune                  = {this, "detune",    0,   has_limits::init(-1,   1),  steppable::init(0.01)};
-      Property<int> ratio_idx                 = {this, "ratio_idx", 0,   has_limits::init(0,    18), steppable::init(1)};
-      //Amp
-      Property<float> outLev                  = {this, "outLev",    1,   has_limits::init(0, 1),    steppable::init(0.01)};
-      // clang-format on
+    struct OperatorProps {
+      // Envelopes
+      Property<float> feedback = {0, limits(0, 0.4), step_size(0.01)};
+      Property<float> mAtt = {0.2, limits(0, 1), step_size(0.01)};
+      Property<float> mDecrel = {0.5, limits(0, 1), step_size(0.01)};
+      Property<float> mSuspos = {0.5, limits(0, 1), step_size(0.01)};
+      // Oscillator
+      Property<float> detune = {0, limits(-1, 1), step_size(0.01)};
+      Property<int> ratio_idx = {0, limits(0, 18), step_size(1)};
+      // Amp
+      Property<float> outLev = {1, limits(0, 1), step_size(0.01)};
 
       DECL_REFLECTION(OperatorProps, feedback, mAtt, mDecrel, mSuspos, detune, ratio_idx, outLev);
     };
 
-    struct Props : Properties<> {
-      using Properties<>::Properties;
-      Property<int> algN = {this, "algN", 0, has_limits::init(0, 10), steppable::init(1)};
-      Property<float> fmAmount = {this, "fmAmount", 1, has_limits::init(0, 1),
-                                  steppable::init(0.01)};
+    struct Props {
+      Property<int> algN = {0, limits(0, 10), step_size(1)};
+      Property<float> fmAmount = {1, limits(0, 1), step_size(0.01)};
 
-      std::array<OperatorProps, 4> operators = {
-        {{this, "op0"}, {this, "op1"}, {this, "op2"}, {this, "op3"}}};
+      std::array<OperatorProps, 4> operators;
 
       DECL_REFLECTION(Props, algN, fmAmount, operators);
     } props;

@@ -5,8 +5,6 @@
 #include <engines/synths/goss/goss.hpp>
 #include "core/engine/sequencer.hpp"
 #include "engines/fx/chorus/chorus.hpp"
-#include "engines/fx/pingpong/pingpong.hpp"
-#include "engines/fx/wormhole/wormhole.hpp"
 #include "engines/misc/master/master.hpp"
 #include "engines/seq/euclid/euclid.hpp"
 #include "engines/synths/OTTOFM/ottofm.hpp"
@@ -34,8 +32,6 @@ namespace otto::services {
 
     using EffectsDispatcher = EngineDispatcher< //
       EngineType::effect,
-      engines::Wormhole,
-      engines::Pingpong,
       engines::Chorus>;
     using ArpDispatcher = EngineDispatcher< //
       EngineType::arpeggiator,
@@ -56,15 +52,13 @@ namespace otto::services {
   };
 
   struct EffectSend {
-    struct Props : engines::Properties<> {
-      engines::Property<float> to_FX1 = {this, "to_FX1", 0, engines::has_limits::init(0, 1),
-                                         engines::steppable::init(0.01)};
-      engines::Property<float> to_FX2 = {this, "to_FX2", 0, engines::has_limits::init(0, 1),
-                                         engines::steppable::init(0.01)};
-      engines::Property<float> dry = {this, "dry", 1, engines::has_limits::init(0, 1),
-                                      engines::steppable::init(0.01)};
-      engines::Property<float> dry_pan = {this, "dry_pan", 0, engines::has_limits::init(-1, 1),
-                                          engines::steppable::init(0.01)};
+    struct Props {
+      props::Property<float> to_FX1 = {0, props::limits(0, 1), props::step_size(0.01)};
+      props::Property<float> to_FX2 = {0, props::limits(0, 1), props::step_size(0.01)};
+      props::Property<float> dry = {1, props::limits(0, 1), props::step_size(0.01)};
+      props::Property<float> dry_pan = {0, props::limits(-1, 1), props::step_size(0.01)};
+
+      DECL_REFLECTION(Props, to_FX1, to_FX2, dry, dry_pan);
     } props;
 
     struct Screen : ui::Screen {
@@ -152,12 +146,9 @@ namespace otto::services {
     auto& state_manager = *Application::current().state_manager;
 
     engineGetters.try_emplace("Synth", [&]() { return &synth.current(); });
-    engineGetters.try_emplace("Effect1",
-                              [&]() { return &effect1.current(); });
-    engineGetters.try_emplace("Effect2",
-                              [&]() { return &effect2.current(); });
-    engineGetters.try_emplace("Arpeggiator",
-                              [&]() { return &arpeggiator.current(); });
+    engineGetters.try_emplace("Effect1", [&]() { return &effect1.current(); });
+    engineGetters.try_emplace("Effect2", [&]() { return &effect2.current(); });
+    engineGetters.try_emplace("Arpeggiator", [&]() { return &arpeggiator.current(); });
 
     arpeggiator.init();
     synth.init();

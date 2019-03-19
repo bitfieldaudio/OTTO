@@ -31,7 +31,7 @@ namespace otto::engines {
   // PotionSynth ////////////////////////////////////////////////////////////////
 
   PotionSynth::PotionSynth()
-    : SynthEngine<PotionSynth>(props, std::make_unique<PotionSynthScreen>(this)), voice_mgr_(props)
+    : SynthEngine<PotionSynth>(std::make_unique<PotionSynthScreen>(this)), voice_mgr_(props)
   {}
 
   PotionSynth::Pre::Pre(Props& props) noexcept : PreBase(props)

@@ -18,7 +18,7 @@ namespace otto::engines {
     using EngineScreen<Chorus>::EngineScreen;
   };
 
-  Chorus::Chorus() : EffectEngine<Chorus>(props, std::make_unique<ChorusScreen>(this))
+  Chorus::Chorus() : EffectEngine<Chorus>(std::make_unique<ChorusScreen>(this))
   {
     // Initialize LPF for param smoothening
     lpf.type(gam::SMOOTHING);

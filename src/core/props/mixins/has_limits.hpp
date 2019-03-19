@@ -17,6 +17,12 @@ namespace otto::core::props {
     };
   };
 
+  /// Shorthand for has_limits::init
+  template<typename Min, typename Max>
+  auto limits(const Min& min, const Max& max) {
+    return has_limits::init(min, max);
+  }
+
   OTTO_PROPS_MIXIN_LEAF (has_limits) {
     OTTO_PROPS_MIXIN_DECLS(has_limits);
 
@@ -48,7 +54,7 @@ namespace otto::core::props {
     {
       static_assert(!std::is_enum_v<value_type>,
                     "has_limits::normalize() is unavaliable for enums");
-      auto& prop = dynamic_cast<property_type const&>(*this);
+      auto& prop = static_cast<property_type const&>(*this);
       return (prop.get() - min) / (max - min);
     }
 

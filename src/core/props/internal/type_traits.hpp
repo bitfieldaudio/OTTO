@@ -2,8 +2,6 @@
 
 #include <string>
 
-// #include <range/v3/utility/concepts.hpp>
-
 #include "util/meta.hpp"
 #include "util/type_traits.hpp"
 
@@ -28,14 +26,6 @@ namespace otto::core::props {
 
     template<typename Tag, typename ValueType, typename TagList>
     struct leaf;
-
-    template<typename Tag>
-    struct interface {
-      virtual ~interface() noexcept = default;
-    };
-
-    template<typename Tag>
-    struct branch : virtual branch_base {};
 
     template<typename Tag>
     struct hooks {};
@@ -232,52 +222,6 @@ namespace otto::core::props {
     /// Get mixin type for type `T` and tag `Tag`
     template<typename Tag, typename T, typename TagList>
     using leaf = mixin::leaf<Tag, T, TagList>;
-
-    // Type-erased Interface //
-
-  private:
-    template<typename Tag, typename = void>
-    struct interface_impl {
-      using type = void;
-    };
-
-    template<typename Tag>
-    struct interface_impl<Tag, std::void_t<mixin::interface<Tag>>> {
-      using type = mixin::interface<Tag>;
-    };
-
-  public:
-    /// Get the type-erased interface type for `Tag`
-    ///
-    /// The interface type is a non-templated type which provides functionality
-    /// that can be used in a type-erased context. For example, the
-    /// `serializable` mixin has a `JsonClient` with loader and saver functions
-    /// to use independently from the specific property.
-    ///
-    /// If a mixin provides a type-erased interface, it should have a
-    /// `interface_type& interface()` member function, which returns an instance
-    /// of this type.
-    template<typename Tag>
-    using interface = typename mixin::interface<Tag>;
-
-    /// Check if `Tag` has a type-erased interface
-    ///
-    /// The interface type is a non-templated type which provides functionality
-    /// that can be used in a type-erased context. For example, the
-    /// `serializable` mixin has a `JsonClient` with loader and saver functions
-    /// to use independently from the specific property.
-    ///
-    /// If a mixin provides a type-erased interface, it should have a
-    /// `interface_type& interface()` member function, which returns an instance
-    /// of this type.
-    ///
-    /// If no interface type is provided, this is void.
-    template<typename Tag>
-    constexpr static bool has_interface = !std::is_void_v<interface<Tag>>;
-
-    /// A branch of `Tag`
-    template<typename Tag>
-    using branch = typename mixin::branch<Tag>;
   };
 
   namespace detail {

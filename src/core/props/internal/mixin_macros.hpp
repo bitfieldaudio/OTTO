@@ -15,7 +15,6 @@
   using value_type = ValueType;                                                                    \
   using tag_list = TagList;                                                                        \
   using self_type = leaf<TAG_NAME, value_type, tag_list>;                                          \
-  using interface_type = ::otto::core::props::MixinTag::interface<TAG_NAME>;                       \
   using property_type = ::otto::core::props::PropertyImpl<value_type, tag_list>;                   \
                                                                                                    \
   template<typename Tag>                                                                           \
@@ -77,15 +76,6 @@
     using type = ::otto::core::props::tag_list<__VA_ARGS__>;                                       \
   }
 
-#define OTTO_PROPS_MIXIN_INTERFACE(TAG_NAME)                                                       \
-  template<>                                                                                       \
-  struct otto::core::props::mixin::interface<TAG_NAME>
-
-#define OTTO_PROPS_MIXIN_BRANCH(TAG_NAME)                                                          \
-  template<>                                                                                       \
-  struct otto::core::props::mixin::branch<TAG_NAME>                                                \
-    : virtual otto::core::props::branch_base, otto::core::props::mixin::interface<TAG_NAME>
-
 #define _OTTO_PROPS_MIXIN_HOOK_1(NAME)                                                             \
   struct NAME : ::otto::core::props::mixin::hook<void> {};
 
@@ -131,18 +121,13 @@
 #define OTTO_PROPS_MIXIN_LEAF(TAG_NAME)                                                            \
   template<typename ValueType, typename TagList>                                                   \
   struct otto::core::props::mixin::leaf<TAG_NAME, ValueType, TagList>                              \
-    : otto::core::props::mixin::interface<TAG_NAME>
-
+    
 #define OTTO_PROPS_MIXIN__NAME_REQUIRES(...) REQUIRES
 #define OTTO_PROPS_MIXIN__ARGS_REQUIRES(...) __VA_ARGS__
 #define OTTO_PROPS_MIXIN__NAME_HOOKS(...) HOOKS
 #define OTTO_PROPS_MIXIN__ARGS_HOOKS(...) __VA_ARGS__
-#define OTTO_PROPS_MIXIN__NAME_INTERFACE(...) INTERFACE
-#define OTTO_PROPS_MIXIN__ARGS_INTERFACE(...) __VA_ARGS__
 #define OTTO_PROPS_MIXIN__NAME_LEAF(...) LEAF
 #define OTTO_PROPS_MIXIN__ARGS_LEAF(...) __VA_ARGS__
-#define OTTO_PROPS_MIXIN__NAME_BRANCH(...) BRANCH
-#define OTTO_PROPS_MIXIN__ARGS_BRANCH(...) __VA_ARGS__
 #define OTTO_PROPS_MIXIN__NAME_TAG(...) TAG
 #define OTTO_PROPS_MIXIN__ARGS_TAG(...) __VA_ARGS__
 
@@ -180,13 +165,13 @@
 /// };
 /// ```
 /// This defines the tag type `has_name`, and the type template
-/// `has_name_impl<T>`, which inherits virtually from
-/// [otto::props::PropertyBase<T>]() and `has_value`. Applying this mixin will
+/// `has_name_impl<T>`, which inherits from `has_value`. Applying this mixin will
 /// make the member function `maximum` avaliable to the user, along with any
 /// `has_value` members.
 #define OTTO_PROPS_MIXIN(...)                                                                      \
   /* Call OTTO_PROPS_MIXIN_1 if only 1 argument was provided, and */                               \
   /* OTTO_PROPS_MIXIN_2 if multiple args were provided */                                          \
-  SWITCH_FOR_VARARGS_1(OTTO_PROPS_MIXIN_1, OTTO_PROPS_MIXIN_2, __VA_ARGS__)
+  SWITCH_FOR_VARARGS_1(OTTO_PROPS_MIXIN_1, OTTO_PROPS_MIXIN_2, __VA_ARGS__); \
+  OTTO_PROPS_MIXIN_LEAF(FIRST_ARG(__VA_ARGS__))
 
 #endif // OTTO_PROPS_MIXIN__MACROS_DEFINED

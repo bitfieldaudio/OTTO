@@ -92,10 +92,10 @@ namespace otto::engines {
 
   struct Sampler : SynthEngine<Sampler>, EngineWithEnvelope {
     static constexpr std::string_view name = "Sampler";
-    struct Props : Properties<> {
-      Property<std::string> file = {this, "FILENAME", ""};
-      Property<float> filter = {this, "FILTER", 0, has_limits::init(0, 1), steppable::init(0.01)};
-      Property<float> speed = {this, "SPEED", 1, has_limits::init(-10, 10), steppable::init(0.01)};
+    struct Props {
+      Property<std::string> file = "";
+      Property<float> filter = {0, limits(0, 1), step_size(0.01)};
+      Property<float> speed = {1, limits(-10, 10), step_size(0.01)};
       DECL_REFLECTION(Props, file, filter, speed);
     } props;
 

@@ -25,7 +25,7 @@ namespace otto::engines {
     void rotary(RotaryEvent e) override;
   };
 
-  Sequencer::Sequencer() : MiscEngine<Sequencer>(props, std::make_unique<SequencerScreen>(this))
+  Sequencer::Sequencer() : MiscEngine<Sequencer>(std::make_unique<SequencerScreen>(this))
   {}
 
   std::pair<bool, int> get_sequencer_number(int key)

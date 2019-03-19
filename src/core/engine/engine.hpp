@@ -37,7 +37,7 @@ namespace otto::core::engine {
   ///
   /// Use this when refering to a generic engine
   struct IEngine {
-    IEngine(props::properties_base& props, std::unique_ptr<ui::Screen> screen);
+    IEngine(std::unique_ptr<ui::Screen> screen);
 
     virtual ~IEngine() = default;
 
@@ -111,11 +111,7 @@ namespace otto::core::engine {
     /// [nlohmann::json::exception](), see it for details.
     virtual void from_json(const nlohmann::json& j) = 0;
 
-    props::properties_base& props() noexcept;
-    props::properties_base const& props() const noexcept;
-
   private:
-    props::properties_base& _props;
     std::unique_ptr<ui::Screen> _screen;
     int _current_preset = -1;
   };

@@ -5,8 +5,6 @@
 #include "util/iterator.hpp"
 #include "util/utility.hpp"
 
-#include "master.faust.hpp"
-
 namespace otto::engines {
 
   using namespace ui;
@@ -20,8 +18,7 @@ namespace otto::engines {
   };
 
   Master::Master()
-    : MiscEngine<Master>(props, std::make_unique<MasterScreen>(this)),
-      faust_(std::make_unique<faust_master>(), props)
+    : MiscEngine<Master>(std::make_unique<MasterScreen>(this))
   {}
 
 
@@ -33,7 +30,7 @@ namespace otto::engines {
     for (auto&& r : data.audio[1]) {
       r *= props.volume * props.volume * 0.80;
     }
-    return faust_.process(data);
+    return data;
   }
 
   // SCREEN //

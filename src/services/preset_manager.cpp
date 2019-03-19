@@ -56,7 +56,7 @@ namespace otto::services {
     }
     DLOGI("Applying preset {} to engine {}", name, engine.name());
     int idx = niter - pd_iter->value.names.begin();
-    engine.props().as<core::props::serializable>().from_json(pd_iter->value.data[idx]);
+    engine.from_json(pd_iter->value.data[idx]);
     engine.current_preset(idx);
   }
 
@@ -72,7 +72,7 @@ namespace otto::services {
                       idx, engine.name());
     }
     DLOGI("Applying preset {} to engine {}", pd.names[idx], engine.name());
-    engine.props().as<core::props::serializable>().from_json(pd.data[idx]);
+    engine.from_json(pd.data[idx]);
     engine.current_preset(idx);
   }
 

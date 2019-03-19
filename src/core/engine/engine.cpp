@@ -6,8 +6,8 @@ namespace otto::core::engine {
 
   // IEngine ////////////////////////////////////////////////////////////////
 
-  IEngine::IEngine(props::properties_base& props, std::unique_ptr<ui::Screen> screen)
-    : _props(props), _screen(std::move(screen))
+  IEngine::IEngine(std::unique_ptr<ui::Screen> screen)
+    : _screen(std::move(screen))
   {}
 
   ui::Screen& IEngine::screen() noexcept
@@ -18,16 +18,6 @@ namespace otto::core::engine {
   ui::Screen const& IEngine::screen() const noexcept
   {
     return *_screen;
-  }
-
-  props::properties_base& IEngine::props() noexcept
-  {
-    return _props;
-  }
-
-  props::properties_base const& IEngine::props() const noexcept
-  {
-    return _props;
   }
 
   int IEngine::current_preset() const noexcept
