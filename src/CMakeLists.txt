@@ -5,7 +5,7 @@ file(GLOB_RECURSE sources ${OTTO_SOURCE_DIR}/src/*.cpp)
 
 find_package (Threads)
 # Library
-add_library(otto ${sources} engines/fx/chorus/chorus.cpp core/engine/sequencer.hpp core/engine/sequencer.cpp)
+add_library(otto ${sources} engines/fx/chorus/chorus.cpp core/engine/sequencer.hpp core/engine/sequencer.cpp engines/fx/FDNReverb/FDNReverb.cpp engines/fx/FDNReverb/FDNReverb.hpp)
 target_link_libraries(otto PUBLIC ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
 target_include_directories(otto PUBLIC ./)
 

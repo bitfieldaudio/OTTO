@@ -25,6 +25,7 @@ namespace otto::engines {
       Property<int> ratio_idx = {0, limits(0, 18), step_size(1)};
       // Amp
       Property<float> outLev = {1, limits(0, 1), step_size(0.01)};
+      float current_level = 0;
 
       DECL_REFLECTION(OperatorProps, feedback, mAtt, mDecrel, mSuspos, detune, ratio_idx, outLev);
     };
@@ -60,6 +61,8 @@ namespace otto::engines {
       float freq_ratio;
       float detune_amount;
 
+      float previous_value = 0;
+
       float operator()(float);
 
       void freq(float); /// Set frequency
@@ -84,10 +87,14 @@ namespace otto::engines {
     DECL_REFLECTION(OTTOFMSynth, props, ("voice_manager", &OTTOFMSynth::voice_mgr_));
 
   private:
+    struct Voice;
+
     struct Pre : voices::PreBase<Pre, Props> {
       Pre(Props&) noexcept;
 
       void operator()() noexcept;
+
+      Voice* last_voice = nullptr;
     };
 
     struct Voice : voices::VoiceBase<Voice, Pre> {

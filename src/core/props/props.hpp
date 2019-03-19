@@ -54,11 +54,11 @@ namespace otto::core::props {
   using Property = PropertyImpl<ValueType, meta::_t<get_tag_list<ValueType, Tags...>>>;
 } // namespace otto::core::props
 
-// reflect a property directly to its value type
-// For serialization, this means you get { "property": 13 }
-// instead of { "property": { "value": 13 } }
-
 namespace otto::reflect {
+  // reflect a property directly to its value type
+  // For serialization, this means you get { "property": 13 }
+  // instead of { "property": { "value": 13 } }
+
   template<typename Class, typename ValueType, typename... Tags>
   constexpr auto member(util::string_ref name,
                         util::member_ptr<Class, core::props::Property<ValueType, Tags...>> memptr)

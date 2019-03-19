@@ -10,6 +10,11 @@
 #include <Gamma/Oscillator.h>
 #include <Gamma/SoundFile.h>
 
+// WAV parser by Adam Stark: https://github.com/adamstark/AudioFile
+#include <AudioFile.h>
+#include <Gamma/SamplePlayer.h>
+
+#include "util/filesystem.hpp"
 
 namespace otto::engines {
 
@@ -20,27 +25,38 @@ namespace otto::engines {
   struct PotionSynth : SynthEngine<PotionSynth>, EngineWithEnvelope {
     static constexpr std::string_view name = "Potion";
 
-    struct CurveOscProps {
-      Property<float> curve_length = {0.5, limits(0, 1), step_size(0.01)};
-      Property<int> wave_pair = {0, limits(0, 0), step_size(1)};
-      Property<float> volume = {1, limits(0, 1), step_size(0.01)};
-      Property<float> remap = {0.7, limits(0, 0.99), step_size(0.01)};
+    struct WaveProps {
+      Property<std::string> file = "";
+      Property<float> volume = {0.5, has_limits::init(0, 1), steppable::init(0.01)};
 
-      DECL_REFLECTION(CurveOscProps, curve_length, wave_pair, volume, remap);
+      DECL_REFLECTION(WaveProps, file, volume);
+    };
+
+    struct CurveOscProps {
+      Property<float> curve_length = {0.5, has_limits::init(0, 0.99), steppable::init(0.01)};
+      WaveProps wave1;
+      WaveProps wave2;
+
+      DECL_REFLECTION(CurveOscProps, curve_length, wave1, wave2);
     };
 
     struct LFOOscProps {
-      Property<float> lfo_speed = {0.5, limits(0, 1), step_size(0.01)};
-      Property<int> wave_pair = {0, limits(0, 0), step_size(1)};
-      Property<float> volume = {1, limits(0, 1), step_size(0.01)};
-      Property<float> remap = {0.7, limits(0, 0.99), step_size(0.01)};
+      Property<float> lfo_speed = {0.5, has_limits::init(0, 0.99), steppable::init(0.01)};
+      WaveProps wave1;
+      WaveProps wave2;
 
-      DECL_REFLECTION(LFOOscProps, lfo_speed, wave_pair, volume, remap);
+      DECL_REFLECTION(LFOOscProps, lfo_speed, wave1, wave2);
     };
 
     struct Props {
       CurveOscProps curve_osc;
       LFOOscProps lfo_osc;
+
+      std::array<gam::Array<float>, 4> wavetables;
+      std::array<float, 4> samplerates;
+      std::vector<std::string> filenames;
+      std::array<std::vector<std::string>::iterator, 4> file_it = {
+        {filenames.begin(), filenames.begin(), filenames.begin(), filenames.begin()}};
 
       DECL_REFLECTION(Props, curve_osc, lfo_osc);
     } props;
@@ -60,8 +76,7 @@ namespace otto::engines {
     }
 
     /// Equal-power 2-channel panner (Stereo-to-Mono)
-    class PanSM {
-    public:
+    struct PanSM {
       /// \param[in] pos	Position, in [-1, 1]
       PanSM(float pos = 0)
       {
@@ -72,6 +87,12 @@ namespace otto::engines {
       float operator()(float position, float in1, float in2)
       {
         pos(position);
+        return in1 * w1 + in2 * w2;
+      }
+
+      /// Filter sample (mono to stereo)
+      float operator()(float in1, float in2)
+      {
         return in1 * w1 + in2 * w2;
       }
 
@@ -98,22 +119,22 @@ namespace otto::engines {
     };
 
     struct DualWavePlayer {
-      /// Returns the weighted sum of two wavetables.
       /// These should be external wavetables (in Pre)
-      AudioFile<float>* waves[2];
+      std::array<gam::SamplePlayer<float, gam::ipl::Linear, gam::phsInc::Loop>, 2> waves;
       PanSM pan;
+      float vol0 = 0.5;
+      float vol1 = 0.5;
 
       /// Call operator takes play position and pan value
-      float operator()(float, float) noexcept;
+      float operator()() noexcept;
     };
 
     DECL_REFLECTION(PotionSynth, props, ("voice_manager", &PotionSynth::voice_mgr_));
 
   private:
-    struct Pre : voices::PreBase<Pre, Props> {
-      std::array<AudioFile<float>, 4> wavetables;
-      gam::Osc<> remap_table;
+    void load_wavetable(int, std::string);
 
+    struct Pre : voices::PreBase<Pre, Props> {
       Pre(Props&) noexcept;
       void operator()() noexcept;
     };
@@ -121,12 +142,9 @@ namespace otto::engines {
     struct Voice : voices::VoiceBase<Voice, Pre> {
       gam::LFO<> lfo;
       gam::Decay<> curve;
-      gam::Sweep<> phase;
 
       DualWavePlayer curve_osc;
       DualWavePlayer lfo_osc;
-
-      float remapping(float, float);
 
       Voice(Pre&) noexcept;
       float operator()() noexcept;
@@ -140,5 +158,6 @@ namespace otto::engines {
     };
 
     voices::VoiceManager<Post, 6> voice_mgr_;
+    friend struct PotionSynthScreen;
   };
 } // namespace otto::engines

@@ -97,20 +97,22 @@ namespace otto::core::voices {
       envelope_props.release.on_change().connect(
         [&voice](float release) { voice.env_.release(release); });
     }
-    settings_props.play_mode.on_change().connect([this](PlayMode mode) {
-      util::for_each(voices_, &Voice::release);
-      note_stack.clear();
-      free_voices.clear();
+    settings_props.play_mode.on_change()
+      .connect([this](PlayMode mode) {
+        util::for_each(voices_, &Voice::release);
+        note_stack.clear();
+        free_voices.clear();
 
-      switch (mode) {
-      case PlayMode::unison:
-        // TODO: Can not be implemented this way
-        [[fallthrough]];
-      case PlayMode::mono: free_voices.push_back(&voices_[0]); break;
-      case PlayMode::poly:
-        for (auto& voice : voices_) free_voices.push_back(&voice);
-      }
-    }).call_now(settings_props.play_mode);
+        switch (mode) {
+        case PlayMode::unison:
+          // TODO: Can not be implemented this way
+          [[fallthrough]];
+        case PlayMode::mono: free_voices.push_back(&voices_[0]); break;
+        case PlayMode::poly:
+          for (auto& voice : voices_) free_voices.push_back(&voice);
+        }
+      })
+      .call_now(settings_props.play_mode);
   }
 
   template<typename V, int N>
@@ -196,8 +198,8 @@ namespace otto::core::voices {
   auto VoiceManager<V, N>::stop_voice(int key) noexcept -> Voice*
   {
     auto free_voice = [this](Voice& v) {
-      auto found =
-        std::find_if(note_stack.rbegin(), note_stack.rend(), [](auto nvp) { return !nvp.has_voice(); });
+      auto found = std::find_if(note_stack.rbegin(), note_stack.rend(),
+                                [](auto nvp) { return !nvp.has_voice(); });
       if (found != note_stack.rend()) {
         found->voice = &v;
         // TODO: Restore original velocity
@@ -220,6 +222,12 @@ namespace otto::core::voices {
     });
     note_stack.erase(it, note_stack.end());
     return res;
+  }
+
+  template<typename V, int N>
+  auto VoiceManager<V, N>::voices() -> std::array<Voice, voice_count>&
+  {
+    return voices_;
   }
 
   namespace details {
