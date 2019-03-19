@@ -1,5 +1,3 @@
-#pragma once
-
 #include "transpose.hpp"
 
 namespace otto::dsp {
