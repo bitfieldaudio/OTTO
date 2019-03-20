@@ -11,7 +11,7 @@ namespace otto::core::props {
     SECTION ("Basic mixin tests") {
       // Test the tags of a property
 
-      Property<float, no_defaults, steppable> pf = {nullptr, "pf", 0};
+      Property<float, no_defaults, steppable> pf =0;
 
       OTTO_META_ASSERT_EQUAL(decltype(pf)::tag_list, meta::_t<normalize_tags<tag_list<steppable>>>);
 
@@ -23,9 +23,9 @@ namespace otto::core::props {
       float f = pf;
     }
 
-    struct Props : Properties<> {
-      Property<float, no_defaults, steppable, has_limits, faust_link> pf1 = {this, "", 0.f};
-      Property<float, steppable, faust_link> pf2 = {this, "", 1.f};
+    struct Props {
+      Property<float, no_defaults, steppable, has_limits> pf1 = 0.f;
+      Property<float, steppable> pf2 = 1.f;
 
       Props()
       {
@@ -47,7 +47,7 @@ namespace otto::core::props {
     REQUIRE(props.pf1 == 5.f);
 
     SECTION ("on_change hooks") {
-      Property<float> pf = {nullptr, "pf", 0};
+      Property<float> pf = 0;
       bool ran = false;
       pf.on_change().connect([&](float f) {
         REQUIRE(f == 10);
@@ -62,40 +62,25 @@ namespace otto::core::props {
 
 namespace otto::core::props {
 
-  Property<float, steppable, has_limits, serializable> property = {nullptr, "property", 0};
+  Property<float, steppable, has_limits> property = 0;
 
-  struct Props : Properties<serializable> {
-    Property<float, serializable> prop1 = {this, "prop1", 0};
-    Property<float, serializable> prop2 = {this, "prop2", 4};
+  struct Props {
+    Property<float> prop1 = 0;
+    Property<float> prop2 = 4;
 
   } props;
 
 
   TEST_CASE ("Property conversions", "[props]") {
-    auto& pb = static_cast<property_base&>(property);
-    REQUIRE(&pb == &property);
-
     const float& val = static_cast<const float&>(property);
     REQUIRE(&val == &property.get());
   }
 
-  TEST_CASE ("serializable", "[props]") {
-    REQUIRE(props.prop1.to_json() == 0.f);
-    REQUIRE(props.prop2.to_json() == 4.f);
-    auto expct = nlohmann::json{{"prop1", 0.f}, {"prop2", 4.f}};
-    auto& interface = props.as<serializable>();
-    REQUIRE(props.name() == "");
-    auto got = interface.to_json();
-    REQUIRE(got == expct);
-  }
-
   TEST_CASE ("has_limits", "[props]") {
-    Property<float, steppable, has_limits, serializable> pp = {
-      nullptr,
-      "",
+    Property<float, steppable, has_limits> pp = {
       0,
-      has_limits::init(1, 5), //
-      steppable::init(1.5f),  //
+      has_limits::init(1, 5),
+      steppable::init(1.5f),
     };
 
     REQUIRE(pp.min == 1.f);
@@ -125,7 +110,7 @@ namespace otto::core::props {
   }
 
   TEST_CASE ("wrap", "[props]") {
-    Property<int, wrap> prop = {nullptr, "prop", 0, has_limits::init(-2, 2)};
+    Property<int, wrap> prop = {0, has_limits::init(-2, 2)};
 
     REQUIRE(prop == 0);
     prop.set(1);

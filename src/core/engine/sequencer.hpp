@@ -3,19 +3,21 @@
 #include <core/props/props.hpp>
 #include "core/props/props.hpp"
 #include "engine.hpp"
-#include "engines/synths/sampler/sampler.hpp"
-#include "util/filesystem.hpp"
+
+#include "engines/synths/gammasampler/gammasampler.hpp"
 
 namespace otto::engines {
 
   using namespace otto::core;
   using namespace otto::core::props;
 
-  struct Sequencer : engine::MiscEngine {
+  struct Sequencer : engine::MiscEngine<Sequencer> {
+    static constexpr util::string_ref name = "Sequencer";
     static constexpr int number_of_channels = 10;
     int current_channel = 0;
 
-    struct Props : Properties<> {
+    struct Props {
+      DECL_REFLECTION_EMPTY();
     } props;
 
     struct Channel {

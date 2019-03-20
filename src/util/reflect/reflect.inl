@@ -2,9 +2,9 @@
 #include <cstring>
 #include <tuple>
 
-#include "Member.h"
-#include "detail/MetaHolder.h"
-#include "detail/template_helpers.h"
+#include "member.hpp"
+#include "detail/meta_holder.hpp"
+#include "detail/template_helpers.hpp"
 
 namespace otto::reflect {
 
@@ -28,9 +28,9 @@ namespace otto::reflect {
   // {
   //     return "";
   // }
-
+  // 
   template<typename Class>
-  constexpr std::string_view get_name()
+  constexpr util::string_ref get_name()
   {
     return detail::MetaHolder<Class, decltype(register_members<Class>())>::name();
   }
@@ -47,10 +47,16 @@ namespace otto::reflect {
     return detail::MetaHolder<Class, decltype(register_members<Class>())>::members;
   }
 
+  template<typename T, typename = void>
+  struct _is_registered : std::false_type {};
+
+  template<typename T>
+  struct _is_registered<T, std::void_t<decltype(register_members<T>())>> : std::true_type {};
+
   template<typename Class>
   constexpr bool is_registered()
   {
-    return !std::is_same<std::tuple<>, decltype(register_members<Class>())>::value;
+    return _is_registered<Class>::value;
   }
 
   // Check if Class has non-default ctor registered
@@ -114,3 +120,5 @@ namespace otto::reflect {
   }
 
 } // namespace otto::reflect
+
+// kak: other_file=reflect.hpp

@@ -1,13 +1,11 @@
 #pragma once
 
 #include "core/engine/engine.hpp"
-
-#include "core/audio/faust.hpp"
 #include "core/voices/voice_manager.hpp"
 
 #include <Gamma/Filter.h>
-#include <Gamma/Oscillator.h>
 #include <Gamma/Noise.h>
+#include <Gamma/Oscillator.h>
 
 namespace otto::engines {
 
@@ -15,19 +13,15 @@ namespace otto::engines {
   using namespace core::engine;
   using namespace props;
 
-  struct RhodesSynth : SynthEngine, EngineWithEnvelope {
-    static constexpr std::string_view name = "Rhodes";
-    struct Props : Properties<> {
+  struct RhodesSynth : SynthEngine<RhodesSynth>, EngineWithEnvelope {
+    static constexpr util::string_ref name = "Rhodes";
+    struct Props {
+      Property<float> aggro = {1, limits(0.5, 1), step_size(0.01)};
+      Property<float> asymmetry = {1, limits(1, 3), step_size(0.05)};
+      Property<float> lfo_speed = {0.1, limits(0, 1), step_size(0.01)};
+      Property<float> lfo_depth = {0.1, limits(0, 1), step_size(0.01)};
 
-        Property<float> aggro    = {this, "pickup", 1, has_limits::init(0.5, 1),
-                                     steppable::init(0.01)};
-        Property<float> asymmetry      = {this, "asymmetry", 1, has_limits::init(1, 3),
-                                     steppable::init(0.05)};
-        Property<float> lfo_speed = {this, "lfo_speed", 0.1, has_limits::init(0, 1),
-                                     steppable::init(0.01)};
-        Property<float> lfo_depth = {this, "lfo_depth", 0.1, has_limits::init(0, 1),
-                                     steppable::init(0.01)};
-
+      DECL_REFLECTION(Props, aggro, asymmetry, lfo_speed, lfo_depth);
     } props;
 
     RhodesSynth();
@@ -44,9 +38,10 @@ namespace otto::engines {
       return voice_mgr_.settings_screen();
     }
 
+    DECL_REFLECTION(RhodesSynth, props, ("voice_manager", &RhodesSynth::voice_mgr_));
+
   private:
     struct Pre : voices::PreBase<Pre, Props> {
-
       Pre(Props&) noexcept;
 
       void operator()() noexcept;

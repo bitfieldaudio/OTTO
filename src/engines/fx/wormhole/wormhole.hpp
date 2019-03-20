@@ -1,28 +1,28 @@
 #pragma once
 
 #include "core/engine/engine.hpp"
+#include "core/voices/voice_manager.hpp"
 
-#include "core/audio/faust.hpp"
+#include "util/dsp/transpose.hpp"
 
+constexpr unsigned num_taps = 4;
+
+/// Reverb Engine
 namespace otto::engines {
 
   using namespace core;
   using namespace core::engine;
   using namespace props;
 
-  struct Wormhole : EffectEngine {
-    static constexpr std::string_view name = "Wormhole";
+  struct Wormhole : EffectEngine<Wormhole> {
+    static constexpr util::string_ref name = "Wormhole";
+    struct Props {
+      Property<float> filter = {0, limits(0, 1), step_size(0.01)};
+      Property<float> shimmer = {0, limits(0, 1), step_size(0.01)};
+      Property<float> length = {0.5, limits(0, 1), step_size(0.01)};
+      Property<float> damping = {0.4, limits(0, 0.99), step_size(0.01)};
 
-    struct Props : Properties<faust_link> {
-      Property<float, faust_link> spread = {this, "SPREAD", 0, has_limits::init(0, 1),
-                                            steppable::init(0.01)};
-      Property<float, faust_link> shimmer = {this, "SHIMMER", 0, has_limits::init(0, 0.8),
-                                             steppable::init(0.01)};
-      Property<float, faust_link> length = {this, "LENGTH", 0.5, has_limits::init(0, 1),
-                                            steppable::init(0.01)};
-      Property<float, faust_link> shape = {this, "SHAPE", 1, has_limits::init(0, 2),
-                                           steppable::init(0.01)};
-
+      DECL_REFLECTION(Props, filter, shimmer, length, damping);
     } props;
 
     Wormhole();
@@ -30,7 +30,14 @@ namespace otto::engines {
     audio::ProcessData<2> process(audio::ProcessData<1>) override;
 
   private:
-    audio::FaustWrapper<1, 2> faust_;
+    float last_sample = 0;
+    float shimmer_amount = 0;
+    gam::ReverbMS<> reverb;
+    dsp::SimplePitchShift pitchshifter;
+    std::array<gam::Delay<>, 2> output_delay;
+    gam::Biquad<> shimmer_filter;
+    gam::BlockDC<> dc_block;
+    gam::Biquad<> pre_filter;
   };
 
 } // namespace otto::engines

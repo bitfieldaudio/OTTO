@@ -22,9 +22,6 @@ namespace otto::core::voices {
   struct PreBase : util::crtp<DerivedT, PreBase<DerivedT, PropsT>> {
     using Props = PropsT;
 
-    static_assert(std::is_base_of_v<props::properties_base, Props>,
-                  "PreBase<Derived, Props>: Props must be a Properties<> subclass");
-
     /// Constructor
     PreBase(Props& p) noexcept;
 
@@ -144,34 +141,23 @@ namespace otto::core::voices {
     /// @return an all-lowercase string corresponding to the enum name
     std::string to_string(PlayMode) noexcept;
 
-    struct EnvelopeProps : props::Properties<> {
-      props::Property<float> attack = {this, "Attack", 0, props::has_limits::init(0, 8),
-                                       props::steppable::init(0.02)};
+    struct EnvelopeProps {
+      props::Property<float> attack = {0, props::limits(0, 1), props::step_size(0.02)};
+      props::Property<float> decay = {0, props::limits(0, 1), props::step_size(0.02)};
+      props::Property<float> sustain = {1, props::limits(0, 1), props::step_size(0.02)};
+      props::Property<float> release = {0.2, props::limits(0, 1), props::step_size(0.02)};
 
-      props::Property<float> decay = {this, "Decay", 0, props::has_limits::init(0, 4),
-                                      props::steppable::init(0.02)};
-
-      props::Property<float> sustain = {this, "Sustain", 1, props::has_limits::init(0, 1),
-                                        props::steppable::init(0.02)};
-
-      props::Property<float> release = {this, "Release", 0.2, props::has_limits::init(0, 6),
-                                        props::steppable::init(0.02)};
-
-      using Properties::Properties;
+      DECL_REFLECTION(EnvelopeProps, attack, decay, sustain, release);
     };
 
-    struct SettingsProps : props::Properties<> {
+    struct SettingsProps {
       props::Property<PlayMode, props::wrap> play_mode = {
-        this, "Play Mode", PlayMode::poly,
-        props::has_limits::init(PlayMode::poly, PlayMode::unison)};
+        PlayMode::poly, props::limits(PlayMode::poly, PlayMode::unison)};
+      props::Property<float> portamento = {0, props::limits(0, 1), props::step_size(0.01)};
+      props::Property<int> octave = {0, props::limits(-2, 7)};
+      props::Property<int> transpose = {0, props::limits(-12, 12)};
 
-      props::Property<float> portamento = {this, "Portamento", 0, props::has_limits::init(0, 1),
-                                           props::steppable::init(0.01)};
-
-      props::Property<int> octave = {this, "Octave", 0, props::has_limits::init(-2, 7)};
-
-      props::Property<int> transpose = {this, "Transpose", 0, props::has_limits::init(-12, 12)};
-      using Properties::Properties;
+      DECL_REFLECTION(SettingsProps, play_mode, portamento, octave, transpose);
     };
 
     std::unique_ptr<ui::Screen> make_envelope_screen(EnvelopeProps& props);
@@ -222,6 +208,13 @@ namespace otto::core::voices {
     /// Process audio, applying Preprocessing, each voice and then postprocessing
     audio::ProcessData<1> process(audio::ProcessData<1> data) noexcept;
 
+    /// Return list of voices
+    std::array<Voice, voice_count>& voices();
+
+    DECL_REFLECTION(VoiceManager,
+                    ("envelope", &VoiceManager::envelope_props),
+                    ("voice_settings", &VoiceManager::settings_props));
+
   private:
     Voice& get_voice(int key) noexcept;
     Voice* stop_voice(int key) noexcept;
@@ -245,17 +238,18 @@ namespace otto::core::voices {
       util::generate_array<voice_count>([this](auto) { return Voice{pre}; });
     Post post = {pre};
 
-    EnvelopeProps envelope_props = {&props, "envelope"};
-    SettingsProps settings_props = {&props, "voice_settings"};
+    EnvelopeProps envelope_props;
+    SettingsProps settings_props;
 
     std::unique_ptr<ui::Screen> envelope_screen_ = details::make_envelope_screen(envelope_props);
     std::unique_ptr<ui::Screen> settings_screen_ = details::make_settings_screen(settings_props);
     PlayMode play_mode = PlayMode::mono;
+
   }; // namespace otto::core::voices
 
 } // namespace otto::core::voices
 
 // Implementation
-#include "voice_manager.impl.hpp"
+#include "voice_manager.inl"
 
-// kak: other_file=voice_manager.impl.hpp
+// kak: other_file=voice_manager.inl

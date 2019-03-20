@@ -1,0 +1,56 @@
+{
+  "engine": "OTTO.FM",
+  "name": "Preset1",
+  "props": {
+    "algN": 3,
+    "envelope": {
+      "Attack": 2.59999823570251,
+      "Decay": 4.0,
+      "Release": 2.51999831199646,
+      "Sustain": 0.280000358819962
+    },
+    "fmAmount": 1.0,
+    "op0": {
+      "detune": 0.00999999977648258,
+      "feedback": 0.0,
+      "mAtt": 0.220000699162483,
+      "mDecrel": 0.5,
+      "mSuspos": 0.559999942779541,
+      "outLev": 1.0,
+      "ratio_idx": 18
+    },
+    "op1": {
+      "detune": 0.0,
+      "feedback": 0.0,
+      "mAtt": 0.0,
+      "mDecrel": 0.62000036239624,
+      "mSuspos": 1.0,
+      "outLev": 0.859999477863312,
+      "ratio_idx": 18
+    },
+    "op2": {
+      "detune": 0.0,
+      "feedback": 0.00999999977648258,
+      "mAtt": 0.00999999977648258,
+      "mDecrel": 1.0,
+      "mSuspos": 0.120000176131725,
+      "outLev": 0.81000018119812,
+      "ratio_idx": 2
+    },
+    "op3": {
+      "detune": 0.0,
+      "feedback": 0.140000090003014,
+      "mAtt": 0.740000247955322,
+      "mDecrel": 0.949999570846558,
+      "mSuspos": 0.480000019073486,
+      "outLev": 0.0,
+      "ratio_idx": 0
+    },
+    "voice_settings": {
+      "Octave": 1,
+      "Play Mode": 0,
+      "Portamento": 0.00999999977648258,
+      "Transpose": 0
+    }
+  }
+}

@@ -12,6 +12,12 @@ namespace otto::core::props {
 
   OTTO_PROPS_MIXIN(steppable, HOOKS((on_step, value_type)));
 
+  /// Shorthand for steppable::init(ss)
+  template<typename VT>
+  auto step_size(const VT& ss) {
+    return steppable::init(ss);
+  }
+
   OTTO_PROPS_MIXIN_LEAF (steppable) {
     OTTO_PROPS_MIXIN_DECLS(steppable);
 
@@ -26,7 +32,7 @@ namespace otto::core::props {
 
     void step(int n = 1)
     {
-      auto& prop = dynamic_cast<property_type&>(*this);
+      auto& prop = static_cast<property_type&>(*this);
       _current_step_count = n;
       auto new_value = run_hook<hooks::on_step>([&] () -> value_type {
         if constexpr (std::is_same_v<bool, value_type>) {

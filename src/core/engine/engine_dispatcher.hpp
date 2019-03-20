@@ -14,10 +14,10 @@ namespace otto::core::engine {
     virtual IEngine& current() = 0;
     virtual const IEngine& current() const = 0;
     virtual int current_idx() const = 0;
-    virtual IEngine& select(std::string_view name) = 0;
+    virtual IEngine& select(util::string_ref name) = 0;
     virtual IEngine& select(int index) = 0;
 
-    virtual std::vector<std::string_view> make_name_list() const = 0;
+    virtual std::vector<util::string_ref> make_name_list() const = 0;
 
     virtual ~IEngineDispatcher() = default;
 
@@ -33,9 +33,9 @@ namespace otto::core::engine {
     using exception = util::as_exception<ErrorCode>;
 
     static constexpr const EngineType engine_type = ET;
-    using Engine = engine::Engine<ET>;
-    using variant = util::variant_w_base<Engine, Engines...>;
-    using DataMap = foonathan::array::flat_map<std::string_view, nlohmann::json>;
+    using ITypedEngine = engine::ITypedEngine<ET>;
+    using variant = util::variant_w_base<ITypedEngine, Engines...>;
+    using DataMap = foonathan::array::flat_map<util::string_ref, nlohmann::json>;
 
     // Initialization
     EngineDispatcher(bool allow_off) : IEngineDispatcher(allow_off) {}
@@ -46,28 +46,28 @@ namespace otto::core::engine {
     void init();
 
     /// Access the currently selected engine
-    Engine& current() noexcept override;
-    const Engine& current() const noexcept override;
+    ITypedEngine& current() noexcept override;
+    const ITypedEngine& current() const noexcept override;
     int current_idx() const noexcept override;
 
     /// Access the currently selected engine
-    Engine const* operator->() const noexcept;
+    ITypedEngine const* operator->() const noexcept;
     /// Access the currently selected engine
-    Engine* operator->() noexcept;
+    ITypedEngine* operator->() noexcept;
 
     /// Select engine by name
     ///
     /// \effects Find engine with name `name`, and `select(engine)`
     /// \throws `util::exception` when no matching engine was found
-    Engine& select(std::string_view name) override;
+    ITypedEngine& select(util::string_ref name) override;
 
     /// Select engine by index
     /// 
     /// If `index` is < 0, and `allow_off`, select the null engine.
     /// @throws `util::exception` when `index` is out of bounds
-    Engine& select(int index) override;
+    ITypedEngine& select(int index) override;
 
-    std::vector<std::string_view> make_name_list() const override;
+    std::vector<util::string_ref> make_name_list() const override;
 
     /// Access the screen used to select engines/presets
     ///
@@ -84,9 +84,9 @@ namespace otto::core::engine {
     DataMap _engine_data;
     NullEngine<ET> _null_engine;
     variant _engine_storage = std::in_place_index_t<0>();
-    Engine* _current = &_null_engine;
+    ITypedEngine* _current = &_null_engine;
     std::unique_ptr<ui::Screen> _selector_screen = nullptr;
   };
 } // namespace otto::core::engine
 
-// kak: other_file=engine_dispatcher.impl.hpp
+// kak: other_file=engine_dispatcher.inl

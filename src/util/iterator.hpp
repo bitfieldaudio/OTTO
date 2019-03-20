@@ -1069,6 +1069,8 @@ namespace otto::util {
       WrappedIter last;
       std::shared_ptr<Predicate> callable;
     };
+
+
   } // namespace iterator
 
   namespace view {

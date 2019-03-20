@@ -1,17 +1,18 @@
 #include "engine_manager.hpp"
 #include "core/engine/engine_dispatcher.hpp"
-#include "core/engine/engine_dispatcher.impl.hpp"
+#include "core/engine/engine_dispatcher.inl"
 
 #include <engines/synths/goss/goss.hpp>
+#include <engines/synths/potion/potion.hpp>
 #include "core/engine/sequencer.hpp"
 #include "engines/fx/chorus/chorus.hpp"
-#include "engines/fx/pingpong/pingpong.hpp"
 #include "engines/fx/wormhole/wormhole.hpp"
 #include "engines/misc/master/master.hpp"
+#include "engines/misc/sends/sends.hpp"
 #include "engines/seq/euclid/euclid.hpp"
 #include "engines/synths/OTTOFM/ottofm.hpp"
+#include "engines/synths/potion/potion.hpp"
 #include "engines/synths/rhodes/rhodes.hpp"
-#include "engines/synths/sampler/sampler.hpp"
 
 #include "services/application.hpp"
 
@@ -35,7 +36,6 @@ namespace otto::services {
     using EffectsDispatcher = EngineDispatcher< //
       EngineType::effect,
       engines::Wormhole,
-      engines::Pingpong,
       engines::Chorus>;
     using ArpDispatcher = EngineDispatcher< //
       EngineType::arpeggiator,
@@ -44,6 +44,7 @@ namespace otto::services {
       EngineType::synth,
       engines::GossSynth,
       engines::RhodesSynth,
+      engines::PotionSynth,
       engines::OTTOFMSynth>;
 
     SynthDispatcher synth{false};
@@ -51,95 +52,11 @@ namespace otto::services {
     EffectsDispatcher effect1{true};
     EffectsDispatcher effect2{true};
 
+    engines::Sends synth_send;
+    engines::Sends line_in_send;
     engines::Master master;
     // engines::Sequencer sequencer;
   };
-
-  struct EffectSend {
-    struct Props : engines::Properties<> {
-      engines::Property<float> to_FX1 = {this, "to_FX1", 0, engines::has_limits::init(0, 1),
-                                         engines::steppable::init(0.01)};
-      engines::Property<float> to_FX2 = {this, "to_FX2", 0, engines::has_limits::init(0, 1),
-                                         engines::steppable::init(0.01)};
-      engines::Property<float> dry = {this, "dry", 1, engines::has_limits::init(0, 1),
-                                      engines::steppable::init(0.01)};
-      engines::Property<float> dry_pan = {this, "dry_pan", 0, engines::has_limits::init(-1, 1),
-                                          engines::steppable::init(0.01)};
-    } props;
-
-    struct Screen : ui::Screen {
-      Screen(EffectSend& owner) : _owner(owner) {}
-      EffectSend& _owner;
-
-      void draw(core::ui::vg::Canvas& ctx) override;
-      void rotary(core::ui::RotaryEvent e) override;
-    } screen = {*this};
-  };
-
-  void EffectSend::Screen::draw(core::ui::vg::Canvas& ctx)
-  {
-    using namespace core::ui::vg;
-    ctx.font(Fonts::Norm, 35);
-
-    constexpr float x_pad = 30;
-
-    constexpr float y_pad = 50;
-    constexpr float space = (height - 2.f * y_pad) / 3.f;
-    ctx.beginPath();
-
-    ctx.fillStyle(Colours::Blue);
-    ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
-    ctx.fillText("To FX1", {x_pad, y_pad});
-    ctx.beginPath();
-
-    ctx.fillStyle(Colours::Blue);
-    ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:1.2}", _owner.props.to_FX1), {width - x_pad, y_pad});
-    ctx.beginPath();
-
-    ctx.fillStyle(Colours::Green);
-    ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
-    ctx.fillText("To FX2", {x_pad, y_pad + space});
-    ctx.beginPath();
-
-    ctx.fillStyle(Colours::Green);
-    ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:1.2}", _owner.props.to_FX2), {width - x_pad, y_pad + space});
-    ctx.beginPath();
-
-    ctx.fillStyle(Colours::Yellow);
-    ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
-    ctx.fillText("Dry", {x_pad, y_pad + 2 * space});
-    ctx.beginPath();
-
-    ctx.fillStyle(Colours::Yellow);
-    ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:1.2}", _owner.props.dry), {width - x_pad, y_pad + 2 * space});
-    ctx.beginPath();
-
-    ctx.fillStyle(Colours::Red);
-    ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
-    ctx.fillText("Pan", {x_pad, y_pad + 3 * space});
-    ctx.beginPath();
-
-    ctx.fillStyle(Colours::Red);
-    ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:1.2}", _owner.props.dry_pan), {width - x_pad, y_pad + 3 * space});
-  }
-  void EffectSend::Screen::rotary(core::ui::RotaryEvent e)
-  {
-    switch (e.rotary) {
-    case otto::core::ui::Rotary::blue: _owner.props.to_FX1.step(e.clicks); break;
-    case otto::core::ui::Rotary::green: _owner.props.to_FX2.step(e.clicks); break;
-    case otto::core::ui::Rotary::yellow: _owner.props.dry.step(e.clicks); break;
-    case otto::core::ui::Rotary::red: _owner.props.dry_pan.step(e.clicks); break;
-    }
-  }
-
-  EffectSend synth_send;
-  EffectSend line_in_send;
-
-
 
   std::unique_ptr<EngineManager> EngineManager::create_default()
   {
@@ -152,17 +69,9 @@ namespace otto::services {
     auto& state_manager = *Application::current().state_manager;
 
     engineGetters.try_emplace("Synth", [&]() { return &synth.current(); });
-    engineGetters.try_emplace("Effect1",
-                              [&]() { return &effect1.current(); });
-    engineGetters.try_emplace("Effect2",
-                              [&]() { return &effect2.current(); });
-    engineGetters.try_emplace("Arpeggiator",
-                              [&]() { return &arpeggiator.current(); });
-
-    arpeggiator.init();
-    synth.init();
-    effect1.init();
-    effect2.init();
+    engineGetters.try_emplace("Effect1", [&]() { return &effect1.current(); });
+    engineGetters.try_emplace("Effect2", [&]() { return &effect2.current(); });
+    engineGetters.try_emplace("Arpeggiator", [&]() { return &arpeggiator.current(); });
 
     ui_manager.register_key_handler(ui::Key::arpeggiator, [&](ui::Key k) {
       if (ui_manager.is_pressed(ui::Key::shift)) {
@@ -187,6 +96,7 @@ namespace otto::services {
         if (ui_manager.is_pressed(ui::Key::shift)) {
           ui_manager.display(owner->voices_screen());
         } else {
+          ui_manager.select_engine("Synth");
           ui_manager.display(owner->envelope_screen());
         }
       }
@@ -237,7 +147,7 @@ namespace otto::services {
                                       send_last_screen = ui_manager.current_screen();
                                       if (ui_manager.selected_engine_name() == "Arpeggiator" ||
                                           ui_manager.selected_engine_name() == "Synth")
-                                        ui_manager.display(synth_send.screen);
+                                        ui_manager.display(synth_send.screen());
                                     },
                                     [&](ui::Key k) {
                                       if (send_last_screen) ui_manager.display(*send_last_screen);
@@ -262,7 +172,13 @@ namespace otto::services {
     state_manager.attach("Engines", load, save);
   }
 
-  void DefaultEngineManager::start() {}
+  void DefaultEngineManager::start()
+  {
+    arpeggiator.init();
+    synth.init();
+    effect1.init();
+    effect2.init();
+  }
 
   audio::ProcessData<2> DefaultEngineManager::process(audio::ProcessData<1> external_in)
   { // Main processor function

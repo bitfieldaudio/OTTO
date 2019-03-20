@@ -17,7 +17,6 @@ namespace otto::services {
 
   void AudioManager::start() noexcept
   {
-    gam::sampleRate(samplerate());
     _running = true;
   }
 

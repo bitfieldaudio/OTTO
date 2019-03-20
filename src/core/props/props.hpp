@@ -5,6 +5,7 @@
 
 #include "internal/property.hpp"
 #include "mixins/all.hpp"
+#include "util/serialize.hpp"
 
 /// The property system
 ///
@@ -19,50 +20,56 @@ namespace otto::core::props {
   template<typename T, typename Enable>
   struct default_mixins {
     using type = std::conditional_t<std::is_enum_v<T>,
-                                    tag_list<serializable, change_hook, has_limits, steppable>,
-                                    tag_list<serializable, change_hook>>;
+                                    tag_list<change_hook, has_limits, steppable>,
+                                    tag_list<change_hook>>;
   };
 
   template<>
   struct default_mixins<int> {
-    using type = tag_list<serializable, change_hook, has_limits, steppable>;
+    using type = tag_list<change_hook, has_limits, steppable>;
   };
 
   template<>
   struct default_mixins<bool> {
-    using type = tag_list<serializable, change_hook, steppable>;
+    using type = tag_list<change_hook, steppable>;
   };
 
   template<>
   struct default_mixins<float> {
-    using type = tag_list<serializable, change_hook, has_limits, steppable>;
+    using type = tag_list<change_hook, has_limits, steppable>;
   };
 
   template<>
   struct default_mixins<double> {
-    using type = tag_list<serializable, change_hook, has_limits, steppable>;
+    using type = tag_list<change_hook, has_limits, steppable>;
   };
 
   // Void is for branches
   template<>
   struct default_mixins<void> {
-    using type = tag_list<serializable>;
+    using type = tag_list<>;
   };
 
   /// A property of type `ValueType` with mixins `Tags...`
   template<typename ValueType, typename... Tags>
   using Property = PropertyImpl<ValueType, meta::_t<get_tag_list<ValueType, Tags...>>>;
 
-  template<typename... Tags>
-  struct Properties : meta::_t<detail::properties_for_list<meta::_t<get_tag_list<void, Tags...>>>> {
-    /// \private
-    using Super = meta::_t<detail::properties_for_list<meta::_t<get_tag_list<void, Tags...>>>>;
+  template<typename ValueType, typename... Tags>
+  inline nlohmann::json serialize(const core::props::Property<ValueType, Tags...>& prop)
+  {
+    using ::otto::util::serialize;
+    return serialize(prop.get());
+  }
 
-    using typename Super::tag_list;
-
-    /// \private
-    using Super::Super;
-  };
-
-  using no_serialize = no<serializable>;
+  template<typename ValueType, typename... Tags>
+  inline void deserialize(core::props::Property<ValueType, Tags...>& prop,
+                          const nlohmann::json& json)
+  {
+    using ::otto::util::deserialize;
+    static_assert(std::is_default_constructible_v<ValueType>,
+                  "A property type must be default constructible to be deserializable");
+    ValueType v{};
+    deserialize(v, json);
+    prop.set(std::move(v));
+  }
 } // namespace otto::core::props
