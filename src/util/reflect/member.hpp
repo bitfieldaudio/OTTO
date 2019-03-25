@@ -1,14 +1,5 @@
 /* -----------------------------------------------------------------------------------------------
 
-Member<Class, T> is a representation of a registered member
-Class - a class this member belongs to
-T - type of that member
-
-Member contains pointer to data member which can be used to get / set stuff
-Different getters and setters can be added via fluent interface (see
-addGetter/addConstGetter/addSetter) Getters and setters are always preffered to using raw data
-member pointers (because why would you set them in the other place?)
-
 -------------------------------------------------------------------------------------------------*/
 
 #pragma once
@@ -20,7 +11,10 @@ member pointers (because why would you set them in the other place?)
 
 #include "./reflect.hpp"
 
+
 namespace otto::reflect {
+  /// @addtogroup reflection
+  /// \{
 
   /// MemberType is Member<T, Class>
   template<typename MemberType>
@@ -65,6 +59,10 @@ namespace otto::reflect {
     Data data;
   };
 
+  /// A representation of a registered member
+  /// @tparam Class a class this member belongs to
+  /// @tparam T type of that member
+  /// @tparam AT the Accessor type
   template<typename Class, typename T, AccessorType AT, typename AccessorData>
   struct Member {
     using Accessor = MemberAccessor<Class, T, AT, AccessorData>;
@@ -117,8 +115,8 @@ namespace otto::reflect {
            typename = std::enable_if_t<mpark::lib::is_invocable<Getter, const Class&>::value>>
   constexpr auto member(util::string_ref, Getter&& getter, Setter&& setter);
 
+  /// \}
+
 } // namespace otto::reflect
 
 #include "member.inl"
-
-// kak: other_file=member.inl

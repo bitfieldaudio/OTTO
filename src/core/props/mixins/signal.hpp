@@ -14,10 +14,10 @@
 
 namespace otto::core::props {
 
-  OTTO_PROPS_MIXIN(change_hook);
+  OTTO_PROPS_MIXIN(signal);
 
-  OTTO_PROPS_MIXIN_LEAF (change_hook) {
-    OTTO_PROPS_MIXIN_DECLS(change_hook);
+  OTTO_PROPS_MIXIN_LEAF (signal) {
+    OTTO_PROPS_MIXIN_DECLS(signal);
 
     void on_hook(hook<common::hooks::after_set, HookOrder::After> & hook)
     {

@@ -22,9 +22,10 @@ namespace otto::engines {
       Property<float> drawbar1 = {1, limits(0, 1), step_size(0.01)};
       Property<float> drawbar2 = {0.5, limits(0, 1), step_size(0.01)};
       Property<float> click = {0.5, limits(0, 1), step_size(0.01)};
-      Property<float> leslie   = {0.3, limits(0, 1), step_size(0.01)};
+      Property<float> leslie = {0.3, limits(0, 1), step_size(0.01)};
 
       float rotation_value;
+
       DECL_REFLECTION(Props, drawbar1, drawbar2, click, leslie);
     } props;
 

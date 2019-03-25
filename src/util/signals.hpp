@@ -1,7 +1,7 @@
 #pragma once
 
 #include <functional>
-#include <list>
+#include <forward_list>
 
 namespace otto::util {
 
@@ -33,7 +33,7 @@ namespace otto::util {
     using Connection = otto::util::Connection<Args...>;
     using SlotRef = otto::util::SlotRef<Args...>;
     using Function = std::function<void(Args...)>;
-    using FuncIterator = typename std::list<Function>::iterator;
+    using FuncIterator = typename std::forward_list<Function>::iterator;
 
     SlotRef connect(const Function& func);
     SlotRef connect(Function&& func);
@@ -50,7 +50,7 @@ namespace otto::util {
     void emit(Args... a);
 
   private:
-    std::list<Function> _slots;
+    std::forward_list<Function> _slots;
   };
 
   template<typename... Args>
@@ -89,13 +89,15 @@ namespace otto::util {
   template<typename... Args>
   auto Signal<Args...>::connect(const Function& func) -> SlotRef
   {
-    return {this, _slots.insert(_slots.end(), func)};
+    _slots.emplace_front(func);
+    return {this, _slots.begin()};
   }
 
   template<typename... Args>
   auto Signal<Args...>::connect(Function&& func) -> SlotRef
   {
-    return {this, _slots.insert(_slots.end(), std::move(func))};
+    _slots.emplace_front(std::move(func));
+    return {this, _slots.begin()};
   }
 
   template<typename... Args>

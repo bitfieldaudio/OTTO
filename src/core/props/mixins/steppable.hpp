@@ -33,7 +33,6 @@ namespace otto::core::props {
     void step(int n = 1)
     {
       auto& prop = static_cast<property_type&>(*this);
-      _current_step_count = n;
       auto new_value = run_hook<hooks::on_step>([&] () -> value_type {
         if constexpr (std::is_same_v<bool, value_type>) {
           return (prop.get() + n) % 2;
@@ -47,7 +46,6 @@ namespace otto::core::props {
     }
 
     util::enum_decay_t<value_type> step_size = 1;
-    int _current_step_count;
   };
 
 } // namespace otto::core::props
