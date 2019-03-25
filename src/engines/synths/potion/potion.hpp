@@ -36,6 +36,7 @@ namespace otto::engines {
       Property<float> curve_length = {0.5, limits(0, 0.99), step_size(0.01)};
       WaveProps wave1;
       WaveProps wave2;
+      float pan_position;
 
       DECL_REFLECTION(CurveOscProps, curve_length, wave1, wave2);
     };
@@ -44,6 +45,7 @@ namespace otto::engines {
       Property<float> lfo_speed = {0.5, limits(0, 0.99), step_size(0.01)};
       WaveProps wave1;
       WaveProps wave2;
+      float pan_position;
 
       DECL_REFLECTION(LFOOscProps, lfo_speed, wave1, wave2);
     };
@@ -97,12 +99,6 @@ namespace otto::engines {
       }
 
       /// Set position (constant power law)
-
-      /// This is a constant power pan where the sum of the squares of the two
-      /// channel gains is always 1. A quadratic approximation is used to avoid
-      /// expensive trig function calls. The approximation is good enough for most
-      /// purposes and gives the exact result at positions of -1, 0, 1.
-      ///
       /// \param[in] v	Position, in [-1, 1]
       void pos(float v)
       {
@@ -111,19 +107,29 @@ namespace otto::engines {
         static const float c2 = -0.5 / c1;
         v = gam::scl::clip(v, 1.f, -1.f);
         w1 = c1 * v * (v + c2) + c0;
+        w1 *= vol1;
+
         w2 = w1 + v;
+        w2 *= vol2;
+      }
+
+      void volume1(float v) {
+        vol1 = v;
+      }
+      void volume2(float v) {
+        vol2 = v;
       }
 
     protected:
       float w1, w2; // channel weights
+      float vol1 = 0.5;
+      float vol2 = 0.5; //Channel volumes
     };
 
     struct DualWavePlayer {
       /// These should be external wavetables (in Pre)
       std::array<gam::SamplePlayer<float, gam::ipl::Linear, gam::phsInc::Loop>, 2> waves;
       PanSM pan;
-      float vol0 = 0.5;
-      float vol1 = 0.5;
 
       /// Call operator takes play position and pan value
       float operator()() noexcept;
@@ -134,9 +140,13 @@ namespace otto::engines {
   private:
     void load_wavetable(int, std::string);
 
+    struct Voice;
+
     struct Pre : voices::PreBase<Pre, Props> {
       Pre(Props&) noexcept;
       void operator()() noexcept;
+
+      Voice* last_voice = nullptr;
     };
 
     struct Voice : voices::VoiceBase<Voice, Pre> {
@@ -145,6 +155,7 @@ namespace otto::engines {
 
       DualWavePlayer curve_osc;
       DualWavePlayer lfo_osc;
+      float lfo_pan;
 
       Voice(Pre&) noexcept;
       float operator()() noexcept;
