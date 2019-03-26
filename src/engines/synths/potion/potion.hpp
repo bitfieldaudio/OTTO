@@ -10,7 +10,7 @@
 #include <Gamma/Oscillator.h>
 #include <Gamma/SoundFile.h>
 
-#include "util/dsp/pan.h"
+#include "util/dsp/pan.hpp"
 
 // WAV parser by Adam Stark: https://github.com/adamstark/AudioFile
 #include <AudioFile.h>
