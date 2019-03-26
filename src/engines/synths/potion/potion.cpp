@@ -22,7 +22,7 @@ namespace otto::engines {
     void draw(Canvas& ctx) override;
     void draw_waveslots(Canvas& ctx);
     void draw_lfo_and_curve(Canvas& ctx);
-    void draw_waveform(Canvas& ctx, float, float, float, float, Colour, int, int);
+    void draw_waveform(Canvas& ctx, Point, Size, Colour, int, int);
     void draw_waveforms(Canvas& ctx);
     void draw_level(Canvas& ctx);
     void draw_filename(Canvas& ctx);
@@ -94,7 +94,7 @@ namespace otto::engines {
   {
     AudioFile<float> aux;
     bool loaded = aux.load(Application::current().data_dir / "wavetables" / filename);
-    int num_samples;
+    int num_samples = 1;
     if (loaded) {
       props.wavetables[wt_number].resize(aux.getNumSamplesPerChannel());
       props.samplerates[wt_number] = aux.getSampleRate();
@@ -104,7 +104,6 @@ namespace otto::engines {
       props.wavetables[wt_number].resize(1);
       props.samplerates[wt_number] = 1;
       props.wavetables[wt_number][0] = 0;
-      num_samples = 1;
     }
     for (auto&& v : voice_mgr_.voices()) {
       switch (wt_number) {
@@ -151,7 +150,7 @@ namespace otto::engines {
     /// On_change handlers for the lfo and curve/envelope
     props.lfo_osc.lfo_speed.on_change().connect([this](float speed) { lfo.freq(speed * 3); });
     props.curve_osc.curve_length.on_change().connect(
-      [this](float decaytime) { curve.decay(decaytime * 10 + 0.2); });
+      [this](float decaytime) { curve.decay((1-decaytime) * 15 + 0.2); });
     /// On_change handlers for the wavetable volumes
     props.lfo_osc.wave1.volume.on_change().connect([this](float v) { lfo_osc.pan.volume1(v); });
     props.lfo_osc.wave2.volume.on_change().connect([this](float v) { lfo_osc.pan.volume2(v); });
@@ -405,31 +404,28 @@ namespace otto::engines {
 
   }
 
-  void PotionSynthScreen::draw_waveform(ui::vg::Canvas& ctx, float x_start, float x_scale, float y_middle, float y_scale, Colour cl, int steps, int wt) {
+  void PotionSynthScreen::draw_waveform(ui::vg::Canvas& ctx, Point start, Size scale, Colour cl, int steps, int wt) {
     ctx.lineWidth(6.0);
     ctx.lineCap(Canvas::LineCap::ROUND);
 
     ctx.beginPath();
-    ctx.moveTo(x_start, y_middle);
+    ctx.moveTo(start.x, start.y);
     float * val = engine.props.wavetables[wt].begin();
     int step = engine.props.wavetables[wt].size() / steps;
     //Draw only some of the values. Number of samples must be smaller
     //than number of steps.
     for (int i = 0; i < steps - 1; i++) {
-      x_start += x_scale;
+      start.x += scale.w;
       val += step;
-      ctx.lineTo(x_start, y_middle - (*val) * y_scale);
+      ctx.lineTo(start.x, start.y - (*val) * scale.h);
     }
-    x_start += x_scale;
+    start.x += scale.w;
     val = engine.props.wavetables[wt].end() - 1;
-    ctx.lineTo(x_start, y_middle - (*val) * y_scale);
+    ctx.lineTo(start.x, start.y - (*val) * scale.h);
     ctx.stroke(cl);
   }
-  
-  void PotionSynthScreen::draw_waveforms(ui::vg::Canvas& ctx) {
-    ctx.lineWidth(6.0);
-    ctx.lineCap(Canvas::LineCap::ROUND);
 
+  void PotionSynthScreen::draw_waveforms(ui::vg::Canvas& ctx) {
     ///Draw big waveform
     constexpr int steps = 100;
     float x_scale = 1.6;
@@ -437,7 +433,7 @@ namespace otto::engines {
 
     float y_middle = 138;
     float y_scale = 35;
-    draw_waveform(ctx, x_start, x_scale, y_middle, y_scale, Colours::White, steps, view_order[0]);
+    draw_waveform(ctx, {x_start, y_middle}, {x_scale, y_scale}, Colours::White, steps, view_order[0]);
 
     ///Draw small waveforms
     constexpr int steps_small = 50;
@@ -457,7 +453,7 @@ namespace otto::engines {
         case 3: cl = Colours::Red.mix(Colours::White, 0.2); break;
         default: break;
       }
-      draw_waveform(ctx, x_start, x_scale, y_middle, y_scale, cl, steps_small, view_order[i]);
+      draw_waveform(ctx, {x_start, y_middle}, {x_scale, y_scale}, cl, steps_small, view_order[i]);
       y_middle += y_jump;
     }
 
