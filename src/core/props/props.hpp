@@ -59,16 +59,16 @@ namespace otto::core::props {
   using Property = PropertyImpl<ValueType, meta::_t<get_tag_list<ValueType, Tags...>>>;
 
   /// Serialize a property to json
-  template<typename ValueType, typename... Tags>
-  inline nlohmann::json serialize(const core::props::Property<ValueType, Tags...>& prop)
+  template<typename ValueType, typename TagList>
+  inline nlohmann::json serialize(const PropertyImpl<ValueType, TagList>& prop)
   {
     using ::otto::util::serialize;
     return serialize(prop.get());
   }
 
   /// Deserialize a property from json
-  template<typename ValueType, typename... Tags>
-  inline void deserialize(core::props::Property<ValueType, Tags...>& prop,
+  template<typename ValueType, typename TagList>
+  inline void deserialize(PropertyImpl<ValueType, TagList>& prop,
                           const nlohmann::json& json)
   {
     using ::otto::util::deserialize;

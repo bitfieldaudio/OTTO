@@ -24,11 +24,9 @@ namespace otto::core::engine {
     std::function<IEngine&(int)>&& select_eg) noexcept
   {
     SelectorWidget::Options opts;
-    opts.on_select = [this, sl = std::move(select_eg),
-                      empty_vec = std::vector<std::string>()](int idx) {
+    opts.on_select = [this, sl = std::move(select_eg)](int idx) {
       auto& eg = sl(idx);
       try {
-        preset_wid.items(empty_vec);
         preset_wid.items(Application::current().preset_manager->preset_names(eg.name()));
       } catch (services::PresetManager::exception& e) {
       }
@@ -43,7 +41,11 @@ namespace otto::core::engine {
   {
     SelectorWidget::Options opts;
     opts.on_select = [cur_eg = std::move(cur_eg)](int idx) {
+      try {
       Application::current().preset_manager->apply_preset(cur_eg(), idx);
+      } catch (util::exception& e) {
+        LOGE(e.what());
+      }
     };
     opts.item_colour = Colours::Gray50;
     opts.selected_item_colour = Colours::Green;
@@ -69,7 +71,8 @@ namespace otto::core::engine {
     case ui::Key::red_click: {
       std::string name = "Preset" + std::to_string(preset_wid.nitems() + 1);
       Application::current().preset_manager->create_preset(
-        _engine_dispatcher.current().name(), name, _engine_dispatcher.current().to_json()["props"]);
+        _engine_dispatcher.current().name(), name, _engine_dispatcher.current().to_json());
+      preset_wid.items(Application::current().preset_manager->preset_names(_engine_dispatcher.current().name()));
       preset_wid.select(preset_wid.nitems() - 1, true);
       break;
     }

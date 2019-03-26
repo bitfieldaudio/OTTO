@@ -26,7 +26,7 @@
         FOR_EACH_LAST_SEP(_REFLECT_STRUCT_ARGS, (Type), __VA_ARGS__));                             \
     }                                                                                              \
     template<>                                                                                     \
-    constexpr std::string_view register_name<Type>()                                               \
+    constexpr ::otto::util::string_ref register_name<Type>()                                                \
     {                                                                                              \
       return #Type                                                                                 \
     }                                                                                              \
@@ -39,7 +39,7 @@
   {                                                                                                \
     return ::otto::reflect::members(FOR_EACH_LAST_SEP(_REFLECT_STRUCT_ARGS, (Type), __VA_ARGS__)); \
   }                                                                                                \
-  static constexpr std::string_view reflect_name()                                                 \
+  static constexpr ::otto::util::string_ref reflect_name()                                                  \
   {                                                                                                \
     return #Type;                                                                                  \
   }
@@ -50,7 +50,7 @@
   {                                                                                                \
     return ::otto::reflect::members();                                                             \
   }                                                                                                \
-  static constexpr std::string_view reflect_name()                                                 \
+  static constexpr ::otto::util::string_ref reflect_name()                                                  \
   {                                                                                                \
     return #Type;                                                                                  \
   }
