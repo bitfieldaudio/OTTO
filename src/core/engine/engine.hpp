@@ -41,24 +41,6 @@ namespace otto::core::engine {
 
     virtual ~IEngine() = default;
 
-    /* Events */
-
-    /// Called when this module is enabled
-    ///
-    /// The samplers use this to load the sample file.
-    ///
-    /// TODO: Define "enabled"
-    /// \effects None
-    virtual void on_enable() {}
-
-    /// Called when this module is disabled
-    ///
-    /// The samplers use this to load the sample file.
-    ///
-    /// TODO: Define "disabled"
-    /// \effects None
-    virtual void on_disable() {}
-
     /* Accessors */
 
     /// The name of this module.

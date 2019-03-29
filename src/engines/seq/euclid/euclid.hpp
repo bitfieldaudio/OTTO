@@ -38,8 +38,6 @@ namespace otto::engines {
 
     Euclid();
 
-    void on_enable() override;
-
     audio::ProcessData<0> process(audio::ProcessData<0>) override;
 
     Channel& current_channel()
