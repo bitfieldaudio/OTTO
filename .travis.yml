@@ -69,9 +69,10 @@ matrix:
       osx_image: xcode9.1
       env:
         - CC=clang CXX=clang++
-        - MATRIX_EVAL="brew update; brew install gdb llvm"
+        - MATRIX_EVAL="brew update; brew install gdb; brew install llvm "
         - LDFLAGS="-L/usr/local/opt/llvm/lib -Wl,-rpath,/usr/local/opt/llvm/lib"
         - PATH="/usr/local/opt/llvm/bin:$PATH"
+        - CXXFLAGS="-I/usr/local/opt/llvm/include -I/usr/local/opt/llvm/include/c++/v1/"
         - USE_LIBCXX=1
         - DEPLOY_DOCS=OFF
 
