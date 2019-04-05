@@ -175,7 +175,7 @@ namespace otto::engines {
     case ui::Key::yellow_click: [[fallthrough]];
     case ui::Key::red_click:
       if (engine.recording) {
-        engine.recording = std::nullopt;
+        engine.recording = tl::nullopt;
       } else {
         engine._has_pressed_keys = false;
         engine.recording = engine.current_channel().notes;
