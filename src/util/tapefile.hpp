@@ -1,3 +1,5 @@
+#include <array>
+
 #include "util/soundfile.hpp"
 
 namespace otto::util {
