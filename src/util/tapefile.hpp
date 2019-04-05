@@ -4,8 +4,7 @@
 
 namespace otto::util {
 
-  class TapeFile : public SoundFile {
-  public:
+  struct TapeFile : SoundFile {
     using SoundFile::Info;
 
     struct SliceData {
