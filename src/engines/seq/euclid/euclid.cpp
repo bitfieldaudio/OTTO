@@ -89,7 +89,7 @@ namespace otto::engines {
                         note = -1;
                       }
                       if (util::all_of(recording.value(), [](int note) { return note < 0; })) {
-                        recording = std::nullopt;
+                        recording = tl::nullopt;
                       }
                     },
                     [](auto&&) {});
