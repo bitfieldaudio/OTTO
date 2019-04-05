@@ -60,17 +60,22 @@ namespace otto::core::engine {
     if (!allow_off || util::to_lowercase(name) != "off") {
       Application::current().audio_manager->wait_one();
       bool done = false;
-      meta::for_each<meta::list<Egs...>>([&](auto m_type) -> void {
-        using type = decltype(m_type._t());
-        if (!done && name_of_engine_v<type> == name) {
-          _engine_storage.template emplace<type>();
-          if (auto found = _engine_data.try_lookup(_engine_storage->name()); found)
-            _engine_storage.base()->from_json(*found);
-          done = true;
-        }
-      });
+      try {
+        meta::for_each<meta::list<Egs...>>([&](auto m_type) -> void {
+          using type = decltype(m_type._t());
+          if (!done && name_of_engine_v<type> == name) {
+            _engine_storage.template emplace<type>();
+            if (auto found = _engine_data.try_lookup(_engine_storage->name()); found)
+              _engine_storage.base()->from_json(*found);
+            done = true;
+          }
+        });
+      } catch (std::exception& e) {
+        LOGE("Error loading engine: {}", e.what());
+        done = true;
+      }
       _current = _engine_storage.base();
-      if (!done) throw util::exception("ITypedEngine '{}' not found", name);
+      if (!done) throw util::exception("Engine '{}' not found", name);
     }
     return *_current;
   }
@@ -83,16 +88,21 @@ namespace otto::core::engine {
     if (!allow_off || index >= 0) {
       Application::current().audio_manager->wait_one();
       bool done = false;
-      meta::for_each<meta::list<Egs...>>([&, idx = 0](auto m_type) mutable {
-        using type = decltype(m_type._t());
-        if (!done && idx == index) {
-          _engine_storage.template emplace<type>();
-          if (auto found = _engine_data.try_lookup(_engine_storage->name()); found)
-            _engine_storage.base()->from_json(*found);
-          done = true;
-        }
-        idx++;
-      });
+      try {
+        meta::for_each<meta::list<Egs...>>([&, idx = 0](auto m_type) mutable {
+          using type = decltype(m_type._t());
+          if (!done && idx == index) {
+            _engine_storage.template emplace<type>();
+            if (auto found = _engine_data.try_lookup(_engine_storage->name()); found)
+              _engine_storage.base()->from_json(*found);
+            done = true;
+          }
+          idx++;
+        });
+      } catch (std::exception& e) {
+        LOGE("Error loading engine: {}", e.what());
+        done = true;
+      }
       _current = _engine_storage.base();
       if (!done) throw util::exception("EngineDispatcher::select(): Idx {} out of bounds", index);
     }

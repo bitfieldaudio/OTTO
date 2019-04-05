@@ -72,6 +72,7 @@ matrix:
         - MATRIX_EVAL="brew update; brew install gdb llvm"
         - LDFLAGS="-L/usr/local/opt/llvm/lib -Wl,-rpath,/usr/local/opt/llvm/lib"
         - PATH="/usr/local/opt/llvm/bin:$PATH"
+        - CXXFLAGS="-I/usr/local/opt/llvm/include -I/usr/local/opt/llvm/include/c++/v1/"
         - USE_LIBCXX=1
         - DEPLOY_DOCS=OFF
 

@@ -4,6 +4,7 @@
 
 #include "member.hpp"
 
+/// @if hidden
 namespace otto::reflect {
 
   template<typename Class, typename T, AccessorType AT, typename AD>
@@ -86,5 +87,4 @@ namespace otto::reflect {
   }
 
 } // namespace otto::reflect
-
-// kak: other_file=member.hpp
+/// @endif

@@ -83,7 +83,7 @@ namespace otto::core::engine {
   private:
     DataMap _engine_data;
     NullEngine<ET> _null_engine;
-    variant _engine_storage = std::in_place_index_t<0>();
+    variant _engine_storage = util::in_place_index_t<0>();
     ITypedEngine* _current = &_null_engine;
     std::unique_ptr<ui::Screen> _selector_screen = nullptr;
   };

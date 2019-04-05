@@ -93,7 +93,9 @@ namespace otto::util {
   {
     if (object.is_object()) {
       reflect::for_all_members<Class>([&obj, &object](auto& member) {
-        auto& objName = object[std::string(member.get_name())];
+        auto iter = object.find(std::string(member.get_name()));
+        if (iter == object.end()) throw util::exception("Error: Member '{}' not found in json", member.get_name());
+        auto& objName = *iter;
         if (!objName.is_null()) {
           using MemberT = reflect::get_member_type<decltype(member)>;
           if constexpr (std::decay_t<decltype(member)>::can_get_ref()) {
@@ -116,7 +118,7 @@ namespace otto::util {
         }
       });
     } else {
-      throw std::runtime_error("Error: can't deserialize from Json::json to Class.");
+      throw util::exception("Error: can't deserialize from Json::json to {}. Json: {}", reflect::get_name<Class>(), object);
     }
   }
 

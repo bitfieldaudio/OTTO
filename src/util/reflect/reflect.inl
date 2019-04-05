@@ -120,5 +120,3 @@ namespace otto::reflect {
   }
 
 } // namespace otto::reflect
-
-// kak: other_file=reflect.hpp

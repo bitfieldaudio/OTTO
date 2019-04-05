@@ -2,8 +2,7 @@
 
 #include <iterator>
 #include <type_traits>
-#include <mpark/variant.hpp>
-#include <variant>
+#include "util/variant.hpp"
 
 namespace otto::util {
   /// Any arithmetic type except bool
@@ -11,9 +10,7 @@ namespace otto::util {
   struct is_number : std::false_type {};
 
   template<typename T>
-  struct is_number<
-    T,
-    std::enable_if_t<std::is_arithmetic_v<T> && !std::is_same_v<T, bool>>>
+  struct is_number<T, std::enable_if_t<std::is_arithmetic_v<T> && !std::is_same_v<T, bool>>>
     : std::true_type {};
 
   template<typename T>
@@ -23,20 +20,21 @@ namespace otto::util {
   struct is_number_or_enum : std::false_type {};
 
   template<typename T>
-  struct is_number_or_enum<
-    T,
-    std::enable_if_t<std::is_enum_v<T> || is_number_v<T>>> : std::true_type {};
+  struct is_number_or_enum<T, std::enable_if_t<std::is_enum_v<T> || is_number_v<T>>>
+    : std::true_type {};
 
   template<typename T>
   constexpr inline bool is_number_or_enum_v = is_number_or_enum<T>::value;
 
   /// Check if a type is equal comparable to another type (or itself)
-  template<typename T1, typename T2 = T1,  typename Enable = void>
+  template<typename T1, typename T2 = T1, typename Enable = void>
   struct is_equal_comparable : std::false_type {};
 
   template<typename T1, typename T2>
-  struct is_equal_comparable<T1, T2, std::void_t<decltype(std::declval<T1>() == std::declval<T2>())>>
-   : std::true_type {};
+  struct is_equal_comparable<T1,
+                             T2,
+                             std::void_t<decltype(std::declval<T1>() == std::declval<T2>())>>
+    : std::true_type {};
 
   template<typename T1>
   struct is_equal_comparable<T1, T1> : std::true_type {};
@@ -45,12 +43,14 @@ namespace otto::util {
   constexpr bool is_equal_comparable_v = is_equal_comparable<T1, T2>::value;
 
   /// Check if a type is less than comparable to another type (or itself)
-  template<typename T1, typename T2 = T1,  typename Enable = void>
+  template<typename T1, typename T2 = T1, typename Enable = void>
   struct is_less_than_comparable : std::false_type {};
 
   template<typename T1, typename T2>
-  struct is_less_than_comparable<T1, T2, std::void_t<decltype(std::declval<T1>() < std::declval<T2>())>>
-   : std::true_type {};
+  struct is_less_than_comparable<T1,
+                                 T2,
+                                 std::void_t<decltype(std::declval<T1>() < std::declval<T2>())>>
+    : std::true_type {};
 
   template<typename T1>
   struct is_less_than_comparable<T1, T1> : std::true_type {};
@@ -59,12 +59,14 @@ namespace otto::util {
   constexpr bool is_less_than_comparable_v = is_less_than_comparable<T1, T2>::value;
 
   /// Check if a type is greater than comparable to another type (or itself)
-  template<typename T1, typename T2 = T1,  typename Enable = void>
+  template<typename T1, typename T2 = T1, typename Enable = void>
   struct is_greater_than_comparable : std::false_type {};
 
   template<typename T1, typename T2>
-  struct is_greater_than_comparable<T1, T2, std::void_t<decltype(std::declval<T1>() > std::declval<T2>())>>
-   : std::true_type {};
+  struct is_greater_than_comparable<T1,
+                                    T2,
+                                    std::void_t<decltype(std::declval<T1>() > std::declval<T2>())>>
+    : std::true_type {};
 
   template<typename T1>
   struct is_greater_than_comparable<T1, T1> : std::true_type {};
@@ -121,10 +123,7 @@ namespace otto::util {
   /// with category of at least `category`
   ///
   /// Checks `std::iterator_traits`
-  template<typename iter,
-           typename type,
-           typename category,
-           typename Enable = void>
+  template<typename iter, typename type, typename category, typename Enable = void>
   struct is_iterator : std::false_type {};
 
   /// \privatesection
@@ -134,12 +133,10 @@ namespace otto::util {
     type,
     category,
     std::enable_if_t<
-      std::is_same_v<
-        std::remove_reference_t<iter>,
-        std::iterator_traits<std::remove_reference_t<iter>>::value_type> &&
+      std::is_same_v<std::remove_reference_t<iter>,
+                     std::iterator_traits<std::remove_reference_t<iter>>::value_type> &&
       std::is_base_of_v<std::remove_reference_t<iter>,
-                        std::iterator_traits<
-                          std::remove_reference_t<iter>>::iterator_category>>>
+                        std::iterator_traits<std::remove_reference_t<iter>>::iterator_category>>>
     : std::true_type {};
 
 
@@ -201,8 +198,7 @@ namespace otto::util {
   using is_invocable_r = mpark::lib::is_invocable_r<R, F, Args...>;
 
   template<typename R, typename F, typename... Args>
-  constexpr bool is_invocable_r_v =
-    mpark::lib::is_invocable_r<R, F, Args...>::value;
+  constexpr bool is_invocable_r_v = mpark::lib::is_invocable_r<R, F, Args...>::value;
 
   template<typename F, typename... Args>
   using invoke_result = mpark::lib::invoke_result<F, Args...>;
@@ -228,7 +224,7 @@ namespace otto::util {
 
     /// Foreach for tuples
     template<std::size_t I = 0, typename FuncT, typename... Tp>
-      constexpr void for_each(std::tuple<Tp...>& t, FuncT f)
+    constexpr void for_each(std::tuple<Tp...>& t, FuncT f)
     {
       if constexpr (I != sizeof...(Tp)) {
         f(std::get<I>(t));

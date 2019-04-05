@@ -1,5 +1,6 @@
 #pragma once
-#include <variant>
+
+#include "util/variant.hpp"
 
 namespace otto::util {
 
@@ -9,7 +10,7 @@ namespace otto::util {
     using Self = basic_variant_w_base<Base, Variant>;
 
     template<class Visitor, class Base_, class Variant_>
-    friend constexpr decltype(auto) std::visit(Visitor&&, basic_variant_w_base<Base_, Variant_>&);
+    friend constexpr decltype(auto) mpark::visit(Visitor&&, basic_variant_w_base<Base_, Variant_>&);
 
     template<class T, class Base_, class Variant_>
     friend constexpr decltype(auto) std::get(basic_variant_w_base<Base_, Variant_>&);
@@ -23,10 +24,10 @@ namespace otto::util {
 
     void update_base()
     {
-      m_base = std::visit(
+      m_base = util::visit(
         [](auto&& arg) -> Base* {
           using Arg = std::decay_t<decltype(arg)>;
-          if constexpr (std::is_same_v<Arg, std::monostate>) {
+          if constexpr (std::is_same_v<Arg, util::monostate>) {
             return nullptr;
           }
 
@@ -99,7 +100,7 @@ namespace otto::util {
       return *this;
     }
 
-    template <class T, class... Args>
+    template<class T, class... Args>
     T& emplace(Args&&... args)
     {
       auto& res = m_variant.template emplace<T>(std::forward<Args>(args)...);
@@ -107,7 +108,7 @@ namespace otto::util {
       return res;
     }
 
-    template <class T, class U, class... Args>
+    template<class T, class U, class... Args>
     T& emplace(std::initializer_list<U> il, Args&&... args)
     {
       auto& res = m_variant.template emplace<T>(std::move(il), std::forward<Args>(args)...);
@@ -163,7 +164,7 @@ namespace otto::util {
   };
 
   template<typename Base, typename... Types>
-  using variant_w_base = basic_variant_w_base<Base, std::variant<Types...>>;
+  using variant_w_base = basic_variant_w_base<Base, util::variant<Types...>>;
 
 
 } // namespace otto::util
@@ -182,7 +183,7 @@ namespace std {
   {
     if constexpr (std::is_same_v<T, Base>) {
       if (var.base() == nullptr) {
-        throw std::bad_variant_access();
+        throw otto::util::bad_variant_access();
       }
       // assert(var.base() != nullptr);
       return *var.base();

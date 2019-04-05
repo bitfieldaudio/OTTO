@@ -127,7 +127,7 @@ namespace otto::core::voices {
 
   namespace details {
     /// The way the voicemanager handles voices
-    enum struct PlayMode {
+    enum struct PlayMode : char {
       /// Multiple voices at once, each playing a note
       poly,
       /// Only a single voice in use, allways playing the latest note
@@ -151,11 +151,10 @@ namespace otto::core::voices {
     };
 
     struct SettingsProps {
-      props::Property<PlayMode, props::wrap> play_mode = {
-        PlayMode::poly, props::limits(PlayMode::poly, PlayMode::unison)};
-      props::Property<float> portamento = {0, props::limits(0, 1), props::step_size(0.01)};
-      props::Property<int> octave = {0, props::limits(-2, 7)};
-      props::Property<int> transpose = {0, props::limits(-12, 12)};
+      props::Property<PlayMode, props::wrap> play_mode = { PlayMode::poly, props::limits(PlayMode::poly, PlayMode::unison)};
+      props::Property<float, props::no_signal> portamento = {0, props::limits(0, 1), props::step_size(0.01)};
+      props::Property<int, props::no_signal> octave = {0, props::limits(-2, 7)};
+      props::Property<int, props::no_signal> transpose = {0, props::limits(-12, 12)};
 
       DECL_REFLECTION(SettingsProps, play_mode, portamento, octave, transpose);
     };

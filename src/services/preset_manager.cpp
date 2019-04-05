@@ -6,8 +6,6 @@ namespace otto::services {
 
   PresetManager::PresetManager()
   {
-    // debug_ui::add_info(draw_debug_info);
-
     load_preset_files();
   }
 
@@ -15,7 +13,7 @@ namespace otto::services {
   {
     auto eg_found = _preset_data.find(engine_name);
     if (eg_found == _preset_data.end()) {
-      throw exception(ErrorCode::no_such_engine, "No presets for engine: {}", engine_name);
+      eg_found = _preset_data.insert(std::string(engine_name), PresetNamesDataPair{}).iter();
     }
     return eg_found->value.names;
   }
@@ -72,7 +70,11 @@ namespace otto::services {
                       idx, engine.name());
     }
     DLOGI("Applying preset {} to engine {}", pd.names[idx], engine.name());
-    engine.from_json(pd.data[idx]);
+    try {
+      engine.from_json(pd.data[idx]);
+    } catch(std::exception& e) {
+      throw util::exception("Error applying preset: {}", e.what());
+    }
     engine.current_preset(idx);
   }
 
@@ -126,51 +128,3 @@ namespace otto::services {
   }
 
 } // namespace otto::services
-
-// Debug UI /////////////////////////////////////////////////////////////////
-
-#if false
-
-#include "services/engines.hpp"
-#include "services/ui.hpp"
-
-namespace otto::service::presets {
-
-  static void draw_debug_info()
-  {
-    ImGui::Begin("Presets");
-
-    static std::string engine_name;
-    static char preset_name[256] = "";
-    static nlohmann::json preset_data;
-
-    if (ImGui::Button("Create preset")) {
-      auto engine = engines::by_name(ui::selected_engine_name());
-      if (engine != nullptr) {
-        engine_name = engine->name();
-        preset_data = engine->props().as<core::props::serializable>().to_json();
-        ImGui::OpenPopup("New preset");
-      }
-    }
-    if (ImGui::BeginPopup("New preset")) {
-      ImGui::Text("Engine: %s", engine_name.c_str());
-      ImGui::InputText("Preset Name", preset_name, 256);
-      if (ImGui::Button("Create preset")) {
-        create_preset(engine_name, std::string(preset_name), preset_data);
-        load_preset_files();
-        ImGui::CloseCurrentPopup();
-      }
-      if (ImGui::Button("Cancel")) {
-        ImGui::CloseCurrentPopup();
-      }
-
-      ImGui::EndPopup();
-    }
-
-    ImGui::End();
-  }
-} // namespace otto::service::presets
-
-#else
-
-#endif

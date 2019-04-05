@@ -43,7 +43,7 @@ namespace otto::core::voices {
   float VoiceBase<D, P>::aftertouch() noexcept
   {
     return aftertouch_;
-  }
+}
 
   template<typename D, typename P>
   bool VoiceBase<D, P>::is_triggered() noexcept

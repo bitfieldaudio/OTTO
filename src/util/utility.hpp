@@ -37,7 +37,7 @@ namespace otto::util {
   decltype(auto) match(Var&& v, Lambdas&&... ls)
   {
     auto&& matcher = overloaded<Lambdas...>(std::forward<Lambdas>(ls)...);
-    // ADL to use std::visit or mpark::visit
+    // ADL to use std::visit or mpark::visit 
     // TODO: Remove this when the standard is adapted
     return visit(std::move(matcher), std::forward<Var>(v));
   }
