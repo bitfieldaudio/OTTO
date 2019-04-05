@@ -25,7 +25,7 @@ namespace otto::services {
     struct KeyRelease {
       core::ui::Key key;
     };
-    using KeyEvent = mpark::variant<KeyPress, KeyRelease>;
+    using KeyEvent = util::variant<KeyPress, KeyRelease>;
 
     /// Function type for key handlers
     using KeyHandler = std::function<void(core::ui::Key k)>;
