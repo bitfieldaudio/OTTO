@@ -104,6 +104,20 @@ namespace otto::services {
       ui_manager.display(synth.current().voices_screen());
     });
 
+    ui_manager.register_key_handler(ui::Key::oct_up, [&](ui::Key k) {
+      auto* owner = dynamic_cast<engines::EngineWithEnvelope*>(&synth.current());
+      if (owner) {
+        owner->voices_screen().keypress(ui::Key::oct_up);
+      }
+    });
+
+    ui_manager.register_key_handler(ui::Key::oct_down, [&](ui::Key k) {
+        auto* owner = dynamic_cast<engines::EngineWithEnvelope*>(&synth.current());
+        if (owner) {
+          owner->voices_screen().keypress(ui::Key::oct_down);
+        }
+    });
+
     ui_manager.register_key_handler(ui::Key::fx1, [&](ui::Key k) {
       if (ui_manager.is_pressed(ui::Key::shift)) {
         ui_manager.display(effect1.selector_screen());

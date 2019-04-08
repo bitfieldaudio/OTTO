@@ -34,6 +34,12 @@ namespace otto::core::voices {
   }
 
   template<typename D, typename P>
+  void VoiceBase<D, P>::frequency(float freq) noexcept
+  {
+    frequency_ = freq;
+  }
+
+  template<typename D, typename P>
   float VoiceBase<D, P>::velocity() noexcept
   {
     return velocity_;
@@ -61,7 +67,9 @@ namespace otto::core::voices {
   void VoiceBase<D, P>::trigger(int midi_note, float velocity) noexcept
   {
     midi_note_ = midi_note;
-    frequency_ = midi::note_freq(midi_note);
+    //Sets target value of portamento to new note
+    glide_ = midi::note_freq(midi_note);
+    //frequency_ = midi::note_freq(midi_note);
     velocity_ = velocity;
     on_note_on();
     env_.resetSoft();
@@ -96,6 +104,11 @@ namespace otto::core::voices {
         [&voice](float sustain) { voice.env_.sustain(sustain); });
       envelope_props.release.on_change().connect(
         [&voice](float release) { voice.env_.release(release); });
+
+      settings_props.portamento.on_change()
+        .connect([&voice](float p) {
+          voice.glide_.period(p);
+        }).call_now(settings_props.portamento);
     }
     settings_props.play_mode.on_change()
       .connect([this](PlayMode mode) {
@@ -133,6 +146,10 @@ namespace otto::core::voices {
     pre();
     float voice_sum = 0.f;
     for (auto& voice : voices_) {
+      ///Change frequency if applicable
+      //voice.frequency(midi::note_freq(voice.midi_note_) * pitch_bend_);
+      voice.frequency(voice.glide_() * pitch_bend_);
+      ///Get next sample
       voice_sum += voice.env_() * voice();
     }
     return post(voice_sum);
@@ -157,11 +174,19 @@ namespace otto::core::voices {
   }
 
   template<typename V, int N>
+  void VoiceManager<V, N>::handle_pitch_bend(const midi::PitchBendEvent& evt) noexcept
+  {
+    pitch_bend_ = powf(2.f, ((float)evt.value / 8192.f) - 1.f);
+  }
+
+  template<typename V, int N>
   audio::ProcessData<1> VoiceManager<V, N>::process(audio::ProcessData<1> data) noexcept
   {
     for (auto& evt : data.midi) {
       util::match(evt, [&](midi::NoteOnEvent& evt) { handle_midi_on(evt); },
-                  [&](midi::NoteOffEvent& evt) { handle_midi_off(evt); }, [](auto&) {});
+                  [&](midi::NoteOffEvent& evt) { handle_midi_off(evt); },
+                  [&](midi::PitchBendEvent& evt) { handle_pitch_bend(evt); },
+                  [](auto&) {});
     }
     auto buf = Application::current().audio_manager->buffer_pool().allocate();
     for (auto& frm : buf) {

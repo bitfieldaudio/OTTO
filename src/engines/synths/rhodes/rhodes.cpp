@@ -29,6 +29,7 @@ namespace otto::engines {
   float RhodesSynth::Voice::operator()() noexcept
   {
     reson.freq(frequency());
+    overtones.freq(frequency());
     float excitation = lpf(exciter() * (1 + noise()));
     float harmonics = env() * overtones();
     float orig_note = reson(excitation*hammer_strength);
@@ -69,7 +70,6 @@ namespace otto::engines {
 
     pickup_hpf.freq(frequency());
 
-    overtones.freq(frequency());
     env.reset(1.7);
   }
 

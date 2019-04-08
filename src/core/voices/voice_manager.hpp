@@ -74,6 +74,8 @@ namespace otto::core::voices {
     ///
     /// Needs to be applied seperately for each sample to handle for example glide.
     float frequency() noexcept;
+    /// Change the current frequency
+    void frequency(float) noexcept;
 
     /// Get the velocity value
     float velocity() noexcept;
@@ -106,6 +108,7 @@ namespace otto::core::voices {
     int midi_note_ = 0;
 
     gam::ADSR<> env_;
+    gam::SegExp<> glide_{0.f};
   };
 
   template<typename DerivedT, typename VoiceT>
@@ -228,6 +231,7 @@ namespace otto::core::voices {
 
     Voice& handle_midi_on(const midi::NoteOnEvent&) noexcept;
     Voice* handle_midi_off(const midi::NoteOffEvent&) noexcept;
+    void handle_pitch_bend(const midi::PitchBendEvent&) noexcept;
 
     /// Process audio, applying Preprocessing, each voice and then postprocessing
     audio::ProcessData<1> process(audio::ProcessData<1> data) noexcept;
@@ -252,6 +256,8 @@ namespace otto::core::voices {
         return voice != nullptr;
       }
     };
+
+    float pitch_bend_ = 1;
 
     std::deque<Voice*> free_voices;
     std::vector<NoteVoicePair> note_stack;

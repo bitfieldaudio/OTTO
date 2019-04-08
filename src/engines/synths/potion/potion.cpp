@@ -165,14 +165,14 @@ namespace otto::engines {
     lfo.phase(0.f);
     curve.reset(-2);
     pre.last_voice = this;
-    for (int osc = 0; osc < 2; osc++) {
-      lfo_osc.waves[osc].freq(frequency());
-      curve_osc.waves[osc].freq(frequency());
-    }
   }
 
   float PotionSynth::Voice::operator()() noexcept
   {
+    for (int osc = 0; osc < 2; osc++) {
+      lfo_osc.waves[osc].freq(frequency());
+      curve_osc.waves[osc].freq(frequency());
+    }
     /// Set panning positions
     lfo_pan = lfo.tri();
     lfo_osc.pan.pos(lfo_pan);

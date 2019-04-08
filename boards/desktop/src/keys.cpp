@@ -121,6 +121,9 @@ namespace otto::board::ui {
     case Key::p: send_key(OKey::play); break;
     case Key::m: send_key(OKey::master); break;
 
+    case Key::up: send_key(OKey::oct_up); break;
+    case Key::down: send_key(OKey::oct_down); break;
+
     case Key::n7: send_key(OKey::send); break;
 
     case Key::left_shift: [[fallthrough]];
