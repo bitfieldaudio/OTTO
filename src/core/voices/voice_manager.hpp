@@ -161,7 +161,7 @@ namespace otto::core::voices {
     struct SettingsProps {
       props::Property<PlayMode, props::wrap> play_mode = {
         PlayMode::poly, props::limits(PlayMode::poly, PlayMode::unison)};
-      props::Property<float, props::no_signal> portamento = {0, props::limits(0, 1),
+      props::Property<float> portamento = {0, props::limits(0, 1),
                                                              props::step_size(0.01)};
       props::Property<int, props::no_signal> octave = {0, props::limits(-2, 7)};
       props::Property<int, props::no_signal> transpose = {0, props::limits(-12, 12)};
@@ -232,6 +232,7 @@ namespace otto::core::voices {
     Voice& handle_midi_on(const midi::NoteOnEvent&) noexcept;
     Voice* handle_midi_off(const midi::NoteOffEvent&) noexcept;
     void handle_pitch_bend(const midi::PitchBendEvent&) noexcept;
+    void handle_control_change(const midi::ControlChangeEvent&) noexcept;
 
     /// Process audio, applying Preprocessing, each voice and then postprocessing
     audio::ProcessData<1> process(audio::ProcessData<1> data) noexcept;
@@ -258,6 +259,9 @@ namespace otto::core::voices {
     };
 
     float pitch_bend_ = 1;
+
+    props::Property<bool> sustain_ = {false};
+    std::vector<int> held_keys_;
 
     std::deque<Voice*> free_voices;
     std::vector<NoteVoicePair> note_stack;

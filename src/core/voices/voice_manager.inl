@@ -110,6 +110,7 @@ namespace otto::core::voices {
           voice.glide_.period(p);
         }).call_now(settings_props.portamento);
     }
+
     settings_props.play_mode.on_change()
       .connect([this](PlayMode mode) {
         util::for_each(voices_, &Voice::release);
@@ -126,6 +127,15 @@ namespace otto::core::voices {
         }
       })
       .call_now(settings_props.play_mode);
+
+    sustain_.on_change().connect([this](bool val) {
+      if (!val) {
+        while (!held_keys_.empty()) {
+          static_cast<void>(stop_voice(held_keys_.back()));
+          held_keys_.pop_back();
+        }
+      }
+    });
   }
 
   template<typename V, int N>
@@ -170,7 +180,13 @@ namespace otto::core::voices {
   auto VoiceManager<V, N>::handle_midi_off(const midi::NoteOffEvent& evt) noexcept -> Voice*
   {
     auto key = evt.key + settings_props.octave * 12 + settings_props.transpose;
-    return stop_voice(key);
+    if (sustain_) {
+      held_keys_.push_back(key);
+      return nullptr;
+    } else {
+      return stop_voice(key);
+    }
+
   }
 
   template<typename V, int N>
@@ -180,11 +196,21 @@ namespace otto::core::voices {
   }
 
   template<typename V, int N>
+  void VoiceManager<V, N>::handle_control_change(const otto::core::midi::ControlChangeEvent& evt) noexcept
+  {
+    switch (evt.controler)
+    {
+      case 0x40: sustain_ = evt.value > 63;
+    }
+  }
+
+  template<typename V, int N>
   audio::ProcessData<1> VoiceManager<V, N>::process(audio::ProcessData<1> data) noexcept
   {
     for (auto& evt : data.midi) {
       util::match(evt, [&](midi::NoteOnEvent& evt) { handle_midi_on(evt); },
                   [&](midi::NoteOffEvent& evt) { handle_midi_off(evt); },
+                  [&](midi::ControlChangeEvent& evt) { handle_control_change(evt); },
                   [&](midi::PitchBendEvent& evt) { handle_pitch_bend(evt); },
                   [](auto&) {});
     }
