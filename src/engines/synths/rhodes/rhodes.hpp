@@ -13,7 +13,7 @@ namespace otto::engines {
   using namespace core::engine;
   using namespace props;
 
-  struct RhodesSynth : SynthEngine<RhodesSynth>, EngineWithEnvelope {
+  struct RhodesSynth : SynthEngine<RhodesSynth> {
     static constexpr util::string_ref name = "Rhodes";
     struct Props {
       Property<float> aggro = {1, limits(0.5, 1), step_size(0.01)};
@@ -28,14 +28,9 @@ namespace otto::engines {
 
     audio::ProcessData<1> process(audio::ProcessData<1>) override;
 
-    ui::Screen& envelope_screen() override
+    voices::IVoiceManager& voice_mgr() override
     {
-      return voice_mgr_.envelope_screen();
-    }
-
-    ui::Screen& voices_screen() override
-    {
-      return voice_mgr_.settings_screen();
+      return voice_mgr_;
     }
 
     DECL_REFLECTION(RhodesSynth, props, ("voice_manager", &RhodesSynth::voice_mgr_));

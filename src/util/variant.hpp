@@ -10,4 +10,9 @@
 
 namespace otto::util {
   using namespace mpark;
+
+  using mpark::in_place;
+  using mpark::in_place_t;
+  using mpark::in_place_index;
+  using mpark::in_place_index_t;
 }

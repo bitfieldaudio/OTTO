@@ -14,6 +14,7 @@
 #include "core/audio/processor.hpp"
 #include "core/props/props.hpp"
 #include "core/ui/screen.hpp"
+#include "core/voices/voice_manager.hpp"
 
 namespace otto::core::engine {
 
@@ -108,6 +109,15 @@ namespace otto::core::engine {
   struct ITypedEngine<EngineType::synth> : IEngine {
     using IEngine::IEngine;
     virtual audio::ProcessData<1> process(audio::ProcessData<1>) = 0;
+    virtual voices::IVoiceManager& voice_mgr() = 0;
+    virtual ui::Screen& envelope_screen()
+    {
+      return voice_mgr().envelope_screen();
+    }
+    virtual ui::Screen& voices_screen()
+    {
+      return voice_mgr().settings_screen();
+    }
   };
 
   template<>
@@ -167,7 +177,8 @@ namespace otto::core::engine {
 
       static constexpr auto reflect_members()
       {
-        return reflect::members(reflect::member<EngineImpl>("props", [] (auto& obj) -> auto& { return obj.derived().props; }));
+        return reflect::members(reflect::member<EngineImpl>(
+          "props", [](auto& obj) -> auto& { return obj.derived().props; }));
       }
 
     protected:
@@ -229,10 +240,4 @@ namespace otto::core::engine {
   protected:
     Engine& engine;
   };
-
-  struct EngineWithEnvelope {
-    virtual ui::Screen& envelope_screen() = 0;
-    virtual ui::Screen& voices_screen() = 0;
-  };
-
 } // namespace otto::core::engine

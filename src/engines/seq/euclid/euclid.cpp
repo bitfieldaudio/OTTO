@@ -84,7 +84,7 @@ namespace otto::engines {
                         note = -1;
                       }
                       if (util::all_of(recording.value(), [](int note) { return note < 0; })) {
-                        recording = std::nullopt;
+                        recording = tl::nullopt;
                       }
                     },
                     [](auto&&) {});
@@ -170,7 +170,7 @@ namespace otto::engines {
     case ui::Key::yellow_click: [[fallthrough]];
     case ui::Key::red_click:
       if (engine.recording) {
-        engine.recording = std::nullopt;
+        engine.recording = tl::nullopt;
       } else {
         engine._has_pressed_keys = false;
         engine.recording = engine.current_channel().notes;

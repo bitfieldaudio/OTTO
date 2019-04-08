@@ -12,7 +12,7 @@ namespace otto::engines {
   using namespace core::engine;
   using namespace props;
 
-  struct OTTOFMSynth : SynthEngine<OTTOFMSynth>, EngineWithEnvelope {
+  struct OTTOFMSynth : SynthEngine<OTTOFMSynth> {
     static constexpr util::string_ref name = "OTTO.FM";
     struct OperatorProps {
       // Envelopes
@@ -22,7 +22,7 @@ namespace otto::engines {
       Property<float> mSuspos = {0.5, limits(0, 1), step_size(0.01)};
       // Oscillator
       Property<float> detune = {0, limits(-1, 1), step_size(0.01)};
-      Property<int> ratio_idx = {0, limits(0, 18), step_size(1)};
+      Property<int> ratio_idx = {0, limits(0, 19), step_size(1)};
       // Amp
       Property<float> outLev = {1, limits(0, 1), step_size(0.01)};
       float current_level = 0;
@@ -53,13 +53,13 @@ namespace otto::engines {
       FMSine sine;
       gam::ADSR<> env;
 
-      bool modulator; /// If it is a modulator, use the envelope.
-      float outlevel;
-      float feedback; /// TODO:Implement in call operator
-      float fm_amount;
+      bool modulator = false; /// If it is a modulator, use the envelope.
+      float outlevel = 1;
+      float feedback = 0; /// TODO:Implement in call operator
+      float fm_amount = 1;
 
-      float freq_ratio;
-      float detune_amount;
+      float freq_ratio = 1;
+      float detune_amount = 0;
 
       float previous_value = 0;
 
@@ -74,14 +74,9 @@ namespace otto::engines {
 
     audio::ProcessData<1> process(audio::ProcessData<1>) override;
 
-    ui::Screen& envelope_screen() override
+    voices::IVoiceManager& voice_mgr() override
     {
-      return voice_mgr_.envelope_screen();
-    }
-
-    ui::Screen& voices_screen() override
-    {
-      return voice_mgr_.settings_screen();
+      return voice_mgr_;
     }
 
     DECL_REFLECTION(OTTOFMSynth, props, ("voice_manager", &OTTOFMSynth::voice_mgr_));

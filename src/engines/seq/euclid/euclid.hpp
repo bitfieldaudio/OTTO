@@ -3,7 +3,7 @@
 #include "core/engine/engine.hpp"
 
 #include <array>
-#include <optional>
+#include <tl/optional.hpp>
 
 namespace otto::engines {
 
@@ -45,7 +45,7 @@ namespace otto::engines {
       return props.channels.at(props.channel);
     }
 
-    std::optional<std::array<int, 6>> recording = std::nullopt;
+    tl::optional<std::array<int, 6>> recording = tl::nullopt;
 
     bool running = false;
 

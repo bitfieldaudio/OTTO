@@ -1,10 +1,11 @@
 #pragma once
 
-#include <string>
-#include <iterator>
-#include <utility>
+#include <array>
 #include <fstream>
+#include <iterator>
+#include <string>
 #include <tl/expected.hpp>
+#include <utility>
 
 #include "util/filesystem.hpp"
 #include "util/type_traits.hpp"
@@ -17,89 +18,117 @@ namespace otto::util {
 
     bytes() = default;
 
-    bytes(const bytes& o) {
+    bytes(const bytes& o)
+    {
       std::copy(o.begin(), o.end(), data);
     }
 
-    bytes(const std::initializer_list<std::byte> bs) {
+    bytes(const std::initializer_list<std::byte> bs)
+    {
       data = bs;
     }
 
-    bytes(const std::initializer_list<unsigned char> bs) {
-      std::transform(bs.begin(), bs.end(), begin(),
-        [] (auto uc) {return std::byte(uc);});
+    bytes(const std::initializer_list<unsigned char> bs)
+    {
+      std::transform(bs.begin(), bs.end(), begin(), [](auto uc) { return std::byte(uc); });
     }
 
-    bytes(const char str[len + 1]) {
-      std::copy_n(str, len,
-        reinterpret_cast<char*>(data));
+    bytes(const char str[len + 1])
+    {
+      std::copy_n(str, len, reinterpret_cast<char*>(data));
     }
 
     template<std::size_t N = len, typename Num = int_n_bytes_u_t<N>>
-      bytes (Num d) {
+    bytes(Num d)
+    {
       cast<Num>() = d;
     }
 
-    std::byte* begin() {return data;}
-    std::byte* end() {return data + len;}
-    const std::byte* begin() const {return data;}
-    const std::byte* end() const {return data + len;}
+    std::byte* begin()
+    {
+      return data;
+    }
+    std::byte* end()
+    {
+      return data + len;
+    }
+    const std::byte* begin() const
+    {
+      return data;
+    }
+    const std::byte* end() const
+    {
+      return data + len;
+    }
 
-    bool operator==(const bytes& rhs) const {
+    bool operator==(const bytes& rhs) const
+    {
       return std::equal(begin(), end(), rhs.begin());
     }
 
-    bool operator==(const char* rhs) const {
+    bool operator==(const char* rhs) const
+    {
       return std::equal(begin(), end(), reinterpret_cast<const std::byte*>(rhs));
     }
 
-    bool operator!=(const bytes& rhs) const {return !(*this == rhs);}
-    bool operator!=(const char* rhs) const {return !(*this == rhs);}
+    bool operator!=(const bytes& rhs) const
+    {
+      return !(*this == rhs);
+    }
+    bool operator!=(const char* rhs) const
+    {
+      return !(*this == rhs);
+    }
 
     template<typename T>
-      T& cast() {
+    T& cast()
+    {
       return *reinterpret_cast<std::decay_t<T>*>(data);
     }
 
     template<std::size_t N = len, typename Num = int_n_bytes_t<N>>
-      Num& as_i() {
+    Num& as_i()
+    {
       return cast<Num>();
     }
 
     template<std::size_t N = len, typename Num = int_n_bytes_u_t<N>>
-      Num& as_u() {
+    Num& as_u()
+    {
       return cast<Num>();
     }
 
-    explicit operator char*() const {
+    explicit operator char*() const
+    {
       return (char*) data;
     }
 
-    std::string str() const {
-      return {(char*)data, len};
+    std::string str() const
+    {
+      return {(char*) data, len};
     }
 
     // Factories
     template<std::size_t N = len, typename Num = int_n_bytes_u_t<N>>
-    static bytes from_u(Num n) {
+    static bytes from_u(Num n)
+    {
       bytes ret;
       ret.as_u() = n;
       return ret;
     }
 
     template<std::size_t N = len, typename Num = int_n_bytes_t<N>>
-    static bytes from_i(Num n) {
+    static bytes from_i(Num n)
+    {
       bytes ret;
       ret.as_i() = n;
       return ret;
     }
-
   };
 
   /// TODO: Documentation
   class ByteFile {
   public:
-
     struct Error : std::exception {
       enum class Type {
         FileNotOpen,
@@ -109,26 +138,24 @@ namespace otto::util {
 
       std::string message;
 
-      Error(Type t, std::string m = "") :
-        std::exception(),
-        type (t),
-        message (enumString(type) + '\n' + m) {}
+      Error(Type t, std::string m = "")
+        : std::exception(), type(t), message(enumString(type) + '\n' + m)
+      {}
 
-#pragma GCC diagnostic push 
+#pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wreturn-type"
-      static std::string enumString(Type t) {
-        switch(t) {
-        case Type::FileNotOpen:
-          return "File not open"; break;
-        case Type::ExceptionThrown:
-          return "Exception thrown"; break;
-        case Type::PastEnd:
-          return "Past the end of the file"; break;
+      static std::string enumString(Type t)
+      {
+        switch (t) {
+        case Type::FileNotOpen: return "File not open"; break;
+        case Type::ExceptionThrown: return "Exception thrown"; break;
+        case Type::PastEnd: return "Past the end of the file"; break;
         }
       }
 #pragma GCC diagnostic pop
 
-      const char* what() const noexcept override {
+      const char* what() const noexcept override
+      {
         return message.c_str();
       }
     };
@@ -138,12 +165,12 @@ namespace otto::util {
 
     struct Chunk {
       bytes<4> id;
-      bytes<4> size = {0,0,0,0};
+      bytes<4> size = {0, 0, 0, 0};
 
       Position offset;
 
-      Chunk(bytes<4> id = {0,0,0,0}) : id (id) {}
-      Chunk(const Chunk& o) : id (o.id), size (o.size), offset (o.offset) {}
+      Chunk(bytes<4> id = {0, 0, 0, 0}) : id(id) {}
+      Chunk(const Chunk& o) : id(o.id), size(o.size), offset(o.offset) {}
       virtual ~Chunk() = default;
 
       Position beginning()
@@ -156,7 +183,8 @@ namespace otto::util {
         return offset + 8 + size.as_u();
       }
 
-      void write(ByteFile& file) {
+      void write(ByteFile& file)
+      {
         offset = file.position();
         file.write_bytes(id);
         file.write_bytes(size);
@@ -173,7 +201,8 @@ namespace otto::util {
 
       virtual void write_fields(ByteFile& file) {}
 
-      void read(ByteFile& file) {
+      void read(ByteFile& file)
+      {
         offset = file.position();
         file.read_bytes(id);
         file.read_bytes(size);
@@ -214,34 +243,30 @@ namespace otto::util {
     Position size();
 
     template<typename OutIter,
-      typename = std::enable_if<is_iterator_v<OutIter, std::byte,
-                                  std::output_iterator_tag>>>
+             typename = std::enable_if<is_iterator_v<OutIter, std::byte, std::output_iterator_tag>>>
     tl::expected<void, OutIter> read_bytes(OutIter, OutIter);
 
     template<typename OutIter,
-      typename = std::enable_if<is_iterator_v<OutIter, std::byte,
-                                  std::output_iterator_tag>>>
+             typename = std::enable_if<is_iterator_v<OutIter, std::byte, std::output_iterator_tag>>>
     tl::expected<void, std::streampos> read_bytes(OutIter, int);
 
     template<std::size_t N>
     tl::expected<void, std::streampos> read_bytes(bytes<N>&);
 
     template<typename InIter,
-      typename = std::enable_if<is_iterator_v<InIter, std::byte,
-                                  std::input_iterator_tag>>>
+             typename = std::enable_if<is_iterator_v<InIter, std::byte, std::input_iterator_tag>>>
     void write_bytes(InIter, InIter);
 
     template<typename InIter,
-      typename = std::enable_if<is_iterator_v<InIter, std::byte,
-                                  std::input_iterator_tag>>>
+             typename = std::enable_if<is_iterator_v<InIter, std::byte, std::input_iterator_tag>>>
     void write_bytes(InIter, int);
 
     template<std::size_t N>
     void write_bytes(const bytes<N>&);
 
     template<typename F>
-      auto for_chunks_in_range(Position, Position, F&& f) ->
-      std::enable_if_t<util::is_invocable_v<F, Chunk&>, void>;
+    auto for_chunks_in_range(Position, Position, F&& f)
+      -> std::enable_if_t<util::is_invocable_v<F, Chunk&>, void>;
 
     // Data
   protected:
@@ -253,14 +278,16 @@ namespace otto::util {
    */
 
   template<typename OutIter, typename>
-  tl::expected<void, OutIter> ByteFile::read_bytes(OutIter f, OutIter l) {
+  tl::expected<void, OutIter> ByteFile::read_bytes(OutIter f, OutIter l)
+  {
     if (!is_open()) throw Error(Error::Type::FileNotOpen);
-    tl::expected<void, OutIter> res {};
+    tl::expected<void, OutIter> res{};
     // If OutIter is a pointer, copy everything at once
     if constexpr (std::is_pointer_v<OutIter>) {
       fstream.read((char*) f, l - f);
       if (fstream.eof()) {
-        res = tl::unexpected<OutIter>(f + fstream.gcount() / sizeof(std::remove_pointer_t<OutIter>));
+        res =
+          tl::unexpected<OutIter>(f + fstream.gcount() / sizeof(std::remove_pointer_t<OutIter>));
         fstream.clear();
       }
     } else {
@@ -280,17 +307,18 @@ namespace otto::util {
   }
 
   template<typename OutIter, typename>
-  tl::expected<void, std::streampos> ByteFile::read_bytes(OutIter iter, int n) {
+  tl::expected<void, std::streampos> ByteFile::read_bytes(OutIter iter, int n)
+  {
     if (!is_open()) throw Error(Error::Type::FileNotOpen);
     // If OutIter is a pointer, copy everything at once
     if constexpr (std::is_pointer_v<OutIter>) {
-        fstream.read((char*) iter, n);
-      } else {
+      fstream.read((char*) iter, n);
+    } else {
       char buf;
       std::generate_n(iter, n, [&] {
-          fstream.read(&buf, 1);
-          return std::byte(buf);
-        });
+        fstream.read(&buf, 1);
+        return std::byte(buf);
+      });
     }
     if (fstream.eof()) {
       fstream.clear();
@@ -300,8 +328,9 @@ namespace otto::util {
   }
 
   template<std::size_t N>
-  tl::expected<void, std::streampos> ByteFile::read_bytes(bytes<N>& bs) {
-    fstream.read((char*)bs, N);
+  tl::expected<void, std::streampos> ByteFile::read_bytes(bytes<N>& bs)
+  {
+    fstream.read((char*) bs, N);
     if (fstream.eof()) {
       fstream.clear();
       return tl::unexpected{fstream.tellg()};
@@ -310,23 +339,25 @@ namespace otto::util {
   }
 
   template<typename InIter, typename>
-  void ByteFile::write_bytes(InIter f, InIter l) {
+  void ByteFile::write_bytes(InIter f, InIter l)
+  {
     if (!is_open()) throw Error(Error::Type::FileNotOpen);
     // If InIter is a pointer, copy everything at once
     if constexpr (std::is_pointer_v<InIter>) {
-        fstream.write((char*)f, l - f);
-      } else {
-      std::for_each(f, l, [&] (auto& b) {fstream.write((char*)&b, 1);});
+      fstream.write((char*) f, l - f);
+    } else {
+      std::for_each(f, l, [&](auto& b) { fstream.write((char*) &b, 1); });
     }
   }
 
   template<typename InIter, typename>
-  void ByteFile::write_bytes(InIter iter, int n) {
+  void ByteFile::write_bytes(InIter iter, int n)
+  {
     if (!is_open()) throw Error(Error::Type::FileNotOpen);
     // If InIter is a pointer, copy everything at once
     if constexpr (std::is_pointer_v<InIter>) {
-        fstream.write((char*)iter, n);
-      } else {
+      fstream.write((char*) iter, n);
+    } else {
       for (int i = 0; i < n; i++, iter++) {
         fstream.write(reinterpret_cast<char*>(&(*iter)), 1);
       }
@@ -334,13 +365,15 @@ namespace otto::util {
   }
 
   template<std::size_t N>
-  void ByteFile::write_bytes(const bytes<N>& bs) {
-    fstream.write((char*)bs.data, N);
+  void ByteFile::write_bytes(const bytes<N>& bs)
+  {
+    fstream.write((char*) bs.data, N);
   }
 
   template<typename F>
-  auto ByteFile::for_chunks_in_range(Position i, Position o, F &&f) ->
-  std::enable_if_t<util::is_invocable_v<F, Chunk&>, void> {
+  auto ByteFile::for_chunks_in_range(Position i, Position o, F&& f)
+    -> std::enable_if_t<util::is_invocable_v<F, Chunk&>, void>
+  {
     seek(i);
     if (o > size()) {
       o = size();
@@ -355,4 +388,4 @@ namespace otto::util {
       seek(chunk.past_end());
     }
   }
-}
+} // namespace otto::util

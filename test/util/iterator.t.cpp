@@ -1,5 +1,7 @@
 #include "testing.t.hpp"
 
+#include <array>
+
 #include "util/iterator.hpp"
 
 namespace otto::util {

@@ -43,7 +43,7 @@ namespace otto::core::voices {
   float VoiceBase<D, P>::aftertouch() noexcept
   {
     return aftertouch_;
-}
+  }
 
   template<typename D, typename P>
   bool VoiceBase<D, P>::is_triggered() noexcept
@@ -87,7 +87,7 @@ namespace otto::core::voices {
   template<typename V, int N>
   VoiceManager<V, N>::VoiceManager(Props& props) noexcept : props(props)
   {
-    for (int i = 0; i < voice_count; ++i) {
+    for (int i = 0; i < voice_count_v; ++i) {
       auto& voice = voices_[i];
       envelope_props.attack.on_change().connect(
         [&voice](float attack) { voice.env_.attack(attack); });
@@ -225,7 +225,7 @@ namespace otto::core::voices {
   }
 
   template<typename V, int N>
-  auto VoiceManager<V, N>::voices() -> std::array<Voice, voice_count>&
+  auto VoiceManager<V, N>::voices() -> std::array<Voice, voice_count_v>&
   {
     return voices_;
   }
