@@ -60,7 +60,7 @@ namespace otto::engines {
   };
 
 
-  static const std::array<Fraction, 19> fractions = {{{1, 1},
+  static const std::array<Fraction, 20> fractions = {{{1, 1},
                                                       {1, 64},
                                                       {1, 32},
                                                       {3, 32},
@@ -78,7 +78,8 @@ namespace otto::engines {
                                                       {4, 1},
                                                       {7, 4},
                                                       {7, 16},
-                                                      {7, 2}}};
+                                                      {7, 2},
+                                                      {0, 1}}};
 
   static const std::array<Algorithm, 11> algorithms = {
     {Algorithm({1, 2, 3},
@@ -599,8 +600,8 @@ namespace otto::engines {
       ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
       ctx.fillText("Self-mod", {x_pad_left + 10, y_pad + 100});
 
-      int circ_x = 1.6 * x_pad_left;
-      int circ_y = 2.3 * y_pad;
+      float circ_x = 1.6 * x_pad_left;
+      float circ_y = 2.3 * y_pad;
       int rad = 15;
 
 
@@ -723,7 +724,7 @@ namespace otto::engines {
       ctx.beginPath();
       if (algorithms[engine.props.algN].modulator_flags[i]) {
         ctx.rect(
-          {x_pad + 12.5 * (1 - op_level), y_pad + (3 - i) * space - 13 + 12.5 * (1 - op_level)},
+          {x_pad + 12.5f * (1 - op_level), y_pad + (3 - i) * space - 13 + 12.5f * (1 - op_level)},
           {25 * op_level, 25 * op_level});
       } else { // draw carrier
         ctx.circle({x_pad + 12, y_pad + (3 - i) * space}, 15 * op_level);
