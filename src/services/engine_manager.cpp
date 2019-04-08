@@ -91,22 +91,17 @@ namespace otto::services {
     });
 
     ui_manager.register_key_handler(ui::Key::envelope, [&](ui::Key k) {
-      auto* owner = dynamic_cast<engines::EngineWithEnvelope*>(&synth.current());
-      if (owner) {
+      auto& owner = synth.current();
         if (ui_manager.is_pressed(ui::Key::shift)) {
-          ui_manager.display(owner->voices_screen());
+          ui_manager.display(owner.voices_screen());
         } else {
           ui_manager.select_engine("Synth");
-          ui_manager.display(owner->envelope_screen());
-        }
+          ui_manager.display(owner.envelope_screen());
       }
     });
 
     ui_manager.register_key_handler(ui::Key::voices, [&](ui::Key k) {
-      auto* owner = dynamic_cast<engines::EngineWithEnvelope*>(&synth.current());
-      if (owner) {
-        ui_manager.display(owner->voices_screen());
-      }
+      ui_manager.display(synth.current().voices_screen());
     });
 
     ui_manager.register_key_handler(ui::Key::fx1, [&](ui::Key k) {

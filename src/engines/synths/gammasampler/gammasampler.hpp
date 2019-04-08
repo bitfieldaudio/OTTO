@@ -15,7 +15,7 @@ namespace otto::engines {
   using namespace props;
 
 
-  struct Sampler : SynthEngine<Sampler>, EngineWithEnvelope {
+  struct Sampler : SynthEngine<Sampler> {
     static constexpr util::string_ref name = "Sampler";
     struct Props {
       Property<std::string> file = "";
@@ -42,10 +42,14 @@ namespace otto::engines {
 
     audio::ProcessData<1> process(audio::ProcessData<1>) override;
 
+    voices::IVoiceManager& voice_mgr() noexcept override
+    {
+      return _voice_mgr;
+    }
     ui::Screen& envelope_screen() override;
     ui::Screen& voices_screen() override;
 
-  private:
+  protected:
     friend struct SamplerScreen;
     friend struct SamplerEnvelopeScreen;
 
@@ -59,6 +63,20 @@ namespace otto::engines {
     gam::Biquad<> _lo_filter;
     gam::Biquad<> _hi_filter;
 
+    struct Pre : voices::PreBase<Pre, Props> {
+      using voices::PreBase<Pre, Props>::PreBase;
+    };
+    struct Voice : voices::VoiceBase<Voice, Pre> {
+      using voices::VoiceBase<Voice, Pre>::VoiceBase;
+      float operator()() noexcept
+      {
+        return 0;
+      }
+    };
+
+    struct Post : voices::PostBase<Post, Voice> {};
+    using VoiceManager = voices::VoiceManager<Post, 6>;
+    VoiceManager _voice_mgr = {props};
 
     std::unique_ptr<ui::Screen> _envelope_screen;
   };

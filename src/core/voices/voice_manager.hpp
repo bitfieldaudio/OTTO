@@ -12,6 +12,7 @@
 #include "core/audio/processor.hpp"
 
 #include "util/crtp.hpp"
+#include "util/algorithm.hpp"
 
 namespace otto::core::voices {
 
@@ -21,6 +22,8 @@ namespace otto::core::voices {
   template<typename DerivedT, typename PropsT>
   struct PreBase : util::crtp<DerivedT, PreBase<DerivedT, PropsT>> {
     using Props = PropsT;
+
+    void operator()() noexcept {};
 
     /// Constructor
     PreBase(Props& p) noexcept;
@@ -118,6 +121,8 @@ namespace otto::core::voices {
     using Pre = typename Voice::VoiceBase::Pre;
     using Props = typename Voice::VoiceBase::Props;
 
+    float operator()(float f) noexcept { return f; }
+
     /// Constructor
     PostBase(Pre& p) noexcept;
 
@@ -151,8 +156,10 @@ namespace otto::core::voices {
     };
 
     struct SettingsProps {
-      props::Property<PlayMode, props::wrap> play_mode = { PlayMode::poly, props::limits(PlayMode::poly, PlayMode::unison)};
-      props::Property<float, props::no_signal> portamento = {0, props::limits(0, 1), props::step_size(0.01)};
+      props::Property<PlayMode, props::wrap> play_mode = {
+        PlayMode::poly, props::limits(PlayMode::poly, PlayMode::unison)};
+      props::Property<float, props::no_signal> portamento = {0, props::limits(0, 1),
+                                                             props::step_size(0.01)};
       props::Property<int, props::no_signal> octave = {0, props::limits(-2, 7)};
       props::Property<int, props::no_signal> transpose = {0, props::limits(-12, 12)};
 
@@ -164,11 +171,24 @@ namespace otto::core::voices {
 
   } // namespace details
 
+  // -- VOICE MANAGER INTERFACE -- //
+
+  struct IVoiceManager {
+    using PlayMode = details::PlayMode;
+    using EnvelopeProps = details::EnvelopeProps;
+    using SettingsProps = details::SettingsProps;
+
+    virtual ~IVoiceManager() = default;
+    virtual int voice_count() noexcept = 0;
+
+    virtual ui::Screen& envelope_screen() noexcept = 0;
+    virtual ui::Screen& settings_screen() noexcept = 0;
+  };
 
   // -- VOICE MANAGER -- //
 
   template<typename PostT, int NumberOfVoices>
-  struct VoiceManager {
+  struct VoiceManager : IVoiceManager {
     /// PostProcessor
     using Post = PostT;
 
@@ -182,7 +202,12 @@ namespace otto::core::voices {
     using Pre = typename Post::PostBase::Pre;
 
     /// The number of voices
-    static constexpr int voice_count = NumberOfVoices;
+    static constexpr int voice_count_v = NumberOfVoices;
+
+    int voice_count() noexcept override
+    {
+      return NumberOfVoices;
+    }
 
     // Assert requirements met
     static_assert(std::is_base_of_v<VoiceBase<Voice, Pre>, Voice>,
@@ -195,8 +220,8 @@ namespace otto::core::voices {
     /// Constructor
     VoiceManager(Props& props) noexcept;
 
-    ui::Screen& envelope_screen() noexcept;
-    ui::Screen& settings_screen() noexcept;
+    ui::Screen& envelope_screen() noexcept override;
+    ui::Screen& settings_screen() noexcept override;
 
     /// Process audio, applying Preprocessing, each voice and then postprocessing
     float operator()() noexcept;
@@ -208,7 +233,7 @@ namespace otto::core::voices {
     audio::ProcessData<1> process(audio::ProcessData<1> data) noexcept;
 
     /// Return list of voices
-    std::array<Voice, voice_count>& voices();
+    std::array<Voice, voice_count_v>& voices();
 
     DECL_REFLECTION(VoiceManager,
                     ("envelope", &VoiceManager::envelope_props),
@@ -233,8 +258,8 @@ namespace otto::core::voices {
 
     Props& props;
     Pre pre = {props};
-    std::array<Voice, voice_count> voices_ =
-      util::generate_array<voice_count>([this](auto) { return Voice{pre}; });
+    std::array<Voice, voice_count_v> voices_ =
+      util::generate_array<voice_count_v>([this](auto) { return Voice{pre}; });
     Post post = {pre};
 
     EnvelopeProps envelope_props;

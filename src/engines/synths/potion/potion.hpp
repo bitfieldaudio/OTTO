@@ -24,7 +24,7 @@ namespace otto::engines {
   using namespace core::engine;
   using namespace props;
 
-  struct PotionSynth : SynthEngine<PotionSynth>, EngineWithEnvelope {
+  struct PotionSynth : SynthEngine<PotionSynth> {
     static constexpr util::string_ref name = "Potion";
 
     struct WaveProps {
@@ -69,14 +69,9 @@ namespace otto::engines {
 
     audio::ProcessData<1> process(audio::ProcessData<1>) override;
 
-    ui::Screen& envelope_screen() override
+    voices::IVoiceManager& voice_mgr() override
     {
-      return voice_mgr_.envelope_screen();
-    }
-
-    ui::Screen& voices_screen() override
-    {
-      return voice_mgr_.settings_screen();
+      return voice_mgr_;
     }
 
     struct DualWavePlayer {

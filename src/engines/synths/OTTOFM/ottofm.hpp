@@ -12,7 +12,7 @@ namespace otto::engines {
   using namespace core::engine;
   using namespace props;
 
-  struct OTTOFMSynth : SynthEngine<OTTOFMSynth>, EngineWithEnvelope {
+  struct OTTOFMSynth : SynthEngine<OTTOFMSynth> {
     static constexpr util::string_ref name = "OTTO.FM";
     struct OperatorProps {
       // Envelopes
@@ -74,14 +74,9 @@ namespace otto::engines {
 
     audio::ProcessData<1> process(audio::ProcessData<1>) override;
 
-    ui::Screen& envelope_screen() override
+    voices::IVoiceManager& voice_mgr() override
     {
-      return voice_mgr_.envelope_screen();
-    }
-
-    ui::Screen& voices_screen() override
-    {
-      return voice_mgr_.settings_screen();
+      return voice_mgr_;
     }
 
     DECL_REFLECTION(OTTOFMSynth, props, ("voice_manager", &OTTOFMSynth::voice_mgr_));
