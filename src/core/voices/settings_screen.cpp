@@ -7,6 +7,7 @@ namespace otto::core::voices {
   struct SettingsScreen : ui::Screen {
     SettingsScreen(details::SettingsProps& props) : props(props) {}
 
+    bool keypress(ui::Key) override;
     void draw(ui::vg::Canvas&) override;
     void rotary(ui::RotaryEvent ev) override;
 
@@ -22,6 +23,16 @@ namespace otto::core::voices {
 
   using namespace ui;
   using namespace ui::vg;
+
+  bool SettingsScreen::keypress(ui::Key key)
+  {
+    switch (key) {
+      case ui::Key::oct_up: props.octave.step(1); break;
+      case ui::Key::oct_down: props.octave.step(-1); break;
+      default: return false; ;
+    }
+    return true;
+  }
 
   void SettingsScreen::rotary(ui::RotaryEvent ev)
   {
