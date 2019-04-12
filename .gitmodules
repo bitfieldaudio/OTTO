@@ -22,3 +22,6 @@
 [submodule "external/foonathan_array"]
 	path = external/foonathan_array
 	url = https://github.com/foonathan/array
+[submodule "external/foonathan_type_safe"]
+	path = external/foonathan_type_safe
+	url = https://github.com/foonathan/type_safe

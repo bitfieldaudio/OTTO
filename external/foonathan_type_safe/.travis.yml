@@ -1,0 +1,93 @@
+language: cpp
+
+matrix:
+  include:
+    - os: linux
+      compiler: clang
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test', 'boost-latest']
+          packages: ['g++-5', 'libboost1.55-all-dev']
+      env: TOOLSET=clang++ TOOLSET_C=clang BUILD_TYPE='Release' BUILD_DOCS=1
+
+    - os: linux
+      compiler: gcc
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test']
+          packages: ['g++-4.8']
+      env: TOOLSET=g++-4.8 TOOLSET_C=gcc-4.8 BUILD_TYPE='Debug' BUILD_DOCS=0
+    - os: linux
+      compiler: gcc
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test']
+          packages: ['g++-4.8']
+      env: TOOLSET=g++-4.8 TOOLSET_C=gcc-4.8 BUILD_TYPE='Release' BUILD_DOCS=0
+
+    - os: linux
+      compiler: gcc
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test']
+          packages: ['g++-5']
+      env: TOOLSET=g++-5 TOOLSET_C=gcc-5 BUILD_TYPE='Debug' BUILD_DOCS=0
+    - os: linux
+      compiler: gcc
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test']
+          packages: ['g++-5']
+      env: TOOLSET=g++-5 TOOLSET_C=gcc-5 BUILD_TYPE='Release' BUILD_DOCS=0
+
+    - os: osx
+      compiler: clang
+      env: TOOLSET=clang++ TOOLSET_C=clang BUILD_TYPE='Debug' BUILD_DOCS=0
+    - os: osx
+      compiler: clang
+      env: TOOLSET=clang++ TOOLSET_C=clang BUILD_TYPE='Release' BUILD_DOCS=0
+
+install:
+  - cd ../
+
+  - if [[ "$BUILD_DOCS" -eq 1 ]]; then wget https://raw.githubusercontent.com/foonathan/standardese/master/travis_get_standardese.sh; fi
+  - if [[ "$BUILD_DOCS" -eq 1 ]]; then STANDARDESE_TAG=v0.3-4 . travis_get_standardese.sh; fi
+  - if [[ "$BUILD_DOCS" -eq 1 ]]; then export CLANG_FORMAT=$LLVM_DIR/bin/clang-format; fi
+
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then wget --no-check-certificate https://www.cmake.org/files/v3.3/cmake-3.3.1-Linux-x86_64.tar.gz; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then tar -xzf cmake-3.3.1-Linux-x86_64.tar.gz; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then export CMAKE=$TRAVIS_BUILD_DIR/../cmake-3.3.1-Linux-x86_64/bin/cmake; fi
+
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then wget --no-check-certificate https://cmake.org/files/v3.3/cmake-3.3.0-Darwin-x86_64.tar.gz; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then tar -xzf cmake-3.3.0-Darwin-x86_64.tar.gz && ls && ls cmake-3.3.0-Darwin-x86_64; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then export CMAKE=$TRAVIS_BUILD_DIR/../cmake-3.3.0-Darwin-x86_64/CMake.app/Contents/bin/cmake; fi
+
+  - export CXX=$TOOLSET
+  - export CC=$TOOLSET_C
+  - $CXX --version
+  - $CC --version
+  - $CMAKE --version
+
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then pip install --user conan && export PATH=$PATH:$HOME/.local/bin; fi
+
+  - cd type_safe/
+
+script:
+  - mkdir build/ && cd build/
+  - $CMAKE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_CXX_FLAGS="-Werror -pedantic -Wall -Wextra -Wconversion -Wsign-conversion -Wno-parentheses" -DTYPE_SAFE_BUILD_TEST_EXAMPLE=ON -DTYPE_SAFE_BUILD_DOC="$BUILD_DOCS" -DTYPE_SAFE_STANDARDESE_DOWNLOAD_DIRECTORY=../../standardese/ ../
+  - $CMAKE --build .
+  - ./test/type_safe_test
+
+  # Run conan package test (only on linux, pip is not available in the osx build)
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then conan remote add Manu343726 https://api.bintray.com/conan/manu343726/conan-packages; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cd .. && conan create . Manu343726/testing --build=outdated && cd build; fi
+
+after_success:
+  - git config --global user.name "Travis CI"
+  - git config --global user.email "ci@foonathan.net"
+  - if [[ "$BUILD_DOCS" -eq 1 ]]; then $CMAKE --build . --target standardese_type_safe; fi
+  - git clone "https://$GITHUB_TOKEN@github.com/foonathan/foonathan.github.io.git/"
+  - cd foonathan.github.io/
+  - if [[ "$BUILD_DOCS" -eq 1 ]]; then cp ../doc/standardese_type_safe/*.html doc/type_safe/; fi
+  - git add doc/ && git commit -m"Update type_safe documentation";
+  - if [[ "$BUILD_DOCS" -eq 1 ]] &&  [[ "$TRAVIS_BRANCH" == "master" ]] && [[ "$TRAVIS_PULL_REQUEST" == "false" ]]; then git push; fi

@@ -27,15 +27,44 @@ namespace otto::services {
     _cm.start(_source);
   }
 
-  /// Stop the clock
   void Client::stop()
   {
     _cm.stop();
   }
 
+  void Client::set_bpm()
+  {
+    _cm.set_bpm();
+  }
+
+  void Client::set_current(Time time)
+  {
+    _cm.set_current(time);
+  }
+
   ClockManager& Client::clock_manager() noexcept
   {
     return _cm;
+  }
+
+  // DefaultClockManager //
+
+  struct DefaultClockManager : ClockManager {
+
+    Time current_time() override;
+    bool running() override;
+
+  protected:
+    void start(Source) override;
+    void stop() override;
+    void set_bpm() override;
+    void set_current(Time) override;
+  };
+
+  // ClockManager::create_default //
+
+  std::unique_ptr<ClockManager> ClockManager::create_default() {
+    return std::make_unique<DefaultClockManager>();
   }
 
 } // namespace otto::services

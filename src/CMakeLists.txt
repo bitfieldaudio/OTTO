@@ -31,6 +31,7 @@ target_link_libraries(otto PUBLIC GSL)
 target_link_libraries(otto PUBLIC fmt)
 target_link_libraries(otto PUBLIC gamma)
 target_link_libraries(otto PUBLIC foonathan_array)
+target_link_libraries(otto PUBLIC foonathan_type_safe)
 
 # Enable warnings for local code
 if(MSVC)

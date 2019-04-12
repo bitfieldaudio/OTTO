@@ -60,3 +60,9 @@ target_include_directories(gamma SYSTEM PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/incl
 execute_process(COMMAND git submodule update --init -- foonathan_array WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_library(foonathan_array INTERFACE)
 target_include_directories(foonathan_array SYSTEM INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/foonathan_array/include")
+
+# foonathan/array
+execute_process(COMMAND git submodule update --init -- foonathan_type_safe WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+add_library(foonathan_type_safe INTERFACE)
+target_include_directories(foonathan_type_safe SYSTEM INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/foonathan_type_safe/include")
+target_include_directories(foonathan_type_safe SYSTEM INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/foonathan_type_safe/external/debug_assert")

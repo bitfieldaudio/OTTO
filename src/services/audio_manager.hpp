@@ -48,7 +48,7 @@ namespace otto::services {
 
     /// Start audio processing
     ///
-    /// \postconditions `running() == true`
+    /// Sets `running() = true`
     void start() noexcept;
 
     /// Check if audio should be processed
@@ -58,6 +58,13 @@ namespace otto::services {
 
     /// The amount of cpu time spent on average since the last call to this function
     float cpu_time() noexcept;
+
+    /// Get the current instance of this service
+    /// 
+    /// Alias to `Application::current().audio_manager`
+    static AudioManager& current() noexcept {
+      return Application::current().audio_manager;
+    }
 
     struct Events {
       util::Event<> pre_init;

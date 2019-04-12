@@ -16,6 +16,8 @@ namespace otto::services {
   struct PresetManager;
   struct UIManager;
   struct StateManager;
+  struct ClockManager;
+
   struct Application;
 
   template<typename Service>
@@ -80,6 +82,7 @@ namespace otto::services {
                 ServiceStorage<StateManager>::Factory state_factory,
                 ServiceStorage<PresetManager>::Factory preset_factory,
                 ServiceStorage<AudioManager>::Factory audio_factory,
+                ServiceStorage<ClockManager>::Factory clock_factory,
                 ServiceStorage<UIManager>::Factory ui_factory,
                 ServiceStorage<EngineManager>::Factory engine_factory);
 
@@ -102,6 +105,7 @@ namespace otto::services {
     ServiceStorage<StateManager> state_manager;
     ServiceStorage<PresetManager> preset_manager;
     ServiceStorage<AudioManager> audio_manager;
+    ServiceStorage<ClockManager> clock_manager;
     ServiceStorage<UIManager> ui_manager;
     ServiceStorage<EngineManager> engine_manager;
 

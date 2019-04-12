@@ -3,8 +3,10 @@
 #include <array>
 #include <memory>
 #include <tl/optional.hpp>
+#include <type_safe/strong_typedef.hpp>
 
 #include "core/service.hpp"
+#include "services/application.hpp"
 
 namespace otto::services {
 
@@ -13,13 +15,13 @@ namespace otto::services {
   /// The clock can be started or stopped by an internal or external source,
   /// and should be used by the sequencer, the looper, and arpeggiators.
   struct ClockManager : core::Service {
-    using Time = float;
+    using Time = type_safe::strong_typedef<float, struct TimeTag>;
 
     /// The source currently controling the clock.
     enum struct Source { internal, midi, sync };
 
     /// Get the current time
-    virtual Time current() = 0;
+    virtual Time current_time() = 0;
     /// Whether the clock is running
     virtual bool running() = 0;
 
@@ -42,6 +44,10 @@ namespace otto::services {
     /// Create an instance of the default clock manager
     static std::unique_ptr<ClockManager> create_default();
 
+    static ClockManager& current() noexcept {
+      return Application::current().clock_manager;
+    }
+
   protected:
     /// Start the clock, implementation
     ///
@@ -52,6 +58,16 @@ namespace otto::services {
     ///
     /// Called by @ref Client::start
     virtual void stop() = 0;
+
+    /// Set the bpm, implementation
+    /// 
+    /// Called by @ref Client::set_bpm
+    virtual void set_bpm() = 0;
+
+    /// Set current time, implementation
+    /// 
+    /// Called by @ref Client::set_current
+    virtual void set_current(Time) = 0;
 
     std::array<bool, 3> _client_exists;
     Source _active_source = Source::internal;
@@ -72,7 +88,6 @@ namespace otto::services {
 
     /// The clock manager this client is attached to.
     ClockManager& clock_manager() noexcept;
-
   private:
     friend ClockManager;
 
