@@ -1,8 +1,6 @@
 #pragma once
 
-#include <type_traits>
-#include <cmath>
-#include <gsl/span>
+// namespace otto::util::audio
 
 #include "util/dyn-array.hpp"
 #include "util/iterator.hpp"
@@ -16,7 +14,8 @@ namespace otto::util::audio {
    * @B Signal B
    * @ratio B:A, amount of B to mix into signal A.
    */
-  inline float mix(float A, float B, float ratio = 0.5) {
+  inline float mix(float A, float B, float ratio = 0.5)
+  {
     return A + (B - A) * ratio;
   }
 
@@ -30,11 +29,9 @@ namespace otto::util::audio {
   template<typename Rng1, typename Rng2, typename... Rngs>
   void add_all(Rng1&& r1, Rng2&& r2, Rngs&&... rs)
   {
-    auto sum = [](auto const&... e) -> decltype(auto) {
-      return (e + ...);
-    };
-    for (auto&& [ir1, irs] : util::zip(
-           r1, util::zip(std::forward<Rng2>(r2), std::forward<Rngs>(rs)...))) {
+    auto sum = [](auto const&... e) -> decltype(auto) { return (e + ...); };
+    for (auto&& [ir1, irs] :
+         util::zip(r1, util::zip(std::forward<Rng2>(r2), std::forward<Rngs>(rs)...))) {
       ir1 += std::apply(sum, irs);
     }
   }
@@ -47,25 +44,29 @@ namespace otto::util::audio {
     int nsamples = 0;
 
     /// Add a sample to the graph
-    void add(float sample) {
+    void add(float sample)
+    {
       ++nsamples;
       sum += std::abs(sample);
     }
 
     /// Clear the values, starting a new average
-    void clear() {
+    void clear()
+    {
       int scale = 64;
       sum /= scale;
       nsamples /= scale;
     }
 
     /// get `average` clamped to `[0, 1]`
-    float clip() const {
-      return std::clamp(nsamples == 0 ? 0 : sum/nsamples, 0.f, 1.f);
+    float clip() const
+    {
+      return std::clamp(nsamples == 0 ? 0 : sum / nsamples, 0.f, 1.f);
     }
 
-    operator float() const {
-      return nsamples == 0 ? 0 : sum/nsamples;
+    operator float() const
+    {
+      return nsamples == 0 ? 0 : sum / nsamples;
     }
   };
 
@@ -74,7 +75,8 @@ namespace otto::util::audio {
     const float k = 0.001;
     float value = 0;
 
-    float operator()(float x) {
+    float operator()(float x)
+    {
       auto abs = std::abs(x);
       if (abs > value) {
         value = abs;
@@ -94,48 +96,55 @@ namespace otto::util::audio {
     T in = 0;
     T out = 0;
 
-    operator bool() const {
+    operator bool() const
+    {
       return in != out;
     }
 
-    T size() const {
+    T size() const
+    {
       return out - in;
     }
 
-    T middle() const {
+    T middle() const
+    {
       return in + (out - in) / static_cast<T>(2);
     }
 
-    T clamp(T val) const {
+    T clamp(T val) const
+    {
       return std::clamp(val, in, out);
     }
 
-    bool contains(const T element) const {
+    bool contains(const T element) const
+    {
       return (element >= in && element <= out);
     }
 
-    bool contains(const Section<T> &other) const {
+    bool contains(const Section<T>&other) const  {
       return (contains(other.in) && contains(other.out));
     }
 
-    bool operator==(Section o) const {
+    bool operator==(Section o) const
+    {
       return in == o.in && out == o.out;
     }
 
-    bool operator!=(Section o) const {
+    bool operator!=(Section o) const
+    {
       return in != o.in || out != o.out;
     }
 
     enum Overlap {
-      None        = 0b0000,
-      Equal       = 0b0001,
-      Contained   = 0b0010,
-      ContainsIn  = 0b0100,
+      None = 0b0000,
+      Equal = 0b0001,
+      Contained = 0b0010,
+      ContainsIn = 0b0100,
       ContainsOut = 0b1000,
-      Contains    = ContainsIn | ContainsOut,
+      Contains = ContainsIn | ContainsOut,
     };
 
-    Overlap overlaps(const Section<T> &other) const {
+    Overlap overlaps(const Section<T> other) const  {
       if (*this == other) return Overlap::Equal;
       if (contains(other)) return Overlap::Contains;
       if (other.contains(*this)) return Overlap::Contained;
@@ -149,7 +158,8 @@ namespace otto::util::audio {
     /// Will, if needed, extend this section to span over both this and `o`
     ///
     /// If `o` has `size < 0`, no modifications are made
-    Section& operator+=(Section o) {
+    Section& operator+=(Section o)
+    {
       in = std::min(in, o.in);
       out = std::max(out, o.out);
       return *this;
@@ -158,7 +168,8 @@ namespace otto::util::audio {
     /// Add `o` to a copy of this section
     ///
     /// see <operator+=> for details
-    Section operator+(Section o) const {
+    Section operator+(Section o) const
+    {
       Section res = *this;
       res += o;
       return res;
@@ -178,17 +189,15 @@ namespace otto::util::audio {
     /// As such, it is guarantied that every part in this, but not in `o` will
     /// be preserved. It is however not guarrantied that all of `o` will be
     /// removed.
-    Section& operator-=(Section o) {
+    Section& operator-=(Section o)
+    {
       switch (overlaps(o)) {
       case ContainsIn:
-        out = o.in; break;
-      case ContainsOut:
-        in = o.out; break;
+    out = o.in; break;
+      case ContainsOut: in = o.out; break;
       case Contained:
-      case Equal:
-        in = out; break;
-      default:
-        break;
+      case Equal: in = out; break;
+      default: break;
       }
       return *this;
     }
@@ -203,4 +212,5 @@ namespace otto::util::audio {
     }
   };
 
-} // otto::audio
+} 
+    

@@ -20,6 +20,18 @@ namespace otto::board::ui {
       }
     };
 
+    auto send_sustain = [action] {
+      if (action == Action::press) {
+        Application::current().audio_manager->send_midi_event(
+          core::midi::ControlChangeEvent{0x40, 64});
+        LOGI("Sustain down");
+      } else if (action == Action::release) {
+        Application::current().audio_manager->send_midi_event(
+          core::midi::ControlChangeEvent{0x40, 0});
+        LOGI("Sustain released");
+      }
+    };
+
     using OKey = core::ui::Key;
 
     auto send_key = [action](OKey k, bool repeat = false) {
@@ -37,6 +49,7 @@ namespace otto::board::ui {
 
     if (mods & Modifier::alt) {
       switch (key) {
+      case Key::space: send_sustain(); return;
       case Key::q: send_midi(17); return;
       case Key::n2: send_midi(18); return;
       case Key::w: send_midi(19); return;

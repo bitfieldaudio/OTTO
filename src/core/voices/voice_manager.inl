@@ -130,9 +130,12 @@ namespace otto::core::voices {
 
     sustain_.on_change().connect([this](bool val) {
       if (!val) {
-        while (!held_keys_.empty()) {
-          static_cast<void>(stop_voice(held_keys_.back()));
-          held_keys_.pop_back();
+        auto copy = note_stack;
+        for (auto&& nvp : copy) {
+          if (nvp.should_release) {
+            stop_voice(nvp.note);
+            DLOGI("Released note {}", nvp.note);
+          }
         }
       }
     });
@@ -181,7 +184,10 @@ namespace otto::core::voices {
   {
     auto key = evt.key + settings_props.octave * 12 + settings_props.transpose;
     if (sustain_) {
-      held_keys_.push_back(key);
+      auto found = util::find_if(note_stack, [&] (auto& nvp) { return nvp.note == key; });
+      if (found != note_stack.end()) {
+        found->should_release = true;
+      }
       return nullptr;
     } else {
       return stop_voice(key);

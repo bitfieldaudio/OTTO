@@ -251,6 +251,10 @@ namespace otto::core::voices {
     struct NoteVoicePair {
       int note = 0;
       Voice* voice = nullptr;
+      /// Whether a physical key is not holding this note down
+      /// 
+      /// When using a sustain pedal, this will be set to false on note off
+      bool should_release = false;
 
       bool has_voice() const noexcept
       {
@@ -261,7 +265,6 @@ namespace otto::core::voices {
     float pitch_bend_ = 1;
 
     props::Property<bool> sustain_ = {false};
-    std::vector<int> held_keys_;
 
     std::deque<Voice*> free_voices;
     std::vector<NoteVoicePair> note_stack;

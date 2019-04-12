@@ -4,9 +4,9 @@
 #include <cmath>
 #include <gsl/gsl>
 
-#include "util/variant.hpp"
 #include "util/algorithm.hpp"
 #include "util/exception.hpp"
+#include "util/variant.hpp"
 
 #include "services/log_manager.hpp"
 #include "util/utility.hpp"
@@ -145,7 +145,8 @@ namespace otto::core::midi {
     int controler = 0;
     int value = 0;
 
-    ControlChangeEvent(const MidiEvent& event) : MidiEvent(event){};
+    ControlChangeEvent(int controler, int value) : controler(controler), value(value) {}
+    ControlChangeEvent(const MidiEvent& event) : MidiEvent(event) {}
 
     std::array<byte, 3> to_bytes()
     {
@@ -162,21 +163,23 @@ namespace otto::core::midi {
   };
 
   struct PitchBendEvent : public MidiEvent {
-      int value = 0;
+    int value = 0;
 
-      PitchBendEvent(const MidiEvent& event) : MidiEvent(event){};
+    PitchBendEvent(int value) : value(value) {}
+    PitchBendEvent(const MidiEvent& event) : MidiEvent(event){};
 
-      static PitchBendEvent from_bytes(gsl::span<byte> bytes, int time = 0)
-      {
-        auto res = PitchBendEvent(MidiEvent::from_bytes(bytes, time));
-        res.value = (unsigned short)bytes[2];
-        res.value <<= 7;
-        res.value |= (unsigned short)bytes[1];
-        return(res);
-      }
+    static PitchBendEvent from_bytes(gsl::span<byte> bytes, int time = 0)
+    {
+      auto res = PitchBendEvent(MidiEvent::from_bytes(bytes, time));
+      res.value = (unsigned short) bytes[2];
+      res.value <<= 7;
+      res.value |= (unsigned short) bytes[1];
+      return (res);
+    }
   };
 
-  using AnyMidiEvent = mpark::variant<MidiEvent, NoteOnEvent, NoteOffEvent, ControlChangeEvent, PitchBendEvent>;
+  using AnyMidiEvent =
+    mpark::variant<MidiEvent, NoteOnEvent, NoteOffEvent, ControlChangeEvent, PitchBendEvent>;
 
   inline AnyMidiEvent from_bytes(gsl::span<unsigned char> bytes, int time = 0)
   {
