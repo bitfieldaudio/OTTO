@@ -40,7 +40,8 @@ namespace otto::services {
       engines::Chorus>;
     using ArpDispatcher = EngineDispatcher< //
       EngineType::arpeggiator,
-      engines::Euclid>;
+      engines::Euclid,
+      engines::Arp>;
     using SynthDispatcher = EngineDispatcher< //
       EngineType::synth,
       engines::GossSynth,
