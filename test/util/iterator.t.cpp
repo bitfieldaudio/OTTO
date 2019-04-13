@@ -252,12 +252,23 @@ namespace otto::util {
     auto circ = view::circular(data);
     auto iter = circ.begin();
 
-    SECTION("circular") {
-      REQUIRE(*iter++ == 1);
-      REQUIRE(*iter++ == 2);
-      REQUIRE(*iter++ == 3);
-      REQUIRE(*iter++ == 1);
-      REQUIRE(*iter++ == 2);
+    SECTION("basics") {
+      REQUIRE(*iter == 1);
+      REQUIRE(*++iter == 2);
+      REQUIRE(*++iter == 3);
+      REQUIRE(*++iter == 1);
+      REQUIRE(*++iter == 2);
+      REQUIRE(*--iter == 1);
+      REQUIRE(*--iter == 3);
+      REQUIRE(*--iter == 2);
+      REQUIRE(*--iter == 1);
+
+      std::advance(iter, 2);
+      REQUIRE(*iter == 3);
+      std::advance(iter, -2);
+      REQUIRE(*iter == 1);
+      std::advance(iter, -2);
+      REQUIRE(*iter == 2);
     }
   }
 }

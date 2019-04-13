@@ -16,8 +16,8 @@ namespace otto::util {
   /// containers
   ///
   /// \attention `otto::util::iterator` is an inline namespace, meaning all members can and should
-  /// be/// accessed directly from the `otto::util` namespace i.e. as `util::float_step(...)`, not
-  /// /// `util::iterator::float_step(...)`. It is only a separate namespace for clarification of
+  /// be accessed directly from the `otto::util` namespace i.e. as `util::float_step(...)`, not
+  /// `util::iterator::float_step(...)`. It is only a separate namespace for clarification of
   /// documentation and name resolution.
 
 
@@ -1075,23 +1075,27 @@ namespace otto::util {
     ///
     template<typename WrappedIter>
     struct circular_iterator : iterator_facade<circular_iterator<WrappedIter>,
-                                             detail::value_type_t<WrappedIter>,
-                                             detail::iterator_category_t<WrappedIter>,
-                                             detail::reference_t<WrappedIter>> {
+                                               detail::value_type_t<WrappedIter>,
+                                               detail::iterator_category_t<WrappedIter>,
+                                               detail::reference_t<WrappedIter>> {
       static_assert(std::is_same_v<std::decay_t<decltype(*std::declval<WrappedIter>())>,
                                    detail::value_type_t<WrappedIter>>);
 
       circular_iterator(WrappedIter iter, WrappedIter first, WrappedIter last)
-        : iter(std::move(iter)),
-          first(std::move(first)),
-          last(std::move(last))
-      {
-      }
+        : iter(std::move(iter)), first(std::move(first)), last(std::move(last))
+      {}
 
       void advance(int n)
       {
-        ++iter;
-        if (iter == last) iter = first;
+        for (int i = 0; i < std::abs(n); i++) {
+          if (n > 0) {
+            iter++;
+            if (iter == last) iter = first;
+          } else {
+            if (iter == first) iter = last;
+            iter--;
+          }
+        }
       }
 
       decltype(auto) dereference()
