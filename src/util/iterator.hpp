@@ -991,7 +991,7 @@ namespace otto::util {
         std::advance(iter, 1);
       }
 
-      auto dereference()
+      decltype(auto) dereference()
       {
         return std::invoke(*callable, *iter);
       }
@@ -1050,7 +1050,7 @@ namespace otto::util {
         }
       }
 
-      auto dereference()
+      decltype(auto) dereference()
       {
         return *iter;
       }
@@ -1070,6 +1070,49 @@ namespace otto::util {
       std::shared_ptr<Predicate> callable;
     };
 
+    ///
+    /// Circular Iterator
+    ///
+    template<typename WrappedIter>
+    struct circular_iterator : iterator_facade<circular_iterator<WrappedIter>,
+                                             detail::value_type_t<WrappedIter>,
+                                             detail::iterator_category_t<WrappedIter>,
+                                             detail::reference_t<WrappedIter>> {
+      static_assert(std::is_same_v<std::decay_t<decltype(*std::declval<WrappedIter>())>,
+                                   detail::value_type_t<WrappedIter>>);
+
+      circular_iterator(WrappedIter iter, WrappedIter first, WrappedIter last)
+        : iter(std::move(iter)),
+          first(std::move(first)),
+          last(std::move(last))
+      {
+      }
+
+      void advance(int n)
+      {
+        ++iter;
+        if (iter == last) iter = first;
+      }
+
+      decltype(auto) dereference()
+      {
+        return *iter;
+      }
+
+      bool equal(const circular_iterator& o) const
+      {
+        return iter == o.iter;
+      }
+
+      auto difference(const circular_iterator& o) const
+      {
+        return iter - o.iter;
+      }
+
+      WrappedIter iter;
+      WrappedIter first, last;
+    };
+
 
   } // namespace iterator
 
@@ -1084,9 +1127,6 @@ namespace otto::util {
       auto last = transformiter(end(r), first);
       return sequence(first, last);
     }
-  } // namespace view
-
-  namespace view {
 
     template<typename Range, typename Predicate>
     auto filter(Range&& r, Predicate&& c)
@@ -1095,6 +1135,16 @@ namespace otto::util {
       using filteriter = filter_iterator<decltype(begin(r)), std::decay_t<Predicate>>;
       auto first = filteriter(begin(r), end(r), std::forward<Predicate>(c));
       auto last = filteriter(end(r), end(r), first);
+      return sequence(first, last);
+    }
+
+    template<typename Range>
+    auto circular(Range&& r)
+    {
+      using std::begin, std::end;
+      using CircIter = circular_iterator<decltype(begin(r))>;
+      auto first = CircIter(begin(r), begin(r), end(r));
+      auto last = CircIter(end(r), begin(r), end(r));
       return sequence(first, last);
     }
   } // namespace view

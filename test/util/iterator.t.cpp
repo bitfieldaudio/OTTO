@@ -245,4 +245,19 @@ namespace otto::util {
       REQUIRE(flag);
     }
   }
+
+  TEST_CASE("Circular iterator", "[iterator] [util]") {
+    std::vector<int> data = {1, 2, 3};
+
+    auto circ = view::circular(data);
+    auto iter = circ.begin();
+
+    SECTION("circular") {
+      REQUIRE(*iter++ == 1);
+      REQUIRE(*iter++ == 2);
+      REQUIRE(*iter++ == 3);
+      REQUIRE(*iter++ == 1);
+      REQUIRE(*iter++ == 2);
+    }
+  }
 }
