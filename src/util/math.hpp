@@ -17,6 +17,11 @@ namespace otto::util::math {
     return std::round(f * i)/i;
   }
 
+  template <typename T>
+  int sgn(T val) {
+    return (T(0) < val) - (val < T(0));
+  }
+
   /// Real modulo for negative `a` too
   template<typename T>
   constexpr inline T modulo(T a, T b) {

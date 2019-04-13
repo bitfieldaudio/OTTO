@@ -10,6 +10,7 @@
 #include "engines/misc/master/master.hpp"
 #include "engines/misc/sends/sends.hpp"
 #include "engines/seq/euclid/euclid.hpp"
+#include "engines/seq/arp/arp.hpp"
 #include "engines/synths/OTTOFM/ottofm.hpp"
 #include "engines/synths/potion/potion.hpp"
 #include "engines/synths/rhodes/rhodes.hpp"
