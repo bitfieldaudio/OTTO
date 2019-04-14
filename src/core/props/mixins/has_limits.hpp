@@ -18,14 +18,20 @@ namespace otto::core::props {
     struct limits {
       static constexpr auto min() {
         if constexpr (std::is_enum_v<T>) {
-          return util::underlying(*util::min_element(enum_values<T>()));
+          auto vals = enum_values<T>();
+          auto iter = util::min_element(vals);
+          if (iter == vals.end()) return util::underlying(T{0});
+          return util::underlying(*iter);
         } else {
           return std::numeric_limits<T>::min();
         }
       }
       static constexpr auto max() {
         if constexpr (std::is_enum_v<T>) {
-          return util::underlying(*util::max_element(enum_values<T>()));
+          auto vals = enum_values<T>();
+          auto iter = util::max_element(vals);
+          if (iter == vals.end()) return util::underlying(T{0});
+          return util::underlying(*iter);
         } else {
           return std::numeric_limits<T>::max();
         }

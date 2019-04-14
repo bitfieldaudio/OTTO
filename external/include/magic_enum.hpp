@@ -113,6 +113,7 @@ template <typename E, E V>
   std::string_view name{__FUNCSIG__};
   constexpr auto suffix = sizeof(">(void) noexcept") - 1;
 #else
+  #error magic_enum is unsupported on this compiler
   return {}; // Unsupported compiler.
 #endif
 

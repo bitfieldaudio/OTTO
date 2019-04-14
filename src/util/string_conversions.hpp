@@ -305,6 +305,4 @@ namespace otto::util {
     return sv;
   }
 
-  static_assert(to_string(StringConvErrCode::invalid_input) == "invalid_input");
-
 } // namespace otto::util

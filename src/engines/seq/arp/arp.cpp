@@ -202,7 +202,7 @@ namespace otto::engines {
     midi::NoteOnEvent transposed = orig;
     transposed.key += t;
     return transposed;
-  };
+  }
 
   // SCREEN //
 
