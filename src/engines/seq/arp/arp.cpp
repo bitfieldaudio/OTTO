@@ -58,7 +58,6 @@ namespace otto::engines {
                     util::erase_if(held_notes_,
                                    [ev](midi::NoteOnEvent& noe) { return ev.key == noe.key; });
                     has_changed_ = true;
-                    DLOGI("Recieved OFF {}", ev.key);
                   },
                   [](auto&&) {});
     };
@@ -102,7 +101,6 @@ namespace otto::engines {
       // increment in output stack (wrapping) and push new notes
       iter++;
       for (auto ev : *iter) {
-        DLOGI("Send ON: {}", ev.key);
         data.midi.push_back(ev);
       }
     }
