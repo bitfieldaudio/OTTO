@@ -16,6 +16,9 @@ namespace otto::engines {
     case Playmode::up: return "Up";
     case Playmode::down: return "Down";
     case Playmode::updown: return "Up/Down";
+    case Playmode::downup: return "Down/Up";
+    case Playmode::updowninc: return "Up/Down Inc.";
+    case Playmode::downupinc: return "Down/Up Inc.";
     case Playmode::manual: return "Manual";
     case Playmode::chord: return "Chord";
     };
@@ -29,6 +32,7 @@ namespace otto::engines {
     case OctaveMode::octaveup: return "+1";
     case OctaveMode::octaveupunison: return "+1Unison";
     case OctaveMode::fifthunison: return "Fifth";
+    case OctaveMode::octaveupdown: return "+1 & -1";
     default: return "";
     };
   }
@@ -125,6 +129,7 @@ namespace otto::engines {
     auto& res = output_stack_;
     res.clear();
     // Sanitize input (remove duplicates)
+    //Maybe only needed for development. Let's leave it for now
 
     // Add new notes depending on octavemode. Most octavemodes add new vectors to the output
     // (separate steps), but unison modes add new notes to the same steps. To keep things
@@ -159,6 +164,17 @@ namespace otto::engines {
       }
       break;
     }
+    case OctaveMode::octaveupdown: {
+      for (auto ev : held_notes_) {
+        NoteArray up;
+        up.push_back(transpose_note(ev, 12));
+        NoteArray down;
+        down.push_back(transpose_note(ev, -12));
+        res.push_back(up);
+        res.push_back(down);
+      }
+      break;
+    }
     case OctaveMode::standard: [[fallthrough]];
     default: {
       for (auto ev : held_notes_) {
@@ -183,6 +199,19 @@ namespace otto::engines {
       util::sort(res, [](auto& a, auto& b) { return a.front().key < b.front().key; });
       if (res.size() > 2)
         std::reverse_copy(res.begin() + 1, res.end() - 1, std::back_inserter(res));
+    } break;
+    case Playmode::downup: {
+      util::sort(res, [](auto& a, auto& b) { return a.front().key > b.front().key; });
+      if (res.size() > 2)
+        std::reverse_copy(res.begin() + 1, res.end() - 1, std::back_inserter(res));
+    } break;
+    case Playmode::updowninc: {
+      util::sort(res, [](auto& a, auto& b) { return a.front().key < b.front().key; });
+      std::reverse_copy(res.begin(), res.end(), std::back_inserter(res));
+    } break;
+    case Playmode::downupinc: {
+      util::sort(res, [](auto& a, auto& b) { return a.front().key > b.front().key; });
+      std::reverse_copy(res.begin(), res.end(), std::back_inserter(res));
     } break;
     case Playmode::manual: break;
     case Playmode::chord: {

@@ -20,6 +20,9 @@ namespace otto::engines {
       up,
       down,
       updown,
+      downup,
+      updowninc,
+      downupinc,
       manual,
       chord,
     };
@@ -29,9 +32,7 @@ namespace otto::engines {
       octaveup,
       octaveupunison,
       fifthunison,
-      //octavedown,
-      //octaveupdown,
-      //octaveupdownskip,
+      octaveupdown,
     };
 
     struct Props {
