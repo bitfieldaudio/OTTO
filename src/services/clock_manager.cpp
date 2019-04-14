@@ -8,6 +8,7 @@ namespace otto::services {
 
   using Client = ClockManager::Client;
   using Source = ClockManager::Source;
+  using Time = ClockManager::Time;
 
   tl::optional<Client> ClockManager::request_client(Source s)
   {
@@ -50,7 +51,6 @@ namespace otto::services {
   // DefaultClockManager //
 
   struct DefaultClockManager : ClockManager {
-
     Time current_time() override;
     bool running() override;
 
@@ -63,8 +63,25 @@ namespace otto::services {
 
   // ClockManager::create_default //
 
-  std::unique_ptr<ClockManager> ClockManager::create_default() {
+  std::unique_ptr<ClockManager> ClockManager::create_default()
+  {
     return std::make_unique<DefaultClockManager>();
   }
+
+  // DefaultClockManager implementation //
+
+  Time DefaultClockManager::current_time()
+  {
+    return Time{0};
+  }
+  bool DefaultClockManager::running()
+  {
+    return false;
+  }
+
+  void DefaultClockManager::start(Source) {}
+  void DefaultClockManager::stop() {}
+  void DefaultClockManager::set_bpm() {}
+  void DefaultClockManager::set_current(Time) {}
 
 } // namespace otto::services

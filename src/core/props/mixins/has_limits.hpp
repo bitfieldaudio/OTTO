@@ -1,11 +1,37 @@
 #pragma once
 
+#include <magic_enum.hpp>
+
+#include "util/algorithm.hpp"
+
 #include "services/log_manager.hpp"
 
 #include "../internal/mixin_macros.hpp"
 #include "../internal/property.hpp"
 
+
 namespace otto::core::props {
+
+  namespace detail {
+    using namespace magic_enum;
+    template<typename T>
+    struct limits {
+      static constexpr auto min() {
+        if constexpr (std::is_enum_v<T>) {
+          return util::underlying(*util::min_element(enum_values<T>()));
+        } else {
+          return std::numeric_limits<T>::min();
+        }
+      }
+      static constexpr auto max() {
+        if constexpr (std::is_enum_v<T>) {
+          return util::underlying(*util::max_element(enum_values<T>()));
+        } else {
+          return std::numeric_limits<T>::max();
+        }
+      }
+    };
+  }
 
   OTTO_PROPS_MIXIN(has_limits);
 
@@ -58,8 +84,8 @@ namespace otto::core::props {
       return (prop.get() - min) / (max - min);
     }
 
-    util::enum_decay_t<value_type> min = std::numeric_limits<util::enum_decay_t<value_type>>::min();
-    util::enum_decay_t<value_type> max = std::numeric_limits<util::enum_decay_t<value_type>>::max();
+    util::enum_decay_t<value_type> min = detail::limits<value_type>::min();
+    util::enum_decay_t<value_type> max = detail::limits<value_type>::max();
   };
 
 } // namespace otto::core::props

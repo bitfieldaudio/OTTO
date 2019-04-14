@@ -15,7 +15,7 @@ namespace otto::services {
   /// The clock can be started or stopped by an internal or external source,
   /// and should be used by the sequencer, the looper, and arpeggiators.
   struct ClockManager : core::Service {
-    using Time = type_safe::strong_typedef<float, struct TimeTag>;
+    using Time = type_safe::strong_typedef<struct TimeTag, float>;
 
     /// The source currently controling the clock.
     enum struct Source { internal, midi, sync };

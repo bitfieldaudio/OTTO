@@ -233,6 +233,10 @@ namespace otto::core::midi {
 
     shared_vector(const allocator_type& alloc) : _data(std::make_shared<vector_type>(alloc)) {}
 
+    bool empty() const {
+      return _data->empty();
+    }
+
     auto begin()
     {
       return _data->begin();

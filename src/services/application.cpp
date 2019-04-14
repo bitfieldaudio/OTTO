@@ -8,6 +8,7 @@
 #include "services/preset_manager.hpp"
 #include "services/state_manager.hpp"
 #include "services/ui_manager.hpp"
+#include "services/clock_manager.hpp"
 
 namespace otto::services {
 
