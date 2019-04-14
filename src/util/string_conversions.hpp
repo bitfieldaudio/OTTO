@@ -1,58 +1,72 @@
 #pragma once
 
-#include <string_view>
-#include <tl/expected.hpp>
 #include <cerrno>
 #include <cstdlib>
+#include <string_view>
+#include <tl/expected.hpp>
+
+#include <magic_enum.hpp>
+#include <tl/optional.hpp>
 
 #include "util/exception.hpp"
+#include "util/string_ref.hpp"
+
 
 namespace otto::util {
 
   enum struct StringConvErrCode { invalid_input, out_of_range };
   using StringConvErr = util::as_exception<StringConvErrCode>;
 
-  std::string to_lowercase(std::string_view sv) noexcept;
-  std::string to_uppercase(std::string_view sv) noexcept;
 
-  std::string to_string(int i) noexcept;
-  std::string to_string(long i) noexcept;
-  std::string to_string(long long i) noexcept;
-  std::string to_string(unsigned int i) noexcept;
-  std::string to_string(unsigned long i) noexcept;
-  std::string to_string(unsigned long long i) noexcept;
+  [[nodiscard]] std::string to_lowercase(std::string_view sv) noexcept;
+  [[nodiscard]] std::string to_uppercase(std::string_view sv) noexcept;
 
-  std::string to_string(float i) noexcept;
-  std::string to_string(double i) noexcept;
-  std::string to_string(long double i) noexcept;
+  [[nodiscard]] std::string to_string(int i) noexcept;
+  [[nodiscard]] std::string to_string(long i) noexcept;
+  [[nodiscard]] std::string to_string(long long i) noexcept;
+  [[nodiscard]] std::string to_string(unsigned int i) noexcept;
+  [[nodiscard]] std::string to_string(unsigned long i) noexcept;
+  [[nodiscard]] std::string to_string(unsigned long long i) noexcept;
 
-  std::string_view to_string(bool b) noexcept;
-  std::string_view to_string(std::string_view v) noexcept;
+  [[nodiscard]] std::string to_string(float i) noexcept;
+  [[nodiscard]] std::string to_string(double i) noexcept;
+  [[nodiscard]] std::string to_string(long double i) noexcept;
+
+  [[nodiscard]] constexpr util::string_ref to_string(bool b) noexcept;
+  [[nodiscard]] constexpr std::string_view to_string(std::string_view v) noexcept;
+  [[nodiscard]] std::string& to_string(std::string& v) noexcept;
+  [[nodiscard]] const std::string& to_string(const std::string& v) noexcept;
+
+  template<typename T, typename = std::enable_if_t<std::is_enum_v<T>>>
+  [[nodiscard]] constexpr std::string_view to_string(T e) noexcept;
 
   template<typename T>
-  tl::expected<T, StringConvErr> from_string(std::string_view) noexcept;
+  [[nodiscard]] tl::expected<T, StringConvErr> from_string(std::string_view) noexcept;
   template<>
-  tl::expected<long, StringConvErr> from_string(std::string_view sv) noexcept;
+  [[nodiscard]] tl::expected<long, StringConvErr> from_string(std::string_view sv) noexcept;
   template<>
-  tl::expected<long long, StringConvErr> from_string(std::string_view sv) noexcept;
+  [[nodiscard]] tl::expected<long long, StringConvErr> from_string(std::string_view sv) noexcept;
   template<>
-  tl::expected<unsigned int, StringConvErr> from_string(std::string_view sv) noexcept;
+  [[nodiscard]] tl::expected<unsigned int, StringConvErr> from_string(std::string_view sv) noexcept;
   template<>
-  tl::expected<unsigned long, StringConvErr> from_string(std::string_view sv) noexcept;
+  [[nodiscard]] tl::expected<unsigned long, StringConvErr> from_string(
+    std::string_view sv) noexcept;
   template<>
-  tl::expected<unsigned long long, StringConvErr> from_string(std::string_view sv) noexcept;
+  [[nodiscard]] tl::expected<unsigned long long, StringConvErr> from_string(
+    std::string_view sv) noexcept;
 
   template<>
-  tl::expected<float, StringConvErr> from_string(std::string_view sv) noexcept;
+  [[nodiscard]] tl::expected<float, StringConvErr> from_string(std::string_view sv) noexcept;
   template<>
-  tl::expected<double, StringConvErr> from_string(std::string_view sv) noexcept;
+  [[nodiscard]] tl::expected<double, StringConvErr> from_string(std::string_view sv) noexcept;
   template<>
-  tl::expected<double, StringConvErr> from_string(std::string_view sv) noexcept;
+  [[nodiscard]] tl::expected<double, StringConvErr> from_string(std::string_view sv) noexcept;
 
   template<>
-  tl::expected<bool, StringConvErr> from_string(std::string_view sv) noexcept;
+  [[nodiscard]] tl::expected<bool, StringConvErr> from_string(std::string_view sv) noexcept;
   template<>
-  tl::expected<std::string_view, StringConvErr> from_string(std::string_view sv) noexcept;
+  [[nodiscard]] tl::expected<std::string_view, StringConvErr> from_string(
+    std::string_view sv) noexcept;
 
 } // namespace otto::util
 
@@ -114,13 +128,29 @@ namespace otto::util {
     return std::to_string(i);
   }
 
-  inline std::string_view to_string(bool b) noexcept
+  constexpr util::string_ref to_string(bool b) noexcept
   {
     return b ? "true" : "false";
   }
-  inline std::string_view to_string(std::string_view sv) noexcept
+  constexpr std::string_view to_string(std::string_view sv) noexcept
   {
     return sv;
+  }
+  inline std::string& to_string(std::string& s) noexcept
+  {
+    return s;
+  }
+  inline const std::string& to_string(const std::string& s) noexcept
+  {
+    return s;
+  }
+
+  template<typename T, typename EnableIfTisEnum>
+  constexpr std::string_view to_string(T e) noexcept
+  {
+    auto res = magic_enum::enum_name(e);
+    if (res) return res.value();
+    return "";
   }
 
   template<>
@@ -274,5 +304,7 @@ namespace otto::util {
   {
     return sv;
   }
+
+  static_assert(to_string(StringConvErrCode::invalid_input) == "invalid_input");
 
 } // namespace otto::util

@@ -7,6 +7,7 @@
 #include "services/log_manager.hpp"
 #include "services/preset_manager.hpp"
 #include "services/state_manager.hpp"
+#include "services/clock_manager.hpp"
 #include "services/ui_manager.hpp"
 
 #include "board/audio_driver.hpp"
@@ -27,6 +28,7 @@ int main(int argc, char* argv[])
       StateManager::create_default,
       std::make_unique<PresetManager>,
       std::make_unique<RTAudioAudioManager>,
+      ClockManager::create_default,
       std::make_unique<GLFWUIManager>,
       EngineManager::create_default
     };

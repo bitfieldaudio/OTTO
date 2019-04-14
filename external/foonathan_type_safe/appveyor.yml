@@ -1,0 +1,12 @@
+version: '{build}'
+build_script:
+
+  - cmd: mkdir build-14-debug && cd build-14-debug\
+  - cmd: cmake -G"Visual Studio 14" -DCMAKE_BUILD_TYPE=Debug -DTYPE_SAFE_BUILD_TEST_EXAMPLE=ON ..\
+  - cmd: cmake --build . --config Debug -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+  - cmd: test\Debug\type_safe_test.exe
+
+  - cmd: cd ..\ && mkdir build-14-release && cd build-14-release\
+  - cmd: cmake -G"Visual Studio 14" -DCMAKE_BUILD_TYPE=Release -DTYPE_SAFE_BUILD_TEST_EXAMPLE=ON ..\
+  - cmd: cmake --build . --config Release -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+  - cmd: test\Release\type_safe_test.exe

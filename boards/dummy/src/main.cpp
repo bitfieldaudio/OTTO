@@ -8,6 +8,7 @@
 #include "services/preset_manager.hpp"
 #include "services/state_manager.hpp"
 #include "services/ui_manager.hpp"
+#include "services/clock_manager.hpp"
 
 using namespace otto;
 using namespace otto::services;
@@ -29,6 +30,7 @@ int main(int argc, char* argv[])
                     StateManager::create_default,
                     std::make_unique<PresetManager>,
                     std::make_unique<AudioManager>,
+                    ClockManager::create_default,
                     std::make_unique<DummyUIManager>,
                     EngineManager::create_default};
 

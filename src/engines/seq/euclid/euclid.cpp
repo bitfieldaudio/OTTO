@@ -53,11 +53,6 @@ namespace otto::engines {
 
   Euclid::Euclid() : ArpeggiatorEngine<Euclid>(std::make_unique<EuclidScreen>(this))
   {
-    static_cast<EuclidScreen*>(&screen())->refresh_state();
-  }
-
-  void Euclid::on_enable()
-  {
     for (auto& c : props.channels) c.update_notes();
     static_cast<EuclidScreen*>(&screen())->refresh_state();
   }

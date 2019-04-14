@@ -279,6 +279,8 @@ namespace otto::core::audio {
     std::array<float*, channels> raw_audio_buffers();
   };
 
+  using TestType = std::vector<struct Tag>;
+
   /// Non-owning package of data passed to audio processors
   template<>
   struct ProcessData<0> {
