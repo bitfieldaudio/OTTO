@@ -40,6 +40,9 @@ namespace otto::engines {
       Property<OctaveMode, wrap> octavemode = {OctaveMode::standard};
       Property<float> note_length = {0.2f, limits(0.01f, 1.f)};
 
+      std::vector<NoteArray> output_stack_;
+      bool graphics_outdated = false;
+
       DECL_REFLECTION(Props, playmode, octavemode, note_length);
     } props;
 
@@ -60,8 +63,7 @@ namespace otto::engines {
     bool running_ = false;
 
     std::vector<midi::NoteOnEvent> held_notes_;
-    std::vector<NoteArray> output_stack_;
-    decltype(util::view::circular(output_stack_).begin()) iter = util::view::circular(output_stack_).begin();
+    decltype(util::view::circular(props.output_stack_).begin()) iter = util::view::circular(props.output_stack_).begin();
   };
 
 

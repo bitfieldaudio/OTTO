@@ -1,6 +1,7 @@
 #include "arp.hpp"
 
 #include "core/ui/vector_graphics.hpp"
+#include <algorithm>
 
 namespace otto::engines {
 
@@ -39,8 +40,14 @@ namespace otto::engines {
 
 
   struct ArpScreen : EngineScreen<Arp> {
+    int min = 88;
+    int max = 0;
+    int num_steps = 0;
+    std::vector<Point> dots;
     void rotary(ui::RotaryEvent e) override;
     void draw(Canvas& ctx) override;
+
+    void calculate_dots(std::vector<Point>&);
 
     using EngineScreen::EngineScreen;
   };
@@ -87,7 +94,7 @@ namespace otto::engines {
 
     // If we are running, at a note-off point, and the output stack is not empty send note-off
     // events
-    if (next_beat <= data.nframes - note_off_frames && running_ && !output_stack_.empty()) {
+    if (next_beat <= data.nframes - note_off_frames && running_ && !props.output_stack_.empty()) {
       for (auto ev : *iter) {
         data.midi.push_back(midi::NoteOffEvent(ev.key));
       }
@@ -98,8 +105,10 @@ namespace otto::engines {
       // Resort notes. Wait until this point to make sure that off events have been sent
       if (has_changed_) {
         sort_notes();
-        iter = util::view::circular(output_stack_).begin();
+        iter = util::view::circular(props.output_stack_).begin();
         has_changed_ = false;
+        //Flag to recalculate on the graphics thread
+        props.graphics_outdated = true;
       }
       // Go to next value in the output_stack
       // increment in output stack (wrapping) and push new notes
@@ -123,10 +132,10 @@ namespace otto::engines {
       [this](float len) { note_off_frames = (int) len * _samples_per_beat; });
   }
 
-  // Sorting  for the arpeggiator. This is wherthe magic happens.
+  // Sorting  for the arpeggiator. This is where the magic happens.
   void Arp::sort_notes()
   {
-    auto& res = output_stack_;
+    auto& res = props.output_stack_;
     res.clear();
     // Sanitize input (remove duplicates)
     //Maybe only needed for development. Let's leave it for now
@@ -256,11 +265,64 @@ namespace otto::engines {
     ctx.lineWidth(6);
 
     ctx.font(Fonts::Norm, 22.0);
-    ctx.fillStyle(Colours::White);
-    ctx.fillText(to_string(props.playmode), 252, 41.6);
+    ctx.fillStyle(Colours::Blue);
+    ctx.fillText(to_string(props.playmode), 52, 41.6);
 
-    ctx.fillText(to_string(props.octavemode), 252, 81.6);
+    ctx.fillStyle(Colours::Green);
+    ctx.fillText(to_string(props.octavemode), 200, 41.6);
 
     ctx.restore();
+
+    //Dots
+    //If dots are outdated, recalculate.
+    if (props.graphics_outdated) {
+      calculate_dots(dots);
+      props.graphics_outdated = false;
+    }
+    //Draw dots
+    for (auto& p : dots) {
+      ctx.beginPath();
+      ctx.circle(p,5);
+      ctx.fillStyle(Colours::White);
+      ctx.stroke(Colours::White);
+      ctx.fill();
+    }
+
+  }
+
+   void ArpScreen::calculate_dots(std::vector<Point>& dots)
+  {
+    //Graphics options
+    float y_bot = 190;
+    float y_size = 100;
+    float x_step_width = 30;
+
+
+    int num_steps = 0;
+    int min = 88;
+    int max = 0;
+    //Find minimum and maximum key values
+    for (auto& v : engine.props.output_stack_)
+    {
+      num_steps += v.size();
+
+      auto current_min = util::min_element(v, [](auto& a, auto& b){return a.key < b.key; });
+      min = min > current_min->key ? current_min->key : min;
+      auto current_max = util::max_element(v, [](auto& a, auto& b){return a.key < b.key; });
+      max = max < current_max->key ? current_max->key : max;
+    }
+    //Calculate new dot values
+    dots.clear();
+    for (int i=0; i<engine.props.output_stack_.size(); i++)
+    {
+      for (auto& note : engine.props.output_stack_[i])
+      {
+        Point p;
+        p.x = width/2.f + (2 * i + 1 - num_steps) * x_step_width / 2.f;
+        if (min != max) p.y = y_bot - ((float)note.key - (float)min) / ((float)max - (float)min) * y_size;
+        else p.y = y_bot - y_size / 2;
+        dots.push_back(p);
+      }
+    }
   }
 } // namespace otto::engines
