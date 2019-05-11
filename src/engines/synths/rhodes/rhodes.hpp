@@ -16,7 +16,7 @@ namespace otto::engines {
   struct RhodesSynth : SynthEngine<RhodesSynth> {
     static constexpr util::string_ref name = "Rhodes";
     struct Props {
-      Property<float> aggro = {1, limits(0.5, 1), step_size(0.01)};
+      Property<float> aggro = {1, limits(0.3, 1), step_size(0.01)};
       Property<float> asymmetry = {1, limits(1, 3), step_size(0.05)};
       Property<float> lfo_speed = {0.1, limits(0, 1), step_size(0.01)};
       Property<float> lfo_depth = {0.1, limits(0, 1), step_size(0.01)};
