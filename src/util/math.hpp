@@ -112,4 +112,23 @@ namespace otto::util::math {
     return res;
   }
 
+  inline double vox_fasttanh2( const double x )
+  {
+    const double ax = fabs( x );
+    const double x2 = x * x;
+
+    return( x * ( 2.45550750702956 + 2.45550750702956 * ax +
+                  ( 0.893229853513558 + 0.821226666969744 * ax ) * x2 ) /
+            ( 2.44506634652299 + ( 2.44506634652299 + x2 ) *
+             fabs( x + 0.814642734961073 * x * ax )));
+  }
+
+  inline float fasttanh3( const float x)
+  {
+    const float x2 = x*x;
+    const float ax = (((x2 + 378.f)*x2 + 17325.f)*x2 + 135135)*x;
+    const float bx = ((28*x2 + 3150.f)*x2 + 62370)*x2 + 135135;
+    return ax / bx;
+  }
 }
+

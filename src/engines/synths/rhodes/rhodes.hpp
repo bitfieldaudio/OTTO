@@ -6,6 +6,10 @@
 #include <Gamma/Filter.h>
 #include <Gamma/Noise.h>
 #include <Gamma/Oscillator.h>
+#include <Gamma/scl.h>
+
+#include "util/math.hpp"
+
 
 namespace otto::engines {
 
@@ -16,7 +20,7 @@ namespace otto::engines {
   struct RhodesSynth : SynthEngine<RhodesSynth> {
     static constexpr util::string_ref name = "Rhodes";
     struct Props {
-      Property<float> aggro = {1, limits(0.3, 1), step_size(0.01)};
+      Property<float> aggro = {0.8, limits(0.3, 1), step_size(0.01)};
       Property<float> asymmetry = {1, limits(1, 3), step_size(0.05)};
       Property<float> lfo_speed = {0.1, limits(0, 1), step_size(0.01)};
       Property<float> lfo_depth = {0.1, limits(0, 1), step_size(0.01)};
@@ -48,13 +52,13 @@ namespace otto::engines {
       gam::NoiseWhite<> noise;
 
       gam::Biquad<> lpf;
-      gam::Biquad<> pickup_lpf;
       gam::Biquad<> pickup_hpf;
 
       gam::Osc<> overtones;
       gam::Decay<> env;
 
-      float hammer_strength;
+      float hammer_strength = 2;
+      float amp = 1;
 
       Voice(Pre&) noexcept;
 

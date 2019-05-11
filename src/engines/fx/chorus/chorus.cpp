@@ -31,10 +31,10 @@ namespace otto::engines {
 
     float wave_height = 20;
     float intpart = 1;
-    gam::AD<> env_blue;
-    gam::AD<> env_green;
-    gam::AD<> env_yellow;
-    gam::AD<> env_red;
+    gam::AD<> env_blue{0.001, 0.004, 1, 0};
+    gam::AD<> env_green{0.001, 0.004, 1, 0};
+    gam::AD<> env_yellow{0.001, 0.004, 1, 0};
+    gam::AD<> env_red{0.001, 0.004, 1, 0};
 
     using EngineScreen<Chorus>::EngineScreen;
   };
@@ -87,33 +87,21 @@ namespace otto::engines {
     switch (ev.rotary) {
     case Rotary::blue: {
       props.delay.step(ev.clicks);
-      env_blue.attack(0.001);
-      env_blue.decay(0.004);
-      env_blue.curve(0);
       env_blue.resetSoft();
       break;
     }
     case Rotary::green: {
       props.rate.step(ev.clicks);
-      env_green.attack(0.001);
-      env_green.decay(0.004);
-      env_green.curve(0);
       env_green.resetSoft();
       break;
     }
     case Rotary::yellow: {
       props.feedback.step(ev.clicks);
-      env_yellow.attack(0.001);
-      env_yellow.decay(0.004);
-      env_yellow.curve(0);
       env_yellow.resetSoft();
       break;
     }
     case Rotary::red: {
       props.depth.step(ev.clicks);
-      env_red.attack(0.001);
-      env_red.decay(0.004);
-      env_red.curve(0);
       env_red.resetSoft();
       break;
     }

@@ -16,6 +16,7 @@ namespace otto::core::voices {
   template<typename D, typename P>
   VoiceBase<D, P>::VoiceBase(Pre& pre) noexcept : pre(pre), props(pre.props)
   {
+    glide_ = frequency();
     env_.finish();
   }
 
@@ -69,7 +70,7 @@ namespace otto::core::voices {
     midi_note_ = midi_note;
     //Sets target value of portamento to new note
     glide_ = midi::note_freq(midi_note);
-    //frequency_ = midi::note_freq(midi_note);
+    frequency_ = glide_();
     velocity_ = velocity;
     on_note_on();
     env_.resetSoft();
@@ -98,12 +99,12 @@ namespace otto::core::voices {
     for (int i = 0; i < voice_count_v; ++i) {
       auto& voice = voices_[i];
       envelope_props.attack.on_change().connect(
-        [&voice](float attack) { voice.env_.attack(attack); });
-      envelope_props.decay.on_change().connect([&voice](float decay) { voice.env_.decay(decay); });
+        [&voice](float attack) { voice.env_.attack(8 * attack * attack + 0.02); });
+      envelope_props.decay.on_change().connect([&voice](float decay) { voice.env_.decay(decay + 0.02); });
       envelope_props.sustain.on_change().connect(
         [&voice](float sustain) { voice.env_.sustain(sustain); });
       envelope_props.release.on_change().connect(
-        [&voice](float release) { voice.env_.release(release); });
+        [&voice](float release) { voice.env_.release(4 * release * release + 0.02); });
 
       settings_props.portamento.on_change()
         .connect([&voice](float p) {
