@@ -1,6 +1,7 @@
 #pragma once
 
 #include <magic_enum.hpp>
+#include <better_enum.hpp>
 
 #include "util/algorithm.hpp"
 
@@ -22,6 +23,11 @@ namespace otto::core::props {
           auto iter = util::min_element(vals);
           if (iter == vals.end()) return util::underlying(T{0});
           return util::underlying(*iter);
+        } else if constexpr (util::BetterEnum::is<T>) {
+          auto vals = T::_values();
+          auto iter = util::min_element(vals);
+          if (iter == vals.end()) return util::underlying(T{0});
+          return util::underlying(*iter);
         } else {
           return std::numeric_limits<T>::min();
         }
@@ -29,6 +35,11 @@ namespace otto::core::props {
       static constexpr auto max() {
         if constexpr (std::is_enum_v<T>) {
           auto vals = enum_values<T>();
+          auto iter = util::max_element(vals);
+          if (iter == vals.end()) return util::underlying(T{0});
+          return util::underlying(*iter);
+        } else if constexpr (util::BetterEnum::is<T>) {
+          auto vals = T::_values();
           auto iter = util::max_element(vals);
           if (iter == vals.end()) return util::underlying(T{0});
           return util::underlying(*iter);
