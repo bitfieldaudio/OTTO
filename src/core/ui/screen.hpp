@@ -1,44 +1,16 @@
 #pragma once
 
 #include "core/ui/canvas.hpp"
+#include "services/controller.hpp"
 
 namespace otto::core::ui {
 
   /// Represents a physical key
-  enum struct Key {
-    none = 0,
+  using Key = services::Key;
+  using Encoder = services::Encoder;
+  using EncoderEvent = services::EncoderEvent;
 
-    red_click,
-    blue_click,
-    yellow_click,
-    green_click,
-
-    shift,
-    oct_up,
-    oct_down,
-
-    play,
-
-    // Globals:
-    quit,
-
-    arpeggiator,
-    fx1,
-    fx2,
-    synth,
-    envelope,
-    voices,
-
-    sequencer,
-    master,
-
-    send,
-
-    /// Number of keys
-    n_keys,
-  };
-
-  using PressedKeys = bool[util::underlying(Key::n_keys)];
+  using PressedKeys = bool[Key::_size()];
 
   /// A [Drawable]() with a defined size
   ///
@@ -51,17 +23,6 @@ namespace otto::core::ui {
     explicit Widget(vg::Size size) //
       : Drawable(), size(size)
     {}
-  };
-
-  enum struct Rotary { blue, green, yellow, red };
-
-  /// Passed to `Screen::rotary`
-  struct RotaryEvent {
-    /// The rotary at which the event occured
-    Rotary rotary;
-
-    /// The amount of steps the rotary was turned. Negative means CCW
-    int clicks;
   };
 
   /// Represents a view that covers the entire screen
@@ -90,7 +51,7 @@ namespace otto::core::ui {
     }
 
     /// This should be used for handling rotary events
-    virtual void rotary(RotaryEvent) {}
+    virtual void encoder(EncoderEvent) {}
 
     /// Run by MainUI when switching to this screen
     virtual void on_show() {}

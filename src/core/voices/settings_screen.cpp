@@ -9,7 +9,7 @@ namespace otto::core::voices {
 
     bool keypress(ui::Key) override;
     void draw(ui::vg::Canvas&) override;
-    void rotary(ui::RotaryEvent ev) override;
+    void encoder(ui::EncoderEvent ev) override;
 
     details::SettingsProps& props;
   };
@@ -27,20 +27,20 @@ namespace otto::core::voices {
   bool SettingsScreen::keypress(ui::Key key)
   {
     switch (key) {
-      case ui::Key::oct_up: props.octave.step(1); break;
-      case ui::Key::oct_down: props.octave.step(-1); break;
+      case ui::Key::plus: props.octave.step(1); break;
+      case ui::Key::minus: props.octave.step(-1); break;
       default: return false; ;
     }
     return true;
   }
 
-  void SettingsScreen::rotary(ui::RotaryEvent ev)
+  void SettingsScreen::encoder(ui::EncoderEvent ev)
   {
-    switch (ev.rotary) {
-    case Rotary::blue: props.play_mode.step(ev.clicks); break;
-    case Rotary::green: props.portamento.step(ev.clicks); break;
-    case Rotary::yellow: props.octave.step(ev.clicks); break;
-    case Rotary::red: props.transpose.step(ev.clicks); break;
+    switch (ev.encoder) {
+    case Encoder::blue: props.play_mode.step(ev.steps); break;
+    case Encoder::green: props.portamento.step(ev.steps); break;
+    case Encoder::yellow: props.octave.step(ev.steps); break;
+    case Encoder::red: props.transpose.step(ev.steps); break;
     }
   }
 

@@ -8,7 +8,7 @@ namespace otto::core::voices {
     EnvelopeScreen(details::EnvelopeProps& props) : props(props) {}
 
     void draw(ui::vg::Canvas&) override;
-    void rotary(ui::RotaryEvent ev) override;
+    void encoder(ui::EncoderEvent ev) override;
 
     details::EnvelopeProps& props;
   };
@@ -23,13 +23,13 @@ namespace otto::core::voices {
   using namespace ui;
   using namespace ui::vg;
 
-  void EnvelopeScreen::rotary(RotaryEvent ctx)
+  void EnvelopeScreen::encoder(EncoderEvent ctx)
   {
-    switch (ctx.rotary) {
-    case Rotary::blue: props.attack.step(ctx.clicks); break;
-    case Rotary::green: props.decay.step(ctx.clicks); break;
-    case Rotary::yellow: props.sustain.step(ctx.clicks); break;
-    case Rotary::red: props.release.step(ctx.clicks); break;
+    switch (ctx.encoder) {
+    case Encoder::blue: props.attack.step(ctx.steps); break;
+    case Encoder::green: props.decay.step(ctx.steps); break;
+    case Encoder::yellow: props.sustain.step(ctx.steps); break;
+    case Encoder::red: props.release.step(ctx.steps); break;
     }
   }
 

@@ -21,7 +21,7 @@ namespace otto::engines {
 
     void draw(Canvas& ctx) override;
     bool keypress(Key key) override;
-    void rotary(RotaryEvent e) override;
+    void encoder(EncoderEvent e) override;
 
     void draw_normal(Canvas& ctx);
     void draw_recording(Canvas& ctx);
@@ -145,18 +145,18 @@ namespace otto::engines {
 
   // SCREEN //
 
-  void EuclidScreen::rotary(ui::RotaryEvent ev)
+  void EuclidScreen::encoder(ui::EncoderEvent ev)
   {
     if (engine.recording) return;
 
     auto& props = engine.props;
     auto& current = props.channels.at(props.channel);
 
-    switch (ev.rotary) {
-    case Rotary::blue: props.channel.step(ev.clicks); break;
-    case Rotary::green: current.length.step(ev.clicks); break;
-    case Rotary::yellow: current.hits.step(ev.clicks); break;
-    case Rotary::red: current.rotation.step(ev.clicks); break;
+    switch (ev.encoder) {
+    case Encoder::blue: props.channel.step(ev.steps); break;
+    case Encoder::green: current.length.step(ev.steps); break;
+    case Encoder::yellow: current.hits.step(ev.steps); break;
+    case Encoder::red: current.rotation.step(ev.steps); break;
     }
     current.update_notes();
     refresh_state();

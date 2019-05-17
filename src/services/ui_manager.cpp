@@ -12,7 +12,7 @@ namespace otto::services {
 
   bool UIManager::is_pressed(Key k) noexcept
   {
-    return keys[static_cast<unsigned>(k)];
+    return keys[k._to_index()];
   }
 
   void UIManager::select_engine(const std::string& engine_name)
@@ -73,11 +73,11 @@ namespace otto::services {
 
   bool UIManager::handle_global(Key key, bool is_press)
   {
-    if (key == Key::quit) {
+/*    if (key == Key::quit) {
       Application::current().exit(Application::ErrorCode::user_exit);
       return true;
     }
-
+*/
     auto [first, last] = key_handlers.equal_range(key);
     if (first == last) return false;
 
@@ -114,9 +114,9 @@ namespace otto::services {
     key_events.outer().push_back(KeyPress{key});
   }
 
-  void UIManager::rotary(RotaryEvent ev)
+  void UIManager::encoder(EncoderEvent ev)
   {
-    rotary_events.outer().push_back(ev);
+    encoder_events.outer().push_back(ev);
   }
 
   void UIManager::keyrelease(Key key)
@@ -130,20 +130,20 @@ namespace otto::services {
     for (auto& event : key_events.inner()) {
       util::match(event,
                   [this](KeyPress ev) {
-                    keys[static_cast<unsigned>(ev.key)] = true;
+                    keys[ev.key._to_index()] = true;
                     if (handle_global(ev.key)) return;
                     cur_screen->keypress(ev.key);
                   },
                   [this](KeyRelease& ev) {
-                    keys[static_cast<unsigned>(ev.key)] = false;
+                    keys[ev.key._to_index()] = false;
                     if (handle_global(ev.key, false)) return;
                     cur_screen->keyrelease(ev.key);
                   });
     }
 
-    rotary_events.swap();
-    for (auto& event : rotary_events.inner()) {
-      cur_screen->rotary(event);
+    encoder_events.swap();
+    for (auto& event : encoder_events.inner()) {
+      cur_screen->encoder(event);
     }
   }
 } // namespace otto::services

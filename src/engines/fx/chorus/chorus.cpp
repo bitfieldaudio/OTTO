@@ -13,7 +13,7 @@ namespace otto::engines {
   struct ChorusScreen : EngineScreen<Chorus> {
     void draw(Canvas& ctx) override;
     bool keypress(Key key) override;
-    void rotary(RotaryEvent e) override;
+    void encoder(EncoderEvent e) override;
 
     using EngineScreen<Chorus>::EngineScreen;
   };
@@ -50,14 +50,14 @@ namespace otto::engines {
 
   // SCREEN //
 
-  void ChorusScreen::rotary(ui::RotaryEvent ev)
+  void ChorusScreen::encoder(ui::EncoderEvent ev)
   {
     auto& props = engine.props;
-    switch (ev.rotary) {
-    case Rotary::blue: props.delay.step(ev.clicks); break;
-    case Rotary::green: props.rate.step(ev.clicks); break;
-    case Rotary::yellow: props.feedback.step(ev.clicks); break;
-    case Rotary::red: props.depth.step(ev.clicks); break;
+    switch (ev.encoder) {
+    case Encoder::blue: props.delay.step(ev.steps); break;
+    case Encoder::green: props.rate.step(ev.steps); break;
+    case Encoder::yellow: props.feedback.step(ev.steps); break;
+    case Encoder::red: props.depth.step(ev.steps); break;
     }
   }
 

@@ -14,7 +14,7 @@ namespace otto::engines {
   struct WormholeScreen : EngineScreen<Wormhole> {
     void draw(Canvas& ctx) override;
     bool keypress(Key key) override;
-    void rotary(RotaryEvent e) override;
+    void encoder(EncoderEvent e) override;
 
     using EngineScreen<Wormhole>::EngineScreen;
   };
@@ -56,14 +56,14 @@ namespace otto::engines {
 
   // SCREEN //
 
-  void WormholeScreen::rotary(ui::RotaryEvent ev)
+  void WormholeScreen::encoder(ui::EncoderEvent ev)
   {
     auto& props = engine.props;
-    switch (ev.rotary) {
-    case Rotary::blue: props.filter.step(ev.clicks); break;
-    case Rotary::green: props.length.step(ev.clicks); break;
-    case Rotary::yellow: props.shimmer.step(ev.clicks); break;
-    case Rotary::red: props.damping.step(ev.clicks); break;
+    switch (ev.encoder) {
+    case Encoder::blue: props.filter.step(ev.steps); break;
+    case Encoder::green: props.length.step(ev.steps); break;
+    case Encoder::yellow: props.shimmer.step(ev.steps); break;
+    case Encoder::red: props.damping.step(ev.steps); break;
     }
   }
 

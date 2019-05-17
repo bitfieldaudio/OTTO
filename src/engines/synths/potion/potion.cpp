@@ -28,7 +28,7 @@ namespace otto::engines {
     void draw_filename(Canvas& ctx);
 
     bool keypress(Key key) override;
-    void rotary(RotaryEvent e) override;
+    void encoder(EncoderEvent e) override;
 
     int cur_wave = 0;
 
@@ -224,62 +224,62 @@ namespace otto::engines {
     return true;
   }
 
-  void PotionSynthScreen::rotary(RotaryEvent e)
+  void PotionSynthScreen::encoder(EncoderEvent e)
   {
     auto& props = engine.props;
-    switch (e.rotary) {
-    case Rotary::blue: props.lfo_osc.lfo_speed.step(e.clicks); break;
-    case Rotary::green: props.curve_osc.curve_length.step(e.clicks); break;
-    case Rotary::yellow:
+    switch (e.encoder) {
+    case Encoder::blue: props.lfo_osc.lfo_speed.step(e.steps); break;
+    case Encoder::green: props.curve_osc.curve_length.step(e.steps); break;
+    case Encoder::yellow:
       switch (cur_wave) {
-      case 0: props.lfo_osc.wave1.volume.step(e.clicks); break;
-      case 1: props.lfo_osc.wave2.volume.step(e.clicks); break;
-      case 2: props.curve_osc.wave1.volume.step(e.clicks); break;
-      case 3: props.curve_osc.wave2.volume.step(e.clicks); break;
+      case 0: props.lfo_osc.wave1.volume.step(e.steps); break;
+      case 1: props.lfo_osc.wave2.volume.step(e.steps); break;
+      case 2: props.curve_osc.wave1.volume.step(e.steps); break;
+      case 3: props.curve_osc.wave2.volume.step(e.steps); break;
       default: break;
       }
       break;
-    case Rotary::red:
+    case Encoder::red:
       switch (cur_wave) {
       case 0:
-        if (e.clicks > 0 && props.file_it[0] < props.filenames.end() - 1) {
+        if (e.steps > 0 && props.file_it[0] < props.filenames.end() - 1) {
           // Clockwise, go up
           props.file_it[0]++;
           props.lfo_osc.wave1.file.set(*props.file_it[0]);
-        } else if (e.clicks < 0 && props.file_it[0] > props.filenames.begin()) {
+        } else if (e.steps < 0 && props.file_it[0] > props.filenames.begin()) {
           // Counterclockwise, go down
           props.file_it[0]--;
           props.lfo_osc.wave1.file.set(*props.file_it[0]);
         }
         break;
       case 1:
-        if (e.clicks > 0 && props.file_it[1] < props.filenames.end() - 1) {
+        if (e.steps > 0 && props.file_it[1] < props.filenames.end() - 1) {
           // Clockwise, go up
           props.file_it[1]++;
           props.lfo_osc.wave2.file.set(*props.file_it[1]);
-        } else if (e.clicks < 0 && props.file_it[1] > props.filenames.begin()) {
+        } else if (e.steps < 0 && props.file_it[1] > props.filenames.begin()) {
           // Counterclockwise, go down
           props.file_it[1]--;
           props.lfo_osc.wave2.file.set(*props.file_it[1]);
         }
         break;
       case 2:
-        if (e.clicks > 0 && props.file_it[2] < props.filenames.end() - 1) {
+        if (e.steps > 0 && props.file_it[2] < props.filenames.end() - 1) {
           // Clockwise, go up
           props.file_it[2]++;
           props.curve_osc.wave1.file.set(*props.file_it[2]);
-        } else if (e.clicks < 0 && props.file_it[2] > props.filenames.begin()) {
+        } else if (e.steps < 0 && props.file_it[2] > props.filenames.begin()) {
           // Counterclockwise, go down
           props.file_it[2]--;
           props.curve_osc.wave1.file.set(*props.file_it[2]);
         }
         break;
       case 3:
-        if (e.clicks > 0 && props.file_it[3] < props.filenames.end() - 1) {
+        if (e.steps > 0 && props.file_it[3] < props.filenames.end() - 1) {
           // Clockwise, go up
           props.file_it[3]++;
           props.curve_osc.wave2.file.set(*props.file_it[3]);
-        } else if (e.clicks < 0 && props.file_it[3] > props.filenames.begin()) {
+        } else if (e.steps < 0 && props.file_it[3] > props.filenames.begin()) {
           // Counterclockwise, go down
           props.file_it[3]--;
           props.curve_osc.wave2.file.set(*props.file_it[3]);

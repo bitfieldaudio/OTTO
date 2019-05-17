@@ -289,7 +289,7 @@ namespace otto::engines {
     void draw_operators(Canvas& ctx);
     void draw_envelope(Canvas& ctx);
     bool keypress(Key key) override;
-    void rotary(RotaryEvent e) override;
+    void encoder(EncoderEvent e) override;
 
     bool shift = false;
     int cur_op = 0;
@@ -313,38 +313,38 @@ namespace otto::engines {
     return true;
   }
 
-  void OTTOFMSynthScreen::rotary(RotaryEvent e)
+  void OTTOFMSynthScreen::encoder(EncoderEvent e)
   {
     auto& props = engine.props;
     auto& current = props.operators.at(cur_op);
-    switch (e.rotary) {
-    case Rotary::blue:
+    switch (e.encoder) {
+    case Encoder::blue:
       if (!shift) {
-        current.ratio_idx.step(e.clicks);
+        current.ratio_idx.step(e.steps);
       } else {
-        current.detune.step(e.clicks);
+        current.detune.step(e.steps);
       }
       break;
-    case Rotary::green:
+    case Encoder::green:
       if (!shift) {
-        current.outLev.step(e.clicks);
+        current.outLev.step(e.steps);
       } else {
-        current.mSuspos.step(e.clicks);
+        current.mSuspos.step(e.steps);
       }
       break;
-    case Rotary::yellow:
+    case Encoder::yellow:
       if (!shift) {
-        current.feedback.step(e.clicks);
-        current.mAtt.step(e.clicks);
+        current.feedback.step(e.steps);
+        current.mAtt.step(e.steps);
       } else {
-        current.mDecrel.step(e.clicks);
+        current.mDecrel.step(e.steps);
       }
       break;
-    case Rotary::red:
+    case Encoder::red:
       if (!shift) {
-        props.fmAmount.step(e.clicks);
+        props.fmAmount.step(e.steps);
       } else {
-        props.algN.step(e.clicks);
+        props.algN.step(e.steps);
       }
       break;
     }

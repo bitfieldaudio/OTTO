@@ -72,9 +72,6 @@ namespace otto::services {
     /// Get the currently selected engine
     const std::string& selected_engine_name();
 
-  protected:
-    /// Draws the current screen and overlays.
-    void draw_frame(core::ui::vg::Canvas& ctx);
 
     /// Dispatches to the event handler for the current screen, and handles
     /// global keys.
@@ -88,12 +85,17 @@ namespace otto::services {
     /// Can be executed from a separate thread, but must be the same thread as keypress
     void keyrelease(core::ui::Key key);
 
-    /// Send rotary event
+    /// Send encoder event
     ///
     /// Can be executed from a separate thread
-    void rotary(core::ui::RotaryEvent ev);
+    void encoder(core::ui::EncoderEvent ev);
 
-    /// Actually executes the key and rotary events
+
+  protected:
+    /// Draws the current screen and overlays.
+    void draw_frame(core::ui::vg::Canvas& ctx);
+
+    /// Actually executes the key and encoder events
     void flush_events();
 
     /// Temporary solution
@@ -115,8 +117,8 @@ namespace otto::services {
 
     core::ui::PressedKeys keys;
     std::unordered_multimap<core::ui::Key, std::pair<KeyHandler, KeyHandler>> key_handlers;
-    util::atomic_swap<std::vector<KeyEvent>> key_events;
-    util::atomic_swap<std::vector<core::ui::RotaryEvent>> rotary_events;
+    util::double_buffered<std::vector<KeyEvent>> key_events;
+    util::double_buffered<std::vector<core::ui::EncoderEvent>> encoder_events;
 
     unsigned _frame_count = 0;
 

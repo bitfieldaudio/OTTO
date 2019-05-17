@@ -14,7 +14,7 @@ namespace otto::engines {
   struct RhodesSynthScreen : EngineScreen<RhodesSynth> {
     void draw(Canvas& ctx) override;
     bool keypress(Key key) override;
-    void rotary(RotaryEvent e) override;
+    void encoder(EncoderEvent e) override;
 
     using EngineScreen<RhodesSynth>::EngineScreen;
   };
@@ -113,14 +113,14 @@ namespace otto::engines {
     return false;
   }
 
-  void RhodesSynthScreen::rotary(RotaryEvent e)
+  void RhodesSynthScreen::encoder(EncoderEvent e)
   {
 
-    switch (e.rotary) {
-    case Rotary::blue:  engine.props.aggro.step(e.clicks); break;
-    case Rotary::green:  engine. props.asymmetry.step(e.clicks); break;
-    case Rotary::yellow: engine.props.lfo_speed.step(e.clicks); break;
-    case Rotary::red: engine.props.lfo_depth.step(e.clicks); break;
+    switch (e.encoder) {
+    case Encoder::blue:  engine.props.aggro.step(e.steps); break;
+    case Encoder::green:  engine. props.asymmetry.step(e.steps); break;
+    case Encoder::yellow: engine.props.lfo_speed.step(e.steps); break;
+    case Encoder::red: engine.props.lfo_depth.step(e.steps); break;
     }
 
   }

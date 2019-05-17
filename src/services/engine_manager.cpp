@@ -75,7 +75,7 @@ namespace otto::services {
     engineGetters.try_emplace("Effect2", [&]() { return &effect2.current(); });
     engineGetters.try_emplace("Arpeggiator", [&]() { return &arpeggiator.current(); });
 
-    ui_manager.register_key_handler(ui::Key::arpeggiator, [&](ui::Key k) {
+    ui_manager.register_key_handler(ui::Key::arp, [&](ui::Key k) {
       if (ui_manager.is_pressed(ui::Key::shift)) {
         ui_manager.display(arpeggiator.selector_screen());
       } else {
@@ -102,16 +102,12 @@ namespace otto::services {
       }
     });
 
-    ui_manager.register_key_handler(ui::Key::voices, [&](ui::Key k) {
-      ui_manager.display(synth.current().voices_screen());
+    ui_manager.register_key_handler(ui::Key::plus, [&](ui::Key k) {
+      synth.current().voices_screen().keypress(ui::Key::plus);
     });
 
-    ui_manager.register_key_handler(ui::Key::oct_up, [&](ui::Key k) {
-      synth.current().voices_screen().keypress(ui::Key::oct_up);
-    });
-
-    ui_manager.register_key_handler(ui::Key::oct_down, [&](ui::Key k) {
-        synth.current().voices_screen().keypress(ui::Key::oct_down);
+    ui_manager.register_key_handler(ui::Key::minus, [&](ui::Key k) {
+        synth.current().voices_screen().keypress(ui::Key::minus);
     });
 
     ui_manager.register_key_handler(ui::Key::fx1, [&](ui::Key k) {
@@ -147,7 +143,7 @@ namespace otto::services {
                                         ui_manager.display(*master_last_screen);
                                     });
 
-    ui_manager.register_key_handler(ui::Key::send,
+    ui_manager.register_key_handler(ui::Key::sends,
                                     [&](ui::Key k) {
                                       send_last_screen = ui_manager.current_screen();
                                       if (ui_manager.selected_engine_name() == "Arpeggiator" ||

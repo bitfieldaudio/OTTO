@@ -11,7 +11,7 @@ namespace otto::core::engine {
   struct EngineSelectorScreen : ui::Screen {
     EngineSelectorScreen(IEngineDispatcher&);
 
-    void rotary(ui::RotaryEvent) override;
+    void encoder(ui::EncoderEvent) override;
 
     bool keypress(ui::Key) override;
 

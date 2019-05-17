@@ -71,7 +71,7 @@ namespace otto::services {
     } events;
 
   protected:
-    util::atomic_swap<core::midi::shared_vector<core::midi::AnyMidiEvent>> midi_bufs = {{}, {}};
+    util::double_buffered<core::midi::shared_vector<core::midi::AnyMidiEvent>> midi_bufs = {{}, {}};
     std::atomic_int _samplerate = 48000;
     std::atomic_uint _buffer_size = 256;
     std::atomic_uint _buffer_number = 0;
