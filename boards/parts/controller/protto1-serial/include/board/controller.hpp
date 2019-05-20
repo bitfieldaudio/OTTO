@@ -11,6 +11,7 @@
 namespace otto::services {
 
   using BytesView = gsl::span<const std::uint8_t>;
+  class Command;
 
   /**
    * # RPI -> MCU Messages
@@ -64,10 +65,8 @@ namespace otto::services {
    * # Encoding of Key dump
    * ???
    */
-  struct PrOTTO1SerialController : Controller {
+  struct PrOTTO1SerialController final : Controller {
     PrOTTO1SerialController();
-
-    EventBag get_events() override;
 
     void set_color(LED, LEDColor) override;
     void flush_leds() override;
@@ -76,6 +75,9 @@ namespace otto::services {
   private:
     void handle_message(BytesView);
     void queue_message(BytesView);
+
+    void insert_key_event(Command cmd, Key key);
+    void insert_key_or_midi(Command cmd, BytesView args, bool do_send_midi);
 
     util::Serial serial = {"/dev/ttyACM0"};
     util::double_buffered<EventBag, util::clear_inner> events_;

@@ -1,14 +1,23 @@
 #pragma once
 
+#include <array>
 #include <better_enum.hpp>
 #include <cstdint>
-#include <type_safe/floating_point.hpp>
-#include <type_safe/strong_typedef.hpp>
+#include <foonathan/array/flat_map.hpp>
 #include <vector>
 
+#include "util/locked.hpp"
 #include "util/variant.hpp"
 
 #include "core/service.hpp"
+#include "services/application.hpp"
+
+namespace otto::board::ui {
+  enum struct Action;
+  struct Modifiers;
+  enum struct Key;
+  void handle_keyevent(board::ui::Action, board::ui::Modifiers, board::ui::Key);
+} // namespace otto::board::ui
 
 namespace otto::services {
 
@@ -176,14 +185,64 @@ namespace otto::services {
   inline const LEDColor LEDColor::Red = 0xFF0000;
 
   struct Controller : core::Service {
+    /// Function type for key handlers
+    using KeyHandler = std::function<void(Key k)>;
+
     using Event = util::variant<EncoderEvent, KeyPressEvent, KeyReleaseEvent>;
     using EventBag = std::vector<Event>;
 
-    virtual EventBag get_events() = 0;
+    static Controller& current() noexcept {
+      return Application::current().controller;
+    }
+
+    /// Actually executes the key and encoder events
+    /// 
+    /// Should only be called by graphics thread, once per frame
+    void flush_events();
 
     virtual void set_color(LED, LEDColor) = 0;
     virtual void flush_leds() = 0;
     virtual void clear_leds() = 0;
+
+    /// Check if a key is currently pressed.
+    bool is_pressed(Key k) noexcept;
+
+    /// Register a key handler
+    void register_key_handler(Key k,
+                              KeyHandler press_handler,
+                              KeyHandler release_handler = nullptr);
+
+  protected:
+    /// Dispatches to the event handler for the current screen, and handles
+    /// global keys.
+    ///
+    /// Can be executed from a separate thread
+    void keypress(Key key);
+
+    /// Dispatches to the event handler for the current screen, and handles
+    /// global keys.
+    ///
+    /// Can be executed from a separate thread, but must be the same thread as keypress
+    void keyrelease(Key key);
+
+    /// Send encoder event
+    ///
+    /// Can be executed from a separate thread
+    void encoder(EncoderEvent ev);
+
+    /// Temporary solution
+    ///
+    /// @TODO replace with something cleaner
+    friend void ::otto::board::ui::handle_keyevent(board::ui::Action,
+                                                   board::ui::Modifiers,
+                                                   board::ui::Key);
+
+  private:
+    bool handle_global(Key key, bool is_press = true);
+
+    foonathan::array::flat_map<Key, std::pair<KeyHandler, KeyHandler>> key_handlers;
+    std::array<bool, Key::_size()> keys;
+    util::double_buffered<EventBag> events;
   };
 } // namespace otto::services
 

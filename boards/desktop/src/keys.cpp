@@ -8,6 +8,8 @@
 
 namespace otto::board::ui {
 
+  using services::Controller;
+
   void handle_keyevent(Action action, Modifiers mods, Key key)
   {
     auto send_midi = [action](int note) {
@@ -37,14 +39,14 @@ namespace otto::board::ui {
 
     auto send_key = [action](OKey k, bool repeat = false) {
       if (action == Action::press || (action == Action::repeat && repeat))
-        Application::current().ui_manager->keypress(k);
+        Controller::current().keypress(k);
       else if (action == Action::release)
-        Application::current().ui_manager->keyrelease(k);
+        Controller::current().keyrelease(k);
     };
 
     auto send_encoder = [action](core::ui::Encoder rot, int n) {
       if (action == Action::press || (action == Action::repeat))
-        Application::current().ui_manager->encoder({rot, n});
+        Controller::current().encoder({rot, n});
     };
 
 

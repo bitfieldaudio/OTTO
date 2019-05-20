@@ -298,7 +298,7 @@ namespace otto::engines {
     using namespace ui::vg;
     using namespace core::ui::vg;
 
-    shift = Application::current().ui_manager->is_pressed(ui::Key::shift);
+    shift = services::Controller::current().is_pressed(ui::Key::shift);
 
     ctx.font(Fonts::Norm, 35);
 

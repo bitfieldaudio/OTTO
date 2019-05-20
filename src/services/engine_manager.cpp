@@ -69,14 +69,15 @@ namespace otto::services {
   {
     auto& ui_manager = *Application::current().ui_manager;
     auto& state_manager = *Application::current().state_manager;
+    auto& controller = *Application::current().controller;
 
     engineGetters.try_emplace("Synth", [&]() { return &synth.current(); });
     engineGetters.try_emplace("Effect1", [&]() { return &effect1.current(); });
     engineGetters.try_emplace("Effect2", [&]() { return &effect2.current(); });
     engineGetters.try_emplace("Arpeggiator", [&]() { return &arpeggiator.current(); });
 
-    ui_manager.register_key_handler(ui::Key::arp, [&](ui::Key k) {
-      if (ui_manager.is_pressed(ui::Key::shift)) {
+    controller.register_key_handler(ui::Key::arp, [&](ui::Key k) {
+      if (controller.is_pressed(ui::Key::shift)) {
         ui_manager.display(arpeggiator.selector_screen());
       } else {
         ui_manager.select_engine("Arpeggiator");
@@ -84,17 +85,17 @@ namespace otto::services {
       }
     });
 
-    ui_manager.register_key_handler(ui::Key::synth, [&](ui::Key k) {
-      if (ui_manager.is_pressed(ui::Key::shift)) {
+    controller.register_key_handler(ui::Key::synth, [&](ui::Key k) {
+      if (controller.is_pressed(ui::Key::shift)) {
         ui_manager.display(synth.selector_screen());
       } else {
         ui_manager.select_engine("Synth");
       }
     });
 
-    ui_manager.register_key_handler(ui::Key::envelope, [&](ui::Key k) {
+    controller.register_key_handler(ui::Key::envelope, [&](ui::Key k) {
       auto& owner = synth.current();
-        if (ui_manager.is_pressed(ui::Key::shift)) {
+        if (controller.is_pressed(ui::Key::shift)) {
           ui_manager.display(owner.voices_screen());
         } else {
           ui_manager.select_engine("Synth");
@@ -102,38 +103,38 @@ namespace otto::services {
       }
     });
 
-    ui_manager.register_key_handler(ui::Key::plus, [&](ui::Key k) {
+    controller.register_key_handler(ui::Key::plus, [&](ui::Key k) {
       synth.current().voices_screen().keypress(ui::Key::plus);
     });
 
-    ui_manager.register_key_handler(ui::Key::minus, [&](ui::Key k) {
+    controller.register_key_handler(ui::Key::minus, [&](ui::Key k) {
         synth.current().voices_screen().keypress(ui::Key::minus);
     });
 
-    ui_manager.register_key_handler(ui::Key::fx1, [&](ui::Key k) {
-      if (ui_manager.is_pressed(ui::Key::shift)) {
+    controller.register_key_handler(ui::Key::fx1, [&](ui::Key k) {
+      if (controller.is_pressed(ui::Key::shift)) {
         ui_manager.display(effect1.selector_screen());
       } else {
         ui_manager.select_engine("Effect1");
       }
     });
 
-    ui_manager.register_key_handler(ui::Key::fx2, [&](ui::Key k) {
-      if (ui_manager.is_pressed(ui::Key::shift)) {
+    controller.register_key_handler(ui::Key::fx2, [&](ui::Key k) {
+      if (controller.is_pressed(ui::Key::shift)) {
         ui_manager.display(effect2.selector_screen());
       } else {
         ui_manager.select_engine("Effect2");
       }
     });
 
-    // ui_manager.register_key_handler(ui::Key::sequencer, [&](ui::Key k) {
+    // controller.register_key_handler(ui::Key::sequencer, [&](ui::Key k) {
     //     ui_manager.display(sequencer.screen());
     // });
 
     static ui::Screen* master_last_screen = nullptr;
     static ui::Screen* send_last_screen = nullptr;
 
-    ui_manager.register_key_handler(ui::Key::master,
+    controller.register_key_handler(ui::Key::master,
                                     [&](ui::Key k) {
                                       master_last_screen = ui_manager.current_screen();
                                       ui_manager.display(master.screen());
@@ -143,7 +144,7 @@ namespace otto::services {
                                         ui_manager.display(*master_last_screen);
                                     });
 
-    ui_manager.register_key_handler(ui::Key::sends,
+    controller.register_key_handler(ui::Key::sends,
                                     [&](ui::Key k) {
                                       send_last_screen = ui_manager.current_screen();
                                       if (ui_manager.selected_engine_name() == "Arpeggiator" ||

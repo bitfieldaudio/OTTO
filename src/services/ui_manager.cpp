@@ -9,12 +9,6 @@
 namespace otto::services {
 
   using namespace core::ui;
-
-  bool UIManager::is_pressed(Key k) noexcept
-  {
-    return keys[k._to_index()];
-  }
-
   void UIManager::select_engine(const std::string& engine_name)
   {
     _selected_engine_name = engine_name;
@@ -65,30 +59,6 @@ namespace otto::services {
   {
     return cur_screen;
   }
-
-  void UIManager::register_key_handler(Key k, KeyHandler press_handler, KeyHandler release_handler)
-  {
-    key_handlers.emplace(k, std::pair{std::move(press_handler), std::move(release_handler)});
-  }
-
-  bool UIManager::handle_global(Key key, bool is_press)
-  {
-/*    if (key == Key::quit) {
-      Application::current().exit(Application::ErrorCode::user_exit);
-      return true;
-    }
-*/
-    auto [first, last] = key_handlers.equal_range(key);
-    if (first == last) return false;
-
-    for (auto&& [key, funcs] : util::sequence(first, last)) {
-      auto& func = is_press ? funcs.first : funcs.second;
-      if (func) func(key);
-    }
-
-    return true;
-  }
-
   void UIManager::draw_frame(vg::Canvas& ctx)
   {
     ctx.lineWidth(6);
@@ -109,41 +79,4 @@ namespace otto::services {
     _frame_count++;
   }
 
-  void UIManager::keypress(Key key)
-  {
-    key_events.outer().push_back(KeyPress{key});
-  }
-
-  void UIManager::encoder(EncoderEvent ev)
-  {
-    encoder_events.outer().push_back(ev);
-  }
-
-  void UIManager::keyrelease(Key key)
-  {
-    key_events.outer().push_back(KeyRelease{key});
-  }
-
-  void UIManager::flush_events()
-  {
-    key_events.swap();
-    for (auto& event : key_events.inner()) {
-      util::match(event,
-                  [this](KeyPress ev) {
-                    keys[ev.key._to_index()] = true;
-                    if (handle_global(ev.key)) return;
-                    cur_screen->keypress(ev.key);
-                  },
-                  [this](KeyRelease& ev) {
-                    keys[ev.key._to_index()] = false;
-                    if (handle_global(ev.key, false)) return;
-                    cur_screen->keyrelease(ev.key);
-                  });
-    }
-
-    encoder_events.swap();
-    for (auto& event : encoder_events.inner()) {
-      cur_screen->encoder(event);
-    }
-  }
 } // namespace otto::services

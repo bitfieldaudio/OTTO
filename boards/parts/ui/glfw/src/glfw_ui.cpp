@@ -227,7 +227,7 @@ namespace otto::services {
       main_win.end_frame();
 
       glfwPollEvents();
-      flush_events();
+      Controller::current().flush_events();
 
       spent = glfwGetTime() - t;
 

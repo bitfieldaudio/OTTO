@@ -1,5 +1,7 @@
 #pragma once
 
+#include <better_enum.hpp>
+
 #include <json.hpp>
 #include <unordered_map>
 #include "util/locked.hpp"
@@ -9,26 +11,48 @@
 #include "core/ui/screen.hpp"
 #include "services/application.hpp"
 
-namespace otto::board::ui {
-  enum struct Action;
-  struct Modifiers;
-  enum struct Key;
-  void handle_keyevent(board::ui::Action, board::ui::Modifiers, board::ui::Key);
-} // namespace otto::board::ui
-
 namespace otto::services {
 
-  struct UIManager : core::Service {
-    struct KeyPress {
-      core::ui::Key key;
-    };
-    struct KeyRelease {
-      core::ui::Key key;
-    };
-    using KeyEvent = util::variant<KeyPress, KeyRelease>;
+  BETTER_ENUM(ChannelEnum,
+              std::uint8_t,
+              sampler0 = 0,
+              sampler1 = 1,
+              sampler2 = 2,
+              sampler3 = 3,
+              sampler4 = 4,
+              sampler5 = 5,
+              sampler6 = 6,
+              sampler7 = 7,
+              sampler8 = 8,
+              sampler9 = 9,
+              internal,
+              external)
 
-    /// Function type for key handlers
-    using KeyHandler = std::function<void(core::ui::Key k)>;
+  BETTER_ENUM(ScreenEnum,
+              std::uint8_t,
+              sends,
+              routing,
+              fx1,
+              fx2,
+              looper,
+              arp,
+              master,
+              sequencer,
+              sampler,
+              synth,
+              envelope,
+              settings,
+              external,
+              twist1,
+              twist2)
+
+
+  struct UIManager : core::Service {
+    struct State {
+      ChannelEnum active_channel = ChannelEnum::internal;
+      ScreenEnum current_screen = ScreenEnum::synth;
+    };
+
 
     UIManager();
 
@@ -48,13 +72,6 @@ namespace otto::services {
     /// folders.
     virtual void main_ui_loop() = 0;
 
-    /// Check if a key is currently pressed.
-    bool is_pressed(core::ui::Key k) noexcept;
-
-    /// Register a key handler
-    void register_key_handler(core::ui::Key k,
-                              KeyHandler press_handler,
-                              KeyHandler release_handler = nullptr);
     /// Display a screen.
     ///
     /// Calls @ref Screen::on_hide for the old screen, and then @ref Screen::on_show
@@ -72,42 +89,15 @@ namespace otto::services {
     /// Get the currently selected engine
     const std::string& selected_engine_name();
 
-
-    /// Dispatches to the event handler for the current screen, and handles
-    /// global keys.
-    ///
-    /// Can be executed from a separate thread
-    void keypress(core::ui::Key key);
-
-    /// Dispatches to the event handler for the current screen, and handles
-    /// global keys.
-    ///
-    /// Can be executed from a separate thread, but must be the same thread as keypress
-    void keyrelease(core::ui::Key key);
-
-    /// Send encoder event
-    ///
-    /// Can be executed from a separate thread
-    void encoder(core::ui::EncoderEvent ev);
-
+    static UIManager& current() noexcept {
+      return Application::current().ui_manager;
+    }
 
   protected:
     /// Draws the current screen and overlays.
     void draw_frame(core::ui::vg::Canvas& ctx);
 
-    /// Actually executes the key and encoder events
-    void flush_events();
-
-    /// Temporary solution
-    ///
-    /// @TODO replace with something cleaner
-    friend void ::otto::board::ui::handle_keyevent(board::ui::Action,
-                                                   board::ui::Modifiers,
-                                                   board::ui::Key);
-
   private:
-    bool handle_global(core::ui::Key key, bool is_press = true);
-
     struct EmptyScreen : core::ui::Screen {
       void draw(core::ui::vg::Canvas& ctx) {}
     } empty_screen;
@@ -115,10 +105,7 @@ namespace otto::services {
     std::string _selected_engine_name = "";
     core::ui::Screen* cur_screen = &empty_screen;
 
-    core::ui::PressedKeys keys;
-    std::unordered_multimap<core::ui::Key, std::pair<KeyHandler, KeyHandler>> key_handlers;
-    util::double_buffered<std::vector<KeyEvent>> key_events;
-    util::double_buffered<std::vector<core::ui::EncoderEvent>> encoder_events;
+    State state;
 
     unsigned _frame_count = 0;
 

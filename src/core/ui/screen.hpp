@@ -10,8 +10,6 @@ namespace otto::core::ui {
   using Encoder = services::Encoder;
   using EncoderEvent = services::EncoderEvent;
 
-  using PressedKeys = bool[Key::_size()];
-
   /// A [Drawable]() with a defined size
   ///
   /// Intended as a base class for widgets.
