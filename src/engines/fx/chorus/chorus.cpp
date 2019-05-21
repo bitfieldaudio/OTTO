@@ -18,10 +18,10 @@ namespace otto::engines {
     void draw_front_head(Canvas&, Point, Colour, float);
     void draw_background_head(Canvas&, Point, Colour, float);
 
-    std::array<ui::vg::Colour, 10> colour_list = {Colours::Yellow,
+    std::array<ui::vg::Colour, 10> colour_list = {Colours::Blue,
                                                   Colours::Green,
-                                                  Colours::Blue,
                                                   Colours::Yellow,
+                                                  Colours::Red,
                                                   Colours::Green,
                                                   Colours::Blue,
                                                   Colours::Red,
@@ -31,10 +31,10 @@ namespace otto::engines {
 
     float wave_height = 20;
     float intpart = 1;
-    gam::AD<> env_blue{0.001, 0.004, 1, 0};
-    gam::AD<> env_green{0.001, 0.004, 1, 0};
-    gam::AD<> env_yellow{0.001, 0.004, 1, 0};
-    gam::AD<> env_red{0.001, 0.004, 1, 0};
+    gam::AD<> env_blue{0.0005, 0.002, 1, 0};
+    gam::AD<> env_green{0.0005, 0.002, 1, 0};
+    gam::AD<> env_yellow{0.0005, 0.002, 1, 0};
+    gam::AD<> env_red{0.0005, 0.002, 1, 0};
 
     using EngineScreen<Chorus>::EngineScreen;
   };
@@ -174,16 +174,15 @@ namespace otto::engines {
 
 
     //Heads
-    constexpr float slope = 0.5;
     constexpr float spacing_constant = 1000;
     constexpr int num_heads = 10;
 
     float spacing = spacing_constant * props.delay + 10;
-    Point start = {140 - props.delay * 5000, 165};
+    Point start = {120 - props.delay * 5000, 165};
 
     for (int i=num_heads; i>=1; i--) {
       float head_height = wave_height * gam::scl::sinP9(gam::scl::wrap(props.phase_value - 0.2f*(float)i, 1.f, -1.f));
-      draw_background_head(ctx, {start.x + i*spacing, start.y + head_height}, colour_list[i].dim((float)i/(float)num_heads), 1 - i*0.07);
+      draw_background_head(ctx, {start.x + i*spacing, start.y + head_height}, colour_list[i], 1 - i*0.07);
     }
     draw_front_head(ctx, {start.x, start.y + wave_height * gam::scl::sinP9(props.phase_value)}, Colours::Blue, 1);
 
