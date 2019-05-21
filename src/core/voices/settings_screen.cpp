@@ -43,11 +43,11 @@ namespace otto::core::voices {
     case Encoder::blue: props.play_mode.step(ev.steps); break;
     case Encoder::green: {
       switch (props.play_mode) {
-        case PlayMode::poly: props.drift.step(ev.steps);
-        case PlayMode::mono: props.sub.step(ev.steps);
-        case PlayMode::unison: props.detune.step(ev.steps);
-        case PlayMode::interval: props.interval.step(util::math::sgn(ev.steps));
-      };
+        case PlayMode::poly: props.drift.step(ev.steps); break;
+        case PlayMode::mono: props.sub.step(ev.steps); break;
+        case PlayMode::unison: props.detune.step(ev.steps); break;
+        case PlayMode::interval: props.interval.step(util::math::sgn(ev.steps)); break;
+      }; break;
     }
     case Encoder::yellow: props.portamento.step(ev.steps); break;
     case Encoder::red: props.transpose.step(ev.steps); break;
@@ -84,14 +84,22 @@ namespace otto::core::voices {
     ctx.fillStyle(Colours::Green);
     ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
     switch (props.play_mode) {
-      case PlayMode::poly:
+      case PlayMode::poly: {
         ctx.fillText(fmt::format("{:3.2}", props.drift), {width - x_pad, y_pad + space});
-      case PlayMode::mono:
+        break;
+      }
+      case PlayMode::mono: {
         ctx.fillText(fmt::format("{:3.2}", props.sub), {width - x_pad, y_pad + space});
-      case PlayMode::unison:
+        break;
+      }
+      case PlayMode::unison: {
         ctx.fillText(fmt::format("{:3.2}", props.detune), {width - x_pad, y_pad + space});
-      case PlayMode::interval:
+        break;
+      }
+      case PlayMode::interval: {
         ctx.fillText(fmt::format("{}", props.interval), {width - x_pad, y_pad + space});
+        break;
+      }
     };
 
     ctx.beginPath();
@@ -102,7 +110,7 @@ namespace otto::core::voices {
     ctx.beginPath();
     ctx.fillStyle(Colours::Yellow);
     ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:+}", props.octave), {width - x_pad, y_pad + 2 * space});
+    ctx.fillText(fmt::format("{:3.2}", props.portamento), {width - x_pad, y_pad + 2 * space});
 
     ctx.beginPath();
     ctx.fillStyle(Colours::Red);

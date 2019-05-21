@@ -69,6 +69,39 @@ namespace otto::util {
       return _data[idx];
     }
 
+    value_type& operator[](std::size_t idx)
+    {
+      return _data[idx];
+    }
+
+    value_type& push_back(value_type v)
+    {
+      _data[_size] = v;
+      _size += 1;
+      return back();
+    }
+
+    void pop_back()
+    {
+      _size -= 1;
+    }
+
+    void clear()
+    {
+      _size = 0;
+    }
+
+    value_type* data()
+    {
+      return _data.data();
+    }
+
+    const value_type* data() const
+    {
+      return _data.data();
+    }
+
+
   private:
     std::array<value_type, capacity()> _data;
     std::size_t _size;
