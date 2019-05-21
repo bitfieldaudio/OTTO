@@ -163,7 +163,6 @@ namespace otto::core::voices {
     float voice_sum = 0.f;
     for (auto& voice : voices_) {
       ///Change frequency if applicable
-      //voice.frequency(midi::note_freq(voice.midi_note_) * pitch_bend_);
       voice.frequency(voice.glide_() * pitch_bend_);
       ///Get next sample
       voice_sum += voice.env_() * voice();
@@ -174,12 +173,19 @@ namespace otto::core::voices {
   template<typename V, int N>
   auto VoiceManager<V, N>::handle_midi_on(const midi::NoteOnEvent& evt) noexcept -> Voice&
   {
+    //Determine which notes to start. Depends on playmode.
+    //Determine how to distribute those new notes on the voices
+    // if key is being used, use same voice.
     auto key = evt.key + settings_props.octave * 12 + settings_props.transpose;
     stop_voice(key);
     Voice& voice = get_voice(key);
     note_stack.push_back({key, &voice});
+    // in trigger - don't use on_note on if legato && stolen (from triggered voice)
+    // jump/retrig: non-stolen voices skip portamento.
     voice.trigger(key, evt.velocity / 127.f);
     return voice;
+
+
   }
 
   template<typename V, int N>

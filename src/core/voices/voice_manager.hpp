@@ -180,7 +180,8 @@ namespace otto::core::voices {
       props::Property<int, props::no_signal> octave = {0, props::limits(-2, 7)};
       props::Property<int, props::no_signal> transpose = {0, props::limits(-12, 12)};
 
-      DECL_REFLECTION(SettingsProps, play_mode, portamento, octave, transpose);
+      DECL_REFLECTION(SettingsProps, play_mode, drift, sub, detune, interval,
+              portamento, legato, retrig, octave, transpose);
     };
 
     std::unique_ptr<ui::Screen> make_envelope_screen(EnvelopeProps& props);
@@ -294,7 +295,6 @@ namespace otto::core::voices {
 
     std::unique_ptr<ui::Screen> envelope_screen_ = details::make_envelope_screen(envelope_props);
     std::unique_ptr<ui::Screen> settings_screen_ = details::make_settings_screen(settings_props);
-    PlayMode play_mode = PlayMode::mono;
 
   }; // namespace otto::core::voices
 
