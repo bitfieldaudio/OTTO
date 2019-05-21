@@ -122,6 +122,8 @@ namespace otto::core::voices {
         case PlayMode::unison:
           // TODO: Can not be implemented this way
           [[fallthrough]];
+        case PlayMode::interval:
+          [[fallthrough]];
         case PlayMode::mono: free_voices.push_back(&voices_[0]); break;
         case PlayMode::poly:
           for (auto& voice : voices_) free_voices.push_back(&voice);
@@ -295,6 +297,18 @@ namespace otto::core::voices {
       case PlayMode::poly: return "poly";
       case PlayMode::mono: return "mono";
       case PlayMode::unison: return "unison";
+      case PlayMode::interval: return "interval";
+      };
+      return "";
+    }
+
+    inline std::string aux_setting(PlayMode pm) noexcept
+    {
+      switch (pm) {
+        case PlayMode::poly: return "drift";
+        case PlayMode::mono: return "sub";
+        case PlayMode::unison: return "detune";
+        case PlayMode::interval: return "interval";
       };
       return "";
     }
