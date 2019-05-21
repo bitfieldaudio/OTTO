@@ -2,10 +2,13 @@
 
 #include "services/audio_manager.hpp"
 #include "services/ui_manager.hpp"
+#include "services/controller.hpp"
 
 #include "services/log_manager.hpp"
 
 namespace otto::board::ui {
+
+  using services::Controller;
 
   void handle_keyevent(Action action, Modifiers mods, Key key)
   {
@@ -32,18 +35,18 @@ namespace otto::board::ui {
       }
     };
 
-    using OKey = core::ui::Key;
+    using OKey = services::Key;
 
     auto send_key = [action](OKey k, bool repeat = false) {
       if (action == Action::press || (action == Action::repeat && repeat))
-        Application::current().ui_manager->keypress(k);
+        Controller::current().keypress(k);
       else if (action == Action::release)
-        Application::current().ui_manager->keyrelease(k);
+        Controller::current().keyrelease(k);
     };
 
-    auto send_rotary = [action](core::ui::Rotary rot, int n) {
+    auto send_encoder = [action](core::ui::Encoder rot, int n) {
       if (action == Action::press || (action == Action::repeat))
-        Application::current().ui_manager->rotary({rot, n});
+        Controller::current().encoder({rot, n});
     };
 
 
@@ -78,66 +81,66 @@ namespace otto::board::ui {
       if (ctrl)
         send_key(OKey::blue_click);
       else
-        send_rotary(core::ui::Rotary::blue, 1);
+        send_encoder(core::ui::Encoder::blue, 1);
       break;
     case Key::a:
       if (ctrl)
         send_key(OKey::blue_click);
       else
-        send_rotary(core::ui::Rotary::blue, -1);
+        send_encoder(core::ui::Encoder::blue, -1);
       break;
     case Key::w:
       if (ctrl)
         send_key(OKey::green_click);
       else
-        send_rotary(core::ui::Rotary::green, 1);
+        send_encoder(core::ui::Encoder::green, 1);
       break;
     case Key::s:
       if (ctrl)
         send_key(OKey::green_click);
       else
-        send_rotary(core::ui::Rotary::green, -1);
+        send_encoder(core::ui::Encoder::green, -1);
       break;
     case Key::e:
       if (ctrl)
         send_key(OKey::yellow_click);
       else
-        send_rotary(core::ui::Rotary::yellow, 1);
+        send_encoder(core::ui::Encoder::yellow, 1);
       break;
     case Key::d:
       if (ctrl)
         send_key(OKey::yellow_click);
       else
-        send_rotary(core::ui::Rotary::yellow, -1);
+        send_encoder(core::ui::Encoder::yellow, -1);
       break;
     case Key::r:
       if (ctrl)
         send_key(OKey::red_click);
       else
-        send_rotary(core::ui::Rotary::red, 1);
+        send_encoder(core::ui::Encoder::red, 1);
       break;
     case Key::f:
       if (ctrl)
         send_key(OKey::red_click);
       else
-        send_rotary(core::ui::Rotary::red, -1);
+        send_encoder(core::ui::Encoder::red, -1);
       break;
 
     // Engines
-    case Key::n1: send_key(OKey::arpeggiator); break;
+    case Key::n1: send_key(OKey::arp); break;
     case Key::n2: send_key(OKey::synth); break;
     case Key::n3: send_key(OKey::envelope); break;
-    case Key::n4: send_key(OKey::voices); break;
+    //case Key::n4: send_key(OKey::voices); break;
     case Key::n5: send_key(OKey::fx1); break;
     case Key::n6: send_key(OKey::fx2); break;
     case Key::n8: send_key(OKey::sequencer); break;
     case Key::p: send_key(OKey::play); break;
     case Key::m: send_key(OKey::master); break;
 
-    case Key::up: send_key(OKey::oct_up); break;
-    case Key::down: send_key(OKey::oct_down); break;
+    case Key::up: send_key(OKey::plus); break;
+    case Key::down: send_key(OKey::minus); break;
 
-    case Key::n7: send_key(OKey::send); break;
+    case Key::n7: send_key(OKey::sends); break;
 
     case Key::left_shift: [[fallthrough]];
     case Key::right_shift: send_key(OKey::shift); break;

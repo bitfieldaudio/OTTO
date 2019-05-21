@@ -22,7 +22,7 @@ namespace otto::engines {
 
     void draw(Canvas& ctx) override;
     bool keypress(Key key) override;
-    void rotary(RotaryEvent e) override;
+    void encoder(EncoderEvent e) override;
   };
 
   Sequencer::Sequencer() : MiscEngine<Sequencer>(std::make_unique<SequencerScreen>(this))
@@ -111,13 +111,13 @@ namespace otto::engines {
     return true;
   }
 
-  void SequencerScreen::rotary(ui::RotaryEvent ev)
+  void SequencerScreen::encoder(ui::EncoderEvent ev)
   {
-    switch (ev.rotary) {
-    case Rotary::blue: [[fallthrough]];
-    case Rotary::green: [[fallthrough]];
-    case Rotary::yellow: [[fallthrough]];
-    case Rotary::red: break;
+    switch (ev.encoder) {
+    case Encoder::blue: [[fallthrough]];
+    case Encoder::green: [[fallthrough]];
+    case Encoder::yellow: [[fallthrough]];
+    case Encoder::red: break;
     }
   }
 

@@ -8,7 +8,7 @@ namespace otto::engines {
     using EngineScreen::EngineScreen;
 
     void draw(core::ui::vg::Canvas& ctx) override;
-    void rotary(core::ui::RotaryEvent e) override;
+    void encoder(core::ui::EncoderEvent e) override;
   };
 
   Sends::Sends() : MiscEngine<Sends>(std::make_unique<SendsScreen>(this)) {}
@@ -315,13 +315,13 @@ namespace otto::engines {
     ctx.restore();
   }
 
-  void SendsScreen::rotary(core::ui::RotaryEvent e)
+  void SendsScreen::encoder(core::ui::EncoderEvent e)
   {
-    switch (e.rotary) {
-    case otto::core::ui::Rotary::blue: engine.props.to_FX1.step(e.clicks); break;
-    case otto::core::ui::Rotary::green: engine.props.to_FX2.step(e.clicks); break;
-    case otto::core::ui::Rotary::yellow: engine.props.dry_pan.step(e.clicks); break;
-    case otto::core::ui::Rotary::red: engine.props.dry.step(e.clicks); break;
+    switch (e.encoder) {
+    case core::ui::Encoder::blue: engine.props.to_FX1.step(e.steps); break;
+    case core::ui::Encoder::green: engine.props.to_FX2.step(e.steps); break;
+    case core::ui::Encoder::yellow: engine.props.dry_pan.step(e.steps); break;
+    case core::ui::Encoder::red: engine.props.dry.step(e.steps); break;
     }
   }
 

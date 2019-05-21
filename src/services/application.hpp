@@ -17,6 +17,7 @@ namespace otto::services {
   struct UIManager;
   struct StateManager;
   struct ClockManager;
+  struct Controller;
 
   struct Application;
 
@@ -84,6 +85,7 @@ namespace otto::services {
                 ServiceStorage<AudioManager>::Factory audio_factory,
                 ServiceStorage<ClockManager>::Factory clock_factory,
                 ServiceStorage<UIManager>::Factory ui_factory,
+                ServiceStorage<Controller>::Factory controller,
                 ServiceStorage<EngineManager>::Factory engine_factory);
 
     virtual ~Application();
@@ -107,6 +109,7 @@ namespace otto::services {
     ServiceStorage<AudioManager> audio_manager;
     ServiceStorage<ClockManager> clock_manager;
     ServiceStorage<UIManager> ui_manager;
+    ServiceStorage<Controller> controller;
     ServiceStorage<EngineManager> engine_manager;
 
   private:

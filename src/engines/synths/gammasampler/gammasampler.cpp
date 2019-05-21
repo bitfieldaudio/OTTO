@@ -14,14 +14,14 @@ namespace otto::engines {
 
   struct SamplerScreen : EngineScreen<Sampler> {
     void draw(Canvas& ctx) override;
-    void rotary(RotaryEvent e) override;
+    void encoder(EncoderEvent e) override;
 
     using EngineScreen<Sampler>::EngineScreen;
   };
 
   struct SamplerEnvelopeScreen : EngineScreen<Sampler> {
     void draw(Canvas& ctx) override;
-    void rotary(RotaryEvent e) override;
+    void encoder(EncoderEvent e) override;
 
     AudioFile<float> waveform;
 
@@ -120,15 +120,15 @@ namespace otto::engines {
 
   // MAIN SCREEN //
 
-  void SamplerScreen::rotary(ui::RotaryEvent ev)
+  void SamplerScreen::encoder(ui::EncoderEvent ev)
   {
     auto& props = engine.props;
     //auto& sample = engine.sample;
-    switch (ev.rotary) {
-    case ui::Rotary::blue: props.volume.step(ev.clicks); break;
-    case ui::Rotary::green: props.filter.step(ev.clicks); break;
-    case ui::Rotary::yellow: props.speed.step(ev.clicks); break;
-    case ui::Rotary::red:
+    switch (ev.encoder) {
+    case ui::Encoder::blue: props.volume.step(ev.steps); break;
+    case ui::Encoder::green: props.filter.step(ev.steps); break;
+    case ui::Encoder::yellow: props.speed.step(ev.steps); break;
+    case ui::Encoder::red:
       if (props.cut && props.loop) {
         props.loop = false;
       } else if (props.cut && !props.loop) {
@@ -192,14 +192,14 @@ namespace otto::engines {
 
   // ENVELOPE SCREEN //
 
-  void SamplerEnvelopeScreen::rotary(ui::RotaryEvent ev)
+  void SamplerEnvelopeScreen::encoder(ui::EncoderEvent ev)
   {
     //auto& sample = engine.sample;
-    switch (ev.rotary) {
-    case ui::Rotary::blue: engine.props.startpoint.step(ev.clicks); break;
-    case ui::Rotary::green: engine.props.endpoint.step(ev.clicks); break;
-    case ui::Rotary::yellow: engine.props.fadein.step(ev.clicks); break;
-    case ui::Rotary::red: engine.props.fadeout.step(ev.clicks); break;
+    switch (ev.encoder) {
+    case ui::Encoder::blue: engine.props.startpoint.step(ev.steps); break;
+    case ui::Encoder::green: engine.props.endpoint.step(ev.steps); break;
+    case ui::Encoder::yellow: engine.props.fadein.step(ev.steps); break;
+    case ui::Encoder::red: engine.props.fadeout.step(ev.steps); break;
     }
   }
 

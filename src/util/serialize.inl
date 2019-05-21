@@ -2,18 +2,6 @@
 
 #include "serialize.hpp"
 
-template<typename T>
-void to_json(json& j, const T& obj)
-{
-  j = otto::util::serialize(obj);
-}
-
-template<typename T>
-void from_json(const json& j, T& obj)
-{
-  otto::util::deserialize(obj, j);
-}
-
 namespace otto::util {
 
   /////////////////// SERIALIZATION

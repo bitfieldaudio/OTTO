@@ -63,31 +63,47 @@ namespace otto::util {
     }
   };
 
+  struct clear_inner {
+    template<typename T>
+    void operator()(T& inner, T& outer)
+    {
+      inner.clear();
+    }
+  };
+  struct clear_outer {
+    template<typename T>
+    void operator()(T& inner, T& outer)
+    {
+      outer.clear();
+    }
+  };
+
+
   /// Inner and outer buffers swapped atomically
   ///
   /// The inner buffer can always be accessed lock-free,
   /// the outer is locked on swap.
   ///
   /// \tparam T needs .clear(), which is called on swap
-  template<typename T>
-  struct atomic_swap {
-    constexpr atomic_swap(const T& inner,
-                          const T& outer) noexcept(std::is_nothrow_copy_constructible_v<T>)
+  template<typename T, typename AfterSwap = clear_outer>
+  struct double_buffered {
+    constexpr double_buffered(const T& inner,
+                              const T& outer) noexcept(std::is_nothrow_copy_constructible_v<T>)
       : _store{{inner, outer}}
     {}
 
-    constexpr atomic_swap(T&& inner, const T& outer) noexcept(
+    constexpr double_buffered(T&& inner, const T& outer) noexcept(
       std::is_nothrow_copy_constructible_v<T>&& std::is_nothrow_move_constructible_v<T>)
       : _store{{std::move(inner), outer}}
     {}
 
-    constexpr atomic_swap(const T& inner, T&& outer = T{}) noexcept(
+    constexpr double_buffered(const T& inner, T&& outer = T{}) noexcept(
       std::is_nothrow_copy_constructible_v<T>&& std::is_nothrow_move_constructible_v<T>)
       : _store{{inner, std::move(outer)}}
     {}
 
-    constexpr atomic_swap(T&& inner = T{},
-                          T&& outer = T{}) noexcept(std::is_nothrow_move_constructible_v<T>)
+    constexpr double_buffered(T&& inner = T{},
+                              T&& outer = T{}) noexcept(std::is_nothrow_move_constructible_v<T>)
       : _store{{std::move(inner), std::move(outer)}}
     {}
 
@@ -113,11 +129,26 @@ namespace otto::util {
       return _store[(_inner_idx + 1) % 2];
     }
 
+    template<typename Func>
+    constexpr decltype(auto) outer_locked(Func&& f) noexcept(std::is_nothrow_invocable_v<Func, T&>)
+    {
+      std::unique_lock lock(_outer_lock);
+      return std::invoke(std::forward<Func>(f), _store[(_inner_idx + 1) % 2]);
+    }
+
+    template<typename Func>
+    constexpr decltype(auto) outer_locked(Func&& f) const
+      noexcept(std::is_nothrow_invocable_v<Func, const T&>)
+    {
+      std::unique_lock lock(_outer_lock);
+      return std::invoke(std::forward<Func>(f), _store[(_inner_idx + 1) % 2]);
+    }
+
     constexpr void swap() noexcept
     {
       std::unique_lock lock(_outer_lock);
       _inner_idx = (_inner_idx + 1) % 2;
-      _store[(_inner_idx + 1) % 2].clear();
+      AfterSwap{}(_store[_inner_idx % 2], _store[(_inner_idx + 1) % 2]);
     }
 
   private:

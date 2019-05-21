@@ -23,6 +23,17 @@ namespace otto::util {
   struct is_number_or_enum<T, std::enable_if_t<std::is_enum_v<T> || is_number_v<T>>>
     : std::true_type {};
 
+  /// Concept of a @ref better_enum.hpp enum
+  class BetterEnum {
+    static std::false_type _is(...);
+    template<typename T, typename = std::void_t<typename T::_enumerated>>
+    static std::true_type _is(T);
+
+  public:
+    template<typename T>
+    static constexpr auto is = decltype(_is(std::declval<T>()))::value;
+  };
+
   template<typename T>
   constexpr inline bool is_number_or_enum_v = is_number_or_enum<T>::value;
 
@@ -206,18 +217,17 @@ namespace otto::util {
   template<typename F, typename... Args>
   using invoke_result_t = mpark::lib::invoke_result_t<F, Args...>;
 
-
   /// Cast scoped enums to their underlying numeric type
   template<typename E>
-  constexpr auto underlying(E e) noexcept -> std::enable_if_t<!std::is_enum_v<E>, E>
-  {
-    return e;
-  }
-
-  template<typename E, typename = std::enable_if_t<std::is_enum_v<E>>>
   constexpr auto underlying(E e) noexcept
   {
-    return static_cast<std::underlying_type_t<E>>(e);
+    if constexpr (BetterEnum::is<E>) {
+      return e._to_integral();
+    } else if constexpr (std::is_enum_v<E>) {
+      return static_cast<std::underlying_type_t<E>>(e);
+    } else {
+      return e;
+    }
   }
 
   namespace tuple {

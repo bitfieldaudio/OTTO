@@ -12,7 +12,7 @@ namespace otto::engines {
 
   struct MasterScreen : EngineScreen<Master> {
     void draw(Canvas& ctx) override;
-    void rotary(RotaryEvent e) override;
+    void encoder(EncoderEvent e) override;
 
     using EngineScreen<Master>::EngineScreen;
   };
@@ -35,10 +35,10 @@ namespace otto::engines {
 
   // SCREEN //
 
-  void MasterScreen::rotary(ui::RotaryEvent ev)
+  void MasterScreen::encoder(ui::EncoderEvent ev)
   {
     auto& props = engine.props;
-    props.volume.step(ev.clicks);
+    props.volume.step(ev.steps);
   }
 
   void MasterScreen::draw(ui::vg::Canvas& ctx)

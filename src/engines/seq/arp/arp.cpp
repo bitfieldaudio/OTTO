@@ -44,7 +44,7 @@ namespace otto::engines {
     int max = 0;
     int num_steps = 0;
     std::vector<Point> dots;
-    void rotary(ui::RotaryEvent e) override;
+    void encoder(ui::EncoderEvent e) override;
     void draw(Canvas& ctx) override;
 
     void calculate_dots(std::vector<Point>&);
@@ -253,15 +253,15 @@ namespace otto::engines {
 
   // SCREEN //
 
-  void ArpScreen::rotary(ui::RotaryEvent ev)
+  void ArpScreen::encoder(ui::EncoderEvent ev)
   {
     auto& props = engine.props;
 
-    switch (ev.rotary) {
-    case Rotary::blue: props.playmode.step(util::math::sgn(ev.clicks)); break;
-    case Rotary::green: props.octavemode.step(util::math::sgn(ev.clicks)); break;
-    case Rotary::yellow: props.subdivision.step(util::math::sgn(ev.clicks)); break;
-    case Rotary::red: props.note_length.step(ev.clicks); break;
+    switch (ev.encoder) {
+    case Encoder::blue: props.playmode.step(util::math::sgn(ev.steps)); break;
+    case Encoder::green: props.octavemode.step(util::math::sgn(ev.steps)); break;
+    case Encoder::yellow: props.subdivision.step(util::math::sgn(ev.steps)); break;
+    case Encoder::red: props.note_length.step(ev.steps); break;
     }
   }
 

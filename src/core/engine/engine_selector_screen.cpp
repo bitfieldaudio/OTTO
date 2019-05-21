@@ -53,11 +53,11 @@ namespace otto::core::engine {
     return opts;
   }
 
-  void EngineSelectorScreen::rotary(RotaryEvent e)
+  void EngineSelectorScreen::encoder(EncoderEvent e)
   {
-    switch (e.rotary) {
-    case Rotary::blue: engine_wid.prev(e.clicks); break;
-    case Rotary::green: preset_wid.prev(e.clicks); break;
+    switch (e.encoder) {
+    case Encoder::blue: engine_wid.prev(e.steps); break;
+    case Encoder::green: preset_wid.prev(e.steps); break;
     default:;
     }
   }

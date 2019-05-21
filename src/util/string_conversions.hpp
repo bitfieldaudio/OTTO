@@ -6,11 +6,12 @@
 #include <tl/expected.hpp>
 
 #include <magic_enum.hpp>
+#include <better_enum.hpp>
 #include <tl/optional.hpp>
 
 #include "util/exception.hpp"
 #include "util/string_ref.hpp"
-
+#include "util/type_traits.hpp"
 
 namespace otto::util {
 
@@ -37,7 +38,7 @@ namespace otto::util {
   [[nodiscard]] std::string& to_string(std::string& v) noexcept;
   [[nodiscard]] const std::string& to_string(const std::string& v) noexcept;
 
-  template<typename T, typename = std::enable_if_t<std::is_enum_v<T>>>
+  template<typename T, typename = std::enable_if_t<std::is_enum_v<T> || BetterEnum::is<T>>>
   [[nodiscard]] constexpr std::string_view to_string(T e) noexcept;
 
   template<typename T>
@@ -146,11 +147,16 @@ namespace otto::util {
   }
 
   template<typename T, typename EnableIfTisEnum>
-  constexpr std::string_view to_string(T e) noexcept
+  constexpr auto to_string(T e) noexcept
   {
-    auto res = magic_enum::enum_name(e);
-    if (res) return res.value();
-    return "";
+    if constexpr (std::is_enum_v<T>) {
+      auto res = magic_enum::enum_name(e);
+      if (res) return res.value();
+      return std::string_view("");
+    } else if (BetterEnum::is<T>) {
+      if (!T::_is_valid(e._to_integral)) return util::string_ref("");
+      return util::string_ref(e._to_string());
+    }
   }
 
   template<>

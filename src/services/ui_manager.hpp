@@ -1,122 +1,119 @@
 #pragma once
 
-#include <json.hpp>
 #include <unordered_map>
+#include <json.hpp>
+
 #include "util/locked.hpp"
+#include "util/enum.hpp"
 
 #include "core/engine/engine.hpp"
 #include "core/service.hpp"
 #include "core/ui/screen.hpp"
 #include "services/application.hpp"
 
-namespace otto::board::ui {
-  enum struct Action;
-  struct Modifiers;
-  enum struct Key;
-  void handle_keyevent(board::ui::Action, board::ui::Modifiers, board::ui::Key);
-} // namespace otto::board::ui
-
 namespace otto::services {
 
-  struct UIManager : core::Service {
-    struct KeyPress {
-      core::ui::Key key;
-    };
-    struct KeyRelease {
-      core::ui::Key key;
-    };
-    using KeyEvent = util::variant<KeyPress, KeyRelease>;
+  BETTER_ENUM(ChannelEnum,
+              std::uint8_t,
+              sampler0 = 0,
+              sampler1 = 1,
+              sampler2 = 2,
+              sampler3 = 3,
+              sampler4 = 4,
+              sampler5 = 5,
+              sampler6 = 6,
+              sampler7 = 7,
+              sampler8 = 8,
+              sampler9 = 9,
+              internal,
+              external)
 
-    /// Function type for key handlers
-    using KeyHandler = std::function<void(core::ui::Key k)>;
+  BETTER_ENUM(ScreenEnum,
+              std::uint8_t,
+              sends,
+              routing,
+              fx1,
+              fx1_selector,
+              fx2,
+              fx2_selector,
+              looper,
+              arp,
+              arp_selector,
+              voices,
+              master,
+              sequencer,
+              sampler,
+              synth,
+              synth_selector,
+              envelope,
+              settings,
+              external,
+              twist1,
+              twist2)
+
+  struct UIManager : core::Service {
+    /// The UI state
+    ///
+    /// This will dictate which state-leds light up, and which channel is currently selected etc.
+    struct State {
+      ChannelEnum active_channel = ChannelEnum::internal;
+      ScreenEnum current_screen = ScreenEnum::synth;
+    };
+
+    using ScreenSelector = std::function<core::ui::Screen&()>;
 
     UIManager();
 
     /// The main ui loop
     ///
-    /// This sets up all the device specific graphics, and calls
-    /// @ref internal::draw_frame 60 times pr second, until @ref global::running is
-    /// false, or the graphics are exitted by the user. It is also responsible for
-    /// listening to keyevents, and calling @ref internal::keypress and
-    /// @ref internal::keyrelease as apropriate.
+    /// This sets up all the device specific graphics, and calls @ref draw_frame 60 times pr second,
+    /// until @ref Application::running() is false, or the graphics are exitted by the user. It is
+    /// also responsible for listening to keyevents, and calling @ref keypress and @ref keyrelease
+    /// as apropriate.
     ///
     /// On some platforms (OSX), all OpenGL calls must be made from the main
     /// thread, therefore this function is called from `main()`.
-    ///
-    /// One important note, is that this function is implemented in the graphics
-    /// drivers. The drivers can be found in the "egl" (RPI native) and "glfw" (Windowing systems)
-    /// folders.
     virtual void main_ui_loop() = 0;
 
-    /// Check if a key is currently pressed.
-    bool is_pressed(core::ui::Key k) noexcept;
+    /// Select an engine
+    void display(ScreenEnum screen);
 
-    /// Register a key handler
-    void register_key_handler(core::ui::Key k,
-                              KeyHandler press_handler,
-                              KeyHandler release_handler = nullptr);
+    core::ui::Screen& current_screen();
+
+    static UIManager& current() noexcept
+    {
+      return Application::current().ui_manager;
+    }
+
+    /// The current UI state
+    State state() const noexcept {
+      return state_;
+    }
+
+    void register_screen_selector(ScreenEnum, ScreenSelector);
+
+  protected:
+    /// Draws the current screen and overlays.
+    void draw_frame(core::ui::vg::Canvas& ctx);
+
     /// Display a screen.
     ///
     /// Calls @ref Screen::on_hide for the old screen, and then @ref Screen::on_show
     /// for the new screen
     void display(core::ui::Screen& screen);
 
-    /// Select an engine
-    void select_engine(core::engine::IEngine& engine);
-
-    /// Select an engine by name
-    void select_engine(const std::string& engine_name);
-
-    core::ui::Screen* current_screen();
-
-    /// Get the currently selected engine
-    const std::string& selected_engine_name();
-
-  protected:
-    /// Draws the current screen and overlays.
-    void draw_frame(core::ui::vg::Canvas& ctx);
-
-    /// Dispatches to the event handler for the current screen, and handles
-    /// global keys.
-    ///
-    /// Can be executed from a separate thread
-    void keypress(core::ui::Key key);
-
-    /// Dispatches to the event handler for the current screen, and handles
-    /// global keys.
-    ///
-    /// Can be executed from a separate thread, but must be the same thread as keypress
-    void keyrelease(core::ui::Key key);
-
-    /// Send rotary event
-    ///
-    /// Can be executed from a separate thread
-    void rotary(core::ui::RotaryEvent ev);
-
-    /// Actually executes the key and rotary events
-    void flush_events();
-
-    /// Temporary solution
-    ///
-    /// @TODO replace with something cleaner
-    friend void ::otto::board::ui::handle_keyevent(board::ui::Action,
-                                                   board::ui::Modifiers,
-                                                   board::ui::Key);
+    void set_state(State state);
 
   private:
-    bool handle_global(core::ui::Key key, bool is_press = true);
-
     struct EmptyScreen : core::ui::Screen {
       void draw(core::ui::vg::Canvas& ctx) {}
     } empty_screen;
 
-    std::string _selected_engine_name = "";
     core::ui::Screen* cur_screen = &empty_screen;
 
-    core::ui::PressedKeys keys;
-    std::unordered_multimap<core::ui::Key, std::pair<KeyHandler, KeyHandler>> key_handlers;
-    util::atomic_swap<std::vector<KeyEvent>> key_events;
-    util::atomic_swap<std::vector<core::ui::RotaryEvent>> rotary_events;
+    util::enum_map<ScreenEnum, ScreenSelector> screen_selectors_;
+
+    State state_;
 
     unsigned _frame_count = 0;
 

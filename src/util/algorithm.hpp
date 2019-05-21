@@ -871,6 +871,13 @@ namespace otto::util {
       return std::find_if(begin(cont), end(cont), std::forward<UnaryPredicate>(f));
     }
 
+    template<typename Cont, typename Cont2>
+    decltype(auto) equal(Cont&& cont, Cont2&& cont2)
+    {
+      using std::begin;
+      using std::end;
+      return std::equal(begin(cont), end(cont), begin(cont2), end(cont2));
+    }
 
     /// \}
     ///

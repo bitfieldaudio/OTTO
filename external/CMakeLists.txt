@@ -63,6 +63,7 @@ target_include_directories(foonathan_array SYSTEM INTERFACE "${CMAKE_CURRENT_SOU
 
 # foonathan/array
 execute_process(COMMAND git submodule update --init -- foonathan_type_safe WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+execute_process(COMMAND git submodule update --init -- external/debug_assert WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/foonathan_type_safe)
 add_library(foonathan_type_safe INTERFACE)
 target_include_directories(foonathan_type_safe SYSTEM INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/foonathan_type_safe/include")
 target_include_directories(foonathan_type_safe SYSTEM INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/foonathan_type_safe/external/debug_assert")

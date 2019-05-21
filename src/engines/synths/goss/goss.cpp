@@ -14,7 +14,7 @@ namespace otto::engines {
   struct GossSynthScreen : EngineScreen<GossSynth> {
     void draw(Canvas& ctx) override;
     bool keypress(Key key) override;
-    void rotary(RotaryEvent e) override;
+    void encoder(EncoderEvent e) override;
 
     using EngineScreen<GossSynth>::EngineScreen;
   };
@@ -117,13 +117,13 @@ namespace otto::engines {
     return false;
   }
 
-  void GossSynthScreen::rotary(RotaryEvent e)
+  void GossSynthScreen::encoder(EncoderEvent e)
   {
-    switch (e.rotary) {
-    case Rotary::blue: engine.props.drawbar1.step(e.clicks); break;
-    case Rotary::green: engine.props.drawbar2.step(e.clicks); break;
-    case Rotary::yellow: engine.props.click.step(e.clicks); break;
-    case Rotary::red: engine.props.leslie.step(e.clicks); break;
+    switch (e.encoder) {
+    case Encoder::blue: engine.props.drawbar1.step(e.steps); break;
+    case Encoder::green: engine.props.drawbar2.step(e.steps); break;
+    case Encoder::yellow: engine.props.click.step(e.steps); break;
+    case Encoder::red: engine.props.leslie.step(e.steps); break;
     }
   }
 
