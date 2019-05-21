@@ -323,14 +323,12 @@ namespace otto::engines {
     float x_step_width = 30;
 
 
-    int num_steps = 0;
+    int num_steps = engine.props.output_stack_.size();
     int min = 88;
     int max = 0;
     //Find minimum and maximum key values
     for (auto& v : engine.props.output_stack_)
     {
-      num_steps += v.size();
-
       auto current_min = util::min_element(v, [](auto& a, auto& b){return a.key < b.key; });
       min = min > current_min->key ? current_min->key : min;
       auto current_max = util::max_element(v, [](auto& a, auto& b){return a.key < b.key; });
