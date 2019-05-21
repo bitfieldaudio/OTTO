@@ -33,21 +33,29 @@ namespace otto::engines {
     float excitation = lpf(exciter() * (1 + noise()));
     float harmonics = env() * overtones();
     float orig_note = reson(excitation*hammer_strength);
-    float aux = tanh(0.3*orig_note + props.asymmetry);
-    return pickup_hpf(pow(2, 10*aux)) + harmonics;
+    float aux = util::math::fasttanh3(0.3f*orig_note + props.asymmetry);
+    return amp * pickup_hpf(powf(2, 10*aux)) + harmonics;
   }
 
   RhodesSynth::Voice::Voice(Pre& pre) noexcept : VoiceBase(pre) {
     reson.type(gam::RESONANT);
     reson.res(1500);
+    reson.zero();
 
     exciter.attack(0.001);
+    exciter.decay(1.f/frequency());
     exciter.curve(0);
+    exciter.finish();
+
+    noise.seed(123);
 
     lpf.type(gam::LOW_PASS);
-    pickup_lpf.type(gam::LOW_PASS);
-    pickup_lpf.freq(1000);
+    lpf.freq(powf(20,2));
+    lpf.zero();
+
     pickup_hpf.type(gam::HIGH_PASS);
+    pickup_hpf.freq(440.f);
+    pickup_hpf.zero();
 
     overtones.resize(1024);
     overtones.addSine(7, 1, 0);
@@ -58,17 +66,19 @@ namespace otto::engines {
 
   void RhodesSynth::Voice::on_note_on() noexcept {
     reson.zero();
+
     exciter.decay(1.f/frequency());
     exciter.reset();
 
-    hammer_strength = pow(2, (1 - props.aggro*velocity()*(-3.0)));
+    hammer_strength = powf(2.f, (1.f + 3.0f * props.aggro * velocity()));
 
     noise.seed(123);
 
-    lpf.freq(pow(velocity()*90*props.aggro + 20,2));
+    lpf.freq(powf(velocity()*90*props.aggro + 20,2));
     lpf.zero();
 
     pickup_hpf.freq(frequency());
+    pickup_hpf.zero();
 
     env.reset(1.7);
   }
@@ -96,7 +106,7 @@ namespace otto::engines {
 
   float RhodesSynth::Post::operator()(float in) noexcept
   {
-    return 0.01*in*(1 + lfo_amount*lfo.tri());
+    return 0.01f*in*(1 + lfo_amount*lfo.tri());
   }
 
   audio::ProcessData<1> RhodesSynth::process(audio::ProcessData<1> data)

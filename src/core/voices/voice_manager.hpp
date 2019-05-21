@@ -5,6 +5,7 @@
 #include <vector>
 
 #include <Gamma/Envelope.h>
+#include "util/dsp/SegExpBypass.hpp"
 
 #include "core/props/props.hpp"
 #include "core/ui/screen.hpp"
@@ -72,7 +73,7 @@ namespace otto::core::voices {
 
     /// Get the current frequency this voice should play
     ///
-    /// Needs to be applied seperately for each sample to handle for example glide.
+    /// Needs to be applied separately for each sample to handle for example glide.
     float frequency() noexcept;
     /// Change the current frequency
     void frequency(float) noexcept;
@@ -80,7 +81,7 @@ namespace otto::core::voices {
     /// Get the velocity value
     float velocity() noexcept;
 
-    /// Get the velocity value
+    /// Get the aftertouch value
     float aftertouch() noexcept;
 
     /// Is this voice currently triggered?

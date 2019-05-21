@@ -35,10 +35,12 @@ namespace otto::engines {
       octaveupdown,
     };
 
+
     struct Props {
       Property<Playmode, wrap> playmode = {Playmode::up};
       Property<OctaveMode, wrap> octavemode = {OctaveMode::standard};
-      Property<float> note_length = {0.2f, limits(0.01f, 1.f)};
+      Property<float> note_length = {0.2f, limits(0.01f, 0.97f), step_size(0.01)};
+      Property<int, wrap> subdivision = {1, limits(1, 4)};
 
       std::vector<NoteArray> output_stack_;
       bool graphics_outdated = false;
@@ -56,7 +58,8 @@ namespace otto::engines {
 
 
   private:
-    int _samples_per_beat = 22050 / 2;
+    int _samples_per_quarternote = 22050;
+    int _samples_per_beat = 22050;
     int _counter = _samples_per_beat;
     bool has_changed_ = false;
     int note_off_frames = 1000;

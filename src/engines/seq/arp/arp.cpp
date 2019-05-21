@@ -77,12 +77,18 @@ namespace otto::engines {
 
     // If the held_notes_ stack has changed, re-sort and reset.
     if (has_changed_) {
+      //Flag to recalculate on the graphics thread
+      props.graphics_outdated = true;
       // If stack is now empty, stop the arpeggiator
       if (held_notes_.empty()) {
         running_ = false;
         for (auto&& ev : *iter) {
           data.midi.push_back(midi::NoteOffEvent(ev.key));
         }
+        //Necessary to clear the output_stack and the dots on the screen
+        sort_notes();
+        iter = util::view::circular(props.output_stack_).begin();
+        props.graphics_outdated = true;
       } else if (!running_) { // If it wasn't running and should start now
         running_ = true;
         _counter = 0;
@@ -94,7 +100,7 @@ namespace otto::engines {
 
     // If we are running, at a note-off point, and the output stack is not empty send note-off
     // events
-    if (next_beat <= data.nframes - note_off_frames && running_ && !props.output_stack_.empty()) {
+    if (next_beat <= _samples_per_beat - note_off_frames && running_ && !props.output_stack_.empty()) {
       for (auto ev : *iter) {
         data.midi.push_back(midi::NoteOffEvent(ev.key));
       }
@@ -107,8 +113,6 @@ namespace otto::engines {
         sort_notes();
         iter = util::view::circular(props.output_stack_).begin();
         has_changed_ = false;
-        //Flag to recalculate on the graphics thread
-        props.graphics_outdated = true;
       }
       // Go to next value in the output_stack
       // increment in output stack (wrapping) and push new notes
@@ -129,7 +133,12 @@ namespace otto::engines {
   {
     // Set on_change handlers
     props.note_length.on_change().connect(
-      [this](float len) { note_off_frames = (int) len * _samples_per_beat; });
+      [this](float len) { note_off_frames = (int)(len * (float)_samples_per_beat); });
+    props.subdivision.on_change().connect(
+            [this](int mod) {
+              _samples_per_beat = _samples_per_quarternote / mod;
+              note_off_frames = (int)(props.note_length * (float)_samples_per_beat);
+            });
   }
 
   // Sorting  for the arpeggiator. This is where the magic happens.
@@ -251,7 +260,7 @@ namespace otto::engines {
     switch (ev.rotary) {
     case Rotary::blue: props.playmode.step(util::math::sgn(ev.clicks)); break;
     case Rotary::green: props.octavemode.step(util::math::sgn(ev.clicks)); break;
-    case Rotary::yellow: break;
+    case Rotary::yellow: props.subdivision.step(util::math::sgn(ev.clicks)); break;
     case Rotary::red: props.note_length.step(ev.clicks); break;
     }
   }
@@ -271,6 +280,24 @@ namespace otto::engines {
     ctx.fillStyle(Colours::Green);
     ctx.fillText(to_string(props.octavemode), 200, 41.6);
 
+    ctx.fillStyle(Colours::Yellow);
+    ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
+    ctx.fillText("Speed", 52, 61.6);
+    //Draw speed dots
+    for (int i=0; i<props.subdivision; i++) {
+      ctx.beginPath();
+      ctx.circle(200 + (float)i*13, 61.6 , 5);
+      ctx.fill(Colours::Yellow);
+    }
+
+
+
+    ctx.fillStyle(Colours::Red);
+    ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
+    ctx.fillText("NoteLength", 52, 81.6);
+    ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
+    ctx.fillText(fmt::format("{:1}", props.note_length * 100), 200, 81.6);
+
     ctx.restore();
 
     //Dots
@@ -283,9 +310,7 @@ namespace otto::engines {
     for (auto& p : dots) {
       ctx.beginPath();
       ctx.circle(p,5);
-      ctx.fillStyle(Colours::White);
-      ctx.stroke(Colours::White);
-      ctx.fill();
+      ctx.fill(Colours::White);
     }
 
   }
