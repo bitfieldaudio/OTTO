@@ -165,7 +165,7 @@ namespace otto::services {
     controller.register_key_handler(ui::Key::sends,
                                     [&](ui::Key k) {
                                       send_last_screen = ui_manager.state().current_screen;
-                                      // ui_manager.display(synth_send.screen());
+                                      //ui_manager.display(synth_send.screen());
                                     },
                                     [&](ui::Key k) {
                                       if (send_last_screen) ui_manager.display(send_last_screen);

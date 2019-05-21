@@ -26,7 +26,7 @@ namespace otto::util {
     template<typename T>
     static constexpr auto is = decltype(_is(std::declval<T>()))::value;
   };
-
+  
   template<typename T, typename Enable = void>
   struct is_number_or_enum : std::false_type {};
 

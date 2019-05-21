@@ -142,13 +142,17 @@ namespace otto::core::voices {
       /// Only a single voice in use, allways playing the latest note
       mono,
       /// All voices in use, all playing the latest note (posibly with detune)
-      unison
+      unison,
+      /// Plays a given interval
+      interval,
     };
 
     /// Convert a playmode to string
     ///
     /// @return an all-lowercase string corresponding to the enum name
     std::string to_string(PlayMode) noexcept;
+    /// Returns the name of the corresponding extra setting
+    std::string aux_setting(PlayMode pm) noexcept;
 
     struct EnvelopeProps {
       props::Property<float> attack = {0, props::limits(0, 1), props::step_size(0.02)};
@@ -161,9 +165,18 @@ namespace otto::core::voices {
 
     struct SettingsProps {
       props::Property<PlayMode, props::wrap> play_mode = {
-        PlayMode::poly, props::limits(PlayMode::poly, PlayMode::unison)};
+        PlayMode::poly, props::limits(PlayMode::poly, PlayMode::interval)};
+      props::Property<float> drift = {0, props::limits(0, 1), props::step_size(0.01)};
+      props::Property<float> sub = {0, props::limits(0, 1), props::step_size(0.01)};
+      props::Property<float> detune = {0, props::limits(0, 1), props::step_size(0.01)};
+      props::Property<int> interval = {0, props::limits(-12, 12)};
+
       props::Property<float> portamento = {0, props::limits(0, 1),
                                                              props::step_size(0.01)};
+
+      props::Property<bool> legato = {false};
+      props::Property<bool> retrig = {false};
+
       props::Property<int, props::no_signal> octave = {0, props::limits(-2, 7)};
       props::Property<int, props::no_signal> transpose = {0, props::limits(-12, 12)};
 
