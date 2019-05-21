@@ -13,7 +13,7 @@ namespace otto::engines {
 
   struct Sequencer : engine::MiscEngine<Sequencer> {
     static constexpr util::string_ref name = "Sequencer";
-    static constexpr int number_of_channels = 10;
+    static constexpr int number_of_channels = 8;
     int current_channel = 0;
 
     struct Props {
@@ -26,10 +26,12 @@ namespace otto::engines {
     };
 
     std::array<Channel, number_of_channels> channels;
+    decltype(channels)::iterator cur_channel = channels.begin();
+
 
     Sequencer();
 
-    audio::ProcessData<1> process(audio::ProcessData<0>);
+    audio::ProcessData<2> process(audio::ProcessData<0>, audio::ProcessData<1>, audio::ProcessData<1>);
 
   private:
     friend struct SequencerScreen;

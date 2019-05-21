@@ -51,7 +51,7 @@ namespace otto::engines {
       return {false, octave[octave_pos].second + (key / 12) * 5};
   }
 
-  audio::ProcessData<1> Sequencer::process(audio::ProcessData<0> data)
+  audio::ProcessData<2> Sequencer::process(audio::ProcessData<0> data, audio::ProcessData<1> fx1, audio::ProcessData<1> fx2)
   {
     for (auto& event : data.midi) {
       util::match(event,
@@ -83,10 +83,15 @@ namespace otto::engines {
       }
     }
 
-    auto buf = Application::current().audio_manager->buffer_pool().allocate();
-    for (auto&& frm : buf) {
-      for (auto& chan : channels) {
-        frm += chan.sampler();
+    auto buf = Application::current().audio_manager->buffer_pool().allocate_multi<2>();
+    for (auto&& [dryL, dryR, fx1, fx2] :
+            util::zip(buf[0], buf[1], fx1.audio, fx2.audio)) {
+      for (auto &chan : channels) {
+        float ss = chan.sampler();
+        dryL = ss * chan.sampler.props.send.props.dry * (1 - chan.sampler.props.send.props.dry_pan);
+        dryR = ss * chan.sampler.props.send.props.dry * (1 + chan.sampler.props.send.props.dry_pan);
+        fx1 += ss * chan.sampler.props.send.props.to_FX1;
+        fx2 += ss * chan.sampler.props.send.props.to_FX2;
       }
     }
 

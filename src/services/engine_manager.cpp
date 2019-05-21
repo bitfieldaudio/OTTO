@@ -4,7 +4,7 @@
 
 #include <engines/synths/goss/goss.hpp>
 #include <engines/synths/potion/potion.hpp>
-#include "core/engine/sequencer.hpp"
+//#include "core/engine/sequencer.hpp"
 #include "engines/fx/chorus/chorus.hpp"
 #include "engines/fx/wormhole/wormhole.hpp"
 #include "engines/misc/master/master.hpp"
@@ -14,6 +14,7 @@
 #include "engines/synths/OTTOFM/ottofm.hpp"
 #include "engines/synths/potion/potion.hpp"
 #include "engines/synths/rhodes/rhodes.hpp"
+//#include "engines/synths/gammasampler/gammasampler.hpp"
 
 #include "services/application.hpp"
 
@@ -56,7 +57,8 @@ namespace otto::services {
     engines::Sends synth_send;
     engines::Sends line_in_send;
     engines::Master master;
-    // engines::Sequencer sequencer;
+    //engines::Sequencer sequencer;
+    //std::array<engines::Sends> sequencer_sends;
   };
 
   std::unique_ptr<EngineManager> EngineManager::create_default()
@@ -138,7 +140,7 @@ namespace otto::services {
       }
     });
 
-    // controller.register_key_handler(ui::Key::sequencer, [&](ui::Key k) {
+    //ui_manager.register_key_handler(ui::Key::sequencer, [&](ui::Key k) {
     //     ui_manager.display(sequencer.screen());
     // });
 
@@ -192,15 +194,18 @@ namespace otto::services {
     auto midi_in = external_in.midi_only();
     auto arp_out = arpeggiator->process(midi_in);
     auto synth_out = synth->process({external_in.audio, arp_out.midi, external_in.nframes});
-    // auto seq_out = sequencer.process(midi_in);
+
     auto fx1_bus = Application::current().audio_manager->buffer_pool().allocate();
     auto fx2_bus = Application::current().audio_manager->buffer_pool().allocate();
     for (auto&& [snth, fx1, fx2] : util::zip(synth_out.audio, fx1_bus, fx2_bus)) {
       fx1 = snth * synth_send.props.to_FX1;
       fx2 = snth * synth_send.props.to_FX2;
     }
+    // Sequencer. Outputs L/R dry output and adds to fx busses.
+    // auto seq_dry = sequencer.process(midi_in, fx1_bus, fx2_bus);
     auto fx1_out = effect1->process(audio::ProcessData<1>(fx1_bus));
     auto fx2_out = effect2->process(audio::ProcessData<1>(fx2_bus));
+    //Stereo output gathered in fx1_out
     for (auto&& [snth, fx1L, fx1R, fx2L, fx2R] :
          util::zip(synth_out.audio, fx1_out.audio[0], fx1_out.audio[1], fx2_out.audio[0],
                    fx2_out.audio[1])) {

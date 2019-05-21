@@ -7,6 +7,7 @@
 #include <AudioFile.h>
 #include <Gamma/Filter.h>
 #include <Gamma/SamplePlayer.h>
+#include <engines/misc/sends/sends.hpp>
 
 namespace otto::engines {
 
@@ -27,16 +28,21 @@ namespace otto::engines {
       Property<float> startpoint = {0, limits(0, 1), step_size(0.001)};
       Property<float> endpoint = {1, limits(0, 1), step_size(0.001)};
 
-      Property<bool> cut = false;
-      Property<bool> loop = false;
+      std::vector<std::string> filenames;
+      std::vector<std::string>::iterator file_it = filenames.begin();
+      gam::Array<float> samplecontainer;
+      float samplerate;
 
-      DECL_REFLECTION(Props, file, volume, filter, speed, fadein, fadeout, startpoint, cut, loop);
+      engines::Sends send;
+
+      DECL_REFLECTION(Props, file, volume, filter, speed, fadein, fadeout, startpoint, endpoint);
     } props;
 
     Sampler();
 
     void restart();
     void finish();
+
 
     float operator()() noexcept;
 
@@ -53,9 +59,8 @@ namespace otto::engines {
     friend struct SamplerScreen;
     friend struct SamplerEnvelopeScreen;
 
-    void load_file(fs::path path);
+    void load_file(std::string);
     gam::SamplePlayer<> sample;
-    gam::Array<float> samplecontainer;
     AudioFile<float> samplefile;
     int frames;
     bool note_on = false;

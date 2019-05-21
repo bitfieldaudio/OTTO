@@ -15,6 +15,7 @@ namespace otto::engines {
   struct SamplerScreen : EngineScreen<Sampler> {
     void draw(Canvas& ctx) override;
     void encoder(EncoderEvent e) override;
+    void draw_filename(Canvas& ctx);
 
     using EngineScreen<Sampler>::EngineScreen;
   };
@@ -23,8 +24,6 @@ namespace otto::engines {
     void draw(Canvas& ctx) override;
     void encoder(EncoderEvent e) override;
 
-    AudioFile<float> waveform;
-
     using EngineScreen<Sampler>::EngineScreen;
   };
 
@@ -32,35 +31,57 @@ namespace otto::engines {
     : SynthEngine<Sampler>(std::make_unique<SamplerScreen>(this)),
       _envelope_screen(std::make_unique<SamplerEnvelopeScreen>(this))
   {
-    samplefile.load((Application::current().data_dir / "samples" / "sample.wav").c_str());
-    samplecontainer.source(&samplefile.samples[0][0], samplefile.getNumSamplesPerChannel(), true);
-    sample.buffer(samplecontainer, (double) samplefile.getSampleRate(),
-                  samplefile.getNumChannels());
-    finish();
-    frames = sample.frames();
+    //Load filenames into vector. TODO: Move this out to enclosing sequencer
+    std::string path = Application::current().data_dir / "samples";
+    for (const auto& entry : filesystem::directory_iterator(path)) {
+      props.filenames.push_back(entry.path().filename());
+    }
+    util::sort(props.filenames);
 
+    //Set up on_change handler for the file name
+    props.file.on_change().connect([this](std::string fl) {
+        // Check if file exists and locate index
+        auto idx = util::find(props.filenames, fl);
+        if (idx != props.filenames.end()) {
+          props.file_it = idx;
+        }
+        load_file(fl);
+    });
+
+    //Filter stuff
     _lo_filter.type(gam::LOW_PASS);
     _lo_filter.freq(20);
     _hi_filter.type(gam::HIGH_PASS);
     _hi_filter.freq(20000);
 
-    // On_change handlers
+    // More on_change handlers
     props.startpoint.on_change().connect([this](float pt) { sample.min(pt * frames); });
     props.endpoint.on_change().connect([this](float pt) { sample.max(pt * frames); });
     props.fadein.on_change().connect(
-      [this](float fd) { sample.fade((int) fd * 1000, (int) props.fadeout * 1000); });
+            [this](float fd) { sample.fade((int) fd * 1000, (int) props.fadeout * 1000); });
     props.fadeout.on_change().connect(
-      [this](float fd) { sample.fade((int) props.fadein * 1000, (int) fd * 1000); });
+            [this](float fd) { sample.fade((int) props.fadein * 1000, (int) fd * 1000); });
     props.filter.on_change().connect([this](float freq) {
-      if (freq > 10) {
-        _lo_filter.freq(20000);
-        _hi_filter.freq(freq * freq * freq * 0.2);
-      } else {
-        _lo_filter.freq(freq * freq * 200);
-        _hi_filter.freq(20);
-      }
+        if (freq > 10) {
+          _lo_filter.freq(20000);
+          _hi_filter.freq(freq * freq * freq * 0.2);
+        } else {
+          _lo_filter.freq(freq * freq * 200);
+          _hi_filter.freq(20);
+        }
     });
     props.speed.on_change().connect([this](float spd) { sample.rate(spd); });
+
+    //Load default sample
+    /*
+    samplefile.load(props.filenames[0]);
+    props.samplecontainer.source(&samplefile.samples[0][0], samplefile.getNumSamplesPerChannel(), true);
+    sample.buffer(samplecontainer, (double) samplefile.getSampleRate(),
+                  samplefile.getNumChannels());
+    finish();
+    frames = sample.frames();
+*/
+
   }
 
   void Sampler::restart()
@@ -75,16 +96,24 @@ namespace otto::engines {
 
   float Sampler::operator()() noexcept
   {
-    if (props.loop) sample.loop();
     return sample();
   }
 
-  void Sampler::load_file(fs::path path)
+  void Sampler::load_file(std::string filename)
   {
-    samplefile.load((Application::current().data_dir / "samples" / "sample.wav").c_str());
-    samplecontainer.source(&samplefile.samples[0][0], samplefile.getNumSamplesPerChannel());
-    sample.buffer(samplecontainer, (double) samplefile.getSampleRate(),
-                  samplefile.getNumChannels());
+    bool loaded = samplefile.load(Application::current().data_dir / "samples" / filename);
+    int num_samples = 1;
+    if (loaded) {
+      props.samplecontainer.resize(samplefile.getNumSamplesPerChannel());
+      props.samplerate = samplefile.getSampleRate();
+      util::copy(samplefile.samples[0], props.samplecontainer.elems());
+      num_samples = samplefile.getNumSamplesPerChannel();
+    } else {
+      props.samplecontainer.resize(1);
+      props.samplerate = 1;
+      props.samplecontainer[0] = 0;
+    }
+    sample.finish();
   }
 
   audio::ProcessData<1> Sampler::process(audio::ProcessData<1> data)
@@ -97,13 +126,12 @@ namespace otto::engines {
                   },
                   [this](midi::NoteOffEvent& ev) {
                     note_on = false;
-                    if (props.cut) finish();
+                    finish();
                   },
                   [](auto&&) {});
     }
     for (auto&& frm : data.audio) {
       frm = _hi_filter(_lo_filter(sample())) * props.volume;
-      if (props.loop && note_on && sample.done()) restart();
     }
     return data;
   }
@@ -125,27 +153,64 @@ namespace otto::engines {
     auto& props = engine.props;
     //auto& sample = engine.sample;
     switch (ev.encoder) {
-    case ui::Encoder::blue: props.volume.step(ev.steps); break;
-    case ui::Encoder::green: props.filter.step(ev.steps); break;
-    case ui::Encoder::yellow: props.speed.step(ev.steps); break;
-    case ui::Encoder::red:
-      if (props.cut && props.loop) {
-        props.loop = false;
-      } else if (props.cut && !props.loop) {
-        props.cut = false;
-      } else if (!props.cut && !props.loop) {
-        props.loop = true;
-      } else if (!props.cut && props.loop) {
-        props.cut = true;
+      case ui::Encoder::blue: props.volume.step(ev.steps); break;
+      case ui::Encoder::green: props.filter.step(ev.steps); break;
+      case ui::Encoder::yellow: props.speed.step(ev.steps); break;
+      case ui::Encoder::red: {
+        if (ev.steps > 0 && props.file_it < props.filenames.end() - 1) {
+          // Clockwise, go up
+          props.file_it++;
+          props.file.set(*props.file_it);
+        } else if (ev.steps < 0 && props.file_it > props.filenames.begin()) {
+          // Counterclockwise, go down
+          props.file_it--;
+          props.file.set(*props.file_it);
+        }
+        break;
       }
     }
   }
+
+    void SamplerScreen::draw_filename(ui::vg::Canvas& ctx)
+    {
+      float y_pos = height - 30;
+      float x_pos = width / 2;
+      float text_width = 100;
+      ctx.beginPath();
+      ctx.fillStyle(Colours::Gray50);
+      ctx.textAlign(HorizontalAlign::Center, VerticalAlign::Middle);
+      ctx.fillText(engine.props.file, {x_pos, y_pos});
+      text_width = ctx.measureText(engine.props.file);
+      //Arrowheads
+      float x = x_pos + text_width/2 + 20;
+      int side_length = 10;
+      ctx.group([&] {
+          ctx.beginPath();
+          ctx.moveTo(x, y_pos);
+          ctx.lineTo(x - side_length, y_pos - side_length);
+          ctx.lineTo(x - side_length, y_pos + side_length);
+          ctx.closePath();
+          ctx.stroke(Colours::Red);
+          ctx.fill(Colours::Red);
+      });
+      x = x_pos - text_width/2 - 20;
+      ctx.group([&] {
+          ctx.beginPath();
+          ctx.moveTo(x, y_pos);
+          ctx.lineTo(x + side_length, y_pos - side_length);
+          ctx.lineTo(x + side_length, y_pos + side_length);
+          ctx.closePath();
+          ctx.stroke(Colours::Red);
+          ctx.fill(Colours::Red);
+      });
+
+    }
 
   void SamplerScreen::draw(ui::vg::Canvas& ctx)
   {
     using namespace ui::vg;
 
-    auto& props = engine.props;
+    //auto& props = engine.props;
     //auto& sample = engine.sample;
 
     ctx.font(Fonts::Norm, 20);
@@ -186,8 +251,8 @@ namespace otto::engines {
     ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
     ctx.fillText(fmt::format("{:1.2}", engine.props.speed), {width - x_pad, y_pad + 2 * space});
 
-    if (props.cut) ctx.fillText("CUT", {100, 170});
-    if (props.loop) ctx.fillText("LOOP", {100, 195});
+    draw_filename(ctx);
+
   }
 
   // ENVELOPE SCREEN //
