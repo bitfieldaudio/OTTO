@@ -129,6 +129,21 @@ namespace otto::util {
       return _store[(_inner_idx + 1) % 2];
     }
 
+    template<typename Func>
+    constexpr decltype(auto) outer_locked(Func&& f) noexcept(std::is_nothrow_invocable_v<Func, T&>)
+    {
+      std::unique_lock lock(_outer_lock);
+      return std::invoke(std::forward<Func>(f), _store[(_inner_idx + 1) % 2]);
+    }
+
+    template<typename Func>
+    constexpr decltype(auto) outer_locked(Func&& f) const
+      noexcept(std::is_nothrow_invocable_v<Func, const T&>)
+    {
+      std::unique_lock lock(_outer_lock);
+      return std::invoke(std::forward<Func>(f), _store[(_inner_idx + 1) % 2]);
+    }
+
     constexpr void swap() noexcept
     {
       std::unique_lock lock(_outer_lock);

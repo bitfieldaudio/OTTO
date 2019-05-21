@@ -11,12 +11,6 @@
 
 using json = nlohmann::json;
 
-template<typename T>
-void to_json(json& j, const T& obj);
-
-template<typename T>
-void from_json(const json& j, T& obj);
-
 namespace otto::util {
 
   /////////////////// SERIALIZATION

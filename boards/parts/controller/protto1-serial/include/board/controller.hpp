@@ -18,6 +18,7 @@ namespace otto::services {
    *
    * | Byte | Function         | Args        |
    * |-----:|------------------|-------------|
+   * | 0x23 | Debug message    |             |
    * | 0x0A | Request alive    |             |
    * | 0x0B | Respond alive    |             |
    * | 0xE0 | Clear all LEDs   | COLOR       |
@@ -29,6 +30,7 @@ namespace otto::services {
    * 
    * | Byte | Function         | Args     |
    * |-----:|------------------|----------|
+   * | 0x23 | Debug message    |          |
    * | 0x0A | Request alive    |          |
    * | 0x0B | Respond alive    |          |
    * | 0x20 | Key down         | KEY      |
@@ -79,8 +81,9 @@ namespace otto::services {
     void insert_key_event(Command cmd, Key key);
     void insert_key_or_midi(Command cmd, BytesView args, bool do_send_midi);
 
-    util::Serial serial = {"/dev/ttyACM0"};
+    util::Serial serial = {"/dev/ttyACM0", 10, 1};
     util::double_buffered<EventBag, util::clear_inner> events_;
+    util::double_buffered<std::vector<std::uint8_t>, util::clear_outer> write_buffer_;
     util::thread read_thread;
     bool send_midi_ = true;
   };

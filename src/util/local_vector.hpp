@@ -4,7 +4,6 @@
 
 namespace otto::util {
 
-
   template<typename T, std::size_t Capacity>
   struct local_vector {
     using value_type = T;

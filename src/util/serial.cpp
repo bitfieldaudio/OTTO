@@ -15,11 +15,15 @@
 
 namespace otto::util {
 
-  Serial::Serial(std::string path) : path_(std::move(path))
+  template<typename T>
+  using expected = tl::expected<T, Serial::exception>;
+
+  Serial::Serial(std::string path, int vtime, int vmin)
+    : path_(std::move(path))
   {
     fd_ = open(path_.c_str(), O_RDWR);
     try {
-      if (fd_< 0) {
+      if (fd_ < 0) {
         throw util::exception("Couldn't open serial device '{}'. ERR {}: {}", path_, errno,
                               strerror(errno));
       }
@@ -44,8 +48,8 @@ namespace otto::util {
       tty.c_oflag &= ~OPOST; // Prevent special interpretation of output bytes (e.g. newline chars)
       tty.c_oflag &= ~ONLCR; // Prevent conversion of newline to carriage return/line feed
 
-      tty.c_cc[VTIME] = 0; // No read timeout
-      tty.c_cc[VMIN] = 1;  // Wait until one byte has been recieved
+      tty.c_cc[VTIME] = vtime; // No read timeout
+      tty.c_cc[VMIN] = vmin;  // Wait until one byte has been recieved
 
       // Set baud rate
       cfsetispeed(&tty, B9600);
@@ -67,52 +71,53 @@ namespace otto::util {
     close(fd_);
   }
 
-  void Serial::write(ConstBytesView data)
+  expected<void> Serial::write(ConstBytesView data)
   {
     auto res = ::write(fd_, data.data(), data.size());
     if (res != data.size()) {
-      throw util::exception(
+      return tl::make_unexpected(exception(ErrorCode::error,
         "Error writing {} bytes to serial port {}, write returned {}. ERR {}: {}", data.size(),
-        path_, res, errno, strerror(errno));
+        path_, res, errno, strerror(errno)));
     }
+    return {};
   }
 
-  void Serial::read(BytesView dest)
+  expected<void> Serial::read(BytesView dest) noexcept
   {
     auto res = ::read(fd_, dest.data(), dest.size());
-    if (res != dest.size()) {
-      throw util::exception(
-        "Error reading {} bytes from serial port {}, write returned {}. ERR {}: {}", dest.size(),
-        path_, res, errno, strerror(errno));
+    if (res == 0) {
+      return tl::make_unexpected(exception(ErrorCode::empty_buffer, "No data avaliable on serial port"));
     }
+    if (res != dest.size()) {
+      return tl::make_unexpected(exception(ErrorCode::error,
+        "Error reading {} bytes from serial port {}, write returned {}. ERR {}: {}", dest.size(),
+        path_, res, errno, strerror(errno)));
+    }
+    return {};
   }
 
-  std::vector<std::uint8_t> Serial::read(std::size_t n)
+  expected<std::vector<std::uint8_t>> Serial::read(std::size_t n) noexcept
   {
     std::vector<std::uint8_t> res;
     res.reserve(n);
-    read(res);
-    return res;
+    return read(res).map([&] { return res; });
   }
 
-  std::uint8_t Serial::read_single() {
+  expected<std::uint8_t> Serial::read_single() noexcept
+  {
     std::uint8_t dst = 0;
-    auto res = ::read(fd_, &dst, 1);
-    if (res != 1) {
-      throw util::exception(
-        "Error reading {} bytes from serial port {} (fd: {}), write returned {}. \nERR {}: {}", 1,
-        path_, fd_, res, errno, strerror(errno));
-    }
-    return dst;
+    return read({&dst, 1}).map([&] { return dst; });
   }
 
-  std::vector<std::uint8_t> Serial::read_line(std::uint8_t delim) {
+  expected<std::vector<std::uint8_t>> Serial::read_line(std::uint8_t delim) noexcept
+  {
     std::vector<std::uint8_t> res;
     std::uint8_t c;
     do {
-      c = read_single();
+      auto ec = read_single();
+      if (!ec) return tl::make_unexpected(ec.error());
+      c = *ec;
       res.push_back(c);
-      DLOGI("Read: {:#x}", c);
     } while (c != delim);
     return res;
   }

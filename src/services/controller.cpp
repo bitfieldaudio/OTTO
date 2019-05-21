@@ -56,15 +56,15 @@ namespace otto::services {
                   [this](KeyPressEvent& ev) {
                     keys[ev.key._to_index()] = true;
                     if (handle_global(ev.key)) return;
-                    UIManager::current().current_screen()->keypress(ev.key);
+                    UIManager::current().current_screen().keypress(ev.key);
                   },
                   [this](KeyReleaseEvent& ev) {
                     keys[ev.key._to_index()] = false;
                     if (handle_global(ev.key, false)) return;
-                    UIManager::current().current_screen()->keyrelease(ev.key);
+                    UIManager::current().current_screen().keyrelease(ev.key);
                   },
                   [](EncoderEvent& ev) {
-                    UIManager::current().current_screen()->encoder(ev);
+                    UIManager::current().current_screen().encoder(ev);
                   });
     }
   }

@@ -16,6 +16,7 @@ namespace otto::services {
 
   BETTER_ENUM(Command,
               std::uint8_t,
+              debug_message = 0x23,
               request_alive = 0x0A,
               respond_alive = 0x0B,
               clear_all_leds = 0xE0,
@@ -108,7 +109,12 @@ namespace otto::services {
     return std::vector<byte>{cmd._to_integral()};
   }
 
-  void P1SC::queue_message(BytesView) {}
+  void P1SC::queue_message(BytesView message) {
+    write_buffer_.outer_locked([&] (auto& b) {
+      b.reserve(b.size() + message.size());
+      util::copy(message, std::back_inserter(b));
+    });
+  }
 
   int8_t to_int8(uint8_t x)
   {
@@ -131,19 +137,14 @@ namespace otto::services {
       case Command::key_down: {
         insert_key_or_midi(command, bytes, send_midi_);
       } break;
-      case Command::blue_enc_step:
-        encoder({Encoder::blue, to_int8(bytes.at(0))});
-        break;
-      case Command::green_enc_step:
-        encoder({Encoder::green, to_int8(bytes.at(0))});
-        break;
-      case Command::yellow_enc_step:
-        encoder({Encoder::yellow, to_int8(bytes.at(0))});
-        break;
-      case Command::red_enc_step:
-        encoder({Encoder::red, to_int8(bytes.at(0))});
-        break;
+      case Command::blue_enc_step: encoder({Encoder::blue, to_int8(bytes.at(0))}); break;
+      case Command::green_enc_step: encoder({Encoder::green, to_int8(bytes.at(0))}); break;
+      case Command::yellow_enc_step: encoder({Encoder::yellow, to_int8(bytes.at(0))}); break;
+      case Command::red_enc_step: encoder({Encoder::red, to_int8(bytes.at(0))}); break;
       case Command::respond_key_dump: {
+      } break;
+      case Command::debug_message: {
+        DLOGI("MCU DEBUG: {}", std::string(bytes.begin(), bytes.end()));
       } break;
       default: {
         LOGE("Unparsable message");
@@ -153,18 +154,35 @@ namespace otto::services {
   }
 
   P1SC::PrOTTO1SerialController()
-    : read_thread([this](auto should_run) {
+    : read_thread([this](auto should_run) noexcept {
         while (should_run()) {
-          auto bytes = serial.read_line();
-          DLOGI("From serial controler: {}", std::string(bytes.begin(), bytes.end()));
-          handle_message(bytes);
+          serial.read_line()
+            .map([&](auto&& bytes) {
+              handle_message(bytes);
+            })
+            .map_error([&](auto&& error) {
+              if (error.data() != util::Serial::ErrorCode::empty_buffer) {
+                LOGE("Error reading serial data {}", error.what());
+              }
+            });
         }
       })
   {}
 
-  void P1SC::set_color(LED, LEDColor) {}
-  void P1SC::flush_leds() {}
-  void P1SC::clear_leds() {}
+  void P1SC::set_color(LED led, LEDColor color) {
+    std::array<std::uint8_t, 6> msg = {0xEC, led.key._to_integral(), color.r, color.g, color.b, '\n'};
+    queue_message(msg);
+  }
+
+  void P1SC::flush_leds() {
+    write_buffer_.swap();
+    serial.write(write_buffer_.inner());
+  }
+  void P1SC::clear_leds() {
+    auto c = LEDColor::Black;
+    std::array<std::uint8_t, 5> msg = {0xE0, c.r, c.g, c.b, '\n'};
+    queue_message(msg);
+  }
 
 } // namespace otto::services
 

@@ -9,8 +9,8 @@
 #include "engines/fx/wormhole/wormhole.hpp"
 #include "engines/misc/master/master.hpp"
 #include "engines/misc/sends/sends.hpp"
-#include "engines/seq/euclid/euclid.hpp"
 #include "engines/seq/arp/arp.hpp"
+#include "engines/seq/euclid/euclid.hpp"
 #include "engines/synths/OTTOFM/ottofm.hpp"
 #include "engines/synths/potion/potion.hpp"
 #include "engines/synths/rhodes/rhodes.hpp"
@@ -76,54 +76,72 @@ namespace otto::services {
     engineGetters.try_emplace("Effect2", [&]() { return &effect2.current(); });
     engineGetters.try_emplace("Arpeggiator", [&]() { return &arpeggiator.current(); });
 
+    auto reg_ss = [&](auto se, auto&& f) { return ui_manager.register_screen_selector(se, f); };
+
+    // reg_ss(ScreenEnum::sends, );
+    // reg_ss(ScreenEnum::routing, );
+    reg_ss(ScreenEnum::fx1, [&]() -> auto& { return effect1->screen(); });
+    reg_ss(ScreenEnum::fx1_selector, [&]() -> auto& { return effect1.selector_screen(); });
+    reg_ss(ScreenEnum::fx2, [&]() -> auto& { return effect2->screen(); });
+    reg_ss(ScreenEnum::fx2_selector, [&]() -> auto& { return effect2.selector_screen(); });
+    // reg_ss(ScreenEnum::looper,         [&] () -> auto& { return  ; });
+    reg_ss(ScreenEnum::arp, [&]() -> auto& { return arpeggiator->screen(); });
+    reg_ss(ScreenEnum::arp_selector, [&]() -> auto& { return arpeggiator.selector_screen(); });
+    reg_ss(ScreenEnum::voices, [&]() -> auto& { return synth->voices_screen(); });
+    reg_ss(ScreenEnum::master, [&]() -> auto& { return master.screen(); });
+    // reg_ss(ScreenEnum::sequencer,      [&] () -> auto& { return  ; });
+    // reg_ss(ScreenEnum::sampler,        [&] () -> auto& { return  ; });
+    reg_ss(ScreenEnum::synth, [&]() -> auto& { return synth->screen(); });
+    reg_ss(ScreenEnum::synth_selector, [&]() -> auto& { return synth.selector_screen(); });
+    reg_ss(ScreenEnum::envelope, [&]() -> auto& { return synth->envelope_screen(); });
+    // reg_ss(ScreenEnum::settings,       [&] () -> auto& { return  ; });
+    // reg_ss(ScreenEnum::external,       [&] () -> auto& { return  ; });
+    // reg_ss(ScreenEnum::twist1,         [&] () -> auto& { return  ; });
+    // reg_ss(ScreenEnum::twist2,         [&] () -> auto& { return  ; });
+
     controller.register_key_handler(ui::Key::arp, [&](ui::Key k) {
       if (controller.is_pressed(ui::Key::shift)) {
-        ui_manager.display(arpeggiator.selector_screen());
+        ui_manager.display(ScreenEnum::arp_selector);
       } else {
-        ui_manager.select_engine("Arpeggiator");
-        ui_manager.display(arpeggiator->screen());
+        ui_manager.display(ScreenEnum::arp);
       }
     });
 
     controller.register_key_handler(ui::Key::synth, [&](ui::Key k) {
       if (controller.is_pressed(ui::Key::shift)) {
-        ui_manager.display(synth.selector_screen());
+        ui_manager.display(ScreenEnum::synth_selector);
       } else {
-        ui_manager.select_engine("Synth");
+        ui_manager.display(ScreenEnum::synth);
       }
     });
 
     controller.register_key_handler(ui::Key::envelope, [&](ui::Key k) {
-      auto& owner = synth.current();
-        if (controller.is_pressed(ui::Key::shift)) {
-          ui_manager.display(owner.voices_screen());
-        } else {
-          ui_manager.select_engine("Synth");
-          ui_manager.display(owner.envelope_screen());
+      if (controller.is_pressed(ui::Key::shift)) {
+        ui_manager.display(ScreenEnum::voices);
+      } else {
+        ui_manager.display(ScreenEnum::envelope);
       }
     });
 
-    controller.register_key_handler(ui::Key::plus, [&](ui::Key k) {
-      synth.current().voices_screen().keypress(ui::Key::plus);
-    });
+    controller.register_key_handler(
+      ui::Key::plus, [&](ui::Key k) { synth.current().voices_screen().keypress(ui::Key::plus); });
 
-    controller.register_key_handler(ui::Key::minus, [&](ui::Key k) {
-        synth.current().voices_screen().keypress(ui::Key::minus);
-    });
+    controller.register_key_handler(
+      ui::Key::minus, [&](ui::Key k) { synth.current().voices_screen().keypress(ui::Key::minus); });
 
     controller.register_key_handler(ui::Key::fx1, [&](ui::Key k) {
       if (controller.is_pressed(ui::Key::shift)) {
-        ui_manager.display(effect1.selector_screen());
+        ui_manager.display(ScreenEnum::fx1_selector);
       } else {
-        ui_manager.select_engine("Effect1");
+        ui_manager.display(ScreenEnum::fx1);
       }
     });
 
     controller.register_key_handler(ui::Key::fx2, [&](ui::Key k) {
       if (controller.is_pressed(ui::Key::shift)) {
-        ui_manager.display(effect2.selector_screen());
+        ui_manager.display(ScreenEnum::fx2_selector);
       } else {
-        ui_manager.select_engine("Effect2");
+        ui_manager.display(ScreenEnum::fx2);
       }
     });
 
@@ -131,28 +149,26 @@ namespace otto::services {
     //     ui_manager.display(sequencer.screen());
     // });
 
-    static ui::Screen* master_last_screen = nullptr;
-    static ui::Screen* send_last_screen = nullptr;
+    static ScreenEnum master_last_screen = ScreenEnum::master;
+    static ScreenEnum send_last_screen = ScreenEnum::sends;
 
     controller.register_key_handler(ui::Key::master,
                                     [&](ui::Key k) {
-                                      master_last_screen = ui_manager.current_screen();
-                                      ui_manager.display(master.screen());
+                                      master_last_screen = ui_manager.state().current_screen;
+                                      ui_manager.display(ScreenEnum::master);
                                     },
                                     [&](ui::Key k) {
                                       if (master_last_screen)
-                                        ui_manager.display(*master_last_screen);
+                                        ui_manager.display(master_last_screen);
                                     });
 
     controller.register_key_handler(ui::Key::sends,
                                     [&](ui::Key k) {
-                                      send_last_screen = ui_manager.current_screen();
-                                      if (ui_manager.selected_engine_name() == "Arpeggiator" ||
-                                          ui_manager.selected_engine_name() == "Synth")
-                                        ui_manager.display(synth_send.screen());
+                                      send_last_screen = ui_manager.state().current_screen;
+                                      // ui_manager.display(synth_send.screen());
                                     },
                                     [&](ui::Key k) {
-                                      if (send_last_screen) ui_manager.display(*send_last_screen);
+                                      if (send_last_screen) ui_manager.display(send_last_screen);
                                     });
 
     auto load = [&](nlohmann::json& data) {
