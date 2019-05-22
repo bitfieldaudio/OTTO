@@ -1,9 +1,9 @@
 #pragma once
 
-#include "util/reflection.hpp"
 #include "../internal/mixin_macros.hpp"
 #include "base.hpp"
 #include "tag_list.hpp"
+#include "util/reflection.hpp"
 
 namespace otto::core::props {
 
@@ -71,15 +71,15 @@ namespace otto::core::props {
     constexpr static bool is = ::otto::core::props::contains_tag_v<tag_list, Tag>;
 
     template<typename Tag>
-    auto as()
-      -> ::std::enable_if_t<PropertyImpl::template is<Tag>, MixinTag::leaf<Tag, value_type, tag_list>&>
+    auto as() -> ::std::enable_if_t<PropertyImpl::template is<Tag>,
+                                    MixinTag::leaf<Tag, value_type, tag_list>&>
     {
       return static_cast<MixinTag::leaf<Tag, value_type, tag_list>&>(*this);
     }
 
     template<typename Tag>
-    auto as() const
-      -> ::std::enable_if_t<PropertyImpl::template is<Tag>, const MixinTag::leaf<Tag, value_type, tag_list>&>
+    auto as() const -> ::std::enable_if_t<PropertyImpl::template is<Tag>,
+                                          const MixinTag::leaf<Tag, value_type, tag_list>&>
     {
       return static_cast<const MixinTag::leaf<Tag, value_type, tag_list>&>(*this);
     }
@@ -139,3 +139,4 @@ namespace otto::core::props {
   };
 
 } // namespace otto::core::props
+

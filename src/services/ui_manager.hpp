@@ -51,13 +51,18 @@ namespace otto::services {
               twist1,
               twist2)
 
+  BETTER_ENUM(KeyMode, std::uint8_t, midi, seq);
+
   struct UIManager : core::Service {
     /// The UI state
     ///
     /// This will dictate which state-leds light up, and which channel is currently selected etc.
     struct State {
-      ChannelEnum active_channel = ChannelEnum::internal;
-      ScreenEnum current_screen = ScreenEnum::synth;
+      core::props::Property<ChannelEnum> active_channel = ChannelEnum::internal;
+      core::props::Property<ScreenEnum> current_screen = ScreenEnum::synth;
+      core::props::Property<KeyMode> key_mode = KeyMode::midi;
+
+      DECL_REFLECTION(State, active_channel, current_screen, key_mode);
     };
 
     using ScreenSelector = std::function<core::ui::Screen&()>;

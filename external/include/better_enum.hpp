@@ -884,9 +884,9 @@ namespace better_enums {
     j = e._to_string();                                                                            \
   }                                                                                                \
                                                                                                    \
-  inline void from_json(const ::nlohmann::json& j, Enum& p)                                        \
+  inline void from_json(const ::nlohmann::json& j, Enum& e)                                        \
   {                                                                                                \
-    p = Enum::_from_string(j.get<std::string>().c_str());                                          \
+    e = Enum::_from_string(j.get<std::string>().c_str());                                          \
   }
 
 
@@ -1049,8 +1049,7 @@ namespace better_enums {
 
 #ifndef BETTER_ENUMS_DEFAULT_CONSTRUCTOR
 #define BETTER_ENUMS_DEFAULT_CONSTRUCTOR(Enum)                                                     \
-private:                                                                                           \
-  Enum() : _value(0) {}
+  explicit Enum() : _value(0) {}
 #endif
 
 
