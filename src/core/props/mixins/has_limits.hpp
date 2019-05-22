@@ -1,7 +1,7 @@
 #pragma once
 
-#include <magic_enum.hpp>
 #include <better_enum.hpp>
+#include <magic_enum.hpp>
 
 #include "util/algorithm.hpp"
 
@@ -14,10 +14,23 @@
 namespace otto::core::props {
 
   namespace detail {
+    template<typename T>
+    T from_integral(const util::enum_decay_t<T>& t)
+    {
+      if constexpr (std::is_enum_v<T>) {
+        return static_cast<T>(t);
+      } else if constexpr (util::BetterEnum::is<T>) {
+        return T::_from_integral(t);
+      } else {
+        return t;
+      }
+    }
+
     using namespace magic_enum;
     template<typename T>
     struct limits {
-      static constexpr auto min() {
+      static constexpr auto min()
+      {
         if constexpr (std::is_enum_v<T>) {
           auto vals = enum_values<T>();
           auto iter = util::min_element(vals);
@@ -26,13 +39,14 @@ namespace otto::core::props {
         } else if constexpr (util::BetterEnum::is<T>) {
           auto vals = T::_values();
           auto iter = util::min_element(vals);
-          if (iter == vals.end()) return util::underlying(T{0});
+          if (iter == vals.end()) return T::_values()[0]._to_integral();
           return util::underlying(*iter);
         } else {
           return std::numeric_limits<T>::min();
         }
       }
-      static constexpr auto max() {
+      static constexpr auto max()
+      {
         if constexpr (std::is_enum_v<T>) {
           auto vals = enum_values<T>();
           auto iter = util::max_element(vals);
@@ -41,14 +55,15 @@ namespace otto::core::props {
         } else if constexpr (util::BetterEnum::is<T>) {
           auto vals = T::_values();
           auto iter = util::max_element(vals);
-          if (iter == vals.end()) return util::underlying(T{0});
+          if (iter == vals.end()) return T::_values()[T::_size() - 1]._to_integral();
           return util::underlying(*iter);
         } else {
           return std::numeric_limits<T>::max();
         }
       }
     };
-  }
+
+  } // namespace detail
 
   OTTO_PROPS_MIXIN(has_limits);
 
@@ -56,13 +71,15 @@ namespace otto::core::props {
   struct mixin::hooks<has_limits> {
     struct on_exceeded {
       template<typename HookTag, typename Val, ::otto::core::props::HookOrder HO>
-      using type = typename hook<util::enum_decay_t<Val>>::template type<HookTag, util::enum_decay_t<Val>, HO>;
+      using type =
+        typename hook<util::enum_decay_t<Val>>::template type<HookTag, util::enum_decay_t<Val>, HO>;
     };
   };
 
   /// Shorthand for has_limits::init
   template<typename Min, typename Max>
-  auto limits(const Min& min, const Max& max) {
+  auto limits(const Min& min, const Max& max)
+  {
     return has_limits::init(min, max);
   }
 
@@ -86,10 +103,10 @@ namespace otto::core::props {
       auto& val = hook.value();
       if (util::underlying(val) < min) {
         auto hv = run_hook<hooks::on_exceeded>(util::underlying(val));
-        hook.value() = static_cast<value_type>(hv == util::underlying(val) ? min : hv);
+        hook.value() = detail::from_integral<value_type>(hv == util::underlying(val) ? min : hv);
       } else if (util::underlying(val) > max) {
         auto hv = run_hook<hooks::on_exceeded>(util::underlying(val));
-        hook.value() = static_cast<value_type>(hv == util::underlying(val) ? max : hv);
+        hook.value() = detail::from_integral<value_type>(hv == util::underlying(val) ? max : hv);
       }
     }
 

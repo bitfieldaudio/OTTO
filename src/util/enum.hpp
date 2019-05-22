@@ -92,3 +92,19 @@ namespace otto::util {
     std::array<T, Enum::_size()> _data;
   };
 } // namespace otto::util
+
+/// Serialize a BetterEnum to json
+template<typename Enum>
+inline auto serialize(const Enum& e)
+  -> std::enable_if_t<otto::util::BetterEnum::is<Enum>, nlohmann::json>
+{
+  return serialize(e._to_string());
+}
+
+/// Deserialize a BetterEnum from json
+template<typename Enum>
+inline auto deserialize(Enum& p, const nlohmann::json& j)
+  -> std::enable_if_t<otto::util::BetterEnum::is<Enum>, nlohmann::json>
+{
+  p = Enum::_from_string(j.get<std::string>().c_str());
+}
