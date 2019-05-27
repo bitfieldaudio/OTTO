@@ -7,6 +7,8 @@
 #include "services/log_manager.hpp"
 #include "services/ui_manager.hpp"
 
+#include "board/emulottor.hpp"
+
 namespace otto::services {
   using P1SC = PrOTTO1SerialController;
   using Event = P1SC::Event;
@@ -174,6 +176,15 @@ namespace otto::services {
     } catch (std::exception& e) {
       LOGE("Couldn't set up serial controller. Continuing with dummy. ERR: {}", e.what());
       return Controller::make_dummy();
+    }
+  }
+
+  std::unique_ptr<Controller> P1SC::make_or_emulator() {
+    try {
+      return std::make_unique<P1SC>();
+    } catch (std::exception& e) {
+      LOGE("Couldn't set up serial controller. Continuing with dummy. ERR: {}", e.what());
+      return std::make_unique<board::Emulator>();
     }
   }
 

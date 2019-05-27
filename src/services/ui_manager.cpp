@@ -61,12 +61,12 @@ namespace otto::services {
     };
 
     auto save = [this] {
-      return nlohmann::json::object({{"current_screen", state_.current_screen},
-                                     {"active_channel", state_.active_channel}});
+      return nlohmann::json::object(
+        {{"current_screen", state_.current_screen}, {"active_channel", state_.active_channel}});
     };
 
     Application::current().state_manager->attach("UI", load, save);
-  } // namespace otto::services
+  }
 
   void UIManager::display(Screen& screen)
   {
@@ -96,8 +96,7 @@ namespace otto::services {
       ctx.beginPath();
       ctx.fillStyle(vg::Colours::White);
       ctx.font(vg::Fonts::Norm, 12);
-      std::string cpu_time =
-        fmt::format("{}%", int(100 * Application::current().audio_manager->cpu_time()));
+      std::string cpu_time = fmt::format("{}%", int(100 * Application::current().audio_manager->cpu_time()));
       ctx.fillText(cpu_time, {290, 230});
     });
 
