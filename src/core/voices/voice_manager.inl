@@ -161,7 +161,9 @@ namespace otto::core::voices {
         if (nvp.has_voice()) {
           free_voice(*nvp.voice);
         }
+        return true;
       }
+      return false;
     });
     vm.note_stack.erase(it, vm.note_stack.end());
   }
@@ -257,7 +259,7 @@ namespace otto::core::voices {
         auto copy = note_stack;
         for (auto&& nvp : copy) {
           if (nvp.should_release) {
-            stop_voice(nvp.note);
+            voice_allocator->stop_voice(nvp.note);
             DLOGI("Released note {}", nvp.note);
           }
         }
@@ -310,8 +312,8 @@ namespace otto::core::voices {
   audio::ProcessData<1> VoiceManager<V, N>::process(audio::ProcessData<1> data) noexcept
   {
     for (auto& evt : data.midi) {
-      util::match(evt, [&](midi::NoteOnEvent& evt) { voice_allocator.handle_midi_on(evt); },
-                  [&](midi::NoteOffEvent& evt) { voice_allocator.handle_midi_off(evt); },
+      util::match(evt, [&](midi::NoteOnEvent& evt) { voice_allocator->handle_midi_on(evt); },
+                  [&](midi::NoteOffEvent& evt) { voice_allocator->handle_midi_off(evt); },
                   [&](midi::ControlChangeEvent& evt) { handle_control_change(evt); },
                   [&](midi::PitchBendEvent& evt) { handle_pitch_bend(evt); },
                   [](auto&) {});

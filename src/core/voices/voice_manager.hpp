@@ -285,6 +285,7 @@ namespace otto::core::voices {
 
     /// Voice allocators - Corresponds to different playmodes
     struct IVoiceAllocator {
+      VoiceManager& vm;
       /// Constructor
       IVoiceAllocator(VoiceManager& vm);
       /// Deleter. Should flush all playing notes
@@ -295,8 +296,6 @@ namespace otto::core::voices {
 
       Voice& get_voice(int key) noexcept;
       void stop_voice(int key) noexcept;
-
-      VoiceManager& vm;
     };
 
     struct PolyAllocator : IVoiceAllocator {
@@ -335,7 +334,7 @@ namespace otto::core::voices {
     EnvelopeProps envelope_props;
     SettingsProps settings_props;
 
-    std::unique_ptr<IVoiceAllocator> voice_allocator;
+    std::unique_ptr<IVoiceAllocator> voice_allocator = std::make_unique<PolyAllocator>(*this);
 
     std::unique_ptr<ui::Screen> envelope_screen_ = details::make_envelope_screen(envelope_props);
     std::unique_ptr<ui::Screen> settings_screen_ = details::make_settings_screen(settings_props);
