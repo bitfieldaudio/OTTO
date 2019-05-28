@@ -117,17 +117,7 @@ namespace otto::core::voices {
         util::for_each(voices_, &Voice::release);
         note_stack.clear();
         free_voices.clear();
-
-        switch (mode) {
-        case PlayMode::unison:
-          // TODO: Can not be implemented this way
-          [[fallthrough]];
-        case PlayMode::interval:
-          [[fallthrough]];
-        case PlayMode::mono: free_voices.push_back(&voices_[0]); break;
-        case PlayMode::poly:
-          for (auto& voice : voices_) free_voices.push_back(&voice);
-        }
+        for (auto& voice : voices_) free_voices.push_back(&voice);
       })
       .call_now(settings_props.play_mode);
 
@@ -173,17 +163,57 @@ namespace otto::core::voices {
   template<typename V, int N>
   auto VoiceManager<V, N>::handle_midi_on(const midi::NoteOnEvent& evt) noexcept -> Voice&
   {
-    //Determine which notes to start. Depends on playmode.
-    //Determine how to distribute those new notes on the voices
-    // if key is being used, use same voice.
     auto key = evt.key + settings_props.octave * 12 + settings_props.transpose;
-    stop_voice(key);
-    Voice& voice = get_voice(key);
-    note_stack.push_back({key, &voice});
-    // in trigger - don't use on_note on if legato && stolen (from triggered voice)
-    // jump/retrig: non-stolen voices skip portamento.
-    voice.trigger(key, evt.velocity / 127.f);
-    return voice;
+    switch (settings_props.play_mode) {
+      case PlayMode::unison: [[fallthrough]];
+      case PlayMode::interval: [[fallthrough]];
+      case PlayMode::poly: {
+        //Determine which notes to start. Depends on playmode.
+        //Determine how to distribute those new notes on the voices
+        // if key is being used, use same voice.
+        stop_voice(key);
+        Voice& voice = get_voice(key);
+        note_stack.push_back({key, key, &voice});
+        // in trigger - don't use on_note on if legato && stolen (from triggered voice)
+        // jump/retrig: non-stolen voices skip portamento.
+        voice.trigger(key, evt.velocity / 127.f);
+        return voice;
+      }
+      case PlayMode::mono: {
+        stop_voice(key);
+        if (note_stack.size() > 0) {
+          auto& first_note = *(note_stack.rbegin() + 1);
+          auto& second_note = note_stack.back();
+          DLOGI("Stealing voice {} from key {}", (first_note.voice - voices_.data()), first_note.note);
+          DLOGI("Stealing voice {} from key {}", (second_note.voice - voices_.data()), second_note.note);
+          Voice &v = *first_note.voice;
+          Voice &sv = *second_note.voice;
+          v.release();
+          sv.release();
+          first_note.voice = nullptr;
+          second_note.voice = nullptr;
+          note_stack.push_back({key, key, &v});
+          note_stack.push_back({key, key - 12, &sv});
+          v.trigger(key, evt.velocity / 127.f);
+          sv.trigger(key - 12, evt.velocity / 127.f);
+          return v;
+        } else {
+          auto fvit = free_voices.begin();
+          auto& v = **fvit;
+          note_stack.push_back({key, key, &v});
+          v.trigger(key, evt.velocity / 127.f);
+          //Sub voice
+          auto svit = ++free_voices.begin();
+          auto& sv = **svit;
+          note_stack.push_back({key, key - 12, &sv});
+          sv.trigger(key - 12, evt.velocity / 127.f);
+          return v;
+        }
+
+
+      }
+    }
+
 
 
   }
@@ -277,7 +307,7 @@ namespace otto::core::voices {
     };
     Voice* res = nullptr;
     auto it = util::remove_if(note_stack, [&](auto nvp) {
-      if (nvp.note == key) {
+      if (nvp.key == key) {
         if (nvp.has_voice()) {
           free_voice(*nvp.voice);
           res = nvp.voice;

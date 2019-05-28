@@ -72,7 +72,6 @@ namespace otto::core::voices {
     virtual void on_note_off() noexcept;
 
     /// Get the current frequency this voice should play
-    ///
     /// Needs to be applied separately for each sample to handle for example glide.
     float frequency() noexcept;
     /// Change the current frequency
@@ -83,6 +82,9 @@ namespace otto::core::voices {
 
     /// Get the aftertouch value
     float aftertouch() noexcept;
+
+    /// Get the volume (typically 1, but might be different for sub-octaves)
+    float volume() noexcept;
 
     /// Is this voice currently triggered?
     ///
@@ -105,6 +107,7 @@ namespace otto::core::voices {
 
     float frequency_ = 440.f;
     float velocity_ = 1.f;
+    float level = 1.f;
     float aftertouch_ = 0.f;
     int midi_note_ = 0;
 
@@ -264,6 +267,9 @@ namespace otto::core::voices {
     Voice* stop_voice(int key) noexcept;
 
     struct NoteVoicePair {
+      /// Which physical key is activating this note
+      int key = 0;
+      /// Which note this voice is playing.
       int note = 0;
       Voice* voice = nullptr;
       /// Whether a physical key is not holding this note down
