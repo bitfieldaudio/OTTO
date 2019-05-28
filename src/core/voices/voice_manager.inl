@@ -119,6 +119,30 @@ namespace otto::core::voices {
   }
 
   template<typename V, int N>
+  auto VoiceManager<V, N>::IVoiceAllocator::get_voice(int key) noexcept -> Voice&
+  {
+    if (vm.free_voices.size() > 0) {
+      auto it = util::find_if(vm.note_stack, [key](NoteVoicePair& nvp) { return nvp.note == key; });
+      auto fvit = it == vm.note_stack.end() ? vm.free_voices.begin() : util::find(vm.free_voices, it->voice);
+      auto& v = **fvit;
+      vm.free_voices.erase(fvit);
+      return v;
+    } else {
+      auto found = util::find_if(vm.note_stack, [](NoteVoicePair& nvp) { return nvp.has_voice(); });
+      if (found != vm.note_stack.end()) {
+        DLOGI("Stealing voice {} from key {}", (found->voice - vm.voices_.data()), found->note);
+        Voice& v = *found->voice;
+        v.release();
+        found->voice = nullptr;
+        return v;
+      } else {
+        DLOGE("No voice found. Using voice 0");
+        return vm.voices_[0];
+      }
+    }
+  }
+
+  template<typename V, int N>
   void VoiceManager<V, N>::IVoiceAllocator::stop_voice(int key) noexcept {
     auto free_voice = [this](Voice& v) {
         auto found = std::find_if(vm.note_stack.rbegin(), vm.note_stack.rend(),
@@ -146,12 +170,13 @@ namespace otto::core::voices {
   template<typename V, int N>
   void VoiceManager<V, N>::PolyAllocator::handle_midi_on(const midi::NoteOnEvent& evt) noexcept
   {
+    auto& vm = this->vm;
     auto key = evt.key + vm.settings_props.octave * 12 + vm.settings_props.transpose;
     //Determine which notes to start. Depends on playmode
     //Determine how to distribute those new notes on the voices
     // if key is being used, use same voice.
-    stop_voice(key);
-    Voice& voice = get_voice(key);
+    this->stop_voice(key);
+    Voice& voice = this->get_voice(key);
     vm.note_stack.push_back({key, key, &voice});
     // in trigger - don't use on_note on if legato && stolen (from triggered voice)
     // jump/retrig: non-stolen voices skip portamento.
@@ -161,37 +186,36 @@ namespace otto::core::voices {
   template<typename V, int N>
   void VoiceManager<V, N>::MonoAllocator::handle_midi_on(const midi::NoteOnEvent& evt) noexcept
   {
-    auto key = evt.key + settings_props.octave * 12 + settings_props.transpose;
-    stop_voice(key);
-    if (note_stack.size() > 0) {
-      auto& first_note = *(note_stack.rbegin() + 1);
-      auto& second_note = note_stack.back();
-      DLOGI("Stealing voice {} from key {}", (first_note.voice - voices_.data()), first_note.note);
-      DLOGI("Stealing voice {} from key {}", (second_note.voice - voices_.data()), second_note.note);
+    auto& vm = this->vm;
+    auto key = evt.key + vm.settings_props.octave * 12 + vm.settings_props.transpose;
+    this->stop_voice(key);
+    if (vm.note_stack.size() > 0) {
+      auto& first_note = *(vm.note_stack.rbegin() + 1);
+      auto& second_note = vm.note_stack.back();
+      DLOGI("Stealing voice {} from key {}", (first_note.voice - vm.voices_.data()), first_note.note);
+      DLOGI("Stealing voice {} from key {}", (second_note.voice - vm.voices_.data()), second_note.note);
       Voice &v = *first_note.voice;
       Voice &sv = *second_note.voice;
       v.release();
       sv.release();
       first_note.voice = nullptr;
       second_note.voice = nullptr;
-      note_stack.push_back({key, key, &v});
-      note_stack.push_back({key, key - 12, &sv});
+      vm.note_stack.push_back({key, key, &v});
+      vm.note_stack.push_back({key, key - 12, &sv});
       v.trigger(key, evt.velocity / 127.f);
       sv.trigger(key - 12, evt.velocity / 127.f);
-      return v;
     }
     else {
-      auto fvit = free_voices.begin();
+      auto fvit = vm.free_voices.begin();
       auto& v = **fvit;
-      note_stack.push_back({key, key, &v});
+      vm.note_stack.push_back({key, key, &v});
       v.trigger(key, evt.velocity / 127.f);
       //Sub voice
-      auto svit = ++free_voices.begin();
+      auto svit = ++vm.free_voices.begin();
       auto& sv = **svit;
-      note_stack.push_back({key, key - 12, &sv});
+      vm.note_stack.push_back({key, key - 12, &sv});
       sv.trigger(key - 12, evt.velocity / 127.f);
     }
-
 
   }
 
@@ -268,62 +292,6 @@ namespace otto::core::voices {
   }
 
   template<typename V, int N>
-  auto VoiceManager<V, N>::handle_midi_on(const midi::NoteOnEvent& evt) noexcept -> Voice&
-  {
-    auto key = evt.key + settings_props.octave * 12 + settings_props.transpose;
-    switch (settings_props.play_mode) {
-      case PlayMode::unison: [[fallthrough]];
-      case PlayMode::interval: [[fallthrough]];
-      case PlayMode::poly: {
-        //Determine which notes to start. Depends on playmode.
-        //Determine how to distribute those new notes on the voices
-        // if key is being used, use same voice.
-        stop_voice(key);
-        Voice& voice = get_voice(key);
-        note_stack.push_back({key, key, &voice});
-        // in trigger - don't use on_note on if legato && stolen (from triggered voice)
-        // jump/retrig: non-stolen voices skip portamento.
-        voice.trigger(key, evt.velocity / 127.f);
-        return voice;
-      }
-      case PlayMode::mono: {
-        stop_voice(key);
-        if (note_stack.size() > 0) {
-          auto& first_note = *(note_stack.rbegin() + 1);
-          auto& second_note = note_stack.back();
-          DLOGI("Stealing voice {} from key {}", (first_note.voice - voices_.data()), first_note.note);
-          DLOGI("Stealing voice {} from key {}", (second_note.voice - voices_.data()), second_note.note);
-          Voice &v = *first_note.voice;
-          Voice &sv = *second_note.voice;
-          v.release();
-          sv.release();
-          first_note.voice = nullptr;
-          second_note.voice = nullptr;
-          note_stack.push_back({key, key, &v});
-          note_stack.push_back({key, key - 12, &sv});
-          v.trigger(key, evt.velocity / 127.f);
-          sv.trigger(key - 12, evt.velocity / 127.f);
-          return v;
-        } else {
-          auto fvit = free_voices.begin();
-          auto& v = **fvit;
-          note_stack.push_back({key, key, &v});
-          v.trigger(key, evt.velocity / 127.f);
-          //Sub voice
-          auto svit = ++free_voices.begin();
-          auto& sv = **svit;
-          note_stack.push_back({key, key - 12, &sv});
-          sv.trigger(key - 12, evt.velocity / 127.f);
-          return v;
-        }
-
-
-      }
-    }
-
-  }
-
-  template<typename V, int N>
   void VoiceManager<V, N>::handle_pitch_bend(const midi::PitchBendEvent& evt) noexcept
   {
     pitch_bend_ = powf(2.f, ((float)evt.value / 8192.f) - 1.f);
@@ -354,31 +322,6 @@ namespace otto::core::voices {
     }
     return data.redirect(buf);
   }
-
-  template<typename V, int N>
-  auto VoiceManager<V, N>::get_voice(int key) noexcept -> Voice&
-  {
-    if (free_voices.size() > 0) {
-      auto it = util::find_if(note_stack, [key](NoteVoicePair& nvp) { return nvp.note == key; });
-      auto fvit = it == note_stack.end() ? free_voices.begin() : util::find(free_voices, it->voice);
-      auto& v = **fvit;
-      free_voices.erase(fvit);
-      return v;
-    } else {
-      auto found = util::find_if(note_stack, [](NoteVoicePair& nvp) { return nvp.has_voice(); });
-      if (found != note_stack.end()) {
-        DLOGI("Stealing voice {} from key {}", (found->voice - voices_.data()), found->note);
-        Voice& v = *found->voice;
-        v.release();
-        found->voice = nullptr;
-        return v;
-      } else {
-        DLOGE("No voice found. Using voice 0");
-        return voices_[0];
-      }
-    }
-  }
-
 
 
   template<typename V, int N>

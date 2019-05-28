@@ -293,6 +293,7 @@ namespace otto::core::voices {
       /// Midi off is common to all
       void handle_midi_off(const midi::NoteOffEvent&) noexcept;
 
+      Voice& get_voice(int key) noexcept;
       void stop_voice(int key) noexcept;
 
       VoiceManager& vm;
