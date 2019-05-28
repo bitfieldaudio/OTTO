@@ -286,7 +286,7 @@ namespace otto::core::voices {
     /// Voice allocators - Corresponds to different playmodes
     struct IVoiceAllocator {
       /// Constructor
-      IVoiceAllocator();
+      IVoiceAllocator(VoiceManager& vm);
       /// Deleter. Should flush all playing notes
       ~IVoiceAllocator();
       virtual void handle_midi_on(const midi::NoteOnEvent&) noexcept = 0;
@@ -299,18 +299,22 @@ namespace otto::core::voices {
     };
 
     struct PolyAllocator : IVoiceAllocator {
+        PolyAllocator(VoiceManager& vm) : IVoiceAllocator(vm) {}
         void handle_midi_on(const midi::NoteOnEvent&) noexcept override;
     };
 
     struct MonoAllocator : IVoiceAllocator {
+        MonoAllocator(VoiceManager& vm) : IVoiceAllocator(vm) {}
         void handle_midi_on(const midi::NoteOnEvent&) noexcept override;
     };
 
     struct UnisonAllocator : IVoiceAllocator {
+        UnisonAllocator(VoiceManager& vm) : IVoiceAllocator(vm) {}
         void handle_midi_on(const midi::NoteOnEvent&)noexcept override;
     };
 
     struct IntervalAllocator : IVoiceAllocator {
+        IntervalAllocator(VoiceManager& vm) : IVoiceAllocator(vm) {}
         void handle_midi_on(const midi::NoteOnEvent&) noexcept override;
     };
 

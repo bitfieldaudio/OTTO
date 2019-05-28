@@ -94,7 +94,7 @@ namespace otto::core::voices {
   // VOICE ALLOCATORS //
   // INTERFACE //
   template<typename V, int N>
-  VoiceManager<V, N>::IVoiceAllocator::IVoiceAllocator() : vm(*this) {
+  VoiceManager<V, N>::IVoiceAllocator::IVoiceAllocator(VoiceManager& vm) : vm(vm) {
     for (auto& voice : vm.voices_) vm.free_voices.push_back(&voice);
   }
 
@@ -147,15 +147,15 @@ namespace otto::core::voices {
   void VoiceManager<V, N>::PolyAllocator::handle_midi_on(const midi::NoteOnEvent& evt) noexcept
   {
     auto key = evt.key + vm.settings_props.octave * 12 + vm.settings_props.transpose;
-        //Determine which notes to start. Depends on playmode
-        //Determine how to distribute those new notes on the voices
-        // if key is being used, use same voice.
-        stop_voice(key);
-        Voice& voice = get_voice(key);
-        note_stack.push_back({key, key, &voice});
-        // in trigger - don't use on_note on if legato && stolen (from triggered voice)
-        // jump/retrig: non-stolen voices skip portamento.
-        voice.trigger(key, evt.velocity / 127.f);
+    //Determine which notes to start. Depends on playmode
+    //Determine how to distribute those new notes on the voices
+    // if key is being used, use same voice.
+    stop_voice(key);
+    Voice& voice = get_voice(key);
+    vm.note_stack.push_back({key, key, &voice});
+    // in trigger - don't use on_note on if legato && stolen (from triggered voice)
+    // jump/retrig: non-stolen voices skip portamento.
+    voice.trigger(key, evt.velocity / 127.f);
   }
 
   template<typename V, int N>
@@ -179,7 +179,8 @@ namespace otto::core::voices {
       v.trigger(key, evt.velocity / 127.f);
       sv.trigger(key - 12, evt.velocity / 127.f);
       return v;
-    } else {
+    }
+    else {
       auto fvit = free_voices.begin();
       auto& v = **fvit;
       note_stack.push_back({key, key, &v});
@@ -218,10 +219,11 @@ namespace otto::core::voices {
     settings_props.play_mode.on_change()
       .connect([this](PlayMode mode) {
         switch (mode) {
-          case PlayMode::poly: voice_allocator = std::make_unique<PolyAllocator>();
-          case PlayMode::mono: voice_allocator = std::make_unique<MonoAllocator>();
-          case PlayMode::unison: voice_allocator = std::make_unique<PolyAllocator>();
-          case PlayMode::interval: voice_allocator = std::make_unique<PolyAllocator>();
+          case PlayMode::poly: voice_allocator = std::make_unique<PolyAllocator>(*this); break;
+          case PlayMode::mono: voice_allocator = std::make_unique<MonoAllocator>(*this); break;
+          case PlayMode::unison: voice_allocator = std::make_unique<PolyAllocator>(*this); break;
+          case PlayMode::interval: voice_allocator = std::make_unique<PolyAllocator>(*this); break;
+          default:break;
         }
       })
       .call_now(settings_props.play_mode);
