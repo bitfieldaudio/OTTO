@@ -247,8 +247,8 @@ namespace otto::core::voices {
     /// Process audio, applying Preprocessing, each voice and then postprocessing
     float operator()() noexcept;
 
-    Voice& handle_midi_on(const midi::NoteOnEvent&) noexcept;
-    Voice* handle_midi_off(const midi::NoteOffEvent&) noexcept;
+    //Voice& handle_midi_on(const midi::NoteOnEvent&) noexcept;
+    //Voice* handle_midi_off(const midi::NoteOffEvent&) noexcept;
     void handle_pitch_bend(const midi::PitchBendEvent&) noexcept;
     void handle_control_change(const midi::ControlChangeEvent&) noexcept;
 
@@ -273,7 +273,7 @@ namespace otto::core::voices {
       int note = 0;
       Voice* voice = nullptr;
       /// Whether a physical key is not holding this note down
-      /// 
+      ///
       /// When using a sustain pedal, this will be set to false on note off
       bool should_release = false;
 
@@ -281,6 +281,37 @@ namespace otto::core::voices {
       {
         return voice != nullptr;
       }
+    };
+
+    /// Voice allocators - Corresponds to different playmodes
+    struct IVoiceAllocator {
+      /// Constructor
+      IVoiceAllocator();
+      /// Deleter. Should flush all playing notes
+      ~IVoiceAllocator();
+      virtual void handle_midi_on(const midi::NoteOnEvent&) noexcept = 0;
+      /// Midi off is common to all
+      void handle_midi_off(const midi::NoteOffEvent&) noexcept;
+
+      void stop_voice(int key) noexcept;
+
+      VoiceManager& vm;
+    };
+
+    struct PolyAllocator : IVoiceAllocator {
+        void handle_midi_on(const midi::NoteOnEvent&) noexcept override;
+    };
+
+    struct MonoAllocator : IVoiceAllocator {
+        void handle_midi_on(const midi::NoteOnEvent&) noexcept override;
+    };
+
+    struct UnisonAllocator : IVoiceAllocator {
+        void handle_midi_on(const midi::NoteOnEvent&)noexcept override;
+    };
+
+    struct IntervalAllocator : IVoiceAllocator {
+        void handle_midi_on(const midi::NoteOnEvent&) noexcept override;
     };
 
     float pitch_bend_ = 1;
@@ -298,6 +329,8 @@ namespace otto::core::voices {
 
     EnvelopeProps envelope_props;
     SettingsProps settings_props;
+
+    std::unique_ptr<IVoiceAllocator> voice_allocator;
 
     std::unique_ptr<ui::Screen> envelope_screen_ = details::make_envelope_screen(envelope_props);
     std::unique_ptr<ui::Screen> settings_screen_ = details::make_settings_screen(settings_props);
