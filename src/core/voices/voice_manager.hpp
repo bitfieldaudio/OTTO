@@ -5,6 +5,7 @@
 #include <vector>
 
 #include <Gamma/Envelope.h>
+#include "util/dsp/ADSR_lite.hpp"
 #include "util/dsp/SegExpBypass.hpp"
 
 #include "core/props/props.hpp"
@@ -102,7 +103,7 @@ namespace otto::core::voices {
     template<typename T, int N>
     friend struct VoiceManager;
 
-    void trigger(int midi_note, float velocity) noexcept;
+    void trigger(int midi_note, float mult, float velocity) noexcept;
     void release() noexcept;
 
     float frequency_ = 440.f;
@@ -142,9 +143,9 @@ namespace otto::core::voices {
     enum struct PlayMode : char {
       /// Multiple voices at once, each playing a note
       poly,
-      /// Only a single voice in use, allways playing the latest note
+      /// Only a single voice in use, always playing the latest note
       mono,
-      /// All voices in use, all playing the latest note (posibly with detune)
+      /// All voices in use, all playing the latest note (possibly with detune)
       unison,
       /// Plays a given interval
       interval,
@@ -263,8 +264,7 @@ namespace otto::core::voices {
                     ("voice_settings", &VoiceManager::settings_props));
 
   private:
-    Voice& get_voice(int key) noexcept;
-    Voice* stop_voice(int key) noexcept;
+    std::vector<float> detune_values;
 
     struct NoteVoicePair {
       /// Which physical key is activating this note
@@ -287,9 +287,9 @@ namespace otto::core::voices {
     struct IVoiceAllocator {
       VoiceManager& vm;
       /// Constructor
-      IVoiceAllocator(VoiceManager& vm);
+      IVoiceAllocator(VoiceManager& vm_in);
       /// Deleter. Should flush all playing notes
-      ~IVoiceAllocator();
+      virtual ~IVoiceAllocator();
       virtual void handle_midi_on(const midi::NoteOnEvent&) noexcept = 0;
       /// Midi off is common to all
       void handle_midi_off(const midi::NoteOffEvent&) noexcept;
@@ -299,24 +299,26 @@ namespace otto::core::voices {
     };
 
     struct PolyAllocator : IVoiceAllocator {
-        PolyAllocator(VoiceManager& vm) : IVoiceAllocator(vm) {}
+        PolyAllocator(VoiceManager& vm_in) : IVoiceAllocator(vm_in) {}
         void handle_midi_on(const midi::NoteOnEvent&) noexcept override;
     };
 
     struct MonoAllocator : IVoiceAllocator {
-        MonoAllocator(VoiceManager& vm) : IVoiceAllocator(vm) {}
+        MonoAllocator(VoiceManager& vm_in) : IVoiceAllocator(vm_in) {}
         void handle_midi_on(const midi::NoteOnEvent&) noexcept override;
     };
 
     struct UnisonAllocator : IVoiceAllocator {
-        UnisonAllocator(VoiceManager& vm) : IVoiceAllocator(vm) {}
+        UnisonAllocator(VoiceManager& vm_in) : IVoiceAllocator(vm_in) {}
         void handle_midi_on(const midi::NoteOnEvent&)noexcept override;
+
     };
 
     struct IntervalAllocator : IVoiceAllocator {
-        IntervalAllocator(VoiceManager& vm) : IVoiceAllocator(vm) {}
+        IntervalAllocator(VoiceManager& vm_in) : IVoiceAllocator(vm_in) {}
         void handle_midi_on(const midi::NoteOnEvent&) noexcept override;
     };
+
 
     float pitch_bend_ = 1;
 
@@ -334,7 +336,7 @@ namespace otto::core::voices {
     EnvelopeProps envelope_props;
     SettingsProps settings_props;
 
-    std::unique_ptr<IVoiceAllocator> voice_allocator = std::make_unique<PolyAllocator>(*this);
+    std::unique_ptr<IVoiceAllocator> voice_allocator;
 
     std::unique_ptr<ui::Screen> envelope_screen_ = details::make_envelope_screen(envelope_props);
     std::unique_ptr<ui::Screen> settings_screen_ = details::make_settings_screen(settings_props);

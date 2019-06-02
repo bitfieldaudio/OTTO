@@ -65,11 +65,11 @@ namespace otto::core::voices {
   }
 
   template<typename D, typename P>
-  void VoiceBase<D, P>::trigger(int midi_note, float velocity) noexcept
+  void VoiceBase<D, P>::trigger(int midi_note, float mult, float velocity) noexcept
   {
     midi_note_ = midi_note;
     //Sets target value of portamento to new note
-    glide_ = midi::note_freq(midi_note);
+    glide_ = midi::note_freq(midi_note) * mult;
     frequency_ = glide_();
     velocity_ = velocity;
     on_note_on();
@@ -94,22 +94,28 @@ namespace otto::core::voices {
   // VOICE ALLOCATORS //
   // INTERFACE //
   template<typename V, int N>
-  VoiceManager<V, N>::IVoiceAllocator::IVoiceAllocator(VoiceManager& vm) : vm(vm) {
-    for (auto& voice : vm.voices_) vm.free_voices.push_back(&voice);
+  VoiceManager<V, N>::IVoiceAllocator::IVoiceAllocator(VoiceManager& vm_in) : vm(vm_in) {
+    DLOGI("Creating new voiceallocator.");
+    // Note. These lines belong in the destructor, but the order of constructing
+    // a new allocator vs. destroying the old one is weird.
+    util::for_each(vm.voices_, &Voice::release);
+    vm.note_stack.clear();
+    vm.free_voices.clear();
+
+    for (auto &voice : vm.voices_) vm.free_voices.push_back(&voice);
+    DLOGI("FREE VOICES: {}", vm.free_voices.size());
   }
 
   template<typename V, int N>
   VoiceManager<V, N>::IVoiceAllocator::~IVoiceAllocator() {
-    util::for_each(vm.voices_, &Voice::release);
-    vm.note_stack.clear();
-    vm.free_voices.clear();
+    DLOGI("Destructing voiceallocator.");
   }
 
   template<typename V, int N>
   void VoiceManager<V, N>::IVoiceAllocator::handle_midi_off(const otto::core::midi::NoteOffEvent & evt) noexcept {
     auto key = evt.key + vm.settings_props.octave * 12 + vm.settings_props.transpose;
     if (vm.sustain_) {
-      auto found = util::find_if(vm.note_stack, [&] (auto& nvp) { return nvp.note == key; });
+      auto found = util::find_if(vm.note_stack, [&] (auto& nvp) { return nvp.key == key; });
       if (found != vm.note_stack.end()) {
         found->should_release = true;
       }
@@ -150,7 +156,7 @@ namespace otto::core::voices {
         if (found != vm.note_stack.rend()) {
           found->voice = &v;
           // TODO: Restore original velocity
-          v.trigger(found->note, v.velocity_);
+          v.trigger(found->note, 1, v.velocity_);
         } else {
           v.release();
           vm.free_voices.push_back(&v);
@@ -169,6 +175,7 @@ namespace otto::core::voices {
   }
 
   // PLAYMODE ALLOCATORS //
+  // POLY //
   template<typename V, int N>
   void VoiceManager<V, N>::PolyAllocator::handle_midi_on(const midi::NoteOnEvent& evt) noexcept
   {
@@ -182,9 +189,10 @@ namespace otto::core::voices {
     vm.note_stack.push_back({key, key, &voice});
     // in trigger - don't use on_note on if legato && stolen (from triggered voice)
     // jump/retrig: non-stolen voices skip portamento.
-    voice.trigger(key, evt.velocity / 127.f);
+    voice.trigger(key, 1, evt.velocity / 127.f);
   }
 
+  // MONO //
   template<typename V, int N>
   void VoiceManager<V, N>::MonoAllocator::handle_midi_on(const midi::NoteOnEvent& evt) noexcept
   {
@@ -204,22 +212,51 @@ namespace otto::core::voices {
       second_note.voice = nullptr;
       vm.note_stack.push_back({key, key, &v});
       vm.note_stack.push_back({key, key - 12, &sv});
-      v.trigger(key, evt.velocity / 127.f);
-      sv.trigger(key - 12, evt.velocity / 127.f);
+      v.trigger(key, 1, evt.velocity / 127.f);
+      sv.trigger(key - 12, 1, evt.velocity * vm.settings_props.sub / 127.f);
     }
     else {
       auto fvit = vm.free_voices.begin();
       auto& v = **fvit;
       vm.note_stack.push_back({key, key, &v});
-      v.trigger(key, evt.velocity / 127.f);
+      v.trigger(key, 1, evt.velocity / 127.f);
       //Sub voice
       auto svit = ++vm.free_voices.begin();
       auto& sv = **svit;
       vm.note_stack.push_back({key, key - 12, &sv});
-      sv.trigger(key - 12, evt.velocity / 127.f);
+      sv.trigger(key - 12, 1, evt.velocity * vm.settings_props.sub / 127.f);
     }
 
   }
+
+  // UNISON //
+  template<typename V, int N>
+  void VoiceManager<V, N>::UnisonAllocator::handle_midi_on(const midi::NoteOnEvent& evt) noexcept
+  {
+    auto& vm = this->vm;
+    auto key = evt.key + vm.settings_props.octave * 12 + vm.settings_props.transpose;
+    this->stop_voice(key);
+    if (vm.note_stack.size() > 0) {
+      for (int i = 0; i<5; i++) {
+        auto& note = *(vm.note_stack.rbegin() + 2*i);
+        DLOGI("Stealing voice {} from key {}", (note.voice - vm.voices_.data()), note.note);
+        Voice &v = *note.voice;
+        v.release();
+        note.voice = nullptr;
+        vm.note_stack.push_back({key, key, &v});
+        v.trigger(key, vm.detune_values[i], evt.velocity / 127.f);
+      }
+    }
+    else {
+      for (int i = 0; i < 5; i++) {
+        auto vit = vm.free_voices.begin() + i;
+        auto &v = **vit;
+        vm.note_stack.push_back({key, key, &v});
+        v.trigger(key, vm.detune_values[i], evt.velocity / 127.f);
+      }
+    }
+  }
+
 
   // VOICE MANAGER //
 
@@ -242,12 +279,21 @@ namespace otto::core::voices {
         }).call_now(settings_props.portamento);
     }
 
+    settings_props.detune.on_change().connect([this](float det){
+      detune_values.clear();
+      detune_values.push_back(1);
+      for (int i = 1; i<3; i++) {
+        detune_values.push_back(1 + det * 0.01 * i);
+        detune_values.push_back(1.f / (1.f + det * 0.01f * (float)i));
+      }
+    }).call_now(settings_props.detune);
+
     settings_props.play_mode.on_change()
       .connect([this](PlayMode mode) {
         switch (mode) {
           case PlayMode::poly: voice_allocator = std::make_unique<PolyAllocator>(*this); break;
           case PlayMode::mono: voice_allocator = std::make_unique<MonoAllocator>(*this); break;
-          case PlayMode::unison: voice_allocator = std::make_unique<PolyAllocator>(*this); break;
+          case PlayMode::unison: voice_allocator = std::make_unique<UnisonAllocator>(*this); break;
           case PlayMode::interval: voice_allocator = std::make_unique<PolyAllocator>(*this); break;
           default:break;
         }
@@ -318,6 +364,7 @@ namespace otto::core::voices {
                   [&](midi::PitchBendEvent& evt) { handle_pitch_bend(evt); },
                   [](auto&) {});
     }
+
     auto buf = Application::current().audio_manager->buffer_pool().allocate();
     for (auto& frm : buf) {
       frm = (*this)();
