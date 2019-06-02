@@ -112,7 +112,8 @@ namespace otto::core::voices {
     float aftertouch_ = 0.f;
     int midi_note_ = 0;
 
-    gam::ADSR<> env_;
+    //HERE IS THE ERROR. At this point, the voice doesn't know it has a call operator
+    ADSR_lite<> env_{(*this)()};
     gam::SegExp<> glide_{0.f};
   };
 

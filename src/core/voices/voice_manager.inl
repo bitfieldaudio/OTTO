@@ -334,7 +334,8 @@ namespace otto::core::voices {
       ///Change frequency if applicable
       voice.frequency(voice.glide_() * pitch_bend_);
       ///Get next sample
-      voice_sum += voice.env_() * voice();
+      /// Note: The voice call operator is called inside the envelope
+      voice_sum += voice.env_();
     }
     return post(voice_sum);
   }
