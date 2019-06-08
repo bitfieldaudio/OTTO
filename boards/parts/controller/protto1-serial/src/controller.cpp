@@ -7,7 +7,7 @@
 #include "services/log_manager.hpp"
 #include "services/ui_manager.hpp"
 
-#include "board/emulottor.hpp"
+#include "board/emulator.hpp"
 
 namespace otto::services {
   using P1SC = PrOTTO1SerialController;

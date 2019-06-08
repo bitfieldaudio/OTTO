@@ -37,21 +37,17 @@ namespace otto::services {
   using namespace core::ui;
   void UIManager::display(ScreenEnum screen)
   {
-    auto new_state = state_;
-    new_state.current_screen = screen;
+    state.current_screen = screen;
     display(screen_selectors_[screen]());
-    set_state(new_state);
-  }
-
-  void UIManager::set_state(State state)
-  {
-    Controller::current().set_color(led_for_screen(state_.current_screen), LEDColor::Black);
-    state_ = state;
-    Controller::current().set_color(led_for_screen(state_.current_screen), LEDColor::White);
   }
 
   UIManager::UIManager()
   {
+    state.current_screen.on_change().connect([&state] (auto new_val) {
+      Controller::current().set_color(led_for_screen(state.current_screen), LEDColor::Black);
+      Controller::current().set_color(led_for_screen(state_.current_screen), LEDColor::White);
+    });
+
     auto load = [this](const nlohmann::json& j) {
       if (j.is_object()) {
         j.at("current_screen").get_to(state_.current_screen);

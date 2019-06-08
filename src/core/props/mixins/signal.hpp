@@ -24,13 +24,13 @@ namespace otto::core::props {
       _on_change.emit(as_prop().get());
     }
 
-    util::Signal<value_type>& on_change()
+    util::Signal<value_type, value_type>& on_change()
     {
       return _on_change;
     }
 
   private:
-    util::Signal<value_type> _on_change;
+    util::Signal<value_type, value_type> _on_change;
   };
 
 } // namespace otto::core::props

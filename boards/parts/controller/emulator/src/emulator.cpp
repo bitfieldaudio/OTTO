@@ -1,4 +1,4 @@
-#include "board/emulottor.hpp"
+#include "board/emulator.hpp"
 
 namespace otto::board {
 
@@ -28,16 +28,12 @@ namespace otto::board {
     lf();
     ctx.fill(Colour::bytes(c.r, c.g, c.b));
 
-    ctx.lineJoin(Canvas::LineJoin::ROUND);
-    ctx.strokeStyle(Colour::bytes(0, 0, 0));
-    ctx.lineCap(Canvas::LineCap::ROUND);
-    ctx.miterLimit(4);
-    ctx.lineWidth(1.000000);
-    ctx.fillStyle(Colour::bytes(26, 26, 26));
+    auto fill = is_pressed(key) ? Colour::bytes(128, 128, 128) : Colour::bytes(26, 26, 26);
+    ctx.lineWidth(1);
     ctx.beginPath();
     bf();
-    ctx.fill();
-    ctx.stroke();
+    ctx.fill(fill);
+    ctx.stroke(Colour::bytes(0, 0, 0));
   }
 
     template<typename BTNFunc, typename LEDFunc>
@@ -47,13 +43,11 @@ namespace otto::board {
     lf();
     ctx.fill(Colour::bytes(c.r, c.g, c.b));
 
-    ctx.strokeStyle(Colour::bytes(0, 0, 0));
-    ctx.miterLimit(4);
-    ctx.lineWidth(1.000000);
-    ctx.fillStyle(Colour::bytes(26, 26, 26));
+    auto fill = is_pressed(key) ? Colour::bytes(128, 128, 128) : Colour::bytes(26, 26, 26);
+    ctx.lineWidth(1);
     bf();
-    ctx.fill();
-    ctx.stroke();
+    ctx.fill(fill);
+    ctx.stroke(Colour::bytes(0, 0, 0));
   }
 
     template<typename BTNFunc, typename LEDFunc>
@@ -63,13 +57,11 @@ namespace otto::board {
     lf();
     ctx.fill(Colour::bytes(c.r, c.g, c.b));
 
-    ctx.strokeStyle(Colour::bytes(179, 179, 179));
-    ctx.miterLimit(4);
-    ctx.lineWidth(1.000000);
-    ctx.fillStyle(Colour::bytes(255, 255, 255));
+    auto fill = is_pressed(key) ? Colour::bytes(108, 108, 108) : Colour::bytes(255,255,255);
+    ctx.lineWidth(1);
     bf();
-    ctx.fill();
-    ctx.stroke();
+    ctx.fill(fill);
+    ctx.stroke(Colour::bytes(179, 179, 179));
   }
 
   void Emulator::draw(Canvas& ctx)
@@ -4841,5 +4833,5 @@ namespace otto::board {
 
 } // namespace otto::board
 
-// kak: other_file=../include/board/emulottor.hpp
+// kak: other_file=../include/board/emulator.hpp
 

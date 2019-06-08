@@ -78,7 +78,7 @@ namespace otto::services {
 
     auto reg_ss = [&](auto se, auto&& f) { return ui_manager.register_screen_selector(se, f); };
 
-    // reg_ss(ScreenEnum::sends, );
+    reg_ss(ScreenEnum::sends, [&]() -> auto& { return synth_send.screen(); });
     // reg_ss(ScreenEnum::routing, );
     reg_ss(ScreenEnum::fx1, [&]() -> auto& { return effect1->screen(); });
     reg_ss(ScreenEnum::fx1_selector, [&]() -> auto& { return effect1.selector_screen(); });
@@ -165,7 +165,7 @@ namespace otto::services {
     controller.register_key_handler(ui::Key::sends,
                                     [&](ui::Key k) {
                                       send_last_screen = ui_manager.state().current_screen;
-                                      // ui_manager.display(synth_send.screen());
+                                      ui_manager.display(ScreenEnum::sends);
                                     },
                                     [&](ui::Key k) {
                                       if (send_last_screen) ui_manager.display(send_last_screen);

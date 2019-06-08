@@ -26,12 +26,7 @@ namespace otto::core::voices {
 
   bool SettingsScreen::keypress(ui::Key key)
   {
-    switch (key) {
-      case ui::Key::plus: props.octave.step(1); break;
-      case ui::Key::minus: props.octave.step(-1); break;
-      default: return false; ;
-    }
-    return true;
+    return false;
   }
 
   void SettingsScreen::encoder(ui::EncoderEvent ev)
@@ -39,8 +34,8 @@ namespace otto::core::voices {
     switch (ev.encoder) {
     case Encoder::blue: props.play_mode.step(ev.steps); break;
     case Encoder::green: props.portamento.step(ev.steps); break;
-    case Encoder::yellow: props.octave.step(ev.steps); break;
     case Encoder::red: props.transpose.step(ev.steps); break;
+    default: break;
     }
   }
 
@@ -75,16 +70,6 @@ namespace otto::core::voices {
     ctx.fillText(fmt::format("{:3.2}", props.portamento), {width - x_pad, y_pad + space});
 
     ctx.beginPath();
-    ctx.fillStyle(Colours::Yellow);
-    ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
-    ctx.fillText("octave", {x_pad, y_pad + 2 * space});
-
-    ctx.beginPath();
-    ctx.fillStyle(Colours::Yellow);
-    ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:+}", props.octave), {width - x_pad, y_pad + 2 * space});
-
-    ctx.beginPath();
     ctx.fillStyle(Colours::Red);
     ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
     ctx.fillText("transpose", {x_pad, y_pad + 3 * space});
@@ -92,7 +77,7 @@ namespace otto::core::voices {
     ctx.beginPath();
     ctx.fillStyle(Colours::Red);
     ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:+}", props.transpose), {width - x_pad, y_pad + 3 * space});
+    ctx.fillText(fmt::format("{:+}", props.transpose), {width - x_pad, y_pad + 2 * space});
   }
 
 } // namespace otto::core::voices

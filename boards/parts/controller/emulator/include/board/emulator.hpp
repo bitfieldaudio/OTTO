@@ -38,4 +38,4 @@ namespace otto::board {
 }
 
 
-// kak: other_file=../../src/emulottor.cpp
+// kak: other_file=../../src/emulator.cpp

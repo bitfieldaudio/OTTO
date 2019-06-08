@@ -21,7 +21,7 @@
 #include <GLFW/glfw3.h>
 #include <nanovg_gl.h>
 
-#include "board/emulottor.hpp"
+#include "board/emulator.hpp"
 
 namespace otto::glfw {
 

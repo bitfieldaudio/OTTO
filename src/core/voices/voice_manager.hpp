@@ -164,10 +164,9 @@ namespace otto::core::voices {
         PlayMode::poly, props::limits(PlayMode::poly, PlayMode::unison)};
       props::Property<float> portamento = {0, props::limits(0, 1),
                                                              props::step_size(0.01)};
-      props::Property<int, props::no_signal> octave = {0, props::limits(-2, 7)};
       props::Property<int, props::no_signal> transpose = {0, props::limits(-12, 12)};
 
-      DECL_REFLECTION(SettingsProps, play_mode, portamento, octave, transpose);
+      DECL_REFLECTION(SettingsProps, play_mode, portamento, transpose);
     };
 
     std::unique_ptr<ui::Screen> make_envelope_screen(EnvelopeProps& props);

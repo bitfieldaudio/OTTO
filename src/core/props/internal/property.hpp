@@ -12,8 +12,8 @@ namespace otto::core::props {
       /// Allows you to change the value that is set
       struct on_set : mixin::hook<mixin::value_type> {};
       /// Fired after the value has been changed. At this point the value can be read
-      /// using .value()
-      struct after_set : mixin::hook<void> {};
+      /// using .value(), and the old value can be read
+      struct after_set : mixin::hook<mixin::value_type> {};
     };
   };
 
