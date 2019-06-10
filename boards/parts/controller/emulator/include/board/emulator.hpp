@@ -21,6 +21,7 @@ namespace otto::board {
     void clear_leds() override;
 
     void handle_click(core::ui::vg::Point p, ClickAction);
+    void handle_scroll(core::ui::vg::Point p, float offset);
 
     constexpr static core::ui::vg::Size size = {1115, 352};
 

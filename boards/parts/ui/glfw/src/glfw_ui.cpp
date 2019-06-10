@@ -45,6 +45,12 @@ namespace otto::glfw {
       }
     });
 
+    glfwSetScrollCallback(_glfw_win, [](GLFWwindow* window, double x, double y) {
+      if (auto* win = get_for(window); win && win->mouse_button_callback) {
+        win->scroll_callback(x, y);
+      }
+    });
+
 #if false
     glfwSetKeyboardCallback(_glfw_win, [](GLFWwindow* window, int key, int scancode, int action,
                                           int mods, const char* str, int) {
@@ -225,6 +231,9 @@ namespace otto::services {
       main_win.mouse_button_callback = [&] (glfw::Button b, glfw::Action a, glfw::Modifiers)  {
         if (a == glfw::Action::press) emulator->handle_click(main_win.cursor_pos() / scale, board::Emulator::ClickAction::down);
         if (a == glfw::Action::release) emulator->handle_click(main_win.cursor_pos() / scale, board::Emulator::ClickAction::up);
+      };
+      main_win.scroll_callback = [&] (double x, double y) {
+        emulator->handle_scroll(main_win.cursor_pos() / scale, y);
       };
     } else {
       main_win.set_window_aspect_ration(4, 3);

@@ -40,6 +40,7 @@ namespace otto::glfw {
     std::function<void(Button, Action, Modifiers)> mouse_button_callback = nullptr;
     std::function<void(Action, Modifiers, Key)> key_callback = nullptr;
     std::function<void(char)> char_callback = nullptr;
+    std::function<void(double x, double y)> scroll_callback = nullptr;
 
   private:
     GLFWwindow* _glfw_win;

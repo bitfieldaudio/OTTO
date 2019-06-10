@@ -4898,6 +4898,19 @@ namespace otto::board {
     btn_rect(209.665530, 101.947120, 88.151146, 83.738075, Key::green_click);
   }
 
+  void Emulator::handle_scroll(Point p, float offset) {
+    auto enc_rect = [&] (float x, float y, float w, float h, Encoder e) {
+      if (p.x > x && p.x < x + w && p.y > y && p.y < y + h) {
+        encoder({e, offset});
+      }
+    };
+
+    enc_rect(105.665530, 33.947121, 88.151146, 83.738075, Encoder::blue);
+    enc_rect(411.665530, 99.947121, 88.151146, 83.738075, Encoder::red);
+    enc_rect(309.864720, 33.214043, 88.151146, 83.738075, Encoder::yellow);
+    enc_rect(209.665530, 101.947120, 88.151146, 83.738075, Encoder::green);
+  }
+
 } // namespace otto::board
 
 // kak: other_file=../include/board/emulator.hpp
