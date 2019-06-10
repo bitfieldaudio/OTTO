@@ -6,6 +6,7 @@
 
 #include "services/log_manager.hpp"
 #include "services/ui_manager.hpp"
+#include "services/audio_manager.hpp"
 
 #include "board/emulator.hpp"
 

@@ -38,28 +38,37 @@ namespace otto::services {
   void UIManager::display(ScreenEnum screen)
   {
     state.current_screen = screen;
-    display(screen_selectors_[screen]());
   }
 
   UIManager::UIManager()
   {
-    state.current_screen.on_change().connect([&state] (auto new_val) {
-      Controller::current().set_color(led_for_screen(state.current_screen), LEDColor::Black);
-      Controller::current().set_color(led_for_screen(state_.current_screen), LEDColor::White);
+    state.current_screen.on_change().connect([&](auto new_val, auto old_val) {
+      display(screen_selectors_[new_val]());
+      Controller::current().set_color(led_for_screen(old_val), LEDColor::Black);
+      Controller::current().set_color(led_for_screen(new_val), LEDColor::White);
     });
 
-    auto load = [this](const nlohmann::json& j) {
-      if (j.is_object()) {
-        j.at("current_screen").get_to(state_.current_screen);
-        j.at("active_channel").get_to(state_.active_channel);
-      }
-      display(state_.current_screen);
-    };
+    state.octave.on_change().connect([&](auto octave) {
+      LEDColor c = [&] {
+        switch (std::abs(octave)) {
+          case 1: return LEDColor::Blue;
+          case 2: return LEDColor::Green;
+          case 3: return LEDColor::Yellow;
+          case 4: return LEDColor::Red;
+          default: return LEDColor::Black;
+        };
+      }();
+      Controller::current().set_color(LED{Key::plus}, octave > 0 ? c : LEDColor::Black);
+      Controller::current().set_color(LED{Key::minus}, octave < 0 ? c : LEDColor::Black);
+    });
 
-    auto save = [this] {
-      return nlohmann::json::object(
-        {{"current_screen", state_.current_screen}, {"active_channel", state_.active_channel}});
-    };
+    Application::current().events.post_init.subscribe([&] {
+      Controller::current().register_key_handler(Key::plus, [&](auto&&) { state.octave.step(1); });
+      Controller::current().register_key_handler(Key::minus, [&](auto&&) { state.octave.step(-1); });
+    });
+
+    auto load = [this](const nlohmann::json& j) { util::deserialize(state, j); };
+    auto save = [this] { return util::serialize(state); };
 
     Application::current().state_manager->attach("UI", load, save);
   }

@@ -123,12 +123,6 @@ namespace otto::services {
       }
     });
 
-    controller.register_key_handler(
-      ui::Key::plus, [&](ui::Key k) { synth.current().voices_screen().keypress(ui::Key::plus); });
-
-    controller.register_key_handler(
-      ui::Key::minus, [&](ui::Key k) { synth.current().voices_screen().keypress(ui::Key::minus); });
-
     controller.register_key_handler(ui::Key::fx1, [&](ui::Key k) {
       if (controller.is_pressed(ui::Key::shift)) {
         ui_manager.display(ScreenEnum::fx1_selector);
@@ -154,7 +148,7 @@ namespace otto::services {
 
     controller.register_key_handler(ui::Key::master,
                                     [&](ui::Key k) {
-                                      master_last_screen = ui_manager.state().current_screen;
+                                      master_last_screen = ui_manager.state.current_screen;
                                       ui_manager.display(ScreenEnum::master);
                                     },
                                     [&](ui::Key k) {
@@ -164,7 +158,7 @@ namespace otto::services {
 
     controller.register_key_handler(ui::Key::sends,
                                     [&](ui::Key k) {
-                                      send_last_screen = ui_manager.state().current_screen;
+                                      send_last_screen = ui_manager.state.current_screen;
                                       ui_manager.display(ScreenEnum::sends);
                                     },
                                     [&](ui::Key k) {
@@ -192,10 +186,6 @@ namespace otto::services {
 
   void DefaultEngineManager::start()
   {
-    arpeggiator.init();
-    synth.init();
-    effect1.init();
-    effect2.init();
   }
 
   audio::ProcessData<2> DefaultEngineManager::process(audio::ProcessData<1> external_in)

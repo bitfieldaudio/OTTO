@@ -2,6 +2,7 @@
 
 #include <chrono>
 #include <thread>
+#include <gsl/gsl_util>
 
 #include <type_safe/optional_ref.hpp>
 
@@ -189,7 +190,6 @@ namespace otto::glfw {
     glEnable(GL_DEPTH_TEST);
     swap_buffers();
   }
-
 } // namespace otto::glfw
 
 namespace otto::services {
@@ -216,11 +216,16 @@ namespace otto::services {
     board::Emulator* const emulator = dynamic_cast<board::Emulator*>(&services::Controller::current());
 
     vg::Size canvas_size = {vg::width, vg::height};
+    float scale = 1;
 
     if (emulator) {
       main_win.set_window_aspect_ration(emulator->size.w, emulator->size.h);
       main_win.set_window_size(emulator->size.w, emulator->size.h);
       canvas_size = emulator->size;
+      main_win.mouse_button_callback = [&] (glfw::Button b, glfw::Action a, glfw::Modifiers)  {
+        if (a == glfw::Action::press) emulator->handle_click(main_win.cursor_pos() / scale, board::Emulator::ClickAction::down);
+        if (a == glfw::Action::release) emulator->handle_click(main_win.cursor_pos() / scale, board::Emulator::ClickAction::up);
+      };
     } else {
       main_win.set_window_aspect_ration(4, 3);
       main_win.set_window_size_limits(320, 240, GLFW_DONT_CARE, GLFW_DONT_CARE);
@@ -234,7 +239,6 @@ namespace otto::services {
 
     double t, spent;
     while (!main_win.should_close() && Application::current().running()) {
-      float scale;
 
       t = glfwGetTime();
 

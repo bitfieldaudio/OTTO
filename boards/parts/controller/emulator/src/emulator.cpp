@@ -36,7 +36,7 @@ namespace otto::board {
     ctx.stroke(Colour::bytes(0, 0, 0));
   }
 
-    template<typename BTNFunc, typename LEDFunc>
+  template<typename BTNFunc, typename LEDFunc>
   void Emulator::draw_c_btn(core::ui::vg::Canvas& ctx, Key key, BTNFunc&& bf, LEDFunc&& lf)
   {
     auto c = _led_colors[key];
@@ -50,14 +50,14 @@ namespace otto::board {
     ctx.stroke(Colour::bytes(0, 0, 0));
   }
 
-    template<typename BTNFunc, typename LEDFunc>
+  template<typename BTNFunc, typename LEDFunc>
   void Emulator::draw_s_btn(core::ui::vg::Canvas& ctx, Key key, BTNFunc&& bf, LEDFunc&& lf)
   {
     auto c = _led_colors[key];
     lf();
     ctx.fill(Colour::bytes(c.r, c.g, c.b));
 
-    auto fill = is_pressed(key) ? Colour::bytes(108, 108, 108) : Colour::bytes(255,255,255);
+    auto fill = is_pressed(key) ? Colour::bytes(108, 108, 108) : Colour::bytes(255, 255, 255);
     ctx.lineWidth(1);
     bf();
     ctx.fill(fill);
@@ -4829,6 +4829,73 @@ namespace otto::board {
     ctx.arc(456.160580, 143.697530, 19.438662, 0.000000, 6.28318531, 1);
     ctx.fill();
     ctx.stroke();
+  }
+
+
+  void Emulator::handle_click(Point p, ClickAction a)
+  {
+    auto btn_rect = [&] (float x, float y, float w, float h, Key k) {
+      if (p.x > x && p.x < x + w && p.y > y && p.y < y + h) {
+        if (a == ClickAction::down) {
+          keypress(k);
+        } else {
+          keyrelease(k);
+        }
+      }
+    };
+
+    btn_rect(888.187260, 77.683167, 44.075573, 41.869038, Key::arp);
+    btn_rect(119.813030, 202.981950, 57.684937, 58.410713, Key::C0);
+    btn_rect(188.012250, 202.981950, 57.684937, 58.410713, Key::C1);
+    btn_rect(324.012270, 202.981950, 57.684937, 58.410713, Key::C2);
+    btn_rect(392.012270, 202.981950, 57.684937, 58.410713, Key::C3);
+    btn_rect(460.745330, 202.981950, 57.684937, 58.410713, Key::C4);
+    btn_rect(596.745360, 202.981950, 57.684937, 58.410713, Key::C5);
+    btn_rect(664.745360, 202.981950, 57.684937, 58.410713, Key::C6);
+    btn_rect(801.279170, 202.981950, 57.684937, 58.410713, Key::C7);
+    btn_rect(869.279170, 202.981950, 57.684937, 58.410713, Key::C8);
+    btn_rect(937.279170, 202.981950, 57.684937, 58.410713, Key::C9);
+    btn_rect(1002.187300, 79.683167, 44.075573, 41.869038, Key::envelope);
+    btn_rect(1048.187300, 79.683167, 44.075573, 41.869038, Key::external);
+    btn_rect(842.187260, 31.683163, 44.075573, 41.869038, Key::fx1);
+    btn_rect(842.187260, 77.683167, 44.075573, 41.869038, Key::fx2);
+    btn_rect(886.187260, 31.683163, 44.075573, 41.869038, Key::looper);
+    btn_rect(888.187260, 147.683170, 44.075573, 41.869038, Key::master);
+    btn_rect(22.187317, 147.683170, 44.075573, 41.869038, Key::minus);
+    btn_rect(842.187260, 147.683170, 44.075573, 41.869038, Key::play);
+    btn_rect(22.187317, 103.683170, 44.075573, 41.869038, Key::plus);
+    btn_rect(798.187260, 147.683170, 44.075573, 41.869038, Key::rec);
+    btn_rect(798.187260, 77.683167, 44.075573, 41.869038, Key::routing);
+    btn_rect(17.644073, 263.346830, 59.823616, 62.015549, Key::S0);
+    btn_rect(84.910995, 263.346830, 59.823616, 62.015549, Key::S1);
+    btn_rect(152.911010, 263.346830, 59.823616, 62.015549, Key::S2);
+    btn_rect(221.444850, 263.346830, 59.823616, 62.015549, Key::S3);
+    btn_rect(290.910980, 263.346830, 59.823616, 62.015549, Key::S4);
+    btn_rect(358.241610, 263.346830, 59.823616, 62.015549, Key::S5);
+    btn_rect(426.042420, 263.346830, 59.823616, 62.015549, Key::S6);
+    btn_rect(494.042420, 263.346830, 59.823616, 62.015549, Key::S7);
+    btn_rect(561.309330, 263.346830, 59.823616, 62.015549, Key::S8);
+    btn_rect(630.042420, 263.346830, 59.823616, 62.015549, Key::S9);
+    btn_rect(698.042420, 263.346830, 59.823616, 62.015549, Key::S10);
+    btn_rect(766.042420, 263.346830, 59.823616, 62.015549, Key::S11);
+    btn_rect(834.042420, 263.346830, 59.823616, 62.015549, Key::S12);
+    btn_rect(902.042420, 263.346830, 59.823616, 62.015549, Key::S13);
+    btn_rect(970.042420, 263.346830, 59.823616, 62.015549, Key::S14);
+    btn_rect(1038.042500, 263.346830, 59.823616, 62.015549, Key::S15);
+    btn_rect(932.187260, 77.683167, 44.075573, 41.869038, Key::sampler);
+    btn_rect(798.990230, 31.660383, 40.448444, 41.914600, Key::sends);
+    btn_rect(932.187260, 31.683163, 44.075573, 41.869038, Key::sequencer);
+    btn_rect(1048.187300, 33.683167, 44.075573, 41.869038, Key::settings);
+    btn_rect(22.187317, 33.683167, 44.075573, 41.869038, Key::shift);
+    btn_rect(934.187260, 147.683170, 44.075573, 41.869038, Key::slots);
+    btn_rect(1002.187300, 33.683167, 44.075573, 41.869038, Key::synth);
+    btn_rect(1002.187300, 147.683170, 44.075573, 41.869038, Key::twist1);
+    btn_rect(1048.187300, 147.683170, 44.075573, 41.869038, Key::twist2);
+
+    btn_rect(105.665530, 33.947121, 88.151146, 83.738075, Key::blue_click);
+    btn_rect(411.665530, 99.947121, 88.151146, 83.738075, Key::red_click);
+    btn_rect(309.864720, 33.214043, 88.151146, 83.738075, Key::yellow_click);
+    btn_rect(209.665530, 101.947120, 88.151146, 83.738075, Key::green_click);
   }
 
 } // namespace otto::board

@@ -9,11 +9,18 @@
 namespace otto::board {
 
   struct Emulator : core::ui::vg::Drawable, services::Controller {
+
+    enum struct ClickAction {
+      down, up
+    };
+
     void draw(core::ui::vg::Canvas& ctx) override;
 
     void set_color(services::LED, services::LEDColor) override;
     void flush_leds() override;
     void clear_leds() override;
+
+    void handle_click(core::ui::vg::Point p, ClickAction);
 
     constexpr static core::ui::vg::Size size = {1115, 352};
 

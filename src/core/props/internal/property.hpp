@@ -118,8 +118,9 @@ namespace otto::core::props {
 
     void set(const value_type& v)
     {
+      auto oldval = value_;
       value_ = run_hook<common::hooks::on_set>(v);
-      run_hook<common::hooks::after_set>();
+      run_hook<common::hooks::after_set>(oldval);
     }
 
     PropertyImpl& operator=(const value_type& rhs)
