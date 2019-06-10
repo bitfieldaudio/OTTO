@@ -15,10 +15,9 @@ namespace otto::core::engine {
 
   // EngineDispatcher Implementations /////////////////////////////////////////
   template<EngineType ET, typename... Egs>
-  void EngineDispatcher<ET, Egs...>::init()
-  {
-    _selector_screen = std::make_unique<EngineSelectorScreen>(*this);
-  }
+  EngineDispatcher<ET, Egs...>::EngineDispatcher(bool allow_off)
+    : IEngineDispatcher(allow_off), _selector_screen(std::make_unique<EngineSelectorScreen>(*this))
+  {}
 
   template<EngineType ET, typename... Egs>
   ITypedEngine<ET>& EngineDispatcher<ET, Egs...>::current() noexcept
@@ -128,8 +127,8 @@ namespace otto::core::engine {
   }
 
   template<EngineType ET, typename... Egs>
-  const foonathan::array::flat_map<util::string_ref, nlohmann::json>&
-  EngineDispatcher<ET, Egs...>::data_of_engines() const noexcept
+  const foonathan::array::flat_map<util::string_ref, nlohmann::json>& EngineDispatcher<ET, Egs...>::data_of_engines()
+    const noexcept
   {
     return _engine_data;
   }

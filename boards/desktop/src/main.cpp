@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
       std::make_unique<RTAudioAudioManager>,
       ClockManager::create_default,
       std::make_unique<GLFWUIManager>,
-      PrOTTO1SerialController::make_or_dummy,
+      PrOTTO1SerialController::make_or_emulator,
       EngineManager::create_default
     };
 
