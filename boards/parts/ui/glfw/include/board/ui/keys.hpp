@@ -158,12 +158,9 @@ namespace otto::board::ui {
         })}
     {}
 
-    constexpr Modifiers(Modifier data) noexcept : data(util::underlying(data))
-    {}
+    constexpr Modifiers(Modifier data) noexcept : data(util::underlying(data)) {}
 
-    constexpr Modifiers(std::underlying_type_t<Modifier> data) noexcept
-      : data(data)
-    {}
+    constexpr Modifiers(std::underlying_type_t<Modifier> data) noexcept : data(data) {}
 
     constexpr bool is(Modifier m) const noexcept
     {
@@ -199,11 +196,15 @@ namespace otto::board::ui {
     }
   };
 
-  enum struct Action {
-    press = GLFW_PRESS, release = GLFW_RELEASE, repeat = GLFW_REPEAT
+  enum struct Action { press = GLFW_PRESS, release = GLFW_RELEASE, repeat = GLFW_REPEAT };
+
+  enum struct Button {
+    left = GLFW_MOUSE_BUTTON_LEFT,
+    middle = GLFW_MOUSE_BUTTON_MIDDLE,
+    right = GLFW_MOUSE_BUTTON_RIGHT
   };
 
   /// Bind keys by implementing this function
   void handle_keyevent(Action, Modifiers, Key);
 
-}
+} // namespace otto::board::ui

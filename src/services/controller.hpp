@@ -163,6 +163,7 @@ namespace otto::services {
   };
 
   struct LEDColor {
+    LEDColor() = default;
     LEDColor(std::uint32_t rgb) : r((rgb >> 16) & 0xFF), g((rgb >> 8) & 0xFF), b(rgb & 0xFF) {}
     LEDColor(float r, float g, float b) : r(r * 255), g(g * 255), b(b * 255) {}
 
