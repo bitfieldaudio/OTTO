@@ -4841,6 +4841,8 @@ namespace otto::board {
         } else {
           keyrelease(k);
         }
+      } else {
+        keyrelease(k); //without this, if the mouse leaves the button area while MOUSE_DOWN the button stays active.
       }
     };
 
