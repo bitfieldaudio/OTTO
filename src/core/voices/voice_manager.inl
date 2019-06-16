@@ -1,6 +1,7 @@
 #pragma once
 
 #include "services/audio_manager.hpp"
+#include "services/ui_manager.hpp"
 #include "voice_manager.hpp"
 
 namespace otto::core::voices {
@@ -172,7 +173,7 @@ namespace otto::core::voices {
   template<typename V, int N>
   auto VoiceManager<V, N>::handle_midi_on(const midi::NoteOnEvent& evt) noexcept -> Voice&
   {
-    auto key = evt.key + settings_props.octave * 12 + settings_props.transpose;
+    auto key = evt.key + services::UIManager::current().state.octave * 12 + settings_props.transpose;
     stop_voice(key);
     Voice& voice = get_voice(key);
     note_stack.push_back({key, &voice});
@@ -183,7 +184,7 @@ namespace otto::core::voices {
   template<typename V, int N>
   auto VoiceManager<V, N>::handle_midi_off(const midi::NoteOffEvent& evt) noexcept -> Voice*
   {
-    auto key = evt.key + settings_props.octave * 12 + settings_props.transpose;
+    auto key = evt.key + services::UIManager::current().state.octave * 12 + settings_props.transpose;
     if (sustain_) {
       auto found = util::find_if(note_stack, [&] (auto& nvp) { return nvp.note == key; });
       if (found != note_stack.end()) {

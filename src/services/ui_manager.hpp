@@ -6,8 +6,8 @@
 #include "util/locked.hpp"
 #include "util/enum.hpp"
 
-#include "core/engine/engine.hpp"
 #include "core/service.hpp"
+#include "core/props/props.hpp"
 #include "core/ui/screen.hpp"
 #include "services/application.hpp"
 
@@ -51,13 +51,19 @@ namespace otto::services {
               twist1,
               twist2)
 
+  BETTER_ENUM(KeyMode, std::uint8_t, midi, seq);
+
   struct UIManager : core::Service {
     /// The UI state
     ///
     /// This will dictate which state-leds light up, and which channel is currently selected etc.
     struct State {
-      ChannelEnum active_channel = ChannelEnum::internal;
-      ScreenEnum current_screen = ScreenEnum::synth;
+      core::props::Property<ChannelEnum> active_channel = ChannelEnum::internal;
+      core::props::Property<ScreenEnum> current_screen = ScreenEnum::synth;
+      core::props::Property<KeyMode> key_mode = KeyMode::midi;
+      core::props::Property<int> octave = {0, core::props::limits(-4, 4)};
+
+      DECL_REFLECTION(State, active_channel, current_screen, key_mode, octave);
     };
 
     using ScreenSelector = std::function<core::ui::Screen&()>;
@@ -85,12 +91,9 @@ namespace otto::services {
       return Application::current().ui_manager;
     }
 
-    /// The current UI state
-    State state() const noexcept {
-      return state_;
-    }
-
     void register_screen_selector(ScreenEnum, ScreenSelector);
+
+    State state;
 
   protected:
     /// Draws the current screen and overlays.
@@ -102,8 +105,6 @@ namespace otto::services {
     /// for the new screen
     void display(core::ui::Screen& screen);
 
-    void set_state(State state);
-
   private:
     struct EmptyScreen : core::ui::Screen {
       void draw(core::ui::vg::Canvas& ctx) {}
@@ -112,8 +113,6 @@ namespace otto::services {
     core::ui::Screen* cur_screen = &empty_screen;
 
     util::enum_map<ScreenEnum, ScreenSelector> screen_selectors_;
-
-    State state_;
 
     unsigned _frame_count = 0;
 
