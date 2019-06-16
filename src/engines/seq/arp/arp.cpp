@@ -152,7 +152,7 @@ namespace otto::engines {
     // Add new notes depending on octavemode. Most octavemodes add new vectors to the output
     // (separate steps), but unison modes add new notes to the same steps. To keep things
     // "simple", an octavemode cannot do both.
-    switch (props.octavemode) {
+    switch (props.octavemode.get()) {
     case OctaveMode::octaveup: {
       for (auto ev : held_notes_) {
         NoteArray orig;
@@ -206,7 +206,7 @@ namespace otto::engines {
 
     // Sort vectors (steps) according to the playmode. A mode like updown adds extra steps.
     // The chord mode gathers all vectors into one.
-    switch (props.playmode) {
+    switch (props.playmode.get()) {
     case Playmode::up: {
       util::sort(res, [](auto& a, auto& b) { return a.front().key < b.front().key; });
     } break;

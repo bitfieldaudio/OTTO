@@ -136,19 +136,15 @@ namespace otto::core::voices {
 
   namespace details {
     /// The way the voicemanager handles voices
-    enum struct PlayMode : char {
+    BETTER_ENUM(PlayMode,
+      char,
       /// Multiple voices at once, each playing a note
       poly,
       /// Only a single voice in use, allways playing the latest note
       mono,
       /// All voices in use, all playing the latest note (posibly with detune)
       unison
-    };
-
-    /// Convert a playmode to string
-    ///
-    /// @return an all-lowercase string corresponding to the enum name
-    std::string to_string(PlayMode) noexcept;
+    );
 
     struct EnvelopeProps {
       props::Property<float> attack = {0, props::limits(0, 1), props::step_size(0.02)};

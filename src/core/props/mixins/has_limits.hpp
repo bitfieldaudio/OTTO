@@ -1,7 +1,6 @@
 #pragma once
 
 #include <better_enum.hpp>
-#include <magic_enum.hpp>
 
 #include "util/algorithm.hpp"
 
@@ -17,26 +16,18 @@ namespace otto::core::props {
     template<typename T>
     T from_integral(const util::enum_decay_t<T>& t)
     {
-      if constexpr (std::is_enum_v<T>) {
-        return static_cast<T>(t);
-      } else if constexpr (util::BetterEnum::is<T>) {
+      if constexpr (util::BetterEnum::is<T>) {
         return T::_from_integral(t);
       } else {
         return t;
       }
     }
 
-    using namespace magic_enum;
     template<typename T>
     struct limits {
       static constexpr auto min()
       {
-        if constexpr (std::is_enum_v<T>) {
-          auto vals = enum_values<T>();
-          auto iter = util::min_element(vals);
-          if (iter == vals.end()) return util::underlying(T{0});
-          return util::underlying(*iter);
-        } else if constexpr (util::BetterEnum::is<T>) {
+        if constexpr (util::BetterEnum::is<T>) {
           auto vals = T::_values();
           auto iter = util::min_element(vals);
           if (iter == vals.end()) return T::_values()[0]._to_integral();
@@ -47,12 +38,7 @@ namespace otto::core::props {
       }
       static constexpr auto max()
       {
-        if constexpr (std::is_enum_v<T>) {
-          auto vals = enum_values<T>();
-          auto iter = util::max_element(vals);
-          if (iter == vals.end()) return util::underlying(T{0});
-          return util::underlying(*iter);
-        } else if constexpr (util::BetterEnum::is<T>) {
+        if constexpr (util::BetterEnum::is<T>) {
           auto vals = T::_values();
           auto iter = util::max_element(vals);
           if (iter == vals.end()) return T::_values()[T::_size() - 1]._to_integral();
@@ -86,10 +72,10 @@ namespace otto::core::props {
   OTTO_PROPS_MIXIN_LEAF (has_limits) {
     OTTO_PROPS_MIXIN_DECLS(has_limits);
 
-    static_assert(std::is_enum_v<value_type> || util::is_less_than_comparable_v<value_type>,
+    static_assert(util::is_less_than_comparable_v<value_type>,
                   "Property type must be less than comparable for has_limits");
 
-    static_assert(std::is_enum_v<value_type> || util::is_greater_than_comparable_v<value_type>,
+    static_assert(util::is_greater_than_comparable_v<value_type>,
                   "Property type must be greater than comparable for has_limits");
 
     void init(const value_type& pmin, const value_type& pmax)
@@ -110,12 +96,10 @@ namespace otto::core::props {
       }
     }
 
-    value_type normalize() const
+    float normalize() const
     {
-      static_assert(!std::is_enum_v<value_type>,
-                    "has_limits::normalize() is unavaliable for enums");
       auto& prop = static_cast<property_type const&>(*this);
-      return (prop.get() - min) / (max - min);
+      return (prop.get() - min) / float(max - min);
     }
 
     util::enum_decay_t<value_type> min = detail::limits<value_type>::min();

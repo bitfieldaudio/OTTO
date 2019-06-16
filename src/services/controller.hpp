@@ -47,18 +47,7 @@ namespace otto::services {
 
   BETTER_ENUM(Encoder, std::uint8_t, blue = 0, green = 1, yellow = 2, red = 3)
 
-  BETTER_ENUM(ChannelKey,
-              std::uint8_t,
-              N0 = 0,
-              N1 = 1,
-              N2 = 2,
-              N3 = 3,
-              N4 = 4,
-              N5 = 5,
-              N6 = 6,
-              N7 = 7,
-              N8 = 8,
-              N9 = 9)
+  BETTER_ENUM(ChannelKey, std::uint8_t, N0 = 0, N1 = 1, N2 = 2, N3 = 3, N4 = 4, N5 = 5, N6 = 6, N7 = 7, N8 = 8, N9 = 9)
 
   BETTER_ENUM(SeqKey,
               std::uint8_t,
@@ -165,9 +154,27 @@ namespace otto::services {
   struct LEDColor {
     LEDColor() = default;
     LEDColor(std::uint32_t rgb) : r((rgb >> 16) & 0xFF), g((rgb >> 8) & 0xFF), b(rgb & 0xFF) {}
-    LEDColor(float r, float g, float b) : r(r * 255), g(g * 255), b(b * 255) {}
+    LEDColor(std::uint8_t r, std::uint8_t g, std::uint8_t b) : r(r), g(g), b(b) {}
 
     std::uint8_t r = 0, g = 0, b = 0;
+
+    LEDColor mix(LEDColor o, float f) const noexcept
+    {
+      return *this / f + o * f;
+    }
+
+    LEDColor operator*(float f) const noexcept
+    {
+      return {static_cast<std::uint8_t>(r * f), static_cast<std::uint8_t>(g * f), static_cast<std::uint8_t>(b * f)};
+    }
+    LEDColor operator/(float f) const noexcept
+    {
+      return {static_cast<std::uint8_t>(r / f), static_cast<std::uint8_t>(g / f), static_cast<std::uint8_t>(b / f)};
+    }
+    LEDColor operator+(LEDColor o) const noexcept
+    {
+      return {static_cast<std::uint8_t>(r + o.r), static_cast<std::uint8_t>(g + o.g), static_cast<std::uint8_t>(b + o.b)};
+    }
 
     static const LEDColor Black;
     static const LEDColor White;
@@ -193,12 +200,13 @@ namespace otto::services {
     using EventBag = std::vector<Event>;
 
     static std::unique_ptr<Controller> make_dummy();
-    static Controller& current() noexcept {
+    static Controller& current() noexcept
+    {
       return Application::current().controller;
     }
 
     /// Actually executes the key and encoder events
-    /// 
+    ///
     /// Should only be called by graphics thread, once per frame
     void flush_events();
 
@@ -210,9 +218,7 @@ namespace otto::services {
     bool is_pressed(Key k) noexcept;
 
     /// Register a key handler
-    void register_key_handler(Key k,
-                              KeyHandler press_handler,
-                              KeyHandler release_handler = nullptr);
+    void register_key_handler(Key k, KeyHandler press_handler, KeyHandler release_handler = nullptr);
 
 
   protected:
@@ -236,9 +242,7 @@ namespace otto::services {
     /// Temporary solution
     ///
     /// @TODO replace with something cleaner
-    friend void ::otto::board::ui::handle_keyevent(board::ui::Action,
-                                                   board::ui::Modifiers,
-                                                   board::ui::Key);
+    friend void ::otto::board::ui::handle_keyevent(board::ui::Action, board::ui::Modifiers, board::ui::Key);
 
   private:
     bool handle_global(Key key, bool is_press = true);

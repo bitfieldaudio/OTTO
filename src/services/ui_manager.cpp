@@ -42,10 +42,11 @@ namespace otto::services {
 
   UIManager::UIManager()
   {
-    state.current_screen.on_change().connect([&](auto new_val, auto old_val) {
+    state.current_screen.on_change().connect([&](auto new_val) {
       display(screen_selectors_[new_val]());
-      Controller::current().set_color(led_for_screen(old_val), LEDColor::Black);
-      Controller::current().set_color(led_for_screen(new_val), LEDColor::White);
+      for (auto scrn : ScreenEnum::_values()) {
+        Controller::current().set_color(led_for_screen(scrn), scrn == new_val ? LEDColor::White : LEDColor::Black);
+      }
     });
 
     state.octave.on_change().connect([&](auto octave) {
