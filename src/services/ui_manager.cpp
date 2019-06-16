@@ -32,6 +32,7 @@ namespace otto::services {
       case ScreenEnum::twist1: return LED(Key::twist1);
       case ScreenEnum::twist2: return LED(Key::twist2);
     }
+    OTTO_UNREACHABLE;
   }
 
   using namespace core::ui;
