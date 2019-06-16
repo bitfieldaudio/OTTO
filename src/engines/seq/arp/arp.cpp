@@ -23,7 +23,7 @@ namespace otto::engines {
     case Playmode::manual: return "Manual";
     case Playmode::chord: return "Chord";
     };
-    return "";
+    OTTO_UNREACHABLE;
   }
 
   inline std::string to_string(OctaveMode om) noexcept
@@ -34,8 +34,8 @@ namespace otto::engines {
     case OctaveMode::octaveupunison: return "+1Unison";
     case OctaveMode::fifthunison: return "Fifth";
     case OctaveMode::octaveupdown: return "+1 & -1";
-    default: return "";
     };
+    OTTO_UNREACHABLE;
   }
 
 
