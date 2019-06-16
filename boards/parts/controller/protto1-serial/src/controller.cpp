@@ -52,7 +52,7 @@ namespace otto::services {
       case Command::key_up: {
         keyrelease(key);
       } break;
-      default: OTTO_UNREACHABLE("");
+      default: OTTO_UNREACHABLE;
     }
   }
 

@@ -33,6 +33,7 @@ namespace otto::engines {
       case ChannelEnum::sampler8: return LED{Key::S8};
       case ChannelEnum::sampler9: return LED{Key::S9};
     }
+    OTTO_UNREACHABLE;
   }
 
   void SendsScreen::draw(core::ui::vg::Canvas& ctx)
