@@ -65,11 +65,11 @@ namespace otto::core::voices {
   }
 
   template<typename D, typename P>
-  void VoiceBase<D, P>::trigger(int midi_note, float mult, float velocity) noexcept
+  void VoiceBase<D, P>::trigger(int midi_note, float detune, float velocity) noexcept
   {
     midi_note_ = midi_note;
     //Sets target value of portamento to new note
-    glide_ = midi::note_freq(midi_note) * mult;
+    glide_ = midi::note_freq(midi_note) * detune;
     frequency_ = glide_();
     velocity_ = velocity;
     on_note_on();
@@ -106,10 +106,12 @@ namespace otto::core::voices {
     DLOGI("FREE VOICES: {}", vm.free_voices.size());
   }
 
+
   template<typename V, int N>
   VoiceManager<V, N>::IVoiceAllocator::~IVoiceAllocator() {
-    DLOGI("Destructing voiceallocator.");
+    DLOGI("Destructing voiceallocator base.");
   }
+
 
   template<typename V, int N>
   void VoiceManager<V, N>::IVoiceAllocator::handle_midi_off(const otto::core::midi::NoteOffEvent & evt) noexcept {
@@ -128,6 +130,7 @@ namespace otto::core::voices {
   auto VoiceManager<V, N>::IVoiceAllocator::get_voice(int key) noexcept -> Voice&
   {
     if (vm.free_voices.size() > 0) {
+      // Reuses the voice that last played the note if it exists
       auto it = util::find_if(vm.note_stack, [key](NoteVoicePair& nvp) { return nvp.note == key; });
       auto fvit = it == vm.note_stack.end() ? vm.free_voices.begin() : util::find(vm.free_voices, it->voice);
       auto& v = **fvit;
@@ -151,18 +154,19 @@ namespace otto::core::voices {
   template<typename V, int N>
   void VoiceManager<V, N>::IVoiceAllocator::stop_voice(int key) noexcept {
     auto free_voice = [this](Voice& v) {
-        auto found = std::find_if(vm.note_stack.rbegin(), vm.note_stack.rend(),
+        //TODO: this used to be reversed. Does it cause problems in poly?
+        auto found = std::find_if(vm.note_stack.begin(), vm.note_stack.end(),
                                   [](auto nvp) { return !nvp.has_voice(); });
-        if (found != vm.note_stack.rend()) {
+        if (found != vm.note_stack.end()) {
           found->voice = &v;
-          // TODO: Restore original velocity
-          v.trigger(found->note, 1, v.velocity_);
+          v.trigger(found->note, found->detune, found->velocity);
         } else {
           v.release();
           vm.free_voices.push_back(&v);
         }
     };
-    auto it = util::remove_if(vm.note_stack, [&](auto nvp) {
+
+    auto it = std::remove_if(vm.note_stack.begin(), vm.note_stack.end(), [&](auto nvp) {
       if (nvp.key == key) {
         if (nvp.has_voice()) {
           free_voice(*nvp.voice);
@@ -186,13 +190,22 @@ namespace otto::core::voices {
     // if key is being used, use same voice.
     this->stop_voice(key);
     Voice& voice = this->get_voice(key);
-    vm.note_stack.push_back({key, key, &voice});
+    vm.note_stack.push_back({.key = key, .note = key, .detune = 1, .velocity = evt.velocity / 127.f, .voice = &voice});
     // in trigger - don't use on_note on if legato && stolen (from triggered voice)
     // jump/retrig: non-stolen voices skip portamento.
     voice.trigger(key, 1, evt.velocity / 127.f);
   }
 
   // MONO //
+  /*
+  template<typename V, int N>
+  VoiceManager<V, N>::MonoAllocator::~MonoAllocator() {
+    for (int i = 1; i < 3; ++i) {
+      auto& voice = this->vm.voices_[i];
+      voice.env_.amp(1.f);
+    }
+  }
+  */
   template<typename V, int N>
   void VoiceManager<V, N>::MonoAllocator::handle_midi_on(const midi::NoteOnEvent& evt) noexcept
   {
@@ -210,20 +223,20 @@ namespace otto::core::voices {
       sv.release();
       first_note.voice = nullptr;
       second_note.voice = nullptr;
-      vm.note_stack.push_back({key, key, &v});
-      vm.note_stack.push_back({key, key - 12, &sv});
+      vm.note_stack.push_back({.key = key, .note = key, .detune = 1, .velocity = evt.velocity / 127.f, .voice = &v});
+      vm.note_stack.push_back({.key = key, .note = key - 12, .detune = 1, .velocity = evt.velocity / 127.f, .voice = &sv});
       v.trigger(key, 1, evt.velocity / 127.f);
-      sv.trigger(key - 12, 1, evt.velocity * vm.settings_props.sub / 127.f);
+      sv.trigger(key, 0.5, evt.velocity * vm.settings_props.sub / 127.f);
     }
     else {
       auto fvit = vm.free_voices.begin();
       auto& v = **fvit;
-      vm.note_stack.push_back({key, key, &v});
+      vm.note_stack.push_back({.key = key, .note = key, .detune = 1, .velocity = evt.velocity / 127.f, .voice = &v});
       v.trigger(key, 1, evt.velocity / 127.f);
       //Sub voice
       auto svit = ++vm.free_voices.begin();
       auto& sv = **svit;
-      vm.note_stack.push_back({key, key - 12, &sv});
+      vm.note_stack.push_back({.key = key, .note = key - 12, .detune = 1, .velocity = evt.velocity / 127.f, .voice = &sv});
       sv.trigger(key - 12, 1, evt.velocity * vm.settings_props.sub / 127.f);
     }
 
@@ -243,7 +256,7 @@ namespace otto::core::voices {
         Voice &v = *note.voice;
         v.release();
         note.voice = nullptr;
-        vm.note_stack.push_back({key, key, &v});
+        vm.note_stack.push_back({.key = key, .note = key, .detune = vm.detune_values[i], .velocity = evt.velocity / 127.f, .voice = &v});
         v.trigger(key, vm.detune_values[i], evt.velocity / 127.f);
       }
     }
@@ -251,10 +264,29 @@ namespace otto::core::voices {
       for (int i = 0; i < 5; i++) {
         auto vit = vm.free_voices.begin() + i;
         auto &v = **vit;
-        vm.note_stack.push_back({key, key, &v});
+        vm.note_stack.push_back({.key = key, .note = key, .detune = vm.detune_values[i], .velocity = evt.velocity / 127.f, .voice = &v});
         v.trigger(key, vm.detune_values[i], evt.velocity / 127.f);
       }
     }
+  }
+
+  // INTERVAL //
+  template<typename V, int N>
+  void VoiceManager<V, N>::IntervalAllocator::handle_midi_on(const midi::NoteOnEvent& evt) noexcept
+  {
+    auto& vm = this->vm;
+    auto key = evt.key + vm.settings_props.octave * 12 + vm.settings_props.transpose;
+    auto interval = vm.settings_props.interval;
+    auto det = otto::util::dsp::semitone_to_detune(interval);
+    this->stop_voice(key);
+    // Main voice
+    Voice& voice = this->get_voice(key);
+    vm.note_stack.push_back({.key = key, .note = key, .detune = 1, .velocity = evt.velocity / 127.f, .voice = &voice});
+    voice.trigger(key, 1, evt.velocity / 127.f);
+    // Interval voice
+    Voice& interval_voice = this->get_voice(key + interval);
+    vm.note_stack.push_back({.key = key, .note = key, .detune = det, .velocity = evt.velocity / 127.f, .voice = &interval_voice});
+    interval_voice.trigger(key, det, evt.velocity / 127.f);
   }
 
 
@@ -283,10 +315,20 @@ namespace otto::core::voices {
       detune_values.clear();
       detune_values.push_back(1);
       for (int i = 1; i<3; i++) {
-        detune_values.push_back(1 + det * 0.01 * i);
-        detune_values.push_back(1.f / (1.f + det * 0.01f * (float)i));
+        detune_values.push_back(1 + det * 0.015f * i);
+        detune_values.push_back(1.f / (1.f + det * 0.015f * (float)i));
       }
     }).call_now(settings_props.detune);
+
+    // The second and third voice are sub voices on mono mode. This sets their volume.
+    /// TODO: does this mean we need to remake all the voices when changing away from mono?
+    for (int i = 1; i < 3; ++i) {
+      auto& voice = voices_[i];
+      settings_props.sub.on_change().connect([&voice](float s){
+        voice.env_.amp(s);
+      });
+    }
+
 
     settings_props.play_mode.on_change()
       .connect([this](PlayMode mode) {
@@ -294,7 +336,7 @@ namespace otto::core::voices {
           case PlayMode::poly: voice_allocator = std::make_unique<PolyAllocator>(*this); break;
           case PlayMode::mono: voice_allocator = std::make_unique<MonoAllocator>(*this); break;
           case PlayMode::unison: voice_allocator = std::make_unique<UnisonAllocator>(*this); break;
-          case PlayMode::interval: voice_allocator = std::make_unique<PolyAllocator>(*this); break;
+          case PlayMode::interval: voice_allocator = std::make_unique<IntervalAllocator>(*this); break;
           default:break;
         }
       })
@@ -334,8 +376,8 @@ namespace otto::core::voices {
       ///Change frequency if applicable
       voice.frequency(voice.glide_() * pitch_bend_);
       ///Get next sample
-      /// Note: The voice call operator is called inside the envelope
-      voice_sum += voice.env_();
+      // TODO: The voice could be called inside the envelope. Maybe later.
+      voice_sum += voice.env_() * voice();
     }
     return post(voice_sum);
   }
