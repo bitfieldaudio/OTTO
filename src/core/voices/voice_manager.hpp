@@ -174,7 +174,7 @@ namespace otto::core::voices {
       props::Property<PlayMode, props::wrap> play_mode = {
         PlayMode::poly, props::limits(PlayMode::poly, PlayMode::interval)};
       props::Property<float> drift = {0, props::limits(0, 1), props::step_size(0.01)};
-      props::Property<float> sub = {0, props::limits(0.01, 1), props::step_size(0.01)};
+      props::Property<float> sub = {0.2, props::limits(0.01, 1), props::step_size(0.01)};
       props::Property<float> detune = {0, props::limits(0, 1), props::step_size(0.01)};
       props::Property<int> interval = {0, props::limits(-12, 12)};
 
@@ -273,7 +273,6 @@ namespace otto::core::voices {
       /// Which physical key is activating this note
       int key = 0;
       /// Which note this voice is playing.
-      //  TODO: Remove this
       int note = 0;
       /// Detune value from note
       float detune = 0;
@@ -295,11 +294,13 @@ namespace otto::core::voices {
 
     /// Voice allocators - Corresponds to different playmodes
     struct IVoiceAllocator {
+      // Owner
       VoiceManager& vm;
-      /// Constructor
+
       IVoiceAllocator(VoiceManager& vm_in);
-      /// Deleter. Should flush all playing notes
-      ~IVoiceAllocator();
+
+      virtual ~IVoiceAllocator() = 0;
+
       virtual void handle_midi_on(const midi::NoteOnEvent&) noexcept = 0;
       /// Midi off is common to all
       void handle_midi_off(const midi::NoteOffEvent&) noexcept;
@@ -314,16 +315,9 @@ namespace otto::core::voices {
     };
 
     struct MonoAllocator final : IVoiceAllocator {
-        MonoAllocator(VoiceManager& vm_in) : IVoiceAllocator(vm_in) {}
-        /*
-        {
-          for (int i = 1; i < 3; ++i) {
-            auto& voice = vm_in.voices_[i];
-            voice.env_.amp(vm_in.settings_props.sub);
-          }
-        }
-         */
-        //~MonoAllocator();
+        MonoAllocator(VoiceManager& vm_in);
+
+        ~MonoAllocator();
 
         void handle_midi_on(const midi::NoteOnEvent&) noexcept override;
     };

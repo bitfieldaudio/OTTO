@@ -67,6 +67,7 @@ namespace otto::core::voices {
   template<typename D, typename P>
   void VoiceBase<D, P>::trigger(int midi_note, float detune, float velocity) noexcept
   {
+    // TODO: jump/retrig: non-stolen voices skip portamento.
     midi_note_ = midi_note;
     //Sets target value of portamento to new note
     glide_ = midi::note_freq(midi_note) * detune;
@@ -106,12 +107,8 @@ namespace otto::core::voices {
     DLOGI("FREE VOICES: {}", vm.free_voices.size());
   }
 
-
   template<typename V, int N>
-  VoiceManager<V, N>::IVoiceAllocator::~IVoiceAllocator() {
-    DLOGI("Destructing voiceallocator base.");
-  }
-
+  VoiceManager<V, N>::IVoiceAllocator::~IVoiceAllocator() {}
 
   template<typename V, int N>
   void VoiceManager<V, N>::IVoiceAllocator::handle_midi_off(const otto::core::midi::NoteOffEvent & evt) noexcept {
@@ -185,27 +182,30 @@ namespace otto::core::voices {
   {
     auto& vm = this->vm;
     auto key = evt.key + vm.settings_props.octave * 12 + vm.settings_props.transpose;
-    //Determine which notes to start. Depends on playmode
-    //Determine how to distribute those new notes on the voices
-    // if key is being used, use same voice.
     this->stop_voice(key);
     Voice& voice = this->get_voice(key);
     vm.note_stack.push_back({.key = key, .note = key, .detune = 1, .velocity = evt.velocity / 127.f, .voice = &voice});
-    // in trigger - don't use on_note on if legato && stolen (from triggered voice)
-    // jump/retrig: non-stolen voices skip portamento.
     voice.trigger(key, 1, evt.velocity / 127.f);
   }
 
   // MONO //
-  /*
+  template<typename V, int N>
+  VoiceManager<V, N>::MonoAllocator::MonoAllocator(VoiceManager& vm_in) : IVoiceAllocator(vm_in)
+  {
+    for (int i = 1; i < 3; ++i) {
+    auto& voice = vm_in.voices_[i];
+    voice.env_.amp(vm_in.settings_props.sub);
+    }
+  }
+
   template<typename V, int N>
   VoiceManager<V, N>::MonoAllocator::~MonoAllocator() {
-    for (int i = 1; i < 3; ++i) {
+    for (int i = 0; i < N; ++i) {
       auto& voice = this->vm.voices_[i];
       voice.env_.amp(1.f);
     }
   }
-  */
+
   template<typename V, int N>
   void VoiceManager<V, N>::MonoAllocator::handle_midi_on(const midi::NoteOnEvent& evt) noexcept
   {
@@ -226,7 +226,7 @@ namespace otto::core::voices {
       vm.note_stack.push_back({.key = key, .note = key, .detune = 1, .velocity = evt.velocity / 127.f, .voice = &v});
       vm.note_stack.push_back({.key = key, .note = key - 12, .detune = 1, .velocity = evt.velocity / 127.f, .voice = &sv});
       v.trigger(key, 1, evt.velocity / 127.f);
-      sv.trigger(key, 0.5, evt.velocity * vm.settings_props.sub / 127.f);
+      sv.trigger(key - 12, 1, evt.velocity * vm.settings_props.sub / 127.f);
     }
     else {
       auto fvit = vm.free_voices.begin();
@@ -277,7 +277,6 @@ namespace otto::core::voices {
     auto& vm = this->vm;
     auto key = evt.key + vm.settings_props.octave * 12 + vm.settings_props.transpose;
     auto interval = vm.settings_props.interval;
-    auto det = otto::util::dsp::semitone_to_detune(interval);
     this->stop_voice(key);
     // Main voice
     Voice& voice = this->get_voice(key);
@@ -285,8 +284,8 @@ namespace otto::core::voices {
     voice.trigger(key, 1, evt.velocity / 127.f);
     // Interval voice
     Voice& interval_voice = this->get_voice(key + interval);
-    vm.note_stack.push_back({.key = key, .note = key, .detune = det, .velocity = evt.velocity / 127.f, .voice = &interval_voice});
-    interval_voice.trigger(key, det, evt.velocity / 127.f);
+    vm.note_stack.push_back({.key = key, .note = key + interval, .detune = 1, .velocity = evt.velocity / 127.f, .voice = &interval_voice});
+    interval_voice.trigger(key + interval, 1, evt.velocity / 127.f);
   }
 
 
