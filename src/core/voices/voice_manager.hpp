@@ -105,7 +105,7 @@ namespace otto::core::voices {
     template<typename T, int N>
     friend struct VoiceManager;
 
-    void trigger(int midi_note, float mult, float velocity) noexcept;
+    void trigger(int midi_note, float mult, float velocity, bool legato) noexcept;
     void release() noexcept;
 
     float frequency_ = 440.f;
@@ -339,7 +339,7 @@ namespace otto::core::voices {
     props::Property<bool> sustain_ = {false};
 
     std::deque<Voice*> free_voices;
-    std::vector<NoteVoicePair> note_stack;
+    std::deque<NoteVoicePair> note_stack;
 
     Props& props;
     Pre pre = {props};
