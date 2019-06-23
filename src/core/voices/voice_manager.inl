@@ -65,13 +65,14 @@ namespace otto::core::voices {
   }
 
   template<typename D, typename P>
-  void VoiceBase<D, P>::trigger(int midi_note, float detune, float velocity, bool legato) noexcept
+  void VoiceBase<D, P>::trigger(int midi_note, float detune, float velocity, bool legato, bool jump) noexcept
   {
-    // TODO: jump/retrig: non-stolen voices skip portamento.
     midi_note_ = midi_note;
     //Sets target value of portamento to new note
     glide_ = midi::note_freq(midi_note) * detune;
     frequency_ = glide_();
+    // So far, jump/retrig only works for MONO and UNISON
+    if (jump) glide_.finish();
     velocity_ = velocity;
     if (!legato) on_note_on();
     env_.resetSoft();
@@ -156,7 +157,7 @@ namespace otto::core::voices {
                                   [](auto nvp) { return !nvp.has_voice(); });
         if (found != vm.note_stack.end()) {
           found->voice = &v;
-          v.trigger(found->note, found->detune, found->velocity, vm.settings_props.legato);
+          v.trigger(found->note, found->detune, found->velocity, vm.settings_props.legato, false);
         } else {
           v.release();
           vm.free_voices.push_back(&v);
@@ -188,7 +189,7 @@ namespace otto::core::voices {
     this->stop_voice(key);
     Voice& voice = this->get_voice(key);
     vm.note_stack.push_front({.key = key, .note = key, .detune = 1, .velocity = evt.velocity / 127.f, .voice = &voice});
-    voice.trigger(key, 1, evt.velocity / 127.f, false);
+    voice.trigger(key, 1, evt.velocity / 127.f, false, false);
   }
 
   // INTERVAL //
@@ -202,7 +203,7 @@ namespace otto::core::voices {
       this->stop_voice(key);
       Voice& voice = this->get_voice(key + interval * i);
       vm.note_stack.push_front({.key = key, .note = key + interval * i, .detune = 1, .velocity = evt.velocity / 127.f, .voice = &voice});
-      voice.trigger(key + interval * i, 1, evt.velocity / 127.f, false);
+      voice.trigger(key + interval * i, 1, evt.velocity / 127.f, false, false);
     }
   }
 
@@ -240,7 +241,7 @@ namespace otto::core::voices {
         v.release();
         note.voice = nullptr;
         vm.note_stack.push_front({.key = key, .note = key - 12 * i, .detune = 1, .velocity = evt.velocity / 127.f, .voice = &v});
-        v.trigger(key - 12 * i, 1, evt.velocity * (1 - i + vm.settings_props.sub * (float)i) / 127.f, vm.settings_props.legato);
+        v.trigger(key - 12 * i, 1, evt.velocity * (1 - i + vm.settings_props.sub * (float)i) / 127.f, vm.settings_props.legato, false);
       }
     }
     else {
@@ -248,7 +249,7 @@ namespace otto::core::voices {
         auto fvit = vm.free_voices.begin() + i;
         auto& v = **fvit;
         vm.note_stack.push_front({.key = key, .note = key - 12 * i, .detune = 1, .velocity = evt.velocity / 127.f, .voice = &v});
-        v.trigger(key - 12 * i, 1, evt.velocity * (1 - i + vm.settings_props.sub * (float)i) / 127.f, false);
+        v.trigger(key - 12 * i, 1, evt.velocity * (1 - i + vm.settings_props.sub * (float)i) / 127.f, false, vm.settings_props.retrig);
       }
     }
 
@@ -270,7 +271,7 @@ namespace otto::core::voices {
         v.release();
         note.voice = nullptr;
         vm.note_stack.push_front({.key = key, .note = key, .detune = vm.detune_values[i], .velocity = evt.velocity / 127.f, .voice = &v});
-        v.trigger(key, vm.detune_values[i], evt.velocity / 127.f, vm.settings_props.legato);
+        v.trigger(key, vm.detune_values[i], evt.velocity / 127.f, vm.settings_props.legato, false);
       }
     }
     else {
@@ -278,7 +279,7 @@ namespace otto::core::voices {
         auto vit = vm.free_voices.begin() + i;
         auto &v = **vit;
         vm.note_stack.push_front({.key = key, .note = key, .detune = vm.detune_values[i], .velocity = evt.velocity / 127.f, .voice = &v});
-        v.trigger(key, vm.detune_values[i], evt.velocity / 127.f, false);
+        v.trigger(key, vm.detune_values[i], evt.velocity / 127.f, false, vm.settings_props.retrig);
       }
     }
   }

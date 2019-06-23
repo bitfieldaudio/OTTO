@@ -105,7 +105,7 @@ namespace otto::core::voices {
     template<typename T, int N>
     friend struct VoiceManager;
 
-    void trigger(int midi_note, float mult, float velocity, bool legato) noexcept;
+    void trigger(int midi_note, float mult, float velocity, bool legato, bool jump) noexcept;
     void release() noexcept;
 
     float frequency_ = 440.f;
@@ -116,7 +116,7 @@ namespace otto::core::voices {
 
     //HERE IS THE ERROR. At this point, the voice doesn't know it has a call operator
     gam::ADSR<> env_;
-    gam::SegExp<> glide_{0.f};
+    SegExpBypass<> glide_{0.f};
   };
 
   template<typename DerivedT, typename VoiceT>
