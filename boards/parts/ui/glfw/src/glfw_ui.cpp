@@ -268,11 +268,10 @@ namespace otto::services {
       main_win.end_frame();
 
       glfwPollEvents();
-      Controller::current().flush_events();
 
       spent = glfwGetTime() - t;
 
-      std::this_thread::sleep_for(std::chrono::milliseconds(int(1000 / 60 - spent * 1000)));
+      std::this_thread::sleep_for(std::chrono::milliseconds(int(1000 / 120 - spent * 1000)));
     }
   }
 } // namespace otto::services

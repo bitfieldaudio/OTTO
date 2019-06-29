@@ -43,9 +43,10 @@ namespace otto::services {
               master,
               sequencer,
               sampler,
+              sampler_envelope,
               synth,
               synth_selector,
-              envelope,
+              synth_envelope,
               settings,
               external,
               twist1,
@@ -94,6 +95,10 @@ namespace otto::services {
     void register_screen_selector(ScreenEnum, ScreenSelector);
 
     State state;
+
+    struct {
+      util::Signal<core::ui::vg::Canvas&> on_draw;
+    } signals;
 
   protected:
     /// Draws the current screen and overlays.

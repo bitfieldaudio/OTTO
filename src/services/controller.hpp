@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "util/locked.hpp"
+#include "util/thread.hpp"
 #include "util/variant.hpp"
 
 #include "core/service.hpp"
@@ -158,9 +159,9 @@ namespace otto::services {
 
     std::uint8_t r = 0, g = 0, b = 0;
 
-    LEDColor mix(LEDColor o, float f) const noexcept
+    LEDColor mix(LEDColor o, float f = 0.5) const noexcept
     {
-      return *this / f + o * f;
+      return (*this * (1.f - f)) + o * f;
     }
 
     LEDColor operator*(float f) const noexcept
@@ -173,7 +174,8 @@ namespace otto::services {
     }
     LEDColor operator+(LEDColor o) const noexcept
     {
-      return {static_cast<std::uint8_t>(r + o.r), static_cast<std::uint8_t>(g + o.g), static_cast<std::uint8_t>(b + o.b)};
+      return {static_cast<std::uint8_t>(r + o.r), static_cast<std::uint8_t>(g + o.g),
+              static_cast<std::uint8_t>(b + o.b)};
     }
 
     static const LEDColor Black;
@@ -199,20 +201,18 @@ namespace otto::services {
     using Event = util::variant<EncoderEvent, KeyPressEvent, KeyReleaseEvent>;
     using EventBag = std::vector<Event>;
 
+    Controller();
+
     static std::unique_ptr<Controller> make_dummy();
     static Controller& current() noexcept
     {
       return Application::current().controller;
     }
 
-    /// Actually executes the key and encoder events
-    ///
-    /// Should only be called by graphics thread, once per frame
-    void flush_events();
-
     virtual void set_color(LED, LEDColor) = 0;
     virtual void flush_leds() = 0;
     virtual void clear_leds() = 0;
+
 
     /// Check if a key is currently pressed.
     bool is_pressed(Key k) noexcept;
@@ -220,6 +220,9 @@ namespace otto::services {
     /// Register a key handler
     void register_key_handler(Key k, KeyHandler press_handler, KeyHandler release_handler = nullptr);
 
+    struct Signals {
+      util::Signal<Event> on_input;
+    } signals;
 
   protected:
     /// Dispatches to the event handler for the current screen, and handles
@@ -249,7 +252,10 @@ namespace otto::services {
 
     foonathan::array::flat_map<Key, std::pair<KeyHandler, KeyHandler>> key_handlers;
     std::array<bool, Key::_size()> keys;
-    util::double_buffered<EventBag> events;
+    util::double_buffered<EventBag> events_;
+
+    /// Essentially the logic thread, since most logic will happen in key handlers and property change events
+    util::triggered_thread key_handler_thread;
   };
 } // namespace otto::services
 

@@ -26,7 +26,10 @@
     return lhs = (lhs | rhs);                                           \
   }
 
-#define FIELD_GETTER(name) [] (auto& obj) { return obj.name; }
+#define FIELD_GETTER(name) [] (auto&& obj) { return obj.name; }
+
+/// Forward any expression through std::forward with the correct type
+#define FWD(X) std::forward<decltype(X)>(X)
 
 // Overload macros based on argument count
 #define GET_MACRO_1(_1,NAME, ...) NAME

@@ -10,7 +10,10 @@ namespace otto::util {
     using iterator = typename std::array<T, Capacity>::iterator;
     using const_iterator = typename std::array<T, Capacity>::const_iterator;
 
-    constexpr local_vector(std::initializer_list<value_type> il) : _data(il), _size(il.size()) {}
+    constexpr local_vector() : _data(), _size(0) {}
+
+    template<std::size_t N, std::enable_if_t<N <= Capacity>>
+    constexpr local_vector(std::array<T, N> il) : _data(il), _size(il.size()) {}
 
     // Queries
 
@@ -22,6 +25,11 @@ namespace otto::util {
     constexpr std::size_t size() const noexcept
     {
       return _size;
+    }
+
+    constexpr bool empty() const noexcept
+    {
+      return size() == 0;
     }
 
     constexpr auto begin()
@@ -67,6 +75,33 @@ namespace otto::util {
     constexpr const value_type& operator[](std::size_t idx)
     {
       return _data[idx];
+    }
+
+    constexpr value_type& push_back(const value_type& e) {
+      _data.at(_size) = e;
+      _size++;
+      return back();
+    }
+
+    constexpr iterator insert(iterator pos, const value_type& e) {
+      _data.at(_size) = e;
+      _size++;
+      return end() - 1;
+    }
+
+    constexpr const_iterator& insert(const_iterator pos, const value_type& e) {
+      _data.at(_size) = e;
+      _size++;
+      return end() - 1;
+    }
+
+    constexpr void pop_back() {
+      // TODO: Actually destroy elements;
+      _size--;
+    }
+
+    constexpr void clear() {
+      _size = 0;
     }
 
   private:

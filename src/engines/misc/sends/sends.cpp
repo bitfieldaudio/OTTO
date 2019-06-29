@@ -13,6 +13,12 @@ namespace otto::engines {
 
     void draw(core::ui::vg::Canvas& ctx) override;
     void encoder(core::ui::EncoderEvent e) override;
+
+    void on_show() override;
+    void on_hide() override;
+
+    util::Slot fx1_handler;
+    util::Slot fx2_handler;
   };
 
   Sends::Sends() : MiscEngine<Sends>(std::make_unique<SendsScreen>(this)) {
@@ -36,13 +42,23 @@ namespace otto::engines {
     OTTO_UNREACHABLE;
   }
 
+  void SendsScreen::on_show() {
+    fx1_handler = engine.props.to_FX1.on_change().connect([] (auto val) {
+      Controller::current().set_color(LED{Key::fx1}, LEDColor::Blue * val);
+    }).call_now();
+    fx2_handler = engine.props.to_FX2.on_change().connect([] (auto val) {
+      Controller::current().set_color(LED{Key::fx2}, LEDColor::Green * val);
+    }).call_now();
+    Controller::current().set_color(led_for(UIManager::current().state.active_channel), LEDColor::Red);
+  }
+
+  void SendsScreen::on_hide() {
+    fx1_handler.disconnect();
+    fx2_handler.disconnect();
+  }
+
   void SendsScreen::draw(core::ui::vg::Canvas& ctx)
   {
-    Controller::current().set_color(LED{Key::fx1}, LEDColor::Blue * engine.props.to_FX1.get());
-    Controller::current().set_color(LED{Key::fx2}, LEDColor::Green * engine.props.to_FX2.get());
-    Controller::current().set_color(led_for(UIManager::current().state.active_channel), LEDColor::Red);
-
-
     using namespace core::ui::vg;
     ctx.font(Fonts::Norm, 35);
 

@@ -4,7 +4,6 @@
 
 #include <engines/synths/goss/goss.hpp>
 #include <engines/synths/potion/potion.hpp>
-//#include "core/engine/sequencer.hpp"
 #include "engines/fx/chorus/chorus.hpp"
 #include "engines/fx/wormhole/wormhole.hpp"
 #include "engines/misc/master/master.hpp"
@@ -14,7 +13,7 @@
 #include "engines/synths/OTTOFM/ottofm.hpp"
 #include "engines/synths/potion/potion.hpp"
 #include "engines/synths/rhodes/rhodes.hpp"
-//#include "engines/synths/gammasampler/gammasampler.hpp"
+#include "engines/misc/sequencer/sequencer.hpp"
 
 #include "services/application.hpp"
 
@@ -57,7 +56,7 @@ namespace otto::services {
     engines::Sends synth_send;
     engines::Sends line_in_send;
     engines::Master master;
-    //engines::Sequencer sequencer;
+    engines::Sequencer sequencer;
     //std::array<engines::Sends> sequencer_sends;
   };
 
@@ -90,15 +89,20 @@ namespace otto::services {
     reg_ss(ScreenEnum::arp_selector, [&]() -> auto& { return arpeggiator.selector_screen(); });
     reg_ss(ScreenEnum::voices, [&]() -> auto& { return synth->voices_screen(); });
     reg_ss(ScreenEnum::master, [&]() -> auto& { return master.screen(); });
-    // reg_ss(ScreenEnum::sequencer,      [&] () -> auto& { return  ; });
-    // reg_ss(ScreenEnum::sampler,        [&] () -> auto& { return  ; });
+    reg_ss(ScreenEnum::sequencer, [&]() -> auto& { return sequencer.screen(); });
+    reg_ss(ScreenEnum::sampler, [&]() -> auto& { return sequencer.sampler_screen(); });
+    reg_ss(ScreenEnum::sampler_envelope, [&]() -> auto& { return sequencer.envelope_screen(); });
     reg_ss(ScreenEnum::synth, [&]() -> auto& { return synth->screen(); });
     reg_ss(ScreenEnum::synth_selector, [&]() -> auto& { return synth.selector_screen(); });
-    reg_ss(ScreenEnum::envelope, [&]() -> auto& { return synth->envelope_screen(); });
+    reg_ss(ScreenEnum::synth_envelope, [&]() -> auto& { return synth->envelope_screen(); });
     // reg_ss(ScreenEnum::settings,       [&] () -> auto& { return  ; });
     // reg_ss(ScreenEnum::external,       [&] () -> auto& { return  ; });
     // reg_ss(ScreenEnum::twist1,         [&] () -> auto& { return  ; });
     // reg_ss(ScreenEnum::twist2,         [&] () -> auto& { return  ; });
+
+    controller.register_key_handler(ui::Key::sequencer, [&](ui::Key k) { ui_manager.display(ScreenEnum::sequencer); });
+
+    controller.register_key_handler(ui::Key::sampler, [&](ui::Key k) { ui_manager.display(ScreenEnum::sampler); });
 
     controller.register_key_handler(ui::Key::arp, [&](ui::Key k) {
       if (controller.is_pressed(ui::Key::shift)) {
@@ -117,10 +121,14 @@ namespace otto::services {
     });
 
     controller.register_key_handler(ui::Key::envelope, [&](ui::Key k) {
-      if (controller.is_pressed(ui::Key::shift)) {
-        ui_manager.display(ScreenEnum::voices);
+      if (ui_manager.state.active_channel == ChannelEnum::internal) {
+        if (controller.is_pressed(ui::Key::shift)) {
+          ui_manager.display(ScreenEnum::voices);
+        } else {
+          ui_manager.display(ScreenEnum::synth_envelope);
+        }
       } else {
-        ui_manager.display(ScreenEnum::envelope);
+        ui_manager.display(ScreenEnum::sampler_envelope);
       }
     });
 
@@ -172,14 +180,18 @@ namespace otto::services {
       effect2.from_json(data["Effect2"]);
       master.from_json(data["Master"]);
       arpeggiator.from_json(data["Arpeggiator"]);
+      sequencer.from_json(data["Sequencer"]);
     };
 
     auto save = [&] {
-      return nlohmann::json({{"Synth", synth.to_json()},
-                             {"Effect1", effect1.to_json()},
-                             {"Effect2", effect2.to_json()},
-                             {"Master", master.to_json()},
-                             {"Arpeggiator", arpeggiator.to_json()}});
+      return nlohmann::json({
+        {"Synth", synth.to_json()},
+        {"Effect1", effect1.to_json()},
+        {"Effect2", effect2.to_json()},
+        {"Master", master.to_json()},
+        {"Arpeggiator", arpeggiator.to_json()},
+        {"Sequencer", sequencer.to_json()},
+      });
     };
 
     state_manager.attach("Engines", load, save);
@@ -217,6 +229,13 @@ namespace otto::services {
     fx2_out.audio[1].release();
     fx1_bus.release();
     fx2_bus.release();
+
+    auto smplr_out = sequencer.process(midi_in);
+    for (auto&& [resL, resR, smplr] : util::zip(fx1_out.audio[0], fx1_out.audio[1], smplr_out.audio)) {
+      resL += smplr;
+      resR += smplr;
+    }
+
     return master.process(std::move(fx1_out));
     /*
     auto temp = Application::current().audio_manager->buffer_pool().allocate_multi_clear<2>();
