@@ -4,12 +4,12 @@
 
 namespace otto::core::engine {
 
-  /// A engine representing no engine.
+  /// An engine representing no engine.
   ///
   /// Used either as an "OFF" engine, or while the active engine is being switched.
   ///
   /// For synths, the audio processing should just return an empty buffer, and for
-  /// fx it returns the input. Any others should be fairly obvious then
+  /// fx it returns the input. Any others should be fairly obvious then.
   template<EngineType ET>
   struct NullEngine;
 
