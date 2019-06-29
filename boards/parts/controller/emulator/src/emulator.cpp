@@ -4901,7 +4901,7 @@ namespace otto::board {
   void Emulator::handle_scroll(Point p, float offset) {
     auto enc_rect = [&] (float x, float y, float w, float h, Encoder e) {
       if (p.x > x && p.x < x + w && p.y > y && p.y < y + h) {
-        encoder({e, offset});
+        encoder({e, (int) offset});
       }
     };
 

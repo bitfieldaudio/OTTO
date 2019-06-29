@@ -1,6 +1,7 @@
 #include "voice_manager.hpp"
 
 #include "core/ui/vector_graphics.hpp"
+#include "util/string_conversions.hpp"
 
 namespace otto::core::voices {
 
@@ -57,7 +58,7 @@ namespace otto::core::voices {
     ctx.beginPath();
     ctx.fillStyle(Colours::Blue);
     ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(to_string(props.play_mode), {width - x_pad, y_pad});
+    ctx.fillText(util::to_string(props.play_mode.get()).data(), {width - x_pad, y_pad});
 
     ctx.beginPath();
     ctx.fillStyle(Colours::Green);

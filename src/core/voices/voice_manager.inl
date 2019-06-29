@@ -289,18 +289,6 @@ namespace otto::core::voices {
     return voices_;
   }
 
-  namespace details {
-    inline std::string to_string(PlayMode pm) noexcept
-    {
-      switch (pm) {
-      case PlayMode::poly: return "poly";
-      case PlayMode::mono: return "mono";
-      case PlayMode::unison: return "unison";
-      };
-      return "";
-    }
-  } // namespace details
-
 } // namespace otto::core::voices
 
 // kak: other_file=voice_manager.hpp

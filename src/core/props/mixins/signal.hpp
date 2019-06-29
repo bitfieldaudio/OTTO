@@ -23,11 +23,11 @@ namespace otto::core::props {
       using Super = util::Signal<value_type, value_type>;
 
       struct SlotRef : Super::SlotRef {
-        using Super = typename Super::SlotRef;
+        using SuperSR = typename Super::SlotRef;
 
-        SlotRef(Super&& s, Signal& owner) : Super(s), owner(owner){};
+        SlotRef(SuperSR&& s, Signal& owner) : SuperSR(s), owner(owner){};
 
-        using Super::call_now;
+        using SuperSR::call_now;
         void call_now(value_type new_val)
         {
           call_now(new_val, new_val);
