@@ -16,23 +16,24 @@ namespace otto::util {
   template<typename T>
   constexpr inline bool is_number_v = is_number<T>::value;
 
-  template<typename T, typename Enable = void>
-  struct is_number_or_enum : std::false_type {};
-
-  template<typename T>
-  struct is_number_or_enum<T, std::enable_if_t<std::is_enum_v<T> || is_number_v<T>>>
-    : std::true_type {};
-
   /// Concept of a @ref better_enum.hpp enum
   class BetterEnum {
     static std::false_type _is(...);
-    template<typename T, typename = std::void_t<typename T::_enumerated>>
+    template<typename T, typename = std::enable_if_t<!std::is_void_v<typename T::_enumerated>>>
     static std::true_type _is(T);
 
   public:
     template<typename T>
     static constexpr auto is = decltype(_is(std::declval<T>()))::value;
   };
+
+  template<typename T, typename Enable = void>
+  struct is_number_or_enum : std::false_type {};
+
+  template<typename T>
+  struct is_number_or_enum<T, std::enable_if_t<BetterEnum::is<T> || std::is_enum_v<T> || is_number_v<T>>>
+    : std::true_type {};
+
 
   template<typename T>
   constexpr inline bool is_number_or_enum_v = is_number_or_enum<T>::value;
@@ -94,6 +95,11 @@ namespace otto::util {
   template<typename T>
   struct enum_decay<T, std::enable_if_t<std::is_enum_v<T>>> {
     using type = std::underlying_type_t<T>;
+  };
+
+  template<typename T>
+  struct enum_decay<T, std::enable_if_t<BetterEnum::is<T>>> {
+    using type = typename T::_integral;
   };
 
   template<typename T>
