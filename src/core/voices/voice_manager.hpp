@@ -114,7 +114,6 @@ namespace otto::core::voices {
     float aftertouch_ = 0.f;
     int midi_note_ = 0;
 
-    //HERE IS THE ERROR. At this point, the voice doesn't know it has a call operator
     gam::ADSR<> env_;
     SegExpBypass<> glide_{0.f};
   };
@@ -173,7 +172,7 @@ namespace otto::core::voices {
     struct SettingsProps {
       props::Property<PlayMode, props::wrap> play_mode = {
         PlayMode::poly, props::limits(PlayMode::poly, PlayMode::interval)};
-      props::Property<float> drift = {0, props::limits(0, 1), props::step_size(0.01)};
+      props::Property<float> rand = {0, props::limits(0, 1), props::step_size(0.01)};
       props::Property<float> sub = {0.2, props::limits(0.01, 1), props::step_size(0.01)};
       props::Property<float> detune = {0, props::limits(0, 1), props::step_size(0.01)};
       props::Property<int> interval = {0, props::limits(-12, 12)};
@@ -187,7 +186,7 @@ namespace otto::core::voices {
       props::Property<int, props::no_signal> octave = {0, props::limits(-2, 7)};
       props::Property<int, props::no_signal> transpose = {0, props::limits(-12, 12)};
 
-      DECL_REFLECTION(SettingsProps, play_mode, drift, sub, detune, interval,
+      DECL_REFLECTION(SettingsProps, play_mode, rand, sub, detune, interval,
               portamento, legato, retrig, octave, transpose);
     };
 
@@ -268,6 +267,9 @@ namespace otto::core::voices {
 
   private:
     std::vector<float> detune_values;
+    std::vector<float> rand_values;
+    // Random values. 100% random, organic and fresh.
+    std::array<float, 6> rand_max = {0.94, 0.999, 1.03, 1.06, 0.92, 1.01};
 
     struct NoteVoicePair {
       /// Which physical key is activating this note

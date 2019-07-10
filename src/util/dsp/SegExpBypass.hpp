@@ -7,6 +7,8 @@
 #include <Gamma/Domain.h>
 #include <Gamma/Strategy.h>
 
+#include "OscillatorBank.hpp"
+
 /// Exponential envelope segment for smoothing out value changes.
 
 /// \ingroup Envelope Interpolation

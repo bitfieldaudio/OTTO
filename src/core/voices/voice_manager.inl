@@ -189,7 +189,7 @@ namespace otto::core::voices {
     this->stop_voice(key);
     Voice& voice = this->get_voice(key);
     vm.note_stack.push_front({.key = key, .note = key, .detune = 1, .velocity = evt.velocity / 127.f, .voice = &voice});
-    voice.trigger(key, 1, evt.velocity / 127.f, false, false);
+    voice.trigger(key, vm.rand_values[(&voice - vm.voices_.data())], evt.velocity / 127.f, false, false);
   }
 
   // INTERVAL //
@@ -315,6 +315,13 @@ namespace otto::core::voices {
       }
     }).call_now(settings_props.detune);
 
+    settings_props.rand.on_change().connect([this](float r){
+      rand_values.clear();
+        for (int i = 0; i<voice_count_v; i++) {
+          rand_values.push_back(rand_max[i] * r - r + 1.f);
+        }
+    }).call_now(settings_props.rand);
+
     // The second and third voice are sub voices on mono mode. This sets their volume.
     for (int i = 1; i < 3; ++i) {
       auto& voice = voices_[i];
@@ -322,8 +329,7 @@ namespace otto::core::voices {
         voice.env_.amp(s);
       });
     }
-
-
+    
     settings_props.play_mode.on_change()
       .connect([this](PlayMode mode) {
         switch (mode) {
@@ -431,10 +437,10 @@ namespace otto::core::voices {
     inline std::string aux_setting(PlayMode pm) noexcept
     {
       switch (pm) {
-        case PlayMode::poly: return "drift";
+        case PlayMode::poly: return "M.U.S.";
         case PlayMode::mono: return "sub";
         case PlayMode::unison: return "detune";
-        case PlayMode::interval: return "interval";
+        case PlayMode::interval: return "interv.";
       };
       return "";
     }
