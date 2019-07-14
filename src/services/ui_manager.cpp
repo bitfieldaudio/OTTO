@@ -71,7 +71,9 @@ namespace otto::services {
       key_mode_for(new_val).map([&](auto&& km) { state.key_mode.set(km); });
     });
 
-    state.active_channel.on_change().connect([&](auto chan) { state.current_screen = state.current_screen.get(); });
+    state.active_channel.on_change().connect([&](auto chan) { 
+      state.current_screen = state.current_screen.get(); 
+    });
 
     state.octave.on_change().connect([&](auto octave) {
       LEDColor c = [&] {

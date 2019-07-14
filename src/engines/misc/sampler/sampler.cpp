@@ -101,7 +101,7 @@ namespace otto::engines {
     sample.finish();
   }
 
-  float Sampler::progress() const noexcept
+ float Sampler::progress() const noexcept
   {
     return sample.done() ? 1.f : (sample.pos() - sample.min()) / float(sample.max() - sample.min());
   }
@@ -144,7 +144,8 @@ namespace otto::engines {
       finish();
     }
     for (auto&& frm : audio) {
-      frm += _hi_filter(_lo_filter(sample())) * props.volume;
+      //frm += _hi_filter(_lo_filter(sample())) * props.volume;
+      frm += sample();
     }
   }
 

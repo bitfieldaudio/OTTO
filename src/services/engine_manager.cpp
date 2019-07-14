@@ -100,6 +100,18 @@ namespace otto::services {
     // reg_ss(ScreenEnum::twist1,         [&] () -> auto& { return  ; });
     // reg_ss(ScreenEnum::twist2,         [&] () -> auto& { return  ; });
 
+    ui_manager.state.current_screen.on_change().connect([&](auto new_val) {
+      switch (new_val) {
+        case ScreenEnum::synth: [[fallthrough]];
+        case ScreenEnum::synth_envelope: [[fallthrough]];
+        case ScreenEnum::synth_selector: [[fallthrough]];
+        case ScreenEnum::voices:
+          if (ui_manager.state.active_channel != +ChannelEnum::internal)
+            ui_manager.state.active_channel = +ChannelEnum::internal;
+        default: break;
+      }
+    });
+
     controller.register_key_handler(ui::Key::sequencer, [&](ui::Key k) { ui_manager.display(ScreenEnum::sequencer); });
 
     controller.register_key_handler(ui::Key::sampler, [&](ui::Key k) { ui_manager.display(ScreenEnum::sampler); });
