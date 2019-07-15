@@ -329,7 +329,7 @@ namespace otto::core::voices {
         voice.env_.amp(s);
       });
     }
-    
+
     settings_props.play_mode.on_change()
       .connect([this](PlayMode mode) {
         switch (mode) {
