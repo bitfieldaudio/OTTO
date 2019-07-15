@@ -1,7 +1,10 @@
 #pragma once
 
 #include <fmt/format.h>
+
+#define CATCH_CONFIG_ENABLE_BENCHMARKING 1
 #include <catch.hpp>
+
 #include <chrono>
 #include <fstream>
 #include <random.hpp>

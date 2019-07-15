@@ -14,8 +14,8 @@ namespace otto::services {
 
   struct LogManager : core::Service {
     /// Initialize the logger
-    LogManager(int argc,
-               char** argv,
+    LogManager(int argc = 0,
+               char** argv = nullptr,
                bool enable_console = true,
                const char* logFilePath = nullptr);
 

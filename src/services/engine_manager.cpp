@@ -29,7 +29,6 @@ namespace otto::services {
 
     void start() override;
     audio::ProcessData<2> process(audio::ProcessData<1> external_in) override;
-    IEngine* by_name(const std::string& name) noexcept override;
 
   private:
     std::unordered_map<std::string, std::function<IEngine*()>> engineGetters;
@@ -222,14 +221,6 @@ namespace otto::services {
         }
     return master.process({std::move(temp),external_in.midi,external_in.nframes});
     */
-  }
-
-  IEngine* DefaultEngineManager::by_name(const std::string& name) noexcept
-  {
-    auto getter = engineGetters.find(name);
-    if (getter == engineGetters.end()) return nullptr;
-
-    return getter->second();
   }
 
 } // namespace otto::services
