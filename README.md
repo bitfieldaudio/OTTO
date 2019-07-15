@@ -6,6 +6,14 @@ The OTTO is a complete hardware and software solution, with synths, samplers, ef
 
 We would like to invite you to our **[discord server](https://discord.gg/4cV9Ucz)** where we hang out and discuss all things OTTO.
 
+# Support the project
+
+As hardware test boards costs money, and many of you have asked how you can contribute in a financial way, we have decided to set up a Patreon account. With Patreon, you can send us a small monthly amount of money, or make a one-time donation by cancelling the monthly subscription after the first payment (Note that this usually happens on the first of the month, not immediately.)
+
+**All funds go directly towards the OTTO**
+
+<a href="https://www.patreon.com/bePatron?u=21164987" data-patreon-widget-type="become-patron-button">Become a Patron!</a><script async src="https://c6.patreon.com/becomePatronButton.bundle.js"></script>
+
 # The hardware
 
 The OTTO hardware is going to be a Rapberry Pi 3 A+, a screen, a DAC, 4 encoders and some 30+ buttons/keys. Some of us are currently building the next version of prototypes. We can (so far) show you some nice renders of that, which is currently being shipped to us. Next steps will be a few revisions and _a lot_ of coding to get the existing software to work with the hardware, but then we'll be ready to share with all of you!
