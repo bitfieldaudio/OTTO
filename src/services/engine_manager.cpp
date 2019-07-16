@@ -8,12 +8,12 @@
 #include "engines/fx/wormhole/wormhole.hpp"
 #include "engines/misc/master/master.hpp"
 #include "engines/misc/sends/sends.hpp"
+#include "engines/misc/sequencer/sequencer.hpp"
 #include "engines/seq/arp/arp.hpp"
 #include "engines/seq/euclid/euclid.hpp"
 #include "engines/synths/OTTOFM/ottofm.hpp"
 #include "engines/synths/potion/potion.hpp"
 #include "engines/synths/rhodes/rhodes.hpp"
-#include "engines/misc/sequencer/sequencer.hpp"
 
 #include "services/application.hpp"
 
@@ -57,7 +57,7 @@ namespace otto::services {
     engines::Sends line_in_send;
     engines::Master master;
     engines::Sequencer sequencer;
-    //std::array<engines::Sends> sequencer_sends;
+    // std::array<engines::Sends> sequencer_sends;
   };
 
   std::unique_ptr<EngineManager> EngineManager::create_default()
@@ -160,10 +160,6 @@ namespace otto::services {
       }
     });
 
-    //ui_manager.register_key_handler(ui::Key::sequencer, [&](ui::Key k) {
-    //     ui_manager.display(sequencer.screen());
-    // });
-
     static ScreenEnum master_last_screen = ScreenEnum::master;
     static ScreenEnum send_last_screen = ScreenEnum::sends;
 
@@ -173,8 +169,7 @@ namespace otto::services {
                                       ui_manager.display(ScreenEnum::master);
                                     },
                                     [&](ui::Key k) {
-                                      if (master_last_screen)
-                                        ui_manager.display(master_last_screen);
+                                      if (master_last_screen) ui_manager.display(master_last_screen);
                                     });
 
     controller.register_key_handler(ui::Key::sends,
@@ -209,9 +204,7 @@ namespace otto::services {
     state_manager.attach("Engines", load, save);
   }
 
-  void DefaultEngineManager::start()
-  {
-  }
+  void DefaultEngineManager::start() {}
 
   audio::ProcessData<2> DefaultEngineManager::process(audio::ProcessData<1> external_in)
   { // Main processor function
@@ -229,10 +222,9 @@ namespace otto::services {
     // auto seq_dry = sequencer.process(midi_in, fx1_bus, fx2_bus);
     auto fx1_out = effect1->process(audio::ProcessData<1>(fx1_bus));
     auto fx2_out = effect2->process(audio::ProcessData<1>(fx2_bus));
-    //Stereo output gathered in fx1_out
+    // Stereo output gathered in fx1_out
     for (auto&& [snth, fx1L, fx1R, fx2L, fx2R] :
-         util::zip(synth_out.audio, fx1_out.audio[0], fx1_out.audio[1], fx2_out.audio[0],
-                   fx2_out.audio[1])) {
+         util::zip(synth_out.audio, fx1_out.audio[0], fx1_out.audio[1], fx2_out.audio[0], fx2_out.audio[1])) {
       fx1L += fx2L + snth * synth_send.props.dry * (1 - synth_send.props.dry_pan);
       fx1R += fx2R + snth * synth_send.props.dry * (1 + synth_send.props.dry_pan);
     }
