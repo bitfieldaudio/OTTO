@@ -22,7 +22,7 @@ namespace otto::services::test {
     }
     void attach(std::string name, Loader load, Saver save) override
     {
-      LOGI("DummyStateManager::attach({})", name);
+      //LOGI("DummyStateManager::attach({})", name);
     }
     void detach(std::string name) override
     {

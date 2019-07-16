@@ -3,12 +3,13 @@
 #include "core/audio/midi.hpp"
 
 #include "services/audio_manager.hpp"
+#include "services/clock_manager.hpp"
+#include "services/controller.hpp"
 #include "services/engine_manager.hpp"
 #include "services/log_manager.hpp"
 #include "services/preset_manager.hpp"
 #include "services/state_manager.hpp"
 #include "services/ui_manager.hpp"
-#include "services/clock_manager.hpp"
 
 using namespace otto;
 using namespace otto::services;
@@ -23,6 +24,12 @@ struct DummyUIManager final : UIManager {
   void main_ui_loop() override {}
 };
 
+struct DummyController final : Controller {
+  void set_color(LED, LEDColor) override{};
+  void flush_leds() override {}
+  void clear_leds() override {}
+};
+
 int main(int argc, char* argv[])
 {
   try {
@@ -32,6 +39,7 @@ int main(int argc, char* argv[])
                     std::make_unique<AudioManager>,
                     ClockManager::create_default,
                     std::make_unique<DummyUIManager>,
+                    std::make_unique<DummyController>,
                     EngineManager::create_default};
 
     // Overwrite the logger signal handlers
