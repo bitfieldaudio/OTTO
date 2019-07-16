@@ -65,8 +65,10 @@ namespace otto::services {
     state.current_screen.on_change().connect([&](auto new_val) {
       display(screen_selectors_[new_val]());
       for (auto scrn : ScreenEnum::_values()) {
-        Controller::current().set_color(led_for_screen(scrn), scrn == new_val ? LEDColor::White : LEDColor::Black);
+        if (scrn != new_val) 
+          Controller::current().set_color(led_for_screen(scrn), LEDColor::Black);
       }
+      Controller::current().set_color(led_for_screen(new_val), LEDColor::White);
       DLOGI("Select screen {}", new_val._to_string());
       key_mode_for(new_val).map([&](auto&& km) { state.key_mode.set(km); });
     });

@@ -65,7 +65,6 @@ namespace otto::engines {
     void load_file(std::string);
     gam::SamplePlayer<> sample;
     AudioFile<float> samplefile;
-    int frames;
     bool note_on = false;
 
     gam::Biquad<> _lo_filter;

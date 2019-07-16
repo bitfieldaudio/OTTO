@@ -31,8 +31,6 @@ namespace otto::services {
     audio::ProcessData<2> process(audio::ProcessData<1> external_in) override;
 
   private:
-    std::unordered_map<std::string, std::function<IEngine*()>> engineGetters;
-
     using EffectsDispatcher = EngineDispatcher< //
       EngineType::effect,
       engines::Wormhole,
@@ -57,7 +55,6 @@ namespace otto::services {
     engines::Sends line_in_send;
     engines::Master master;
     engines::Sequencer sequencer;
-    // std::array<engines::Sends> sequencer_sends;
   };
 
   std::unique_ptr<EngineManager> EngineManager::create_default()
@@ -70,11 +67,6 @@ namespace otto::services {
     auto& ui_manager = *Application::current().ui_manager;
     auto& state_manager = *Application::current().state_manager;
     auto& controller = *Application::current().controller;
-
-    engineGetters.try_emplace("Synth", [&]() { return &synth.current(); });
-    engineGetters.try_emplace("Effect1", [&]() { return &effect1.current(); });
-    engineGetters.try_emplace("Effect2", [&]() { return &effect2.current(); });
-    engineGetters.try_emplace("Arpeggiator", [&]() { return &arpeggiator.current(); });
 
     auto reg_ss = [&](auto se, auto&& f) { return ui_manager.register_screen_selector(se, f); };
 
@@ -214,6 +206,7 @@ namespace otto::services {
 
     auto fx1_bus = Application::current().audio_manager->buffer_pool().allocate();
     auto fx2_bus = Application::current().audio_manager->buffer_pool().allocate();
+
     for (auto&& [snth, fx1, fx2] : util::zip(synth_out.audio, fx1_bus, fx2_bus)) {
       fx1 = snth * synth_send.props.to_FX1;
       fx2 = snth * synth_send.props.to_FX2;

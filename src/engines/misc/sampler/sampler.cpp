@@ -59,8 +59,8 @@ namespace otto::engines {
     _hi_filter.freq(20000);
 
     // More on_change handlers
-    props.startpoint.on_change().connect([this](float pt) { sample.min(pt * frames); }).call_now();
-    props.endpoint.on_change().connect([this](float pt) { sample.max(pt * frames); }).call_now();
+    props.startpoint.on_change().connect([this](float pt) { sample.min(pt * sample.frames()); }).call_now();
+    props.endpoint.on_change().connect([this](float pt) { sample.max(pt * sample.frames()); }).call_now();
     props.fadein.on_change()
       .connect([this](float fd) { sample.fade((int) fd * 1000, (int) props.fadeout * 1000); })
       .call_now();
@@ -87,7 +87,6 @@ namespace otto::engines {
     sample.buffer(samplecontainer, (double) samplefile.getSampleRate(),
                   samplefile.getNumChannels());
     finish();
-    frames = sample.frames();
 */
   }
 
@@ -101,7 +100,7 @@ namespace otto::engines {
     sample.finish();
   }
 
- float Sampler::progress() const noexcept
+  float Sampler::progress() const noexcept
   {
     return sample.done() ? 1.f : (sample.pos() - sample.min()) / float(sample.max() - sample.min());
   }
@@ -121,6 +120,21 @@ namespace otto::engines {
       props.samplecontainer.resize(num_samples);
       props.samplecontainer.assign(samplefile.samples[0]);
       sample.buffer(props.samplecontainer, (double) props.samplerate, 1);
+
+      // Check file
+
+      for (auto& f : props.samplecontainer) {
+        if (f == NAN or f == INFINITY) {
+          props.samplecontainer.resize(1);
+          props.samplerate = 1;
+          props.samplecontainer[0] = 0;
+          sample.buffer(props.samplecontainer, (double) props.samplerate, 1);
+          props.error = "Invalid file";
+          sample.finish();
+          return;
+        }
+      }
+
       DLOGI("Loaded sample file {}. Length: {}. SR: {}", filename, num_samples, props.samplerate);
       props.error = "";
     } else {
@@ -141,11 +155,9 @@ namespace otto::engines {
       restart();
     } else if (!triggered && note_on) {
       note_on = false;
-      finish();
     }
     for (auto&& frm : audio) {
-      //frm += _hi_filter(_lo_filter(sample())) * props.volume;
-      frm += sample();
+      frm += _hi_filter(_lo_filter(sample())) * props.volume;
     }
   }
 

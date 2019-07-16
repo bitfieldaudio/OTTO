@@ -17,6 +17,7 @@ namespace otto::engines {
     bool trig = step.triggered();
 
     if (trig && &samplers.current() != &samplers[step.note]) {
+      samplers.current().finish();
       samplers.select(step.note);
     }
 
