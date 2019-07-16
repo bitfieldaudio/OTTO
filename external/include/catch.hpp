@@ -6311,17 +6311,21 @@ namespace Catch {
             struct ChronometerConcept {
                 virtual void start() = 0;
                 virtual void finish() = 0;
+                virtual void set_divisor(int n) = 0;
                 virtual ~ChronometerConcept() = default;
             };
             template <typename Clock>
             struct ChronometerModel final : public ChronometerConcept {
                 void start() override { started = Clock::now(); }
                 void finish() override { finished = Clock::now(); }
+                void set_divisor (int n) override { divisor = n; }
 
-                ClockDuration<Clock> elapsed() const { return finished - started; }
+                ClockDuration<Clock> elapsed() const { return (finished - started); }
 
                 TimePoint<Clock> started;
                 TimePoint<Clock> finished;
+
+                int divisor = 1;
             };
         } // namespace Detail
 
@@ -6331,6 +6335,8 @@ namespace Catch {
             void measure(Fun&& fun) { measure(std::forward<Fun>(fun), is_callable<Fun(int)>()); }
 
             int runs() const { return k; }
+
+            void divisor(int d) { impl->set_divisor(d); }
 
             Chronometer(Detail::ChronometerConcept& meter, int k)
                 : impl(&meter)
@@ -6636,7 +6642,7 @@ namespace Catch {
                     this->benchmark(Chronometer(model, iterations_per_sample));
                     auto sample_time = model.elapsed() - env.clock_cost.mean;
                     if (sample_time < FloatDuration<Clock>::zero()) sample_time = FloatDuration<Clock>::zero();
-                    return sample_time / iterations_per_sample;
+                    return sample_time / iterations_per_sample / model.divisor;
                 });
                 return times;
             }
