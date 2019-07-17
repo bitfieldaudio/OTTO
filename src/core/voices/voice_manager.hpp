@@ -107,6 +107,7 @@ namespace otto::core::voices {
 
     void trigger(int midi_note, float mult, float velocity, bool legato, bool jump) noexcept;
     void release() noexcept;
+    void releaseNoEnv() noexcept;
 
     float frequency_ = 440.f;
     float velocity_ = 1.f;
@@ -227,6 +228,7 @@ namespace otto::core::voices {
 
     /// The number of voices
     static constexpr int voice_count_v = NumberOfVoices;
+    static constexpr int sub_voice_count_v = 2;
 
     int voice_count() noexcept override
     {
@@ -307,7 +309,7 @@ namespace otto::core::voices {
       /// Midi off is common to all
       void handle_midi_off(const midi::NoteOffEvent&) noexcept;
 
-      Voice& get_voice(int key) noexcept;
+      Voice& get_voice(int key, int note) noexcept;
       void stop_voice(int key) noexcept;
     };
 
@@ -318,16 +320,14 @@ namespace otto::core::voices {
 
     struct MonoAllocator final : IVoiceAllocator {
         MonoAllocator(VoiceManager& vm_in);
-
         ~MonoAllocator();
-
         void handle_midi_on(const midi::NoteOnEvent&) noexcept override;
     };
 
     struct UnisonAllocator final : IVoiceAllocator {
-        UnisonAllocator(VoiceManager& vm_in) : IVoiceAllocator(vm_in) {}
+        UnisonAllocator(VoiceManager& vm_in);
+        ~UnisonAllocator();
         void handle_midi_on(const midi::NoteOnEvent&)noexcept override;
-
     };
 
     struct IntervalAllocator final : IVoiceAllocator {

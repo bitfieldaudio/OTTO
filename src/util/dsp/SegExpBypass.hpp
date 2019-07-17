@@ -45,6 +45,8 @@ public:
       mCurve.reset();
     }
 
+    T getEnd() { return mVal0; }
+
     /// Set curvature.  Negative gives faster change, positive gives slower change.
     void curve(T v){ set(mLen, v); }
 
