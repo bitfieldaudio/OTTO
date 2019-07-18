@@ -36,7 +36,7 @@ namespace otto::core::voices {
     switch (ev.encoder) {
     case Encoder::blue: props.play_mode.step(ev.steps); break;
     case Encoder::green: {
-      switch (props.play_mode) {
+      switch (props.play_mode.get()) {
         case PlayMode::poly: props.rand.step(ev.steps); break;
         case PlayMode::mono: props.sub.step(ev.steps); break;
         case PlayMode::unison: props.detune.step(ev.steps); break;
@@ -63,6 +63,7 @@ namespace otto::core::voices {
     constexpr float y_pad = 50;
     constexpr float y_shift = -12;
     constexpr float space = (height - 2.f * y_pad) / 3.f;
+    constexpr float green_x = width - 2.5f * x_pad;
 
     ctx.font(Fonts::Norm, 60);
     ctx.beginPath();
@@ -70,8 +71,8 @@ namespace otto::core::voices {
     ctx.textAlign(HorizontalAlign::Center, VerticalAlign::Bottom);
     ctx.fillText(util::to_string(props.play_mode.get()).data(), {3.5f * x_pad, y_pad + 0.6f * space + y_shift});
 
+    ctx.font(Fonts::Norm, 35);
     ctx.beginPath();
-    constexpr float green_x = width - 2.5f * x_pad;
     ctx.fillStyle(Colours::Green);
     ctx.textAlign(HorizontalAlign::Center, VerticalAlign::Middle);
     ctx.fillText(aux_setting(props.play_mode), {green_x, y_pad - 0.2 * space + y_shift});
@@ -79,7 +80,7 @@ namespace otto::core::voices {
     ctx.beginPath();
     ctx.fillStyle(Colours::Green);
     ctx.textAlign(HorizontalAlign::Center, VerticalAlign::Bottom);
-    switch (props.play_mode) {
+    switch (props.play_mode.get()) {
       case PlayMode::poly: {
         ctx.fillText(fmt::format("{:3.2}", props.rand), {green_x, y_pad + 0.8f * space + y_shift});
         break;

@@ -125,7 +125,7 @@ namespace otto::core::voices {
 
   template<typename V, int N>
   void VoiceManager<V, N>::IVoiceAllocator::handle_midi_off(const otto::core::midi::NoteOffEvent & evt) noexcept {
-    auto key = evt.key + vm.settings_props.octave * 12 + vm.settings_props.transpose;
+    auto key = evt.key + services::UIManager::current().state.octave * 12 + vm.settings_props.transpose;
     if (vm.sustain_) {
       auto found = util::find_if(vm.note_stack, [&] (auto& nvp) { return nvp.key == key; });
       if (found != vm.note_stack.end()) {
@@ -197,7 +197,7 @@ namespace otto::core::voices {
   void VoiceManager<V, N>::PolyAllocator::handle_midi_on(const midi::NoteOnEvent& evt) noexcept
   {
     auto& vm = this->vm;
-    auto key = evt.key + vm.settings_props.octave * 12 + vm.settings_props.transpose;
+    auto key = evt.key + services::UIManager::current().state.octave * 12 + vm.settings_props.transpose;
     this->stop_voice(key);
     Voice& voice = this->get_voice(key, key);
     vm.note_stack.push_front({.key = key, .note = key, .detune = 1, .velocity = evt.velocity / 127.f, .voice = &voice});
@@ -209,7 +209,7 @@ namespace otto::core::voices {
   void VoiceManager<V, N>::IntervalAllocator::handle_midi_on(const midi::NoteOnEvent& evt) noexcept
   {
     auto& vm = this->vm;
-    auto key = evt.key + vm.settings_props.octave * 12 + vm.settings_props.transpose;
+    auto key = evt.key + services::UIManager::current().state.octave * 12 + vm.settings_props.transpose;
     auto interval = vm.settings_props.interval;
     this->stop_voice(key);
     for (int i = 0; i < 2; ++i) {
@@ -242,7 +242,7 @@ namespace otto::core::voices {
   {
     constexpr int num_voices_used = 3;
     auto& vm = this->vm;
-    auto key = evt.key + vm.settings_props.octave * 12 + vm.settings_props.transpose;
+    auto key = evt.key + services::UIManager::current().state.octave * 12 + vm.settings_props.transpose;
     this->stop_voice(key);
     if (vm.note_stack.size() > 0) {
       for (int i = 0; i < num_voices_used; ++i) {
@@ -292,7 +292,7 @@ namespace otto::core::voices {
   {
     constexpr int num_voices_used = voice_count_v - (voice_count_v + 1)%2;
     auto& vm = this->vm;
-    auto key = evt.key + vm.settings_props.octave * 12 + vm.settings_props.transpose;
+    auto key = evt.key + services::UIManager::current().state.octave * 12 + vm.settings_props.transpose;
     this->stop_voice(key);
     if (vm.note_stack.size() > 0) {
       for (int i = 0; i<num_voices_used; i++) {
@@ -416,33 +416,6 @@ namespace otto::core::voices {
   }
 
   template<typename V, int N>
-  auto VoiceManager<V, N>::handle_midi_on(const midi::NoteOnEvent& evt) noexcept -> Voice&
-  {
-    auto key = evt.key + services::UIManager::current().state.octave * 12 + settings_props.transpose;
-    stop_voice(key);
-    Voice& voice = get_voice(key);
-    note_stack.push_back({key, &voice});
-    voice.trigger(key, evt.velocity / 127.f);
-    return voice;
-  }
-
-  template<typename V, int N>
-  auto VoiceManager<V, N>::handle_midi_off(const midi::NoteOffEvent& evt) noexcept -> Voice*
-  {
-    auto key = evt.key + services::UIManager::current().state.octave * 12 + settings_props.transpose;
-    if (sustain_) {
-      auto found = util::find_if(note_stack, [&] (auto& nvp) { return nvp.note == key; });
-      if (found != note_stack.end()) {
-        found->should_release = true;
-      }
-      return nullptr;
-    } else {
-      return stop_voice(key);
-    }
-
-  }
-
-  template<typename V, int N>
   void VoiceManager<V, N>::handle_pitch_bend(const midi::PitchBendEvent& evt) noexcept
   {
     pitch_bend_ = powf(2.f, ((float)evt.value / 8192.f) - 1.f);
@@ -482,7 +455,6 @@ namespace otto::core::voices {
     return voices_;
   }
 
-<<<<<<< HEAD
   namespace details {
     inline std::string aux_setting(PlayMode pm) noexcept
     {
@@ -498,4 +470,3 @@ namespace otto::core::voices {
 
 } // namespace otto::core::voices
 
-// kak: other_file=voice_manager.hpp

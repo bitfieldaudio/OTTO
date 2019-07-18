@@ -147,7 +147,7 @@ namespace otto::core::voices {
   namespace details {
     /// The way the voicemanager handles voices
     BETTER_ENUM(PlayMode,
-      char,
+      int,
       /// Multiple voices at once, each playing a note
       poly,
       /// Only a single voice in use, always playing the latest note
@@ -155,8 +155,8 @@ namespace otto::core::voices {
       /// All voices in use, all playing the latest note (possibly with detune)
       unison,
       /// Plays a given interval
-      interval,
-    };
+      interval
+    );
 
     /// Convert a playmode to string
     ///
@@ -175,8 +175,7 @@ namespace otto::core::voices {
     };
 
     struct SettingsProps {
-      props::Property<PlayMode, props::wrap> play_mode = {
-        PlayMode::poly, props::limits(PlayMode::poly, PlayMode::interval)};
+      props::Property<PlayMode, props::wrap> play_mode = {PlayMode::poly};
       props::Property<float> rand = {0, props::limits(0, 1), props::step_size(0.01)};
       props::Property<float> sub = {0.2, props::limits(0.01, 1), props::step_size(0.01)};
       props::Property<float> detune = {0, props::limits(0, 1), props::step_size(0.01)};
@@ -367,4 +366,3 @@ namespace otto::core::voices {
 // Implementation
 #include "voice_manager.inl"
 
-// kak: other_file=voice_manager.inl
