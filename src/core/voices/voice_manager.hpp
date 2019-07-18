@@ -146,7 +146,8 @@ namespace otto::core::voices {
 
   namespace details {
     /// The way the voicemanager handles voices
-    enum struct PlayMode : char {
+    BETTER_ENUM(PlayMode,
+      char,
       /// Multiple voices at once, each playing a note
       poly,
       /// Only a single voice in use, always playing the latest note
@@ -183,7 +184,6 @@ namespace otto::core::voices {
 
       props::Property<float> portamento = {0, props::limits(0, 1),
                                                              props::step_size(0.01)};
-
       props::Property<bool> legato = {false};
       props::Property<bool> retrig = {false};
 

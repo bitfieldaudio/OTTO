@@ -29,7 +29,6 @@ namespace otto::services {
 
     void start() override;
     audio::ProcessData<2> process(audio::ProcessData<1> external_in) override;
-    IEngine* by_name(const std::string& name) noexcept override;
 
   private:
     std::unordered_map<std::string, std::function<IEngine*()>> engineGetters;
@@ -78,7 +77,7 @@ namespace otto::services {
 
     auto reg_ss = [&](auto se, auto&& f) { return ui_manager.register_screen_selector(se, f); };
 
-    // reg_ss(ScreenEnum::sends, );
+    reg_ss(ScreenEnum::sends, [&]() -> auto& { return synth_send.screen(); });
     // reg_ss(ScreenEnum::routing, );
     reg_ss(ScreenEnum::fx1, [&]() -> auto& { return effect1->screen(); });
     reg_ss(ScreenEnum::fx1_selector, [&]() -> auto& { return effect1.selector_screen(); });
@@ -123,12 +122,6 @@ namespace otto::services {
       }
     });
 
-    controller.register_key_handler(
-      ui::Key::plus, [&](ui::Key k) { synth.current().voices_screen().keypress(ui::Key::plus); });
-
-    controller.register_key_handler(
-      ui::Key::minus, [&](ui::Key k) { synth.current().voices_screen().keypress(ui::Key::minus); });
-
     controller.register_key_handler(ui::Key::fx1, [&](ui::Key k) {
       if (controller.is_pressed(ui::Key::shift)) {
         ui_manager.display(ScreenEnum::fx1_selector);
@@ -154,7 +147,7 @@ namespace otto::services {
 
     controller.register_key_handler(ui::Key::master,
                                     [&](ui::Key k) {
-                                      master_last_screen = ui_manager.state().current_screen;
+                                      master_last_screen = ui_manager.state.current_screen;
                                       ui_manager.display(ScreenEnum::master);
                                     },
                                     [&](ui::Key k) {
@@ -164,8 +157,8 @@ namespace otto::services {
 
     controller.register_key_handler(ui::Key::sends,
                                     [&](ui::Key k) {
-                                      send_last_screen = ui_manager.state().current_screen;
-                                      //ui_manager.display(synth_send.screen());
+                                      send_last_screen = ui_manager.state.current_screen;
+                                      ui_manager.display(ScreenEnum::sends);
                                     },
                                     [&](ui::Key k) {
                                       if (send_last_screen) ui_manager.display(send_last_screen);
@@ -192,10 +185,6 @@ namespace otto::services {
 
   void DefaultEngineManager::start()
   {
-    arpeggiator.init();
-    synth.init();
-    effect1.init();
-    effect2.init();
   }
 
   audio::ProcessData<2> DefaultEngineManager::process(audio::ProcessData<1> external_in)
@@ -232,14 +221,6 @@ namespace otto::services {
         }
     return master.process({std::move(temp),external_in.midi,external_in.nframes});
     */
-  }
-
-  IEngine* DefaultEngineManager::by_name(const std::string& name) noexcept
-  {
-    auto getter = engineGetters.find(name);
-    if (getter == engineGetters.end()) return nullptr;
-
-    return getter->second();
   }
 
 } // namespace otto::services

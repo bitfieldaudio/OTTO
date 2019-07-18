@@ -6,16 +6,24 @@ The OTTO is a complete hardware and software solution, with synths, samplers, ef
 
 We would like to invite you to our **[discord server](https://discord.gg/4cV9Ucz)** where we hang out and discuss all things OTTO.
 
+# Support the project
+
+As hardware test boards costs money, and many of you have asked how you can contribute in a financial way, we have decided to set up a Patreon account. With Patreon, you can send us a small monthly amount of money, or make a one-time donation by cancelling the monthly subscription after the first payment (Note that this usually happens on the first of the month, not immediately.)
+
+**All funds go directly towards the OTTO**
+
+<a href="https://www.patreon.com/bePatron?u=21164987" data-patreon-widget-type="become-patron-button"><img src="https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fshieldsio-patreon.herokuapp.com%2Fottosynthesizer&style=for-the-badge"></a>
+
 # The hardware
 
-The OTTO is basically going to be a Rpi3+, a screen, a DAC, 4 encoders and some 30+ buttons/keys. Some of us are currently building the next version of prototypes. We can (so far) show you some nice renders of that, which is currently being shipped to us. Next steps will be a few revisions and _a lot_ of coding to get the existing software to work with the hardware, but then we'll be ready to share with all of you!
+The OTTO hardware is going to be a Rapberry Pi 3 A+, a screen, a DAC, 4 encoders and some 30+ buttons/keys. Some of us are currently building the next version of prototypes. We can (so far) show you some nice renders of that, which is currently being shipped to us. Next steps will be a few revisions and _a lot_ of coding to get the existing software to work with the hardware, but then we'll be ready to share with all of you!
 
 <a href="https://ibb.co/mBXmNnH"><img src="https://i.ibb.co/6Z12XK4/render1.png" alt="render1" width="100%" /></a>
 <a href="https://ibb.co/17QcPHK"><img src="https://i.ibb.co/HB4ZbmY/render2.png" alt="render2" width="100%" /></a>
 
 # Planned Features for v1.0
 
-* A synth (with swappable engines) for live performance with midi effects (arpeggiator, etc.)
+* A synth for live performance with midi effects (arpeggiator, etc.)
 * 2 FX slots. Synths and drums send to them as a FX bus.
 *  Synths and effects are swappable "engines".
 *  For drums, a sampler will run in parallel to the sequencer-synth chain. 
@@ -55,7 +63,7 @@ and of course, the coding itself, with areas like
 If you feel like joining the adventure, please check out the [guidelines](https://github.com/topisani/OTTO/wiki/Guidelines).
 
 # Credits
- - DSP Framework: [faust](http://faust.grame.fr/) and [Gamma](http://w2.mat.ucsb.edu/gamma/)
+ - DSP Framework: [Gamma](http://w2.mat.ucsb.edu/gamma/)
  - Vector Graphics: [NanoVG](https://github.com/memononen/nanovg) with [NanoCanvas](https://github.com/Geequlim/NanoCanvas)
  - [fmtlib](http://fmtlib.net), string formatting in C++
  - [json](https://github.com/nlohmann/json/), json for modern C++

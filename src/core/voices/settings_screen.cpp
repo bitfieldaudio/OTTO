@@ -1,6 +1,7 @@
 #include "voice_manager.hpp"
 
 #include "core/ui/vector_graphics.hpp"
+#include "util/string_conversions.hpp"
 
 namespace otto::core::voices {
 
@@ -26,12 +27,7 @@ namespace otto::core::voices {
 
   bool SettingsScreen::keypress(ui::Key key)
   {
-    switch (key) {
-      case ui::Key::plus: props.octave.step(1); break;
-      case ui::Key::minus: props.octave.step(-1); break;
-      default: return false; ;
-    }
-    return true;
+    return false;
   }
 
   void SettingsScreen::encoder(ui::EncoderEvent ev)
@@ -72,12 +68,10 @@ namespace otto::core::voices {
     ctx.beginPath();
     ctx.fillStyle(Colours::Blue);
     ctx.textAlign(HorizontalAlign::Center, VerticalAlign::Bottom);
-    ctx.fillText(to_string(props.play_mode), {3.5 * x_pad, y_pad + 0.6 * space + y_shift});
-
-    ctx.font(Fonts::Norm, 35);
+    ctx.fillText(util::to_string(props.play_mode.get()).data(), {3.5f * x_pad, y_pad + 0.6f * space + y_shift});
 
     ctx.beginPath();
-    constexpr int green_x = width - 2.5 * x_pad;
+    constexpr float green_x = width - 2.5f * x_pad;
     ctx.fillStyle(Colours::Green);
     ctx.textAlign(HorizontalAlign::Center, VerticalAlign::Middle);
     ctx.fillText(aux_setting(props.play_mode), {green_x, y_pad - 0.2 * space + y_shift});
@@ -87,19 +81,19 @@ namespace otto::core::voices {
     ctx.textAlign(HorizontalAlign::Center, VerticalAlign::Bottom);
     switch (props.play_mode) {
       case PlayMode::poly: {
-        ctx.fillText(fmt::format("{:3.2}", props.rand), {green_x, y_pad + 0.8 * space + y_shift});
+        ctx.fillText(fmt::format("{:3.2}", props.rand), {green_x, y_pad + 0.8f * space + y_shift});
         break;
       }
       case PlayMode::mono: {
-        ctx.fillText(fmt::format("{:3.2}", props.sub), {green_x, y_pad + 0.8 * space + y_shift});
+        ctx.fillText(fmt::format("{:3.2}", props.sub), {green_x, y_pad + 0.8f * space + y_shift});
         break;
       }
       case PlayMode::unison: {
-        ctx.fillText(fmt::format("{:3.2}", props.detune), {green_x, y_pad + 0.8 * space + y_shift});
+        ctx.fillText(fmt::format("{:3.2}", props.detune), {green_x, y_pad + 0.8f * space + y_shift});
         break;
       }
       case PlayMode::interval: {
-        ctx.fillText(fmt::format("{:+}", props.interval), {green_x, y_pad + 0.8 * space + y_shift});
+        ctx.fillText(fmt::format("{:+}", props.interval), {green_x, y_pad + 0.8f * space + y_shift});
         break;
       }
     };
@@ -146,7 +140,6 @@ namespace otto::core::voices {
     ctx.lineTo(width - x_pad - top_part_length, y_pad + 2.5 * space + 0.5 * y_shift);
     ctx.moveTo(x_pad, y_pad + 3.5 * space);
     ctx.lineTo(width - x_pad, y_pad + 3.5 * space);
-    //ctx.roundedRect(x_pad, y_pad + 2.5 * space + y_shift, width - 2*x_pad, space -y_shift, 10);
     ctx.stroke();
 
     ctx.beginPath();

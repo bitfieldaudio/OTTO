@@ -1,6 +1,7 @@
 #pragma once
 
 #include "services/audio_manager.hpp"
+#include "services/ui_manager.hpp"
 #include "voice_manager.hpp"
 
 namespace otto::core::voices {
@@ -415,6 +416,33 @@ namespace otto::core::voices {
   }
 
   template<typename V, int N>
+  auto VoiceManager<V, N>::handle_midi_on(const midi::NoteOnEvent& evt) noexcept -> Voice&
+  {
+    auto key = evt.key + services::UIManager::current().state.octave * 12 + settings_props.transpose;
+    stop_voice(key);
+    Voice& voice = get_voice(key);
+    note_stack.push_back({key, &voice});
+    voice.trigger(key, evt.velocity / 127.f);
+    return voice;
+  }
+
+  template<typename V, int N>
+  auto VoiceManager<V, N>::handle_midi_off(const midi::NoteOffEvent& evt) noexcept -> Voice*
+  {
+    auto key = evt.key + services::UIManager::current().state.octave * 12 + settings_props.transpose;
+    if (sustain_) {
+      auto found = util::find_if(note_stack, [&] (auto& nvp) { return nvp.note == key; });
+      if (found != note_stack.end()) {
+        found->should_release = true;
+      }
+      return nullptr;
+    } else {
+      return stop_voice(key);
+    }
+
+  }
+
+  template<typename V, int N>
   void VoiceManager<V, N>::handle_pitch_bend(const midi::PitchBendEvent& evt) noexcept
   {
     pitch_bend_ = powf(2.f, ((float)evt.value / 8192.f) - 1.f);
@@ -454,18 +482,8 @@ namespace otto::core::voices {
     return voices_;
   }
 
+<<<<<<< HEAD
   namespace details {
-    inline std::string to_string(PlayMode pm) noexcept
-    {
-      switch (pm) {
-      case PlayMode::poly: return "poly";
-      case PlayMode::mono: return "mono";
-      case PlayMode::unison: return "unison";
-      case PlayMode::interval: return "interval";
-      };
-      return "";
-    }
-
     inline std::string aux_setting(PlayMode pm) noexcept
     {
       switch (pm) {

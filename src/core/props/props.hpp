@@ -9,7 +9,7 @@
 
 /// The property system
 ///
-/// The property system is used for serialization, faust linking, encoder-stepping and more
+/// The property system is used for serialization, encoder-stepping and more
 /// of variables, mainly on engines.
 ///
 /// \warning The implementation of this relies on a lot of template metaprogramming and
@@ -19,7 +19,7 @@ namespace otto::core::props {
 
   template<typename T, typename Enable>
   struct default_mixins {
-    using type = std::conditional_t<std::is_enum_v<T>,
+    using type = std::conditional_t<std::is_enum_v<T> || util::BetterEnum::is<T>,
                                     tag_list<signal, has_limits, steppable>,
                                     tag_list<signal>>;
   };
@@ -53,8 +53,8 @@ namespace otto::core::props {
   using no_signal = no<signal>;
 
   /// A property of type `ValueType` with mixins `Tags...`
-  /// 
-  /// Properties 
+  ///
+  /// Properties
   template<typename ValueType, typename... Tags>
   using Property = PropertyImpl<ValueType, meta::_t<get_tag_list<ValueType, Tags...>>>;
 
@@ -68,8 +68,7 @@ namespace otto::core::props {
 
   /// Deserialize a property from json
   template<typename ValueType, typename TagList>
-  inline void deserialize(PropertyImpl<ValueType, TagList>& prop,
-                          const nlohmann::json& json)
+  inline void deserialize(PropertyImpl<ValueType, TagList>& prop, const nlohmann::json& json)
   {
     using ::otto::util::deserialize;
     static_assert(std::is_default_constructible_v<ValueType>,
@@ -77,5 +76,30 @@ namespace otto::core::props {
     ValueType v{};
     deserialize(v, json);
     prop.set(std::move(v));
+  }
+
+
+  template<typename ValueType, typename TagList>
+  void to_json(json& j, PropertyImpl<ValueType, TagList>& t)
+  {
+    j = serialize(t);
+  }
+
+  template<typename ValueType, typename TagList>
+  void to_json(json& j, const PropertyImpl<ValueType, TagList>& t)
+  {
+    j = serialize(t);
+  }
+
+  template<typename ValueType, typename TagList>
+  void to_json(json& j, PropertyImpl<ValueType, TagList>&& t)
+  {
+    j = serialize(std::move(t));
+  }
+
+  template<typename ValueType, typename TagList>
+  void from_json(const json& j, PropertyImpl<ValueType, TagList>& t)
+  {
+    deserialize(t, j);
   }
 } // namespace otto::core::props

@@ -187,7 +187,7 @@ namespace otto::util::audio {
     ///    removed.
     ///
     /// As such, it is guarantied that every part in this, but not in `o` will
-    /// be preserved. It is however not guarrantied that all of `o` will be
+    /// be preserved. It is however not guaranteed that all of `o` will be
     /// removed.
     Section& operator-=(Section o)
     {

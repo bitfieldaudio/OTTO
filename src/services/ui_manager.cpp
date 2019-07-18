@@ -32,41 +32,48 @@ namespace otto::services {
       case ScreenEnum::twist1: return LED(Key::twist1);
       case ScreenEnum::twist2: return LED(Key::twist2);
     }
+    OTTO_UNREACHABLE;
   }
 
   using namespace core::ui;
   void UIManager::display(ScreenEnum screen)
   {
-    auto new_state = state_;
-    new_state.current_screen = screen;
-    display(screen_selectors_[screen]());
-    set_state(new_state);
-  }
-
-  void UIManager::set_state(State state)
-  {
-    Controller::current().set_color(led_for_screen(state_.current_screen), LEDColor::Black);
-    state_ = state;
-    Controller::current().set_color(led_for_screen(state_.current_screen), LEDColor::White);
+    state.current_screen = screen;
   }
 
   UIManager::UIManager()
   {
-    auto load = [this](const nlohmann::json& j) {
-      if (j.is_object()) {
-        j.at("current_screen").get_to(state_.current_screen);
-        j.at("active_channel").get_to(state_.active_channel);
+    state.current_screen.on_change().connect([&](auto new_val) {
+      display(screen_selectors_[new_val]());
+      for (auto scrn : ScreenEnum::_values()) {
+        Controller::current().set_color(led_for_screen(scrn), scrn == new_val ? LEDColor::White : LEDColor::Black);
       }
-      display(state_.current_screen);
-    };
+    });
 
-    auto save = [this] {
-      return nlohmann::json::object({{"current_screen", state_.current_screen},
-                                     {"active_channel", state_.active_channel}});
-    };
+    state.octave.on_change().connect([&](auto octave) {
+      LEDColor c = [&] {
+        switch (std::abs(octave)) {
+          case 1: return LEDColor::Blue;
+          case 2: return LEDColor::Green;
+          case 3: return LEDColor::Yellow;
+          case 4: return LEDColor::Red;
+          default: return LEDColor::Black;
+        };
+      }();
+      Controller::current().set_color(LED{Key::plus}, octave > 0 ? c : LEDColor::Black);
+      Controller::current().set_color(LED{Key::minus}, octave < 0 ? c : LEDColor::Black);
+    });
+
+    Application::current().events.post_init.subscribe([&] {
+      Controller::current().register_key_handler(Key::plus, [&](auto&&) { state.octave.step(1); });
+      Controller::current().register_key_handler(Key::minus, [&](auto&&) { state.octave.step(-1); });
+    });
+
+    auto load = [this](const nlohmann::json& j) { util::deserialize(state, j); };
+    auto save = [this] { return util::serialize(state); };
 
     Application::current().state_manager->attach("UI", load, save);
-  } // namespace otto::services
+  }
 
   void UIManager::display(Screen& screen)
   {
@@ -96,8 +103,7 @@ namespace otto::services {
       ctx.beginPath();
       ctx.fillStyle(vg::Colours::White);
       ctx.font(vg::Fonts::Norm, 12);
-      std::string cpu_time =
-        fmt::format("{}%", int(100 * Application::current().audio_manager->cpu_time()));
+      std::string cpu_time = fmt::format("{}%", int(100 * Application::current().audio_manager->cpu_time()));
       ctx.fillText(cpu_time, {290, 230});
     });
 
