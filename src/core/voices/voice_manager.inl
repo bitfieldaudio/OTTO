@@ -91,7 +91,7 @@ namespace otto::core::voices {
   }
 
   template<typename D, typename P>
-  void VoiceBase<D, P>::releaseNoEnv() noexcept
+  void VoiceBase<D, P>::release_no_env() noexcept
   {
     if (is_triggered()) {
       on_note_off();
@@ -250,7 +250,7 @@ namespace otto::core::voices {
         auto& note = *(vm.note_stack.begin() + num_voices_used - 1);
         DLOGI("Stealing voice {} from key {}", (note.voice - vm.voices_.data()), note.note);
         Voice &v = *note.voice;
-        v.releaseNoEnv();
+        v.release_no_env();
         note.voice = nullptr;
         vm.note_stack.push_front({.key = key, .note = key - 12 * i, .detune = 1, .velocity = evt.velocity / 127.f, .voice = &v});
         v.trigger(key - 12 * sv, 1, evt.velocity * (1 - sv + vm.settings_props.sub * (float)sv) / 127.f, vm.settings_props.legato, false);
@@ -298,7 +298,7 @@ namespace otto::core::voices {
         auto& note = *(vm.note_stack.begin() + num_voices_used - 1);
         DLOGI("Stealing voice {} from key {}", (note.voice - vm.voices_.data()), note.note);
         Voice &v = *note.voice;
-        v.releaseNoEnv();
+        v.release_no_env();
         note.voice = nullptr;
         vm.note_stack.push_front({.key = key, .note = key, .detune = vm.detune_values[i], .velocity = evt.velocity / 127.f, .voice = &v});
         v.trigger(key, vm.detune_values[i], evt.velocity / 127.f, vm.settings_props.legato, false);
@@ -469,7 +469,7 @@ namespace otto::core::voices {
     inline std::string aux_setting(PlayMode pm) noexcept
     {
       switch (pm) {
-        case PlayMode::poly: return "M.U.S.";
+        case PlayMode::poly: return "rand";
         case PlayMode::mono: return "sub";
         case PlayMode::unison: return "detune";
         case PlayMode::interval: return "interv.";

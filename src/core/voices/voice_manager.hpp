@@ -105,9 +105,12 @@ namespace otto::core::voices {
     template<typename T, int N>
     friend struct VoiceManager;
 
-    void trigger(int midi_note, float mult, float velocity, bool legato, bool jump) noexcept;
+    /// Triggers a new voice. midi_note gives base frequency, detune is multiplied on this.
+    /// Legato and jump control legato on envelope + on_note_on and portamento, respectively.
+    void trigger(int midi_note, float detune, float velocity, bool legato, bool jump) noexcept;
+
     void release() noexcept;
-    void releaseNoEnv() noexcept;
+    void release_no_env() noexcept;
 
     float frequency_ = 440.f;
     float velocity_ = 1.f;
