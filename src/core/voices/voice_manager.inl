@@ -116,7 +116,10 @@ namespace otto::core::voices {
     vm.note_stack.clear();
     vm.free_voices.clear();
 
-    for (auto &voice : vm.voices_) vm.free_voices.push_back(&voice);
+    for (auto &voice : vm.voices_) {
+      vm.free_voices.push_back(&voice);
+      voice.env_.amp(1.f);
+    }
     DLOGI("FREE VOICES: {}", vm.free_voices.size());
   }
 
@@ -321,6 +324,7 @@ namespace otto::core::voices {
   template<typename V, int N>
   VoiceManager<V, N>::VoiceManager(Props& props) noexcept : props(props)
   {
+
     for (int i = 0; i < voice_count_v; ++i) {
       auto& voice = voices_[i];
       envelope_props.attack.on_change().connect(

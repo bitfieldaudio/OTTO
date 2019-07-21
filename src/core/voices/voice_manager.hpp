@@ -272,8 +272,10 @@ namespace otto::core::voices {
   private:
     std::vector<float> detune_values;
     std::vector<float> rand_values;
-    // Random values. 100% random, organic and fresh.
-    std::array<float, 6> rand_max = {0.94, 0.999, 1.03, 1.06, 0.92, 1.01};
+    // Random values. 100% random, organic and fresh. Works for up to 12 voices.
+    std::vector<float> rand_max_length = {0.94, 0.999, 1.03, 1.06, 0.92, 1.01,
+                                                  1.02, 0.98, 1.0, 1.09, 0.94, 1.05};
+    std::vector<float> rand_max = std::vector<float>(rand_max_length.begin(), rand_max_length.begin() + NumberOfVoices);
 
     struct NoteVoicePair {
       /// Which physical key is activating this note
