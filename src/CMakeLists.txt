@@ -50,6 +50,7 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 -Wno-unknown-pragmas \
 -Wno-missing-braces \
 -Wno-vla-extension \
+-Wno-c99-extensions \
 ")
 endif()
 
