@@ -28,7 +28,7 @@ int main(int argc, char* argv[])
     Application app {
       [&] { return std::make_unique<LogManager>(argc, argv); },
       StateManager::create_default,
-      std::make_unique<PresetManager>,
+      PresetManager::create_default,
       std::make_unique<RTAudioAudioManager>,
       ClockManager::create_default,
       std::make_unique<GLFWUIManager>,

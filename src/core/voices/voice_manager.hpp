@@ -5,6 +5,7 @@
 #include <vector>
 
 #include <Gamma/Envelope.h>
+#include "util/dsp/ADSR_lite.hpp"
 #include "util/dsp/SegExpBypass.hpp"
 
 #include "core/props/props.hpp"
@@ -14,6 +15,8 @@
 
 #include "util/crtp.hpp"
 #include "util/algorithm.hpp"
+
+#include "util/dsp/dsp.hpp"
 
 namespace otto::core::voices {
 
@@ -72,7 +75,6 @@ namespace otto::core::voices {
     virtual void on_note_off() noexcept;
 
     /// Get the current frequency this voice should play
-    ///
     /// Needs to be applied separately for each sample to handle for example glide.
     float frequency() noexcept;
     /// Change the current frequency
@@ -83,6 +85,9 @@ namespace otto::core::voices {
 
     /// Get the aftertouch value
     float aftertouch() noexcept;
+
+    /// Get the volume (typically 1, but might be different for sub-octaves)
+    float volume() noexcept;
 
     /// Is this voice currently triggered?
     ///
@@ -100,16 +105,21 @@ namespace otto::core::voices {
     template<typename T, int N>
     friend struct VoiceManager;
 
-    void trigger(int midi_note, float velocity) noexcept;
+    /// Triggers a new voice. midi_note gives base frequency, detune is multiplied on this.
+    /// Legato and jump control legato on envelope + on_note_on and portamento, respectively.
+    void trigger(int midi_note, float detune, float velocity, bool legato, bool jump) noexcept;
+
     void release() noexcept;
+    void release_no_env() noexcept;
 
     float frequency_ = 440.f;
     float velocity_ = 1.f;
+    float level = 1.f;
     float aftertouch_ = 0.f;
     int midi_note_ = 0;
 
     gam::ADSR<> env_;
-    gam::SegExp<> glide_{0.f};
+    SegExpBypass<> glide_{0.f};
   };
 
   template<typename DerivedT, typename VoiceT>
@@ -136,19 +146,24 @@ namespace otto::core::voices {
 
   namespace details {
     /// The way the voicemanager handles voices
-    enum struct PlayMode : char {
+    BETTER_ENUM(PlayMode,
+      int,
       /// Multiple voices at once, each playing a note
       poly,
-      /// Only a single voice in use, allways playing the latest note
+      /// Only a single voice in use, always playing the latest note
       mono,
-      /// All voices in use, all playing the latest note (posibly with detune)
-      unison
-    };
+      /// All voices in use, all playing the latest note (possibly with detune)
+      unison,
+      /// Plays a given interval
+      interval
+    );
 
     /// Convert a playmode to string
     ///
     /// @return an all-lowercase string corresponding to the enum name
     std::string to_string(PlayMode) noexcept;
+    /// Returns the name of the corresponding extra setting
+    std::string aux_setting(PlayMode pm) noexcept;
 
     struct EnvelopeProps {
       props::Property<float> attack = {0, props::limits(0, 1), props::step_size(0.02)};
@@ -160,13 +175,22 @@ namespace otto::core::voices {
     };
 
     struct SettingsProps {
-      props::Property<PlayMode, props::wrap> play_mode = {
-        PlayMode::poly, props::limits(PlayMode::poly, PlayMode::unison)};
+      props::Property<PlayMode, props::wrap> play_mode = {PlayMode::poly};
+      props::Property<float> rand = {0, props::limits(0, 1), props::step_size(0.01)};
+      props::Property<float> sub = {0.2, props::limits(0.01, 1), props::step_size(0.01)};
+      props::Property<float> detune = {0, props::limits(0, 1), props::step_size(0.01)};
+      props::Property<int> interval = {0, props::limits(-12, 12)};
+
       props::Property<float> portamento = {0, props::limits(0, 1),
                                                              props::step_size(0.01)};
+      props::Property<bool> legato = {false};
+      props::Property<bool> retrig = {false};
+
+      props::Property<int, props::no_signal> octave = {0, props::limits(-2, 7)};
       props::Property<int, props::no_signal> transpose = {0, props::limits(-12, 12)};
 
-      DECL_REFLECTION(SettingsProps, play_mode, portamento, transpose);
+      DECL_REFLECTION(SettingsProps, play_mode, rand, sub, detune, interval,
+              portamento, legato, retrig, octave, transpose);
     };
 
     std::unique_ptr<ui::Screen> make_envelope_screen(EnvelopeProps& props);
@@ -206,6 +230,7 @@ namespace otto::core::voices {
 
     /// The number of voices
     static constexpr int voice_count_v = NumberOfVoices;
+    static constexpr int sub_voice_count_v = 2;
 
     int voice_count() noexcept override
     {
@@ -229,8 +254,8 @@ namespace otto::core::voices {
     /// Process audio, applying Preprocessing, each voice and then postprocessing
     float operator()() noexcept;
 
-    Voice& handle_midi_on(const midi::NoteOnEvent&) noexcept;
-    Voice* handle_midi_off(const midi::NoteOffEvent&) noexcept;
+    //Voice& handle_midi_on(const midi::NoteOnEvent&) noexcept;
+    //Voice* handle_midi_off(const midi::NoteOffEvent&) noexcept;
     void handle_pitch_bend(const midi::PitchBendEvent&) noexcept;
     void handle_control_change(const midi::ControlChangeEvent&) noexcept;
 
@@ -245,14 +270,25 @@ namespace otto::core::voices {
                     ("voice_settings", &VoiceManager::settings_props));
 
   private:
-    Voice& get_voice(int key) noexcept;
-    Voice* stop_voice(int key) noexcept;
+    std::vector<float> detune_values;
+    std::vector<float> rand_values;
+    // Random values. 100% random, organic and fresh.
+    std::array<float, 6> rand_max = {0.94, 0.999, 1.03, 1.06, 0.92, 1.01};
 
     struct NoteVoicePair {
+      /// Which physical key is activating this note
+      int key = 0;
+      /// Which note this voice is playing.
       int note = 0;
+      /// Detune value from note
+      float detune = 0;
+      /// Velocity
+      float velocity = 0;
+      /// Reference to voice that is playing this note
       Voice* voice = nullptr;
+
       /// Whether a physical key is not holding this note down
-      /// 
+      ///
       /// When using a sustain pedal, this will be set to false on note off
       bool should_release = false;
 
@@ -262,12 +298,52 @@ namespace otto::core::voices {
       }
     };
 
+    /// Voice allocators - Corresponds to different playmodes
+    struct IVoiceAllocator {
+      // Owner
+      VoiceManager& vm;
+
+      IVoiceAllocator(VoiceManager& vm_in);
+
+      virtual ~IVoiceAllocator() = 0;
+
+      virtual void handle_midi_on(const midi::NoteOnEvent&) noexcept = 0;
+      /// Midi off is common to all
+      void handle_midi_off(const midi::NoteOffEvent&) noexcept;
+
+      Voice& get_voice(int key, int note) noexcept;
+      void stop_voice(int key) noexcept;
+    };
+
+    struct PolyAllocator final : IVoiceAllocator {
+        PolyAllocator(VoiceManager& vm_in) : IVoiceAllocator(vm_in) {}
+        void handle_midi_on(const midi::NoteOnEvent&) noexcept override;
+    };
+
+    struct MonoAllocator final : IVoiceAllocator {
+        MonoAllocator(VoiceManager& vm_in);
+        ~MonoAllocator();
+        void handle_midi_on(const midi::NoteOnEvent&) noexcept override;
+    };
+
+    struct UnisonAllocator final : IVoiceAllocator {
+        UnisonAllocator(VoiceManager& vm_in);
+        ~UnisonAllocator();
+        void handle_midi_on(const midi::NoteOnEvent&)noexcept override;
+    };
+
+    struct IntervalAllocator final : IVoiceAllocator {
+        IntervalAllocator(VoiceManager& vm_in) : IVoiceAllocator(vm_in) {}
+        void handle_midi_on(const midi::NoteOnEvent&) noexcept override;
+    };
+
+
     float pitch_bend_ = 1;
 
     props::Property<bool> sustain_ = {false};
 
     std::deque<Voice*> free_voices;
-    std::vector<NoteVoicePair> note_stack;
+    std::deque<NoteVoicePair> note_stack;
 
     Props& props;
     Pre pre = {props};
@@ -278,9 +354,10 @@ namespace otto::core::voices {
     EnvelopeProps envelope_props;
     SettingsProps settings_props;
 
+    std::unique_ptr<IVoiceAllocator> voice_allocator;
+
     std::unique_ptr<ui::Screen> envelope_screen_ = details::make_envelope_screen(envelope_props);
     std::unique_ptr<ui::Screen> settings_screen_ = details::make_settings_screen(settings_props);
-    PlayMode play_mode = PlayMode::mono;
 
   }; // namespace otto::core::voices
 
@@ -289,4 +366,3 @@ namespace otto::core::voices {
 // Implementation
 #include "voice_manager.inl"
 
-// kak: other_file=voice_manager.inl

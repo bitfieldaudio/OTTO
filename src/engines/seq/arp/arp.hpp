@@ -1,6 +1,5 @@
 #pragma once
 
-#include <magic_enum.hpp>
 #include <foonathan/array/small_array.hpp>
 
 #include "core/engine/engine.hpp"
@@ -11,12 +10,9 @@ namespace otto::engines {
   using namespace core::engine;
   using namespace props;
 
-  struct Arp : ArpeggiatorEngine<Arp> {
-    static constexpr util::string_ref name = "Arp";
+  namespace detail {
 
-    using NoteArray = foonathan::array::small_array<midi::NoteOnEvent, 6>;
-
-    enum struct Playmode {
+    BETTER_ENUM(ArpPlaymode, std::uint8_t,
       up,
       down,
       updown,
@@ -24,17 +20,25 @@ namespace otto::engines {
       updowninc,
       downupinc,
       manual,
-      chord,
-    };
+      chord
+    );
 
-    enum struct OctaveMode {
+    BETTER_ENUM(ArpOctaveMode, std::uint8_t,
       standard,
       octaveup,
       octaveupunison,
       fifthunison,
-      octaveupdown,
-    };
+      octaveupdown
+    );
 
+  }
+
+  struct Arp : ArpeggiatorEngine<Arp> {
+    static constexpr util::string_ref name = "Arp";
+
+    using Playmode = detail::ArpPlaymode;
+    using OctaveMode = detail::ArpOctaveMode;
+    using NoteArray = foonathan::array::small_array<midi::NoteOnEvent, 6>;
 
     struct Props {
       Property<Playmode, wrap> playmode = {Playmode::up};

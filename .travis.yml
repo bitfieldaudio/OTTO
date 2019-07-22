@@ -47,7 +47,21 @@ matrix:
         - BUILD_TYPE=Release
         - USE_LIBCXX=0
         - DEPLOY_DOCS=OFF
-
+    - name: "Linux, GCC, Debug"	
+      os: linux	
+      addons:	
+        apt:	
+          sources:	
+            - ubuntu-toolchain-r-test	
+          packages:	
+            - g++-7	
+            - gdb-minimal	
+            - libasound-dev	
+      env:	
+        - CC=gcc-7 CXX=g++-7	
+        - BUILD_TYPE=Debug	
+        - USE_LIBCXX=0	
+        - DEPLOY_DOCS=OFF	
     - name: "OSX, Clang, Debug, libc++"
       os: osx
       osx_image: xcode9.1

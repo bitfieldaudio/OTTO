@@ -187,7 +187,7 @@ namespace otto::glfw {
     glDisable(GL_DEPTH_TEST);
 
     _canvas.clearColor(vg::Colours::Black);
-    _canvas.beginFrame(winWidth, winHeight);
+    _canvas.begineFrame(winWidth, winHeight);
   }
 
   void NVGWindow::end_frame()

@@ -148,7 +148,7 @@ namespace otto::engines {
   PotionSynth::Voice::Voice(Pre& pre) noexcept : VoiceBase(pre)
   {
     /// On_change handlers for the lfo and curve/envelope
-    props.lfo_osc.lfo_speed.on_change().connect([this](float speed) { lfo.freq(speed * 3); });
+    props.lfo_osc.lfo_speed.on_change().connect([this](float speed) { lfo.freq(speed * 3); }).call_now(props.lfo_osc.lfo_speed);
     props.curve_osc.curve_length.on_change().connect(
       [this](float decaytime) { curve.decay((1-decaytime) * 15 + 0.2); });
     /// On_change handlers for the wavetable volumes
