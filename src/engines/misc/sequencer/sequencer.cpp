@@ -14,9 +14,9 @@ namespace otto::engines {
   void Sequencer::SamplerGroup<N>::process(audio::AudioBufferHandle audio, int step_n) noexcept
   {
     auto& step = seq.steps[step_n];
-    bool trig = step.triggered();
+    bool trig = step.triggered() and !mutes[step.note];
 
-    if (trig && &samplers.current() != &samplers[step.note]) {
+    if (trig and &samplers.current() != &samplers[step.note]) {
       samplers.current().finish();
       samplers.select(step.note);
     }
@@ -46,20 +46,25 @@ namespace otto::engines {
   }
 
   template<typename F>
-  auto Sequencer::for_seq(F&& f)
+  auto Sequencer::for_cur_chan(F&& f) {
+    for_chan(UIManager::current().state.active_channel.get(), FWD(f));
+  }
+
+  template<typename F>
+  auto Sequencer::for_chan(ChannelEnum chan, F&& f)
   {
-    switch (UIManager::current().state.active_channel.get()) {
-      case ChannelEnum::sampler0: return f(props.group0.seq, 0);
-      case ChannelEnum::sampler1: return f(props.group0.seq, 1);
-      case ChannelEnum::sampler2: return f(props.group1.seq, 0);
-      case ChannelEnum::sampler3: return f(props.group1.seq, 1);
-      case ChannelEnum::sampler4: return f(props.group1.seq, 2);
-      case ChannelEnum::sampler5: return f(props.group2.seq, 0);
-      case ChannelEnum::sampler6: return f(props.group2.seq, 1);
-      case ChannelEnum::sampler7: return f(props.group3.seq, 0);
-      case ChannelEnum::sampler8: return f(props.group3.seq, 1);
-      case ChannelEnum::sampler9: return f(props.group3.seq, 2);
-      default: return f(props.group0.seq, 0);
+    switch (chan) {
+      case ChannelEnum::sampler0: return f(props.group0, 0);
+      case ChannelEnum::sampler1: return f(props.group0, 1);
+      case ChannelEnum::sampler2: return f(props.group1, 0);
+      case ChannelEnum::sampler3: return f(props.group1, 1);
+      case ChannelEnum::sampler4: return f(props.group1, 2);
+      case ChannelEnum::sampler5: return f(props.group2, 0);
+      case ChannelEnum::sampler6: return f(props.group2, 1);
+      case ChannelEnum::sampler7: return f(props.group3, 0);
+      case ChannelEnum::sampler8: return f(props.group3, 1);
+      case ChannelEnum::sampler9: return f(props.group3, 2);
+      default: return f(props.group0, 0);
     }
   }
 
@@ -212,22 +217,23 @@ namespace otto::engines {
 
     engine.for_all_chans([](auto chan, auto& group, auto idx) {
       bool is_current = chan == UIManager::current().state.active_channel;
-      LEDColor color = is_current ? LEDColor::White : LEDColor::Blue;
+      bool is_muted = group.mutes[idx];
+      LEDColor color = is_current ? LEDColor::White : is_muted ? LEDColor::Red : LEDColor::Blue;
       Sampler& sampler = group.samplers[idx];
       float progress = sampler.progress();
-      if (is_current) progress *= 0.5;
-      color = color.mix(LEDColor::Black, progress);
+      if (is_current || is_muted) progress *= 0.5;
+      color = color.mix(is_muted ? LEDColor::Red : LEDColor::Black, progress);
       Controller::current().set_color(chan_led(chan), color);
     });
 
-    engine.for_seq([&](auto& seq, auto idx) {
+    engine.for_cur_chan([&](auto& group, auto idx) {
       auto& c = Controller::current();
       for (int i = 0; i < 16; i++) {
         // 0: no trig, 1: trig; 2: trig on substep
-        int trig = seq.steps[i * substeps].note == idx ? 1 : 0;
+        int trig = group.seq.steps[i * substeps].note == idx ? 1 : 0;
         if (trig == 0)
           for (int j = 1; j < substeps; j++) {
-            if (seq.steps[i * substeps + j].note == idx) {
+            if (group.seq.steps[i * substeps + j].note == idx) {
               trig = 2;
             }
           }
@@ -257,15 +263,25 @@ namespace otto::engines {
       [this](const services::KeyPressEvent& evt) {
         auto k = evt.key;
         auto toggle_step = [&](int i) {
-          engine.for_seq([&](auto& seq, auto note) {
+          engine.for_cur_chan([&](auto& group, auto note) {
             DLOGI("Toggle step");
-            if constexpr (std::is_same_v<std::decay_t<decltype(seq)>, Sequencer::MonoSequence>) {
-              auto& step = seq.steps[i * Sequencer::substeps];
+            if constexpr (std::is_same_v<std::decay_t<decltype(group.seq)>, Sequencer::MonoSequence>) {
+              auto& step = group.seq.steps[i * Sequencer::substeps];
               if (step.triggered() && step.note == note) {
                 step.clear();
               } else {
                 step = {note};
               }
+            }
+          });
+        };
+
+        auto channel_action = [&] (ChannelEnum ch) {
+          engine.for_chan(ch, [&] (auto& group, auto idx) {
+            if (Controller::current().is_pressed(Key::shift)) {
+              group.mutes[idx] = !group.mutes[idx];
+            } else {
+              UIManager::current().state.active_channel = ch;
             }
           });
         };
@@ -288,16 +304,16 @@ namespace otto::engines {
           case Key::S14: toggle_step(14); return;
           case Key::S15: toggle_step(15); return;
 
-          case Key::C0: UIManager::current().state.active_channel = +ChannelEnum::sampler0; return;
-          case Key::C1: UIManager::current().state.active_channel = +ChannelEnum::sampler1; return;
-          case Key::C2: UIManager::current().state.active_channel = +ChannelEnum::sampler2; return;
-          case Key::C3: UIManager::current().state.active_channel = +ChannelEnum::sampler3; return;
-          case Key::C4: UIManager::current().state.active_channel = +ChannelEnum::sampler4; return;
-          case Key::C5: UIManager::current().state.active_channel = +ChannelEnum::sampler5; return;
-          case Key::C6: UIManager::current().state.active_channel = +ChannelEnum::sampler6; return;
-          case Key::C7: UIManager::current().state.active_channel = +ChannelEnum::sampler7; return;
-          case Key::C8: UIManager::current().state.active_channel = +ChannelEnum::sampler8; return;
-          case Key::C9: UIManager::current().state.active_channel = +ChannelEnum::sampler9; return;
+          case Key::C0: channel_action(ChannelEnum::sampler0); return;
+          case Key::C1: channel_action(ChannelEnum::sampler1); return;
+          case Key::C2: channel_action(ChannelEnum::sampler2); return;
+          case Key::C3: channel_action(ChannelEnum::sampler3); return;
+          case Key::C4: channel_action(ChannelEnum::sampler4); return;
+          case Key::C5: channel_action(ChannelEnum::sampler5); return;
+          case Key::C6: channel_action(ChannelEnum::sampler6); return;
+          case Key::C7: channel_action(ChannelEnum::sampler7); return;
+          case Key::C8: channel_action(ChannelEnum::sampler8); return;
+          case Key::C9: channel_action(ChannelEnum::sampler9); return;
 
           default: return;
         }

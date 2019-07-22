@@ -28,6 +28,10 @@ namespace otto::glfw {
 
   Window::Window(int width, int height, const std::string& name)
   {
+    if (!glfwInit()) {
+      LOG_F(ERROR, "Failed to init GLFW.");
+    }
+
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);

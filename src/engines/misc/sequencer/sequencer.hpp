@@ -61,8 +61,9 @@ namespace otto::engines {
     struct SamplerGroup {
       util::selectable<std::array<Sampler, N>> samplers;
       MonoSequence seq;
+      std::array<bool, N> mutes;
 
-      DECL_REFLECTION(SamplerGroup, samplers, seq);
+      DECL_REFLECTION(SamplerGroup, samplers, seq, mutes);
 
       void process(audio::AudioBufferHandle d, int step) noexcept;
     };
@@ -91,8 +92,13 @@ namespace otto::engines {
 
     friend struct SeqScreen;
 
+    /// @param f callable as `f(SamplerGroup, int idx)`
     template<typename F>
-    auto for_seq(F&& f);
+    auto for_cur_chan(F&& f);
+
+    /// @param f callable as `f(SamplerGroup, int idx)`
+    template<typename F>
+    auto for_chan(services::ChannelEnum, F&& f);
 
     /// @param f callable as `f(ChannelEnum, SamplerGroup, int idx)`
     template<typename F>

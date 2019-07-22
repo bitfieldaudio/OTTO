@@ -6,8 +6,6 @@
 #include "engines/fx/wormhole/wormhole.hpp"
 #include "engines/synths/OTTOFM/ottofm.hpp"
 
-#include "benchmark_csv_reporter.hpp"
-
 namespace otto::services::test {
 
   using namespace otto::engines;
@@ -20,21 +18,24 @@ namespace otto::services::test {
 
     SECTION ("AudioManager::process()") {
       DummyAudioManager::current().set_bs_sr(16, 44100);
-      BENCHMARK("AudioManager::process, bs = 16")
+      BENCHMARK_ADVANCED("AudioManager::process, bs = 16")(Catch::Benchmark::Chronometer meter)
       {
-        return DummyAudioManager::current().process();
+        meter.divisor(16);
+        meter.measure([&] { DummyAudioManager::current().process(); });
       };
 
       DummyAudioManager::current().set_bs_sr(256, 44100);
-      BENCHMARK("AudioManager::process, bs = 256")
+      BENCHMARK_ADVANCED("AudioManager::process, bs = 256")(Catch::Benchmark::Chronometer meter)
       {
-        return DummyAudioManager::current().process();
+        meter.divisor(256);
+        meter.measure([&] { DummyAudioManager::current().process(); });
       };
 
       DummyAudioManager::current().set_bs_sr(1024, 44100);
-      BENCHMARK("AudioManager::process, bs = 1024")
+      BENCHMARK_ADVANCED("AudioManager::process, bs = 1024")(Catch::Benchmark::Chronometer meter)
       {
-        return DummyAudioManager::current().process();
+        meter.divisor(1024);
+        meter.measure([&] { DummyAudioManager::current().process(); });
       };
     }
   }
@@ -89,8 +90,6 @@ namespace otto::services::test {
     benchmark_fx_pr_bs<Wormhole>();
     benchmark_fx_pr_bs<Chorus>();
 
-    SECTION("Parameter changes") {
-
-    }
+    SECTION ("Parameter changes") {}
   }
 } // namespace otto::services::test

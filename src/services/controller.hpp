@@ -164,6 +164,16 @@ namespace otto::services {
       return (*this * (1.f - f)) + o * f;
     }
 
+    LEDColor dim(float f = 0.5) const noexcept
+    {
+      return mix(0x000000, f);
+    }
+
+    LEDColor brighten(float f = 0.5) const noexcept
+    {
+      return mix(0xFFFFFF, f);
+    }
+
     LEDColor operator*(float f) const noexcept
     {
       return {static_cast<std::uint8_t>(r * f), static_cast<std::uint8_t>(g * f), static_cast<std::uint8_t>(b * f)};
