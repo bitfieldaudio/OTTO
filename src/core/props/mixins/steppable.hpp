@@ -39,7 +39,7 @@ namespace otto::core::props {
         } else if constexpr (std::is_enum_v<value_type>) {
           return static_cast<value_type>(util::underlying(prop.get()) + n * step_size);
         } else if constexpr (util::BetterEnum::is<value_type>) {
-          return value_type::_from_integral(util::underlying(prop.get()) + n * step_size);
+          return value_type::_from_integral_unchecked(util::underlying(prop.get()) + n * step_size);
         } else {
           return prop.get() + n * step_size;
         }

@@ -16,12 +16,10 @@ namespace otto::core::props {
     void on_hook(hook<has_limits::hooks::on_exceeded> & hook)
     {
       auto& hl = this->as<has_limits>();
-      if (hook.value() < hl.min) {
-        hook.value() =
-          hl.max - ((hl.min - (is<steppable>() ? as<steppable>().step_size : 1)) - hook.value());
-      } else if (hook.value() > hl.max) {
-        hook.value() =
-          hl.min + (hook.value() - (hl.max + (is<steppable>() ? as<steppable>().step_size : 1)));
+      auto length = hl.max - hl.min;
+      if (hook.value() < hl.min || hook.value() > hl.max) {
+        hook.value() = hl.min + (((hook.value() - hl.min) % length + length) % length);
+        // hl.min + (hook.value() - (hl.max + step_size));
       }
     }
   };

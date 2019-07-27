@@ -13,8 +13,8 @@
 
 #include "core/audio/processor.hpp"
 
-#include "util/crtp.hpp"
 #include "util/algorithm.hpp"
+#include "util/crtp.hpp"
 
 #include "util/dsp/dsp.hpp"
 
@@ -128,14 +128,16 @@ namespace otto::core::voices {
     static_assert(std::is_base_of_v<VoiceBase<Voice, typename Voice::VoiceBase::Pre>, Voice>,
                   "PostBase<Derived, Voice>: Voice must inherit from VoiceBase<Voice, Pre>");
 
-    static_assert(util::is_invocable_r_v<float, Voice>,
-                  "Voice must have a `float operator()()` defined");
+    static_assert(util::is_invocable_r_v<float, Voice>, "Voice must have a `float operator()()` defined");
 
 
     using Pre = typename Voice::VoiceBase::Pre;
     using Props = typename Voice::VoiceBase::Props;
 
-    float operator()(float f) noexcept { return f; }
+    float operator()(float f) noexcept
+    {
+      return f;
+    }
 
     /// Constructor
     PostBase(Pre& p) noexcept;
@@ -147,16 +149,16 @@ namespace otto::core::voices {
   namespace details {
     /// The way the voicemanager handles voices
     BETTER_ENUM(PlayMode,
-      int,
-      /// Multiple voices at once, each playing a note
-      poly,
-      /// Only a single voice in use, always playing the latest note
-      mono,
-      /// All voices in use, all playing the latest note (possibly with detune)
-      unison,
-      /// Plays a given interval
-      interval
-    );
+                // Needs signed int for props::wrap to work
+                std::int8_t,
+                /// Multiple voices at once, each playing a note
+                poly,
+                /// Only a single voice in use, always playing the latest note
+                mono,
+                /// All voices in use, all playing the latest note (possibly with detune)
+                unison,
+                /// Plays a given interval
+                interval);
 
     /// Convert a playmode to string
     ///
@@ -181,16 +183,24 @@ namespace otto::core::voices {
       props::Property<float> detune = {0, props::limits(0, 1), props::step_size(0.01)};
       props::Property<int> interval = {0, props::limits(-12, 12)};
 
-      props::Property<float> portamento = {0, props::limits(0, 1),
-                                                             props::step_size(0.01)};
+      props::Property<float> portamento = {0, props::limits(0, 1), props::step_size(0.01)};
       props::Property<bool> legato = {false};
       props::Property<bool> retrig = {false};
 
       props::Property<int, props::no_signal> octave = {0, props::limits(-2, 7)};
       props::Property<int, props::no_signal> transpose = {0, props::limits(-12, 12)};
 
-      DECL_REFLECTION(SettingsProps, play_mode, rand, sub, detune, interval,
-              portamento, legato, retrig, octave, transpose);
+      DECL_REFLECTION(SettingsProps,
+                      play_mode,
+                      rand,
+                      sub,
+                      detune,
+                      interval,
+                      portamento,
+                      legato,
+                      retrig,
+                      octave,
+                      transpose);
     };
 
     std::unique_ptr<ui::Screen> make_envelope_screen(EnvelopeProps& props);
@@ -221,8 +231,7 @@ namespace otto::core::voices {
 
     static_assert(std::is_base_of_v<PostBase<Post, typename Post::PostBase::Voice>, Post>,
                   "PostBase<Derived, Post>: Post must inherit from PostBase<Post, Voice>");
-    static_assert(util::is_invocable_r_v<float, Post, float>,
-                  "Post must have a `float operator()(float)` defined");
+    static_assert(util::is_invocable_r_v<float, Post, float>, "Post must have a `float operator()(float)` defined");
 
     using Voice = typename Post::PostBase::Voice;
     using Props = typename Post::PostBase::Props;
@@ -254,8 +263,8 @@ namespace otto::core::voices {
     /// Process audio, applying Preprocessing, each voice and then postprocessing
     float operator()() noexcept;
 
-    //Voice& handle_midi_on(const midi::NoteOnEvent&) noexcept;
-    //Voice* handle_midi_off(const midi::NoteOffEvent&) noexcept;
+    // Voice& handle_midi_on(const midi::NoteOnEvent&) noexcept;
+    // Voice* handle_midi_off(const midi::NoteOffEvent&) noexcept;
     void handle_pitch_bend(const midi::PitchBendEvent&) noexcept;
     void handle_control_change(const midi::ControlChangeEvent&) noexcept;
 
@@ -316,25 +325,25 @@ namespace otto::core::voices {
     };
 
     struct PolyAllocator final : IVoiceAllocator {
-        PolyAllocator(VoiceManager& vm_in) : IVoiceAllocator(vm_in) {}
-        void handle_midi_on(const midi::NoteOnEvent&) noexcept override;
+      PolyAllocator(VoiceManager& vm_in) : IVoiceAllocator(vm_in) {}
+      void handle_midi_on(const midi::NoteOnEvent&) noexcept override;
     };
 
     struct MonoAllocator final : IVoiceAllocator {
-        MonoAllocator(VoiceManager& vm_in);
-        ~MonoAllocator();
-        void handle_midi_on(const midi::NoteOnEvent&) noexcept override;
+      MonoAllocator(VoiceManager& vm_in);
+      ~MonoAllocator();
+      void handle_midi_on(const midi::NoteOnEvent&) noexcept override;
     };
 
     struct UnisonAllocator final : IVoiceAllocator {
-        UnisonAllocator(VoiceManager& vm_in);
-        ~UnisonAllocator();
-        void handle_midi_on(const midi::NoteOnEvent&)noexcept override;
+      UnisonAllocator(VoiceManager& vm_in);
+      ~UnisonAllocator();
+      void handle_midi_on(const midi::NoteOnEvent&) noexcept override;
     };
 
     struct IntervalAllocator final : IVoiceAllocator {
-        IntervalAllocator(VoiceManager& vm_in) : IVoiceAllocator(vm_in) {}
-        void handle_midi_on(const midi::NoteOnEvent&) noexcept override;
+      IntervalAllocator(VoiceManager& vm_in) : IVoiceAllocator(vm_in) {}
+      void handle_midi_on(const midi::NoteOnEvent&) noexcept override;
     };
 
 
@@ -347,8 +356,7 @@ namespace otto::core::voices {
 
     Props& props;
     Pre pre = {props};
-    std::array<Voice, voice_count_v> voices_ =
-      util::generate_array<voice_count_v>([this](auto) { return Voice{pre}; });
+    std::array<Voice, voice_count_v> voices_ = util::generate_array<voice_count_v>([this](auto) { return Voice{pre}; });
     Post post = {pre};
 
     EnvelopeProps envelope_props;
@@ -365,4 +373,3 @@ namespace otto::core::voices {
 
 // Implementation
 #include "voice_manager.inl"
-
