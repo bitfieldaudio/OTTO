@@ -21,27 +21,51 @@ namespace otto::test {
     auto file_len = file.getNumSamplesPerChannel();
     REQUIRE(file_len > 1);
 
-    ch::Output<int> start;
-    ch::Output<int> length = file_len;
+    ch::Output<int> start = 0;
+    ch::Output<int> length = file_len - 1;
 
     ch::Timeline timeline;
-    timeline.apply(&start).rampTo(file_len - 1, 600).finishFn([&m = *start.inputPtr()] { m.setPlaybackSpeed(m.getPlaybackSpeed() * -1); m.resetTime(); });
-    timeline.apply(&length).rampTo(0, 400).finishFn([&m = *length.inputPtr()] { m.setPlaybackSpeed(m.getPlaybackSpeed() * -1); m.resetTime(); });
+    timeline.apply(&start).rampTo(file_len - 1, 600).finishFn([& m = *start.inputPtr()] {
+      m.setPlaybackSpeed(m.getPlaybackSpeed() * -1);
+      m.resetTime();
+    });
+    timeline.apply(&length).rampTo(0, 400).finishFn([& m = *length.inputPtr()] {
+      m.setPlaybackSpeed(m.getPlaybackSpeed() * -1);
+      m.resetTime();
+    });
 
-    std::vector<Point> points;
+    auto view = wf.view(300, start, start + length);
     test::show_gui([&](Canvas& ctx) {
       timeline.step(1);
-      points.clear();
+      wf.view(view, std::max(0.f, start - 0.2f * std::min(length(), file_len - start)),
+              std::min(start + length * 1.2f, float(file_len)));
 
       float x = 10;
-      wf.for_points(300, start, std::min(start + length, file_len), [&](float y) {
-        points.emplace_back(x, 200 - y * 50);
+      ctx.beginPath();
+      auto iter = view.begin();
+      ctx.moveTo(x, 200 - *iter * 50);
+      auto b = view.iter_for_time(start);
+      for (; iter < b; iter++) {
+        ctx.lineTo(x, 200 - *iter * 50);
         x += 1;
-      });
+      }
+      ctx.stroke(Colors::Gray);
 
       ctx.beginPath();
-      ctx.plotLines(points.begin(), points.end());
+      ctx.moveTo(x, 200 - *iter * 50);
+      for (auto e = view.iter_for_time(std::min(start + length, file_len)); iter < e; iter++) {
+        ctx.lineTo(x, 200 - *iter * 50);
+        x += 1;
+      }
       ctx.stroke(Colors::White);
+
+      ctx.beginPath();
+      ctx.moveTo(x, 200 - *iter * 50);
+      for (; iter < view.end(); iter++) {
+        ctx.lineTo(x, 200 - *iter * 50);
+        x += 1;
+      }
+      ctx.stroke(Colors::Gray);
     });
   }
 

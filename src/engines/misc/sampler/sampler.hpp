@@ -7,7 +7,10 @@
 #include <AudioFile.h>
 #include <Gamma/Filter.h>
 #include <Gamma/SamplePlayer.h>
-#include <engines/misc/sends/sends.hpp>
+
+#include "engines/misc/sends/sends.hpp"
+
+#include "core/audio/waveform.hpp"
 
 namespace otto::engines {
 
@@ -29,6 +32,7 @@ namespace otto::engines {
       Property<float> startpoint = {0, limits(0, 1), step_size(0.001)};
       Property<float> endpoint = {1, limits(0, 1), step_size(0.001)};
 
+      audio::Waveform waveform;
       std::vector<std::string> filenames;
       std::vector<std::string>::iterator file_it = filenames.begin();
       gam::Array<float> samplecontainer;

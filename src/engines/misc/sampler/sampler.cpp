@@ -24,6 +24,11 @@ namespace otto::engines {
     void draw(Canvas& ctx) override;
     void encoder(EncoderEvent e) override;
 
+    void update_wf();
+
+    SamplerEnvelopeScreen(Sampler* e);
+
+    audio::WaveformView wfv = engine.props.waveform.view(300, engine.sample.min(), engine.sample.max() - 1);
     using EngineScreen<Sampler>::EngineScreen;
   };
 
@@ -124,14 +129,13 @@ namespace otto::engines {
       // Check file
 
       for (auto& f : props.samplecontainer) {
-        if (f == NAN or f == INFINITY) {
+        if (f == NAN or f == INFINITY or props.samplecontainer.size() == 0) {
           props.samplecontainer.resize(1);
           props.samplerate = 1;
           props.samplecontainer[0] = 0;
           sample.buffer(props.samplecontainer, (double) props.samplerate, 1);
           props.error = "Invalid file";
-          sample.finish();
-          return;
+          goto end;
         }
       }
 
@@ -145,6 +149,10 @@ namespace otto::engines {
       sample.buffer(props.samplecontainer, (double) props.samplerate, 1);
       props.error = "Unknown Error (check log)";
     }
+  end:
+    props.waveform = {{props.samplecontainer.elems(), props.samplecontainer.size()}, 300};
+    auto& envscr = *dynamic_cast<SamplerEnvelopeScreen*>(_envelope_screen.get());
+    envscr.update_wf();
     sample.finish();
   }
 
@@ -281,6 +289,21 @@ namespace otto::engines {
 
   // ENVELOPE SCREEN //
 
+  SamplerEnvelopeScreen::SamplerEnvelopeScreen(Sampler* e) : EngineScreen<Sampler>(e)
+  {
+    engine.props.endpoint.on_change().connect([this] { update_wf(); });
+    engine.props.startpoint.on_change().connect([this] { update_wf(); });
+  }
+
+  void SamplerEnvelopeScreen::update_wf()
+  {
+    auto start = engine.sample.min();
+    auto end = engine.sample.max();
+
+    engine.props.waveform.view(wfv, std::max(0.f, float(start) - 0.2f * float(end - start)),
+                               std::min(float(start + (end - start) * 1.2f), float(engine.sample.size() - 1)));
+  }
+
   void SamplerEnvelopeScreen::encoder(ui::EncoderEvent ev)
   {
     // auto& sample = engine.sample;
@@ -344,52 +367,37 @@ namespace otto::engines {
     ctx.fillStyle(Colours::Red);
     ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
     ctx.fillText(fmt::format("{:1.2}", engine.props.fadeout), {width - x_pad, y_pad + 3 * space});
-    /*
-    if (engine.sample.size() <= 0) return;
+
+    auto start = engine.sample.min();
+    auto end = engine.sample.max() - 1;
+
+    float x = 10;
+    ctx.beginPath();
+    auto iter = wfv.begin();
+    ctx.moveTo(x, 200 - *iter * 50);
+    auto b = wfv.iter_for_time(start);
+    for (; iter < b; iter++) {
+      ctx.lineTo(x, 200 - *iter * 50);
+      x += 1;
+    }
+    ctx.lineTo(x, 200 - *iter * 50);
+    ctx.stroke(Colors::Gray);
 
     ctx.beginPath();
-
-    ctx.moveTo(10, 120);
-    auto waveform = engine.sample.waveform();
-    float size = waveform.end() - waveform.begin();
-
-    for (float i = 0; i < 300; i += 2) {
-      float x = 10.f + i;
-      float y = *(waveform.begin() + float(i) / 300.f * size) * 50.f;
-      ctx.lineTo(x, 120.f - y);
+    ctx.moveTo(x, 200 - *iter * 50);
+    for (auto e = wfv.iter_for_time(end); iter < e; iter++) {
+      ctx.lineTo(x, 200 - *iter * 50);
+      x += 1;
     }
-    for (float i = 299; i >= 0; i -= 2) {
-      float x = 10.f + i;
-      float y = *(waveform.begin() + float(i) / 300.f * size) * 50.f;
-      ctx.lineTo(x, 120.f + y);
+    ctx.stroke(Colors::White);
+
+    ctx.beginPath();
+    ctx.moveTo(x, 200 - *iter * 50);
+    for (; iter < wfv.end(); iter++) {
+      ctx.lineTo(x, 200 - *iter * 50);
+      x += 1;
     }
-    ctx.closePath();
-    ctx.fill(Colours::White);
-
-    auto wfm_idx = [&] (int idx) {
-      return (idx - sample.start_point()) / sample.waveform_scale();
-    };
-
-    auto draw_line = [&] (int point, Colour c) {
-      float idx = wfm_idx(point);
-      float x = 10 + 300.f * idx / size;
-      float y = *(waveform.begin() + idx) * 50.f;
-      ctx.beginPath();
-      ctx.moveTo(x, 120);
-      ctx.lineTo(x, 120 - y);
-      ctx.circle({x, 120 - y}, 3);
-      ctx.lineWidth(3);
-      ctx.stroke(c);
-    };
-
-    if (sample.loop_start() != sample.start_point()) {
-      draw_line(sample.loop_start(), Colours::Yellow);
-    }
-
-    if (sample.loop_end() != sample.end_point()) {
-      draw_line(sample.loop_end(), Colours::Red);
-    }
-     */
+    ctx.stroke(Colors::Gray);
   }
 
 } // namespace otto::engines
