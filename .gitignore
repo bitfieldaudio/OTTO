@@ -27,3 +27,4 @@ CMakeLists.txt.user
 .idea
 *.cbp
 ./build*
+.gdb_history

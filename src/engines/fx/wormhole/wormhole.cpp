@@ -76,13 +76,12 @@ namespace otto::engines {
   {
     {
       using namespace ui::vg;
-      using util::math::vec;
 
       auto& props = engine.props;
 
       // declaration of star radius of first group of stars
       float starradius = 3;
-      vec direction = vec{3, -2} * (engine.props.length.normalize() * 3 + 0.6);
+      Vec2 direction = Vec2{3, -2} * (engine.props.length.normalize() * 3 + 0.6);
       float minscale = 0.55;
       float frontscale =
         std::min(1.f, (minscale + engine.props.damping.normalize() * (1 - minscale) * 2));
@@ -493,7 +492,7 @@ namespace otto::engines {
       // WormHole/GreenLineCheat
       ctx.group([&] {
         Point fixed = {144.3, 151.2};
-        Point translation = vec(177.828 + 12, 128.387 - 8) + direction * -4.4;
+        Point translation = Vec2(177.828 + 12, 128.387 - 8) + direction * -4.4;
 
         if (translation.x > fixed.x) {
           ctx.beginPath();

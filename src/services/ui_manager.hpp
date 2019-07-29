@@ -1,17 +1,22 @@
 #pragma once
 
 #include <unordered_map>
+
 #include <json.hpp>
+#include <type_safe/bounded_type.hpp>
+#include <type_safe/strong_typedef.hpp>
 
-#include "util/locked.hpp"
 #include "util/enum.hpp"
+#include "util/locked.hpp"
 
-#include "core/service.hpp"
 #include "core/props/props.hpp"
+#include "core/service.hpp"
 #include "core/ui/screen.hpp"
 #include "services/application.hpp"
 
 namespace otto::services {
+
+  BETTER_ENUM(SourceEnum, std::uint8_t, sequencer, internal, external)
 
   BETTER_ENUM(ChannelEnum,
               std::uint8_t,
@@ -28,6 +33,8 @@ namespace otto::services {
               internal,
               external)
 
+  SourceEnum source_of(ChannelEnum) noexcept;
+
   BETTER_ENUM(ScreenEnum,
               std::uint8_t,
               sends,
@@ -43,9 +50,10 @@ namespace otto::services {
               master,
               sequencer,
               sampler,
+              sampler_envelope,
               synth,
               synth_selector,
-              envelope,
+              synth_envelope,
               settings,
               external,
               twist1,
@@ -58,6 +66,7 @@ namespace otto::services {
     ///
     /// This will dictate which state-leds light up, and which channel is currently selected etc.
     struct State {
+      core::props::Property<SourceEnum> active_source = SourceEnum::internal;
       core::props::Property<ChannelEnum> active_channel = ChannelEnum::internal;
       core::props::Property<ScreenEnum> current_screen = ScreenEnum::synth;
       core::props::Property<KeyMode> key_mode = KeyMode::midi;
@@ -95,6 +104,10 @@ namespace otto::services {
 
     State state;
 
+    struct {
+      util::Signal<core::ui::vg::Canvas&> on_draw;
+    } signals;
+
   protected:
     /// Draws the current screen and overlays.
     void draw_frame(core::ui::vg::Canvas& ctx);
@@ -115,8 +128,6 @@ namespace otto::services {
     util::enum_map<ScreenEnum, ScreenSelector> screen_selectors_;
 
     unsigned _frame_count = 0;
-
-    static constexpr const char* initial_engine = "Synth";
   };
 
 } // namespace otto::services

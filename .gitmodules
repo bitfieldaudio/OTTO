@@ -25,3 +25,6 @@
 [submodule "external/foonathan_type_safe"]
 	path = external/foonathan_type_safe
 	url = https://github.com/foonathan/type_safe
+[submodule "external/choreograph"]
+	path = external/choreograph
+	url = https://github.com/sansumbrella/Choreograph

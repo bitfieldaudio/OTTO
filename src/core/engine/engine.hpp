@@ -234,10 +234,11 @@ namespace otto::core::engine {
   /// engine from the `engine` reference.
   template<typename Engine>
   struct EngineScreen : ui::Screen {
-    EngineScreen(Engine* engine) : Screen(), engine(*engine) {}
+    EngineScreen(Engine* engine) : Screen(), engine(*engine), props(engine->props) {}
     virtual ~EngineScreen() = default;
 
   protected:
     Engine& engine;
+    typename Engine::Props& props;
   };
 } // namespace otto::core::engine

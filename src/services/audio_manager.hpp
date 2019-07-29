@@ -5,7 +5,7 @@
 #include "core/audio/processor.hpp"
 #include "core/service.hpp"
 #include "services/debug_ui.hpp"
-#include "util/event.hpp"
+#include "util/signals.hpp"
 #include "util/locked.hpp"
 
 #include "services/application.hpp"
@@ -67,7 +67,7 @@ namespace otto::services {
     }
 
     struct Events {
-      util::Event<> pre_init;
+      util::Signal<> pre_init;
     } events;
 
   protected:

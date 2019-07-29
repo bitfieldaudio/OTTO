@@ -59,14 +59,14 @@ int main(int argc, char* argv[])
 
 int handle_exception(const char* e)
 {
-  LOGE(e);
+  LOGE("{}", e);
   LOGE("Exception thrown, exitting!");
   return 1;
 }
 
 int handle_exception(std::exception& e)
 {
-  LOGE(e.what());
+  LOGE("{}", e.what());
   LOGE("Exception thrown, exitting!");
   return 1;
 }

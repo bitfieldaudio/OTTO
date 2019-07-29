@@ -27,14 +27,20 @@ namespace otto::core::props {
 
         SlotRef(SuperSR&& s, Signal& owner) : SuperSR(s), owner(owner){};
 
-        using SuperSR::call_now;
-        void call_now(value_type new_val)
+        SlotRef& call_now(value_type new_val, value_type old_val)
         {
-          call_now(new_val, new_val);
+          SuperSR::call_now(std::move(new_val), std::move(new_val));
+          return *this;
         }
-        void call_now()
+        SlotRef& call_now(value_type new_val)
+        {
+          SuperSR::call_now(std::move(new_val), std::move(new_val));
+          return *this;
+        }
+        SlotRef& call_now()
         {
           call_now(owner.owner.as_prop().get());
+          return *this;
         }
 
       private:

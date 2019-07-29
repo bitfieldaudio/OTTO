@@ -61,7 +61,7 @@
 /// Elias daler.
 ///
 /// You register classes for reflection using the macros @ref DECL_REFLECTION or
-/// @ref DECL_REFLECTION_OUTSIDE, or by manually declaring the member `reflect_members` or
+/// @ref DECL_REFLECTION_OUTSIDE, or by manually declaring the static constexpr member `reflect_members` or
 /// nonmember @ref register_members, along with `reflect_name` and @ref register_name
 ///
 /// Reflection is mainly used for serialization, using @ref otto::util::serialize and

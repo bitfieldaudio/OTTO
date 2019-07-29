@@ -4,7 +4,7 @@
 #include <functional>
 #include <memory>
 
-#include "util/event.hpp"
+#include "util/signals.hpp"
 #include "util/exception.hpp"
 #include "util/filesystem.hpp"
 
@@ -99,8 +99,8 @@ namespace otto::services {
     static void handle_signal(int signal) noexcept;
 
     struct Events {
-      util::Event<> post_init;
-      util::Event<> pre_exit;
+      util::Signal<> post_init;
+      util::Signal<> pre_exit;
     } events;
 
     ServiceStorage<LogManager> log_manager;

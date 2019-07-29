@@ -28,6 +28,10 @@ namespace otto::glfw {
 
   Window::Window(int width, int height, const std::string& name)
   {
+    if (!glfwInit()) {
+      LOG_F(ERROR, "Failed to init GLFW.");
+    }
+
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -268,11 +272,10 @@ namespace otto::services {
       main_win.end_frame();
 
       glfwPollEvents();
-      Controller::current().flush_events();
 
       spent = glfwGetTime() - t;
 
-      std::this_thread::sleep_for(std::chrono::milliseconds(int(1000 / 60 - spent * 1000)));
+      std::this_thread::sleep_for(std::chrono::milliseconds(int(1000 / 120 - spent * 1000)));
     }
   }
 } // namespace otto::services
