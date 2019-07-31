@@ -9,6 +9,8 @@
 #include <Gamma/scl.h>
 
 #include "util/math.hpp"
+#include "util/dsp/DelayedLambda.hpp"
+#include "util/dsp/BiquadSoftReset.hpp"
 
 
 namespace otto::engines {
@@ -47,23 +49,25 @@ namespace otto::engines {
     };
 
     struct Voice : voices::VoiceBase<Voice, Pre> {
-      gam::Biquad<> reson;
+      BiquadSoftReset<> reson;
       gam::AD<> exciter;
       gam::NoiseWhite<> noise;
 
       gam::Biquad<> lpf;
-      gam::Biquad<> pickup_hpf;
+      BiquadSoftReset<> pickup_hpf;
 
       gam::Osc<> overtones;
-      gam::Decay<> env;
+      gam::AD<> env{0.01, 0.2};
 
       float hammer_strength = 2;
       float amp = 1;
 
+
+
       Voice(Pre&) noexcept;
 
       float operator()() noexcept;
-      void on_note_on() noexcept;
+      void on_note_on(float freq_target) noexcept;
     };
 
     struct Post : voices::PostBase<Post, Voice> {

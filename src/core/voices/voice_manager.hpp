@@ -69,7 +69,9 @@ namespace otto::core::voices {
     VoiceBase(const VoiceBase&) = delete;
 
     /// Implement a handler for note on events
-    virtual void on_note_on() noexcept;
+    /// freq_target is the arget frequency. This allows frequency-specific
+    /// calculations to be done even when there is portamento.
+    virtual void on_note_on(float freq_target) noexcept;
 
     /// Implement a handler for note off events
     virtual void on_note_off() noexcept;

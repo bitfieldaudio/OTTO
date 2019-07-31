@@ -101,28 +101,28 @@ namespace otto::core::voices {
 
     //------------------------------//
     // Portamento
-    ctx.globalCompositeOperation(NVG_XOR);
-    //Background. Note, colour doesn't matter for this,
-    //it is only to get the logic to work
-    ctx.beginPath();
-    ctx.fillStyle(Colours::Gray50);
-    ctx.roundedRect({x_pad, y_pad + space + y_shift}, {width - 2 * x_pad, space}, 10);
-    ctx.fill();
+    ctx.group([&] {
+      ctx.globalCompositeOperation(NVG_XOR);
+      //Background. Note, colour doesn't matter for this,
+      //it is only to get the logic to work
+      ctx.beginPath();
+      ctx.fillStyle(Colours::Gray50);
+      ctx.roundedRect({x_pad, y_pad + space + y_shift}, {width - 2 * x_pad, space}, 10);
+      ctx.fill();
 
-    // Fill
-    constexpr float fudge = 3.f;
-    ctx.beginPath();
-    ctx.fillStyle(Colours::Yellow);
-    ctx.roundedRect({x_pad + fudge, y_pad + space + y_shift}, {(width - 2 * x_pad - fudge) * props.portamento, space}, 10);
-    ctx.fill();
+      // Text
+      ctx.beginPath();
+      ctx.fillStyle(Colours::Yellow);
+      ctx.textAlign(HorizontalAlign::Center, VerticalAlign::Middle);
+      ctx.fillText("portamento", {width * 0.5, y_pad + 1.5 * space + y_shift});
 
-    // Text
-    ctx.beginPath();
-    ctx.fillStyle(Colours::Yellow);
-    ctx.textAlign(HorizontalAlign::Center, VerticalAlign::Middle);
-    ctx.fillText("portamento", {width * 0.5, y_pad + 1.5 * space + y_shift});
-
-    ctx.globalCompositeOperation(NVG_SOURCE_OVER);
+      // Fill
+      constexpr float fudge = 3.f;
+      ctx.beginPath();
+      ctx.fillStyle(Colours::Yellow);
+      ctx.roundedRect({x_pad + fudge, y_pad + space + y_shift}, {(width - 2 * x_pad - fudge) * props.portamento, space}, 10);
+      ctx.fill();
+    });
 
     // Rectangle
     ctx.beginPath();

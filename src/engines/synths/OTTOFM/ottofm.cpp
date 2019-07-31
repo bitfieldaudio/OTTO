@@ -231,7 +231,7 @@ namespace otto::engines {
     }
   }
 
-  void OTTOFMSynth::Voice::on_note_on() noexcept
+  void OTTOFMSynth::Voice::on_note_on(float freq_target) noexcept
   {
     reset_envelopes();
     pre.last_voice = this;

@@ -336,12 +336,17 @@ namespace otto::engines {
     }
     //Calculate new dot values
     dots.clear();
+    //Possibly, there are too many steps and we must rescale in the x-direction
+    if (num_steps > 10) x_step_width = x_step_width * 10 / num_steps;
+
     for (int i=0; i<engine.props.output_stack_.size(); i++)
     {
       for (auto& note : engine.props.output_stack_[i])
       {
         Point p;
+
         p.x = width/2.f + (2 * i + 1 - num_steps) * x_step_width / 2.f;
+
         if (min != max) p.y = y_bot - ((float)note.key - (float)min) / ((float)max - (float)min) * y_size;
         else p.y = y_bot - y_size / 2;
         dots.push_back(p);

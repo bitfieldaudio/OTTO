@@ -160,7 +160,7 @@ namespace otto::engines {
     curve.finish();
   }
 
-  void PotionSynth::Voice::on_note_on() noexcept
+  void PotionSynth::Voice::on_note_on(float freq_target) noexcept
   {
     lfo.phase(0.f);
     curve.reset(-2);

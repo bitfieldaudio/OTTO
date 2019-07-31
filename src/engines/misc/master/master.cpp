@@ -5,6 +5,8 @@
 #include "util/iterator.hpp"
 #include "util/utility.hpp"
 
+#include "util/math.hpp"
+
 namespace otto::engines {
 
   using namespace ui;
@@ -25,10 +27,10 @@ namespace otto::engines {
   audio::ProcessData<2> Master::process(audio::ProcessData<2> data)
   {
     for (auto&& l : data.audio[0]) {
-      l *= props.volume * props.volume * 0.80;
+      l = util::math::fasttanh3( l * props.volume * props.volume * 0.80 );
     }
     for (auto&& r : data.audio[1]) {
-      r *= props.volume * props.volume * 0.80;
+      r = util::math::fasttanh3( r * props.volume * props.volume * 0.80 );
     }
     return data;
   }

@@ -27,7 +27,7 @@ namespace otto::engines {
 
   float GossSynth::Voice::operator()() noexcept
   {
-    float fundamental = frequency() * (1 + 0.015 * props.leslie * pre.pitch_modulation_hi.cos()) * 0.5;
+    float fundamental = frequency() * (1 + 0.012 * props.leslie * pre.pitch_modulation_hi.cos()) * 0.5;
     pipes[0].freq(fundamental);
     pipes[1].freq(fundamental);
     pipes[2].freq(fundamental);
@@ -56,12 +56,17 @@ namespace otto::engines {
     percussion.addSine(4, 0.5, 0);
     percussion.addSine(6, 1.0, 0);
 
-    perc_env.decay(0.5);
     perc_env.finish();
+    props.click.on_change().connect([this](float cl) {
+        perc_env.decay(cl * 5);
+        perc_env.amp(0.5 + 3 * cl);
+    }).call_now(props.click);
+
+
   }
 
-  void GossSynth::Voice::on_note_on() noexcept {
-    perc_env.reset(props.click * 5);
+  void GossSynth::Voice::on_note_on(float freq_target) noexcept {
+    perc_env.resetSoft();
   }
 
   GossSynth::Pre::Pre(Props& props) noexcept : PreBase(props)

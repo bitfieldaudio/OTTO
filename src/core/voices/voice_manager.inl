@@ -22,7 +22,7 @@ namespace otto::core::voices {
   }
 
   template<typename D, typename P>
-  void VoiceBase<D, P>::on_note_on() noexcept
+  void VoiceBase<D, P>::on_note_on(float freq_target) noexcept
   {}
 
   template<typename D, typename P>
@@ -76,7 +76,7 @@ namespace otto::core::voices {
     if (jump) glide_.finish();
     velocity_ = velocity;
     if (!legato) {
-      on_note_on();
+      on_note_on(midi::note_freq(midi_note) * detune);
       env_.resetSoft();
     }
 
