@@ -324,8 +324,8 @@ namespace otto::engines {
       ctx.lineTo(241.1, 85.3);
       ctx.lineWidth(6.0);
       ctx.strokeStyle(Colours::Green);
-      ctx.lineCap(Canvas::LineCap::ROUND);
-      ctx.lineJoin(Canvas::LineJoin::ROUND);
+      ctx.lineCap(LineCap::ROUND);
+      ctx.lineJoin(LineJoin::ROUND);
       ctx.stroke();
 
       // WormHole/BackPad
@@ -423,8 +423,8 @@ namespace otto::engines {
         ctx.bezierCurveTo(180.0, 103.0, 185.0, 98.9, 192.7, 102.7);
         ctx.bezierCurveTo(200.4, 106.5, 205.4, 114.2, 205.4, 124.2);
         ctx.closePath();
-        ctx.lineCap(Canvas::LineCap::BUTT);
-        ctx.lineJoin(Canvas::LineJoin::MITER);
+        ctx.lineCap(LineCap::BUTT);
+        ctx.lineJoin(LineJoin::MITER);
         ctx.miterLimit(10.0);
         ctx.stroke(Colours::Red);
       });
@@ -461,8 +461,8 @@ namespace otto::engines {
         ctx.closePath();
         ctx.fill();
         ctx.strokeStyle(Colour::bytes(250, 249, 249));
-        ctx.lineCap(Canvas::LineCap::ROUND);
-        ctx.lineJoin(Canvas::LineJoin::ROUND);
+        ctx.lineCap(LineCap::ROUND);
+        ctx.lineJoin(LineJoin::ROUND);
         ctx.stroke();
 
         // WormHole/FrontPadGroup/FrontPad2
@@ -500,8 +500,8 @@ namespace otto::engines {
           ctx.lineTo(translation);
           ctx.lineWidth(6.0);
           ctx.strokeStyle(Colours::Green);
-          ctx.lineCap(Canvas::LineCap::ROUND);
-          ctx.lineJoin(Canvas::LineJoin::ROUND);
+          ctx.lineCap(LineCap::ROUND);
+          ctx.lineJoin(LineJoin::ROUND);
           ctx.stroke();
         }
       });

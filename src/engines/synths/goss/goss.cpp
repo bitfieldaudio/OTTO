@@ -140,8 +140,8 @@ namespace otto::engines {
       ctx.circle({160, 120}, 55);
       ctx.lineWidth(6.0);
       ctx.strokeStyle(Colours::Gray50);
-      ctx.lineCap(Canvas::LineCap::ROUND);
-      ctx.lineJoin(Canvas::LineJoin::ROUND);
+      ctx.lineCap(LineCap::ROUND);
+      ctx.lineJoin(LineJoin::ROUND);
       ctx.stroke();
 
       // Ring 2 Base
@@ -163,8 +163,8 @@ namespace otto::engines {
       ctx.arc(160, 120, 55, 0, (2 * M_PI * engine.props.click), false);
       ctx.lineWidth(6.0);
       ctx.strokeStyle(Colours::Yellow);
-      ctx.lineCap(Canvas::LineCap::ROUND);
-      ctx.lineJoin(Canvas::LineJoin::ROUND);
+      ctx.lineCap(LineCap::ROUND);
+      ctx.lineJoin(LineJoin::ROUND);
       ctx.stroke();
 
       // Ring 2

@@ -65,17 +65,14 @@ namespace otto::services {
     state.current_screen.on_change().connect([&](auto new_val) {
       display(screen_selectors_[new_val]());
       for (auto scrn : ScreenEnum::_values()) {
-        if (scrn != new_val) 
-          Controller::current().set_color(led_for_screen(scrn), LEDColor::Black);
+        if (scrn != new_val) Controller::current().set_color(led_for_screen(scrn), LEDColor::Black);
       }
       Controller::current().set_color(led_for_screen(new_val), LEDColor::White);
       DLOGI("Select screen {}", new_val._to_string());
       key_mode_for(new_val).map([&](auto&& km) { state.key_mode.set(km); });
     });
 
-    state.active_channel.on_change().connect([&](auto chan) { 
-      state.current_screen = state.current_screen.get(); 
-    });
+    state.active_channel.on_change().connect([&](auto chan) { state.current_screen = state.current_screen.get(); });
 
     state.octave.on_change().connect([&](auto octave) {
       LEDColor c = [&] {
@@ -122,22 +119,29 @@ namespace otto::services {
   void UIManager::draw_frame(vg::Canvas& ctx)
   {
     ctx.lineWidth(6);
-    ctx.lineCap(vg::Canvas::LineCap::ROUND);
-    ctx.lineJoin(vg::Canvas::Canvas::LineJoin::ROUND);
-    ctx.group([&] { cur_screen->draw(ctx); });
-
+    ctx.lineCap(vg::LineCap::ROUND);
+    ctx.lineJoin(vg::LineJoin::ROUND);
     ctx.group([&] {
-      ctx.beginPath();
-      ctx.fillStyle(vg::Colours::White);
-      ctx.font(vg::Fonts::Norm, 12);
-      std::string cpu_time = fmt::format("{}%", int(100 * Application::current().audio_manager->cpu_time()));
-      ctx.fillText(cpu_time, {290, 230});
-    });
+      ctx.clip(0, 0, 320, 240);
+      cur_screen->draw(ctx);
 
-    signals.on_draw.emit(ctx);
+      ctx.group([&] {
+        ctx.beginPath();
+        ctx.fillStyle(vg::Colours::White);
+        ctx.font(vg::Fonts::Norm, 12);
+        std::string cpu_time = fmt::format("{}%", int(100 * Application::current().audio_manager->cpu_time()));
+        ctx.fillText(cpu_time, {290, 230});
+      });
+
+      signals.on_draw.emit(ctx);
+    });
 
     Controller::current().flush_leds();
     _frame_count++;
+
+    auto now = chrono::clock::now();
+    timeline_.step(chrono::duration_cast<chrono::milliseconds>(now - last_frame).count());
+    last_frame = now;
   }
 
 } // namespace otto::services

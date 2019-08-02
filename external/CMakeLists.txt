@@ -29,13 +29,6 @@ if (APPLE)
   target_link_libraries(external ${CORE_FOUNDATION})
 endif()
 
-# NanoCanvas
-execute_process(COMMAND git submodule update --init -- NanoCanvas WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-file(GLOB_RECURSE nanocanvas_src "${CMAKE_CURRENT_SOURCE_DIR}/NanoCanvas/src/*.cpp")
-add_library(nanocanvas ${nanocanvas_src})
-target_link_libraries(nanocanvas nanovg)
-target_include_directories(nanocanvas SYSTEM INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/NanoCanvas/src)
-
 # fmtlib
 execute_process(COMMAND git submodule update --init -- fmt WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/fmt)

@@ -10,6 +10,7 @@
 #include "services/clock_manager.hpp"
 #include "services/ui_manager.hpp"
 #include "services/controller.hpp"
+#include "services/settings.hpp"
 
 #include "board/audio_driver.hpp"
 #include "board/controller.hpp"
@@ -35,6 +36,8 @@ int main(int argc, char* argv[])
       PrOTTO1SerialController::make_or_emulator,
       EngineManager::create_default
     };
+
+    Settings settings;
 
     // Overwrite the logger signal handlers
     std::signal(SIGABRT, Application::handle_signal);

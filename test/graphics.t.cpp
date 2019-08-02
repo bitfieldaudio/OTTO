@@ -31,8 +31,8 @@ namespace otto::test {
       window.begin_frame();
 
       window.canvas().lineWidth(6);
-      window.canvas().lineCap(core::ui::vg::Canvas::LineCap::ROUND);
-      window.canvas().lineJoin(core::ui::vg::Canvas::Canvas::LineJoin::ROUND);
+      window.canvas().lineCap(core::ui::vg::LineCap::ROUND);
+      window.canvas().lineJoin(core::ui::vg::LineJoin::ROUND);
       draw(window.canvas());
       window.end_frame();
 

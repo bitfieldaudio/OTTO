@@ -1,6 +1,7 @@
 #pragma once
 
 #include <unordered_map>
+#include <chrono>
 
 #include <json.hpp>
 #include <type_safe/bounded_type.hpp>
@@ -108,6 +109,11 @@ namespace otto::services {
       util::Signal<core::ui::vg::Canvas&> on_draw;
     } signals;
 
+    ch::Timeline& timeline()
+    {
+      return timeline_;
+    }
+
   protected:
     /// Draws the current screen and overlays.
     void draw_frame(core::ui::vg::Canvas& ctx);
@@ -128,6 +134,9 @@ namespace otto::services {
     util::enum_map<ScreenEnum, ScreenSelector> screen_selectors_;
 
     unsigned _frame_count = 0;
+
+    chrono::time_point last_frame = chrono::clock::now();
+    ch::Timeline timeline_;
   };
 
 } // namespace otto::services

@@ -191,7 +191,7 @@ namespace otto::glfw {
     glDisable(GL_DEPTH_TEST);
 
     _canvas.clearColor(vg::Colours::Black);
-    _canvas.begineFrame(winWidth, winHeight);
+    _canvas.beginFrame(winWidth, winHeight);
   }
 
   void NVGWindow::end_frame()
@@ -276,6 +276,7 @@ namespace otto::services {
       spent = glfwGetTime() - t;
 
       std::this_thread::sleep_for(std::chrono::milliseconds(int(1000 / 120 - spent * 1000)));
+
     }
   }
 } // namespace otto::services

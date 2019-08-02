@@ -87,7 +87,6 @@ namespace otto::services {
     reg_ss(ScreenEnum::synth, [&]() -> auto& { return synth->screen(); });
     reg_ss(ScreenEnum::synth_selector, [&]() -> auto& { return synth.selector_screen(); });
     reg_ss(ScreenEnum::synth_envelope, [&]() -> auto& { return synth->envelope_screen(); });
-    // reg_ss(ScreenEnum::settings,       [&] () -> auto& { return  ; });
     // reg_ss(ScreenEnum::external,       [&] () -> auto& { return  ; });
     // reg_ss(ScreenEnum::twist1,         [&] () -> auto& { return  ; });
     // reg_ss(ScreenEnum::twist2,         [&] () -> auto& { return  ; });

@@ -76,8 +76,8 @@ namespace otto::engines {
     ctx.lineTo(72.2, 78.4);
     ctx.lineWidth(6.0);
     ctx.strokeStyle(Colours::Gray70);
-    ctx.lineCap(Canvas::LineCap::ROUND);
-    ctx.lineJoin(Canvas::LineJoin::ROUND);
+    ctx.lineCap(LineCap::ROUND);
+    ctx.lineJoin(LineJoin::ROUND);
     ctx.stroke();
 
     // sends/sendsIcon/Send1Arrow
@@ -268,8 +268,8 @@ namespace otto::engines {
     ctx.lineTo(200.6, 142.5);
     ctx.lineWidth(6.0);
     ctx.strokeStyle(Colours::Gray70);
-    ctx.lineCap(Canvas::LineCap::ROUND);
-    ctx.lineJoin(Canvas::LineJoin::ROUND);
+    ctx.lineCap(LineCap::ROUND);
+    ctx.lineJoin(LineJoin::ROUND);
     ctx.stroke();
 
     // sends/dryArrow/arrowhead
@@ -304,8 +304,8 @@ namespace otto::engines {
     ctx.lineTo(295.3, 74.8);
     ctx.lineWidth(6.0);
     ctx.strokeStyle(Colours::Gray70);
-    ctx.lineCap(Canvas::LineCap::ROUND);
-    ctx.lineJoin(Canvas::LineJoin::ROUND);
+    ctx.lineCap(LineCap::ROUND);
+    ctx.lineJoin(LineJoin::ROUND);
     ctx.stroke();
 
     // sends/7Lines/6
@@ -353,8 +353,8 @@ namespace otto::engines {
     ctx.lineTo(x_position, 63.1);
     ctx.lineWidth(6.0);
     ctx.strokeStyle(Colours::White);
-    ctx.lineCap(Canvas::LineCap::ROUND);
-    ctx.lineJoin(Canvas::LineJoin::ROUND);
+    ctx.lineCap(LineCap::ROUND);
+    ctx.lineJoin(LineJoin::ROUND);
     ctx.stroke();
     ctx.restore();
   }
