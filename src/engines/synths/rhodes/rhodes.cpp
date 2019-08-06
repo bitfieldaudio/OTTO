@@ -34,7 +34,7 @@ namespace otto::engines {
     float harmonics = env() * overtones();
     float orig_note = reson.nextBP(excitation*hammer_strength);
     float aux = util::math::fasttanh3(0.3f*orig_note + props.asymmetry);
-    return amp * pickup_hpf(powf(2, 10*aux)) + harmonics;
+    return amp * pickup_hpf(powf(2, 10*aux)) + 400 * orig_note + harmonics;
   }
 
   RhodesSynth::Voice::Voice(Pre& pre) noexcept : VoiceBase(pre) {
@@ -62,7 +62,7 @@ namespace otto::engines {
 
     // Parameters for the tine harmonics
     env.decay(2.2);
-    env.amp(1.4);
+    env.amp(1.6);
 
 
   }
@@ -110,7 +110,7 @@ namespace otto::engines {
 
   float RhodesSynth::Post::operator()(float in) noexcept
   {
-    return 0.01f*in*(1 + lfo_amount*lfo.tri());
+    return 0.006f*in*(1 + lfo_amount*lfo.tri());
   }
 
   audio::ProcessData<1> RhodesSynth::process(audio::ProcessData<1> data)

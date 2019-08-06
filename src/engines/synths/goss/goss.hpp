@@ -60,7 +60,7 @@ namespace otto::engines {
     };
 
     struct Voice : voices::VoiceBase<Voice, Pre> {
-      std::array<gam::Osc<>, 4> pipes;
+      std::array<gam::Osc<>, 3> pipes;
       gam::Osc<> percussion;
       gam::AD<> perc_env{0.001, 0.2};
 

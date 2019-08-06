@@ -143,9 +143,16 @@ namespace otto::core::voices {
   auto VoiceManager<V, N>::IVoiceAllocator::get_voice(int key, int note) noexcept -> Voice&
   {
     if (vm.free_voices.size() > 0) {
-      // Reuses the voice that last played the note if it exists
-      auto it = util::find_if(vm.note_stack, [key, note](NoteVoicePair& nvp) { return nvp.key == key && nvp.note == note; });
-      auto fvit = it == vm.note_stack.end() ? vm.free_voices.begin() : util::find(vm.free_voices, it->voice);
+      /// Usual behaviour is to return the next free voice
+      auto fvit = vm.free_voices.begin();
+      /// Finds the voice that last played the note if it exists
+      auto it = util::find_if(vm.voices_, [note](Voice& vp) { return vp.midi_note_ == note; });
+      /// If there is/was a voice that is playing this note
+      if (it != vm.voices_.end()) {
+        /// It's not currently playing; choose this voice
+        if (!it->is_triggered()) fvit = util::find(vm.free_voices, it);
+        /// Otherwise, do nothing - That would mean the voice is playing, and we should not steal it.
+      }
       auto& v = **fvit;
       vm.free_voices.erase(fvit);
       return v;
