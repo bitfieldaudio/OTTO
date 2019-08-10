@@ -1,19 +1,44 @@
 #pragma once
 
 #include <array>
+#include <tl/expected.hpp>
+
+#include "util/exception.hpp"
 
 namespace otto::util {
 
   template<typename T, std::size_t Capacity>
   struct local_vector {
     using value_type = T;
-    using iterator = typename std::array<T, Capacity>::iterator;
-    using const_iterator = typename std::array<T, Capacity>::const_iterator;
+    using iterator = value_type*;
+    using const_iterator = const value_type*;
+
+    /// Error codes
+    enum struct error {
+      /// The vector is at capacity
+      full,
+      /// The vecctor is empty
+      empty
+    };
+
+    using exception = util::as_exception<error>;
 
     constexpr local_vector() : _data(), _size(0) {}
 
     template<std::size_t N, std::enable_if_t<N <= Capacity>>
-    constexpr local_vector(std::array<T, N> il) : _data(il), _size(il.size()) {}
+    constexpr local_vector(std::array<T, N> il) : _size(il.size())
+    {
+      for (T& v : il) {
+        push_back(std::move(v));
+      }
+    }
+
+    // TODO: C++20, can be constexpr
+    ~local_vector() noexcept
+    {
+      // Destroy elements
+      clear();
+    }
 
     // Queries
 
@@ -32,91 +57,135 @@ namespace otto::util {
       return size() == 0;
     }
 
-    constexpr auto begin()
+    constexpr bool full() const noexcept
     {
-      return _data.begin();
+      return size() == capacity();
     }
 
-    constexpr auto begin() const
+    // Iterators
+
+    constexpr auto begin() noexcept
     {
-      return _data.begin();
+      return data();
     }
 
-    constexpr auto end()
+    constexpr auto begin() const noexcept
     {
-      return _data.begin() + _size;
+      return data();
     }
 
-    constexpr auto end() const
+    constexpr auto end() noexcept
     {
-      return _data.begin() + _size;
+      return data() + _size;
     }
 
-    constexpr value_type& front()
+    constexpr auto end() const noexcept
     {
-      return _data.front();
+      return data() + _size;
     }
 
-    constexpr const value_type& front() const
+    // Accessors
+
+    constexpr value_type& front() noexcept
     {
-      return _data.front();
+      return *begin();
     }
 
-    constexpr value_type& back()
+    constexpr const value_type& front() const noexcept
     {
-      return _data[_size - 1];
+      return *begin();
     }
 
-    constexpr const value_type& back() const
+    constexpr value_type& back() noexcept
     {
-      return _data[_size - 1];
+      return data()[_size - 1];
     }
 
-    constexpr value_type& operator[](std::size_t idx)
+    constexpr const value_type& back() const noexcept
     {
-      return _data[idx];
+      return data()[_size - 1];
     }
 
-    constexpr value_type* data()
+    constexpr value_type& operator[](std::size_t idx) noexcept
     {
-      return _data.data();
+      return data()[idx];
     }
 
-    constexpr const value_type* data() const
+    constexpr value_type* data() noexcept
     {
-      return _data.data();
+      // Launder is a pointer optimization barrier. It's necessary to make the
+      // reinterpret_cast legal in this case
+      return std::launder(reinterpret_cast<value_type*>(&_data));
     }
 
+    constexpr const value_type* data() const noexcept
+    {
+      // Launder is a pointer optimization barrier. It's necessary to make the
+      // reinterpret_cast legal in this case
+      return std::launder(reinterpret_cast<const value_type*>(&_data));
+    }
 
-    constexpr value_type& push_back(const value_type& e) {
-      _data.at(_size) = e;
+    // Modifiers
+
+    constexpr tl::expected<value_type*, error> push_back(const value_type& e) noexcept
+    {
+      return emplace_back(e);
+    }
+
+    constexpr tl::expected<value_type*, error> push_back(value_type&& e) noexcept
+    {
+      return emplace_back(std::move(e));
+    }
+
+    template<typename... Args, typename Enable = std::enable_if_t<std::is_constructible_v<value_type, Args...>>>
+    constexpr tl::expected<value_type*, error> emplace_back(Args&&... args) noexcept
+    {
+      if (full()) return tl::unexpected(error::full);
+      new (data() + _size) T(std::forward<Args>(args)...);
       _size++;
-      return back();
+      return &back();
     }
 
-    constexpr iterator insert(iterator pos, const value_type& e) {
-      _data.at(_size) = e;
-      _size++;
-      return end() - 1;
+    /// Inserts value before pos
+    constexpr tl::expected<iterator, error> insert_before(iterator iter, const value_type& value) noexcept
+    {
+      return push_back(value).map([&](auto &&) {
+        // Move the element back until its placed at the correct location
+        for (auto i = end() - 1; i != iter; --i) {
+          std::swap(*(i), *(i - 1));
+        }
+        return iter;
+      });
     }
 
-    constexpr const_iterator& insert(const_iterator pos, const value_type& e) {
-      _data.at(_size) = e;
-      _size++;
-      return end() - 1;
+    /// Inserts value before iter. NOTE: use insert_before for noexcept version
+    /// 
+    /// Mainly provided for use with STL algorithms like transform.
+    /// 
+    /// @throws tl::bad_expected_access<error> if there was an error when inserting
+    constexpr iterator insert(iterator iter, const value_type& value)
+    {
+      return insert_before(iter, value).value();
     }
 
-    constexpr void pop_back() {
-      // TODO: Actually destroy elements;
+    constexpr tl::expected<void, error> pop_back() noexcept
+    {
+      if (empty()) return tl::unexpected(error::empty);
+      data()[_size].~T();
       _size--;
+      return {};
     }
 
-    constexpr void clear() {
-      _size = 0;
+    constexpr void clear() noexcept
+    {
+      while(!empty()) {
+        pop_back();
+      }
     }
 
   private:
-    std::array<value_type, capacity()> _data;
-    std::size_t _size;
+    /// Uninitialized storage. Always access through data();
+    std::aligned_storage_t<capacity() * sizeof(value_type)> _data;
+    std::size_t _size = 0;
   };
 } // namespace otto::util

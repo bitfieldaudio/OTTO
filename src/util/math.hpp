@@ -1,32 +1,41 @@
 #pragma once
 
-#include <cmath>
-#include <array>
 #include <algorithm>
+#include <array>
+#include <cmath>
 #include <valarray>
 
 namespace otto::util::math {
 
   template<typename T>
-  constexpr inline bool between(T min, T max, T el) {
+  constexpr inline bool between(T min, T max, T el)
+  {
     return (el <= max && el >= min);
   }
 
-  inline float round(float f, int places) {
+  inline float round(float f, int places)
+  {
     int i = std::pow(10, places);
-    return std::round(f * i)/i;
+    return std::round(f * i) / i;
   }
 
-  template <typename T>
-  int sgn(T val) {
+  template<typename T>
+  int sgn(T val)
+  {
     return (T(0) < val) - (val < T(0));
   }
 
   /// Real modulo for negative `a` too
   template<typename T>
-  constexpr inline T modulo(T a, T b) {
+  constexpr inline T modulo(T a, T b)
+  {
     const T result = std::fmod(a, b);
     return result >= 0 ? result : result + b;
+  }
+
+  inline int modulo(int i, int n)
+  {
+    return (i % n + n) % n;
   }
 
   /// Split a number into `N` values between 0 and 1, each representing a Nth
@@ -38,7 +47,7 @@ namespace otto::util::math {
   template<int N>
   constexpr std::array<float, N> split_values(float f, float min, float max)
   {
-    std::array<float, N> res {{0}};
+    std::array<float, N> res{{0}};
     // f scaled to [0, N]
     float f1 = (N - 1) * (f - min) / (max - min);
     for (int i = 0; i < N; i++) {
@@ -47,23 +56,20 @@ namespace otto::util::math {
     return res;
   }
 
-  inline double vox_fasttanh2( const double x )
+  inline double vox_fasttanh2(const double x)
   {
-    const double ax = fabs( x );
+    const double ax = fabs(x);
     const double x2 = x * x;
 
-    return( x * ( 2.45550750702956 + 2.45550750702956 * ax +
-                  ( 0.893229853513558 + 0.821226666969744 * ax ) * x2 ) /
-            ( 2.44506634652299 + ( 2.44506634652299 + x2 ) *
-             fabs( x + 0.814642734961073 * x * ax )));
+    return (x * (2.45550750702956 + 2.45550750702956 * ax + (0.893229853513558 + 0.821226666969744 * ax) * x2) /
+            (2.44506634652299 + (2.44506634652299 + x2) * fabs(x + 0.814642734961073 * x * ax)));
   }
 
-  inline float fasttanh3( const float x)
+  inline float fasttanh3(const float x)
   {
-    const float x2 = x*x;
-    const float ax = (((x2 + 378.f)*x2 + 17325.f)*x2 + 135135)*x;
-    const float bx = ((28*x2 + 3150.f)*x2 + 62370)*x2 + 135135;
+    const float x2 = x * x;
+    const float ax = (((x2 + 378.f) * x2 + 17325.f) * x2 + 135135) * x;
+    const float bx = ((28 * x2 + 3150.f) * x2 + 62370) * x2 + 135135;
     return ax / bx;
   }
-}
-
+} // namespace otto::util::math
