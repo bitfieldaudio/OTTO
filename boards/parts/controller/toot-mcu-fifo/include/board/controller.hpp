@@ -29,7 +29,8 @@ namespace otto::services {
     void insert_key_event(Command cmd, Key key);
     void insert_key_or_midi(Command cmd, BytesView args, bool do_send_midi);
 
-    util::FIFO fifo = {"/dev/toot-mcu-fifo"};
+    util::FIFO fifo0 = {"/dev/toot-mcu-fifo0"};
+    util::FIFO fifo1 = {"/dev/toot-mcu-fifo1"};
     util::double_buffered<EventBag, util::clear_inner> events_;
     util::double_buffered<std::vector<std::uint8_t>, util::clear_outer> write_buffer_;
     util::thread read_thread;

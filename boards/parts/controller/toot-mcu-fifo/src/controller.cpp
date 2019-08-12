@@ -157,7 +157,7 @@ namespace otto::services {
   TMFC::TOOT_MCU_FIFO_Controller()
     : read_thread([this](auto should_run) noexcept {
         while (should_run()) {
-          fifo.read_line()
+          fifo0.read_line()
             .map([&](auto&& bytes) { handle_message(bytes); })
             .map_error([&](auto&& error) {
               if (error.data() != util::FIFO::ErrorCode::empty_buffer) {
@@ -179,16 +179,20 @@ namespace otto::services {
 
   void TMFC::set_color(LED led, LEDColor color)
   {
-    // Not Implemented Yet
+    std::array<std::uint8_t, 6> msg = {0xEC, led.key._to_integral(), color.r, color.g, color.b,
+                                       '\n'};
+    queue_message(msg);
   }
-
   void TMFC::flush_leds()
   {
-    // Not Implemented Yet
+    write_buffer_.swap();
+    fifo1.write(write_buffer_.inner());
   }
   void TMFC::clear_leds()
   {
-    // Not Implemented Yet
+    auto c = LEDColor::Black;
+    std::array<std::uint8_t, 5> msg = {0xE0, c.r, c.g, c.b, '\n'};
+    queue_message(msg);
   }
 
 } // namespace otto::services
