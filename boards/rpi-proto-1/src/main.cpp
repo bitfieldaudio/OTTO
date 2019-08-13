@@ -47,7 +47,7 @@ int main(int argc, char* argv[])
     app.ui_manager->main_ui_loop();
 
     if (app.error() == Application::ErrorCode::ui_closed) {
-      std::system("shutdown -h now");
+//      std::system("shutdown -h now");
     }
   } catch (const char* e) {
     result = handle_exception(e);

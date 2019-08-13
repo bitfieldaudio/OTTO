@@ -73,6 +73,10 @@ namespace otto::services {
       }
     };
 
+    auto shutdown = [cmd] {
+      if (cmd == +Command::key_down) Application::current().exit(Application::ErrorCode::ui_closed); 
+    };
+
     switch (key) {
       case Key::S0: send_midi(47); break;
       case Key::S1: send_midi(48); break;
@@ -93,13 +97,19 @@ namespace otto::services {
       case Key::C6: send_midi(63); break;
       case Key::S10: send_midi(64); break;
       case Key::S11: send_midi(65); break;
-      case Key::C7: send_midi(66); break;
+      case Key::C7: send_midi(6); break;
       case Key::S12: send_midi(67); break;
       case Key::C8: send_midi(68); break;
       case Key::S13: send_midi(69); break;
       case Key::C9: send_midi(70); break;
       case Key::S14: send_midi(71); break;
       case Key::S15: send_midi(72); break;
+      case Key::master: 
+        if (is_pressed(Key::shift))
+          shutdown();
+        else
+          insert_key_event(cmd, key); 
+        break;
       default: insert_key_event(cmd, key); break;
     }
   }
