@@ -1,5 +1,6 @@
 #pragma once
 
+#include <new>
 #include <array>
 #include <tl/expected.hpp>
 
