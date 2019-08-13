@@ -14,36 +14,36 @@ cache:
 matrix:
   include:
 
-    - name: "Linux, Clang 5.0, Debug, libc++"
+    - name: "Linux, Clang 6.0, Debug, libc++"
       os: linux
       addons:
         apt:
           sources:
-            - llvm-toolchain-trusty-5.0
+            - llvm-toolchain-trusty-6.0
           packages:
-            - clang-5.0
+            - clang-6.0
             - gdb-minimal
             - libasound-dev
       env:
-        - CC=clang-5.0 CXX=clang++-5.0
+        - CC=clang-6.0 CXX=clang++-6.0
         - BUILD_TYPE=Debug
         - USE_LIBCXX=1
         - DEPLOY_DOCS=OFF
 
-    - name: "Linux, Clang 5.0, Release, libstdc++"
+    - name: "Linux, Clang 6.0, Release, libstdc++"
       os: linux
       addons:
         apt:
           sources:
-            - llvm-toolchain-trusty-5.0
+            - llvm-toolchain-trusty-6.0
             - ubuntu-toolchain-r-test
           packages:
-            - clang-5.0
+            - clang-6.0
             - libstdc++-7-dev
             - gdb-minimal
             - libasound-dev
       env:
-        - CC=clang-5.0 CXX=clang++-5.0
+        - CC=clang-6.0 CXX=clang++-6.0
         - BUILD_TYPE=Release
         - USE_LIBCXX=0
         - DEPLOY_DOCS=OFF
@@ -132,8 +132,8 @@ install:
     LLVM_INSTALL=${DEPS_DIR}/llvm/install
     # if in linux and compiler clang and llvm not installed
     if [[ "${TRAVIS_OS_NAME}" == "linux" && "$USE_LIBCXX" == "1" && ! -d $LLVM_INSTALL ]]; then
-    [[ "${CXX}" == "clang++-5.0" ]] && LLVM_VERSION="5.0.0";
     [[ "${CXX}" == "clang++-6.0" ]] && LLVM_VERSION="6.0.0";
+    [[ "${CXX}" == "clang++-7.0" ]] && LLVM_VERSION="7.0.0";
     LLVM_URL="http://llvm.org/releases/${LLVM_VERSION}/llvm-${LLVM_VERSION}.src.tar.xz"
     LIBCXX_URL="http://llvm.org/releases/${LLVM_VERSION}/libcxx-${LLVM_VERSION}.src.tar.xz"
     LIBCXXABI_URL="http://llvm.org/releases/${LLVM_VERSION}/libcxxabi-${LLVM_VERSION}.src.tar.xz"
