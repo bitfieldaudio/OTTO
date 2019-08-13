@@ -10,6 +10,7 @@
 #include "services/clock_manager.hpp"
 #include "services/ui_manager.hpp"
 #include "services/controller.hpp"
+#include "services/settings.hpp"
 
 #include "board/audio_driver.hpp"
 #include "board/controller.hpp"
@@ -36,6 +37,8 @@ int main(int argc, char* argv[])
       EngineManager::create_default
     };
 
+    Settings settings;
+
     // Overwrite the logger signal handlers
     std::signal(SIGABRT, Application::handle_signal);
     std::signal(SIGTERM, Application::handle_signal);
@@ -59,14 +62,14 @@ int main(int argc, char* argv[])
 
 int handle_exception(const char* e)
 {
-  LOGE(e);
+  LOGE("{}", e);
   LOGE("Exception thrown, exitting!");
   return 1;
 }
 
 int handle_exception(std::exception& e)
 {
-  LOGE(e.what());
+  LOGE("{}", e.what());
   LOGE("Exception thrown, exitting!");
   return 1;
 }

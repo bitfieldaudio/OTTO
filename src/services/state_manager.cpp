@@ -29,8 +29,8 @@ namespace otto::services {
   DefaultStateManager::DefaultStateManager()
     : data_file(Application::current().data_dir / "state.json")
   {
-    Application::current().events.post_init.subscribe([this] { load(); });
-    Application::current().events.pre_exit.subscribe([this] { save(); });
+    Application::current().events.post_init.connect([this] { load(); });
+    Application::current().events.pre_exit.connect([this] { save(); });
   }
 
   DefaultStateManager::~DefaultStateManager() {}

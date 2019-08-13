@@ -123,7 +123,6 @@ namespace otto::engines {
   void ChorusScreen::draw(ui::vg::Canvas& ctx)
   {
     using namespace ui::vg;
-    using util::math::vec;
 
     auto& props = engine.props;
 

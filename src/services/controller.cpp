@@ -3,15 +3,17 @@
 #include "util/iterator.hpp"
 #include "util/utility.hpp"
 
-#include "services/ui_manager.hpp"
 #include "services/audio_manager.hpp"
+#include "services/ui_manager.hpp"
 
 namespace otto::services {
 
   using Event = Controller::Event;
   using EventBag = Controller::EventBag;
 
-  static void send_midi_for(Key key, bool press) {
+  static bool send_midi_for(Key key, bool press)
+  {
+    if (UIManager::current().state.key_mode != KeyMode::midi) return false;
     auto send_midi = [press](int note) {
       if (press) {
         auto evt = core::midi::NoteOnEvent{note};
@@ -23,51 +25,52 @@ namespace otto::services {
       }
     };
     switch (key) {
-      case Key::S0: send_midi(47); break;
-      case Key::S1: send_midi(48); break;
-      case Key::C0: send_midi(49); break;
-      case Key::S2: send_midi(50); break;
-      case Key::C1: send_midi(51); break;
-      case Key::S3: send_midi(52); break;
-      case Key::S4: send_midi(53); break;
-      case Key::C2: send_midi(54); break;
-      case Key::S5: send_midi(55); break;
-      case Key::C3: send_midi(56); break;
-      case Key::S6: send_midi(57); break;
-      case Key::C4: send_midi(58); break;
-      case Key::S7: send_midi(59); break;
-      case Key::S8: send_midi(60); break;
-      case Key::C5: send_midi(61); break;
-      case Key::S9: send_midi(62); break;
-      case Key::C6: send_midi(63); break;
-      case Key::S10: send_midi(64); break;
-      case Key::S11: send_midi(65); break;
-      case Key::C7: send_midi(66); break;
-      case Key::S12: send_midi(67); break;
-      case Key::C8: send_midi(68); break;
-      case Key::S13: send_midi(69); break;
-      case Key::C9: send_midi(70); break;
-      case Key::S14: send_midi(71); break;
-      case Key::S15: send_midi(72); break;
-      default: break;
+      case Key::S0: send_midi(47); return true;
+      case Key::S1: send_midi(48); return true;
+      case Key::C0: send_midi(49); return true;
+      case Key::S2: send_midi(50); return true;
+      case Key::C1: send_midi(51); return true;
+      case Key::S3: send_midi(52); return true;
+      case Key::S4: send_midi(53); return true;
+      case Key::C2: send_midi(54); return true;
+      case Key::S5: send_midi(55); return true;
+      case Key::C3: send_midi(56); return true;
+      case Key::S6: send_midi(57); return true;
+      case Key::C4: send_midi(58); return true;
+      case Key::S7: send_midi(59); return true;
+      case Key::S8: send_midi(60); return true;
+      case Key::C5: send_midi(61); return true;
+      case Key::S9: send_midi(62); return true;
+      case Key::C6: send_midi(63); return true;
+      case Key::S10: send_midi(64); return true;
+      case Key::S11: send_midi(65); return true;
+      case Key::C7: send_midi(66); return true;
+      case Key::S12: send_midi(67); return true;
+      case Key::C8: send_midi(68); return true;
+      case Key::S13: send_midi(69); return true;
+      case Key::C9: send_midi(70); return true;
+      case Key::S14: send_midi(71); return true;
+      case Key::S15: send_midi(72); return true;
+      default: return false;
     }
   }
 
   void Controller::keypress(Key key)
   {
-    events.outer().push_back(KeyPressEvent{key});
-    send_midi_for(key, true);
+    if (!send_midi_for(key, true)) events_.outer().push_back(KeyPressEvent{key});
+    key_handler_thread.trigger();
   }
 
   void Controller::encoder(EncoderEvent ev)
   {
-    events.outer().push_back(ev);
+    events_.outer().push_back(ev);
+    key_handler_thread.trigger();
   }
 
   void Controller::keyrelease(Key key)
   {
-    events.outer().push_back(KeyReleaseEvent{key});
-    send_midi_for(key, false);
+    if (!send_midi_for(key, false)) events_.outer().push_back(KeyReleaseEvent{key});
+    key_handler_thread.trigger();
   }
 
   bool Controller::is_pressed(Key k) noexcept
@@ -93,27 +96,28 @@ namespace otto::services {
     return true;
   }
 
-  void Controller::flush_events()
-  {
-    events.swap();
-    for (auto& event : events.inner()) {
-      util::match(event,
-                  [this](KeyPressEvent& ev) {
-                    keys[ev.key._to_index()] = true;
-                    if (handle_global(ev.key)) return;
-                    UIManager::current().current_screen().keypress(ev.key);
-                  },
-                  [this](KeyReleaseEvent& ev) {
-                    keys[ev.key._to_index()] = false;
-                    if (handle_global(ev.key, false)) return;
-                    UIManager::current().current_screen().keyrelease(ev.key);
-                  },
-                  [](EncoderEvent& ev) {
-                    UIManager::current().current_screen().encoder(ev);
-                  });
-    }
-  }
-
+  Controller::Controller()
+    : key_handler_thread([this](auto&& should_run) {
+        while (!events_.inner().empty() || should_run()) {
+          events_.swap();
+          for (auto& event : events_.inner()) {
+            signals.on_input.emit(event);
+            util::match(event,
+                        [this](KeyPressEvent& ev) {
+                          keys[ev.key._to_index()] = true;
+                          if (handle_global(ev.key)) return;
+                          UIManager::current().current_screen().keypress(ev.key);
+                        },
+                        [this](KeyReleaseEvent& ev) {
+                          keys[ev.key._to_index()] = false;
+                          if (handle_global(ev.key, false)) return;
+                          UIManager::current().current_screen().keyrelease(ev.key);
+                        },
+                        [](EncoderEvent& ev) { UIManager::current().current_screen().encoder(ev); });
+          }
+        }
+      })
+  {}
 
   // DummyController //
   struct DummyController final : Controller {
@@ -122,7 +126,8 @@ namespace otto::services {
     void clear_leds() override {}
   };
 
-  std::unique_ptr<Controller> Controller::make_dummy() {
+  std::unique_ptr<Controller> Controller::make_dummy()
+  {
     return std::make_unique<DummyController>();
   }
 

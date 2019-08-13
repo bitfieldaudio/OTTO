@@ -426,7 +426,7 @@ namespace otto::engines {
     ctx.moveTo(line_x, line_top);
     ctx.lineTo(line_x, line_bot);
     ctx.lineWidth(6.0);
-    ctx.lineCap(Canvas::LineCap::ROUND);
+    ctx.lineCap(LineCap::ROUND);
     ctx.closePath();
     // shift not held
     ctx.stroke(Colours::Green);
@@ -439,7 +439,7 @@ namespace otto::engines {
       line_x + 0.5 * bar_width,
       line_bot - engine.props.operators.at(cur_op).outLev.normalize() * (line_bot - line_top));
     ctx.lineWidth(6.0);
-    ctx.lineCap(Canvas::LineCap::ROUND);
+    ctx.lineCap(LineCap::ROUND);
     ctx.closePath();
     // shift not held
     ctx.stroke(Colours::Green);
@@ -475,7 +475,7 @@ namespace otto::engines {
     ctx.moveTo(line_x, line_top);
     ctx.lineTo(line_x, line_bot);
     ctx.lineWidth(6.0);
-    ctx.lineCap(Canvas::LineCap::ROUND);
+    ctx.lineCap(LineCap::ROUND);
     ctx.closePath();
     // shift is held
     ctx.stroke(Colours::Gray60);
@@ -488,7 +488,7 @@ namespace otto::engines {
       line_x + 0.5 * bar_width,
       line_bot - engine.props.operators.at(cur_op).outLev.normalize() * (line_bot - line_top));
     ctx.lineWidth(6.0);
-    ctx.lineCap(Canvas::LineCap::ROUND);
+    ctx.lineCap(LineCap::ROUND);
     ctx.closePath();
     // shift not held
     ctx.stroke(Colours::Gray60);

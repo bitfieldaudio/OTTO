@@ -26,12 +26,13 @@ if (NOT OTTO_USE_LIBCXX)
 endif()
 
 target_link_libraries(otto PUBLIC external)
-target_link_libraries(otto PUBLIC nanocanvas)
+target_link_libraries(otto PUBLIC nanovg)
 target_link_libraries(otto PUBLIC GSL)
 target_link_libraries(otto PUBLIC fmt)
 target_link_libraries(otto PUBLIC gamma)
 target_link_libraries(otto PUBLIC foonathan_array)
 target_link_libraries(otto PUBLIC foonathan_type_safe)
+target_link_libraries(otto PUBLIC choreograph)
 
 # Enable warnings for local code
 if(MSVC)

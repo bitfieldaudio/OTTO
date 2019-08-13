@@ -406,7 +406,7 @@ namespace otto::engines {
 
   void PotionSynthScreen::draw_waveform(ui::vg::Canvas& ctx, Point start, Size scale, Colour cl, int steps, int wt) {
     ctx.lineWidth(6.0);
-    ctx.lineCap(Canvas::LineCap::ROUND);
+    ctx.lineCap(LineCap::ROUND);
 
     ctx.beginPath();
     ctx.moveTo(start.x, start.y);
@@ -468,7 +468,7 @@ namespace otto::engines {
     ctx.moveTo(line_x, line_top);
     ctx.lineTo(line_x, line_bot);
     ctx.lineWidth(6.0);
-    ctx.lineCap(Canvas::LineCap::ROUND);
+    ctx.lineCap(LineCap::ROUND);
     ctx.closePath();
     ctx.stroke(Colours::Gray50);
 
@@ -485,7 +485,7 @@ namespace otto::engines {
     ctx.moveTo(line_x - 0.5 * bar_width, line_bot - cur_level * (line_bot - line_top));
     ctx.lineTo(line_x + 0.5 * bar_width, line_bot - cur_level * (line_bot - line_top));
     ctx.lineWidth(6.0);
-    ctx.lineCap(Canvas::LineCap::ROUND);
+    ctx.lineCap(LineCap::ROUND);
     ctx.closePath();
     ctx.stroke(Colours::Yellow);
   }

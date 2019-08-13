@@ -64,8 +64,8 @@ namespace otto::engines {
     ctx.fill();
     ctx.lineWidth(6.0);
     ctx.strokeStyle(Colour::bytes(147, 192, 34));
-    ctx.lineCap(Canvas::LineCap::ROUND);
-    ctx.lineJoin(Canvas::LineJoin::ROUND);
+    ctx.lineCap(LineCap::ROUND);
+    ctx.lineJoin(LineJoin::ROUND);
     ctx.stroke();
 
     // Dial
@@ -89,8 +89,8 @@ namespace otto::engines {
     ctx.bezierCurveTo(221.0, 122.6, 217.6, 133.7, 211.8, 143.0);
     ctx.lineWidth(6.0);
     ctx.strokeStyle(Colour::bytes(99, 99, 99));
-    ctx.lineCap(Canvas::LineCap::ROUND);
-    ctx.lineJoin(Canvas::LineJoin::ROUND);
+    ctx.lineCap(LineCap::ROUND);
+    ctx.lineJoin(LineJoin::ROUND);
     ctx.stroke();
     ctx.restore();
 

@@ -28,6 +28,10 @@ namespace otto::glfw {
 
   Window::Window(int width, int height, const std::string& name)
   {
+    if (!glfwInit()) {
+      LOG_F(ERROR, "Failed to init GLFW.");
+    }
+
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -187,7 +191,7 @@ namespace otto::glfw {
     glDisable(GL_DEPTH_TEST);
 
     _canvas.clearColor(vg::Colours::Black);
-    _canvas.begineFrame(winWidth, winHeight);
+    _canvas.beginFrame(winWidth, winHeight);
   }
 
   void NVGWindow::end_frame()
@@ -214,8 +218,8 @@ namespace otto::services {
     if (!glfwInit()) {
       LOG_F(ERROR, "Failed to init GLFW.");
     }
-    gsl::final_act terminate_glfw(glfwTerminate);
-    gsl::final_act exit_application([] { Application::current().exit(Application::ErrorCode::ui_closed); });
+    gsl::final_action terminate_glfw(glfwTerminate);
+    gsl::final_action exit_application([] { Application::current().exit(Application::ErrorCode::ui_closed); });
 
     glfw::NVGWindow main_win(vg::width, vg::height, "OTTO");
 
@@ -268,11 +272,11 @@ namespace otto::services {
       main_win.end_frame();
 
       glfwPollEvents();
-      Controller::current().flush_events();
 
       spent = glfwGetTime() - t;
 
-      std::this_thread::sleep_for(std::chrono::milliseconds(int(1000 / 60 - spent * 1000)));
+      std::this_thread::sleep_for(std::chrono::milliseconds(int(1000 / 120 - spent * 1000)));
+
     }
   }
 } // namespace otto::services
