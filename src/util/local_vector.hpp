@@ -1,7 +1,7 @@
 #pragma once
 
-#include <new>
 #include <array>
+#include <new>
 #include <tl/expected.hpp>
 
 #include "util/exception.hpp"
@@ -111,19 +111,30 @@ namespace otto::util {
     {
       return data()[idx];
     }
-
     constexpr value_type* data() noexcept
     {
       // Launder is a pointer optimization barrier. It's necessary to make the
       // reinterpret_cast legal in this case
+#if __cpp_lib_launder >= 201606
+      // have std::launder for sure
       return std::launder(reinterpret_cast<value_type*>(&_data));
+#else
+      // not sure, could've std::launder either way
+      return reinterpret_cast<value_type*>(&_data);
+#endif
     }
 
     constexpr const value_type* data() const noexcept
     {
       // Launder is a pointer optimization barrier. It's necessary to make the
       // reinterpret_cast legal in this case
-      return std::launder(reinterpret_cast<const value_type*>(&_data));
+#if __cpp_lib_launder >= 201606
+      // have std::launder for sure
+      return std::launder(reinterpret_cast<value_type*>(&_data));
+#else
+      // not sure, could've std::launder either way
+      return reinterpret_cast<value_type*>(&_data);
+#endif
     }
 
     // Modifiers
@@ -150,7 +161,7 @@ namespace otto::util {
     /// Inserts value before pos
     constexpr tl::expected<iterator, error> insert_before(iterator iter, const value_type& value) noexcept
     {
-      return push_back(value).map([&](auto &&) {
+      return push_back(value).map([&](auto&&) {
         // Move the element back until its placed at the correct location
         for (auto i = end() - 1; i != iter; --i) {
           std::swap(*(i), *(i - 1));
@@ -160,9 +171,9 @@ namespace otto::util {
     }
 
     /// Inserts value before iter. NOTE: use insert_before for noexcept version
-    /// 
+    ///
     /// Mainly provided for use with STL algorithms like transform.
-    /// 
+    ///
     /// @throws tl::bad_expected_access<error> if there was an error when inserting
     constexpr iterator insert(iterator iter, const value_type& value)
     {
@@ -179,7 +190,7 @@ namespace otto::util {
 
     constexpr void clear() noexcept
     {
-      while(!empty()) {
+      while (!empty()) {
         pop_back();
       }
     }
