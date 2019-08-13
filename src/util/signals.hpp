@@ -14,7 +14,8 @@ namespace otto::util {
 
   /// Type-erased connection
   struct Slot {
-    Slot() noexcept = default;
+    Slot() /*noexcept*/ = default;
+
     Slot(Slot*& ptr, std::function<void()> d) noexcept : _ptr(&ptr), _disconnect(std::move(d))
     {
       if (_ptr) *_ptr = this;
