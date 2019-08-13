@@ -24,4 +24,4 @@
 	url = https://github.com/foonathan/type_safe
 [submodule "external/choreograph"]
 	path = external/choreograph
-	url = https://github.com/sansumbrella/Choreograph
+	url = https://github.com/topisani/Choreograph
