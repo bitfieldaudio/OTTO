@@ -62,7 +62,6 @@ namespace otto::engines {
         perc_env.amp(3 * cl);
     }).call_now(props.click);
 
-
   }
 
   void GossSynth::Voice::on_note_on(float freq_target) noexcept {

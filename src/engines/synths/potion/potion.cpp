@@ -179,7 +179,7 @@ namespace otto::engines {
     curve_osc.pan.pos(curve() + 1);
     /// Get next sample from wavetables
     float result = lfo_osc() + curve_osc();
-    return result * 1.2;
+    return result * 2.0f;
   }
 
   float PotionSynth::DualWavePlayer::operator()() noexcept
