@@ -46,7 +46,8 @@ namespace otto::engines {
   }
 
   template<typename F>
-  auto Sequencer::for_cur_chan(F&& f) {
+  auto Sequencer::for_cur_chan(F&& f)
+  {
     for_chan(UIManager::current().state.active_channel.get(), FWD(f));
   }
 
@@ -66,6 +67,7 @@ namespace otto::engines {
       case ChannelEnum::sampler9: return f(props.group3, 2);
       default: return f(props.group0, 0);
     }
+    OTTO_UNREACHABLE;
   }
 
   template<typename F>
@@ -99,6 +101,7 @@ namespace otto::engines {
       case ChannelEnum::internal: return screen();
       case ChannelEnum::external: return screen();
     }
+    OTTO_UNREACHABLE;
   }
 
   ui::Screen& Sequencer::envelope_screen() noexcept
@@ -117,6 +120,7 @@ namespace otto::engines {
       case ChannelEnum::internal: return screen();
       case ChannelEnum::external: return screen();
     }
+    OTTO_UNREACHABLE;
   }
 
   // Screen //
@@ -160,8 +164,8 @@ namespace otto::engines {
       case ChannelEnum::sampler7: return LED{Key::C7};
       case ChannelEnum::sampler8: return LED{Key::C8};
       case ChannelEnum::sampler9: return LED{Key::C9};
-      default: OTTO_UNREACHABLE;
     }
+    OTTO_UNREACHABLE;
   }
 
   struct SeqScreen : EngineScreen<Sequencer> {
@@ -202,10 +206,9 @@ namespace otto::engines {
           on_draw.disconnect();
           on_input.disconnect();
           // Clear LEDs
-          engine.for_all_chans([] (ChannelEnum i, auto&&, auto&&) {
-            Controller::current().set_color(chan_led(i), LEDColor::Black);
-          });
-          for (int i : {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15}) {
+          engine.for_all_chans(
+            [](ChannelEnum i, auto&&, auto&&) { Controller::current().set_color(chan_led(i), LEDColor::Black); });
+          for (int i : {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}) {
             Controller::current().set_color(seq_led(i), LEDColor::Black);
           }
         }
@@ -276,8 +279,8 @@ namespace otto::engines {
           });
         };
 
-        auto channel_action = [&] (ChannelEnum ch) {
-          engine.for_chan(ch, [&] (auto& group, auto idx) {
+        auto channel_action = [&](ChannelEnum ch) {
+          engine.for_chan(ch, [&](auto& group, auto idx) {
             if (Controller::current().is_pressed(Key::shift)) {
               group.mutes[idx] = !group.mutes[idx];
             } else {
