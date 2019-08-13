@@ -6,6 +6,11 @@ namespace otto::test {
 
   using util::local_vector;
 
+  template<typename... Args>
+  std::vector<int> vec(Args&&... args) {
+    return {FWD(args)...};
+  }
+
   TEST_CASE( "local_vector") {
     using LvInt = local_vector<int, 5>;
     LvInt lv;
@@ -24,7 +29,7 @@ namespace otto::test {
 
     REQUIRE_NOTHROW(lv.push_back(5).error() == LvInt::error::full);
 
-    REQUIRE(std::vector(lv.begin(), lv.end()) == std::vector({0, 1, 2, 3, 4}));
+    REQUIRE(vec(lv.begin(), lv.end()) == vec(0, 1, 2, 3, 4));
 
     auto pos = lv.begin() + 2;
     REQUIRE_NOTHROW(lv.insert_before(pos, 10).error() == LvInt::error::full);
@@ -33,15 +38,15 @@ namespace otto::test {
     REQUIRE(lv.pop_back().has_value());
     REQUIRE_NOTHROW(lv.insert_before(pos, 10).value() == lv.begin() + 2);
 
-    REQUIRE(std::vector(lv.begin(), lv.end()) == std::vector({0, 1, 10, 2, 3}));
+    REQUIRE(vec(lv.begin(), lv.end()) == vec(0, 1, 10, 2, 3));
 
     lv.pop_back();
 
     REQUIRE_NOTHROW(lv.insert_before(lv.end(), 11).value() == lv.begin() + 4);
-    REQUIRE(std::vector(lv.begin(), lv.end()) == std::vector({0, 1, 10, 2, 11}));
+    REQUIRE(vec(lv.begin(), lv.end()) == vec(0, 1, 10, 2, 11));
     lv.pop_back();
     REQUIRE_NOTHROW(lv.insert_before(lv.begin(), 12).value() == lv.begin());
-    REQUIRE(std::vector(lv.begin(), lv.end()) == std::vector({12, 0, 1, 10, 2}));
+    REQUIRE(vec(lv.begin(), lv.end()) == vec(12, 0, 1, 10, 2));
   }
 
 } // namespace otto::test
