@@ -15,6 +15,10 @@
 #define CATCH_CONFIG_ENABLE_BENCHMARKING 1
 #include <catch.hpp>
 
+#include "graphics.t.hpp"
+
+#include "benchmark_csv_reporter.hpp"
+
 using Random = effolkronium::random_static;
 
 namespace otto::test {

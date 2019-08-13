@@ -6,8 +6,8 @@ namespace otto::core::ui::vg::icons {
 
   void Arrow::draw(Canvas& ctx) {
     ctx.save();
-    ctx.lineJoin(Canvas::LineJoin::ROUND);
-    ctx.lineCap(Canvas::LineCap::ROUND);
+    ctx.lineJoin(LineJoin::ROUND);
+    ctx.lineCap(LineCap::ROUND);
     ctx.lineWidth(lineWidth);
 
     if (!looping) {

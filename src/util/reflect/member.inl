@@ -13,7 +13,7 @@ namespace otto::reflect {
   {}
 
   template<typename Class, typename T, AccessorType AT, typename AD>
-  constexpr const T& Member<Class, T, AT, AD>::get(const Class& obj) const
+  constexpr decltype(auto) Member<Class, T, AT, AD>::get(const Class& obj) const
   {
     return _accessor.get_const(_accessor.data, obj);
   }
@@ -79,7 +79,7 @@ namespace otto::reflect {
 
     using MemberT = Member<Class, std::decay_t<Res>, AccessorType::ReadWrite, Data>;
     return MemberT(name, typename MemberT::Accessor{
-                           [](const Data& d, const Class& obj) -> const Val& { return std::invoke(d.first, obj); },
+                           [](const Data& d, const Class& obj) { return std::invoke(d.first, obj); },
                            [](const Data& d, Class& obj, const Val& val) {
                              return std::invoke(d.second, obj, val);
                            },

@@ -4,7 +4,7 @@ gl3w_gen("${OTTO_EXTERNAL_DIR}/")
 target_sources(external PRIVATE "${OTTO_EXTERNAL_DIR}/src/gl3w.c")
 
 # GLFW
-find_package(glfw3)
+find_package(glfw3 QUIET)
 if (glfw3_FOUND)
     message("Using system GLFW")
     #pkg_search_module(GLFW REQUIRED glfw3)

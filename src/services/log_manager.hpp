@@ -8,6 +8,7 @@
 #include <debug_assert.hpp>
 #include <loguru.hpp>
 
+#include "util/macros.hpp"
 #include "services/application.hpp"
 
 namespace otto::services {
@@ -115,7 +116,7 @@ namespace otto {
 
 #define OTTO_ASSERT_NM(Expr) DEBUG_ASSERT(Expr, ::otto::assert_module{})
 #define OTTO_ASSERT_M(Expr, ...) DEBUG_ASSERT(Expr, ::otto::assert_module{}, __VA_ARGS__)
-#define OTTO_ASSERT(...) EXPAND(SWITCH_FOR_VARARGS_1(OTTO_ASSERT_NM, OTTO_ASSERT_M, __VA_ARGS__))
+#define OTTO_ASSERT(...) SWITCH_FOR_VARARGS_1(OTTO_ASSERT_NM, OTTO_ASSERT_M, __VA_ARGS__)
 
 #define OTTO_UNREACHABLE \
  (DEBUG_UNREACHABLE(::otto::assert_module{}), DEBUG_ASSERT_MARK_UNREACHABLE)

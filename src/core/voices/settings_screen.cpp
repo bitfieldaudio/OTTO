@@ -101,7 +101,7 @@ namespace otto::core::voices {
 
     //------------------------------//
     // Portamento
-    ctx.globalCompositeOperation(NVG_XOR);
+    ctx.globalCompositeOperation(CompositeOperation::XOR);
     //Background. Note, colour doesn't matter for this,
     //it is only to get the logic to work
     ctx.beginPath();
@@ -122,7 +122,7 @@ namespace otto::core::voices {
     ctx.textAlign(HorizontalAlign::Center, VerticalAlign::Middle);
     ctx.fillText("portamento", {width * 0.5, y_pad + 1.5 * space + y_shift});
 
-    ctx.globalCompositeOperation(NVG_SOURCE_OVER);
+    ctx.globalCompositeOperation(CompositeOperation::SOURCE_OVER);
 
     // Rectangle
     ctx.beginPath();
