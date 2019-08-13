@@ -24,6 +24,9 @@ namespace otto::core::props {
     static_assert(util::is_number_or_enum_v<value_type> || std::is_same_v<value_type, bool>,
                   "The 'steppable' mixin requires a number, bool or enum type");
 
+    static_assert(!util::BetterEnum::is<value_type> || std::is_signed_v<util::enum_decay_t<value_type>>,
+                  "Enums must have a signed underlying type to be used in a steppable property");
+
     void init(value_type p_step_size = value_type{1})
     {
       // unwrap enums

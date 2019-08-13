@@ -17,10 +17,10 @@
 
 namespace otto::services {
 
-  BETTER_ENUM(SourceEnum, std::uint8_t, sequencer, internal, external)
+  BETTER_ENUM(SourceEnum, std::int8_t, sequencer, internal, external)
 
   BETTER_ENUM(ChannelEnum,
-              std::uint8_t,
+              std::int8_t,
               sampler0 = 0,
               sampler1 = 1,
               sampler2 = 2,
@@ -37,7 +37,7 @@ namespace otto::services {
   SourceEnum source_of(ChannelEnum) noexcept;
 
   BETTER_ENUM(ScreenEnum,
-              std::uint8_t,
+              std::int8_t,
               sends,
               routing,
               fx1,
@@ -60,7 +60,7 @@ namespace otto::services {
               twist1,
               twist2)
 
-  BETTER_ENUM(KeyMode, std::uint8_t, midi, seq);
+  BETTER_ENUM(KeyMode, std::int8_t, midi, seq);
 
   struct UIManager : core::Service {
     /// The UI state
