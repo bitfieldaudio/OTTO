@@ -266,6 +266,7 @@ namespace otto::nvg {
         case CompositeOperation::COPY: return NVG_COPY;
         case CompositeOperation::XOR: return NVG_XOR;
       }
+      OTTO_UNREACHABLE;
     }();
     nvgGlobalCompositeOperation(m_nvgCtx, nvgOp);
     return *this;
