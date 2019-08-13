@@ -218,8 +218,8 @@ namespace otto::services {
     if (!glfwInit()) {
       LOG_F(ERROR, "Failed to init GLFW.");
     }
-    gsl::final_act terminate_glfw(glfwTerminate);
-    gsl::final_act exit_application([] { Application::current().exit(Application::ErrorCode::ui_closed); });
+    gsl::final_action terminate_glfw(glfwTerminate);
+    gsl::final_action exit_application([] { Application::current().exit(Application::ErrorCode::ui_closed); });
 
     glfw::NVGWindow main_win(vg::width, vg::height, "OTTO");
 

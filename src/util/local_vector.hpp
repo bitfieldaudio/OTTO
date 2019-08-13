@@ -1,6 +1,6 @@
 #pragma once
 
-#include <array>
+#include <initializer_list>
 #include <new>
 #include <tl/expected.hpp>
 
@@ -26,11 +26,10 @@ namespace otto::util {
 
     constexpr local_vector() : _data(), _size(0) {}
 
-    template<std::size_t N, std::enable_if_t<N <= Capacity>>
-    constexpr local_vector(std::array<T, N> il) : _size(il.size())
+    constexpr local_vector(std::initializer_list<value_type> il) : _size(il.size())
     {
       for (T& v : il) {
-        push_back(std::move(v));
+        push_back(v);
       }
     }
 
@@ -130,7 +129,7 @@ namespace otto::util {
       // reinterpret_cast legal in this case
 #if __cpp_lib_launder >= 201606
       // have std::launder for sure
-      return std::launder(reinterpret_cast<value_type*>(&_data));
+      return std::launder(reinterpret_cast<const value_type*>(&_data));
 #else
       // not sure, could've std::launder either way
       return reinterpret_cast<const value_type*>(&_data);
