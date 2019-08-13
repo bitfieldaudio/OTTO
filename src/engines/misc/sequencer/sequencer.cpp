@@ -164,8 +164,8 @@ namespace otto::engines {
       case ChannelEnum::sampler7: return LED{Key::C7};
       case ChannelEnum::sampler8: return LED{Key::C8};
       case ChannelEnum::sampler9: return LED{Key::C9};
+      default: OTTO_UNREACHABLE;
     }
-    OTTO_UNREACHABLE;
   }
 
   struct SeqScreen : EngineScreen<Sequencer> {
