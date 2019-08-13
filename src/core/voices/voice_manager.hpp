@@ -181,7 +181,7 @@ namespace otto::core::voices {
     struct SettingsProps {
       props::Property<PlayMode, props::wrap> play_mode = {PlayMode::poly};
       props::Property<float> rand = {0, props::limits(0, 1), props::step_size(0.01)};
-      props::Property<float> sub = {0.2, props::limits(0.01, 1), props::step_size(0.01)};
+      props::Property<float> sub = {1, props::limits(0.01, 1), props::step_size(0.01)};
       props::Property<float> detune = {0, props::limits(0, 1), props::step_size(0.01)};
       props::Property<int> interval = {0, props::limits(-12, 12)};
 
@@ -329,7 +329,7 @@ namespace otto::core::voices {
     };
 
     struct PolyAllocator final : IVoiceAllocator {
-      PolyAllocator(VoiceManager& vm_in) : IVoiceAllocator(vm_in) {}
+      PolyAllocator(VoiceManager& vm_in) : IVoiceAllocator(vm_in) {};
       void handle_midi_on(const midi::NoteOnEvent&) noexcept override;
     };
 

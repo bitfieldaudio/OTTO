@@ -99,7 +99,10 @@ namespace otto::engines {
 
     struct Voice : voices::VoiceBase<Voice, Pre> {
       gam::LFO<> lfo;
-      gam::Decay<> curve;
+      // Smoothing filter to eliminate pops when resetting the lfo.
+      // Cost is 2 multiplications and 1 addition per sample.
+      gam::OnePole<> lfo_smoother{20};
+      gam::AD<> curve{0.001, 0.2, -2, -4};
 
       DualWavePlayer curve_osc;
       DualWavePlayer lfo_osc;

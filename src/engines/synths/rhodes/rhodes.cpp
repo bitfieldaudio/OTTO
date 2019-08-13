@@ -110,7 +110,7 @@ namespace otto::engines {
 
   float RhodesSynth::Post::operator()(float in) noexcept
   {
-    return 0.006f*in*(1 + lfo_amount*lfo.tri());
+    return 0.003f*in*(1 + lfo_amount*lfo.tri());
   }
 
   audio::ProcessData<1> RhodesSynth::process(audio::ProcessData<1> data)

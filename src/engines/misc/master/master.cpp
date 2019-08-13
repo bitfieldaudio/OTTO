@@ -21,16 +21,20 @@ namespace otto::engines {
 
   Master::Master()
     : MiscEngine<Master>(std::make_unique<MasterScreen>(this))
-  {}
+  {
+    props.volume.on_change().connect([this](float v){
+      volume_square = v * v;
+    }).call_now();
+  }
 
 
   audio::ProcessData<2> Master::process(audio::ProcessData<2> data)
   {
     for (auto&& l : data.audio[0]) {
-      l = util::math::fasttanh3( l * props.volume * props.volume * 0.80 );
+      l = util::math::fastatan( l * volume_square );
     }
     for (auto&& r : data.audio[1]) {
-      r = util::math::fasttanh3( r * props.volume * props.volume * 0.80 );
+      r = util::math::fastatan( r * volume_square );
     }
     return data;
   }

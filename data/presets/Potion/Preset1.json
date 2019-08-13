@@ -1,0 +1,50 @@
+{
+  "engine": "Potion",
+  "name": "Preset1",
+  "props": {
+    "props": {
+      "curve_osc": {
+        "curve_length": 0.5499999523162842,
+        "wave1": {
+          "file": "07.wav",
+          "volume": 0.5
+        },
+        "wave2": {
+          "file": "05.wav",
+          "volume": 0.5
+        }
+      },
+      "lfo_osc": {
+        "lfo_speed": 0.059999994933605194,
+        "wave1": {
+          "file": "00.wav",
+          "volume": 0.5
+        },
+        "wave2": {
+          "file": "05.wav",
+          "volume": 0.6499998569488525
+        }
+      }
+    },
+    "voice_manager": {
+      "envelope": {
+        "attack": 0.0,
+        "decay": 0.5200000405311584,
+        "release": 0.0,
+        "sustain": 0.5000004768371582
+      },
+      "voice_settings": {
+        "detune": 0.0,
+        "interval": 0,
+        "legato": true,
+        "octave": 0,
+        "play_mode": "poly",
+        "portamento": 0.01999998465180397,
+        "rand": 0.0,
+        "retrig": true,
+        "sub": 1.0,
+        "transpose": 0
+      }
+    }
+  }
+}

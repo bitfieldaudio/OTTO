@@ -163,7 +163,7 @@ namespace otto::engines {
   void PotionSynth::Voice::on_note_on(float freq_target) noexcept
   {
     lfo.phase(0.f);
-    curve.reset(-2);
+    curve.resetSoft();
     pre.last_voice = this;
   }
 
@@ -174,12 +174,12 @@ namespace otto::engines {
       curve_osc.waves[osc].freq(frequency());
     }
     /// Set panning positions
-    lfo_pan = lfo.tri();
+    lfo_pan = lfo_smoother( lfo.tri() );
     lfo_osc.pan.pos(lfo_pan);
     curve_osc.pan.pos(curve() + 1);
     /// Get next sample from wavetables
     float result = lfo_osc() + curve_osc();
-    return result;
+    return result * 1.2;
   }
 
   float PotionSynth::DualWavePlayer::operator()() noexcept

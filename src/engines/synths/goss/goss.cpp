@@ -32,7 +32,7 @@ namespace otto::engines {
     pipes[1].freq(fundamental);
     pipes[2].freq(fundamental);
     percussion.freq(frequency());
-    return pipes[0]() + pipes[1]() * props.drawbar1 + pipes[2]() * props.drawbar2 + 0*percussion() * perc_env();
+    return pipes[0]() + pipes[1]() * props.drawbar1 + pipes[2]() * props.drawbar2 + percussion() * perc_env();
   }
 
   GossSynth::Voice::Voice(Pre& pre) noexcept : VoiceBase(pre) {
@@ -58,8 +58,8 @@ namespace otto::engines {
 
     perc_env.finish();
     props.click.on_change().connect([this](float cl) {
-        perc_env.decay(cl * 5);
-        perc_env.amp(0.5 + 3 * cl);
+        perc_env.decay(cl * 2);
+        perc_env.amp(3 * cl);
     }).call_now(props.click);
 
 

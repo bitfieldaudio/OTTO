@@ -94,6 +94,8 @@ namespace otto::core::voices {
   template<typename D, typename P>
   void VoiceBase<D, P>::release_no_env() noexcept
   {
+    /// This method is called when a voice is stolen in the static/monophonic playmodes
+    /// (mono, unison).
     if (is_triggered()) {
       on_note_off();
     }
@@ -116,11 +118,10 @@ namespace otto::core::voices {
     vm.note_stack.clear();
     vm.free_voices.clear();
 
-    for (auto &voice : vm.voices_) {
+    for (auto&& voice : vm_in.voices_) {
       vm.free_voices.push_back(&voice);
       voice.env_.amp(1.f);
     }
-    DLOGI("FREE VOICES: {}", vm.free_voices.size());
   }
 
   template<typename V, int N>
@@ -261,7 +262,9 @@ namespace otto::core::voices {
         auto& note = *(vm.note_stack.begin() + num_voices_used - 1);
         DLOGI("Stealing voice {} from key {}", (note.voice - vm.voices_.data()), note.note);
         Voice &v = *note.voice;
-        v.release_no_env();
+        /// release_no_env calls on_note_off. Don't do this if legato is engaged, since we are stealing the voice
+        /// and will note call on_note_on again.
+        if (!vm.settings_props.legato) v.release_no_env();
         note.voice = nullptr;
         vm.note_stack.push_front({.key = key, .note = key - 12 * i, .detune = 1, .velocity = evt.velocity / 127.f, .voice = &v});
         v.trigger(key - 12 * sv, 1, evt.velocity * (1 - sv + vm.settings_props.sub * (float)sv) / 127.f, vm.settings_props.legato, false);
@@ -309,7 +312,9 @@ namespace otto::core::voices {
         auto& note = *(vm.note_stack.begin() + num_voices_used - 1);
         DLOGI("Stealing voice {} from key {}", (note.voice - vm.voices_.data()), note.note);
         Voice &v = *note.voice;
-        v.release_no_env();
+        /// release_no_env calls on_note_off. Don't do this if legato is engaged, since we are stealing the voice
+        /// and will note call on_note_on again.
+        if (!vm.settings_props.legato) v.release_no_env();
         note.voice = nullptr;
         vm.note_stack.push_front({.key = key, .note = key, .detune = vm.detune_values[i], .velocity = evt.velocity / 127.f, .voice = &v});
         v.trigger(key, vm.detune_values[i], evt.velocity / 127.f, vm.settings_props.legato, false);
