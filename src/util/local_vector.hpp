@@ -133,7 +133,7 @@ namespace otto::util {
       return std::launder(reinterpret_cast<value_type*>(&_data));
 #else
       // not sure, could've std::launder either way
-      return reinterpret_cast<value_type*>(&_data);
+      return reinterpret_cast<const value_type*>(&_data);
 #endif
     }
 
