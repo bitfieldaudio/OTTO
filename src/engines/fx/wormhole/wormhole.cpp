@@ -51,7 +51,7 @@ namespace otto::engines {
       bufL = output_delay[0](frm);
       bufR = output_delay[1](frm);
     }
-    return data.redirect(buf);
+    return data.with(buf);
   }
 
   // SCREEN //

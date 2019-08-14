@@ -3,8 +3,8 @@
 #include <array>
 #include <memory>
 #include <tl/optional.hpp>
-#include <type_safe/strong_typedef.hpp>
 
+#include "core/audio/clock.hpp"
 #include "core/service.hpp"
 #include "services/application.hpp"
 
@@ -15,87 +15,45 @@ namespace otto::services {
   /// The clock can be started or stopped by an internal or external source,
   /// and should be used by the sequencer, the looper, and arpeggiators.
   struct ClockManager : core::Service {
-    using Time = type_safe::strong_typedef<struct TimeTag, float>;
+    using ClockCounter = core::clock::ClockCounter;
+    using ClockRange = core::clock::ClockRange;
+    using Time = core::clock::Time;
 
-    /// The source currently controling the clock.
-    enum struct Source { internal, midi, sync };
+    // Initialization //
 
-    /// Get the current time
-    virtual Time current_time() = 0;
-    /// Whether the clock is running
-    virtual bool running() = 0;
+    ClockManager() noexcept;
 
-    /// A Client managing the clock.
-    ///
-    /// The client is an interface to start, stop and sync the clock.
-    struct Client;
-
-    /// Request a client to manage the clock.
-    ///
-    /// Multiple clients can exist, but only one for each source type.
-    ///
-    /// @return tl::nullopt if a client for the specified source has already been requested.
-    /// Otherwise, a new client.
-    tl::optional<Client> request_client(Source s);
-
-    /// The source that last started the clock.
-    Source active_source() const noexcept;
-
-    /// Create an instance of the default clock manager
-    static std::unique_ptr<ClockManager> create_default();
-
-    static ClockManager& current() noexcept {
-      return Application::current().clock_manager;
+    static std::unique_ptr<ClockManager> create_default() noexcept
+    {
+      return std::make_unique<ClockManager>();
     }
 
-  protected:
-    /// Start the clock, implementation
-    ///
-    /// Called by @ref Client::start
-    virtual void start(Source) = 0;
+    static ClockManager& current() noexcept {
+      return *Application::current().clock_manager;
+    }
 
-    /// Stop the clock, implementation
-    ///
-    /// Called by @ref Client::start
-    virtual void stop() = 0;
+    // Member funcs //
 
-    /// Set the bpm, implementation
-    /// 
-    /// Called by @ref Client::set_bpm
-    virtual void set_bpm() = 0;
+    // Accessors //
 
-    /// Set current time, implementation
-    /// 
-    /// Called by @ref Client::set_current
-    virtual void set_current(Time) = 0;
+    float bpm() const noexcept;
+    int samples_pr_beat() const noexcept;
+    bool running() const noexcept;
 
-    std::array<bool, 3> _client_exists;
-    Source _active_source = Source::internal;
-  };
+    // Modifiers //
 
-  struct ClockManager::Client {
-    /// Start the clock, and set the value of @ref ClockManager::source()
-    void start();
+    void set_bpm(float bpm) noexcept;
+    void start() noexcept;
+    void stop(bool reset = true) noexcept;
+    void reset() noexcept;
 
-    /// Stop the clock
-    void stop();
+    ClockRange step_frames(int nframes);
 
-    /// Set the bpm
-    void set_bpm();
-
-    /// Set current time
-    void set_current(Time);
-
-    /// The clock manager this client is attached to.
-    ClockManager& clock_manager() noexcept;
   private:
-    friend ClockManager;
-
-    /// Private constructor so it can only be constructed from @ref ClockManager::request_client
-    Client(ClockManager& cm, Source source) : _cm(cm), _source(source) {}
-
-    ClockManager& _cm;
-    Source _source;
+    bool running_ = false;
+    float bpm_ = 0;
+    int samples_pr_beat_ = 0;
+    ClockCounter counter_;
   };
 
 

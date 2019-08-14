@@ -103,8 +103,6 @@ namespace otto::engines {
     /// @param f callable as `f(ChannelEnum, SamplerGroup, int idx)`
     template<typename F>
     void for_all_chans(F&& f);
-
-    int smpl_counter = 0;
   };
 
 } // namespace otto::engines

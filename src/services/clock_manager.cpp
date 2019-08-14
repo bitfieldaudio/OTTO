@@ -2,86 +2,63 @@
 
 #include "util/type_traits.hpp"
 
+#include "services/audio_manager.hpp"
+
 namespace otto::services {
 
-  // ClockManager //
+  using namespace core;
+  using namespace core::clock;
 
-  using Client = ClockManager::Client;
-  using Source = ClockManager::Source;
-  using Time = ClockManager::Time;
+  // Initialization //
 
-  tl::optional<Client> ClockManager::request_client(Source s)
+  ClockManager::ClockManager() noexcept
   {
-    return _client_exists[util::underlying(s)] ? tl::nullopt : tl::make_optional(Client(*this, s));
+    Application::current().events.post_init.connect([this] { set_bpm(120.f); });
   }
 
-  Source ClockManager::active_source() const noexcept
+  // Accessors //
+
+  float ClockManager::bpm() const noexcept
   {
-    return _active_source;
+    return bpm_;
   }
 
-  // ClockManager::Client //
-
-  void Client::start()
+  int ClockManager::samples_pr_beat() const noexcept
   {
-    _cm._active_source = _source;
-    _cm.start(_source);
+    return samples_pr_beat_;
   }
 
-  void Client::stop()
+  bool ClockManager::running() const noexcept
   {
-    _cm.stop();
+    return running_;
   }
 
-  void Client::set_bpm()
+  // Modifiers //
+
+  void ClockManager::set_bpm(float bpm) noexcept
   {
-    _cm.set_bpm();
+    bpm_ = bpm;
+    samples_pr_beat_ = AudioManager::current().samplerate() / (bpm / 60.f);
   }
 
-  void Client::set_current(Time time)
+  ClockRange ClockManager::step_frames(int nframes)
   {
-    _cm.set_current(time);
+    if (running()) counter_.step(notes::beat * nframes / samples_pr_beat_);
+    return counter_.current();
   }
 
-  ClockManager& Client::clock_manager() noexcept
+  void ClockManager::start() noexcept
   {
-    return _cm;
+    running_ = true;
   }
-
-  // DefaultClockManager //
-
-  struct DefaultClockManager : ClockManager {
-    Time current_time() override;
-    bool running() override;
-
-  protected:
-    void start(Source) override;
-    void stop() override;
-    void set_bpm() override;
-    void set_current(Time) override;
-  };
-
-  // ClockManager::create_default //
-
-  std::unique_ptr<ClockManager> ClockManager::create_default()
+  void ClockManager::stop(bool reset) noexcept
   {
-    return std::make_unique<DefaultClockManager>();
+    running_ = false;
+    if (reset) this->reset();
   }
-
-  // DefaultClockManager implementation //
-
-  Time DefaultClockManager::current_time()
+  void ClockManager::reset() noexcept
   {
-    return Time{0};
+    counter_.reset();
   }
-  bool DefaultClockManager::running()
-  {
-    return false;
-  }
-
-  void DefaultClockManager::start(Source) {}
-  void DefaultClockManager::stop() {}
-  void DefaultClockManager::set_bpm() {}
-  void DefaultClockManager::set_current(Time) {}
 
 } // namespace otto::services

@@ -114,7 +114,7 @@ namespace otto::services::test {
 
       auto in_buf = Application::current().audio_manager->buffer_pool().allocate_clear();
       // steal the inner midi buffer
-      auto out = Application::current().engine_manager->process({in_buf, {std::move(midi_bufs.inner())}, nframes});
+      auto out = Application::current().engine_manager->process({in_buf, {std::move(midi_bufs.inner())}, core::clock::ClockRange()});
 
       // process_audio_output(out);
 

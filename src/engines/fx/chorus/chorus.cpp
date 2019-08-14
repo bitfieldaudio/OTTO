@@ -83,7 +83,7 @@ namespace otto::engines {
       props.phase_value = phase.nextPhase();
     }
     // Reassign (redirect) processed data to original data
-    return data.redirect(buf);
+    return data.with(buf);
   }
 
   // SCREEN //

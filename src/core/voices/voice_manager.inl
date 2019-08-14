@@ -461,7 +461,7 @@ namespace otto::core::voices {
     for (auto& frm : buf) {
       frm = (*this)();
     }
-    return data.redirect(buf);
+    return data.with(buf);
   }
 
 

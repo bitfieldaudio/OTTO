@@ -1,6 +1,7 @@
 #include "sequencer.hpp"
 
 #include "services/audio_manager.hpp"
+#include "services/clock_manager.hpp"
 
 namespace otto::engines {
 
@@ -33,16 +34,9 @@ namespace otto::engines {
     props.group2.process(buf, props.cur_step);
     props.group3.process(buf, props.cur_step);
 
-    static const int smpl_pr_step = (AudioManager::current().samplerate() * 60) / (4 * 120 * substeps);
+    props.cur_step = data.clock.position_of_multiple(clock::notes::eighth / substeps) % (16 * substeps);
 
-    smpl_counter += data.nframes;
-
-    if (smpl_counter > smpl_pr_step) {
-      props.cur_step = (props.cur_step + (smpl_counter / smpl_pr_step)) % (substeps * 16);
-      smpl_counter %= smpl_pr_step;
-    }
-
-    return data.redirect(buf);
+    return data.with(buf);
   }
 
   template<typename F>
@@ -256,6 +250,16 @@ namespace otto::engines {
 
   bool SeqScreen::keypress(Key k)
   {
+    auto& cm = ClockManager::current();
+    switch (k) {
+      case Key::play:
+        if (cm.running())
+          cm.stop();
+        else
+          cm.start();
+        break;
+      default: break;
+    }
     return false;
   }
 
