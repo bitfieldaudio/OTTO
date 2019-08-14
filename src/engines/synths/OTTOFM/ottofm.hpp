@@ -106,7 +106,7 @@ namespace otto::engines {
       Voice(Pre&) noexcept;
 
       float operator()() noexcept;
-      void on_note_on() noexcept;
+      void on_note_on(float freq_target) noexcept;
       void on_note_off() noexcept;
 
     private:

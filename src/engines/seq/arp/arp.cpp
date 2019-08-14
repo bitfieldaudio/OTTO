@@ -323,14 +323,12 @@ namespace otto::engines {
     float x_step_width = 30;
 
 
-    int num_steps = 0;
+    int num_steps = engine.props.output_stack_.size();
     int min = 88;
     int max = 0;
     //Find minimum and maximum key values
     for (auto& v : engine.props.output_stack_)
     {
-      num_steps += v.size();
-
       auto current_min = util::min_element(v, [](auto& a, auto& b){return a.key < b.key; });
       min = min > current_min->key ? current_min->key : min;
       auto current_max = util::max_element(v, [](auto& a, auto& b){return a.key < b.key; });
@@ -338,12 +336,17 @@ namespace otto::engines {
     }
     //Calculate new dot values
     dots.clear();
+    //Possibly, there are too many steps and we must rescale in the x-direction
+    if (num_steps > 10) x_step_width = x_step_width * 10 / num_steps;
+
     for (int i=0; i<engine.props.output_stack_.size(); i++)
     {
       for (auto& note : engine.props.output_stack_[i])
       {
         Point p;
+
         p.x = width/2.f + (2 * i + 1 - num_steps) * x_step_width / 2.f;
+
         if (min != max) p.y = y_bot - ((float)note.key - (float)min) / ((float)max - (float)min) * y_size;
         else p.y = y_bot - y_size / 2;
         dots.push_back(p);

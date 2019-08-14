@@ -15,6 +15,9 @@
 #include "engines/synths/potion/potion.hpp"
 #include "engines/synths/rhodes/rhodes.hpp"
 
+#include "engines/synths/example/synth_example.hpp"
+#include "engines/fx/example/fx_example.hpp"
+
 #include "services/application.hpp"
 
 #include "core/ui/vector_graphics.hpp"
@@ -34,7 +37,8 @@ namespace otto::services {
     using EffectsDispatcher = EngineDispatcher< //
       EngineType::effect,
       engines::Wormhole,
-      engines::Chorus>;
+      engines::Chorus,
+      engines::ExampleFX>;
     using ArpDispatcher = EngineDispatcher< //
       EngineType::arpeggiator,
       engines::Euclid,
@@ -44,7 +48,8 @@ namespace otto::services {
       engines::GossSynth,
       engines::RhodesSynth,
       engines::PotionSynth,
-      engines::OTTOFMSynth>;
+      engines::OTTOFMSynth,
+      engines::ExampleSynth>;
 
     SynthDispatcher synth{false};
     ArpDispatcher arpeggiator{true};

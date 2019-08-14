@@ -22,7 +22,7 @@ namespace otto::core::voices {
   }
 
   template<typename D, typename P>
-  void VoiceBase<D, P>::on_note_on() noexcept
+  void VoiceBase<D, P>::on_note_on(float freq_target) noexcept
   {}
 
   template<typename D, typename P>
@@ -76,7 +76,7 @@ namespace otto::core::voices {
     if (jump) glide_.finish();
     velocity_ = velocity;
     if (!legato) {
-      on_note_on();
+      on_note_on(midi::note_freq(midi_note) * detune);
       env_.resetSoft();
     }
 
@@ -94,6 +94,8 @@ namespace otto::core::voices {
   template<typename D, typename P>
   void VoiceBase<D, P>::release_no_env() noexcept
   {
+    /// This method is called when a voice is stolen in the static/monophonic playmodes
+    /// (mono, unison).
     if (is_triggered()) {
       on_note_off();
     }
@@ -116,8 +118,10 @@ namespace otto::core::voices {
     vm.note_stack.clear();
     vm.free_voices.clear();
 
-    for (auto &voice : vm.voices_) vm.free_voices.push_back(&voice);
-    DLOGI("FREE VOICES: {}", vm.free_voices.size());
+    for (auto&& voice : vm_in.voices_) {
+      vm.free_voices.push_back(&voice);
+      voice.env_.amp(1.f);
+    }
   }
 
   template<typename V, int N>
@@ -140,9 +144,16 @@ namespace otto::core::voices {
   auto VoiceManager<V, N>::IVoiceAllocator::get_voice(int key, int note) noexcept -> Voice&
   {
     if (vm.free_voices.size() > 0) {
-      // Reuses the voice that last played the note if it exists
-      auto it = util::find_if(vm.note_stack, [key, note](NoteVoicePair& nvp) { return nvp.key == key && nvp.note == note; });
-      auto fvit = it == vm.note_stack.end() ? vm.free_voices.begin() : util::find(vm.free_voices, it->voice);
+      /// Usual behaviour is to return the next free voice
+      auto fvit = vm.free_voices.begin();
+      /// Finds the voice that last played the note if it exists
+      auto it = util::find_if(vm.voices_, [note](Voice& vp) { return vp.midi_note_ == note; });
+      /// If there is/was a voice that is playing this note
+      if (it != vm.voices_.end()) {
+        /// It's not currently playing; choose this voice
+        if (!it->is_triggered()) fvit = util::find(vm.free_voices, it);
+        /// Otherwise, do nothing - That would mean the voice is playing, and we should not steal it.
+      }
       auto& v = **fvit;
       vm.free_voices.erase(fvit);
       return v;
@@ -251,7 +262,9 @@ namespace otto::core::voices {
         auto& note = *(vm.note_stack.begin() + num_voices_used - 1);
         DLOGI("Stealing voice {} from key {}", (note.voice - vm.voices_.data()), note.note);
         Voice &v = *note.voice;
-        v.release_no_env();
+        /// release_no_env calls on_note_off. Don't do this if legato is engaged, since we are stealing the voice
+        /// and will note call on_note_on again.
+        if (!vm.settings_props.legato) v.release_no_env();
         note.voice = nullptr;
         vm.note_stack.push_front({.key = key, .note = key - 12 * i, .detune = 1, .velocity = evt.velocity / 127.f, .voice = &v});
         v.trigger(key - 12 * sv, 1, evt.velocity * (1 - sv + vm.settings_props.sub * (float)sv) / 127.f, vm.settings_props.legato, false);
@@ -299,7 +312,9 @@ namespace otto::core::voices {
         auto& note = *(vm.note_stack.begin() + num_voices_used - 1);
         DLOGI("Stealing voice {} from key {}", (note.voice - vm.voices_.data()), note.note);
         Voice &v = *note.voice;
-        v.release_no_env();
+        /// release_no_env calls on_note_off. Don't do this if legato is engaged, since we are stealing the voice
+        /// and will note call on_note_on again.
+        if (!vm.settings_props.legato) v.release_no_env();
         note.voice = nullptr;
         vm.note_stack.push_front({.key = key, .note = key, .detune = vm.detune_values[i], .velocity = evt.velocity / 127.f, .voice = &v});
         v.trigger(key, vm.detune_values[i], evt.velocity / 127.f, vm.settings_props.legato, false);
@@ -321,6 +336,7 @@ namespace otto::core::voices {
   template<typename V, int N>
   VoiceManager<V, N>::VoiceManager(Props& props) noexcept : props(props)
   {
+
     for (int i = 0; i < voice_count_v; ++i) {
       auto& voice = voices_[i];
       envelope_props.attack.on_change().connect(

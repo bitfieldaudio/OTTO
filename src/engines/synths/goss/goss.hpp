@@ -60,15 +60,15 @@ namespace otto::engines {
     };
 
     struct Voice : voices::VoiceBase<Voice, Pre> {
-      std::array<gam::Osc<>, 4> pipes;
+      std::array<gam::Osc<>, 3> pipes;
       gam::Osc<> percussion;
-      gam::Decay<> perc_env;
+      gam::AD<> perc_env{0.001, 0.2};
 
       Voice(Pre&) noexcept;
 
       float operator()() noexcept;
 
-      void on_note_on() noexcept;
+      void on_note_on(float freq_target) noexcept;
     };
 
     struct Post : voices::PostBase<Post, Voice> {

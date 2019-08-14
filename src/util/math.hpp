@@ -72,4 +72,12 @@ namespace otto::util::math {
     const float bx = ((28 * x2 + 3150.f) * x2 + 62370) * x2 + 135135;
     return ax / bx;
   }
-} // namespace otto::util::math
+
+  inline float fastatan( const float x)
+  {
+    const float a1 = (M_PI / 4.f) * x;
+    const float a2 = 0.273f * x * (1.f - std::abs(x));
+    return a1 + a2;
+  }
+}// namespace otto::util::math
+

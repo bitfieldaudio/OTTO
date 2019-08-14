@@ -69,7 +69,9 @@ namespace otto::core::voices {
     VoiceBase(const VoiceBase&) = delete;
 
     /// Implement a handler for note on events
-    virtual void on_note_on() noexcept;
+    /// freq_target is the arget frequency. This allows frequency-specific
+    /// calculations to be done even when there is portamento.
+    virtual void on_note_on(float freq_target) noexcept;
 
     /// Implement a handler for note off events
     virtual void on_note_off() noexcept;
@@ -179,7 +181,7 @@ namespace otto::core::voices {
     struct SettingsProps {
       props::Property<PlayMode, props::wrap> play_mode = {PlayMode::poly};
       props::Property<float> rand = {0, props::limits(0, 1), props::step_size(0.01)};
-      props::Property<float> sub = {0.2, props::limits(0.01, 1), props::step_size(0.01)};
+      props::Property<float> sub = {1, props::limits(0.01, 1), props::step_size(0.01)};
       props::Property<float> detune = {0, props::limits(0, 1), props::step_size(0.01)};
       props::Property<int> interval = {0, props::limits(-12, 12)};
 
@@ -281,8 +283,9 @@ namespace otto::core::voices {
   private:
     std::vector<float> detune_values;
     std::vector<float> rand_values;
-    // Random values. 100% random, organic and fresh.
-    std::array<float, 6> rand_max = {0.94, 0.999, 1.03, 1.06, 0.92, 1.01};
+    // Random values. 100% random, organic and fresh. Works for up to 12 voices.
+    std::array<float, 12> rand_max = {0.94, 0.999, 1.03, 1.06, 0.92, 1.01,
+                                      1.02, 0.98, 1.0, 1.09, 0.94, 1.05};
 
     struct NoteVoicePair {
       /// Which physical key is activating this note
@@ -325,7 +328,7 @@ namespace otto::core::voices {
     };
 
     struct PolyAllocator final : IVoiceAllocator {
-      PolyAllocator(VoiceManager& vm_in) : IVoiceAllocator(vm_in) {}
+      PolyAllocator(VoiceManager& vm_in) : IVoiceAllocator(vm_in) {};
       void handle_midi_on(const midi::NoteOnEvent&) noexcept override;
     };
 

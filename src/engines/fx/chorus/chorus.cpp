@@ -5,6 +5,9 @@
 #include "util/iterator.hpp"
 #include "util/utility.hpp"
 
+// The chorus was developed with inspiration from this:
+// https://ccrma.stanford.edu/~dattorro/EffectDesignPart2.pdf
+
 namespace otto::engines {
 
   using namespace ui;
@@ -41,25 +44,31 @@ namespace otto::engines {
 
   Chorus::Chorus() : EffectEngine<Chorus>(std::make_unique<ChorusScreen>(this))
   {
-    // Initialize LPF for param smoothening
-    lpf.type(gam::SMOOTHING);
-    lpf.freq(1000);
-
     // Set proper size of phase accumulator for graphics
     phase.radius(1);
 
-    props.delay.on_change().connect([this](float delay) { chorus.delay(delay); });
+    props.delay.on_change().connect([this](float d) {
+      //Goes from minimal to around 20 ms nominal delay.
+      chorus.center(d * d * 0.020 + 0.0005);
+      //Naturally, the new nominal delay changes the maximum for the play head movement
+      chorus.depth(props.depth * chorus.center());
+    }).call_now(props.delay);
 
     props.rate.on_change().connect([this](float rate) {
-      chorus.freq(rate);
+      chorus.rate(rate * 0.5);
       phase.freq(rate * 0.5f);
     });
 
-    props.feedback.on_change().connect([this](float fbk) { chorus.fbk(fbk); });
-
-    props.depth.on_change().connect([this](float depth) {
-      chorus.depth(depth);
+    props.feedback.on_change().connect([this](float fbk) {
+      chorus.fbk(fbk);
+      //if (abs(fbk) > 0.7)
+        //chorus.ffd(1 + 0.7 - abs(fbk));
     });
+
+    props.depth.on_change().connect([this](float d) {
+      //chorus.depth(depth);
+        chorus.depth(d * chorus.center());
+    }).call_now(props.depth);
   }
 
   audio::ProcessData<2> Chorus::process(audio::ProcessData<1> data)
@@ -68,8 +77,6 @@ namespace otto::engines {
     auto buf = Application::current().audio_manager->buffer_pool().allocate_multi<2>();
     // Fill buffers with processed samples
     for (auto&& [dat, bufL, bufR] : util::zip(data.audio, buf[0], buf[1])) {
-      // Apply smoothening filter to depth param to reduce cracks in sound
-      chorus.depth(lpf(props.depth));
       // Get one sample from chorus effect
       chorus(dat, bufL, bufR);
       // Update phase value for graphics
@@ -128,7 +135,7 @@ namespace otto::engines {
     constexpr float y_bottom = height - y_pad;
     constexpr float number_shift = 30;
 
-    wave_height = props.depth * 1000;
+    wave_height = props.depth * 12;
 
     // Text
     ctx.font(Fonts::Norm, 25);
@@ -154,7 +161,7 @@ namespace otto::engines {
     // chorus/RedValue/10
     ctx.fillStyle(Colours::Red.dim(1 - env_red()));
     ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{}", std::round(10000 * props.depth)), x_right, y_bottom - number_shift);
+    ctx.fillText(fmt::format("{}", std::round(100 * props.depth)), x_right, y_bottom - number_shift);
 
     // chorus/GreenValue/10
     ctx.fillStyle(Colours::Green.dim(1 - env_green()));
@@ -169,19 +176,21 @@ namespace otto::engines {
     // chorus/BlueValue/1
     ctx.fillStyle(Colours::Blue.dim(1 - env_blue()));
     ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{}", std::round(10000 * props.delay)), x_pad, y_pad + number_shift);
+    ctx.fillText(fmt::format("{}", std::round(100 * props.delay)), x_pad, y_pad + number_shift);
 
 
     //Heads
-    constexpr float spacing_constant = 1000;
+    constexpr float spacing_constant = 10;
     constexpr int num_heads = 10;
 
     float spacing = spacing_constant * props.delay + 10;
-    Point start = {120 - props.delay * 5000, 165};
+    Point start = {120 - props.delay * 50, 165};
 
     for (int i=num_heads; i>=1; i--) {
       float head_height = wave_height * gam::scl::sinP9(gam::scl::wrap(props.phase_value - 0.2f*(float)i, 1.f, -1.f));
-      draw_background_head(ctx, {start.x + i*spacing, start.y + head_height}, colour_list[i], 1 - i*0.07);
+      //This brightness calculation is HORRIBLY over-engineered...
+      float brightness = powf(cosh(abs(props.feedback)*1.5)*0.4, 0.3 * float(i));
+      draw_background_head(ctx, {start.x + i*spacing, start.y + head_height}, colour_list[i].dim(1 - brightness), 1 - i*0.07);
     }
     draw_front_head(ctx, {start.x, start.y + wave_height * gam::scl::sinP9(props.phase_value)}, Colours::Blue, 1);
 
