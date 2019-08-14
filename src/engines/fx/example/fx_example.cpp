@@ -56,8 +56,8 @@ namespace otto::engines {
 
       }
 
-      // Reassign (redirect) processed data to original data
-      return data.redirect(buf);
+      // Return original data with new processed audio
+      return data.with(buf);
     }
 
     // SCREEN //
