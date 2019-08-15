@@ -15,9 +15,11 @@ namespace otto::engines {
   struct SamplerScreen : EngineScreen<Sampler> {
     void draw(Canvas& ctx) override;
     void encoder(EncoderEvent e) override;
+    bool keypress(Key key) override;
     void draw_filename(Canvas& ctx);
 
     using EngineScreen<Sampler>::EngineScreen;
+
   };
 
   struct SamplerEnvelopeScreen : EngineScreen<Sampler> {
@@ -25,11 +27,16 @@ namespace otto::engines {
     void encoder(EncoderEvent e) override;
 
     void update_wf();
+    void draw_waveform(Canvas& ctx);
 
-    SamplerEnvelopeScreen(Sampler* e);
+    bool shift = false;
 
     audio::WaveformView wfv = engine.props.waveform.view(300, engine.sample.min(), engine.sample.max() - 1);
+    SamplerEnvelopeScreen(Sampler* e);
+
+
     using EngineScreen<Sampler>::EngineScreen;
+
   };
 
   Sampler::Sampler()
@@ -194,6 +201,15 @@ namespace otto::engines {
     }
   }
 
+  bool SamplerScreen::keypress(Key key)
+  {
+    switch (key) {
+      case ui::Key::yellow_click: engine.props.speed = -engine.props.speed; break;
+      default: return false; ;
+    }
+    return true;
+  }
+
   void SamplerScreen::draw_filename(ui::vg::Canvas& ctx)
   {
     float y_pos = height - 30;
@@ -285,6 +301,10 @@ namespace otto::engines {
     }
 
     draw_filename(ctx);
+
+    engine.envelope_screen().draw(ctx);
+
+
   }
 
   // ENVELOPE SCREEN //
@@ -304,12 +324,61 @@ namespace otto::engines {
                                std::min(float(start + (end - start) * 1.2f), float(engine.sample.size() - 1)));
   }
 
+  void SamplerEnvelopeScreen::draw_waveform(ui::vg::Canvas &ctx)
+  {
+    auto start = engine.sample.min();
+    auto end = engine.sample.max() - 1;
+
+    //startpoint
+    float x_start = 10;
+    float y_bot = 200;
+    float y_scale = 50;
+
+    float x = x_start;
+    ctx.beginPath();
+    auto iter = wfv.begin();
+    ctx.moveTo(x, y_bot - *iter * y_scale);
+    auto b = wfv.iter_for_time(start);
+    for (; iter < b; iter++) {
+      ctx.lineTo(x, y_bot - *iter * y_scale);
+      x += 1;
+    }
+    ctx.lineTo(x, y_bot - *iter * y_scale);
+    ctx.lineTo(x, y_bot);
+    ctx.lineTo(x_start, y_bot);
+    ctx.fill(Colors::Gray);
+
+    float x_1 = x;
+    ctx.beginPath();
+    ctx.moveTo(x, y_bot - *iter * y_scale);
+    for (auto e = wfv.iter_for_time(end); iter < e; iter++) {
+      ctx.lineTo(x, y_bot - *iter * y_scale);
+      x += 1;
+    }
+    ctx.lineTo(x, y_bot);
+    ctx.lineTo(x_1, y_bot);
+    ctx.fill(Colors::White);
+
+    float x_2 = x;
+    ctx.beginPath();
+    ctx.moveTo(x, y_bot - *iter * y_scale);
+    for (; iter < wfv.end(); iter++) {
+      ctx.lineTo(x, y_bot - *iter * y_scale);
+      x += 1;
+    }
+    ctx.lineTo(x, y_bot);
+    ctx.lineTo(x_2, y_bot);
+    ctx.fill(Colors::Gray);
+  }
+
+
   void SamplerEnvelopeScreen::encoder(ui::EncoderEvent ev)
   {
-    // auto& sample = engine.sample;
+    shift = services::Controller::current().is_pressed(ui::Key::shift);
+    constexpr int speedup = 20;
     switch (ev.encoder) {
-      case ui::Encoder::blue: engine.props.startpoint.step(ev.steps); break;
-      case ui::Encoder::green: engine.props.endpoint.step(ev.steps); break;
+      case ui::Encoder::blue: engine.props.startpoint.step(ev.steps * (1 + speedup * shift)); break;
+      case ui::Encoder::green: engine.props.endpoint.step(ev.steps * (1 + speedup * shift)); break;
       case ui::Encoder::yellow: engine.props.fadein.step(ev.steps); break;
       case ui::Encoder::red: engine.props.fadeout.step(ev.steps); break;
     }
@@ -318,6 +387,8 @@ namespace otto::engines {
   void SamplerEnvelopeScreen::draw(ui::vg::Canvas& ctx)
   {
     using namespace ui::vg;
+
+
 
     // auto& props = engine.props;
     // auto& sample = engine.sample;
@@ -329,75 +400,29 @@ namespace otto::engines {
     constexpr float space = (height - 2.f * y_pad) / 3.f;
 
     ctx.beginPath();
-    ctx.fillStyle(Colours::Blue);
-    ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
-    ctx.fillText("Start", {x_pad, y_pad});
-
-    ctx.beginPath();
-    ctx.fillStyle(Colours::Blue);
-    ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:1.2}", engine.props.startpoint), {width - x_pad, y_pad});
-
-    ctx.beginPath();
-    ctx.fillStyle(Colours::Green);
-    ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
-    ctx.fillText("End", {x_pad, y_pad + space});
-
-    ctx.beginPath();
-    ctx.fillStyle(Colours::Green);
-    ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:1.2}", engine.props.endpoint), {width - x_pad, y_pad + space});
-
-    ctx.beginPath();
     ctx.fillStyle(Colours::Yellow);
     ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
-    ctx.fillText("FadeIn", {x_pad, y_pad + 2 * space});
+    ctx.fillText("FadeIn", {x_pad, y_pad});
 
     ctx.beginPath();
     ctx.fillStyle(Colours::Yellow);
     ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:1.2}", engine.props.fadein), {width - x_pad, y_pad + 2 * space});
+    ctx.fillText(fmt::format("{:1.2}", engine.props.fadein), {width - x_pad, y_pad});
 
     ctx.beginPath();
     ctx.fillStyle(Colours::Red);
     ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
-    ctx.fillText("FadeOut", {x_pad, y_pad + 3 * space});
+    ctx.fillText("FadeOut", {x_pad, y_pad +  space});
 
     ctx.beginPath();
     ctx.fillStyle(Colours::Red);
     ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:1.2}", engine.props.fadeout), {width - x_pad, y_pad + 3 * space});
+    ctx.fillText(fmt::format("{:1.2}", engine.props.fadeout), {width - x_pad, y_pad + space});
 
-    auto start = engine.sample.min();
-    auto end = engine.sample.max() - 1;
+    draw_waveform(ctx);
 
-    float x = 10;
-    ctx.beginPath();
-    auto iter = wfv.begin();
-    ctx.moveTo(x, 200 - *iter * 50);
-    auto b = wfv.iter_for_time(start);
-    for (; iter < b; iter++) {
-      ctx.lineTo(x, 200 - *iter * 50);
-      x += 1;
-    }
-    ctx.lineTo(x, 200 - *iter * 50);
-    ctx.stroke(Colors::Gray);
 
-    ctx.beginPath();
-    ctx.moveTo(x, 200 - *iter * 50);
-    for (auto e = wfv.iter_for_time(end); iter < e; iter++) {
-      ctx.lineTo(x, 200 - *iter * 50);
-      x += 1;
-    }
-    ctx.stroke(Colors::White);
-
-    ctx.beginPath();
-    ctx.moveTo(x, 200 - *iter * 50);
-    for (; iter < wfv.end(); iter++) {
-      ctx.lineTo(x, 200 - *iter * 50);
-      x += 1;
-    }
-    ctx.stroke(Colors::Gray);
   }
+
 
 } // namespace otto::engines

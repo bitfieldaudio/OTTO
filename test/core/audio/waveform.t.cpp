@@ -24,21 +24,29 @@ namespace otto::test {
     ch::Output<int> start = 0;
     ch::Output<int> length = file_len - 1;
 
+    ch::Time duration = 4000;
+
     ch::Timeline timeline;
-    timeline.apply(&start).rampTo(file_len - 1, 600).finishFn([& m = *start.inputPtr()] {
-      m.setPlaybackSpeed(m.getPlaybackSpeed() * -1);
-      m.resetTime();
-    });
-    timeline.apply(&length).rampTo(0, 400).finishFn([& m = *length.inputPtr()] {
-      m.setPlaybackSpeed(m.getPlaybackSpeed() * -1);
-      m.resetTime();
-    });
+    timeline.apply(&start).rampTo(length, duration, ch::EaseOutQuad())
+      .then<ch::RampTo>(0, duration)
+      .then<ch::Hold>(0, 2 * duration);
+    timeline.apply(&length).holdUntil(2 * duration)
+      .then<ch::RampTo>(0, duration, ch::EaseOutExpo())
+      .then<ch::RampTo>(file_len - 1, duration).then<ch::Hold>(4000, duration);
+    //timeline.apply(&start).rampTo(file_len - 1, duration).finishFn([& m = *start.inputPtr()] {
+    //  m.setPlaybackSpeed(m.getPlaybackSpeed() * -1);
+    //  m.resetTime();
+    //});
+    //timeline.apply(&length).rampTo(0, duration).finishFn([& m = *length.inputPtr()] {
+    //  m.setPlaybackSpeed(m.getPlaybackSpeed() * -1);
+    //  m.resetTime();
+    //});
 
     auto view = wf.view(300, start, start + length);
     test::show_gui([&](Canvas& ctx) {
       timeline.step(1);
       wf.view(view, std::max(0.f, start - 0.2f * std::min(length(), file_len - start)),
-              std::min(start + length * 1.2f, float(file_len)));
+              std::min(start + length * 1.2f, float(file_len - 1)));
 
       float x = 10;
       ctx.beginPath();

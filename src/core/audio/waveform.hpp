@@ -2,6 +2,7 @@
 
 #include <gsl/span>
 #include <vector>
+#include <Gamma/Filter.h>
 
 #include "services/log_manager.hpp"
 #include "util/dyn-array.hpp"
@@ -34,6 +35,8 @@ namespace otto::core::audio {
     /// res 0 is original resolution, 1 is 1/2, 2 is 1/4 etc.
     int max_res_;
     util::dyn_array<float> points_ = {0};
+    /// Frequency controls grainyness of waveform.
+    gam::OnePole<> lpf{200};
   };
 
   struct WaveformView {

@@ -27,11 +27,11 @@ namespace otto::core::audio {
     // return {points_.data() + start, length};
 
     // return {points_.data() + input_data_.size() * res, input_data_.size()};
-    return {points_.data(), std::ceil(float(input_data_.size()) / float(bin_size))};
+    //return {points_.data(), std::ceil(float(input_data_.size()) / float(bin_size))};
+    return {points_.data(), input_data_.size()};
   }
 
-  void Waveform::generate_res(int res)
-  {
+  void Waveform::generate_res(int res) {
     auto data = at_resolution(res);
 
     // EnvelopFollower
@@ -59,16 +59,23 @@ namespace otto::core::audio {
         auto f = std::abs(src[i]);
         max = std::max(f, max);
       }
-      *dst = max;
+      for (int i = 0; i < len; i++) {
+        *dst = max;
+        dst++;
+      }
       rem -= len;
       src += len;
-      dst++;
+
     }
     // 4. lpf
-    // gam::OnePole<> lpf = {10};
-    // for (auto& f : data) {
-    //   f = lpf(f);
-    // }
+    // Do it forwards and backwards to get zero phase twists.
+    for (auto &f : data) {
+      f = lpf(f);
+    }
+    lpf.zero();
+    for (auto f = data.rbegin(); f != data.rend(); ++f) {
+      *f = lpf(*f);
+    }
   }
 
   int Waveform::res_for_duration(int dur, int nPoints) const
@@ -103,9 +110,10 @@ namespace otto::core::audio {
       //   max = std::max(data[std::min(int(first + idx), last) / bin_size], max);
       // }
       // v.points_.push_back(max);
-      float sum = data[std::min(int(first + idx), last) / bin_size];
+      float sum = data[std::min(int(first + idx), last)];
       for (int j = 1; j < v.step_; j++) {
-        sum += data[std::min(int(first + idx), last) / bin_size];
+        sum += data[std::min(int(first + idx + j), last)];
+        //DLOGI("{}",j);
       }
       v.points_.push_back(sum / std::ceil(v.step_));
       idx += v.step_;
