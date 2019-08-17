@@ -18,18 +18,20 @@ namespace otto::engines {
 
     struct MonoSequence {
       struct Step {
-        int note = -1;
+        bool trig = false;
         float velocity = 0.8;
 
-        bool triggered() const noexcept {
-          return note >= 0;
+        bool triggered() const noexcept
+        {
+          return trig;
         }
 
-        void clear() noexcept {
-          note = -1;
+        void clear() noexcept
+        {
+          trig = false;
         }
 
-        DECL_REFLECTION(Step, note, velocity);
+        DECL_REFLECTION(Step, trig, velocity);
       };
       std::array<Step, 16 * substeps> steps;
 
@@ -42,11 +44,13 @@ namespace otto::engines {
         float velocity = 1.0;
         int length = substeps;
 
-        bool triggered() const noexcept {
+        bool triggered() const noexcept
+        {
           return !notes.empty();
         }
 
-        void clear() noexcept {
+        void clear() noexcept
+        {
           notes.clear();
         }
 
@@ -57,29 +61,23 @@ namespace otto::engines {
       DECL_REFLECTION(PolySequence, steps);
     };
 
-    template<std::size_t N>
-    struct SamplerGroup {
-      util::selectable<std::array<Sampler, N>> samplers;
-      MonoSequence seq;
-      std::array<bool, N> mutes;
+    struct SamplerSequence : MonoSequence {
+      Sampler sampler;
+      bool muted;
 
-      DECL_REFLECTION(SamplerGroup, samplers, seq, mutes);
+      DECL_REFLECTION(SamplerSequence, sampler, muted, steps);
 
       void process(audio::AudioBufferHandle d, int step) noexcept;
     };
 
     struct Props {
-      SamplerGroup<2> group0;
-      SamplerGroup<3> group1;
-      SamplerGroup<2> group2;
-      SamplerGroup<3> group3;
-
+      std::array<SamplerSequence, 10> sampler_seqs;
       PolySequence synth_seq;
       PolySequence ext_seq;
 
-      Property<int> cur_step = 0;
+      Property<int> cur_step = -1;
 
-      DECL_REFLECTION(Props, group0, group1, group2, group3, synth_seq, ext_seq);
+      DECL_REFLECTION(Props, sampler_seqs, synth_seq, ext_seq);
     } props;
 
     Sequencer();
@@ -88,8 +86,8 @@ namespace otto::engines {
     ui::Screen& envelope_screen() noexcept;
 
     audio::ProcessData<1> process(audio::ProcessData<0>) noexcept;
-  private:
 
+  private:
     friend struct SeqScreen;
 
     /// @param f callable as `f(SamplerGroup, int idx)`
