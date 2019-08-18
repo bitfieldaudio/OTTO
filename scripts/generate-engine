@@ -1,0 +1,49 @@
+#!/bin/bash
+
+_usage() {
+  cat <<EOF
+Usage: scripts/generate-engine <type> <EngineClassName>
+
+   <type>:            fx|synth
+   <EngineClassName>: The name of the engine in CamelCase
+EOF
+}
+
+if [[ $# != 2 ]]; then
+  echo "Expected 2 args, got $#"
+  _usage
+  exit
+fi
+
+eType=$1
+eName=$2
+
+case $eType in
+  fx)
+    eTypeDir=fx
+    ;;
+  synth)
+    eTypeDir=synths
+    ;;
+  *)
+    _usage
+    exit
+    ;;
+esac
+
+eNameSnakeCase=$(echo $eName | perl -pe 's/([a-z0-9])([A-Z])/$1_$2/g' | perl -pe 's/([A-Z])/\l\1/g')
+
+read -r -n 1 -p "Generate $eType engine $eName in directory src/engines/$eTypeDir/$eNameSnakeCase? [y|n] "
+echo    # (optional) move to a new line
+if [[ ! $REPLY =~ ^[Yy]$ ]]
+then
+  exit
+fi
+
+
+mkdir src/engines/$eTypeDir/$eNameSnakeCase/
+
+cp scripts/templates/$eType/template.cpp src/engines/$eTypeDir/$eNameSnakeCase/$eNameSnakeCase.cpp
+cp scripts/templates/$eType/template.hpp src/engines/$eTypeDir/$eNameSnakeCase/$eNameSnakeCase.hpp
+
+sed -i "s/EngineClassName/$eName/g" src/engines/$eTypeDir/$eNameSnakeCase/$eNameSnakeCase.cpp src/engines/$eTypeDir/$eNameSnakeCase/$eNameSnakeCase.hpp
