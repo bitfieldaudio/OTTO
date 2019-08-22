@@ -19,14 +19,14 @@ namespace otto::engines {
   struct LPCScreen : EngineScreen<LPC> {
     void draw(Canvas& ctx) override;
     bool keypress(Key key) override;
-    void rotary(RotaryEvent e) override;
+    void encoder(EncoderEvent e) override;
 
     using EngineScreen<LPC>::EngineScreen;
   };
 
-  LPC::LPC() : EffectEngine("LPC", props, std::make_unique<LPCScreen>(this)) {}
+  LPC::LPC() : EffectEngine<LPC>(std::make_unique<LPCScreen>(this)) {}
 
-  void LPC::makeSha(span<float> buffer, int sha_period)
+  void LPC::make_sha(span<float> buffer, int sha_period)
   {
     util::fill(buffer, 0.f);
     for (int i = this->lag; i < buffer.size(); i += sha_period) {
@@ -66,7 +66,7 @@ namespace otto::engines {
     auto exciter = Application::current().audio_manager->buffer_pool().allocate();
 
     if (pitch != 0){
-      makeSha(span(exciter.begin(), exciter.end()), pitch);
+      make_sha(span(exciter.begin(), exciter.end()), pitch);
       for(auto&& s : exciter) s = s*0.8f + white()*0.2f;
     }else{
       for(auto&& s : exciter) s = white()*0.5f;
@@ -88,21 +88,21 @@ namespace otto::engines {
     util::copy(span(exciter.end()-max_order, exciter.end()), prev_exciter_data.begin());
 
     auto r_out = Application::current().audio_manager->buffer_pool().allocate();
-    util::copy(exciter.begin(), r_out.begin());
-    return ProcessData<2>({exciter, r_out});
+    //util::copy(exciter.begin(), r_out.begin());
+    return ProcessData<2>({exciter, exciter});
   }
 
   // SCREEN //
 
-  void LPCScreen::rotary(ui::RotaryEvent ev)
+  void LPCScreen::encoder(ui::EncoderEvent ev)
   {
     // TODO: add shift + encoder behaviour
     auto& props = engine.props;
-    switch (ev.rotary) {
-    case Rotary::blue: props.pitch.step(ev.clicks); break;
-    case Rotary::green: props.pitch_tracking.step(ev.clicks); break;
-    case Rotary::yellow: props.detune.step(ev.clicks); break;
-    case Rotary::red: props.snr.step(ev.clicks); break;
+    switch (ev.encoder) {
+    case Encoder::blue: props.pitch.step(ev.steps); break;
+    case Encoder::green: props.pitch_tracking.step(ev.steps); break;
+    case Encoder::yellow: props.detune.step(ev.steps); break;
+    case Encoder::red: props.snr.step(ev.steps); break;
     }
   }
 

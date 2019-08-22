@@ -6,6 +6,7 @@
 #include <engines/synths/potion/potion.hpp>
 #include "engines/fx/chorus/chorus.hpp"
 #include "engines/fx/wormhole/wormhole.hpp"
+#include "engines/fx/lpc/lpc.hpp"
 #include "engines/misc/master/master.hpp"
 #include "engines/misc/sends/sends.hpp"
 #include "engines/misc/sequencer/sequencer.hpp"
@@ -15,8 +16,8 @@
 #include "engines/synths/potion/potion.hpp"
 #include "engines/synths/rhodes/rhodes.hpp"
 
-#include "engines/synths/example/synth_example.hpp"
-#include "engines/fx/example/fx_example.hpp"
+//#include "engines/synths/example/synth_example.hpp"
+//#include "engines/fx/example/fx_example.hpp"
 
 #include "services/application.hpp"
 #include "services/clock_manager.hpp"
@@ -39,7 +40,7 @@ namespace otto::services {
       EngineType::effect,
       engines::Wormhole,
       engines::Chorus,
-      engines::ExampleFX>;
+      engines::LPC>;
     using ArpDispatcher = EngineDispatcher< //
       EngineType::arpeggiator,
       engines::Euclid,
@@ -49,8 +50,7 @@ namespace otto::services {
       engines::GossSynth,
       engines::RhodesSynth,
       engines::PotionSynth,
-      engines::OTTOFMSynth,
-      engines::ExampleSynth>;
+      engines::OTTOFMSynth>;
 
     SynthDispatcher synth{false};
     ArpDispatcher arpeggiator{true};
