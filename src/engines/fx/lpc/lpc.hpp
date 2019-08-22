@@ -16,15 +16,21 @@ namespace otto::engines {
     static constexpr int max_order = 50;
 
     struct Props {
+      //Currently used
+      Property<int> order = {10, limits(1, max_order), step_size(1)};
+      Property<float> detune = {0, limits(-24, 24), step_size(0.01)};
+
+      // Ideas: Let snr control balance between dirac and noise in exciter
+      // pitch_tracking can control pitch threshold
+
+
+      //Currently unused
       Property<float> pitch = {0, limits(-24, 24), step_size(1)};
       Property<float> pitch_tracking = {1, limits(0, 1), step_size(0.01)};
-      Property<float> detune = {0, limits(-24, 24), step_size(0.01)};
       Property<float> snr = {0.5, limits(0, 1), step_size(0.01)};
-      Property<int> order = {10, limits(1, max_order), step_size(1)};
-      Property<int> framerate = {0.5, limits(0, 1), step_size(0.01)};
 
       DECL_REFLECTION(Props, pitch, pitch_tracking, detune,
-              snr, order, framerate);
+              snr, order);
       } props;
 
     LPC();

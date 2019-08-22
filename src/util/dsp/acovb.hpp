@@ -8,7 +8,7 @@ using namespace gam;
 
 void acovb(gsl::span<float> data){
     const int N = (int) data.size();
-    const int M = 2*(N -1); // FFT order
+    const int M = 2*(N - 1); // FFT order
 
     // FFT is in-place and we need more space, so we first copy the data to a buffer, and zero-pad
     // TODO: not this

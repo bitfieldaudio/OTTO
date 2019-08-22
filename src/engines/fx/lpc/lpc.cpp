@@ -44,7 +44,9 @@ namespace otto::engines {
     acovb(span(gamma.begin(), gamma.end()));
 
     // Estimate coefficients
-    const int order = 25; // TODO: use parameter instead
+    //const int order = 25; // TODO: use parameter instead
+    auto order = props.order;
+
     solve_yule_walker(span(gamma.begin(), order), this->sigmaAndCoeffs, this->scratchBuffer);
 
     // Vocal signals usually have fundamentals in the [20Hz; 600Hz] band
@@ -54,7 +56,7 @@ namespace otto::engines {
     const int maxT = (int) ceil(sampling_freq/f_min);
     const int minT = (int) floor(sampling_freq/f_max);
 
-    auto pitch = detect_pitch(span(gamma.begin(), gamma.end()), minT, maxT);
+    auto pitch = detect_pitch(span(gamma.begin(), gamma.end()), minT, maxT) + props.detune;
 
     gamma.release();
 
@@ -96,10 +98,9 @@ namespace otto::engines {
 
   void LPCScreen::encoder(ui::EncoderEvent ev)
   {
-    // TODO: add shift + encoder behaviour
     auto& props = engine.props;
     switch (ev.encoder) {
-    case Encoder::blue: props.pitch.step(ev.steps); break;
+    case Encoder::blue: props.order.step(ev.steps); break;
     case Encoder::green: props.pitch_tracking.step(ev.steps); break;
     case Encoder::yellow: props.detune.step(ev.steps); break;
     case Encoder::red: props.snr.step(ev.steps); break;
@@ -108,13 +109,59 @@ namespace otto::engines {
 
   bool LPCScreen::keypress(ui::Key key)
   {
-    // TODO: add shift + encoder behaviour
     return false;
   }
 
   void LPCScreen::draw(ui::vg::Canvas& ctx)
   {
-    // TODO
+    using namespace ui::vg;
+    using namespace core::ui::vg;
+
+    ctx.font(Fonts::Norm, 35);
+
+    constexpr float x_pad = 30;
+    constexpr float y_pad = 50;
+    constexpr float space = (height - 2.f * y_pad) / 3.f;
+
+    ctx.beginPath();
+    ctx.fillStyle(Colours::Blue);
+    ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
+    ctx.fillText("order", {x_pad, y_pad});
+
+    ctx.beginPath();
+    ctx.fillStyle(Colours::Blue);
+    ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
+    ctx.fillText(fmt::format("{:1}", engine.props.order), {width - x_pad, y_pad});
+
+    ctx.beginPath();
+    ctx.fillStyle(Colours::Green);
+    ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
+    ctx.fillText("tracking", {x_pad, y_pad + space});
+
+    ctx.beginPath();
+    ctx.fillStyle(Colours::Green);
+    ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
+    ctx.fillText(fmt::format("{:1.2}", engine.props.pitch_tracking), {width - x_pad, y_pad + space});
+
+    ctx.beginPath();
+    ctx.fillStyle(Colours::Yellow);
+    ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
+    ctx.fillText("detune", {x_pad, y_pad + 2 * space});
+
+    ctx.beginPath();
+    ctx.fillStyle(Colours::Yellow);
+    ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
+    ctx.fillText(fmt::format("{:1.2}", engine.props.detune), {width - x_pad, y_pad + 2 * space});
+
+    ctx.beginPath();
+    ctx.fillStyle(Colours::Red);
+    ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
+    ctx.fillText("balance", {x_pad, y_pad + 3 * space});
+
+    ctx.beginPath();
+    ctx.fillStyle(Colours::Red);
+    ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
+    ctx.fillText(fmt::format("{:1.2}", engine.props.snr), {width - x_pad, y_pad + 3 * space});
   }
 
 } // namespace otto::engines
