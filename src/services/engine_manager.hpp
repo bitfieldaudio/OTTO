@@ -4,7 +4,6 @@
 
 #include "core/service.hpp"
 #include "core/engine/engine.hpp"
-#include "core/engine/engine_dispatcher.hpp"
 
 #include "core/audio/processor.hpp"
 
@@ -47,11 +46,6 @@ namespace otto::services {
 
     /// Process the engine audio chain
     virtual core::audio::ProcessData<2> process(core::audio::ProcessData<1> external_in) = 0;
-
-    /// Get an engine by name
-    ///
-    /// \returns `nullptr` if no such engine was found
-    virtual core::engine::AnyEngine* by_name(const std::string& name) noexcept = 0;
 
     /// For now, this is the way to get the default EngineManager implementation
     /// 

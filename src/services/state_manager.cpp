@@ -29,8 +29,8 @@ namespace otto::services {
   DefaultStateManager::DefaultStateManager()
     : data_file(Application::current().data_dir / "state.json")
   {
-    Application::current().events.post_init.subscribe([this] { load(); });
-    Application::current().events.pre_exit.subscribe([this] { save(); });
+    Application::current().events.post_init.connect([this] { load(); });
+    Application::current().events.pre_exit.connect([this] { save(); });
   }
 
   DefaultStateManager::~DefaultStateManager() {}
@@ -84,7 +84,8 @@ namespace otto::services {
                             name);
     }
 
-    _clients[name] = {name, load, std::move(save)};
+    // cannot move load, used below
+    _clients.insert_or_replace(name, Client{name, load, std::move(save)});
 
     if (_loaded) {
       auto& data = data_file.data();
@@ -98,7 +99,7 @@ namespace otto::services {
       throw util::exception("Tried to detach a state client that was never attached: " + name);
     }
 
-    _clients.erase(name);
+    _clients.erase_all(name);
   }
 
 } // namespace otto::services

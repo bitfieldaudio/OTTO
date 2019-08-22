@@ -3,6 +3,7 @@
 #include "../internal/mixin_macros.hpp"
 #include "base.hpp"
 #include "tag_list.hpp"
+#include "util/reflection.hpp"
 
 namespace otto::core::props {
 
@@ -11,8 +12,8 @@ namespace otto::core::props {
       /// Allows you to change the value that is set
       struct on_set : mixin::hook<mixin::value_type> {};
       /// Fired after the value has been changed. At this point the value can be read
-      /// using .value()
-      struct after_set : mixin::hook<void> {};
+      /// using .value(), and the old value can be read
+      struct after_set : mixin::hook<mixin::value_type> {};
     };
   };
 
@@ -22,8 +23,7 @@ namespace otto::core::props {
   struct PropertyImpl;
 
   template<typename T, typename... Tags>
-  struct PropertyImpl<T, tag_list<Tags...>> : virtual property_base,
-                                              MixinTag::leaf<Tags, T, tag_list<Tags...>>... {
+  struct PropertyImpl<T, tag_list<Tags...>> : MixinTag::leaf<Tags, T, tag_list<Tags...>>... {
     using value_type = T;
     using tag_list = tag_list<Tags...>;
 
@@ -53,8 +53,7 @@ namespace otto::core::props {
     }
 
     template<typename TRef, typename... Args>
-    PropertyImpl(branch_base* parent, std::string const& name, TRef&& value, Args&&... args)
-      : property_base(parent, name), value_(std::forward<TRef>(value))
+    PropertyImpl(TRef&& value, Args&&... args) : value_(std::forward<TRef>(value))
     {
       if constexpr ((is_initializer_v<Args> && ...)) {
         // GCC 7.2 marks this variable as unused.
@@ -72,15 +71,15 @@ namespace otto::core::props {
     constexpr static bool is = ::otto::core::props::contains_tag_v<tag_list, Tag>;
 
     template<typename Tag>
-    auto as()
-      -> ::std::enable_if_t<PropertyImpl::is<Tag>, MixinTag::leaf<Tag, value_type, tag_list>&>
+    auto as() -> ::std::enable_if_t<PropertyImpl::template is<Tag>,
+                                    MixinTag::leaf<Tag, value_type, tag_list>&>
     {
       return static_cast<MixinTag::leaf<Tag, value_type, tag_list>&>(*this);
     }
 
     template<typename Tag>
-    auto as() const
-      -> ::std::enable_if_t<PropertyImpl::is<Tag>, const MixinTag::leaf<Tag, value_type, tag_list>&>
+    auto as() const -> ::std::enable_if_t<PropertyImpl::template is<Tag>,
+                                          const MixinTag::leaf<Tag, value_type, tag_list>&>
     {
       return static_cast<const MixinTag::leaf<Tag, value_type, tag_list>&>(*this);
     }
@@ -119,8 +118,9 @@ namespace otto::core::props {
 
     void set(const value_type& v)
     {
+      auto oldval = value_;
       value_ = run_hook<common::hooks::on_set>(v);
-      run_hook<common::hooks::after_set>();
+      run_hook<common::hooks::after_set>(oldval);
     }
 
     PropertyImpl& operator=(const value_type& rhs)
@@ -134,33 +134,10 @@ namespace otto::core::props {
       return get();
     }
 
+    DECL_REFLECTION(PropertyImpl, ("value", &PropertyImpl::get, &PropertyImpl::set))
   protected:
     value_type value_;
   };
 
-  // Properties ////////////////////////////////////////////////////////////////
-
-  template<typename... Tags>
-  struct PropertiesImpl : properties_base, mixin::branch<Tags>... {
-    using tag_list = props::tag_list<Tags...>;
-
-    // Initialization //
-    PropertiesImpl() : branch_base(nullptr, "") {}
-    using properties_base::properties_base;
-
-  private:
-    std::string name_;
-  };
-
-  namespace detail {
-
-    template<typename TagList>
-    struct properties_for_list;
-
-    template<typename... Tags>
-    struct properties_for_list<tag_list<Tags...>> {
-      using type = PropertiesImpl<Tags...>;
-    };
-  } // namespace detail
-
 } // namespace otto::core::props
+

@@ -5,14 +5,20 @@
 #include "core/service.hpp"
 
 #define LOGURU_USE_FMTLIB 1
+#include <debug_assert.hpp>
 #include <loguru.hpp>
+
+#include "util/macros.hpp"
 #include "services/application.hpp"
 
 namespace otto::services {
 
   struct LogManager : core::Service {
     /// Initialize the logger
-    LogManager(int argc, char** argv, bool enable_console = true, const char* logFilePath = nullptr);
+    LogManager(int argc = 0,
+               char** argv = nullptr,
+               bool enable_console = true,
+               const char* logFilePath = nullptr);
 
     /// Set how the current thread appears in the log
     void set_thread_name(const std::string& name);
@@ -91,3 +97,27 @@ namespace otto::services {
 
 /// Shorthand to the loguru macro DLOG_SCOPE_F(FATAL, ...)
 #define DLOGF_SCOPE(...) DLOG_SCOPE_F(FATAL, __VA_ARGS__)
+
+namespace otto {
+  struct assert_module : debug_assert::set_level<999> {
+    template<typename... Args>
+    static void handle(const debug_assert::source_location& loc,
+                       const char* expression,
+                       Args&&... args) noexcept
+    {
+      if constexpr (sizeof...(args) > 0) {
+        LOGE("Assertion failed at {}:{}: {} {}", loc.file_name, loc.line_number, expression, fmt::format(args...));
+      } else {
+        LOGE("Assertion failed at {}:{}: {}", loc.file_name, loc.line_number, expression);
+      }
+    }
+  };
+} // namespace otto
+
+#define OTTO_ASSERT_NM(Expr) DEBUG_ASSERT(Expr, ::otto::assert_module{})
+#define OTTO_ASSERT_M(Expr, ...) DEBUG_ASSERT(Expr, ::otto::assert_module{}, __VA_ARGS__)
+#define OTTO_ASSERT(...) SWITCH_FOR_VARARGS_1(OTTO_ASSERT_NM, OTTO_ASSERT_M, __VA_ARGS__)
+
+#define OTTO_UNREACHABLE \
+ (DEBUG_UNREACHABLE(::otto::assert_module{}), DEBUG_ASSERT_MARK_UNREACHABLE)
+#define OTTO_UNREACHABLE_M(...) (DEBUG_UNREACHABLE(::otto::assert_module{}, __VA_ARGS__), DEBUG_ASSERT_MARK_UNREACHABLE)

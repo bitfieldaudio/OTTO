@@ -2,11 +2,12 @@
 
 #include "core/engine/engine.hpp"
 
-#include "core/audio/faust.hpp"
 #include "core/voices/voice_manager.hpp"
 
 #include <Gamma/Filter.h>
 #include <Gamma/Oscillator.h>
+
+#include "util/reflection.hpp"
 
 namespace otto::engines {
 
@@ -14,34 +15,30 @@ namespace otto::engines {
   using namespace core::engine;
   using namespace props;
 
-  struct GossSynth : SynthEngine, EngineWithEnvelope {
+  struct GossSynth final : SynthEngine<GossSynth> {
+    static constexpr util::string_ref name = "Goss";
 
-    struct Props : Properties<> {
-      Property<float> drawbar1 = {this, "drawbar1", 1, has_limits::init(0, 1),
-                                  steppable::init(0.01)};
-      Property<float> drawbar2 = {this, "drawbar2", 0.5, has_limits::init(0, 1),
-                                  steppable::init(0.01)};
-      Property<float> drawbar3 = {this, "drawbar3", 0.5, has_limits::init(0, 1),
-                                  steppable::init(0.01)};
-      Property<float> leslie = {this, "leslie", 0.3, has_limits::init(0, 1), steppable::init(0.01)};
+    struct Props {
+      Property<float> drawbar1 = {1, limits(0, 1), step_size(0.01)};
+      Property<float> drawbar2 = {0.5, limits(0, 1), step_size(0.01)};
+      Property<float> click = {0.5, limits(0, 1), step_size(0.01)};
+      Property<float> leslie = {0.3, limits(0, 1), step_size(0.01)};
 
       float rotation_value;
 
+      DECL_REFLECTION(Props, drawbar1, drawbar2, click, leslie);
     } props;
 
     GossSynth();
 
     audio::ProcessData<1> process(audio::ProcessData<1>) override;
 
-    ui::Screen& envelope_screen() override
+    voices::IVoiceManager& voice_mgr() override
     {
-      return voice_mgr_.envelope_screen();
+      return voice_mgr_;
     }
 
-    ui::Screen& voices_screen() override
-    {
-      return voice_mgr_.settings_screen();
-    }
+    DECL_REFLECTION(GossSynth, props, ("voice_manager", &GossSynth::voice_mgr_));
 
   private:
     struct Pre : voices::PreBase<Pre, Props> {
@@ -63,16 +60,15 @@ namespace otto::engines {
     };
 
     struct Voice : voices::VoiceBase<Voice, Pre> {
-      std::array<gam::Osc<>, 4> pipes;
+      std::array<gam::Osc<>, 3> pipes;
       gam::Osc<> percussion;
-      gam::Decay<> perc_env;
+      gam::AD<> perc_env{0.001, 0.2};
 
       Voice(Pre&) noexcept;
 
       float operator()() noexcept;
 
-      void on_note_on() noexcept;
-
+      void on_note_on(float freq_target) noexcept;
     };
 
     struct Post : voices::PostBase<Post, Voice> {
@@ -86,4 +82,5 @@ namespace otto::engines {
 
     voices::VoiceManager<Post, 6> voice_mgr_;
   };
+
 } // namespace otto::engines

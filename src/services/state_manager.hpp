@@ -3,7 +3,7 @@
 #include <functional>
 #include <json.hpp>
 #include <string>
-#include <unordered_map>
+#include <foonathan/array/flat_map.hpp>
 
 #include "core/service.hpp"
 #include "services/application.hpp"
@@ -44,7 +44,7 @@ namespace otto::services {
     };
 
     bool _loaded = false;
-    std::unordered_map<std::string, Client> _clients;
+    foonathan::array::flat_map<std::string, Client> _clients;
   };
 
 } // namespace otto::services

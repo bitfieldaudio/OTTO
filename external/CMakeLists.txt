@@ -29,13 +29,6 @@ if (APPLE)
   target_link_libraries(external ${CORE_FOUNDATION})
 endif()
 
-# NanoCanvas
-execute_process(COMMAND git submodule update --init -- NanoCanvas WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-file(GLOB_RECURSE nanocanvas_src "${CMAKE_CURRENT_SOURCE_DIR}/NanoCanvas/src/*.cpp")
-add_library(nanocanvas ${nanocanvas_src})
-target_link_libraries(nanocanvas nanovg)
-target_include_directories(nanocanvas SYSTEM INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/NanoCanvas/src)
-
 # fmtlib
 execute_process(COMMAND git submodule update --init -- fmt WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/fmt)
@@ -44,14 +37,10 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/fmt)
 execute_process(COMMAND git submodule update --init -- GSL WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/GSL)
 
-# Ranges V3
-execute_process(COMMAND git submodule update --init -- range-v3 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-add_library(range-v3 INTERFACE)
-target_include_directories(range-v3 SYSTEM INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/range-v3/include)
-
 # Gamma
 execute_process(COMMAND git submodule update --init -- Gamma WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 execute_process(COMMAND mkdir -p "${CMAKE_CURRENT_BINARY_DIR}/include")
+execute_process(COMMAND rm "${CMAKE_CURRENT_BINARY_DIR}/include/Gamma")
 execute_process(COMMAND ln -s "${CMAKE_CURRENT_SOURCE_DIR}/Gamma/Gamma" "${CMAKE_CURRENT_BINARY_DIR}/include/Gamma")
 file(GLOB_RECURSE gamma_src "${CMAKE_CURRENT_SOURCE_DIR}/Gamma/src/*.cpp")
 list(REMOVE_ITEM gamma_src 
@@ -64,3 +53,16 @@ target_include_directories(gamma SYSTEM PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/incl
 execute_process(COMMAND git submodule update --init -- foonathan_array WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_library(foonathan_array INTERFACE)
 target_include_directories(foonathan_array SYSTEM INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/foonathan_array/include")
+
+# foonathan/array
+execute_process(COMMAND git submodule update --init -- foonathan_type_safe WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+execute_process(COMMAND git submodule update --init -- external/debug_assert WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/foonathan_type_safe)
+add_library(foonathan_type_safe INTERFACE)
+target_include_directories(foonathan_type_safe SYSTEM INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/foonathan_type_safe/include")
+target_include_directories(foonathan_type_safe SYSTEM INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/foonathan_type_safe/external/debug_assert")
+
+# Choreograph
+execute_process(COMMAND git submodule update --init -- choreograph WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+file(GLOB_RECURSE choreograph_src "${CMAKE_CURRENT_SOURCE_DIR}/choreograph/src/**.cpp")
+add_library(choreograph ${choreograph_src})
+target_include_directories(choreograph SYSTEM PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/choreograph/src")

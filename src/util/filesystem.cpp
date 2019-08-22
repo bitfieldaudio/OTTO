@@ -51,14 +51,12 @@ namespace otto::filesystem {
 
   perms operator&(perms lhs, perms rhs)
   {
-    return perms{std::underlying_type_t<perms>(lhs) &
-                 std::underlying_type_t<perms>(rhs)};
+    return perms{std::underlying_type_t<perms>(lhs) & std::underlying_type_t<perms>(rhs)};
   }
 
   perms operator|(perms lhs, perms rhs)
   {
-    return perms{std::underlying_type_t<perms>(lhs) |
-                 std::underlying_type_t<perms>(rhs)};
+    return perms{std::underlying_type_t<perms>(lhs) | std::underlying_type_t<perms>(rhs)};
   }
 
   bool operator!=(perms lhs, perms rhs)
@@ -171,13 +169,11 @@ namespace otto::filesystem {
         return {};
       }
 #if __APPLE__
-      return file_time_type() +
-             std::chrono::duration_cast<file_time_type::duration>(
-               std::chrono::nanoseconds(st.st_mtimespec.tv_nsec));
+      return file_time_type() + std::chrono::duration_cast<file_time_type::duration>(
+                                  std::chrono::nanoseconds(st.st_mtimespec.tv_nsec));
 #else
-      return file_time_type() +
-             std::chrono::duration_cast<file_time_type::duration>(
-               std::chrono::nanoseconds(st.st_mtim.tv_nsec));
+      return file_time_type() + std::chrono::duration_cast<file_time_type::duration>(
+                                  std::chrono::nanoseconds(st.st_mtim.tv_nsec));
 #endif
     }
 
@@ -216,7 +212,7 @@ namespace otto::filesystem {
       }
       ec.clear();
       file_type type = to_file_type(st, ec);
-      perms prms     = static_cast<perms>(st.st_mode) & perms::mask;
+      perms prms = static_cast<perms>(st.st_mode) & perms::mask;
       return file_status{type, prms};
     }
 
@@ -233,7 +229,7 @@ namespace otto::filesystem {
       }
       ec.clear();
       file_type type = to_file_type(st, ec);
-      perms prms     = static_cast<perms>(st.st_mode) & perms::mask;
+      perms prms = static_cast<perms>(st.st_mode) & perms::mask;
       return file_status{type, prms};
     }
 
@@ -249,28 +245,15 @@ namespace otto::filesystem {
 
   path::path(const path& p) = default;
 
-  path::path(path&& p) noexcept : _format(p._format), _path(std::move(p._path))
-  {}
+  path::path(path&& p) noexcept : _format(p._format), _path(std::move(p._path)) {}
 
-  path::path(string_type&& source, format fmt)
-    : _format(fmt),
-      _path(std::move(source))
-  {}
+  path::path(string_type&& source, format fmt) : _format(fmt), _path(std::move(source)) {}
 
-  path::path(const string_type& source, format fmt)
-    : _format(fmt),
-      _path(source)
-  {}
+  path::path(const string_type& source, format fmt) : _format(fmt), _path(source) {}
 
-  path::path(std::basic_string_view<value_type> source, format fmt)
-    : _format(fmt),
-      _path(source)
-  {}
+  path::path(std::basic_string_view<value_type> source, format fmt) : _format(fmt), _path(source) {}
 
-  path::path(const value_type* source, format fmt)
-    : _format(fmt),
-       _path(source)
-  {}
+  path::path(const value_type* source, format fmt) : _format(fmt), _path(source) {}
 
   path::~path() = default;
 
@@ -289,7 +272,7 @@ namespace otto::filesystem {
   path& path::assign(string_type&& source)
   {
     _format = px::detect_format(source);
-    _path   = std::move(source);
+    _path = std::move(source);
     return *this;
   }
 
@@ -298,8 +281,7 @@ namespace otto::filesystem {
 
   path& path::operator/=(const path& p)
   {
-    if (p.is_absolute() ||
-        (p.has_root_name() && p.root_name() != root_name())) {
+    if (p.is_absolute() || (p.has_root_name() && p.root_name() != root_name())) {
       assign(p);
     } else {
       if (has_filename()) {
@@ -432,7 +414,7 @@ namespace otto::filesystem {
 
   int path::compare(const path& p) const noexcept
   {
-    return native() < p.native();
+    return native().compare(p.native());
   }
 
   int path::compare(const string_type& s) const
@@ -654,8 +636,7 @@ namespace otto::filesystem {
 
   path::iterator::iterator(iterator&&) noexcept = default;
 
-  path::iterator::iterator(const path::value_type* first,
-                           const path::value_type* ptr)
+  path::iterator::iterator(const path::value_type* first, const path::value_type* ptr)
     : _first(first), _ptr(ptr), _len(0)
   {
     refresh();
@@ -726,9 +707,7 @@ namespace otto::filesystem {
 
   // otto::filesystem::file_status /////////////////////////////////////////////
 
-  file_status::file_status(file_type ft, perms prms) noexcept
-    : _type(ft), _perms(prms)
-  {}
+  file_status::file_status(file_type ft, perms prms) noexcept : _type(ft), _perms(prms) {}
 
   file_status::~file_status() {}
 
@@ -759,8 +738,7 @@ namespace otto::filesystem {
 
   // otto::filesystem::filesystem_error ////////////////////////////////////////
 
-  filesystem_error::filesystem_error(const std::string& what_arg,
-                                     std::error_code ec)
+  filesystem_error::filesystem_error(const std::string& what_arg, std::error_code ec)
     : system_error(ec), _code(ec)
   {
     _what = std::string("Filesystem error: ") + ec.message();
@@ -819,8 +797,7 @@ namespace otto::filesystem {
     refresh();
   }
 
-  DEntr::directory_entry(const class path& p, std::error_code& ec)
-    : pathobject(p)
+  DEntr::directory_entry(const class path& p, std::error_code& ec) : pathobject(p)
   {
     refresh(ec);
   }
@@ -857,8 +834,7 @@ namespace otto::filesystem {
     std::error_code ec;
     refresh(ec);
     if (ec != std::error_code()) {
-      throw filesystem_error("While refreshing directory entry", pathobject,
-                             ec);
+      throw filesystem_error("While refreshing directory entry", pathobject, ec);
     }
   }
 
@@ -867,10 +843,10 @@ namespace otto::filesystem {
     struct stat st;
     _status = px::status(pathobject, st, ec);
     if (filesystem::exists(_status)) {
-      _file_size       = px::file_size(st, ec);
+      _file_size = px::file_size(st, ec);
       _hard_link_count = px::hard_link_count(st, ec);
     } else {
-      _file_size       = 0;
+      _file_size = 0;
       _hard_link_count = 0;
     }
     _symlink_status = filesystem::symlink_status(pathobject, ec);
@@ -1036,6 +1012,22 @@ namespace otto::filesystem {
   {
     return pathobject != rhs.pathobject;
   }
+  bool DEntr::operator<(const directory_entry& rhs) const noexcept
+  {
+    return pathobject < rhs.pathobject;
+  }
+  bool DEntr::operator<=(const directory_entry& rhs) const noexcept
+  {
+    return pathobject <= rhs.pathobject;
+  }
+  bool DEntr::operator>(const directory_entry& rhs) const noexcept
+  {
+    return pathobject > rhs.pathobject;
+  }
+  bool DEntr::operator>=(const directory_entry& rhs) const noexcept
+  {
+    return pathobject >= rhs.pathobject;
+  }
 
 
   // otto::filesystem::directory_iterator //////////////////////////////////////
@@ -1068,9 +1060,7 @@ namespace otto::filesystem {
     read_dir(p, {}, ec);
   }
 
-  DIter::directory_iterator(const path& p,
-                            directory_options options,
-                            std::error_code& ec)
+  DIter::directory_iterator(const path& p, directory_options options, std::error_code& ec)
   {
     read_dir(p, options, ec);
   }
@@ -1125,14 +1115,12 @@ namespace otto::filesystem {
     return tmp;
   }
 
-  void DIter::read_dir(const path& p,
-                       directory_options options,
-                       std::error_code& ec)
+  void DIter::read_dir(const path& p, directory_options options, std::error_code& ec)
   {
     _entries = std::make_shared<std::vector<DEntr>>();
 
-    bool skip_denied = (options & directory_options::skip_permission_denied) !=
-                       directory_options::none;
+    bool skip_denied =
+      (options & directory_options::skip_permission_denied) != directory_options::none;
 
     errno = 0;
     auto* dir = opendir(p.c_str());
@@ -1156,6 +1144,8 @@ namespace otto::filesystem {
     } while (de != nullptr);
 
     closedir(dir);
+
+    std::sort(_entries->begin(), _entries->end());
 
     if (errno != 0) {
       ec.assign(errno, std::system_category());
@@ -1240,8 +1230,12 @@ namespace otto::filesystem {
         if (ec.value() != 0) {
           throw filesystem_error("", ec);
         }
+        // If dir is empty, pop back out of it
+        if (_data->back() == end(_data->back())) {
+          pop();
+        }
       } else {
-        ++_data->back();
+        ++(_data->back());
         if (_data->back() == end(_data->back())) {
           pop();
         }
@@ -1255,7 +1249,7 @@ namespace otto::filesystem {
     if (_data != nullptr) {
       _data->pop_back();
       if (_data->size() == 0) {
-        _data = nullptr; 
+        _data = nullptr;
       } else {
         ++(_data->back());
         if (_data->back() == end(_data->back())) {
@@ -1268,8 +1262,7 @@ namespace otto::filesystem {
   bool RDIter::operator==(const RDIter& other) const
   {
     return (_data == other._data) ||
-           (_data != nullptr && other._data != nullptr &&
-             _data->back() == other._data->back());
+           (_data != nullptr && other._data != nullptr && _data->back() == other._data->back());
   }
 
   bool RDIter::operator!=(const RDIter& other) const
@@ -1393,9 +1386,8 @@ namespace otto::filesystem {
     if (!is_regular_file(from) ||
         (t.type() != file_type::not_found &&
          (t.type() != file_type::regular || equivalent(from, to) ||
-          (options &
-           (copy_options::skip_existing | copy_options::overwrite_existing |
-            copy_options::update_existing)) == copy_options::none))) {
+          (options & (copy_options::skip_existing | copy_options::overwrite_existing |
+                      copy_options::update_existing)) == copy_options::none))) {
       ec.assign(EEXIST, std::system_category());
     } else {
       if (t.type() == file_type::not_found ||
@@ -1628,8 +1620,8 @@ namespace otto::filesystem {
 
   bool is_other(file_status status) noexcept
   {
-    return exists(status) && !is_regular_file(status) &&
-           !is_directory(status) && !is_symlink(status);
+    return exists(status) && !is_regular_file(status) && !is_directory(status) &&
+           !is_symlink(status);
   }
 
   bool is_other(const path& p)

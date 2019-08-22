@@ -4,7 +4,7 @@
 #include <functional>
 #include <memory>
 
-#include "util/event.hpp"
+#include "util/signals.hpp"
 #include "util/exception.hpp"
 #include "util/filesystem.hpp"
 
@@ -16,6 +16,9 @@ namespace otto::services {
   struct PresetManager;
   struct UIManager;
   struct StateManager;
+  struct ClockManager;
+  struct Controller;
+
   struct Application;
 
   template<typename Service>
@@ -80,7 +83,9 @@ namespace otto::services {
                 ServiceStorage<StateManager>::Factory state_factory,
                 ServiceStorage<PresetManager>::Factory preset_factory,
                 ServiceStorage<AudioManager>::Factory audio_factory,
+                ServiceStorage<ClockManager>::Factory clock_factory,
                 ServiceStorage<UIManager>::Factory ui_factory,
+                ServiceStorage<Controller>::Factory controller,
                 ServiceStorage<EngineManager>::Factory engine_factory);
 
     virtual ~Application();
@@ -94,15 +99,17 @@ namespace otto::services {
     static void handle_signal(int signal) noexcept;
 
     struct Events {
-      util::Event<> post_init;
-      util::Event<> pre_exit;
+      util::Signal<> post_init;
+      util::Signal<> pre_exit;
     } events;
 
     ServiceStorage<LogManager> log_manager;
     ServiceStorage<StateManager> state_manager;
     ServiceStorage<PresetManager> preset_manager;
     ServiceStorage<AudioManager> audio_manager;
+    ServiceStorage<ClockManager> clock_manager;
     ServiceStorage<UIManager> ui_manager;
+    ServiceStorage<Controller> controller;
     ServiceStorage<EngineManager> engine_manager;
 
   private:

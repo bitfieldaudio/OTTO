@@ -5,10 +5,11 @@
 
 #include "internal/property.hpp"
 #include "mixins/all.hpp"
+#include "util/serialize.hpp"
 
 /// The property system
 ///
-/// The property system is used for serialization, faust linking, encoder-stepping and more
+/// The property system is used for serialization, encoder-stepping and more
 /// of variables, mainly on engines.
 ///
 /// \warning The implementation of this relies on a lot of template metaprogramming and
@@ -18,51 +19,87 @@ namespace otto::core::props {
 
   template<typename T, typename Enable>
   struct default_mixins {
-    using type = std::conditional_t<std::is_enum_v<T>,
-                                    tag_list<serializable, change_hook, has_limits, steppable>,
-                                    tag_list<serializable, change_hook>>;
+    using type = std::conditional_t<std::is_enum_v<T> || util::BetterEnum::is<T>,
+                                    tag_list<signal, has_limits, steppable>,
+                                    tag_list<signal>>;
   };
 
   template<>
   struct default_mixins<int> {
-    using type = tag_list<serializable, faust_link, change_hook, has_limits, steppable>;
+    using type = tag_list<signal, has_limits, steppable>;
   };
 
   template<>
   struct default_mixins<bool> {
-    using type = tag_list<serializable, faust_link, change_hook, steppable>;
+    using type = tag_list<signal, steppable>;
   };
 
   template<>
   struct default_mixins<float> {
-    using type = tag_list<serializable, faust_link, change_hook, has_limits, steppable>;
+    using type = tag_list<signal, has_limits, steppable>;
   };
 
   template<>
   struct default_mixins<double> {
-    using type = tag_list<serializable, faust_link, change_hook, has_limits, steppable>;
+    using type = tag_list<signal, has_limits, steppable>;
   };
 
   // Void is for branches
   template<>
   struct default_mixins<void> {
-    using type = tag_list<serializable, faust_link>;
+    using type = tag_list<>;
   };
 
+  using no_signal = no<signal>;
+
   /// A property of type `ValueType` with mixins `Tags...`
+  ///
+  /// Properties
   template<typename ValueType, typename... Tags>
   using Property = PropertyImpl<ValueType, meta::_t<get_tag_list<ValueType, Tags...>>>;
 
-  template<typename... Tags>
-  struct Properties : meta::_t<detail::properties_for_list<meta::_t<get_tag_list<void, Tags...>>>> {
-    /// \private
-    using Super = meta::_t<detail::properties_for_list<meta::_t<get_tag_list<void, Tags...>>>>;
+  /// Serialize a property to json
+  template<typename ValueType, typename TagList>
+  inline nlohmann::json serialize(const PropertyImpl<ValueType, TagList>& prop)
+  {
+    using ::otto::util::serialize;
+    return serialize(prop.get());
+  }
 
-    using typename Super::tag_list;
+  /// Deserialize a property from json
+  template<typename ValueType, typename TagList>
+  inline void deserialize(PropertyImpl<ValueType, TagList>& prop, const nlohmann::json& json)
+  {
+    using ::otto::util::deserialize;
+    static_assert(std::is_default_constructible_v<ValueType>,
+                  "A property type must be default constructible to be deserializable");
+    ValueType v{};
+    deserialize(v, json);
+    prop.set(std::move(v));
+  }
 
-    /// \private
-    using Super::Super;
-  };
 
-  using no_serialize = no<serializable>;
+  template<typename ValueType, typename TagList>
+  void to_json(json& j, PropertyImpl<ValueType, TagList>& t)
+  {
+    j = serialize(t);
+  }
+
+  template<typename ValueType, typename TagList>
+  void to_json(json& j, const PropertyImpl<ValueType, TagList>& t)
+  {
+    j = serialize(t);
+  }
+
+  template<typename ValueType, typename TagList>
+  void to_json(json& j, PropertyImpl<ValueType, TagList>&& t)
+  {
+    j = serialize(std::move(t));
+  }
+
+  template<typename ValueType, typename TagList>
+  void from_json(const json& j, PropertyImpl<ValueType, TagList>& t)
+  {
+    deserialize(t, j);
+  }
 } // namespace otto::core::props

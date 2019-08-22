@@ -5,7 +5,7 @@
 #include "core/audio/processor.hpp"
 #include "core/service.hpp"
 #include "services/debug_ui.hpp"
-#include "util/event.hpp"
+#include "util/signals.hpp"
 #include "util/locked.hpp"
 
 #include "services/application.hpp"
@@ -30,17 +30,25 @@ namespace otto::services {
     /// The `core::midi` namespace has some nice utils for constructing events.
     void send_midi_event(core::midi::AnyMidiEvent) noexcept;
 
-    /// Get the current samplerate
-    int samplerate() noexcept { return _samplerate; }
+    /// Get the samplerate
+    int samplerate() const noexcept { return _samplerate; }
 
-    /// Process the final output
-    ///
-    /// Currently only used for debugging
-    void process_audio_output(core::audio::ProcessData<2> audio_output);
+    /// Get the buffer size
+    int buffer_size() const noexcept { return _buffer_size; }
+
+    /// Get the current buffer number
+    /// 
+    /// i.e. number of {@ref buffer_size()} chunks of samples since the start
+    /// 
+    /// Can be used to wait until the current process call is over
+    unsigned buffer_number() const noexcept { return _buffer_number; }
+
+    /// Wait at least until the current process call is done
+    void wait_one() const noexcept;
 
     /// Start audio processing
     ///
-    /// \postconditions `running() == true`
+    /// Sets `running() = true`
     void start() noexcept;
 
     /// Check if audio should be processed
@@ -51,13 +59,22 @@ namespace otto::services {
     /// The amount of cpu time spent on average since the last call to this function
     float cpu_time() noexcept;
 
+    /// Get the current instance of this service
+    /// 
+    /// Alias to `Application::current().audio_manager`
+    static AudioManager& current() noexcept {
+      return Application::current().audio_manager;
+    }
+
     struct Events {
-      util::Event<> pre_init;
+      util::Signal<> pre_init;
     } events;
 
   protected:
-    util::atomic_swap<core::midi::shared_vector<core::midi::AnyMidiEvent>> midi_bufs = {{}, {}};
-    int _samplerate = 48000;
+    util::double_buffered<core::midi::shared_vector<core::midi::AnyMidiEvent>> midi_bufs = {{}, {}};
+    std::atomic_int _samplerate = 48000;
+    std::atomic_uint _buffer_size = 256;
+    std::atomic_uint _buffer_number = 0;
     util::audio::Graph _cpu_time;
   private:
     core::audio::AudioBufferPool _buffer_pool{1};

@@ -8,6 +8,7 @@
 #include "services/preset_manager.hpp"
 #include "services/state_manager.hpp"
 #include "services/ui_manager.hpp"
+#include "services/clock_manager.hpp"
 
 #include "board/audio_driver.hpp"
 #include "board/ui/egl_ui_manager.hpp"
@@ -26,8 +27,9 @@ int main(int argc, char* argv[])
     Application app {
       [&] { return std::make_unique<LogManager>(argc, argv); },
       StateManager::create_default,
-      std::make_unique<PresetManager>,
+      PresetManager::create_default,
       std::make_unique<RTAudioAudioManager>,
+      ClockManager::create_default,
       std::make_unique<EGLUIManager>,
       EngineManager::create_default
     };
@@ -60,19 +62,19 @@ int main(int argc, char* argv[])
 int handle_exception(const char* e)
 {
   LOGE(e);
-  LOGE("Exception thrown, exitting!");
+  LOGE("Exception thrown, exiting!");
   return 1;
 }
 
 int handle_exception(std::exception& e)
 {
   LOGE(e.what());
-  LOGE("Exception thrown, exitting!");
+  LOGE("Exception thrown, exiting!");
   return 1;
 }
 
 int handle_exception()
 {
-  LOGE("Unknown exception thrown, exitting!");
+  LOGE("Unknown exception thrown, exiting!");
   return 1;
 }

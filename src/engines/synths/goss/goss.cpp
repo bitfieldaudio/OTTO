@@ -14,7 +14,7 @@ namespace otto::engines {
   struct GossSynthScreen : EngineScreen<GossSynth> {
     void draw(Canvas& ctx) override;
     bool keypress(Key key) override;
-    void rotary(RotaryEvent e) override;
+    void encoder(EncoderEvent e) override;
 
     using EngineScreen<GossSynth>::EngineScreen;
   };
@@ -22,12 +22,12 @@ namespace otto::engines {
   // GossSynth ////////////////////////////////////////////////////////////////
 
   GossSynth::GossSynth()
-    : SynthEngine("Goss", props, std::make_unique<GossSynthScreen>(this)), voice_mgr_(props)
+    : SynthEngine<GossSynth>(std::make_unique<GossSynthScreen>(this)), voice_mgr_(props)
   {}
 
   float GossSynth::Voice::operator()() noexcept
   {
-    float fundamental = frequency() * (1 + 0.015 * props.leslie * pre.pitch_modulation_hi.cos()) * 0.5;
+    float fundamental = frequency() * (1 + 0.012 * props.leslie * pre.pitch_modulation_hi.cos()) * 0.5;
     pipes[0].freq(fundamental);
     pipes[1].freq(fundamental);
     pipes[2].freq(fundamental);
@@ -43,7 +43,7 @@ namespace otto::engines {
 
     pipes[1].resize(1024);
     pipes[1].addSine(4, 1, 0);
-    pipes[1].addSine(16, 0.5, 0);
+    pipes[1].addSine(16, 0.3, 0);
 
     pipes[2].resize(1024);
     pipes[2].addSine(6, 0.5, 0);
@@ -56,12 +56,16 @@ namespace otto::engines {
     percussion.addSine(4, 0.5, 0);
     percussion.addSine(6, 1.0, 0);
 
-    perc_env.decay(0.5);
     perc_env.finish();
+    props.click.on_change().connect([this](float cl) {
+        perc_env.decay(cl * 2);
+        perc_env.amp(3 * cl);
+    }).call_now(props.click);
+
   }
 
-  void GossSynth::Voice::on_note_on() noexcept {
-    perc_env.reset(props.drawbar3 * 5);
+  void GossSynth::Voice::on_note_on(float freq_target) noexcept {
+    perc_env.resetSoft();
   }
 
   GossSynth::Pre::Pre(Props& props) noexcept : PreBase(props)
@@ -78,7 +82,7 @@ namespace otto::engines {
       pitch_modulation_lo.freq(leslie_speed_hi);
       pitch_modulation_hi.freq(leslie);
       rotation.freq(leslie_speed_hi/4.f);
-    });
+    }).call_now(props.leslie);
   }
 
   void GossSynth::Pre::operator()() noexcept {
@@ -117,13 +121,13 @@ namespace otto::engines {
     return false;
   }
 
-  void GossSynthScreen::rotary(RotaryEvent e)
+  void GossSynthScreen::encoder(EncoderEvent e)
   {
-    switch (e.rotary) {
-    case Rotary::blue: engine.props.drawbar1.step(e.clicks); break;
-    case Rotary::green: engine.props.drawbar2.step(e.clicks); break;
-    case Rotary::yellow: engine.props.drawbar3.step(e.clicks); break;
-    case Rotary::red: engine.props.leslie.step(e.clicks); break;
+    switch (e.encoder) {
+    case Encoder::blue: engine.props.drawbar1.step(e.steps); break;
+    case Encoder::green: engine.props.drawbar2.step(e.steps); break;
+    case Encoder::yellow: engine.props.click.step(e.steps); break;
+    case Encoder::red: engine.props.leslie.step(e.steps); break;
     }
   }
 
@@ -140,8 +144,8 @@ namespace otto::engines {
       ctx.circle({160, 120}, 55);
       ctx.lineWidth(6.0);
       ctx.strokeStyle(Colours::Gray50);
-      ctx.lineCap(Canvas::LineCap::ROUND);
-      ctx.lineJoin(Canvas::LineJoin::ROUND);
+      ctx.lineCap(LineCap::ROUND);
+      ctx.lineJoin(LineJoin::ROUND);
       ctx.stroke();
 
       // Ring 2 Base
@@ -160,11 +164,11 @@ namespace otto::engines {
       // Ring 1
       ctx.beginPath();
       ctx.rotateAround(55, {160, 120});
-      ctx.arc(160, 120, 55, 0, (2 * M_PI * engine.props.drawbar3), false);
+      ctx.arc(160, 120, 55, 0, (2 * M_PI * engine.props.click), false);
       ctx.lineWidth(6.0);
       ctx.strokeStyle(Colours::Yellow);
-      ctx.lineCap(Canvas::LineCap::ROUND);
-      ctx.lineJoin(Canvas::LineJoin::ROUND);
+      ctx.lineCap(LineCap::ROUND);
+      ctx.lineJoin(LineJoin::ROUND);
       ctx.stroke();
 
       // Ring 2

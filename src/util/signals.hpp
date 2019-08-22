@@ -1,7 +1,7 @@
 #pragma once
 
+#include <forward_list>
 #include <functional>
-#include <list>
 
 namespace otto::util {
 
@@ -12,28 +12,96 @@ namespace otto::util {
   template<typename... Args>
   struct Signal;
 
-  template<typename... Args>
-  struct Connection;
+  /// Type-erased connection
+  struct Slot {
+    Slot() /*noexcept*/ = default;
+
+    Slot(Slot*& ptr, std::function<void()> d) noexcept : _ptr(&ptr), _disconnect(std::move(d))
+    {
+      if (_ptr) *_ptr = this;
+    }
+
+    Slot(const Slot&) = delete;
+    Slot& operator=(const Slot&) = delete;
+
+    Slot(Slot&& rhs)
+    {
+      *this = std::move(rhs);
+    }
+    Slot& operator=(Slot&& rhs)
+    {
+      disconnect();
+      _ptr = rhs._ptr;
+      _disconnect = rhs._disconnect;
+      if (_ptr) *_ptr = this;
+      rhs.clear();
+      return *this;
+    }
+
+    ~Slot() noexcept
+    {
+      disconnect();
+    }
+
+    void disconnect() noexcept
+    {
+      if (_disconnect != nullptr) _disconnect();
+      _disconnect = nullptr;
+      if (_ptr) *_ptr = nullptr;
+    }
+
+    /// Called by Signal on destruction
+    void clear() noexcept
+    {
+      _ptr = nullptr;
+      _disconnect = nullptr;
+    }
+
+  private:
+    /// Pointer to the slot field in the Connection object in the list
+    Slot** _ptr = nullptr;
+    std::function<void()> _disconnect = nullptr;
+  };
 
   template<typename... Args>
   struct SlotRef {
-    using Connection = otto::util::Connection<Args...>;
     using Signal = otto::util::Signal<Args...>;
     using Function = typename Signal::Function;
-    using FuncIterator = typename Signal::FuncIterator;
+    using ConIterator = typename Signal::ConIterator;
 
     Signal* signal;
-    FuncIterator func_iter;
+    ConIterator func_iter;
 
-    void call_now(Args...);
+    operator Slot()
+    {
+      return {func_iter->slot, [cpy = *this] { cpy.signal->disconnect(cpy); }};
+    }
+
+    SlotRef& call_now(Args...);
   };
 
   template<typename... Args>
   struct Signal {
-    using Connection = otto::util::Connection<Args...>;
     using SlotRef = otto::util::SlotRef<Args...>;
     using Function = std::function<void(Args...)>;
-    using FuncIterator = typename std::list<Function>::iterator;
+    struct Connection {
+      Connection(const Function& f) : func(f) {}
+      Connection(Function&& f) : func(std::move(f)) {}
+      ~Connection() noexcept
+      {
+        if (slot) slot->clear();
+      }
+      Function func;
+      Slot* slot = nullptr;
+    };
+    using ConIterator = typename std::forward_list<Connection>::iterator;
+
+    Signal() = default;
+    ~Signal() noexcept;
+    Signal(const Signal&) = default;
+    Signal(Signal&&) = default;
+    Signal& operator=(const Signal&) = default;
+    Signal& operator=(Signal&&) = default;
 
     SlotRef connect(const Function& func);
     SlotRef connect(Function&& func);
@@ -50,52 +118,40 @@ namespace otto::util {
     void emit(Args... a);
 
   private:
-    std::list<Function> _slots;
-  };
-
-  template<typename... Args>
-  struct Connection {
-    using Signal = otto::util::Signal<Args...>;
-    using SlotRef = otto::util::SlotRef<Args...>;
-    using Function = typename Signal::Function;
-    using FuncIterator = typename Signal::FuncIterator;
-
-    Connection(SlotRef) noexcept;
-
-    Connection(const Connection&) = delete;
-    Connection(Connection&&) noexcept = default;
-    Connection& operator=(const Connection&) = delete;
-    Connection& operator=(Connection&&) noexcept = default;
-
-    operator SlotRef() const noexcept;
-
-    ~Connection() noexcept;
-
-  private:
-    SlotRef slot_ref;
+    std::forward_list<Connection> _slots;
   };
 
   // -- SlotRef IMPLEMENTATIONS -- //
 
   template<typename... Args>
-  void SlotRef<Args...>::call_now(Args... args)
+  SlotRef<Args...>& SlotRef<Args...>::call_now(Args... args)
   {
-    (*func_iter)(std::forward<Args>(args)...);
+    func_iter->func(std::forward<Args>(args)...);
+    return *this;
   }
 
 
   // -- Signal IMPLEMENTATIONS -- //
 
+
+  template<typename... Args>
+  Signal<Args...>::~Signal() noexcept
+  {
+    disconnect_all();
+  }
+
   template<typename... Args>
   auto Signal<Args...>::connect(const Function& func) -> SlotRef
   {
-    return {this, _slots.insert(_slots.end(), func)};
+    _slots.emplace_front(func);
+    return {this, _slots.begin()};
   }
 
   template<typename... Args>
   auto Signal<Args...>::connect(Function&& func) -> SlotRef
   {
-    return {this, _slots.insert(_slots.end(), std::move(func))};
+    _slots.emplace_front(std::move(func));
+    return {this, _slots.begin()};
   }
 
   template<typename... Args>
@@ -115,33 +171,28 @@ namespace otto::util {
   template<typename... Args>
   void Signal<Args...>::disconnect(SlotRef sr)
   {
-    _slots.erase(sr.func_iter);
+    auto prev = _slots.before_begin();
+    for (auto i = _slots.begin(); i != _slots.end(); i++) {
+      if (i == sr.func_iter) {
+        _slots.erase_after(prev);
+        break;
+      }
+      prev = i;
+    }
+  }
+
+  template<typename... Args>
+  void Signal<Args...>::disconnect_all()
+  {
+    _slots.clear();
   }
 
   template<typename... Args>
   void Signal<Args...>::emit(Args... args)
   {
     for (auto&& slot : _slots) {
-      slot(args...);
+      slot.func(args...);
     }
-  }
-
-  // -- Connection IMPLEMENTATIONS -- //
-
-  template<typename... Args>
-  Connection<Args...>::Connection(SlotRef sr) noexcept : slot_ref(sr)
-  {}
-
-  template<typename... Args>
-  Connection<Args...>::~Connection() noexcept
-  {
-    slot_ref.signal->disconnect(slot_ref);
-  }
-
-  template<typename... Args>
-  Connection<Args...>::operator SlotRef() const noexcept
-  {
-    return slot_ref;
   }
 
 } // namespace otto::util

@@ -9,9 +9,7 @@
 
 namespace otto::core::props {
 
-  OTTO_PROPS_MIXIN(pow2, REQUIRES(steppable));
-
-  OTTO_PROPS_MIXIN_LEAF(pow2) {
+  OTTO_PROPS_MIXIN(pow2, REQUIRES(steppable)) {
     OTTO_PROPS_MIXIN_DECLS(pow2);
 
     value_type pow_2() const
@@ -28,9 +26,7 @@ namespace otto::core::props {
     value_type pow2_;
   };
 
-  OTTO_PROPS_MIXIN(exp_step);
-
-  OTTO_PROPS_MIXIN_LEAF(exp_step) {
+  OTTO_PROPS_MIXIN(exp_step) {
     OTTO_PROPS_MIXIN_DECLS(exp_step);
 
     auto on_hook(hook<steppable::hooks::on_step, HookOrder::After> const & hook)

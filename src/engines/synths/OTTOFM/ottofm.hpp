@@ -1,8 +1,6 @@
 #pragma once
 
 #include "core/engine/engine.hpp"
-
-#include "core/audio/faust.hpp"
 #include "core/voices/voice_manager.hpp"
 
 #include <Gamma/Envelope.h>
@@ -14,32 +12,31 @@ namespace otto::engines {
   using namespace core::engine;
   using namespace props;
 
-  struct OTTOFMSynth : SynthEngine, EngineWithEnvelope {
-    struct OperatorProps : Properties<> {
-      using Properties::Properties;
-      // clang-format off
-      //Envelopes
-      Property<float> feedback                = {this, "feedback",  0,   has_limits::init(0, 0.4),  steppable::init(0.01)};
-      Property<float> mAtt                    = {this, "mAtt",      0.2, has_limits::init(0,    1),  steppable::init(0.01)};
-      Property<float> mDecrel                 = {this, "mDecrel",   0.5, has_limits::init(0,    1),  steppable::init(0.01)};
-      Property<float> mSuspos                 = {this, "mSuspos",   0.5, has_limits::init(0,    1),  steppable::init(0.01)};
-      //Oscillator
-      Property<float> detune                  = {this, "detune",    0,   has_limits::init(-1,   1),  steppable::init(0.01)};
-      Property<int> ratio_idx                 = {this, "ratio_idx", 0,   has_limits::init(0,    18), steppable::init(1)};
-      //Amp
-      Property<float> outLev                  = {this, "outLev",    1,   has_limits::init(0, 1),    steppable::init(0.01)};
-      // clang-format on
+  struct OTTOFMSynth : SynthEngine<OTTOFMSynth> {
+    static constexpr util::string_ref name = "OTTO.FM";
+    struct OperatorProps {
+      // Envelopes
+      Property<float> feedback = {0, limits(0, 0.4), step_size(0.01)};
+      Property<float> mAtt = {0.2, limits(0, 1), step_size(0.01)};
+      Property<float> mDecrel = {0.5, limits(0, 1), step_size(0.01)};
+      Property<float> mSuspos = {0.5, limits(0, 1), step_size(0.01)};
+      // Oscillator
+      Property<float> detune = {0, limits(-1, 1), step_size(0.01)};
+      Property<int> ratio_idx = {0, limits(0, 19), step_size(1)};
+      // Amp
+      Property<float> outLev = {1, limits(0, 1), step_size(0.01)};
+      float current_level = 0;
+
+      DECL_REFLECTION(OperatorProps, feedback, mAtt, mDecrel, mSuspos, detune, ratio_idx, outLev);
     };
 
-    struct Props : Properties<> {
-      using Properties::Properties;
-      Property<int> algN = {this, "algN", 0, has_limits::init(0, 10), steppable::init(1)};
-      Property<float> fmAmount = {this, "fmAmount", 1, has_limits::init(0, 1),
-                                  steppable::init(0.01)};
+    struct Props {
+      Property<int> algN = {0, limits(0, 10), step_size(1)};
+      Property<float> fmAmount = {1, limits(0, 1), step_size(0.01)};
 
-      std::array<OperatorProps, 4> operators = {
-        {{this, "op0"}, {this, "op1"}, {this, "op2"}, {this, "op3"}}};
+      std::array<OperatorProps, 4> operators;
 
+      DECL_REFLECTION(Props, algN, fmAmount, operators);
     } props;
 
     struct FMOperator {
@@ -56,13 +53,15 @@ namespace otto::engines {
       FMSine sine;
       gam::ADSR<> env;
 
-      bool modulator; /// If it is a modulator, use the envelope.
-      float outlevel;
-      float feedback; /// TODO:Implement in call operator
-      float fm_amount;
+      bool modulator = false; /// If it is a modulator, use the envelope.
+      float outlevel = 1;
+      float feedback = 0; /// TODO:Implement in call operator
+      float fm_amount = 1;
 
-      float freq_ratio;
-      float detune_amount;
+      float freq_ratio = 1;
+      float detune_amount = 0;
+
+      float previous_value = 0;
 
       float operator()(float);
 
@@ -75,21 +74,22 @@ namespace otto::engines {
 
     audio::ProcessData<1> process(audio::ProcessData<1>) override;
 
-    ui::Screen& envelope_screen() override
+    voices::IVoiceManager& voice_mgr() override
     {
-      return voice_mgr_.envelope_screen();
+      return voice_mgr_;
     }
 
-    ui::Screen& voices_screen() override
-    {
-      return voice_mgr_.settings_screen();
-    }
+    DECL_REFLECTION(OTTOFMSynth, props, ("voice_manager", &OTTOFMSynth::voice_mgr_));
 
   private:
+    struct Voice;
+
     struct Pre : voices::PreBase<Pre, Props> {
       Pre(Props&) noexcept;
 
       void operator()() noexcept;
+
+      Voice* last_voice = nullptr;
     };
 
     struct Voice : voices::VoiceBase<Voice, Pre> {
@@ -106,7 +106,7 @@ namespace otto::engines {
       Voice(Pre&) noexcept;
 
       float operator()() noexcept;
-      void on_note_on() noexcept;
+      void on_note_on(float freq_target) noexcept;
       void on_note_off() noexcept;
 
     private:

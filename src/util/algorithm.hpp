@@ -819,7 +819,7 @@ namespace otto::util {
 
     /// Container based wrapper for \ref std::max_element()
     template<typename Cont>
-    decltype(auto) max_element(Cont&& cont)
+    constexpr decltype(auto) max_element(Cont&& cont)
     {
       using std::begin;
       using std::end;
@@ -828,7 +828,7 @@ namespace otto::util {
 
     /// Container based wrapper for \ref std::min_element()
     template<typename Cont>
-    decltype(auto) min_element(Cont&& cont)
+    constexpr decltype(auto) min_element(Cont&& cont)
     {
       using std::begin;
       using std::end;
@@ -837,7 +837,7 @@ namespace otto::util {
 
     /// Container based wrapper for \ref std::min_element()
     template<typename Cont, typename Compare>
-    decltype(auto) min_element(Cont&& cont, Compare&& f)
+    constexpr decltype(auto) min_element(Cont&& cont, Compare&& f)
     {
       using std::begin;
       using std::end;
@@ -846,7 +846,7 @@ namespace otto::util {
 
     /// Container based wrapper for \ref std::max_element()
     template<typename Cont, typename Compare>
-    decltype(auto) max_element(Cont&& cont, Compare&& f)
+    constexpr decltype(auto) max_element(Cont&& cont, Compare&& f)
     {
       using std::begin;
       using std::end;
@@ -871,6 +871,13 @@ namespace otto::util {
       return std::find_if(begin(cont), end(cont), std::forward<UnaryPredicate>(f));
     }
 
+    template<typename Cont, typename Cont2>
+    decltype(auto) equal(Cont&& cont, Cont2&& cont2)
+    {
+      using std::begin;
+      using std::end;
+      return std::equal(begin(cont), end(cont), begin(cont2), end(cont2));
+    }
 
     /// \}
     ///

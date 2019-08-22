@@ -8,6 +8,8 @@
 #include "services/preset_manager.hpp"
 #include "services/state_manager.hpp"
 #include "services/ui_manager.hpp"
+#include "services/clock_manager.hpp"
+#include "services/controller.hpp"
 
 namespace otto::services {
 
@@ -15,22 +17,26 @@ namespace otto::services {
                            ServiceStorage<StateManager>::Factory state_fact,
                            ServiceStorage<PresetManager>::Factory preset_fact,
                            ServiceStorage<AudioManager>::Factory audio_fact,
+                           ServiceStorage<ClockManager>::Factory clock_fact,
                            ServiceStorage<UIManager>::Factory ui_fact,
+                           ServiceStorage<Controller>::Factory controller,
                            ServiceStorage<EngineManager>::Factory engine_fact)
     : log_manager(std::move(log_fact)),
       state_manager(std::move(state_fact)),
       preset_manager(std::move(preset_fact)),
       audio_manager(std::move(audio_fact)),
+      clock_manager(std::move(clock_fact)),
       ui_manager(std::move(ui_fact)),
+      controller(std::move(controller)),
       engine_manager(std::move(engine_fact))
   {
     _current = this;
-    events.post_init.fire();
+    events.post_init.emit();
   }
 
   Application::~Application()
   {
-    events.pre_exit.fire();
+    events.pre_exit.emit();
   }
 
   void Application::exit(ErrorCode ec) noexcept

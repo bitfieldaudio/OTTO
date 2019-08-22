@@ -82,3 +82,5 @@ namespace otto::util {
   // Defines bitwise operations for JsonFile::OpenOptions
   MAKE_ENUM_OPERATORS(JsonFile::OpenOptions)
 }
+
+#include "util/serialize.inl"

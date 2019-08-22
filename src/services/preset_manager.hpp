@@ -1,6 +1,6 @@
 #pragma once
 
-#include <unordered_map>
+#include <foonathan/array/flat_map.hpp>
 
 #include "core/engine/engine.hpp"
 #include "core/service.hpp"
@@ -18,21 +18,9 @@ namespace otto::services {
     /// EngineManager exceptions. Contain an @ref ErrorCode
     using exception = util::as_exception<ErrorCode>;
 
-    /// Initialize preset manager
-    ///
-    /// \effects `load_preset_files()`
-    PresetManager();
-
-    /// (Re)load preset files
-    ///
-    /// Invoked by @ref init. Call to reload all preset files.
-    ///
-    /// \throws @ref filesystem::filesystem_error
-    void load_preset_files();
-
     /// Get the names of presets for an engine
     ///
-    /// These presets can be applied using @ref apply_preset(AnyEngine&, const std::string&) or
+    /// These presets can be applied using @ref apply_preset(AnyEngine&, const std::string_view) or
     /// @ref apply_preset(AnyEngine&, int)
     ///
     /// \throws @ref exception with @ref ErrorCode::no_such_engine if no matching
@@ -42,21 +30,21 @@ namespace otto::services {
     /// over the actual preset data. Also it makes sense for the
     /// @ref otto::engines::EngineSelectorScreen, which is probably the only place
     /// that really needs access
-    const std::vector<std::string>& preset_names(const std::string& engine_name);
+    virtual const std::vector<std::string>& preset_names(util::string_ref engine_name) = 0;
 
     /// Get the name of preset with indx `idx`
     ///
     /// \throws @ref exception with @ref ErrorCode::no_such_preset if no matching
     /// preset was found, or @ref ErrorCode::no_such_engine if no matching engine
     /// was found
-    const std::string& name_of_idx(const std::string& engine_name, int idx);
+    virtual const std::string& name_of_idx(util::string_ref engine_name, int idx) = 0;
 
     /// Get the index of preset with name `name`
     ///
     /// \throws @ref exception with @ref ErrorCode::no_such_preset if no matching
     /// preset was found, or @ref ErrorCode::no_such_engine if no matching engine
     /// was found
-    int idx_of_name(const std::string& engine_name, const std::string& name);
+    virtual int idx_of_name(util::string_ref engine_name, std::string_view name) = 0;
 
     /// Apply preset to engine
     ///
@@ -64,9 +52,9 @@ namespace otto::services {
     ///
     /// \throws @ref exception with @ref ErrorCode::no_such_preset if no matching
     /// preset was found.
-    void apply_preset(core::engine::AnyEngine& engine,
-                      const std::string& name,
-                      bool no_enable_callback = false);
+    virtual void apply_preset(core::engine::IEngine& engine,
+                              std::string_view name,
+                              bool no_enable_callback = false) = 0;
 
     /// Apply preset to engine
     ///
@@ -74,24 +62,14 @@ namespace otto::services {
     ///
     /// \throws @ref exception with @ref ErrorCode::no_such_preset if no matching
     /// preset was found.
-    void apply_preset(core::engine::AnyEngine& engine, int idx, bool no_enable_callback = false);
+    virtual void apply_preset(core::engine::IEngine& engine, int idx, bool no_enable_callback = false) = 0;
 
-    void create_preset(const std::string& engine_name,
-                       const std::string& preset_name,
-                       const nlohmann::json& preset_data);
+    virtual void create_preset(util::string_ref engine_name,
+                               std::string_view preset_name,
+                               const nlohmann::json& preset_data) = 0;
 
-  private:
-    struct PresetNamesDataPair {
-      std::vector<std::string> names;
-      std::vector<nlohmann::json> data;
-    };
+    static std::unique_ptr<PresetManager> create_default();
 
-    // Key is engine name.
-    // This design is chosen because we want to expose the names vector
-    // separately.
-    std::unordered_map<std::string, PresetNamesDataPair> _preset_data;
-
-    const fs::path presets_dir = Application::current().data_dir / "presets";
   };
 
 } // namespace otto::services

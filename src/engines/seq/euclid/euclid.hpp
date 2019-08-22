@@ -2,11 +2,8 @@
 
 #include "core/engine/engine.hpp"
 
-#include "core/audio/faust.hpp"
-#include "core/audio/voice_manager.hpp"
-
 #include <array>
-#include <optional>
+#include <tl/optional.hpp>
 
 namespace otto::engines {
 
@@ -14,44 +11,32 @@ namespace otto::engines {
   using namespace core::engine;
   using namespace props;
 
-  struct Euclid : ArpeggiatorEngine {
+  struct Euclid : ArpeggiatorEngine<Euclid> {
+    static constexpr util::string_ref name = "Euclid";
     static constexpr int max_length = 16;
 
-    struct Channel : Properties<> {
-      Property<int> length = {this, "Length", max_length, has_limits::init(0, max_length),
-                                    steppable::init(1)};
-      Property<int> hits = {this, "Hits", 0, has_limits::init(0, max_length), steppable::init(1)};
-      Property<int> rotation = {this, "Rotation", 0, has_limits::init(0, max_length),
-                                steppable::init(1)};
+    struct Channel {
+      Property<int> length = {max_length, limits(0, max_length), step_size(1)};
+      Property<int> hits = {0, limits(0, max_length), step_size(1)};
+      Property<int> rotation = {0, limits(0, max_length), step_size(1)};
 
-      Property<std::array<int, 6>> notes = {this, "Notes", std::array<int, 6>{{-1, -1, -1, -1, -1, -1}}};
+      Property<std::array<int, 6>> notes = {std::array<int, 6>{{-1, -1, -1, -1, -1, -1}}};
 
       void update_notes();
 
-      Channel(int n) : branch_base(nullptr, fmt::format("Channel {}", n)){};
-
       int _beat_counter = 0;
       std::array<bool, max_length> _hits_enabled;
+
+      DECL_REFLECTION(Channel, length, hits, rotation, notes);
     };
 
-    struct Props : Properties<> {
-      Property<int, wrap> channel = {this, "Channel", 0, has_limits::init(0, 3)};
-      std::array<Channel, 4> channels = util::generate_array<4>([](int n) { return Channel(n); });
-
-      Props() {
-        for (auto& c : channels) {
-          DLOGI("{}", c.name());
-          channels_props.push_back(c);
-        }
-      }
-
-      Properties<> channels_props = {this, "Channels"};
-
+    struct Props {
+      Property<int, wrap> channel = {0, limits(0, 3)};
+      std::array<Channel, 4> channels;
+      DECL_REFLECTION(Props, channel, channels);
     } props;
 
     Euclid();
-
-    void on_enable() override;
 
     audio::ProcessData<0> process(audio::ProcessData<0>) override;
 
@@ -60,7 +45,7 @@ namespace otto::engines {
       return props.channels.at(props.channel);
     }
 
-    std::optional<std::array<int, 6>> recording = std::nullopt;
+    tl::optional<std::array<int, 6>> recording = tl::nullopt;
 
     bool running = false;
 
@@ -69,7 +54,7 @@ namespace otto::engines {
 
     int _samples_per_beat = 22050 / 4;
     int _counter = _samples_per_beat;
-    //Used to make sure NoteOff events are sent when stopped
+    // Used to make sure NoteOff events are sent when stopped
     bool _should_run = false;
 
     // Used in recording to clear the current value when the first keyonevent is sent

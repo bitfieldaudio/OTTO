@@ -21,7 +21,7 @@ namespace otto::engines {
 
     void draw(Canvas& ctx) override;
     bool keypress(Key key) override;
-    void rotary(RotaryEvent e) override;
+    void encoder(EncoderEvent e) override;
 
     void draw_normal(Canvas& ctx);
     void draw_recording(Canvas& ctx);
@@ -51,12 +51,7 @@ namespace otto::engines {
     void draw_channel(ui::vg::Canvas& ctx, State::ChannelState& chan);
   };
 
-  Euclid::Euclid() : ArpeggiatorEngine("Euclid", props, std::make_unique<EuclidScreen>(this))
-  {
-    static_cast<EuclidScreen*>(&screen())->refresh_state();
-  }
-
-  void Euclid::on_enable()
+  Euclid::Euclid() : ArpeggiatorEngine<Euclid>(std::make_unique<EuclidScreen>(this))
   {
     for (auto& c : props.channels) c.update_notes();
     static_cast<EuclidScreen*>(&screen())->refresh_state();
@@ -89,7 +84,7 @@ namespace otto::engines {
                         note = -1;
                       }
                       if (util::all_of(recording.value(), [](int note) { return note < 0; })) {
-                        recording = std::nullopt;
+                        recording = tl::nullopt;
                       }
                     },
                     [](auto&&) {});
@@ -150,18 +145,18 @@ namespace otto::engines {
 
   // SCREEN //
 
-  void EuclidScreen::rotary(ui::RotaryEvent ev)
+  void EuclidScreen::encoder(ui::EncoderEvent ev)
   {
     if (engine.recording) return;
 
     auto& props = engine.props;
     auto& current = props.channels.at(props.channel);
 
-    switch (ev.rotary) {
-    case Rotary::blue: props.channel.step(ev.clicks); break;
-    case Rotary::green: current.length.step(ev.clicks); break;
-    case Rotary::yellow: current.hits.step(ev.clicks); break;
-    case Rotary::red: current.rotation.step(ev.clicks); break;
+    switch (ev.encoder) {
+    case Encoder::blue: props.channel.step(ev.steps); break;
+    case Encoder::green: current.length.step(ev.steps); break;
+    case Encoder::yellow: current.hits.step(ev.steps); break;
+    case Encoder::red: current.rotation.step(ev.steps); break;
     }
     current.update_notes();
     refresh_state();
@@ -175,7 +170,7 @@ namespace otto::engines {
     case ui::Key::yellow_click: [[fallthrough]];
     case ui::Key::red_click:
       if (engine.recording) {
-        engine.recording = std::nullopt;
+        engine.recording = tl::nullopt;
       } else {
         engine._has_pressed_keys = false;
         engine.recording = engine.current_channel().notes;

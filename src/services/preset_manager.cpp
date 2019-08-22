@@ -4,23 +4,104 @@
 
 namespace otto::services {
 
-  PresetManager::PresetManager()
-  {
-    // debug_ui::add_info(draw_debug_info);
+  struct DefaultPresetManager final : PresetManager {
 
+    /// Initialize preset manager
+    ///
+    /// \effects `load_preset_files()`
+    DefaultPresetManager();
+
+    /// Get the names of presets for an engine
+    ///
+    /// These presets can be applied using @ref apply_preset(AnyEngine&, const std::string_view) or
+    /// @ref apply_preset(AnyEngine&, int)
+    ///
+    /// \throws @ref exception with @ref ErrorCode::no_such_engine if no matching
+    /// engine was found.
+    ///
+    /// \remarks This design is chosen so the engine manager has complete control
+    /// over the actual preset data. Also it makes sense for the
+    /// @ref otto::engines::EngineSelectorScreen, which is probably the only place
+    /// that really needs access
+    const std::vector<std::string>& preset_names(util::string_ref engine_name) override;
+
+    /// Get the name of preset with indx `idx`
+    ///
+    /// \throws @ref exception with @ref ErrorCode::no_such_preset if no matching
+    /// preset was found, or @ref ErrorCode::no_such_engine if no matching engine
+    /// was found
+    const std::string& name_of_idx(util::string_ref engine_name, int idx) override;
+
+    /// Get the index of preset with name `name`
+    ///
+    /// \throws @ref exception with @ref ErrorCode::no_such_preset if no matching
+    /// preset was found, or @ref ErrorCode::no_such_engine if no matching engine
+    /// was found
+    int idx_of_name(util::string_ref engine_name, std::string_view name) override;
+
+    /// Apply preset to engine
+    ///
+    /// \effects Apply preset identified by `name` to `engine`
+    ///
+    /// \throws @ref exception with @ref ErrorCode::no_such_preset if no matching
+    /// preset was found.
+    void apply_preset(core::engine::IEngine& engine,
+                      std::string_view name,
+                      bool no_enable_callback = false) override;
+
+    /// Apply preset to engine
+    ///
+    /// \effects Apply preset identified by `idx` to `engine`
+    ///
+    /// \throws @ref exception with @ref ErrorCode::no_such_preset if no matching
+    /// preset was found.
+    void apply_preset(core::engine::IEngine& engine, int idx, bool no_enable_callback = false) override;
+
+    void create_preset(util::string_ref engine_name,
+                       std::string_view preset_name,
+                       const nlohmann::json& preset_data) override;
+
+  private:
+
+    /// (Re)load preset files
+    ///
+    /// Invoked by @ref init. Call to reload all preset files.
+    ///
+    /// \throws @ref filesystem::filesystem_error
+    void load_preset_files();
+
+    struct PresetNamesDataPair {
+      std::vector<std::string> names;
+      std::vector<nlohmann::json> data;
+    };
+
+    // Key is engine name.
+    // This design is chosen because we want to expose the names vector
+    // separately.
+    foonathan::array::flat_map<std::string, PresetNamesDataPair> _preset_data;
+
+    const fs::path presets_dir = Application::current().data_dir / "presets";
+  };
+
+  std::unique_ptr<PresetManager> PresetManager::create_default() {
+    return std::make_unique<DefaultPresetManager>();
+  }
+
+  DefaultPresetManager::DefaultPresetManager()
+  {
     load_preset_files();
   }
 
-  const std::vector<std::string>& PresetManager::preset_names(const std::string& engine_name)
+  const std::vector<std::string>& DefaultPresetManager::preset_names(util::string_ref engine_name)
   {
     auto eg_found = _preset_data.find(engine_name);
     if (eg_found == _preset_data.end()) {
-      throw exception(ErrorCode::no_such_engine, "No presets for engine: {}", engine_name);
+      eg_found = _preset_data.insert(std::string(engine_name), PresetNamesDataPair{}).iter();
     }
-    return eg_found->second.names;
+    return eg_found->value.names;
   }
 
-  const std::string& PresetManager::name_of_idx(const std::string& engine_name, int idx)
+  const std::string& DefaultPresetManager::name_of_idx(util::string_ref engine_name, int idx)
   {
     auto& names = preset_names(engine_name);
     if (idx < 0 || static_cast<std::size_t>(idx) >= names.size()) {
@@ -30,7 +111,7 @@ namespace otto::services {
     return names[idx];
   }
 
-  int PresetManager::idx_of_name(const std::string& engine_name, const std::string& name)
+  int DefaultPresetManager::idx_of_name(util::string_ref engine_name, std::string_view name)
   {
     auto& names = preset_names(engine_name);
     auto found = util::find(names, name);
@@ -41,39 +122,46 @@ namespace otto::services {
     return found - names.begin();
   }
 
-  void PresetManager::apply_preset(core::engine::AnyEngine& engine,
-                                   const std::string& name,
+  void DefaultPresetManager::apply_preset(core::engine::IEngine& engine,
+                                   std::string_view name,
                                    bool no_enable_callback)
   {
-    auto& pd = _preset_data[engine.name()];
-    auto niter = util::find(pd.names, name);
-    if (niter == pd.names.end()) {
+    auto pd_iter = _preset_data.find(engine.name());
+    if (pd_iter == _preset_data.end()) {
+      throw exception(ErrorCode::no_such_engine, "No engine named '{}'", engine.name());
+    }
+    auto niter = util::find(pd_iter->value.names, name);
+    if (niter == pd_iter->value.names.end()) {
       throw exception(ErrorCode::no_such_preset, "No preset named '{}' for engine '{}'", name,
                       engine.name());
     }
     DLOGI("Applying preset {} to engine {}", name, engine.name());
-    int idx = niter - pd.names.begin();
-    engine.props().as<core::props::serializable>().from_json(pd.data[idx]);
+    int idx = niter - pd_iter->value.names.begin();
+    engine.from_json(pd_iter->value.data[idx]);
     engine.current_preset(idx);
-    if (!no_enable_callback) engine.on_enable();
   }
 
-  void PresetManager::apply_preset(core::engine::AnyEngine& engine,
-                                   int idx,
-                                   bool no_enable_callback)
+  void DefaultPresetManager::apply_preset(core::engine::IEngine& engine, int idx, bool no_enable_callback)
   {
-    auto& pd = _preset_data[engine.name()];
+    auto pd_iter = _preset_data.find(engine.name());
+    if (pd_iter == _preset_data.end()) {
+      throw exception(ErrorCode::no_such_engine, "No engine named '{}'", engine.name());
+    }
+    auto& pd = pd_iter->value;
     if (idx < 0 || static_cast<std::size_t>(idx) >= pd.data.size()) {
       throw exception(ErrorCode::no_such_preset, "Preset index {} is out range for engine '{}'",
                       idx, engine.name());
     }
     DLOGI("Applying preset {} to engine {}", pd.names[idx], engine.name());
-    engine.props().as<core::props::serializable>().from_json(pd.data[idx]);
+    try {
+      engine.from_json(pd.data[idx]);
+    } catch(std::exception& e) {
+      throw util::exception("Error applying preset: {}", e.what());
+    }
     engine.current_preset(idx);
-    if (!no_enable_callback) engine.on_enable();
   }
 
-  void PresetManager::load_preset_files()
+  void DefaultPresetManager::load_preset_files()
   {
     LOG_SCOPE_FUNCTION(INFO);
     if (!fs::exists(presets_dir)) {
@@ -91,8 +179,8 @@ namespace otto::services {
         jf.read();
         std::string engine = jf.data()["engine"];
         std::string name = jf.data()["name"];
-        // map::operator[] creates the entry if it doesnt exist
-        auto& pd = _preset_data[engine];
+        auto pd_iter = _preset_data.emplace(engine).iter();
+        auto& pd = pd_iter->value;
         if (auto found = util::find(pd.names, name); found != pd.names.end()) {
           pd.data[found - pd.names.begin()] = std::move(jf.data()["props"]);
           DLOGI("Reloaded preset '{}' for engine '{}", name, engine);
@@ -105,12 +193,12 @@ namespace otto::services {
     }
   }
 
-  void PresetManager::create_preset(const std::string& engine_name,
-                                    const std::string& preset_name,
+  void DefaultPresetManager::create_preset(util::string_ref engine_name,
+                                    std::string_view preset_name,
                                     const nlohmann::json& preset_data)
   {
     LOG_SCOPE_FUNCTION(INFO);
-    util::JsonFile jf{presets_dir / engine_name / (preset_name + ".json")};
+    util::JsonFile jf{presets_dir / engine_name.c_str() / (std::string(preset_name) + ".json")};
 
     jf.data() = nlohmann::json::object();
     jf.data()["engine"] = engine_name;
@@ -123,51 +211,3 @@ namespace otto::services {
   }
 
 } // namespace otto::services
-
-// Debug UI /////////////////////////////////////////////////////////////////
-
-#if false
-
-#include "services/engines.hpp"
-#include "services/ui.hpp"
-
-namespace otto::service::presets {
-
-  static void draw_debug_info()
-  {
-    ImGui::Begin("Presets");
-
-    static std::string engine_name;
-    static char preset_name[256] = "";
-    static nlohmann::json preset_data;
-
-    if (ImGui::Button("Create preset")) {
-      auto engine = engines::by_name(ui::selected_engine_name());
-      if (engine != nullptr) {
-        engine_name = engine->name();
-        preset_data = engine->props().as<core::props::serializable>().to_json();
-        ImGui::OpenPopup("New preset");
-      }
-    }
-    if (ImGui::BeginPopup("New preset")) {
-      ImGui::Text("Engine: %s", engine_name.c_str());
-      ImGui::InputText("Preset Name", preset_name, 256);
-      if (ImGui::Button("Create preset")) {
-        create_preset(engine_name, std::string(preset_name), preset_data);
-        load_preset_files();
-        ImGui::CloseCurrentPopup();
-      }
-      if (ImGui::Button("Cancel")) {
-        ImGui::CloseCurrentPopup();
-      }
-
-      ImGui::EndPopup();
-    }
-
-    ImGui::End();
-  }
-} // namespace otto::service::presets
-
-#else
-
-#endif

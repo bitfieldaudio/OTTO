@@ -3,10 +3,10 @@
 #include <array>
 #include <cmath>
 #include <gsl/gsl>
-#include <variant.hpp>
 
 #include "util/algorithm.hpp"
 #include "util/exception.hpp"
+#include "util/variant.hpp"
 
 #include "services/log_manager.hpp"
 #include "util/utility.hpp"
@@ -54,6 +54,7 @@ namespace otto::core::midi {
       NoteOff = 0b1000,
       NoteOn = 0b1001,
       ControlChange = 0b1011,
+      PitchBend = 0b1110
     };
 
     std::array<byte, 1> to_bytes()
@@ -144,7 +145,8 @@ namespace otto::core::midi {
     int controler = 0;
     int value = 0;
 
-    ControlChangeEvent(const MidiEvent& event) : MidiEvent(event){};
+    ControlChangeEvent(int controler, int value) : controler(controler), value(value) {}
+    ControlChangeEvent(const MidiEvent& event) : MidiEvent(event) {}
 
     std::array<byte, 3> to_bytes()
     {
@@ -160,7 +162,24 @@ namespace otto::core::midi {
     }
   };
 
-  using AnyMidiEvent = mpark::variant<MidiEvent, NoteOnEvent, NoteOffEvent, ControlChangeEvent>;
+  struct PitchBendEvent : public MidiEvent {
+    int value = 0;
+
+    PitchBendEvent(int value) : value(value) {}
+    PitchBendEvent(const MidiEvent& event) : MidiEvent(event){};
+
+    static PitchBendEvent from_bytes(gsl::span<byte> bytes, int time = 0)
+    {
+      auto res = PitchBendEvent(MidiEvent::from_bytes(bytes, time));
+      res.value = (unsigned short) bytes[2];
+      res.value <<= 7;
+      res.value |= (unsigned short) bytes[1];
+      return (res);
+    }
+  };
+
+  using AnyMidiEvent =
+    mpark::variant<MidiEvent, NoteOnEvent, NoteOffEvent, ControlChangeEvent, PitchBendEvent>;
 
   inline AnyMidiEvent from_bytes(gsl::span<unsigned char> bytes, int time = 0)
   {
@@ -177,6 +196,7 @@ namespace otto::core::midi {
         return NoteOffEvent::from_bytes(bytes, time);
     }
     case MidiEvent::Type::ControlChange: return ControlChangeEvent::from_bytes(bytes, time);
+    case MidiEvent::Type::PitchBend: return PitchBendEvent::from_bytes(bytes, time);
     default: return MidiEvent::from_bytes(bytes, time);
     }
   }
@@ -212,6 +232,10 @@ namespace otto::core::midi {
     shared_vector(const vector_type& other) : _data(std::make_shared<vector_type>(other)) {}
 
     shared_vector(const allocator_type& alloc) : _data(std::make_shared<vector_type>(alloc)) {}
+
+    bool empty() const {
+      return _data->empty();
+    }
 
     auto begin()
     {

@@ -2,8 +2,6 @@
 
 #include <string>
 
-#include <range/v3/utility/concepts.hpp>
-
 #include "util/meta.hpp"
 #include "util/type_traits.hpp"
 
@@ -28,14 +26,6 @@ namespace otto::core::props {
 
     template<typename Tag, typename ValueType, typename TagList>
     struct leaf;
-
-    template<typename Tag>
-    struct interface {
-      virtual ~interface() noexcept = default;
-    };
-
-    template<typename Tag>
-    struct branch : virtual branch_base {};
 
     template<typename Tag>
     struct hooks {};
@@ -100,30 +90,28 @@ namespace otto::core::props {
 
   // Concepts //
 
-  namespace cpts = ranges::concepts;
+  // namespace cpts = ranges::concepts;
 
-  struct NonVoid {
-    template<typename T>
-    auto requires_(T&& t) -> decltype( //
-      cpts::valid_expr(                //
-        cpts::is_false(std::is_void<T>())));
-  };
-
-  struct MixinValue : cpts::refines<NonVoid> {};
+  template<typename T>
+  constexpr auto is_MixinValue = !std::is_void_v<T>;
 
   /// A hook implementation concept
   struct Hook {
-    template<typename H>
-    using value_type = typename H::value_type;
-
     template<typename T>
-    auto requires_(T&& t) -> decltype( //
-      cpts::valid_expr(                //
-        cpts::model_of<MixinValue, typename T::value_type>()));
+    using value_type = typename T::value_type;
+
+  private:
+    static std::false_type _is(...);
+    template<typename T, typename = std::enable_if_t<is_MixinValue<typename T::value_type>>>
+    static std::true_type _is(T);
+
+  public:
+    template<typename T>
+    static constexpr auto is = decltype(_is(std::declval<T>()))::value;
   };
 
   /// Concept of a Hook with a value
-  struct HookWithValue : cpts::refines<Hook> {
+  struct HookWithValue {
     /// The value type of the property this belongs to
     template<typename H>
     using value_type = typename H::value_type;
@@ -132,13 +120,19 @@ namespace otto::core::props {
     template<typename H>
     using arg_type = typename H::arg_type;
 
+  private:
+    static std::false_type _is(...);
+
+    template<typename T,                  //
+             typename = std::enable_if_t< //
+               is_MixinValue<value_type<T>> && !std::is_void_v<arg_type<T>> &&
+               std::is_same_v<arg_type<T>&, decltype(std::declval<T>().value())> &&
+               std::is_convertible_v<T, arg_type<T>&>>>
+    static std::true_type _is(T);
+
+  public:
     template<typename T>
-    auto requires_(T&& t) -> decltype( //
-      cpts::valid_expr(cpts::model_of<MixinValue, value_type<T>>(),
-                       cpts::model_of<NonVoid, arg_type<T>>(),
-                       cpts::has_type<arg_type<T>&>(t.value()),
-                       cpts::model_of<cpts::ConvertibleTo, T, arg_type<T>&>(),
-                       cpts::model_of<cpts::Constructible, T, const arg_type<T>&>()));
+    static constexpr auto is = Hook::is<T>&& decltype(_is(std::declval<T>()))::value;
   };
 
   /// Concept of a hook tag type
@@ -147,21 +141,33 @@ namespace otto::core::props {
     template<typename HT, typename VT, HookOrder HO = HookOrder::Middle>
     using impl_t = typename HT::template type<HT, VT, HO>;
 
+  private:
+    static std::false_type _is(...);
+
+    template<typename T,
+             typename ValueType,
+             HookOrder HO = HookOrder::Middle,
+             typename = std::enable_if_t<Hook::is<typename T::template type<T, ValueType, HO>>>>
+    static std::true_type _is(T, ValueType, meta::c<HO>);
+
+  public:
     template<typename T, typename ValueType, HookOrder HO = HookOrder::Middle>
-    auto requires_(T&& t) -> decltype( //
-      cpts::valid_expr(                //
-        cpts::model_of<Hook, typename T::template type<T, ValueType, HO>>()));
+    static constexpr auto is =
+      decltype(_is(std::declval<T>(), std::declval<ValueType>(), meta::c<HO>()))::value;
   };
 
   struct MixinImpl {
+  private:
+    static std::false_type _is(...);
+    template<typename T,
+             typename = std::enable_if_t<
+               !std::is_void_v<typename T::value_type> && !std::is_void_v<typename T::tag_list> &&
+               !std::is_void_v<typename T::hooks> && !std::is_void_v<typename T::property_type>>>
+    static std::true_type _is(T);
+
+  public:
     template<typename T>
-    auto requires_(T&& t) -> decltype(                       //
-      cpts::valid_expr(                                      //
-        cpts::model_of<NonVoid, typename T::value_type>(),   //
-        cpts::model_of<NonVoid, typename T::tag_list>(),     //
-        cpts::model_of<NonVoid, typename T::hooks>(),        //
-        cpts::model_of<NonVoid, typename T::property_type>() //
-        ));                                                  //
+    static constexpr auto is = decltype(_is(std::declval<T>()))::value;
 
     // HOOKS //
 
@@ -169,15 +175,14 @@ namespace otto::core::props {
     template<typename Mixin,
              typename HT,
              HookOrder HO = HookOrder::Middle,
-             CONCEPT_REQUIRES_(cpts::models<HookTag, HT, typename Mixin::value_type>())>
+             typename = std::enable_if_t<HookTag::is<HT, typename Mixin::value_type>>>
     using hook_t = HookTag::impl_t<HT, typename Mixin::value_type, HO>;
 
     /// Check if Mixin has a handler for Hook
     /// \privatesection
     template<typename Mixin, typename HT, HookOrder HO, typename = void>
     struct has_handler : std::false_type {
-      CONCEPT_ASSERT(cpts::models<MixinImpl, Mixin>() &&
-                     cpts::models<HookTag, HT, typename Mixin::value_type>());
+      static_assert(MixinImpl::is<Mixin> && HookTag::is<HT, typename Mixin::value_type>);
     };
 
     /// Check if Mixin has a handler for Hook
@@ -189,8 +194,7 @@ namespace otto::core::props {
       HO,
       std::void_t<decltype(std::declval<Mixin>().on_hook(std::declval<hook_t<Mixin, HT, HO>&>()))>>
       : std::true_type {
-      CONCEPT_ASSERT(cpts::models<MixinImpl, Mixin>() &&
-                     cpts::models<HookTag, HT, typename Mixin::value_type>());
+      static_assert(MixinImpl::is<Mixin> && HookTag::is<HT, typename Mixin::value_type>);
     };
 
     /// Check if Mixin has a handler for Hook
@@ -200,11 +204,15 @@ namespace otto::core::props {
 
   /// Concept for a Tag used to identify a mixin
   struct MixinTag {
-    template<typename Tag>
-    auto requires_(Tag&& t) -> decltype( //
-      cpts::valid_expr(                  //
-        cpts::has_type<const char*>(Tag::name)));
+  private:
+    static std::false_type _is(...);
+    template<typename Tag,
+             typename = std::enable_if_t<std::is_same_v<const char*, decltype(Tag::name)>>>
+    static std::true_type _is(Tag);
 
+  public:
+    template<typename T>
+    static constexpr auto is = decltype(_is(std::declval<T>()))::value;
     // Required Tags impl //
 
     /// Get all required tags for `Tag`
@@ -214,52 +222,6 @@ namespace otto::core::props {
     /// Get mixin type for type `T` and tag `Tag`
     template<typename Tag, typename T, typename TagList>
     using leaf = mixin::leaf<Tag, T, TagList>;
-
-    // Type-erased Interface //
-
-  private:
-    template<typename Tag, typename = void>
-    struct interface_impl {
-      using type = void;
-    };
-
-    template<typename Tag>
-    struct interface_impl<Tag, std::void_t<mixin::interface<Tag>>> {
-      using type = mixin::interface<Tag>;
-    };
-
-  public:
-    /// Get the type-erased interface type for `Tag`
-    ///
-    /// The interface type is a non-templated type which provides functionality
-    /// that can be used in a type-erased context. For example, the
-    /// `serializable` mixin has a `JsonClient` with loader and saver functions
-    /// to use independently from the specific property.
-    ///
-    /// If a mixin provides a type-erased interface, it should have a
-    /// `interface_type& interface()` member function, which returns an instance
-    /// of this type.
-    template<typename Tag>
-    using interface = typename mixin::interface<Tag>;
-
-    /// Check if `Tag` has a type-erased interface
-    ///
-    /// The interface type is a non-templated type which provides functionality
-    /// that can be used in a type-erased context. For example, the
-    /// `serializable` mixin has a `JsonClient` with loader and saver functions
-    /// to use independently from the specific property.
-    ///
-    /// If a mixin provides a type-erased interface, it should have a
-    /// `interface_type& interface()` member function, which returns an instance
-    /// of this type.
-    ///
-    /// If no interface type is provided, this is void.
-    template<typename Tag>
-    constexpr static bool has_interface = !std::is_void_v<interface<Tag>>;
-
-    /// A branch of `Tag`
-    template<typename Tag>
-    using branch = typename mixin::branch<Tag>;
   };
 
   namespace detail {
@@ -268,7 +230,7 @@ namespace otto::core::props {
     template<typename HT,
              HookOrder HO,
              typename Mixin,
-             CONCEPT_REQUIRES_(cpts::models<HookTag, HT, typename Mixin::value_type>())>
+             typename = std::enable_if_t<HookTag::is<HT, typename Mixin::value_type>>>
     void run_hook_if_handler(Mixin& m, MixinImpl::hook_t<Mixin, HT, HO>& h)
     {
       if constexpr (MixinImpl::has_handler_v<Mixin, HT, HO>) {
@@ -279,7 +241,7 @@ namespace otto::core::props {
     template<typename H,
              typename Mixin,
              HookOrder HO,
-             CONCEPT_REQUIRES_(cpts::models<HookTag, H, typename Mixin::value_type>())>
+             typename = std::enable_if_t<HookTag::is<H, typename Mixin::value_type>>>
     auto run_all_hooks_impl(Mixin& m, MixinImpl::hook_t<Mixin, H, HO>&& hook)
     {
       meta::for_each<typename Mixin::tag_list>([&hook, &m](auto&& mtype) {
@@ -291,8 +253,8 @@ namespace otto::core::props {
     /// Run handler for `Hook` for all of `Mixin`s siblings
     template<typename H,
              typename Mixin,
-             CONCEPT_REQUIRES_(cpts::models<HookTag, H, typename Mixin::value_type>() &&
-                               !cpts::models<HookWithValue, MixinImpl::hook_t<Mixin, H>>())>
+             typename = std::enable_if_t<HookTag::is<H, typename Mixin::value_type> &&
+                                         !HookWithValue::is<MixinImpl::hook_t<Mixin, H>>>>
     void run_hook(Mixin& m)
     {
       MixinImpl::hook_t<Mixin, H, HookOrder::Before> hook{};
@@ -310,8 +272,8 @@ namespace otto::core::props {
     /// Run handler for `Hook` for all of `Mixin`s siblings
     template<typename H,
              typename Mixin,
-             CONCEPT_REQUIRES_(cpts::models<HookTag, H, typename Mixin::value_type>() &&
-                               cpts::models<HookWithValue, MixinImpl::hook_t<Mixin, H>>())>
+             typename = std::enable_if_t<HookTag::is<H, typename Mixin::value_type> &&
+                                         HookWithValue::is<MixinImpl::hook_t<Mixin, H>>>>
     auto run_hook(Mixin& m, const HookWithValue::arg_type<MixinImpl::hook_t<Mixin, H>>& arg)
     {
       MixinImpl::hook_t<Mixin, H, HookOrder::Before> hook{arg};

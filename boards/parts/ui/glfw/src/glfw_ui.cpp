@@ -2,6 +2,9 @@
 
 #include <chrono>
 #include <thread>
+#include <gsl/gsl_util>
+
+#include <type_safe/optional_ref.hpp>
 
 #include "core/ui/vector_graphics.hpp"
 
@@ -19,10 +22,16 @@
 #include <GLFW/glfw3.h>
 #include <nanovg_gl.h>
 
+#include "board/emulator.hpp"
+
 namespace otto::glfw {
 
   Window::Window(int width, int height, const std::string& name)
   {
+    if (!glfwInit()) {
+      LOG_F(ERROR, "Failed to init GLFW.");
+    }
+
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -33,6 +42,18 @@ namespace otto::glfw {
       throw util::exception("Failed to create GLFW window {}", name);
     }
     glfwSetWindowUserPointer(_glfw_win, this);
+
+    glfwSetMouseButtonCallback(_glfw_win, [](GLFWwindow* window, int button, int action, int mods) {
+      if (auto* win = get_for(window); win && win->mouse_button_callback) {
+        win->mouse_button_callback(board::ui::Button{button}, board::ui::Action{action}, board::ui::Modifiers{mods});
+      }
+    });
+
+    glfwSetScrollCallback(_glfw_win, [](GLFWwindow* window, double x, double y) {
+      if (auto* win = get_for(window); win && win->mouse_button_callback) {
+        win->scroll_callback(x, y);
+      }
+    });
 
 #if false
     glfwSetKeyboardCallback(_glfw_win, [](GLFWwindow* window, int key, int scancode, int action,
@@ -50,8 +71,7 @@ namespace otto::glfw {
 #else
     glfwSetKeyCallback(_glfw_win, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
       if (auto* win = get_for(window); win && win->key_callback) {
-        win->key_callback(board::ui::Action{action}, board::ui::Modifiers{mods},
-                          board::ui::Key{key});
+        win->key_callback(board::ui::Action{action}, board::ui::Modifiers{mods}, board::ui::Key{key});
       }
     });
 
@@ -103,6 +123,11 @@ namespace otto::glfw {
     glfwSetWindowSizeLimits(_glfw_win, min_x, min_y, max_x, max_y);
   }
 
+  void Window::set_window_size(int x, int y)
+  {
+    glfwSetWindowSize(_glfw_win, x, y);
+  }
+
   bool Window::should_close()
   {
     return glfwWindowShouldClose(_glfw_win);
@@ -112,7 +137,7 @@ namespace otto::glfw {
   {
     double x, y;
     glfwGetCursorPos(_glfw_win, &x, &y);
-    return vg::Point{x, y};
+    return vg::Point{(float) x, (float) y};
   }
 
   std::pair<int, int> Window::window_size()
@@ -166,7 +191,7 @@ namespace otto::glfw {
     glDisable(GL_DEPTH_TEST);
 
     _canvas.clearColor(vg::Colours::Black);
-    _canvas.begineFrame(winWidth, winHeight);
+    _canvas.beginFrame(winWidth, winHeight);
   }
 
   void NVGWindow::end_frame()
@@ -175,7 +200,6 @@ namespace otto::glfw {
     glEnable(GL_DEPTH_TEST);
     swap_buffers();
   }
-
 } // namespace otto::glfw
 
 namespace otto::services {
@@ -194,14 +218,31 @@ namespace otto::services {
     if (!glfwInit()) {
       LOG_F(ERROR, "Failed to init GLFW.");
     }
-    gsl::final_act terminate_glfw(glfwTerminate);
-    gsl::final_act exit_application(
-      [] { Application::current().exit(Application::ErrorCode::ui_closed); });
+    gsl::final_action terminate_glfw(glfwTerminate);
+    gsl::final_action exit_application([] { Application::current().exit(Application::ErrorCode::ui_closed); });
 
     glfw::NVGWindow main_win(vg::width, vg::height, "OTTO");
 
-    main_win.set_window_aspect_ration(4, 3);
-    main_win.set_window_size_limits(320, 240, GLFW_DONT_CARE, GLFW_DONT_CARE);
+    board::Emulator* const emulator = dynamic_cast<board::Emulator*>(&services::Controller::current());
+
+    vg::Size canvas_size = {vg::width, vg::height};
+    float scale = 1;
+
+    if (emulator) {
+      main_win.set_window_aspect_ration(emulator->size.w, emulator->size.h);
+      main_win.set_window_size(emulator->size.w, emulator->size.h);
+      canvas_size = emulator->size;
+      main_win.mouse_button_callback = [&] (glfw::Button b, glfw::Action a, glfw::Modifiers)  {
+        if (a == glfw::Action::press) emulator->handle_click(main_win.cursor_pos() / scale, board::Emulator::ClickAction::down);
+        if (a == glfw::Action::release) emulator->handle_click(main_win.cursor_pos() / scale, board::Emulator::ClickAction::up);
+      };
+      main_win.scroll_callback = [&] (double x, double y) {
+        emulator->handle_scroll(main_win.cursor_pos() / scale, y);
+      };
+    } else {
+      main_win.set_window_aspect_ration(4, 3);
+      main_win.set_window_size_limits(320, 240, GLFW_DONT_CARE, GLFW_DONT_CARE);
+    }
 
     main_win.key_callback = board::ui::handle_keyevent;
 
@@ -211,27 +252,31 @@ namespace otto::services {
 
     double t, spent;
     while (!main_win.should_close() && Application::current().running()) {
-      float scale;
 
       t = glfwGetTime();
 
       auto [winWidth, winHeight] = main_win.window_size();
       // Calculate pixel ration for hi-dpi devices.
-       
+
       main_win.begin_frame();
-      scale =
-        std::min((float) winWidth / (float) vg::width, (float) winHeight / (float) vg::height);
+      scale = std::min((float) winWidth / (float) canvas_size.w, (float) winHeight / (float) canvas_size.h);
       main_win.canvas().scale(scale, scale);
 
+      if (emulator) {
+        emulator->draw(main_win.canvas());
+        main_win.canvas().translate(518, 28);
+        main_win.canvas().scale(215.f / 320.f, 161.f / 240.f);
+      }
       draw_frame(main_win.canvas());
+
       main_win.end_frame();
 
       glfwPollEvents();
-      flush_events();
 
       spent = glfwGetTime() - t;
 
-      std::this_thread::sleep_for(std::chrono::milliseconds(int(1000 / 60 - spent * 1000)));
+      std::this_thread::sleep_for(std::chrono::milliseconds(int(1000 / 120 - spent * 1000)));
+
     }
   }
 } // namespace otto::services

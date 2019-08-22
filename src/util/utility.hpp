@@ -7,6 +7,15 @@
 
 namespace otto::util {
 
+  template<typename Ret, typename... Args>
+  using function_ptr = Ret (*)(Args...);
+
+  template<typename Class, typename Ret, typename... Args>
+  using member_func_ptr = Ret (Class::*)(Args...);
+
+  template<typename Class, typename T>
+  using member_ptr = T Class::*;
+
   // overloaded ///////////////////////////////////////////////////////////////
 
   /// Overload lambdas
@@ -28,7 +37,7 @@ namespace otto::util {
   decltype(auto) match(Var&& v, Lambdas&&... ls)
   {
     auto&& matcher = overloaded<Lambdas...>(std::forward<Lambdas>(ls)...);
-    // ADL to use std::visit or mpark::visit
+    // ADL to use std::visit or mpark::visit 
     // TODO: Remove this when the standard is adapted
     return visit(std::move(matcher), std::forward<Var>(v));
   }

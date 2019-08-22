@@ -2,15 +2,21 @@
 
 #include "core/engine/engine.hpp"
 
-#include "core/audio/faust.hpp"
 #include "core/voices/voice_manager.hpp"
 
-#include <Gamma/Oscillator.h>
-#include <Gamma/Envelope.h>
-#include <Gamma/SoundFile.h>
-#include <Gamma/Effects.h>
 #include <AudioFile.h>
+#include <Gamma/Effects.h>
+#include <Gamma/Envelope.h>
+#include <Gamma/Oscillator.h>
+#include <Gamma/SoundFile.h>
 
+#include "util/dsp/pan.hpp"
+
+// WAV parser by Adam Stark: https://github.com/adamstark/AudioFile
+#include <AudioFile.h>
+#include <Gamma/SamplePlayer.h>
+
+#include "util/filesystem.hpp"
 
 namespace otto::engines {
 
@@ -18,120 +24,102 @@ namespace otto::engines {
   using namespace core::engine;
   using namespace props;
 
-  struct PotionSynth : SynthEngine, EngineWithEnvelope {
+  struct PotionSynth : SynthEngine<PotionSynth> {
+    static constexpr util::string_ref name = "Potion";
 
-    struct CurveOscProps : Properties<> {
-      using Properties::Properties;
-      Property<float> curve_length    = {this, "curve_length",        0.5,  has_limits::init(0, 1),    steppable::init(0.01)};
-      Property<int> wave_pair        = {this, "wave_pair",     0,  has_limits::init(0,0),     steppable::init(1)};
-      Property<float> volume        = {this, "volume",        1,  has_limits::init(0, 1),    steppable::init(0.01)};
-      Property<float> remap           = {this, "remap",    0.7,  has_limits::init(0, 0.99),    steppable::init(0.01)};
+    struct WaveProps {
+      Property<std::string> file = "";
+      Property<float> volume = {0.5, limits(0, 1), step_size(0.01)};
 
+      DECL_REFLECTION(WaveProps, file, volume);
     };
 
-    struct LFOOscProps : Properties<> {
-        using Properties::Properties;
-        Property<float> lfo_speed    = {this, "lfo_speed",        0.5,  has_limits::init(0, 1),    steppable::init(0.01)};
-        Property<int> wave_pair        = {this, "wave_pair",     0,  has_limits::init(0,0),     steppable::init(1)};
-        Property<float> volume        = {this, "volume",        1,  has_limits::init(0, 1),    steppable::init(0.01)};
-        Property<float> remap           = {this, "remap",    0.7,  has_limits::init(0, 0.99),    steppable::init(0.01)};
+    struct CurveOscProps {
+      Property<float> curve_length = {0.5, limits(0, 0.99), step_size(0.01)};
+      WaveProps wave1;
+      WaveProps wave2;
+      float pan_position;
 
+      DECL_REFLECTION(CurveOscProps, curve_length, wave1, wave2);
     };
 
-    struct Props : Properties<> {
-      CurveOscProps curve_osc = {this, "curve_osc"};
-      LFOOscProps lfo_osc = {this, "lfo_osc"};
+    struct LFOOscProps {
+      Property<float> lfo_speed = {0.5, limits(0, 0.99), step_size(0.01)};
+      WaveProps wave1;
+      WaveProps wave2;
+      float pan_position;
+
+      DECL_REFLECTION(LFOOscProps, lfo_speed, wave1, wave2);
+    };
+
+    struct Props {
+      CurveOscProps curve_osc;
+      LFOOscProps lfo_osc;
+
+      std::array<gam::Array<float>, 4> wavetables;
+      std::array<float, 4> samplerates;
+      std::vector<std::string> filenames;
+      std::array<std::vector<std::string>::iterator, 4> file_it = {
+        {filenames.begin(), filenames.begin(), filenames.begin(), filenames.begin()}};
+
+      DECL_REFLECTION(Props, curve_osc, lfo_osc);
     } props;
 
     PotionSynth();
 
     audio::ProcessData<1> process(audio::ProcessData<1>) override;
 
-    ui::Screen& envelope_screen() override {
-      return voice_mgr_.envelope_screen();
+    voices::IVoiceManager& voice_mgr() override
+    {
+      return voice_mgr_;
     }
-
-    ui::Screen& voices_screen() override {
-      return voice_mgr_.settings_screen();
-    }
-
-    /// Equal-power 2-channel panner (Stereo-to-Mono)
-    class PanSM{
-    public:
-        /// \param[in] pos	Position, in [-1, 1]
-        PanSM(float pos=0){ this->pos(pos); }
-
-        /// Filter sample (mono to stereo)
-        float operator()(float position, float in1, float in2){
-          pos(position);
-          return in1*w1 + in2*w2;
-        }
-
-        /// Set position (constant power law)
-
-        /// This is a constant power pan where the sum of the squares of the two
-        /// channel gains is always 1. A quadratic approximation is used to avoid
-        /// expensive trig function calls. The approximation is good enough for most
-        /// purposes and gives the exact result at positions of -1, 0, 1.
-        ///
-        /// \param[in] v	Position, in [-1, 1]
-        void pos(float v){
-          static const float c0 = 1./sqrt(2);
-          static const float c1 = 0.5 - c0;
-          static const float c2 =-0.5/c1;
-          v = gam::scl::clip(v, 1.f, -1.f);
-          w1 = c1 * v * (v + c2) + c0;
-          w2 = w1 + v;
-        }
-
-    protected:
-        float w1, w2; // channel weights
-    };
 
     struct DualWavePlayer {
-      ///Returns the weighted sum of two wavetables.
-      ///These should be external wavetables (in Pre)
-      AudioFile<float> *waves[2];
+      /// These should be external wavetables (in Pre)
+      std::array<gam::SamplePlayer<float, gam::ipl::Linear, gam::phsInc::Loop>, 2> waves;
       PanSM pan;
 
-      ///Call operator takes play position and pan value
-      float operator()(float, float) noexcept;
-
-
+      /// Call operator takes play position and pan value
+      float operator()() noexcept;
     };
 
-  private:
-    struct Pre : voices::PreBase<Pre, Props> {
-      std::array<AudioFile<float>,4> wavetables;
-      gam::Osc<> remap_table;
+    DECL_REFLECTION(PotionSynth, props, ("voice_manager", &PotionSynth::voice_mgr_));
 
+  private:
+    void load_wavetable(int, std::string);
+
+    struct Voice;
+
+    struct Pre : voices::PreBase<Pre, Props> {
       Pre(Props&) noexcept;
       void operator()() noexcept;
+
+      Voice* last_voice = nullptr;
     };
 
     struct Voice : voices::VoiceBase<Voice, Pre> {
       gam::LFO<> lfo;
-      gam::Decay<> curve;
-      gam::Sweep<> phase;
+      // Smoothing filter to eliminate pops when resetting the lfo.
+      // Cost is 2 multiplications and 1 addition per sample.
+      gam::OnePole<> lfo_smoother{20};
+      gam::AD<> curve{0.001, 0.2, -2, -4};
 
       DualWavePlayer curve_osc;
       DualWavePlayer lfo_osc;
-
-      float remapping(float, float);
+      float lfo_pan;
 
       Voice(Pre&) noexcept;
       float operator()() noexcept;
-      void on_note_on() noexcept;
+      void on_note_on(float freq_target) noexcept;
     };
 
     struct Post : voices::PostBase<Post, Voice> {
-
       Post(Pre&) noexcept;
 
       float operator()(float) noexcept;
     };
 
     voices::VoiceManager<Post, 6> voice_mgr_;
-
+    friend struct PotionSynthScreen;
   };
 } // namespace otto::engines

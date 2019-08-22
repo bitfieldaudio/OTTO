@@ -34,8 +34,7 @@ namespace otto::services {
     // optional is used to delay construction to the init phaase, where errros can be handled
     std::optional<RtMidiIn> midi_in = std::nullopt;
     std::optional<RtMidiOut> midi_out = std::nullopt;
-
-    unsigned buffer_size = 256;
+    bool enable_input = true;
   };
 
 } // namespace otto::service::audio
