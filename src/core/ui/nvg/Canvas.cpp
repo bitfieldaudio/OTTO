@@ -705,6 +705,14 @@ namespace otto::nvg {
     return *this;
   }
 
+  Canvas& Canvas::scaleTowards(Point s, Point p)
+  {
+    translate(p);
+    scale(s.x, s.y);
+    translate(-p);
+    return *this;
+  }
+
   Canvas& Canvas::draw(Drawable& d)
   {
     d.draw(*this);

@@ -110,6 +110,7 @@ namespace otto::core::audio {
       //   max = std::max(data[std::min(int(first + idx), last) / bin_size], max);
       // }
       // v.points_.push_back(max);
+      //TODO: Benchmark difference between start, mean, max.
       float sum = data[std::min(int(first + idx), last)];
       for (int j = 1; j < v.step_; j++) {
         sum += data[std::min(int(first + idx + j), last)];

@@ -12,11 +12,17 @@ namespace otto::engines {
   using namespace ui;
   using namespace ui::vg;
 
-  struct SamplerScreen : EngineScreen<Sampler> {
+  struct SamplerMainScreen : EngineScreen<Sampler>{
     void draw(Canvas& ctx) override;
     void encoder(EncoderEvent e) override;
     bool keypress(Key key) override;
     void draw_filename(Canvas& ctx);
+
+    void draw_envelope(Canvas& ctx);
+
+    audio::WaveformView& _wfv;
+
+    SamplerMainScreen(Sampler* e, audio::WaveformView& wfv) : EngineScreen<Sampler>(e), _wfv(wfv) {};
 
     using EngineScreen<Sampler>::EngineScreen;
 
@@ -26,22 +32,23 @@ namespace otto::engines {
     void draw(Canvas& ctx) override;
     void encoder(EncoderEvent e) override;
 
-    void update_wf();
-    void draw_waveform(Canvas& ctx);
+    void draw_arrowhead_down(ui::vg::Canvas& ctx, float x, float y_pos, float side_length, Colour cl);
+
+    void draw_envelope(Canvas& ctx);
 
     bool shift = false;
 
-    audio::WaveformView wfv = engine.props.waveform.view(300, engine.sample.min(), engine.sample.max() - 1);
-    SamplerEnvelopeScreen(Sampler* e);
+    audio::WaveformView& _wfv;
 
+    SamplerEnvelopeScreen(Sampler* e, audio::WaveformView& wfv) : EngineScreen<Sampler>(e), _wfv(wfv) {};
 
     using EngineScreen<Sampler>::EngineScreen;
 
   };
 
   Sampler::Sampler()
-    : MiscEngine<Sampler>(std::make_unique<SamplerScreen>(this)),
-      _envelope_screen(std::make_unique<SamplerEnvelopeScreen>(this))
+    : MiscEngine<Sampler>(std::make_unique<SamplerMainScreen>(this, wfv)),
+      _envelope_screen(std::make_unique<SamplerEnvelopeScreen>(this, wfv))
   {
     // Load filenames into vector. TODO: Move this out to enclosing sequencer
     std::string samples_path = Application::current().data_dir / "samples";
@@ -70,15 +77,25 @@ namespace otto::engines {
     _hi_filter.type(gam::HIGH_PASS);
     _hi_filter.freq(20000);
 
+    constexpr float fade_amount = 5;
+
     // More on_change handlers
-    props.startpoint.on_change().connect([this](float pt) { sample.min(pt * sample.frames()); }).call_now();
-    props.endpoint.on_change().connect([this](float pt) { sample.max(pt * sample.frames()); }).call_now();
-    props.fadein.on_change()
-      .connect([this](float fd) { sample.fade((int) fd * 1000, (int) props.fadeout * 1000); })
-      .call_now();
-    props.fadeout.on_change()
-      .connect([this](float fd) { sample.fade((int) props.fadein * 1000, (int) fd * 1000); })
-      .call_now();
+    props.startpoint.on_change().connect([this](int pt) {
+      sample.min((double)pt);
+      update_wf();
+      update_scaling(sample.min(), sample.max() - 1);
+    }).call_now();
+    props.endpoint.on_change().connect([this](int pt) {
+      sample.max(sample.frames() + (double)pt);
+      update_wf();
+      update_scaling(sample.min(), sample.max() - 1);
+    }).call_now();
+    props.fadeout.on_change().connect([this](float fd) {
+      env_.release( fd * fd * fade_amount);
+    }).call_now();
+    props.fadein.on_change().connect([this](float fd) {
+      env_.attack( fd * fd * fade_amount);
+    }).call_now();
     props.filter.on_change()
       .connect([this](float freq) {
         if (freq > 10) {
@@ -91,6 +108,8 @@ namespace otto::engines {
       })
       .call_now();
     props.speed.on_change().connect([this](float spd) { sample.rate(spd); }).call_now();
+
+    env_.finish();
 
     // Load default sample
     /*
@@ -105,11 +124,13 @@ namespace otto::engines {
   void Sampler::restart()
   {
     sample.reset();
+    env_.reset();
   }
 
   void Sampler::finish()
   {
     sample.finish();
+    env_.finish();
   }
 
   float Sampler::progress() const noexcept
@@ -158,9 +179,16 @@ namespace otto::engines {
     }
   end:
     props.waveform = {{props.samplecontainer.elems(), props.samplecontainer.size()}, 300};
-    auto& envscr = *dynamic_cast<SamplerEnvelopeScreen*>(_envelope_screen.get());
-    envscr.update_wf();
+    //auto& envscr = *dynamic_cast<SamplerEnvelopeScreen*>(_envelope_screen.get());
+    update_wf();
     sample.finish();
+
+    props.startpoint = 0;
+    props.endpoint = 0;
+    props.startpoint.max = num_samples - 1;
+    props.endpoint.min =  -num_samples + 1;
+
+    props.num_samples = num_samples;
   }
 
   void Sampler::process(audio::AudioBufferHandle audio, bool triggered)
@@ -172,13 +200,84 @@ namespace otto::engines {
       note_on = false;
     }
     for (auto&& frm : audio) {
-      frm += _hi_filter(_lo_filter(sample())) * props.volume;
+      frm += _hi_filter(_lo_filter(sample())) * props.volume * env_();
     }
+  }
+
+  void Sampler::update_scaling(int start, int end)
+  {
+    x_scale_factor = (width - 2 * 30) / (wfv.point_for_time(end).first - wfv.point_for_time(start).first);
+  }
+
+  void Sampler::update_wf()
+  {
+    auto start = sample.min();
+    auto end = sample.max();
+
+    props.waveform.view(wfv, std::max(0.f, float(start) - 0.2f * float(end - start)),
+                               std::min(float(start + (end - start) * 1.2f), float(sample.size() - 1)));
+  }
+
+  void Sampler::draw_waveform(ui::vg::Canvas &ctx, int start, int end)
+  {
+    // Waveform
+    // Positions
+    float x_1 = 30;
+    float x_2 = width - x_1;
+
+    float y_bot = height * 0.5 - 5;
+    float y_scale = 70;
+
+    float x_start = x_1 - wfv.point_for_time(start).first;
+    float x = x_start;
+    auto iter = wfv.begin();
+    ctx.group([&] {
+
+        ctx.scaleTowards({x_scale_factor, 1}, {x_1, y_bot});
+
+        ctx.beginPath();
+        ctx.moveTo(x, y_bot - *iter * y_scale);
+        auto b = wfv.iter_for_time(start);
+        for (; iter < b; iter++) {
+          ctx.lineTo(x, y_bot - *iter * y_scale);
+          x += 1;
+        }
+        ctx.lineTo(x, y_bot - *iter * y_scale);
+        ctx.lineTo(x, y_bot);
+        ctx.lineTo(x_start, y_bot);
+        ctx.fill(Colors::Gray);
+
+        // At this point, x = x_1.
+
+        ctx.beginPath();
+        ctx.moveTo(x, y_bot - *iter * y_scale);
+        for (auto e = wfv.iter_for_time(end); iter < e; iter++) {
+          ctx.lineTo(x, y_bot - *iter * y_scale);
+          x += 1;
+        }
+        ctx.lineTo(x, y_bot);
+        ctx.lineTo(x_1, y_bot);
+        ctx.fill(Colors::White);
+
+        // Now, x = x_2 in the scaled image.
+        // Unscaled, we need to record the transition
+        float sample_end = x;
+
+        ctx.beginPath();
+        ctx.moveTo(x, y_bot - *iter * y_scale);
+        for (; iter < wfv.end(); iter++) {
+          ctx.lineTo(x, y_bot - *iter * y_scale);
+          x += 1;
+        }
+        ctx.lineTo(x, y_bot);
+        ctx.lineTo(sample_end, y_bot);
+        ctx.fill(Colors::Gray);
+    });
   }
 
   // MAIN SCREEN //
 
-  void SamplerScreen::encoder(ui::EncoderEvent ev)
+  void SamplerMainScreen::encoder(ui::EncoderEvent ev)
   {
     auto& props = engine.props;
     // auto& sample = engine.sample;
@@ -201,7 +300,7 @@ namespace otto::engines {
     }
   }
 
-  bool SamplerScreen::keypress(Key key)
+  bool SamplerMainScreen::keypress(Key key)
   {
     switch (key) {
       case ui::Key::yellow_click: engine.props.speed = -engine.props.speed; break;
@@ -210,7 +309,7 @@ namespace otto::engines {
     return true;
   }
 
-  void SamplerScreen::draw_filename(ui::vg::Canvas& ctx)
+  void SamplerMainScreen::draw_filename(ui::vg::Canvas& ctx)
   {
     float y_pos = height - 30;
     float x_pos = width / 2;
@@ -244,20 +343,52 @@ namespace otto::engines {
     });
   }
 
-  void SamplerScreen::draw(ui::vg::Canvas& ctx)
+  void SamplerMainScreen::draw_envelope(otto::nvg::Canvas &ctx)
+  {
+    constexpr Point b = {30, height * 0.5 + 5};
+
+    const float spacing = 10.f;
+    const float max_width = (width - 2 * b.x - 3 * spacing) / 3.f;
+    const float aw = max_width * props.fadein.normalize();
+    const float rw = max_width * props.fadeout.normalize();
+
+    ctx.lineWidth(6.f);
+
+    ctx.beginPath();
+    ctx.moveTo(b.x, b.y);
+    ctx.lineTo(b.x + aw, b.y);
+    ctx.closePath();
+    ctx.stroke(Colours::Gray50);
+    ctx.fill(Colours::Gray50);
+
+    ctx.beginPath();
+    ctx.moveTo(b.x + aw + spacing, b.y);
+    ctx.lineTo(width - b.x - spacing - rw, b.y);
+    ctx.closePath();
+    ctx.stroke(Colours::Gray70);
+    ctx.fill(Colours::Gray70);
+
+    ctx.beginPath();
+    ctx.moveTo(width - b.x - rw, b.y);
+    ctx.lineTo(width - b.x, b.y);
+    ctx.closePath();
+    ctx.stroke(Colours::Gray50);
+    ctx.fill(Colours::Gray50);
+  }
+
+  void SamplerMainScreen::draw(ui::vg::Canvas& ctx)
   {
     using namespace ui::vg;
 
     // auto& props = engine.props;
     // auto& sample = engine.sample;
 
-    ctx.font(Fonts::Norm, 20);
-
     ctx.font(Fonts::Norm, 35);
 
     constexpr float x_pad = 30;
     constexpr float y_pad = 50;
     constexpr float space = (height - 2.f * y_pad) / 3.f;
+
 
     if (props.error.empty()) {
       ctx.beginPath();
@@ -300,85 +431,84 @@ namespace otto::engines {
       ctx.rect(box).stroke(Colours::Red);
     }
 
+
     draw_filename(ctx);
 
-    engine.envelope_screen().draw(ctx);
-
+    engine.draw_waveform(ctx, props.startpoint, props.num_samples + props.endpoint);
+    draw_envelope(ctx);
 
   }
 
   // ENVELOPE SCREEN //
-
-  SamplerEnvelopeScreen::SamplerEnvelopeScreen(Sampler* e) : EngineScreen<Sampler>(e)
+  void SamplerEnvelopeScreen::draw_arrowhead_down(ui::vg::Canvas& ctx, float x, float y_pos, float side_length, Colour cl)
   {
-    engine.props.endpoint.on_change().connect([this] { update_wf(); });
-    engine.props.startpoint.on_change().connect([this] { update_wf(); });
+    ctx.beginPath();
+    ctx.moveTo(x, y_pos);
+    ctx.lineTo(x - side_length, y_pos - side_length);
+    ctx.lineTo(x + side_length, y_pos - side_length);
+    ctx.closePath();
+    ctx.stroke(cl);
+    ctx.fill(cl);
   }
 
-  void SamplerEnvelopeScreen::update_wf()
+  void SamplerEnvelopeScreen::draw_envelope(otto::nvg::Canvas &ctx)
   {
-    auto start = engine.sample.min();
-    auto end = engine.sample.max();
+    constexpr auto b = vg::Box{30.f, height * 0.5 + 5, 260.f, 50.f};
+    const float spacing = 10.f;
+    const float max_width = (b.width - 3 * spacing) / 3.f;
+    const float aw = max_width * props.fadein.normalize();
+    const float rw = max_width * props.fadeout.normalize();
 
-    engine.props.waveform.view(wfv, std::max(0.f, float(start) - 0.2f * float(end - start)),
-                               std::min(float(start + (end - start) * 1.2f), float(engine.sample.size() - 1)));
-  }
+    ctx.lineWidth(6.f);
 
-  void SamplerEnvelopeScreen::draw_waveform(ui::vg::Canvas &ctx)
-  {
-    auto start = engine.sample.min();
-    auto end = engine.sample.max() - 1;
+    const float arc_size = 0.9;
 
-    //startpoint
-    float x_start = 10;
-    float y_bot = 200;
-    float y_scale = 50;
-
-    float x = x_start;
     ctx.beginPath();
-    auto iter = wfv.begin();
-    ctx.moveTo(x, y_bot - *iter * y_scale);
-    auto b = wfv.iter_for_time(start);
-    for (; iter < b; iter++) {
-      ctx.lineTo(x, y_bot - *iter * y_scale);
-      x += 1;
-    }
-    ctx.lineTo(x, y_bot - *iter * y_scale);
-    ctx.lineTo(x, y_bot);
-    ctx.lineTo(x_start, y_bot);
-    ctx.fill(Colors::Gray);
+    ctx.moveTo(b.x, b.y);
+    ctx.quadraticCurveTo({b.x + aw * arc_size, b.y + b.height * arc_size},
+                         {b.x + aw, b.y + b.height}); // curve
+    ctx.lineTo(b.x + aw, b.y);
+    ctx.closePath();
+    ctx.stroke(Colours::Yellow);
+    ctx.fill(Colours::Yellow);
 
-    float x_1 = x;
     ctx.beginPath();
-    ctx.moveTo(x, y_bot - *iter * y_scale);
-    for (auto e = wfv.iter_for_time(end); iter < e; iter++) {
-      ctx.lineTo(x, y_bot - *iter * y_scale);
-      x += 1;
-    }
-    ctx.lineTo(x, y_bot);
-    ctx.lineTo(x_1, y_bot);
-    ctx.fill(Colors::White);
+    ctx.moveTo(b.x + aw + spacing, b.y);
+    ctx.lineTo(b.x + b.width - spacing - rw, b.y);
+    ctx.lineTo(b.x + b.width - spacing - rw, b.y + b.height);
+    ctx.lineTo(b.x + aw + spacing, b.y + b.height);
+    ctx.closePath();
+    ctx.stroke(Colours::Gray70);
+    ctx.fill(Colours::Gray70);
 
-    float x_2 = x;
     ctx.beginPath();
-    ctx.moveTo(x, y_bot - *iter * y_scale);
-    for (; iter < wfv.end(); iter++) {
-      ctx.lineTo(x, y_bot - *iter * y_scale);
-      x += 1;
-    }
-    ctx.lineTo(x, y_bot);
-    ctx.lineTo(x_2, y_bot);
-    ctx.fill(Colors::Gray);
+    ctx.moveTo(b.x + b.width - rw, b.y);
+    ctx.lineTo(b.x + b.width - rw, b.y + b.height);
+    ctx.quadraticCurveTo({b.x + b.width - rw * arc_size, b.y + b.height},
+                         {b.x + b.width, b.y});
+    ctx.closePath();
+    ctx.stroke(Colours::Red);
+    ctx.fill(Colours::Red);
   }
 
 
   void SamplerEnvelopeScreen::encoder(ui::EncoderEvent ev)
   {
+    auto& props = engine.props;
     shift = services::Controller::current().is_pressed(ui::Key::shift);
-    constexpr int speedup = 20;
+    constexpr int speedup = 10;
     switch (ev.encoder) {
-      case ui::Encoder::blue: engine.props.startpoint.step(ev.steps * (1 + speedup * shift)); break;
-      case ui::Encoder::green: engine.props.endpoint.step(ev.steps * (1 + speedup * shift)); break;
+      case ui::Encoder::blue: {
+        if(props.startpoint < props.num_samples + props.endpoint - props.startpoint.step_size * (speedup + 1) - 1 || util::math::sgn(ev.steps) < 0)
+          props.startpoint.step(ev.steps * (1 + speedup * !shift));
+        break;
+      }
+
+      case ui::Encoder::green: {
+        if(props.endpoint > -props.num_samples + props.startpoint + props.endpoint.step_size * (speedup + 1) + 1 || util::math::sgn(ev.steps) > 0)
+          props.endpoint.step(ev.steps * (1 + speedup * !shift));
+        break;
+      }
       case ui::Encoder::yellow: engine.props.fadein.step(ev.steps); break;
       case ui::Encoder::red: engine.props.fadeout.step(ev.steps); break;
     }
@@ -388,38 +518,27 @@ namespace otto::engines {
   {
     using namespace ui::vg;
 
+    auto& props = engine.props;
 
+    engine.draw_waveform(ctx, props.startpoint, props.num_samples + props.endpoint);
 
-    // auto& props = engine.props;
-    // auto& sample = engine.sample;
-
-    ctx.font(Fonts::Norm, 35);
-
-    constexpr float x_pad = 30;
-    constexpr float y_pad = 50;
-    constexpr float space = (height - 2.f * y_pad) / 3.f;
+    // Start/End markers
+    constexpr float y_pos = 30;
+    constexpr float arrow_size = 10;
+    constexpr float line_end = height * 0.5 - 5;
+    ctx.beginPath();
+    ctx.moveTo({30, y_pos});
+    ctx.lineTo({30, line_end});
+    ctx.stroke(Colours::Blue);
+    draw_arrowhead_down(ctx, 30, y_pos, arrow_size, Colours::Blue);
 
     ctx.beginPath();
-    ctx.fillStyle(Colours::Yellow);
-    ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
-    ctx.fillText("FadeIn", {x_pad, y_pad});
+    ctx.moveTo({width - 30, y_pos});
+    ctx.lineTo({width - 30, line_end});
+    ctx.stroke(Colours::Green);
+    draw_arrowhead_down(ctx, width - 30, y_pos, arrow_size, Colours::Green);
 
-    ctx.beginPath();
-    ctx.fillStyle(Colours::Yellow);
-    ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:1.2}", engine.props.fadein), {width - x_pad, y_pad});
-
-    ctx.beginPath();
-    ctx.fillStyle(Colours::Red);
-    ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
-    ctx.fillText("FadeOut", {x_pad, y_pad +  space});
-
-    ctx.beginPath();
-    ctx.fillStyle(Colours::Red);
-    ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:1.2}", engine.props.fadeout), {width - x_pad, y_pad + space});
-
-    draw_waveform(ctx);
+    draw_envelope(ctx);
 
 
   }

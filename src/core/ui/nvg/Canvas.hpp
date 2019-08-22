@@ -628,6 +628,16 @@ namespace otto::nvg {
      */
     Canvas& scaleTowards(float s, Point p);
 
+      /**
+       * @brief Scales the current drawing, bigger or smaller.
+       * @note If you scale a drawing, all future drawings will also be scaled. The positioning will also be scaled.
+       * If you scale(2,2); drawings will be positioned twice as far from the left and top of the canvas as you specify.
+       * @param s Scales the width and height of the current drawing (1=100%, 0.5=50%, 2=200%, etc.)
+       * @param p the point to scale towards (the point that doesnt move)
+       * @return The canvas to scale with
+       */
+      Canvas& scaleTowards(Point s, Point p);
+
     /**
      * @brief Rotates the current drawing
      * @note: The rotation will only affect drawings made AFTER the rotation is done.

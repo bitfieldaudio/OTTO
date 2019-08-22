@@ -36,7 +36,7 @@ namespace otto::core::audio {
     int max_res_;
     util::dyn_array<float> points_ = {0};
     /// Frequency controls grainyness of waveform.
-    gam::OnePole<> lpf{200};
+    gam::OnePole<> lpf{150};
   };
 
   struct WaveformView {
