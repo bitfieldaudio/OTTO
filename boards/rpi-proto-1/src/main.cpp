@@ -64,19 +64,19 @@ int main(int argc, char* argv[])
 int handle_exception(const char* e)
 {
   LOGE(e);
-  LOGE("Exception thrown, exitting!");
+  LOGE("Exception thrown, exiting!");
   return 1;
 }
 
 int handle_exception(std::exception& e)
 {
   LOGE(e.what());
-  LOGE("Exception thrown, exitting!");
+  LOGE("Exception thrown, exiting!");
   return 1;
 }
 
 int handle_exception()
 {
-  LOGE("Unknown exception thrown, exitting!");
+  LOGE("Unknown exception thrown, exiting!");
   return 1;
 }

@@ -9,10 +9,10 @@
 /// ```
 ///
 /// This method _must_ not be called from anywhere other than the main
-/// audio system and it's deligates.
+/// audio system and its delegates.
 ///
 /// If another thread needs access to any of this data, e.g. the audio/midi
-/// data, They need an audio processor to read it and store it. It is up to the
+/// data, they need an audio processor to read it and store it. It is up to the
 /// engine in question to handle thread safety.
 
 #pragma once
