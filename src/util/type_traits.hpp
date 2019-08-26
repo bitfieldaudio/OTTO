@@ -22,9 +22,17 @@ namespace otto::util {
     template<typename T, typename = std::enable_if_t<!std::is_void_v<typename T::_enumerated>>>
     static std::true_type _is(T);
 
+    static std::false_type _is_enumerated(...);
+
+    template<typename T, typename E, typename = std::enable_if_t<std::is_same_v<typename T::_enumerated, E>>>
+    static std::true_type _is_enumerated(T, E);
+
   public:
     template<typename T>
     static constexpr auto is = decltype(_is(std::declval<T>()))::value;
+
+    template<typename T, typename E>
+    static constexpr auto is_enumerated = decltype(_is_enumerated(std::declval<T>(), std::declval<E>()))::value;
   };
 
   template<typename T, typename Enable = void>

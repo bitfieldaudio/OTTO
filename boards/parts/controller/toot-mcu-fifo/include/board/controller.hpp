@@ -21,6 +21,7 @@ namespace otto::services {
     void clear_leds() override;
 
     static std::unique_ptr<Controller> make_or_dummy();
+//    static std::unique_ptr<Controller> make_or_emulator();
 
   private:
     void handle_message(BytesView);

@@ -1,6 +1,7 @@
 #include "voice_manager.hpp"
 
 #include "core/ui/vector_graphics.hpp"
+#include "util/string_conversions.hpp"
 
 namespace otto::core::voices {
 
@@ -26,38 +27,22 @@ namespace otto::core::voices {
 
   bool SettingsScreen::keypress(ui::Key key)
   {
-    switch (key) {
-      case ui::Key::plus: props.octave.step(1); break;
-      case ui::Key::minus: props.octave.step(-1); break;
-      case ui::Key::blue_click: props.legato = !props.legato;
-      case ui::Key::yellow_click: props.retrig = !props.retrig;
-      default: return false; ;
-    }
-    return true;
+    return false;
   }
 
   void SettingsScreen::encoder(ui::EncoderEvent ev)
   {
-    using details::PlayMode;
     switch (ev.encoder) {
     case Encoder::blue: props.play_mode.step(ev.steps); break;
-    case Encoder::green: {
-      switch (props.play_mode) {
-        case PlayMode::poly: props.drift.step(ev.steps); break;
-        case PlayMode::mono: props.sub.step(ev.steps); break;
-        case PlayMode::unison: props.detune.step(ev.steps); break;
-        case PlayMode::interval: props.interval.step(util::math::sgn(ev.steps)); break;
-      }; break;
-    }
-    case Encoder::yellow: props.portamento.step(ev.steps); break;
+    case Encoder::green: props.portamento.step(ev.steps); break;
     case Encoder::red: props.transpose.step(ev.steps); break;
+    default: break;
     }
   }
 
   void SettingsScreen::draw(ui::vg::Canvas& ctx)
   {
     using namespace ui::vg;
-    using details::PlayMode;
 
     ctx.font(Fonts::Norm, 35);
 
@@ -73,44 +58,17 @@ namespace otto::core::voices {
     ctx.beginPath();
     ctx.fillStyle(Colours::Blue);
     ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(to_string(props.play_mode), {width - x_pad, y_pad});
+    ctx.fillText(util::to_string(props.play_mode.get()).data(), {width - x_pad, y_pad});
 
     ctx.beginPath();
     ctx.fillStyle(Colours::Green);
     ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
-    ctx.fillText(aux_setting(props.play_mode), {x_pad, y_pad + space});
+    ctx.fillText("portamento", {x_pad, y_pad + space});
 
     ctx.beginPath();
     ctx.fillStyle(Colours::Green);
     ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    switch (props.play_mode) {
-      case PlayMode::poly: {
-        ctx.fillText(fmt::format("{:3.2}", props.drift), {width - x_pad, y_pad + space});
-        break;
-      }
-      case PlayMode::mono: {
-        ctx.fillText(fmt::format("{:3.2}", props.sub), {width - x_pad, y_pad + space});
-        break;
-      }
-      case PlayMode::unison: {
-        ctx.fillText(fmt::format("{:3.2}", props.detune), {width - x_pad, y_pad + space});
-        break;
-      }
-      case PlayMode::interval: {
-        ctx.fillText(fmt::format("{}", props.interval), {width - x_pad, y_pad + space});
-        break;
-      }
-    };
-
-    ctx.beginPath();
-    ctx.fillStyle(Colours::Yellow);
-    ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
-    ctx.fillText("portamento", {x_pad, y_pad + 2 * space});
-
-    ctx.beginPath();
-    ctx.fillStyle(Colours::Yellow);
-    ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:3.2}", props.portamento), {width - x_pad, y_pad + 2 * space});
+    ctx.fillText(fmt::format("{:3.2}", props.portamento), {width - x_pad, y_pad + space});
 
     ctx.beginPath();
     ctx.fillStyle(Colours::Red);
@@ -120,7 +78,7 @@ namespace otto::core::voices {
     ctx.beginPath();
     ctx.fillStyle(Colours::Red);
     ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:+}", props.transpose), {width - x_pad, y_pad + 3 * space});
+    ctx.fillText(fmt::format("{:+}", props.transpose), {width - x_pad, y_pad + 2 * space});
   }
 
 } // namespace otto::core::voices

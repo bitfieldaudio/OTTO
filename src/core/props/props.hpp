@@ -9,7 +9,7 @@
 
 /// The property system
 ///
-/// The property system is used for serialization, faust linking, encoder-stepping and more
+/// The property system is used for serialization, encoder-stepping and more
 /// of variables, mainly on engines.
 ///
 /// \warning The implementation of this relies on a lot of template metaprogramming and

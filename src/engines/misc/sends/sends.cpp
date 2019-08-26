@@ -2,7 +2,11 @@
 
 #include "core/ui/vector_graphics.hpp"
 
+#include "services/controller.hpp"
+
 namespace otto::engines {
+
+  using namespace otto::services;
 
   struct SendsScreen : EngineScreen<Sends> {
     using EngineScreen::EngineScreen;
@@ -11,10 +15,33 @@ namespace otto::engines {
     void encoder(core::ui::EncoderEvent e) override;
   };
 
-  Sends::Sends() : MiscEngine<Sends>(std::make_unique<SendsScreen>(this)) {}
+  Sends::Sends() : MiscEngine<Sends>(std::make_unique<SendsScreen>(this)) {
+  }
+
+  LED led_for(ChannelEnum ce) {
+    switch (+ce) {
+      case ChannelEnum::internal: return LED{Key::synth};
+      case ChannelEnum::external: return LED{Key::external};
+      case ChannelEnum::sampler0: return LED{Key::S0};
+      case ChannelEnum::sampler1: return LED{Key::S1};
+      case ChannelEnum::sampler2: return LED{Key::S2};
+      case ChannelEnum::sampler3: return LED{Key::S3};
+      case ChannelEnum::sampler4: return LED{Key::S4};
+      case ChannelEnum::sampler5: return LED{Key::S5};
+      case ChannelEnum::sampler6: return LED{Key::S6};
+      case ChannelEnum::sampler7: return LED{Key::S7};
+      case ChannelEnum::sampler8: return LED{Key::S8};
+      case ChannelEnum::sampler9: return LED{Key::S9};
+    }
+  }
 
   void SendsScreen::draw(core::ui::vg::Canvas& ctx)
   {
+    Controller::current().set_color(LED{Key::fx1}, LEDColor::Blue * engine.props.to_FX1.get());
+    Controller::current().set_color(LED{Key::fx2}, LEDColor::Green * engine.props.to_FX2.get());
+    Controller::current().set_color(led_for(UIManager::current().state.active_channel), LEDColor::Red);
+
+
     using namespace core::ui::vg;
     ctx.font(Fonts::Norm, 35);
 

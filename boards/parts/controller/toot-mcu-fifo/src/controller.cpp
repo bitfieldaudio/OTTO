@@ -6,6 +6,9 @@
 
 #include "services/log_manager.hpp"
 #include "services/ui_manager.hpp"
+#include "services/audio_manager.hpp"
+
+//#include "board/emulator.hpp"
 
 namespace otto::services {
   using TMFC = TOOT_MCU_FIFO_Controller;
@@ -186,6 +189,15 @@ namespace otto::services {
       return Controller::make_dummy();
     }
   }
+
+// std::unique_ptr<Controller> TMFC::make_or_emulator() {
+//   try {
+//     return std::make_unique<TMFC>();
+//   } catch (std::exception& e) {
+//     LOGE("Couldn't set up fifo controller. Continuing with dummy. ERR: {}", e.what());
+//     return std::make_unique<board::Emulator>();
+//   }
+// }
 
   void TMFC::set_color(LED led, LEDColor color)
   {
