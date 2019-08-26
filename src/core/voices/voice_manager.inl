@@ -484,4 +484,4 @@ namespace otto::core::voices {
     }
   } // namespace details
 
-} // namespace otto::core::voices
+} // namespace otto::core::voice
