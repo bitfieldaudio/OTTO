@@ -13,6 +13,7 @@
 #include "services/audio_manager.hpp"
 #include "services/engine_manager.hpp"
 #include "services/log_manager.hpp"
+#include "services/clock_manager.hpp"
 
 #include <Gamma/Domain.h>
 
@@ -141,7 +142,7 @@ namespace otto::services {
     auto in_buf = enable_input ? core::audio::AudioBufferHandle(in_data, nframes, ref_count) : Application::current().audio_manager->buffer_pool().allocate_clear();
     // steal the inner midi buffer
     auto out = Application::current().engine_manager->process(
-      {in_buf, {std::move(midi_bufs.inner())}, nframes});
+      {in_buf, {std::move(midi_bufs.inner())}, core::clock::ClockRange{}});
 
     // process_audio_output(out);
 

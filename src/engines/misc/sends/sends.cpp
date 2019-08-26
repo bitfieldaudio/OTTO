@@ -13,6 +13,12 @@ namespace otto::engines {
 
     void draw(core::ui::vg::Canvas& ctx) override;
     void encoder(core::ui::EncoderEvent e) override;
+
+    void on_show() override;
+    void on_hide() override;
+
+    util::Slot fx1_handler;
+    util::Slot fx2_handler;
   };
 
   Sends::Sends() : MiscEngine<Sends>(std::make_unique<SendsScreen>(this)) {
@@ -33,15 +39,26 @@ namespace otto::engines {
       case ChannelEnum::sampler8: return LED{Key::S8};
       case ChannelEnum::sampler9: return LED{Key::S9};
     }
+    OTTO_UNREACHABLE;
+  }
+
+  void SendsScreen::on_show() {
+    fx1_handler = engine.props.to_FX1.on_change().connect([] (auto val) {
+      Controller::current().set_color(LED{Key::fx1}, LEDColor::Blue * val);
+    }).call_now();
+    fx2_handler = engine.props.to_FX2.on_change().connect([] (auto val) {
+      Controller::current().set_color(LED{Key::fx2}, LEDColor::Green * val);
+    }).call_now();
+    Controller::current().set_color(led_for(UIManager::current().state.active_channel), LEDColor::Red);
+  }
+
+  void SendsScreen::on_hide() {
+    fx1_handler.disconnect();
+    fx2_handler.disconnect();
   }
 
   void SendsScreen::draw(core::ui::vg::Canvas& ctx)
   {
-    Controller::current().set_color(LED{Key::fx1}, LEDColor::Blue * engine.props.to_FX1.get());
-    Controller::current().set_color(LED{Key::fx2}, LEDColor::Green * engine.props.to_FX2.get());
-    Controller::current().set_color(led_for(UIManager::current().state.active_channel), LEDColor::Red);
-
-
     using namespace core::ui::vg;
     ctx.font(Fonts::Norm, 35);
 
@@ -59,8 +76,8 @@ namespace otto::engines {
     ctx.lineTo(72.2, 78.4);
     ctx.lineWidth(6.0);
     ctx.strokeStyle(Colours::Gray70);
-    ctx.lineCap(Canvas::LineCap::ROUND);
-    ctx.lineJoin(Canvas::LineJoin::ROUND);
+    ctx.lineCap(LineCap::ROUND);
+    ctx.lineJoin(LineJoin::ROUND);
     ctx.stroke();
 
     // sends/sendsIcon/Send1Arrow
@@ -251,8 +268,8 @@ namespace otto::engines {
     ctx.lineTo(200.6, 142.5);
     ctx.lineWidth(6.0);
     ctx.strokeStyle(Colours::Gray70);
-    ctx.lineCap(Canvas::LineCap::ROUND);
-    ctx.lineJoin(Canvas::LineJoin::ROUND);
+    ctx.lineCap(LineCap::ROUND);
+    ctx.lineJoin(LineJoin::ROUND);
     ctx.stroke();
 
     // sends/dryArrow/arrowhead
@@ -287,8 +304,8 @@ namespace otto::engines {
     ctx.lineTo(295.3, 74.8);
     ctx.lineWidth(6.0);
     ctx.strokeStyle(Colours::Gray70);
-    ctx.lineCap(Canvas::LineCap::ROUND);
-    ctx.lineJoin(Canvas::LineJoin::ROUND);
+    ctx.lineCap(LineCap::ROUND);
+    ctx.lineJoin(LineJoin::ROUND);
     ctx.stroke();
 
     // sends/7Lines/6
@@ -336,8 +353,8 @@ namespace otto::engines {
     ctx.lineTo(x_position, 63.1);
     ctx.lineWidth(6.0);
     ctx.strokeStyle(Colours::White);
-    ctx.lineCap(Canvas::LineCap::ROUND);
-    ctx.lineJoin(Canvas::LineJoin::ROUND);
+    ctx.lineCap(LineCap::ROUND);
+    ctx.lineJoin(LineJoin::ROUND);
     ctx.stroke();
     ctx.restore();
   }

@@ -8,6 +8,9 @@ namespace otto::services {
 
   LogManager::LogManager(int argc, char* argv[], bool enable_console, const char* logFilePath)
   {
+    static bool initialized = false;
+    if (initialized) return;
+
     std::string def_path = Application::current().data_dir / "log.txt";
     if (logFilePath == nullptr) {
       logFilePath = def_path.c_str();
@@ -15,6 +18,13 @@ namespace otto::services {
 
     if (!enable_console) {
       loguru::g_stderr_verbosity = loguru::Verbosity_OFF;
+    }
+
+    char exc[] = "otto";
+    char* eptr[] = {exc, nullptr};
+    if (argc == 0) {
+      argc = 1;
+      argv = eptr;
     }
 
     loguru::init(argc, argv);
@@ -26,6 +36,7 @@ namespace otto::services {
     });
 
     LOGI("LOGGING NOW");
+    initialized = true;
   }
 
   void LogManager::set_thread_name(const std::string& name)

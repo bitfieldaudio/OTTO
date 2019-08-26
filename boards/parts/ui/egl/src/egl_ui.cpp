@@ -14,7 +14,6 @@
 
 #include "./egl_connection.hpp"
 #include "./egl_deps.hpp"
-#include "./fbcp.hpp"
 #include "board/ui/egl_ui_manager.hpp"
 
 static nlohmann::json config = {{"FPS", 30.f}, {"Debug", false}};
@@ -28,18 +27,6 @@ namespace otto::services {
   {
     EGLConnection egl;
     egl.init();
-#if OTTO_USE_FBCP
-    auto fbcp = RpiFBCP{egl.eglData};
-    bool use_fbcp = true;
-    try {
-      fbcp.init();
-    } catch (util::exception& e) {
-      LOGW("Error starting FBCP: {}", e.what());
-      LOGI("If you are using an HDMI screen you probably meant to compile with OTTO_USE_FBCP=OFF");
-      LOGI("FBCP has been disabled. /dev/fb0 will not be copied to /dev/fb1");
-      use_fbcp = false;
-    }
-#endif
 
     NVGcontext* nvg = nvgCreateGLES2(NVG_ANTIALIAS | NVG_STENCIL_STROKES | NVG_DEBUG);
     if (nvg == NULL) {
@@ -78,8 +65,6 @@ namespace otto::services {
     while (Application::current().running()) {
       t0 = clock::now();
 
-      Controller::current().flush_events();
-
       // Update and render
       egl.beginFrame();
       canvas.clearColor(vg::Colours::Black);
@@ -98,10 +83,6 @@ namespace otto::services {
 
       canvas.endFrame();
       egl.endFrame();
-
-#if OTTO_USE_FBCP
-      if (use_fbcp) fbcp.copy();
-#endif
 
       lastFrameTime = clock::now() - t0;
       std::this_thread::sleep_for(waitTime - lastFrameTime);

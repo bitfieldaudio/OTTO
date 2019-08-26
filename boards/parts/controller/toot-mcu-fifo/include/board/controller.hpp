@@ -27,8 +27,7 @@ namespace otto::services {
     void handle_message(BytesView);
     void queue_message(BytesView);
 
-    void insert_key_event(Command cmd, Key key);
-    void insert_key_or_midi(Command cmd, BytesView args, bool do_send_midi);
+    void handle_keyevent(Command cmd, BytesView args, bool do_send_midi);
 
     util::FIFO fifo0 = {"/dev/toot-mcu-fifo0"};
     util::FIFO fifo1 = {"/dev/toot-mcu-fifo1"};

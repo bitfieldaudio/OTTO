@@ -11,6 +11,7 @@
 #include "services/clock_manager.hpp"
 #include "services/controller.hpp"
 #include "board/controller.hpp"
+#include "services/settings.hpp"
 #include "board/audio_driver.hpp"
 #include "board/ui/egl_ui_manager.hpp"
 
@@ -23,12 +24,11 @@ int handle_exception();
 
 int main(int argc, char* argv[])
 {
-  int result = 0;
   try {
     Application app {
       [&] { return std::make_unique<LogManager>(argc, argv); },
       StateManager::create_default,
-      std::make_unique<PresetManager>,
+      PresetManager::create_default,
       std::make_unique<RTAudioAudioManager>,
       ClockManager::create_default,
       std::make_unique<EGLUIManager>,
@@ -36,47 +36,49 @@ int main(int argc, char* argv[])
       EngineManager::create_default
     };
 
+    Settings settings;
+
     // Overwrite the logger signal handlers
     std::signal(SIGABRT, Application::handle_signal);
     std::signal(SIGTERM, Application::handle_signal);
     std::signal(SIGINT, Application::handle_signal);
-    std::signal(SIGKILL, Application::handle_signal);
 
-    app.engine_manager->start();
     app.audio_manager->start();
+    app.engine_manager->start();
     app.ui_manager->main_ui_loop();
 
     if (app.error() == Application::ErrorCode::ui_closed) {
 //      std::system("shutdown -h now");
     }
+
   } catch (const char* e) {
-    result = handle_exception(e);
+    return handle_exception(e);
   } catch (std::exception& e) {
-    result = handle_exception(e);
+    return handle_exception(e);
   } catch (...) {
-    result = handle_exception();
+    return handle_exception();
   }
 
   LOG_F(INFO, "Exiting");
-  return result;
+  return 0;
 }
 
 int handle_exception(const char* e)
 {
-  LOGE(e);
-  LOGE("Exception thrown, exiting!");
+  LOGE("{}", e);
+  LOGE("Exception thrown, exitting!");
   return 1;
 }
 
 int handle_exception(std::exception& e)
 {
-  LOGE(e.what());
-  LOGE("Exception thrown, exiting!");
+  LOGE("{}", e.what());
+  LOGE("Exception thrown, exitting!");
   return 1;
 }
 
 int handle_exception()
 {
-  LOGE("Unknown exception thrown, exiting!");
+  LOGE("Unknown exception thrown, exitting!");
   return 1;
 }

@@ -148,7 +148,7 @@ namespace otto::engines {
   PotionSynth::Voice::Voice(Pre& pre) noexcept : VoiceBase(pre)
   {
     /// On_change handlers for the lfo and curve/envelope
-    props.lfo_osc.lfo_speed.on_change().connect([this](float speed) { lfo.freq(speed * 3); });
+    props.lfo_osc.lfo_speed.on_change().connect([this](float speed) { lfo.freq(speed * 3); }).call_now(props.lfo_osc.lfo_speed);
     props.curve_osc.curve_length.on_change().connect(
       [this](float decaytime) { curve.decay((1-decaytime) * 15 + 0.2); });
     /// On_change handlers for the wavetable volumes
@@ -160,10 +160,10 @@ namespace otto::engines {
     curve.finish();
   }
 
-  void PotionSynth::Voice::on_note_on() noexcept
+  void PotionSynth::Voice::on_note_on(float freq_target) noexcept
   {
     lfo.phase(0.f);
-    curve.reset(-2);
+    curve.resetSoft();
     pre.last_voice = this;
   }
 
@@ -174,12 +174,12 @@ namespace otto::engines {
       curve_osc.waves[osc].freq(frequency());
     }
     /// Set panning positions
-    lfo_pan = lfo.tri();
+    lfo_pan = lfo_smoother( lfo.tri() );
     lfo_osc.pan.pos(lfo_pan);
     curve_osc.pan.pos(curve() + 1);
     /// Get next sample from wavetables
     float result = lfo_osc() + curve_osc();
-    return result;
+    return result * 2.0f;
   }
 
   float PotionSynth::DualWavePlayer::operator()() noexcept
@@ -406,7 +406,7 @@ namespace otto::engines {
 
   void PotionSynthScreen::draw_waveform(ui::vg::Canvas& ctx, Point start, Size scale, Colour cl, int steps, int wt) {
     ctx.lineWidth(6.0);
-    ctx.lineCap(Canvas::LineCap::ROUND);
+    ctx.lineCap(LineCap::ROUND);
 
     ctx.beginPath();
     ctx.moveTo(start.x, start.y);
@@ -468,7 +468,7 @@ namespace otto::engines {
     ctx.moveTo(line_x, line_top);
     ctx.lineTo(line_x, line_bot);
     ctx.lineWidth(6.0);
-    ctx.lineCap(Canvas::LineCap::ROUND);
+    ctx.lineCap(LineCap::ROUND);
     ctx.closePath();
     ctx.stroke(Colours::Gray50);
 
@@ -485,7 +485,7 @@ namespace otto::engines {
     ctx.moveTo(line_x - 0.5 * bar_width, line_bot - cur_level * (line_bot - line_top));
     ctx.lineTo(line_x + 0.5 * bar_width, line_bot - cur_level * (line_bot - line_top));
     ctx.lineWidth(6.0);
-    ctx.lineCap(Canvas::LineCap::ROUND);
+    ctx.lineCap(LineCap::ROUND);
     ctx.closePath();
     ctx.stroke(Colours::Yellow);
   }

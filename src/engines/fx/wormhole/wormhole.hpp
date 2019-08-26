@@ -1,11 +1,8 @@
 #pragma once
 
 #include "core/engine/engine.hpp"
-#include "core/voices/voice_manager.hpp"
 
 #include "util/dsp/transpose.hpp"
-
-constexpr unsigned num_taps = 4;
 
 /// Reverb Engine
 namespace otto::engines {

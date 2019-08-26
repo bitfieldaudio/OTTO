@@ -24,13 +24,33 @@ namespace otto::services {
       case ScreenEnum::master: return LED(Key::master);
       case ScreenEnum::sequencer: return LED(Key::sequencer);
       case ScreenEnum::sampler: return LED(Key::sampler);
+      case ScreenEnum::sampler_envelope: return LED(Key::envelope);
       case ScreenEnum::synth: return LED(Key::synth);
       case ScreenEnum::synth_selector: return LED(Key::synth);
-      case ScreenEnum::envelope: return LED(Key::envelope);
+      case ScreenEnum::synth_envelope: return LED(Key::envelope);
       case ScreenEnum::settings: return LED(Key::settings);
       case ScreenEnum::external: return LED(Key::external);
       case ScreenEnum::twist1: return LED(Key::twist1);
       case ScreenEnum::twist2: return LED(Key::twist2);
+    }
+    OTTO_UNREACHABLE;
+  }
+
+  tl::optional<KeyMode> key_mode_for(ScreenEnum screen)
+  {
+    switch (screen) {
+      case ScreenEnum::arp: [[fallthrough]];
+      case ScreenEnum::arp_selector: [[fallthrough]];
+      case ScreenEnum::voices: [[fallthrough]];
+      case ScreenEnum::synth_selector: [[fallthrough]];
+      case ScreenEnum::synth_envelope: [[fallthrough]];
+      case ScreenEnum::synth: return KeyMode::midi;
+
+      case ScreenEnum::sampler: [[fallthrough]];
+      case ScreenEnum::sampler_envelope: [[fallthrough]];
+      case ScreenEnum::looper: [[fallthrough]];
+      case ScreenEnum::sequencer: return KeyMode::seq;
+      default: return tl::nullopt;
     }
   }
 
@@ -45,9 +65,14 @@ namespace otto::services {
     state.current_screen.on_change().connect([&](auto new_val) {
       display(screen_selectors_[new_val]());
       for (auto scrn : ScreenEnum::_values()) {
-        Controller::current().set_color(led_for_screen(scrn), scrn == new_val ? LEDColor::White : LEDColor::Black);
+        if (scrn != new_val) Controller::current().set_color(led_for_screen(scrn), LEDColor::Black);
       }
+      Controller::current().set_color(led_for_screen(new_val), LEDColor::White);
+      DLOGI("Select screen {}", new_val._to_string());
+      key_mode_for(new_val).map([&](auto&& km) { state.key_mode.set(km); });
     });
+
+    state.active_channel.on_change().connect([&](auto chan) { state.current_screen = state.current_screen.get(); });
 
     state.octave.on_change().connect([&](auto octave) {
       LEDColor c = [&] {
@@ -63,7 +88,7 @@ namespace otto::services {
       Controller::current().set_color(LED{Key::minus}, octave < 0 ? c : LEDColor::Black);
     });
 
-    Application::current().events.post_init.subscribe([&] {
+    Application::current().events.post_init.connect([&] {
       Controller::current().register_key_handler(Key::plus, [&](auto&&) { state.octave.step(1); });
       Controller::current().register_key_handler(Key::minus, [&](auto&&) { state.octave.step(-1); });
     });
@@ -94,20 +119,29 @@ namespace otto::services {
   void UIManager::draw_frame(vg::Canvas& ctx)
   {
     ctx.lineWidth(6);
-    ctx.lineCap(vg::Canvas::LineCap::ROUND);
-    ctx.lineJoin(vg::Canvas::Canvas::LineJoin::ROUND);
-    ctx.group([&] { cur_screen->draw(ctx); });
-
+    ctx.lineCap(vg::LineCap::ROUND);
+    ctx.lineJoin(vg::LineJoin::ROUND);
     ctx.group([&] {
-      ctx.beginPath();
-      ctx.fillStyle(vg::Colours::White);
-      ctx.font(vg::Fonts::Norm, 12);
-      std::string cpu_time = fmt::format("{}%", int(100 * Application::current().audio_manager->cpu_time()));
-      ctx.fillText(cpu_time, {290, 230});
+      ctx.clip(0, 0, 320, 240);
+      cur_screen->draw(ctx);
+
+      ctx.group([&] {
+        ctx.beginPath();
+        ctx.fillStyle(vg::Colours::White);
+        ctx.font(vg::Fonts::Norm, 12);
+        std::string cpu_time = fmt::format("{}%", int(100 * Application::current().audio_manager->cpu_time()));
+        ctx.fillText(cpu_time, {290, 230});
+      });
+
+      signals.on_draw.emit(ctx);
     });
 
     Controller::current().flush_leds();
     _frame_count++;
+
+    auto now = chrono::clock::now();
+    timeline_.step(chrono::duration_cast<chrono::milliseconds>(now - last_frame).count());
+    last_frame = now;
   }
 
 } // namespace otto::services

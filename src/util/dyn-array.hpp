@@ -1,11 +1,11 @@
 #pragma once
 
-#include <memory>
-#include <iterator>
 #include <algorithm>
-#include <vector>
 #include <cstring>
+#include <iterator>
+#include <memory>
 #include <type_traits>
+#include <vector>
 
 namespace otto::util {
 
@@ -16,28 +16,50 @@ namespace otto::util {
   class dyn_array {
     std::size_t cur_size;
     std::unique_ptr<T[]> _data;
-  public:
 
-    dyn_array(std::size_t size)
-      : cur_size (size),
-        _data (std::make_unique<T[]>(size))
+  public:
+    dyn_array(std::size_t size) : cur_size(size), _data(std::make_unique<T[]>(size)) {}
+
+    decltype(auto) operator[](std::size_t i)
     {
-      clear();
+      return _data[i];}
+    
+    decltype(auto) operator[](std::size_t i) const
+    {
+      return _data[i];}
+    
+
+    T* begin()
+    {
+      return _data.get();
+    }
+    T* end()
+    {
+      return _data.get() + cur_size;
     }
 
-    decltype(auto) operator[](std::size_t i) {return _data[i];}
-    decltype(auto) operator[](std::size_t i) const {return _data[i];}
+    const T* begin() const
+    {
+      return _data.get();
+    }
+    const T* end() const
+    {
+      return _data.get() + cur_size;
+    }
 
-    T* begin() { return _data.get(); }
-    T* end() { return _data.get() + cur_size; }
+    T* data()
+    {
+      return _data.get();
+    }
+    const T* data() const
+    {
+      return _data.get();
+    }
 
-    const T* begin() const { return _data.get(); }
-    const T* end() const { return _data.get() + cur_size; }
-
-    T* data() { return _data.get(); }
-    const T* data() const { return _data.get(); }
-
-    std::size_t size() const { return cur_size; }
+    std::size_t size() const
+    {
+      return cur_size;
+    }
 
     /// Replace the array with a new one of size `new_size`
     ///
@@ -56,3 +78,4 @@ namespace otto::util {
     }
   };
 }
+ // namespace otto::util

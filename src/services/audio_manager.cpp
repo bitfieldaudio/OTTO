@@ -6,7 +6,7 @@ namespace otto::services {
 
   AudioManager::AudioManager()
   {
-    events.pre_init.fire();
+    events.pre_init.emit();
     core::midi::generateFreqTable(440);
   }
 

@@ -12,7 +12,7 @@ namespace otto::engines {
 
   namespace detail {
 
-    BETTER_ENUM(ArpPlaymode, std::uint8_t,
+    BETTER_ENUM(ArpPlaymode, std::int8_t,
       up,
       down,
       updown,
@@ -23,7 +23,7 @@ namespace otto::engines {
       chord
     );
 
-    BETTER_ENUM(ArpOctaveMode, std::uint8_t,
+    BETTER_ENUM(ArpOctaveMode, std::int8_t,
       standard,
       octaveup,
       octaveupunison,

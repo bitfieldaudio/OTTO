@@ -7,6 +7,8 @@
 #include <Gamma/Domain.h>
 #include <Gamma/Strategy.h>
 
+#include "OscillatorBank.hpp"
+
 /// Exponential envelope segment for smoothing out value changes.
 
 /// \ingroup Envelope Interpolation
@@ -27,6 +29,9 @@ public:
     /// Returns whether envelope is done
     bool done() const { return mCurve.value() >= T(1); }
 
+    /// Jumps to the end of the curve
+    void finish() { mCurve.value(T(1)); }
+
     /// Generate next value
     T operator()(){
       if(done()) return mVal0;
@@ -38,9 +43,9 @@ public:
       mVal1 = gam::ipl::linear(gam::scl::min(mCurve.value(), T(1)), mVal1, mVal0);
       mVal0 = v;
       mCurve.reset();
-      //If time is below threshold, bypass interpolation
-      if (mLen <= T(0.0001)) mCurve.value(mCurve.end());
     }
+
+    T getEnd() { return mVal0; }
 
     /// Set curvature.  Negative gives faster change, positive gives slower change.
     void curve(T v){ set(mLen, v); }

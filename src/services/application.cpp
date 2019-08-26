@@ -31,12 +31,12 @@ namespace otto::services {
       engine_manager(std::move(engine_fact))
   {
     _current = this;
-    events.post_init.fire();
+    events.post_init.emit();
   }
 
   Application::~Application()
   {
-    events.pre_exit.fire();
+    events.pre_exit.emit();
   }
 
   void Application::exit(ErrorCode ec) noexcept

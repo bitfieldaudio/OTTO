@@ -40,43 +40,5 @@ TEST_CASE ("String algorithms", "[algorithm]") {
       REQUIRE(same_char == "BBBBBA");
     }
 
-    OBENCH_SECTION ("string_replace vs regex::replace") {
-      std::string local;
-      OBENCH ("string_replace", 1000) {
-        OBENCH_SKIP {
-          local = long_str;
-        }
-        string_replace(local, "string", "another string");
-      }
-
-      std::regex regex;
-      OBENCH ("regex::replace", 1000) {
-        OBENCH_SKIP {
-          local = long_str;
-        }
-        OBENCH ("construct regex") {
-          regex = std::regex("string");
-          OBENCH ("Nesting test")
-            ;
-        }
-        OBENCH ("replace") {
-          std::regex_replace(local, regex, "another string");
-        }
-      }
-
-      OBENCH ("string_replace (single char)", 1000) {
-        OBENCH_SKIP {
-          local = long_str;
-        }
-        string_replace(local, "e", " ");
-      }
-
-      OBENCH ("std::replace (single char) ", 1000) {
-        OBENCH_SKIP {
-          local = long_str;
-        }
-        std::replace(local.begin(), local.end(), 'e', ' ');
-      }
-    }
   }
 }

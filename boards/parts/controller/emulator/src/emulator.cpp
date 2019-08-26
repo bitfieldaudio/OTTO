@@ -67,8 +67,8 @@ namespace otto::board {
   void Emulator::draw(Canvas& ctx)
   {
     // #BKGRND
-    ctx.lineJoin(Canvas::LineJoin::ROUND);
-    ctx.lineCap(Canvas::LineCap::ROUND);
+    ctx.lineJoin(LineJoin::ROUND);
+    ctx.lineCap(LineCap::ROUND);
     ctx.miterLimit(4);
     ctx.lineWidth(2.109509);
     ctx.fillStyle(Colour::bytes(40, 40, 40));
@@ -83,9 +83,9 @@ namespace otto::board {
     draw_sc_btns(ctx);
 
     // #rect1819
-    ctx.lineJoin(Canvas::LineJoin::ROUND);
+    ctx.lineJoin(LineJoin::ROUND);
     ctx.strokeStyle(Colour::bytes(77, 77, 77));
-    ctx.lineCap(Canvas::LineCap::ROUND);
+    ctx.lineCap(LineCap::ROUND);
     ctx.miterLimit(4);
     ctx.lineWidth(1.000000);
     ctx.fillStyle(Colour::bytes(0, 0, 0));
@@ -721,7 +721,7 @@ namespace otto::board {
         ctx.bezierCurveTo(52.808563, 38.982468, 52.607391, 38.982468, 52.607391, 38.982468);
         ctx.bezierCurveTo(52.607391, 38.982468, 52.607391, 38.982468, 52.607391, 38.982468);
         ctx.moveTo(52.628871, 41.195358);
-        ctx.pathWinding(Canvas::Winding::CW);
+        ctx.pathWinding(Winding::CW);
         ctx.bezierCurveTo(52.628871, 41.195358, 55.267543, 43.834030, 55.267543, 43.834030);
         ctx.bezierCurveTo(55.267543, 43.834030, 57.906215, 46.472702, 57.906215, 46.472702);
         ctx.bezierCurveTo(57.906215, 46.472702, 57.882775, 46.498092, 57.882775, 46.498092);
@@ -1075,7 +1075,7 @@ namespace otto::board {
         ctx.bezierCurveTo(818.096120, 38.543067, 817.947690, 38.498147, 817.947690, 38.498147);
         ctx.bezierCurveTo(817.947690, 38.498147, 817.947690, 38.498147, 817.947690, 38.498147);
         ctx.moveTo(808.715260, 46.201272);
-        ctx.pathWinding(Canvas::Winding::CW);
+        ctx.pathWinding(Winding::CW);
         ctx.bezierCurveTo(808.715260, 46.201272, 809.107840, 46.203272, 809.107840, 46.203272);
         ctx.bezierCurveTo(809.107840, 46.203272, 809.502370, 46.205272, 809.502370, 46.205272);
         ctx.bezierCurveTo(809.502370, 46.205272, 809.726980, 46.289252, 809.726980, 46.289252);
@@ -1538,7 +1538,7 @@ namespace otto::board {
         ctx.bezierCurveTo(951.068460, 44.201166, 950.795020, 44.177726, 950.795020, 44.177726);
         ctx.bezierCurveTo(950.795020, 44.177726, 950.519530, 44.154296, 950.519530, 44.154296);
         ctx.moveTo(950.863280, 45.623046);
-        ctx.pathWinding(Canvas::Winding::CW);
+        ctx.pathWinding(Winding::CW);
         ctx.bezierCurveTo(950.863280, 45.623046, 951.085940, 45.681636, 951.085940, 45.681636);
         ctx.bezierCurveTo(951.085940, 45.681636, 951.308590, 45.738276, 951.308590, 45.738276);
         ctx.bezierCurveTo(951.308590, 45.738276, 951.548830, 45.851557, 951.548830, 45.851557);
@@ -1669,7 +1669,7 @@ namespace otto::board {
         ctx.bezierCurveTo(942.107400, 44.232387, 941.744120, 44.193327, 941.744120, 44.193327);
         ctx.bezierCurveTo(941.744120, 44.193327, 941.382810, 44.154257, 941.382810, 44.154257);
         ctx.moveTo(941.056640, 45.623007);
-        ctx.pathWinding(Canvas::Winding::CW);
+        ctx.pathWinding(Winding::CW);
         ctx.bezierCurveTo(941.056640, 45.623007, 941.382810, 45.623007, 941.382810, 45.623007);
         ctx.bezierCurveTo(941.382810, 45.623007, 941.708980, 45.623007, 941.708980, 45.623007);
         ctx.bezierCurveTo(941.708980, 45.623007, 941.931640, 45.681597, 941.931640, 45.681597);
@@ -2782,7 +2782,7 @@ namespace otto::board {
         ctx.bezierCurveTo(854.070400, 156.136750, 853.867280, 156.136750, 853.867280, 156.136750);
         ctx.bezierCurveTo(853.867280, 156.136750, 853.867280, 156.136750, 853.867280, 156.136750);
         ctx.moveTo(854.828210, 158.406280);
-        ctx.pathWinding(Canvas::Winding::CW);
+        ctx.pathWinding(Winding::CW);
         ctx.bezierCurveTo(854.828210, 158.406280, 858.462980, 159.859410, 858.462980, 159.859410);
         ctx.bezierCurveTo(858.462980, 159.859410, 862.097750, 161.312530, 862.097750, 161.312530);
         ctx.bezierCurveTo(862.097750, 161.312530, 862.179750, 161.349630, 862.179750, 161.349630);
@@ -2943,7 +2943,7 @@ namespace otto::board {
         ctx.bezierCurveTo(905.367160, 153.420410, 905.162080, 153.404810, 905.162080, 153.404810);
         ctx.bezierCurveTo(905.162080, 153.404810, 904.955070, 153.389110, 904.955070, 153.389110);
         ctx.moveTo(904.150380, 156.033640);
-        ctx.pathWinding(Canvas::Winding::CW);
+        ctx.pathWinding(Winding::CW);
         ctx.bezierCurveTo(904.150380, 156.033640, 904.165980, 156.076640, 904.165980, 156.076640);
         ctx.bezierCurveTo(904.165980, 156.076640, 904.183580, 156.119640, 904.183580, 156.119640);
         ctx.bezierCurveTo(904.183580, 156.119640, 904.173580, 161.328620, 904.173580, 161.328620);
@@ -2959,7 +2959,7 @@ namespace otto::board {
         ctx.bezierCurveTo(900.343220, 158.572910, 902.245560, 157.303370, 902.245560, 157.303370);
         ctx.bezierCurveTo(902.245560, 157.303370, 904.150380, 156.033640, 904.150380, 156.033640);
         ctx.moveTo(896.640610, 158.910600);
-        ctx.pathWinding(Canvas::Winding::CW);
+        ctx.pathWinding(Winding::CW);
         ctx.bezierCurveTo(896.640610, 158.910600, 897.541010, 159.000400, 897.541010, 159.000400);
         ctx.bezierCurveTo(897.541010, 159.000400, 898.439440, 159.092200, 898.439440, 159.092200);
         ctx.bezierCurveTo(898.439440, 159.092200, 898.482440, 159.127300, 898.482440, 159.127300);
@@ -3132,7 +3132,7 @@ namespace otto::board {
         ctx.bezierCurveTo(955.799170, 163.320330, 948.840180, 163.320330, 948.840180, 163.320330);
         ctx.bezierCurveTo(948.840180, 163.320330, 941.878920, 163.320310, 941.878920, 163.320310);
         ctx.moveTo(943.111340, 165.119140);
-        ctx.pathWinding(Canvas::Winding::CW);
+        ctx.pathWinding(Winding::CW);
         ctx.bezierCurveTo(943.111340, 165.119140, 948.843760, 165.119140, 948.843760, 165.119140);
         ctx.bezierCurveTo(948.843760, 165.119140, 954.574230, 165.119140, 954.574230, 165.119140);
         ctx.bezierCurveTo(954.574230, 165.119140, 954.613330, 165.166040, 954.613330, 165.166040);
@@ -3602,7 +3602,7 @@ namespace otto::board {
         ctx.bezierCurveTo(1062.840400, 38.400369, 1062.701700, 38.400369, 1062.701700, 38.400369);
         ctx.bezierCurveTo(1062.701700, 38.400369, 1062.564500, 38.400391, 1062.564500, 38.400391);
         ctx.moveTo(1062.291000, 42.781250);
-        ctx.pathWinding(Canvas::Winding::CW);
+        ctx.pathWinding(Winding::CW);
         ctx.bezierCurveTo(1062.291000, 42.781250, 1062.875000, 42.798830, 1062.875000, 42.798830);
         ctx.bezierCurveTo(1062.875000, 42.798830, 1063.457000, 42.818360, 1063.457000, 42.818360);
         ctx.bezierCurveTo(1063.457000, 42.818360, 1063.816400, 42.902340, 1063.816400, 42.902340);
@@ -4729,9 +4729,9 @@ namespace otto::board {
     // #GREEN
 
     // #path1640-11
-    ctx.lineJoin(Canvas::LineJoin::ROUND);
+    ctx.lineJoin(LineJoin::ROUND);
     ctx.strokeStyle(Colour::bytes(0, 71, 0));
-    ctx.lineCap(Canvas::LineCap::ROUND);
+    ctx.lineCap(LineCap::ROUND);
     ctx.miterLimit(4);
     ctx.lineWidth(1.000000);
     ctx.fillStyle(Colour::bytes(0, 128, 0));
@@ -4741,9 +4741,9 @@ namespace otto::board {
     ctx.stroke();
 
     // #circle1882
-    ctx.lineJoin(Canvas::LineJoin::ROUND);
+    ctx.lineJoin(LineJoin::ROUND);
     ctx.strokeStyle(Colour::bytes(148, 255, 20));
-    ctx.lineCap(Canvas::LineCap::ROUND);
+    ctx.lineCap(LineCap::ROUND);
     ctx.miterLimit(4);
     ctx.lineWidth(1.000000);
     ctx.fillStyle(Colour::bytes(0, 213, 0));
@@ -4755,9 +4755,9 @@ namespace otto::board {
     // #BLUE
 
     // #path1640
-    ctx.lineJoin(Canvas::LineJoin::ROUND);
+    ctx.lineJoin(LineJoin::ROUND);
     ctx.strokeStyle(Colour::bytes(0, 0, 78));
-    ctx.lineCap(Canvas::LineCap::ROUND);
+    ctx.lineCap(LineCap::ROUND);
     ctx.miterLimit(4);
     ctx.lineWidth(1.000000);
     ctx.fillStyle(Colour::bytes(0, 0, 128));
@@ -4767,9 +4767,9 @@ namespace otto::board {
     ctx.stroke();
 
     // #circle1882-0
-    ctx.lineJoin(Canvas::LineJoin::ROUND);
+    ctx.lineJoin(LineJoin::ROUND);
     ctx.strokeStyle(Colour::bytes(0, 86, 243));
-    ctx.lineCap(Canvas::LineCap::ROUND);
+    ctx.lineCap(LineCap::ROUND);
     ctx.miterLimit(4);
     ctx.lineWidth(1.000000);
     ctx.fillStyle(Colour::bytes(0, 0, 255));
@@ -4781,9 +4781,9 @@ namespace otto::board {
     // #YELLOW
 
     // #path1640-3
-    ctx.lineJoin(Canvas::LineJoin::ROUND);
+    ctx.lineJoin(LineJoin::ROUND);
     ctx.strokeStyle(Colour::bytes(226, 144, 0));
-    ctx.lineCap(Canvas::LineCap::ROUND);
+    ctx.lineCap(LineCap::ROUND);
     ctx.miterLimit(4);
     ctx.lineWidth(1.000000);
     ctx.fillStyle(Colour::bytes(255, 194, 0));
@@ -4793,9 +4793,9 @@ namespace otto::board {
     ctx.stroke();
 
     // #circle1882-7
-    ctx.lineJoin(Canvas::LineJoin::ROUND);
+    ctx.lineJoin(LineJoin::ROUND);
     ctx.strokeStyle(Colour::bytes(255, 255, 133));
-    ctx.lineCap(Canvas::LineCap::ROUND);
+    ctx.lineCap(LineCap::ROUND);
     ctx.miterLimit(4);
     ctx.lineWidth(1.000000);
     ctx.fillStyle(Colour::bytes(255, 235, 0));
@@ -4807,9 +4807,9 @@ namespace otto::board {
     // #RED
 
     // #path1640-7
-    ctx.lineJoin(Canvas::LineJoin::ROUND);
+    ctx.lineJoin(LineJoin::ROUND);
     ctx.strokeStyle(Colour::bytes(81, 0, 0));
-    ctx.lineCap(Canvas::LineCap::ROUND);
+    ctx.lineCap(LineCap::ROUND);
     ctx.miterLimit(4);
     ctx.lineWidth(1.000000);
     ctx.fillStyle(Colour::bytes(128, 0, 0));
@@ -4819,9 +4819,9 @@ namespace otto::board {
     ctx.stroke();
 
     // #circle1882-79
-    ctx.lineJoin(Canvas::LineJoin::ROUND);
+    ctx.lineJoin(LineJoin::ROUND);
     ctx.strokeStyle(Colour::bytes(255, 71, 71));
-    ctx.lineCap(Canvas::LineCap::ROUND);
+    ctx.lineCap(LineCap::ROUND);
     ctx.miterLimit(4);
     ctx.lineWidth(1.000000);
     ctx.fillStyle(Colour::bytes(231, 0, 0));
@@ -4901,7 +4901,7 @@ namespace otto::board {
   void Emulator::handle_scroll(Point p, float offset) {
     auto enc_rect = [&] (float x, float y, float w, float h, Encoder e) {
       if (p.x > x && p.x < x + w && p.y > y && p.y < y + h) {
-        encoder({e, offset});
+        encoder({e, (int) offset});
       }
     };
 

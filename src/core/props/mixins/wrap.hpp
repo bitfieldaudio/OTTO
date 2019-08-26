@@ -6,6 +6,8 @@
 #include "has_limits.hpp"
 #include "steppable.hpp"
 
+#include "util/math.hpp"
+
 namespace otto::core::props {
 
   OTTO_PROPS_MIXIN(wrap, REQUIRES(has_limits));
@@ -16,12 +18,10 @@ namespace otto::core::props {
     void on_hook(hook<has_limits::hooks::on_exceeded> & hook)
     {
       auto& hl = this->as<has_limits>();
-      if (hook.value() < hl.min) {
-        hook.value() =
-          hl.max - ((hl.min - (is<steppable>() ? as<steppable>().step_size : 1)) - hook.value());
-      } else if (hook.value() > hl.max) {
-        hook.value() =
-          hl.min + (hook.value() - (hl.max + (is<steppable>() ? as<steppable>().step_size : 1)));
+      auto length = hl.max - hl.min + 1;
+      if (hook.value() < hl.min || hook.value() > hl.max) {
+        // hl.min + (hook.value() - (hl.max + step_size));
+        hook.value() = hl.min + util::math::modulo((hook.value() - hl.min), length);
       }
     }
   };
