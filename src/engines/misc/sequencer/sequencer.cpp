@@ -3,6 +3,8 @@
 #include "services/audio_manager.hpp"
 #include "services/clock_manager.hpp"
 
+#include "core/ui/vector_graphics.hpp"
+
 namespace otto::engines {
 
   using namespace services;
@@ -172,6 +174,8 @@ namespace otto::engines {
 
     bool keypress(Key k) override;
 
+    void encoder(EncoderEvent e) override;
+
     void input_handler(const services::Controller::Event& event);
 
   private:
@@ -323,9 +327,24 @@ namespace otto::engines {
       },
       [](auto&&) {});
   }
+
+  void SeqScreen::encoder(EncoderEvent e)
+  {
+    switch (e.encoder) {
+      case Encoder::red: ClockManager::current().set_bpm(ClockManager::current().bpm() + e.steps); break;
+      default: break;
+    }
+  }
+
   // Draw
 
 
-  void SeqScreen::draw(Canvas& ctx) {}
+  void SeqScreen::draw(Canvas& ctx)
+  {
+    ctx.font(Fonts::Bold, 40)
+      .fillStyle(Colours::Red)
+      .textAlign(HorizontalAlign::Center, VerticalAlign::Middle)
+      .fillText(fmt::format("{} bpm", ClockManager::current().bpm()), {160, 120});
+  }
 
 } // namespace otto::engines

@@ -6,6 +6,7 @@
 
 #include "core/audio/clock.hpp"
 #include "core/service.hpp"
+#include "core/props/props.hpp"
 #include "services/application.hpp"
 
 namespace otto::services {
