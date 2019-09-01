@@ -11,8 +11,8 @@ namespace otto::engines {
     using namespace core::engine;
     using namespace props;
 
-    struct ExampleSynth : SynthEngine<ExampleSynth> {
-        static constexpr util::string_ref name = "Example";
+    struct EngineClassName : SynthEngine<EngineClassName> {
+        static constexpr util::string_ref name = "EngineClassName";
         struct Props {
 
             Property<float> level = {0.8, limits(0, 1), step_size(0.01)};
@@ -20,7 +20,7 @@ namespace otto::engines {
             DECL_REFLECTION(Props, level);
         } props;
 
-        ExampleSynth();
+        EngineClassName();
 
         audio::ProcessData<1> process(audio::ProcessData<1>) override;
 
@@ -29,7 +29,7 @@ namespace otto::engines {
           return voice_mgr_;
         }
 
-        DECL_REFLECTION(ExampleSynth, props, ("voice_manager", &ExampleSynth::voice_mgr_));
+        DECL_REFLECTION(EngineClassName, props, ("voice_manager", &EngineClassName::voice_mgr_));
 
     private:
         struct Pre : voices::PreBase<Pre, Props> {

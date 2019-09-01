@@ -11,7 +11,7 @@ namespace otto::engines {
 
     //----------------------//
     // Voice implementation
-    float ExampleSynth::Voice::operator()() noexcept
+    float EngineClassName::Voice::operator()() noexcept
     {
       // Always update the frequency
       sine_osc.freq(frequency());
@@ -20,29 +20,29 @@ namespace otto::engines {
       return sine_osc();
     }
 
-    ExampleSynth::Voice::Voice(Pre& pre) noexcept : VoiceBase(pre)
+    EngineClassName::Voice::Voice(Pre& pre) noexcept : VoiceBase(pre)
     {
       // Constructor for the voices. Any on_change handlers would go in here
     }
 
-    void ExampleSynth::Voice::on_note_on(float freq_target) noexcept
+    void EngineClassName::Voice::on_note_on(float freq_target) noexcept
     {
       // What should happen on a new voice trigger?
     }
 
-    void ExampleSynth::Voice::on_note_off() noexcept
+    void EngineClassName::Voice::on_note_off() noexcept
     {
       // What should happen on a voice release?
     }
 
     //------------------------//
     // Preprocessor
-    ExampleSynth::Pre::Pre(Props& props) noexcept : PreBase(props)
+    EngineClassName::Pre::Pre(Props& props) noexcept : PreBase(props)
     {
       // Constructor for the Preprocessor
     }
 
-    void ExampleSynth::Pre::operator()() noexcept
+    void EngineClassName::Pre::operator()() noexcept
     {
       // Call operator. Note that it does not return a value.
       // No audio should be calculated here - only any variable changes that all voices depend on.
@@ -51,7 +51,7 @@ namespace otto::engines {
 
     //------------------------//
     // Postprocessor
-    ExampleSynth::Post::Post(Pre& pre) noexcept : PostBase(pre)
+    EngineClassName::Post::Post(Pre& pre) noexcept : PostBase(pre)
     {
       // Constructor. Takes care of linking appropriate variables to props
       // Here we place any on_change handlers. For this example, we want the output level to change
@@ -63,23 +63,23 @@ namespace otto::engines {
       });
     }
 
-    float ExampleSynth::Post::operator()(float in) noexcept
+    float EngineClassName::Post::operator()(float in) noexcept
     {
       // Call operator for the Postprocessor.
       // Here we perform the volume scaling in this example
       return in * output_level;
     }
 
-    // ExampleSynth ////////////////////////////////////////////////////////////////
+    // EngineClassName ////////////////////////////////////////////////////////////////
 
-    audio::ProcessData<1> ExampleSynth::process(audio::ProcessData<1> data)
+    audio::ProcessData<1> EngineClassName::process(audio::ProcessData<1> data)
     {
       return voice_mgr_.process(data);
     }
 
-    // ExampleSynthScreen /////////////////////////////////////////////////////////
+    // EngineClassNameScreen /////////////////////////////////////////////////////////
     // Here we construct what is drawn on screen. We also handle keypresses and encoder events
-    struct ExampleSynthScreen : EngineScreen<ExampleSynth> {
+    struct EngineClassNameScreen : EngineScreen<EngineClassName> {
 
         // What is drawn on screen
         void draw(Canvas& ctx) override;
@@ -88,25 +88,25 @@ namespace otto::engines {
         // How encoder turns are handled
         void encoder(EncoderEvent e) override;
 
-        using EngineScreen<ExampleSynth>::EngineScreen;
+        using EngineScreen<EngineClassName>::EngineScreen;
     };
 
-    ExampleSynth::ExampleSynth()
-            : SynthEngine<ExampleSynth>(std::make_unique<ExampleSynthScreen>(this)), voice_mgr_(props)
+    EngineClassName::EngineClassName()
+            : SynthEngine<EngineClassName>(std::make_unique<EngineClassNameScreen>(this)), voice_mgr_(props)
     {}
 
     // Implementation //
 
     // Keypresses are (for synths) usually only encoderclicks handled in a switch statement.
     // Here we have nothing to do in this example.
-    bool ExampleSynthScreen::keypress(Key key)
+    bool EngineClassNameScreen::keypress(Key key)
     {
       return true;
     }
 
     // Encoder turns usually change the properties (which then might change other parameters through
     // its on_change handler.)
-    void ExampleSynthScreen::encoder(EncoderEvent e)
+    void EngineClassNameScreen::encoder(EncoderEvent e)
     {
       auto& props = engine.props;
 
@@ -126,7 +126,7 @@ namespace otto::engines {
     }
 
     // Now for the drawing
-    void ExampleSynthScreen::draw(ui::vg::Canvas& ctx)
+    void EngineClassNameScreen::draw(ui::vg::Canvas& ctx)
     {
       using namespace ui::vg;
 

@@ -7,11 +7,12 @@ namespace otto::test {
   using util::local_vector;
 
   template<typename... Args>
-  std::vector<int> vec(Args&&... args) {
+  std::vector<int> vec(Args&&... args)
+  {
     return {FWD(args)...};
   }
 
-  TEST_CASE( "local_vector") {
+  TEST_CASE ("local_vector") {
     using LvInt = local_vector<int, 5>;
     LvInt lv;
 
@@ -21,10 +22,15 @@ namespace otto::test {
     REQUIRE(lv.size() == 1);
     REQUIRE(&lv.front() == &lv.back());
 
-    REQUIRE(lv.push_back(1).value() == &lv.back());
-    REQUIRE(lv.push_back(2).value() == &lv.back());
-    REQUIRE(lv.push_back(3).value() == &lv.back());
-    REQUIRE(lv.push_back(4).value() == &lv.back());
+    auto v = lv.push_back(1).value();
+    REQUIRE(v == &lv.back());
+    v = lv.push_back(2).value();
+    REQUIRE(v == &lv.back());
+    v = lv.push_back(3).value();
+    REQUIRE(v == &lv.back());
+    v = lv.push_back(4).value();
+    REQUIRE(v == &lv.back());
+
     REQUIRE(lv.size() == 5);
 
     REQUIRE_NOTHROW(lv.push_back(5).error() == LvInt::error::full);

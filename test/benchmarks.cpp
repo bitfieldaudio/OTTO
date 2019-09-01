@@ -10,7 +10,7 @@ namespace otto::services::test {
 
   using namespace otto::engines;
 
-  TEST_CASE ("Application benchmarks") {
+  TEST_CASE ("Application benchmarks", "[.benchmarks]") {
     auto app = make_dummy_application_default_engines();
 
     app.engine_manager->start();
@@ -81,7 +81,7 @@ namespace otto::services::test {
     }
   }
 
-  TEST_CASE ("Engine benchmarks") {
+  TEST_CASE ("Engine benchmarks", "[.benchmarks]") {
     auto app = make_dummy_application();
     app.engine_manager->start();
     app.audio_manager->start();
