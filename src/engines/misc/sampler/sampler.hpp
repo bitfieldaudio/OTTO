@@ -28,8 +28,11 @@ namespace otto::engines {
       Property<float> volume = {1, limits(0, 4), step_size(0.01)};
       Property<float> filter = {10, limits(1, 20), step_size(0.3)};
       Property<float> speed = {1, limits(-10, 10), step_size(0.01)};
-      Property<float> fadein = {0, limits(0, 1), step_size(0.01)};
-      Property<float> fadeout = {0, limits(0, 1), step_size(0.01)};
+
+      /// The following values are reset when changing sample file.
+      /// They are not saved/associated to the file in any way.
+      Property<int, exp_steppable> fadein = {0, limits(0, 1), exp_step_size(1)};
+      Property<int, exp_steppable> fadeout = {0, limits(0, 1), exp_step_size(1)};
       Property<int> startpoint = {0, limits(0,1), step_size(30)};
       Property<int> endpoint = {0, limits(-1,0), step_size(30)};
 
@@ -39,6 +42,8 @@ namespace otto::engines {
       gam::Array<float> samplecontainer;
       float samplerate;
       int num_samples = 1;
+      // This is num_samples - startpoint + endpoint
+      int length = 1;
 
       /// The error message loading the last sample
       std::string error = "Sample not loaded yet";
@@ -74,6 +79,7 @@ namespace otto::engines {
     bool note_on = false;
 
     AR<> env_;
+    int env_countdown = 0;
 
     gam::Biquad<> _lo_filter;
     gam::Biquad<> _hi_filter;

@@ -251,11 +251,13 @@ namespace otto::services {
     fx1_bus.release();
     fx2_bus.release();
 
+    /*
     auto smplr_out = sequencer.process(midi_in);
     for (auto&& [resL, resR, smplr] : util::zip(fx1_out.audio[0], fx1_out.audio[1], smplr_out.audio)) {
       resL += smplr;
       resR += smplr;
     }
+     */
 
     return master.process(std::move(fx1_out));
     /*

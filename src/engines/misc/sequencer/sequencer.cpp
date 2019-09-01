@@ -257,6 +257,7 @@ namespace otto::engines {
           cm.stop();
         else
           cm.start();
+        DLOGI("Sequencer started");
         break;
       default: break;
     }

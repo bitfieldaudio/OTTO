@@ -1,3 +1,4 @@
+#include <services/audio_manager.hpp>
 #include "sampler.hpp"
 
 #include "core/ui/vector_graphics.hpp"
@@ -77,25 +78,46 @@ namespace otto::engines {
     _hi_filter.type(gam::HIGH_PASS);
     _hi_filter.freq(20000);
 
-    constexpr float fade_amount = 5;
 
     // More on_change handlers
     props.startpoint.on_change().connect([this](int pt) {
       sample.min((double)pt);
+      props.length = props.num_samples - pt + props.endpoint;
       update_wf();
       update_scaling(sample.min(), sample.max() - 1);
+      /// Clamp fadetime. When the startpoint is changed,
+      /// it makes sense for the fadein to give way
+      if (props.fadein + props.fadeout > props.length)
+        props.fadein.set(props.length - props.fadeout - 1);
     }).call_now();
+
     props.endpoint.on_change().connect([this](int pt) {
       sample.max(sample.frames() + (double)pt);
+      props.length = props.num_samples - props.startpoint + pt;
       update_wf();
       update_scaling(sample.min(), sample.max() - 1);
+      /// Clamp fadetime. When the endpoint is changed,
+      /// it makes sense for the fadeout to give way
+      if (props.fadein + props.fadeout > props.length)
+        props.fadeout.set(props.length - props.fadein - 1);
     }).call_now();
-    props.fadeout.on_change().connect([this](float fd) {
-      env_.release( fd * fd * fade_amount);
+
+    props.fadein.on_change().connect([this](int fd) {
+        auto sr = services::AudioManager::current().samplerate();
+        env_.attack( (float)(fd * fd) / (float)sr );
+        // If sum of fadeout and and fadein is too large, make fadeout smaller
+        if (props.fadeout + fd > props.num_samples)
+          props.fadeout.set(props.num_samples - fd - 1);
     }).call_now();
-    props.fadein.on_change().connect([this](float fd) {
-      env_.attack( fd * fd * fade_amount);
+
+    props.fadeout.on_change().connect([this](int fd) {
+      auto sr = services::AudioManager::current().samplerate();
+      env_.release( (float)fd / (float)sr );
+      // If sum of fadeout and and fadein is too large, make fadein smaller
+      if (props.fadein + fd > props.num_samples)
+        props.fadein.set(props.num_samples - fd - 1);
     }).call_now();
+
     props.filter.on_change()
       .connect([this](float freq) {
         if (freq > 10) {
@@ -107,24 +129,18 @@ namespace otto::engines {
         }
       })
       .call_now();
+
     props.speed.on_change().connect([this](float spd) { sample.rate(spd); }).call_now();
 
     env_.finish();
 
-    // Load default sample
-    /*
-    samplefile.load(props.filenames[0]);
-    props.samplecontainer.source(&samplefile.samples[0][0], samplefile.getNumSamplesPerChannel(), true);
-    sample.buffer(samplecontainer, (double) samplefile.getSampleRate(),
-                  samplefile.getNumChannels());
-    finish();
-*/
   }
 
   void Sampler::restart()
   {
     sample.reset();
     env_.reset();
+    env_countdown = props.length - props.fadeout;
   }
 
   void Sampler::finish()
@@ -138,6 +154,7 @@ namespace otto::engines {
     return sample.done() ? 1.f : (sample.pos() - sample.min()) / float(sample.max() - sample.min());
   }
 
+  //This is not used currently
   float Sampler::operator()() noexcept
   {
     return sample();
@@ -188,9 +205,16 @@ namespace otto::engines {
     props.startpoint.max = num_samples - 1;
     props.endpoint.min =  -num_samples + 1;
 
+    props.fadein = 0;
+    props.fadeout = 0;
+    props.fadein.max = num_samples - 1;
+    props.fadeout.max = num_samples - 1;
+
     props.num_samples = num_samples;
+    props.length = props.num_samples;
   }
 
+  //This is used
   void Sampler::process(audio::AudioBufferHandle audio, bool triggered)
   {
     if (triggered && !note_on) {
@@ -200,6 +224,13 @@ namespace otto::engines {
       note_on = false;
     }
     for (auto&& frm : audio) {
+      if (env_countdown == 0) {
+        env_.release();
+        note_on = false;
+        env_countdown--;
+      }
+       if (note_on) env_countdown--;
+
       frm += _hi_filter(_lo_filter(sample())) * props.volume * env_();
     }
   }
@@ -214,8 +245,12 @@ namespace otto::engines {
     auto start = sample.min();
     auto end = sample.max();
 
-    props.waveform.view(wfv, std::max(0.f, float(start) - 0.2f * float(end - start)),
-                               std::min(float(start + (end - start) * 1.2f), float(sample.size() - 1)));
+    // A waveform with the skipped ends showing
+    //props.waveform.view(wfv, std::max(0.f, float(start) - 0.2f * float(end - start)),
+    //                           std::min(float(start + (end - start) * 1.2f), float(sample.size() - 1)));
+
+    // Only the playing section
+    props.waveform.view(wfv, float(start), float(end));
   }
 
   void Sampler::draw_waveform(ui::vg::Canvas &ctx, int start, int end)
@@ -509,8 +544,8 @@ namespace otto::engines {
           props.endpoint.step(ev.steps * (1 + speedup * !shift));
         break;
       }
-      case ui::Encoder::yellow: engine.props.fadein.step(ev.steps); break;
-      case ui::Encoder::red: engine.props.fadeout.step(ev.steps); break;
+      case ui::Encoder::yellow: engine.props.fadein.exp_step(ev.steps); break;
+      case ui::Encoder::red: engine.props.fadeout.exp_step(ev.steps); break;
     }
   }
 

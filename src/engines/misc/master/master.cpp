@@ -36,6 +36,21 @@ namespace otto::engines {
     for (auto&& r : data.audio[1]) {
       r = util::math::fastatan( r * volume_square );
     }
+
+    /// Only in DEBUG builds. Check and correct for NaN / Inf
+    for (int i=0; i<2; i++) {
+      for(auto&& s : data.audio[i]) {
+        if (std::isnan(s)) {
+          DLOGE("NaN found!");
+          s = 0;
+        }
+        else if(std::isinf(s)) {
+          DLOGE("Inf found!");
+          s = 0;
+        }
+      }
+    }
+
     return data;
   }
 
