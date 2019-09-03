@@ -90,7 +90,7 @@ namespace otto::engines {
     float x_scale_factor = 1;
     void update_scaling(int start, int end);
     void update_wf();
-    void draw_waveform(ui::vg::Canvas &ctx, int start, int end);
+    void draw_waveform(ui::vg::Canvas &ctx, int start, int end, float y_scale);
 
     std::unique_ptr<ui::Screen> _envelope_screen;
   };

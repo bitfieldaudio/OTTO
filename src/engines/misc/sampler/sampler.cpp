@@ -33,7 +33,8 @@ namespace otto::engines {
     void draw(Canvas& ctx) override;
     void encoder(EncoderEvent e) override;
 
-    void draw_arrowhead_down(ui::vg::Canvas& ctx, float x, float y_pos, float side_length, Colour cl);
+    void draw_arrowhead_left(ui::vg::Canvas& ctx, float x, float y_pos, float side_length, Colour cl);
+    void draw_arrowhead_right(ui::vg::Canvas& ctx, float x, float y_pos, float side_length, Colour cl);
 
     void draw_envelope(Canvas& ctx);
 
@@ -253,15 +254,14 @@ namespace otto::engines {
     props.waveform.view(wfv, float(start), float(end));
   }
 
-  void Sampler::draw_waveform(ui::vg::Canvas &ctx, int start, int end)
+  void Sampler::draw_waveform(ui::vg::Canvas &ctx, int start, int end , float y_scale)
   {
     // Waveform
     // Positions
     float x_1 = 30;
     float x_2 = width - x_1;
 
-    float y_bot = height * 0.5 - 5;
-    float y_scale = 70;
+    float y_bot = height - 70;
 
     float x_start = x_1 - wfv.point_for_time(start).first;
     float x = x_start;
@@ -380,35 +380,31 @@ namespace otto::engines {
 
   void SamplerMainScreen::draw_envelope(otto::nvg::Canvas &ctx)
   {
-    constexpr Point b = {30, height * 0.5 + 5};
-
-    const float spacing = 10.f;
-    const float max_width = (width - 2 * b.x - 3 * spacing) / 3.f;
-    const float aw = max_width * props.fadein.normalize();
-    const float rw = max_width * props.fadeout.normalize();
+    constexpr auto b = vg::Box{31.f, height - 60, 258, 50.f};
+    const float spacing = 15.f;
+    //const float max_width = (b.width - 3 * spacing) / 3.f;
+    const float aw = props.fadein.normalize();
+    const float rw = props.fadeout.normalize();
 
     ctx.lineWidth(6.f);
 
+    //Fade-in
     ctx.beginPath();
-    ctx.moveTo(b.x, b.y);
-    ctx.lineTo(b.x + aw, b.y);
-    ctx.closePath();
+    ctx.moveTo(b.x - 1, b.y);
+    ctx.lineTo(b.x + (b.width - 2 * spacing) * aw, b.y);
     ctx.stroke(Colours::Gray50);
-    ctx.fill(Colours::Gray50);
 
+    //Midpoint
     ctx.beginPath();
-    ctx.moveTo(b.x + aw + spacing, b.y);
-    ctx.lineTo(width - b.x - spacing - rw, b.y);
-    ctx.closePath();
+    ctx.moveTo(b.x + (b.width - 2 * spacing) * aw + spacing - 1, b.y);
+    ctx.lineTo(b.x + b.width - spacing - (b.width - 2 * spacing) * rw + 1.f, b.y);
     ctx.stroke(Colours::Gray70);
-    ctx.fill(Colours::Gray70);
 
+    //Fadeout
     ctx.beginPath();
-    ctx.moveTo(width - b.x - rw, b.y);
-    ctx.lineTo(width - b.x, b.y);
-    ctx.closePath();
+    ctx.moveTo(b.x + b.width - (b.width - 2 * spacing) * rw, b.y);
+    ctx.lineTo(b.x + b.width + 1, b.y);
     ctx.stroke(Colours::Gray50);
-    ctx.fill(Colours::Gray50);
   }
 
   void SamplerMainScreen::draw(ui::vg::Canvas& ctx)
@@ -469,18 +465,29 @@ namespace otto::engines {
 
     draw_filename(ctx);
 
-    engine.draw_waveform(ctx, props.startpoint, props.num_samples + props.endpoint);
+    engine.draw_waveform(ctx, props.startpoint, props.num_samples + props.endpoint, 40.f);
     draw_envelope(ctx);
 
   }
 
   // ENVELOPE SCREEN //
-  void SamplerEnvelopeScreen::draw_arrowhead_down(ui::vg::Canvas& ctx, float x, float y_pos, float side_length, Colour cl)
+  void SamplerEnvelopeScreen::draw_arrowhead_left(ui::vg::Canvas& ctx, float x, float y_pos, float side_length, Colour cl)
+  {
+    ctx.beginPath();
+    ctx.moveTo(x, y_pos);
+    ctx.lineTo(x + side_length, y_pos + side_length);
+    ctx.lineTo(x + side_length, y_pos - side_length);
+    ctx.closePath();
+    ctx.stroke(cl);
+    ctx.fill(cl);
+  }
+
+  void SamplerEnvelopeScreen::draw_arrowhead_right(ui::vg::Canvas& ctx, float x, float y_pos, float side_length, Colour cl)
   {
     ctx.beginPath();
     ctx.moveTo(x, y_pos);
     ctx.lineTo(x - side_length, y_pos - side_length);
-    ctx.lineTo(x + side_length, y_pos - side_length);
+    ctx.lineTo(x - side_length, y_pos + side_length);
     ctx.closePath();
     ctx.stroke(cl);
     ctx.fill(cl);
@@ -488,42 +495,44 @@ namespace otto::engines {
 
   void SamplerEnvelopeScreen::draw_envelope(otto::nvg::Canvas &ctx)
   {
-    constexpr auto b = vg::Box{30.f, height * 0.5 + 5, 260.f, 50.f};
-    const float spacing = 10.f;
-    const float max_width = (b.width - 3 * spacing) / 3.f;
-    const float aw = max_width * props.fadein.normalize();
-    const float rw = max_width * props.fadeout.normalize();
+    constexpr auto b = vg::Box{31.f, height - 60, 258, 50.f};
+    const float spacing = 15.f;
+    //const float max_width = (b.width - 3 * spacing) / 3.f;
+    const float aw = props.fadein.normalize();
+    const float rw = props.fadeout.normalize();
+
+    constexpr float height = 30.f;
 
     ctx.lineWidth(6.f);
 
-    const float arc_size = 0.9;
 
+    //Fade-in
     ctx.beginPath();
-    ctx.moveTo(b.x, b.y);
-    ctx.quadraticCurveTo({b.x + aw * arc_size, b.y + b.height * arc_size},
-                         {b.x + aw, b.y + b.height}); // curve
-    ctx.lineTo(b.x + aw, b.y);
+    ctx.moveTo(b.x - 2, b.y);
+    ctx.lineTo(b.x + (b.width - 2 * spacing) * aw - 1, b.y);
+    ctx.lineTo(b.x + (b.width - 2 * spacing) * aw - 1, b.y + height);
     ctx.closePath();
-    ctx.stroke(Colours::Yellow);
     ctx.fill(Colours::Yellow);
+    ctx.stroke(Colours::Yellow);
 
+    //Midpoint
     ctx.beginPath();
-    ctx.moveTo(b.x + aw + spacing, b.y);
-    ctx.lineTo(b.x + b.width - spacing - rw, b.y);
-    ctx.lineTo(b.x + b.width - spacing - rw, b.y + b.height);
-    ctx.lineTo(b.x + aw + spacing, b.y + b.height);
+    ctx.moveTo(b.x + (b.width - 2 * spacing) * aw + spacing - 1, b.y);
+    ctx.lineTo(b.x + b.width - spacing - (b.width - 2 * spacing) * rw + 1.f, b.y);
+    ctx.lineTo(b.x + b.width - spacing - (b.width - 2 * spacing) * rw + 1.f, b.y + height);
+    ctx.lineTo(b.x + (b.width - 2 * spacing) * aw + spacing - 1, b.y + height);
     ctx.closePath();
-    ctx.stroke(Colours::Gray70);
     ctx.fill(Colours::Gray70);
+    ctx.stroke(Colours::Gray70);
 
+    //Fadeout
     ctx.beginPath();
-    ctx.moveTo(b.x + b.width - rw, b.y);
-    ctx.lineTo(b.x + b.width - rw, b.y + b.height);
-    ctx.quadraticCurveTo({b.x + b.width - rw * arc_size, b.y + b.height},
-                         {b.x + b.width, b.y});
+    ctx.moveTo(b.x + b.width - (b.width - 2 * spacing) * rw, b.y);
+    ctx.lineTo(b.x + b.width - (b.width - 2 * spacing) * rw, b.y + height);
+    ctx.lineTo(b.x + b.width + 1, b.y);
     ctx.closePath();
-    ctx.stroke(Colours::Red);
     ctx.fill(Colours::Red);
+    ctx.stroke(Colours::Red);
   }
 
 
@@ -555,23 +564,22 @@ namespace otto::engines {
 
     auto& props = engine.props;
 
-    engine.draw_waveform(ctx, props.startpoint, props.num_samples + props.endpoint);
+    engine.draw_waveform(ctx, props.startpoint, props.num_samples + props.endpoint, 120.f);
 
     // Start/End markers
     constexpr float y_pos = 30;
+    constexpr float x_pos = 30;
     constexpr float arrow_size = 10;
-    constexpr float line_end = height * 0.5 - 5;
-    ctx.beginPath();
-    ctx.moveTo({30, y_pos});
-    ctx.lineTo({30, line_end});
-    ctx.stroke(Colours::Blue);
-    draw_arrowhead_down(ctx, 30, y_pos, arrow_size, Colours::Blue);
+    constexpr float spacing = 15;
 
-    ctx.beginPath();
-    ctx.moveTo({width - 30, y_pos});
-    ctx.lineTo({width - 30, line_end});
-    ctx.stroke(Colours::Green);
-    draw_arrowhead_down(ctx, width - 30, y_pos, arrow_size, Colours::Green);
+    auto clb = props.startpoint != 0 ? Colours::Blue : Colours:: Gray60;
+    draw_arrowhead_left(ctx, x_pos - spacing, y_pos, arrow_size, clb);
+    draw_arrowhead_right(ctx, x_pos + spacing, y_pos, arrow_size, Colours::Blue);
+
+
+    auto clg = props.endpoint != 0 ? Colours::Green : Colours::Gray60;
+      draw_arrowhead_right(ctx, width - x_pos + spacing, y_pos, arrow_size, clg);
+    draw_arrowhead_left(ctx, width - x_pos - spacing, y_pos, arrow_size, Colours::Green);
 
     draw_envelope(ctx);
 
