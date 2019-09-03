@@ -124,6 +124,7 @@ namespace otto::core::audio {
     std::array<float*, channels> raw_audio_buffers();
   };
 
+  void validate_audio(AudioBufferHandle& audio);
 
 } // namespace otto::core::audio
 

@@ -7,7 +7,7 @@ namespace otto::core::audio {
   {
 #ifndef NDEBUG
     for (auto& frm : audio) {
-      if (frm == NAN) {
+      if (std::isnan(frm)) {
         LOGE("ProcessData was constructed with a frame containing NAN");
       } else if (frm == INFINITY) {
         LOGE("ProcessData was constructed with a frame containing INFINITY");
