@@ -223,6 +223,10 @@ namespace otto::services {
     auto arp_out = arpeggiator->process(midi_in);
     auto synth_out = synth->process(arp_out.with(external_in.audio));
 
+    auto fx1 = effect1->process(audio::ProcessData<1>(synth_out));
+
+    return master.process(std::move(fx1));
+
     auto fx1_bus = Application::current().audio_manager->buffer_pool().allocate();
     auto fx2_bus = Application::current().audio_manager->buffer_pool().allocate();
 
@@ -246,13 +250,13 @@ namespace otto::services {
     fx1_bus.release();
     fx2_bus.release();
 
-    /*
+
     auto smplr_out = sequencer.process(midi_in);
     for (auto&& [resL, resR, smplr] : util::zip(fx1_out.audio[0], fx1_out.audio[1], smplr_out.audio)) {
       resL += smplr;
       resR += smplr;
     }
-     */
+
 
     return master.process(std::move(fx1_out));
     /*
