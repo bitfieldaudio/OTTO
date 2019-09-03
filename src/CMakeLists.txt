@@ -33,6 +33,7 @@ target_link_libraries(otto PUBLIC gamma)
 target_link_libraries(otto PUBLIC foonathan_array)
 target_link_libraries(otto PUBLIC foonathan_type_safe)
 target_link_libraries(otto PUBLIC choreograph)
+target_link_libraries(otto PUBLIC BFG::Lyra)
 
 # Enable warnings for local code
 if(MSVC)

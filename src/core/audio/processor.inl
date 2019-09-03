@@ -3,12 +3,34 @@
 
 namespace otto::core::audio {
 
+  inline void validate_audio(AudioBufferHandle& audio)
+  {
+#ifndef NDEBUG
+    for (auto& frm : audio) {
+      if (std::isnan(frm)) {
+        LOGE("ProcessData was constructed with a frame containing NAN");
+      } else if (frm == INFINITY) {
+        LOGE("ProcessData was constructed with a frame containing INFINITY");
+      } else if (frm == -INFINITY) {
+        LOGE("ProcessData was constructed with a frame containing -INFINITY");
+      } else {
+        break;
+      }
+      // Set breakpoint here to catch error where it happens
+      frm = 0;
+      LOGE("The frame was set to zero here, but will crash the audio service in release builds!");
+    }
+#endif
+  }
+
   template<int N>
   ProcessData<N>::ProcessData(std::array<AudioBufferHandle, channels> audio,
                               midi::shared_vector<midi::AnyMidiEvent> midi,
                               clock::ClockRange clock) noexcept
     : audio(audio), midi(midi), clock(clock), nframes(audio[0].size())
-  {}
+  {
+    util::for_each(audio, validate_audio);
+  }
 
   template<int N>
   ProcessData<0> ProcessData<N>::midi_only()
@@ -88,7 +110,9 @@ namespace otto::core::audio {
                                      midi::shared_vector<midi::AnyMidiEvent> midi,
                                      clock::ClockRange clock) noexcept
     : audio(audio), midi(midi), clock(clock), nframes(audio.size())
-  {}
+  {
+    validate_audio(audio);
+  }
 
   inline ProcessData<0> ProcessData<1>::midi_only()
   {

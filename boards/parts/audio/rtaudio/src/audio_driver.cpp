@@ -11,9 +11,9 @@
 #include "core/audio/processor.hpp"
 
 #include "services/audio_manager.hpp"
+#include "services/clock_manager.hpp"
 #include "services/engine_manager.hpp"
 #include "services/log_manager.hpp"
-#include "services/clock_manager.hpp"
 
 #include <Gamma/Domain.h>
 
@@ -30,6 +30,18 @@ namespace otto::services {
     }
   }
 
+  void RTAudioAudioManager::log_devices()
+  {
+    LOGI("Avaliable RtAudio devices:");
+    for (auto i = 0; i < client.getDeviceCount(); i++) {
+      auto info = client.getDeviceInfo(i);
+      LOGI("{}: '{}'. {} in channels, {} out channels, {} duplex channels", i, info.name, info.inputChannels,
+           info.outputChannels, info.duplexChannels);
+    }
+    LOGI("Currently in={} and out={} will be used, but this can be changed with --audio-in=n and --audio-out=n",
+         device_in_, device_out_);
+  }
+
   void RTAudioAudioManager::init_audio()
   {
 #ifndef NDEBUG
@@ -40,12 +52,16 @@ namespace otto::services {
       DLOGI("RtApi: {}", api);
     }
 #endif
+
+    if (device_in_ < 0 or device_in_ >= client.getDeviceCount()) device_in_ = client.getDefaultInputDevice();
+    if (device_out_ < 0 or device_out_ >= client.getDeviceCount()) device_out_ = client.getDefaultOutputDevice();
+
     RtAudio::StreamParameters outParameters;
-    outParameters.deviceId = client.getDefaultOutputDevice();
+    outParameters.deviceId = device_out_;
     outParameters.nChannels = 2;
     outParameters.firstChannel = 0;
     RtAudio::StreamParameters inParameters;
-    inParameters.deviceId = client.getDefaultInputDevice();
+    inParameters.deviceId = device_in_;
     inParameters.nChannels = 1;
     inParameters.firstChannel = 0;
 
@@ -56,14 +72,13 @@ namespace otto::services {
     unsigned buf_siz = _buffer_size;
 
     try {
-      client.openStream(&outParameters, enable_input ? &inParameters : nullptr, RTAUDIO_FLOAT32,
-                        _samplerate, &buf_siz,
-                        [](void* out, void* in, unsigned int nframes, double time,
-                           RtAudioStreamStatus status, void* _self) {
-                          auto* self = static_cast<RTAudioAudioManager*>(_self);
-                          return self->process((float*) out, (float*) in , nframes, time, status);
-                        },
-                        this, &options);
+      client.openStream(
+        &outParameters, enable_input ? &inParameters : nullptr, RTAUDIO_FLOAT32, _samplerate, &buf_siz,
+        [](void* out, void* in, unsigned int nframes, double time, RtAudioStreamStatus status, void* _self) {
+          auto* self = static_cast<RTAudioAudioManager*>(_self);
+          return self->process((float*) out, (float*) in, nframes, time, status);
+        },
+        this, &options);
       _buffer_size = buf_siz;
       buffer_pool().set_buffer_size(buf_siz);
       client.startStream();
@@ -87,8 +102,7 @@ namespace otto::services {
 
     for (unsigned i = 0; i < midi_out->getPortCount(); i++) {
       auto port = midi_out->getPortName(i);
-      if (!util::starts_with(port, "OTTO:") &&
-          !util::starts_with(port, "Midi Through:Midi Through")) {
+      if (!util::starts_with(port, "OTTO:") && !util::starts_with(port, "Midi Through:Midi Through")) {
         midi_out->openPort(i, "out");
         DLOGI("Connected OTTO:out to midi port {}", port);
       }
@@ -96,8 +110,7 @@ namespace otto::services {
 
     for (unsigned i = 0; i < midi_in->getPortCount(); i++) {
       auto port = midi_in->getPortName(i);
-      if (!util::starts_with(port, "OTTO:") &&
-          !util::starts_with(port, "Midi Through:Midi Through")) {
+      if (!util::starts_with(port, "OTTO:") && !util::starts_with(port, "Midi Through:Midi Through")) {
         midi_in->openPort(i, "in");
         DLOGI("Connected OTTO:in to midi port {}", port);
       }
@@ -129,9 +142,13 @@ namespace otto::services {
       return 0;
     }
 
-    if ((unsigned) nframes > _buffer_size) {
-      LOGE("RTAudio requested more frames than expected");
+    if ((unsigned) nframes != _buffer_size) {
+      LOGE("RTAudio requested {} frames. expected {}", nframes, _buffer_size);
       return 0;
+    }
+
+    if (stream_status != 0) {
+      LOGE("RTAudioStreamStatus == {:x}", stream_status);
     }
 
     clock::time_point t0 = clock::now();
@@ -139,14 +156,18 @@ namespace otto::services {
     midi_bufs.swap();
 
     int ref_count = 0;
-    auto in_buf = enable_input ? core::audio::AudioBufferHandle(in_data, nframes, ref_count) : Application::current().audio_manager->buffer_pool().allocate_clear();
+    auto in_buf = enable_input ? core::audio::AudioBufferHandle(in_data, nframes, ref_count)
+                               : Application::current().audio_manager->buffer_pool().allocate_clear();
     // steal the inner midi buffer
     auto out = Application::current().engine_manager->process(
       {in_buf, {std::move(midi_bufs.inner())}, core::clock::ClockRange{}});
 
+    core::audio::validate_audio(out.audio[0]);
+    core::audio::validate_audio(out.audio[1]);
+
     // process_audio_output(out);
 
-    LOGW_IF(out.nframes != nframes, "Frames went missing!");
+    LOGE_IF(out.nframes != nframes, "Frames went missing!");
 
     // Separate channels
     for (int i = 0; i < nframes; i++) {
