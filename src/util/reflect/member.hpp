@@ -27,22 +27,22 @@ namespace otto::reflect {
 
   template<typename Class, typename T, typename Data>
   struct MemberAccessor<Class, T, AccessorType::ReadOnly, Data> {
-    constexpr MemberAccessor(util::function_ptr<const T&, const Data&, const Class&> getter,
+    constexpr MemberAccessor(util::function_ptr<T, const Data&, const Class&> getter,
                              Data const& data)
       : get_const(getter), data(data)
     {}
-    util::function_ptr<const T&, const Data&, const Class&> get_const;
+    util::function_ptr<T, const Data&, const Class&> get_const;
     Data data;
   };
 
   template<typename Class, typename T, typename Data>
   struct MemberAccessor<Class, T, AccessorType::ReadWrite, Data> {
-    constexpr MemberAccessor(util::function_ptr<const T&, const Data&, const Class&> get,
+    constexpr MemberAccessor(util::function_ptr<T, const Data&, const Class&> get,
                              util::function_ptr<void, const Data&, Class&, const T&> set,
                              const Data& data)
       : get_const(get), set(set), data(data)
     {}
-    util::function_ptr<const T&, const Data&, const Class&> get_const;
+    util::function_ptr<T, const Data&, const Class&> get_const;
     util::function_ptr<void, const Data&, Class&, const T&> set;
     Data data;
   };
@@ -84,11 +84,11 @@ namespace otto::reflect {
     {
       return AT == AccessorType::MutableRef;
     }
-
+    
     // get sets methods can be used to add support
     // for getters/setters for members instead of
     // direct access to them
-    constexpr const T& get(const Class& obj) const;
+    constexpr decltype(auto) get(const Class& obj) const;
     constexpr decltype(auto) get(Class& obj) const;
     constexpr T& get_ref(Class& obj) const;
 

@@ -20,6 +20,9 @@ namespace otto::engines {
     Master();
 
     audio::ProcessData<2> process(audio::ProcessData<2>);
+
+  private:
+    float volume_square = 0;
   };
 
 } // namespace otto::engines

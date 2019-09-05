@@ -16,7 +16,7 @@ namespace otto::core::engine {
   audio::ProcessData<2> NullEngine<EngineType::effect>::process(audio::ProcessData<1> data) noexcept
   {
     auto out = Application::current().audio_manager->buffer_pool().allocate_multi_clear<2>();
-    return data.redirect(out);
+    return data.with(out);
   }
 
   NullEngine<EngineType::arpeggiator>::NullEngine()

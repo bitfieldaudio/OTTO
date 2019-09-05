@@ -148,4 +148,15 @@ namespace otto::util {
 
 } // namespace otto::util
 
+template<typename T>
+void to_json(json& j, T&& t) {
+  j = serialize(std::forward<T>(t));
+}
+
+template<typename T>
+void from_json(const json& j, T& t) {
+  deserialize(t, j);
+}
+
+
 // kak: other_file=serialize.hpp

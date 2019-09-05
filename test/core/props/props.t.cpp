@@ -11,7 +11,7 @@ namespace otto::core::props {
     SECTION ("Basic mixin tests") {
       // Test the tags of a property
 
-      Property<float, no_defaults, steppable> pf =0;
+      Property<float, no_defaults, steppable> pf = 0;
 
       OTTO_META_ASSERT_EQUAL(decltype(pf)::tag_list, meta::_t<normalize_tags<tag_list<steppable>>>);
 
@@ -36,8 +36,8 @@ namespace otto::core::props {
 
     static_assert(HookTag::is<common::hooks::on_set, typename decltype(props.pf1)::value_type>);
 
-    static_assert(MixinImpl::has_handler_v<typename decltype(props.pf1)::mixin<has_limits>,
-                                           common::hooks::on_set, HookOrder::Early>);
+    static_assert(MixinImpl::has_handler_v<typename decltype(props.pf1)::mixin<has_limits>, common::hooks::on_set,
+                                           HookOrder::Early>);
 
     // REQUIRE(props.pf1 == 0.f);
     REQUIRE(props.pf2 == 1.f);
@@ -61,6 +61,8 @@ namespace otto::core::props {
 } // namespace otto::core::props
 
 namespace otto::core::props {
+
+  BETTER_ENUM(TestEnum, std::int8_t, V0, V1, V2, V3);
 
   Property<float, steppable, has_limits> property = 0;
 
@@ -123,5 +125,20 @@ namespace otto::core::props {
     REQUIRE(prop == -2);
     prop.set(-3);
     REQUIRE(prop == 2);
+
+    prop.set(-2);
+    REQUIRE(prop == -2);
+    prop.step(-1);
+    REQUIRE(prop == 2);
+    prop.step(1);
+    REQUIRE(prop == -2);
+
+    Property<TestEnum, wrap> ep = {TestEnum::V0};
+
+    REQUIRE(ep == TestEnum::V0);
+    ep.step(-1);
+    REQUIRE(ep == TestEnum::V3);
+    ep.step(1);
+    REQUIRE(ep == TestEnum::V0);
   }
 } // namespace otto::core::props

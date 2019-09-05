@@ -11,19 +11,19 @@ namespace otto::core::ui::vg {
   constexpr float height = 240;
 
   namespace Colours {
-    const Colour Black = Colour(0x000000);
+    const Colour Black = Colour(0x000000FF);
 
-    const MainColour White = {0xFFFFFF, 0x646464};
-    const MainColour Yellow = {0xFAB700, 0x646464};
-    const MainColour Red = {0xE6332A, 0x6E0C0C};
-    const MainColour Green = {0x5ECF3E, 0x0C6E0C};
-    const MainColour Blue = {0x009EE3, 0x0C0C6E};
+    const MainColour White = {0xFFFFFFFF, 0x646464FF};
+    const MainColour Yellow = {0xFAB700FF, 0x646464FF};
+    const MainColour Red = {0xE6332AFF, 0x6E0C0CFF};
+    const MainColour Green = {0x5ECF3EFF, 0x0C6E0CFF};
+    const MainColour Blue = {0x009EE3FF, 0x0C0C6EFF};
 
-    const Colour Gray50 = 0x646464;
-    const Colour Gray60 = 0x999999;
-    const Colour Gray70 = 0xB2B2B2;
+    const Colour Gray50 = 0x646464FF;
+    const Colour Gray60 = 0x999999FF;
+    const Colour Gray70 = 0xB2B2B2FF;
 
-    const Colour Pink = 0xEE7AAA;
+    const Colour Pink = 0xEE7AAAFF;
   } // namespace Colours
 
   namespace Fonts {

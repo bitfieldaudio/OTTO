@@ -5,6 +5,8 @@
 #include "util/iterator.hpp"
 #include "util/utility.hpp"
 
+#include "util/math.hpp"
+
 namespace otto::engines {
 
   using namespace ui;
@@ -19,16 +21,20 @@ namespace otto::engines {
 
   Master::Master()
     : MiscEngine<Master>(std::make_unique<MasterScreen>(this))
-  {}
+  {
+    props.volume.on_change().connect([this](float v){
+      volume_square = v * v;
+    }).call_now();
+  }
 
 
   audio::ProcessData<2> Master::process(audio::ProcessData<2> data)
   {
     for (auto&& l : data.audio[0]) {
-      l *= props.volume * props.volume * 0.80;
+      l = util::math::fastatan( l * volume_square );
     }
     for (auto&& r : data.audio[1]) {
-      r *= props.volume * props.volume * 0.80;
+      r = util::math::fastatan( r * volume_square );
     }
     return data;
   }
@@ -58,8 +64,8 @@ namespace otto::engines {
     ctx.fill();
     ctx.lineWidth(6.0);
     ctx.strokeStyle(Colour::bytes(147, 192, 34));
-    ctx.lineCap(Canvas::LineCap::ROUND);
-    ctx.lineJoin(Canvas::LineJoin::ROUND);
+    ctx.lineCap(LineCap::ROUND);
+    ctx.lineJoin(LineJoin::ROUND);
     ctx.stroke();
 
     // Dial
@@ -83,8 +89,8 @@ namespace otto::engines {
     ctx.bezierCurveTo(221.0, 122.6, 217.6, 133.7, 211.8, 143.0);
     ctx.lineWidth(6.0);
     ctx.strokeStyle(Colour::bytes(99, 99, 99));
-    ctx.lineCap(Canvas::LineCap::ROUND);
-    ctx.lineJoin(Canvas::LineJoin::ROUND);
+    ctx.lineCap(LineCap::ROUND);
+    ctx.lineJoin(LineJoin::ROUND);
     ctx.stroke();
     ctx.restore();
 

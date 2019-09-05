@@ -7,9 +7,6 @@
 [submodule "external/fmt"]
 	path = external/fmt
 	url = https://github.com/fmtlib/fmt
-[submodule "external/NanoCanvas"]
-	path = external/NanoCanvas
-	url = https://github.com/topisani/NanoCanvas
 [submodule "external/glfw"]
 	path = external/glfw
 	url = https://github.com/glfw/glfw
@@ -25,3 +22,9 @@
 [submodule "external/foonathan_type_safe"]
 	path = external/foonathan_type_safe
 	url = https://github.com/foonathan/type_safe
+[submodule "external/choreograph"]
+	path = external/choreograph
+	url = https://github.com/topisani/Choreograph
+[submodule "external/lyra"]
+	path = external/lyra
+	url = https://github.com/bfgroup/Lyra

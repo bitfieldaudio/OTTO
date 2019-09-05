@@ -3,47 +3,58 @@
 
 namespace otto::core::audio {
 
+  inline void validate_audio(AudioBufferHandle& audio)
+  {
+#ifndef NDEBUG
+    for (auto& frm : audio) {
+      if (std::isnan(frm)) {
+        LOGE("ProcessData was constructed with a frame containing NAN");
+      } else if (frm == INFINITY) {
+        LOGE("ProcessData was constructed with a frame containing INFINITY");
+      } else if (frm == -INFINITY) {
+        LOGE("ProcessData was constructed with a frame containing -INFINITY");
+      } else {
+        break;
+      }
+      // Set breakpoint here to catch error where it happens
+      frm = 0;
+      LOGE("The frame was set to zero here, but will crash the audio service in release builds!");
+    }
+#endif
+  }
+
   template<int N>
   ProcessData<N>::ProcessData(std::array<AudioBufferHandle, channels> audio,
                               midi::shared_vector<midi::AnyMidiEvent> midi,
-                              long nframes) noexcept
-    : audio(audio), midi(midi), nframes(nframes)
-  {}
-
-  template<int N>
-  ProcessData<N>::ProcessData(std::array<AudioBufferHandle, channels> audio,
-                              midi::shared_vector<midi::AnyMidiEvent> midi) noexcept
-    : audio(audio), midi(midi), nframes(audio[0].size())
-  {}
-
-  template<int N>
-  ProcessData<N>::ProcessData(std::array<AudioBufferHandle, channels> audio) noexcept
-    : audio(audio), midi(), nframes(audio[0].size())
-  {}
+                              clock::ClockRange clock) noexcept
+    : audio(audio), midi(midi), clock(clock), nframes(audio[0].size())
+  {
+    util::for_each(audio, validate_audio);
+  }
 
   template<int N>
   ProcessData<0> ProcessData<N>::midi_only()
   {
-    return {midi, nframes};
+    return {midi, clock, nframes};
   }
 
   template<int N>
   ProcessData<N> ProcessData<N>::audio_only()
   {
-    return {audio, {}, nframes};
+    return {audio, {}, clock, nframes};
   }
 
   template<int N>
   template<std::size_t NN>
-  ProcessData<NN> ProcessData<N>::redirect(const std::array<AudioBufferHandle, NN>& buf)
+  ProcessData<NN> ProcessData<N>::with(const std::array<AudioBufferHandle, NN>& buf)
   {
-    return ProcessData<NN>{buf, midi, nframes};
+    return ProcessData<NN>{buf, midi, clock};
   }
 
   template<int N>
-  ProcessData<1> ProcessData<N>::redirect(const AudioBufferHandle& buf)
+  ProcessData<1> ProcessData<N>::with(const AudioBufferHandle& buf)
   {
-    return ProcessData<1>{buf, midi, nframes};
+    return ProcessData<1>{buf, midi, clock};
   }
 
   /// Get only a slice of the audio.
@@ -72,19 +83,20 @@ namespace otto::core::audio {
   // ProcessData<0> //
 
   inline ProcessData<0>::ProcessData(midi::shared_vector<midi::AnyMidiEvent> midi,
+                                     clock::ClockRange clock,
                                      long nframes) noexcept
-    : midi(midi), nframes(nframes)
+    : midi(midi), clock(clock), nframes(nframes)
   {}
 
   template<std::size_t NN>
-  ProcessData<NN> ProcessData<0>::redirect(const std::array<AudioBufferHandle, NN>& buf)
+  ProcessData<NN> ProcessData<0>::with(const std::array<AudioBufferHandle, NN>& buf)
   {
-    return ProcessData<NN>{buf, midi, nframes};
+    return ProcessData<NN>{buf, midi, clock, nframes};
   }
 
-  inline ProcessData<1> ProcessData<0>::redirect(const AudioBufferHandle& buf)
+  inline ProcessData<1> ProcessData<0>::with(const AudioBufferHandle& buf)
   {
-    return ProcessData<1>{buf, midi, nframes};
+    return ProcessData<1>{buf, midi, clock};
   }
 
   inline std::array<float*, 0> ProcessData<0>::raw_audio_buffers()
@@ -96,54 +108,31 @@ namespace otto::core::audio {
 
   inline ProcessData<1>::ProcessData(AudioBufferHandle audio,
                                      midi::shared_vector<midi::AnyMidiEvent> midi,
-                                     long nframes) noexcept
-    : audio(audio), midi(midi), nframes(nframes)
-  {}
-
-  inline ProcessData<1>::ProcessData(AudioBufferHandle audio,
-                                     midi::shared_vector<midi::AnyMidiEvent> midi) noexcept
-    : audio(audio), midi(midi), nframes(audio.size())
-  {}
-
-  inline ProcessData<1>::ProcessData(AudioBufferHandle audio) noexcept
-    : audio(audio), midi(), nframes(audio.size())
-  {}
-
-  inline ProcessData<1>::ProcessData(std::array<AudioBufferHandle, channels> audio,
-                                     midi::shared_vector<midi::AnyMidiEvent> midi,
-                                     long nframes) noexcept
-    : audio(audio[0]), midi(midi), nframes(nframes)
-  {}
-
-  inline ProcessData<1>::ProcessData(std::array<AudioBufferHandle, channels> audio,
-                                     midi::shared_vector<midi::AnyMidiEvent> midi) noexcept
-    : audio(audio[0]), midi(midi), nframes(audio[0].size())
-  {}
-
-  inline ProcessData<1>::ProcessData(std::array<AudioBufferHandle, channels> audio) noexcept
-    : audio(audio[0]), midi(), nframes(audio[0].size())
-  {}
-
+                                     clock::ClockRange clock) noexcept
+    : audio(audio), midi(midi), clock(clock), nframes(audio.size())
+  {
+    validate_audio(audio);
+  }
 
   inline ProcessData<0> ProcessData<1>::midi_only()
   {
-    return {midi, nframes};
+    return {midi, clock, nframes};
   }
 
   inline ProcessData<1> ProcessData<1>::audio_only()
   {
-    return {audio, {}, nframes};
+    return {audio, {}, clock};
   }
 
   template<std::size_t NN>
-  inline ProcessData<NN> ProcessData<1>::redirect(const std::array<AudioBufferHandle, NN>& buf)
+  inline ProcessData<NN> ProcessData<1>::with(const std::array<AudioBufferHandle, NN>& buf)
   {
-    return ProcessData<NN>{buf, midi, nframes};
+    return ProcessData<NN>{buf, midi, clock};
   }
 
-  inline ProcessData<1> ProcessData<1>::redirect(const AudioBufferHandle& buf)
+  inline ProcessData<1> ProcessData<1>::with(const AudioBufferHandle& buf)
   {
-    return ProcessData<1>{buf, midi, nframes};
+    return ProcessData<1>{buf, midi, clock};
   }
 
   /// Get only a slice of the audio.
@@ -168,5 +157,3 @@ namespace otto::core::audio {
   }
 
 } // namespace otto::core::audio
-
-// kak: other_file=processor.hpp

@@ -38,12 +38,7 @@ namespace otto::core::engine {
     using DataMap = foonathan::array::flat_map<util::string_ref, nlohmann::json>;
 
     // Initialization
-    EngineDispatcher(bool allow_off) : IEngineDispatcher(allow_off) {}
-
-    /// Construct all registered engines
-    ///
-    /// Only call this after all engines are registered
-    void init();
+    EngineDispatcher(bool allow_off);
 
     /// Access the currently selected engine
     ITypedEngine& current() noexcept override;

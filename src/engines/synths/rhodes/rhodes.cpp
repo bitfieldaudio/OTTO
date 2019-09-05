@@ -32,15 +32,15 @@ namespace otto::engines {
     overtones.freq(frequency());
     float excitation = lpf(exciter() * (1 + noise()));
     float harmonics = env() * overtones();
-    float orig_note = reson(excitation*hammer_strength);
+    float orig_note = reson.nextBP(excitation*hammer_strength);
     float aux = util::math::fasttanh3(0.3f*orig_note + props.asymmetry);
-    return amp * pickup_hpf(powf(2, 10*aux)) + harmonics;
+    return amp * pickup_hpf(powf(2, 10*aux)) + 400 * orig_note + harmonics;
   }
 
   RhodesSynth::Voice::Voice(Pre& pre) noexcept : VoiceBase(pre) {
     reson.type(gam::RESONANT);
     reson.res(1500);
-    reson.zero();
+    reson.smoothTime(0.004);
 
     exciter.attack(0.001);
     exciter.decay(1.f/frequency());
@@ -51,36 +51,40 @@ namespace otto::engines {
 
     lpf.type(gam::LOW_PASS);
     lpf.freq(powf(20,2));
-    lpf.zero();
 
     pickup_hpf.type(gam::HIGH_PASS);
     pickup_hpf.freq(440.f);
-    pickup_hpf.zero();
+    pickup_hpf.smoothTime(0.004);
 
     overtones.resize(1024);
-    overtones.addSine(7, 1, 0);
-    overtones.addSine(20, 0.5, 0);
+    overtones.addSine(7, 15, 0);
+    overtones.addSine(20, 0.8, 0);
 
-    env.decay(3);
+    // Parameters for the tine harmonics
+    env.decay(2.2);
+    env.amp(1.6);
+
+
   }
 
-  void RhodesSynth::Voice::on_note_on() noexcept {
+  void RhodesSynth::Voice::on_note_on(float freq_target) noexcept {
+
     reson.zero();
 
-    exciter.decay(1.f/frequency());
-    exciter.reset();
+    exciter.decay(1.f/freq_target);
+    exciter.resetSoft();
 
     hammer_strength = powf(2.f, (1.f + 3.0f * props.aggro * velocity()));
 
     noise.seed(123);
 
     lpf.freq(powf(velocity()*90*props.aggro + 20,2));
-    lpf.zero();
 
-    pickup_hpf.freq(frequency());
-    pickup_hpf.zero();
+    pickup_hpf.smoothOutput();
+    pickup_hpf.freq(freq_target);
 
-    env.reset(1.7);
+    env.resetSoft();
+
   }
 
   //Preprocessor
@@ -106,7 +110,7 @@ namespace otto::engines {
 
   float RhodesSynth::Post::operator()(float in) noexcept
   {
-    return 0.01f*in*(1 + lfo_amount*lfo.tri());
+    return 0.003f*in*(1 + lfo_amount*lfo.tri());
   }
 
   audio::ProcessData<1> RhodesSynth::process(audio::ProcessData<1> data)

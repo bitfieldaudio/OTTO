@@ -6,6 +6,9 @@
 
 #include "services/log_manager.hpp"
 #include "services/ui_manager.hpp"
+#include "services/audio_manager.hpp"
+
+#include "board/emulator.hpp"
 
 namespace otto::services {
   using P1SC = PrOTTO1SerialController;
@@ -40,8 +43,10 @@ namespace otto::services {
     return led.key;
   }
 
-  void P1SC::insert_key_event(Command cmd, Key key)
+  void P1SC::handle_keyevent(Command cmd, BytesView args, bool do_send_midi)
   {
+    OTTO_ASSERT(args.size() > 0, "Requires > 0 args");
+    auto key = Key::_from_integral_unchecked(args.at(0));
     switch (cmd) {
       case Command::key_down: {
         keypress(key);
@@ -49,58 +54,7 @@ namespace otto::services {
       case Command::key_up: {
         keyrelease(key);
       } break;
-      default: OTTO_UNREACHABLE("");
-    }
-  }
-
-  void P1SC::insert_key_or_midi(Command cmd, BytesView args, bool do_send_midi)
-  {
-    OTTO_ASSERT(args.size() > 0, "Requires > 0 args");
-    auto key = Key::_from_integral_unchecked(args.at(0));
-    if (!do_send_midi) {
-      insert_key_event(cmd, key);
-      return;
-    }
-
-    auto send_midi = [cmd](int note) {
-      if (cmd == +Command::key_down) {
-        auto evt = core::midi::NoteOnEvent{note};
-        AudioManager::current().send_midi_event(evt);
-        LOGI("Press key {}", evt.key);
-      } else if (cmd == +Command::key_up) {
-        AudioManager::current().send_midi_event(core::midi::NoteOffEvent{note});
-        LOGI("Release key {}", note);
-      }
-    };
-
-    switch (key) {
-      case Key::S0: send_midi(47); break;
-      case Key::S1: send_midi(48); break;
-      case Key::C0: send_midi(49); break;
-      case Key::S2: send_midi(50); break;
-      case Key::C1: send_midi(51); break;
-      case Key::S3: send_midi(52); break;
-      case Key::S4: send_midi(53); break;
-      case Key::C2: send_midi(54); break;
-      case Key::S5: send_midi(55); break;
-      case Key::C3: send_midi(56); break;
-      case Key::S6: send_midi(57); break;
-      case Key::C4: send_midi(58); break;
-      case Key::S7: send_midi(59); break;
-      case Key::S8: send_midi(60); break;
-      case Key::C5: send_midi(61); break;
-      case Key::S9: send_midi(62); break;
-      case Key::C6: send_midi(63); break;
-      case Key::S10: send_midi(64); break;
-      case Key::S11: send_midi(65); break;
-      case Key::C7: send_midi(66); break;
-      case Key::S12: send_midi(67); break;
-      case Key::C8: send_midi(68); break;
-      case Key::S13: send_midi(69); break;
-      case Key::C9: send_midi(70); break;
-      case Key::S14: send_midi(71); break;
-      case Key::S15: send_midi(72); break;
-      default: insert_key_event(cmd, key); break;
+      default: OTTO_UNREACHABLE;
     }
   }
 
@@ -136,7 +90,7 @@ namespace otto::services {
       } break;
       case Command::key_up: [[fallthrough]];
       case Command::key_down: {
-        insert_key_or_midi(command, bytes, send_midi_);
+        handle_keyevent(command, bytes, send_midi_);
       } break;
       case Command::blue_enc_step: encoder({Encoder::blue, to_int8(bytes.at(0))}); break;
       case Command::green_enc_step: encoder({Encoder::green, to_int8(bytes.at(0))}); break;
@@ -174,6 +128,15 @@ namespace otto::services {
     } catch (std::exception& e) {
       LOGE("Couldn't set up serial controller. Continuing with dummy. ERR: {}", e.what());
       return Controller::make_dummy();
+    }
+  }
+
+  std::unique_ptr<Controller> P1SC::make_or_emulator() {
+    try {
+      return std::make_unique<P1SC>();
+    } catch (std::exception& e) {
+      LOGE("Couldn't set up serial controller. Continuing with dummy. ERR: {}", e.what());
+      return std::make_unique<board::Emulator>();
     }
   }
 
