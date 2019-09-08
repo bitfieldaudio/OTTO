@@ -420,6 +420,7 @@ namespace otto::engines {
     constexpr float y_pad = 50;
     constexpr float space = (height - 2.f * y_pad) / 3.f;
 
+    /*
 
     if (props.error.empty()) {
       ctx.beginPath();
@@ -462,6 +463,7 @@ namespace otto::engines {
       ctx.rect(box).stroke(Colours::Red);
     }
 
+     */
 
     draw_filename(ctx);
 
@@ -475,8 +477,8 @@ namespace otto::engines {
   {
     ctx.beginPath();
     ctx.moveTo(x, y_pos);
-    ctx.lineTo(x + side_length, y_pos + side_length);
-    ctx.lineTo(x + side_length, y_pos - side_length);
+    ctx.lineTo(x + side_length, y_pos + side_length* 0.5);
+    ctx.lineTo(x + side_length, y_pos - side_length* 0.5);
     ctx.closePath();
     ctx.stroke(cl);
     ctx.fill(cl);
@@ -486,8 +488,8 @@ namespace otto::engines {
   {
     ctx.beginPath();
     ctx.moveTo(x, y_pos);
-    ctx.lineTo(x - side_length, y_pos - side_length);
-    ctx.lineTo(x - side_length, y_pos + side_length);
+    ctx.lineTo(x - side_length, y_pos - side_length * 0.5);
+    ctx.lineTo(x - side_length, y_pos + side_length * 0.5);
     ctx.closePath();
     ctx.stroke(cl);
     ctx.fill(cl);
@@ -508,9 +510,9 @@ namespace otto::engines {
 
     //Fade-in
     ctx.beginPath();
-    ctx.moveTo(b.x - 2, b.y);
-    ctx.lineTo(b.x + (b.width - 2 * spacing) * aw - 1, b.y);
-    ctx.lineTo(b.x + (b.width - 2 * spacing) * aw - 1, b.y + height);
+    ctx.moveTo(b.x - 1, b.y);
+    ctx.lineTo(b.x + (b.width - 2 * spacing) * aw, b.y);
+    ctx.lineTo(b.x + (b.width - 2 * spacing) * aw, b.y + height);
     ctx.closePath();
     ctx.fill(Colours::Yellow);
     ctx.stroke(Colours::Yellow);
@@ -568,16 +570,16 @@ namespace otto::engines {
 
     // Start/End markers
     constexpr float y_pos = 30;
-    constexpr float x_pos = 30;
+    constexpr float x_pos = 40;
     constexpr float arrow_size = 10;
     constexpr float spacing = 15;
 
-    auto clb = props.startpoint != 0 ? Colours::Blue : Colours:: Gray60;
+    auto clb = props.startpoint != 0 ? Colours::Blue : Colours:: Gray50;
     draw_arrowhead_left(ctx, x_pos - spacing, y_pos, arrow_size, clb);
     draw_arrowhead_right(ctx, x_pos + spacing, y_pos, arrow_size, Colours::Blue);
 
 
-    auto clg = props.endpoint != 0 ? Colours::Green : Colours::Gray60;
+    auto clg = props.endpoint != 0 ? Colours::Green : Colours::Gray50;
       draw_arrowhead_right(ctx, width - x_pos + spacing, y_pos, arrow_size, clg);
     draw_arrowhead_left(ctx, width - x_pos - spacing, y_pos, arrow_size, Colours::Green);
 
