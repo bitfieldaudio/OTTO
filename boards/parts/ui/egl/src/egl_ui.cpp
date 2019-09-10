@@ -78,7 +78,7 @@ namespace otto::services {
     while (Application::current().running()) {
       t0 = clock::now();
 
-      Controller::current().flush_events();
+      Controller::current().flush_leds();
 
       // Update and render
       egl.beginFrame();
