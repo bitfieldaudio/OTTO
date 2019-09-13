@@ -34,9 +34,14 @@ namespace otto::core::audio {
     gsl::span<float> input_data_;
     /// res 0 is original resolution, 1 is 1/2, 2 is 1/4 etc.
     int max_res_;
+
+    // The structure of this becomes
+    // [ - - res=0 - - | - res=1 - | res=2 |.... ]
+    // Each new sector is half the size of the previous
     util::dyn_array<float> points_ = {0};
+
     /// Frequency controls grainyness of waveform.
-    gam::OnePole<> lpf{150};
+    gam::OnePole<> lpf{8000};
   };
 
   struct WaveformView {
