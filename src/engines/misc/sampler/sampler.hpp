@@ -33,8 +33,8 @@ namespace otto::engines {
       /// They are not saved/associated to the file in any way.
       Property<int, exp_steppable> fadein = {0, limits(0, 1), exp_step_size(1)};
       Property<int, exp_steppable> fadeout = {0, limits(0, 1), exp_step_size(1)};
-      Property<int> startpoint = {0, limits(0,1), step_size(30)};
-      Property<int> endpoint = {0, limits(-1,0), step_size(30)};
+      Property<int> startpoint = {0, limits(0,1), step_size(15)};
+      Property<int> endpoint = {0, limits(-1,0), step_size(15)};
 
       audio::Waveform waveform;
       std::vector<std::string> filenames;
@@ -74,7 +74,7 @@ namespace otto::engines {
     friend struct SamplerEnvelopeScreen;
 
     void load_file(std::string);
-    gam::SamplePlayer<> sample;
+    gam::SamplePlayer<float, gam::ipl::Linear, gam::phsInc::OneShot> sample;
     AudioFile<float> samplefile;
     bool note_on = false;
 
@@ -85,7 +85,7 @@ namespace otto::engines {
     gam::Biquad<> _hi_filter;
 
     // WaveformView stuff (for drawing)
-    int wfv_num_of_points = 300;
+    int wfv_num_of_points = 320 - 2 * 30;
     audio::WaveformView wfv = props.waveform.view(wfv_num_of_points, sample.min(), sample.max() - 1);
     float x_scale_factor = 1;
     void update_scaling(int start, int end);

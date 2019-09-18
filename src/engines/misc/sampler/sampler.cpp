@@ -79,11 +79,13 @@ namespace otto::engines {
     _hi_filter.type(gam::HIGH_PASS);
     _hi_filter.freq(20000);
 
-
+    //Sets (half) the minimum length of a sample through the property limits.
+    constexpr int minimum_length = 20;
     // More on_change handlers
     props.startpoint.on_change().connect([this](int pt) {
       sample.min((double)pt);
       props.length = props.num_samples - pt + props.endpoint;
+      props.endpoint.min = -props.num_samples + pt + minimum_length;
       update_wf();
       update_scaling(sample.min(), sample.max() - 1);
       /// Clamp fadetime. When the startpoint is changed,
@@ -93,8 +95,10 @@ namespace otto::engines {
     }).call_now();
 
     props.endpoint.on_change().connect([this](int pt) {
-      sample.max(sample.frames() + (double)pt);
+      //Remember pt is a negative integer
+      sample.max(props.num_samples + (double)pt);
       props.length = props.num_samples - props.startpoint + pt;
+      props.startpoint.max = props.num_samples + pt - minimum_length;
       update_wf();
       update_scaling(sample.min(), sample.max() - 1);
       /// Clamp fadetime. When the endpoint is changed,
@@ -102,6 +106,9 @@ namespace otto::engines {
       if (props.fadein + props.fadeout > props.length)
         props.fadeout.set(props.length - props.fadein - 1);
     }).call_now();
+
+    //To make sure props.endpoint.min is correct
+    props.startpoint.set(0);
 
     props.fadein.on_change().connect([this](int fd) {
         auto sr = services::AudioManager::current().samplerate();
@@ -226,6 +233,7 @@ namespace otto::engines {
     }
     for (auto&& frm : audio) {
       if (env_countdown == 0) {
+        DLOGI("Envelope released");
         env_.release();
         note_on = false;
         env_countdown--;
@@ -244,6 +252,7 @@ namespace otto::engines {
   void Sampler::update_wf()
   {
     auto start = sample.min();
+    
     auto end = sample.max();
 
     // A waveform with the skipped ends showing
@@ -251,15 +260,17 @@ namespace otto::engines {
     //                           std::min(float(start + (end - start) * 1.2f), float(sample.size() - 1)));
 
     // Only the playing section
-    props.waveform.view(wfv, float(start), float(end));
+    props.waveform.view(wfv, int(start), int(end));
   }
 
   void Sampler::draw_waveform(ui::vg::Canvas &ctx, int start, int end , float y_scale)
   {
+    /*
+    // OLD code from when the ends were visible
     // Waveform
     // Positions
     float x_1 = 30;
-    float x_2 = width - x_1;
+    //float x_2 = width - x_1;
 
     float y_bot = height - 70;
 
@@ -267,6 +278,13 @@ namespace otto::engines {
     float x = x_start;
     auto iter = wfv.begin();
     ctx.group([&] {
+      auto b = wfv.iter_for_time(start);
+      ctx.beginPath();
+      ctx.moveTo(x, y_bot - *iter * y_scale);
+      for (; iter < b; iter++) {
+          ctx.lineTo(x, y_bot - *iter * y_scale);
+          x += 1;
+        }
 
         ctx.scaleTowards({x_scale_factor, 1}, {x_1, y_bot});
 
@@ -308,6 +326,25 @@ namespace otto::engines {
         ctx.lineTo(sample_end, y_bot);
         ctx.fill(Colors::Gray);
     });
+    */
+   // Waveform
+  // Positions
+  float y_bot = height - 70;
+  float x_start = 30;
+  float x = x_start;
+  auto iter = wfv.begin();
+  ctx.group([&] {
+    ctx.beginPath();
+    ctx.moveTo(x, y_bot - *iter * y_scale);
+    for (; iter < wfv.end(); iter++) {
+      ctx.lineTo(x, y_bot - *iter * y_scale);
+      x += 1;
+    }
+    ctx.lineTo(x, y_bot);
+    ctx.lineTo(x_start, y_bot);
+    ctx.fill(Colors::White);
+  });
+
   }
 
   // MAIN SCREEN //
@@ -416,9 +453,9 @@ namespace otto::engines {
 
     ctx.font(Fonts::Norm, 35);
 
-    constexpr float x_pad = 30;
-    constexpr float y_pad = 50;
-    constexpr float space = (height - 2.f * y_pad) / 3.f;
+    //constexpr float x_pad = 30;
+    //constexpr float y_pad = 50;
+    //constexpr float space = (height - 2.f * y_pad) / 3.f;
 
     /*
 
@@ -542,8 +579,9 @@ namespace otto::engines {
   {
     auto& props = engine.props;
     shift = services::Controller::current().is_pressed(ui::Key::shift);
-    constexpr int speedup = 10;
+    constexpr int speedup = 5;
     switch (ev.encoder) {
+      /*
       case ui::Encoder::blue: {
         if(props.startpoint < props.num_samples + props.endpoint - props.startpoint.step_size * (speedup + 1) - 1 || util::math::sgn(ev.steps) < 0)
           props.startpoint.step(ev.steps * (1 + speedup * !shift));
@@ -553,6 +591,16 @@ namespace otto::engines {
       case ui::Encoder::green: {
         if(props.endpoint > -props.num_samples + props.startpoint + props.endpoint.step_size * (speedup + 1) + 1 || util::math::sgn(ev.steps) > 0)
           props.endpoint.step(ev.steps * (1 + speedup * !shift));
+        break;
+      }
+      */
+      //Non-checking encoder turns
+      case ui::Encoder::blue: {
+        props.startpoint.step(ev.steps * (1 + speedup * !shift));
+        break;
+      }
+      case ui::Encoder::green: {
+        props.endpoint.step(ev.steps * (1 + speedup * !shift));
         break;
       }
       case ui::Encoder::yellow: engine.props.fadein.exp_step(ev.steps); break;

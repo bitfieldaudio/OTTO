@@ -7,7 +7,7 @@
 
 namespace otto::core::audio {
 
-  constexpr int bin_size = 10;
+  constexpr int bin_size = 5;
 
   Waveform::Waveform(gsl::span<float> data, int min_points)
     : input_data_(data),
@@ -15,6 +15,7 @@ namespace otto::core::audio {
       points_(data.size() * (2 - std::pow(2, -max_res_)))
   {
     DLOGI("Maximum resolution is = {}", max_res_);
+    DLOGI("File size: {}", input_data_.size());
     for (int i = 0; i <= max_res_; i++) {
       DLOGI("Generating res = {}", i);
       generate_res(i);
@@ -34,7 +35,7 @@ namespace otto::core::audio {
     //NOTE: I have changed ceil to floor, to 
     // Calculate start-point in points_.
     // The result of the sum over: input_data_.size()*2^(-n), for n=0 to n=res
-    int start = std::ceil(input_data_.size() * (2 - std::pow(2, 1-float(res))));
+    int start = std::ceil(input_data_.size() * (2 - std::pow(2.f, 1-float(res))));
     // Calculate number of points at a certain resolution
     int length = std::ceil(input_data_.size() * std::pow(2.f, -float(res)));
     DLOGI("start: {}, length: {}", start, length);
@@ -48,21 +49,7 @@ namespace otto::core::audio {
 
     if (res == 0) {
       // Res=0 is special.
-      auto src = input_data_.cbegin();
-      // We take abs of the binned values
-      int rem = input_data_.size();
-      while (rem > 0) {
-        auto len = std::min(bin_size, rem);
-        float max = 0.f;
-        for (int i = 0; i < len; i++) {
-          auto f = std::abs(src[i]);
-          max = std::max(f, max);
-        }
-        *dst = max;
-        rem -= len;
-        src += len;
-        dst++;
-      }
+      util::transform(input_data_, dst, [](float f){return std::abs(f);} );
 
     } else {
       // For all other resolutions, the source of data is the previous resolution
@@ -78,6 +65,7 @@ namespace otto::core::audio {
       DLOGI("Done.");
       // Low-pass filter the result.
       // Do it forwards and backwards to get zero phase twists.
+      
       for (auto &f : data) {
         f = lpf(f);
       }
@@ -85,6 +73,7 @@ namespace otto::core::audio {
       for (auto f = data.rbegin(); f != data.rend(); ++f) {
         *f = lpf(*f);
       }
+      
 
     }
     
@@ -93,7 +82,8 @@ namespace otto::core::audio {
   int Waveform::res_for_duration(int dur, int nPoints) const
   {
     if (dur == 0) return 0;
-    return std::floor(std::log(dur / float(nPoints)));
+    // The max is to be safe against when dur < nPoints
+    return std::max(std::floor(std::log(dur / float(nPoints))),0.f);
 
     // Highest integer n such that
     //dur > nPoints * n
@@ -117,14 +107,22 @@ namespace otto::core::audio {
       return v;
     }
     DLOGI("Calculating view");
+    // nPoints is the number of points we want, e.g. 260 or 300
     auto nPoints = v.size();
     v.points_.clear();
+
     OTTO_ASSERT(last >= first);
+
     int res = res_for_duration(last - first, nPoints);
     auto data = at_resolution(res);
-    v.start_ = first;
-    v.step_ = (last - first) / float(nPoints);
-    float idx = 0;
+
+    // nDataPoints is how many samples there are in the resolution
+    // we have been given. This might be every fourth sample in the original audiofile
+    auto nDataPoints = data.size();
+
+    v.start_ = float(first) / float(input_data_.size()) * nDataPoints;
+    v.step_ = (last - first) / float(input_data_.size()) * nDataPoints / float(nPoints);
+
     DLOGI("Calculating view now: {}", res);
     for (int i = 0; i < nPoints; i++) {
       // float max = data[std::min(int(first + idx), last) / bin_size];
@@ -142,7 +140,7 @@ namespace otto::core::audio {
       //idx += v.step_;
 
       //For now, just take the first valid point in the resolution
-      int pos = std::floor(i * v.step_ / std::pow(2, res));
+      int pos = std::floor(v.start_ + i * v.step_);
       v.points_.push_back( data[pos] );
 
     }
