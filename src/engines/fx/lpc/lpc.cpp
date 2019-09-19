@@ -24,15 +24,18 @@ namespace otto::engines {
     using EngineScreen<LPC>::EngineScreen;
   };
 
-  LPC::LPC() : EffectEngine<LPC>(std::make_unique<LPCScreen>(this)) {}
+  LPC::LPC() : EffectEngine<LPC>(std::make_unique<LPCScreen>(this)) 
+  {
+    util::fill(this->prev_exciter_data, 0.f);
+  }
 
   void LPC::make_sha(span<float> buffer, int sha_period)
   {
     util::fill(buffer, 0.f);
-    for (int i = this->lag; i < buffer.size(); i += sha_period) {
+    for (int i = this->lag_; i < buffer.size(); i += sha_period) {
       buffer[i] = 1;
     }
-    this->lag = sha_period - (int)(buffer.size()%sha_period);
+    this->lag_ = sha_period - (int)(buffer.size()%sha_period);
   }
 
   ProcessData<2> LPC::process(ProcessData<1> data)
@@ -44,10 +47,11 @@ namespace otto::engines {
     acovb(span(gamma.begin(), gamma.end()));
 
     // Estimate coefficients
-    //const int order = 25; // TODO: use parameter instead
     auto order = props.order;
 
     solve_yule_walker(span(gamma.begin(), order), this->sigmaAndCoeffs, this->scratchBuffer);
+
+    
 
     // Vocal signals usually have fundamentals in the [20Hz; 600Hz] band
     const float f_min = 20;
@@ -57,6 +61,9 @@ namespace otto::engines {
     const int minT = (int) floor(sampling_freq/f_max);
 
     auto pitch = detect_pitch(span(gamma.begin(), gamma.end()), minT, maxT) + props.detune;
+
+    DLOGI("pitch: {}", pitch);
+    //return ProcessData<2>({gamma, gamma});
 
     gamma.release();
 
@@ -74,11 +81,17 @@ namespace otto::engines {
       for(auto&& s : exciter) s = white()*0.5f;
     }
 
+    DLOGI("saC: {}", sigmaAndCoeffs[1]);
+
+    DLOGI("saC: {}", sigmaAndCoeffs[order]);
+
+    //return ProcessData<2>({exciter, exciter});
+
     // Filtering
 
-    int N = (int) in.size();
+    int N = (int) exciter.size();
 
-    for(int i=0; i < N; ++i){
+    for(int i=0; i < N; i++){
       for(int j=0; j < order-i; j++){
         exciter[i] += prev_exciter_data[i+j] * this->sigmaAndCoeffs[1+j];
       }
@@ -89,8 +102,7 @@ namespace otto::engines {
 
     util::copy(span(exciter.end()-max_order, exciter.end()), prev_exciter_data.begin());
 
-    auto r_out = Application::current().audio_manager->buffer_pool().allocate();
-    //util::copy(exciter.begin(), r_out.begin());
+
     return ProcessData<2>({exciter, exciter});
   }
 

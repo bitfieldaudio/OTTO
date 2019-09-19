@@ -34,7 +34,7 @@ namespace otto::engines {
     float harmonics = env() * overtones();
     float orig_note = reson.nextBP(excitation*hammer_strength);
     float aux = util::math::fasttanh3(0.3f*orig_note + props.asymmetry);
-    return amp * pickup_hpf(powf(2, 10*aux)) + 400 * orig_note + harmonics;
+    return amp * pickup_hpf(powf(2, 10*aux)) + harmonics;
   }
 
   RhodesSynth::Voice::Voice(Pre& pre) noexcept : VoiceBase(pre) {

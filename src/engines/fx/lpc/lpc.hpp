@@ -44,7 +44,7 @@ namespace otto::engines {
     std::array<float, max_order> prev_exciter_data;
 
     gam::NoiseWhite<> white;
-    int lag = 0;
+    int lag_ = 0;
   };
 
 } // namespace otto::engines

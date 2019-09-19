@@ -5,7 +5,7 @@
 
 namespace otto::dsp {
 
-    constexpr float pitch_threshold = 0.5;
+    constexpr float pitch_threshold = 0.2;
 
     ///
     ///	\brief This is a simple pitch-detection algorithm using an autocovariance estimator.
@@ -20,7 +20,16 @@ namespace otto::dsp {
     ///
     int detect_pitch(gsl::span<float> gamma, int minT, int maxT){
       int N = (int) gamma.size();
-      for (auto&& c : gamma) c /= gamma[0];
+
+      // Check for gamma[0]==0
+      constexpr float eps_threshold = 0.000000001;
+      float scale;
+      if (std::abs(gamma[0]) <= eps_threshold)
+        scale = 1;
+      else
+        scale = gamma[0];
+
+      for (auto&& c : gamma) c /= scale;
       long int T = std::max_element(gamma.begin()+minT, gamma.end()) - gamma.begin();
       if (gamma[T]*N/(N-T) < pitch_threshold || T > maxT){
         T = 0;

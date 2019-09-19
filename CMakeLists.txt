@@ -25,8 +25,8 @@ if (OTTO_ENABLE_ASAN)
 endif()
 
 if (OTTO_ENABLE_UBSAN) 
-  set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=undefined")
-  set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fsanitize=undefined")
+  set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=undefined -fsanitize=float-divide-by-zero")
+  set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fsanitize=undefined -fsanitize=float-divide-by-zero")
 endif()
 
 if (OTTO_ENABLE_LTO) 

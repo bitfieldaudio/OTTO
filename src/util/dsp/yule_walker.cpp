@@ -33,7 +33,14 @@ namespace otto::dsp {
     gsl::span<float> backward = scratch_buffer.subspan(acov.size(), 2*acov.size());
 
     // Initialize our first induction variables
-    float inv = 1. / acov[0];
+    // If the input signal is 0, the FFT will be zero, so acov[0] is zero.
+    constexpr float eps_threshold = 0.000000001;
+    float inv;
+    if (std::abs(acov[0]) <= eps_threshold)
+      inv = 1;
+    else
+      inv = 1. / acov[0];
+
     sigma_and_coeffs[0] = backward_prev[acov.size() - 1] = inv;
 
     int lastB = acov.size() - 1;
