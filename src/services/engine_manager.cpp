@@ -16,9 +16,6 @@
 #include "engines/synths/potion/potion.hpp"
 #include "engines/synths/rhodes/rhodes.hpp"
 
-//#include "engines/synths/example/synth_example.hpp"
-//#include "engines/fx/example/fx_example.hpp"
-
 #include "services/application.hpp"
 #include "services/clock_manager.hpp"
 

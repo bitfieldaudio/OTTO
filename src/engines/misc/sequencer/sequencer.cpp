@@ -3,38 +3,38 @@
 #include "services/audio_manager.hpp"
 #include "services/clock_manager.hpp"
 
+#include "core/ui/vector_graphics.hpp"
+
 namespace otto::engines {
 
   using namespace services;
+
+  using SamplerSequence = Sequencer::SamplerSequence;
 
   static std::unique_ptr<ui::Screen> make_screen(Sequencer* seq);
 
   Sequencer::Sequencer() : MiscEngine<Sequencer>(make_screen(this)) {}
 
-  template<std::size_t N>
-  void Sequencer::SamplerGroup<N>::process(audio::AudioBufferHandle audio, int step_n) noexcept
+  void Sequencer::SamplerSequence::process(audio::AudioBufferHandle audio, int step_n) noexcept
   {
-    auto& step = seq.steps[step_n];
-    bool trig = step.triggered() and !mutes[step.note];
+    if (step_n >= 0) {
+      auto& step = steps[step_n];
+      bool trig = step.triggered() and !muted;
 
-    if (trig and &samplers.current() != &samplers[step.note]) {
-      samplers.current().finish();
-      samplers.select(step.note);
+      sampler.process(audio, trig);
+    } else {
+      sampler.process(audio, false);
     }
-
-    samplers.current().process(audio, trig);
   }
 
   audio::ProcessData<1> Sequencer::process(audio::ProcessData<0> data) noexcept
   {
     auto buf = AudioManager::current().buffer_pool().allocate_clear();
 
-    props.group0.process(buf, props.cur_step);
-    props.group1.process(buf, props.cur_step);
-    props.group2.process(buf, props.cur_step);
-    props.group3.process(buf, props.cur_step);
+    for (auto& s : props.sampler_seqs) s.process(buf, props.cur_step);
 
-    props.cur_step = data.clock.position_of_multiple(clock::notes::eighth / substeps) % (16 * substeps);
+    if (ClockManager::current().running())
+      props.cur_step = data.clock.position_of_multiple(clock::notes::eighth / substeps) % (16 * substeps);
 
     return data.with(buf);
   }
@@ -49,17 +49,17 @@ namespace otto::engines {
   auto Sequencer::for_chan(ChannelEnum chan, F&& f)
   {
     switch (chan) {
-      case ChannelEnum::sampler0: return f(props.group0, 0);
-      case ChannelEnum::sampler1: return f(props.group0, 1);
-      case ChannelEnum::sampler2: return f(props.group1, 0);
-      case ChannelEnum::sampler3: return f(props.group1, 1);
-      case ChannelEnum::sampler4: return f(props.group1, 2);
-      case ChannelEnum::sampler5: return f(props.group2, 0);
-      case ChannelEnum::sampler6: return f(props.group2, 1);
-      case ChannelEnum::sampler7: return f(props.group3, 0);
-      case ChannelEnum::sampler8: return f(props.group3, 1);
-      case ChannelEnum::sampler9: return f(props.group3, 2);
-      default: return f(props.group0, 0);
+      case ChannelEnum::sampler0: return f(props.sampler_seqs[0]);
+      case ChannelEnum::sampler1: return f(props.sampler_seqs[1]);
+      case ChannelEnum::sampler2: return f(props.sampler_seqs[2]);
+      case ChannelEnum::sampler3: return f(props.sampler_seqs[3]);
+      case ChannelEnum::sampler4: return f(props.sampler_seqs[4]);
+      case ChannelEnum::sampler5: return f(props.sampler_seqs[5]);
+      case ChannelEnum::sampler6: return f(props.sampler_seqs[6]);
+      case ChannelEnum::sampler7: return f(props.sampler_seqs[7]);
+      case ChannelEnum::sampler8: return f(props.sampler_seqs[8]);
+      case ChannelEnum::sampler9: return f(props.sampler_seqs[9]);
+      default: return f(props.sampler_seqs[0]);
     }
     OTTO_UNREACHABLE;
   }
@@ -67,31 +67,31 @@ namespace otto::engines {
   template<typename F>
   void Sequencer::for_all_chans(F&& f)
   {
-    f(ChannelEnum::sampler0, props.group0, 0);
-    f(ChannelEnum::sampler1, props.group0, 1);
-    f(ChannelEnum::sampler2, props.group1, 0);
-    f(ChannelEnum::sampler3, props.group1, 1);
-    f(ChannelEnum::sampler4, props.group1, 2);
-    f(ChannelEnum::sampler5, props.group2, 0);
-    f(ChannelEnum::sampler6, props.group2, 1);
-    f(ChannelEnum::sampler7, props.group3, 0);
-    f(ChannelEnum::sampler8, props.group3, 1);
-    f(ChannelEnum::sampler9, props.group3, 2);
+    f(ChannelEnum::sampler0, props.sampler_seqs[0]);
+    f(ChannelEnum::sampler1, props.sampler_seqs[1]);
+    f(ChannelEnum::sampler2, props.sampler_seqs[2]);
+    f(ChannelEnum::sampler3, props.sampler_seqs[3]);
+    f(ChannelEnum::sampler4, props.sampler_seqs[4]);
+    f(ChannelEnum::sampler5, props.sampler_seqs[5]);
+    f(ChannelEnum::sampler6, props.sampler_seqs[6]);
+    f(ChannelEnum::sampler7, props.sampler_seqs[7]);
+    f(ChannelEnum::sampler8, props.sampler_seqs[8]);
+    f(ChannelEnum::sampler9, props.sampler_seqs[9]);
   }
 
   ui::Screen& Sequencer::sampler_screen() noexcept
   {
     switch (UIManager::current().state.active_channel.get()) {
-      case ChannelEnum::sampler0: return props.group0.samplers[0].screen();
-      case ChannelEnum::sampler1: return props.group0.samplers[1].screen();
-      case ChannelEnum::sampler2: return props.group1.samplers[0].screen();
-      case ChannelEnum::sampler3: return props.group1.samplers[1].screen();
-      case ChannelEnum::sampler4: return props.group1.samplers[2].screen();
-      case ChannelEnum::sampler5: return props.group2.samplers[0].screen();
-      case ChannelEnum::sampler6: return props.group2.samplers[1].screen();
-      case ChannelEnum::sampler7: return props.group3.samplers[0].screen();
-      case ChannelEnum::sampler8: return props.group3.samplers[1].screen();
-      case ChannelEnum::sampler9: return props.group3.samplers[2].screen();
+      case ChannelEnum::sampler0: return props.sampler_seqs[0].sampler.screen();
+      case ChannelEnum::sampler1: return props.sampler_seqs[1].sampler.screen();
+      case ChannelEnum::sampler2: return props.sampler_seqs[2].sampler.screen();
+      case ChannelEnum::sampler3: return props.sampler_seqs[3].sampler.screen();
+      case ChannelEnum::sampler4: return props.sampler_seqs[4].sampler.screen();
+      case ChannelEnum::sampler5: return props.sampler_seqs[5].sampler.screen();
+      case ChannelEnum::sampler6: return props.sampler_seqs[6].sampler.screen();
+      case ChannelEnum::sampler7: return props.sampler_seqs[7].sampler.screen();
+      case ChannelEnum::sampler8: return props.sampler_seqs[8].sampler.screen();
+      case ChannelEnum::sampler9: return props.sampler_seqs[9].sampler.screen();
       case ChannelEnum::internal: return screen();
       case ChannelEnum::external: return screen();
     }
@@ -101,16 +101,16 @@ namespace otto::engines {
   ui::Screen& Sequencer::envelope_screen() noexcept
   {
     switch (UIManager::current().state.active_channel.get()) {
-      case ChannelEnum::sampler0: return props.group0.samplers[0].envelope_screen();
-      case ChannelEnum::sampler1: return props.group0.samplers[1].envelope_screen();
-      case ChannelEnum::sampler2: return props.group1.samplers[0].envelope_screen();
-      case ChannelEnum::sampler3: return props.group1.samplers[1].envelope_screen();
-      case ChannelEnum::sampler4: return props.group1.samplers[2].envelope_screen();
-      case ChannelEnum::sampler5: return props.group2.samplers[0].envelope_screen();
-      case ChannelEnum::sampler6: return props.group2.samplers[1].envelope_screen();
-      case ChannelEnum::sampler7: return props.group3.samplers[0].envelope_screen();
-      case ChannelEnum::sampler8: return props.group3.samplers[1].envelope_screen();
-      case ChannelEnum::sampler9: return props.group3.samplers[2].envelope_screen();
+      case ChannelEnum::sampler0: return props.sampler_seqs[0].sampler.envelope_screen();
+      case ChannelEnum::sampler1: return props.sampler_seqs[1].sampler.envelope_screen();
+      case ChannelEnum::sampler2: return props.sampler_seqs[2].sampler.envelope_screen();
+      case ChannelEnum::sampler3: return props.sampler_seqs[3].sampler.envelope_screen();
+      case ChannelEnum::sampler4: return props.sampler_seqs[4].sampler.envelope_screen();
+      case ChannelEnum::sampler5: return props.sampler_seqs[5].sampler.envelope_screen();
+      case ChannelEnum::sampler6: return props.sampler_seqs[6].sampler.envelope_screen();
+      case ChannelEnum::sampler7: return props.sampler_seqs[7].sampler.envelope_screen();
+      case ChannelEnum::sampler8: return props.sampler_seqs[8].sampler.envelope_screen();
+      case ChannelEnum::sampler9: return props.sampler_seqs[9].sampler.envelope_screen();
       case ChannelEnum::internal: return screen();
       case ChannelEnum::external: return screen();
     }
@@ -174,6 +174,8 @@ namespace otto::engines {
 
     bool keypress(Key k) override;
 
+    void encoder(EncoderEvent e) override;
+
     void input_handler(const services::Controller::Event& event);
 
   private:
@@ -201,7 +203,7 @@ namespace otto::engines {
           on_input.disconnect();
           // Clear LEDs
           engine.for_all_chans(
-            [](ChannelEnum i, auto&&, auto&&) { Controller::current().set_color(chan_led(i), LEDColor::Black); });
+            [](ChannelEnum i, auto& seq) { Controller::current().set_color(chan_led(i), LEDColor::Black); });
           for (int i : {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}) {
             Controller::current().set_color(seq_led(i), LEDColor::Black);
           }
@@ -212,25 +214,25 @@ namespace otto::engines {
   {
     constexpr auto substeps = Sequencer::substeps;
 
-    engine.for_all_chans([](auto chan, auto& group, auto idx) {
+    engine.for_all_chans([](ChannelEnum chan, SamplerSequence& seq) {
       bool is_current = chan == UIManager::current().state.active_channel;
-      bool is_muted = group.mutes[idx];
+      bool is_muted = seq.muted;
       LEDColor color = is_current ? LEDColor::White : is_muted ? LEDColor::Red : LEDColor::Blue;
-      Sampler& sampler = group.samplers[idx];
+      Sampler& sampler = seq.sampler;
       float progress = sampler.progress();
       if (is_current || is_muted) progress *= 0.5;
       color = color.mix(is_muted ? LEDColor::Red : LEDColor::Black, progress);
       Controller::current().set_color(chan_led(chan), color);
     });
 
-    engine.for_cur_chan([&](auto& group, auto idx) {
+    engine.for_cur_chan([&](SamplerSequence& seq) {
       auto& c = Controller::current();
       for (int i = 0; i < 16; i++) {
         // 0: no trig, 1: trig; 2: trig on substep
-        int trig = group.seq.steps[i * substeps].note == idx ? 1 : 0;
+        int trig = seq.steps[i * substeps].trig ? 1 : 0;
         if (trig == 0)
           for (int j = 1; j < substeps; j++) {
-            if (group.seq.steps[i * substeps + j].note == idx) {
+            if (seq.steps[i * substeps + j].trig) {
               trig = 2;
             }
           }
@@ -270,23 +272,21 @@ namespace otto::engines {
       [this](const services::KeyPressEvent& evt) {
         auto k = evt.key;
         auto toggle_step = [&](int i) {
-          engine.for_cur_chan([&](auto& group, auto note) {
+          engine.for_cur_chan([&](SamplerSequence& seq) {
             DLOGI("Toggle step");
-            if constexpr (std::is_same_v<std::decay_t<decltype(group.seq)>, Sequencer::MonoSequence>) {
-              auto& step = group.seq.steps[i * Sequencer::substeps];
-              if (step.triggered() && step.note == note) {
-                step.clear();
-              } else {
-                step = {note};
-              }
+            auto& step = seq.steps[i * Sequencer::substeps];
+            if (step.triggered()) {
+              step.clear();
+            } else {
+              step.trig = true;
             }
           });
         };
 
         auto channel_action = [&](ChannelEnum ch) {
-          engine.for_chan(ch, [&](auto& group, auto idx) {
+          engine.for_chan(ch, [&](SamplerSequence& seq) {
             if (Controller::current().is_pressed(Key::shift)) {
-              group.mutes[idx] = !group.mutes[idx];
+              seq.muted = !seq.muted;
             } else {
               UIManager::current().state.active_channel = ch;
             }
@@ -327,9 +327,24 @@ namespace otto::engines {
       },
       [](auto&&) {});
   }
+
+  void SeqScreen::encoder(EncoderEvent e)
+  {
+    switch (e.encoder) {
+      case Encoder::red: ClockManager::current().set_bpm(ClockManager::current().bpm() + e.steps); break;
+      default: break;
+    }
+  }
+
   // Draw
 
 
-  void SeqScreen::draw(Canvas& ctx) {}
+  void SeqScreen::draw(Canvas& ctx)
+  {
+    ctx.font(Fonts::Bold, 40)
+      .fillStyle(Colours::Red)
+      .textAlign(HorizontalAlign::Center, VerticalAlign::Middle)
+      .fillText(fmt::format("{} bpm", ClockManager::current().bpm()), {160, 120});
+  }
 
 } // namespace otto::engines

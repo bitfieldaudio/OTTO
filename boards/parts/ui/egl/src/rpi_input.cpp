@@ -104,91 +104,11 @@ namespace otto::services {
 
   void EGLUIManager::read_encoders()
   {
-    auto file = fopen("/dev/ttyACM0", "r");
-    if (file == nullptr) {
-      LOGW("Encoder device not found (expected /dev/ttyACM0). Continuing without it");
-      return;
-    }
 
-    char* line = nullptr;
-    std::size_t len;
-    std::size_t read;
-
-    while (Application::current().running()) {
-      read = getline(&line, &len, file);
-      if (len >= 2) {
-        if (line[1] == 'P') {
-          switch (line[0]) {
-          case 'B': keypress(core::ui::Key::blue_click); break;
-          case 'G': keypress(core::ui::Key::green_click); break;
-          case 'Y': keypress(core::ui::Key::yellow_click); break;
-          case 'R': keypress(core::ui::Key::red_click); break;
-          default: break;
-          }
-          continue;
-        }
-        RotaryEvent rot;
-        switch (line[0]) {
-        case 'B': rot.rotary = Rotary::blue; break;
-        case 'G': rot.rotary = Rotary::green; break;
-        case 'Y': rot.rotary = Rotary::yellow; break;
-        case 'R': rot.rotary = Rotary::red; break;
-        default: rot.rotary = Rotary{-1};
-        }
-        if (rot.rotary == Rotary{-1}) continue;
-        char* end = line + len;
-        rot.clicks = std::strtol(line + 1, &end, 10);
-        rotary(rot);
-      }
-    }
   }
 
   void EGLUIManager::read_keyboard()
   {
-    Modifiers left;
-    Modifiers right;
-    int keyboard = [] {
-      int dev = open_device("0-event-kbd", true);
-      if (dev < 0) dev = open_device("event-kbd", true);
-      return dev;
-    }();
-    std::thread encoder_thread = std::thread{[this] { read_encoders(); }};
 
-    if (keyboard == -1) {
-      throw Application::exception(Application::ErrorCode::input_error, "Could not find a keyboard!");
-    }
-
-    while (Application::current().running()) {
-      auto events = read_events(keyboard);
-      for (const auto& event : events) {
-       if (!Application::current().running()) break;
-        if (event.type == EV_KEY) {
-          auto pressed = event.value != 0;
-
-          switch (event.code) {
-          case KEY_LEFTCTRL: left.set(Modifier::ctrl, pressed); break;
-          case KEY_RIGHTCTRL: right.set(Modifier::ctrl, pressed); break;
-          case KEY_LEFTALT: left.set(Modifier::alt, pressed); break;
-          case KEY_RIGHTALT: right.set(Modifier::alt, pressed); break;
-          case KEY_LEFTSHIFT: left.set(Modifier::shift, pressed); break;
-          case KEY_RIGHTSHIFT: right.set(Modifier::shift, pressed); break;
-          case KEY_LEFTMETA: left.set(Modifier::super, pressed); break;
-          case KEY_RIGHTMETA: right.set(Modifier::super, pressed); break;
-          }
-
-          Action action = [event] {
-            switch (event.value) {
-            case key_release: return Action::release;
-            case key_press: return Action::press;
-            case key_repeat: return Action::repeat;
-            default: return Action{-1};
-            }
-          }();
-
-          board::ui::handle_keyevent(action, left | right, board::ui::Key(event.code));
-        }
-      }
-    }
-    encoder_thread.join();
   }
 } // namespace otto::board::ui

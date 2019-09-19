@@ -4,10 +4,12 @@
 
 #include "services/audio_manager.hpp"
 #include "services/ui_manager.hpp"
-
+#include "services/controller.hpp"
 #include "services/log_manager.hpp"
 
 namespace otto::board::ui {
+
+  using services::Controller;
 
   void handle_keyevent(Action action, Modifiers mods, Key key)
   {
@@ -23,18 +25,18 @@ namespace otto::board::ui {
       }
     };
 
-    using OKey = core::ui::Key;
+    using OKey = services::Key;
 
     auto send_key = [action](OKey k, bool repeat = false) {
       if (action == Action::press || (action == Action::repeat && repeat))
-        Application::current().ui_manager->keypress(k);
+        Controller::current().keypress(k);
       else if (action == Action::release)
-        Application::current().ui_manager->keyrelease(k);
+        Controller::current().keyrelease(k);
     };
 
-    auto send_rotary = [action](core::ui::Rotary rot, int n) {
+    auto send_encoder = [action](core::ui::Encoder rot, int n) {
       if (action == Action::press || (action == Action::repeat))
-        Application::current().ui_manager->rotary({rot, n});
+        Controller::current().encoder({rot, n});
     };
 
     auto shutdown = [action] {
@@ -68,8 +70,8 @@ namespace otto::board::ui {
     case Key::w: send_midi(39); break;
     case Key::x: send_midi(40); break;
 
-    case Key::period: send_key(OKey::oct_up); break;
-    case Key::comma: send_key(OKey::oct_down); break;
+    case Key::period: send_key(OKey::plus); break;
+    case Key::comma: send_key(OKey::minus); break;
 
     case Key::f1: break; // Used for sound slots
     case Key::f2: break; // Used for sound slots
@@ -80,25 +82,18 @@ namespace otto::board::ui {
     case Key::f7: break; // Used for sound slots
     case Key::f8: break; // Used for sound slots
 
-    case Key::space: send_key(OKey::none); break; // master
     case Key::left_control: send_key(OKey::play); break;
     case Key::left_shift: send_key(OKey::shift); break;
 
-    case Key::enter:
-      if (Application::current().ui_manager->is_pressed(OKey::shift))
-        shutdown();
-      else
-        send_key(OKey::master);
-      break;
-    case Key::y: send_key(OKey::send);
+    case Key::enter: send_key(OKey::master); break;
+    case Key::y: send_key(OKey::sends);
     case Key::z: break;
 
-    case Key::n1: send_key(OKey::arpeggiator); break;
+    case Key::n1: send_key(OKey::arp); break;
     case Key::n2: send_key(OKey::synth); break;
     case Key::n3: send_key(OKey::fx1); break;
     case Key::n4: send_key(OKey::fx2); break;
 
-    case Key::n5: send_key(OKey::voices); break;
     case Key::n6: send_key(OKey::envelope); break;
     case Key::n7: break; // TWIST 1
     case Key::n8: break; // TWIST 2

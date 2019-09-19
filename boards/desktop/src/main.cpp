@@ -1,5 +1,7 @@
 #include <csignal>
 
+#include <lyra/lyra.hpp>
+
 #include "core/audio/midi.hpp"
 
 #include "services/audio_manager.hpp"
@@ -15,6 +17,7 @@
 #include "board/audio_driver.hpp"
 #include "board/controller.hpp"
 #include "board/ui/glfw_ui_manager.hpp"
+
 
 using namespace otto;
 using namespace otto::services;
@@ -36,6 +39,13 @@ int main(int argc, char* argv[])
       PrOTTO1SerialController::make_or_emulator,
       EngineManager::create_default
     };
+
+    auto cli = lyra::cli_parser();
+    RTAudioAudioManager::current().add_args(cli);
+
+    cli.parse({argc, argv});
+
+    RTAudioAudioManager::current().log_devices();
 
     Settings settings;
 
