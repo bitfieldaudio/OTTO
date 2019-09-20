@@ -33,9 +33,9 @@ namespace otto::engines {
   {
     util::fill(buffer, 0.f);
     for (int i = this->lag_; i < buffer.size(); i += sha_period) {
-      buffer[i] = 1;
+      buffer.at(i) = 1;
     }
-    this->lag_ = sha_period - (int)(buffer.size()%sha_period);
+    this->lag_ = sha_period - buffer.size()%sha_period;
   }
 
   ProcessData<2> LPC::process(ProcessData<1> data)
@@ -74,6 +74,7 @@ namespace otto::engines {
 
     auto exciter = Application::current().audio_manager->buffer_pool().allocate();
 
+
     if (pitch != 0){
       make_sha(span(exciter.begin(), exciter.end()), pitch);
       for(auto&& s : exciter) s = s*0.8f + white()*0.2f;
@@ -84,23 +85,47 @@ namespace otto::engines {
     DLOGI("saC: {}", sigmaAndCoeffs[1]);
 
     DLOGI("saC: {}", sigmaAndCoeffs[order]);
-
-    //return ProcessData<2>({exciter, exciter});
+    
+    //Saving exciter samples for next buffer
+    util::copy(span(exciter.end()-max_order, exciter.end()), prev_exciter_data.begin());
 
     // Filtering
-
+    // This is essentially a convolution of 'order' exciter samples
+    // and the estimated filter coefficients
     int N = (int) exciter.size();
-
-    for(int i=0; i < N; i++){
+    //Loop is done in reverse to preserve unaltered samples
+    for(int i=N-1; i >= 0; i--){
+      float sample = 0;
+      //For the first iterations (in the end of the buffer)
+      //Only this loop runs
+      //Start loop from max of i-order and 0
+      auto start = (i>order)*(i-order);
+      for(int j=start; j<i; j++){
+        sample += exciter[i-1-j+start] * this->sigmaAndCoeffs.at(1+j-start);
+      }
+      //Takes care of the memory from last buffer. Only runs the first order samples
       for(int j=0; j < order-i; j++){
-        exciter[i] += prev_exciter_data[i+j] * this->sigmaAndCoeffs[1+j];
+        sample += prev_exciter_data.at(max_order-1-j) * this->sigmaAndCoeffs.at(1+j);
       }
-      for(int j=0; j<i; j++){
-        exciter[i] += exciter[j] * this->sigmaAndCoeffs[1+j+order-i];
-      }
+      exciter[i] = sample;
     }
 
-    util::copy(span(exciter.end()-max_order, exciter.end()), prev_exciter_data.begin());
+    for (auto& frm : exciter) {
+      if (std::isnan(frm)) {
+        LOGE("ProcessData was constructed with a frame containing NAN");
+      } else if (frm == INFINITY) {
+        LOGE("ProcessData was constructed with a frame containing INFINITY");
+      } else if (frm == -INFINITY) {
+        LOGE("ProcessData was constructed with a frame containing -INFINITY");
+      } else {
+        break;
+      }
+      // Set breakpoint here to catch error where it happens
+      frm = 0;
+      LOGE("The frame was set to zero here, but will crash the audio service in release builds!");
+    }
+
+    
 
 
     return ProcessData<2>({exciter, exciter});
