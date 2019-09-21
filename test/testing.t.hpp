@@ -42,4 +42,10 @@ namespace otto::test {
       return std::chrono::duration_cast<TimeT>(std::chrono::steady_clock::now() - start);
     }
   };
+
+  inline auto float_cmp(float epsilon) {
+    return [epsilon] (float a, float b) {
+      return std::abs(a - b) < epsilon;
+    };
+  }
 }

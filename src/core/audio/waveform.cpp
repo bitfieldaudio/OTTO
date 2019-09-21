@@ -7,8 +7,6 @@
 
 namespace otto::core::audio {
 
-  constexpr int bin_size = 5;
-
   Waveform::Waveform(gsl::span<float> data, int min_points)
     : input_data_(data),
       max_res_(std::floor(std::log(data.size() / min_points))),

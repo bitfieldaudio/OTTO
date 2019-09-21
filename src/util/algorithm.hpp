@@ -80,6 +80,9 @@ namespace otto::util {
       return detail::generate_array_impl(std::move(intseq), std::forward<Func>(gen));
     }
 
+    /// Identity function
+    constexpr auto identity = [] (auto&& x) -> decltype(auto) { return FWD(x); };
+
     /// Erase elements from container
     ///
     /// @param cont Must be a container with a `erase(Iter, Iter)` member function, erasing the
@@ -877,6 +880,14 @@ namespace otto::util {
       using std::begin;
       using std::end;
       return std::equal(begin(cont), end(cont), begin(cont2), end(cont2));
+    }
+
+    template<typename Cont, typename Cont2, typename BinaryPredicate>
+    decltype(auto) equal(Cont&& cont, Cont2&& cont2, BinaryPredicate&& bp)
+    {
+      using std::begin;
+      using std::end;
+      return std::equal(begin(cont), end(cont), begin(cont2), end(cont2), std::forward<BinaryPredicate>(bp));
     }
 
     /// \}
