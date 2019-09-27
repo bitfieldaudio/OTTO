@@ -43,9 +43,43 @@ namespace otto::test {
     }
   };
 
-  inline auto float_cmp(float epsilon) {
-    return [epsilon] (float a, float b) {
-      return std::abs(a - b) < epsilon;
-    };
+  inline auto float_cmp(float margin)
+  {
+    return [margin](float a, float b) { return std::abs(a - b) < margin; };
   }
-}
+
+  struct approx {
+    approx(float v) noexcept : value_(v) {}
+
+    approx& margin(float m) noexcept
+    {
+      margin_ = m;
+      return *this;
+    };
+
+    bool operator==(float rhs) const noexcept
+    {
+      return std::abs(value_ - rhs) < margin_;
+    }
+
+    friend bool operator==(float lhs, const approx& rhs)
+    {
+      return (rhs == lhs);
+    }
+
+    bool operator!=(float rhs) const noexcept
+    {
+      return !(*this == rhs);
+    }
+
+    friend bool operator!=(float lhs, const approx& rhs)
+    {
+      return rhs != lhs;
+    }
+
+  private:
+    float value_;
+    float margin_ = 0.0001;
+  };
+
+} // namespace otto::test

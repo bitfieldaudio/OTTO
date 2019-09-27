@@ -144,6 +144,9 @@ namespace otto::dsp {
       if (signed_index() == loop_end() && do_loop) {
         _index = std::abs(loop_start());
       }
+      // if (signed_index() == loop_end() && do_loop) {
+      // _index = std::abs(loop_start());
+      // }
     }
   }
 
@@ -216,4 +219,4 @@ namespace otto::dsp {
   }
 
 
-}
+} // namespace otto::dsp

@@ -21,8 +21,10 @@ namespace otto::reflect {
   template<typename Class, typename T, AccessorType AT, typename AD>
   constexpr decltype(auto) Member<Class, T, AT, AD>::get(Class& obj) const
   {
-    if constexpr (can_get_ref())  return _accessor.get(_accessor.data, obj);
-    else return _accessor.get_const(_accessor.data, obj);
+    if constexpr (can_get_ref())
+      return _accessor.get(_accessor.data, obj);
+    else
+      return _accessor.get_const(_accessor.data, obj);
   }
 
 
@@ -53,17 +55,14 @@ namespace otto::reflect {
     using Val = std::decay_t<Res>;
     if constexpr (std::is_lvalue_reference_v<Res> && !std::is_const_v<Res>) {
       using MemberT = Member<Class, Val, AccessorType::MutableRef, Callable>;
-      return MemberT(name,
-                     typename MemberT::Accessor(
-                       [](const Callable& d, Class& obj) -> Val& { return std::invoke(d, obj); },
-                       [](const Callable& d, const Class& obj) -> const Val& { return std::invoke(d, obj); },
-                       std::forward<Callable>(ref_getter)));
+      return MemberT(name, typename MemberT::Accessor(
+                             [](const Callable& d, Class& obj) -> Val& { return std::invoke(d, obj); },
+                             [](const Callable& d, const Class& obj) -> const Val& { return std::invoke(d, obj); },
+                             std::forward<Callable>(ref_getter)));
     } else {
       using MemberT = Member<Class, Val, AccessorType::ReadOnly, Callable>;
       return MemberT(name, typename MemberT::Accessor(
-                             [](const Callable& d, const Class& obj) -> const Val& {
-                               return std::invoke(d, obj);
-                             },
+                             [](const Callable& d, const Class& obj) -> const Val& { return std::invoke(d, obj); },
                              std::forward<Callable>(ref_getter)));
     }
   }
@@ -80,10 +79,28 @@ namespace otto::reflect {
     using MemberT = Member<Class, std::decay_t<Res>, AccessorType::ReadWrite, Data>;
     return MemberT(name, typename MemberT::Accessor{
                            [](const Data& d, const Class& obj) { return std::invoke(d.first, obj); },
-                           [](const Data& d, Class& obj, const Val& val) {
-                             return std::invoke(d.second, obj, val);
-                           },
+                           [](const Data& d, Class& obj, const Val& val) -> void { std::invoke(d.second, obj, val); },
                            std::make_pair(std::forward<Getter>(getter), std::forward<Setter>(setter))});
+  }
+
+  template<typename Class,
+           typename ValueType,
+           typename SetterReturnType>
+  constexpr auto member(util::string_ref name, ValueType (Class::*getter)() const, SetterReturnType (Class::*setter)(const ValueType&))
+  {
+    return member<Class>(
+      name, [getter](const Class& obj) { return std::invoke(getter, obj); },
+      [setter](Class& obj, const auto& val) { return std::invoke(setter, obj, val); });
+  }
+
+  template<typename Class,
+           typename ValueType,
+           typename SetterReturnType>
+  constexpr auto member(util::string_ref name, ValueType (Class::*getter)() const, SetterReturnType (Class::*setter)(ValueType))
+  {
+    return member<Class>(
+      name, [getter](const Class& obj) { return std::invoke(getter, obj); },
+      [setter](Class& obj, const auto& val) { return std::invoke(setter, obj, val); });
   }
 
 } // namespace otto::reflect

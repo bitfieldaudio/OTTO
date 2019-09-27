@@ -115,6 +115,15 @@ namespace otto::reflect {
            typename = std::enable_if_t<mpark::lib::is_invocable<Getter, const Class&>::value>>
   constexpr auto member(util::string_ref, Getter&& getter, Setter&& setter);
 
+  template<typename Class,
+           typename ValueType,
+           typename SetterReturnType>
+  constexpr auto member(util::string_ref, ValueType (Class::*getter)() const, SetterReturnType (Class::*setter)(const ValueType&));
+
+  template<typename Class,
+           typename ValueType,
+           typename SetterReturnType>
+  constexpr auto member(util::string_ref, ValueType (Class::*getter)() const, SetterReturnType (Class::*setter)(ValueType));
   /// \}
 
 } // namespace otto::reflect

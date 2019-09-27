@@ -3,9 +3,11 @@
 #include "util/algorithm.hpp"
 
 #include "util/dsp/sample.hpp"
+#include "util/serialize.hpp"
 
 namespace otto::dsp {
 
+  using namespace test;
   namespace view = util::view;
 
   ///
@@ -189,6 +191,38 @@ namespace otto::dsp {
 
         REQUIRE(sample.size() == expected.size());
         REQUIRE_THAT(view::to_vec(sample), Catch::Approx(expected).margin(0.05));
+      }
+    }
+
+    SECTION ("Reflection") {
+      SECTION ("Serialization") {
+        sample.start_point(10);
+        sample.end_point(90);
+        sample.fade_in_time(15);
+        sample.fade_out_time(16);
+        sample.playback_speed(-4.2);
+        auto json = util::serialize(sample);
+        REQUIRE(json["start_point"] == 10);
+        REQUIRE(json["end_point"] == 90);
+        REQUIRE(json["fade_in_time"] == 15);
+        REQUIRE(json["fade_out_time"] == 16);
+        REQUIRE(json["playback_speed"] == approx(-4.2f));
+      }
+
+      SECTION ("Deserialization") {
+        nlohmann::json json = {
+          {"start_point", 10},
+          {"end_point", 90},
+          {"fade_in_time", 15},
+          {"fade_out_time", 16},
+          {"playback_speed", -4.2},
+        };
+        util::deserialize(sample, json);
+        REQUIRE(sample.start_point() == 10);
+        REQUIRE(sample.end_point() == 90);
+        REQUIRE(sample.fade_in_time() == 15);
+        REQUIRE(sample.fade_out_time() == 16);
+        REQUIRE(sample.playback_speed() == approx(-4.2));
       }
     }
   }

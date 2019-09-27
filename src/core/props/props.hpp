@@ -80,25 +80,25 @@ namespace otto::core::props {
 
 
   template<typename ValueType, typename TagList>
-  void to_json(json& j, PropertyImpl<ValueType, TagList>& t)
+  void to_json(nlohmann::json& j, PropertyImpl<ValueType, TagList>& t)
   {
     j = serialize(t);
   }
 
   template<typename ValueType, typename TagList>
-  void to_json(json& j, const PropertyImpl<ValueType, TagList>& t)
+  void to_json(nlohmann::json& j, const PropertyImpl<ValueType, TagList>& t)
   {
     j = serialize(t);
   }
 
   template<typename ValueType, typename TagList>
-  void to_json(json& j, PropertyImpl<ValueType, TagList>&& t)
+  void to_json(nlohmann::json& j, PropertyImpl<ValueType, TagList>&& t)
   {
     j = serialize(std::move(t));
   }
 
   template<typename ValueType, typename TagList>
-  void from_json(const json& j, PropertyImpl<ValueType, TagList>& t)
+  void from_json(const nlohmann::json& j, PropertyImpl<ValueType, TagList>& t)
   {
     deserialize(t, j);
   }

@@ -3,6 +3,7 @@
 #include <gsl/span>
 
 #include "util/iterator.hpp"
+#include "util/reflection.hpp"
 
 namespace otto::dsp {
 
@@ -16,7 +17,6 @@ namespace otto::dsp {
     int size() const noexcept;
 
     iterator begin() const;
-
     iterator end() const;
 
     int start_point() const;
@@ -68,6 +68,14 @@ namespace otto::dsp {
     bool cut = false;
     bool loop = false;
 
+    DECL_REFLECTION(Sample,
+                    ("start_point", &Sample::start_point, &Sample::start_point),
+                    ("end_point", &Sample::end_point, &Sample::end_point),
+                    // ("loop_start", &Sample::loop_start, &Sample::loop_start),
+                    // ("loop_end", &Sample::loop_end, &Sample::loop_end),
+                    ("fade_in_time", &Sample::fade_in_time, &Sample::fade_in_time),
+                    ("fade_out_time", &Sample::fade_out_time, &Sample::fade_out_time),
+                    ("playback_speed", &Sample::playback_speed, &Sample::playback_speed))
   private:
     gsl::span<float> _audio_data;
 
