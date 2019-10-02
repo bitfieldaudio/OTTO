@@ -141,9 +141,6 @@ namespace otto::dsp {
     }
     for (int i = 0; i != std::abs(int_part); i++) {
       _index += int_part / std::abs(int_part);
-      if (signed_index() == loop_end() && do_loop) {
-        _index = std::abs(loop_start());
-      }
       // if (signed_index() == loop_end() && do_loop) {
       // _index = std::abs(loop_start());
       // }

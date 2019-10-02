@@ -44,28 +44,59 @@ namespace otto::core::props::mixin {
 } // namespace otto::core::props::mixin
 namespace otto::core2 {
 
-  template<typename Tag, typename ValueType>
-  struct Prop {
-    using value_type = ValueType;
-    using tag_type = Tag;
-    using change_action = Action<Tag, value_type, value_type>;
+  /// A property which queues change_actions on set
+  /// 
+  /// @tparam Aqh An @ref ActionQueueHelper to which the actions will be enqueued
+  /// @tparam Val The property value type
+  /// @tparam Tag A unique tag type for this property
+  /// @tparam Mixins property mixins for this property
+  template<typename Aqh, typename Val, typename Tag, typename... Mixins>
+  struct ActionProp : core::props::Property<Val, core::props::mixin::action<Tag, Aqh>, Mixins...> {
+    using prop_impl_t = core::props::Property<Val, core::props::mixin::action<Tag, Aqh>, Mixins...>;
+    using value_type = Val;
+    using action_mixin = core::props::mixin::action<Tag, Aqh>;
+    using change_action = core2::Action<Tag, value_type, value_type>;
 
-    Prop(value_type v) : value(v) {}
+    template<typename TRef, typename... Args>
+    ActionProp(TRef&& value, Aqh* aqh, Args&&... args)
+      : core::props::Property<Val, core::props::mixin::action<Tag, Aqh>, Mixins...>(std::forward<TRef>(value),
+                                                                        action_mixin::init(aqh),
+                                                                        FWD(args)...)
+    {}
 
-    value_type value;
-
-    ActionData<change_action> set(value_type new_val)
+    ActionProp& operator=(const value_type& rhs)
     {
-      auto res = change_action::data(new_val, value);
-      value = new_val;
-      return res;
+      this->set(rhs);
+      return *this;
     }
 
-    bool operator==(const value_type& rhs) const
+    operator const value_type&() const
     {
-      return value == rhs;
+      return this->get();
     }
+
+    DECL_REFLECTION(ActionProp, ("value", &ActionProp::get, &ActionProp::set))
   };
+
+  /// Serialize a property to json
+  template<typename Aqh, typename ValueType, typename Tag, typename... Mixins>
+  inline nlohmann::json serialize(const ActionProp<Aqh, ValueType, Tag, Mixins...>& prop)
+  {
+    using ::otto::util::serialize;
+    return serialize(prop.get());
+  }
+
+  /// Deserialize a property from json
+  template<typename Aqh, typename ValueType, typename Tag, typename... Mixins>
+  inline void deserialize(ActionProp<Aqh, ValueType, Tag, Mixins...>& prop, const nlohmann::json& json)
+  {
+    using ::otto::util::deserialize;
+    static_assert(std::is_default_constructible_v<ValueType>,
+                  "A property type must be default constructible to be deserializable");
+    ValueType v{};
+    deserialize(v, json);
+    prop.set(std::move(v));
+  }
 
   /// Get the property type from a member pointer to it
   struct PropTypeFor {

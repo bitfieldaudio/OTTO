@@ -33,6 +33,7 @@ namespace otto::util::math {
     return result >= 0 ? result : result + b;
   }
 
+  /// Real modulo for negative `a` too
   inline int modulo(int i, int n)
   {
     return (i % n + n) % n;

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vector>
 #include <gsl/span>
 
 #include "util/iterator.hpp"

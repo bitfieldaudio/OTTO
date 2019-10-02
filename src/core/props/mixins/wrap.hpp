@@ -17,12 +17,33 @@ namespace otto::core::props {
 
     void on_hook(hook<has_limits::hooks::on_exceeded> & hook)
     {
-      auto& hl = this->as<has_limits>();
-      auto length = hl.max - hl.min + 1;
-      if (hook.value() < hl.min || hook.value() > hl.max) {
-        // hl.min + (hook.value() - (hl.max + step_size));
-        hook.value() = hl.min + util::math::modulo((hook.value() - hl.min), length);
+      if constexpr (!std::is_floating_point_v<value_type>) {
+        auto& hl = this->as<has_limits>();
+        hook.value() = wrap_value(hook.value(), hl.min, hl.max);
       }
+    }
+
+    void on_hook(hook<common::hooks::on_set, HookOrder::Early> & hook)
+    {
+      if constexpr (std::is_floating_point_v<value_type>) {
+        auto& hl = this->as<has_limits>();
+        hook.value() = wrap_value(hook.value(), hl.min, hl.max);
+      }
+    }
+
+  private:
+    using decayed = util::enum_decay_t<value_type>;
+
+    decayed wrap_value(decayed value, decayed min, decayed max)
+    {
+      decayed length = max - min;
+      if constexpr (!std::is_floating_point_v<value_type>) {
+        length += 1;
+      }
+      if (value < min || value >= max) {
+        value = min + util::math::modulo((value - min), length);
+      }
+      return value;
     }
   };
 } // namespace otto::core::props

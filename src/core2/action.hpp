@@ -48,7 +48,8 @@ namespace otto::core2 {
   auto call_reciever(AR&& ar, ActionData<Action<Tag, Args...>> action_data)
     -> std::enable_if_t<ActionReciever::is<AR, Action<Tag, Args...>>>
   {
-    std::apply(&std::decay_t<AR>::action,
+    static_assert(ActionReciever::is<AR, Action<Tag, Args...>>);
+    std::apply([](auto&& ar, auto&&... args) { FWD(ar).action(FWD(args)...); },
                std::tuple_cat(std::forward_as_tuple<AR>(ar), std::tuple<Action<Tag, Args...>>(), action_data.args));
   }
 
@@ -59,11 +60,11 @@ namespace otto::core2 {
   bool try_call_reciever(AR&& ar, ActionData<Action<Tag, Args...>> action_data)
   {
     if constexpr (ActionReciever::is<AR, Action<Tag, Args...>>) {
-      std::apply(&std::decay_t<AR>::action,
+      std::apply([](auto&& ar, auto&&... args) { FWD(ar).action(FWD(args)...); },
                  std::tuple_cat(std::forward_as_tuple<AR>(ar), std::tuple<Action<Tag, Args...>>(), action_data.args));
       return true;
     }
     return false;
   }
 
-}
+} // namespace otto::core2

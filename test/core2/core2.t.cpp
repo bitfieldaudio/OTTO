@@ -24,23 +24,6 @@ namespace otto::core2 {
       int value = 0;
     };
 
-    struct Props {
-      Prop<struct int_prop_tag, int> int_prop = 0;
-    } props;
-
-    static_assert(std::is_same_v<prop_change<&Props::int_prop>, decltype(props.int_prop)::change_action>);
-
-    struct PropAR {
-      void action(prop_change<&Props::int_prop>, int new_val, int old_val)
-      {
-        this->new_val += new_val;
-        this->old_val += old_val;
-      }
-      int new_val = 0;
-      int old_val = 0;
-    };
-
-
     SECTION ("The ActionReciever concept") {
       struct EmptyStruct {};
 
@@ -80,30 +63,6 @@ namespace otto::core2 {
       IntAR int_ar;
       REQUIRE(!try_call_reciever(int_ar, void_action::data()));
       REQUIRE(int_ar.value == 0);
-    }
-
-    SECTION ("Properties") {
-      PropAR par;
-
-      SECTION ("A ActionReciever can recieve prop_change actions") {
-        call_reciever(par, prop_change<&Props::int_prop>::data(2, 3));
-        REQUIRE(par.new_val == 2);
-        REQUIRE(par.old_val == 3);
-      }
-
-      SECTION ("Prop::set changes the value and returns a change action data object") {
-        auto ad = props.int_prop.set(10);
-        REQUIRE(props.int_prop == 10);
-        REQUIRE(std::get<0>(ad.args) == 10);
-        REQUIRE(std::get<1>(ad.args) == 0);
-      }
-
-      SECTION ("passing the result of Prop::set through call_reciever updates the values") {
-        call_reciever(par, props.int_prop.set(10));
-        REQUIRE(props.int_prop == 10);
-        REQUIRE(par.new_val == 10);
-        REQUIRE(par.old_val == 0);
-      }
     }
 
     SECTION ("ActionQueue") {
@@ -174,8 +133,7 @@ namespace otto::core2 {
       ActionQueue queue;
       VoidAR var;
       IntAR iar;
-      PropAR par;
-      ActionQueueHelper aqh = {queue, var, iar, oiar, par};
+      ActionQueueHelper aqh = {queue, var, iar, oiar};
 
       SECTION ("ActionQueueHelper holds references to recievers") {
         REQUIRE(&aqh.reciever<VoidAR>() == &var);
@@ -189,15 +147,6 @@ namespace otto::core2 {
         queue.pop_call_all();
         REQUIRE(iar.value == 10);
         REQUIRE(oiar.value == 10);
-      }
-
-      SECTION ("ActionQueueHelper can queue property change actions") {
-        aqh.push(props.int_prop.set(10));
-        REQUIRE(queue.size() == 1);
-        queue.pop_call_all();
-
-        REQUIRE(par.new_val == 10);
-        REQUIRE(par.old_val == 0);
       }
 
       SECTION ("ActionQueueHelper is copy constructible") {

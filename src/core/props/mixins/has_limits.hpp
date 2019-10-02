@@ -84,7 +84,7 @@ namespace otto::core::props {
       max = util::underlying(pmax);
     }
 
-    void on_hook(hook<common::hooks::on_set, HookOrder::Early> & hook)
+    void on_hook(hook<common::hooks::on_set, HookOrder::Middle> & hook)
     {
       auto& val = hook.value();
       if (util::underlying(val) < min) {
