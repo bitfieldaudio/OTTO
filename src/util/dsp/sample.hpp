@@ -12,58 +12,60 @@ namespace otto::dsp {
   struct Sample {
     struct iterator;
 
-    explicit Sample(gsl::span<float> audio_data);
+    explicit Sample(gsl::span<float> audio_data) noexcept;
     Sample() = default;
 
     int size() const noexcept;
 
-    iterator begin() const;
-    iterator end() const;
+    iterator begin() const noexcept;
+    iterator end() const noexcept;
 
-    int start_point() const;
-    int end_point() const;
-    int loop_start() const;
-    int loop_end() const;
-    int fade_in_time() const;
-    int fade_out_time() const;
-    float playback_speed() const;
+    int start_point() const noexcept;
+    int end_point() const noexcept;
+    int loop_start() const noexcept;
+    int loop_end() const noexcept;
+    int fade_in_time() const noexcept;
+    int fade_out_time() const noexcept;
+    float playback_speed() const noexcept;
 
-    int start_point(int val);
-    int end_point(int val);
-    int loop_start(int val);
-    int loop_end(int val);
-    int fade_in_time(int val);
-    int fade_out_time(int val);
-    float playback_speed(float val);
+    int start_point(int val) noexcept;
+    int end_point(int val) noexcept;
+    int loop_start(int val) noexcept;
+    int loop_end(int val) noexcept;
+    int fade_in_time(int val) noexcept;
+    int fade_out_time(int val) noexcept;
+    float playback_speed(float val) noexcept;
 
     struct iterator : util::iterator_facade<iterator, float, std::forward_iterator_tag, float> {
       using vector_iterator = std::vector<float>::const_iterator;
 
-      iterator(const Sample& sample, int index, float stride = 1.f);
-      iterator(const iterator&);
-      iterator& operator=(const iterator&);
+      iterator() noexcept = default;
+      iterator(const Sample& sample, int index, float stride = 1.f) noexcept;
+      iterator(const iterator&) noexcept;
+      iterator& operator=(const iterator&) noexcept;
 
-      void advance(std::ptrdiff_t d);
-      float dereference() const;
-      bool equal(const iterator& rhs) const;
+      void advance(std::ptrdiff_t d) noexcept;
+      float dereference() const noexcept;
+      bool equal(const iterator& rhs) const noexcept;
 
-      int index() const;
+      int index() const noexcept;
 
-      const Sample& sample;
       bool do_loop = false;
 
     private:
-      int start_point() const;
-      int end_point() const;
-      int loop_start() const;
-      int loop_end() const;
-      int signed_index() const;
-      int fade_in_time() const;
-      int fade_out_time() const;
+      int start_point() const noexcept;
+      int end_point() const noexcept;
+      int loop_start() const noexcept;
+      int loop_end() const noexcept;
+      int signed_index() const noexcept;
+      int fade_in_time() const noexcept;
+      int fade_out_time() const noexcept;
 
-      int _index = 0;
-      float _playback_speed = 1.f;
-      float _error = 0.f;
+      const Sample* sample_ = nullptr;
+
+      int index_ = 0;
+      float playback_speed_ = 1.f;
+      float error_ = 0.f;
     };
 
     bool cut = false;
@@ -78,17 +80,17 @@ namespace otto::dsp {
                     ("fade_out_time", &Sample::fade_out_time, &Sample::fade_out_time),
                     ("playback_speed", &Sample::playback_speed, &Sample::playback_speed))
   private:
-    gsl::span<float> _audio_data;
+    gsl::span<float> audio_data_;
 
     friend struct iterator;
 
-    int _start_point = 0;
-    int _end_point = 0;
-    int _loop_start = -1;
-    int _loop_end = -1;
-    int _fade_in_time = 0;
-    int _fade_out_time = 0;
-    float _playback_speed = 1.f;
+    int start_point_ = 0;
+    int end_point_ = 0;
+    int loop_start_ = -1;
+    int loop_end_ = -1;
+    int fade_in_time_ = 0;
+    int fade_out_time_ = 0;
+    float playback_speed_ = 1.f;
 
     /// The normal speed. When reading a sample from a file, this is the AudioManager's
     /// samplerate divided by the sample's
