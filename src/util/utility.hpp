@@ -67,4 +67,11 @@ namespace otto::util {
     return [&object, func] (Args... args) -> Ret { return (object.*func)(args...);};
   }
 
+  template<typename T>
+  auto does_equal(T&& obj) {
+    return [obj = std::forward<T>(obj)] (auto&& lhs) {
+      return lhs == obj;
+    };
+  }
+
 } // namespace otto::util

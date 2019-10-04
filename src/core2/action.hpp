@@ -19,7 +19,7 @@ namespace otto::core2 {
     /// Construct an @ref ActionData object  for this action
     static auto data(Args... args)
     {
-      return ActionData<Action<Tag, Args...>>{std::make_tuple(args...)};
+      return ActionData<Action<Tag, Args...>>{args_tuple(args...)};
     }
   };
 

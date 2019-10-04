@@ -80,6 +80,16 @@ namespace otto::util {
       return detail::generate_array_impl(std::move(intseq), std::forward<Func>(gen));
     }
 
+    template<class Func>
+    constexpr auto generate_vector(int n, Func&& gen)
+    {
+      using value_type = std::decay_t<decltype(gen(n))>;
+      std::vector<value_type> res;
+      res.reserve(n);
+      std::generate_n(std::back_inserter(res), n, [&gen, i = 0] () mutable { return gen(i++); });
+      return res;
+    }
+
     /// Identity function
     constexpr auto identity = [] (auto&& x) -> decltype(auto) { return FWD(x); };
 

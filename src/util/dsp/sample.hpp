@@ -1,7 +1,7 @@
 #pragma once
 
-#include <vector>
 #include <gsl/span>
+#include <vector>
 
 #include "util/iterator.hpp"
 #include "util/reflection.hpp"
@@ -12,7 +12,7 @@ namespace otto::dsp {
   struct Sample {
     struct iterator;
 
-    explicit Sample(gsl::span<float> audio_data) noexcept;
+    explicit Sample(gsl::span<float> audio_data, float speed_modifier = 1.f) noexcept;
     Sample() = default;
 
     int size() const noexcept;
@@ -20,18 +20,20 @@ namespace otto::dsp {
     iterator begin() const noexcept;
     iterator end() const noexcept;
 
+    /// Index where playback should start
     int start_point() const noexcept;
+    /// Index one past where playback should end
     int end_point() const noexcept;
-    int loop_start() const noexcept;
-    int loop_end() const noexcept;
+    // int loop_start() const noexcept;
+    // int loop_end() const noexcept;
     int fade_in_time() const noexcept;
     int fade_out_time() const noexcept;
     float playback_speed() const noexcept;
 
     int start_point(int val) noexcept;
     int end_point(int val) noexcept;
-    int loop_start(int val) noexcept;
-    int loop_end(int val) noexcept;
+    // int loop_start(int val) noexcept;
+    // int loop_end(int val) noexcept;
     int fade_in_time(int val) noexcept;
     int fade_out_time(int val) noexcept;
     float playback_speed(float val) noexcept;
@@ -40,9 +42,9 @@ namespace otto::dsp {
       using vector_iterator = std::vector<float>::const_iterator;
 
       iterator() noexcept = default;
-      iterator(const Sample& sample, int index, float stride = 1.f) noexcept;
+      iterator(const Sample& sample, int index) noexcept;
       iterator(const iterator&) noexcept;
-      iterator& operator=(const iterator&) noexcept;
+      iterator& operator=(const iterator&) noexcept = default;
 
       void advance(std::ptrdiff_t d) noexcept;
       float dereference() const noexcept;
@@ -52,19 +54,24 @@ namespace otto::dsp {
 
       bool do_loop = false;
 
+      std::ptrdiff_t operator-(const iterator& rhs) const noexcept;
+
     private:
       int start_point() const noexcept;
       int end_point() const noexcept;
-      int loop_start() const noexcept;
-      int loop_end() const noexcept;
+      // int loop_start() const noexcept;
+      // int loop_end() const noexcept;
       int signed_index() const noexcept;
       int fade_in_time() const noexcept;
       int fade_out_time() const noexcept;
+      float playback_speed() const noexcept;
+
+      /// -1 if going backwards, otherwise 1
+      int sign() const noexcept;
 
       const Sample* sample_ = nullptr;
 
       int index_ = 0;
-      float playback_speed_ = 1.f;
       float error_ = 0.f;
     };
 
@@ -86,8 +93,8 @@ namespace otto::dsp {
 
     int start_point_ = 0;
     int end_point_ = 0;
-    int loop_start_ = -1;
-    int loop_end_ = -1;
+    // int loop_start_ = -1;
+    // int loop_end_ = -1;
     int fade_in_time_ = 0;
     int fade_out_time_ = 0;
     float playback_speed_ = 1.f;

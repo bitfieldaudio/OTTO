@@ -1142,6 +1142,35 @@ namespace otto::util {
     };
 
 
+    struct counting_iterator : iterator_facade<counting_iterator, int, std::output_iterator_tag, int> {
+      using value_type = int;
+      counting_iterator(int value = 0) : value_(value) {}
+
+      int dereference() const noexcept
+      {
+        return value_;
+      }
+
+      void advance(int n) noexcept
+      {
+        value_ += n;
+      }
+
+      bool equal(const counting_iterator& o) const noexcept
+      {
+        return value_ == o.value_;
+      }
+
+      int difference(const counting_iterator& o) const noexcept
+      {
+        return value_ - o.value_;
+      }
+
+    private:
+      int value_;
+    };
+
+
   } // namespace iterator
 
   namespace view {
@@ -1197,6 +1226,11 @@ namespace otto::util {
     auto subrange(Range&& r, std::size_t begin_idx, std::size_t end_idx) {
       using std::begin, std::end;
       return sequence(begin(r) + begin_idx, std::min(begin(r) + end_idx, end(r)));
+    }
+
+    /// A range of ints [lo;hi[
+    inline auto ints(int lo, int hi) {
+      return sequence(counting_iterator(lo), counting_iterator(hi));
     }
 
     template<typename Range>

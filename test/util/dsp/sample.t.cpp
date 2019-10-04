@@ -123,8 +123,28 @@ namespace otto::dsp {
       REQUIRE_THAT(view::to_vec(sample), Catch::Approx(expected).margin(0.05));
     }
 
+    SECTION ("Subtracting iterators") {
+      sample.start_point(10);
+      sample.end_point(90);
+      REQUIRE(sample.begin() - sample.begin() == 0);
+      REQUIRE(sample.end() - sample.begin() == sample.size());
+      auto iter = sample.end();
+      iter++;
+      REQUIRE(iter - sample.begin() == sample.size());
+    }
+
     SECTION ("Reverse") {
       sample.playback_speed(-1);
+
+      SECTION("Incrementing iterator") {
+        auto iter = sample.begin();
+        iter++;
+        REQUIRE(iter - sample.begin() == 1);
+        iter++;
+        REQUIRE(iter - sample.begin() == 2);
+        iter.advance(98);
+        REQUIRE(iter == sample.end());
+      }
 
       SECTION ("Sample plays audio in reverse") {
         REQUIRE(sample.size() == 100);
@@ -192,6 +212,30 @@ namespace otto::dsp {
         REQUIRE(sample.size() == expected.size());
         REQUIRE_THAT(view::to_vec(sample), Catch::Approx(expected).margin(0.05));
       }
+
+      SECTION ("Subtracting iterators in reverse") {
+        sample.start_point(10);
+        sample.end_point(90);
+        REQUIRE(sample.begin() - sample.begin() == 0);
+        REQUIRE(sample.end() - sample.begin() == sample.size());
+        auto iter = sample.end();
+        iter++;
+        REQUIRE(iter - sample.begin() == sample.size());
+      }
+    }
+
+    SECTION ("Speed modifier") {
+      auto sample2 = Sample(data, 2.f);
+      SECTION ("Playback speed is still 1 when seen from the outside") {
+        REQUIRE(sample2.playback_speed() == 1);
+        sample2.playback_speed(2);
+        REQUIRE(sample2.playback_speed() == 2);
+      }
+      SECTION ("The actual playback speed is doubled") {
+        auto iter = sample2.begin();
+        REQUIRE(*iter == 0);
+        REQUIRE(*++iter == 2);
+      }
     }
 
     SECTION ("Reflection") {
@@ -211,11 +255,7 @@ namespace otto::dsp {
 
       SECTION ("Deserialization") {
         nlohmann::json json = {
-          {"start_point", 10},
-          {"end_point", 90},
-          {"fade_in_time", 15},
-          {"fade_out_time", 16},
-          {"playback_speed", -4.2},
+          {"start_point", 10}, {"end_point", 90}, {"fade_in_time", 15}, {"fade_out_time", 16}, {"playback_speed", -4.2},
         };
         util::deserialize(sample, json);
         REQUIRE(sample.start_point() == 10);

@@ -77,9 +77,14 @@ namespace otto::test {
       return rhs != lhs;
     }
 
+    friend std::ostream& operator<<(std::ostream& os, const approx& a)
+    {
+      os << "approx(" << a.value_ << ")";
+      return os;
+    }
+
   private:
     float value_;
     float margin_ = 0.0001;
   };
-
 } // namespace otto::test

@@ -155,6 +155,20 @@ namespace otto::core2 {
         REQUIRE(&aqh2.reciever<VoidAR>() == &var);
       }
     }
+
+    SECTION ("Action with reference parameter") {
+      using ref_act = Action<struct ref_act_tag, int&>;
+      struct RefAR {
+        void action(ref_act, int& ref) {
+          addr = &ref;
+        };
+        int* addr = nullptr;
+      };
+      int an_int = 0;
+      RefAR rar;
+      call_reciever(rar, ref_act::data(an_int));
+      REQUIRE(rar.addr == &an_int);
+    }
   }
 
 } // namespace otto::core2

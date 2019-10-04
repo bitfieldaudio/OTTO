@@ -1,6 +1,9 @@
 #include "testing.t.hpp"
 
+#include <atomic>
+
 #include "core/audio/processor.hpp"
+#include "core/engine/engine.hpp"
 #include "core2/core2.hpp"
 #include "util/dsp/sample.hpp"
 
@@ -26,11 +29,24 @@ namespace otto::engines::sampler {
     DECL_REFLECTION(Props, start_point, end_point, fade_in_time, fade_out_time, playback_speed);
   };
 
+  struct Actions {
+    /// Get the current progress as a float in range [0;1], where 0 means
+    using get_progress = Action<struct get_progress_action, std::atomic<float>&>;
+    /// Action to set the audio data to play.
+    ///
+    /// start/end points, fade in/out times and playback speed will all be reset,
+    /// so make sure to update these accordingly afterwards.
+    using set_sample_buffer = Action<struct set_sample_action, gsl::span<float>>;
+  };
+
   struct Audio {
     void process(audio::AudioBufferHandle audio, bool triggered) noexcept;
 
     void finish() noexcept;
     void reset() noexcept;
+
+    void action(Actions::get_progress, std::atomic<float>&) const noexcept;
+    void action(Actions::set_sample_buffer, gsl::span<float>) noexcept;
 
     void action(prop_change<&Props::start_point>, int, int) noexcept;
     void action(prop_change<&Props::end_point>, int, int) noexcept;
@@ -40,15 +56,60 @@ namespace otto::engines::sampler {
 
   private:
     dsp::Sample sample;
-    dsp::Sample::iterator sample_iterator;
+    dsp::Sample::iterator sample_iterator = sample.end();
     bool was_triggered = false;
   };
+
+  struct Screen : ui::Screen {
+
+  };
+
+  struct Engine : engine::MiscEngine<Engine> {
+    static constexpr util::string_ref name = "Sampler";
+    using Props = Props;
+
+    Props props;
+  };
+
+  using namespace test;
 
   TEST_CASE ("Sampler") {
     ActionQueue queue;
     Audio audio;
     Aqh aqh{queue, audio};
     Props props{&aqh};
+
+    int ref_count = 0;
+    auto the_buffer = util::generate_array<10>([](auto i) { return float(i); });
+    core::audio::AudioBufferHandle buffer = {the_buffer.data(), the_buffer.size(), ref_count};
+
+    std::atomic<float> progress;
+
+    SECTION ("Initial construction") {
+      SECTION ("All audio is unchanged when not triggered") {
+        audio.process(buffer, false);
+        auto expected = util::generate_vector(10, [](auto i) { return float(i); });
+        REQUIRE_THAT(util::view::to_vec(buffer), Catch::Approx(expected));
+      }
+      SECTION ("All audio is unchanged when triggered") {
+        audio.process(buffer, true);
+        auto expected = util::generate_vector(10, [](auto i) { return float(i); });
+        REQUIRE_THAT(util::view::to_vec(buffer), Catch::Approx(expected));
+      }
+      SECTION ("Progress is 0") {
+        audio.action(Actions::get_progress(), progress);
+        REQUIRE(progress == approx(0));
+        audio.process(buffer, false);
+        REQUIRE(progress == approx(0));
+        audio.process(buffer, true);
+        REQUIRE(progress == approx(0));
+      }
+    }
+
+    std::vector<float> the_sample;
+    std::generate_n(std::back_inserter(the_sample), 100, [i = 0]() mutable { return i++; });
+
+    audio.action(Actions::set_sample_buffer(), the_sample);
 
     SECTION ("Property serialization") {
       props.start_point = 1;
@@ -79,6 +140,67 @@ namespace otto::engines::sampler {
       REQUIRE(props.fade_out_time == 6);
       REQUIRE(props.playback_speed == 7);
     }
+
+    SECTION ("get_progress action") {
+      SECTION ("Initially, progress is zero") {
+        audio.action(Actions::get_progress(), progress);
+        REQUIRE(progress == approx(0.f));
+      }
+      SECTION ("Does not progress when not triggered") {
+        audio.process(buffer, false);
+        audio.action(Actions::get_progress(), progress);
+        REQUIRE(progress == approx(0.f));
+      }
+      SECTION ("When progressing 10 frames into a 100 frames sample, progress is 0.1") {
+        audio.process(buffer, true);
+        audio.action(Actions::get_progress(), progress);
+        REQUIRE(progress == approx(0.1f));
+      }
+      SECTION ("after processing 90 frames, progress is 0.9") {
+        for (int i : util::view::ints(0, 9)) audio.process(buffer, true);
+        audio.action(Actions::get_progress(), progress);
+        REQUIRE(progress == approx(0.9f));
+      }
+      SECTION ("After processing 100 frames, progress is 0") {
+        for (int i : util::view::ints(0, 11)) audio.process(buffer, true);
+        audio.action(Actions::get_progress(), progress);
+        REQUIRE(progress == approx(0.f));
+      }
+      SECTION ("When progressing 10 frames into a 100 frames sample playing at 2x, progress is 0.2") {
+        audio.action(prop_change<&Props::playback_speed>(), 2, 1);
+        audio.process(buffer, true);
+        audio.action(Actions::get_progress(), progress);
+        REQUIRE(progress == approx(0.2f));
+      }
+      SECTION ("Reverse") {
+        audio.action(prop_change<&Props::playback_speed>(), -1, 1);
+        SECTION ("Initially, progress is one") {
+          audio.action(Actions::get_progress(), progress);
+          REQUIRE(progress == approx(1.f));
+        }
+        SECTION ("Does not progress when not triggered") {
+          audio.process(buffer, false);
+          audio.action(Actions::get_progress(), progress);
+          REQUIRE(progress == approx(1.f));
+        }
+        SECTION ("When progressing 10 frames into a 100 frames sample, progress is 0.9") {
+          audio.process(buffer, true);
+          audio.action(Actions::get_progress(), progress);
+          REQUIRE(progress == approx(0.9f));
+        }
+        SECTION ("When progressing 10 frames into a 100 frames sample playing at 2x, progress is 0.2") {
+          audio.action(prop_change<&Props::playback_speed>(), -2, -1);
+          audio.process(buffer, true);
+          audio.action(Actions::get_progress(), progress);
+          REQUIRE(progress == approx(0.8f));
+        }
+        SECTION ("after processing all 100 frames, progress is 1") {
+          for (int i : util::view::ints(0, 10)) audio.process(buffer, true);
+          audio.action(Actions::get_progress(), progress);
+          REQUIRE(progress == approx(1.f));
+        }
+      }
+    }
   }
 
   void Audio::process(audio::AudioBufferHandle audio, bool triggered) noexcept
@@ -100,17 +222,42 @@ namespace otto::engines::sampler {
     sample_iterator = sample.begin();
   }
 
-/// Helper macro to forward action recievers to sample
-#define ACTION_TO_SAMPLE(Name, Type)                                                                                   \
-  void Audio::action(prop_change<&Props::Name>, Type new_value, Type old_value) noexcept                               \
-  {                                                                                                                    \
-    sample.Name(new_value);                                                                                            \
+  void Audio::action(Actions::get_progress, std::atomic<float>& result) const noexcept
+  {
+    auto val = (sample_iterator - sample.begin()) / float(sample.size());
+    if (sample_iterator == sample.end()) val = 0;
+    // if going in reverse, progress starts at 1 and goes to 0
+    if (sample.playback_speed() < 0) val = 1.f - val;
+    result = val;
   }
 
-  ACTION_TO_SAMPLE(start_point, int)
-  ACTION_TO_SAMPLE(end_point, int)
-  ACTION_TO_SAMPLE(fade_in_time, int)
-  ACTION_TO_SAMPLE(fade_out_time, int)
-  ACTION_TO_SAMPLE(playback_speed, float)
+  void Audio::action(Actions::set_sample_buffer, gsl::span<float> new_sample) noexcept
+  {
+    sample = dsp::Sample(new_sample);
+    sample_iterator = sample.end();
+  }
+
+  void Audio::action(prop_change<&Props::start_point>, int new_value, int old_value) noexcept
+  {
+    sample.start_point(new_value);
+  }
+  void Audio::action(prop_change<&Props::end_point>, int new_value, int old_value) noexcept
+  {
+    sample.end_point(new_value);
+  }
+  void Audio::action(prop_change<&Props::fade_in_time>, int new_value, int old_value) noexcept
+  {
+    sample.fade_in_time(new_value);
+  }
+  void Audio::action(prop_change<&Props::fade_out_time>, int new_value, int old_value) noexcept
+  {
+    sample.fade_out_time(new_value);
+  }
+  void Audio::action(prop_change<&Props::playback_speed>, float new_value, float old_value) noexcept
+  {
+    bool do_finish = sample_iterator == sample.end();
+    sample.playback_speed(new_value);
+    if (do_finish) finish();
+  }
 
 } // namespace otto::engines::sampler
