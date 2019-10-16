@@ -12,8 +12,12 @@ namespace otto::engines::sampler {
   using namespace core;
   using namespace core2;
   struct Audio;
+  struct MainScreen;
+  struct EnvelopeScreen;
 
-  using Aqh = ActionQueueHelper<Audio>;
+  using AudioAQH = ActionQueueHelper<Audio>;
+  using GraphicsAQH = ActionQueueHelper<MainScreen, EnvelopeScreen>;
+  using Aqh = JoinedActionQueueHelper<AudioAQH, GraphicsAQH>;
 
   struct Props {
     template<typename Val, typename Tag, typename... Mixins>
@@ -60,8 +64,13 @@ namespace otto::engines::sampler {
     bool was_triggered = false;
   };
 
-  struct Screen : ui::Screen {
 
+  struct MainScreen : ui::Screen {
+    void draw(ui::vg::Canvas& ctx) override {}
+  };
+
+  struct EnvelopeScreen : ui::Screen {
+    void draw(ui::vg::Canvas& ctx) override {}
   };
 
   struct Engine : engine::MiscEngine<Engine> {
@@ -74,9 +83,12 @@ namespace otto::engines::sampler {
   using namespace test;
 
   TEST_CASE ("Sampler") {
-    ActionQueue queue;
+    ActionQueue audio_queue;
+    ActionQueue ui_queue;
     Audio audio;
-    Aqh aqh{queue, audio};
+    MainScreen main_screen;
+    EnvelopeScreen env_screen;
+    Aqh aqh{{audio_queue, audio}, {ui_queue, main_screen, env_screen}};
     Props props{&aqh};
 
     int ref_count = 0;

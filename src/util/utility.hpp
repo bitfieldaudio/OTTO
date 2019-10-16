@@ -74,4 +74,28 @@ namespace otto::util {
     };
   }
 
+  // Tuple for_each ///////////////////////////////////////////////////////////
+  
+  namespace details {
+    template<typename T, typename F, std::size_t... Is>
+    void tuple_for_each_impl(T&& t, F&& f, std::integer_sequence<std::size_t, Is...> is) {
+      (f(std::get<Is>(t)), ...);
+    }
+  }
+
+  template<typename F, typename... Args>
+  void tuple_for_each(const std::tuple<Args...>& tuple, F&& f) {
+    details::tuple_for_each_impl(tuple, FWD(f), std::make_index_sequence<std::tuple_size<std::tuple<Args...>>::value>()); 
+  }
+
+  template<typename F, typename... Args>
+  void tuple_for_each(std::tuple<Args...>& tuple, F&& f) {
+    details::tuple_for_each_impl(tuple, FWD(f), std::make_index_sequence<std::tuple_size<std::tuple<Args...>>::value>()); 
+  }
+
+  template<typename F, typename... Args>
+  void tuple_for_each(std::tuple<Args...>&& tuple, F&& f) {
+    details::tuple_for_each_impl(tuple, FWD(f), std::make_index_sequence<std::tuple_size<std::tuple<Args...>>::value>()); 
+  }
+
 } // namespace otto::util

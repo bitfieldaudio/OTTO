@@ -12,8 +12,10 @@ namespace otto::core2 {
       void action(void_action)
       {
         has_run = true;
+        run_count++;
       }
       bool has_run = false;
+      int run_count = 0;
     };
 
     struct IntAR {
@@ -153,6 +155,23 @@ namespace otto::core2 {
         auto aqh2 = aqh;
         REQUIRE(&aqh.reciever<VoidAR>() == &var);
         REQUIRE(&aqh2.reciever<VoidAR>() == &var);
+      }
+
+      SECTION ("JoinedActionQueueHelper") {
+        ActionQueue queue2;
+        ActionQueueHelper aqh1 = {queue, var};
+        ActionQueueHelper aqh2 = {queue2, iar, var};
+        JoinedActionQueueHelper jaqh = {aqh1, aqh2};
+
+        SECTION("can push the same action to multiple queues") {
+          jaqh.push(void_action::data());
+          REQUIRE(queue.size() == 1);
+          REQUIRE(queue2.size() == 1);
+          queue.pop_call_all();
+          REQUIRE(var.run_count == 1);
+          queue2.pop_call_all();
+          REQUIRE(var.run_count == 2);
+        }
       }
     }
 

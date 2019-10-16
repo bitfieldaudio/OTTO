@@ -13,8 +13,6 @@ namespace otto::engines {
   using namespace ui;
   using namespace ui::vg;
 
-
-
   struct SamplerMainScreen : EngineScreen<Sampler>{
     void draw(Canvas& ctx) override;
     void encoder(EncoderEvent e) override;

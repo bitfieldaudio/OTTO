@@ -6,6 +6,7 @@
 #include <tuple>
 
 #include "util/type_traits.hpp"
+#include "util/utility.hpp"
 
 #include "action.hpp"
 
@@ -107,4 +108,19 @@ namespace otto::core2 {
     std::tuple<Recievers&...> recievers_;
   };
 
-}
+  template<typename... AQHs>
+  struct JoinedActionQueueHelper {
+    JoinedActionQueueHelper(AQHs... aqhs) : aqhs_{std::forward<AQHs>(aqhs)...} {}
+
+    template<typename Tag, typename... Args>
+    void push(ActionData<Action<Tag, Args...>> action_data)
+    {
+      util::tuple_for_each(aqhs_, [this, &action_data] (auto& aqh) {
+        aqh.push(action_data);
+      });
+    }
+  private:
+    std::tuple<AQHs...> aqhs_;
+  };
+
+} // namespace otto::core2
