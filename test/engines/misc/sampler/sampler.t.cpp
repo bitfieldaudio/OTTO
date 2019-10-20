@@ -20,15 +20,13 @@ namespace otto::engines::sampler {
   using Aqh = JoinedActionQueueHelper<AudioAQH, GraphicsAQH>;
 
   struct Props {
-    template<typename Val, typename Tag, typename... Mixins>
-    using ActionProp = ActionProp<Aqh, Val, Tag, Mixins...>;
     Aqh* aqh;
 
-    ActionProp<struct start_point_tag, int> start_point = {aqh, 0};
-    ActionProp<struct end_point_tag, int> end_point = {aqh, 0};
-    ActionProp<struct fade_in_time_tag, int> fade_in_time = {aqh, 0};
-    ActionProp<struct fade_out_time_tag, int> fade_out_time = {aqh, 0};
-    ActionProp<struct playback_speed_tag, float> playback_speed = {aqh, 0};
+    Aqh::Prop<struct start_point_tag, int> start_point = {aqh, 0};
+    Aqh::Prop<struct end_point_tag, int> end_point = {aqh, 0};
+    Aqh::Prop<struct fade_in_time_tag, int> fade_in_time = {aqh, 0};
+    Aqh::Prop<struct fade_out_time_tag, int> fade_out_time = {aqh, 0};
+    Aqh::Prop<struct playback_speed_tag, float> playback_speed = {aqh, 0};
 
     DECL_REFLECTION(Props, start_point, end_point, fade_in_time, fade_out_time, playback_speed);
   };

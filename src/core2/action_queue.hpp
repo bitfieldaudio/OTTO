@@ -81,11 +81,18 @@ namespace otto::core2 {
     std::queue<value_type, std::deque<value_type>> queue_;
   };
 
+  // FORWARD DECLARATION
+  template<typename Aqh, typename Tag, typename Val, typename... Mixins>
+  struct ActionProp;
+
   /// A class to help enqueue actions for a list of recievers
   ///
   /// Currently only supports one reciever of each type, which shouldn't be a problem.
   template<typename... Recievers>
   struct ActionQueueHelper {
+    template<typename Val, typename Tag, typename... Mixins>
+    using Prop = ActionProp<ActionQueueHelper<Recievers...>, Val, Tag, Mixins...>;
+
     /// Does not own the queue, and does not own the recievers.
     ActionQueueHelper(ActionQueue& queue, Recievers&... r) : queue_(queue), recievers_(r...) {}
 
@@ -110,15 +117,17 @@ namespace otto::core2 {
 
   template<typename... AQHs>
   struct JoinedActionQueueHelper {
+    template<typename Val, typename Tag, typename... Mixins>
+    using Prop = ActionProp<JoinedActionQueueHelper<AQHs...>, Val, Tag, Mixins...>;
+
     JoinedActionQueueHelper(AQHs... aqhs) : aqhs_{std::forward<AQHs>(aqhs)...} {}
 
     template<typename Tag, typename... Args>
     void push(ActionData<Action<Tag, Args...>> action_data)
     {
-      util::tuple_for_each(aqhs_, [this, &action_data] (auto& aqh) {
-        aqh.push(action_data);
-      });
+      util::tuple_for_each(aqhs_, [this, &action_data](auto& aqh) { aqh.push(action_data); });
     }
+
   private:
     std::tuple<AQHs...> aqhs_;
   };
