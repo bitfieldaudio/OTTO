@@ -2,6 +2,8 @@
 
 #include <atomic>
 
+#include "dummy_services.hpp"
+
 #include "core/audio/processor.hpp"
 #include "core/engine/engine.hpp"
 #include "core2/core2.hpp"
@@ -26,7 +28,7 @@ namespace otto::engines::sampler {
     Aqh::Prop<struct end_point_tag, int> end_point = {aqh, 0};
     Aqh::Prop<struct fade_in_time_tag, int> fade_in_time = {aqh, 0};
     Aqh::Prop<struct fade_out_time_tag, int> fade_out_time = {aqh, 0};
-    Aqh::Prop<struct playback_speed_tag, float> playback_speed = {aqh, 0};
+    Aqh::Prop<struct playback_speed_tag, float> playback_speed = {aqh, 0, props::limits(-10, 10)};
 
     DECL_REFLECTION(Props, start_point, end_point, fade_in_time, fade_out_time, playback_speed);
   };
@@ -56,12 +58,10 @@ namespace otto::engines::sampler {
     void action(prop_change<&Props::fade_out_time>, int, int) noexcept;
     void action(prop_change<&Props::playback_speed>, float, float) noexcept;
 
-  private:
     dsp::Sample sample;
     dsp::Sample::iterator sample_iterator = sample.end();
     bool was_triggered = false;
   };
-
 
   struct MainScreen : ui::Screen {
     void draw(ui::vg::Canvas& ctx) override {}
@@ -70,12 +70,19 @@ namespace otto::engines::sampler {
   struct EnvelopeScreen : ui::Screen {
     void draw(ui::vg::Canvas& ctx) override {}
   };
-
-  struct Engine : engine::MiscEngine<Engine> {
+  struct Engine {
     static constexpr util::string_ref name = "Sampler";
     using Props = Props;
 
-    Props props;
+    Audio audio;
+    MainScreen main_screen;
+    EnvelopeScreen envelope_screen;
+
+    AudioAQH audio_aqh = services::AudioManager::current().make_aqh(audio);
+    GraphicsAQH graphics_aqh = services::UIManager::current().make_aqh(main_screen, envelope_screen);
+    Aqh aqh = {audio_aqh, graphics_aqh};
+
+    Props props = {&aqh};
   };
 
   using namespace test;
@@ -211,6 +218,49 @@ namespace otto::engines::sampler {
         }
       }
     }
+  }
+
+  TEST_CASE ("Sampler integration audio") {
+    auto app = services::test::make_dummy_application();
+
+    ActionQueue graphics_queue;
+
+    sampler::Audio sampler_audio;
+    sampler::MainScreen main_screen;
+    sampler::EnvelopeScreen envelope_screen;
+
+    sampler::AudioAQH audio_aqh = services::AudioManager::current().make_aqh(sampler_audio);
+    sampler::GraphicsAQH graphics_aqh = {graphics_queue, main_screen, envelope_screen};
+    sampler::Aqh aqh = {audio_aqh, graphics_aqh};
+    sampler::Props props = {&aqh};
+
+    services::test::DummyEngineManager::current().on_process = [&](auto data) {
+      auto buffer = services::AudioManager::current().buffer_pool().allocate();
+      sampler_audio.process(data.audio, false);
+      util::copy(data.audio, buffer.begin());
+      return data.with(std::array{data.audio, buffer});
+    };
+
+    app.engine_manager->start();
+    app.audio_manager->start();
+
+    props.playback_speed = -1;
+
+    services::test::DummyAudioManager::current().process();
+
+    // The main test here is actually whether actions on the audio queue are run at all
+    REQUIRE(sampler_audio.sample.playback_speed() == -1);
+  }
+
+  TEST_CASE ("Sampler integration") {
+    auto app = services::test::make_dummy_application();
+
+    sampler::Engine sampler_engine;
+
+    app.engine_manager->start();
+    app.audio_manager->start();
+
+    services::test::DummyUIManager::current().display(sampler_engine.main_screen);
   }
 
   void Audio::process(audio::AudioBufferHandle audio, bool triggered) noexcept

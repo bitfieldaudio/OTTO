@@ -7,6 +7,7 @@
 #include "services/debug_ui.hpp"
 #include "util/signals.hpp"
 #include "util/locked.hpp"
+#include "core2/action_queue.hpp"
 
 #include "services/application.hpp"
 
@@ -24,6 +25,15 @@ namespace otto::services {
     /// Use this to get audio buffers. There are currently a maximum of 4 avaliable, so make sure to
     /// release them when you're done with them!
     core::audio::AudioBufferPool& buffer_pool() noexcept;
+
+    /// Push-only access to the action queue
+    /// 
+    /// This queue is consumed at the start of each buffer.
+    core2::PushOnlyActionQueue& action_queue() noexcept;
+
+    /// Make an {@ref ActionQueueHelper} for the audio action queue
+    template<typename... Recievers>
+    auto make_aqh(Recievers&...) noexcept;
 
     /// Send a midi event into the system.
     ///
@@ -43,7 +53,7 @@ namespace otto::services {
     /// Can be used to wait until the current process call is over
     unsigned buffer_number() const noexcept { return _buffer_number; }
 
-    /// Wait at least until the current process call is done
+    /// Block at least until the current process call is done
     void wait_one() const noexcept;
 
     /// Start audio processing
@@ -67,18 +77,32 @@ namespace otto::services {
     }
 
     struct Events {
+      /// Triggered first in constructor
       util::Signal<> pre_init;
     } events;
 
   protected:
+    /// Must be called by implementations before the actual processing is performed
+    /// 
+    /// Executes the items in the action queue, and increments the buffer number
+    void pre_process_tasks() noexcept;
+
     util::double_buffered<core::midi::shared_vector<core::midi::AnyMidiEvent>> midi_bufs = {{}, {}};
     std::atomic_int _samplerate = 48000;
     std::atomic_uint _buffer_size = 256;
     std::atomic_uint _buffer_number = 0;
     util::audio::Graph _cpu_time;
+    core2::ActionQueue action_queue_;
   private:
     core::audio::AudioBufferPool _buffer_pool{1};
     std::atomic_bool _running{false};
   };
+
+  // IMPLEMENTATION //
+
+  template<typename... Recievers>
+  auto AudioManager::make_aqh(Recievers&... recievers) noexcept {
+    return core2::ActionQueueHelper(action_queue_, recievers...);
+  }
 
 } // namespace otto::services

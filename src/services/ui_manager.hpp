@@ -1,7 +1,7 @@
 #pragma once
 
-#include <unordered_map>
 #include <chrono>
+#include <unordered_map>
 
 #include <json.hpp>
 #include <type_safe/bounded_type.hpp>
@@ -14,6 +14,8 @@
 #include "core/service.hpp"
 #include "core/ui/screen.hpp"
 #include "services/application.hpp"
+
+#include "core2/action_queue.hpp"
 
 namespace otto::services {
 
@@ -109,10 +111,22 @@ namespace otto::services {
       util::Signal<core::ui::vg::Canvas&> on_draw;
     } signals;
 
-    ch::Timeline& timeline()
+    ch::Timeline& timeline() noexcept
     {
       return timeline_;
     }
+
+    /// Push-only access to the action queue
+    ///
+    /// This queue is consumed at the start of each buffer.
+    core2::PushOnlyActionQueue& action_queue() noexcept
+    {
+      return action_queue_;
+    }
+
+    /// Make an {@ref ActionQueueHelper} for the audio action queue
+    template<typename... Recievers>
+    auto make_aqh(Recievers&...) noexcept;
 
   protected:
     /// Draws the current screen and overlays.
@@ -137,6 +151,15 @@ namespace otto::services {
 
     chrono::time_point last_frame = chrono::clock::now();
     ch::Timeline timeline_;
+    core2::ActionQueue action_queue_;
   };
+
+  // IMPLEMENTATION //
+
+  template<typename... Recievers>
+  auto UIManager::make_aqh(Recievers&... recievers) noexcept
+  {
+    return core2::ActionQueueHelper(action_queue_, recievers...);
+  }
 
 } // namespace otto::services

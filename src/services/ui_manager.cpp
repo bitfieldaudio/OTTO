@@ -118,6 +118,7 @@ namespace otto::services {
 
   void UIManager::draw_frame(vg::Canvas& ctx)
   {
+    action_queue_.pop_call_all();
     ctx.lineWidth(6);
     ctx.lineCap(vg::LineCap::ROUND);
     ctx.lineJoin(vg::LineJoin::ROUND);

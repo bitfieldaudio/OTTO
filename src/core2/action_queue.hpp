@@ -12,11 +12,14 @@
 
 namespace otto::core2 {
 
-  /// A queue one can push actionData/reciever pairs to have the reciever called on another thread
+  /// The push-only interface of an {@ref ActionQueue}.
+  /// 
+  /// Queue-owners can expose a reference to this to make sure the internal pop functions aren't 
+  /// callable from the outside.
   ///
   /// @TODO Implement as a lock-free thread safe queue
   /// @TODO Implement using a fixed size std::function alternative.
-  struct ActionQueue {
+  struct PushOnlyActionQueue {
     using value_type = std::function<void()>;
 
     int size() const noexcept
@@ -55,6 +58,16 @@ namespace otto::core2 {
       queue_.push(v);
     }
 
+  protected:
+    PushOnlyActionQueue() = default;
+
+    std::queue<value_type, std::deque<value_type>> queue_;
+  };
+
+  /// A queue one can push actionData/reciever pairs to to have the reciever called on another thread
+  struct ActionQueue : PushOnlyActionQueue {
+    using value_type = PushOnlyActionQueue::value_type;
+
     /// Pop a function off the queue and return it
     value_type pop() noexcept
     {
@@ -76,9 +89,6 @@ namespace otto::core2 {
         pop_call();
       }
     }
-
-  private:
-    std::queue<value_type, std::deque<value_type>> queue_;
   };
 
   // FORWARD DECLARATION
@@ -94,7 +104,7 @@ namespace otto::core2 {
     using Prop = ActionProp<ActionQueueHelper<Recievers...>, Val, Tag, Mixins...>;
 
     /// Does not own the queue, and does not own the recievers.
-    ActionQueueHelper(ActionQueue& queue, Recievers&... r) : queue_(queue), recievers_(r...) {}
+    ActionQueueHelper(PushOnlyActionQueue& queue, Recievers&... r) : queue_(queue), recievers_(r...) {}
 
     /// Push an action to be recieved by all recievers that support it
     template<typename Tag, typename... Args>
@@ -111,7 +121,7 @@ namespace otto::core2 {
     }
 
   private:
-    ActionQueue& queue_;
+    PushOnlyActionQueue& queue_;
     std::tuple<Recievers&...> recievers_;
   };
 
