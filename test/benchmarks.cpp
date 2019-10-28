@@ -2,6 +2,9 @@
 
 #include "dummy_services.hpp"
 
+// TODO: Put these back after core2 merge
+#if false
+
 #include "engines/fx/chorus/chorus.hpp"
 #include "engines/fx/wormhole/wormhole.hpp"
 #include "engines/synths/OTTOFM/ottofm.hpp"
@@ -93,3 +96,5 @@ namespace otto::services::test {
     SECTION ("Parameter changes") {}
   }
 } // namespace otto::services::test
+
+#endif
