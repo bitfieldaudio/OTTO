@@ -28,6 +28,11 @@
 /// Forward any expression through std::forward with the correct type
 #define FWD(X) std::forward<decltype(X)>(X)
 
+/// Used to wrap entire overload sets into a single callable lambda
+#define CALLABLE(...) [](auto&&... args) -> decltype(auto) { return std::invoke(__VA_ARGS__, FWD(args)...); }
+/// Used to wrap entire overload sets of member functions into a single callable lambda
+#define WRAP_MEM_FUNC(...) [](auto&& obj, auto&&... args) -> decltype(auto) { return obj.__VA_ARGS__(FWD(args)...); }
+
 // Overload macros based on argument count
 #define GET_MACRO_1(_1, NAME, ...) NAME
 #define GET_MACRO_2(_1, _2, NAME, ...) NAME

@@ -36,6 +36,18 @@ namespace otto::core::voices {
   }
 
   template<typename D>
+  float VoiceBase<D>::volume() noexcept
+  {
+    return volume_;
+  }
+
+  template<typename D>
+  void VoiceBase<D>::volume(float volume) noexcept
+  {
+    volume_ = volume;
+  }
+
+  template<typename D>
   int VoiceBase<D>::midi_note() noexcept
   {
     return midi_note_;
@@ -145,7 +157,7 @@ namespace otto::core::voices {
       return v;
     } else {
       auto reverse_note_stack = util::view::reverse(vm.note_stack);
-      auto found = util::find_if(reverse_note_stack, [](NoteVoicePair& nvp) { return nvp.has_voice(); });
+      auto found = util::find_if(reverse_note_stack, [](NoteStackEntry& nvp) { return nvp.has_voice(); });
       if (found != reverse_note_stack.end()) {
         DLOGI("Stealing voice {} from key {}", (found->voice - vm.voices_.data()), found->note);
         Voice& v = *found->voice;
@@ -202,6 +214,10 @@ namespace otto::core::voices {
     voice.trigger(key, vm.rand_values[(&voice - vm.voices_.data())], evt.velocity / 127.f, false, false);
   }
 
+  template<typename V, int N>
+  void VoiceManager<V, N>::PolyAllocator::set_rand(float rand) noexcept
+  {}
+
   // INTERVAL //
   template<typename V, int N>
   void VoiceManager<V, N>::IntervalAllocator::handle_midi_on(const midi::NoteOnEvent& evt) noexcept
@@ -218,22 +234,32 @@ namespace otto::core::voices {
     }
   }
 
+  template<typename V, int N>
+  void VoiceManager<V, N>::IntervalAllocator::set_interval(float interval) noexcept
+  {}
+
   // MONO //
   template<typename V, int N>
   VoiceManager<V, N>::MonoAllocator::MonoAllocator(VoiceManager& vm_in) : VoiceAllocatorBase(vm_in)
   {
-    for (int i = 1; i < 1 + sub_voice_count_v; ++i) {
-      auto& voice = vm_in.voices_[i];
-      voice.env_.amp(vm_in.sub_);
-    }
+    set_sub(vm_in.sub_);
   }
 
   template<typename V, int N>
   VoiceManager<V, N>::MonoAllocator::~MonoAllocator()
   {
-    for (int i = 0; i < N; ++i) {
-      auto& voice = this->vm.voices_[i];
-      voice.env_.amp(1.f);
+    // Restore the volumes
+    for (auto& voice : this->vm.voices()) {
+      voice.volume(1);
+    }
+  }
+
+  template<typename V, int N>
+  void VoiceManager<V, N>::MonoAllocator::set_sub(float sub) noexcept
+  {
+    // The second and third voice are sub voices on mono mode. This sets their volume.
+    for (auto& voice : util::view::subrange(this->vm.voices(), 1, 3)) {
+      voice.volume(sub);
     }
   }
 
@@ -289,6 +315,10 @@ namespace otto::core::voices {
       voice.env_.amp(1.f);
     }
   }
+
+  template<typename V, int N>
+  void VoiceManager<V, N>::UnisonAllocator::set_detune(float detune) noexcept
+  {}
 
   template<typename V, int N>
   void VoiceManager<V, N>::UnisonAllocator::handle_midi_on(const midi::NoteOnEvent& evt) noexcept
@@ -360,14 +390,6 @@ namespace otto::core::voices {
     //       rand_values.push_back(rand_max[i] * r - r + 1.f);
     //     }
     // }).call_now(settings_props.rand);
-
-    // The second and third voice are sub voices on mono mode. This sets their volume.
-    // for (int i = 1; i < 3; ++i) {
-    //   auto& voice = voices_[i];
-    //   settings_props.sub.on_change().connect([&voice](float s){
-    //     voice.env_.amp(s);
-    //   });
-    // }
 
     // settings_props.play_mode.on_change()
     //   .connect([this](PlayMode mode) {
@@ -470,6 +492,28 @@ namespace otto::core::voices {
     }
   }
 
+
+  template<typename V, int N>
+  void VoiceManager<V, N>::action(core2::prop_tag_change<rand_tag, float>, float rand) noexcept
+  {
+    util::partial_match(voice_allocator, [&](PolyAllocator& a) { a.set_rand(rand); });
+  }
+  template<typename V, int N>
+  void VoiceManager<V, N>::action(core2::prop_tag_change<sub_tag, float>, float sub) noexcept
+  {
+    util::partial_match(voice_allocator, [&](MonoAllocator& a) { a.set_sub(sub); });
+  }
+  template<typename V, int N>
+  void VoiceManager<V, N>::action(core2::prop_tag_change<detune_tag, float>, float detune) noexcept
+  {
+    util::partial_match(voice_allocator, [&](UnisonAllocator& a) { a.set_detune(detune); });
+  }
+  template<typename V, int N>
+  void VoiceManager<V, N>::action(core2::prop_tag_change<interval_tag, int>, int interval) noexcept
+  {
+    util::partial_match(voice_allocator, [&](IntervalAllocator& a) { a.set_interval(interval); });
+  }
+
   template<typename V, int N>
   auto VoiceManager<V, N>::play_mode() noexcept -> PlayMode
   {
@@ -480,18 +524,5 @@ namespace otto::core::voices {
       [](UnisonAllocator&) { return PlayMode::unison; },      //
       [](IntervalAllocator&) { return PlayMode::interval; }); //
   }
-
-  namespace details {
-    inline std::string aux_setting(PlayMode pm) noexcept
-    {
-      switch (pm) {
-        case PlayMode::poly: return "rand";
-        case PlayMode::mono: return "sub";
-        case PlayMode::unison: return "detune";
-        case PlayMode::interval: return "interv.";
-      };
-      return "";
-    }
-  } // namespace details
 
 } // namespace otto::core::voices

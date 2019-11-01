@@ -1,34 +1,55 @@
 #pragma once
-#if false
-
-#include "core/engine/engine.hpp"
-
-#include "core/voices/voice_manager.hpp"
 
 #include <Gamma/Filter.h>
 #include <Gamma/Oscillator.h>
 
+#include "core/engine/engine.hpp"
+#include "core/ui/screen.hpp"
+#include "core/voices/voice_manager.hpp"
+#include "core2/prop.hpp"
 #include "util/reflection.hpp"
 
-namespace otto::engines {
+namespace otto::engines::goss {
 
   using namespace core;
   using namespace core::engine;
   using namespace props;
 
+  struct GossScreen;
+  using GraphicsAqh = core2::ActionQueueHelper<GossScreen>;
+
+  using Aqh = GraphicsAqh;
+
+  struct Actions {
+    /// Publish the rotation variable, which is shared between the audio and screen
+    using rotation_variable = core2::Action<struct rotation_variable_tag, std::atomic<float>&>;
+  };
+
+  struct Props {
+    Aqh* aqh;
+
+    Aqh::Prop<struct drawbar1_tag, float> drawbar1 = {aqh, 1, limits(0, 1), step_size(0.01)};
+    Aqh::Prop<struct drawbar2_tag, float> drawbar2 = {aqh, 0.5, limits(0, 1), step_size(0.01)};
+    Aqh::Prop<struct click_tag, float> click = {aqh, 0.5, limits(0, 1), step_size(0.01)};
+    Aqh::Prop<struct leslie_tag, float> leslie = {aqh, 0.3, limits(0, 1), step_size(0.01)};
+
+    DECL_REFLECTION(Props, drawbar1, drawbar2, click, leslie);
+  };
+
+  struct GossEngine {
+    GossEngine();
+
+  private:
+    std::unique_ptr<GossScreen> screen_;
+    GraphicsAqh graphics_aqh_;
+    Aqh aqh_ = {graphics_aqh_};
+
+    std::atomic<float> rotation_ = 0;
+  };
+
+#if false
   struct GossSynth final : SynthEngine<GossSynth> {
     static constexpr util::string_ref name = "Goss";
-
-    struct Props {
-      Property<float> drawbar1 = {1, limits(0, 1), step_size(0.01)};
-      Property<float> drawbar2 = {0.5, limits(0, 1), step_size(0.01)};
-      Property<float> click = {0.5, limits(0, 1), step_size(0.01)};
-      Property<float> leslie = {0.3, limits(0, 1), step_size(0.01)};
-
-      float rotation_value;
-
-      DECL_REFLECTION(Props, drawbar1, drawbar2, click, leslie);
-    } props;
 
     GossSynth();
 
@@ -83,6 +104,6 @@ namespace otto::engines {
 
     voices::VoiceManager<Post, 6> voice_mgr_;
   };
-
-} // namespace otto::engines
 #endif
+
+} // namespace otto::engines::goss

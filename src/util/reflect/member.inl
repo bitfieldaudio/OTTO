@@ -51,7 +51,7 @@ namespace otto::reflect {
   template<typename Class, typename Callable, typename>
   constexpr auto member(util::string_ref name, Callable&& ref_getter)
   {
-    using Res = typename mpark::lib::invoke_result<Callable, Class&>::type;
+    using Res = typename std::invoke_result<Callable, Class&>::type;
     using Val = std::decay_t<Res>;
     if constexpr (std::is_lvalue_reference_v<Res> && !std::is_const_v<Res>) {
       using MemberT = Member<Class, Val, AccessorType::MutableRef, Callable>;
@@ -70,9 +70,9 @@ namespace otto::reflect {
   template<typename Class, typename Getter, typename Setter, typename>
   constexpr auto member(util::string_ref name, Getter&& getter, Setter&& setter)
   {
-    using Res = typename mpark::lib::invoke_result<Getter, const Class&>::type;
+    using Res = typename std::invoke_result<Getter, const Class&>::type;
     using Val = std::decay_t<Res>;
-    static_assert(mpark::lib::is_invocable<Setter, Class&, const Res&>::value);
+    static_assert(std::is_invocable<Setter, Class&, const Res&>::value);
 
     using Data = std::pair<Getter, Setter>;
 

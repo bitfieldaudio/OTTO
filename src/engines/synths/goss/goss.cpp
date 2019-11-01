@@ -1,30 +1,18 @@
 #include "goss.hpp"
 
-#include "core/ui/vector_graphics.hpp"
+#include "screen.hpp"
+#include "services/ui_manager.hpp"
+
+namespace otto::engines::goss {
+
+  GossEngine::GossEngine()
+    : screen_(std::make_unique<GossScreen>()), //
+      graphics_aqh_(services::UIManager::current().make_aqh(*screen_))
+  {
+    aqh_.push(Actions::rotation_variable::data(rotation_));
+  }
+
 #if false
-
-namespace otto::engines {
-
-  using namespace ui;
-  using namespace ui::vg;
-
-  /*
-   * Declarations
-   */
-
-  struct GossSynthScreen : EngineScreen<GossSynth> {
-    void draw(Canvas& ctx) override;
-    bool keypress(Key key) override;
-    void encoder(EncoderEvent e) override;
-
-    using EngineScreen<GossSynth>::EngineScreen;
-  };
-
-  // GossSynth ////////////////////////////////////////////////////////////////
-
-  GossSynth::GossSynth()
-    : SynthEngine<GossSynth>(std::make_unique<GossSynthScreen>(this)), voice_mgr_(props)
-  {}
 
   float GossSynth::Voice::operator()() noexcept
   {
@@ -112,94 +100,6 @@ namespace otto::engines {
   {
     return voice_mgr_.process(data);
   }
-
-  /*
-   * GossSynthScreen
-   */
-
-  bool GossSynthScreen::keypress(Key key)
-  {
-    return false;
-  }
-
-  void GossSynthScreen::encoder(EncoderEvent e)
-  {
-    switch (e.encoder) {
-    case Encoder::blue: engine.props.drawbar1.step(e.steps); break;
-    case Encoder::green: engine.props.drawbar2.step(e.steps); break;
-    case Encoder::yellow: engine.props.click.step(e.steps); break;
-    case Encoder::red: engine.props.leslie.step(e.steps); break;
-    }
-  }
-
-  void GossSynthScreen::draw(ui::vg::Canvas& ctx)
-  {
-    using namespace ui::vg;
-
-    ctx.font(Fonts::Norm, 35);
-
-    // Gray Base Layers
-    ctx.group([&] {
-      // Ring 1 Base
-      ctx.beginPath();
-      ctx.circle({160, 120}, 55);
-      ctx.lineWidth(6.0);
-      ctx.strokeStyle(Colours::Gray50);
-      ctx.lineCap(LineCap::ROUND);
-      ctx.lineJoin(LineJoin::ROUND);
-      ctx.stroke();
-
-      // Ring 2 Base
-      ctx.beginPath();
-      ctx.circle({160, 120}, 75);
-      ctx.stroke();
-
-      // Ring 3 Base
-      ctx.beginPath();
-      ctx.circle({160, 120}, 95);
-      ctx.stroke();
-    });
-
-    // Coloured Parameters
-    ctx.group([&] {
-      // Ring 1
-      ctx.beginPath();
-      ctx.rotateAround(55, {160, 120});
-      ctx.arc(160, 120, 55, 0, (2 * M_PI * engine.props.click), false);
-      ctx.lineWidth(6.0);
-      ctx.strokeStyle(Colours::Yellow);
-      ctx.lineCap(LineCap::ROUND);
-      ctx.lineJoin(LineJoin::ROUND);
-      ctx.stroke();
-
-      // Ring 2
-      ctx.beginPath();
-      ctx.arc(160, 120, 75, 0, (2 * M_PI * engine.props.drawbar2), false);
-      ctx.strokeStyle(Colours::Green);
-      ctx.stroke();
-
-      // Ring 3
-      ctx.beginPath();
-      ctx.arc(160, 120, 95, 0, (2 * M_PI * engine.props.drawbar1), false);
-      ctx.strokeStyle(Colours::Blue);
-      ctx.stroke();
-    });
-
-    // middle red ring
-    ctx.group([&] {
-      // Ring Base
-      ctx.beginPath();
-      ctx.lineWidth(6.0);
-      ctx.strokeStyle(Colours::Red);
-
-      ctx.rotateAround(engine.props.rotation_value, {160, 120});
-      ctx.circle({160, height/2 + engine.props.leslie*25}, 12.5);
-      ctx.stroke();
-
-      ctx.circle({160, height / 2 + engine.props.leslie * 25}, 12.5);
-      ctx.stroke();
-    });
-    ///
-  }
-} // namespace otto::engines
 #endif
+
+} // namespace otto::engines::goss

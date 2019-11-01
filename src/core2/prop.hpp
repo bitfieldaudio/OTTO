@@ -23,16 +23,23 @@ namespace otto::core::props::mixin {
     OTTO_PROPS_MIXIN_DECLS(action);
     using change_action = core2::Action<PropTag, value_type>;
 
-    void init(AQH& aqh) {
+    void init(AQH& aqh) noexcept
+    {
       action_queue_helper = &aqh;
     }
 
-    void init(AQH* aqh) {
+    void init(AQH* aqh) noexcept
+    {
       action_queue_helper = aqh;
     }
 
-    void on_hook(hook<common::hooks::after_set>& hook)
+    void on_hook(hook<common::hooks::after_set>& hook) noexcept
     {
+      send_actions();
+    }
+
+    /// Send change actions with the current value to all recievers
+    void send_actions() const noexcept {
       OTTO_ASSERT(action_queue_helper != nullptr);
       action_queue_helper->push(change_action::data(as_prop().get()));
     }
@@ -45,7 +52,7 @@ namespace otto::core::props::mixin {
 namespace otto::core2 {
 
   /// A property which queues change_actions on set
-  /// 
+  ///
   /// @tparam Aqh An @ref ActionQueueHelper to which the actions will be enqueued
   /// @tparam Tag A unique tag type for this property
   /// @tparam Val The property value type
@@ -58,10 +65,10 @@ namespace otto::core2 {
     using change_action = core2::Action<Tag, value_type>;
 
     template<typename TRef, typename... Args>
-    ActionProp(Aqh* aqh, TRef&& value,  Args&&... args)
+    ActionProp(Aqh* aqh, TRef&& value, Args&&... args)
       : core::props::Property<Val, core::props::mixin::action<Tag, Aqh>, Mixins...>(std::forward<TRef>(value),
-                                                                        action_mixin::init(aqh),
-                                                                        FWD(args)...)
+                                                                                    action_mixin::init(aqh),
+                                                                                    FWD(args)...)
     {}
 
     using prop_impl_t::operator=;

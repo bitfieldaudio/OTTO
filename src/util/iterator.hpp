@@ -737,8 +737,8 @@ namespace otto::util {
     ///
     template<typename Generator>
     struct generating_iterator
-      : iterator_facade<generating_iterator<Generator>, util::invoke_result_t<Generator>, std::input_iterator_tag> {
-      using value_type = util::invoke_result_t<Generator>;
+      : iterator_facade<generating_iterator<Generator>, std::invoke_result_t<Generator>, std::input_iterator_tag> {
+      using value_type = std::invoke_result_t<Generator>;
       using iterator_category = std::input_iterator_tag;
 
       generating_iterator(Generator generator) : generator{std::move(generator)} {}
@@ -997,9 +997,9 @@ namespace otto::util {
     template<typename WrappedIter, typename Callable>
     struct transform_iterator
       : iterator_facade<transform_iterator<WrappedIter, Callable>,
-                        std::decay_t<util::invoke_result_t<Callable, detail::reference_t<WrappedIter>>>,
+                        std::decay_t<std::invoke_result_t<Callable, detail::reference_t<WrappedIter>>>,
                         detail::iterator_category_t<WrappedIter>,
-                        util::invoke_result_t<Callable, detail::reference_t<WrappedIter>>> {
+                        std::invoke_result_t<Callable, detail::reference_t<WrappedIter>>> {
       transform_iterator(WrappedIter iter, Callable callable)
         : iter(std::move(iter)), callable{std::make_shared<Callable>(std::move(callable))}
       {}

@@ -205,27 +205,6 @@ namespace otto::util {
   template<int N>
   using int_n_bytes_u_t = typename int_n_bytes<N>::utype;
 
-  // libc++ 5.0 doesnt have these
-
-
-  template<typename F, typename... Args>
-  using is_invocable [[deprecated("Use the std:: variant")]] = std::is_invocable<F, Args...>;
-
-  template<typename F, typename... Args>
-  constexpr bool is_invocable_v [[deprecated("Use the std:: variant")]] = std::is_invocable<F, Args...>::value;
-
-  template<typename R, typename F, typename... Args>
-  using is_invocable_r [[deprecated("Use the std:: variant")]] = std::is_invocable_r<R, F, Args...>;
-
-  template<typename R, typename F, typename... Args>
-  constexpr bool is_invocable_r_v [[deprecated("Use the std:: variant")]] = std::is_invocable_r<R, F, Args...>::value;
-
-  template<typename F, typename... Args>
-  using invoke_result [[deprecated("Use the std:: variant")]] = std::invoke_result<F, Args...>;
-
-  template<typename F, typename... Args>
-  using invoke_result_t [[deprecated("Use the std:: variant")]] = std::invoke_result_t<F, Args...>;
-
   /// Cast scoped enums to their underlying numeric type
   template<typename E>
   constexpr auto underlying(E e) noexcept
