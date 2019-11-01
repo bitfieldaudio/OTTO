@@ -5,7 +5,7 @@
 
 #include "util/macros.hpp"
 
-namespace otto::core2 {
+namespace otto::itc {
 
   /// A tagged tuple of an actions arguments
   template<typename Action>
@@ -69,4 +69,4 @@ namespace otto::core2 {
     return false;
   }
 
-} // namespace otto::core2
+} // namespace otto::itc

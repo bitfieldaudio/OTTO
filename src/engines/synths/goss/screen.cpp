@@ -4,7 +4,7 @@
 
 namespace otto::engines::goss {
 
-  using namespace core2;
+  using namespace itc;
 
   using namespace ui;
   using namespace ui::vg;

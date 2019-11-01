@@ -15,7 +15,7 @@ namespace otto::services {
     return _buffer_pool;
   }
 
-  core2::PushOnlyActionQueue& AudioManager::action_queue() noexcept
+  itc::PushOnlyActionQueue& AudioManager::action_queue() noexcept
   {
     return action_queue_;
   }

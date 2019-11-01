@@ -475,7 +475,7 @@ namespace otto::core::voices {
   }
 
   template<typename V, int N>
-  void VoiceManager<V, N>::action(core2::prop_tag_change<play_mode_tag, PlayMode>, PlayMode new_value) noexcept
+  void VoiceManager<V, N>::action(itc::prop_tag_change<play_mode_tag, PlayMode>, PlayMode new_value) noexcept
   {
     switch (new_value) {
       case PlayMode::poly: voice_allocator.template emplace<PolyAllocator>(*this); break;
@@ -494,22 +494,22 @@ namespace otto::core::voices {
 
 
   template<typename V, int N>
-  void VoiceManager<V, N>::action(core2::prop_tag_change<rand_tag, float>, float rand) noexcept
+  void VoiceManager<V, N>::action(itc::prop_tag_change<rand_tag, float>, float rand) noexcept
   {
     util::partial_match(voice_allocator, [&](PolyAllocator& a) { a.set_rand(rand); });
   }
   template<typename V, int N>
-  void VoiceManager<V, N>::action(core2::prop_tag_change<sub_tag, float>, float sub) noexcept
+  void VoiceManager<V, N>::action(itc::prop_tag_change<sub_tag, float>, float sub) noexcept
   {
     util::partial_match(voice_allocator, [&](MonoAllocator& a) { a.set_sub(sub); });
   }
   template<typename V, int N>
-  void VoiceManager<V, N>::action(core2::prop_tag_change<detune_tag, float>, float detune) noexcept
+  void VoiceManager<V, N>::action(itc::prop_tag_change<detune_tag, float>, float detune) noexcept
   {
     util::partial_match(voice_allocator, [&](UnisonAllocator& a) { a.set_detune(detune); });
   }
   template<typename V, int N>
-  void VoiceManager<V, N>::action(core2::prop_tag_change<interval_tag, int>, int interval) noexcept
+  void VoiceManager<V, N>::action(itc::prop_tag_change<interval_tag, int>, int interval) noexcept
   {
     util::partial_match(voice_allocator, [&](IntervalAllocator& a) { a.set_interval(interval); });
   }

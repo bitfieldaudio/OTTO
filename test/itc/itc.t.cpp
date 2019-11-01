@@ -1,7 +1,7 @@
-#include "core2/core2.hpp"
+#include "itc/itc.hpp"
 #include "testing.t.hpp"
 
-namespace otto::core2 {
+namespace otto::itc {
 
   TEST_CASE ("ActionReciever") {
     using void_action = Action<struct void_action_tag>;
@@ -190,4 +190,4 @@ namespace otto::core2 {
     }
   }
 
-} // namespace otto::core2
+} // namespace otto::itc

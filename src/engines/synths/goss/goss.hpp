@@ -6,7 +6,7 @@
 #include "core/engine/engine.hpp"
 #include "core/ui/screen.hpp"
 #include "core/voices/voice_manager.hpp"
-#include "core2/prop.hpp"
+#include "itc/prop.hpp"
 #include "util/reflection.hpp"
 
 namespace otto::engines::goss {
@@ -16,13 +16,13 @@ namespace otto::engines::goss {
   using namespace props;
 
   struct GossScreen;
-  using GraphicsAqh = core2::ActionQueueHelper<GossScreen>;
+  using GraphicsAqh = itc::ActionQueueHelper<GossScreen>;
 
   using Aqh = GraphicsAqh;
 
   struct Actions {
     /// Publish the rotation variable, which is shared between the audio and screen
-    using rotation_variable = core2::Action<struct rotation_variable_tag, std::atomic<float>&>;
+    using rotation_variable = itc::Action<struct rotation_variable_tag, std::atomic<float>&>;
   };
 
   struct Props {

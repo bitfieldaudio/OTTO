@@ -6,13 +6,13 @@
 
 #include "core/audio/processor.hpp"
 #include "core/engine/engine.hpp"
-#include "core2/core2.hpp"
+#include "itc/itc.hpp"
 #include "util/dsp/sample.hpp"
 
 namespace otto::engines::sampler {
 
   using namespace core;
-  using namespace core2;
+  using namespace itc;
   struct Audio;
   struct MainScreen;
   struct EnvelopeScreen;

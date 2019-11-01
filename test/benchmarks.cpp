@@ -2,7 +2,7 @@
 
 #include "dummy_services.hpp"
 
-// TODO: Put these back after core2 merge
+// TODO: Put these back after itc merge
 #if false
 
 #include "engines/fx/chorus/chorus.hpp"

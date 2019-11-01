@@ -15,7 +15,7 @@
 #include "core/ui/screen.hpp"
 #include "services/application.hpp"
 
-#include "core2/action_queue.hpp"
+#include "itc/action_queue.hpp"
 
 namespace otto::services {
 
@@ -119,7 +119,7 @@ namespace otto::services {
     /// Push-only access to the action queue
     ///
     /// This queue is consumed at the start of each buffer.
-    core2::PushOnlyActionQueue& action_queue() noexcept
+    itc::PushOnlyActionQueue& action_queue() noexcept
     {
       return action_queue_;
     }
@@ -151,7 +151,7 @@ namespace otto::services {
 
     chrono::time_point last_frame = chrono::clock::now();
     ch::Timeline timeline_;
-    core2::ActionQueue action_queue_;
+    itc::ActionQueue action_queue_;
   };
 
   // IMPLEMENTATION //
@@ -159,7 +159,7 @@ namespace otto::services {
   template<typename... Recievers>
   auto UIManager::make_aqh(Recievers&... recievers) noexcept
   {
-    return core2::ActionQueueHelper(action_queue_, recievers...);
+    return itc::ActionQueueHelper(action_queue_, recievers...);
   }
 
 } // namespace otto::services

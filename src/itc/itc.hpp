@@ -4,6 +4,6 @@
 #include "prop.hpp"
 #include "action_queue.hpp"
 
-namespace otto::core2 {
+namespace otto::itc {
 
-} // namespace otto::core2
+} // namespace otto::itc

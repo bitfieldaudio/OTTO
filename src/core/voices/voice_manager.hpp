@@ -9,7 +9,7 @@
 #include "core/audio/processor.hpp"
 #include "core/props/props.hpp"
 #include "core/ui/screen.hpp"
-#include "core2/prop.hpp"
+#include "itc/prop.hpp"
 #include "util/algorithm.hpp"
 #include "util/crtp.hpp"
 #include "util/dsp/ADSR_lite.hpp"
@@ -140,13 +140,13 @@ namespace otto::core::voices {
 
     // -- PROPERTY SETTERS -- //
 
-    void action(core2::prop_tag_change<play_mode_tag, PlayMode>, PlayMode) noexcept;
-    void action(core2::prop_tag_change<legato_tag, bool>, bool) noexcept;
-    void action(core2::prop_tag_change<retrig_tag, bool>, bool) noexcept;
-    void action(core2::prop_tag_change<rand_tag, float>, float rand) noexcept;
-    void action(core2::prop_tag_change<sub_tag, float>, float sub) noexcept;
-    void action(core2::prop_tag_change<detune_tag, float>, float detune) noexcept;
-    void action(core2::prop_tag_change<interval_tag, int>, int interval) noexcept;
+    void action(itc::prop_tag_change<play_mode_tag, PlayMode>, PlayMode) noexcept;
+    void action(itc::prop_tag_change<legato_tag, bool>, bool) noexcept;
+    void action(itc::prop_tag_change<retrig_tag, bool>, bool) noexcept;
+    void action(itc::prop_tag_change<rand_tag, float>, float rand) noexcept;
+    void action(itc::prop_tag_change<sub_tag, float>, float sub) noexcept;
+    void action(itc::prop_tag_change<detune_tag, float>, float detune) noexcept;
+    void action(itc::prop_tag_change<interval_tag, int>, int interval) noexcept;
 
     // -- GETTERS -- //
 

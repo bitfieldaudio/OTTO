@@ -14,8 +14,8 @@ namespace otto::core::voices {
     };
 
     VoiceManager<Voice, 6> vmgr;
-    using Aqh = core2::ActionQueueHelper<VoiceManager<Voice, 6>>;
-    core2::ActionQueue queue;
+    using Aqh = itc::ActionQueueHelper<VoiceManager<Voice, 6>>;
+    itc::ActionQueue queue;
     Aqh aqh = {queue, vmgr};
 
     EnvelopeProps<Aqh> envelope_props = {&aqh};

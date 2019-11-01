@@ -7,7 +7,7 @@
 #include "services/debug_ui.hpp"
 #include "util/signals.hpp"
 #include "util/locked.hpp"
-#include "core2/action_queue.hpp"
+#include "itc/action_queue.hpp"
 
 #include "services/application.hpp"
 
@@ -29,7 +29,7 @@ namespace otto::services {
     /// Push-only access to the action queue
     /// 
     /// This queue is consumed at the start of each buffer.
-    core2::PushOnlyActionQueue& action_queue() noexcept;
+    itc::PushOnlyActionQueue& action_queue() noexcept;
 
     /// Make an {@ref ActionQueueHelper} for the audio action queue
     template<typename... Recievers>
@@ -92,7 +92,7 @@ namespace otto::services {
     std::atomic_uint _buffer_size = 256;
     std::atomic_uint _buffer_number = 0;
     util::audio::Graph _cpu_time;
-    core2::ActionQueue action_queue_;
+    itc::ActionQueue action_queue_;
   private:
     core::audio::AudioBufferPool _buffer_pool{1};
     std::atomic_bool _running{false};
@@ -102,7 +102,7 @@ namespace otto::services {
 
   template<typename... Recievers>
   auto AudioManager::make_aqh(Recievers&... recievers) noexcept {
-    return core2::ActionQueueHelper(action_queue_, recievers...);
+    return itc::ActionQueueHelper(action_queue_, recievers...);
   }
 
 } // namespace otto::services

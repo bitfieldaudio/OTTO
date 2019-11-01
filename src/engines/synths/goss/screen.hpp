@@ -5,17 +5,17 @@
 
 namespace otto::engines::goss {
 
-  using namespace core2;
+  using namespace itc;
 
   struct GossScreen : ui::Screen {
     void draw(nvg::Canvas& ctx) override;
     bool keypress(ui::Key key) override;
     void encoder(ui::EncoderEvent e) override;
 
-    void action(core2::prop_change<&Props::drawbar1>, float d1) noexcept;
-    void action(core2::prop_change<&Props::drawbar2>, float d2) noexcept;
-    void action(core2::prop_change<&Props::click>, float c) noexcept;
-    void action(core2::prop_change<&Props::leslie>, float l) noexcept;
+    void action(itc::prop_change<&Props::drawbar1>, float d1) noexcept;
+    void action(itc::prop_change<&Props::drawbar2>, float d2) noexcept;
+    void action(itc::prop_change<&Props::click>, float c) noexcept;
+    void action(itc::prop_change<&Props::leslie>, float l) noexcept;
     void action(Actions::rotation_variable, std::atomic<float>& v) noexcept;
 
     float drawbar1 = 1;

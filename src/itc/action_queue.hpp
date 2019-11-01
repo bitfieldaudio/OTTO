@@ -10,7 +10,7 @@
 
 #include "action.hpp"
 
-namespace otto::core2 {
+namespace otto::itc {
 
   /// The push-only interface of an {@ref ActionQueue}.
   /// 
@@ -142,4 +142,4 @@ namespace otto::core2 {
     std::tuple<AQHs...> aqhs_;
   };
 
-} // namespace otto::core2
+} // namespace otto::itc

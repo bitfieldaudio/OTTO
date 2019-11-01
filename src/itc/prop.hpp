@@ -21,7 +21,7 @@ namespace otto::core::props::mixin {
   struct otto::core::props::mixin::leaf<action<PropTag, AQH>, ValueType, TagList> {
     using action = action<PropTag, AQH>;
     OTTO_PROPS_MIXIN_DECLS(action);
-    using change_action = core2::Action<PropTag, value_type>;
+    using change_action = itc::Action<PropTag, value_type>;
 
     void init(AQH& aqh) noexcept
     {
@@ -49,7 +49,7 @@ namespace otto::core::props::mixin {
   };
 
 } // namespace otto::core::props::mixin
-namespace otto::core2 {
+namespace otto::itc {
 
   /// A property which queues change_actions on set
   ///
@@ -62,7 +62,7 @@ namespace otto::core2 {
     using prop_impl_t = core::props::Property<Val, core::props::mixin::action<Tag, Aqh>, Mixins...>;
     using value_type = Val;
     using action_mixin = core::props::mixin::action<Tag, Aqh>;
-    using change_action = core2::Action<Tag, value_type>;
+    using change_action = itc::Action<Tag, value_type>;
 
     template<typename TRef, typename... Args>
     ActionProp(Aqh* aqh, TRef&& value, Args&&... args)
@@ -115,4 +115,4 @@ namespace otto::core2 {
   template<typename PropTag, typename ValueType>
   using prop_tag_change = Action<PropTag, ValueType>;
 
-} // namespace otto::core2
+} // namespace otto::itc

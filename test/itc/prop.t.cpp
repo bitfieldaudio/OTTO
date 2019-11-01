@@ -1,12 +1,12 @@
 #include "testing.t.hpp"
 
 #include "core/engine/engine.hpp"
-#include "core2/core2.hpp"
+#include "itc/itc.hpp"
 
 namespace otto::engines::test_engine {
 
   using namespace core;
-  using namespace core2;
+  using namespace itc;
 
   struct Audio;
   struct Screen;
