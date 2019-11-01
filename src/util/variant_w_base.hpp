@@ -1,6 +1,6 @@
 #pragma once
 
-#include "util/variant.hpp"
+#include <variant>
 
 namespace otto::util {
 
@@ -10,7 +10,7 @@ namespace otto::util {
     using Self = basic_variant_w_base<Base, Variant>;
 
     template<class Visitor, class Base_, class Variant_>
-    friend constexpr decltype(auto) mpark::visit(Visitor&&, basic_variant_w_base<Base_, Variant_>&);
+    friend constexpr decltype(auto) std::visit(Visitor&&, basic_variant_w_base<Base_, Variant_>&);
 
     template<class T, class Base_, class Variant_>
     friend constexpr decltype(auto) std::get(basic_variant_w_base<Base_, Variant_>&);
@@ -24,10 +24,10 @@ namespace otto::util {
 
     void update_base()
     {
-      m_base = util::visit(
+      m_base = std::visit(
         [](auto&& arg) -> Base* {
           using Arg = std::decay_t<decltype(arg)>;
-          if constexpr (std::is_same_v<Arg, util::monostate>) {
+          if constexpr (std::is_same_v<Arg, std::monostate>) {
             return nullptr;
           }
 
@@ -52,16 +52,26 @@ namespace otto::util {
     {
       update_base();
     }
-    template<class T, typename = is_not_self<T>>
-    basic_variant_w_base(T&& value) : m_variant(std::forward<T>(value))
-    {
-      update_base();
-    }
     basic_variant_w_base(const Variant& var) : m_variant(var)
     {
       update_base();
     }
     basic_variant_w_base(Variant&& var) : m_variant(std::move(var))
+    {
+      update_base();
+    }
+    template<class T, typename = is_not_self<T>>
+    basic_variant_w_base(T&& value) : m_variant(std::forward<T>(value))
+    {
+      update_base();
+    }
+    template<typename T, typename... Args>
+    basic_variant_w_base(std::in_place_type_t<T> tag, Args&&... args) : m_variant(tag, std::forward<Args>(args)...)
+    {
+      update_base();
+    }
+    template<std::size_t I, typename... Args>
+    basic_variant_w_base(std::in_place_index_t<I> tag, Args&&... args) : m_variant(tag, std::forward<Args>(args)...)
     {
       update_base();
     }
@@ -164,7 +174,7 @@ namespace otto::util {
   };
 
   template<typename Base, typename... Types>
-  using variant_w_base = basic_variant_w_base<Base, util::variant<Types...>>;
+  using variant_w_base = basic_variant_w_base<Base, std::variant<Types...>>;
 
 
 } // namespace otto::util
@@ -172,8 +182,7 @@ namespace otto::util {
 namespace std {
 
   template<class Visitor, class Base, class Variant>
-  constexpr decltype(auto) visit(Visitor&& vis,
-                                 otto::util::basic_variant_w_base<Base, Variant>& var)
+  constexpr decltype(auto) visit(Visitor&& vis, otto::util::basic_variant_w_base<Base, Variant>& var)
   {
     return std::visit(std::forward<Visitor>(vis), var.variant());
   }
@@ -183,7 +192,7 @@ namespace std {
   {
     if constexpr (std::is_same_v<T, Base>) {
       if (var.base() == nullptr) {
-        throw otto::util::bad_variant_access();
+        throw std::bad_variant_access();
       }
       // assert(var.base() != nullptr);
       return *var.base();

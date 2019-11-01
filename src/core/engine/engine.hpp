@@ -14,7 +14,6 @@
 #include "core/audio/processor.hpp"
 #include "core/props/props.hpp"
 #include "core/ui/screen.hpp"
-#include "core/voices/voice_manager.hpp"
 
 namespace otto::core::engine {
 
@@ -109,15 +108,8 @@ namespace otto::core::engine {
   struct ITypedEngine<EngineType::synth> : IEngine {
     using IEngine::IEngine;
     virtual audio::ProcessData<1> process(audio::ProcessData<1>) = 0;
-    virtual voices::IVoiceManager& voice_mgr() = 0;
-    virtual ui::Screen& envelope_screen()
-    {
-      return voice_mgr().envelope_screen();
-    }
-    virtual ui::Screen& voices_screen()
-    {
-      return voice_mgr().settings_screen();
-    }
+    virtual ui::Screen& envelope_screen() = 0;
+    virtual ui::Screen& voices_screen() = 0;
   };
 
   template<>

@@ -87,4 +87,11 @@ namespace otto::test {
     float value_;
     float margin_ = 0.0001;
   };
+
+  template<typename Cont>
+  auto sort(Cont&& c) {
+    auto vec = util::view::to_vec(c);
+    util::sort(vec);
+    return vec;
+  }
 } // namespace otto::test

@@ -21,7 +21,7 @@ namespace otto::core::props::mixin {
   struct otto::core::props::mixin::leaf<action<PropTag, AQH>, ValueType, TagList> {
     using action = action<PropTag, AQH>;
     OTTO_PROPS_MIXIN_DECLS(action);
-    using change_action = core2::Action<PropTag, value_type, value_type>;
+    using change_action = core2::Action<PropTag, value_type>;
 
     void init(AQH& aqh) {
       action_queue_helper = &aqh;
@@ -34,7 +34,7 @@ namespace otto::core::props::mixin {
     void on_hook(hook<common::hooks::after_set>& hook)
     {
       OTTO_ASSERT(action_queue_helper != nullptr);
-      action_queue_helper->push(change_action::data(as_prop().get(), hook.value()));
+      action_queue_helper->push(change_action::data(as_prop().get()));
     }
 
   private:
@@ -55,7 +55,7 @@ namespace otto::core2 {
     using prop_impl_t = core::props::Property<Val, core::props::mixin::action<Tag, Aqh>, Mixins...>;
     using value_type = Val;
     using action_mixin = core::props::mixin::action<Tag, Aqh>;
-    using change_action = core2::Action<Tag, value_type, value_type>;
+    using change_action = core2::Action<Tag, value_type>;
 
     template<typename TRef, typename... Args>
     ActionProp(Aqh* aqh, TRef&& value,  Args&&... args)
@@ -103,5 +103,9 @@ namespace otto::core2 {
   /// The Action type for a property member pointer
   template<auto PropPtr>
   using prop_change = typename PropTypeFor::get<PropPtr>::change_action;
+
+  /// The Action type for a property tag type
+  template<typename PropTag, typename ValueType>
+  using prop_tag_change = Action<PropTag, ValueType>;
 
 } // namespace otto::core2

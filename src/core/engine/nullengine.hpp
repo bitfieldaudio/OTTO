@@ -45,26 +45,27 @@ namespace otto::core::engine {
     NullEngine();
     audio::ProcessData<1> process(audio::ProcessData<1> data) noexcept override;
 
-    voices::IVoiceManager& voice_mgr() override
+    ui::Screen& envelope_screen() override
     {
-      return voice_mgr_;
+      return screen();
+    }
+
+    ui::Screen& voices_screen() override
+    {
+      return screen();
     }
 
   private:
-    struct Pre : voices::PreBase<Pre, Props> {
-      using voices::PreBase<Pre, Props>::PreBase;
-    };
-    struct Voice : voices::VoiceBase<Voice, Pre> {
-      using voices::VoiceBase<Voice, Pre>::VoiceBase;
-      float operator()() noexcept
-      {
-        return 0;
-      }
-    };
+    // struct Voice : voices::VoiceBase<Voice> {
+    //   using voices::VoiceBase<Voice>::VoiceBase;
+    //   float operator()() noexcept
+    //   {
+    //     return 0;
+    //   }
+    // };
 
-    struct Post : voices::PostBase<Post, Voice> {};
-    using VoiceManager = voices::VoiceManager<Post, 6>;
-    VoiceManager voice_mgr_ = {props};
+    // using VoiceManager = voices::VoiceManager<Voice, 6>;
+    // VoiceManager voice_mgr_;
   };
 
 } // namespace otto::core::engine

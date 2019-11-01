@@ -52,11 +52,11 @@ namespace otto::engines::sampler {
     void action(Actions::get_progress, std::atomic<float>&) const noexcept;
     void action(Actions::set_sample_buffer, gsl::span<float>) noexcept;
 
-    void action(prop_change<&Props::start_point>, int, int) noexcept;
-    void action(prop_change<&Props::end_point>, int, int) noexcept;
-    void action(prop_change<&Props::fade_in_time>, int, int) noexcept;
-    void action(prop_change<&Props::fade_out_time>, int, int) noexcept;
-    void action(prop_change<&Props::playback_speed>, float, float) noexcept;
+    void action(prop_change<&Props::start_point>, int) noexcept;
+    void action(prop_change<&Props::end_point>, int) noexcept;
+    void action(prop_change<&Props::fade_in_time>, int) noexcept;
+    void action(prop_change<&Props::fade_out_time>, int) noexcept;
+    void action(prop_change<&Props::playback_speed>, float) noexcept;
 
     dsp::Sample sample;
     dsp::Sample::iterator sample_iterator = sample.end();
@@ -184,13 +184,13 @@ namespace otto::engines::sampler {
         REQUIRE(progress == approx(0.f));
       }
       SECTION ("When progressing 10 frames into a 100 frames sample playing at 2x, progress is 0.2") {
-        audio.action(prop_change<&Props::playback_speed>(), 2, 1);
+        audio.action(prop_change<&Props::playback_speed>(), 2);
         audio.process(buffer, true);
         audio.action(Actions::get_progress(), progress);
         REQUIRE(progress == approx(0.2f));
       }
       SECTION ("Reverse") {
-        audio.action(prop_change<&Props::playback_speed>(), -1, 1);
+        audio.action(prop_change<&Props::playback_speed>(), -1);
         SECTION ("Initially, progress is one") {
           audio.action(Actions::get_progress(), progress);
           REQUIRE(progress == approx(1.f));
@@ -206,7 +206,7 @@ namespace otto::engines::sampler {
           REQUIRE(progress == approx(0.9f));
         }
         SECTION ("When progressing 10 frames into a 100 frames sample playing at 2x, progress is 0.2") {
-          audio.action(prop_change<&Props::playback_speed>(), -2, -1);
+          audio.action(prop_change<&Props::playback_speed>(), -2);
           audio.process(buffer, true);
           audio.action(Actions::get_progress(), progress);
           REQUIRE(progress == approx(0.8f));
@@ -297,23 +297,23 @@ namespace otto::engines::sampler {
     sample_iterator = sample.end();
   }
 
-  void Audio::action(prop_change<&Props::start_point>, int new_value, int old_value) noexcept
+  void Audio::action(prop_change<&Props::start_point>, int new_value) noexcept
   {
     sample.start_point(new_value);
   }
-  void Audio::action(prop_change<&Props::end_point>, int new_value, int old_value) noexcept
+  void Audio::action(prop_change<&Props::end_point>, int new_value) noexcept
   {
     sample.end_point(new_value);
   }
-  void Audio::action(prop_change<&Props::fade_in_time>, int new_value, int old_value) noexcept
+  void Audio::action(prop_change<&Props::fade_in_time>, int new_value) noexcept
   {
     sample.fade_in_time(new_value);
   }
-  void Audio::action(prop_change<&Props::fade_out_time>, int new_value, int old_value) noexcept
+  void Audio::action(prop_change<&Props::fade_out_time>, int new_value) noexcept
   {
     sample.fade_out_time(new_value);
   }
-  void Audio::action(prop_change<&Props::playback_speed>, float new_value, float old_value) noexcept
+  void Audio::action(prop_change<&Props::playback_speed>, float new_value) noexcept
   {
     bool do_finish = sample_iterator == sample.end();
     sample.playback_speed(new_value);

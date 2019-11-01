@@ -3,6 +3,8 @@
 #include <functional>
 #include <tuple>
 
+#include "util/macros.hpp"
+
 namespace otto::core2 {
 
   /// A tagged tuple of an actions arguments
@@ -34,7 +36,7 @@ namespace otto::core2 {
       typename Tag,
       typename... Args,
       typename = std::void_t<decltype(std::declval<T>().action(Action<Tag, Args...>(), std::declval<Args>()...))>>
-    static constexpr auto _is(T, Action<Tag, Args...>) -> std::true_type;
+    static constexpr auto _is(T&&, Action<Tag, Args...>) -> std::true_type;
 
   public:
     template<typename T, typename Action>

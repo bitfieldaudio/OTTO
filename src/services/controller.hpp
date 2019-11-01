@@ -5,10 +5,10 @@
 #include <cstdint>
 #include <foonathan/array/flat_map.hpp>
 #include <vector>
+#include <variant>
 
 #include "util/locked.hpp"
 #include "util/thread.hpp"
-#include "util/variant.hpp"
 
 #include "core/service.hpp"
 #include "services/application.hpp"
@@ -208,7 +208,7 @@ namespace otto::services {
     /// Function type for key handlers
     using KeyHandler = std::function<void(Key k)>;
 
-    using Event = util::variant<EncoderEvent, KeyPressEvent, KeyReleaseEvent>;
+    using Event = std::variant<EncoderEvent, KeyPressEvent, KeyReleaseEvent>;
     using EventBag = std::vector<Event>;
 
     Controller();

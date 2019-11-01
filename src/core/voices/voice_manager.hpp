@@ -1,40 +1,53 @@
 #pragma once
 
+#include <Gamma/Envelope.h>
+
 #include <deque>
 #include <type_traits>
 #include <vector>
 
-#include <Gamma/Envelope.h>
-#include "util/dsp/ADSR_lite.hpp"
-#include "util/dsp/SegExpBypass.hpp"
-
+#include "core/audio/processor.hpp"
 #include "core/props/props.hpp"
 #include "core/ui/screen.hpp"
-
-#include "core/audio/processor.hpp"
-
+#include "core2/prop.hpp"
 #include "util/algorithm.hpp"
 #include "util/crtp.hpp"
-
+#include "util/dsp/ADSR_lite.hpp"
+#include "util/dsp/SegExpBypass.hpp"
 #include "util/dsp/dsp.hpp"
+#include "util/local_vector.hpp"
+#include "util/variant_w_base.hpp"
 
 namespace otto::core::voices {
 
+  /// Tag type for the attack property.
+  struct attack_tag {};
+  /// Tag type for the decay property.
+  struct decay_tag {};
+  /// Tag type for the sustain property.
+  struct sustain_tag {};
+  /// Tag type for the release property.
+  struct release_tag {};
+
+  /// Tag type for the play_mode property.
+  struct play_mode_tag {};
+  /// Tag type for the rand property.
+  struct rand_tag {};
+  /// Tag type for the sub property.
+  struct sub_tag {};
+  /// Tag type for the detune property.
+  struct detune_tag {};
+  /// Tag type for the interval property.
+  struct interval_tag {};
+  /// Tag type for the portamento property.
+  struct portamento_tag {};
+  /// Tag type for the legato property.
+  struct legato_tag {};
+  /// Tag type for the retrig property.
+  struct retrig_tag {};
+
   template<typename PostT, int NumberOfVoices>
   struct VoiceManager;
-
-  template<typename DerivedT, typename PropsT>
-  struct PreBase : util::crtp<DerivedT, PreBase<DerivedT, PropsT>> {
-    using Props = PropsT;
-
-    void operator()() noexcept {};
-
-    /// Constructor
-    PreBase(Props& p) noexcept;
-
-    /// The engine properties.
-    Props& props;
-  };
 
   /// Base class for voices
   ///
@@ -55,26 +68,21 @@ namespace otto::core::voices {
   ///
   /// @tparam Derived the derived voice type
   /// @tparam Props the Props type of the engine.
-  template<typename DerivedT, typename PreT>
-  struct VoiceBase : util::crtp<DerivedT, VoiceBase<DerivedT, PreT>> {
-    using Pre = PreT;
-
-    static_assert(std::is_base_of_v<PreBase<Pre, typename Pre::PreBase::Props>, Pre>,
-                  "VoiceBase<Derived, Pre>: Pre must inherit from PreBase<Pre, Props>");
-    static_assert(util::is_invocable_r_v<void, Pre>, "Pre must have a `void operator()()` defined");
-
-    using Props = typename Pre::PreBase::Props;
-
-    VoiceBase(Pre& p) noexcept;
+  template<typename DerivedT>
+  struct VoiceBase : util::crtp<DerivedT, VoiceBase<DerivedT>> {
+    VoiceBase() noexcept;
     VoiceBase(const VoiceBase&) = delete;
 
     /// Implement a handler for note on events
-    /// freq_target is the arget frequency. This allows frequency-specific
+    /// freq_target is the target frequency. This allows frequency-specific
     /// calculations to be done even when there is portamento.
-    virtual void on_note_on(float freq_target) noexcept;
+    void on_note_on(float freq_target) noexcept;
 
     /// Implement a handler for note off events
-    virtual void on_note_off() noexcept;
+    void on_note_off() noexcept;
+
+    /// Get the midi note this voice is currently attached to
+    int midi_note() noexcept;
 
     /// Get the current frequency this voice should play
     /// Needs to be applied separately for each sample to handle for example glide.
@@ -100,9 +108,6 @@ namespace otto::core::voices {
     /// The current envelope value
     float envelope() noexcept;
 
-    Pre& pre;
-    Props& props;
-
   private:
     template<typename T, int N>
     friend struct VoiceManager;
@@ -119,173 +124,78 @@ namespace otto::core::voices {
     float level = 1.f;
     float aftertouch_ = 0.f;
     int midi_note_ = 0;
+    bool triggered_ = false;
 
     gam::ADSR<> env_;
     SegExpBypass<> glide_{0.f};
   };
 
-  template<typename DerivedT, typename VoiceT>
-  struct PostBase : util::crtp<DerivedT, PostBase<DerivedT, VoiceT>> {
-    using Voice = VoiceT;
-    static_assert(std::is_base_of_v<VoiceBase<Voice, typename Voice::VoiceBase::Pre>, Voice>,
-                  "PostBase<Derived, Voice>: Voice must inherit from VoiceBase<Voice, Pre>");
-
-    static_assert(util::is_invocable_r_v<float, Voice>, "Voice must have a `float operator()()` defined");
-
-
-    using Pre = typename Voice::VoiceBase::Pre;
-    using Props = typename Voice::VoiceBase::Props;
-
-    float operator()(float f) noexcept
-    {
-      return f;
-    }
-
-    /// Constructor
-    PostBase(Pre& p) noexcept;
-
-    Pre& pre;
-    Props& props;
-  };
-
-  namespace details {
-    /// The way the voicemanager handles voices
-    BETTER_ENUM(PlayMode,
-                // Needs signed int for props::wrap to work
-                std::int8_t,
-                /// Multiple voices at once, each playing a note
-                poly,
-                /// Only a single voice in use, always playing the latest note
-                mono,
-                /// All voices in use, all playing the latest note (possibly with detune)
-                unison,
-                /// Plays a given interval
-                interval);
-
-    /// Convert a playmode to string
-    ///
-    /// @return an all-lowercase string corresponding to the enum name
-    std::string to_string(PlayMode) noexcept;
-    /// Returns the name of the corresponding extra setting
-    std::string aux_setting(PlayMode pm) noexcept;
-
-    struct EnvelopeProps {
-      props::Property<float> attack = {0, props::limits(0, 1), props::step_size(0.02)};
-      props::Property<float> decay = {0, props::limits(0, 1), props::step_size(0.02)};
-      props::Property<float> sustain = {1, props::limits(0, 1), props::step_size(0.02)};
-      props::Property<float> release = {0.2, props::limits(0, 1), props::step_size(0.02)};
-
-      DECL_REFLECTION(EnvelopeProps, attack, decay, sustain, release);
-    };
-
-    struct SettingsProps {
-      props::Property<PlayMode, props::wrap> play_mode = {PlayMode::poly};
-      props::Property<float> rand = {0, props::limits(0, 1), props::step_size(0.01)};
-      props::Property<float> sub = {1, props::limits(0.01, 1), props::step_size(0.01)};
-      props::Property<float> detune = {0, props::limits(0, 1), props::step_size(0.01)};
-      props::Property<int> interval = {0, props::limits(-12, 12)};
-
-      props::Property<float> portamento = {0, props::limits(0, 1), props::step_size(0.01)};
-      props::Property<bool> legato = {false};
-      props::Property<bool> retrig = {false};
-
-      props::Property<int, props::no_signal> octave = {0, props::limits(-2, 7)};
-      props::Property<int, props::no_signal> transpose = {0, props::limits(-12, 12)};
-
-      DECL_REFLECTION(SettingsProps,
-                      play_mode,
-                      rand,
-                      sub,
-                      detune,
-                      interval,
-                      portamento,
-                      legato,
-                      retrig,
-                      octave,
-                      transpose);
-    };
-
-    std::unique_ptr<ui::Screen> make_envelope_screen(EnvelopeProps& props);
-    std::unique_ptr<ui::Screen> make_settings_screen(SettingsProps& props);
-
-  } // namespace details
-
-  // -- VOICE MANAGER INTERFACE -- //
-
-  struct IVoiceManager {
-    using PlayMode = details::PlayMode;
-    using EnvelopeProps = details::EnvelopeProps;
-    using SettingsProps = details::SettingsProps;
-
-    virtual ~IVoiceManager() = default;
-    virtual int voice_count() noexcept = 0;
-
-    virtual ui::Screen& envelope_screen() noexcept = 0;
-    virtual ui::Screen& settings_screen() noexcept = 0;
-  };
+  /// The way the voicemanager handles voices
+  BETTER_ENUM(PlayMode,
+              // Needs signed int for props::wrap to work
+              std::int8_t,
+              /// Multiple voices at once, each playing a note
+              poly,
+              /// Only a single voice in use, always playing the latest note
+              mono,
+              /// All voices in use, all playing the latest note (possibly with detune)
+              unison,
+              /// Plays a given interval
+              interval);
 
   // -- VOICE MANAGER -- //
 
-  template<typename PostT, int NumberOfVoices>
-  struct VoiceManager : IVoiceManager {
-    /// PostProcessor
-    using Post = PostT;
+  template<typename VoiceT, int NumberOfVoices>
+  struct VoiceManager {
+    using Voice = VoiceT;
 
-    static_assert(std::is_base_of_v<PostBase<Post, typename Post::PostBase::Voice>, Post>,
-                  "PostBase<Derived, Post>: Post must inherit from PostBase<Post, Voice>");
-    static_assert(util::is_invocable_r_v<float, Post, float>, "Post must have a `float operator()(float)` defined");
-
-    using Voice = typename Post::PostBase::Voice;
-    using Props = typename Post::PostBase::Props;
-    using Pre = typename Post::PostBase::Pre;
+    static_assert(std::is_base_of_v<VoiceBase<Voice>, Voice>,
+                  "VoiceManager<Voice, N>: Voice must derive from VoiceBase<Voice>");
 
     /// The number of voices
     static constexpr int voice_count_v = NumberOfVoices;
     static constexpr int sub_voice_count_v = 2;
 
-    int voice_count() noexcept override
-    {
-      return NumberOfVoices;
-    }
-
-    // Assert requirements met
-    static_assert(std::is_base_of_v<VoiceBase<Voice, Pre>, Voice>,
-                  "VoiceManager<Voice, N>: Voice must derive from VoiceBase<Voice, Pre>");
-
-    using PlayMode = details::PlayMode;
-    using EnvelopeProps = details::EnvelopeProps;
-    using SettingsProps = details::SettingsProps;
-
     /// Constructor
-    VoiceManager(Props& props) noexcept;
+    VoiceManager() noexcept;
 
-    ui::Screen& envelope_screen() noexcept override;
-    ui::Screen& settings_screen() noexcept override;
-
-    /// Process audio, applying Preprocessing, each voice and then postprocessing
-    float operator()() noexcept;
-
-    // Voice& handle_midi_on(const midi::NoteOnEvent&) noexcept;
-    // Voice* handle_midi_off(const midi::NoteOffEvent&) noexcept;
-    void handle_pitch_bend(const midi::PitchBendEvent&) noexcept;
-    void handle_control_change(const midi::ControlChangeEvent&) noexcept;
 
     /// Process audio, applying Preprocessing, each voice and then postprocessing
     audio::ProcessData<1> process(audio::ProcessData<1> data) noexcept;
 
+    /// Process audio, applying Preprocessing, each voice and then postprocessing
+    float operator()() noexcept;
+
+    void handle_midi(const midi::AnyMidiEvent&) noexcept;
+    void handle_pitch_bend(const midi::PitchBendEvent&) noexcept;
+    void handle_control_change(const midi::ControlChangeEvent&) noexcept;
+
     /// Return list of voices
     std::array<Voice, voice_count_v>& voices();
 
-    DECL_REFLECTION(VoiceManager,
-                    ("envelope", &VoiceManager::envelope_props),
-                    ("voice_settings", &VoiceManager::settings_props));
+    // -- PROPERTY SETTERS -- //
 
+    void action(core2::prop_tag_change<play_mode_tag, PlayMode>, PlayMode) noexcept;
+    void action(core2::prop_tag_change<legato_tag, bool>, bool) noexcept;
+    void action(core2::prop_tag_change<retrig_tag, bool>, bool) noexcept;
+
+    // -- GETTERS -- //
+
+    PlayMode play_mode() noexcept;
+
+    // -- PRIVATE FIELDS -- //
   private:
-    std::vector<float> detune_values;
-    std::vector<float> rand_values;
+
+    util::local_vector<float, 7> detune_values;
+    util::local_vector<float, voice_count_v> rand_values;
     // Random values. 100% random, organic and fresh. Works for up to 12 voices.
-    std::array<float, 12> rand_max = {0.94, 0.999, 1.03, 1.06, 0.92, 1.01,
-                                      1.02, 0.98, 1.0, 1.09, 0.94, 1.05};
+    static inline std::array<float, 12> rand_max = {0.94, 0.999, 1.03, 1.06, 0.92, 1.01,
+                                                    1.02, 0.98,  1.0,  1.09, 0.94, 1.05};
+
+    bool legato_ = false;
+    bool retrig_ = false;
+    int interval_ = 0;
+    float sub_ = 0.f;
 
     struct NoteVoicePair {
       /// Which physical key is activating this note
@@ -311,13 +221,9 @@ namespace otto::core::voices {
     };
 
     /// Voice allocators - Corresponds to different playmodes
-    struct IVoiceAllocator {
-      // Owner
-      VoiceManager& vm;
-
-      IVoiceAllocator(VoiceManager& vm_in);
-
-      virtual ~IVoiceAllocator() = 0;
+    struct VoiceAllocatorBase {
+      VoiceAllocatorBase(VoiceManager& vm_in) noexcept;
+      ~VoiceAllocatorBase() noexcept;
 
       virtual void handle_midi_on(const midi::NoteOnEvent&) noexcept = 0;
       /// Midi off is common to all
@@ -325,52 +231,92 @@ namespace otto::core::voices {
 
       Voice& get_voice(int key, int note) noexcept;
       void stop_voice(int key) noexcept;
+
+      /// Owner
+      VoiceManager& vm;
     };
 
-    struct PolyAllocator final : IVoiceAllocator {
-      PolyAllocator(VoiceManager& vm_in) : IVoiceAllocator(vm_in) {};
+    struct PolyAllocator final : VoiceAllocatorBase {
+      PolyAllocator(VoiceManager& vm_in) : VoiceAllocatorBase(vm_in){};
       void handle_midi_on(const midi::NoteOnEvent&) noexcept override;
     };
 
-    struct MonoAllocator final : IVoiceAllocator {
+    struct MonoAllocator final : VoiceAllocatorBase {
       MonoAllocator(VoiceManager& vm_in);
       ~MonoAllocator();
       void handle_midi_on(const midi::NoteOnEvent&) noexcept override;
     };
 
-    struct UnisonAllocator final : IVoiceAllocator {
+    struct UnisonAllocator final : VoiceAllocatorBase {
       UnisonAllocator(VoiceManager& vm_in);
       ~UnisonAllocator();
       void handle_midi_on(const midi::NoteOnEvent&) noexcept override;
     };
 
-    struct IntervalAllocator final : IVoiceAllocator {
-      IntervalAllocator(VoiceManager& vm_in) : IVoiceAllocator(vm_in) {}
+    struct IntervalAllocator final : VoiceAllocatorBase {
+      IntervalAllocator(VoiceManager& vm_in) : VoiceAllocatorBase(vm_in) {}
       void handle_midi_on(const midi::NoteOnEvent&) noexcept override;
     };
 
 
     float pitch_bend_ = 1;
 
-    props::Property<bool> sustain_ = {false};
+    bool sustain_ = false;
 
     std::deque<Voice*> free_voices;
     std::deque<NoteVoicePair> note_stack;
 
-    Props& props;
-    Pre pre = {props};
-    std::array<Voice, voice_count_v> voices_ = util::generate_array<voice_count_v>([this](auto) { return Voice{pre}; });
-    Post post = {pre};
+    std::array<Voice, voice_count_v> voices_ = util::generate_array<voice_count_v>([](auto) { return Voice{}; });
 
-    EnvelopeProps envelope_props;
-    SettingsProps settings_props;
-
-    std::unique_ptr<IVoiceAllocator> voice_allocator;
-
-    std::unique_ptr<ui::Screen> envelope_screen_ = details::make_envelope_screen(envelope_props);
-    std::unique_ptr<ui::Screen> settings_screen_ = details::make_settings_screen(settings_props);
+    util::variant_w_base<VoiceAllocatorBase, PolyAllocator, MonoAllocator, UnisonAllocator, IntervalAllocator>
+      voice_allocator = {std::in_place_type<PolyAllocator>, *this};
 
   }; // namespace otto::core::voices
+
+  /// Convert a playmode to string
+  ///
+  /// @return an all-lowercase string corresponding to the enum name
+  std::string to_string(PlayMode) noexcept;
+  /// Returns the name of the corresponding extra setting
+  std::string aux_setting(PlayMode pm) noexcept;
+
+  template<typename Aqh>
+  struct EnvelopeProps {
+    template<typename Val, typename Tag, typename... Mixins>
+    using Prop = typename Aqh::template Prop<Val, Tag, Mixins...>;
+
+    Aqh* aqh;
+
+    Prop<attack_tag, float> attack = {aqh, 0, props::limits(0, 1), props::step_size(0.02)};
+    Prop<decay_tag, float> decay = {aqh, 0, props::limits(0, 1), props::step_size(0.02)};
+    Prop<sustain_tag, float> sustain = {aqh, 1, props::limits(0, 1), props::step_size(0.02)};
+    Prop<release_tag, float> release = {aqh, 0.2, props::limits(0, 1), props::step_size(0.02)};
+
+    DECL_REFLECTION(EnvelopeProps, attack, decay, sustain, release);
+  };
+
+  template<typename Aqh>
+  struct SettingsProps {
+    template<typename Val, typename Tag, typename... Mixins>
+    using Prop = typename Aqh::template Prop<Val, Tag, Mixins...>;
+
+    Aqh* aqh;
+
+    Prop<play_mode_tag, PlayMode, props::wrap> play_mode = {aqh, PlayMode::poly};
+    Prop<rand_tag, float> rand = {aqh, 0, props::limits(0, 1), props::step_size(0.01)};
+    Prop<sub_tag, float> sub = {aqh, 1, props::limits(0.01, 1), props::step_size(0.01)};
+    Prop<detune_tag, float> detune = {aqh, 0, props::limits(0, 1), props::step_size(0.01)};
+    Prop<interval_tag, int> interval = {aqh, 0, props::limits(-12, 12)};
+
+    Prop<portamento_tag, float> portamento = {aqh, 0, props::limits(0, 1), props::step_size(0.01)};
+    Prop<legato_tag, bool> legato = {aqh, false};
+    Prop<retrig_tag, bool> retrig = {aqh, false};
+
+    DECL_REFLECTION(SettingsProps, play_mode, rand, sub, detune, interval, portamento, legato, retrig);
+  };
+
+  // std::unique_ptr<ui::Screen> make_envelope_screen(EnvelopeProps& props);
+  // std::unique_ptr<ui::Screen> make_settings_screen(SettingsProps& props);
 
 } // namespace otto::core::voices
 

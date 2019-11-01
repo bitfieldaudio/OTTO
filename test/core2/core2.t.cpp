@@ -1,6 +1,5 @@
-#include "testing.t.hpp"
-
 #include "core2/core2.hpp"
+#include "testing.t.hpp"
 
 namespace otto::core2 {
 
@@ -163,7 +162,7 @@ namespace otto::core2 {
         ActionQueueHelper aqh2 = {queue2, iar, var};
         JoinedActionQueueHelper jaqh = {aqh1, aqh2};
 
-        SECTION("can push the same action to multiple queues") {
+        SECTION ("can push the same action to multiple queues") {
           jaqh.push(void_action::data());
           REQUIRE(queue.size() == 1);
           REQUIRE(queue2.size() == 1);
@@ -178,7 +177,8 @@ namespace otto::core2 {
     SECTION ("Action with reference parameter") {
       using ref_act = Action<struct ref_act_tag, int&>;
       struct RefAR {
-        void action(ref_act, int& ref) {
+        void action(ref_act, int& ref)
+        {
           addr = &ref;
         };
         int* addr = nullptr;

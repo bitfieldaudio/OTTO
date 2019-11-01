@@ -3,16 +3,17 @@
 #include "core/ui/vector_graphics.hpp"
 #include "util/string_conversions.hpp"
 
+#if false
 namespace otto::core::voices {
 
   struct SettingsScreen : ui::Screen {
-    SettingsScreen(details::SettingsProps& props) : props(props) {}
+    SettingsScreen(SettingsProps& props) : props(props) {}
 
     bool keypress(ui::Key) override;
     void draw(ui::vg::Canvas&) override;
     void encoder(ui::EncoderEvent ev) override;
 
-    details::SettingsProps& props;
+    SettingsProps& props;
   };
 
   namespace details {
@@ -32,7 +33,7 @@ namespace otto::core::voices {
 
   void SettingsScreen::encoder(ui::EncoderEvent ev)
   {
-    using details::PlayMode;
+    using PlayMode;
     switch (ev.encoder) {
     case Encoder::blue: props.play_mode.step(ev.steps); break;
     case Encoder::green: {
@@ -57,7 +58,7 @@ namespace otto::core::voices {
   void SettingsScreen::draw(ui::vg::Canvas& ctx)
   {
     using namespace ui::vg;
-    using details::PlayMode;
+    using PlayMode;
 
     constexpr float x_pad = 30;
     constexpr float y_pad = 50;
@@ -164,3 +165,4 @@ namespace otto::core::voices {
   }
 
 } // namespace otto::core::voices
+#endif

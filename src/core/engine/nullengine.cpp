@@ -23,8 +23,7 @@ namespace otto::core::engine {
     : ArpeggiatorEngine<NullEngine<EngineType::arpeggiator>>(std::make_unique<OffScreen>())
   {}
 
-  audio::ProcessData<0> NullEngine<EngineType::arpeggiator>::process(
-    audio::ProcessData<0> data) noexcept
+  audio::ProcessData<0> NullEngine<EngineType::arpeggiator>::process(audio::ProcessData<0> data) noexcept
   {
     return data;
   }

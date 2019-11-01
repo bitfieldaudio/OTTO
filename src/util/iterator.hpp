@@ -379,8 +379,49 @@ namespace otto::util {
         return std::make_reverse_iterator(first);
       }
 
+      auto&& front()
+      {
+        return *first;
+      }
+
       BIter first;
       EIter last;
+    };
+
+    /// A sequence where begin and end iterators are created for each call to begin and end functions
+    template<typename BIterFactory, typename EIterFactory>
+    struct lazy_sequence {
+      using iterator = std::common_type_t<std::invoke_result_t<BIterFactory>, std::invoke_result_t<BIterFactory>>;
+
+      lazy_sequence(BIterFactory&& f, EIterFactory&& l) : first{std::move(f)}, last{std::move(l)} {}
+
+      auto begin()
+      {
+        return first();
+      }
+
+      auto end()
+      {
+        return last();
+      }
+
+      auto rbegin()
+      {
+        return std::make_reverse_iterator(end());
+      }
+
+      auto rend()
+      {
+        return std::make_reverse_iterator(begin());
+      }
+
+      auto&& front()
+      {
+        return *begin();
+      }
+
+      BIterFactory first;
+      EIterFactory last;
     };
 
     /// \class float_step_iterator
@@ -1007,6 +1048,12 @@ namespace otto::util {
         nextvalid();
       }
 
+      filter_iterator(WrappedIter iter, WrappedIter last, std::shared_ptr<Predicate> callable)
+        : iter(std::move(iter)), last(last), callable{std::move(callable)}
+      {
+        nextvalid();
+      }
+
       filter_iterator(WrappedIter iter, WrappedIter last, filter_iterator other)
         : iter(std::move(iter)), last(last), callable{other.callable}
       {
@@ -1023,7 +1070,7 @@ namespace otto::util {
       void advance(int n)
       {
         for (int i = 0; i < n; i++) {
-          while (++iter != last && !std::invoke(*callable, *iter))
+          while (iter != last && !std::invoke(*callable, *++iter))
             ;
         }
       }
@@ -1102,7 +1149,7 @@ namespace otto::util {
         std::size_t index;
         Ref val;
       };
-    }
+    } // namespace detail
 
     template<typename WrappedIter>
     struct indexed_iterator : iterator_facade<indexed_iterator<WrappedIter>,
@@ -1112,9 +1159,7 @@ namespace otto::util {
       static_assert(
         std::is_same_v<std::decay_t<decltype(*std::declval<WrappedIter>())>, detail::value_type_t<WrappedIter>>);
 
-      indexed_iterator(WrappedIter iter, std::size_t index = 0)
-        : iter(std::move(iter)), index(index)
-      {}
+      indexed_iterator(WrappedIter iter, std::size_t index = 0) : iter(std::move(iter)), index(index) {}
 
       void advance(int n)
       {
@@ -1197,9 +1242,10 @@ namespace otto::util {
     {
       using std::begin, std::end;
       using filteriter = filter_iterator<decltype(begin(r)), std::decay_t<Predicate>>;
-      auto first = filteriter(begin(r), end(r), std::forward<Predicate>(c));
-      auto last = filteriter(end(r), end(r), first);
-      return sequence(first, last);
+      auto ptr = std::make_shared<Predicate>(std::forward<Predicate>(c));
+      auto first = [&r, &c, ptr] { return filteriter(begin(r), end(r), ptr); };
+      auto last = [&r, &c, ptr] { return filteriter(end(r), end(r), ptr); };
+      return lazy_sequence(std::move(first), std::move(last));
     }
 
     template<typename Range>
@@ -1223,21 +1269,28 @@ namespace otto::util {
     }
 
     template<typename Range>
-    auto subrange(Range&& r, std::size_t begin_idx, std::size_t end_idx) {
+    auto subrange(Range&& r, std::size_t begin_idx, std::size_t end_idx)
+    {
       using std::begin, std::end;
       return sequence(begin(r) + begin_idx, std::min(begin(r) + end_idx, end(r)));
     }
 
     /// A range of ints [lo;hi[
-    inline auto ints(int lo, int hi) {
+    inline auto ints(int lo, int hi)
+    {
       return sequence(counting_iterator(lo), counting_iterator(hi));
     }
 
     template<typename Range>
-    auto to_vec(Range&& r) {
+    auto to_vec(Range&& r)
+    {
       using std::begin, std::end;
       using Iter = std::decay_t<decltype(begin(r))>;
-      return std::vector<iterator::detail::value_type_t<Iter>>(begin(r), end(r));
+      std::vector<iterator::detail::value_type_t<Iter>> res;
+      for (auto&& e : r) {
+        res.push_back(e);
+      }
+      return res;
     }
 
   } // namespace view

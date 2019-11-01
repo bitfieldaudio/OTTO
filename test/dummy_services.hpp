@@ -9,6 +9,8 @@
 #include "services/state_manager.hpp"
 #include "services/ui_manager.hpp"
 
+#include <Gamma/Domain.h>
+
 namespace otto::services::test {
 
   struct DummyStateManager final : StateManager {

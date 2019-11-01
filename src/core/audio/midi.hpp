@@ -3,10 +3,10 @@
 #include <array>
 #include <cmath>
 #include <gsl/gsl>
+#include <variant>
 
 #include "util/algorithm.hpp"
 #include "util/exception.hpp"
-#include "util/variant.hpp"
 
 #include "services/log_manager.hpp"
 #include "util/utility.hpp"
@@ -179,7 +179,7 @@ namespace otto::core::midi {
   };
 
   using AnyMidiEvent =
-    mpark::variant<MidiEvent, NoteOnEvent, NoteOffEvent, ControlChangeEvent, PitchBendEvent>;
+    std::variant<MidiEvent, NoteOnEvent, NoteOffEvent, ControlChangeEvent, PitchBendEvent>;
 
   inline AnyMidiEvent from_bytes(gsl::span<unsigned char> bytes, int time = 0)
   {

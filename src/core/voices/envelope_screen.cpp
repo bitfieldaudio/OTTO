@@ -2,15 +2,16 @@
 
 #include "core/ui/vector_graphics.hpp"
 
+#if false
 namespace otto::core::voices {
 
   struct EnvelopeScreen : ui::Screen {
-    EnvelopeScreen(details::EnvelopeProps& props) : props(props) {}
+    EnvelopeScreen(EnvelopeProps& props) : props(props) {}
 
     void draw(ui::vg::Canvas&) override;
     void encoder(ui::EncoderEvent ev) override;
 
-    details::EnvelopeProps& props;
+    EnvelopeProps& props;
   };
 
   namespace details {
@@ -92,3 +93,4 @@ namespace otto::core::voices {
   }
 
 } // namespace otto::core::voices
+#endif

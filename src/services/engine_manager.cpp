@@ -1,13 +1,11 @@
 #include "engine_manager.hpp"
+
 #include "core/engine/engine_dispatcher.hpp"
 #include "core/engine/engine_dispatcher.inl"
-
+#include "core/ui/vector_graphics.hpp"
 #include "engines/synths/goss/goss.hpp"
-
 #include "services/application.hpp"
 #include "services/clock_manager.hpp"
-
-#include "core/ui/vector_graphics.hpp"
 
 namespace otto::services {
 
@@ -27,7 +25,7 @@ namespace otto::services {
       EngineType::arpeggiator>;
     using SynthDispatcher = EngineDispatcher< //
       EngineType::synth,
-      engines::GossSynth>;
+      NullEngine<EngineType::synth>>;
 
     SynthDispatcher synth{false};
     // ArpDispatcher arpeggiator{true};
@@ -67,9 +65,12 @@ namespace otto::services {
     // reg_ss(ScreenEnum::sequencer, [&]() -> auto& { return sequencer.screen(); });
     // reg_ss(ScreenEnum::sampler, [&]() -> auto& { return sequencer.sampler_screen(); });
     // reg_ss(ScreenEnum::sampler_envelope, [&]() -> auto& { return sequencer.envelope_screen(); });
-    reg_ss(ScreenEnum::synth, [&]() -> auto& { return synth->screen(); });
-    reg_ss(ScreenEnum::synth_selector, [&]() -> auto& { return synth.selector_screen(); });
-    reg_ss(ScreenEnum::synth_envelope, [&]() -> auto& { return synth->envelope_screen(); });
+    reg_ss(
+      ScreenEnum::synth, [&]() -> auto& { return synth->screen(); });
+    reg_ss(
+      ScreenEnum::synth_selector, [&]() -> auto& { return synth.selector_screen(); });
+    reg_ss(
+      ScreenEnum::synth_envelope, [&]() -> auto& { return synth->envelope_screen(); });
     // reg_ss(ScreenEnum::external,       [&] () -> auto& { return  ; });
     // reg_ss(ScreenEnum::twist1,         [&] () -> auto& { return  ; });
     // reg_ss(ScreenEnum::twist2,         [&] () -> auto& { return  ; });
@@ -86,7 +87,8 @@ namespace otto::services {
       }
     });
 
-    // controller.register_key_handler(ui::Key::sequencer, [&](ui::Key k) { ui_manager.display(ScreenEnum::sequencer); });
+    // controller.register_key_handler(ui::Key::sequencer, [&](ui::Key k) { ui_manager.display(ScreenEnum::sequencer);
+    // });
 
     // controller.register_key_handler(ui::Key::sampler, [&](ui::Key k) { ui_manager.display(ScreenEnum::sampler); });
 
