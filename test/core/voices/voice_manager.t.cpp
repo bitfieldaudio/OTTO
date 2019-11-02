@@ -14,12 +14,12 @@ namespace otto::core::voices {
     };
 
     VoiceManager<Voice, 6> vmgr;
-    using Aqh = itc::ActionQueueHelper<VoiceManager<Voice, 6>>;
+    using Sndr = itc::ActionSender<VoiceManager<Voice, 6>>;
     itc::ActionQueue queue;
-    Aqh aqh = {queue, vmgr};
+    Sndr sndr = {queue, vmgr};
 
-    EnvelopeProps<Aqh> envelope_props = {&aqh};
-    SettingsProps<Aqh> voices_props = {&aqh};
+    EnvelopeProps<Sndr> envelope_props = {&sndr};
+    SettingsProps<Sndr> voices_props = {&sndr};
 
     // This is a lazy view, so its computed each time you loop through it
     auto triggered_voices =

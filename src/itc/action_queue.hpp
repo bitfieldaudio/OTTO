@@ -92,19 +92,19 @@ namespace otto::itc {
   };
 
   // FORWARD DECLARATION
-  template<typename Aqh, typename Tag, typename Val, typename... Mixins>
+  template<typename Sndr, typename Tag, typename Val, typename... Mixins>
   struct ActionProp;
 
   /// A class to help enqueue actions for a list of recievers
   ///
   /// Currently only supports one reciever of each type, which shouldn't be a problem.
   template<typename... Recievers>
-  struct ActionQueueHelper {
+  struct ActionSender {
     template<typename Val, typename Tag, typename... Mixins>
-    using Prop = ActionProp<ActionQueueHelper<Recievers...>, Val, Tag, Mixins...>;
+    using Prop = ActionProp<ActionSender<Recievers...>, Val, Tag, Mixins...>;
 
     /// Does not own the queue, and does not own the recievers.
-    ActionQueueHelper(PushOnlyActionQueue& queue, Recievers&... r) : queue_(queue), recievers_(r...) {}
+    ActionSender(PushOnlyActionQueue& queue, Recievers&... r) : queue_(queue), recievers_(r...) {}
 
     /// Push an action to be recieved by all recievers that support it
     template<typename Tag, typename... Args>
@@ -126,20 +126,20 @@ namespace otto::itc {
   };
 
   template<typename... AQHs>
-  struct JoinedActionQueueHelper {
+  struct JoinedActionSender {
     template<typename Val, typename Tag, typename... Mixins>
-    using Prop = ActionProp<JoinedActionQueueHelper<AQHs...>, Val, Tag, Mixins...>;
+    using Prop = ActionProp<JoinedActionSender<AQHs...>, Val, Tag, Mixins...>;
 
-    JoinedActionQueueHelper(AQHs... aqhs) : aqhs_{std::forward<AQHs>(aqhs)...} {}
+    JoinedActionSender(AQHs... sndrs) : sndrs_{std::forward<AQHs>(sndrs)...} {}
 
     template<typename Tag, typename... Args>
     void push(ActionData<Action<Tag, Args...>> action_data)
     {
-      util::tuple_for_each(aqhs_, [this, &action_data](auto& aqh) { aqh.push(action_data); });
+      util::tuple_for_each(sndrs_, [this, &action_data](auto& sndr) { sndr.push(action_data); });
     }
 
   private:
-    std::tuple<AQHs...> aqhs_;
+    std::tuple<AQHs...> sndrs_;
   };
 
 } // namespace otto::itc

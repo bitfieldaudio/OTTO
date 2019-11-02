@@ -31,9 +31,9 @@ namespace otto::services {
     /// This queue is consumed at the start of each buffer.
     itc::PushOnlyActionQueue& action_queue() noexcept;
 
-    /// Make an {@ref ActionQueueHelper} for the audio action queue
+    /// Make an {@ref ActionSender} for the audio action queue
     template<typename... Recievers>
-    auto make_aqh(Recievers&...) noexcept;
+    auto make_sndr(Recievers&...) noexcept;
 
     /// Send a midi event into the system.
     ///
@@ -101,8 +101,8 @@ namespace otto::services {
   // IMPLEMENTATION //
 
   template<typename... Recievers>
-  auto AudioManager::make_aqh(Recievers&... recievers) noexcept {
-    return itc::ActionQueueHelper(action_queue_, recievers...);
+  auto AudioManager::make_sndr(Recievers&... recievers) noexcept {
+    return itc::ActionSender(action_queue_, recievers...);
   }
 
 } // namespace otto::services

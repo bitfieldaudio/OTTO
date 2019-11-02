@@ -124,9 +124,9 @@ namespace otto::services {
       return action_queue_;
     }
 
-    /// Make an {@ref ActionQueueHelper} for the audio action queue
+    /// Make an {@ref ActionSender} for the audio action queue
     template<typename... Recievers>
-    auto make_aqh(Recievers&...) noexcept;
+    auto make_sndr(Recievers&...) noexcept;
 
   protected:
     /// Draws the current screen and overlays.
@@ -157,9 +157,9 @@ namespace otto::services {
   // IMPLEMENTATION //
 
   template<typename... Recievers>
-  auto UIManager::make_aqh(Recievers&... recievers) noexcept
+  auto UIManager::make_sndr(Recievers&... recievers) noexcept
   {
-    return itc::ActionQueueHelper(action_queue_, recievers...);
+    return itc::ActionSender(action_queue_, recievers...);
   }
 
 } // namespace otto::services

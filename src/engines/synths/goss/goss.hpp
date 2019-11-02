@@ -16,9 +16,9 @@ namespace otto::engines::goss {
   using namespace props;
 
   struct GossScreen;
-  using GraphicsAqh = itc::ActionQueueHelper<GossScreen>;
+  using GraphicsSndr = itc::ActionSender<GossScreen>;
 
-  using Aqh = GraphicsAqh;
+  using Sndr = GraphicsSndr;
 
   struct Actions {
     /// Publish the rotation variable, which is shared between the audio and screen
@@ -26,12 +26,12 @@ namespace otto::engines::goss {
   };
 
   struct Props {
-    Aqh* aqh;
+    Sndr* sndr;
 
-    Aqh::Prop<struct drawbar1_tag, float> drawbar1 = {aqh, 1, limits(0, 1), step_size(0.01)};
-    Aqh::Prop<struct drawbar2_tag, float> drawbar2 = {aqh, 0.5, limits(0, 1), step_size(0.01)};
-    Aqh::Prop<struct click_tag, float> click = {aqh, 0.5, limits(0, 1), step_size(0.01)};
-    Aqh::Prop<struct leslie_tag, float> leslie = {aqh, 0.3, limits(0, 1), step_size(0.01)};
+    Sndr::Prop<struct drawbar1_tag, float> drawbar1 = {sndr, 1, limits(0, 1), step_size(0.01)};
+    Sndr::Prop<struct drawbar2_tag, float> drawbar2 = {sndr, 0.5, limits(0, 1), step_size(0.01)};
+    Sndr::Prop<struct click_tag, float> click = {sndr, 0.5, limits(0, 1), step_size(0.01)};
+    Sndr::Prop<struct leslie_tag, float> leslie = {sndr, 0.3, limits(0, 1), step_size(0.01)};
 
     DECL_REFLECTION(Props, drawbar1, drawbar2, click, leslie);
   };
@@ -41,8 +41,8 @@ namespace otto::engines::goss {
 
   private:
     std::unique_ptr<GossScreen> screen_;
-    GraphicsAqh graphics_aqh_;
-    Aqh aqh_ = {graphics_aqh_};
+    GraphicsSndr graphics_sndr_;
+    Sndr sndr_ = {graphics_sndr_};
 
     std::atomic<float> rotation_ = 0;
   };

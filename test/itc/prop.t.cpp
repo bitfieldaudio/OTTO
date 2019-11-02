@@ -11,16 +11,16 @@ namespace otto::engines::test_engine {
   struct Audio;
   struct Screen;
 
-  using AudioAQH = ActionQueueHelper<Audio>;
-  using GraphicsAQH = ActionQueueHelper<Screen>;
-  using Aqh = JoinedActionQueueHelper<AudioAQH, GraphicsAQH>;
+  using AudioAQH = ActionSender<Audio>;
+  using GraphicsAQH = ActionSender<Screen>;
+  using Sndr = JoinedActionSender<AudioAQH, GraphicsAQH>;
 
   struct Props {
-    Aqh* aqh;
+    Sndr* sndr;
 
-    Aqh::Prop<struct float_prop_tag, float> float_prop = {aqh, 0};
-    Aqh::Prop<struct int_prop_tag, int> int_prop = {aqh, 0};
-    Aqh::Prop<struct int_prop_tag, int, props::has_limits> int_prop_w_limits = {aqh, 0, props::limits(0, 10)};
+    Sndr::Prop<struct float_prop_tag, float> float_prop = {sndr, 0};
+    Sndr::Prop<struct int_prop_tag, int> int_prop = {sndr, 0};
+    Sndr::Prop<struct int_prop_tag, int, props::has_limits> int_prop_w_limits = {sndr, 0, props::limits(0, 10)};
   };
 
   struct Audio {};

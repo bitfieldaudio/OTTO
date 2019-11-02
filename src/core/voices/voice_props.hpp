@@ -67,37 +67,37 @@ namespace otto::core::voices {
     using action = itc::Action<retrig_tag, bool>;
   };
 
-  template<typename Aqh>
+  template<typename Sndr>
   struct EnvelopeProps {
     template<typename Val, typename Tag, typename... Mixins>
-    using Prop = typename Aqh::template Prop<Val, Tag, Mixins...>;
+    using Prop = typename Sndr::template Prop<Val, Tag, Mixins...>;
 
-    Aqh* aqh;
+    Sndr* sndr;
 
-    Prop<attack_tag, float> attack = {aqh, 0, props::limits(0, 1), props::step_size(0.02)};
-    Prop<decay_tag, float> decay = {aqh, 0, props::limits(0, 1), props::step_size(0.02)};
-    Prop<sustain_tag, float> sustain = {aqh, 1, props::limits(0, 1), props::step_size(0.02)};
-    Prop<release_tag, float> release = {aqh, 0.2, props::limits(0, 1), props::step_size(0.02)};
+    Prop<attack_tag, float> attack = {sndr, 0, props::limits(0, 1), props::step_size(0.02)};
+    Prop<decay_tag, float> decay = {sndr, 0, props::limits(0, 1), props::step_size(0.02)};
+    Prop<sustain_tag, float> sustain = {sndr, 1, props::limits(0, 1), props::step_size(0.02)};
+    Prop<release_tag, float> release = {sndr, 0.2, props::limits(0, 1), props::step_size(0.02)};
 
     DECL_REFLECTION(EnvelopeProps, attack, decay, sustain, release);
   };
 
-  template<typename Aqh>
+  template<typename Sndr>
   struct SettingsProps {
     template<typename Val, typename Tag, typename... Mixins>
-    using Prop = typename Aqh::template Prop<Val, Tag, Mixins...>;
+    using Prop = typename Sndr::template Prop<Val, Tag, Mixins...>;
 
-    Aqh* aqh;
+    Sndr* sndr;
 
-    Prop<play_mode_tag, PlayMode, props::wrap> play_mode = {aqh, PlayMode::poly};
-    Prop<rand_tag, float> rand = {aqh, 0, props::limits(0, 1), props::step_size(0.01)};
-    Prop<sub_tag, float> sub = {aqh, 1, props::limits(0.01, 1), props::step_size(0.01)};
-    Prop<detune_tag, float> detune = {aqh, 0, props::limits(0, 1), props::step_size(0.01)};
-    Prop<interval_tag, int> interval = {aqh, 0, props::limits(-12, 12)};
+    Prop<play_mode_tag, PlayMode, props::wrap> play_mode = {sndr, PlayMode::poly};
+    Prop<rand_tag, float> rand = {sndr, 0, props::limits(0, 1), props::step_size(0.01)};
+    Prop<sub_tag, float> sub = {sndr, 1, props::limits(0.01, 1), props::step_size(0.01)};
+    Prop<detune_tag, float> detune = {sndr, 0, props::limits(0, 1), props::step_size(0.01)};
+    Prop<interval_tag, int> interval = {sndr, 0, props::limits(-12, 12)};
 
-    Prop<portamento_tag, float> portamento = {aqh, 0, props::limits(0, 1), props::step_size(0.01)};
-    Prop<legato_tag, bool> legato = {aqh, false};
-    Prop<retrig_tag, bool> retrig = {aqh, false};
+    Prop<portamento_tag, float> portamento = {sndr, 0, props::limits(0, 1), props::step_size(0.01)};
+    Prop<legato_tag, bool> legato = {sndr, false};
+    Prop<retrig_tag, bool> retrig = {sndr, false};
 
     DECL_REFLECTION(SettingsProps, play_mode, rand, sub, detune, interval, portamento, legato, retrig);
   };

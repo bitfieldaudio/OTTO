@@ -123,7 +123,7 @@ namespace otto::itc {
       }
     }
 
-    SECTION ("ActionQueueHelper") {
+    SECTION ("ActionSender") {
       struct OtherIntAR {
         void action(int_action, int val)
         {
@@ -134,36 +134,36 @@ namespace otto::itc {
       ActionQueue queue;
       VoidAR var;
       IntAR iar;
-      ActionQueueHelper aqh = {queue, var, iar, oiar};
+      ActionSender sndr = {queue, var, iar, oiar};
 
-      SECTION ("ActionQueueHelper holds references to recievers") {
-        REQUIRE(&aqh.reciever<VoidAR>() == &var);
-        REQUIRE(&aqh.reciever<IntAR>() == &iar);
-        REQUIRE(&aqh.reciever<OtherIntAR>() == &oiar);
+      SECTION ("ActionSender holds references to recievers") {
+        REQUIRE(&sndr.reciever<VoidAR>() == &var);
+        REQUIRE(&sndr.reciever<IntAR>() == &iar);
+        REQUIRE(&sndr.reciever<OtherIntAR>() == &oiar);
       }
 
-      SECTION ("ActionQueueHelper queues actions to all recievers") {
-        aqh.push(int_action::data(10));
+      SECTION ("ActionSender queues actions to all recievers") {
+        sndr.push(int_action::data(10));
         REQUIRE(queue.size() == 2);
         queue.pop_call_all();
         REQUIRE(iar.value == 10);
         REQUIRE(oiar.value == 10);
       }
 
-      SECTION ("ActionQueueHelper is copy constructible") {
-        auto aqh2 = aqh;
-        REQUIRE(&aqh.reciever<VoidAR>() == &var);
-        REQUIRE(&aqh2.reciever<VoidAR>() == &var);
+      SECTION ("ActionSender is copy constructible") {
+        auto sndr2 = sndr;
+        REQUIRE(&sndr.reciever<VoidAR>() == &var);
+        REQUIRE(&sndr2.reciever<VoidAR>() == &var);
       }
 
-      SECTION ("JoinedActionQueueHelper") {
+      SECTION ("JoinedActionSender") {
         ActionQueue queue2;
-        ActionQueueHelper aqh1 = {queue, var};
-        ActionQueueHelper aqh2 = {queue2, iar, var};
-        JoinedActionQueueHelper jaqh = {aqh1, aqh2};
+        ActionSender sndr1 = {queue, var};
+        ActionSender sndr2 = {queue2, iar, var};
+        JoinedActionSender jsndr = {sndr1, sndr2};
 
         SECTION ("can push the same action to multiple queues") {
-          jaqh.push(void_action::data());
+          jsndr.push(void_action::data());
           REQUIRE(queue.size() == 1);
           REQUIRE(queue2.size() == 1);
           queue.pop_call_all();

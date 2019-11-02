@@ -5,15 +5,15 @@
 
 namespace otto::core::props::mixin {
 
-  template<typename Tag, typename ActionQueueHelper>
+  template<typename Tag, typename ActionSender>
   struct action {
-    using tag_type = action<Tag, ActionQueueHelper>;
-    using hooks = ::otto::core::props::mixin::hooks<action<Tag, ActionQueueHelper>>;
+    using tag_type = action<Tag, ActionSender>;
+    using hooks = ::otto::core::props::mixin::hooks<action<Tag, ActionSender>>;
     constexpr static const char* name = "action";
     template<typename... Args>
     static auto init(Args&&... args)
     {
-      return ::otto::core::props::make_initializer<action<Tag, ActionQueueHelper>>(std::forward<Args>(args)...);
+      return ::otto::core::props::make_initializer<action<Tag, ActionSender>>(std::forward<Args>(args)...);
     }
   };
 
@@ -23,14 +23,14 @@ namespace otto::core::props::mixin {
     OTTO_PROPS_MIXIN_DECLS(action);
     using change_action = itc::Action<PropTag, value_type>;
 
-    void init(AQH& aqh) noexcept
+    void init(AQH& sndr) noexcept
     {
-      action_queue_helper = &aqh;
+      action_queue_helper = &sndr;
     }
 
-    void init(AQH* aqh) noexcept
+    void init(AQH* sndr) noexcept
     {
-      action_queue_helper = aqh;
+      action_queue_helper = sndr;
     }
 
     void on_hook(hook<common::hooks::after_set>& hook) noexcept
@@ -53,21 +53,21 @@ namespace otto::itc {
 
   /// A property which queues change_actions on set
   ///
-  /// @tparam Aqh An @ref ActionQueueHelper to which the actions will be enqueued
+  /// @tparam Sndr An @ref ActionSender to which the actions will be enqueued
   /// @tparam Tag A unique tag type for this property
   /// @tparam Val The property value type
   /// @tparam Mixins property mixins for this property
-  template<typename Aqh, typename Tag, typename Val, typename... Mixins>
-  struct ActionProp : core::props::Property<Val, core::props::mixin::action<Tag, Aqh>, Mixins...> {
-    using prop_impl_t = core::props::Property<Val, core::props::mixin::action<Tag, Aqh>, Mixins...>;
+  template<typename Sndr, typename Tag, typename Val, typename... Mixins>
+  struct ActionProp : core::props::Property<Val, core::props::mixin::action<Tag, Sndr>, Mixins...> {
+    using prop_impl_t = core::props::Property<Val, core::props::mixin::action<Tag, Sndr>, Mixins...>;
     using value_type = Val;
-    using action_mixin = core::props::mixin::action<Tag, Aqh>;
+    using action_mixin = core::props::mixin::action<Tag, Sndr>;
     using change_action = itc::Action<Tag, value_type>;
 
     template<typename TRef, typename... Args>
-    ActionProp(Aqh* aqh, TRef&& value, Args&&... args)
-      : core::props::Property<Val, core::props::mixin::action<Tag, Aqh>, Mixins...>(std::forward<TRef>(value),
-                                                                                    action_mixin::init(aqh),
+    ActionProp(Sndr* sndr, TRef&& value, Args&&... args)
+      : core::props::Property<Val, core::props::mixin::action<Tag, Sndr>, Mixins...>(std::forward<TRef>(value),
+                                                                                    action_mixin::init(sndr),
                                                                                     FWD(args)...)
     {}
 
@@ -78,16 +78,16 @@ namespace otto::itc {
   };
 
   /// Serialize a property to json
-  template<typename Aqh, typename Tag, typename ValueType, typename... Mixins>
-  inline nlohmann::json serialize(const ActionProp<Aqh, Tag, ValueType, Mixins...>& prop)
+  template<typename Sndr, typename Tag, typename ValueType, typename... Mixins>
+  inline nlohmann::json serialize(const ActionProp<Sndr, Tag, ValueType, Mixins...>& prop)
   {
     using ::otto::util::serialize;
     return serialize(prop.get());
   }
 
   /// Deserialize a property from json
-  template<typename Aqh, typename Tag, typename ValueType, typename... Mixins>
-  inline void deserialize(ActionProp<Aqh, Tag, ValueType, Mixins...>& prop, const nlohmann::json& json)
+  template<typename Sndr, typename Tag, typename ValueType, typename... Mixins>
+  inline void deserialize(ActionProp<Sndr, Tag, ValueType, Mixins...>& prop, const nlohmann::json& json)
   {
     using ::otto::util::deserialize;
     static_assert(std::is_default_constructible_v<ValueType>,

@@ -7,9 +7,9 @@ namespace otto::engines::goss {
 
   GossEngine::GossEngine()
     : screen_(std::make_unique<GossScreen>()), //
-      graphics_aqh_(services::UIManager::current().make_aqh(*screen_))
+      graphics_sndr_(services::UIManager::current().make_sndr(*screen_))
   {
-    aqh_.push(Actions::rotation_variable::data(rotation_));
+    sndr_.push(Actions::rotation_variable::data(rotation_));
   }
 
 #if false

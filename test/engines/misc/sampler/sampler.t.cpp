@@ -17,18 +17,18 @@ namespace otto::engines::sampler {
   struct MainScreen;
   struct EnvelopeScreen;
 
-  using AudioAQH = ActionQueueHelper<Audio>;
-  using GraphicsAQH = ActionQueueHelper<MainScreen, EnvelopeScreen>;
-  using Aqh = JoinedActionQueueHelper<AudioAQH, GraphicsAQH>;
+  using AudioAQH = ActionSender<Audio>;
+  using GraphicsAQH = ActionSender<MainScreen, EnvelopeScreen>;
+  using Sndr = JoinedActionSender<AudioAQH, GraphicsAQH>;
 
   struct Props {
-    Aqh* aqh;
+    Sndr* sndr;
 
-    Aqh::Prop<struct start_point_tag, int> start_point = {aqh, 0};
-    Aqh::Prop<struct end_point_tag, int> end_point = {aqh, 0};
-    Aqh::Prop<struct fade_in_time_tag, int> fade_in_time = {aqh, 0};
-    Aqh::Prop<struct fade_out_time_tag, int> fade_out_time = {aqh, 0};
-    Aqh::Prop<struct playback_speed_tag, float> playback_speed = {aqh, 0, props::limits(-10, 10)};
+    Sndr::Prop<struct start_point_tag, int> start_point = {sndr, 0};
+    Sndr::Prop<struct end_point_tag, int> end_point = {sndr, 0};
+    Sndr::Prop<struct fade_in_time_tag, int> fade_in_time = {sndr, 0};
+    Sndr::Prop<struct fade_out_time_tag, int> fade_out_time = {sndr, 0};
+    Sndr::Prop<struct playback_speed_tag, float> playback_speed = {sndr, 0, props::limits(-10, 10)};
 
     DECL_REFLECTION(Props, start_point, end_point, fade_in_time, fade_out_time, playback_speed);
   };
@@ -78,11 +78,11 @@ namespace otto::engines::sampler {
     MainScreen main_screen;
     EnvelopeScreen envelope_screen;
 
-    AudioAQH audio_aqh = services::AudioManager::current().make_aqh(audio);
-    GraphicsAQH graphics_aqh = services::UIManager::current().make_aqh(main_screen, envelope_screen);
-    Aqh aqh = {audio_aqh, graphics_aqh};
+    AudioAQH audio_sndr = services::AudioManager::current().make_sndr(audio);
+    GraphicsAQH graphics_sndr = services::UIManager::current().make_sndr(main_screen, envelope_screen);
+    Sndr sndr = {audio_sndr, graphics_sndr};
 
-    Props props = {&aqh};
+    Props props = {&sndr};
   };
 
   using namespace test;
@@ -93,8 +93,8 @@ namespace otto::engines::sampler {
     Audio audio;
     MainScreen main_screen;
     EnvelopeScreen env_screen;
-    Aqh aqh{{audio_queue, audio}, {ui_queue, main_screen, env_screen}};
-    Props props{&aqh};
+    Sndr sndr{{audio_queue, audio}, {ui_queue, main_screen, env_screen}};
+    Props props{&sndr};
 
     int ref_count = 0;
     auto the_buffer = util::generate_array<10>([](auto i) { return float(i); });
@@ -229,10 +229,10 @@ namespace otto::engines::sampler {
     sampler::MainScreen main_screen;
     sampler::EnvelopeScreen envelope_screen;
 
-    sampler::AudioAQH audio_aqh = services::AudioManager::current().make_aqh(sampler_audio);
-    sampler::GraphicsAQH graphics_aqh = {graphics_queue, main_screen, envelope_screen};
-    sampler::Aqh aqh = {audio_aqh, graphics_aqh};
-    sampler::Props props = {&aqh};
+    sampler::AudioAQH audio_sndr = services::AudioManager::current().make_sndr(sampler_audio);
+    sampler::GraphicsAQH graphics_sndr = {graphics_queue, main_screen, envelope_screen};
+    sampler::Sndr sndr = {audio_sndr, graphics_sndr};
+    sampler::Props props = {&sndr};
 
     services::test::DummyEngineManager::current().on_process = [&](auto data) {
       auto buffer = services::AudioManager::current().buffer_pool().allocate();
