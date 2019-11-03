@@ -140,13 +140,13 @@ namespace otto::core::voices {
 
     // -- PROPERTY SETTERS -- //
 
-    void action(itc::prop_tag_change<play_mode_tag, PlayMode>, PlayMode) noexcept;
-    void action(itc::prop_tag_change<legato_tag, bool>, bool) noexcept;
-    void action(itc::prop_tag_change<retrig_tag, bool>, bool) noexcept;
-    void action(itc::prop_tag_change<rand_tag, float>, float rand) noexcept;
-    void action(itc::prop_tag_change<sub_tag, float>, float sub) noexcept;
-    void action(itc::prop_tag_change<detune_tag, float>, float detune) noexcept;
-    void action(itc::prop_tag_change<interval_tag, int>, int interval) noexcept;
+    void action(play_mode_tag::action, PlayMode) noexcept;
+    void action(legato_tag::action, bool) noexcept;
+    void action(retrig_tag::action, bool) noexcept;
+    void action(rand_tag::action, float rand) noexcept;
+    void action(sub_tag::action, float sub) noexcept;
+    void action(detune_tag::action, float detune) noexcept;
+    void action(interval_tag::action, int interval) noexcept;
 
     // -- GETTERS -- //
 
