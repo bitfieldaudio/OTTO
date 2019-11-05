@@ -1,13 +1,18 @@
 #include "goss.hpp"
 
 #include "screen.hpp"
+#include "audio.hpp"
+
+#include "services/audio_manager.hpp"
 #include "services/ui_manager.hpp"
 
 namespace otto::engines::goss {
 
   GossEngine::GossEngine()
     : screen_(std::make_unique<GossScreen>()), //
-      graphics_sndr_(services::UIManager::current().make_sndr(*screen_))
+      audio_(std::make_unique<Audio>()),
+      graphics_sndr_(services::UIManager::current().make_sndr(*screen_)),
+      audio_sndr_(services::AudioManager::current().make_sndr(*audio_))
   {
     sndr_.push(Actions::rotation_variable::data(rotation_));
   }
@@ -61,17 +66,6 @@ namespace otto::engines::goss {
   {
     leslie_filter_hi.phase(0.5);
     leslie_filter_lo.phase(0.5);
-    props.leslie.on_change().connect([this](float leslie) {
-      leslie_speed_lo = leslie * 10;
-      leslie_speed_hi = leslie * 3;
-      leslie_filter_hi.freq(leslie_speed_hi);
-      leslie_filter_lo.freq(leslie_speed_lo);
-      leslie_amount_hi = leslie * 0.3;
-      leslie_amount_lo = leslie * 0.5;
-      pitch_modulation_lo.freq(leslie_speed_hi);
-      pitch_modulation_hi.freq(leslie);
-      rotation.freq(leslie_speed_hi/4.f);
-    }).call_now(props.leslie);
   }
 
   void GossSynth::Pre::operator()() noexcept {

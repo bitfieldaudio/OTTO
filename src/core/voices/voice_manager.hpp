@@ -122,7 +122,10 @@ namespace otto::core::voices {
     static constexpr int sub_voice_count_v = 2;
 
     /// Constructor
-    VoiceManager() noexcept;
+    /// 
+    /// Any parameters passed to this will be passed to the constructors of the voices
+    template<typename... Args>
+    VoiceManager(Args&&... args) noexcept;
 
 
     /// Process audio, applying Preprocessing, each voice and then postprocessing
@@ -147,6 +150,13 @@ namespace otto::core::voices {
     void action(sub_tag::action, float sub) noexcept;
     void action(detune_tag::action, float detune) noexcept;
     void action(interval_tag::action, int interval) noexcept;
+
+    template<typename Action, typename... Args>
+    void action(Action a, Args&&... args) noexcept {
+      for (Voice& voice : voices_) {
+        voice.action(a, args...);
+      }
+    }
 
     // -- GETTERS -- //
 
@@ -238,7 +248,7 @@ namespace otto::core::voices {
     std::deque<Voice*> free_voices;
     std::deque<NoteStackEntry> note_stack;
 
-    std::array<Voice, voice_count_v> voices_ = util::generate_array<voice_count_v>([](auto) { return Voice{}; });
+    std::array<Voice, voice_count_v> voices_;
 
     util::variant_w_base<VoiceAllocatorBase, PolyAllocator, MonoAllocator, UnisonAllocator, IntervalAllocator>
       voice_allocator = {std::in_place_type<PolyAllocator>, *this};

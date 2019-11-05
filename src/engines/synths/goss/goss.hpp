@@ -1,8 +1,5 @@
 #pragma once
 
-#include <Gamma/Filter.h>
-#include <Gamma/Oscillator.h>
-
 #include "core/engine/engine.hpp"
 #include "core/ui/screen.hpp"
 #include "core/voices/voice_manager.hpp"
@@ -18,7 +15,10 @@ namespace otto::engines::goss {
   struct GossScreen;
   using GraphicsSndr = itc::ActionSender<GossScreen>;
 
-  using Sndr = GraphicsSndr;
+  struct Audio;
+  using AudioSndr = itc::ActionSender<Audio>;
+
+  using Sndr = itc::JoinedActionSender<GraphicsSndr, AudioSndr>;
 
   struct Actions {
     /// Publish the rotation variable, which is shared between the audio and screen
@@ -41,8 +41,10 @@ namespace otto::engines::goss {
 
   private:
     std::unique_ptr<GossScreen> screen_;
+    std::unique_ptr<Audio> audio_;
     GraphicsSndr graphics_sndr_;
-    Sndr sndr_ = {graphics_sndr_};
+    AudioSndr audio_sndr_;
+    Sndr sndr_ = {graphics_sndr_, audio_sndr_};
 
     std::atomic<float> rotation_ = 0;
   };

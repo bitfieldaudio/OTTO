@@ -6,14 +6,27 @@ namespace otto::core::voices {
   namespace view = util::view;
 
   TEST_CASE ("VoiceManager") {
+
+    using test_action = itc::Action<struct test_action_tag, float>;
+
     struct Voice : voices::VoiceBase<Voice> {
+      Voice(int& r) noexcept : reference(r){};
+
       float operator()() noexcept
       {
         return 1.f;
       }
+
+      void action(test_action, float f) {
+        this->f += f;
+      }
+
+      int& reference;
+      float f = 0;
     };
 
-    VoiceManager<Voice, 6> vmgr;
+    int shared_int = 0;
+    VoiceManager<Voice, 6> vmgr{shared_int};
     using Sndr = itc::ActionSender<VoiceManager<Voice, 6>>;
     itc::ActionQueue queue;
     Sndr sndr = {queue, vmgr};
@@ -24,6 +37,10 @@ namespace otto::core::voices {
     // This is a lazy view, so its computed each time you loop through it
     auto triggered_voices =
       view::filter(vmgr.voices(), [](Voice& v) { return v.is_triggered() && v.volume() != test::approx(0); });
+
+    SECTION("Voice recieves actions sent to voice manager") {
+      itc::call_reciever(vmgr, test_action::data(1));
+    }
 
     SECTION ("Simple voice loop") {
       int n = 0;
@@ -78,8 +95,10 @@ namespace otto::core::voices {
         queue.pop_call_all();
 
         vmgr.handle_midi(midi::NoteOnEvent{50});
-        // REQUIRE_THAT(test::sort(view::transform(triggered_voices, WRAP_MEM_FUNC(midi_note))), Catch::Equals(std::vector{50, 50, 50}));
-        // REQUIRE_THAT(test::sort(view::transform(triggered_voices, WRAP_MEM_FUNC(volume))), Catch::Equals(std::vector{0.5f, 0.5f, 0.5f}));
+        REQUIRE_THAT(test::sort(view::transform(triggered_voices, WRAP_MEM_FUNC(midi_note))),
+                     Catch::Equals(std::vector{50, 50, 50}));
+        REQUIRE_THAT(test::sort(view::transform(triggered_voices, WRAP_MEM_FUNC(volume))),
+                     Catch::Equals(std::vector{0.5f, 0.5f, 0.5f}));
       }
     }
 
@@ -112,6 +131,7 @@ namespace otto::core::voices {
                      Catch::Equals(std::vector{2, 3, 4, 5, 6, 7}));
       }
     }
+
   }
 
 } // namespace otto::core::voices

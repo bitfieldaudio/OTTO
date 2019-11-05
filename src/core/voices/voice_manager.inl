@@ -355,8 +355,11 @@ namespace otto::core::voices {
   // VOICE MANAGER //
 
   template<typename V, int N>
-  VoiceManager<V, N>::VoiceManager() noexcept
+  template<typename... Args>
+  VoiceManager<V, N>::VoiceManager(Args&&... args) noexcept
+    : voices_(util::generate_array<voice_count_v>([&] (int i) { return Voice{args...}; }))
   {
+
     for (int i = 0; i < voice_count_v; ++i) {
       // auto& voice = voices_[i];
       // envelope_props.attack.on_change().connect(
