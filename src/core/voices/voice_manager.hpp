@@ -162,8 +162,6 @@ namespace otto::core::voices {
 
     PlayMode play_mode() noexcept;
 
-    // -- PRIVATE FIELDS -- //
-  private:
     struct NoteStackEntry {
       /// Which physical key is activating this note
       int key = 0;
@@ -204,12 +202,16 @@ namespace otto::core::voices {
     };
 
     struct PolyAllocator final : VoiceAllocatorBase {
+      float rand_ = 0;
+
       PolyAllocator(VoiceManager& vm_in) : VoiceAllocatorBase(vm_in){};
       void handle_midi_on(const midi::NoteOnEvent&) noexcept override;
       void set_rand(float rand) noexcept;
     };
 
     struct MonoAllocator final : VoiceAllocatorBase {
+      constexpr static int num_voices_used = 3;
+
       MonoAllocator(VoiceManager& vm_in);
       ~MonoAllocator();
       void handle_midi_on(const midi::NoteOnEvent&) noexcept override;
@@ -217,6 +219,10 @@ namespace otto::core::voices {
     };
 
     struct UnisonAllocator final : VoiceAllocatorBase {
+      /// Largest odd number less or equal to number of voices
+      constexpr static int num_voices_used = voice_count_v - (voice_count_v + 1) % 2;
+      float detune_ = 0;
+
       UnisonAllocator(VoiceManager& vm_in);
       ~UnisonAllocator();
       void handle_midi_on(const midi::NoteOnEvent&) noexcept override;
@@ -224,11 +230,16 @@ namespace otto::core::voices {
     };
 
     struct IntervalAllocator final : VoiceAllocatorBase {
+      int interval_ = 0;
+
       IntervalAllocator(VoiceManager& vm_in) : VoiceAllocatorBase(vm_in) {}
       void handle_midi_on(const midi::NoteOnEvent&) noexcept override;
       void set_interval(float interval) noexcept;
     };
 
+    // -- PRIVATE FIELDS -- //
+  private:
+  
     util::local_vector<float, 7> detune_values;
     util::local_vector<float, voice_count_v> rand_values;
     // Random values. 100% random, organic and fresh. Works for up to 12 voices.
@@ -237,10 +248,6 @@ namespace otto::core::voices {
 
     bool legato_ = false;
     bool retrig_ = false;
-    float rand_ = 0;
-    float sub_ = 0.f;
-    float detune_ = 0;
-    int interval_ = 0;
 
     float pitch_bend_ = 1;
     bool sustain_ = false;

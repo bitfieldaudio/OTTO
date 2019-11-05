@@ -87,11 +87,22 @@ namespace otto::core::voices {
     template<typename Val, typename Tag, typename... Mixins>
     using Prop = typename Sndr::template Prop<Val, Tag, Mixins...>;
 
+    SettingsProps(Sndr* sndr) : sndr(sndr) 
+    {
+
+      play_mode.on_change().connect([this](){
+        rand.send_actions();
+        sub.send_actions();
+        detune.send_actions();
+        interval.send_actions();
+      });
+    }
+
     Sndr* sndr;
 
     Prop<play_mode_tag, PlayMode, props::wrap> play_mode = {sndr, PlayMode::poly};
     Prop<rand_tag, float> rand = {sndr, 0, props::limits(0, 1), props::step_size(0.01)};
-    Prop<sub_tag, float> sub = {sndr, 1, props::limits(0.01, 1), props::step_size(0.01)};
+    Prop<sub_tag, float> sub = {sndr, 0, props::limits(0.01, 1), props::step_size(0.01)};
     Prop<detune_tag, float> detune = {sndr, 0, props::limits(0, 1), props::step_size(0.01)};
     Prop<interval_tag, int> interval = {sndr, 0, props::limits(-12, 12)};
 
