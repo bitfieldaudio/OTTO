@@ -84,13 +84,16 @@ namespace otto::core::voices {
     midi_note_ = midi_note;
     triggered_ = true;
     // Sets target value of portamento to new note
-    glide_ = midi::note_freq(midi_note) * detune;
-    frequency_ = glide_();
+    frequency_ = midi::note_freq(midi_note) * detune;
     // So far, jump/retrig only works for MONO and UNISON
-    if (jump) glide_.finish();
+    if (jump || glide_.target() == 0.f) {
+      glide_ = frequency_;
+      glide_.finish();
+    }
+    glide_ = frequency_;
     velocity_ = velocity;
     if (!legato) {
-      on_note_on(midi::note_freq(midi_note) * detune);
+      on_note_on(frequency_);
       env_.resetSoft();
     }
   }
@@ -113,6 +116,19 @@ namespace otto::core::voices {
     if (is_triggered()) {
       on_note_off();
     }
+  }
+
+  template<typename D>
+  void VoiceBase<D>::next() noexcept
+  {
+    frequency_ = glide_() * *pitch_bend_;
+  }
+
+  template<typename D>
+  void VoiceBase<D>::action(portamento_tag::action, float p) noexcept
+  {
+    glide_ = glide_.getEnd();
+    glide_.period(p);
   }
 
   // VOICE ALLOCATORS //
@@ -216,8 +232,14 @@ namespace otto::core::voices {
   }
 
   template<typename V, int N>
-  void VoiceManager<V, N>::PolyAllocator::set_rand(float rand) noexcept
-  {}
+  void VoiceManager<V, N>::PolyAllocator::set_rand(float r) noexcept
+  {
+    auto& vm = this->vm;
+    vm.rand_values.clear();
+    for (int i = 0; i < voice_count_v; i++) {
+      vm.rand_values.push_back(vm.rand_max[i] * r - r + 1.f);
+    }
+  }
 
   // INTERVAL //
   template<typename V, int N>
@@ -263,7 +285,7 @@ namespace otto::core::voices {
     // The second and third voice are sub voices on mono mode. This sets their volume.
     int sub_number = 1;
     for (auto& voice : util::view::subrange(this->vm.voices(), 1, 3)) {
-      voice.volume(sub / (float)sub_number);
+      voice.volume(sub / (float) sub_number);
       sub_number++;
     }
   }
@@ -360,9 +382,11 @@ namespace otto::core::voices {
   template<typename V, int N>
   template<typename... Args>
   VoiceManager<V, N>::VoiceManager(Args&&... args) noexcept
-    : voices_(util::generate_array<voice_count_v>([&] (int i) { return Voice{args...}; }))
+    : voices_(util::generate_array<voice_count_v>([&](int i) { return Voice{args...}; }))
   {
-
+    for (auto& v : voices_) {
+      v.pitch_bend_ = &pitch_bend_;
+    }
     for (int i = 0; i < voice_count_v; ++i) {
       // auto& voice = voices_[i];
       // envelope_props.attack.on_change().connect(
@@ -375,8 +399,6 @@ namespace otto::core::voices {
 
       // settings_props.portamento.on_change()
       //   .connect([&voice](float p) {
-      //     voice.glide_ = voice.glide_.getEnd();
-      //     voice.glide_.period(p);
       //   }).call_now(settings_props.portamento);
     }
 
@@ -391,10 +413,6 @@ namespace otto::core::voices {
     // }).call_now(settings_props.detune);
 
     // settings_props.rand.on_change().connect([this](float r){
-    //   rand_values.clear();
-    //     for (int i = 0; i<voice_count_v; i++) {
-    //       rand_values.push_back(rand_max[i] * r - r + 1.f);
-    //     }
     // }).call_now(settings_props.rand);
 
     // settings_props.play_mode.on_change()
@@ -428,7 +446,7 @@ namespace otto::core::voices {
     float voice_sum = 0.f;
     for (auto& voice : voices_) {
       /// Change frequency if applicable
-      voice.frequency(voice.glide_() * pitch_bend_);
+      voice.next();
       /// Get next sample
       // TODO: The voice could be called inside the envelope. Maybe later.
       voice_sum += voice.env_() * voice();
@@ -481,9 +499,9 @@ namespace otto::core::voices {
   }
 
   template<typename V, int N>
-  void VoiceManager<V, N>::action(itc::prop_tag_change<play_mode_tag, PlayMode>, PlayMode new_value) noexcept
+  void VoiceManager<V, N>::action(itc::prop_tag_change<play_mode_tag, PlayMode> a, PlayMode pm) noexcept
   {
-    switch (new_value) {
+    switch (pm) {
       case PlayMode::poly: voice_allocator.template emplace<PolyAllocator>(*this); break;
       case PlayMode::mono: voice_allocator.template emplace<MonoAllocator>(*this); break;
       case PlayMode::unison: voice_allocator.template emplace<UnisonAllocator>(*this); break;
@@ -496,28 +514,45 @@ namespace otto::core::voices {
       free_voices.push_back(&voice);
       voice.env_.amp(1.f);
     }
+    fwd_action_to_voices(a, pm);
   }
 
+  template<typename V, int N>
+  void VoiceManager<V, N>::action(legato_tag::action a, bool l) noexcept
+  {
+    // TODO: Implement
+    fwd_action_to_voices(a, l);
+  }
+  template<typename V, int N>
+  void VoiceManager<V, N>::action(retrig_tag::action a, bool r) noexcept
+  {
+    // TODO: Implement
+    fwd_action_to_voices(a, r);
+  }
 
   template<typename V, int N>
-  void VoiceManager<V, N>::action(itc::prop_tag_change<rand_tag, float>, float rand) noexcept
+  void VoiceManager<V, N>::action(rand_tag::action a, float rand) noexcept
   {
     util::partial_match(voice_allocator, [&](PolyAllocator& a) { a.set_rand(rand); });
+    fwd_action_to_voices(a, rand);
   }
   template<typename V, int N>
-  void VoiceManager<V, N>::action(itc::prop_tag_change<sub_tag, float>, float sub) noexcept
+  void VoiceManager<V, N>::action(sub_tag::action a, float sub) noexcept
   {
     util::partial_match(voice_allocator, [&](MonoAllocator& a) { a.set_sub(sub); });
+    fwd_action_to_voices(a, sub);
   }
   template<typename V, int N>
-  void VoiceManager<V, N>::action(itc::prop_tag_change<detune_tag, float>, float detune) noexcept
+  void VoiceManager<V, N>::action(detune_tag::action a, float detune) noexcept
   {
     util::partial_match(voice_allocator, [&](UnisonAllocator& a) { a.set_detune(detune); });
+    fwd_action_to_voices(a, detune);
   }
   template<typename V, int N>
-  void VoiceManager<V, N>::action(itc::prop_tag_change<interval_tag, int>, int interval) noexcept
+  void VoiceManager<V, N>::action(interval_tag::action a, int interval) noexcept
   {
     util::partial_match(voice_allocator, [&](IntervalAllocator& a) { a.set_interval(interval); });
+    fwd_action_to_voices(a, interval);
   }
 
   template<typename V, int N>

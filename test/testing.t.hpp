@@ -77,7 +77,7 @@ namespace otto::test {
 
     friend std::ostream& operator<<(std::ostream& os, const approx& a)
     {
-      os << "approx(" << a.value_ << ")";
+      os << "approx(" << a.value_ << ", ±" << a.margin_ << ")";
       return os;
     }
 

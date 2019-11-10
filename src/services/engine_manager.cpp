@@ -3,7 +3,8 @@
 #include "core/engine/engine_dispatcher.hpp"
 #include "core/engine/engine_dispatcher.inl"
 #include "core/ui/vector_graphics.hpp"
-#include "engines/synths/goss/goss.hpp"
+#include "engines/synths/goss/audio.hpp"
+#include "engines/synths/goss/screen.hpp"
 #include "services/application.hpp"
 #include "services/clock_manager.hpp"
 
@@ -19,15 +20,15 @@ namespace otto::services {
     audio::ProcessData<2> process(audio::ProcessData<1> external_in) override;
 
   private:
-    using EffectsDispatcher = EngineDispatcher< //
-      EngineType::effect>;
-    using ArpDispatcher = EngineDispatcher< //
-      EngineType::arpeggiator>;
-    using SynthDispatcher = EngineDispatcher< //
-      EngineType::synth,
-      NullEngine<EngineType::synth>>;
+    // using EffectsDispatcher = EngineDispatcher< //
+    //   EngineType::effect>;
+    // using ArpDispatcher = EngineDispatcher< //
+    //   EngineType::arpeggiator>;
+    // using SynthDispatcher = EngineDispatcher< //
+    //   EngineType::synth,
+    //   NullEngine<EngineType::synth>>;
 
-    SynthDispatcher synth{false};
+    engines::goss::GossEngine synth;
     // ArpDispatcher arpeggiator{true};
     // EffectsDispatcher effect1{true};
     // EffectsDispatcher effect2{true};
@@ -66,11 +67,11 @@ namespace otto::services {
     // reg_ss(ScreenEnum::sampler, [&]() -> auto& { return sequencer.sampler_screen(); });
     // reg_ss(ScreenEnum::sampler_envelope, [&]() -> auto& { return sequencer.envelope_screen(); });
     reg_ss(
-      ScreenEnum::synth, [&]() -> auto& { return synth->screen(); });
-    reg_ss(
-      ScreenEnum::synth_selector, [&]() -> auto& { return synth.selector_screen(); });
-    reg_ss(
-      ScreenEnum::synth_envelope, [&]() -> auto& { return synth->envelope_screen(); });
+      ScreenEnum::synth, [&]() -> auto& { return *synth.screen; });
+    // reg_ss(
+    //   ScreenEnum::synth_selector, [&]() -> auto& { return synth.selector_screen(); });
+    // reg_ss(
+    //   ScreenEnum::synth_envelope, [&]() -> auto& { return synth->envelope_screen(); });
     // reg_ss(ScreenEnum::external,       [&] () -> auto& { return  ; });
     // reg_ss(ScreenEnum::twist1,         [&] () -> auto& { return  ; });
     // reg_ss(ScreenEnum::twist2,         [&] () -> auto& { return  ; });
@@ -190,7 +191,7 @@ namespace otto::services {
     auto midi_in = external_in.midi_only();
     midi_in.clock = ClockManager::current().step_frames(external_in.nframes);
     // auto arp_out = arpeggiator->process(midi_in);
-    auto synth_out = synth->process(external_in);
+    auto synth_out = synth.audio->process(external_in);
     auto right_chan = Application::current().audio_manager->buffer_pool().allocate();
 
     util::copy(synth_out.audio, right_chan.begin());

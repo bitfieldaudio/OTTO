@@ -21,7 +21,7 @@ namespace otto::core::engine {
     } props;
     NullEngine();
 
-    audio::ProcessData<2> process(audio::ProcessData<1> data) noexcept override;
+    audio::ProcessData<2> process(audio::ProcessData<1> data) noexcept;
   };
 
   template<>
@@ -32,7 +32,7 @@ namespace otto::core::engine {
       DECL_REFLECTION_EMPTY(Props);
     } props;
     NullEngine();
-    audio::ProcessData<0> process(audio::ProcessData<0> data) noexcept override;
+    audio::ProcessData<0> process(audio::ProcessData<0> data) noexcept;
   };
 
   template<>
@@ -43,17 +43,7 @@ namespace otto::core::engine {
     } props;
 
     NullEngine();
-    audio::ProcessData<1> process(audio::ProcessData<1> data) noexcept override;
-
-    ui::Screen& envelope_screen() override
-    {
-      return screen();
-    }
-
-    ui::Screen& voices_screen() override
-    {
-      return screen();
-    }
+    audio::ProcessData<1> process(audio::ProcessData<1> data) noexcept;
 
   private:
     // struct Voice : voices::VoiceBase<Voice> {

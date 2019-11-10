@@ -36,76 +36,25 @@ namespace otto::engines::goss {
     DECL_REFLECTION(Props, drawbar1, drawbar2, click, leslie);
   };
 
-  struct GossEngine {
+  struct GossEngine : core::engine::SynthEngine<GossEngine> {
+    static constexpr auto name = "Goss";
+    using Audio = Audio;
+    using Screen = GossScreen;
+    using Props = Props;
     GossEngine();
 
+    const std::unique_ptr<GossScreen> screen;
+    const std::unique_ptr<Audio> audio;
+
+    DECL_REFLECTION(GossEngine, props);
+
   private:
-    std::unique_ptr<GossScreen> screen_;
-    std::unique_ptr<Audio> audio_;
     GraphicsSndr graphics_sndr_;
     AudioSndr audio_sndr_;
     Sndr sndr_ = {graphics_sndr_, audio_sndr_};
 
+    Props props {&sndr_};
+
     std::atomic<float> rotation_ = 0;
   };
-
-#if false
-  struct GossSynth final : SynthEngine<GossSynth> {
-    static constexpr util::string_ref name = "Goss";
-
-    GossSynth();
-
-    audio::ProcessData<1> process(audio::ProcessData<1>) override;
-
-    voices::IVoiceManager& voice_mgr() override
-    {
-      return voice_mgr_;
-    }
-
-    DECL_REFLECTION(GossSynth, props, ("voice_manager", &GossSynth::voice_mgr_));
-
-  private:
-    struct Pre : voices::PreBase<Pre, Props> {
-      float leslie_speed_hi = 0.f;
-      float leslie_speed_lo = 0.f;
-      float leslie_amount_hi = 0.f;
-      float leslie_amount_lo = 0.f;
-
-      gam::LFO<> leslie_filter_hi;
-      gam::LFO<> leslie_filter_lo;
-      gam::LFO<> pitch_modulation_lo;
-      gam::LFO<> pitch_modulation_hi;
-
-      gam::AccumPhase<> rotation;
-
-      Pre(Props&) noexcept;
-
-      void operator()() noexcept;
-    };
-
-    struct Voice : voices::VoiceBase<Voice, Pre> {
-      std::array<gam::Osc<>, 3> pipes;
-      gam::Osc<> percussion;
-      gam::AD<> perc_env{0.001, 0.2};
-
-      Voice(Pre&) noexcept;
-
-      float operator()() noexcept;
-
-      void on_note_on(float freq_target) noexcept;
-    };
-
-    struct Post : voices::PostBase<Post, Voice> {
-      gam::Biquad<> lpf;
-      gam::Biquad<> hpf;
-
-      Post(Pre&) noexcept;
-
-      float operator()(float) noexcept;
-    };
-
-    voices::VoiceManager<Post, 6> voice_mgr_;
-  };
-#endif
-
 } // namespace otto::engines::goss

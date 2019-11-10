@@ -73,9 +73,6 @@ namespace otto::core::voices {
 
     /// Get the volume (typically 1, but might be different for sub-octaves)
     float volume() noexcept;
-    /// Set the volume (typically 1, but might be different for sub-octaves)
-    void volume(float) noexcept;
-
     /// Is this voice currently triggered?
     ///
     /// Not to be confused with whether it should play. It is not triggered in the
@@ -84,6 +81,12 @@ namespace otto::core::voices {
 
     /// The current envelope value
     float envelope() noexcept;
+
+    /// Calculate the next glide points, envelope etc..
+    /// @note Must be called before calling operator(). VoiceManager::operator() and ::process do this.
+    void next() noexcept;
+
+    void action(portamento_tag::action, float p) noexcept;
 
   private:
     template<typename T, int N>
@@ -96,16 +99,21 @@ namespace otto::core::voices {
     void release() noexcept;
     void release_no_env() noexcept;
 
-    float frequency_ = 440.f;
+    /// Set the volume (typically 1, but might be different for sub-octaves)
+    void volume(float) noexcept;
+
+    float frequency_ = 0.f;
     float velocity_ = 1.f;
     float level = 1.f;
     float aftertouch_ = 0.f;
     float volume_ = 1.f;
     int midi_note_ = 0;
     bool triggered_ = false;
+    /// Points to the VoiceManager pitch_bend variable.
+    float* pitch_bend_ = nullptr;
 
     gam::ADSR<> env_;
-    SegExpBypass<> glide_{0.f};
+    util::dsp::SegExpBypass<> glide_{0.f};
   };
 
   // -- VOICE MANAGER -- //
@@ -122,7 +130,7 @@ namespace otto::core::voices {
     static constexpr int sub_voice_count_v = 2;
 
     /// Constructor
-    /// 
+    ///
     /// Any parameters passed to this will be passed to the constructors of the voices
     template<typename... Args>
     VoiceManager(Args&&... args) noexcept;
@@ -151,11 +159,11 @@ namespace otto::core::voices {
     void action(detune_tag::action, float detune) noexcept;
     void action(interval_tag::action, int interval) noexcept;
 
+    /// If avaliable, call the action recievers in the voices for all other actions.
     template<typename Action, typename... Args>
-    void action(Action a, Args&&... args) noexcept {
-      for (Voice& voice : voices_) {
-        voice.action(a, args...);
-      }
+    auto action(Action a, Args&&... args) noexcept -> std::enable_if_t<itc::ActionReciever::is<Voice, Action>, void>
+    {
+      fwd_action_to_voices(a, args...);
     }
 
     // -- GETTERS -- //
@@ -204,7 +212,10 @@ namespace otto::core::voices {
     struct PolyAllocator final : VoiceAllocatorBase {
       float rand_ = 0;
 
-      PolyAllocator(VoiceManager& vm_in) : VoiceAllocatorBase(vm_in){};
+      PolyAllocator(VoiceManager& vm_in) : VoiceAllocatorBase(vm_in)
+      {
+        set_rand(0);
+      };
       void handle_midi_on(const midi::NoteOnEvent&) noexcept override;
       void set_rand(float rand) noexcept;
     };
@@ -239,7 +250,16 @@ namespace otto::core::voices {
 
     // -- PRIVATE FIELDS -- //
   private:
-  
+    template<typename Action, typename... Args>
+    void fwd_action_to_voices(Action a, Args&&... args)
+    {
+      if constexpr (itc::ActionReciever::is<Voice, Action>) {
+        for (auto& v : voices_) {
+          v.action(a, args...);
+        }
+      }
+    }
+
     util::local_vector<float, 7> detune_values;
     util::local_vector<float, voice_count_v> rand_values;
     // Random values. 100% random, organic and fresh. Works for up to 12 voices.

@@ -2,7 +2,8 @@
 
 namespace otto::engines::goss {
 
-  Voice::Voice(Audio& a) noexcept : audio(a) {
+  Voice::Voice(Audio& a) noexcept : audio(a)
+  {
     pipes[0].resize(1024);
     pipes[0].addSine(1, 1, 0);
     pipes[0].addSine(3, 1, 0);
@@ -34,6 +35,12 @@ namespace otto::engines::goss {
     pipes[2].freq(fundamental);
     percussion.freq(frequency());
     return pipes[0]() + pipes[1]() * audio.drawbar1 + pipes[2]() * audio.drawbar2 + percussion() * perc_env();
+  }
+
+  void Voice::action(itc::prop_change<&Props::click>, float cl) noexcept
+  {
+    perc_env.decay(cl * 2);
+    perc_env.amp(3 * cl);
   }
 
   Audio::Audio() noexcept
@@ -89,5 +96,14 @@ namespace otto::engines::goss {
     float s_lo = lpf(voices) * (1 + leslie_amount_lo * leslie_filter_lo.cos());
     float s_hi = hpf(voices) * (1 + leslie_amount_hi * leslie_filter_hi.cos());
     return s_lo + s_hi;
+  }
+
+  audio::ProcessData<1> Audio::process(audio::ProcessData<1> data) noexcept
+  {
+    for (auto& m : data.midi) voice_mgr_.handle_midi(m);
+    for (float& f : data.audio) {
+      f = (*this)();
+    }
+    return data;
   }
 } // namespace otto::engines::goss

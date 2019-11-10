@@ -31,7 +31,7 @@
 /// Used to wrap entire overload sets into a single callable lambda
 #define CALLABLE(...) [](auto&&... args) -> decltype(auto) { return std::invoke(__VA_ARGS__, FWD(args)...); }
 /// Used to wrap entire overload sets of member functions into a single callable lambda
-#define WRAP_MEM_FUNC(...) [](auto&& obj, auto&&... args) -> decltype(auto) { return obj.__VA_ARGS__(FWD(args)...); }
+#define MEMBER_CALLER(...) [](auto&& obj, auto&&... args) -> decltype(auto) { return obj.__VA_ARGS__(FWD(args)...); }
 
 // Overload macros based on argument count
 #define GET_MACRO_1(_1, NAME, ...) NAME

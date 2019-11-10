@@ -118,7 +118,7 @@ namespace otto::util {
     /// Zero overhead wrapper to create iterators
     ///
     /// \tparam Impl must define the following member functions:
-    /// ```
+    /// ```cpp
     /// void           Impl::advance(difference_type);
     /// reference      Impl::dereference();
     /// bool           Impl::equal(const Impl&);
