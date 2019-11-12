@@ -7,7 +7,6 @@ namespace otto::core::voices {
   namespace view = util::view;
 
   TEST_CASE ("VoiceManager") {
-
     using test_action = itc::Action<struct test_action_tag, float>;
 
     struct Voice : voices::VoiceBase<Voice> {
@@ -18,7 +17,8 @@ namespace otto::core::voices {
         return 1.f;
       }
 
-      void action(test_action, float f) {
+      void action(test_action, float f)
+      {
         this->f += f;
       }
 
@@ -42,9 +42,9 @@ namespace otto::core::voices {
     auto triggered_voices =
       view::filter(vmgr.voices(), [](Voice& v) { return v.is_triggered() && v.volume() != test::approx(0); });
 
-    auto triggered_voice_ptrs = view::transform(triggered_voices, [](Voice& v){return &v;});
+    auto triggered_voice_ptrs = view::transform(triggered_voices, [](Voice& v) { return &v; });
 
-    SECTION("Voice recieves actions sent to voice manager") {
+    SECTION ("Voice recieves actions sent to voice manager") {
       itc::call_reciever(vmgr, test_action::data(1));
     }
 
@@ -161,6 +161,19 @@ namespace otto::core::voices {
         }
         REQUIRE(used_voices.size() == vmgr.voices().size());
       }
+
+      SECTION ("Keys held over the maximum limit are ignored") {
+        for (int i = 1; i <= 12 * vmgr.voice_count_v + 1; i++) {
+          vmgr.handle_midi(midi::NoteOnEvent{i});
+        }
+        //REQUIRE_THAT(test::sort(view::transform(triggered_voices, WRAP_MEM_FUNC(midi_note))),
+        //             !Catch::Contains(vec(12 * vmgr.voice_count_v + 1)));
+
+        for (int i = 1; i <= 12 * vmgr.voice_count_v; i++) {
+          vmgr.handle_midi(midi::NoteOffEvent{i});
+        }
+        //REQUIRE(std::count(triggered_voices) == 0);
+      }
     }
 
     SECTION ("Unison Mode") {
@@ -201,18 +214,18 @@ namespace otto::core::voices {
 
       SECTION ("Voices keep same order (voice steal)") {
         vmgr.handle_midi(midi::NoteOnEvent{50});
-        auto ordered_voices_expected = test::sort(triggered_voice_ptrs, [](Voice* v){return v->frequency();} );
+        auto ordered_voices_expected = test::sort(triggered_voice_ptrs, [](Voice* v) { return v->frequency(); });
         vmgr.handle_midi(midi::NoteOnEvent{60});
-        auto ordered_voices_actual = test::sort(triggered_voice_ptrs, [](Voice* v){return v->frequency();} );
+        auto ordered_voices_actual = test::sort(triggered_voice_ptrs, [](Voice* v) { return v->frequency(); });
         REQUIRE_THAT(ordered_voices_expected, Catch::Equals(ordered_voices_actual));
       }
 
       SECTION ("Voices keep same order (voice return)") {
         vmgr.handle_midi(midi::NoteOnEvent{50});
         vmgr.handle_midi(midi::NoteOnEvent{60});
-        auto ordered_voices_expected = test::sort(triggered_voice_ptrs, [](Voice* v){return v->frequency();} );
+        auto ordered_voices_expected = test::sort(triggered_voice_ptrs, [](Voice* v) { return v->frequency(); });
         vmgr.handle_midi(midi::NoteOffEvent{60});
-        auto ordered_voices_actual = test::sort(triggered_voice_ptrs, [](Voice* v){return v->frequency();} );
+        auto ordered_voices_actual = test::sort(triggered_voice_ptrs, [](Voice* v) { return v->frequency(); });
         REQUIRE_THAT(ordered_voices_expected, Catch::Equals(ordered_voices_actual));
       }
 
@@ -222,9 +235,9 @@ namespace otto::core::voices {
 
         vmgr.handle_midi(midi::NoteOnEvent{50});
         vmgr.handle_midi(midi::NoteOnEvent{60});
-        auto ordered_voices_expected = test::sort(triggered_voice_ptrs, [](Voice* v){return v->frequency();} );
+        auto ordered_voices_expected = test::sort(triggered_voice_ptrs, [](Voice* v) { return v->frequency(); });
         vmgr.handle_midi(midi::NoteOffEvent{60});
-        auto ordered_voices_actual = test::sort(triggered_voice_ptrs, [](Voice* v){return v->frequency();} );
+        auto ordered_voices_actual = test::sort(triggered_voice_ptrs, [](Voice* v) { return v->frequency(); });
         REQUIRE_THAT(ordered_voices_expected, Catch::Equals(ordered_voices_actual));
       }
     }
@@ -233,49 +246,49 @@ namespace otto::core::voices {
       voices_props.play_mode = +PlayMode::interval;
       voices_props.interval = 1;
       queue.pop_call_all();
-      
+
 
       SECTION ("Interval mode triggers two voices for a single note") {
         vmgr.handle_midi(midi::NoteOnEvent{50});
         REQUIRE(util::count(triggered_voices) == 2);
-        REQUIRE_THAT(test::sort(view::transform(triggered_voices, WRAP_MEM_FUNC(midi_note))), 
-              Catch::Equals(std::vector{50, 51}));
+        REQUIRE_THAT(test::sort(view::transform(triggered_voices, WRAP_MEM_FUNC(midi_note))),
+                     Catch::Equals(std::vector{50, 51}));
       }
 
       SECTION ("Interval mode triggers two voices per note") {
         vmgr.handle_midi(midi::NoteOnEvent{50});
         vmgr.handle_midi(midi::NoteOnEvent{60});
-        REQUIRE_THAT(test::sort(view::transform(triggered_voices, WRAP_MEM_FUNC(midi_note))), 
-              Catch::Equals(std::vector{50, 51, 60, 61}));
+        REQUIRE_THAT(test::sort(view::transform(triggered_voices, WRAP_MEM_FUNC(midi_note))),
+                     Catch::Equals(std::vector{50, 51, 60, 61}));
       }
 
-      SECTION ("Note steal works like in poly"){
+      SECTION ("Note steal works like in poly") {
         vmgr.handle_midi(midi::NoteOnEvent{50});
         vmgr.handle_midi(midi::NoteOnEvent{60});
         vmgr.handle_midi(midi::NoteOnEvent{70});
         vmgr.handle_midi(midi::NoteOnEvent{80});
         // Note steal
-        REQUIRE_THAT(test::sort(view::transform(triggered_voices, WRAP_MEM_FUNC(midi_note))), 
-              Catch::Equals(std::vector{60, 61, 70, 71, 80, 81}));
+        REQUIRE_THAT(test::sort(view::transform(triggered_voices, WRAP_MEM_FUNC(midi_note))),
+                     Catch::Equals(std::vector{60, 61, 70, 71, 80, 81}));
         // Note return
         vmgr.handle_midi(midi::NoteOffEvent{70});
-        REQUIRE_THAT(test::sort(view::transform(triggered_voices, WRAP_MEM_FUNC(midi_note))), 
-              Catch::Equals(std::vector{50, 51, 60, 61, 80, 81}));
+        REQUIRE_THAT(test::sort(view::transform(triggered_voices, WRAP_MEM_FUNC(midi_note))),
+                     Catch::Equals(std::vector{50, 51, 60, 61, 80, 81}));
       }
 
-      SECTION ("Playing base and interval keys yields four voices"){
+      SECTION ("Playing base and interval keys yields four voices") {
         vmgr.handle_midi(midi::NoteOnEvent{50});
         vmgr.handle_midi(midi::NoteOnEvent{51});
-        REQUIRE_THAT(test::sort(view::transform(triggered_voices, WRAP_MEM_FUNC(midi_note))), 
-              Catch::Equals(std::vector{50, 51, 51, 52}));
+        REQUIRE_THAT(test::sort(view::transform(triggered_voices, WRAP_MEM_FUNC(midi_note))),
+                     Catch::Equals(std::vector{50, 51, 51, 52}));
       }
 
-      SECTION ("Playing base and interval keys and releasing one yields two voices"){
+      SECTION ("Playing base and interval keys and releasing one yields two voices") {
         vmgr.handle_midi(midi::NoteOnEvent{50});
         vmgr.handle_midi(midi::NoteOnEvent{51});
         vmgr.handle_midi(midi::NoteOffEvent{50});
-        REQUIRE_THAT(test::sort(view::transform(triggered_voices, WRAP_MEM_FUNC(midi_note))), 
-              Catch::Equals(std::vector{51, 52}));
+        REQUIRE_THAT(test::sort(view::transform(triggered_voices, WRAP_MEM_FUNC(midi_note))),
+                     Catch::Equals(std::vector{51, 52}));
       }
 
       SECTION ("Changing interval still allows removal of all notes") {
@@ -283,18 +296,17 @@ namespace otto::core::voices {
 
         voices_props.interval = 2;
         queue.pop_call_all();
-        REQUIRE_THAT(test::sort(view::transform(triggered_voices, WRAP_MEM_FUNC(midi_note))), 
-              Catch::Equals(std::vector{50, 51}));
-        
+        REQUIRE_THAT(test::sort(view::transform(triggered_voices, WRAP_MEM_FUNC(midi_note))),
+                     Catch::Equals(std::vector{50, 51}));
+
         vmgr.handle_midi(midi::NoteOnEvent{60});
-        REQUIRE_THAT(test::sort(view::transform(triggered_voices, WRAP_MEM_FUNC(midi_note))), 
-              Catch::Equals(std::vector{50, 51, 60, 62}));
+        REQUIRE_THAT(test::sort(view::transform(triggered_voices, WRAP_MEM_FUNC(midi_note))),
+                     Catch::Equals(std::vector{50, 51, 60, 62}));
         vmgr.handle_midi(midi::NoteOffEvent{50});
-        REQUIRE_THAT(test::sort(view::transform(triggered_voices, WRAP_MEM_FUNC(midi_note))), 
-              Catch::Equals(std::vector{60, 62}));
+        REQUIRE_THAT(test::sort(view::transform(triggered_voices, WRAP_MEM_FUNC(midi_note))),
+                     Catch::Equals(std::vector{60, 62}));
       }
     }
-
   }
 
 } // namespace otto::core::voices

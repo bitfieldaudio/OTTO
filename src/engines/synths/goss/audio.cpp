@@ -24,6 +24,7 @@ namespace otto::engines::goss {
     percussion.addSine(6, 1.0, 0);
 
     perc_env.finish();
+    env_.finish();
   }
 
   float Voice::operator()() noexcept
@@ -33,7 +34,20 @@ namespace otto::engines::goss {
     pipes[1].freq(fundamental);
     pipes[2].freq(fundamental);
     percussion.freq(frequency());
-    return pipes[0]() + pipes[1]() * audio.drawbar1 + pipes[2]() * audio.drawbar2 + percussion() * perc_env();
+    float s = pipes[0]() + pipes[1]() * audio.drawbar1 + pipes[2]() * audio.drawbar2 + percussion() * perc_env();
+    return s * env_();
+  }
+
+  void Voice::on_note_on(float freq_target) noexcept
+  {
+    env_.resetSoft();
+    perc_env.resetSoft();
+  }
+
+  void Voice::on_note_off() noexcept
+  {
+    env_.release();
+    perc_env.release();
   }
 
   Audio::Audio() noexcept
