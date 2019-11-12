@@ -12,6 +12,7 @@ namespace otto::core::voices {
   VoiceBase<D>::VoiceBase() noexcept
   {
     glide_ = frequency();
+    glide_.finish();
   }
 
   template<typename D>
@@ -187,7 +188,6 @@ namespace otto::core::voices {
   void VoiceManager<V, N>::VoiceAllocatorBase::stop_voice(int key) noexcept
   {
     auto free_voice = [this](Voice& v) {
-      // TODO: this used to be reversed. Does it cause problems in poly?
       auto found = std::find_if(vm.note_stack.begin(), vm.note_stack.end(), [](auto nvp) { return !nvp.has_voice(); });
       if (found != vm.note_stack.end()) {
         found->voice = &v;

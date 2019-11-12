@@ -69,7 +69,9 @@ namespace otto::itc {
       : core::props::Property<Val, core::props::mixin::action<Tag, Sndr>, Mixins...>(std::forward<TRef>(value),
                                                                                     action_mixin::init(sndr),
                                                                                     FWD(args)...)
-    {}
+    {
+      this->send_actions();
+    }
 
     using prop_impl_t::operator=;
     using prop_impl_t::operator const value_type&;

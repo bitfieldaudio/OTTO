@@ -349,6 +349,7 @@ namespace otto::core::voices {
       REQUIRE(v.frequency() == f);
       for (int i = 0; i < expected_n; i++) {
         v.next();
+        INFO("i = " << i);
         float f2 = v.frequency();
         // Frequency increases for each sample
         REQUIRE(f2 > f);
