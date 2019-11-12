@@ -28,3 +28,6 @@ CMakeLists.txt.user
 *.cbp
 ./build*
 .gdb_history
+test/core/voices/todo.md
+
+.ccls-cache

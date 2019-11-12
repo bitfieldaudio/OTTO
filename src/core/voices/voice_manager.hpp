@@ -49,11 +49,14 @@ namespace otto::core::voices {
     VoiceBase(const VoiceBase&) = delete;
 
     /// Implement a handler for note on events
+    /// Main use for this is resetting the amp envelope
     /// freq_target is the target frequency. This allows frequency-specific
     /// calculations to be done even when there is portamento.
+    /// During a note steal, if legato is engaged, this is not called
     void on_note_on(float freq_target) noexcept;
 
     /// Implement a handler for note off events
+    /// Main use is to release the amp envelope.
     void on_note_off() noexcept;
 
     /// Get the midi note this voice is currently attached to
@@ -71,7 +74,7 @@ namespace otto::core::voices {
     /// Get the aftertouch value
     float aftertouch() noexcept;
 
-    /// Get the volume (typically 1, but might be different for sub-octaves)
+    /// Get the volume (typically 1, but might be different for sub-octaves) or in unison mode
     float volume() noexcept;
 
     /// Is this voice currently triggered?
@@ -79,9 +82,6 @@ namespace otto::core::voices {
     /// Not to be confused with whether it should play. It is not triggered in the
     /// release stage
     bool is_triggered() noexcept;
-
-    /// The current envelope value
-    float envelope() noexcept;
 
     /// Calculate the next glide points, envelope etc..
     /// 
@@ -109,10 +109,10 @@ namespace otto::core::voices {
     void release() noexcept;
     void release_no_env() noexcept;
 
-    /// Set the volume (typically 1, but might be different for sub-octaves)
+    /// Set the volume (typically 1, but might be different for sub-octaves or in unison mode)
     void volume(float) noexcept;
 
-    float frequency_ = 0.f;
+    float frequency_ = 1.f;
     float velocity_ = 1.f;
     float level = 1.f;
     float aftertouch_ = 0.f;
@@ -122,8 +122,9 @@ namespace otto::core::voices {
     /// Points to the VoiceManager pitch_bend variable.
     float* pitch_bend_ = nullptr;
 
-    gam::ADSR<> env_;
-    util::dsp::SegExpBypass<> glide_{0.f};
+    util::dsp::SegExpBypass<> glide_{1.f};
+
+    // Note that the voicemanager does not contain the envelope of the voice by default
   };
 
   // -- VOICE MANAGER -- //
@@ -282,10 +283,14 @@ namespace otto::core::voices {
     float pitch_bend_ = 1;
     bool sustain_ = false;
 
-    std::deque<Voice*> free_voices;
-    std::deque<NoteStackEntry> note_stack;
-
+    // The actual voices
     std::array<Voice, voice_count_v> voices_;
+    // Contains the currently untriggered voices
+    util::local_vector<Voice*, voice_count_v> free_voices;
+    // Contains informatins about the currently held keys/playing voices.
+    // One key pushes more than one entry in other playmodes than poly 
+    util::local_vector<NoteStackEntry, 12 * voice_count_v> note_stack;
+    
 
     util::variant_w_base<VoiceAllocatorBase, PolyAllocator, MonoAllocator, UnisonAllocator, IntervalAllocator>
       voice_allocator = {std::in_place_type<PolyAllocator>, *this};

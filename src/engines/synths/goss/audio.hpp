@@ -14,6 +14,9 @@ namespace otto::engines::goss {
 
     float operator()() noexcept;
 
+    void on_note_on(float) noexcept;
+    void on_note_off() noexcept;
+
     void action(itc::prop_change<&Props::click>, float c) noexcept;
 
   private:
@@ -21,6 +24,7 @@ namespace otto::engines::goss {
     std::array<gam::Osc<>, 3> pipes;
     gam::Osc<> percussion;
     gam::AD<> perc_env{0.001, 0.2};
+    gam::ADSR<> env_;
   };
 
   struct Audio {

@@ -1,8 +1,8 @@
 #include <set>
 
 #include "core/voices/voice_manager.hpp"
-#include "testing.t.hpp"
 #include "dummy_services.hpp"
+#include "testing.t.hpp"
 
 namespace otto::core::voices {
 
@@ -183,6 +183,19 @@ namespace otto::core::voices {
           vmgr.handle_midi(midi::NoteOffEvent{50 + i});
         }
         REQUIRE(vals.size() == 5);
+      }
+
+      SECTION ("Keys held over the maximum limit are ignored") {
+        for (int i = 1; i <= 12 * vmgr.voice_count_v + 1; i++) {
+          vmgr.handle_midi(midi::NoteOnEvent{i});
+        }
+        REQUIRE_THAT(test::sort(view::transform(triggered_voices, MEMBER_CALLER(midi_note))),
+                     !Catch::Contains(std::vector{12 * vmgr.voice_count_v + 1}));
+
+        for (int i = 1; i <= 12 * vmgr.voice_count_v; i++) {
+          vmgr.handle_midi(midi::NoteOffEvent{i});
+        }
+        REQUIRE(util::count(triggered_voices) == 0);
       }
     }
 
@@ -438,7 +451,6 @@ namespace otto::core::voices {
     }
 
     SECTION ("call operators and process calls") {
-
       auto app = services::test::make_dummy_application();
 
       using namespace core::audio;
@@ -482,5 +494,4 @@ namespace otto::core::voices {
       }
     }
   }
-
 } // namespace otto::core::voices
