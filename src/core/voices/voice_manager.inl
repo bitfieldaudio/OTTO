@@ -137,8 +137,9 @@ namespace otto::core::voices {
     auto buf = services::AudioManager::current().buffer_pool().allocate();
     for (auto& f : buf) {
       next();
-      f = this->operator();
+      f = this->derived()();
     }
+    return data.with(buf);
   }
 
   // VOICE ALLOCATORS //
@@ -406,10 +407,6 @@ namespace otto::core::voices {
       //   [&voice](float sustain) { voice.env_.sustain(sustain); });
       // envelope_props.release.on_change().connect(
       //   [&voice](float release) { voice.env_.release(4 * release * release + 0.02); });
-
-      // settings_props.portamento.on_change()
-      //   .connect([&voice](float p) {
-      //   }).call_now(settings_props.portamento);
     }
 
     // settings_props.detune.on_change().connect([this](float det){
@@ -421,21 +418,6 @@ namespace otto::core::voices {
     //   }
     //   for (auto&& [v, d] : util::zip(voices_, detune_values)) v.glide_ = midi::note_freq(v.midi_note_) * d;
     // }).call_now(settings_props.detune);
-
-    // settings_props.rand.on_change().connect([this](float r){
-    // }).call_now(settings_props.rand);
-
-    // settings_props.play_mode.on_change()
-    //   .connect([this](PlayMode mode) {
-    //     switch (mode) {
-    //       case PlayMode::poly: voice_allocator = std::make_unique<PolyAllocator>(*this); break;
-    //       case PlayMode::mono: voice_allocator = std::make_unique<MonoAllocator>(*this); break;
-    //       case PlayMode::unison: voice_allocator = std::make_unique<UnisonAllocator>(*this); break;
-    //       case PlayMode::interval: voice_allocator = std::make_unique<IntervalAllocator>(*this); break;
-    //       default:break;
-    //     }
-    //   })
-    //   .call_now(settings_props.play_mode);
 
     // sustain_.on_change().connect([this](bool val) {
     //   if (!val) {
@@ -455,11 +437,8 @@ namespace otto::core::voices {
   {
     float voice_sum = 0.f;
     for (auto& voice : voices_) {
-      /// Change frequency if applicable
       voice.next();
-      /// Get next sample
-      // TODO: The voice could be called inside the envelope. Maybe later.
-      voice_sum += voice.env_() * voice();
+      voice_sum += voice();
     }
     return voice_sum;
   }
@@ -482,10 +461,12 @@ namespace otto::core::voices {
   audio::ProcessData<1> VoiceManager<V, N>::process(audio::ProcessData<1> data) noexcept
   {
     for (auto& event : data.midi) handle_midi(event);
-
-    auto buf = Application::current().audio_manager->buffer_pool().allocate();
-    for (auto& frm : buf) {
-      frm = (*this)();
+    auto buf = services::AudioManager::current().buffer_pool().allocate_clear();
+    for (auto& v : voices()) {
+      auto v_out = v.process(data.audio_only());
+      for (auto&& [v, b] : util::zip(v_out.audio, buf)) {
+        b += v;
+      }
     }
     return data.with(buf);
   }
