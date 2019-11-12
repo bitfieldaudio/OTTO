@@ -2,6 +2,7 @@
 
 #include "core/voices/voice_manager.hpp"
 #include "testing.t.hpp"
+#include "dummy_services.hpp"
 
 namespace otto::core::voices {
 
@@ -437,9 +438,53 @@ namespace otto::core::voices {
     }
 
     SECTION ("call operators and process calls") {
-      struct SVoice : voices::VoiceBase<SVoice> {
-        float operator()() noexcept;
-      };
+
+      auto app = services::test::make_dummy_application();
+
+      using namespace core::audio;
+      SECTION ("when voice has an operator(), voice and vmgr gets process() and operator()") {
+        struct SVoice : voices::VoiceBase<SVoice> {
+          float operator()() noexcept
+          {
+            return 1.f;
+          }
+        };
+
+        VoiceManager<SVoice, 4> vmgr;
+        REQUIRE(vmgr.voices()[0]() == 1.f);
+        REQUIRE(vmgr() == approx(4.f));
+
+        AudioBufferHandle bh = services::AudioManager::current().buffer_pool().allocate_clear();
+
+        auto res = vmgr.voices()[0].process(ProcessData<1>{bh});
+        REQUIRE(util::all_of(res.audio, util::does_equal(1)));
+        auto res2 = vmgr.process(ProcessData<1>{bh});
+        REQUIRE(util::all_of(res2.audio, util::does_equal(4)));
+      }
+
+      SECTION ("when voice has a process(), vmgr only has process()") {
+        struct SVoice : voices::VoiceBase<SVoice> {
+          ProcessData<1> process(ProcessData<1> data) noexcept
+          {
+            static int refs = 0;
+            static std::array<float, 10> buf;
+            util::fill(buf, 1);
+            AudioBufferHandle bh = {buf.data(), buf.size(), refs};
+            return data.with(bh);
+          }
+        };
+
+        VoiceManager<SVoice, 4> vmgr;
+        int refs = 0;
+        std::array<float, 10> buf = {0};
+        util::fill(buf, 0);
+        AudioBufferHandle bh = {buf.data(), buf.size(), refs};
+
+        auto res = vmgr.voices()[0].process(ProcessData<1>{bh});
+        REQUIRE(util::all_of(res.audio, util::does_equal(1)));
+        auto res2 = vmgr.process(ProcessData<1>{bh});
+        REQUIRE(util::all_of(res2.audio, util::does_equal(4)));
+      }
     }
   }
 

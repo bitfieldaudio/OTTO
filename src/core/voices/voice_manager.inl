@@ -131,6 +131,16 @@ namespace otto::core::voices {
     glide_.period(p);
   }
 
+  template<typename D>
+  core::audio::ProcessData<1> VoiceBase<D>::process(core::audio::ProcessData<1> data) noexcept
+  {
+    auto buf = services::AudioManager::current().buffer_pool().allocate();
+    for (auto& f : buf) {
+      next();
+      f = this->operator();
+    }
+  }
+
   // VOICE ALLOCATORS //
   // INTERFACE //
   template<typename V, int N>
@@ -380,7 +390,7 @@ namespace otto::core::voices {
   // VOICE MANAGER //
 
   template<typename V, int N>
-  template<typename... Args>
+  template<typename... Args, typename>
   VoiceManager<V, N>::VoiceManager(Args&&... args) noexcept
     : voices_(util::generate_array<voice_count_v>([&](int i) { return Voice{args...}; }))
   {

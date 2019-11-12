@@ -73,6 +73,7 @@ namespace otto::core::voices {
 
     /// Get the volume (typically 1, but might be different for sub-octaves)
     float volume() noexcept;
+
     /// Is this voice currently triggered?
     ///
     /// Not to be confused with whether it should play. It is not triggered in the
@@ -83,17 +84,26 @@ namespace otto::core::voices {
     float envelope() noexcept;
 
     /// Calculate the next glide points, envelope etc..
+    /// 
     /// @note Must be called before calling operator(). VoiceManager::operator() and ::process do this.
     void next() noexcept;
 
     void action(portamento_tag::action, float p) noexcept;
 
+    core::audio::ProcessData<1> process(core::audio::ProcessData<1>) noexcept;
+
   private:
     template<typename T, int N>
     friend struct VoiceManager;
 
-    /// Triggers a new voice. midi_note gives base frequency, detune is multiplied on this.
-    /// Legato and jump control legato on envelope + on_note_on and portamento, respectively.
+    /// Triggers a new voice. 
+    /// 
+    /// @param midi_note base frequency.
+    /// @param detune is multiplied on frequency
+    /// @param legato controls legato on envelope + on_note_on. 
+    ///        If `true`, `on_note_on` will not be called.
+    /// @param jump controls legato for portamento
+    ///        If `true`, portamento will not be applied.
     void trigger(int midi_note, float detune, float velocity, bool legato, bool jump) noexcept;
 
     void release() noexcept;
@@ -132,7 +142,7 @@ namespace otto::core::voices {
     /// Constructor
     ///
     /// Any parameters passed to this will be passed to the constructors of the voices
-    template<typename... Args>
+    template<typename... Args, typename = std::enable_if_t<std::is_constructible_v<Voice, Args...>>>
     VoiceManager(Args&&... args) noexcept;
 
 
