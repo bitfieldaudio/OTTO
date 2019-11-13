@@ -9,9 +9,9 @@ namespace otto::engines::goss {
   using namespace ui;
   using namespace ui::vg;
 
-  void GossScreen::action(prop_change<&Props::drawbar1>, float d1) noexcept
+  void GossScreen::action(prop_change<&Props::model>, int m) noexcept
   {
-    drawbar1 = d1;
+    model = m;
   }
   void GossScreen::action(prop_change<&Props::drawbar2>, float d2) noexcept
   {
@@ -78,7 +78,7 @@ namespace otto::engines::goss {
 
       // Ring 3
       ctx.beginPath();
-      ctx.arc(160, 120, 95, 0, (2 * M_PI * drawbar1), false);
+      ctx.arc(160, 120, 95, 0, (2 * M_PI * (model / 2.f)), false);
       ctx.strokeStyle(Colours::Blue);
       ctx.stroke();
     });

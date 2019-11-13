@@ -83,7 +83,7 @@ namespace otto::services {
 
     void handle_keyevent(Command cmd, BytesView args, bool do_send_midi);
 
-    util::Serial serial = {"/dev/ttyACM0", 10, 1};
+    util::Serial serial = {"/dev/ttyACM0", 10, 0};
     util::double_buffered<EventBag, util::clear_inner> events_;
     util::double_buffered<std::vector<std::uint8_t>, util::clear_outer> write_buffer_;
     util::thread read_thread;

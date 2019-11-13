@@ -4,21 +4,9 @@ namespace otto::engines::goss {
 
   Voice::Voice(Audio& a) noexcept : audio(a)
   {
-    pipes[0].resize(1024);
-    pipes[0].addSine(1, 1, 0);
-    pipes[0].addSine(3, 1, 0);
-    pipes[0].addSine(2, 1, 0);
-
-    pipes[1].resize(1024);
-    pipes[1].addSine(4, 1, 0);
-    pipes[1].addSine(16, 0.3, 0);
-
-    pipes[2].resize(1024);
-    pipes[2].addSine(6, 0.5, 0);
-    pipes[2].addSine(8, 1, 0);
-    pipes[2].addSine(10, 0.5, 0);
-    pipes[2].addSine(12, 1, 0);
-    pipes[2].addSine(16, 0.5, 0);
+    for (auto&& [m, p] : util::zip(models, audio.model_params)){
+      audio.generate_model(m, p);
+    }
 
     percussion.resize(1024);
     percussion.addSine(4, 0.5, 0);
@@ -35,11 +23,9 @@ namespace otto::engines::goss {
   float Voice::operator()() noexcept
   {
     float fundamental = frequency() * (1 + 0.012 * audio.leslie * audio.pitch_modulation_hi.cos()) * 0.5;
-    pipes[0].freq(fundamental);
-    pipes[1].freq(fundamental);
-    pipes[2].freq(fundamental);
+    models[audio.model].freq(fundamental);
     percussion.freq(frequency());
-    float s = pipes[0]() + pipes[1]() * audio.drawbar1 + pipes[2]() * audio.drawbar2 + percussion() * perc_env();
+    float s = models[audio.model]() + percussion() * perc_env();
     return s * env_();
   }
 
@@ -61,6 +47,7 @@ namespace otto::engines::goss {
     perc_env.amp(3 * cl);
   }
 
+  // Audio
   Audio::Audio() noexcept
   {
     lpf.type(gam::LOW_PASS);
@@ -74,14 +61,22 @@ namespace otto::engines::goss {
     leslie_filter_lo.phase(0.5);
   }
 
+  void Audio::generate_model(gam::Osc<>& osc, model_type param)
+  {
+    osc.resize(1024);
+    for (auto&& [i,s] : util::view::indexed(param)) {
+      osc.addSine( cycles[i], (float)s/((float)(model_size * 8)), 0);
+    }
+  }
+
   void Audio::action(Actions::rotation_variable, std::atomic<float>& ref) noexcept
   {
     shared_rotation = &ref;
   }
 
-  void Audio::action(itc::prop_change<&Props::drawbar1>, float d1) noexcept
+  void Audio::action(itc::prop_change<&Props::model>, int m) noexcept
   {
-    drawbar1 = d1;
+    model = m;
   }
   void Audio::action(itc::prop_change<&Props::drawbar2>, float d2) noexcept
   {

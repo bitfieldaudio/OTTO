@@ -9,13 +9,14 @@ namespace otto::engines::goss {
 
   struct GossScreen : ui::Screen {
     void draw(nvg::Canvas& ctx) override;
-    void action(itc::prop_change<&Props::drawbar1>, float d1) noexcept;
+
+    void action(itc::prop_change<&Props::model>, int m) noexcept;
     void action(itc::prop_change<&Props::drawbar2>, float d2) noexcept;
     void action(itc::prop_change<&Props::click>, float c) noexcept;
     void action(itc::prop_change<&Props::leslie>, float l) noexcept;
     void action(Actions::rotation_variable, std::atomic<float>& v) noexcept;
 
-    float drawbar1 = 1;
+    int model = 0;
     float drawbar2 = 0;
     float click = 0;
     float leslie = 0;

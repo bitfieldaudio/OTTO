@@ -21,7 +21,7 @@ namespace otto::engines::goss {
   void GossEngine::encoder(EncoderEvent e)
   {
     switch (e.encoder) {
-      case Encoder::blue: props.drawbar1.step(e.steps); break;
+      case Encoder::blue: props.model.step(e.steps); break;
       case Encoder::green: props.drawbar2.step(e.steps); break;
       case Encoder::yellow: props.click.step(e.steps); break;
       case Encoder::red: props.leslie.step(e.steps); break;
