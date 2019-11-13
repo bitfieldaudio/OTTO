@@ -109,13 +109,16 @@ namespace otto::core::voices {
         REQUIRE_THAT(test::sort(view::transform(triggered_voices, MEMBER_CALLER(midi_note))),
                      Catch::Equals(std::vector{38, 38, 50}));
         REQUIRE_THAT(test::sort(view::transform(triggered_voices, MEMBER_CALLER(volume))),
-                     Catch::Approx(std::vector{0.25f, 0.5f, 1.f}));
+                     Catch::Approx(std::vector{0.25f * vmgr.normal_volume, 0.5f * vmgr.normal_volume, vmgr.normal_volume}));
       }
     }
 
     SECTION ("Poly Mode") {
-      voices_props.play_mode = +PlayMode::poly;
-      queue.pop_call_all();
+      //voices_props.play_mode = +PlayMode::poly;
+      //queue.pop_call_all();
+      SECTION ("Poly mode is the initial setting") {
+        REQUIRE(vmgr.play_mode() == +PlayMode::poly);
+      }
 
       SECTION ("Poly mode triggers one voice for a single note") {
         vmgr.handle_midi(midi::NoteOnEvent{50});
@@ -332,6 +335,9 @@ namespace otto::core::voices {
     }
 
     SECTION ("Portamento") {
+      voices_props.play_mode = +PlayMode::mono;
+      queue.pop_call_all();
+
       float target_freq = midi::note_freq(62);
       gam::sampleRate(100);
       int expected_n = 100;
@@ -358,6 +364,10 @@ namespace otto::core::voices {
       // At the end, the target frequency is reached
       REQUIRE(v.frequency() == test::approx(target_freq).margin(0.01));
     };
+
+    /// TODO: Make test for expected behaviour then legato is
+    /// engaged for glide (jump the portamento step) 
+    /// and normal legato (on_note_on and on_note_off is not called).
 
     SECTION ("Voice recieves all envelope and voice settings actions") {
       struct Voice : VoiceBase<Voice> {
@@ -464,15 +474,17 @@ namespace otto::core::voices {
         };
 
         VoiceManager<SVoice, 4> vmgr;
+        
         REQUIRE(vmgr.voices()[0]() == 1.f);
-        REQUIRE(vmgr() == test::approx(4.f));
+        REQUIRE(vmgr() == test::approx(4.f * vmgr.normal_volume));
 
         AudioBufferHandle bh = services::AudioManager::current().buffer_pool().allocate_clear();
 
+        // Note that voice.process() applies volume, while voice() does not.
         auto res = vmgr.voices()[0].process(ProcessData<1>{bh});
-        REQUIRE(util::all_of(res.audio, util::does_equal(1)));
+        REQUIRE(util::all_of(res.audio, util::does_equal(1 * vmgr.normal_volume)));
         auto res2 = vmgr.process(ProcessData<1>{bh});
-        REQUIRE(util::all_of(res2.audio, util::does_equal(4)));
+        REQUIRE(util::all_of(res2.audio, util::does_equal(4 * vmgr.normal_volume)));
       }
 
       SECTION ("when voice has a process(), vmgr only has process()") {
@@ -488,6 +500,7 @@ namespace otto::core::voices {
         VoiceManager<SVoice, 4> vmgr;
         auto buf = services::AudioManager::current().buffer_pool().allocate_clear();
 
+        // We have written our own voice.process() so volume is not applied.
         auto res = vmgr.voices()[0].process(ProcessData<1>{buf});
         REQUIRE(util::all_of(res.audio, util::does_equal(1)));
         auto res2 = vmgr.process(ProcessData<1>{buf});

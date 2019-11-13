@@ -194,7 +194,7 @@ namespace otto::services {
     // auto arp_out = arpeggiator->process(midi_in);
     auto synth_out = synth.audio->process(external_in);
     auto right_chan = Application::current().audio_manager->buffer_pool().allocate();
-
+    
     util::copy(synth_out.audio, right_chan.begin());
 
     return synth_out.with(std::array{synth_out.audio, right_chan});

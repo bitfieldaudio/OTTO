@@ -89,8 +89,7 @@ namespace otto::core::voices {
     /// If legato is true, the voice will NOT be retriggered.
     /// This means only the frequency will be changed and velocity updated.
     if (!legato) {
-      on_note_on(frequency_);
-      on_note_on(midi::note_freq(midi_note) * detune);
+      this->derived().on_note_on(frequency_);
     }
   }
 
@@ -99,7 +98,7 @@ namespace otto::core::voices {
   {
     if (is_triggered()) {
       triggered_ = false;
-      on_note_off();
+      this->derived().on_note_off();
     }
   }
 
@@ -216,6 +215,14 @@ namespace otto::core::voices {
 
   // POLY //
   template<typename V, int N>
+  VoiceManager<V, N>::PolyAllocator::PolyAllocator(VoiceManager& vm_in) : VoiceAllocatorBase(vm_in)
+  {
+    for (auto& voice : this->vm.voices()) {
+      voice.volume(this->vm.normal_volume);
+    }
+    set_rand(0);
+  };
+  template<typename V, int N>
   void VoiceManager<V, N>::PolyAllocator::handle_midi_on(const midi::NoteOnEvent& evt) noexcept
   {
     auto& vm = this->vm;
@@ -237,6 +244,14 @@ namespace otto::core::voices {
   }
 
   // INTERVAL //
+  template<typename V, int N>
+  VoiceManager<V, N>::IntervalAllocator::IntervalAllocator(VoiceManager& vm_in) : VoiceAllocatorBase(vm_in)
+  {
+    for (auto& voice : this->vm.voices()) {
+      voice.volume(this->vm.normal_volume/2.f);
+    }
+  };
+
   template<typename V, int N>
   void VoiceManager<V, N>::IntervalAllocator::handle_midi_on(const midi::NoteOnEvent& evt) noexcept
   {
@@ -262,16 +277,12 @@ namespace otto::core::voices {
   template<typename V, int N>
   VoiceManager<V, N>::MonoAllocator::MonoAllocator(VoiceManager& vm_in) : VoiceAllocatorBase(vm_in)
   {
-    // Note that after allocation, a prop_change of sub property should be sent.
-  }
-
-  template<typename V, int N>
-  VoiceManager<V, N>::MonoAllocator::~MonoAllocator()
-  {
-    // Restore the volumes
+    // Set all normal voices
     for (auto& voice : this->vm.voices()) {
-      voice.volume(1);
+      voice.volume(this->vm.normal_volume);
     }
+    // Note that after allocation, a prop_change of sub property 
+    // should be sent, to change sub voice volume
   }
 
   template<typename V, int N>
@@ -280,7 +291,7 @@ namespace otto::core::voices {
     // The second and third voice are sub voices on mono mode. This sets their volume.
     int sub_number = 1;
     for (auto& voice : util::view::subrange(this->vm.voices(), 1, 3)) {
-      voice.volume(sub / (float) sub_number);
+      voice.volume(this->vm.normal_volume * sub / (float) sub_number);
       sub_number++;
     }
   }
@@ -325,16 +336,7 @@ namespace otto::core::voices {
   {
     for (int i = 0; i < N; ++i) {
       auto& voice = this->vm.voices_[i];
-      voice.volume(1.f / ((float) voice_count_v) - 1.f);
-    }
-  }
-
-  template<typename V, int N>
-  VoiceManager<V, N>::UnisonAllocator::~UnisonAllocator()
-  {
-    for (int i = 0; i < N; ++i) {
-      auto& voice = this->vm.voices_[i];
-      voice.volume(1);
+      voice.volume(this->vm.normal_volume / (float)num_voices_used);
     }
   }
 
@@ -384,6 +386,7 @@ namespace otto::core::voices {
     for (auto& v : voices_) {
       v.pitch_bend_ = &pitch_bend_;
     }
+    set_playmode(PlayMode::poly);
     for (int i = 0; i < voice_count_v; ++i) {
       // auto& voice = voices_[i];
       // envelope_props.attack.on_change().connect(
@@ -450,8 +453,8 @@ namespace otto::core::voices {
     auto buf = services::AudioManager::current().buffer_pool().allocate_clear();
     for (auto& v : voices()) {
       auto v_out = v.process(data.audio_only());
-      for (auto&& [v, b] : util::zip(v_out.audio, buf)) {
-        b += v;
+      for (auto&& [vf, b] : util::zip(v_out.audio, buf)) {
+        b += vf;
       }
     }
     return data.with(buf);
@@ -477,6 +480,13 @@ namespace otto::core::voices {
   template<typename V, int N>
   void VoiceManager<V, N>::action(itc::prop_tag_change<play_mode_tag, PlayMode> a, PlayMode pm) noexcept
   {
+    set_playmode(pm);
+    fwd_action_to_voices(a, pm);
+  }
+
+  template<typename V, int N>
+  void VoiceManager<V, N>::set_playmode(PlayMode pm) noexcept
+  {
     switch (pm) {
       case PlayMode::poly: voice_allocator.template emplace<PolyAllocator>(*this); break;
       case PlayMode::mono: voice_allocator.template emplace<MonoAllocator>(*this); break;
@@ -488,9 +498,7 @@ namespace otto::core::voices {
     free_voices.clear();
     for (auto&& voice : voices()) {
       free_voices.push_back(&voice);
-      voice.volume(1.f);
     }
-    fwd_action_to_voices(a, pm);
   }
 
   template<typename V, int N>
