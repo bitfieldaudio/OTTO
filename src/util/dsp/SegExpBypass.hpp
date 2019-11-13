@@ -22,7 +22,7 @@ namespace otto::util::dsp {
     /// \param[in] crv		Curvature of segment
     /// \param[in] start	Start value
     /// \param[in] end		End value
-    SegExpBypass(T len, T crv = -3, T start = 1, T end = 0) : mLen(len), mCrv(crv), mVal1(start), mVal0(end)
+    SegExpBypass(T len, T crv = -3, T start = 1, T end = 0) : mLen(len), mCrv(crv), mStart(start), mEnd(end)
     {
       onDomainChange(1);
     }
@@ -42,31 +42,27 @@ namespace otto::util::dsp {
     /// Generate next value
     T operator()()
     {
-      if (done()) return mVal0;
-      return gam::ipl::linear(gam::scl::min(mCurve(), T(1)), mVal1, mVal0);
+      if (done()) return mEnd;
+      mCurve();
+      return value();
     }
 
     /// Set new end value.  Start value is set to current value.
     void operator=(T v)
     {
-      mVal1 = value();
-      mVal0 = v;
+      mStart = value();
+      mEnd = v;
       mCurve.reset();
     }
 
     T getEnd()
     {
-      return mVal0;
+      return mEnd;
     }
 
     T value() noexcept
     {
-      return gam::ipl::linear(gam::scl::min(mCurve.value(), T(1)), mVal1, mVal0);
-    }
-
-    T target() noexcept
-    {
-      return mVal0;
+      return gam::ipl::linear(gam::scl::min(mCurve.value(), T(1)), mStart, mEnd);
     }
 
     /// Set curvature.  Negative gives faster change, positive gives slower change.
@@ -100,7 +96,7 @@ namespace otto::util::dsp {
     }
 
   protected:
-    T mLen, mCrv, mVal1, mVal0;
+    T mLen, mCrv, mStart, mEnd;
     gam::Curve<T, T> mCurve;
   };
 

@@ -61,16 +61,16 @@ namespace otto::services {
     // reg_ss(ScreenEnum::looper,         [&] () -> auto& { return  ; });
     // reg_ss(ScreenEnum::arp, [&]() -> auto& { return arpeggiator->screen(); });
     // reg_ss(ScreenEnum::arp_selector, [&]() -> auto& { return arpeggiator.selector_screen(); });
-    // reg_ss(ScreenEnum::voices, [&]() -> auto& { return synth->voices_screen(); });
     // reg_ss(ScreenEnum::master, [&]() -> auto& { return master.screen(); });
     // reg_ss(ScreenEnum::sequencer, [&]() -> auto& { return sequencer.screen(); });
     // reg_ss(ScreenEnum::sampler, [&]() -> auto& { return sequencer.sampler_screen(); });
     // reg_ss(ScreenEnum::sampler_envelope, [&]() -> auto& { return sequencer.envelope_screen(); });
-    reg_ss(ScreenEnum::synth, [&]() { return services::ScreenAndInput{*synth.screen, synth}; });
+    reg_ss(ScreenEnum::synth, [&]() { return core::ui::ScreenAndInput{*synth.screen, synth}; });
     // reg_ss(
     //   ScreenEnum::synth_selector, [&]() -> auto& { return synth.selector_screen(); });
-    // reg_ss(
-    //   ScreenEnum::synth_envelope, [&]() -> auto& { return synth->envelope_screen(); });
+     reg_ss(
+       ScreenEnum::synth_envelope, [&]() { return synth.envelope_screen(); });
+    reg_ss(ScreenEnum::voices, [&](){ return synth.voices_screen(); });
     // reg_ss(ScreenEnum::external,       [&] () -> auto& { return  ; });
     // reg_ss(ScreenEnum::twist1,         [&] () -> auto& { return  ; });
     // reg_ss(ScreenEnum::twist2,         [&] () -> auto& { return  ; });

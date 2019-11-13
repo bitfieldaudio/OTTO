@@ -102,25 +102,21 @@ namespace otto::core::engine {
   template<>
   struct ITypedEngine<EngineType::synth> : IEngine {
     using IEngine::IEngine;
-    // virtual audio::ProcessData<1> process(audio::ProcessData<1>) = 0;
-    // virtual ui::Screen& envelope_screen() = 0;
-    // virtual ui::Screen& voices_screen() = 0;
+    virtual core::ui::ScreenAndInput envelope_screen() = 0;
+    virtual core::ui::ScreenAndInput voices_screen() = 0;
   };
 
   template<>
   struct ITypedEngine<EngineType::effect> : IEngine {
     using IEngine::IEngine;
-    // virtual audio::ProcessData<2> process(audio::ProcessData<1>) = 0;
   };
   template<>
   struct ITypedEngine<EngineType::arpeggiator> : IEngine {
     using IEngine::IEngine;
-    // virtual audio::ProcessData<0> process(audio::ProcessData<0>) = 0;
   };
   template<>
   struct ITypedEngine<EngineType::twist> : IEngine {
     using IEngine::IEngine;
-    // virtual audio::ProcessData<0> process(audio::ProcessData<0>) = 0;
   };
 
   /// Get the name of an engine.

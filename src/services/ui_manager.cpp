@@ -1,10 +1,9 @@
 #include "ui_manager.hpp"
 
+#include "core/ui/vector_graphics.hpp"
 #include "services/audio_manager.hpp"
 #include "services/engine_manager.hpp"
 #include "services/state_manager.hpp"
-
-#include "core/ui/vector_graphics.hpp"
 
 namespace otto::services {
 

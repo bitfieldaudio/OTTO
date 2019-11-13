@@ -12,7 +12,7 @@ namespace otto::engines::goss {
   GossEngine::GossEngine()
     : screen(std::make_unique<GossScreen>()), //
       audio(std::make_unique<Audio>()),
-      graphics_sndr_(services::UIManager::current().make_sndr(*screen)),
+      graphics_sndr_(services::UIManager::current().make_sndr(*screen, env_screen_, voice_screen_)),
       audio_sndr_(services::AudioManager::current().make_sndr(*audio))
   {
     sndr_.push(Actions::rotation_variable::data(rotation_));

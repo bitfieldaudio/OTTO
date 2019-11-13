@@ -17,7 +17,27 @@ namespace otto::engines::goss {
     void on_note_on(float) noexcept;
     void on_note_off() noexcept;
 
+    /// Use actions from base class
+    using VoiceBase::action;
+
     void action(itc::prop_change<&Props::click>, float c) noexcept;
+
+    void action(voices::attack_tag::action, float a) noexcept
+    {
+      env_.attack(a);
+    }
+    void action(voices::decay_tag::action, float d) noexcept
+    {
+      env_.decay(d);
+    }
+    void action(voices::sustain_tag::action, float s) noexcept
+    {
+      env_.sustain(s);
+    }
+    void action(voices::release_tag::action, float r) noexcept
+    {
+      env_.release(r);
+    }
 
   private:
     Audio& audio;

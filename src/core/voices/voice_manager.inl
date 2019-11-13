@@ -80,7 +80,7 @@ namespace otto::core::voices {
     // Sets target value of portamento to new note
     frequency_ = midi::note_freq(midi_note) * detune;
     // So far, jump/retrig only works for MONO and UNISON
-    if (jump || glide_.target() == 1.f) {
+    if (jump || glide_.getEnd() == 1.f) {
       glide_ = frequency_;
       glide_.finish();
     }

@@ -39,7 +39,7 @@ namespace otto::core::voices {
     itc::ActionQueue queue;
     Sndr sndr = {queue, vmgr};
 
-    //EnvelopeProps<Sndr> envelope_props = {&sndr};
+    // EnvelopeProps<Sndr> envelope_props = {&sndr};
     SettingsProps<Sndr> voices_props = {&sndr};
 
     // This is a lazy view, so its computed each time you loop through it
@@ -108,14 +108,15 @@ namespace otto::core::voices {
         vmgr.handle_midi(midi::NoteOnEvent{50});
         REQUIRE_THAT(test::sort(view::transform(triggered_voices, MEMBER_CALLER(midi_note))),
                      Catch::Equals(std::vector{38, 38, 50}));
-        REQUIRE_THAT(test::sort(view::transform(triggered_voices, MEMBER_CALLER(volume))),
-                     Catch::Approx(std::vector{0.25f * vmgr.normal_volume, 0.5f * vmgr.normal_volume, vmgr.normal_volume}));
+        REQUIRE_THAT(
+          test::sort(view::transform(triggered_voices, MEMBER_CALLER(volume))),
+          Catch::Approx(std::vector{0.25f * vmgr.normal_volume, 0.5f * vmgr.normal_volume, vmgr.normal_volume}));
       }
     }
 
     SECTION ("Poly Mode") {
-      //voices_props.play_mode = +PlayMode::poly;
-      //queue.pop_call_all();
+      // voices_props.play_mode = +PlayMode::poly;
+      // queue.pop_call_all();
       SECTION ("Poly mode is the initial setting") {
         REQUIRE(vmgr.play_mode() == +PlayMode::poly);
       }
@@ -338,35 +339,54 @@ namespace otto::core::voices {
       voices_props.play_mode = +PlayMode::mono;
       queue.pop_call_all();
 
-      float target_freq = midi::note_freq(62);
-      gam::sampleRate(100);
-      int expected_n = 100;
-
       static_assert(itc::ActionReciever::is<VMgr, portamento_tag::action>);
-      voices_props.portamento = 1.f;
-      queue.pop_call_all();
 
-      vmgr.handle_midi(midi::NoteOnEvent{50});
-      auto& v = triggered_voices.front();
-      float f = midi::note_freq(50);
-      vmgr.handle_midi(midi::NoteOnEvent{62});
-      // Skip first frame, which should be the start frequency
-      v.next();
-      REQUIRE(v.frequency() == f);
-      for (int i = 0; i < expected_n; i++) {
+      gam::sampleRate(100);
+      float target_freq = midi::note_freq(62);
+
+      SECTION ("Portamento = 0") {
+        voices_props.portamento = 0.f;
+        queue.pop_call_all();
+
+        vmgr.handle_midi(midi::NoteOnEvent{50});
+        auto& v = triggered_voices.front();
         v.next();
-        INFO("i = " << i);
-        float f2 = v.frequency();
-        // Frequency increases for each sample
-        REQUIRE(f2 > f);
-        f = f2;
+        REQUIRE(v.frequency() == test::approx(midi::note_freq(50)).margin(0.01));
+        vmgr.handle_midi(midi::NoteOnEvent{62});
+        v.next();
+        REQUIRE(v.frequency() == test::approx(target_freq).margin(0.01));
       }
-      // At the end, the target frequency is reached
-      REQUIRE(v.frequency() == test::approx(target_freq).margin(0.01));
+
+      SECTION ("Portamento = 1") {
+
+        int expected_n = 100;
+
+        voices_props.portamento = 1.f;
+        queue.pop_call_all();
+
+        vmgr.handle_midi(midi::NoteOnEvent{50});
+        vmgr.handle_midi(midi::NoteOnEvent{62});
+
+        auto& v = triggered_voices.front();
+        float f = midi::note_freq(50);
+        // Skip first frame, which should be the start frequency
+        v.next();
+        REQUIRE(v.frequency() == f);
+        for (int i = 0; i < expected_n; i++) {
+          v.next();
+          INFO("i = " << i);
+          float f2 = v.frequency();
+          // Frequency increases for each sample
+          REQUIRE(f2 > f);
+          f = f2;
+        }
+        // At the end, the target frequency is reached
+        REQUIRE(v.frequency() == test::approx(target_freq).margin(0.01));
+      }
     };
 
     /// TODO: Make test for expected behaviour then legato is
-    /// engaged for glide (jump the portamento step) 
+    /// engaged for glide (jump the portamento step)
     /// and normal legato (on_note_on and on_note_off is not called).
 
     SECTION ("Voice recieves all envelope and voice settings actions") {
@@ -474,7 +494,7 @@ namespace otto::core::voices {
         };
 
         VoiceManager<SVoice, 4> vmgr;
-        
+
         REQUIRE(vmgr.voices()[0]() == 1.f);
         REQUIRE(vmgr() == test::approx(4.f * vmgr.normal_volume));
 

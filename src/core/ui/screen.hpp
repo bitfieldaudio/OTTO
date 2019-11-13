@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/ui/canvas.hpp"
-#include "services/controller.hpp"
+#include "core/input.hpp"
 
 namespace otto::core::ui {
 
@@ -29,6 +29,28 @@ namespace otto::core::ui {
 
     /// Run by MainUI when switching to another screen
     virtual void on_hide() {}
+  };
+
+
+  struct ScreenAndInput {
+    ScreenAndInput(core::ui::Screen& s, core::input::InputHandler& i) noexcept : screen_(&s), input_(&i) {}
+
+    ScreenAndInput(const ScreenAndInput&) = default;
+    ScreenAndInput& operator=(const ScreenAndInput&) = default;
+
+    core::ui::Screen& screen() noexcept
+    {
+      return *screen_;
+    }
+
+    core::input::InputHandler& input() noexcept
+    {
+      return *input_;
+    }
+
+  private:
+    core::ui::Screen* screen_;
+    core::input::InputHandler* input_;
   };
 
 } // namespace otto::core::ui

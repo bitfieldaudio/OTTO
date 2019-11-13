@@ -3,6 +3,7 @@
 #include "core/engine/engine.hpp"
 #include "core/ui/screen.hpp"
 #include "core/voices/voice_manager.hpp"
+#include "core/voices/voices_ui.hpp"
 #include "itc/prop.hpp"
 #include "util/reflection.hpp"
 
@@ -13,7 +14,7 @@ namespace otto::engines::goss {
   using namespace props;
 
   struct GossScreen;
-  using GraphicsSndr = itc::ActionSender<GossScreen>;
+  using GraphicsSndr = itc::ActionSender<GossScreen, voices::EnvelopeScreen, voices::SettingsScreen>;
 
   struct Audio;
   using AudioSndr = itc::ActionSender<Audio>;
@@ -46,9 +47,18 @@ namespace otto::engines::goss {
     const std::unique_ptr<GossScreen> screen;
     const std::unique_ptr<Audio> audio;
 
-    DECL_REFLECTION(GossEngine, props);
+    DECL_REFLECTION(GossEngine, props, voice_props_, envelope_props_);
 
     void encoder(core::input::EncoderEvent e) override;
+
+    core::ui::ScreenAndInput envelope_screen() override 
+    {
+      return {env_screen_, envelope_props_};
+    }
+    core::ui::ScreenAndInput voices_screen() override
+    {
+      return {voice_screen_, voice_props_};
+    }
 
   private:
     GraphicsSndr graphics_sndr_;
@@ -56,6 +66,12 @@ namespace otto::engines::goss {
     Sndr sndr_ = {graphics_sndr_, audio_sndr_};
 
     Props props{&sndr_};
+
+    voices::SettingsProps<Sndr> voice_props_ {&sndr_};
+    voices::EnvelopeProps<Sndr> envelope_props_ {&sndr_};
+    voices::SettingsScreen voice_screen_;
+    voices::EnvelopeScreen env_screen_;
+
 
     std::atomic<float> rotation_ = 0;
   };

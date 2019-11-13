@@ -14,6 +14,9 @@
 #include "util/enum.hpp"
 #include "util/locked.hpp"
 
+#include "services/application.hpp"
+#include "services/controller.hpp"
+
 namespace otto::services {
 
   BETTER_ENUM(SourceEnum, std::int8_t, sequencer, internal, external)
@@ -61,27 +64,6 @@ namespace otto::services {
 
   BETTER_ENUM(KeyMode, std::int8_t, midi, seq);
 
-  struct ScreenAndInput {
-    ScreenAndInput(core::ui::Screen& s, core::input::InputHandler& i) noexcept : screen_(&s), input_(&i) {}
-
-    ScreenAndInput(const ScreenAndInput&) = default;
-    ScreenAndInput& operator=(const ScreenAndInput&) = default;
-
-    core::ui::Screen& screen() noexcept
-    {
-      return *screen_;
-    }
-
-    core::input::InputHandler& input() noexcept
-    {
-      return *input_;
-    }
-
-  private:
-    core::ui::Screen* screen_;
-    core::input::InputHandler* input_;
-  };
-
   struct UIManager : core::Service {
     /// The UI state
     ///
@@ -96,7 +78,7 @@ namespace otto::services {
       DECL_REFLECTION(State, active_channel, current_screen, key_mode, octave);
     };
 
-    using ScreenSelector = std::function<ScreenAndInput()>;
+    using ScreenSelector = std::function<core::ui::ScreenAndInput()>;
 
     UIManager();
 
@@ -155,16 +137,16 @@ namespace otto::services {
     ///
     /// Calls @ref Screen::on_hide for the old screen, and then @ref Screen::on_show
     /// for the new screen
-    void display(ScreenAndInput screen);
+    void display(core::ui::ScreenAndInput screen);
 
   private:
     struct EmptyScreen : core::ui::Screen {
       void draw(core::ui::vg::Canvas& ctx) {}
     } empty_screen;
     core::input::InputHandler empty_input;
-    ScreenAndInput empty_sai = {empty_screen, empty_input};
+    core::ui::ScreenAndInput empty_sai = {empty_screen, empty_input};
 
-    ScreenAndInput cur_sai = empty_sai;
+    core::ui::ScreenAndInput cur_sai = empty_sai;
 
     util::enum_map<ScreenEnum, ScreenSelector> screen_selectors_;
 

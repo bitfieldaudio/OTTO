@@ -113,7 +113,7 @@ namespace otto::core::voices {
     /// but might be different for sub-octaves or in unison mode)
     void volume(float) noexcept;
 
-    float frequency_ = 440.f;
+    float frequency_ = 1.f;
     float velocity_ = 1.f;
     float level = 1.f;
     float aftertouch_ = 0.f;
