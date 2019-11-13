@@ -26,6 +26,10 @@ namespace otto::engines::goss {
 
     perc_env.finish();
     env_.finish();
+    env_.attack(1.2);
+    env_.decay(0.5);
+    env_.sustain(1.f);
+    env_.release(4.f); 
   }
 
   float Voice::operator()() noexcept

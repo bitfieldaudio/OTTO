@@ -53,7 +53,7 @@ namespace otto::engines::goss {
     AudioSndr audio_sndr_;
     Sndr sndr_ = {graphics_sndr_, audio_sndr_};
 
-    Props props {&sndr_};
+    Props props{&sndr_};
 
     std::atomic<float> rotation_ = 0;
   };

@@ -90,6 +90,7 @@ namespace otto::core::voices {
 
     void action(portamento_tag::action, float p) noexcept;
 
+    /// This should multiply by volume_. If you write you own, remember to do that!
     core::audio::ProcessData<1> process(core::audio::ProcessData<1>) noexcept;
 
   private:
@@ -107,18 +108,19 @@ namespace otto::core::voices {
     void trigger(int midi_note, float detune, float velocity, bool legato, bool jump) noexcept;
 
     void release() noexcept;
-    void release_no_env() noexcept;
 
-    /// Set the volume (typically 1, but might be different for sub-octaves or in unison mode)
+    /// Set the volume (typically 1 divided by number of voices, 
+    /// but might be different for sub-octaves or in unison mode)
     void volume(float) noexcept;
 
-    float frequency_ = 1.f;
+    float frequency_ = 440.f;
     float velocity_ = 1.f;
     float level = 1.f;
     float aftertouch_ = 0.f;
-    float volume_ = 1.f;
     int midi_note_ = 0;
     bool triggered_ = false;
+    /// Typical value is vm.normal_volume, which is 1/number_of_voices
+    float volume_ = 1.f;
     /// Points to the VoiceManager pitch_bend variable.
     float* pitch_bend_ = nullptr;
 
@@ -139,6 +141,9 @@ namespace otto::core::voices {
     /// The number of voices
     static constexpr int voice_count_v = NumberOfVoices;
     static constexpr int sub_voice_count_v = 2;
+    /// Voice range is approximately -1 to 1. This ensures the synth range is
+    /// approximately the same.
+    static constexpr float normal_volume = 1.f/(float)NumberOfVoices;
 
     /// Constructor
     ///
@@ -150,7 +155,8 @@ namespace otto::core::voices {
     /// Process audio, applying Preprocessing, each voice and then postprocessing
     audio::ProcessData<1> process(audio::ProcessData<1> data) noexcept;
 
-    /// Process audio, applying Preprocessing, each voice and then postprocessing
+    /// Process audio, applying Preprocessing, each voice and then postprocessing.
+    /// Individual volume of voices are applied here.
     float operator()() noexcept;
 
     void handle_midi(const midi::AnyMidiEvent&) noexcept;
@@ -206,6 +212,7 @@ namespace otto::core::voices {
 
     /// Voice allocators - Corresponds to different playmodes
     struct VoiceAllocatorBase {
+      // Voice volumes are set in individual constructors
       VoiceAllocatorBase(VoiceManager& vm_in) noexcept;
       ~VoiceAllocatorBase() noexcept;
 
@@ -223,19 +230,24 @@ namespace otto::core::voices {
     struct PolyAllocator final : VoiceAllocatorBase {
       float rand_ = 0;
 
-      PolyAllocator(VoiceManager& vm_in) : VoiceAllocatorBase(vm_in)
-      {
-        set_rand(0);
-      };
+      PolyAllocator(VoiceManager& vm_in);
+      
       void handle_midi_on(const midi::NoteOnEvent&) noexcept override;
       void set_rand(float rand) noexcept;
+    };
+
+    struct IntervalAllocator final : VoiceAllocatorBase {
+      int interval_ = 0;
+
+      IntervalAllocator(VoiceManager& vm_in);
+      void handle_midi_on(const midi::NoteOnEvent&) noexcept override;
+      void set_interval(float interval) noexcept;
     };
 
     struct MonoAllocator final : VoiceAllocatorBase {
       constexpr static int num_voices_used = 3;
 
       MonoAllocator(VoiceManager& vm_in);
-      ~MonoAllocator();
       void handle_midi_on(const midi::NoteOnEvent&) noexcept override;
       void set_sub(float sub) noexcept;
     };
@@ -246,17 +258,9 @@ namespace otto::core::voices {
       float detune_ = 0;
 
       UnisonAllocator(VoiceManager& vm_in);
-      ~UnisonAllocator();
+
       void handle_midi_on(const midi::NoteOnEvent&) noexcept override;
       void set_detune(float detune) noexcept;
-    };
-
-    struct IntervalAllocator final : VoiceAllocatorBase {
-      int interval_ = 0;
-
-      IntervalAllocator(VoiceManager& vm_in) : VoiceAllocatorBase(vm_in) {}
-      void handle_midi_on(const midi::NoteOnEvent&) noexcept override;
-      void set_interval(float interval) noexcept;
     };
 
     // -- PRIVATE FIELDS -- //
@@ -270,6 +274,8 @@ namespace otto::core::voices {
         }
       }
     }
+
+    void set_playmode(PlayMode pm) noexcept;
 
     util::local_vector<float, 7> detune_values;
     util::local_vector<float, voice_count_v> rand_values;

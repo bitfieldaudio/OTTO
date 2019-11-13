@@ -24,7 +24,7 @@ namespace otto::engines::goss {
     std::array<gam::Osc<>, 3> pipes;
     gam::Osc<> percussion;
     gam::AD<> perc_env{0.001, 0.2};
-    gam::ADSR<> env_;
+    gam::ADSR<> env_ = {0.1f, 0.1f, 0.7f, 2.0f, 1.f, -4.f};
   };
 
   struct Audio {
