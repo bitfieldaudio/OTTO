@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/input.hpp"
 #include "itc/prop.hpp"
 
 namespace otto::core::voices {
@@ -68,9 +69,11 @@ namespace otto::core::voices {
   };
 
   template<typename Sndr>
-  struct EnvelopeProps {
+  struct EnvelopeProps : core::input::InputHandler {
     template<typename Val, typename Tag, typename... Mixins>
     using Prop = typename Sndr::template Prop<Val, Tag, Mixins...>;
+
+    EnvelopeProps(Sndr* sndr) : sndr(sndr) {};
 
     Sndr* sndr;
 
@@ -79,18 +82,30 @@ namespace otto::core::voices {
     Prop<sustain_tag, float> sustain = {sndr, 1, props::limits(0, 1), props::step_size(0.02)};
     Prop<release_tag, float> release = {sndr, 0.2, props::limits(0, 1), props::step_size(0.02)};
 
+    // TODO: Move to separate input handler
+    void encoder(core::input::EncoderEvent evt)
+    {
+      auto& props = *this;
+      using namespace core::input;
+      switch (evt.encoder) {
+        case Encoder::blue: props.attack.step(evt.steps); break;
+        case Encoder::green: props.decay.step(evt.steps); break;
+        case Encoder::yellow: props.sustain.step(evt.steps); break;
+        case Encoder::red: props.release.step(evt.steps); break;
+      }
+    }
+
     DECL_REFLECTION(EnvelopeProps, attack, decay, sustain, release);
   };
 
   template<typename Sndr>
-  struct SettingsProps {
+  struct SettingsProps : core::input::InputHandler {
     template<typename Val, typename Tag, typename... Mixins>
     using Prop = typename Sndr::template Prop<Val, Tag, Mixins...>;
 
-    SettingsProps(Sndr* sndr) : sndr(sndr) 
+    SettingsProps(Sndr* sndr) : sndr(sndr)
     {
-
-      play_mode.on_change().connect([this](){
+      play_mode.on_change().connect([this]() {
         rand.send_actions();
         sub.send_actions();
         detune.send_actions();
@@ -111,6 +126,35 @@ namespace otto::core::voices {
     Prop<retrig_tag, bool> retrig = {sndr, false};
 
     DECL_REFLECTION(SettingsProps, play_mode, rand, sub, detune, interval, portamento, legato, retrig);
+
+    // TODO: Move to some separate InputHandler
+    void encoder(core::input::EncoderEvent ev) override
+    {
+      using namespace input;
+      auto& props = *this;
+      switch (ev.encoder) {
+        case Encoder::blue: props.play_mode.step(ev.steps); break;
+        case Encoder::green: {
+          switch (props.play_mode.get()) {
+            case PlayMode::poly: props.rand.step(ev.steps); break;
+            case PlayMode::mono: props.sub.step(ev.steps); break;
+            case PlayMode::unison: props.detune.step(ev.steps); break;
+            case PlayMode::interval: props.interval.step(util::math::sgn(ev.steps)); break;
+          };
+          break;
+        }
+        case Encoder::yellow: props.portamento.step(ev.steps); break;
+        case Encoder::red: {
+          // Fuck it. I can do binary logic myself.
+          if (ev.steps > 0)
+            props.legato = props.legato != props.retrig;
+          else
+            props.legato = props.legato == props.retrig;
+          props.retrig = !props.retrig;
+          break;
+        }
+      }
+    }
   };
 
 } // namespace otto::core::voices

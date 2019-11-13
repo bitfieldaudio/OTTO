@@ -30,23 +30,6 @@ namespace otto::engines::goss {
     rotation = &val;
   }
 
-  bool GossScreen::keypress(Key key)
-  {
-    return false;
-  }
-
-  void GossScreen::encoder(EncoderEvent e)
-  {
-    /*
-    switch (e.encoder) {
-      case Encoder::blue: engine.props.drawbar1.step(e.steps); break;
-      case Encoder::green: engine.props.drawbar2.step(e.steps); break;
-      case Encoder::yellow: engine.props.click.step(e.steps); break;
-      case Encoder::red: engine.props.leslie.step(e.steps); break;
-    }
-    */
-  }
-
   void GossScreen::draw(ui::vg::Canvas& ctx)
   {
     using namespace ui::vg;

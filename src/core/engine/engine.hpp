@@ -36,7 +36,7 @@ namespace otto::core::engine {
   /// Abstract base class for Engines
   ///
   /// Use this when refering to a generic engine
-  struct IEngine {
+  struct IEngine : core::input::InputHandler {
     IEngine() noexcept;
 
     virtual ~IEngine() = default;

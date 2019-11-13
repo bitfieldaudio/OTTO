@@ -39,7 +39,7 @@ namespace otto::core::voices {
     itc::ActionQueue queue;
     Sndr sndr = {queue, vmgr};
 
-    EnvelopeProps<Sndr> envelope_props = {&sndr};
+    //EnvelopeProps<Sndr> envelope_props = {&sndr};
     SettingsProps<Sndr> voices_props = {&sndr};
 
     // This is a lazy view, so its computed each time you loop through it

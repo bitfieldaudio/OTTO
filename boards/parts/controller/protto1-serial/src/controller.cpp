@@ -14,6 +14,7 @@ namespace otto::services {
   using P1SC = PrOTTO1SerialController;
   using Event = P1SC::Event;
   using EventBag = P1SC::EventBag;
+  using namespace core::input;
 
   using byte = std::uint8_t;
 

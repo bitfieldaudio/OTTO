@@ -80,9 +80,9 @@ namespace otto::services::test {
     {
       UIManager::draw_frame(ctx);
     }
-    void display(core::ui::Screen& screen)
+    void display(core::ui::Screen& screen, core::input::InputHandler& input)
     {
-      UIManager::display(screen);
+      UIManager::display({screen, input});
     }
 
     static DummyUIManager& current()

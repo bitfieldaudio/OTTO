@@ -8,30 +8,32 @@
 
 namespace otto::services {
 
+  using otto::core::input::Key;
+
   LED led_for_screen(ScreenEnum screen)
   {
     switch (screen) {
-      case ScreenEnum::sends: return LED(Key::sends);
-      case ScreenEnum::routing: return LED(Key::routing);
-      case ScreenEnum::fx1: return LED(Key::fx1);
-      case ScreenEnum::fx1_selector: return LED(Key::fx1);
-      case ScreenEnum::fx2: return LED(Key::fx2);
-      case ScreenEnum::fx2_selector: return LED(Key::fx2);
-      case ScreenEnum::looper: return LED(Key::looper);
-      case ScreenEnum::arp: return LED(Key::arp);
-      case ScreenEnum::arp_selector: return LED(Key::arp);
-      case ScreenEnum::voices: return LED(Key::envelope);
-      case ScreenEnum::master: return LED(Key::master);
-      case ScreenEnum::sequencer: return LED(Key::sequencer);
-      case ScreenEnum::sampler: return LED(Key::sampler);
-      case ScreenEnum::sampler_envelope: return LED(Key::envelope);
-      case ScreenEnum::synth: return LED(Key::synth);
-      case ScreenEnum::synth_selector: return LED(Key::synth);
-      case ScreenEnum::synth_envelope: return LED(Key::envelope);
-      case ScreenEnum::settings: return LED(Key::settings);
-      case ScreenEnum::external: return LED(Key::external);
-      case ScreenEnum::twist1: return LED(Key::twist1);
-      case ScreenEnum::twist2: return LED(Key::twist2);
+      case ScreenEnum::sends: return LED(otto::core::input::Key::sends);
+      case ScreenEnum::routing: return LED(otto::core::input::Key::routing);
+      case ScreenEnum::fx1: return LED(otto::core::input::Key::fx1);
+      case ScreenEnum::fx1_selector: return LED(otto::core::input::Key::fx1);
+      case ScreenEnum::fx2: return LED(otto::core::input::Key::fx2);
+      case ScreenEnum::fx2_selector: return LED(otto::core::input::Key::fx2);
+      case ScreenEnum::looper: return LED(otto::core::input::Key::looper);
+      case ScreenEnum::arp: return LED(otto::core::input::Key::arp);
+      case ScreenEnum::arp_selector: return LED(otto::core::input::Key::arp);
+      case ScreenEnum::voices: return LED(otto::core::input::Key::envelope);
+      case ScreenEnum::master: return LED(otto::core::input::Key::master);
+      case ScreenEnum::sequencer: return LED(otto::core::input::Key::sequencer);
+      case ScreenEnum::sampler: return LED(otto::core::input::Key::sampler);
+      case ScreenEnum::sampler_envelope: return LED(otto::core::input::Key::envelope);
+      case ScreenEnum::synth: return LED(otto::core::input::Key::synth);
+      case ScreenEnum::synth_selector: return LED(otto::core::input::Key::synth);
+      case ScreenEnum::synth_envelope: return LED(otto::core::input::Key::envelope);
+      case ScreenEnum::settings: return LED(otto::core::input::Key::settings);
+      case ScreenEnum::external: return LED(otto::core::input::Key::external);
+      case ScreenEnum::twist1: return LED(otto::core::input::Key::twist1);
+      case ScreenEnum::twist2: return LED(otto::core::input::Key::twist2);
     }
     OTTO_UNREACHABLE;
   }
@@ -63,6 +65,7 @@ namespace otto::services {
   UIManager::UIManager()
   {
     state.current_screen.on_change().connect([&](auto new_val) {
+      if (!screen_selectors_[new_val]) return;
       display(screen_selectors_[new_val]());
       for (auto scrn : ScreenEnum::_values()) {
         if (scrn != new_val) Controller::current().set_color(led_for_screen(scrn), LEDColor::Black);
@@ -99,16 +102,21 @@ namespace otto::services {
     Application::current().state_manager->attach("UI", load, save);
   }
 
-  void UIManager::display(Screen& screen)
+  void UIManager::display(ScreenAndInput sai)
   {
-    cur_screen->on_hide();
-    cur_screen = &screen;
-    cur_screen->on_show();
+    cur_sai.screen().on_hide();
+    cur_sai = sai;
+    cur_sai.screen().on_show();
   }
 
   core::ui::Screen& UIManager::current_screen()
   {
-    return *cur_screen;
+    return cur_sai.screen();
+  }
+
+  core::input::InputHandler& UIManager::current_input_handler()
+  {
+    return cur_sai.input();
   }
 
   void UIManager::register_screen_selector(ScreenEnum se, ScreenSelector ss)
@@ -124,7 +132,7 @@ namespace otto::services {
     ctx.lineJoin(vg::LineJoin::ROUND);
     ctx.group([&] {
       ctx.clip(0, 0, 320, 240);
-      cur_screen->draw(ctx);
+      current_screen().draw(ctx);
 
       ctx.group([&] {
         ctx.beginPath();

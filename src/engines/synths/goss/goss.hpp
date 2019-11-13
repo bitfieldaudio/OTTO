@@ -48,6 +48,8 @@ namespace otto::engines::goss {
 
     DECL_REFLECTION(GossEngine, props);
 
+    void encoder(core::input::EncoderEvent e) override;
+
   private:
     GraphicsSndr graphics_sndr_;
     AudioSndr audio_sndr_;

@@ -1,15 +1,15 @@
 #include "controller.hpp"
 
-#include "util/iterator.hpp"
-#include "util/utility.hpp"
-
 #include "services/audio_manager.hpp"
 #include "services/ui_manager.hpp"
+#include "util/iterator.hpp"
+#include "util/utility.hpp"
 
 namespace otto::services {
 
   using Event = Controller::Event;
   using EventBag = Controller::EventBag;
+  using namespace core::input;
 
   static bool send_midi_for(Key key, bool press)
   {
@@ -102,18 +102,19 @@ namespace otto::services {
           events_.swap();
           for (auto& event : events_.inner()) {
             signals.on_input.emit(event);
-            util::match(event,
-                        [this](KeyPressEvent& ev) {
-                          keys[ev.key._to_index()] = true;
-                          if (handle_global(ev.key)) return;
-                          UIManager::current().current_screen().keypress(ev.key);
-                        },
-                        [this](KeyReleaseEvent& ev) {
-                          keys[ev.key._to_index()] = false;
-                          if (handle_global(ev.key, false)) return;
-                          UIManager::current().current_screen().keyrelease(ev.key);
-                        },
-                        [](EncoderEvent& ev) { UIManager::current().current_screen().encoder(ev); });
+            util::match(
+              event,
+              [this](KeyPressEvent& ev) {
+                keys[ev.key._to_index()] = true;
+                if (handle_global(ev.key)) return;
+                UIManager::current().current_input_handler().keypress(ev.key);
+              },
+              [this](KeyReleaseEvent& ev) {
+                keys[ev.key._to_index()] = false;
+                if (handle_global(ev.key, false)) return;
+                UIManager::current().current_input_handler().keyrelease(ev.key);
+              },
+              [](EncoderEvent& ev) { UIManager::current().current_input_handler().encoder(ev); });
           }
         }
       })

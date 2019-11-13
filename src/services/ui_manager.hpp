@@ -1,21 +1,18 @@
 #pragma once
 
 #include <chrono>
-#include <unordered_map>
-
 #include <json.hpp>
 #include <type_safe/bounded_type.hpp>
 #include <type_safe/strong_typedef.hpp>
-
-#include "util/enum.hpp"
-#include "util/locked.hpp"
+#include <unordered_map>
 
 #include "core/props/props.hpp"
 #include "core/service.hpp"
 #include "core/ui/screen.hpp"
-#include "services/application.hpp"
-
 #include "itc/action_queue.hpp"
+#include "services/application.hpp"
+#include "util/enum.hpp"
+#include "util/locked.hpp"
 
 namespace otto::services {
 
@@ -64,6 +61,27 @@ namespace otto::services {
 
   BETTER_ENUM(KeyMode, std::int8_t, midi, seq);
 
+  struct ScreenAndInput {
+    ScreenAndInput(core::ui::Screen& s, core::input::InputHandler& i) noexcept : screen_(&s), input_(&i) {}
+
+    ScreenAndInput(const ScreenAndInput&) = default;
+    ScreenAndInput& operator=(const ScreenAndInput&) = default;
+
+    core::ui::Screen& screen() noexcept
+    {
+      return *screen_;
+    }
+
+    core::input::InputHandler& input() noexcept
+    {
+      return *input_;
+    }
+
+  private:
+    core::ui::Screen* screen_;
+    core::input::InputHandler* input_;
+  };
+
   struct UIManager : core::Service {
     /// The UI state
     ///
@@ -78,7 +96,7 @@ namespace otto::services {
       DECL_REFLECTION(State, active_channel, current_screen, key_mode, octave);
     };
 
-    using ScreenSelector = std::function<core::ui::Screen&()>;
+    using ScreenSelector = std::function<ScreenAndInput()>;
 
     UIManager();
 
@@ -97,6 +115,7 @@ namespace otto::services {
     void display(ScreenEnum screen);
 
     core::ui::Screen& current_screen();
+    core::input::InputHandler& current_input_handler();
 
     static UIManager& current() noexcept
     {
@@ -136,14 +155,16 @@ namespace otto::services {
     ///
     /// Calls @ref Screen::on_hide for the old screen, and then @ref Screen::on_show
     /// for the new screen
-    void display(core::ui::Screen& screen);
+    void display(ScreenAndInput screen);
 
   private:
     struct EmptyScreen : core::ui::Screen {
       void draw(core::ui::vg::Canvas& ctx) {}
     } empty_screen;
+    core::input::InputHandler empty_input;
+    ScreenAndInput empty_sai = {empty_screen, empty_input};
 
-    core::ui::Screen* cur_screen = &empty_screen;
+    ScreenAndInput cur_sai = empty_sai;
 
     util::enum_map<ScreenEnum, ScreenSelector> screen_selectors_;
 

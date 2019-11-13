@@ -9,9 +9,6 @@ namespace otto::engines::goss {
 
   struct GossScreen : ui::Screen {
     void draw(nvg::Canvas& ctx) override;
-    bool keypress(ui::Key key) override;
-    void encoder(ui::EncoderEvent e) override;
-
     void action(itc::prop_change<&Props::drawbar1>, float d1) noexcept;
     void action(itc::prop_change<&Props::drawbar2>, float d2) noexcept;
     void action(itc::prop_change<&Props::click>, float c) noexcept;

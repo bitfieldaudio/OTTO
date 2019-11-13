@@ -70,7 +70,7 @@ namespace otto::engines::sampler {
   struct EnvelopeScreen : ui::Screen {
     void draw(ui::vg::Canvas& ctx) override {}
   };
-  struct Engine {
+  struct Engine : core::engine::MiscEngine<Engine> {
     static constexpr util::string_ref name = "Sampler";
     using Props = Props;
 
@@ -260,7 +260,7 @@ namespace otto::engines::sampler {
     app.engine_manager->start();
     app.audio_manager->start();
 
-    services::test::DummyUIManager::current().display(sampler_engine.main_screen);
+    services::test::DummyUIManager::current().display(sampler_engine.main_screen, sampler_engine);
   }
 
   void Audio::process(audio::AudioBufferHandle audio, bool triggered) noexcept

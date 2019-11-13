@@ -7,7 +7,6 @@ namespace otto::core::voices {
 
   struct EnvelopeScreen : ui::Screen {
     void draw(ui::vg::Canvas&) override;
-    void encoder(ui::EncoderEvent ev) override;
 
     void action(attack_tag::action, float a) noexcept;
     void action(decay_tag::action, float d) noexcept;
@@ -22,9 +21,7 @@ namespace otto::core::voices {
   };
 
   struct SettingsScreen : ui::Screen {
-    bool keypress(ui::Key) override;
     void draw(ui::vg::Canvas&) override;
-    void encoder(ui::EncoderEvent ev) override;
 
     void action(portamento_tag::action, float portamento) noexcept;
     void action(legato_tag::action, bool legato) noexcept;

@@ -66,8 +66,7 @@ namespace otto::services {
     // reg_ss(ScreenEnum::sequencer, [&]() -> auto& { return sequencer.screen(); });
     // reg_ss(ScreenEnum::sampler, [&]() -> auto& { return sequencer.sampler_screen(); });
     // reg_ss(ScreenEnum::sampler_envelope, [&]() -> auto& { return sequencer.envelope_screen(); });
-    reg_ss(
-      ScreenEnum::synth, [&]() -> auto& { return *synth.screen; });
+    reg_ss(ScreenEnum::synth, [&]() { return services::ScreenAndInput{*synth.screen, synth}; });
     // reg_ss(
     //   ScreenEnum::synth_selector, [&]() -> auto& { return synth.selector_screen(); });
     // reg_ss(
@@ -88,30 +87,32 @@ namespace otto::services {
       }
     });
 
-    // controller.register_key_handler(ui::Key::sequencer, [&](ui::Key k) { ui_manager.display(ScreenEnum::sequencer);
+    // controller.register_key_handler(input::Key::sequencer, [&](input::Key k) {
+    // ui_manager.display(ScreenEnum::sequencer);
     // });
 
-    // controller.register_key_handler(ui::Key::sampler, [&](ui::Key k) { ui_manager.display(ScreenEnum::sampler); });
+    // controller.register_key_handler(input::Key::sampler, [&](input::Key k) { ui_manager.display(ScreenEnum::sampler);
+    // });
 
-    // controller.register_key_handler(ui::Key::arp, [&](ui::Key k) {
-    //   if (controller.is_pressed(ui::Key::shift)) {
+    // controller.register_key_handler(input::Key::arp, [&](input::Key k) {
+    //   if (controller.is_pressed(input::Key::shift)) {
     //     ui_manager.display(ScreenEnum::arp_selector);
     //   } else {
     //     ui_manager.display(ScreenEnum::arp);
     //   }
     // });
 
-    controller.register_key_handler(ui::Key::synth, [&](ui::Key k) {
-      if (controller.is_pressed(ui::Key::shift)) {
+    controller.register_key_handler(input::Key::synth, [&](input::Key k) {
+      if (controller.is_pressed(input::Key::shift)) {
         ui_manager.display(ScreenEnum::synth_selector);
       } else {
         ui_manager.display(ScreenEnum::synth);
       }
     });
 
-    controller.register_key_handler(ui::Key::envelope, [&](ui::Key k) {
+    controller.register_key_handler(input::Key::envelope, [&](input::Key k) {
       if (ui_manager.state.active_channel == ChannelEnum::internal) {
-        if (controller.is_pressed(ui::Key::shift)) {
+        if (controller.is_pressed(input::Key::shift)) {
           ui_manager.display(ScreenEnum::voices);
         } else {
           ui_manager.display(ScreenEnum::synth_envelope);
@@ -121,16 +122,16 @@ namespace otto::services {
       }
     });
 
-    // controller.register_key_handler(ui::Key::fx1, [&](ui::Key k) {
-    //   if (controller.is_pressed(ui::Key::shift)) {
+    // controller.register_key_handler(input::Key::fx1, [&](input::Key k) {
+    //   if (controller.is_pressed(input::Key::shift)) {
     //     ui_manager.display(ScreenEnum::fx1_selector);
     //   } else {
     //     ui_manager.display(ScreenEnum::fx1);
     //   }
     // });
 
-    // controller.register_key_handler(ui::Key::fx2, [&](ui::Key k) {
-    //   if (controller.is_pressed(ui::Key::shift)) {
+    // controller.register_key_handler(input::Key::fx2, [&](input::Key k) {
+    //   if (controller.is_pressed(input::Key::shift)) {
     //     ui_manager.display(ScreenEnum::fx2_selector);
     //   } else {
     //     ui_manager.display(ScreenEnum::fx2);
@@ -141,22 +142,22 @@ namespace otto::services {
     // static ScreenEnum send_last_screen = ScreenEnum::sends;
 
     // controller.register_key_handler(
-    //   ui::Key::master,
-    //   [&](ui::Key k) {
+    //   input::Key::master,
+    //   [&](input::Key k) {
     //     master_last_screen = ui_manager.state.current_screen;
     //     ui_manager.display(ScreenEnum::master);
     //   },
-    //   [&](ui::Key k) {
+    //   [&](input::Key k) {
     //     if (master_last_screen) ui_manager.display(master_last_screen);
     //   });
 
     // controller.register_key_handler(
-    //   ui::Key::sends,
-    //   [&](ui::Key k) {
+    //   input::Key::sends,
+    //   [&](input::Key k) {
     //     send_last_screen = ui_manager.state.current_screen;
     //     ui_manager.display(ScreenEnum::sends);
     //   },
-    //   [&](ui::Key k) {
+    //   [&](input::Key k) {
     //     if (send_last_screen) ui_manager.display(send_last_screen);
     //   });
 

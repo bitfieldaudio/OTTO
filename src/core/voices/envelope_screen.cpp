@@ -23,17 +23,6 @@ namespace otto::core::voices {
     release = r;
   }
 
-  void EnvelopeScreen::encoder(EncoderEvent ctx)
-  { /*
-     switch (ctx.encoder) {
-     case Encoder::blue: props.attack.step(ctx.steps); break;
-     case Encoder::green: props.decay.step(ctx.steps); break;
-     case Encoder::yellow: props.sustain.step(ctx.steps); break;
-     case Encoder::red: props.release.step(ctx.steps); break;
-     }
-    */
-  }
-
   void EnvelopeScreen::draw(Canvas& ctx)
   {
     constexpr auto b = vg::Box{30.f, 60.f, 260.f, 110.f};

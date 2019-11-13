@@ -53,34 +53,6 @@ namespace otto::core::voices {
     if (play_mode == +PlayMode::unison) aux_value = fmt::format("{:+}", interval);
   }
 
-  bool SettingsScreen::keypress(ui::Key key)
-  {
-    return false;
-  }
-
-  void SettingsScreen::encoder(ui::EncoderEvent ev)
-  { /*
-       switch (ev.encoder) {
-       case Encoder::blue: props.play_mode.step(ev.steps); break;
-       case Encoder::green: {
-         switch (props.play_mode.get()) {
-           case PlayMode::poly: props.rand.step(ev.steps); break;
-           case PlayMode::mono: props.sub.step(ev.steps); break;
-           case PlayMode::unison: props.detune.step(ev.steps); break;
-           case PlayMode::interval: props.interval.step(util::math::sgn(ev.steps)); break;
-         }; break;
-       }
-       case Encoder::yellow: props.portamento.step(ev.steps); break;
-       case Encoder::red: {
-         // Fuck it. I can do binary logic myself.
-         if (ev.steps > 0) props.legato = props.legato != props.retrig;
-         else props.legato = props.legato == props.retrig;
-         props.retrig = !props.retrig;
-         break;
-       }
-       }*/
-  }
-
   void SettingsScreen::draw(ui::vg::Canvas& ctx)
   {
     using namespace ui::vg;
