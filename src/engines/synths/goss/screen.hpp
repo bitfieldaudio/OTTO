@@ -12,13 +12,13 @@ namespace otto::engines::goss {
     bool keypress(ui::Key key) override;
     void encoder(ui::EncoderEvent e) override;
 
-    void action(itc::prop_change<&Props::drawbar1>, float d1) noexcept;
+    void action(itc::prop_change<&Props::model>, int m) noexcept;
     void action(itc::prop_change<&Props::drawbar2>, float d2) noexcept;
     void action(itc::prop_change<&Props::click>, float c) noexcept;
     void action(itc::prop_change<&Props::leslie>, float l) noexcept;
     void action(Actions::rotation_variable, std::atomic<float>& v) noexcept;
 
-    float drawbar1 = 1;
+    int model = 0;
     float drawbar2 = 0;
     float click = 0;
     float leslie = 0;

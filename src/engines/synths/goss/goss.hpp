@@ -28,12 +28,12 @@ namespace otto::engines::goss {
   struct Props {
     Sndr* sndr;
 
-    Sndr::Prop<struct drawbar1_tag, float> drawbar1 = {sndr, 1, limits(0, 1), step_size(0.01)};
+    Sndr::Prop<struct model_tag, int> model = {sndr, 0, limits(0, 2)};
     Sndr::Prop<struct drawbar2_tag, float> drawbar2 = {sndr, 0.5, limits(0, 1), step_size(0.01)};
     Sndr::Prop<struct click_tag, float> click = {sndr, 0.5, limits(0, 1), step_size(0.01)};
     Sndr::Prop<struct leslie_tag, float> leslie = {sndr, 0.3, limits(0, 1), step_size(0.01)};
 
-    DECL_REFLECTION(Props, drawbar1, drawbar2, click, leslie);
+    DECL_REFLECTION(Props, model, drawbar2, click, leslie);
   };
 
   struct GossEngine : core::engine::SynthEngine<GossEngine> {
