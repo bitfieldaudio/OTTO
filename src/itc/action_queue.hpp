@@ -5,16 +5,16 @@
 #include <queue>
 #include <tuple>
 
+#include "action.hpp"
+#include "util/spin_lock.hpp"
 #include "util/type_traits.hpp"
 #include "util/utility.hpp"
-
-#include "action.hpp"
 
 namespace otto::itc {
 
   /// The push-only interface of an {@ref ActionQueue}.
-  /// 
-  /// Queue-owners can expose a reference to this to make sure the internal pop functions aren't 
+  ///
+  /// Queue-owners can expose a reference to this to make sure the internal pop functions aren't
   /// callable from the outside.
   ///
   /// @TODO Implement as a lock-free thread safe queue
@@ -53,14 +53,17 @@ namespace otto::itc {
     /// This is completely separate from actions, and just allows you to run any old function on the other thread
     ///
     /// @TODO Consider, should this be removed from the interface?
-    void push(const value_type& v)
+    void push(const value_type& v) noexcept
     {
+      lock_.lock();
       queue_.push(v);
+      lock_.unlock();
     }
 
   protected:
     PushOnlyActionQueue() = default;
 
+    util::spin_lock lock_;
     std::queue<value_type, std::deque<value_type>> queue_;
   };
 
@@ -71,75 +74,28 @@ namespace otto::itc {
     /// Pop a function off the queue and return it
     value_type pop() noexcept
     {
+      lock_.lock();
       auto res = queue_.front();
       queue_.pop();
+      lock_.unlock();
       return res;
     }
 
     /// Pop a function off the queue and call it
-    void pop_call()
+    void pop_call() noexcept
     {
       pop()();
     }
 
     /// Pop all functions off the queue and call them
-    void pop_call_all()
+    void pop_call_all() noexcept
     {
-      while (size() > 0) {
-        pop_call();
+      lock_.lock();
+      while (queue_.size() > 0) {
+        auto res = queue_.front();
+        queue_.pop();
       }
+      lock_.unlock();
     }
   };
-
-  // FORWARD DECLARATION
-  template<typename Sndr, typename Tag, typename Val, typename... Mixins>
-  struct ActionProp;
-
-  /// A class to help enqueue actions for a list of recievers
-  ///
-  /// Currently only supports one reciever of each type, which shouldn't be a problem.
-  template<typename... Recievers>
-  struct ActionSender {
-    template<typename Val, typename Tag, typename... Mixins>
-    using Prop = ActionProp<ActionSender<Recievers...>, Val, Tag, Mixins...>;
-
-    /// Does not own the queue, and does not own the recievers.
-    ActionSender(PushOnlyActionQueue& queue, Recievers&... r) : queue_(queue), recievers_(r...) {}
-
-    /// Push an action to be recieved by all recievers that support it
-    template<typename Tag, typename... Args>
-    void push(ActionData<Action<Tag, Args...>> action_data)
-    {
-      (queue_.try_push(reciever<Recievers>(), action_data), ...);
-    }
-
-    /// Get a reciever of a specific type
-    template<typename Reciever>
-    auto reciever() noexcept -> std::enable_if_t<util::is_one_of_v<Reciever, Recievers...>, Reciever&>
-    {
-      return std::get<Reciever&>(recievers_);
-    }
-
-  private:
-    PushOnlyActionQueue& queue_;
-    std::tuple<Recievers&...> recievers_;
-  };
-
-  template<typename... AQHs>
-  struct JoinedActionSender {
-    template<typename Val, typename Tag, typename... Mixins>
-    using Prop = ActionProp<JoinedActionSender<AQHs...>, Val, Tag, Mixins...>;
-
-    JoinedActionSender(AQHs... sndrs) : sndrs_{std::forward<AQHs>(sndrs)...} {}
-
-    template<typename Tag, typename... Args>
-    void push(ActionData<Action<Tag, Args...>> action_data)
-    {
-      util::tuple_for_each(sndrs_, [&action_data](auto& sndr) { sndr.push(action_data); });
-    }
-
-  private:
-    std::tuple<AQHs...> sndrs_;
-  };
-
 } // namespace otto::itc

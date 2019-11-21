@@ -89,8 +89,7 @@ namespace otto::util {
   /// \tparam T needs .clear(), which is called on swap
   template<typename T, typename AfterSwap = clear_outer>
   struct double_buffered {
-    constexpr double_buffered(const T& inner,
-                              const T& outer) noexcept(std::is_nothrow_copy_constructible_v<T>)
+    constexpr double_buffered(const T& inner, const T& outer) noexcept(std::is_nothrow_copy_constructible_v<T>)
       : _store{{inner, outer}}
     {}
 
@@ -104,8 +103,7 @@ namespace otto::util {
       : _store{{inner, std::move(outer)}}
     {}
 
-    constexpr double_buffered(T&& inner = T{},
-                              T&& outer = T{}) noexcept(std::is_nothrow_move_constructible_v<T>)
+    constexpr double_buffered(T&& inner = T{}, T&& outer = T{}) noexcept(std::is_nothrow_move_constructible_v<T>)
       : _store{{std::move(inner), std::move(outer)}}
     {}
 
@@ -132,16 +130,14 @@ namespace otto::util {
     }
 
     template<typename Func>
-    constexpr decltype(auto) outer_locked(Func&& f)
+    constexpr decltype(auto) outer_locked(Func&& f) noexcept(std::is_nothrow_invocable_v<Func, T&>)
     {
       std::unique_lock lock(_outer_lock);
       return std::invoke(std::forward<Func>(f), _store[(_inner_idx + 1) % 2]);
     }
 
     template<typename Func>
-    constexpr decltype(auto) outer_locked(Func&& f) const
-    // TODO: clang 5 does not implement this
-    // noexcept(std::is_nothrow_invocable_v<Func, const T&>)
+    constexpr decltype(auto) outer_locked(Func&& f) const noexcept(std::is_nothrow_invocable_v<Func, const T&>)
     {
       std::unique_lock lock(_outer_lock);
       return std::invoke(std::forward<Func>(f), _store[(_inner_idx + 1) % 2]);
