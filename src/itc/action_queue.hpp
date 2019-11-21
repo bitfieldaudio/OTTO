@@ -92,7 +92,7 @@ namespace otto::itc {
     {
       lock_.lock();
       while (queue_.size() > 0) {
-        auto res = queue_.front();
+        queue_.front()();
         queue_.pop();
       }
       lock_.unlock();
