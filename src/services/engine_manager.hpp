@@ -51,6 +51,10 @@ namespace otto::services {
     /// 
     /// This is very likely to be changed in the future
     static std::unique_ptr<EngineManager> create_default();
+
+    static EngineManager& current() noexcept {
+      return Application::current().engine_manager;
+    }
   };
 
 } // namespace otto::services

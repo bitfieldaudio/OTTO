@@ -118,7 +118,7 @@ namespace otto::util {
     /// Zero overhead wrapper to create iterators
     ///
     /// \tparam Impl must define the following member functions:
-    /// ```
+    /// ```cpp
     /// void           Impl::advance(difference_type);
     /// reference      Impl::dereference();
     /// bool           Impl::equal(const Impl&);
@@ -205,28 +205,10 @@ namespace otto::util {
       }
     };
 
-    template<typename Derived,
-             typename ValueType,
-             typename Reference,
-             typename Pointer,
-             typename Difference>
-    struct iterator_facade<Derived,
-                           ValueType,
-                           std::bidirectional_iterator_tag,
-                           Reference,
-                           Pointer,
-                           Difference> : iterator_facade<Derived,
-                                                         ValueType,
-                                                         std::input_iterator_tag,
-                                                         Reference,
-                                                         Pointer,
-                                                         Difference> {
-      using Super = iterator_facade<Derived,
-                                    ValueType,
-                                    std::input_iterator_tag,
-                                    Reference,
-                                    Pointer,
-                                    Difference>;
+    template<typename Derived, typename ValueType, typename Reference, typename Pointer, typename Difference>
+    struct iterator_facade<Derived, ValueType, std::bidirectional_iterator_tag, Reference, Pointer, Difference>
+      : iterator_facade<Derived, ValueType, std::input_iterator_tag, Reference, Pointer, Difference> {
+      using Super = iterator_facade<Derived, ValueType, std::input_iterator_tag, Reference, Pointer, Difference>;
 
       using typename Super::difference_type;
       using iterator_category = std::bidirectional_iterator_tag;
@@ -387,8 +369,59 @@ namespace otto::util {
         return last;
       }
 
+      auto rbegin()
+      {
+        return std::make_reverse_iterator(last);
+      }
+
+      auto rend()
+      {
+        return std::make_reverse_iterator(first);
+      }
+
+      auto&& front()
+      {
+        return *first;
+      }
+
       BIter first;
       EIter last;
+    };
+
+    /// A sequence where begin and end iterators are created for each call to begin and end functions
+    template<typename BIterFactory, typename EIterFactory>
+    struct lazy_sequence {
+      using iterator = std::common_type_t<std::invoke_result_t<BIterFactory>, std::invoke_result_t<BIterFactory>>;
+
+      lazy_sequence(BIterFactory&& f, EIterFactory&& l) : first{std::move(f)}, last{std::move(l)} {}
+
+      auto begin()
+      {
+        return first();
+      }
+
+      auto end()
+      {
+        return last();
+      }
+
+      auto rbegin()
+      {
+        return std::make_reverse_iterator(end());
+      }
+
+      auto rend()
+      {
+        return std::make_reverse_iterator(begin());
+      }
+
+      auto&& front()
+      {
+        return *begin();
+      }
+
+      BIterFactory first;
+      EIterFactory last;
     };
 
     /// \class float_step_iterator
@@ -432,8 +465,8 @@ namespace otto::util {
       using reference = typename std::iterator_traits<wrapped_type>::reference;
       using pointer = typename std::iterator_traits<wrapped_type>::pointer;
       using difference_type = typename std::iterator_traits<wrapped_type>::difference_type;
-      using iterator_category = std::common_type_t<typename detail::iterator_category<I>::type,
-                                                   std::bidirectional_iterator_tag>;
+      using iterator_category =
+        std::common_type_t<typename detail::iterator_category<I>::type, std::bidirectional_iterator_tag>;
 
       /*
        * Initialization
@@ -443,9 +476,7 @@ namespace otto::util {
       float_step_iterator(const wrapped_type& iter, float step = 1.f) : step{step}, iter{iter} {}
 
       /// Copy constructor
-      float_step_iterator(const float_step_iterator& r)
-        : step{r.step}, _error{r._error}, iter{r.iter}
-      {}
+      float_step_iterator(const float_step_iterator& r) : step{r.step}, _error{r._error}, iter{r.iter} {}
 
       /// Move constructor
       float_step_iterator(float_step_iterator&& r)
@@ -588,15 +619,13 @@ namespace otto::util {
       /// \requires `wrapped_type` shall be at least a Bidirectional Iterator, or
       /// this function will not exist.
       auto operator-=(difference_type n)
-        -> std::enable_if_t<std::is_base_of_v<std::bidirectional_iterator_tag, iterator_category>,
-                            float_step_iterator&>
+        -> std::enable_if_t<std::is_base_of_v<std::bidirectional_iterator_tag, iterator_category>, float_step_iterator&>
       {
         return *this += -n;
       }
 
       auto operator-(difference_type d)
-        -> std::enable_if_t<std::is_base_of_v<std::bidirectional_iterator_tag, iterator_category>,
-                            float_step_iterator>
+        -> std::enable_if_t<std::is_base_of_v<std::bidirectional_iterator_tag, iterator_category>, float_step_iterator>
       {
         auto res = *this;
         res -= d;
@@ -611,8 +640,7 @@ namespace otto::util {
       /// \requires `wrapped_type` shall be at least a Bidirectional Iterator, or
       /// this function will not exist.
       auto operator--()
-        -> std::enable_if_t<std::is_base_of_v<std::bidirectional_iterator_tag, iterator_category>,
-                            float_step_iterator&>
+        -> std::enable_if_t<std::is_base_of_v<std::bidirectional_iterator_tag, iterator_category>, float_step_iterator&>
       {
         return *this += -1;
       }
@@ -624,8 +652,7 @@ namespace otto::util {
       /// \requires `wrapped_type` shall be at least a Bidirectional Iterator, or
       /// this function will not exist.
       auto operator--(int)
-        -> std::enable_if_t<std::is_base_of_v<std::bidirectional_iterator_tag, iterator_category>,
-                            float_step_iterator&>
+        -> std::enable_if_t<std::is_base_of_v<std::bidirectional_iterator_tag, iterator_category>, float_step_iterator&>
       {
         auto tmp = *this;
         *this += -1;
@@ -655,8 +682,7 @@ namespace otto::util {
       ///
       /// Only avaliable if `wrapped_type` is random access.
       auto difference(const float_step_iterator& rhs) -> std::enable_if_t<
-        std::is_same_v<typename std::iterator_traits<wrapped_type>::iterator_category,
-                       std::random_access_iterator_tag>,
+        std::is_same_v<typename std::iterator_traits<wrapped_type>::iterator_category, std::random_access_iterator_tag>,
         float>
       {
         return (iter - rhs.iter) + (error() - rhs.error());
@@ -710,10 +736,9 @@ namespace otto::util {
     /// each time its called.
     ///
     template<typename Generator>
-    struct generating_iterator : iterator_facade<generating_iterator<Generator>,
-                                                 util::invoke_result_t<Generator>,
-                                                 std::input_iterator_tag> {
-      using value_type = util::invoke_result_t<Generator>;
+    struct generating_iterator
+      : iterator_facade<generating_iterator<Generator>, std::invoke_result_t<Generator>, std::input_iterator_tag> {
+      using value_type = std::invoke_result_t<Generator>;
       using iterator_category = std::input_iterator_tag;
 
       generating_iterator(Generator generator) : generator{std::move(generator)} {}
@@ -762,11 +787,10 @@ namespace otto::util {
     /// }
     /// ```
     template<typename... Iterators>
-    struct zipped_iterator
-      : iterator_facade<zipped_iterator<Iterators...>,
-                        std::tuple<detail::value_type_t<Iterators>...>,
-                        std::common_type_t<typename detail::iterator_category<Iterators>::type...>,
-                        std::tuple<detail::reference_t<Iterators>...>> {
+    struct zipped_iterator : iterator_facade<zipped_iterator<Iterators...>,
+                                             std::tuple<detail::value_type_t<Iterators>...>,
+                                             std::common_type_t<typename detail::iterator_category<Iterators>::type...>,
+                                             std::tuple<detail::reference_t<Iterators>...>> {
     private:
       template<std::size_t N, typename Tuple>
       static bool tuple_equals_impl(const Tuple& t1, const Tuple& t2)
@@ -793,8 +817,8 @@ namespace otto::util {
       {
         if constexpr (N < std::tuple_size_v<Tuple>) {
           return tuple_deref_impl<N + 1>(
-            iters, std::tuple_cat(std::move(t2), std::tuple<std::tuple_element_t<N, reference>>(
-                                                   *(std::get<N>(iters)))));
+            iters,
+            std::tuple_cat(std::move(t2), std::tuple<std::tuple_element_t<N, reference>>(*(std::get<N>(iters)))));
         } else {
           // NRVO does not apply since its recieved as an rvalue refference
           return std::move(t2);
@@ -890,11 +914,10 @@ namespace otto::util {
     /****************************************************************************/
 
     template<typename Iter>
-    struct adjacent_pair_iterator
-      : iterator_facade<adjacent_pair_iterator<Iter>,
-                        std::pair<detail::value_type_t<Iter>, detail::value_type_t<Iter>>,
-                        detail::iterator_category_t<Iter>,
-                        std::pair<detail::reference_t<Iter>, detail::reference_t<Iter>>> {
+    struct adjacent_pair_iterator : iterator_facade<adjacent_pair_iterator<Iter>,
+                                                    std::pair<detail::value_type_t<Iter>, detail::value_type_t<Iter>>,
+                                                    detail::iterator_category_t<Iter>,
+                                                    std::pair<detail::reference_t<Iter>, detail::reference_t<Iter>>> {
       using value_type = std::pair<detail::value_type_t<Iter>, detail::value_type_t<Iter>>;
       using reference = std::pair<detail::reference_t<Iter>, detail::reference_t<Iter>>;
       using iterator_category = typename detail::iterator_category<Iter>::type;
@@ -973,17 +996,15 @@ namespace otto::util {
     ///
     template<typename WrappedIter, typename Callable>
     struct transform_iterator
-      : iterator_facade<
-          transform_iterator<WrappedIter, Callable>,
-          std::decay_t<util::invoke_result_t<Callable, detail::reference_t<WrappedIter>>>,
-          detail::iterator_category_t<WrappedIter>,
-          util::invoke_result_t<Callable, detail::reference_t<WrappedIter>>> {
+      : iterator_facade<transform_iterator<WrappedIter, Callable>,
+                        std::decay_t<std::invoke_result_t<Callable, detail::reference_t<WrappedIter>>>,
+                        detail::iterator_category_t<WrappedIter>,
+                        std::invoke_result_t<Callable, detail::reference_t<WrappedIter>>> {
       transform_iterator(WrappedIter iter, Callable callable)
         : iter(std::move(iter)), callable{std::make_shared<Callable>(std::move(callable))}
       {}
 
-      transform_iterator(WrappedIter iter, transform_iterator other)
-        : iter(std::move(iter)), callable{other.callable}
+      transform_iterator(WrappedIter iter, transform_iterator other) : iter(std::move(iter)), callable{other.callable}
       {}
 
       void advance(int n)
@@ -1018,13 +1039,17 @@ namespace otto::util {
                                              detail::value_type_t<WrappedIter>,
                                              detail::iterator_category_t<WrappedIter>,
                                              detail::reference_t<WrappedIter>> {
-      static_assert(std::is_same_v<std::decay_t<decltype(*std::declval<WrappedIter>())>,
-                                   detail::value_type_t<WrappedIter>>);
+      static_assert(
+        std::is_same_v<std::decay_t<decltype(*std::declval<WrappedIter>())>, detail::value_type_t<WrappedIter>>);
 
       filter_iterator(WrappedIter iter, WrappedIter last, Predicate callable)
-        : iter(std::move(iter)),
-          last(last),
-          callable{std::make_shared<Predicate>(std::move(callable))}
+        : iter(std::move(iter)), last(last), callable{std::make_shared<Predicate>(std::move(callable))}
+      {
+        nextvalid();
+      }
+
+      filter_iterator(WrappedIter iter, WrappedIter last, std::shared_ptr<Predicate> callable)
+        : iter(std::move(iter)), last(last), callable{std::move(callable)}
       {
         nextvalid();
       }
@@ -1045,7 +1070,7 @@ namespace otto::util {
       void advance(int n)
       {
         for (int i = 0; i < n; i++) {
-          while (++iter != last && !std::invoke(*callable, *iter))
+          while (iter != last && !std::invoke(*callable, *++iter))
             ;
         }
       }
@@ -1078,8 +1103,8 @@ namespace otto::util {
                                                detail::value_type_t<WrappedIter>,
                                                detail::iterator_category_t<WrappedIter>,
                                                detail::reference_t<WrappedIter>> {
-      static_assert(std::is_same_v<std::decay_t<decltype(*std::declval<WrappedIter>())>,
-                                   detail::value_type_t<WrappedIter>>);
+      static_assert(
+        std::is_same_v<std::decay_t<decltype(*std::declval<WrappedIter>())>, detail::value_type_t<WrappedIter>>);
 
       circular_iterator(WrappedIter iter, WrappedIter first, WrappedIter last)
         : iter(std::move(iter)), first(std::move(first)), last(std::move(last))
@@ -1117,10 +1142,90 @@ namespace otto::util {
       WrappedIter first, last;
     };
 
+    namespace detail {
+
+      template<typename Ref>
+      struct with_index {
+        std::size_t index;
+        Ref val;
+      };
+    } // namespace detail
+
+    template<typename WrappedIter>
+    struct indexed_iterator : iterator_facade<indexed_iterator<WrappedIter>,
+                                              std::pair<std::size_t, detail::value_type_t<WrappedIter>>,
+                                              detail::iterator_category_t<WrappedIter>,
+                                              std::pair<std::size_t, detail::reference_t<WrappedIter>>> {
+      static_assert(
+        std::is_same_v<std::decay_t<decltype(*std::declval<WrappedIter>())>, detail::value_type_t<WrappedIter>>);
+
+      indexed_iterator(WrappedIter iter, std::size_t index = 0) : iter(std::move(iter)), index(index) {}
+
+      void advance(int n)
+      {
+        std::advance(iter, n);
+        index += n;
+      }
+
+      auto dereference()
+      {
+        return std::pair<std::size_t, detail::reference_t<WrappedIter>>(index, *iter);
+      }
+
+      bool equal(const indexed_iterator& o) const
+      {
+        return iter == o.iter;
+      }
+
+      auto difference(const indexed_iterator& o) const
+      {
+        return iter - o.iter;
+      }
+
+      WrappedIter iter;
+      std::size_t index = 0;
+    };
+
+
+    struct counting_iterator : iterator_facade<counting_iterator, int, std::output_iterator_tag, int> {
+      using value_type = int;
+      counting_iterator(int value = 0) : value_(value) {}
+
+      int dereference() const noexcept
+      {
+        return value_;
+      }
+
+      void advance(int n) noexcept
+      {
+        value_ += n;
+      }
+
+      bool equal(const counting_iterator& o) const noexcept
+      {
+        return value_ == o.value_;
+      }
+
+      int difference(const counting_iterator& o) const noexcept
+      {
+        return value_ - o.value_;
+      }
+
+    private:
+      int value_;
+    };
+
 
   } // namespace iterator
 
   namespace view {
+
+    template<typename Range>
+    auto reverse(Range&& r)
+    {
+      using std::rbegin, std::rend;
+      return sequence(rbegin(r), rend(r));
+    }
 
     template<typename Range, typename Callable>
     auto transform(Range&& r, Callable&& c)
@@ -1137,9 +1242,10 @@ namespace otto::util {
     {
       using std::begin, std::end;
       using filteriter = filter_iterator<decltype(begin(r)), std::decay_t<Predicate>>;
-      auto first = filteriter(begin(r), end(r), std::forward<Predicate>(c));
-      auto last = filteriter(end(r), end(r), first);
-      return sequence(first, last);
+      auto ptr = std::make_shared<Predicate>(std::forward<Predicate>(c));
+      auto first = [&r, &c, ptr] { return filteriter(begin(r), end(r), ptr); };
+      auto last = [&r, &c, ptr] { return filteriter(end(r), end(r), ptr); };
+      return lazy_sequence(std::move(first), std::move(last));
     }
 
     template<typename Range>
@@ -1151,6 +1257,42 @@ namespace otto::util {
       auto last = CircIter(end(r), begin(r), end(r));
       return sequence(first, last);
     }
+
+    template<typename Range>
+    auto indexed(Range&& r)
+    {
+      using std::begin, std::end;
+      using Iter = indexed_iterator<decltype(begin(r))>;
+      auto first = Iter(begin(r));
+      auto last = Iter(end(r));
+      return sequence(first, last);
+    }
+
+    template<typename Range>
+    auto subrange(Range&& r, std::size_t begin_idx, std::size_t end_idx)
+    {
+      using std::begin, std::end;
+      return sequence(begin(r) + begin_idx, std::min(begin(r) + end_idx, end(r)));
+    }
+
+    /// A range of ints [lo;hi[
+    inline auto ints(int lo, int hi)
+    {
+      return sequence(counting_iterator(lo), counting_iterator(hi));
+    }
+
+    template<typename Range>
+    auto to_vec(Range&& r)
+    {
+      using std::begin, std::end;
+      using Iter = std::decay_t<decltype(begin(r))>;
+      std::vector<iterator::detail::value_type_t<Iter>> res;
+      for (auto&& e : r) {
+        res.push_back(e);
+      }
+      return res;
+    }
+
   } // namespace view
 
 } // namespace otto::util

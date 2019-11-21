@@ -1,36 +1,26 @@
-#include "voice_manager.hpp"
-
 #include "core/ui/vector_graphics.hpp"
+#include "voice_manager.hpp"
+#include "voices_ui.hpp"
 
 namespace otto::core::voices {
-
-  struct EnvelopeScreen : ui::Screen {
-    EnvelopeScreen(details::EnvelopeProps& props) : props(props) {}
-
-    void draw(ui::vg::Canvas&) override;
-    void encoder(ui::EncoderEvent ev) override;
-
-    details::EnvelopeProps& props;
-  };
-
-  namespace details {
-    std::unique_ptr<ui::Screen> make_envelope_screen(EnvelopeProps& props)
-    {
-      return std::make_unique<EnvelopeScreen>(props);
-    }
-  } // namespace details
-
   using namespace ui;
   using namespace ui::vg;
 
-  void EnvelopeScreen::encoder(EncoderEvent ctx)
+  void EnvelopeScreen::action(attack_tag::action, float a) noexcept
   {
-    switch (ctx.encoder) {
-    case Encoder::blue: props.attack.step(ctx.steps); break;
-    case Encoder::green: props.decay.step(ctx.steps); break;
-    case Encoder::yellow: props.sustain.step(ctx.steps); break;
-    case Encoder::red: props.release.step(ctx.steps); break;
-    }
+    attack = a;
+  }
+  void EnvelopeScreen::action(decay_tag::action, float d) noexcept
+  {
+    decay = d;
+  }
+  void EnvelopeScreen::action(sustain_tag::action, float s) noexcept
+  {
+    sustain = s;
+  }
+  void EnvelopeScreen::action(release_tag::action, float r) noexcept
+  {
+    release = r;
   }
 
   void EnvelopeScreen::draw(Canvas& ctx)
@@ -38,10 +28,10 @@ namespace otto::core::voices {
     constexpr auto b = vg::Box{30.f, 60.f, 260.f, 110.f};
     const float spacing = 10.f;
     const float max_width = (b.width - 3 * spacing) / 3.f;
-    const float aw = max_width * props.attack.normalize();
-    const float dw = max_width * props.decay.normalize();
-    const float sh = b.height * props.sustain.normalize();
-    const float rw = max_width * props.release.normalize();
+    const float aw = max_width * attack;
+    const float dw = max_width * decay;
+    const float sh = b.height * sustain;
+    const float rw = max_width * release;
 
     ctx.lineWidth(6.f);
 
@@ -54,8 +44,7 @@ namespace otto::core::voices {
 
     ctx.beginPath();
     ctx.moveTo(b.x, b.y + b.height);
-    ctx.quadraticCurveTo({b.x + aw * arc_size, b.y + b.height * arc_size},
-                         {b.x + aw, b.y}); // curve
+    ctx.quadraticCurveTo({b.x + aw * arc_size, b.y + b.height * arc_size}, {b.x + aw, b.y}); // curve
     ctx.lineTo(b.x + aw, b.y + b.height);
     ctx.closePath();
     ctx.stroke(Colours::Blue);
@@ -64,9 +53,8 @@ namespace otto::core::voices {
     ctx.beginPath();
     ctx.moveTo(b.x + aw + spacing, b.y + b.height);
     ctx.lineTo(b.x + aw + spacing, b.y);
-    ctx.quadraticCurveTo(
-      {b.x + aw + spacing + dw * (1 - arc_size), b.y + (b.height - sh) * arc_size},
-      {b.x + aw + spacing + dw, b.y + b.height - sh}); // curve
+    ctx.quadraticCurveTo({b.x + aw + spacing + dw * (1 - arc_size), b.y + (b.height - sh) * arc_size},
+                         {b.x + aw + spacing + dw, b.y + b.height - sh}); // curve
     ctx.lineTo(b.x + aw + spacing + dw, b.y + b.height);
     ctx.closePath();
     ctx.stroke(Colours::Green);

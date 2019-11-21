@@ -3,5 +3,6 @@
 #include "has_limits.hpp"
 #include "steppable.hpp"
 #include "wrap.hpp"
-#include "pow2.hpp"
+#include "square.hpp"
 #include "signal.hpp"
+#include "exp_step.hpp"

@@ -1,86 +1,78 @@
 #pragma once
 
 #include "core/engine/engine.hpp"
-
+#include "core/ui/screen.hpp"
 #include "core/voices/voice_manager.hpp"
-
-#include <Gamma/Filter.h>
-#include <Gamma/Oscillator.h>
-
+#include "core/voices/voices_ui.hpp"
+#include "itc/prop.hpp"
 #include "util/reflection.hpp"
 
-namespace otto::engines {
+namespace otto::engines::goss {
 
   using namespace core;
   using namespace core::engine;
   using namespace props;
 
-  struct GossSynth final : SynthEngine<GossSynth> {
-    static constexpr util::string_ref name = "Goss";
+  struct GossScreen;
+  using GraphicsSndr = itc::ActionSender<GossScreen, voices::EnvelopeScreen, voices::SettingsScreen>;
 
-    struct Props {
-      Property<float> drawbar1 = {1, limits(0, 1), step_size(0.01)};
-      Property<float> drawbar2 = {0.5, limits(0, 1), step_size(0.01)};
-      Property<float> click = {0.5, limits(0, 1), step_size(0.01)};
-      Property<float> leslie = {0.3, limits(0, 1), step_size(0.01)};
+  struct Audio;
+  using AudioSndr = itc::ActionSender<Audio>;
 
-      float rotation_value;
+  using Sndr = itc::JoinedActionSender<GraphicsSndr, AudioSndr>;
 
-      DECL_REFLECTION(Props, drawbar1, drawbar2, click, leslie);
-    } props;
-
-    GossSynth();
-
-    audio::ProcessData<1> process(audio::ProcessData<1>) override;
-
-    voices::IVoiceManager& voice_mgr() override
-    {
-      return voice_mgr_;
-    }
-
-    DECL_REFLECTION(GossSynth, props, ("voice_manager", &GossSynth::voice_mgr_));
-
-  private:
-    struct Pre : voices::PreBase<Pre, Props> {
-      float leslie_speed_hi = 0.f;
-      float leslie_speed_lo = 0.f;
-      float leslie_amount_hi = 0.f;
-      float leslie_amount_lo = 0.f;
-
-      gam::LFO<> leslie_filter_hi;
-      gam::LFO<> leslie_filter_lo;
-      gam::LFO<> pitch_modulation_lo;
-      gam::LFO<> pitch_modulation_hi;
-
-      gam::AccumPhase<> rotation;
-
-      Pre(Props&) noexcept;
-
-      void operator()() noexcept;
-    };
-
-    struct Voice : voices::VoiceBase<Voice, Pre> {
-      std::array<gam::Osc<>, 3> pipes;
-      gam::Osc<> percussion;
-      gam::AD<> perc_env{0.001, 0.2};
-
-      Voice(Pre&) noexcept;
-
-      float operator()() noexcept;
-
-      void on_note_on(float freq_target) noexcept;
-    };
-
-    struct Post : voices::PostBase<Post, Voice> {
-      gam::Biquad<> lpf;
-      gam::Biquad<> hpf;
-
-      Post(Pre&) noexcept;
-
-      float operator()(float) noexcept;
-    };
-
-    voices::VoiceManager<Post, 6> voice_mgr_;
+  struct Actions {
+    /// Publish the rotation variable, which is shared between the audio and screen
+    using rotation_variable = itc::Action<struct rotation_variable_tag, std::atomic<float>&>;
   };
 
-} // namespace otto::engines
+  struct Props {
+    Sndr* sndr;
+
+    Sndr::Prop<struct model_tag, int> model = {sndr, 0, limits(0, 2)};
+    Sndr::Prop<struct drawbar2_tag, float> drawbar2 = {sndr, 0.5, limits(0, 1), step_size(0.01)};
+    Sndr::Prop<struct click_tag, float> click = {sndr, 0.5, limits(0, 1), step_size(0.01)};
+    Sndr::Prop<struct leslie_tag, float> leslie = {sndr, 0.3, limits(0, 1), step_size(0.01)};
+
+    DECL_REFLECTION(Props, model, drawbar2, click, leslie);
+  };
+
+  struct GossEngine : core::engine::SynthEngine<GossEngine> {
+    static constexpr auto name = "Goss";
+    using Audio = Audio;
+    using Screen = GossScreen;
+    using Props = Props;
+    GossEngine();
+
+    const std::unique_ptr<GossScreen> screen;
+    const std::unique_ptr<Audio> audio;
+
+    DECL_REFLECTION(GossEngine, props, voice_props_, envelope_props_);
+
+    void encoder(core::input::EncoderEvent e) override;
+
+    core::ui::ScreenAndInput envelope_screen() override 
+    {
+      return {env_screen_, envelope_props_};
+    }
+    core::ui::ScreenAndInput voices_screen() override
+    {
+      return {voice_screen_, voice_props_};
+    }
+
+  private:
+    GraphicsSndr graphics_sndr_;
+    AudioSndr audio_sndr_;
+    Sndr sndr_ = {graphics_sndr_, audio_sndr_};
+
+    Props props{&sndr_};
+
+    voices::SettingsProps<Sndr> voice_props_ {&sndr_};
+    voices::EnvelopeProps<Sndr> envelope_props_ {&sndr_};
+    voices::SettingsScreen voice_screen_;
+    voices::EnvelopeScreen env_screen_;
+
+
+    std::atomic<float> rotation_ = 0;
+  };
+} // namespace otto::engines::goss

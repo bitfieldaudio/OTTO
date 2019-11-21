@@ -21,7 +21,7 @@ namespace otto::core::engine {
     } props;
     NullEngine();
 
-    audio::ProcessData<2> process(audio::ProcessData<1> data) noexcept override;
+    audio::ProcessData<2> process(audio::ProcessData<1> data) noexcept;
   };
 
   template<>
@@ -32,7 +32,7 @@ namespace otto::core::engine {
       DECL_REFLECTION_EMPTY(Props);
     } props;
     NullEngine();
-    audio::ProcessData<0> process(audio::ProcessData<0> data) noexcept override;
+    audio::ProcessData<0> process(audio::ProcessData<0> data) noexcept;
   };
 
   template<>
@@ -43,28 +43,19 @@ namespace otto::core::engine {
     } props;
 
     NullEngine();
-    audio::ProcessData<1> process(audio::ProcessData<1> data) noexcept override;
-
-    voices::IVoiceManager& voice_mgr() override
-    {
-      return voice_mgr_;
-    }
+    audio::ProcessData<1> process(audio::ProcessData<1> data) noexcept;
 
   private:
-    struct Pre : voices::PreBase<Pre, Props> {
-      using voices::PreBase<Pre, Props>::PreBase;
-    };
-    struct Voice : voices::VoiceBase<Voice, Pre> {
-      using voices::VoiceBase<Voice, Pre>::VoiceBase;
-      float operator()() noexcept
-      {
-        return 0;
-      }
-    };
+    // struct Voice : voices::VoiceBase<Voice> {
+    //   using voices::VoiceBase<Voice>::VoiceBase;
+    //   float operator()() noexcept
+    //   {
+    //     return 0;
+    //   }
+    // };
 
-    struct Post : voices::PostBase<Post, Voice> {};
-    using VoiceManager = voices::VoiceManager<Post, 6>;
-    VoiceManager voice_mgr_ = {props};
+    // using VoiceManager = voices::VoiceManager<Voice, 6>;
+    // VoiceManager voice_mgr_;
   };
 
 } // namespace otto::core::engine

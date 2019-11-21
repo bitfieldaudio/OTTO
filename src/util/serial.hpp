@@ -16,7 +16,7 @@ namespace otto::util {
 
     /// @param vtime Read timeout in deciseconds
     /// @param vmin Minimum number of bytes to read before returning
-    Serial(std::string path, int vtime = 0, int vmin = 1);
+    Serial(std::string path, int vtime = 10, int vmin = 1);
 
     ~Serial() noexcept;
 

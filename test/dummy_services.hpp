@@ -9,6 +9,8 @@
 #include "services/state_manager.hpp"
 #include "services/ui_manager.hpp"
 
+#include <Gamma/Domain.h>
+
 namespace otto::services::test {
 
   struct DummyStateManager final : StateManager {
@@ -22,7 +24,7 @@ namespace otto::services::test {
     }
     void attach(std::string name, Loader load, Saver save) override
     {
-      //LOGI("DummyStateManager::attach({})", name);
+      // LOGI("DummyStateManager::attach({})", name);
     }
     void detach(std::string name) override
     {
@@ -73,6 +75,20 @@ namespace otto::services::test {
     DummyUIManager() = default;
 
     void main_ui_loop() override {}
+
+    void draw_frame(core::ui::vg::Canvas& ctx)
+    {
+      UIManager::draw_frame(ctx);
+    }
+    void display(core::ui::Screen& screen, core::input::InputHandler& input)
+    {
+      UIManager::display({screen, input});
+    }
+
+    static DummyUIManager& current()
+    {
+      return dynamic_cast<DummyUIManager&>(UIManager::current());
+    }
   };
 
   struct DummyController final : Controller {
@@ -85,21 +101,32 @@ namespace otto::services::test {
     void start() override {}
     core::audio::ProcessData<2> process(core::audio::ProcessData<1> external_in) override
     {
+      if (on_process) return on_process(external_in);
       OTTO_UNREACHABLE;
     }
+
+    static DummyEngineManager& current()
+    {
+      return dynamic_cast<DummyEngineManager&>(EngineManager::current());
+    }
+
+    std::function<core::audio::ProcessData<2>(core::audio::ProcessData<1> external_in)> on_process = nullptr;
   };
 
   struct DummyAudioManager final : AudioManager {
-    DummyAudioManager() {
+    DummyAudioManager()
+    {
       set_bs_sr(256, 44100);
     }
 
     core::audio::ProcessData<2> process()
     {
+      pre_process_tasks();
+
       int nframes = _buffer_size;
       static int r1 = 0;
       using namespace core::audio;
-      _buffer_number++;
+
       auto running = this->running() && Application::current().running();
       if (!running) {
         return {{AudioBufferHandle(nullptr, 0, r1), AudioBufferHandle(nullptr, 0, r1)}};
@@ -114,7 +141,8 @@ namespace otto::services::test {
 
       auto in_buf = Application::current().audio_manager->buffer_pool().allocate_clear();
       // steal the inner midi buffer
-      auto out = Application::current().engine_manager->process({in_buf, {std::move(midi_bufs.inner())}, core::clock::ClockRange()});
+      auto out = Application::current().engine_manager->process(
+        {in_buf, {std::move(midi_bufs.inner())}, core::clock::ClockRange()});
 
       // process_audio_output(out);
 
@@ -126,7 +154,8 @@ namespace otto::services::test {
       return out;
     }
 
-    void set_bs_sr(int buffer_size, int sample_rate) {
+    void set_bs_sr(int buffer_size, int sample_rate)
+    {
       _buffer_size = buffer_size;
       buffer_pool().set_buffer_size(buffer_size);
       gam::sampleRate(sample_rate);
@@ -136,34 +165,23 @@ namespace otto::services::test {
     {
       return dynamic_cast<DummyAudioManager&>(*Application::current().audio_manager);
     }
-
   };
 
-  Application make_dummy_application()
+  inline Application make_dummy_application()
   {
     return {
-      std::make_unique<LogManager>,
-      std::make_unique<DummyStateManager>,
-      std::make_unique<DummyPresetManager>,
-      std::make_unique<DummyAudioManager>,
-      ClockManager::create_default,
-      std::make_unique<DummyUIManager>,
-      std::make_unique<DummyController>,
-      std::make_unique<DummyEngineManager>,
+      std::make_unique<LogManager>,        std::make_unique<DummyStateManager>,  std::make_unique<DummyPresetManager>,
+      std::make_unique<DummyAudioManager>, ClockManager::create_default,         std::make_unique<DummyUIManager>,
+      std::make_unique<DummyController>,   std::make_unique<DummyEngineManager>,
     };
   }
 
-  Application make_dummy_application_default_engines()
+  inline Application make_dummy_application_default_engines()
   {
     return {
-      std::make_unique<LogManager>,
-      std::make_unique<DummyStateManager>,
-      std::make_unique<DummyPresetManager>,
-      std::make_unique<DummyAudioManager>,
-      ClockManager::create_default,
-      std::make_unique<DummyUIManager>,
-      std::make_unique<DummyController>,
-      EngineManager::create_default,
+      std::make_unique<LogManager>,        std::make_unique<DummyStateManager>, std::make_unique<DummyPresetManager>,
+      std::make_unique<DummyAudioManager>, ClockManager::create_default,        std::make_unique<DummyUIManager>,
+      std::make_unique<DummyController>,   EngineManager::create_default,
     };
   }
 } // namespace otto::services::test

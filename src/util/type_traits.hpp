@@ -1,8 +1,11 @@
 #pragma once
 
 #include <iterator>
+#include <tuple>
 #include <type_traits>
-#include "util/variant.hpp"
+#include <variant>
+
+#include "util/macros.hpp"
 
 namespace otto::util {
   /// Any arithmetic type except bool
@@ -10,8 +13,7 @@ namespace otto::util {
   struct is_number : std::false_type {};
 
   template<typename T>
-  struct is_number<T, std::enable_if_t<std::is_arithmetic_v<T> && !std::is_same_v<T, bool>>>
-    : std::true_type {};
+  struct is_number<T, std::enable_if_t<std::is_arithmetic_v<T> && !std::is_same_v<T, bool>>> : std::true_type {};
 
   template<typename T>
   constexpr inline bool is_number_v = is_number<T>::value;
@@ -51,10 +53,8 @@ namespace otto::util {
   struct is_equal_comparable : std::false_type {};
 
   template<typename T1, typename T2>
-  struct is_equal_comparable<T1,
-                             T2,
-                             std::void_t<decltype(std::declval<T1>() == std::declval<T2>())>>
-    : std::true_type {};
+  struct is_equal_comparable<T1, T2, std::void_t<decltype(std::declval<T1>() == std::declval<T2>())>> : std::true_type {
+  };
 
   template<typename T1>
   struct is_equal_comparable<T1, T1> : std::true_type {};
@@ -67,9 +67,7 @@ namespace otto::util {
   struct is_less_than_comparable : std::false_type {};
 
   template<typename T1, typename T2>
-  struct is_less_than_comparable<T1,
-                                 T2,
-                                 std::void_t<decltype(std::declval<T1>() < std::declval<T2>())>>
+  struct is_less_than_comparable<T1, T2, std::void_t<decltype(std::declval<T1>() < std::declval<T2>())>>
     : std::true_type {};
 
   template<typename T1>
@@ -83,9 +81,7 @@ namespace otto::util {
   struct is_greater_than_comparable : std::false_type {};
 
   template<typename T1, typename T2>
-  struct is_greater_than_comparable<T1,
-                                    T2,
-                                    std::void_t<decltype(std::declval<T1>() > std::declval<T2>())>>
+  struct is_greater_than_comparable<T1, T2, std::void_t<decltype(std::declval<T1>() > std::declval<T2>())>>
     : std::true_type {};
 
   template<typename T1>
@@ -158,11 +154,9 @@ namespace otto::util {
     type,
     category,
     std::enable_if_t<
-      std::is_same_v<std::remove_reference_t<iter>,
-                     std::iterator_traits<std::remove_reference_t<iter>>::value_type> &&
+      std::is_same_v<std::remove_reference_t<iter>, std::iterator_traits<std::remove_reference_t<iter>>::value_type> &&
       std::is_base_of_v<std::remove_reference_t<iter>,
-                        std::iterator_traits<std::remove_reference_t<iter>>::iterator_category>>>
-    : std::true_type {};
+                        std::iterator_traits<std::remove_reference_t<iter>>::iterator_category>>> : std::true_type {};
 
 
   /// `true` if `iter` is an iterator over `type`,
@@ -211,26 +205,6 @@ namespace otto::util {
   template<int N>
   using int_n_bytes_u_t = typename int_n_bytes<N>::utype;
 
-  // libc++ 5.0 doesnt have these
-
-  template<typename F, typename... Args>
-  using is_invocable = mpark::lib::is_invocable<F, Args...>;
-
-  template<typename F, typename... Args>
-  constexpr bool is_invocable_v = mpark::lib::is_invocable<F, Args...>::value;
-
-  template<typename R, typename F, typename... Args>
-  using is_invocable_r = mpark::lib::is_invocable_r<R, F, Args...>;
-
-  template<typename R, typename F, typename... Args>
-  constexpr bool is_invocable_r_v = mpark::lib::is_invocable_r<R, F, Args...>::value;
-
-  template<typename F, typename... Args>
-  using invoke_result = mpark::lib::invoke_result<F, Args...>;
-
-  template<typename F, typename... Args>
-  using invoke_result_t = mpark::lib::invoke_result_t<F, Args...>;
-
   /// Cast scoped enums to their underlying numeric type
   template<typename E>
   constexpr auto underlying(E e) noexcept
@@ -254,6 +228,32 @@ namespace otto::util {
         f(std::get<I>(t));
         for_each<I + 1, FuncT, Tp...>(t, f);
       }
+    }
+
+    namespace detail {
+
+      template<class X>
+      constexpr auto remove_last(X&& x)
+      {
+        return std::tuple<>();
+      }
+
+      template<class X, class... Xs>
+      constexpr auto remove_last(X&& x, Xs&&... xs);
+
+      constexpr auto tuple_remove_last = [](auto&&... args) { return detail::remove_last(FWD(args)...); };
+
+      template<class X, class... Xs>
+      constexpr auto remove_last(X&& x, Xs&&... xs)
+      {
+        return std::tuple_cat(std::tuple<X>(FWD(x)), std::apply(tuple_remove_last, std::tuple<Xs...>(FWD(xs)...)));
+      }
+    } // namespace detail
+
+    template<class T, class... Args>
+    constexpr auto remove_last(const std::tuple<T, Args...>& t)
+    {
+      return std::apply(detail::tuple_remove_last, t);
     }
 
   } // namespace tuple

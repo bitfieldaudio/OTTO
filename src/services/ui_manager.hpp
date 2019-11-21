@@ -1,19 +1,21 @@
 #pragma once
 
-#include <unordered_map>
 #include <chrono>
-
 #include <json.hpp>
 #include <type_safe/bounded_type.hpp>
 #include <type_safe/strong_typedef.hpp>
-
-#include "util/enum.hpp"
-#include "util/locked.hpp"
+#include <unordered_map>
 
 #include "core/props/props.hpp"
 #include "core/service.hpp"
 #include "core/ui/screen.hpp"
+#include "itc/action_queue.hpp"
 #include "services/application.hpp"
+#include "util/enum.hpp"
+#include "util/locked.hpp"
+
+#include "services/application.hpp"
+#include "services/controller.hpp"
 
 namespace otto::services {
 
@@ -76,7 +78,7 @@ namespace otto::services {
       DECL_REFLECTION(State, active_channel, current_screen, key_mode, octave);
     };
 
-    using ScreenSelector = std::function<core::ui::Screen&()>;
+    using ScreenSelector = std::function<core::ui::ScreenAndInput()>;
 
     UIManager();
 
@@ -95,6 +97,7 @@ namespace otto::services {
     void display(ScreenEnum screen);
 
     core::ui::Screen& current_screen();
+    core::input::InputHandler& current_input_handler();
 
     static UIManager& current() noexcept
     {
@@ -109,10 +112,22 @@ namespace otto::services {
       util::Signal<core::ui::vg::Canvas&> on_draw;
     } signals;
 
-    ch::Timeline& timeline()
+    ch::Timeline& timeline() noexcept
     {
       return timeline_;
     }
+
+    /// Push-only access to the action queue
+    ///
+    /// This queue is consumed at the start of each buffer.
+    itc::PushOnlyActionQueue& action_queue() noexcept
+    {
+      return action_queue_;
+    }
+
+    /// Make an {@ref ActionSender} for the audio action queue
+    template<typename... Recievers>
+    auto make_sndr(Recievers&...) noexcept;
 
   protected:
     /// Draws the current screen and overlays.
@@ -122,14 +137,16 @@ namespace otto::services {
     ///
     /// Calls @ref Screen::on_hide for the old screen, and then @ref Screen::on_show
     /// for the new screen
-    void display(core::ui::Screen& screen);
+    void display(core::ui::ScreenAndInput screen);
 
   private:
     struct EmptyScreen : core::ui::Screen {
       void draw(core::ui::vg::Canvas& ctx) {}
     } empty_screen;
+    core::input::InputHandler empty_input;
+    core::ui::ScreenAndInput empty_sai = {empty_screen, empty_input};
 
-    core::ui::Screen* cur_screen = &empty_screen;
+    core::ui::ScreenAndInput cur_sai = empty_sai;
 
     util::enum_map<ScreenEnum, ScreenSelector> screen_selectors_;
 
@@ -137,6 +154,15 @@ namespace otto::services {
 
     chrono::time_point last_frame = chrono::clock::now();
     ch::Timeline timeline_;
+    itc::ActionQueue action_queue_;
   };
+
+  // IMPLEMENTATION //
+
+  template<typename... Recievers>
+  auto UIManager::make_sndr(Recievers&... recievers) noexcept
+  {
+    return itc::ActionSender(action_queue_, recievers...);
+  }
 
 } // namespace otto::services

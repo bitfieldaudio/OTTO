@@ -7,8 +7,9 @@
 namespace otto::services {
 
   using namespace core;
-  using namespace ui;
-  using namespace ui::vg;
+  using namespace core::input;
+  using namespace core::ui;
+  using namespace core::ui::vg;
   using Screen = Settings::Screen;
   using Menu = Settings::Menu;
   // using Page = Menu::Page;
@@ -24,20 +25,20 @@ namespace otto::services {
   struct Settings::Screen : ui::Screen {
     Screen();
 
-    void encoder(EncoderEvent) override;
+    // void encoder(EncoderEvent) override;
     void draw(ui::vg::Canvas& ctx) override;
 
     void scroll_to(int i);
 
-    //Page& cur_page(int offset = 0);
+    // Page& cur_page(int offset = 0);
 
     ch::Output<float> scroll_position = 0;
   };
 
   Settings::Settings() : screen_(std::make_unique<Screen>())
   {
-    UIManager::current().register_screen_selector(
-      ScreenEnum::settings, [this]() -> auto& { return *screen_; });
+    // UIManager::current().register_screen_selector(
+    //   ScreenEnum::settings, [this]() -> auto& { return *screen_; });
 
     Controller::current().register_key_handler(Key::settings,
                                                [](auto) { UIManager::current().display(ScreenEnum::settings); });
@@ -72,13 +73,13 @@ namespace otto::services {
 
   // Page& Settings::Screen::cur_page(int offset)
   // {
-    // return *menus[util::math::modulo(int(scroll_position + offset), menus.size())];
+  // return *menus[util::math::modulo(int(scroll_position + offset), menus.size())];
   // }
 
-  void Settings::Screen::encoder(EncoderEvent evt)
-  {
-    // scroll_to(util::math::modulo(int(scroll_position + evt.steps), menus.size()));
-  }
+  // void Settings::Screen::encoder(EncoderEvent evt)
+  // {
+  //   // scroll_to(util::math::modulo(int(scroll_position + evt.steps), menus.size()));
+  // }
 
   void Settings::Screen::draw(Canvas& ctx)
   {

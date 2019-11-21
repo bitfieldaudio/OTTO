@@ -35,7 +35,6 @@ namespace otto::util {
     }
 
     std::string message;
-
   };
 
   /// A wrapper for throwing arbitrary data

@@ -14,7 +14,6 @@
 #include "core/audio/processor.hpp"
 #include "core/props/props.hpp"
 #include "core/ui/screen.hpp"
-#include "core/voices/voice_manager.hpp"
 
 namespace otto::core::engine {
 
@@ -37,8 +36,8 @@ namespace otto::core::engine {
   /// Abstract base class for Engines
   ///
   /// Use this when refering to a generic engine
-  struct IEngine {
-    IEngine(std::unique_ptr<ui::Screen> screen);
+  struct IEngine : core::input::InputHandler {
+    IEngine() noexcept;
 
     virtual ~IEngine() = default;
 
@@ -46,10 +45,6 @@ namespace otto::core::engine {
 
     /// The name of this module.
     virtual util::string_ref name() const noexcept = 0;
-
-    ui::Screen& screen() noexcept;
-
-    const ui::Screen& screen() const noexcept;
 
     /// The currently selected preset
     ///
@@ -95,7 +90,6 @@ namespace otto::core::engine {
     virtual void from_json(const nlohmann::json& j) = 0;
 
   private:
-    std::unique_ptr<ui::Screen> _screen;
     int _current_preset = -1;
   };
 
@@ -108,32 +102,21 @@ namespace otto::core::engine {
   template<>
   struct ITypedEngine<EngineType::synth> : IEngine {
     using IEngine::IEngine;
-    virtual audio::ProcessData<1> process(audio::ProcessData<1>) = 0;
-    virtual voices::IVoiceManager& voice_mgr() = 0;
-    virtual ui::Screen& envelope_screen()
-    {
-      return voice_mgr().envelope_screen();
-    }
-    virtual ui::Screen& voices_screen()
-    {
-      return voice_mgr().settings_screen();
-    }
+    virtual core::ui::ScreenAndInput envelope_screen() = 0;
+    virtual core::ui::ScreenAndInput voices_screen() = 0;
   };
 
   template<>
   struct ITypedEngine<EngineType::effect> : IEngine {
     using IEngine::IEngine;
-    virtual audio::ProcessData<2> process(audio::ProcessData<1>) = 0;
   };
   template<>
   struct ITypedEngine<EngineType::arpeggiator> : IEngine {
     using IEngine::IEngine;
-    virtual audio::ProcessData<0> process(audio::ProcessData<0>) = 0;
   };
   template<>
   struct ITypedEngine<EngineType::twist> : IEngine {
     using IEngine::IEngine;
-    virtual audio::ProcessData<0> process(audio::ProcessData<0>) = 0;
   };
 
   /// Get the name of an engine.

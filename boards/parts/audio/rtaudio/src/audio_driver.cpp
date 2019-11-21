@@ -136,7 +136,7 @@ namespace otto::services {
                                    double stream_time,
                                    RtAudioStreamStatus stream_status)
   {
-    _buffer_number++;
+    pre_process_tasks();
     auto running = this->running() && Application::current().running();
     if (!running) {
       return 0;

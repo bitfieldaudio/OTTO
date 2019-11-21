@@ -40,9 +40,7 @@ namespace otto::util {
     }
 
     /// Find/Replace
-    inline void string_replace(std::string& str,
-                               const std::string& oldStr,
-                               const std::string& newStr)
+    inline void string_replace(std::string& str, const std::string& oldStr, const std::string& newStr)
     {
       std::string::size_type pos = 0u;
       while ((pos = str.find(oldStr, pos)) != std::string::npos) {
@@ -68,8 +66,8 @@ namespace otto::util {
       template<class Func, int... ns>
       constexpr auto generate_array_impl(std::integer_sequence<int, ns...>&&, Func&& gen)
       {
-        return std::array<std::decay_t<decltype(std::invoke(gen, std::declval<int>()))>,
-                          sizeof...(ns)>{{std::invoke(gen, ns)...}};
+        return std::array<std::decay_t<decltype(std::invoke(gen, std::declval<int>()))>, sizeof...(ns)>{
+          {std::invoke(gen, ns)...}};
       }
     } // namespace detail
 
@@ -79,6 +77,19 @@ namespace otto::util {
       auto intseq = std::make_integer_sequence<int, n>();
       return detail::generate_array_impl(std::move(intseq), std::forward<Func>(gen));
     }
+
+    template<class Func>
+    constexpr auto generate_vector(int n, Func&& gen)
+    {
+      using value_type = std::decay_t<decltype(gen(n))>;
+      std::vector<value_type> res;
+      res.reserve(n);
+      std::generate_n(std::back_inserter(res), n, [&gen, i = 0]() mutable { return gen(i++); });
+      return res;
+    }
+
+    /// Identity function
+    constexpr auto identity = [](auto&& x) -> decltype(auto) { return FWD(x); };
 
     /// Erase elements from container
     ///
@@ -92,8 +103,7 @@ namespace otto::util {
     template<typename Container, typename T>
     auto erase(Container&& cont, T&& t)
     {
-      return cont.erase(std::remove(std::begin(cont), std::end(cont), std::forward<T>(t)),
-                        std::end(cont));
+      return cont.erase(std::remove(std::begin(cont), std::end(cont), std::forward<T>(t)), std::end(cont));
     }
 
     /// Erase elements from container by predicate
@@ -109,8 +119,7 @@ namespace otto::util {
     template<typename Container, typename Pred>
     auto erase_if(Container&& cont, Pred&& pred)
     {
-      return cont.erase(std::remove_if(std::begin(cont), std::end(cont), std::forward<Pred>(pred)),
-                        std::end(cont));
+      return cont.erase(std::remove_if(std::begin(cont), std::end(cont), std::forward<Pred>(pred)), std::end(cont));
     }
 
     /*
@@ -316,8 +325,7 @@ namespace otto::util {
     {
       using std::begin;
       using std::end;
-      return std::remove_copy(begin(cont), end(cont), std::forward<OutputIterator>(first),
-                              std::forward<T>(value));
+      return std::remove_copy(begin(cont), end(cont), std::forward<OutputIterator>(first), std::forward<T>(value));
     }
 
     /// Container based wrapper for \ref std::remove_copy_if()
@@ -345,8 +353,7 @@ namespace otto::util {
     {
       using std::begin;
       using std::end;
-      return std::replace(begin(cont), end(cont), std::forward<T>(old_value),
-                          std::forward<T2>(new_value));
+      return std::replace(begin(cont), end(cont), std::forward<T>(old_value), std::forward<T2>(new_value));
     }
 
     /// Container based wrapper for \ref std::replace_copy()
@@ -355,16 +362,13 @@ namespace otto::util {
     {
       using std::begin;
       using std::end;
-      return std::replace_copy(begin(cont), end(cont), std::forward<OutputIterator>(first),
-                               std::forward<T>(old_value), std::forward<T2>(old_value));
+      return std::replace_copy(begin(cont), end(cont), std::forward<OutputIterator>(first), std::forward<T>(old_value),
+                               std::forward<T2>(old_value));
     }
 
     /// Container based wrapper for \ref std::replace_copy_if()
     template<typename Cont, typename OutputIterator, typename UnaryPredicate, typename T>
-    decltype(auto) replace_copy_if(Cont&& cont,
-                                   OutputIterator&& first,
-                                   UnaryPredicate&& p,
-                                   T&& new_value)
+    decltype(auto) replace_copy_if(Cont&& cont, OutputIterator&& first, UnaryPredicate&& p, T&& new_value)
     {
       using std::begin;
       using std::end;
@@ -378,8 +382,7 @@ namespace otto::util {
     {
       using std::begin;
       using std::end;
-      return std::replace_if(begin(cont), end(cont), std::forward<UnaryPredicate>(p),
-                             std::forward<T>(new_value));
+      return std::replace_if(begin(cont), end(cont), std::forward<UnaryPredicate>(p), std::forward<T>(new_value));
     }
 
     /// Container based wrapper for \ref std::reverse()
@@ -434,8 +437,7 @@ namespace otto::util {
     {
       using std::begin;
       using std::end;
-      return std::search(begin(cont), end(cont), begin(cont2), end(cont2),
-                         std::forward<BinaryPredicate>(p));
+      return std::search(begin(cont), end(cont), begin(cont2), end(cont2), std::forward<BinaryPredicate>(p));
     }
 
     /// Container based wrapper for \ref std::search_n()
@@ -453,8 +455,7 @@ namespace otto::util {
     {
       using std::begin;
       using std::end;
-      return std::search_n(begin(cont), end(cont), count, std::forward<T>(value),
-                           std::forward<BinaryPredicate>(p));
+      return std::search_n(begin(cont), end(cont), count, std::forward<T>(value), std::forward<BinaryPredicate>(p));
     }
 
     /// Container based wrapper for \ref std::set_difference()
@@ -463,21 +464,17 @@ namespace otto::util {
     {
       using std::begin;
       using std::end;
-      return std::set_difference(begin(cont), end(cont), begin(cont2), end(cont2),
-                                 std::forward<OutputIterator>(first));
+      return std::set_difference(begin(cont), end(cont), begin(cont2), end(cont2), std::forward<OutputIterator>(first));
     }
 
     /// Container based wrapper for \ref std::set_difference()
     template<typename Cont, typename Cont2, typename OutputIterator, typename Compare>
-    decltype(auto) set_difference(Cont&& cont,
-                                  Cont2&& cont2,
-                                  OutputIterator&& first,
-                                  Compare&& comp)
+    decltype(auto) set_difference(Cont&& cont, Cont2&& cont2, OutputIterator&& first, Compare&& comp)
     {
       using std::begin;
       using std::end;
-      return std::set_difference(begin(cont), end(cont), begin(cont2), end(cont2),
-                                 std::forward<OutputIterator>(first), std::forward<Compare>(comp));
+      return std::set_difference(begin(cont), end(cont), begin(cont2), end(cont2), std::forward<OutputIterator>(first),
+                                 std::forward<Compare>(comp));
     }
 
     /// Container based wrapper for \ref std::set_intersection()
@@ -492,16 +489,12 @@ namespace otto::util {
 
     /// Container based wrapper for \ref std::set_intersection()
     template<typename Cont, typename Cont2, typename OutputIterator, typename Compare>
-    decltype(auto) set_intersection(Cont&& cont,
-                                    Cont2&& cont2,
-                                    OutputIterator&& first,
-                                    Compare&& comp)
+    decltype(auto) set_intersection(Cont&& cont, Cont2&& cont2, OutputIterator&& first, Compare&& comp)
     {
       using std::begin;
       using std::end;
       return std::set_intersection(begin(cont), end(cont), begin(cont2), end(cont2),
-                                   std::forward<OutputIterator>(first),
-                                   std::forward<Compare>(comp));
+                                   std::forward<OutputIterator>(first), std::forward<Compare>(comp));
     }
 
     /// Container based wrapper for \ref std::set_symmetric_difference()
@@ -516,16 +509,12 @@ namespace otto::util {
 
     /// Container based wrapper for \ref std::set_symmetric_difference()
     template<typename Cont, typename Cont2, typename OutputIterator, typename Compare>
-    decltype(auto) set_symmetric_difference(Cont&& cont,
-                                            Cont2&& cont2,
-                                            OutputIterator&& first,
-                                            Compare&& comp)
+    decltype(auto) set_symmetric_difference(Cont&& cont, Cont2&& cont2, OutputIterator&& first, Compare&& comp)
     {
       using std::begin;
       using std::end;
       return std::set_symmetric_difference(begin(cont), end(cont), begin(cont2), end(cont2),
-                                           std::forward<OutputIterator>(first),
-                                           std::forward<Compare>(comp));
+                                           std::forward<OutputIterator>(first), std::forward<Compare>(comp));
     }
 
     /// Container based wrapper for \ref std::set_union()
@@ -534,8 +523,7 @@ namespace otto::util {
     {
       using std::begin;
       using std::end;
-      return std::set_union(begin(cont), end(cont), begin(cont2), end(cont2),
-                            std::forward<OutputIterator>(first));
+      return std::set_union(begin(cont), end(cont), begin(cont2), end(cont2), std::forward<OutputIterator>(first));
     }
 
     /// Container based wrapper for \ref std::set_union()
@@ -544,8 +532,8 @@ namespace otto::util {
     {
       using std::begin;
       using std::end;
-      return std::set_union(begin(cont), end(cont), begin(cont2), end(cont2),
-                            std::forward<OutputIterator>(first), std::forward<Compare>(comp));
+      return std::set_union(begin(cont), end(cont), begin(cont2), end(cont2), std::forward<OutputIterator>(first),
+                            std::forward<Compare>(comp));
     }
 
     /// Container based wrapper for \ref std::shuffle()
@@ -654,8 +642,7 @@ namespace otto::util {
     {
       using std::begin;
       using std::end;
-      return std::transform(begin(cont), end(cont), begin(cont2), begin(cont3),
-                            std::forward<BinaryPredicate>(f));
+      return std::transform(begin(cont), end(cont), begin(cont2), begin(cont3), std::forward<BinaryPredicate>(f));
     }
 
     /// Container based wrapper for \ref std::transform()
@@ -681,20 +668,13 @@ namespace otto::util {
     }
 
     /// Container based wrapper for \ref std::transform()
-    template<typename Cont,
-             typename InputIterator,
-             typename OutputIterator,
-             typename BinaryOperation>
-    decltype(auto) transform(Cont&& cont,
-                             InputIterator&& firstIn,
-                             OutputIterator&& firstOut,
-                             BinaryOperation&& op)
+    template<typename Cont, typename InputIterator, typename OutputIterator, typename BinaryOperation>
+    decltype(auto) transform(Cont&& cont, InputIterator&& firstIn, OutputIterator&& firstOut, BinaryOperation&& op)
     {
       using std::begin;
       using std::end;
       return std::transform(begin(cont), end(cont), std::forward<InputIterator>(firstIn),
-                            std::forward<OutputIterator>(firstOut),
-                            std::forward<BinaryOperation>(op));
+                            std::forward<OutputIterator>(firstOut), std::forward<BinaryOperation>(op));
     }
 
     /// Container based wrapper for \ref std::unique()
@@ -749,8 +729,7 @@ namespace otto::util {
     {
       using std::begin;
       using std::end;
-      return std::upper_bound(begin(cont), end(cont), std::forward<T>(value),
-                              std::forward<Compare>(comp));
+      return std::upper_bound(begin(cont), end(cont), std::forward<T>(value), std::forward<Compare>(comp));
     }
 
     /// Container based wrapper for \ref std::copy()
@@ -768,8 +747,7 @@ namespace otto::util {
     {
       using std::begin;
       using std::end;
-      return std::copy_if(begin(cont), end(cont), std::forward<OutputIterator>(first),
-                          std::forward<UnaryPredicate>(p));
+      return std::copy_if(begin(cont), end(cont), std::forward<OutputIterator>(first), std::forward<UnaryPredicate>(p));
     }
 
     /// Container based wrapper for \ref std::fill()
@@ -877,6 +855,38 @@ namespace otto::util {
       using std::begin;
       using std::end;
       return std::equal(begin(cont), end(cont), begin(cont2), end(cont2));
+    }
+
+    template<typename Cont, typename Cont2, typename BinaryPredicate>
+    decltype(auto) equal(Cont&& cont, Cont2&& cont2, BinaryPredicate&& bp)
+    {
+      using std::begin;
+      using std::end;
+      return std::equal(begin(cont), end(cont), begin(cont2), end(cont2), std::forward<BinaryPredicate>(bp));
+    }
+
+    template<typename Cont, typename T>
+    decltype(auto) count(Cont&& cont, T&& obj)
+    {
+      using std::begin;
+      using std::end;
+      return std::count(begin(cont), end(cont), std::forward<T>(obj));
+    }
+
+    template<typename Cont, typename UnaryPredicate>
+    decltype(auto) count_if(Cont&& cont, UnaryPredicate&& p)
+    {
+      using std::begin;
+      using std::end;
+      return std::count_if(begin(cont), end(cont), std::forward<UnaryPredicate>(p));
+    }
+
+    template<typename Cont>
+    constexpr std::size_t count(Cont&& cont)
+    {
+      std::size_t n = 0;
+      for (auto&& el : cont) n++;
+      return n;
     }
 
     /// \}

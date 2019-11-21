@@ -3,6 +3,7 @@
 namespace otto::board {
 
   using namespace core::ui::vg;
+  using namespace core::input;
 
   using namespace services;
 

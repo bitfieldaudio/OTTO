@@ -37,7 +37,7 @@ namespace otto::core::props {
     static_assert(HookTag::is<common::hooks::on_set, typename decltype(props.pf1)::value_type>);
 
     static_assert(MixinImpl::has_handler_v<typename decltype(props.pf1)::mixin<has_limits>, common::hooks::on_set,
-                                           HookOrder::Early>);
+                                           HookOrder::Middle>);
 
     // REQUIRE(props.pf1 == 0.f);
     REQUIRE(props.pf2 == 1.f);
@@ -140,5 +140,30 @@ namespace otto::core::props {
     REQUIRE(ep == TestEnum::V3);
     ep.step(1);
     REQUIRE(ep == TestEnum::V0);
+
+    using namespace otto::test;
+
+    SECTION ("Floating point") {
+      Property<float, wrap> fprop = {0, limits(0, 1), step_size(0.1)};
+
+      REQUIRE(fprop == approx(0));
+      fprop.set(0.5);
+      REQUIRE(fprop == approx(0.5));
+      fprop.set(1);
+      REQUIRE(fprop == approx(0));
+      fprop.set(1.1);
+      REQUIRE(fprop == approx(0.1));
+      fprop.set(2);
+      REQUIRE(fprop == approx(0));
+      fprop.set(-1);
+      REQUIRE(fprop == approx(0));
+
+      fprop.set(0);
+      REQUIRE(fprop == approx(0));
+      fprop.step(-1);
+      REQUIRE(fprop == approx(0.9));
+      fprop.step(1);
+      REQUIRE(fprop == approx(0));
+    }
   }
 } // namespace otto::core::props

@@ -26,9 +26,9 @@ namespace otto::util {
 
     constexpr local_vector() : _data(), _size(0) {}
 
-    constexpr local_vector(std::initializer_list<value_type> il) : _size(il.size())
+    constexpr local_vector(std::initializer_list<value_type> il)
     {
-      for (T& v : il) {
+      for (const T& v : il) {
         push_back(v);
       }
     }
@@ -82,6 +82,26 @@ namespace otto::util {
     constexpr auto end() const noexcept
     {
       return data() + _size;
+    }
+
+    constexpr auto rbegin() noexcept
+    {
+      return std::make_reverse_iterator(end());
+    }
+
+    constexpr auto rbegin() const noexcept
+    {
+      return std::make_reverse_iterator(end());
+    }
+
+    constexpr auto rend() noexcept
+    {
+      return std::make_reverse_iterator(begin());
+    }
+
+    constexpr auto rend() const noexcept
+    {
+      return std::make_reverse_iterator(begin());
     }
 
     // Accessors
@@ -192,6 +212,30 @@ namespace otto::util {
       while (!empty()) {
         pop_back();
       }
+    }
+
+    constexpr iterator erase(iterator first, iterator last) noexcept
+    {
+      if (first == last) return first;
+      // Save return value
+      auto res = first;
+      // Move next values down
+      while (last != end()) {
+        *first = std::move(*last);
+        first++;
+        last++;
+      }
+      // Delete remaining entries
+      while (first != last) {
+        pop_back();
+        last--;
+      }
+      return res;
+    }
+
+    constexpr iterator erase(iterator it) noexcept
+    {
+      return erase(it, it+1);
     }
 
   private:

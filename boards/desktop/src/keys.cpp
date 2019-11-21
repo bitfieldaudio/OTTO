@@ -33,7 +33,8 @@ namespace otto::board::ui {
       }
     };
 
-    using OKey = services::Key;
+    using OKey = core::input::Key;
+    using Encoder = core::input::Encoder;
 
     auto send_key = [action](OKey k, bool repeat = false) {
       if (action == Action::press || (action == Action::repeat && repeat))
@@ -42,7 +43,7 @@ namespace otto::board::ui {
         Controller::current().keyrelease(k);
     };
 
-    auto send_encoder = [action](core::ui::Encoder rot, int n) {
+    auto send_encoder = [action](core::input::Encoder rot, int n) {
       if (action == Action::press || (action == Action::repeat)) Controller::current().encoder({rot, n});
     };
 
@@ -90,49 +91,49 @@ namespace otto::board::ui {
         if (ctrl)
           send_key(OKey::blue_click);
         else
-          send_encoder(core::ui::Encoder::blue, 1);
+          send_encoder(Encoder::blue, 1);
         break;
       case Key::a:
         if (ctrl)
           send_key(OKey::blue_click);
         else
-          send_encoder(core::ui::Encoder::blue, -1);
+          send_encoder(Encoder::blue, -1);
         break;
       case Key::w:
         if (ctrl)
           send_key(OKey::green_click);
         else
-          send_encoder(core::ui::Encoder::green, 1);
+          send_encoder(Encoder::green, 1);
         break;
       case Key::s:
         if (ctrl)
           send_key(OKey::green_click);
         else
-          send_encoder(core::ui::Encoder::green, -1);
+          send_encoder(Encoder::green, -1);
         break;
       case Key::e:
         if (ctrl)
           send_key(OKey::yellow_click);
         else
-          send_encoder(core::ui::Encoder::yellow, 1);
+          send_encoder(Encoder::yellow, 1);
         break;
       case Key::d:
         if (ctrl)
           send_key(OKey::yellow_click);
         else
-          send_encoder(core::ui::Encoder::yellow, -1);
+          send_encoder(Encoder::yellow, -1);
         break;
       case Key::r:
         if (ctrl)
           send_key(OKey::red_click);
         else
-          send_encoder(core::ui::Encoder::red, 1);
+          send_encoder(Encoder::red, 1);
         break;
       case Key::f:
         if (ctrl)
           send_key(OKey::red_click);
         else
-          send_encoder(core::ui::Encoder::red, -1);
+          send_encoder(Encoder::red, -1);
         break;
 
       // Engines

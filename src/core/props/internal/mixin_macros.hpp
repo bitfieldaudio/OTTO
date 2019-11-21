@@ -118,9 +118,9 @@
     }                                                                                              \
   }
 
-#define OTTO_PROPS_MIXIN_LEAF(TAG_NAME)                                                            \
+#define OTTO_PROPS_MIXIN_LEAF(...)                                                            \
   template<typename ValueType, typename TagList>                                                   \
-  struct otto::core::props::mixin::leaf<TAG_NAME, ValueType, TagList>                              \
+  struct otto::core::props::mixin::leaf<__VA_ARGS__, ValueType, TagList>                              \
     
 #define OTTO_PROPS_MIXIN__NAME_REQUIRES(...) REQUIRES
 #define OTTO_PROPS_MIXIN__ARGS_REQUIRES(...) __VA_ARGS__

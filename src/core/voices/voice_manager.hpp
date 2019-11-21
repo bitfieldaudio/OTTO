@@ -1,40 +1,28 @@
 #pragma once
 
+#include <Gamma/Envelope.h>
+
 #include <deque>
 #include <type_traits>
 #include <vector>
 
-#include <Gamma/Envelope.h>
-#include "util/dsp/ADSR_lite.hpp"
-#include "util/dsp/SegExpBypass.hpp"
-
+#include "core/audio/processor.hpp"
 #include "core/props/props.hpp"
 #include "core/ui/screen.hpp"
-
-#include "core/audio/processor.hpp"
-
+#include "itc/prop.hpp"
 #include "util/algorithm.hpp"
 #include "util/crtp.hpp"
-
+#include "util/dsp/ADSR_lite.hpp"
+#include "util/dsp/SegExpBypass.hpp"
 #include "util/dsp/dsp.hpp"
+#include "util/local_vector.hpp"
+#include "util/variant_w_base.hpp"
+#include "voice_props.hpp"
 
 namespace otto::core::voices {
 
   template<typename PostT, int NumberOfVoices>
   struct VoiceManager;
-
-  template<typename DerivedT, typename PropsT>
-  struct PreBase : util::crtp<DerivedT, PreBase<DerivedT, PropsT>> {
-    using Props = PropsT;
-
-    void operator()() noexcept {};
-
-    /// Constructor
-    PreBase(Props& p) noexcept;
-
-    /// The engine properties.
-    Props& props;
-  };
 
   /// Base class for voices
   ///
@@ -55,26 +43,24 @@ namespace otto::core::voices {
   ///
   /// @tparam Derived the derived voice type
   /// @tparam Props the Props type of the engine.
-  template<typename DerivedT, typename PreT>
-  struct VoiceBase : util::crtp<DerivedT, VoiceBase<DerivedT, PreT>> {
-    using Pre = PreT;
-
-    static_assert(std::is_base_of_v<PreBase<Pre, typename Pre::PreBase::Props>, Pre>,
-                  "VoiceBase<Derived, Pre>: Pre must inherit from PreBase<Pre, Props>");
-    static_assert(util::is_invocable_r_v<void, Pre>, "Pre must have a `void operator()()` defined");
-
-    using Props = typename Pre::PreBase::Props;
-
-    VoiceBase(Pre& p) noexcept;
+  template<typename DerivedT>
+  struct VoiceBase : util::crtp<DerivedT, VoiceBase<DerivedT>> {
+    VoiceBase() noexcept;
     VoiceBase(const VoiceBase&) = delete;
 
     /// Implement a handler for note on events
-    /// freq_target is the arget frequency. This allows frequency-specific
+    /// Main use for this is resetting the amp envelope
+    /// freq_target is the target frequency. This allows frequency-specific
     /// calculations to be done even when there is portamento.
-    virtual void on_note_on(float freq_target) noexcept;
+    /// During a note steal, if legato is engaged, this is not called
+    void on_note_on(float freq_target) noexcept;
 
     /// Implement a handler for note off events
-    virtual void on_note_off() noexcept;
+    /// Main use is to release the amp envelope.
+    void on_note_off() noexcept;
+
+    /// Get the midi note this voice is currently attached to
+    int midi_note() noexcept;
 
     /// Get the current frequency this voice should play
     /// Needs to be applied separately for each sample to handle for example glide.
@@ -88,7 +74,7 @@ namespace otto::core::voices {
     /// Get the aftertouch value
     float aftertouch() noexcept;
 
-    /// Get the volume (typically 1, but might be different for sub-octaves)
+    /// Get the volume (typically 1, but might be different for sub-octaves) or in unison mode
     float volume() noexcept;
 
     /// Is this voice currently triggered?
@@ -97,197 +83,111 @@ namespace otto::core::voices {
     /// release stage
     bool is_triggered() noexcept;
 
-    /// The current envelope value
-    float envelope() noexcept;
+    /// Calculate the next glide points, envelope etc..
+    /// 
+    /// @note Must be called before calling operator(). VoiceManager::operator() and ::process do this.
+    void next() noexcept;
 
-    Pre& pre;
-    Props& props;
+    void action(portamento_tag::action, float p) noexcept;
+
+    /// This should multiply by volume_. If you write you own, remember to do that!
+    core::audio::ProcessData<1> process(core::audio::ProcessData<1>) noexcept;
 
   private:
     template<typename T, int N>
     friend struct VoiceManager;
 
-    /// Triggers a new voice. midi_note gives base frequency, detune is multiplied on this.
-    /// Legato and jump control legato on envelope + on_note_on and portamento, respectively.
+    /// Triggers a new voice. 
+    /// 
+    /// @param midi_note base frequency.
+    /// @param detune is multiplied on frequency
+    /// @param legato controls legato on envelope + on_note_on. 
+    ///        If `true`, `on_note_on` will not be called.
+    /// @param jump controls legato for portamento
+    ///        If `true`, portamento will not be applied.
     void trigger(int midi_note, float detune, float velocity, bool legato, bool jump) noexcept;
 
     void release() noexcept;
-    void release_no_env() noexcept;
 
-    float frequency_ = 440.f;
+    /// Set the volume (typically 1 divided by number of voices, 
+    /// but might be different for sub-octaves or in unison mode)
+    void volume(float) noexcept;
+
+    float frequency_ = 1.f;
     float velocity_ = 1.f;
     float level = 1.f;
     float aftertouch_ = 0.f;
     int midi_note_ = 0;
+    bool triggered_ = false;
+    /// Typical value is vm.normal_volume, which is 1/number_of_voices
+    float volume_ = 1.f;
+    /// Points to the VoiceManager pitch_bend variable.
+    float* pitch_bend_ = nullptr;
 
-    gam::ADSR<> env_;
-    SegExpBypass<> glide_{0.f};
-  };
+    util::dsp::SegExpBypass<> glide_{1.f};
 
-  template<typename DerivedT, typename VoiceT>
-  struct PostBase : util::crtp<DerivedT, PostBase<DerivedT, VoiceT>> {
-    using Voice = VoiceT;
-    static_assert(std::is_base_of_v<VoiceBase<Voice, typename Voice::VoiceBase::Pre>, Voice>,
-                  "PostBase<Derived, Voice>: Voice must inherit from VoiceBase<Voice, Pre>");
-
-    static_assert(util::is_invocable_r_v<float, Voice>, "Voice must have a `float operator()()` defined");
-
-
-    using Pre = typename Voice::VoiceBase::Pre;
-    using Props = typename Voice::VoiceBase::Props;
-
-    float operator()(float f) noexcept
-    {
-      return f;
-    }
-
-    /// Constructor
-    PostBase(Pre& p) noexcept;
-
-    Pre& pre;
-    Props& props;
-  };
-
-  namespace details {
-    /// The way the voicemanager handles voices
-    BETTER_ENUM(PlayMode,
-                // Needs signed int for props::wrap to work
-                std::int8_t,
-                /// Multiple voices at once, each playing a note
-                poly,
-                /// Only a single voice in use, always playing the latest note
-                mono,
-                /// All voices in use, all playing the latest note (possibly with detune)
-                unison,
-                /// Plays a given interval
-                interval);
-
-    /// Convert a playmode to string
-    ///
-    /// @return an all-lowercase string corresponding to the enum name
-    std::string to_string(PlayMode) noexcept;
-    /// Returns the name of the corresponding extra setting
-    std::string aux_setting(PlayMode pm) noexcept;
-
-    struct EnvelopeProps {
-      props::Property<float> attack = {0, props::limits(0, 1), props::step_size(0.02)};
-      props::Property<float> decay = {0, props::limits(0, 1), props::step_size(0.02)};
-      props::Property<float> sustain = {1, props::limits(0, 1), props::step_size(0.02)};
-      props::Property<float> release = {0.2, props::limits(0, 1), props::step_size(0.02)};
-
-      DECL_REFLECTION(EnvelopeProps, attack, decay, sustain, release);
-    };
-
-    struct SettingsProps {
-      props::Property<PlayMode, props::wrap> play_mode = {PlayMode::poly};
-      props::Property<float> rand = {0, props::limits(0, 1), props::step_size(0.01)};
-      props::Property<float> sub = {1, props::limits(0.01, 1), props::step_size(0.01)};
-      props::Property<float> detune = {0, props::limits(0, 1), props::step_size(0.01)};
-      props::Property<int> interval = {0, props::limits(-12, 12)};
-
-      props::Property<float> portamento = {0, props::limits(0, 1), props::step_size(0.01)};
-      props::Property<bool> legato = {false};
-      props::Property<bool> retrig = {false};
-
-      props::Property<int, props::no_signal> octave = {0, props::limits(-2, 7)};
-      props::Property<int, props::no_signal> transpose = {0, props::limits(-12, 12)};
-
-      DECL_REFLECTION(SettingsProps,
-                      play_mode,
-                      rand,
-                      sub,
-                      detune,
-                      interval,
-                      portamento,
-                      legato,
-                      retrig,
-                      octave,
-                      transpose);
-    };
-
-    std::unique_ptr<ui::Screen> make_envelope_screen(EnvelopeProps& props);
-    std::unique_ptr<ui::Screen> make_settings_screen(SettingsProps& props);
-
-  } // namespace details
-
-  // -- VOICE MANAGER INTERFACE -- //
-
-  struct IVoiceManager {
-    using PlayMode = details::PlayMode;
-    using EnvelopeProps = details::EnvelopeProps;
-    using SettingsProps = details::SettingsProps;
-
-    virtual ~IVoiceManager() = default;
-    virtual int voice_count() noexcept = 0;
-
-    virtual ui::Screen& envelope_screen() noexcept = 0;
-    virtual ui::Screen& settings_screen() noexcept = 0;
+    // Note that the voicemanager does not contain the envelope of the voice by default
   };
 
   // -- VOICE MANAGER -- //
 
-  template<typename PostT, int NumberOfVoices>
-  struct VoiceManager : IVoiceManager {
-    /// PostProcessor
-    using Post = PostT;
+  template<typename VoiceT, int NumberOfVoices>
+  struct VoiceManager {
+    using Voice = VoiceT;
 
-    static_assert(std::is_base_of_v<PostBase<Post, typename Post::PostBase::Voice>, Post>,
-                  "PostBase<Derived, Post>: Post must inherit from PostBase<Post, Voice>");
-    static_assert(util::is_invocable_r_v<float, Post, float>, "Post must have a `float operator()(float)` defined");
-
-    using Voice = typename Post::PostBase::Voice;
-    using Props = typename Post::PostBase::Props;
-    using Pre = typename Post::PostBase::Pre;
+    static_assert(std::is_base_of_v<VoiceBase<Voice>, Voice>,
+                  "VoiceManager<Voice, N>: Voice must derive from VoiceBase<Voice>");
 
     /// The number of voices
     static constexpr int voice_count_v = NumberOfVoices;
     static constexpr int sub_voice_count_v = 2;
-
-    int voice_count() noexcept override
-    {
-      return NumberOfVoices;
-    }
-
-    // Assert requirements met
-    static_assert(std::is_base_of_v<VoiceBase<Voice, Pre>, Voice>,
-                  "VoiceManager<Voice, N>: Voice must derive from VoiceBase<Voice, Pre>");
-
-    using PlayMode = details::PlayMode;
-    using EnvelopeProps = details::EnvelopeProps;
-    using SettingsProps = details::SettingsProps;
+    /// Voice range is approximately -1 to 1. This ensures the synth range is
+    /// approximately the same.
+    static constexpr float normal_volume = 1.f/(float)NumberOfVoices;
 
     /// Constructor
-    VoiceManager(Props& props) noexcept;
+    ///
+    /// Any parameters passed to this will be passed to the constructors of the voices
+    template<typename... Args, typename = std::enable_if_t<std::is_constructible_v<Voice, Args...>>>
+    VoiceManager(Args&&... args) noexcept;
 
-    ui::Screen& envelope_screen() noexcept override;
-    ui::Screen& settings_screen() noexcept override;
-
-    /// Process audio, applying Preprocessing, each voice and then postprocessing
-    float operator()() noexcept;
-
-    // Voice& handle_midi_on(const midi::NoteOnEvent&) noexcept;
-    // Voice* handle_midi_off(const midi::NoteOffEvent&) noexcept;
-    void handle_pitch_bend(const midi::PitchBendEvent&) noexcept;
-    void handle_control_change(const midi::ControlChangeEvent&) noexcept;
 
     /// Process audio, applying Preprocessing, each voice and then postprocessing
     audio::ProcessData<1> process(audio::ProcessData<1> data) noexcept;
 
+    /// Process audio, applying Preprocessing, each voice and then postprocessing.
+    /// Individual volume of voices are applied here.
+    float operator()() noexcept;
+
+    void handle_midi(const midi::AnyMidiEvent&) noexcept;
+    void handle_pitch_bend(const midi::PitchBendEvent&) noexcept;
+    void handle_control_change(const midi::ControlChangeEvent&) noexcept;
+
     /// Return list of voices
     std::array<Voice, voice_count_v>& voices();
 
-    DECL_REFLECTION(VoiceManager,
-                    ("envelope", &VoiceManager::envelope_props),
-                    ("voice_settings", &VoiceManager::settings_props));
+    // -- PROPERTY SETTERS -- //
 
-  private:
-    std::vector<float> detune_values;
-    std::vector<float> rand_values;
-    // Random values. 100% random, organic and fresh. Works for up to 12 voices.
-    std::array<float, 12> rand_max = {0.94, 0.999, 1.03, 1.06, 0.92, 1.01,
-                                      1.02, 0.98, 1.0, 1.09, 0.94, 1.05};
+    void action(play_mode_tag::action, PlayMode) noexcept;
+    void action(legato_tag::action, bool) noexcept;
+    void action(retrig_tag::action, bool) noexcept;
+    void action(rand_tag::action, float rand) noexcept;
+    void action(sub_tag::action, float sub) noexcept;
+    void action(detune_tag::action, float detune) noexcept;
+    void action(interval_tag::action, int interval) noexcept;
 
-    struct NoteVoicePair {
+    /// If avaliable, call the action recievers in the voices for all other actions.
+    template<typename Action, typename... Args>
+    auto action(Action a, Args&&... args) noexcept -> std::enable_if_t<itc::ActionReciever::is<Voice, Action>, void>
+    {
+      fwd_action_to_voices(a, args...);
+    }
+
+    // -- GETTERS -- //
+
+    PlayMode play_mode() noexcept;
+
+    struct NoteStackEntry {
       /// Which physical key is activating this note
       int key = 0;
       /// Which note this voice is playing.
@@ -311,13 +211,10 @@ namespace otto::core::voices {
     };
 
     /// Voice allocators - Corresponds to different playmodes
-    struct IVoiceAllocator {
-      // Owner
-      VoiceManager& vm;
-
-      IVoiceAllocator(VoiceManager& vm_in);
-
-      virtual ~IVoiceAllocator() = 0;
+    struct VoiceAllocatorBase {
+      // Voice volumes are set in individual constructors
+      VoiceAllocatorBase(VoiceManager& vm_in) noexcept;
+      ~VoiceAllocatorBase() noexcept;
 
       virtual void handle_midi_on(const midi::NoteOnEvent&) noexcept = 0;
       /// Midi off is common to all
@@ -325,50 +222,84 @@ namespace otto::core::voices {
 
       Voice& get_voice(int key, int note) noexcept;
       void stop_voice(int key) noexcept;
+
+      /// Owner
+      VoiceManager& vm;
     };
 
-    struct PolyAllocator final : IVoiceAllocator {
-      PolyAllocator(VoiceManager& vm_in) : IVoiceAllocator(vm_in) {};
+    struct PolyAllocator final : VoiceAllocatorBase {
+      float rand_ = 0;
+
+      PolyAllocator(VoiceManager& vm_in);
+      
       void handle_midi_on(const midi::NoteOnEvent&) noexcept override;
+      void set_rand(float rand) noexcept;
     };
 
-    struct MonoAllocator final : IVoiceAllocator {
+    struct IntervalAllocator final : VoiceAllocatorBase {
+      int interval_ = 0;
+
+      IntervalAllocator(VoiceManager& vm_in);
+      void handle_midi_on(const midi::NoteOnEvent&) noexcept override;
+      void set_interval(float interval) noexcept;
+    };
+
+    struct MonoAllocator final : VoiceAllocatorBase {
+      constexpr static int num_voices_used = 3;
+
       MonoAllocator(VoiceManager& vm_in);
-      ~MonoAllocator();
       void handle_midi_on(const midi::NoteOnEvent&) noexcept override;
+      void set_sub(float sub) noexcept;
     };
 
-    struct UnisonAllocator final : IVoiceAllocator {
+    struct UnisonAllocator final : VoiceAllocatorBase {
+      /// Largest odd number less or equal to number of voices
+      constexpr static int num_voices_used = voice_count_v - (voice_count_v + 1) % 2;
+      float detune_ = 0;
+
       UnisonAllocator(VoiceManager& vm_in);
-      ~UnisonAllocator();
+
       void handle_midi_on(const midi::NoteOnEvent&) noexcept override;
+      void set_detune(float detune) noexcept;
     };
 
-    struct IntervalAllocator final : IVoiceAllocator {
-      IntervalAllocator(VoiceManager& vm_in) : IVoiceAllocator(vm_in) {}
-      void handle_midi_on(const midi::NoteOnEvent&) noexcept override;
-    };
+    // -- PRIVATE FIELDS -- //
+  private:
+    template<typename Action, typename... Args>
+    void fwd_action_to_voices(Action a, Args&&... args)
+    {
+      if constexpr (itc::ActionReciever::is<Voice, Action>) {
+        for (auto& v : voices_) {
+          v.action(a, args...);
+        }
+      }
+    }
 
+    void set_playmode(PlayMode pm) noexcept;
+
+    util::local_vector<float, 7> detune_values;
+    util::local_vector<float, voice_count_v> rand_values;
+    // Random values. 100% random, organic and fresh. Works for up to 12 voices.
+    static inline std::array<float, 12> rand_max = {0.94, 0.999, 1.03, 1.06, 0.92, 1.01,
+                                                    1.02, 0.98,  1.0,  1.09, 0.94, 1.05};
+
+    bool legato_ = false;
+    bool retrig_ = false;
 
     float pitch_bend_ = 1;
+    bool sustain_ = false;
 
-    props::Property<bool> sustain_ = {false};
+    // The actual voices
+    std::array<Voice, voice_count_v> voices_;
+    // Contains the currently untriggered voices
+    util::local_vector<Voice*, voice_count_v> free_voices;
+    // Contains informatins about the currently held keys/playing voices.
+    // One key pushes more than one entry in other playmodes than poly 
+    util::local_vector<NoteStackEntry, 12 * voice_count_v> note_stack;
+    
 
-    std::deque<Voice*> free_voices;
-    std::deque<NoteVoicePair> note_stack;
-
-    Props& props;
-    Pre pre = {props};
-    std::array<Voice, voice_count_v> voices_ = util::generate_array<voice_count_v>([this](auto) { return Voice{pre}; });
-    Post post = {pre};
-
-    EnvelopeProps envelope_props;
-    SettingsProps settings_props;
-
-    std::unique_ptr<IVoiceAllocator> voice_allocator;
-
-    std::unique_ptr<ui::Screen> envelope_screen_ = details::make_envelope_screen(envelope_props);
-    std::unique_ptr<ui::Screen> settings_screen_ = details::make_settings_screen(settings_props);
+    util::variant_w_base<VoiceAllocatorBase, PolyAllocator, MonoAllocator, UnisonAllocator, IntervalAllocator>
+      voice_allocator = {std::in_place_type<PolyAllocator>, *this};
 
   }; // namespace otto::core::voices
 

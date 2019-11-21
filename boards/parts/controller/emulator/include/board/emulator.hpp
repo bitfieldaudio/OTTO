@@ -28,19 +28,19 @@ namespace otto::board {
   private:
 
     template<typename LEDFunc, typename BTNFunc>
-    void draw_btn(core::ui::vg::Canvas& ctx, services::Key key, LEDFunc&& lf, BTNFunc&& bf);
+    void draw_btn(core::ui::vg::Canvas& ctx, core::input::Key key, LEDFunc&& lf, BTNFunc&& bf);
 
     template<typename BTNFunc, typename LEDFunc>
-    void draw_s_btn(core::ui::vg::Canvas& ctx, services::Key key, BTNFunc&& bf, LEDFunc&& lf);
+    void draw_s_btn(core::ui::vg::Canvas& ctx, core::input::Key key, BTNFunc&& bf, LEDFunc&& lf);
 
     template<typename BTNFunc, typename LEDFunc>
-    void draw_c_btn(core::ui::vg::Canvas& ctx, services::Key key, BTNFunc&& bf, LEDFunc&& lf);
+    void draw_c_btn(core::ui::vg::Canvas& ctx, core::input::Key key, BTNFunc&& bf, LEDFunc&& lf);
 
     void draw_func_btns(core::ui::vg::Canvas& ctx);
     void draw_sc_btns(core::ui::vg::Canvas& ctx);
     void draw_encoders(core::ui::vg::Canvas& ctx);
 
-    util::enum_map<services::Key, services::LEDColor> _led_colors = {};
+    util::enum_map<core::input::Key, services::LEDColor> _led_colors = {};
   };
 
 }

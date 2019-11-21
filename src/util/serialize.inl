@@ -7,9 +7,9 @@ namespace otto::util {
   /////////////////// SERIALIZATION
 
   template<typename Class, typename>
-  json serialize(const Class& obj)
+  nlohmann::json serialize(const Class& obj)
   {
-    json value;
+    nlohmann::json value;
     reflect::for_all_members<Class>([&obj, &value](auto& member) {
       auto& valueName = value[std::string(member.get_name())];
       valueName = serialize(member.get(obj));
@@ -18,22 +18,22 @@ namespace otto::util {
   }
 
   template<typename Class, typename, typename>
-  json serialize(const Class& obj)
+  nlohmann::json serialize(const Class& obj)
   {
     return serialize_basic(obj);
   }
 
   template<typename Class>
-  json serialize_basic(const Class& obj)
+  nlohmann::json serialize_basic(const Class& obj)
   {
-    return json(obj);
+    return nlohmann::json(obj);
   }
 
   // specialization for std::array
   template<typename T, std::size_t N>
-  json serialize_basic(const std::array<T, N>& obj)
+  nlohmann::json serialize_basic(const std::array<T, N>& obj)
   {
-    json value;
+    nlohmann::json value;
     int i = 0;
     for (auto& elem : obj) {
       value[i] = serialize(elem);
@@ -44,9 +44,9 @@ namespace otto::util {
 
   // specialization for std::vector
   template<typename T>
-  json serialize_basic(const std::vector<T>& obj)
+  nlohmann::json serialize_basic(const std::vector<T>& obj)
   {
-    json value;
+    nlohmann::json value;
     int i = 0;
     for (auto& elem : obj) {
       value[i] = serialize(elem);
@@ -57,9 +57,9 @@ namespace otto::util {
 
   // specialization for std::unordered_map
   template<typename K, typename V>
-  json serialize_basic(const std::unordered_map<K, V>& obj)
+  nlohmann::json serialize_basic(const std::unordered_map<K, V>& obj)
   {
-    json value;
+    nlohmann::json value;
     for (auto& pair : obj) {
       value.emplace(to_string(pair.first), serialize(pair.second));
     }
@@ -69,7 +69,7 @@ namespace otto::util {
   /////////////////// DESERIALIZATION
 
   template<typename Class>
-  Class deserialize(const json& obj)
+  Class deserialize(const nlohmann::json& obj)
   {
     Class c;
     deserialize(c, obj);
@@ -77,12 +77,12 @@ namespace otto::util {
   }
 
   template<typename Class, typename>
-  void deserialize(Class& obj, const json& object)
+  void deserialize(Class& obj, const nlohmann::json& object)
   {
     if (object.is_object()) {
       reflect::for_all_members<Class>([&obj, &object](auto& member) {
         auto iter = object.find(std::string(member.get_name()));
-        if (iter == object.end()) throw util::exception("Error: Member '{}' not found in json", member.get_name());
+        if (iter == object.end()) throw util::exception("Error: Member '{}' not found in nlohmann::json", member.get_name());
         auto& objName = *iter;
         if (!objName.is_null()) {
           using MemberT = reflect::get_member_type<decltype(member)>;
@@ -106,18 +106,18 @@ namespace otto::util {
         }
       });
     } else {
-      throw util::exception("Error: can't deserialize from Json::json to {}. Json: {}", reflect::get_name<Class>(), object);
+      throw util::exception("Error: can't deserialize from Json::nlohmann::json to {}. Json: {}", reflect::get_name<Class>(), object);
     }
   }
 
   template<typename Class, typename, typename>
-  void deserialize(Class& obj, const json& object)
+  void deserialize(Class& obj, const nlohmann::json& object)
   {
     obj = object.get<Class>();
   }
 
   template<typename T, std::size_t N>
-  void deserialize(std::array<T, N>& obj, const json& object)
+  void deserialize(std::array<T, N>& obj, const nlohmann::json& object)
   {
     std::size_t i = 0;
     for (auto& elem : object) {
@@ -129,7 +129,7 @@ namespace otto::util {
 
   // specialization for std::vector
   template<typename T>
-  void deserialize(std::vector<T>& obj, const json& object)
+  void deserialize(std::vector<T>& obj, const nlohmann::json& object)
   {
     obj.reserve(object.size()); // vector.resize() works only for default constructible types
     for (auto& elem : object) {
@@ -139,7 +139,7 @@ namespace otto::util {
 
   // specialization for std::unodered_map
   template<typename K, typename V>
-  void deserialize(std::unordered_map<K, V>& obj, const json& object)
+  void deserialize(std::unordered_map<K, V>& obj, const nlohmann::json& object)
   {
     for (auto it = object.begin(); it != object.end(); ++it) {
       obj.emplace(from_string<K>(it.key()), it.value());
@@ -149,12 +149,12 @@ namespace otto::util {
 } // namespace otto::util
 
 template<typename T>
-void to_json(json& j, T&& t) {
+void to_json(nlohmann::json& j, T&& t) {
   j = serialize(std::forward<T>(t));
 }
 
 template<typename T>
-void from_json(const json& j, T& t) {
+void from_json(const nlohmann::json& j, T& t) {
   deserialize(t, j);
 }
 

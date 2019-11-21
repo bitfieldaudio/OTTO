@@ -24,48 +24,45 @@ namespace otto::test {
     ch::Output<int> start = 0;
     ch::Output<int> length = file_len - 1;
 
+    ch::Time duration = 1000;
+
     ch::Timeline timeline;
-    timeline.apply(&start).rampTo(file_len - 1, 600).finishFn([& m = *start.inputPtr()] {
-      m.setPlaybackSpeed(m.getPlaybackSpeed() * -1);
-      m.resetTime();
-    });
-    timeline.apply(&length).rampTo(0, 400).finishFn([& m = *length.inputPtr()] {
-      m.setPlaybackSpeed(m.getPlaybackSpeed() * -1);
-      m.resetTime();
-    });
+    //timeline.apply(&start).rampTo(length, duration, ch::EaseOutQuad())
+    //  .then<ch::RampTo>(0, duration)
+     // .then<ch::Hold>(0, 2 * duration);
+    timeline.apply(&length).holdUntil(2 * duration)
+      .then<ch::RampTo>(0, duration, ch::EaseOutExpo())
+      .then<ch::RampTo>(file_len - 1, duration).then<ch::Hold>(duration, duration);
+    //timeline.apply(&start).rampTo(file_len - 1, duration).finishFn([& m = *start.inputPtr()] {
+    //  m.setPlaybackSpeed(m.getPlaybackSpeed() * -1);
+    //  m.resetTime();
+    //});
+    //timeline.apply(&length).rampTo(0, duration).finishFn([& m = *length.inputPtr()] {
+    //  m.setPlaybackSpeed(m.getPlaybackSpeed() * -1);
+    //  m.resetTime();
+    //});
 
     auto view = wf.view(300, start, start + length);
     test::show_gui([&](Canvas& ctx) {
       timeline.step(1);
-      wf.view(view, std::max(0.f, start - 0.2f * std::min(length(), file_len - start)),
-              std::min(start + length * 1.2f, float(file_len)));
+      wf.view(view, start, start + length);
 
-      float x = 10;
-      ctx.beginPath();
+      float y_bot = height - 70;
+      float x_start = 10;
+      float x = x_start;
+      float y_scale = 40;
       auto iter = view.begin();
-      ctx.moveTo(x, 200 - *iter * 50);
-      auto b = view.iter_for_time(start);
-      for (; iter < b; iter++) {
-        ctx.lineTo(x, 200 - *iter * 50);
-        x += 1;
-      }
-      ctx.stroke(Colors::Gray);
-
-      ctx.beginPath();
-      ctx.moveTo(x, 200 - *iter * 50);
-      for (auto e = view.iter_for_time(std::min(start + length, file_len)); iter < e; iter++) {
-        ctx.lineTo(x, 200 - *iter * 50);
-        x += 1;
-      }
-      ctx.stroke(Colors::White);
-
-      ctx.beginPath();
-      ctx.moveTo(x, 200 - *iter * 50);
-      for (; iter < view.end(); iter++) {
-        ctx.lineTo(x, 200 - *iter * 50);
-        x += 1;
-      }
-      ctx.stroke(Colors::Gray);
+      ctx.group([&] {
+        ctx.beginPath();
+        ctx.moveTo(x, y_bot - *iter * y_scale);
+        for (; iter < view.end(); iter++) {
+          ctx.lineTo(x, y_bot - *iter * y_scale);
+          x += 1;
+        }
+        ctx.lineTo(x, y_bot);
+        ctx.lineTo(x_start, y_bot);
+        ctx.fill(Colors::White);
+      });
     });
   }
 

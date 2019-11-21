@@ -7,17 +7,18 @@
 
 namespace otto::core::audio {
 
-  constexpr int bin_size = 30;
-
   Waveform::Waveform(gsl::span<float> data, int min_points)
     : input_data_(data),
       max_res_(std::floor(std::log(data.size() / min_points))),
-      // points_(data.size() * (2 - std::pow(2, -max_res_)))
-      points_(data.size())
+      points_(data.size() * (2 - std::pow(2, -max_res_)))
   {
-    for (int i = 0; i < max_res_; i++) {
+    DLOGI("Maximum resolution is = {}", max_res_);
+    DLOGI("File size: {}", input_data_.size());
+    for (int i = 0; i <= max_res_; i++) {
+      DLOGI("Generating res = {}", i);
+      generate_res(i);
     }
-    generate_res(0);
+    DLOGI("Done generating");
   }
 
   gsl::span<float> Waveform::at_resolution(int res)
@@ -27,54 +28,68 @@ namespace otto::core::audio {
     // return {points_.data() + start, length};
 
     // return {points_.data() + input_data_.size() * res, input_data_.size()};
-    return {points_.data(), std::ceil(float(input_data_.size()) / float(bin_size))};
+    //return {points_.data(), std::ceil(float(input_data_.size()) / float(bin_size))};
+
+    //NOTE: I have changed ceil to floor, to 
+    // Calculate start-point in points_.
+    // The result of the sum over: input_data_.size()*2^(-n), for n=0 to n=res
+    int start = std::ceil(input_data_.size() * (2 - std::pow(2.f, 1-float(res))));
+    // Calculate number of points at a certain resolution
+    int length = std::ceil(input_data_.size() * std::pow(2.f, -float(res)));
+    DLOGI("start: {}, length: {}", start, length);
+    return {points_.data() + start, length};
   }
 
-  void Waveform::generate_res(int res)
-  {
+  void Waveform::generate_res(int res) {
+    // Get the span in which to put the points
     auto data = at_resolution(res);
-
-    // EnvelopFollower
-    // float f = 0;
-    // for (auto&& [src, dst] : util::zip(input_data_, data)) {
-    //   float f0 = std::abs(src);
-    //   if (f0 > f) {
-    //     f = f0;
-    //   } else {
-    //     f -= (f - f0) / (10 * float(std::pow(2, res * res)));
-    //   }
-    //   dst = f;
-    // }
-
-    // 1. abs
-    // 2. bin
-    // 3. all elements in bin = max of bin
-    auto src = input_data_.cbegin();
     auto dst = data.begin();
-    int rem = input_data_.size();
-    while (rem > 0) {
-      auto len = std::min(bin_size, rem);
-      float max = 0.f;
-      for (int i = 0; i < len; i++) {
-        auto f = std::abs(src[i]);
-        max = std::max(f, max);
+
+    if (res == 0) {
+      // Res=0 is special.
+      util::transform(input_data_, dst, [](float f){return std::abs(f);} );
+
+    } else {
+      // For all other resolutions, the source of data is the previous resolution
+      auto src_data = at_resolution(res - 1);
+      auto src = src_data.cbegin();
+      // Pick out every second point
+      *dst = *src;
+      while (src < src_data.cend()-2) {
+        dst++;
+        src += 2;
+        *dst = *src;
       }
-      *dst = max;
-      rem -= len;
-      src += len;
-      dst++;
+      DLOGI("Done.");
+      // Low-pass filter the result.
+      // Do it forwards and backwards to get zero phase twists.
+      
+      for (auto &f : data) {
+        f = lpf(f);
+      }
+      lpf.zero();
+      for (auto f = data.rbegin(); f != data.rend(); ++f) {
+        *f = lpf(*f);
+      }
+      
+
     }
-    // 4. lpf
-    // gam::OnePole<> lpf = {10};
-    // for (auto& f : data) {
-    //   f = lpf(f);
-    // }
+    
   }
 
   int Waveform::res_for_duration(int dur, int nPoints) const
   {
     if (dur == 0) return 0;
-    return std::floor(std::log(dur / float(nPoints)));
+    // The max is to be safe against when dur < nPoints
+    return std::max(std::floor(std::log(dur / float(nPoints))),0.f);
+
+    // Highest integer n such that
+    //dur > nPoints * n
+    // Then
+    //res = n-1
+    // But 0 =< res
+    //return std::max(int(std::floor(dur / float(nPoints)) - 1), 0);
+
   }
 
 
@@ -89,27 +104,45 @@ namespace otto::core::audio {
       util::fill(v.points_, 0);
       return v;
     }
+    DLOGI("Calculating view");
+    // nPoints is the number of points we want, e.g. 260 or 300
     auto nPoints = v.size();
     v.points_.clear();
+
     OTTO_ASSERT(last >= first);
+
     int res = res_for_duration(last - first, nPoints);
     auto data = at_resolution(res);
-    v.start_ = first;
-    v.step_ = (last - first) / float(nPoints);
-    float idx = 0;
+
+    // nDataPoints is how many samples there are in the resolution
+    // we have been given. This might be every fourth sample in the original audiofile
+    auto nDataPoints = data.size();
+
+    v.start_ = float(first) / float(input_data_.size()) * nDataPoints;
+    v.step_ = (last - first) / float(input_data_.size()) * nDataPoints / float(nPoints);
+
+    DLOGI("Calculating view now: {}", res);
     for (int i = 0; i < nPoints; i++) {
       // float max = data[std::min(int(first + idx), last) / bin_size];
       // for (int j = 1; j < v.step_; j++) {
       //   max = std::max(data[std::min(int(first + idx), last) / bin_size], max);
       // }
       // v.points_.push_back(max);
-      float sum = data[std::min(int(first + idx), last) / bin_size];
-      for (int j = 1; j < v.step_; j++) {
-        sum += data[std::min(int(first + idx), last) / bin_size];
-      }
-      v.points_.push_back(sum / std::ceil(v.step_));
-      idx += v.step_;
+      //TODO: Benchmark difference between start, mean, max.
+      //float sum = data[std::min(int(first + idx), last)];
+      //for (int j = 1; j < v.step_; j++) {
+      //  sum += data[std::min(int(first + idx + j), last)];
+        //DLOGI("{}",j);
+      //}
+      //v.points_.push_back(sum / std::ceil(v.step_));
+      //idx += v.step_;
+
+      //For now, just take the first valid point in the resolution
+      int pos = std::floor(v.start_ + i * v.step_);
+      v.points_.push_back( data[pos] );
+
     }
+    DLOGI("Returning view");
     return v;
   }
 

@@ -2,39 +2,44 @@
 
 #include "core/engine/engine.hpp"
 
-#include "util/dsp/transpose.hpp"
+#include "itc/itc.hpp"
 
-/// Reverb Engine
-namespace otto::engines {
+namespace otto::engines::wormhole {
 
-  using namespace core;
-  using namespace core::engine;
-  using namespace props;
+  using namespace core::props;
 
-  struct Wormhole : EffectEngine<Wormhole> {
-    static constexpr util::string_ref name = "Wormhole";
-    struct Props {
-      Property<float> filter = {0, limits(0, 1), step_size(0.01)};
-      Property<float> shimmer = {0, limits(0, 1), step_size(0.01)};
-      Property<float> length = {0.5, limits(0, 1), step_size(0.01)};
-      Property<float> damping = {0.4, limits(0, 0.99), step_size(0.01)};
+  struct Screen;
+  struct Audio;
 
-      DECL_REFLECTION(Props, filter, shimmer, length, damping);
-    } props;
+  using GraphicsSndr = itc::ActionSender<Screen>;
+  using AudioSndr = itc::ActionSender<Audio>;
+  using Sndr = itc::JoinedActionSender<GraphicsSndr, AudioSndr>;
 
-    Wormhole();
+  struct Props {
+    Sndr* sndr;
 
-    audio::ProcessData<2> process(audio::ProcessData<1>) override;
+    Sndr::Prop<struct filter_tag, float> filter = {sndr, 0, limits(0, 1), step_size(0.01)};
+    Sndr::Prop<struct shimmer_tag, float> shimmer = {sndr, 0, limits(0, 1), step_size(0.01)};
+    Sndr::Prop<struct length_tag, float> length = {sndr, 0.5, limits(0, 1), step_size(0.01)};
+    Sndr::Prop<struct damping_tag, float> damping = {sndr, 0.4, limits(0, 0.99), step_size(0.01)};
 
-  private:
-    float last_sample = 0;
-    float shimmer_amount = 0;
-    gam::ReverbMS<> reverb;
-    dsp::SimplePitchShift pitchshifter;
-    std::array<gam::Delay<>, 2> output_delay;
-    gam::Biquad<> shimmer_filter;
-    gam::BlockDC<> dc_block;
-    gam::Biquad<> pre_filter;
+    DECL_REFLECTION(Props, filter, shimmer, length, damping);
   };
 
-} // namespace otto::engines
+  struct Wormhole : core::engine::EffectEngine<Wormhole> {
+    static constexpr util::string_ref name = "Wormhole";
+    Wormhole();
+
+    void encoder(core::input::EncoderEvent e) override;
+
+    std::unique_ptr<Screen> screen;
+    std::unique_ptr<Audio> audio;
+
+    GraphicsSndr graphics_sndr_;
+    AudioSndr audio_sndr_;
+    Sndr sndr_ = {graphics_sndr_, audio_sndr_};
+
+    Props props = {&sndr_};
+  };
+
+} // namespace otto::engines::wormhole

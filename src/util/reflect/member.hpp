@@ -4,10 +4,8 @@
 
 #pragma once
 
-// clang 5.0 has no std::is_invocable_v and similar. Use from mpark::detail namespace instead.
-#include <mpark/variant.hpp>
-
 #include "util/utility.hpp"
+#include "util/string_ref.hpp"
 
 #include "./reflect.hpp"
 
@@ -106,15 +104,24 @@ namespace otto::reflect {
 
   template<typename Class,
            typename Callable,
-           typename = std::enable_if_t<mpark::lib::is_invocable<Callable, Class&>::value>>
+           typename = std::enable_if_t<std::is_invocable_v<Callable, Class&>>>
   constexpr auto member(util::string_ref, Callable&& ref_getter);
 
   template<typename Class,
            typename Getter,
            typename Setter,
-           typename = std::enable_if_t<mpark::lib::is_invocable<Getter, const Class&>::value>>
+           typename = std::enable_if_t<std::is_invocable_v<Getter, const Class&>>>
   constexpr auto member(util::string_ref, Getter&& getter, Setter&& setter);
 
+  template<typename Class,
+           typename ValueType,
+           typename SetterReturnType>
+  constexpr auto member(util::string_ref, ValueType (Class::*getter)() const, SetterReturnType (Class::*setter)(const ValueType&));
+
+  template<typename Class,
+           typename ValueType,
+           typename SetterReturnType>
+  constexpr auto member(util::string_ref, ValueType (Class::*getter)() const, SetterReturnType (Class::*setter)(ValueType));
   /// \}
 
 } // namespace otto::reflect

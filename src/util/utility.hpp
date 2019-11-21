@@ -36,14 +36,14 @@ namespace otto::util {
   template<typename Var, typename... Lambdas>
   decltype(auto) match(Var&& v, Lambdas&&... ls)
   {
-    auto&& matcher = overloaded<Lambdas...>(std::forward<Lambdas>(ls)...);
+    auto&& matcher = overloaded(std::forward<Lambdas>(ls)...);
     // ADL to use std::visit or mpark::visit 
     // TODO: Remove this when the standard is adapted
     return visit(std::move(matcher), std::forward<Var>(v));
   }
 
   /// Match any type, do nothing with it
-  const constexpr auto nullmatch = [](const auto&&) {};
+  const constexpr auto nullmatch = [](auto&&) {};
 
   /// Pattern matching for std::variant.
   ///
@@ -65,6 +65,37 @@ namespace otto::util {
   template<typename Type, typename Ret, typename... Args>
   auto capture_this(Ret (Type::*func)(Args...), Type& object) {
     return [&object, func] (Args... args) -> Ret { return (object.*func)(args...);};
+  }
+
+  template<typename T>
+  auto does_equal(T&& obj) {
+    return [obj = std::forward<T>(obj)] (auto&& lhs) {
+      return lhs == obj;
+    };
+  }
+
+  // Tuple for_each ///////////////////////////////////////////////////////////
+  
+  namespace details {
+    template<typename T, typename F, std::size_t... Is>
+    void tuple_for_each_impl(T&& t, F&& f, std::integer_sequence<std::size_t, Is...> is) {
+      (f(std::get<Is>(t)), ...);
+    }
+  }
+
+  template<typename F, typename... Args>
+  void tuple_for_each(const std::tuple<Args...>& tuple, F&& f) {
+    details::tuple_for_each_impl(tuple, FWD(f), std::make_index_sequence<std::tuple_size<std::tuple<Args...>>::value>()); 
+  }
+
+  template<typename F, typename... Args>
+  void tuple_for_each(std::tuple<Args...>& tuple, F&& f) {
+    details::tuple_for_each_impl(tuple, FWD(f), std::make_index_sequence<std::tuple_size<std::tuple<Args...>>::value>()); 
+  }
+
+  template<typename F, typename... Args>
+  void tuple_for_each(std::tuple<Args...>&& tuple, F&& f) {
+    details::tuple_for_each_impl(tuple, FWD(f), std::make_index_sequence<std::tuple_size<std::tuple<Args...>>::value>()); 
   }
 
 } // namespace otto::util
