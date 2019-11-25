@@ -7,6 +7,8 @@
 #include "core/voices/voice_manager.hpp"
 #include "goss.hpp"
 
+//TODO: oscillators not owned by each voice, drive/compression. 
+
 namespace otto::engines::goss {
 
   struct Voice : voices::VoiceBase<Voice> {
@@ -42,7 +44,11 @@ namespace otto::engines::goss {
   private:
     Audio& audio;
 
-    std::array<gam::Osc<>, 3> models;
+    /// Does not allocate tables. Reads from models in Audio.
+    /// The reason for having one for each model is that gam::Osc does
+    /// not allow for changing the reference to the table after construction
+    std::vector<gam::Osc<>> voice_players;
+
     gam::Osc<> percussion;
     gam::AD<> perc_env{0.001, 0.2};
     gam::ADSR<> env_ = {0.1f, 0.1f, 0.7f, 2.0f, 1.f, -4.f};
@@ -52,8 +58,8 @@ namespace otto::engines::goss {
     Audio() noexcept;
 
     void action(Actions::rotation_variable, std::atomic<float>&) noexcept;
-    void action(itc::prop_change<&Props::leslie>, float l) noexcept;
     void action(itc::prop_change<&Props::model>, int m) noexcept;
+    void action(itc::prop_change<&Props::leslie>, float l) noexcept;
     void action(itc::prop_change<&Props::drawbar2>, float d2) noexcept;
 
     template<typename Tag, typename... Args>
@@ -72,16 +78,25 @@ namespace otto::engines::goss {
 
     std::atomic<float>* shared_rotation = nullptr;
 
-    static constexpr int number_of_models = 3;
+    static constexpr int number_of_models = 11; //When changed, update model limits in goss.hpp
+    std::array<gam::Osc<>, number_of_models> models;
     static constexpr int model_size = 9;
     using model_type = std::array<int, model_size>;
     /// Number of sine cycles for each drawbar. multiplied by 2.
     // Note: perhaps all could be divided by 2 but then we get a cusp for the second drawbar.
     static constexpr model_type cycles = {1, 3, 2, 4, 6, 8, 10, 12, 16};
     /// The drawbar settings. correspond to typical hammond drawbars in ascending order.
-    static constexpr std::array<model_type, number_of_models> model_params = {{{1, 1, 1, 1, 1, 1, 1, 1, 1},
-                                                                              {8, 8, 0, 0, 0, 0, 3, 8, 1},
-                                                                              {8, 7, 6, 5, 4, 5, 6, 7, 1}}};
+    static constexpr std::array<model_type, number_of_models> model_params = {{{8, 8, 8, 0, 0, 0, 0, 0, 0},
+                                                                              {0, 0, 8, 5, 0, 0, 0, 0, 0},
+                                                                              {8, 8, 8, 0, 0, 0, 0, 0, 8},
+                                                                              {8, 4, 8, 0, 0, 0, 0, 0, 0},
+                                                                              {8, 8, 8, 8, 8, 8, 8, 8, 8},
+                                                                              {6, 6, 8, 8, 4, 8, 5, 8, 8},
+                                                                              {8, 0, 0, 0, 0, 0, 6, 7, 8},
+                                                                              {8, 3, 5, 3, 5, 8, 0, 7, 0},
+                                                                              {8, 3, 0, 0, 0, 0, 3, 7, 8},
+                                                                              {8, 0, 3, 6, 0, 0, 0, 0, 0},
+                                                                              {2, 0, 8, 8, 0, 0, 0, 0, 4}}};
     void generate_model(gam::Osc<>&, model_type);
 
     float leslie = 0.f;

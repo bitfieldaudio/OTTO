@@ -4,17 +4,19 @@ namespace otto::engines::goss {
 
   Voice::Voice(Audio& a) noexcept : audio(a)
   {
-    for (auto&& [m, p] : util::zip(models, audio.model_params)){
-      audio.generate_model(m, p);
-    }
-
+    // Point players to correct tables
+    for (auto& m : audio.models){
+      gam::Osc<> player = {1, 0, m.table()};
+      voice_players.push_back(player);
+    } 
+    
     percussion.resize(1024);
     percussion.addSine(4, 0.5, 0);
     percussion.addSine(6, 1.0, 0);
 
     perc_env.finish();
     env_.finish();
-    env_.attack(1.2);
+    env_.attack(0.01);
     env_.decay(0.5);
     env_.sustain(1.f);
     env_.release(4.f); 
@@ -23,9 +25,9 @@ namespace otto::engines::goss {
   float Voice::operator()() noexcept
   {
     float fundamental = frequency() * (1 + 0.012 * audio.leslie * audio.pitch_modulation_hi.cos()) * 0.5;
-    models[audio.model].freq(fundamental);
+    voice_players[audio.model].freq(fundamental);
     percussion.freq(frequency());
-    float s = models[audio.model]() + percussion() * perc_env();
+    float s = voice_players[audio.model]() + percussion() * perc_env();
     return s * env_();
   }
 
@@ -50,6 +52,11 @@ namespace otto::engines::goss {
   // Audio
   Audio::Audio() noexcept
   {
+    // Generate models
+    for (auto&& [m, p] : util::zip(models, model_params)){
+      generate_model(m, p);
+    }
+
     lpf.type(gam::LOW_PASS);
     lpf.freq(1800);
     lpf.res(1);
@@ -65,7 +72,7 @@ namespace otto::engines::goss {
   {
     osc.resize(1024);
     for (auto&& [i,s] : util::view::indexed(param)) {
-      osc.addSine( cycles[i], (float)s/((float)(model_size * 8)), 0);
+      osc.addSine( cycles[i], (float)s/((float)(model_size)));
     }
   }
 
@@ -78,6 +85,7 @@ namespace otto::engines::goss {
   {
     model = m;
   }
+
   void Audio::action(itc::prop_change<&Props::drawbar2>, float d2) noexcept
   {
     drawbar2 = d2;
@@ -104,8 +112,9 @@ namespace otto::engines::goss {
     // TODO: Once per buffer
     *shared_rotation = rotation.nextPhase();
 
+    // Gets summed sample from all voices
     float voices = voice_mgr_();
-
+    // Postprocessing
     float s_lo = lpf(voices) * (1 + leslie_amount_lo * leslie_filter_lo.cos());
     float s_hi = hpf(voices) * (1 + leslie_amount_hi * leslie_filter_hi.cos());
     return s_lo + s_hi;
