@@ -28,7 +28,7 @@ namespace otto::core::ui {
       if (idx == _selected_item) {
         ctx.beginPath();
         ctx.rect({0, i * options.item_height}, {size.w, options.item_height});
-        // ctx.fill(Colours::Black); - in case you want the background back
+        // ctx.fill(Colors::Black); - in case you want the background back
         ctx.fillStyle(options.selected_item_colour);
       } else {
         ctx.fillStyle(options.item_colour);

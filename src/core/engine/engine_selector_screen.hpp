@@ -1,18 +1,191 @@
 #pragma once
 
-#include "core/engine/engine_dispatcher.hpp"
+#include "core/ui/icons.hpp"
+#include "core/ui/vector_graphics.hpp"
+#include "engine_dispatcher.hpp"
 
 namespace otto::core::engine {
+
+  void placeholder_engine_icon(ui::IconData& i, nvg::Canvas& ctx)
+  {
+    ctx.beginPath();
+    ctx.roundedRect({0, 0}, i.size, i.size.min() / 4.f);
+    ctx.stroke(i.color, i.line_width);
+    ctx.beginPath();
+    ctx.circle(i.size.center(), i.size.min() / 4.f);
+    ctx.fill(i.color);
+  };
+
+  struct EngineSelectorData {
+    std::string name;
+    ui::Icon icon = {placeholder_engine_icon};
+    std::vector<std::string> presets = name == "Potion"
+                                         ? std::vector<std::string>{"Last state"}
+                                         : std::vector<std::string>{
+                                             "Last State", "Yard",     "Wren", "Orange", "Smash",  "Pies", "Desire",
+                                             "Base",       "Religion", "Tent", "Branch", "Needle", "Egg",
+                                           };
+  };
+
+  struct selected_idx_tag {
+    using action = itc::Action<selected_idx_tag, int>;
+  };
+
+  struct selected_preset_tag {
+    using action = itc::Action<selected_preset_tag, int>;
+  };
+
+  struct current_screen_tag {
+    using action = itc::Action<current_screen_tag, int>;
+  };
 
   struct EngineSelectorScreen : ui::Screen {
     void draw(nvg::Canvas& ctx) override;
 
+    void action(selected_idx_tag::action, int selected);
+    void action(selected_preset_tag::action, int selected);
+    void action(current_screen_tag::action, int screen);
+
+    std::vector<EngineSelectorData> engines = {{
+      //
+      {"OTTO.FM"},
+      {"Goss"},
+      {"Potion"},
+      {"Subtraction"},
+      {"Rhodes"},
+      {"SawSynth1000"},
+      {"Bullet"},
+      {"Rumble"},
+    }};
+
   private:
-    std::vector<std::string> engines = {"Rhodes", "OTTO.FM", "Goss", "Potion", "Subtraction"};
+    int selected_engine_ = 0;
+    ch::Output<float> engine_scroll_ = 0;
+    ch::Output<float> page_flip_ = 0;
+    int selected_preset_ = 0;
+    ch::Output<float> preset_scroll_ = 0;
+    ch::Output<float> new_indicator_transparency_ = 0;
   };
 
-  void EngineSelectorScreen::draw(nvg::Canvas& ctx) {
+  void EngineSelectorScreen::action(selected_idx_tag::action, int selected)
+  {
+    selected_engine_ = selected;
+    ui::vg::timeline().apply(&engine_scroll_).then<ch::RampTo>(selected, 500, ch::EaseOutExpo());
+    LOGI("selected: {}", engines[selected].name);
+  }
 
+  void EngineSelectorScreen::action(selected_preset_tag::action, int selected)
+  {
+    selected_preset_ = selected;
+    ui::vg::timeline().apply(&preset_scroll_).then<ch::RampTo>(selected, 500, ch::EaseOutExpo());
+    bool is_first = selected == 0;
+    if (!is_first != new_indicator_transparency_.endValue()) {
+      ui::vg::timeline().apply(&new_indicator_transparency_).then<ch::RampTo>(!is_first, 500, ch::EaseOutExpo());
+    }
+    LOGI("selected: {}", engines.at(selected_engine_).presets.at(selected));
+  }
+
+  void EngineSelectorScreen::action(current_screen_tag::action, int screen)
+  {
+    ui::vg::timeline().apply(&page_flip_).then<ch::RampTo>(screen, 500, ch::EaseOutExpo());
+    LOGI("Page flip: {}", screen);
+  }
+
+  void EngineSelectorScreen::draw(nvg::Canvas& ctx)
+  {
+    using namespace core::ui;
+    using namespace core::ui::vg;
+    constexpr float font_size = 48;
+    constexpr float line_height = 52;
+    constexpr float left_pad = 13;
+    constexpr float icon_size = 26;
+    constexpr float icon_pad = 13;
+    constexpr Color deselected_col = Colors::White.dim(0.1);
+
+    constexpr float page_flip_limit = left_pad + icon_size + icon_pad;
+
+    const float right_page_position = vg::width - page_flip_ * (vg::width - page_flip_limit);
+
+    ctx.group([&] {
+      const Color text_color = deselected_col.dim(page_flip_);
+
+      ctx.clip(0, 0, right_page_position, vg::height);
+      ctx.globalCompositeOperation(CompositeOperation::XOR);
+      ctx.beginPath();
+      ctx.rect({0, 0}, {right_page_position, 240});
+      ctx.fill(Colors::Black);
+
+      ctx.beginPath();
+      ctx.rect({0, line_height * 2.f}, {320, line_height});
+      ctx.fill(Colors::Blue);
+
+      float y = -line_height * (engine_scroll_ - 2);
+
+      ctx.beginPath();
+      ctx.font(Fonts::LightItalic, font_size);
+      ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Baseline);
+      ctx.fillStyle(text_color.dim(0.5));
+      ctx.fillText("Engine", {left_pad, y - left_pad});
+
+      for (auto& engine : engines) {
+        auto icon = engine.icon;
+        icon.set_size({icon_size, icon_size});
+        icon.set_color(text_color);
+        icon.set_line_width(4.f);
+        ctx.drawAt({left_pad, y + (line_height - icon_size) / 2.f}, icon);
+        ctx.beginPath();
+        ctx.font(Fonts::Norm, font_size);
+        ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Baseline);
+        ctx.fillStyle(text_color);
+        ctx.fillText(engine.name, {left_pad + icon_size + icon_pad, y + (line_height + icon_size) / 2.f + 2});
+        y += line_height;
+      }
+    });
+
+    if (page_flip_ > 0) {
+      const auto plus_fade = std::max(1 - page_flip_, new_indicator_transparency_.value());
+      const auto plus_color =
+        Colors::Red.brighten(0.1).fade(plus_fade);
+
+      auto plus_icon = ui::Icon(ui::icons::plus_clockwise_circle_arrow, {icon_size, icon_size}, plus_color, 4.f);
+
+      ctx.drawAt({left_pad, left_pad}, [&] {
+        ctx.rotateAround({icon_size / 2, icon_size / 2}, plus_fade * M_PI);
+        plus_icon.draw(ctx);
+      });
+
+      ctx.group([&] {
+        const Color text_color = deselected_col.fade(1 - page_flip_);
+        ctx.translate(right_page_position, 0);
+
+        ctx.globalCompositeOperation(CompositeOperation::XOR);
+        ctx.beginPath();
+        ctx.rect({0, 0}, {320, 240});
+        ctx.fill(Colors::Black);
+
+        ctx.beginPath();
+        ctx.rect({0, line_height * 2.f}, {320, line_height});
+        ctx.fill(Colors::Green);
+
+        float y = -line_height * (preset_scroll_ - 2);
+
+        ctx.beginPath();
+        ctx.font(Fonts::LightItalic, font_size);
+        ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Baseline);
+        ctx.fillStyle(text_color.dim(0.5));
+        ctx.fillText("Preset", {left_pad, y - left_pad});
+
+        for (auto&& [i, preset] : util::view::indexed(engines.at(selected_engine_).presets)) {
+          const Font font = i == 0 ? Fonts::NormItalic : Fonts::Norm;
+          ctx.beginPath();
+          ctx.font(font, font_size);
+          ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Baseline);
+          ctx.fillStyle(text_color);
+          ctx.fillText(preset, {left_pad, y + (line_height + icon_size) / 2.f + 2});
+          y += line_height;
+        }
+      });
+    }
   }
 
 } // namespace otto::core::engine

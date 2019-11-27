@@ -18,22 +18,22 @@ namespace otto::nvg::ColorConverter {
     byte a = 0;
   };
 
-  inline double clamp(double x, double a, double b)
+  constexpr double clamp(double x, double a, double b)
   {
     return x < a ? a : (x > b ? b : x);
   }
 
-  inline double threeway_max(double a, double b, double c)
+  constexpr double threeway_max(double a, double b, double c)
   {
     return std::max(a, std::max(b, c));
   }
 
-  inline double threeway_min(double a, double b, double c)
+  constexpr double threeway_min(double a, double b, double c)
   {
     return std::min(a, std::min(b, c));
   }
 
-  inline double hue2rgb(double h, double m1, double m2)
+  constexpr double hue2rgb(double h, double m1, double m2)
   {
     if (h < 0.0) h += 1.0;
     if (h > 1.0) h -= 1.0;
@@ -58,11 +58,10 @@ namespace otto::nvg::ColorConverter {
    * @param   double  l       The lightness
    * @return  Rgb   The RGB representation
    */
-  inline Rgb hslToRgb(double h, double s, double l)
+  constexpr Rgb hslToRgb(double h, double s, double l)
   {
-    double m1, m2;
-    double useless;
-    h = std::modf(h, &useless);
+    double m1 = 0, m2 = 0;
+    h = h - int(h);
     if (h < 0.0) h += 1.0;
     s = clamp(s, 0.0, 1.0);
     l = clamp(l, 0.0, 1.0);
@@ -87,7 +86,7 @@ namespace otto::nvg::ColorConverter {
    * @param   byte    b       The blue color value
    * @param   double  hsl[]   The HSL representation
    */
-  inline void rgbToHsl(byte r, byte g, byte b, double hsl[])
+  constexpr void rgbToHsl(byte r, byte g, byte b, double hsl[])
   {
     // TODO:
   }
@@ -104,7 +103,7 @@ namespace otto::nvg::ColorConverter {
    * @param   byte  b       The blue color value
    * @return  double hsv[]  The HSV representation
    */
-  inline void rgbToHsv(byte r, byte g, byte b, double hsv[])
+  constexpr void rgbToHsv(byte r, byte g, byte b, double hsv[])
   {
     // TODO:
   }
@@ -120,7 +119,7 @@ namespace otto::nvg::ColorConverter {
    * @param   double  v       The value
    * @return  byte    rgb[]   The RGB representation
    */
-  inline void hsvToRgb(double h, double s, double v, byte rgb[])
+  constexpr void hsvToRgb(double h, double s, double v, byte rgb[])
   {
     // TODO:
   }

@@ -148,7 +148,7 @@ namespace otto::services {
     _frame_count++;
 
     auto now = chrono::clock::now();
-    timeline_.step(chrono::duration_cast<chrono::milliseconds>(now - last_frame).count());
+    vg::timeline().step(chrono::duration_cast<chrono::milliseconds>(now - last_frame).count());
     last_frame = now;
   }
 

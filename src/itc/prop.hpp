@@ -18,7 +18,7 @@ namespace otto::core::props::mixin {
   };
 
   template<typename PropTag, typename AQH, typename ValueType, typename TagList>
-  struct otto::core::props::mixin::leaf<action<PropTag, AQH>, ValueType, TagList> {
+  struct leaf<action<PropTag, AQH>, ValueType, TagList> {
     using action = action<PropTag, AQH>;
     OTTO_PROPS_MIXIN_DECLS(action);
     using change_action = itc::Action<PropTag, value_type>;

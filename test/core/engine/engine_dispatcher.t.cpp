@@ -4,6 +4,7 @@
 namespace otto::test {
   using namespace otto::core::engine;
 
+#if false
   namespace testfxengine1 {
     struct Audio;
     struct Screen;
@@ -100,4 +101,5 @@ namespace otto::test {
       }
     }
   };
+#endif
 } // namespace otto::test

@@ -89,7 +89,7 @@ namespace otto::nvg {
     /// The letter spacing of current text style in pixel
     float letterSpace = NAN;
     /// The color of current text style
-    Color color = Colors::ZeroColor;
+    Color color = DefaultColors::ZeroColor;
     /// The horizontal alignment of current text style
     /// @see TextAlign::HorizontalAlign
     TextAlign::HorizontalAlign hAlign = TextAlign::Left;

@@ -61,7 +61,7 @@ namespace otto::test {
         }
         ctx.lineTo(x, y_bot);
         ctx.lineTo(x_start, y_bot);
-        ctx.fill(Colors::White);
+        ctx.fill(DefaultColors::White);
       });
     });
   }

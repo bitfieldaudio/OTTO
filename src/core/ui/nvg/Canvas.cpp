@@ -682,6 +682,14 @@ namespace otto::nvg {
     return *this;
   }
 
+  Canvas& Canvas::stroke(const Color& color, float line_width)
+  {
+    lineWidth(line_width);
+    strokeStyle(color);
+    stroke();
+    return *this;
+  }
+
 
   Canvas& Canvas::translate(Point p)
   {
@@ -689,7 +697,7 @@ namespace otto::nvg {
     return *this;
   }
 
-  Canvas& Canvas::rotateAround(float r, Point p)
+  Canvas& Canvas::rotateAround(Point p, float r)
   {
     translate(p);
     rotate(r);

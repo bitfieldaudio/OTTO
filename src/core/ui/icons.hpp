@@ -2,47 +2,36 @@
 
 #include "core/ui/vector_graphics.hpp"
 
-namespace otto::core::ui::vg::icons {
+namespace otto::core::ui {
 
-  struct Icon : Drawable {
-    Size size;
-    Colour colour;
-    float lineWidth = 2;
+  struct IconData {
+    nvg::Box square();
 
-    virtual void draw(Canvas&) override {}
+    nvg::Size size = {16, 16};
+    nvg::Color color = ui::vg::Colors::White;
+    float line_width = 6.f;
   };
 
-  /// A simple arrow
-  struct Arrow : public Icon {
+  struct Icon : nvg::Drawable {
+    using IconDrawer = std::function<void(IconData&, nvg::Canvas&)>;
+    Icon(IconDrawer drawer, nvg::Size s = {16, 16}, nvg::Color c = ui::vg::Colors::White, float lw = 6.f);
 
-    enum Direction {
-      Up, Down, Left, Right
-    };
+    void draw(nvg::Canvas& ctx) override;
 
-    Direction dir = Right;
-    /// Add stop line ->|
-    bool stopped = false;
-    /// Loop arrow - CW for Up/Right, CCW for Down/Left
-    bool looping = false;
-    /// headLength/arrowLength
-    float headRatio = 0.25;
+    void set_size(nvg::Size size);
+    void set_color(nvg::Color color);
+    void set_line_width(float width);
+    void set_icon(IconDrawer drawer);
 
-    void draw(Canvas&) override;
-
+  private:
+    IconDrawer drawer_;
+    IconData data_;
   };
 
-  /// A musical note
-  struct Note : public Icon {
+  namespace icons {
+    void plus(IconData& i, nvg::Canvas& ctx);
+    void plus_clockwise_circle_arrow(IconData& i, nvg::Canvas& ctx);
+  } // namespace icons
 
-    enum Direction {
-      Right, Left
-    };
 
-    Direction dir;
-    /// Whether the head of the note is filled;
-    bool filled = true;
-
-    void draw(Canvas&) override;
-  };
-
-} // otto::ui::drawing::icons
+} // namespace otto::core::ui

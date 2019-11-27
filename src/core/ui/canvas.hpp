@@ -14,20 +14,19 @@
 namespace otto::core::ui::vg {
 
   using namespace otto::nvg;
-  using Colour = Color;
 
-  struct MainColour : public Color {
+  struct MainColor : public Color {
     const Color dimmed;
 
     // cppcheck-suppress noExplicitConstructor
-    MainColour(Colour basic) : Colour(basic), dimmed(basic.dim(0)) {}
+    constexpr MainColor(Color basic) : Color(basic), dimmed(basic.dim(0)) {}
 
-    MainColour(Colour basic, Colour dimmed) noexcept : Colour(basic), dimmed(dimmed) {}
+    constexpr MainColor(Color basic, Color dimmed) noexcept : Color(basic), dimmed(dimmed) {}
 
     // cppcheck-suppress noExplicitConstructor
-    MainColour(std::uint32_t basic) : Colour(basic), dimmed(dim(0.1)) {}
+    constexpr MainColor(std::uint32_t basic) : Color(basic), dimmed(dim(0.1)) {}
 
-    MainColour(std::uint32_t basic, std::uint32_t dimmed) : Colour(basic), dimmed(dimmed) {}
+    constexpr MainColor(std::uint32_t basic, std::uint32_t dimmed) : Color(basic), dimmed(dimmed) {}
   };
 
 } // namespace otto::core::ui::vg

@@ -78,7 +78,7 @@ namespace otto::engines::goss {
     ctx.group([&] {
       // Ring 1
       ctx.beginPath();
-      ctx.rotateAround(55, ring_center);
+      ctx.rotateAround(ring_center, 55);
       ctx.arc(ring_center.x, ring_center.y, 55, 0, (2 * M_PI * click), false);
       ctx.lineWidth(6.0);
       ctx.strokeStyle(Colours::Yellow);
@@ -110,8 +110,13 @@ namespace otto::engines::goss {
       ctx.strokeStyle(Colours::Red);
 
       OTTO_ASSERT(rotation != nullptr);
+<<<<<<< HEAD
       ctx.rotateAround(*rotation, ring_center);
       ctx.circle({ring_center.x, height / 2 + leslie * 25}, 12.5);
+=======
+      ctx.rotateAround({160, 120}, *rotation);
+      ctx.circle({160, height / 2 + leslie * 25}, 12.5);
+>>>>>>> develop
       ctx.stroke();
 
       ctx.circle({ring_center.x, height / 2 + leslie * 25}, 12.5);

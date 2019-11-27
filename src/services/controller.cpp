@@ -55,10 +55,11 @@ namespace otto::services {
     }
   }
 
-  void Controller::keypress(Key key)
+  bool Controller::keypress(Key key)
   {
     if (!send_midi_for(key, true)) events_.outer().push_back(KeyPressEvent{key});
     key_handler_thread.trigger();
+    return true;
   }
 
   void Controller::encoder(EncoderEvent ev)
@@ -67,10 +68,11 @@ namespace otto::services {
     key_handler_thread.trigger();
   }
 
-  void Controller::keyrelease(Key key)
+  bool Controller::keyrelease(Key key)
   {
     if (!send_midi_for(key, false)) events_.outer().push_back(KeyReleaseEvent{key});
     key_handler_thread.trigger();
+    return true;
   }
 
   bool Controller::is_pressed(Key k) noexcept
