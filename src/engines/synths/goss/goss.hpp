@@ -35,27 +35,21 @@ namespace otto::engines::goss {
   using namespace props;
 
   struct GossScreen;
-  using GraphicsSndr = itc::ActionSender<GossScreen, voices::EnvelopeScreen, voices::SettingsScreen>;
-
   struct Audio;
-  using AudioSndr = itc::ActionSender<Audio>;
-
-  using Sndr = itc::JoinedActionSender<GraphicsSndr, AudioSndr>;
+  using Sender = EngineSender<Audio, GossScreen, voices::SettingsScreen, voices::EnvelopeScreen>;
 
   struct Actions {
     /// Publish the rotation variable, which is shared between the audio and screen
     using rotation_variable = itc::Action<struct rotation_variable_tag, std::atomic<float>&>;
   };
 
-  struct Props {
-    Sndr* sndr;
+  struct Props : voices::SynthPropsBase<Sender> {
+    Sender::Prop<struct model_tag, int, wrap> model = {sender, 0, limits(0, number_of_models - 1)};
+    Sender::Prop<struct drawbar2_tag, float> drive = {sender, 0.5, limits(0, 1), step_size(0.01)};
+    Sender::Prop<struct click_tag, float> click = {sender, 0.5, limits(0, 1), step_size(0.01)};
+    Sender::Prop<struct leslie_tag, float> leslie = {sender, 0.3, limits(0, 1), step_size(0.01)};
 
-    Sndr::Prop<struct model_tag, int, wrap> model = {sndr, 0, limits(0, number_of_models - 1)};
-    Sndr::Prop<struct drive_tag, float> drive = {sndr, 0, limits(0, 1), step_size(0.01)};
-    Sndr::Prop<struct click_tag, float> click = {sndr, 0.5, limits(0, 1), step_size(0.01)};
-    Sndr::Prop<struct leslie_tag, float> leslie = {sndr, 0.3, limits(0, 1), step_size(0.01)};
-
-    DECL_REFLECTION(Props, model, drive, click, leslie);
+    DECL_REFLECTION(Props, envelope, settings, model, drive, click, leslie);
   };
 
   struct GossEngine : core::engine::SynthEngine<GossEngine> {
@@ -63,35 +57,26 @@ namespace otto::engines::goss {
     using Audio = Audio;
     using Screen = GossScreen;
     using Props = Props;
+
     GossEngine();
-
-    const std::unique_ptr<GossScreen> screen;
-    const std::unique_ptr<Audio> audio;
-
-    DECL_REFLECTION(GossEngine, props, voice_props_, envelope_props_);
 
     void encoder(core::input::EncoderEvent e) override;
 
-    core::ui::ScreenAndInput envelope_screen() override
-    {
-      return {env_screen_, envelope_props_};
-    }
-    core::ui::ScreenAndInput voices_screen() override
-    {
-      return {voice_screen_, voice_props_};
-    }
+    core::ui::ScreenAndInput screen() override;
+    core::ui::ScreenAndInput envelope_screen() override;
+    core::ui::ScreenAndInput voices_screen() override;
+
+    const std::unique_ptr<Audio> audio;
+
+    DECL_REFLECTION(GossEngine, props);
 
   private:
-    GraphicsSndr graphics_sndr_;
-    AudioSndr audio_sndr_;
-    Sndr sndr_ = {graphics_sndr_, audio_sndr_};
-
-    Props props{&sndr_};
-
-    voices::SettingsProps<Sndr> voice_props_{&sndr_};
-    voices::EnvelopeProps<Sndr> envelope_props_{&sndr_};
+    const std::unique_ptr<GossScreen> screen_;
     voices::SettingsScreen voice_screen_;
     voices::EnvelopeScreen env_screen_;
+
+    Sender sender_ = {*audio, *screen_, voice_screen_, env_screen_};
+    Props props{sender_};
 
     std::atomic<float> rotation_ = 0;
   };

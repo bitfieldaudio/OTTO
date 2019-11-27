@@ -1,87 +1,40 @@
 #pragma once
 
-#include <foonathan/array/flat_map.hpp>
 #include "core/engine/engine.hpp"
 #include "core/engine/nullengine.hpp"
-
+#include "util/flat_map.hpp"
 #include "util/variant_w_base.hpp"
 
 namespace otto::core::engine {
 
-  /// Interface base class for the EngineDispatcher struct
-  struct IEngineDispatcher {
-    IEngineDispatcher(bool allow_off) noexcept : allow_off(allow_off) {}
-    virtual IEngine& current() = 0;
-    virtual const IEngine& current() const = 0;
-    virtual int current_idx() const = 0;
-    virtual IEngine& select(util::string_ref name) = 0;
-    virtual IEngine& select(int index) = 0;
-
-    virtual std::vector<util::string_ref> make_name_list() const = 0;
-
-    virtual ~IEngineDispatcher() = default;
-
-    /// Is the engine allowed to be in an "OFF" state?
-    const bool allow_off = false;
-  };
+  struct EngineSelectorScreen;
 
   /// Owns engines of type `ET`, and dispatches to a selected one of them
   template<EngineType ET, typename... Engines>
-  struct EngineDispatcher final : IEngineDispatcher {
-    enum struct ErrorCode { none = 0, engine_not_found, type_mismatch };
+  struct EngineDispatcher {
+    using Sender = services::UISender<EngineSelectorScreen>;
 
-    using exception = util::as_exception<ErrorCode>;
+    struct Props {
+      template<typename Tag, typename Type, typename... Mixins>
+      using Prop = typename Sender::template Prop<Tag, Type, Mixins...>;
 
-    static constexpr const EngineType engine_type = ET;
-    using ITypedEngine = engine::ITypedEngine<ET>;
-    using variant = util::variant_w_base<ITypedEngine, Engines...>;
-    using DataMap = foonathan::array::flat_map<util::string_ref, nlohmann::json>;
+      Sender sender;
 
-    // Initialization
-    EngineDispatcher(bool allow_off);
+      Prop<struct current_tag, std::string> current = {sender, ""};
+    };
 
-    /// Access the currently selected engine
-    ITypedEngine& current() noexcept override;
-    const ITypedEngine& current() const noexcept override;
-    int current_idx() const noexcept override;
+    ui::Screen selector_screen();
+    ITypedEngine<ET>& current();
+    ITypedEngine<ET>* operator->();
 
-    /// Access the currently selected engine
-    ITypedEngine const* operator->() const noexcept;
-    /// Access the currently selected engine
-    ITypedEngine* operator->() noexcept;
+    template<int N>
+    auto process(audio::ProcessData<N> data) noexcept;
 
-    /// Select engine by name
-    ///
-    /// \effects Find engine with name `name`, and `select(engine)`
-    /// \throws `util::exception` when no matching engine was found
-    ITypedEngine& select(util::string_ref name) override;
-
-    /// Select engine by index
-    /// 
-    /// If `index` is < 0, and `allow_off`, select the null engine.
-    /// @throws `util::exception` when `index` is out of bounds
-    ITypedEngine& select(int index) override;
-
-    std::vector<util::string_ref> make_name_list() const override;
-
-    /// Access the screen used to select engines/presets
-    ///
-    /// The returned screen has the dynamic type [EngineSelectorScreen]()
-    /// \preconditions [init]() has previously been called
-    ui::Screen& selector_screen() noexcept;
-
-    const DataMap& data_of_engines() const noexcept;
-
-    nlohmann::json to_json() const;
-    void from_json(const nlohmann::json&);
+    DECL_REFLECTION_EMPTY();
 
   private:
-    DataMap _engine_data;
-    NullEngine<ET> _null_engine;
-    variant _engine_storage = std::in_place_index_t<0>();
-    ITypedEngine* _current = &_null_engine;
-    std::unique_ptr<ui::Screen> _selector_screen = nullptr;
+    util::variant_w_base<ITypedEngine<ET>, Engines...> current_engine_ = std::in_place_index_t<0>();
   };
 } // namespace otto::core::engine
 
-// kak: other_file=engine_dispatcher.inl
+#include "engine_dispatcher.inl"

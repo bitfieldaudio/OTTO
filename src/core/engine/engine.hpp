@@ -5,15 +5,16 @@
 #include <string>
 #include <vector>
 
+#include "core/audio/processor.hpp"
+#include "core/props/props.hpp"
+#include "core/ui/screen.hpp"
+#include "services/audio_manager.hpp"
+#include "services/ui_manager.hpp"
 #include "util/algorithm.hpp"
 #include "util/crtp.hpp"
 #include "util/exception.hpp"
 #include "util/jsonfile.hpp"
 #include "util/serialize.hpp"
-
-#include "core/audio/processor.hpp"
-#include "core/props/props.hpp"
-#include "core/ui/screen.hpp"
 
 namespace otto::core::engine {
 
@@ -56,6 +57,8 @@ namespace otto::core::engine {
     /// Should only be called from [presets::apply_preset]()
     /// \returns new_val
     int current_preset(int new_val) noexcept;
+
+    virtual ui::ScreenAndInput screen() = 0;
 
     /* Serialization */
 
@@ -206,22 +209,14 @@ namespace otto::core::engine {
   ///
   /// SFINAE friendly, and will match any type that inherits from [Engine]()
   template<typename E>
-  constexpr EngineType engine_type_v =
-    meta::_v<decltype(detail::engine_type_impl_func(std::declval<E>()))>;
+  constexpr EngineType engine_type_v = meta::_v<decltype(detail::engine_type_impl_func(std::declval<E>()))>;
 
   // EngineScreen /////////////////////////////////////////////////////////////
 
-  /// A ui::Screen with a reference to the engine it belongs to.
-  ///
-  /// Screens for engines should inherit from this. They can then access the
-  /// engine from the `engine` reference.
-  template<typename Engine>
-  struct EngineScreen : ui::Screen {
-    EngineScreen(Engine* engine) : Screen(), engine(*engine), props(engine->props) {}
-    virtual ~EngineScreen() = default;
-
-  protected:
-    Engine& engine;
-    typename Engine::Props& props;
+  template<typename Audio, typename... Screens>
+  struct EngineSender : itc::JoinedActionSender<services::AudioSender<Audio>, services::UISender<Screens...>> {
+    EngineSender(Audio& audio, Screens&... screens) noexcept
+      : itc::JoinedActionSender<services::AudioSender<Audio>, services::UISender<Screens...>>(audio, {screens...})
+    {}
   };
 } // namespace otto::core::engine
