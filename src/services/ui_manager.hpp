@@ -112,11 +112,6 @@ namespace otto::services {
       util::Signal<core::ui::vg::Canvas&> on_draw;
     } signals;
 
-    ch::Timeline& timeline() noexcept
-    {
-      return timeline_;
-    }
-
     /// Push-only access to the action queue
     ///
     /// This queue is consumed at the start of each buffer.
@@ -153,7 +148,6 @@ namespace otto::services {
     unsigned _frame_count = 0;
 
     chrono::time_point last_frame = chrono::clock::now();
-    ch::Timeline timeline_;
     itc::ActionQueue action_queue_;
   };
 

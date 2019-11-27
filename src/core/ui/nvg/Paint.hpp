@@ -25,8 +25,8 @@ namespace otto::nvg {
     /// The nanovg image id of the image pattern
     int imageID = 0;
     /// The start color of the gradiant
-    Color sColor = Colors::ZeroColor;
+    Color sColor = DefaultColors::ZeroColor;
     /// The end color of the gradiant
-    Color eColor = Colors::ZeroColor;
+    Color eColor = DefaultColors::ZeroColor;
   };
 } // namespace otto::nvg

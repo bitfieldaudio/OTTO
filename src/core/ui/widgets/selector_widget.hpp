@@ -17,9 +17,9 @@ namespace otto::core::ui {
       /// Invoked with the newly selected index.
       std::function<void(int idx)> on_select = [](int) {};
       /// Unselected text colour.
-      vg::Colour item_colour = vg::Colours::Gray50;
+      vg::Color item_colour = vg::Colors::Gray50;
       /// Selected text colour.
-      vg::Colour selected_item_colour = vg::Colours::Blue;
+      vg::Color selected_item_colour = vg::Colors::Blue;
       /// Height of each item
       float item_height = 35.f;
       float font_size = 25.f;

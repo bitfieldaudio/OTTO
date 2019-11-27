@@ -39,7 +39,7 @@ namespace otto::engines::wormhole {
     ctx.group([&] {
       ctx.beginPath();
       ctx.circle({126.6, 75.2}, starradius);
-      ctx.fillStyle(Colours::Yellow.dim(1 - shimmer_));
+      ctx.fillStyle(Colors::Yellow.dim(1 - shimmer_));
       ctx.fill();
 
       // (stars)
@@ -105,7 +105,7 @@ namespace otto::engines::wormhole {
       // 2nd group of stars.
       ctx.beginPath();
       ctx.circle({255.3, 168.8}, secondstarradius);
-      ctx.fillStyle(Colours::Yellow.dim(1 - shimmer_));
+      ctx.fillStyle(Colors::Yellow.dim(1 - shimmer_));
 
       // (stars)
       ctx.beginPath();
@@ -182,7 +182,7 @@ namespace otto::engines::wormhole {
     ctx.group([&] {
       ctx.beginPath();
       ctx.circle({273, 68}, starradius);
-      ctx.fillStyle(Colours::Yellow.dim(1 - shimmer_));
+      ctx.fillStyle(Colors::Yellow.dim(1 - shimmer_));
       ctx.fill();
 
       // (stars)
@@ -234,12 +234,12 @@ namespace otto::engines::wormhole {
     // mass value
     ctx.save();
     ctx.font(Fonts::Norm, 40);
-    ctx.fillStyle(Colours::Blue);
+    ctx.fillStyle(Colors::Blue);
     ctx.fillText(fmt::format("{}", std::round(filter_ * 100)), 22.9, 76.2);
 
     // mass text
     ctx.font(Fonts::Norm, 25);
-    ctx.fillStyle(Colours::White);
+    ctx.fillStyle(Colors::White);
     ctx.fillText("treble", 22.9, 35.4);
 
     ctx.restore();
@@ -247,12 +247,12 @@ namespace otto::engines::wormhole {
     // stars value
     ctx.save();
     ctx.font(Fonts::Norm, 40);
-    ctx.fillStyle(Colours::Yellow);
+    ctx.fillStyle(Colors::Yellow);
     ctx.fillText(fmt::format("{}", std::round(shimmer_ * 100)), 22.9, 147.9);
 
     // stars text
     ctx.font(Fonts::Norm, 25);
-    ctx.fillStyle(Colours::White);
+    ctx.fillStyle(Colors::White);
     ctx.fillText("stars", 22.9, 106.1);
 
     ctx.restore();
@@ -262,7 +262,7 @@ namespace otto::engines::wormhole {
     ctx.beginPath();
     ctx.circle({241.1, 85.3}, 3);
     ctx.lineWidth(6.0);
-    ctx.strokeStyle(Colours::Green);
+    ctx.strokeStyle(Colors::Green);
     ctx.stroke();
 
     // WormHole/GreenLine
@@ -270,7 +270,7 @@ namespace otto::engines::wormhole {
     ctx.moveTo(144.3, 151.2);
     ctx.lineTo(241.1, 85.3);
     ctx.lineWidth(6.0);
-    ctx.strokeStyle(Colours::Green);
+    ctx.strokeStyle(Colors::Green);
     ctx.lineCap(LineCap::ROUND);
     ctx.lineJoin(LineJoin::ROUND);
     ctx.stroke();
@@ -292,9 +292,9 @@ namespace otto::engines::wormhole {
       ctx.bezierCurveTo(226.4, 161.9, 213.9, 169.8, 192.7, 159.0);
       ctx.lineTo(226.4, 176.1);
       ctx.closePath();
-      ctx.fillStyle(Colours::White);
+      ctx.fillStyle(Colors::White);
       ctx.fill();
-      ctx.strokeStyle(Colours::White);
+      ctx.strokeStyle(Colors::White);
       ctx.stroke();
     });
 
@@ -312,7 +312,7 @@ namespace otto::engines::wormhole {
       ctx.bezierCurveTo(206.5, 97.2, 215.5, 111.1, 215.5, 129.0);
       ctx.bezierCurveTo(215.5, 147.0, 207.0, 152.3, 192.7, 145.1);
       ctx.bezierCurveTo(191.2, 144.3, 189.7, 143.4, 188.3, 142.5);
-      ctx.strokeStyle(Colours::Red);
+      ctx.strokeStyle(Colors::Red);
       ctx.stroke();
     });
 
@@ -326,7 +326,7 @@ namespace otto::engines::wormhole {
       ctx.bezierCurveTo(182.3, 106.1, 186.4, 102.7, 192.7, 105.8);
       ctx.bezierCurveTo(199.0, 108.9, 203.1, 115.2, 203.1, 123.5);
       ctx.bezierCurveTo(203.1, 131.7, 199.3, 134.1, 192.7, 130.8);
-      ctx.stroke(Colours::Red);
+      ctx.stroke(Colors::Red);
     });
 
     // WormHole/InnerRing2
@@ -339,7 +339,7 @@ namespace otto::engines::wormhole {
       ctx.bezierCurveTo(182.3, 106.1, 186.4, 102.7, 192.7, 105.8);
       ctx.bezierCurveTo(199.0, 108.9, 203.1, 115.2, 203.1, 123.5);
       ctx.bezierCurveTo(203.1, 131.7, 199.3, 134.1, 192.7, 130.8);
-      ctx.stroke(Colours::Red);
+      ctx.stroke(Colors::Red);
     });
 
     // WormHole/InnerRing3
@@ -352,7 +352,7 @@ namespace otto::engines::wormhole {
       ctx.bezierCurveTo(182.3, 106.1, 186.4, 102.7, 192.7, 105.8);
       ctx.bezierCurveTo(199.0, 108.9, 203.1, 115.2, 203.1, 123.5);
       ctx.bezierCurveTo(203.1, 131.7, 199.3, 134.1, 192.7, 130.8);
-      ctx.stroke(Colours::Red);
+      ctx.stroke(Colors::Red);
     });
 
     // WormHole/FrontInnerRing
@@ -373,7 +373,7 @@ namespace otto::engines::wormhole {
       ctx.lineCap(LineCap::BUTT);
       ctx.lineJoin(LineJoin::MITER);
       ctx.miterLimit(10.0);
-      ctx.stroke(Colours::Red);
+      ctx.stroke(Colors::Red);
     });
 
     // WormHole/FrontRing
@@ -390,7 +390,7 @@ namespace otto::engines::wormhole {
       ctx.bezierCurveTo(169.9, 91.1, 178.9, 83.7, 192.7, 90.4);
       ctx.bezierCurveTo(206.5, 97.2, 215.5, 111.1, 215.5, 129.0);
       ctx.closePath();
-      ctx.stroke(Colours::Red);
+      ctx.stroke(Colors::Red);
     });
 
     // WormHole/FrontPadGroup/FrontPad3
@@ -407,7 +407,7 @@ namespace otto::engines::wormhole {
       ctx.bezierCurveTo(226.4, 161.5, 213.9, 169.4, 192.7, 158.6);
       ctx.closePath();
       ctx.fill();
-      ctx.strokeStyle(Colour::bytes(250, 249, 249));
+      ctx.strokeStyle(Color::bytes(250, 249, 249));
       ctx.lineCap(LineCap::ROUND);
       ctx.lineJoin(LineJoin::ROUND);
       ctx.stroke();
@@ -446,7 +446,7 @@ namespace otto::engines::wormhole {
         ctx.moveTo(144.3, 151.2);
         ctx.lineTo(translation);
         ctx.lineWidth(6.0);
-        ctx.strokeStyle(Colours::Green);
+        ctx.strokeStyle(Colors::Green);
         ctx.lineCap(LineCap::ROUND);
         ctx.lineJoin(LineJoin::ROUND);
         ctx.stroke();
@@ -457,7 +457,7 @@ namespace otto::engines::wormhole {
     ctx.beginPath();
     ctx.circle({144.3, 151.2}, 3);
     ctx.lineWidth(6.0);
-    ctx.strokeStyle(Colours::Green);
+    ctx.strokeStyle(Colors::Green);
     ctx.stroke();
   }
 

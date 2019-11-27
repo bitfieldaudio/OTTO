@@ -8,9 +8,7 @@
 
 namespace otto::board::ui {
 
-  using services::Controller;
-
-  void handle_keyevent(Action action, Modifiers mods, Key key)
+  void handle_keyevent(Action action, Modifiers mods, Key key, core::input::InputHandler& input)
   {
     /*    auto send_midi = [action](int note) {
           if (action == Action::press) {
@@ -24,6 +22,7 @@ namespace otto::board::ui {
         };
     */
     auto send_sustain = [action] {
+      if (!Application::has_current()) return;
       if (action == Action::press) {
         Application::current().audio_manager->send_midi_event(core::midi::ControlChangeEvent{0x40, 64});
         LOGI("Sustain down");
@@ -36,15 +35,15 @@ namespace otto::board::ui {
     using OKey = core::input::Key;
     using Encoder = core::input::Encoder;
 
-    auto send_key = [action](OKey k, bool repeat = false) {
+    auto send_key = [&, action](OKey k, bool repeat = false) {
       if (action == Action::press || (action == Action::repeat && repeat))
-        Controller::current().keypress(k);
+        input.keypress(k);
       else if (action == Action::release)
-        Controller::current().keyrelease(k);
+        input.keyrelease(k);
     };
 
-    auto send_encoder = [action](core::input::Encoder rot, int n) {
-      if (action == Action::press || (action == Action::repeat)) Controller::current().encoder({rot, n});
+    auto send_encoder = [&, action](core::input::Encoder rot, int n) {
+      if (action == Action::press || (action == Action::repeat)) input.encoder({rot, n});
     };
 
 

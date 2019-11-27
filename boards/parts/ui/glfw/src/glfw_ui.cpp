@@ -244,7 +244,9 @@ namespace otto::services {
       main_win.set_window_size_limits(320, 240, GLFW_DONT_CARE, GLFW_DONT_CARE);
     }
 
-    main_win.key_callback = board::ui::handle_keyevent;
+    main_win.key_callback = [] (auto&& action, auto&& mods, auto&& key) {
+      board::ui::handle_keyevent(action, mods, key, services::Controller::current());
+    };
 
     vg::initUtils(main_win.canvas());
 

@@ -66,4 +66,9 @@ namespace otto::services {
   {
     return static_cast<Application&>(*_current);
   }
+
+  bool Application::has_current() noexcept
+  {
+    return _current != nullptr;
+  }
 } // namespace otto::services

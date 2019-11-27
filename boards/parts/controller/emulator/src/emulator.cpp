@@ -27,14 +27,14 @@ namespace otto::board {
   {
     auto c = _led_colors[key];
     lf();
-    ctx.fill(Colour::bytes(c.r, c.g, c.b));
+    ctx.fill(Color::bytes(c.r, c.g, c.b));
 
-    auto fill = is_pressed(key) ? Colour::bytes(128, 128, 128) : Colour::bytes(26, 26, 26);
+    auto fill = is_pressed(key) ? Color::bytes(128, 128, 128) : Color::bytes(26, 26, 26);
     ctx.lineWidth(1);
     ctx.beginPath();
     bf();
     ctx.fill(fill);
-    ctx.stroke(Colour::bytes(0, 0, 0));
+    ctx.stroke(Color::bytes(0, 0, 0));
   }
 
   template<typename BTNFunc, typename LEDFunc>
@@ -42,13 +42,13 @@ namespace otto::board {
   {
     auto c = _led_colors[key];
     lf();
-    ctx.fill(Colour::bytes(c.r, c.g, c.b));
+    ctx.fill(Color::bytes(c.r, c.g, c.b));
 
-    auto fill = is_pressed(key) ? Colour::bytes(128, 128, 128) : Colour::bytes(26, 26, 26);
+    auto fill = is_pressed(key) ? Color::bytes(128, 128, 128) : Color::bytes(26, 26, 26);
     ctx.lineWidth(1);
     bf();
     ctx.fill(fill);
-    ctx.stroke(Colour::bytes(0, 0, 0));
+    ctx.stroke(Color::bytes(0, 0, 0));
   }
 
   template<typename BTNFunc, typename LEDFunc>
@@ -56,13 +56,13 @@ namespace otto::board {
   {
     auto c = _led_colors[key];
     lf();
-    ctx.fill(Colour::bytes(c.r, c.g, c.b));
+    ctx.fill(Color::bytes(c.r, c.g, c.b));
 
-    auto fill = is_pressed(key) ? Colour::bytes(108, 108, 108) : Colour::bytes(255, 255, 255);
+    auto fill = is_pressed(key) ? Color::bytes(108, 108, 108) : Color::bytes(255, 255, 255);
     ctx.lineWidth(1);
     bf();
     ctx.fill(fill);
-    ctx.stroke(Colour::bytes(179, 179, 179));
+    ctx.stroke(Color::bytes(179, 179, 179));
   }
 
   void Emulator::draw(Canvas& ctx)
@@ -72,7 +72,7 @@ namespace otto::board {
     ctx.lineCap(LineCap::ROUND);
     ctx.miterLimit(4);
     ctx.lineWidth(2.109509);
-    ctx.fillStyle(Colour::bytes(40, 40, 40));
+    ctx.fillStyle(Color::bytes(40, 40, 40));
     ctx.beginPath();
     ctx.rect(0.000000, 1.079987, 1115.000000, 351.000000);
     ctx.fill();
@@ -85,11 +85,11 @@ namespace otto::board {
 
     // #rect1819
     ctx.lineJoin(LineJoin::ROUND);
-    ctx.strokeStyle(Colour::bytes(77, 77, 77));
+    ctx.strokeStyle(Color::bytes(77, 77, 77));
     ctx.lineCap(LineCap::ROUND);
     ctx.miterLimit(4);
     ctx.lineWidth(1.000000);
-    ctx.fillStyle(Colour::bytes(0, 0, 0));
+    ctx.fillStyle(Color::bytes(0, 0, 0));
     ctx.beginPath();
     ctx.moveTo(522.724060, 30.049734);
     ctx.lineTo(728.886810, 30.049734);
@@ -4731,11 +4731,11 @@ namespace otto::board {
 
     // #path1640-11
     ctx.lineJoin(LineJoin::ROUND);
-    ctx.strokeStyle(Colour::bytes(0, 71, 0));
+    ctx.strokeStyle(Color::bytes(0, 71, 0));
     ctx.lineCap(LineCap::ROUND);
     ctx.miterLimit(4);
     ctx.lineWidth(1.000000);
-    ctx.fillStyle(Colour::bytes(0, 128, 0));
+    ctx.fillStyle(Color::bytes(0, 128, 0));
     ctx.beginPath();
     ctx.arc(252.443420, 145.252620, 29.805948, 0.000000, 6.28318531, 1);
     ctx.fill();
@@ -4743,11 +4743,11 @@ namespace otto::board {
 
     // #circle1882
     ctx.lineJoin(LineJoin::ROUND);
-    ctx.strokeStyle(Colour::bytes(148, 255, 20));
+    ctx.strokeStyle(Color::bytes(148, 255, 20));
     ctx.lineCap(LineCap::ROUND);
     ctx.miterLimit(4);
     ctx.lineWidth(1.000000);
-    ctx.fillStyle(Colour::bytes(0, 213, 0));
+    ctx.fillStyle(Color::bytes(0, 213, 0));
     ctx.beginPath();
     ctx.arc(252.443420, 145.252620, 19.438662, 0.000000, 6.28318531, 1);
     ctx.fill();
@@ -4757,11 +4757,11 @@ namespace otto::board {
 
     // #path1640
     ctx.lineJoin(LineJoin::ROUND);
-    ctx.strokeStyle(Colour::bytes(0, 0, 78));
+    ctx.strokeStyle(Color::bytes(0, 0, 78));
     ctx.lineCap(LineCap::ROUND);
     ctx.miterLimit(4);
     ctx.lineWidth(1.000000);
-    ctx.fillStyle(Colour::bytes(0, 0, 128));
+    ctx.fillStyle(Color::bytes(0, 0, 128));
     ctx.beginPath();
     ctx.arc(149.548110, 75.921394, 29.805948, 0.000000, 6.28318531, 1);
     ctx.fill();
@@ -4769,11 +4769,11 @@ namespace otto::board {
 
     // #circle1882-0
     ctx.lineJoin(LineJoin::ROUND);
-    ctx.strokeStyle(Colour::bytes(0, 86, 243));
+    ctx.strokeStyle(Color::bytes(0, 86, 243));
     ctx.lineCap(LineCap::ROUND);
     ctx.miterLimit(4);
     ctx.lineWidth(1.000000);
-    ctx.fillStyle(Colour::bytes(0, 0, 255));
+    ctx.fillStyle(Color::bytes(0, 0, 255));
     ctx.beginPath();
     ctx.arc(149.880740, 76.236710, 19.438662, 0.000000, 6.28318531, 1);
     ctx.fill();
@@ -4783,11 +4783,11 @@ namespace otto::board {
 
     // #path1640-3
     ctx.lineJoin(LineJoin::ROUND);
-    ctx.strokeStyle(Colour::bytes(226, 144, 0));
+    ctx.strokeStyle(Color::bytes(226, 144, 0));
     ctx.lineCap(LineCap::ROUND);
     ctx.miterLimit(4);
     ctx.lineWidth(1.000000);
-    ctx.fillStyle(Colour::bytes(255, 194, 0));
+    ctx.fillStyle(Color::bytes(255, 194, 0));
     ctx.beginPath();
     ctx.arc(353.524480, 75.273438, 29.805948, 0.000000, 6.28318531, 1);
     ctx.fill();
@@ -4795,11 +4795,11 @@ namespace otto::board {
 
     // #circle1882-7
     ctx.lineJoin(LineJoin::ROUND);
-    ctx.strokeStyle(Colour::bytes(255, 255, 133));
+    ctx.strokeStyle(Color::bytes(255, 255, 133));
     ctx.lineCap(LineCap::ROUND);
     ctx.miterLimit(4);
     ctx.lineWidth(1.000000);
-    ctx.fillStyle(Colour::bytes(255, 235, 0));
+    ctx.fillStyle(Color::bytes(255, 235, 0));
     ctx.beginPath();
     ctx.arc(353.783660, 75.273438, 19.438662, 0.000000, 6.28318531, 1);
     ctx.fill();
@@ -4809,11 +4809,11 @@ namespace otto::board {
 
     // #path1640-7
     ctx.lineJoin(LineJoin::ROUND);
-    ctx.strokeStyle(Colour::bytes(81, 0, 0));
+    ctx.strokeStyle(Color::bytes(81, 0, 0));
     ctx.lineCap(LineCap::ROUND);
     ctx.miterLimit(4);
     ctx.lineWidth(1.000000);
-    ctx.fillStyle(Colour::bytes(128, 0, 0));
+    ctx.fillStyle(Color::bytes(128, 0, 0));
     ctx.beginPath();
     ctx.arc(456.160610, 143.697530, 29.805948, 0.000000, 6.28318531, 1);
     ctx.fill();
@@ -4821,11 +4821,11 @@ namespace otto::board {
 
     // #circle1882-79
     ctx.lineJoin(LineJoin::ROUND);
-    ctx.strokeStyle(Colour::bytes(255, 71, 71));
+    ctx.strokeStyle(Color::bytes(255, 71, 71));
     ctx.lineCap(LineCap::ROUND);
     ctx.miterLimit(4);
     ctx.lineWidth(1.000000);
-    ctx.fillStyle(Colour::bytes(231, 0, 0));
+    ctx.fillStyle(Color::bytes(231, 0, 0));
     ctx.beginPath();
     ctx.arc(456.160580, 143.697530, 19.438662, 0.000000, 6.28318531, 1);
     ctx.fill();

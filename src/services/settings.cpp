@@ -68,7 +68,7 @@ namespace otto::services {
 
   void Settings::Screen::scroll_to(int i)
   {
-    UIManager::current().timeline().apply(&scroll_position).then<ch::RampTo>(i, 250);
+    timeline().apply(&scroll_position).then<ch::RampTo>(i, 250);
   }
 
   // Page& Settings::Screen::cur_page(int offset)
@@ -109,7 +109,7 @@ namespace otto::services {
     ctx.beginPath();
     // ctx.moveTo(20 + start, 200);
     // ctx.lineTo(20 + start + width, 200);
-    ctx.stroke(Colors::White);
+    ctx.stroke(DefaultColors::White);
   }
 
 } // namespace otto::services

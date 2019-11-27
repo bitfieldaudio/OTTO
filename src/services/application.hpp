@@ -79,6 +79,8 @@ namespace otto::services {
     /// There should obviously only ever be one Application instance in the process.
     static Application& current() noexcept;
 
+    static bool has_current() noexcept;
+
     Application(ServiceStorage<LogManager>::Factory log_factory,
                 ServiceStorage<StateManager>::Factory state_factory,
                 ServiceStorage<PresetManager>::Factory preset_factory,

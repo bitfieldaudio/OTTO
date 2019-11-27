@@ -80,7 +80,7 @@ namespace otto::services {
   inline const LEDColor LEDColor::Yellow = 0x888800;
   inline const LEDColor LEDColor::Red = 0xFF0000;
 
-  struct Controller : core::Service {
+  struct Controller : core::Service, core::input::InputHandler {
     using Key = core::input::Key;
     using EncoderEvent = core::input::EncoderEvent;
     using KeyPressEvent= core::input::KeyPressEvent;
@@ -119,18 +119,18 @@ namespace otto::services {
     /// global keys.
     ///
     /// Can be executed from a separate thread
-    void keypress(Key key);
+    bool keypress(Key key) override;
 
     /// Dispatches to the event handler for the current screen, and handles
     /// global keys.
     ///
     /// Can be executed from a separate thread, but must be the same thread as keypress
-    void keyrelease(Key key);
+    bool keyrelease(Key key) override;
 
     /// Send encoder event
     ///
     /// Can be executed from a separate thread
-    void encoder(EncoderEvent ev);
+    void encoder(EncoderEvent ev) override;
 
     /// Temporary solution
     ///

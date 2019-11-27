@@ -3,6 +3,8 @@
 #include <GL/gl3w.h>
 #include <GLFW/glfw3.h>
 
+#include "core/input.hpp"
+
 #include "util/algorithm.hpp"
 #include "util/utility.hpp"
 
@@ -205,6 +207,6 @@ namespace otto::board::ui {
   };
 
   /// Bind keys by implementing this function
-  void handle_keyevent(Action, Modifiers, Key);
+  void handle_keyevent(Action, Modifiers, Key, core::input::InputHandler&);
 
 } // namespace otto::board::ui

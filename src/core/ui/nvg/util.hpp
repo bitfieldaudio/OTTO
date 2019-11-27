@@ -287,6 +287,16 @@ namespace otto::nvg {
       return {w / 2.f, h / 2.f};
     }
 
+    constexpr float min() const
+    {
+      return std::min(w, h);
+    }
+
+    constexpr float max() const
+    {
+      return std::max(w, h);
+    }
+
     constexpr Size abs() const
     {
       const auto abs = [](float f) { return f < 0 ? -f : f; };

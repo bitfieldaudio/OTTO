@@ -284,6 +284,7 @@ namespace otto::nvg {
      */
     Canvas& stroke();
     Canvas& stroke(const Color& color);
+    Canvas& stroke(const Color& color, float line_width);
 
     /**
      * @brief Draws a "filled" rectangle
@@ -370,8 +371,8 @@ namespace otto::nvg {
     template<typename FuncRef>
     Canvas& group(FuncRef&& func);
 
-    template<typename FuncRef>
-    Canvas& callAt(Point p, FuncRef&& f);
+    template<typename FuncRef, typename = std::enable_if_t<std::is_invocable_v<FuncRef>>>
+    Canvas& drawAt(Point p, FuncRef&& f);
 
     template<typename It>
     Canvas& plotBezier(It pointB, It pointE, float f = 0.5, float t = 1);
@@ -653,11 +654,11 @@ namespace otto::nvg {
      * @note: The rotation will only affect drawings made AFTER the rotation is done.
      * @par To calculate from degrees to radians: degrees*Math.PI/180.
      * @n Example: to rotate 5 degrees, specify the following: 5*Math.PI/180
-     * @param angle The rotation angle, in radians.
      * @param p The point to rotate around.
+     * @param r The rotation angle, in radians.
      * @return The canvas to rotate with
      */
-    Canvas& rotateAround(float r, Point p);
+    Canvas& rotateAround(Point p, float r);
 
     /**
      * @brief Remaps the (0,0) position on the canvas
@@ -912,8 +913,8 @@ namespace otto::nvg {
     return *this;
   }
 
-  template<typename FuncRef>
-  Canvas& Canvas::callAt(Point p, FuncRef&& f)
+  template<typename FuncRef, typename Enable>
+  Canvas& Canvas::drawAt(Point p, FuncRef&& f)
   {
     save();
     translate(p);

@@ -55,4 +55,35 @@ namespace otto::itc {
     std::tuple<AQHs...> sndrs_;
   };
 
-} // namespace otto::core::itc
+
+  /// Directly-invoking action sender
+  /// 
+  /// Calls the action handler directly instead of pushing to a queue.
+  /// 
+  /// @note mainly used for single-threaded testing
+  template<typename... Recievers>
+  struct DirectActionSender {
+    template<typename Val, typename Tag, typename... Mixins>
+    using Prop = ActionProp<DirectActionSender<Recievers...>, Val, Tag, Mixins...>;
+
+    DirectActionSender(Recievers&... r) : recievers_(r...) {}
+
+    /// Push an action to be recieved by all recievers that support it
+    template<typename Tag, typename... Args>
+    void push(ActionData<Action<Tag, Args...>> action_data)
+    {
+      (try_call_reciever(reciever<Recievers>(), action_data), ...);
+    }
+
+    /// Get a reciever of a specific type
+    template<typename Reciever>
+    auto reciever() noexcept -> std::enable_if_t<util::is_one_of_v<Reciever, Recievers...>, Reciever&>
+    {
+      return std::get<Reciever&>(recievers_);
+    }
+
+  private:
+    std::tuple<Recievers&...> recievers_;
+  };
+
+} // namespace otto::itc
