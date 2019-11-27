@@ -9,13 +9,9 @@ namespace otto::engines::goss {
 
   using namespace core::input;
 
-  GossEngine::GossEngine()
-    : screen(std::make_unique<GossScreen>()), //
-      audio(std::make_unique<Audio>()),
-      graphics_sndr_(services::UIManager::current().make_sndr(*screen, env_screen_, voice_screen_)),
-      audio_sndr_(services::AudioManager::current().make_sndr(*audio))
+  GossEngine::GossEngine() : audio(std::make_unique<Audio>()), screen_(std::make_unique<GossScreen>())
   {
-    sndr_.push(Actions::rotation_variable::data(rotation_));
+    sender_.push(Actions::rotation_variable::data(rotation_));
   }
 
   void GossEngine::encoder(EncoderEvent e)
@@ -26,6 +22,21 @@ namespace otto::engines::goss {
       case Encoder::yellow: props.click.step(e.steps); break;
       case Encoder::red: props.leslie.step(e.steps); break;
     }
+  }
+
+  core::ui::ScreenAndInput GossEngine::screen()
+  {
+    return {*screen_, *this};
+  }
+
+  core::ui::ScreenAndInput GossEngine::envelope_screen()
+  {
+    return {env_screen_, props.envelope};
+  }
+
+  core::ui::ScreenAndInput GossEngine::voices_screen()
+  {
+    return {voice_screen_, props.settings};
   }
 
 } // namespace otto::engines::goss

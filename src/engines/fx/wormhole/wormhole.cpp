@@ -7,12 +7,7 @@
 
 namespace otto::engines::wormhole {
 
-  Wormhole::Wormhole()
-    : screen(std::make_unique<Screen>()), //
-      audio(std::make_unique<Audio>()),
-      graphics_sndr_(services::UIManager::current().make_sndr(*screen)),
-      audio_sndr_(services::AudioManager::current().make_sndr(*audio))
-  {}
+  Wormhole::Wormhole() : audio(std::make_unique<Audio>()), screen_(std::make_unique<Screen>()) {}
 
   using namespace core::input;
 
@@ -24,6 +19,11 @@ namespace otto::engines::wormhole {
       case Encoder::yellow: props.shimmer.step(ev.steps); break;
       case Encoder::red: props.damping.step(ev.steps); break;
     }
+  }
+
+  core::ui::ScreenAndInput Wormhole::screen()
+  {
+    return {*screen_, *this};
   }
 
 } // namespace otto::engines::wormhole

@@ -68,19 +68,19 @@ namespace otto::core::voices {
     using action = itc::Action<retrig_tag, bool>;
   };
 
-  template<typename Sndr>
+  template<typename Sender>
   struct EnvelopeProps : core::input::InputHandler {
     template<typename Val, typename Tag, typename... Mixins>
-    using Prop = typename Sndr::template Prop<Val, Tag, Mixins...>;
+    using Prop = typename Sender::template Prop<Val, Tag, Mixins...>;
 
-    EnvelopeProps(Sndr* sndr) : sndr(sndr) {};
+    EnvelopeProps(const Sender& sender) : sender(sender){};
 
-    Sndr* sndr;
+    Sender sender;
 
-    Prop<attack_tag, float> attack = {sndr, 0, props::limits(0, 1), props::step_size(0.02)};
-    Prop<decay_tag, float> decay = {sndr, 0, props::limits(0, 1), props::step_size(0.02)};
-    Prop<sustain_tag, float> sustain = {sndr, 1, props::limits(0, 1), props::step_size(0.02)};
-    Prop<release_tag, float> release = {sndr, 0.2, props::limits(0, 1), props::step_size(0.02)};
+    Prop<attack_tag, float> attack = {sender, 0, props::limits(0, 1), props::step_size(0.02)};
+    Prop<decay_tag, float> decay = {sender, 0, props::limits(0, 1), props::step_size(0.02)};
+    Prop<sustain_tag, float> sustain = {sender, 1, props::limits(0, 1), props::step_size(0.02)};
+    Prop<release_tag, float> release = {sender, 0.2, props::limits(0, 1), props::step_size(0.02)};
 
     // TODO: Move to separate input handler
     void encoder(core::input::EncoderEvent evt)
@@ -98,12 +98,12 @@ namespace otto::core::voices {
     DECL_REFLECTION(EnvelopeProps, attack, decay, sustain, release);
   };
 
-  template<typename Sndr>
+  template<typename Sender>
   struct SettingsProps : core::input::InputHandler {
     template<typename Val, typename Tag, typename... Mixins>
-    using Prop = typename Sndr::template Prop<Val, Tag, Mixins...>;
+    using Prop = typename Sender::template Prop<Val, Tag, Mixins...>;
 
-    SettingsProps(Sndr* sndr) : sndr(sndr)
+    SettingsProps(const Sender& sender) : sender(sender)
     {
       play_mode.on_change().connect([this]() {
         rand.send_actions();
@@ -113,17 +113,17 @@ namespace otto::core::voices {
       });
     }
 
-    Sndr* sndr;
+    Sender sender;
 
-    Prop<play_mode_tag, PlayMode, props::wrap> play_mode = {sndr, PlayMode::poly};
-    Prop<rand_tag, float> rand = {sndr, 0, props::limits(0, 1), props::step_size(0.01)};
-    Prop<sub_tag, float> sub = {sndr, 0, props::limits(0.01, 1), props::step_size(0.01)};
-    Prop<detune_tag, float> detune = {sndr, 0, props::limits(0, 1), props::step_size(0.01)};
-    Prop<interval_tag, int> interval = {sndr, 0, props::limits(-12, 12)};
+    Prop<play_mode_tag, PlayMode, props::wrap> play_mode = {sender, PlayMode::poly};
+    Prop<rand_tag, float> rand = {sender, 0, props::limits(0, 1), props::step_size(0.01)};
+    Prop<sub_tag, float> sub = {sender, 0, props::limits(0.01, 1), props::step_size(0.01)};
+    Prop<detune_tag, float> detune = {sender, 0, props::limits(0, 1), props::step_size(0.01)};
+    Prop<interval_tag, int> interval = {sender, 0, props::limits(-12, 12)};
 
-    Prop<portamento_tag, float> portamento = {sndr, 0, props::limits(0, 1), props::step_size(0.01)};
-    Prop<legato_tag, bool> legato = {sndr, false};
-    Prop<retrig_tag, bool> retrig = {sndr, false};
+    Prop<portamento_tag, float> portamento = {sender, 0, props::limits(0, 1), props::step_size(0.01)};
+    Prop<legato_tag, bool> legato = {sender, false};
+    Prop<retrig_tag, bool> retrig = {sender, false};
 
     DECL_REFLECTION(SettingsProps, play_mode, rand, sub, detune, interval, portamento, legato, retrig);
 
@@ -155,6 +155,18 @@ namespace otto::core::voices {
         }
       }
     }
+  };
+
+
+  template<typename Sender>
+  struct SynthPropsBase {
+    SynthPropsBase(const Sender& sender) : sender(sender) {}
+
+    Sender sender;
+    EnvelopeProps<Sender> envelope = {sender};
+    SettingsProps<Sender> settings = {sender};
+
+    DECL_REFLECTION(SynthPropsBase, envelope, settings);
   };
 
 } // namespace otto::core::voices

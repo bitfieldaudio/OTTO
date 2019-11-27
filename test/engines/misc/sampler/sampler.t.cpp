@@ -78,6 +78,10 @@ namespace otto::engines::sampler {
     MainScreen main_screen;
     EnvelopeScreen envelope_screen;
 
+    ui::ScreenAndInput screen() override {
+      return {main_screen, *this};
+    }
+
     AudioAQH audio_sndr = services::AudioManager::current().make_sndr(audio);
     GraphicsAQH graphics_sndr = services::UIManager::current().make_sndr(main_screen, envelope_screen);
     Sndr sndr = {audio_sndr, graphics_sndr};

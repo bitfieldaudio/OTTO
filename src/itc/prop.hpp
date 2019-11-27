@@ -39,7 +39,8 @@ namespace otto::core::props::mixin {
     }
 
     /// Send change actions with the current value to all recievers
-    void send_actions() const noexcept {
+    void send_actions() const noexcept
+    {
       OTTO_ASSERT(action_queue_helper != nullptr);
       action_queue_helper->push(change_action::data(as_prop().get()));
     }
@@ -67,11 +68,15 @@ namespace otto::itc {
     template<typename TRef, typename... Args>
     ActionProp(Sndr* sndr, TRef&& value, Args&&... args)
       : core::props::Property<Val, core::props::mixin::action<Tag, Sndr>, Mixins...>(std::forward<TRef>(value),
-                                                                                    action_mixin::init(sndr),
-                                                                                    FWD(args)...)
+                                                                                     action_mixin::init(sndr),
+                                                                                     FWD(args)...)
     {
       this->send_actions();
     }
+
+    template<typename TRef, typename... Args>
+    ActionProp(Sndr& sndr, TRef&& value, Args&&... args) : ActionProp(&sndr, FWD(value), FWD(args)...)
+    {}
 
     using prop_impl_t::operator=;
     using prop_impl_t::operator const value_type&;

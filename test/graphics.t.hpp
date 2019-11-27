@@ -14,4 +14,9 @@ namespace otto::test {
     show_gui({core::ui::vg::width, core::ui::vg::height}, std::move(draw));
   }
 
+  inline void show_gui(nvg::Drawable& drawable)
+  {
+    show_gui({core::ui::vg::width, core::ui::vg::height}, [&drawable] (auto& ctx) { drawable.draw(ctx); });
+  }
+
 } // namespace otto::test

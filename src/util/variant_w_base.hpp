@@ -155,6 +155,16 @@ namespace otto::util {
       return m_base;
     }
 
+    Base& operator*() noexcept
+    {
+      return *m_base;
+    }
+
+    const Base& operator*() const noexcept
+    {
+      return *m_base;
+    }
+
     int index() const noexcept
     {
       return m_variant.index();

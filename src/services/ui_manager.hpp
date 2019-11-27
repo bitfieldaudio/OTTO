@@ -157,6 +157,16 @@ namespace otto::services {
     itc::ActionQueue action_queue_;
   };
 
+  template<typename... Recievers>
+  struct UISender : itc::ActionSender<Recievers...> {
+    template<typename Tag, typename Type, typename... Mixins>
+    using Prop = typename itc::ActionSender<Recievers...>::template Prop<Tag, Type, Mixins...>;
+
+    UISender(Recievers&... r) noexcept
+      : itc::ActionSender<Recievers...>(UIManager::current().action_queue(), r...)
+    {}
+  };
+
   // IMPLEMENTATION //
 
   template<typename... Recievers>

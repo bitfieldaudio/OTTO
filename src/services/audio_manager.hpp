@@ -4,17 +4,15 @@
 
 #include "core/audio/processor.hpp"
 #include "core/service.hpp"
-#include "services/debug_ui.hpp"
-#include "util/signals.hpp"
-#include "util/locked.hpp"
 #include "itc/itc.hpp"
-
 #include "services/application.hpp"
+#include "services/debug_ui.hpp"
+#include "util/locked.hpp"
+#include "util/signals.hpp"
 
 namespace otto::services {
 
   struct AudioManager : core::Service {
-
     /// Fires Events::pre_init and generates midi frequency table.
     ///
     /// @note @ref _buffer_pool is constructed
@@ -27,7 +25,7 @@ namespace otto::services {
     core::audio::AudioBufferPool& buffer_pool() noexcept;
 
     /// Push-only access to the action queue
-    /// 
+    ///
     /// This queue is consumed at the start of each buffer.
     itc::PushOnlyActionQueue& action_queue() noexcept;
 
@@ -41,17 +39,26 @@ namespace otto::services {
     void send_midi_event(core::midi::AnyMidiEvent) noexcept;
 
     /// Get the samplerate
-    int samplerate() const noexcept { return _samplerate; }
+    int samplerate() const noexcept
+    {
+      return _samplerate;
+    }
 
     /// Get the buffer size
-    int buffer_size() const noexcept { return _buffer_size; }
+    int buffer_size() const noexcept
+    {
+      return _buffer_size;
+    }
 
     /// Get the current buffer number
-    /// 
+    ///
     /// i.e. number of {@ref buffer_size()} chunks of samples since the start
-    /// 
+    ///
     /// Can be used to wait until the current process call is over
-    unsigned buffer_number() const noexcept { return _buffer_number; }
+    unsigned buffer_number() const noexcept
+    {
+      return _buffer_number;
+    }
 
     /// Block at least until the current process call is done
     void wait_one() const noexcept;
@@ -70,9 +77,10 @@ namespace otto::services {
     float cpu_time() noexcept;
 
     /// Get the current instance of this service
-    /// 
+    ///
     /// Alias to `Application::current().audio_manager`
-    static AudioManager& current() noexcept {
+    static AudioManager& current() noexcept
+    {
       return Application::current().audio_manager;
     }
 
@@ -83,7 +91,7 @@ namespace otto::services {
 
   protected:
     /// Must be called by implementations before the actual processing is performed
-    /// 
+    ///
     /// Executes the items in the action queue, and increments the buffer number
     void pre_process_tasks() noexcept;
 
@@ -93,6 +101,7 @@ namespace otto::services {
     std::atomic_uint _buffer_number = 0;
     util::audio::Graph _cpu_time;
     itc::ActionQueue action_queue_;
+
   private:
     core::audio::AudioBufferPool _buffer_pool{1};
     std::atomic_bool _running{false};
@@ -101,8 +110,18 @@ namespace otto::services {
   // IMPLEMENTATION //
 
   template<typename... Recievers>
-  auto AudioManager::make_sndr(Recievers&... recievers) noexcept {
+  auto AudioManager::make_sndr(Recievers&... recievers) noexcept
+  {
     return itc::ActionSender(action_queue_, recievers...);
   }
+
+  template<typename... Recievers>
+  struct AudioSender : itc::ActionSender<Recievers...> {
+    template<typename Tag, typename Type, typename... Mixins>
+    using Prop = typename itc::ActionSender<Recievers...>::template Prop<Tag, Type, Mixins...>;
+    AudioSender(Recievers&... r) noexcept
+      : itc::ActionSender<Recievers...>(AudioManager::current().action_queue(), r...)
+    {}
+  };
 
 } // namespace otto::services
