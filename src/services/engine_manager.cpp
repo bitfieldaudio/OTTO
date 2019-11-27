@@ -211,10 +211,16 @@ namespace otto::services {
     auto fx1_out = effect1.audio->process(audio::ProcessData<1>(fx1_bus));
     auto fx2_out = effect2.audio->process(audio::ProcessData<1>(fx2_bus));
 
+    //Temporary. Get only synth output for testing
+    for (auto&& [snth, l, r] : util::zip(synth_out.audio, fx1_out.audio[0], fx1_out.audio[1])) {
+      l = r = snth;
+    }
+    return fx1_out;
     // // Sequencer. Outputs L/R dry output and adds to fx busses.
     // // auto seq_dry = sequencer.process(midi_in, fx1_bus, fx2_bus);
     // auto fx1_out = effect1->process(audio::ProcessData<1>(fx1_bus));
     // auto fx2_out = effect2->process(audio::ProcessData<1>(fx2_bus));
+
     // Stereo output gathered in fx1_out
     for (auto&& [snth, fx1L, fx1R, fx2L, fx2R] :
          util::zip(synth_out.audio, fx1_out.audio[0], fx1_out.audio[1], fx2_out.audio[0], fx2_out.audio[1])) {

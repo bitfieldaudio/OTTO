@@ -1,4 +1,5 @@
 #include "audio.hpp"
+#include "util/math.hpp"
 
 namespace otto::engines::goss {
 
@@ -22,7 +23,7 @@ namespace otto::engines::goss {
     float fundamental = frequency() * (1 + 0.012 * audio.leslie * audio.pitch_modulation_hi.cos()) * 0.5;
     voice_player.freq(fundamental);
     percussion_player.freq(frequency());
-    float s = voice_player() + percussion_player() * perc_env();
+    float s = voice_player() + (percussion_player() + noise() * 0.5) * perc_env();
     return s * env_();
   }
 
@@ -35,13 +36,12 @@ namespace otto::engines::goss {
   void Voice::on_note_off() noexcept
   {
     env_.release();
-    perc_env.release();
   }
 
   void Voice::action(itc::prop_change<&Props::click>, float cl) noexcept
   {
-    perc_env.decay(cl * 2);
-    perc_env.amp(2 * cl);
+    //perc_env.decay(cl);
+    perc_env.amp(cl * cl * 0.5f);
   }
 
   void Voice::action(itc::prop_change<&Props::model>, int m) noexcept
@@ -58,7 +58,6 @@ namespace otto::engines::goss {
     }
 
     // Generate percussion table
-    percussion.resize(1024);
     percussion.addSine(4, 0.5, 0);
     percussion.addSine(6, 1.0, 0);
 
@@ -75,9 +74,9 @@ namespace otto::engines::goss {
 
   void Audio::generate_model(gam::Osc<>& osc, model_type param)
   {
-    osc.resize(1024);
+    osc.resize(2048);
     for (auto&& [i,s] : util::view::indexed(param)) {
-      osc.addSine( cycles[i], (float)s/((float)(model_size)));
+      osc.addSine( cycles[i], (float)s/((float)(model_size + i)));
     }
   }
 
@@ -86,7 +85,11 @@ namespace otto::engines::goss {
     shared_rotation = &ref;
   }
 
-  
+  void Audio::action(itc::prop_change<&Props::drive>, float d) noexcept
+  {
+    gain = d + 0.1;
+    output_scaling = 2.f / (1 + 4 * util::math::fasttanh3(d) );
+  }
 
   void Audio::action(itc::prop_change<&Props::leslie>, float l) noexcept
   {
@@ -98,8 +101,7 @@ namespace otto::engines::goss {
     leslie_filter_lo.freq(leslie_speed_lo);
     leslie_amount_hi = leslie * 0.3;
     leslie_amount_lo = leslie * 0.5;
-    pitch_modulation_lo.freq(leslie_speed_hi);
-    pitch_modulation_hi.freq(leslie);
+    pitch_modulation_hi.freq(leslie * leslie_speed_hi);
 
     rotation.freq(leslie_speed_hi / 4.f);
   }
@@ -114,7 +116,8 @@ namespace otto::engines::goss {
     // Postprocessing
     float s_lo = lpf(voices) * (1 + leslie_amount_lo * leslie_filter_lo.cos());
     float s_hi = hpf(voices) * (1 + leslie_amount_hi * leslie_filter_hi.cos());
-    return s_lo + s_hi;
+    // Drive/compression
+    return util::math::fasttanh3( gain * (s_lo + s_hi)) * output_scaling;
   }
 
   audio::ProcessData<1> Audio::process(audio::ProcessData<1> data) noexcept

@@ -15,11 +15,15 @@ namespace otto::engines::goss {
   {
     model = m;
     // Get list of model parameters
-    model_param = otto::engines::goss::Audio::model_params[model];
+    model_param = model_params[model];
   }
   void GossScreen::action(prop_change<&Props::click>, float c) noexcept
   {
     click = c;
+  }
+  void GossScreen::action(prop_change<&Props::drive>, float d) noexcept
+  {
+    drive = d;
   }
   void GossScreen::action(prop_change<&Props::leslie>, float l) noexcept
   {
@@ -83,14 +87,14 @@ namespace otto::engines::goss {
       ctx.stroke();
 
       // Ring 2
-      /* Deprecated
       ctx.beginPath();
-      ctx.arc(160, 120, 75, 0, (2 * M_PI * drawbar2), false);
+      ctx.arc(160, 120, 75, 0, (2 * M_PI * drive), false);
       ctx.strokeStyle(Colours::Green);
       ctx.stroke();
       
 
       // Ring 3
+      /* Deprecated
       ctx.beginPath();
       ctx.arc(ring_center.x, ring_center.y, 95, 0, (2 * M_PI * (model / 2.f)), false);
       ctx.strokeStyle(Colours::Blue);

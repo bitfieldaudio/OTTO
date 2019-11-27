@@ -22,7 +22,7 @@ namespace otto::engines::goss {
   {
     switch (e.encoder) {
       case Encoder::blue: props.model.step(e.steps); break;
-      case Encoder::green: break;
+      case Encoder::green: props.drive.step(e.steps); break;
       case Encoder::yellow: props.click.step(e.steps); break;
       case Encoder::red: props.leslie.step(e.steps); break;
     }

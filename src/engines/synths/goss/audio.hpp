@@ -3,6 +3,7 @@
 #include <Gamma/Envelope.h>
 #include <Gamma/Filter.h>
 #include <Gamma/Oscillator.h>
+#include <Gamma/Noise.h>
 
 #include "core/voices/voice_manager.hpp"
 #include "goss.hpp"
@@ -28,11 +29,11 @@ namespace otto::engines::goss {
 
     void action(voices::attack_tag::action, float a) noexcept
     {
-      env_.attack(a);
+      env_.attack(a * a * 8.f + 0.005f);
     }
     void action(voices::decay_tag::action, float d) noexcept
     {
-      env_.decay(d);
+      env_.decay(d * d * 4.f + 0.005f);
     }
     void action(voices::sustain_tag::action, float s) noexcept
     {
@@ -40,7 +41,7 @@ namespace otto::engines::goss {
     }
     void action(voices::release_tag::action, float r) noexcept
     {
-      env_.release(r);
+      env_.release(r * r * 8.f + 0.005f);
     }
 
   private:
@@ -50,7 +51,8 @@ namespace otto::engines::goss {
     gam::Osc<> voice_player;
     gam::Osc<> percussion_player;
 
-    gam::AD<> perc_env{0.001, 0.2};
+    gam::NoiseBrown<> noise;
+    gam::AD<> perc_env{0.01, 0.08};
     gam::ADSR<> env_ = {0.1f, 0.1f, 0.7f, 2.0f, 1.f, -4.f};
   };
 
@@ -58,7 +60,9 @@ namespace otto::engines::goss {
     Audio() noexcept;
 
     void action(Actions::rotation_variable, std::atomic<float>&) noexcept;
-    
+
+    void action(itc::prop_change<&Props::drive>, float d) noexcept;
+
     void action(itc::prop_change<&Props::leslie>, float l) noexcept;
 
     template<typename Tag, typename... Args>
@@ -72,29 +76,6 @@ namespace otto::engines::goss {
 
     audio::ProcessData<1> process(audio::ProcessData<1>) noexcept;
 
-    // Much of this is needed to draw the screen, so it is not private.
-    // Only static data is shared. nothing during runtime
-    static constexpr int number_of_models = 11; //When changed, update model limits in goss.hpp
-    std::array<gam::Osc<>, number_of_models> models;
-    static constexpr int model_size = 9;
-    using model_type = std::array<int, model_size>;
-    /// Number of sine cycles for each drawbar. multiplied by 2.
-    // Note: perhaps all could be divided by 2 but then we get a cusp for the second drawbar.
-    static constexpr model_type cycles = {1, 3, 2, 4, 6, 8, 10, 12, 16};
-    /// The drawbar settings. correspond to typical hammond drawbars in ascending order.
-    static constexpr std::array<model_type, number_of_models> model_params = {{{8, 8, 8, 0, 0, 0, 0, 0, 0},
-                                                                              {0, 0, 8, 5, 0, 0, 0, 0, 0},
-                                                                              {8, 8, 8, 0, 0, 0, 0, 0, 8},
-                                                                              {8, 4, 8, 0, 0, 0, 0, 0, 0},
-                                                                              {8, 8, 8, 8, 8, 8, 8, 8, 8},
-                                                                              {6, 6, 8, 8, 4, 8, 5, 8, 8},
-                                                                              {8, 0, 0, 0, 0, 0, 6, 7, 8},
-                                                                              {8, 3, 5, 3, 5, 8, 0, 7, 0},
-                                                                              {8, 3, 0, 0, 0, 0, 3, 7, 8},
-                                                                              {8, 0, 3, 6, 0, 0, 0, 0, 0},
-                                                                              {2, 0, 8, 8, 0, 0, 0, 0, 4}}};
-    
-
   private:
     friend Voice;
 
@@ -102,7 +83,12 @@ namespace otto::engines::goss {
 
     void generate_model(gam::Osc<>&, model_type);
 
-    gam::Osc<> percussion;
+    std::array<gam::Osc<>, number_of_models> models;
+
+    gam::Osc<> percussion = {1, 0, 1024};
+
+    float gain = 0.f;
+    float output_scaling = 0.f;
 
     float leslie = 0.f;
 
@@ -113,7 +99,6 @@ namespace otto::engines::goss {
 
     gam::LFO<> leslie_filter_hi;
     gam::LFO<> leslie_filter_lo;
-    gam::LFO<> pitch_modulation_lo;
     gam::LFO<> pitch_modulation_hi;
 
     gam::AccumPhase<> rotation;
