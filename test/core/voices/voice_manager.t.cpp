@@ -101,6 +101,17 @@ namespace otto::core::voices {
                      Catch::Equals(std::vector{50}));
       }
 
+      SECTION ("Snaps back to playing CORRECT old note when a note is released") {
+        vmgr.handle_midi(midi::NoteOnEvent{50});
+        vmgr.handle_midi(midi::NoteOnEvent{60});
+        vmgr.handle_midi(midi::NoteOnEvent{70});
+        vmgr.handle_midi(midi::NoteOffEvent{70});
+        REQUIRE_THAT(test::sort(view::transform(triggered_voices, MEMBER_CALLER(midi_note))),
+                     Catch::Equals(std::vector{60}));
+      }
+
+
+
       SECTION ("AUX mode: Sub = 0.5") {
         voices_props.sub = 0.5f;
         queue.pop_call_all();

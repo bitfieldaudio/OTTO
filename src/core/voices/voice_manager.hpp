@@ -277,6 +277,8 @@ namespace otto::core::voices {
 
     void set_playmode(PlayMode pm) noexcept;
 
+    void set_sustain(bool s) noexcept;
+
     util::local_vector<float, 7> detune_values;
     util::local_vector<float, voice_count_v> rand_values;
     // Random values. 100% random, organic and fresh. Works for up to 12 voices.

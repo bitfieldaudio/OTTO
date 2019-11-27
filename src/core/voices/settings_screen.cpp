@@ -18,6 +18,17 @@ namespace otto::core::voices {
     return "";
   }
 
+  static std::string aux_value_string(PlayMode pm) noexcept
+  {
+    switch (pm) {
+      case PlayMode::poly: return "poly";
+      case PlayMode::mono: return "sub";
+      case PlayMode::unison: return "detune";
+      case PlayMode::interval: return "interv.";
+    };
+    return "";
+  }
+
   void SettingsScreen::action(portamento_tag::action, float portamento) noexcept
   {
     this->portamento = portamento;
@@ -35,6 +46,7 @@ namespace otto::core::voices {
     this->play_mode = play_mode;
     play_mode_str = play_mode._to_string();
     aux_name = aux_setting(play_mode);
+    aux_value = aux_value_string(play_mode);
   }
   void SettingsScreen::action(rand_tag::action, float rand) noexcept
   {
@@ -50,7 +62,7 @@ namespace otto::core::voices {
   }
   void SettingsScreen::action(interval_tag::action, int interval) noexcept
   {
-    if (play_mode == +PlayMode::unison) aux_value = fmt::format("{:+}", interval);
+    if (play_mode == +PlayMode::interval) aux_value = fmt::format("{:+}", interval);
   }
 
   void SettingsScreen::draw(ui::vg::Canvas& ctx)
