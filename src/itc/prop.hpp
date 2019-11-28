@@ -71,7 +71,7 @@ namespace otto::itc {
                                                                                      action_mixin::init(sndr),
                                                                                      FWD(args)...)
     {
-      this->send_actions();
+      //this->send_actions();
     }
 
     template<typename TRef, typename... Args>

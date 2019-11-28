@@ -38,12 +38,12 @@ namespace otto::itc {
     std::tuple<Recievers&...> recievers_;
   };
 
-  template<typename... AQHs>
+  template<typename... ActionSenders>
   struct JoinedActionSender {
     template<typename Val, typename Tag, typename... Mixins>
-    using Prop = ActionProp<JoinedActionSender<AQHs...>, Val, Tag, Mixins...>;
+    using Prop = ActionProp<JoinedActionSender<ActionSenders...>, Val, Tag, Mixins...>;
 
-    JoinedActionSender(AQHs... sndrs) : sndrs_{std::forward<AQHs>(sndrs)...} {}
+    JoinedActionSender(ActionSenders... sndrs) : sndrs_{std::forward<ActionSenders>(sndrs)...} {}
 
     template<typename Tag, typename... Args>
     void push(ActionData<Action<Tag, Args...>> action_data)
@@ -52,7 +52,7 @@ namespace otto::itc {
     }
 
   private:
-    std::tuple<AQHs...> sndrs_;
+    std::tuple<ActionSenders...> sndrs_;
   };
 
 
