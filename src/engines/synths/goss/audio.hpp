@@ -8,7 +8,7 @@
 #include "core/voices/voice_manager.hpp"
 #include "goss.hpp"
 
-//TODO: draw model,  drive/compression. 
+//TODO: draw model
 
 namespace otto::engines::goss {
 
