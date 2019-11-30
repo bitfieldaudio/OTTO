@@ -98,6 +98,7 @@ matrix:
 
   allow_failures:
     - name: "Deploy Docs"
+    - os: osx
 
   fast_finish: true
 
