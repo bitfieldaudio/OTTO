@@ -23,6 +23,7 @@ namespace otto::engines::goss {
   };
 
   struct Props : voices::SynthPropsBase<Sender> {
+    using voices::SynthPropsBase<Sender>::SynthPropsBase;
     Sender::Prop<struct model_tag, int> model = {sender, 0, limits(0, 2)};
     Sender::Prop<struct drawbar2_tag, float> drawbar2 = {sender, 0.5, limits(0, 1), step_size(0.01)};
     Sender::Prop<struct click_tag, float> click = {sender, 0.5, limits(0, 1), step_size(0.01)};
@@ -33,9 +34,6 @@ namespace otto::engines::goss {
 
   struct GossEngine : core::engine::SynthEngine<GossEngine> {
     static constexpr auto name = "Goss";
-    using Audio = Audio;
-    using Screen = GossScreen;
-    using Props = Props;
 
     GossEngine();
 
@@ -54,9 +52,11 @@ namespace otto::engines::goss {
     voices::SettingsScreen voice_screen_;
     voices::EnvelopeScreen env_screen_;
 
-    Sender sender_ = {*audio, *screen_, voice_screen_, env_screen_};
-    Props props{sender_};
+    Props props;
 
     std::atomic<float> rotation_ = 0;
   };
 } // namespace otto::engines::goss
+
+#include "audio.hpp"
+#include "screen.hpp"

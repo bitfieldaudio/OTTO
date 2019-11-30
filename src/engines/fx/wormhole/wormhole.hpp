@@ -39,3 +39,6 @@ namespace otto::engines::wormhole {
   };
 
 } // namespace otto::engines::wormhole
+
+#include "audio.hpp"
+#include "screen.hpp"
