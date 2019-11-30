@@ -5,6 +5,8 @@
 #include "core/ui/vector_graphics.hpp"
 #include "engines/fx/wormhole/audio.hpp"
 #include "engines/fx/wormhole/screen.hpp"
+#include "engines/fx/chorus/audio.hpp"
+#include "engines/fx/chorus/screen.hpp"
 #include "engines/synths/goss/audio.hpp"
 #include "engines/synths/goss/screen.hpp"
 #include "services/application.hpp"
@@ -32,7 +34,7 @@ namespace otto::services {
 
     SynthDispatcher synth;
     engines::wormhole::Wormhole effect1;
-    engines::wormhole::Wormhole effect2;
+    engines::chorus::Chorus effect2;
     // ArpDispatcher arpeggiator{true};
     // EffectsDispatcher effect1{true};
     // EffectsDispatcher effect2{true};
