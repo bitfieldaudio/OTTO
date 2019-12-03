@@ -1,7 +1,7 @@
 # OTTO
 <a href="https://ibb.co/mBXmNnH"><img src="https://i.ibb.co/6Z12XK4/render1.png" alt="render1" width="100%" /></a>
 
-The OTTO is an open source digital hardware synth, groovebox and FX processor. For more information and documentation see [our website](otto-project.github.io)
+The OTTO is an open source digital hardware synth, groovebox and FX processor. For more information and documentation see [our website](https://otto-project.github.io)
 
 We would like to invite you to our **[discord server](https://discord.gg/4cV9Ucz)** where we hang out and discuss all things OTTO.
 
