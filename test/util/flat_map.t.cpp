@@ -22,13 +22,16 @@ namespace otto::test {
     }
 
     SECTION ("Insertion of element increases size") {
-      REQUIRE(map.insert("test", 5) == std::pair(map.begin(), true));
+      auto res = map.insert("test", 5);
+      REQUIRE(res == std::pair(map.begin(), true));
       REQUIRE(map.size() == 1);
     }
 
     SECTION ("Inserting existing element returns iterator to that and false") {
-      REQUIRE(map.insert("test", 5) == std::pair(map.begin(), true));
-      REQUIRE(map.insert("test", 5) == std::pair(map.begin(), false));
+      auto res = map.insert("test", 5);
+      REQUIRE(res == std::pair(map.begin(), true));
+      res = map.insert("test", 5);
+      REQUIRE(res == std::pair(map.begin(), false));
     }
 
     map.insert("0", 0);

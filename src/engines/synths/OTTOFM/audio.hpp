@@ -38,28 +38,57 @@ namespace otto::engines::ottofm {
     };
 
     /// Set frequency
-    void freq(float frq)
+    void freq(float frq) noexcept
     {
-      sine.freq(frq);
+      sine.freq(frq * freq_ratio_ + detune_amount_);
     }; 
 
     /// Get current level
-    float level() { return env_.value() * outlevel_; }; 
+    float level() noexcept
+    { 
+      return env_.value() * outlevel_; 
+    }; 
+
+    /// For graphics
+    /// If it is a carrier it output a constant value and sould be multiplied by the voice envelope
+    /// TODO: Refactor so just operator envelopes are used, so we don't need voice envelope. 
+    float get_activity_level() noexcept
+    {
+      if (modulator_)
+        return level();
+      else
+        return outlevel_;
+    }
 
     /// Set fm_amount
-    void fm_amount(float fm){ fm_amount_ = fm; };
+    void fm_amount(float fm) noexcept
+    { 
+      fm_amount_ = fm; 
+    };
 
     /// Reset envelope
-    void reset(){ env_.resetSoft(); };
+    void reset() noexcept
+    { 
+      env_.resetSoft(); 
+    };
 
     /// Release envelope
-    void release(){ env_.release(); };
+    void release() noexcept
+    { 
+      env_.release(); 
+    };
 
     /// Finish envelope
-    void finish(){ env_.finish(); };
+    void finish() noexcept
+    { 
+      env_.finish(); 
+    };
 
     /// Set modulator flag
-    void modulator(bool m){ modulator_ = m; };
+    void modulator(bool m) noexcept
+    { 
+      modulator_ = m; 
+    };
 
     /// Actionhandlers. These are all the properties that can vary across operators.
     void action(itc::prop_change<&Props::OperatorProps<I>::feedback>, float f)
@@ -133,6 +162,7 @@ namespace otto::engines::ottofm {
     void reset_envelopes() noexcept;
     void release_envelopes() noexcept;
 
+    /// Sets operator frequencies. Call after next() to use updated voice frequency
     void set_frequencies() noexcept;
 
     /// Use actions from base class
@@ -148,11 +178,11 @@ namespace otto::engines::ottofm {
     };
     void action(itc::prop_change<&Props::algN>, int a) noexcept
     {
-      // Raw loop, sorry. Is there a better way?
-      for (int i=0; i<std::tuple_size<decltype(operators)>::value; i++)
-      {
-        std::get<i>(operators).modulator( algorithms[a].modulator_flags[i]; );
-      }
+      int i = 0;
+      util::tuple_for_each(operators, [&i, a](auto& op){
+        op.modulator(algorithms[a].modulator_flags[i]);
+        i++;
+      });
     };
 
     void action(voices::attack_tag::action, float a) noexcept
@@ -178,8 +208,6 @@ namespace otto::engines::ottofm {
 
   struct Audio {
     Audio() noexcept;
-
-    float get_activity_level(int op) noexcept;
 
     /// Passes unhandled actions to voices
     template<typename Tag, typename... Args>

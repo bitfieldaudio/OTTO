@@ -6,7 +6,7 @@
 
 namespace otto::nvg::ColorConverter {
 
-  using byte = unsigned char;
+  using byte = std::uint8_t;
 
   struct Rgb {
     byte r = 0;
@@ -17,6 +17,56 @@ namespace otto::nvg::ColorConverter {
   struct Rgba : Rgb {
     byte a = 0;
   };
+
+  constexpr Rgba rgba(unsigned int color)
+  {
+    Rgba rgba;
+    rgba.r = (byte)(color >> 24U);
+    rgba.g = (byte)((color >> 16U) & 0x00ffU);
+    rgba.b = (byte)((color >> 8U) & 0x0000ffU);
+    rgba.a = (byte)(color % 0x100U);
+    return rgba;
+  }
+
+  constexpr Rgba rgba(float _r, float _g, float _b, float _a)
+  {
+    Rgba rgba;
+    rgba.r = std::clamp<byte>((byte)(_r * UCHAR_MAX), 0, UCHAR_MAX);
+    rgba.g = std::clamp<byte>((byte)(_g * UCHAR_MAX), 0, UCHAR_MAX);
+    rgba.b = std::clamp<byte>((byte)(_b * UCHAR_MAX), 0, UCHAR_MAX);
+    rgba.a = std::clamp<byte>((byte)(_a * UCHAR_MAX), 0, UCHAR_MAX);
+    return rgba;
+  }
+
+  constexpr Rgba rgba(byte _r, byte _g, byte _b, byte _a)
+  {
+    Rgba rgba;
+    rgba.r = _r;
+    rgba.g = _g;
+    rgba.b = _b;
+    rgba.a = _a;
+    return rgba;
+  }
+
+  constexpr Rgba rgba(unsigned _r, unsigned _g, unsigned _b, unsigned _a)
+  {
+    Rgba rgba;
+    rgba.r = (byte) _r;
+    rgba.g = (byte) _g;
+    rgba.b = (byte) _b;
+    rgba.a = (byte) _a;
+    return rgba;
+  }
+
+  constexpr Rgba rgba(int _r, int _g, int _b, int _a)
+  {
+    Rgba rgba;
+    rgba.r = (byte) _r;
+    rgba.g = (byte) _g;
+    rgba.b = (byte) _b;
+    rgba.a = (byte) _a;
+    return rgba;
+  }
 
   constexpr double clamp(double x, double a, double b)
   {

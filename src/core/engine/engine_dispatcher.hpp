@@ -23,7 +23,7 @@ namespace otto::core::engine {
       Prop<struct current_tag, std::string> current = {sender, ""};
     };
 
-    ui::Screen selector_screen();
+    ui::Screen& selector_screen();
     ITypedEngine<ET>& current();
     ITypedEngine<ET>* operator->();
 

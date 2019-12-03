@@ -17,20 +17,20 @@ namespace otto::core::props::mixin {
     }
   };
 
-  template<typename PropTag, typename AQH, typename ValueType, typename TagList>
-  struct leaf<action<PropTag, AQH>, ValueType, TagList> {
-    using action = action<PropTag, AQH>;
-    OTTO_PROPS_MIXIN_DECLS(action);
+  template<typename PropTag, typename Sender, typename ValueType, typename TagList>
+  struct leaf<action<PropTag, Sender>, ValueType, TagList> {
+    using action_mixin = action<PropTag, Sender>;
+    OTTO_PROPS_MIXIN_DECLS(action_mixin);
     using change_action = itc::Action<PropTag, value_type>;
 
-    void init(AQH& sndr) noexcept
+    void init(Sender& sndr) noexcept
     {
-      action_queue_helper = &sndr;
+      sender = &sndr;
     }
 
-    void init(AQH* sndr) noexcept
+    void init(Sender* sndr) noexcept
     {
-      action_queue_helper = sndr;
+      sender = sndr;
     }
 
     void on_hook(hook<common::hooks::after_set>& hook) noexcept
@@ -41,12 +41,12 @@ namespace otto::core::props::mixin {
     /// Send change actions with the current value to all recievers
     void send_actions() const noexcept
     {
-      OTTO_ASSERT(action_queue_helper != nullptr);
-      action_queue_helper->push(change_action::data(as_prop().get()));
+      OTTO_ASSERT(sender != nullptr);
+      sender->push(change_action::data(as_prop().get()));
     }
 
   private:
-    AQH* action_queue_helper = nullptr;
+    Sender* sender = nullptr;
   };
 
 } // namespace otto::core::props::mixin

@@ -2,12 +2,10 @@
 
 #include "audio.hpp"
 #include "screen.hpp"
-#include "services/audio_manager.hpp"
-#include "services/ui_manager.hpp"
 
 namespace otto::engines::wormhole {
 
-  Wormhole::Wormhole() : audio(std::make_unique<Audio>()), screen_(std::make_unique<Screen>()) {}
+  Wormhole::Wormhole() : audio(std::make_unique<Audio>()), screen_(std::make_unique<Screen>()), props{{*audio, *screen_}} {}
 
   using namespace core::input;
 

@@ -6,7 +6,7 @@ namespace otto::engines::ottofm {
   // VOICE //
   Voice::Voice(Audio& a) noexcept : audio(a)
   {
-    for (auto& op : operators) op.finish();
+    util::tuple_for_each(operators, [](auto& op){op.finish();});
   }
 
   void Voice::on_note_on(float freq_target) noexcept
@@ -22,25 +22,17 @@ namespace otto::engines::ottofm {
 
   void Voice::reset_envelopes() noexcept
   {
-    for (auto& op : operators) op.reset();
+    util::tuple_for_each(operators, [](auto& op){op.reset();});
   }
 
   void Voice::release_envelopes() noexcept
   {
-    for (auto& op : operators) op.release();
+    util::tuple_for_each(operators, [](auto& op){op.release();});
   }
 
   void Voice::set_frequencies() noexcept
   {
-    for (auto& op : operators) {
-      op.freq(frequency() * op.freq_ratio_ + op.detune_amount_);
-    }
-  }
-
-  // Actionhandlers
-  void Audio::action(itc::prop_change<&Props::algN>, int a) noexcept
-  {
-    algN_ = a;
+    util::tuple_for_each(operators, [this](auto& op){ op.freq(frequency()); } );
   }
   
   // Voice process. We apply voice volume and increment voice frequency with next() manually, 
@@ -51,95 +43,100 @@ namespace otto::engines::ottofm {
       case 0: {
         for (float& f : data.audio) {
           next();
-          f += operators[0](operators[1](operators[2](operators[3](0)))) * volume();
+          set_frequencies();
+          f += std::get<0>(operators)(std::get<1>(operators)(std::get<2>(operators)(std::get<3>(operators)(0)))) * volume();
         } 
         break; 
       } 
       case 1: {
         for (float& f : data.audio){
           next();
-          f +=  operators[0](operators[1](operators[2](0) + operators[3](0))) * volume();
+          set_frequencies();
+          f += std::get<0>(operators)(std::get<1>(operators)(std::get<2>(operators)(0) + std::get<3>(operators)(0))) * volume();
         } 
         break;
       }
       case 2: {
         for (float& f : data.audio){
           next();
-          f +=  operators[0](operators[1](operators[2](0)) + operators[3](0)) * volume();
+          set_frequencies();
+          f +=  std::get<0>(operators)(std::get<1>(operators)(std::get<2>(operators)(0)) + std::get<3>(operators)(0)) * volume();
         }
         break;
       }
       case 3: {
         for (float& f : data.audio) {
           next();
-          float aux = operators[3](0);  
-          f += operators[0](operators[1](aux) + operators[2](aux)) * volume();
+          set_frequencies();
+          float aux = std::get<3>(operators)(0);  
+          f += std::get<0>(operators)(std::get<1>(operators)(aux) + std::get<2>(operators)(aux)) * volume();
         }
         break;
       }
       case 4: {
         for (float& f : data.audio) {
           next();
-          float aux = operators[2](operators[3](0));
-          f += operators[0](aux) + operators[1](aux) * volume();
+          set_frequencies();
+          float aux = std::get<2>(operators)(std::get<3>(operators)(0));
+          f += (std::get<0>(operators)(aux) + std::get<1>(operators)(aux)) * volume();
         }
         break;
       }
       case 5: {
         for (float& f : data.audio) {
           next();
-          f += operators[0](0) + operators[1](operators[2](operators[3](0))) * volume();
+          set_frequencies();
+          f += (std::get<0>(operators)(0) + std::get<1>(operators)(std::get<2>(operators)(std::get<3>(operators)(0)))) * volume();
         }
         break;
       }
       case 6: { 
         for (float& f : data.audio) {
           next();
-          f += operators[0](operators[1](0) + operators[2](0) + operators[3](0)) * volume();
+          set_frequencies();
+          f += std::get<0>(operators)(std::get<1>(operators)(0) + std::get<2>(operators)(0) + std::get<3>(operators)(0)) * volume();
         }
         break;
       }
       case 7: { 
         for (float& f : data.audio) {
           next();
-          f += operators[0](operators[1](0)) + operators[2](operators[3](0)) * volume();
+          set_frequencies();
+          f += (std::get<0>(operators)(std::get<1>(operators)(0)) + std::get<2>(operators)(std::get<3>(operators)(0))) * volume();
         }
         break;
       }
       case 8: { 
         for (float& f : data.audio) { 
           next();
-          float aux = operators[3](0);
-          f += operators[0](aux) + operators[1](aux) + operators[2](aux) * volume();
+          set_frequencies();
+          float aux = std::get<3>(operators)(0);
+          f += (std::get<0>(operators)(aux) + std::get<1>(operators)(aux) + std::get<2>(operators)(aux)) * volume();
         }
         break;
       }
       case 9: { 
         for (float& f : data.audio) {
           next();
-          f += operators[0](0) + operators[1](0) + operators[2](operators[3](0)) * volume();
+          set_frequencies();
+          f += (std::get<0>(operators)(0) + std::get<1>(operators)(0) + std::get<2>(operators)(std::get<3>(operators)(0))) * volume();
         }
         break;
       }
       case 10: { 
         for (float& f : data.audio){
           next();
-          f += operators[0](0) + operators[1](0) + operators[2](0) + operators[3](0) * volume();
+          set_frequencies();
+          f += (std::get<0>(operators)(0) + std::get<1>(operators)(0) + std::get<2>(operators)(0) + std::get<3>(operators)(0)) * volume();
         }
         break;
       }
-      return data;
+      default: break;
     }
+    return data;
   }
 
   // Audio //
-  float Audio::get_activity_level(int op) noexcept
-  {
-    if (last_voice->operators[op].modulator)
-      return last_voice->operators[op].level();
-    else
-      return last_voice->env_.value() * last_voice->operators[op].outlevel;
-  }
 
   audio::ProcessData<1> Audio::process(audio::ProcessData<1> data) noexcept
   {
@@ -149,10 +146,10 @@ namespace otto::engines::ottofm {
       v.process(data);
     }
     // Set activity values for last triggered voice
-    *shared_activity0 = get_activity_level(0);
-    *shared_activity1 = get_activity_level(1);
-    *shared_activity2 = get_activity_level(2);
-    *shared_activity3 = get_activity_level(3);
+    *shared_activity0 = std::get<0>(last_voice->operators).get_activity_level();
+    *shared_activity1 = std::get<1>(last_voice->operators).get_activity_level();
+    *shared_activity2 = std::get<2>(last_voice->operators).get_activity_level();
+    *shared_activity3 = std::get<3>(last_voice->operators).get_activity_level();
 
     return data;
   }

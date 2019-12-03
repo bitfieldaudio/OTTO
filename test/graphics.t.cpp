@@ -11,7 +11,7 @@ namespace otto::test {
                 std::function<void(core::ui::vg::Canvas& ctx)> draw,
                 core::input::InputHandler*)
   {
-    ERROR("show_gui run, but isn't implemented without GLFW");
+    FAIL("show_gui run, but isn't implemented without GLFW");
   }
 
 } // namespace otto::test

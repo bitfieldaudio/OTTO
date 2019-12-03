@@ -35,7 +35,10 @@ namespace otto::engines::wormhole {
     std::unique_ptr<Audio> audio;
     std::unique_ptr<Screen> screen_;
 
-    Props props = {{*audio, *screen_}};
+    Props props;
   };
 
 } // namespace otto::engines::wormhole
+
+#include "audio.hpp"
+#include "screen.hpp"

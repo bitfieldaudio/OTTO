@@ -72,7 +72,6 @@ namespace otto::engines::sampler {
   };
   struct Engine : core::engine::MiscEngine<Engine> {
     static constexpr util::string_ref name = "Sampler";
-    using Props = Props;
 
     Audio audio;
     MainScreen main_screen;

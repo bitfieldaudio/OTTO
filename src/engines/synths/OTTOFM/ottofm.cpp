@@ -1,7 +1,7 @@
 #include "ottofm.hpp"
 
-//#include "audio.hpp"
-//#include "screen.hpp"
+#include "audio.hpp"
+#include "screen.hpp"
 #include "services/audio_manager.hpp"
 #include "services/ui_manager.hpp"
 
@@ -30,41 +30,34 @@ namespace otto::engines::ottofm {
 
   void OttofmEngine::encoder(EncoderEvent e)
   {
-    //Could this be done in the keypress method?
-    //And it is probably done separately on the graphics thread?
     auto shift = services::Controller::current().is_pressed(Key::shift);
-
-    auto& current = props.operators.at(props.cur_op);
-    switch (e.encoder) {
-    case Encoder::blue:
-      if (!shift) {
-        current.ratio_idx.step(e.steps);
-      } else {
-        current.detune.step(e.steps);
-      }
-      break;
-    case Encoder::green:
-      if (!shift) {
-        current.outLev.step(e.steps);
-      } else {
-        current.mSuspos.step(e.steps);
-      }
-      break;
-    case Encoder::yellow:
-      if (!shift) {
-        current.feedback.step(e.steps);
-        current.mAtt.step(e.steps);
-      } else {
-        current.mDecrel.step(e.steps);
-      }
-      break;
-    case Encoder::red:
-      if (!shift) {
-        props.fmAmount.step(e.steps);
-      } else {
-        props.algN.step(e.steps);
-      }
-      break;
+    if (e.encoder == +Encoder::red){
+      if (!shift) props.fmAmount.step(e.steps);
+      else props.algN.step(e.steps);
+    } else {
+      int i = 0;
+      util::tuple_for_each(props.operators, [&](auto& op){
+        if (i == props.cur_op.get()) {
+          switch (e.encoder) {
+          case Encoder::blue:
+            if (!shift) op.ratio_idx.step(e.steps);
+            else op.detune.step(e.steps);
+            break;
+          case Encoder::green:
+            if (!shift) op.outLev.step(e.steps);
+            else op.mSuspos.step(e.steps);
+            break;
+          case Encoder::yellow:
+            if (!shift) {
+              op.feedback.step(e.steps);
+              op.mAtt.step(e.steps);
+            } else op.mDecrel.step(e.steps);
+            break;
+          default: break;
+          }
+          i++;
+        }    
+      }); 
     }
   }
 

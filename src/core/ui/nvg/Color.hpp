@@ -18,10 +18,7 @@ namespace otto::nvg {
      * @brief Construct a color with an unsigned integer value
      * @param color The color code value
      */
-    constexpr Color(const unsigned int color)
-    {
-      set(color);
-    }
+    constexpr Color(const unsigned int color) noexcept : Rgba(ColorConverter::rgba(color)) {}
 
     /**
      * @brief Construct color with it's components value in the range [0,255]
@@ -30,10 +27,7 @@ namespace otto::nvg {
      * @param _b The blue component value
      * @param _a The alpha component value
      */
-    constexpr Color(Byte _r, Byte _g, Byte _b, Byte _a = 255)
-    {
-      set(_r, _g, _b, _a);
-    }
+    constexpr Color(Byte _r, Byte _g, Byte _b, Byte _a = 255) noexcept : Rgba(ColorConverter::rgba(_r, _g, _b, _a)) {}
 
     /**
      * @brief Construct color with it's components value in the range [0,255]
@@ -42,10 +36,7 @@ namespace otto::nvg {
      * @param _b The blue component value
      * @param _a The alpha component value
      */
-    constexpr Color(int _r, int _g, int _b, int _a = 255)
-    {
-      set(_r, _g, _b, _a);
-    }
+    constexpr Color(int _r, int _g, int _b, int _a = 255) noexcept : Rgba(ColorConverter::rgba(_r, _g, _b, _a)) {}
 
     /**
      * @brief Construct color with it's components value in the range [0,255]
@@ -54,10 +45,9 @@ namespace otto::nvg {
      * @param _b The blue component value
      * @param _a The alpha component value
      */
-    constexpr Color(unsigned _r, unsigned _g, unsigned _b, unsigned _a = 255)
-    {
-      set(_r, _g, _b, _a);
-    }
+    constexpr Color(unsigned _r, unsigned _g, unsigned _b, unsigned _a = 255) noexcept
+      : Rgba(ColorConverter::rgba(_r, _g, _b, _a))
+    {}
 
     /**
      * @brief Construct color with it's components value in the range [0,1]
@@ -66,53 +56,65 @@ namespace otto::nvg {
      * @param _b The blue component value
      * @param _a The alpha component value
      */
-    constexpr Color(float _r, float _g, float _b, float _a = 1.0f)
+    constexpr Color(float _r, float _g, float _b, float _a = 1.0f) noexcept : Rgba(ColorConverter::rgba(_r, _g, _b, _a))
+    {}
+
+    constexpr Color(const Color&) noexcept = default;
+    constexpr Color(Color&&) noexcept = default;
+    constexpr Color& operator=(const Color&) noexcept = default;
+    constexpr Color& operator=(Color&&) noexcept = default;
+
+    constexpr Color& operator=(const Rgba& rgba) noexcept
     {
-      set(_r, _g, _b, _a);
+      this->r = rgba.r;
+      this->g = rgba.g;
+      this->b = rgba.b;
+      this->a = rgba.a;
+      return *this;
     }
 
-    /// Convert the color to unsigned int as the color code
-    constexpr operator unsigned int() const
-    {
-      return code();
-    }
-
-    constexpr Byte& operator[](int index)
-    {
-      switch (index) {
-        case 0: return r;
-        case 1: return g;
-        case 2: return b;
-        case 3: return a;
-        default: OTTO_UNREACHABLE;
-      }
-    }
-    constexpr const Byte operator[](int index) const
-    {
-      switch (index) {
-        case 0: return r;
-        case 1: return g;
-        case 2: return b;
-        case 3: return a;
-        default: OTTO_UNREACHABLE;
-      }
-    }
-
-    constexpr bool operator==(const Color& color)
-    {
-      return code() == color.code();
-    }
-    constexpr bool operator<(const Color& color)
-    {
-      return code() < color.code();
-    }
-
-    constexpr Color& operator=(const unsigned int color)
+    constexpr Color& operator=(const unsigned int color) noexcept
     {
       return set(color);
     }
 
-    constexpr Color& operator+=(const Color& color)
+    /// Convert the color to unsigned int as the color code
+    constexpr operator unsigned int() const noexcept
+    {
+      return code();
+    }
+
+    constexpr Byte& operator[](int index) noexcept
+    {
+      switch (index) {
+        case 0: return r;
+        case 1: return g;
+        case 2: return b;
+        case 3: return a;
+        default: OTTO_UNREACHABLE;
+      }
+    }
+    constexpr const Byte operator[](int index) const noexcept
+    {
+      switch (index) {
+        case 0: return r;
+        case 1: return g;
+        case 2: return b;
+        case 3: return a;
+        default: OTTO_UNREACHABLE;
+      }
+    }
+
+    constexpr bool operator==(const Color& color) const noexcept
+    {
+      return code() == color.code();
+    }
+    constexpr bool operator<(const Color& color) const noexcept
+    {
+      return code() < color.code();
+    }
+
+    constexpr Color& operator+=(const Color& color) noexcept
     {
       r = std::clamp<Byte>(r + color.r, 0, UCHAR_MAX);
       g = std::clamp<Byte>(g + color.g, 0, UCHAR_MAX);
@@ -121,7 +123,7 @@ namespace otto::nvg {
       return *this;
     }
 
-    constexpr Color& operator-=(const Color& color)
+    constexpr Color& operator-=(const Color& color) noexcept
     {
       using std::max;
       r = std::clamp<Byte>(r - color.r, 0, UCHAR_MAX);
@@ -131,7 +133,7 @@ namespace otto::nvg {
       return *this;
     }
 
-    constexpr Color& operator*=(const Color& color)
+    constexpr Color& operator*=(const Color& color) noexcept
     {
       r = std::clamp<Byte>(r + (color.r * color.a / UCHAR_MAX), 0, UCHAR_MAX);
       g = std::clamp<Byte>(g + (color.g * color.a / UCHAR_MAX), 0, UCHAR_MAX);
@@ -139,76 +141,61 @@ namespace otto::nvg {
       return *this;
     }
 
-    constexpr Color operator+(const Color& color)
+    constexpr Color operator+(const Color& color) const noexcept
     {
       Color ret(*this);
       ret += color;
       return ret;
     }
 
-    constexpr Color operator-(const Color& color)
+    constexpr Color operator-(const Color& color) const noexcept
     {
       Color ret(*this);
       ret -= color;
       return ret;
     }
 
-    constexpr Color operator*(const Color& color)
+    constexpr Color operator*(const Color& color) const noexcept
     {
       Color ret(*this);
       ret *= color;
       return ret;
     }
 
-    constexpr Color& set(unsigned int color)
+    constexpr Color& set(unsigned int color) noexcept
     {
-      r = (Byte)(color >> 24U);
-      g = (Byte)((color >> 16U) & 0x00ffU);
-      b = (Byte)((color >> 8U) & 0x0000ffU);
-      a = (Byte)(color % 0x100U);
+      *this = ColorConverter::rgba(color);
       return *this;
     }
 
-    constexpr Color& set(float _r, float _g, float _b, float _a)
+    constexpr Color& set(float _r, float _g, float _b, float _a) noexcept
     {
-      r = std::clamp<Byte>((Byte)(_r * UCHAR_MAX), 0, UCHAR_MAX);
-      g = std::clamp<Byte>((Byte)(_g * UCHAR_MAX), 0, UCHAR_MAX);
-      b = std::clamp<Byte>((Byte)(_b * UCHAR_MAX), 0, UCHAR_MAX);
-      a = std::clamp<Byte>((Byte)(_a * UCHAR_MAX), 0, UCHAR_MAX);
+      *this = ColorConverter::rgba(_r, _g, _b, _a);
       return *this;
     }
 
-    constexpr Color& set(Byte _r, Byte _g, Byte _b, Byte _a)
+    constexpr Color& set(Byte _r, Byte _g, Byte _b, Byte _a) noexcept
     {
-      r = _r;
-      g = _g;
-      b = _b;
-      a = _a;
+      *this = ColorConverter::rgba(_r, _g, _b, _a);
       return *this;
     }
 
-    constexpr Color& set(unsigned _r, unsigned _g, unsigned _b, unsigned _a)
+    constexpr Color& set(unsigned _r, unsigned _g, unsigned _b, unsigned _a) noexcept
     {
-      r = (Byte) _r;
-      g = (Byte) _g;
-      b = (Byte) _b;
-      a = (Byte) _a;
+      *this = ColorConverter::rgba(_r, _g, _b, _a);
       return *this;
     }
 
-    constexpr Color& set(int _r, int _g, int _b, int _a)
+    constexpr Color& set(int _r, int _g, int _b, int _a) noexcept
     {
-      r = (Byte) _r;
-      g = (Byte) _g;
-      b = (Byte) _b;
-      a = (Byte) _a;
+      *this = ColorConverter::rgba(_r, _g, _b, _a);
       return *this;
     }
 
-    static constexpr Color floats(float r, float g, float b, float a = 1);
-    static constexpr Color bytes(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 0xFF);
+    static constexpr Color floats(float r, float g, float b, float a = 1) noexcept;
+    static constexpr Color bytes(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 0xFF) noexcept;
 
-    constexpr unsigned int code() const
+    constexpr unsigned int code() const noexcept
     {
       unsigned int color = 0U;
       color |= (r << 24U);
@@ -218,46 +205,46 @@ namespace otto::nvg {
       return color;
     }
 
-    constexpr float redf() const
+    constexpr float redf() const noexcept
     {
       return r / 255.0f;
     }
-    constexpr float greenf() const
+    constexpr float greenf() const noexcept
     {
       return g / 255.0f;
     }
-    constexpr float bluef() const
+    constexpr float bluef() const noexcept
     {
       return b / 255.0f;
     }
-    constexpr float alphaf() const
+    constexpr float alphaf() const noexcept
     {
       return a / 255.0f;
     }
 
-    static constexpr Color createWidthHSL(float _h, float _s, float _l, float _a = 1.0f)
+    static constexpr Color createWidthHSL(float _h, float _s, float _l, float _a = 1.0f) noexcept
     {
       Rgb rgb = ColorConverter::hslToRgb(_h, _s, _l);
       return {rgb.r, rgb.g, rgb.b, Byte(_a * 255)};
     }
 
-    constexpr Color mix(Color c, float ratio) const;
-    constexpr Color dim(float amount) const;
-    constexpr Color fade(float amount) const;
-    constexpr Color brighten(float amount) const;
+    constexpr Color mix(Color c, float ratio) const noexcept;
+    constexpr Color dim(float amount) const noexcept;
+    constexpr Color fade(float amount) const noexcept;
+    constexpr Color brighten(float amount) const noexcept;
   };
 
-  constexpr Color Color::floats(float r, float g, float b, float a)
+  constexpr Color Color::floats(float r, float g, float b, float a) noexcept
   {
     return Color(r * 255, g * 255, b * 255, a * 255);
   }
 
-  constexpr Color Color::bytes(Byte r, Byte g, Byte b, Byte a)
+  constexpr Color Color::bytes(Byte r, Byte g, Byte b, Byte a) noexcept
   {
     return Color(r, g, b, a);
   }
 
-  constexpr Color Color::mix(Color c, float ratio) const
+  constexpr Color Color::mix(Color c, float ratio) const noexcept
   {
     Color ret;
     ret.r = std::clamp<uint8_t>(r + (c.r - r) * ratio, 0x00, 0xFF);
@@ -267,7 +254,7 @@ namespace otto::nvg {
     return ret;
   }
 
-  constexpr Color Color::dim(float amount) const
+  constexpr Color Color::dim(float amount) const noexcept
   {
     float dim = std::clamp(1.f - amount, 0.f, 1.f);
     Color ret;
@@ -278,7 +265,7 @@ namespace otto::nvg {
     return ret;
   }
 
-  constexpr Color Color::brighten(float amount) const
+  constexpr Color Color::brighten(float amount) const noexcept
   {
     Color ret;
     ret.r = std::clamp<uint8_t>(r + (255 - r) * amount, 0x00, 0xFF);
@@ -288,10 +275,11 @@ namespace otto::nvg {
     return ret;
   }
 
-  constexpr Color Color::fade(float amount) const
+  constexpr Color Color::fade(float amount) const noexcept
   {
     float fade = std::clamp(1.f - amount, 0.f, 1.f);
-    Color ret = *this;;
+    Color ret = *this;
+    ;
     ret.a = std::clamp<uint8_t>(a * fade, 0x00, 0xFF);
     return ret;
   }
