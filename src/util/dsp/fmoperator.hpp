@@ -1,3 +1,4 @@
+#pragma once
 #include <Gamma/Oscillator.h>
 #include <Gamma/Envelope.h>
 
@@ -15,26 +16,13 @@ struct FMOperator {
 
   FMOperator(float frq = 440, float outlevel = 1, bool modulator = false) {}
 
-  FMSine sine;
-  gam::ADSR<> env;
-
-  bool modulator = false; /// If it is a modulator, use the envelope.
-  float outlevel = 1;
-  float feedback = 0; /// TODO:Implement in call operator
-  float fm_amount = 1;
-
-  float freq_ratio = 1;
-  float detune_amount = 0;
-
-  float previous_value = 0;
-
   float operator()(float phaseMod = 0) noexcept 
   {
-    if (modulator)
-      return env() * sine(phaseMod) * outlevel * fm_amount;
+    if (modulator_)
+      return env_() * sine(phaseMod) * outlevel_ * fm_amount_;
     else {
-      previous_value = sine(phaseMod + feedback * previous_value) * outlevel;
-      return previous_value;
+      previous_value_ = sine(phaseMod + feedback_ * previous_value_) * outlevel_;
+      return previous_value_;
     }
   };
 
@@ -45,5 +33,31 @@ struct FMOperator {
   }; 
 
   /// Get current level
-  float level() { return env.value() * outlevel; }; 
+  float level() { return env_.value() * outlevel_; }; 
+
+  /// Set fm_amount
+  void fm_amount(float fm){ fm_amount_ = fm; };
+
+  /// Reset envelope
+  void reset(){ env_.resetSoft(); };
+
+  /// Release envelope
+  void release(){ env_.release(); };
+
+  /// Finish envelope
+  void finish(){ env_.finish(); };
+
+private:
+  FMSine sine;
+  gam::ADSR<> env_;
+
+  bool modulator_ = false; /// If it is a modulator, use the envelope.
+  float outlevel_ = 1;
+  float feedback_ = 0; /// TODO:Implement in call operator
+  float fm_amount_ = 1;
+
+  float freq_ratio_ = 1;
+  float detune_amount_ = 0;
+
+  float previous_value_ = 0;
 };

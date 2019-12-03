@@ -508,11 +508,12 @@ namespace otto::core::voices {
 
         REQUIRE(vmgr.voices()[0]() == 1.f);
         REQUIRE(vmgr() == test::approx(4.f * vmgr.normal_volume));
+        // Note that voice_manager() applies volume in the example above
+        // while voice() does not.
 
         AudioBufferHandle bh = services::AudioManager::current().buffer_pool().allocate_clear();
-
-        // Note that voice.process() applies volume in the example above
-        // while voice() does not. It is done in voice_manager(), however 
+        // When running the default voice.process(), volume is applied. This carries over to
+        // voice_manager.process() 
         auto res = vmgr.voices()[0].process(ProcessData<1>{bh});
         REQUIRE(util::all_of(res.audio, util::does_equal(1 * vmgr.normal_volume)));
         auto res2 = vmgr.process(ProcessData<1>{bh});
@@ -535,6 +536,7 @@ namespace otto::core::voices {
         // We have written our own voice.process() so volume is not applied.
         auto res = vmgr.voices()[0].process(ProcessData<1>{buf});
         REQUIRE(util::all_of(res.audio, util::does_equal(1)));
+        
         auto res2 = vmgr.process(ProcessData<1>{buf});
         REQUIRE(util::all_of(res2.audio, util::does_equal(4)));
       }
