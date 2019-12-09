@@ -225,7 +225,7 @@ namespace otto::nvg {
     return *this;
   }
 
-  float Canvas::measureText(const std::string& text, float rowWidth)
+  float Canvas::measureText(util::string_ref text, float rowWidth)
   {
     float width = 0;
     if (std::isnan(rowWidth))
@@ -237,7 +237,7 @@ namespace otto::nvg {
     return width;
   }
 
-  float Canvas::measureText(const std::string& text, float x, float y, float* bounds, float rowWidth)
+  float Canvas::measureText(util::string_ref text, float x, float y, float* bounds, float rowWidth)
   {
     local2Global(x, y);
     if (std::isnan(rowWidth))
@@ -403,7 +403,7 @@ namespace otto::nvg {
     return *this;
   }
 
-  Canvas& Canvas::fillText(const std::string& text, float x, float y, float rowWidth)
+  Canvas& Canvas::fillText(util::string_ref text, float x, float y, float rowWidth)
   {
     if (text.length()) {
       local2Global(x, y);
@@ -655,13 +655,13 @@ namespace otto::nvg {
     return *this;
   }
 
-  Canvas& Canvas::fillText(const std::string& text, Point p, float rowWidth)
+  Canvas& Canvas::fillText(util::string_ref text, Point p, float rowWidth)
   {
     fillText(text, p.x, p.y, rowWidth);
     return *this;
   }
 
-  Box Canvas::measureText(const std::string& text, Point p, float rowWidth)
+  Box Canvas::measureText(util::string_ref text, Point p, float rowWidth)
   {
     float bounds[4] = {0};
     measureText(text, p.x, p.y, bounds);
