@@ -183,11 +183,7 @@ namespace otto::engines::ottofm {
   };
 
   struct OttofmEngine : core::engine::SynthEngine<OttofmEngine> {
-    static constexpr auto name = "otto.FM";
-    using Audio = Audio;
-    using Screen = OttofmScreen;
-    using Props = Props;
-
+    static constexpr auto name = "OTTO.FM";
     OttofmEngine();
 
     void encoder(core::input::EncoderEvent e) override;
@@ -217,3 +213,6 @@ namespace otto::engines::ottofm {
   };
 
 } // namespace otto::engines::ottofm
+
+#include "screen.hpp"
+#include "audio.hpp"

@@ -32,7 +32,7 @@ namespace otto::reflect {
   template<typename Class>
   constexpr util::string_ref get_name()
   {
-    return detail::MetaHolder<Class, decltype(register_members<Class>())>::name();
+    return detail::MetaHolder<std::decay_t<Class>, decltype(register_members<Class>())>::name();
   }
 
   template<typename Class>
@@ -44,7 +44,7 @@ namespace otto::reflect {
   template<typename Class>
   constexpr const auto& get_members()
   {
-    return detail::MetaHolder<Class, decltype(register_members<Class>())>::members;
+    return detail::MetaHolder<std::decay_t<Class>, decltype(register_members<Class>())>::members;
   }
 
   template<typename T, typename = void>

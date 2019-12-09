@@ -207,8 +207,6 @@ namespace otto::engines::ottofm {
   };
 
   struct Audio {
-    Audio() noexcept;
-
     /// Passes unhandled actions to voices
     template<typename Tag, typename... Args>
     auto action(itc::Action<Tag, Args...> a, Args... args) noexcept

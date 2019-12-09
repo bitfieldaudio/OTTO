@@ -3,10 +3,9 @@
 #include "core/engine/engine_dispatcher.hpp"
 #include "core/engine/engine_dispatcher.inl"
 #include "core/ui/vector_graphics.hpp"
-#include "engines/fx/wormhole/audio.hpp"
-#include "engines/fx/wormhole/screen.hpp"
-#include "engines/synths/goss/audio.hpp"
-#include "engines/synths/goss/screen.hpp"
+#include "engines/fx/wormhole/wormhole.hpp"
+#include "engines/synths/goss/goss.hpp"
+#include "engines/synths/OTTOFM/ottofm.hpp"
 #include "services/application.hpp"
 #include "services/clock_manager.hpp"
 
@@ -28,7 +27,7 @@ namespace otto::services {
     //   EngineType::arpeggiator>;
     using SynthDispatcher = EngineDispatcher< //
       EngineType::synth,
-      engines::goss::GossEngine>;
+      engines::ottofm::OttofmEngine>;
 
     SynthDispatcher synth;
     engines::wormhole::Wormhole effect1;
