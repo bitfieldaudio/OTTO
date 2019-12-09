@@ -62,7 +62,7 @@ namespace otto::util {
       return join_strings(std::begin(cont), std::end(cont), js);
     }
 
-    namespace detail {
+    namespace algo_detail {
       template<class Func, int... ns>
       constexpr auto generate_array_impl(std::integer_sequence<int, ns...>&&, Func&& gen)
       {
@@ -75,7 +75,7 @@ namespace otto::util {
     constexpr auto generate_array(Func&& gen)
     {
       auto intseq = std::make_integer_sequence<int, n>();
-      return detail::generate_array_impl(std::move(intseq), std::forward<Func>(gen));
+      return algo_detail::generate_array_impl(std::move(intseq), std::forward<Func>(gen));
     }
 
     template<class Func>

@@ -17,7 +17,7 @@ namespace otto::core::engine {
   };
 
   struct EngineSelectorData {
-    std::string name;
+    util::string_ref name;
     ui::Icon icon = {placeholder_engine_icon};
     std::vector<std::string> presets = name == "Potion"
                                          ? std::vector<std::string>{"Last state"}
@@ -27,36 +27,15 @@ namespace otto::core::engine {
                                            };
   };
 
-  struct selected_idx_tag {
-    using action = itc::Action<selected_idx_tag, int>;
-  };
-
-  struct selected_preset_tag {
-    using action = itc::Action<selected_preset_tag, int>;
-  };
-
-  struct current_screen_tag {
-    using action = itc::Action<current_screen_tag, int>;
-  };
-
   struct EngineSelectorScreen : ui::Screen {
     void draw(nvg::Canvas& ctx) override;
 
-    void action(selected_idx_tag::action, int selected);
-    void action(selected_preset_tag::action, int selected);
-    void action(current_screen_tag::action, int screen);
+    void action(SelectedEngine::action, int selected);
+    void action(SelectedPreset::action, int selected);
+    void action(CurrentScreen::action, int screen);
+    void action(PublishEngineNames::action, gsl::span<const util::string_ref>);
 
-    std::vector<EngineSelectorData> engines = {{
-      //
-      {"OTTO.FM"},
-      {"Goss"},
-      {"Potion"},
-      {"Subtraction"},
-      {"Rhodes"},
-      {"SawSynth1000"},
-      {"Bullet"},
-      {"Rumble"},
-    }};
+    std::vector<EngineSelectorData> engines = {};
 
   private:
     int selected_engine_ = 0;
@@ -67,14 +46,14 @@ namespace otto::core::engine {
     ch::Output<float> new_indicator_transparency_ = 0;
   };
 
-  void EngineSelectorScreen::action(selected_idx_tag::action, int selected)
+  void EngineSelectorScreen::action(SelectedEngine::action, int selected)
   {
     selected_engine_ = selected;
     ui::vg::timeline().apply(&engine_scroll_).then<ch::RampTo>(selected, 500, ch::EaseOutExpo());
     LOGI("selected: {}", engines[selected].name);
   }
 
-  void EngineSelectorScreen::action(selected_preset_tag::action, int selected)
+  void EngineSelectorScreen::action(SelectedPreset::action, int selected)
   {
     selected_preset_ = selected;
     ui::vg::timeline().apply(&preset_scroll_).then<ch::RampTo>(selected, 500, ch::EaseOutExpo());
@@ -85,10 +64,15 @@ namespace otto::core::engine {
     LOGI("selected: {}", engines.at(selected_engine_).presets.at(selected));
   }
 
-  void EngineSelectorScreen::action(current_screen_tag::action, int screen)
+  void EngineSelectorScreen::action(CurrentScreen::action, int screen)
   {
     ui::vg::timeline().apply(&page_flip_).then<ch::RampTo>(screen, 500, ch::EaseOutExpo());
     LOGI("Page flip: {}", screen);
+  }
+
+  void EngineSelectorScreen::action(PublishEngineNames::action, gsl::span<const util::string_ref> names)
+  {
+    util::transform(names, std::back_inserter(engines), [](auto&& name) { return EngineSelectorData{name}; });
   }
 
   void EngineSelectorScreen::draw(nvg::Canvas& ctx)
@@ -144,8 +128,7 @@ namespace otto::core::engine {
 
     if (page_flip_ > 0) {
       const auto plus_fade = std::max(1 - page_flip_, new_indicator_transparency_.value());
-      const auto plus_color =
-        Colors::Red.brighten(0.1).fade(plus_fade);
+      const auto plus_color = Colors::Red.brighten(0.1).fade(plus_fade);
 
       auto plus_icon = ui::Icon(ui::icons::plus_clockwise_circle_arrow, {icon_size, icon_size}, plus_color, 4.f);
 

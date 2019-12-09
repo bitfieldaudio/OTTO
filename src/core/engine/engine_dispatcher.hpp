@@ -9,6 +9,11 @@ namespace otto::core::engine {
 
   struct EngineSelectorScreen;
 
+  using SelectedEngine = itc::PropTypes<struct selected_engine_tag, int>;
+  using SelectedPreset = itc::PropTypes<struct selected_preset_tag, int>;
+  using CurrentScreen = itc::PropTypes<struct current_screen_tag, int>;
+  using PublishEngineNames = itc::PropTypes<struct publish_engine_names_tag, gsl::span<const util::string_ref>>;
+
   /// Owns engines of type `ET`, and dispatches to a selected one of them
   template<EngineType ET, typename... Engines>
   struct EngineDispatcher {
@@ -19,8 +24,7 @@ namespace otto::core::engine {
       using Prop = typename Sender::template Prop<Tag, Type, Mixins...>;
 
       Sender sender;
-
-      Prop<struct current_tag, std::string> current = {sender, ""};
+      CurrentScreen::Prop<Sender> current_screen = {sender, 0};
     };
 
     ui::Screen& selector_screen();
