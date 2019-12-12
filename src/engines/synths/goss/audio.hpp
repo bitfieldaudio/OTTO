@@ -107,8 +107,6 @@ namespace otto::engines::goss {
     gam::Biquad<> lpf;
     gam::Biquad<> hpf;
 
-    util::dsp::HammondPreamp overdrive;
-
     voices::VoiceManager<Voice, 6> voice_mgr_ = {*this};
   };
 } // namespace otto::engines::goss
