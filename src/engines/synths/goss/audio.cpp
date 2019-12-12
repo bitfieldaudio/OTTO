@@ -9,13 +9,13 @@ namespace otto::engines::goss {
     voice_player.source(audio.models[0].table());
     // Point percussion to table
     percussion_player.source(audio.percussion.table());
-    
+
     perc_env.finish();
     env_.finish();
     env_.attack(0.01);
     env_.decay(0.5);
     env_.sustain(1.f);
-    env_.release(4.f); 
+    env_.release(4.f);
   }
 
   float Voice::operator()() noexcept
@@ -23,8 +23,9 @@ namespace otto::engines::goss {
     float fundamental = frequency() * (1 + 0.012 * audio.leslie * audio.pitch_modulation_hi.cos()) * 0.5;
     voice_player.freq(fundamental);
     percussion_player.freq(frequency());
-    float s = voice_player() + (percussion_player() + noise() * 0.5) * perc_env();
-    return s * env_();
+    float s = voice_player() + (percussion_player() + noise() * 0.4) * perc_env();
+    float s_drive = util::math::fasttanh3(audio.gain * s) * audio.output_scaling;
+    return s_drive * env_();
   }
 
   void Voice::on_note_on(float freq_target) noexcept
@@ -40,8 +41,8 @@ namespace otto::engines::goss {
 
   void Voice::action(itc::prop_change<&Props::click>, float cl) noexcept
   {
-    //perc_env.decay(cl);
-    perc_env.amp(cl * cl * 0.5f);
+    // perc_env.decay(cl);
+    perc_env.amp(cl * cl * cl * 0.5f);
   }
 
   void Voice::action(itc::prop_change<&Props::model>, int m) noexcept
@@ -53,7 +54,7 @@ namespace otto::engines::goss {
   Audio::Audio() noexcept
   {
     // Generate models
-    for (auto&& [m, p] : util::zip(models, model_params)){
+    for (auto&& [m, p] : util::zip(models, model_params)) {
       generate_model(m, p);
     }
 
@@ -75,8 +76,8 @@ namespace otto::engines::goss {
   void Audio::generate_model(gam::Osc<>& osc, model_type param)
   {
     osc.resize(2048);
-    for (auto&& [i,s] : util::view::indexed(param)) {
-      osc.addSine( cycles[i], (float)s/((float)(model_size + i)));
+    for (auto&& [i, s] : util::view::indexed(param)) {
+      osc.addSine(cycles[i], (float) s / ((float) (model_size + cycles[i] * cycles[i])));
     }
   }
 
@@ -88,7 +89,7 @@ namespace otto::engines::goss {
   void Audio::action(itc::prop_change<&Props::drive>, float d) noexcept
   {
     gain = d + 0.1;
-    output_scaling = 2.f / (1 + 4 * util::math::fasttanh3(d) );
+    output_scaling = 6.f / (1 + 4 * util::math::fasttanh3(d));
   }
 
   void Audio::action(itc::prop_change<&Props::leslie>, float l) noexcept
@@ -96,10 +97,10 @@ namespace otto::engines::goss {
     leslie = l;
 
     leslie_speed_lo = leslie * 10;
-    leslie_speed_hi = leslie * 3;
+    leslie_speed_hi = leslie * 2;
     leslie_filter_hi.freq(leslie_speed_hi);
     leslie_filter_lo.freq(leslie_speed_lo);
-    leslie_amount_hi = leslie * 0.3;
+    leslie_amount_hi = leslie * 0.5;
     leslie_amount_lo = leslie * 0.5;
     pitch_modulation_hi.freq(leslie * leslie_speed_hi);
 
@@ -113,11 +114,10 @@ namespace otto::engines::goss {
 
     // Gets summed sample from all voices
     float voices = voice_mgr_();
-    // Postprocessing
-    float s_lo = lpf(voices) * (1 + leslie_amount_lo * leslie_filter_lo.cos());
+    // Leslie
+    float s_lo = voices * (1 + leslie_amount_lo * leslie_filter_lo.cos());
     float s_hi = hpf(voices) * (1 + leslie_amount_hi * leslie_filter_hi.cos());
-    // Drive/compression
-    return util::math::fasttanh3( gain * (s_lo + s_hi)) * output_scaling;
+    return s_lo + s_hi;
   }
 
   audio::ProcessData<1> Audio::process(audio::ProcessData<1> data) noexcept

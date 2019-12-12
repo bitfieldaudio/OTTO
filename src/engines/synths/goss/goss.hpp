@@ -20,15 +20,15 @@ namespace otto::engines::goss {
   /// The drawbar settings. correspond to typical hammond drawbars in ascending order.
   constexpr std::array<model_type, number_of_models> model_params = {{{8, 8, 8, 0, 0, 0, 0, 0, 0},
                                                                       {0, 0, 8, 5, 0, 0, 0, 0, 0},
-                                                                      {8, 8, 8, 0, 0, 0, 0, 0, 8},
+                                                                      {8, 8, 8, 0, 0, 0, 0, 0, 2},
                                                                       {8, 4, 8, 0, 0, 0, 0, 0, 0},
-                                                                      {8, 8, 8, 8, 8, 8, 8, 8, 8},
-                                                                      {6, 6, 8, 8, 4, 8, 5, 8, 8},
-                                                                      {8, 0, 0, 0, 0, 0, 6, 7, 8},
+                                                                      {8, 8, 8, 8, 8, 8, 8, 6, 4},
+                                                                      {6, 6, 8, 8, 4, 8, 5, 8, 2},
+                                                                      {8, 0, 0, 0, 0, 0, 6, 7, 6},
                                                                       {8, 3, 5, 3, 5, 8, 0, 7, 0},
-                                                                      {8, 3, 0, 0, 0, 0, 3, 7, 8},
+                                                                      {8, 3, 0, 0, 0, 0, 3, 7, 6},
                                                                       {8, 0, 3, 6, 0, 0, 0, 0, 0},
-                                                                      {2, 0, 8, 8, 0, 0, 0, 0, 4}}};
+                                                                      {2, 0, 8, 8, 0, 0, 0, 0, 3}}};
 
   using namespace core;
   using namespace core::engine;

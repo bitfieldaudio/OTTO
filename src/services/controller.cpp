@@ -15,6 +15,7 @@ namespace otto::services {
   {
     if (UIManager::current().state.key_mode != KeyMode::midi) return false;
     auto send_midi = [press](int note) {
+      note += 12 * UIManager::current().state.octave;
       if (press) {
         auto evt = core::midi::NoteOnEvent{note};
         AudioManager::current().send_midi_event(evt);
