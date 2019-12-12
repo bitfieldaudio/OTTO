@@ -13,7 +13,6 @@ namespace otto::engines::chorus {
 
   struct Audio {
     Audio() noexcept;
-    float depth_ = 0.f;
     void action(itc::prop_change<&Props::delay>, float d) noexcept;
     void action(itc::prop_change<&Props::depth>, float d) noexcept;
     void action(itc::prop_change<&Props::feedback>, float f) noexcept;
@@ -23,6 +22,7 @@ namespace otto::engines::chorus {
     audio::ProcessData<2> process(audio::ProcessData<1>) noexcept;
   private:
     ChorusEffect<> chorus;
+    float depth_ = 0.f;
     gam::AccumPhase<> phase;
     std::atomic<float>* shared_phase = nullptr;
   };

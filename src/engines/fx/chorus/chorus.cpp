@@ -1,8 +1,5 @@
 #include "chorus.hpp"
 
-#include "audio.hpp"
-#include "screen.hpp"
-
 #include "services/audio_manager.hpp"
 #include "services/ui_manager.hpp"
 
@@ -19,9 +16,9 @@ namespace otto::engines::chorus {
   {
     switch (ev.encoder) {
       case Encoder::blue: props.delay.step(ev.steps); break;
-      case Encoder::green: props.depth.step(ev.steps); break;
+      case Encoder::green: props.rate.step(ev.steps); break;
       case Encoder::yellow: props.feedback.step(ev.steps); break;
-      case Encoder::red: props.rate.step(ev.steps); break;
+      case Encoder::red: props.depth.step(ev.steps); break;
     }
   }
 

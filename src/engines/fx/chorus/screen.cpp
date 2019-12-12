@@ -7,25 +7,59 @@ namespace otto::engines::chorus {
   using namespace core::ui;
   using namespace core::ui::vg;
 
+  constexpr std::array<ui::vg::Color, 10> colour_list = {ui::vg::Colors::Blue,
+                                                  ui::vg::Colors::Green,
+                                                  ui::vg::Colors::Yellow,
+                                                  ui::vg::Colors::Red,
+                                                  ui::vg::Colors::Green,
+                                                  ui::vg::Colors::Blue,
+                                                  ui::vg::Colors::Red,
+                                                  ui::vg::Colors::Green,
+                                                  ui::vg::Colors::Yellow,
+                                                  ui::vg::Colors::Red};
+  
+  constexpr float fadein_time = 100;
+  constexpr float hold_time = 400;
+  constexpr float fadeout_time = 400;
+
   
   void Screen::action(itc::prop_change<&Props::delay>, float d) noexcept
   {
     delay_ = d;
+    ui::vg::timeline().apply(&env_blue_)
+      .then<ch::RampTo>(1, fadein_time)
+      .then<ch::Hold>(1, hold_time)
+      .then<ch::RampTo>(0, fadeout_time);
   }
   
   void Screen::action(itc::prop_change<&Props::depth>, float d) noexcept
   {
     depth_ = d;
+    ui::vg::timeline().apply(&env_red_)
+      .then<ch::RampTo>(1, fadein_time)
+      .then<ch::Hold>(1, hold_time)
+      .then<ch::RampTo>(0, fadeout_time);
   }
   
   void Screen::action(itc::prop_change<&Props::feedback>, float f) noexcept
   {
     feedback_ = f;
+    ui::vg::timeline().apply(&env_yellow_)
+      .then<ch::RampTo>(1, fadein_time)
+      .then<ch::Hold>(1, hold_time)
+      .then<ch::RampTo>(0, fadeout_time);
+
+    for(auto&& [i, b] : util::view::indexed(brightness)) 
+      b = powf(cosh(abs(feedback_)*1.5)*0.4, 0.3 * float(i));
   }
   
   void Screen::action(itc::prop_change<&Props::rate>, float r) noexcept
   {
     rate_ = r;
+    ui::vg::timeline().apply(&env_green_)
+      .then<ch::RampTo>(1, fadein_time)
+      .then<ch::Hold>(1, hold_time)
+      .then<ch::RampTo>(0, fadeout_time);
   }
 
   void Screen::action(Actions::phase_value, std::atomic<float>& val) noexcept
@@ -72,22 +106,22 @@ namespace otto::engines::chorus {
     ctx.font(Fonts::Norm, 40);
 
     // chorus/RedValue/10
-    ctx.fillStyle(Colours::Red.dim(1 - env_red()));
+    ctx.fillStyle(Colours::Red.dim(1 - env_red_));
     ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
     ctx.fillText(fmt::format("{}", std::round(100 * depth_)), x_right, y_bottom - number_shift);
 
     // chorus/GreenValue/10
-    ctx.fillStyle(Colours::Green.dim(1 - env_green()));
+    ctx.fillStyle(Colours::Green.dim(1 - env_green_));
     ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
     ctx.fillText(fmt::format("{}", std::round(rate_ * 100)), x_pad, y_bottom - number_shift);
 
     // chorus/YellowValue/0
-    ctx.fillStyle(Colours::Yellow.dim(1 - env_yellow()));
+    ctx.fillStyle(Colours::Yellow.dim(1 - env_yellow_));
     ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
     ctx.fillText(fmt::format("{}", std::round(feedback_ * 100)), x_right, y_pad + number_shift);
 
     // chorus/BlueValue/1
-    ctx.fillStyle(Colours::Blue.dim(1 - env_blue()));
+    ctx.fillStyle(Colours::Blue.dim(1 - env_blue_));
     ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
     ctx.fillText(fmt::format("{}", std::round(100 * delay_)), x_pad, y_pad + number_shift);
 
@@ -103,11 +137,8 @@ namespace otto::engines::chorus {
 
     for (int i=num_heads; i>=1; i--) {
       float head_height = wave_height * gam::scl::sinP9(gam::scl::wrap(*phase_ - 0.2f*(float)i, 1.f, -1.f));
-      //This brightness calculation is HORRIBLY over-engineered...
-      float brightness = powf(cosh(abs(feedback_)*1.5)*0.4, 0.3 * float(i));
-      draw_background_head(ctx, {start.x + i*spacing, start.y + head_height}, colour_list[i].dim(1 - brightness), 1 - i*0.07);
+      draw_background_head(ctx, {start.x + i*spacing, start.y + head_height}, colour_list[i].dim(1 - brightness[i]), 1 - i*0.07);
     }
-
 
     float wave_phase = *phase_;
     wave_phase = wave_height * gam::scl::sinP9(wave_phase);

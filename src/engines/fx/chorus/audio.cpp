@@ -28,7 +28,7 @@ namespace otto::engines::chorus {
   }
   void Audio::action(itc::prop_change<&Props::rate>, float r) noexcept
   {
-    chorus.rate(r * 0.5);
+    chorus.rate(r * 0.5f);
     phase.freq(r * 0.5f);
   }
   void Audio::action(Actions::phase_value, std::atomic<float>& ref) noexcept
@@ -38,16 +38,11 @@ namespace otto::engines::chorus {
 
   audio::ProcessData<2> Audio::process(audio::ProcessData<1> data) noexcept
   {
-    // Allocate two audio buffers (left and right channels)
     auto buf = Application::current().audio_manager->buffer_pool().allocate_multi<2>();
-    // Fill buffers with processed samples
     for (auto&& [dat, bufL, bufR] : util::zip(data.audio, buf[0], buf[1])) {
-      // Get one sample from chorus effect
       chorus(dat, bufL, bufR);
-      // Update phase value for graphics
       *shared_phase = phase.nextPhase();
     }
-    // Reassign (redirect) processed data to original data
     return data.with(buf);
   }
 
