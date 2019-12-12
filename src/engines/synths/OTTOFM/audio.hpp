@@ -118,7 +118,7 @@ namespace otto::engines::ottofm {
     {
       outlevel_ = l;
     }
-    void action(itc::prop_change<&Props::fmAmount>, float fm)
+    void action(itc::prop_change<&Props::fm_amount>, float fm)
     {
       fm_amount_ = fm;
     }
@@ -174,10 +174,10 @@ namespace otto::engines::ottofm {
     template<typename Action, typename... Args>
     void action(Action action, Args... args) noexcept
     {
-      util::for_each(operators, [&](auto& op) { itc::try_call_reciever(op, Action::data(args...)); });
+      util::for_each(operators, [&](auto& op) { itc::try_call_receiver(op, Action::data(args...)); });
     }
 
-    void action(itc::prop_change<&Props::algN>, int a) noexcept
+    void action(itc::prop_change<&Props::algorithm_idx>, int a) noexcept
     {
       int i = 0;
       util::for_each(operators, [&i, a](auto& op) {
@@ -213,7 +213,7 @@ namespace otto::engines::ottofm {
     /// Passes unhandled actions to voices
     template<typename Tag, typename... Args>
     auto action(itc::Action<Tag, Args...> a, Args... args) noexcept
-      -> std::enable_if_t<itc::ActionReciever::is<voices::VoiceManager<Voice, 6>, itc::Action<Tag, Args...>>>
+      -> std::enable_if_t<itc::ActionReceiver::is<voices::VoiceManager<Voice, 6>, itc::Action<Tag, Args...>>>
     {
       voice_mgr_.action(a, args...);
     }

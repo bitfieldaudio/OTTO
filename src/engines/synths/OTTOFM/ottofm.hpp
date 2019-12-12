@@ -40,16 +40,14 @@ namespace otto::engines::ottofm {
       DECL_REFLECTION(OperatorProps, feedback, attack, decay_release, suspos, detune, ratio_idx, out_level);
     };
 
-    Sender::Prop<struct algN_tag, int, wrap> algN = {sender, 0, limits(0, 10), step_size(1)};
-    Sender::Prop<struct fmAmount_tag, float> fmAmount = {sender, 1, limits(0, 1), step_size(0.01)};
-
-    std::tuple<OperatorProps<0>, OperatorProps<1>, OperatorProps<2>, OperatorProps<3>> operators = {{sender},
-                                                                                                    {sender},
-                                                                                                    {sender},
-                                                                                                    {sender}};
+    Sender::Prop<struct algorithm_idx_tag, int, wrap> algorithm_idx = {sender, 0, limits(0, 10), step_size(1)};
+    Sender::Prop<struct fm_amount_tag, float> fm_amount = {sender, 1, limits(0, 1), step_size(0.01)};
     Sender::Prop<struct cur_op_tag, int> cur_op = {sender, 0, limits(0, 3)};
 
-    DECL_REFLECTION(Props, envelope, settings, algN, fmAmount, operators, cur_op);
+    std::tuple<OperatorProps<0>, OperatorProps<1>, OperatorProps<2>, OperatorProps<3>> operators = //
+      {{sender}, {sender}, {sender}, {sender}};
+
+    DECL_REFLECTION(Props, envelope, settings, algorithm_idx, fm_amount, operators, cur_op);
   };
 
   struct OttofmEngine : core::engine::SynthEngine<OttofmEngine> {

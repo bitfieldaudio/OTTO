@@ -121,8 +121,8 @@ namespace otto::services {
     }
 
     /// Make an {@ref ActionSender} for the audio action queue
-    template<typename... Recievers>
-    auto make_sndr(Recievers&...) noexcept;
+    template<typename... Receivers>
+    auto make_sndr(Receivers&...) noexcept;
 
   protected:
     /// Draws the current screen and overlays.
@@ -151,22 +151,22 @@ namespace otto::services {
     itc::ActionQueue action_queue_;
   };
 
-  template<typename... Recievers>
-  struct UISender : itc::ActionSender<Recievers...> {
+  template<typename... Receivers>
+  struct UISender : itc::ActionSender<Receivers...> {
     template<typename Tag, typename Type, typename... Mixins>
-    using Prop = typename itc::ActionSender<Recievers...>::template Prop<Tag, Type, Mixins...>;
+    using Prop = typename itc::ActionSender<Receivers...>::template Prop<Tag, Type, Mixins...>;
 
-    UISender(Recievers&... r) noexcept
-      : itc::ActionSender<Recievers...>(UIManager::current().action_queue(), r...)
+    UISender(Receivers&... r) noexcept
+      : itc::ActionSender<Receivers...>(UIManager::current().action_queue(), r...)
     {}
   };
 
   // IMPLEMENTATION //
 
-  template<typename... Recievers>
-  auto UIManager::make_sndr(Recievers&... recievers) noexcept
+  template<typename... Receivers>
+  auto UIManager::make_sndr(Receivers&... receivers) noexcept
   {
-    return itc::ActionSender(action_queue_, recievers...);
+    return itc::ActionSender(action_queue_, receivers...);
   }
 
 } // namespace otto::services

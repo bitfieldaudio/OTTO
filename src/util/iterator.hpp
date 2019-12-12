@@ -821,7 +821,7 @@ namespace otto::util {
             iters,
             std::tuple_cat(std::move(t2), std::tuple<std::tuple_element_t<N, reference>>(*(std::get<N>(iters)))));
         } else {
-          // NRVO does not apply since its recieved as an rvalue refference
+          // NRVO does not apply since its received as an rvalue refference
           return std::move(t2);
         }
       }

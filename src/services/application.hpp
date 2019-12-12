@@ -65,7 +65,7 @@ namespace otto::services {
       audio_error,
       graphics_error,
       input_error,
-      signal_recieved
+      signal_received
     };
 
     using exception = util::as_exception<ErrorCode>;

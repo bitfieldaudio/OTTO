@@ -178,9 +178,9 @@ namespace otto::core::voices {
     void action(detune_tag::action, float detune) noexcept;
     void action(interval_tag::action, int interval) noexcept;
 
-    /// If avaliable, call the action recievers in the voices for all other actions.
+    /// If avaliable, call the action receivers in the voices for all other actions.
     template<typename Action, typename... Args>
-    auto action(Action a, Args&&... args) noexcept -> std::enable_if_t<itc::ActionReciever::is<Voice, Action>, void>
+    auto action(Action a, Args&&... args) noexcept -> std::enable_if_t<itc::ActionReceiver::is<Voice, Action>, void>
     {
       fwd_action_to_voices(a, args...);
     }
@@ -270,7 +270,7 @@ namespace otto::core::voices {
     template<typename Action, typename... Args>
     void fwd_action_to_voices(Action a, Args&&... args)
     {
-      if constexpr (itc::ActionReciever::is<Voice, Action>) {
+      if constexpr (itc::ActionReceiver::is<Voice, Action>) {
         for (auto& v : voices_) {
           v.action(a, args...);
         }

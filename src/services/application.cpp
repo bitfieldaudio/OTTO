@@ -59,7 +59,7 @@ namespace otto::services {
   void Application::handle_signal(int signal) noexcept
   {
     Application::current()._is_running = false;
-    Application::current()._error_code = ErrorCode::signal_recieved;
+    Application::current()._error_code = ErrorCode::signal_received;
   }
 
   Application& Application::current() noexcept

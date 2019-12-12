@@ -30,8 +30,8 @@ namespace otto::services {
     itc::PushOnlyActionQueue& action_queue() noexcept;
 
     /// Make an {@ref ActionSender} for the audio action queue
-    template<typename... Recievers>
-    auto make_sndr(Recievers&...) noexcept;
+    template<typename... Receivers>
+    auto make_sndr(Receivers&...) noexcept;
 
     /// Send a midi event into the system.
     ///
@@ -109,18 +109,18 @@ namespace otto::services {
 
   // IMPLEMENTATION //
 
-  template<typename... Recievers>
-  auto AudioManager::make_sndr(Recievers&... recievers) noexcept
+  template<typename... Receivers>
+  auto AudioManager::make_sndr(Receivers&... receivers) noexcept
   {
-    return itc::ActionSender(action_queue_, recievers...);
+    return itc::ActionSender(action_queue_, receivers...);
   }
 
-  template<typename... Recievers>
-  struct AudioSender : itc::ActionSender<Recievers...> {
+  template<typename... Receivers>
+  struct AudioSender : itc::ActionSender<Receivers...> {
     template<typename Tag, typename Type, typename... Mixins>
-    using Prop = typename itc::ActionSender<Recievers...>::template Prop<Tag, Type, Mixins...>;
-    AudioSender(Recievers&... r) noexcept
-      : itc::ActionSender<Recievers...>(AudioManager::current().action_queue(), r...)
+    using Prop = typename itc::ActionSender<Receivers...>::template Prop<Tag, Type, Mixins...>;
+    AudioSender(Receivers&... r) noexcept
+      : itc::ActionSender<Receivers...>(AudioManager::current().action_queue(), r...)
     {}
   };
 

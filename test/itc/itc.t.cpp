@@ -3,9 +3,10 @@
 
 namespace otto::itc {
 
-  TEST_CASE ("ActionReciever") {
+  TEST_CASE ("ActionReceiver") {
     using void_action = Action<struct void_action_tag>;
     using int_action = Action<struct int_action_tag, int>;
+    using float_action = Action<struct float_action_tag, float>;
 
     struct VoidAR {
       void action(void_action)
@@ -25,11 +26,37 @@ namespace otto::itc {
       int value = 0;
     };
 
-    SECTION ("The ActionReciever concept") {
-      struct EmptyStruct {};
+    SECTION ("The InvalidActionReceiver concept") {
+      struct InvalidAR {
+        void action(void_action, int){};
+        void action(int_action, float){};
+        void action(float_action){};
+      };
+      struct InvalidAR1 {
+        void action(void_action){};
+        void action(int_action, int, int){};
+        void action(float_action, float){};
+      };
+      static_assert(InvalidActionReceiver::is<InvalidAR, void_action>);
+      static_assert(InvalidActionReceiver::is<InvalidAR, int_action>);
+      static_assert(InvalidActionReceiver::is<InvalidAR, float_action>);
 
-      static_assert(ActionReciever::is<VoidAR, void_action>);
-      static_assert(!ActionReciever::is<EmptyStruct, void_action>);
+      static_assert(!InvalidActionReceiver::is<InvalidAR1, void_action>);
+      static_assert(InvalidActionReceiver::is<InvalidAR1, int_action>);
+      static_assert(!InvalidActionReceiver::is<InvalidAR1, float_action>);
+    }
+
+    SECTION ("The ActionReceiver concept") {
+      struct ARTest {
+        void action(int_action, float){};
+      };
+
+      static_assert(ActionReceiver::is<VoidAR, void_action>);
+      static_assert(!ActionReceiver::is<ARTest, void_action>);
+      // This one is harder - we use a trick to avoid implicit conversions, but it only works on gcc and clang > 7
+      static_assert(
+        !ActionReceiver::is<ARTest, int_action>,
+        "This doesnt work on clang 7 and below, but it is just error detection. If it fails, comment it out");
     }
 
     SECTION ("ActionData can be created using Action::data") {
@@ -38,31 +65,31 @@ namespace otto::itc {
       REQUIRE(std::get<0>(ad.args) == 10);
     }
 
-    SECTION ("Action with no data can be recieved using call_reciever") {
+    SECTION ("Action with no data can be received using call_receiver") {
       VoidAR void_ar;
 
       REQUIRE(void_ar.has_run == false);
-      call_reciever(void_ar, void_action::data());
+      call_receiver(void_ar, void_action::data());
       REQUIRE(void_ar.has_run == true);
     }
 
-    SECTION ("Action with an int argument can be recieved using call_reciever") {
+    SECTION ("Action with an int argument can be received using call_receiver") {
       IntAR int_ar;
 
-      call_reciever(int_ar, int_action::data(10));
+      call_receiver(int_ar, int_action::data(10));
       REQUIRE(int_ar.value == 10);
     }
 
-    SECTION ("try_call_reciever calls action reciever and returns true") {
+    SECTION ("try_call_receiver calls action receiver and returns true") {
       IntAR int_ar;
 
-      REQUIRE(try_call_reciever(int_ar, int_action::data(10)));
+      REQUIRE(try_call_receiver(int_ar, int_action::data(10)));
       REQUIRE(int_ar.value == 10);
     }
 
-    SECTION ("try_call_reciever returns false when no reciever avaliable") {
+    SECTION ("try_call_receiver returns false when no receiver avaliable") {
       IntAR int_ar;
-      REQUIRE(!try_call_reciever(int_ar, void_action::data()));
+      REQUIRE(!try_call_receiver(int_ar, void_action::data()));
       REQUIRE(int_ar.value == 0);
     }
 
@@ -100,7 +127,7 @@ namespace otto::itc {
         REQUIRE(has_run);
       }
 
-      SECTION ("ActionQueue.push(ActionReciever, ActionData) works") {
+      SECTION ("ActionQueue.push(ActionReceiver, ActionData) works") {
         VoidAR ar;
         aq.push(ar, void_action::data());
         aq.pop_call();
@@ -108,15 +135,15 @@ namespace otto::itc {
       }
 
 
-      SECTION ("ActionQueue.try_push(ActionReciever, ActionData) works") {
+      SECTION ("ActionQueue.try_push(ActionReceiver, ActionData) works") {
         IntAR ar;
         aq.try_push(ar, int_action::data(10));
         aq.pop_call();
         REQUIRE(ar.value == 10);
       }
 
-      SECTION ("ActionQueue.try_push(ActionReciever, ActionData) does not enqueue an action if the reciever cannot "
-               "recieve it") {
+      SECTION ("ActionQueue.try_push(ActionReceiver, ActionData) does not enqueue an action if the receiver cannot "
+               "receive it") {
         IntAR ar;
         REQUIRE(aq.try_push(ar, void_action::data()) == false);
         REQUIRE(aq.size() == 0);
@@ -136,13 +163,13 @@ namespace otto::itc {
       IntAR iar;
       ActionSender sndr = {queue, var, iar, oiar};
 
-      SECTION ("ActionSender holds references to recievers") {
-        REQUIRE(&sndr.reciever<VoidAR>() == &var);
-        REQUIRE(&sndr.reciever<IntAR>() == &iar);
-        REQUIRE(&sndr.reciever<OtherIntAR>() == &oiar);
+      SECTION ("ActionSender holds references to receivers") {
+        REQUIRE(&sndr.receiver<VoidAR>() == &var);
+        REQUIRE(&sndr.receiver<IntAR>() == &iar);
+        REQUIRE(&sndr.receiver<OtherIntAR>() == &oiar);
       }
 
-      SECTION ("ActionSender queues actions to all recievers") {
+      SECTION ("ActionSender queues actions to all receivers") {
         sndr.push(int_action::data(10));
         REQUIRE(queue.size() == 2);
         queue.pop_call_all();
@@ -152,8 +179,8 @@ namespace otto::itc {
 
       SECTION ("ActionSender is copy constructible") {
         auto sndr2 = sndr;
-        REQUIRE(&sndr.reciever<VoidAR>() == &var);
-        REQUIRE(&sndr2.reciever<VoidAR>() == &var);
+        REQUIRE(&sndr.receiver<VoidAR>() == &var);
+        REQUIRE(&sndr2.receiver<VoidAR>() == &var);
       }
 
       SECTION ("JoinedActionSender") {
@@ -185,7 +212,7 @@ namespace otto::itc {
       };
       int an_int = 0;
       RefAR rar;
-      call_reciever(rar, ref_act::data(an_int));
+      call_receiver(rar, ref_act::data(an_int));
       REQUIRE(rar.addr == &an_int);
     }
   }

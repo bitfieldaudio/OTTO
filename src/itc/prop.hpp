@@ -38,7 +38,7 @@ namespace otto::core::props::mixin {
       send_actions();
     }
 
-    /// Send change actions with the current value to all recievers
+    /// Send change actions with the current value to all receivers
     void send_actions() const noexcept
     {
       OTTO_ASSERT(sender != nullptr);

@@ -138,27 +138,27 @@ namespace otto::util {
     /// `for_each` with access to an index value. Function called as `f(*it, i)`
     ///
     /// For each item in range `[first, last)`, invoke `f` with args
-    /// `*iter, i` where `iter` is the current iterator, and `i` is
+    /// `i, *iter` where `iter` is the current iterator, and `i` is
     /// an incrementing value, starting at zero. Use this instead of
     /// raw indexed loops wherever possible.
     ///
     /// \param first Input iterator to the begining of the range
     /// \param last Input iterator to the end of the range
-    /// \param f Must be invocable with arguments `value_type`, `std::size_t`
+    /// \param f Must be invocable with arguments `std::size_t`, `value_type`
     /// \returns The number of iterations performed
     template<typename InputIt, typename F>
-    constexpr std::size_t indexed_for(InputIt&& first, InputIt&& last, F&& f)
+    constexpr std::size_t indexed_for_each(InputIt&& first, InputIt&& last, F&& f)
     {
       std::size_t i = 0;
       std::for_each(std::forward<InputIt>(first), std::forward<InputIt>(last), [&](auto&& a) {
-        std::invoke(f, a, i);
+        std::invoke(f, i, a);
         i++;
       });
       return i;
     }
 
     template<typename Rng, typename F>
-    constexpr std::size_t indexed_for(Rng&& rng, F&& f)
+    constexpr std::size_t indexed_for_each(Rng&& rng, F&& f)
     {
       return indexed_for(std::begin(rng), std::end(rng), std::forward<F>(f));
     }

@@ -18,6 +18,16 @@ namespace otto::util {
   template<typename T>
   constexpr inline bool is_number_v = is_number<T>::value;
 
+  /// this type casts implicitly to anything,
+  /// thus, it can represent an arbitrary type.
+  struct arbitrary_t {
+    template<typename T>
+    operator T &&();
+
+    template<typename T>
+    operator T&();
+  };
+
   /// Concept of a @ref better_enum.hpp enum
   class BetterEnum {
     static std::false_type _is(...);

@@ -27,22 +27,22 @@ namespace otto::itc {
       return queue_.size();
     }
 
-    /// Push a call to `call_reciever` to the queue.
+    /// Push a call to `call_receiver` to the queue.
     template<typename AR, typename Tag, typename... Args>
     auto push(AR& ar, ActionData<Action<Tag, Args...>> action_data)
-      -> std::enable_if_t<ActionReciever::is<AR, Action<Tag, Args...>>>
+      -> std::enable_if_t<ActionReceiver::is<AR, Action<Tag, Args...>>>
     {
-      push([&ar, action_data] { call_reciever(ar, action_data); });
+      push([&ar, action_data] { call_receiver(ar, action_data); });
     }
 
-    /// Push a call to `call_reciever` to the queue, if such a call is valid.
+    /// Push a call to `call_receiver` to the queue, if such a call is valid.
     ///
-    /// Returns `true` if `AR` implements a reciever for the action, false otherwise
+    /// Returns `true` if `AR` implements a receiver for the action, false otherwise
     template<typename AR, typename Tag, typename... Args>
     bool try_push(AR& ar, ActionData<Action<Tag, Args...>> action_data)
     {
-      if constexpr (ActionReciever::is<AR, Action<Tag, Args...>>) {
-        push([&ar, action_data] { call_reciever(ar, action_data); });
+      if constexpr (ActionReceiver::is<AR, Action<Tag, Args...>>) {
+        push([&ar, action_data] { call_receiver(ar, action_data); });
         return true;
       }
       return false;
@@ -67,7 +67,7 @@ namespace otto::itc {
     std::queue<value_type, std::deque<value_type>> queue_;
   };
 
-  /// A queue one can push actionData/reciever pairs to to have the reciever called on another thread
+  /// A queue one can push actionData/receiver pairs to to have the receiver called on another thread
   struct ActionQueue : PushOnlyActionQueue {
     using value_type = PushOnlyActionQueue::value_type;
 

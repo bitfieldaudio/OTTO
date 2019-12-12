@@ -8,34 +8,34 @@ namespace otto::itc {
   template<typename Sndr, typename Tag, typename Val, typename... Mixins>
   struct ActionProp;
 
-  /// A class to help enqueue actions for a list of recievers
+  /// A class to help enqueue actions for a list of receivers
   ///
-  /// Currently only supports one reciever of each type, which shouldn't be a problem.
-  template<typename... Recievers>
+  /// Currently only supports one receiver of each type, which shouldn't be a problem.
+  template<typename... Receivers>
   struct ActionSender {
     template<typename Val, typename Tag, typename... Mixins>
-    using Prop = ActionProp<ActionSender<Recievers...>, Val, Tag, Mixins...>;
+    using Prop = ActionProp<ActionSender<Receivers...>, Val, Tag, Mixins...>;
 
-    /// Does not own the queue, and does not own the recievers.
-    ActionSender(PushOnlyActionQueue& queue, Recievers&... r) : queue_(queue), recievers_(r...) {}
+    /// Does not own the queue, and does not own the receivers.
+    ActionSender(PushOnlyActionQueue& queue, Receivers&... r) : queue_(queue), receivers_(r...) {}
 
-    /// Push an action to be recieved by all recievers that support it
+    /// Push an action to be received by all receivers that support it
     template<typename Tag, typename... Args>
     void push(ActionData<Action<Tag, Args...>> action_data)
     {
-      (queue_.try_push(reciever<Recievers>(), action_data), ...);
+      (queue_.try_push(receiver<Receivers>(), action_data), ...);
     }
 
-    /// Get a reciever of a specific type
-    template<typename Reciever>
-    auto reciever() noexcept -> std::enable_if_t<util::is_one_of_v<Reciever, Recievers...>, Reciever&>
+    /// Get a receiver of a specific type
+    template<typename Receiver>
+    auto receiver() noexcept -> std::enable_if_t<util::is_one_of_v<Receiver, Receivers...>, Receiver&>
     {
-      return std::get<Reciever&>(recievers_);
+      return std::get<Receiver&>(receivers_);
     }
 
   private:
     PushOnlyActionQueue& queue_;
-    std::tuple<Recievers&...> recievers_;
+    std::tuple<Receivers&...> receivers_;
   };
 
   template<typename... ActionSenders>
@@ -61,29 +61,29 @@ namespace otto::itc {
   /// Calls the action handler directly instead of pushing to a queue.
   /// 
   /// @note mainly used for single-threaded testing
-  template<typename... Recievers>
+  template<typename... Receivers>
   struct DirectActionSender {
     template<typename Val, typename Tag, typename... Mixins>
-    using Prop = ActionProp<DirectActionSender<Recievers...>, Val, Tag, Mixins...>;
+    using Prop = ActionProp<DirectActionSender<Receivers...>, Val, Tag, Mixins...>;
 
-    DirectActionSender(Recievers&... r) : recievers_(r...) {}
+    DirectActionSender(Receivers&... r) : receivers_(r...) {}
 
-    /// Push an action to be recieved by all recievers that support it
+    /// Push an action to be received by all receivers that support it
     template<typename Tag, typename... Args>
     void push(ActionData<Action<Tag, Args...>> action_data)
     {
-      (try_call_reciever(reciever<Recievers>(), action_data), ...);
+      (try_call_receiver(receiver<Receivers>(), action_data), ...);
     }
 
-    /// Get a reciever of a specific type
-    template<typename Reciever>
-    auto reciever() noexcept -> std::enable_if_t<util::is_one_of_v<Reciever, Recievers...>, Reciever&>
+    /// Get a receiver of a specific type
+    template<typename Receiver>
+    auto receiver() noexcept -> std::enable_if_t<util::is_one_of_v<Receiver, Receivers...>, Receiver&>
     {
-      return std::get<Reciever&>(recievers_);
+      return std::get<Receiver&>(receivers_);
     }
 
   private:
-    std::tuple<Recievers&...> recievers_;
+    std::tuple<Receivers&...> receivers_;
   };
 
 } // namespace otto::itc

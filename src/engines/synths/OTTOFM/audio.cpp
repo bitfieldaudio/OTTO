@@ -39,12 +39,8 @@ namespace otto::engines::ottofm {
   // since we are overwriting the default process method.
   core::audio::ProcessData<1> Voice::process(core::audio::ProcessData<1> data) noexcept
   {
-    auto& op0 = std::get<0>(operators);
-    auto& op1 = std::get<1>(operators);
-    auto& op2 = std::get<2>(operators);
-    auto& op3 = std::get<3>(operators);
-
     auto callOps = [&] {
+      auto& [op0, op1, op2, op3] = operators;
       float aux = 0;
       switch (audio.algN_) {
         case 0: return op0(op1(op2(op3(0))));

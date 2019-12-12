@@ -35,9 +35,9 @@ namespace otto::engines::ottofm {
     auto shift = services::Controller::current().is_pressed(Key::shift);
     if (e.encoder == +Encoder::red) {
       if (!shift)
-        props.fmAmount.step(e.steps);
+        props.fm_amount.step(e.steps);
       else
-        props.algN.step(e.steps);
+        props.algorithm_idx.step(e.steps);
     } else {
       int i = 0;
       util::for_each(props.operators, [&](auto& op) {

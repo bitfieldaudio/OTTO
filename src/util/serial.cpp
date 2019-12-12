@@ -49,7 +49,7 @@ namespace otto::util {
       tty.c_oflag &= ~ONLCR; // Prevent conversion of newline to carriage return/line feed
 
       tty.c_cc[VTIME] = vtime; // No read timeout
-      tty.c_cc[VMIN] = vmin;  // Wait until one byte has been recieved
+      tty.c_cc[VMIN] = vmin;  // Wait until one byte has been received
 
       // Set baud rate
       cfsetispeed(&tty, B9600);
