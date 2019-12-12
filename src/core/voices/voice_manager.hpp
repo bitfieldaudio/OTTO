@@ -164,7 +164,9 @@ namespace otto::core::voices {
     void handle_control_change(const midi::ControlChangeEvent&) noexcept;
 
     /// Return list of voices
-    std::array<Voice, voice_count_v>& voices();
+    std::array<Voice, voice_count_v>& voices() noexcept;
+
+    Voice& last_triggered_voice() noexcept;
 
     // -- PROPERTY SETTERS -- //
 
@@ -276,6 +278,8 @@ namespace otto::core::voices {
     }
 
     void set_playmode(PlayMode pm) noexcept;
+
+    void set_sustain(bool s) noexcept;
 
     util::local_vector<float, 7> detune_values;
     util::local_vector<float, voice_count_v> rand_values;

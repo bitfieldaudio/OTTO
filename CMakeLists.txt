@@ -1,5 +1,5 @@
 # Version 3.8 is required for c++17
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.9)
 project(OTTO VERSION 0.0.1 LANGUAGES CXX C)
 
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -24,14 +24,9 @@ if (OTTO_ENABLE_ASAN)
   set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
 endif()
 
-if (OTTO_ENABLE_UBSAN) 
+if (OTTO_ENABLE_UBSAN)
   set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=undefined")
   set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fsanitize=undefined")
-endif()
-
-if (OTTO_ENABLE_LTO) 
-  set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto=thin")
-  set (CMAKE_LINKER_FLAGS_RELEASE "${CMAKE_LINKER_FLAGS_RELEASE} -flto=thin")
 endif()
 
 if (DEFINED CMAKE_CXX_FLAGS_DEBUG_INIT AND  
@@ -63,3 +58,15 @@ if (OTTO_BUILD_TESTS)
   add_subdirectory(test)
 endif()
 
+if (OTTO_ENABLE_LTO) 
+  include(CheckIPOSupported)
+  check_ipo_supported(RESULT supported OUTPUT error)
+
+  if( supported )
+    message(STATUS "IPO / LTO enabled")
+    set_property(TARGET otto_exec PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+    set_property(TARGET otto_test PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+  else()
+    message(STATUS "IPO / LTO not supported: <${error}>")
+  endif()
+endif()

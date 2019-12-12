@@ -14,6 +14,17 @@ namespace otto::core::engine {
 #define ENGDISP EngineDispatcher<ET, Engines...>
 
   ENGDISPTEMPLATE
+  ENGDISP::EngineDispatcher() noexcept : screen_(std::make_unique<EngineSelectorScreen>()) {
+    props.sender.push(PublishEngineNames::action::data(engine_names));
+    props.selected_engine_idx.on_change().connect([this] (int idx) {
+      engine_is_constructed_ = false;
+      services::AudioManager::current().wait_one();
+      current_engine_.emplace_by_index(idx);
+      engine_is_constructed_ = true;
+    });
+  }
+
+  ENGDISPTEMPLATE
   ITypedEngine<ET>& ENGDISP::current()
   {
     return *current_engine_;
@@ -29,8 +40,53 @@ namespace otto::core::engine {
   template<int N>
   auto ENGDISP::process(audio::ProcessData<N> data) noexcept
   {
-    return util::match(current_engine_, [&](auto& engine) { return engine.audio->process(data); });
+    if (engine_is_constructed_) {
+      return util::match(current_engine_, [&](auto& engine) { return engine.audio->process(data); });
+    }
+    util::fill(data.audio, 0);
+    return data;
   }
+
+  ENGDISPTEMPLATE
+  ui::ScreenAndInput ENGDISP::selector_screen()
+  {
+    return {*screen_, *this};
+  }
+
+
+  ENGDISPTEMPLATE
+  void ENGDISP::encoder(input::EncoderEvent e)
+  {
+    using namespace input;
+    switch (e.encoder) {
+      case Encoder::blue:
+        if (props.current_screen != 0)
+          props.current_screen = 0;
+        else
+          props.selected_engine_idx.step(e.steps);
+        break;
+      case Encoder::green:
+        if (props.current_screen != 1)
+          props.current_screen = 1;
+        else
+          props.selected_preset_idx.step(e.steps);
+        break;
+      default: break;
+    }
+  }
+
+  ENGDISPTEMPLATE
+  bool ENGDISP::keypress(input::Key key)
+  {
+    using namespace input;
+    switch (key) {
+      case Key::blue_click: //
+        props.current_screen = 1;
+        return true;
+      default: return false;
+    }
+  }
+
 
 #undef ENGDISPTEMPLATE
 #undef ENGDISP

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <functional> // invoke
+
 #include "util/type_traits.hpp"
 
 /// OTTO Metaprogramming utilities

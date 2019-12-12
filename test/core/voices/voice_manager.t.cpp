@@ -101,6 +101,17 @@ namespace otto::core::voices {
                      Catch::Equals(std::vector{50}));
       }
 
+      SECTION ("Snaps back to playing CORRECT old note when a note is released") {
+        vmgr.handle_midi(midi::NoteOnEvent{50});
+        vmgr.handle_midi(midi::NoteOnEvent{60});
+        vmgr.handle_midi(midi::NoteOnEvent{70});
+        vmgr.handle_midi(midi::NoteOffEvent{70});
+        REQUIRE_THAT(test::sort(view::transform(triggered_voices, MEMBER_CALLER(midi_note))),
+                     Catch::Equals(std::vector{60}));
+      }
+
+
+
       SECTION ("AUX mode: Sub = 0.5") {
         voices_props.sub = 0.5f;
         queue.pop_call_all();
@@ -497,10 +508,12 @@ namespace otto::core::voices {
 
         REQUIRE(vmgr.voices()[0]() == 1.f);
         REQUIRE(vmgr() == test::approx(4.f * vmgr.normal_volume));
+        // Note that voice_manager() applies volume in the example above
+        // while voice() does not.
 
         AudioBufferHandle bh = services::AudioManager::current().buffer_pool().allocate_clear();
-
-        // Note that voice.process() applies volume, while voice() does not.
+        // When running the default voice.process(), volume is applied. This carries over to
+        // voice_manager.process() 
         auto res = vmgr.voices()[0].process(ProcessData<1>{bh});
         REQUIRE(util::all_of(res.audio, util::does_equal(1 * vmgr.normal_volume)));
         auto res2 = vmgr.process(ProcessData<1>{bh});
@@ -523,6 +536,7 @@ namespace otto::core::voices {
         // We have written our own voice.process() so volume is not applied.
         auto res = vmgr.voices()[0].process(ProcessData<1>{buf});
         REQUIRE(util::all_of(res.audio, util::does_equal(1)));
+        
         auto res2 = vmgr.process(ProcessData<1>{buf});
         REQUIRE(util::all_of(res2.audio, util::does_equal(4)));
       }

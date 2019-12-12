@@ -1,7 +1,5 @@
 #pragma once
 
-// namespace otto::util::audio
-
 #include "util/dyn-array.hpp"
 #include "util/iterator.hpp"
 

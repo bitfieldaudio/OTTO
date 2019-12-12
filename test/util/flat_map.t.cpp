@@ -7,13 +7,30 @@
 namespace otto::test {
 
   using namespace util::view;
+  // Used to test transparent comparisons
+  struct StringLikeType {
+    StringLikeType(std::string s) : s(s) {}
+    StringLikeType(const StringLikeType&) = delete;
+
+    std::string s;
+
+    friend bool operator==(const StringLikeType& l, const std::string& r)
+    {
+      return l.s == r;
+    }
+
+    friend bool operator==(const std::string& l, const StringLikeType& r)
+    {
+      return l == r.s;
+    }
+  };
 
   TEST_CASE ("util::flat_map") {
     using StringIntMap = util::flat_map<std::string, int>;
 
     static_assert(std::is_same_v<StringIntMap::key_type, std::string>);
     static_assert(std::is_same_v<StringIntMap::mapped_type, int>);
-    static_assert(std::is_same_v<StringIntMap::value_type, std::tuple<std::string, int>>);
+    static_assert(std::is_same_v<StringIntMap::value_type, std::pair<std::string, int>>);
 
     StringIntMap map;
 
@@ -22,13 +39,16 @@ namespace otto::test {
     }
 
     SECTION ("Insertion of element increases size") {
-      REQUIRE(map.insert("test", 5) == std::pair(map.begin(), true));
+      auto res = map.insert("test", 5);
+      REQUIRE(res == std::pair(map.begin(), true));
       REQUIRE(map.size() == 1);
     }
 
     SECTION ("Inserting existing element returns iterator to that and false") {
-      REQUIRE(map.insert("test", 5) == std::pair(map.begin(), true));
-      REQUIRE(map.insert("test", 5) == std::pair(map.begin(), false));
+      auto res = map.insert("test", 5);
+      REQUIRE(res == std::pair(map.begin(), true));
+      res = map.insert("test", 5);
+      REQUIRE(res == std::pair(map.begin(), false));
     }
 
     map.insert("0", 0);
@@ -103,6 +123,21 @@ namespace otto::test {
         REQUIRE(erase_result == map.begin() + 4);
         REQUIRE_THAT(to_vec(map),
                      Catch::Equals(std::vector<StringIntMap::value_type>{{"0", 0}, {"1", 1}, {"2", 2}, {"3", 3}}));
+      }
+    }
+
+    SECTION ("Transparent comparisons") {
+      StringLikeType key = {"2"};
+      SECTION( "find") {
+        REQUIRE(map.find(key) == map.begin() + 2);
+      }
+      SECTION( "contains") {
+        REQUIRE(map.contains(key));
+      }
+      SECTION( "erase") {
+        REQUIRE(map.erase(key));
+        REQUIRE_THAT(to_vec(map),
+                     Catch::Equals(std::vector<StringIntMap::value_type>{{"0", 0}, {"1", 1}, {"3", 3}, {"4", 4}}));
       }
     }
   }

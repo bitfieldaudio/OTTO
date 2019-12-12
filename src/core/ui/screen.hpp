@@ -1,7 +1,7 @@
 #pragma once
 
-#include "core/ui/canvas.hpp"
 #include "core/input.hpp"
+#include "core/ui/canvas.hpp"
 
 namespace otto::core::ui {
 
@@ -34,6 +34,9 @@ namespace otto::core::ui {
 
   struct ScreenAndInput {
     ScreenAndInput(core::ui::Screen& s, core::input::InputHandler& i) noexcept : screen_(&s), input_(&i) {}
+    ScreenAndInput(core::ui::Screen* s, core::input::InputHandler* i) noexcept : screen_(s), input_(i) {}
+    ScreenAndInput(core::ui::Screen& s, core::input::InputHandler* i) noexcept : screen_(&s), input_(i) {}
+    ScreenAndInput(core::ui::Screen* s, core::input::InputHandler& i) noexcept : screen_(s), input_(&i) {}
 
     ScreenAndInput(const ScreenAndInput&) = default;
     ScreenAndInput& operator=(const ScreenAndInput&) = default;

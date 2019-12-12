@@ -3,9 +3,13 @@
 #include <Gamma/Envelope.h>
 #include <Gamma/Filter.h>
 #include <Gamma/Oscillator.h>
+#include <Gamma/Noise.h>
+#include "util/dsp/overdrive.hpp"
 
 #include "core/voices/voice_manager.hpp"
 #include "goss.hpp"
+
+//TODO: draw model
 
 namespace otto::engines::goss {
 
@@ -22,13 +26,15 @@ namespace otto::engines::goss {
 
     void action(itc::prop_change<&Props::click>, float c) noexcept;
 
+    void action(itc::prop_change<&Props::model>, int m) noexcept;
+
     void action(voices::attack_tag::action, float a) noexcept
     {
-      env_.attack(a);
+      env_.attack(a * a * 8.f + 0.01f);
     }
     void action(voices::decay_tag::action, float d) noexcept
     {
-      env_.decay(d);
+      env_.decay(d * d * 4.f + 0.01f);
     }
     void action(voices::sustain_tag::action, float s) noexcept
     {
@@ -36,15 +42,18 @@ namespace otto::engines::goss {
     }
     void action(voices::release_tag::action, float r) noexcept
     {
-      env_.release(r);
+      env_.release(r * r * 8.f + 0.01f);
     }
 
   private:
     Audio& audio;
 
-    std::array<gam::Osc<>, 3> models;
-    gam::Osc<> percussion;
-    gam::AD<> perc_env{0.001, 0.2};
+    /// Does not allocate tables. Reads from models in Audio.
+    gam::Osc<> voice_player;
+    gam::Osc<> percussion_player;
+
+    gam::NoiseBrown<> noise;
+    gam::AD<> perc_env{0.01, 0.08};
     gam::ADSR<> env_ = {0.1f, 0.1f, 0.7f, 2.0f, 1.f, -4.f};
   };
 
@@ -52,9 +61,10 @@ namespace otto::engines::goss {
     Audio() noexcept;
 
     void action(Actions::rotation_variable, std::atomic<float>&) noexcept;
+
+    void action(itc::prop_change<&Props::drive>, float d) noexcept;
+
     void action(itc::prop_change<&Props::leslie>, float l) noexcept;
-    void action(itc::prop_change<&Props::model>, int m) noexcept;
-    void action(itc::prop_change<&Props::drawbar2>, float d2) noexcept;
 
     template<typename Tag, typename... Args>
     auto action(itc::Action<Tag, Args...> a, Args... args) noexcept
@@ -72,22 +82,16 @@ namespace otto::engines::goss {
 
     std::atomic<float>* shared_rotation = nullptr;
 
-    static constexpr int number_of_models = 3;
-    static constexpr int model_size = 9;
-    using model_type = std::array<int, model_size>;
-    /// Number of sine cycles for each drawbar. multiplied by 2.
-    // Note: perhaps all could be divided by 2 but then we get a cusp for the second drawbar.
-    static constexpr model_type cycles = {1, 3, 2, 4, 6, 8, 10, 12, 16};
-    /// The drawbar settings. correspond to typical hammond drawbars in ascending order.
-    static constexpr std::array<model_type, number_of_models> model_params = {{{1, 1, 1, 1, 1, 1, 1, 1, 1},
-                                                                              {8, 8, 0, 0, 0, 0, 3, 8, 1},
-                                                                              {8, 7, 6, 5, 4, 5, 6, 7, 1}}};
     void generate_model(gam::Osc<>&, model_type);
 
-    float leslie = 0.f;
-    float drawbar2 = 0.f;
+    std::array<gam::Osc<>, number_of_models> models;
 
-    int model = 0;
+    gam::Osc<> percussion = {1, 0, 2048};
+
+    float gain = 0.f;
+    float output_scaling = 0.f;
+
+    float leslie = 0.f;
 
     float leslie_speed_hi = 0.f;
     float leslie_speed_lo = 0.f;
@@ -96,7 +100,6 @@ namespace otto::engines::goss {
 
     gam::LFO<> leslie_filter_hi;
     gam::LFO<> leslie_filter_lo;
-    gam::LFO<> pitch_modulation_lo;
     gam::LFO<> pitch_modulation_hi;
 
     gam::AccumPhase<> rotation;
