@@ -7,6 +7,8 @@
 #include "Paint.hpp"
 #include "Text.hpp"
 
+#include "util/string_ref.hpp"
+
 struct NVGcontext;
 
 namespace otto::nvg {
@@ -328,8 +330,11 @@ namespace otto::nvg {
      * @param rowWidth The max row width of the text box,NAN is not limited
      * @return The canvas to operate with
      */
-    Canvas& fillText(const std::string& text, float x, float y, float rowWidth = NAN);
-    Canvas& fillText(const std::string& text, Point p, float rowWidth = NAN);
+    //Canvas& fillText(const std::string& text, float x, float y, float rowWidth = NAN);
+    //Canvas& fillText(const std::string& text, Point p, float rowWidth = NAN);
+
+    Canvas& fillText(util::string_ref text, float x, float y, float rowWidth = NAN);
+    Canvas& fillText(util::string_ref text, Point p, float rowWidth = NAN);
 
     /**
      * @brief Draws an image onto the canvas
@@ -591,7 +596,7 @@ namespace otto::nvg {
      * @param rowWidth The max row width of the text box,NAN is not limited
      * @return The width of the specified text
      */
-    float measureText(const std::string& text, float rowWidth = NAN);
+    float measureText(util::string_ref text, float rowWidth = NAN);
 
     /**
      * @brief Check the boundary of the text, before writing it on the canvas
@@ -602,8 +607,8 @@ namespace otto::nvg {
      * @param rowWidth The max row width of the text box,NAN is not limited
      * @return The width of the specified text
      */
-    float measureText(const std::string& text, float x, float y, float* bounds, float rowWidth = NAN);
-    Box measureText(const std::string& text, Point p, float rowWidth = NAN);
+    float measureText(util::string_ref text, float x, float y, float* bounds, float rowWidth = NAN);
+    Box measureText(util::string_ref text, Point p, float rowWidth = NAN);
 
     Canvas& globalCompositeOperation(CompositeOperation op);
 

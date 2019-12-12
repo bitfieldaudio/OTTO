@@ -48,7 +48,7 @@ namespace otto::itc {
     template<typename Tag, typename... Args>
     void push(ActionData<Action<Tag, Args...>> action_data)
     {
-      util::tuple_for_each(sndrs_, [&action_data](auto& sndr) { sndr.push(action_data); });
+      util::for_each(sndrs_, [&action_data](auto& sndr) { sndr.push(action_data); });
     }
 
   private:

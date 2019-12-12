@@ -3,10 +3,9 @@
 #include "core/engine/engine_dispatcher.hpp"
 #include "core/engine/engine_dispatcher.inl"
 #include "core/ui/vector_graphics.hpp"
-#include "engines/fx/wormhole/audio.hpp"
-#include "engines/fx/wormhole/screen.hpp"
-#include "engines/synths/goss/audio.hpp"
-#include "engines/synths/goss/screen.hpp"
+#include "engines/fx/wormhole/wormhole.hpp"
+#include "engines/synths/OTTOFM/ottofm.hpp"
+#include "engines/synths/goss/goss.hpp"
 #include "services/application.hpp"
 #include "services/clock_manager.hpp"
 
@@ -28,6 +27,7 @@ namespace otto::services {
     //   EngineType::arpeggiator>;
     using SynthDispatcher = EngineDispatcher< //
       EngineType::synth,
+      engines::ottofm::OttofmEngine,
       engines::goss::GossEngine>;
 
     SynthDispatcher synth;
@@ -70,8 +70,7 @@ namespace otto::services {
     // reg_ss(ScreenEnum::sampler, [&]() -> auto& { return sequencer.sampler_screen(); });
     // reg_ss(ScreenEnum::sampler_envelope, [&]() -> auto& { return sequencer.envelope_screen(); });
     reg_ss(ScreenEnum::synth, [&]() { return synth->screen(); });
-    // reg_ss(
-    //   ScreenEnum::synth_selector, [&]() -> auto& { return synth.selector_screen(); });
+    reg_ss(ScreenEnum::synth_selector, [&]() { return synth.selector_screen(); });
     reg_ss(ScreenEnum::synth_envelope, [&]() { return synth->envelope_screen(); });
     reg_ss(ScreenEnum::voices, [&]() { return synth->voices_screen(); });
     // reg_ss(ScreenEnum::external,       [&] () -> auto& { return  ; });
@@ -210,7 +209,7 @@ namespace otto::services {
     auto fx1_out = effect1.audio->process(audio::ProcessData<1>(fx1_bus));
     auto fx2_out = effect2.audio->process(audio::ProcessData<1>(fx2_bus));
 
-    //Temporary. Get only synth output for testing
+    // Temporary. Get only synth output for testing
     for (auto&& [snth, l, r] : util::zip(synth_out.audio, fx1_out.audio[0], fx1_out.audio[1])) {
       l = r = snth;
     }

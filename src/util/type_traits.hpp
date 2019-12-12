@@ -217,45 +217,4 @@ namespace otto::util {
       return e;
     }
   }
-
-  namespace tuple {
-
-    /// Foreach for tuples
-    template<std::size_t I = 0, typename FuncT, typename... Tp>
-    constexpr void for_each(std::tuple<Tp...>& t, FuncT f)
-    {
-      if constexpr (I != sizeof...(Tp)) {
-        f(std::get<I>(t));
-        for_each<I + 1, FuncT, Tp...>(t, f);
-      }
-    }
-
-    namespace detail {
-
-      template<class X>
-      constexpr auto remove_last(X&& x)
-      {
-        return std::tuple<>();
-      }
-
-      template<class X, class... Xs>
-      constexpr auto remove_last(X&& x, Xs&&... xs);
-
-      constexpr auto tuple_remove_last = [](auto&&... args) { return detail::remove_last(FWD(args)...); };
-
-      template<class X, class... Xs>
-      constexpr auto remove_last(X&& x, Xs&&... xs)
-      {
-        return std::tuple_cat(std::tuple<X>(FWD(x)), std::apply(tuple_remove_last, std::tuple<Xs...>(FWD(xs)...)));
-      }
-    } // namespace detail
-
-    template<class T, class... Args>
-    constexpr auto remove_last(const std::tuple<T, Args...>& t)
-    {
-      return std::apply(detail::tuple_remove_last, t);
-    }
-
-  } // namespace tuple
-
 } // namespace otto::util

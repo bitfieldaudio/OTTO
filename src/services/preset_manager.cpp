@@ -2,6 +2,8 @@
 
 #include "services/debug_ui.hpp"
 
+#include "util/flat_map.hpp"
+
 namespace otto::services {
 
   struct DefaultPresetManager final : PresetManager {
@@ -78,7 +80,7 @@ namespace otto::services {
     // Key is engine name.
     // This design is chosen because we want to expose the names vector
     // separately.
-    foonathan::array::flat_map<std::string, PresetNamesDataPair> _preset_data;
+    util::flat_map<std::string, PresetNamesDataPair> _preset_data;
 
     const fs::path presets_dir = Application::current().data_dir / "presets";
   };
@@ -96,9 +98,9 @@ namespace otto::services {
   {
     auto eg_found = _preset_data.find(engine_name);
     if (eg_found == _preset_data.end()) {
-      eg_found = _preset_data.insert(std::string(engine_name), PresetNamesDataPair{}).iter();
+      eg_found = _preset_data.insert(std::string(engine_name), PresetNamesDataPair{}).first;
     }
-    return eg_found->value.names;
+    return eg_found->second.names;
   }
 
   const std::string& DefaultPresetManager::name_of_idx(util::string_ref engine_name, int idx)
@@ -130,14 +132,14 @@ namespace otto::services {
     if (pd_iter == _preset_data.end()) {
       throw exception(ErrorCode::no_such_engine, "No engine named '{}'", engine.name());
     }
-    auto niter = util::find(pd_iter->value.names, name);
-    if (niter == pd_iter->value.names.end()) {
+    auto niter = util::find(pd_iter->second.names, name);
+    if (niter == pd_iter->second.names.end()) {
       throw exception(ErrorCode::no_such_preset, "No preset named '{}' for engine '{}'", name,
                       engine.name());
     }
     DLOGI("Applying preset {} to engine {}", name, engine.name());
-    int idx = niter - pd_iter->value.names.begin();
-    engine.from_json(pd_iter->value.data[idx]);
+    int idx = niter - pd_iter->second.names.begin();
+    engine.from_json(pd_iter->second.data[idx]);
     engine.current_preset(idx);
   }
 
@@ -147,7 +149,7 @@ namespace otto::services {
     if (pd_iter == _preset_data.end()) {
       throw exception(ErrorCode::no_such_engine, "No engine named '{}'", engine.name());
     }
-    auto& pd = pd_iter->value;
+    auto& pd = pd_iter->second;
     if (idx < 0 || static_cast<std::size_t>(idx) >= pd.data.size()) {
       throw exception(ErrorCode::no_such_preset, "Preset index {} is out range for engine '{}'",
                       idx, engine.name());
@@ -179,8 +181,8 @@ namespace otto::services {
         jf.read();
         std::string engine = jf.data()["engine"];
         std::string name = jf.data()["name"];
-        auto pd_iter = _preset_data.emplace(engine).iter();
-        auto& pd = pd_iter->value;
+        auto pd_iter = _preset_data.insert(engine, {}).first;
+        auto& pd = pd_iter->second;
         if (auto found = util::find(pd.names, name); found != pd.names.end()) {
           pd.data[found - pd.names.begin()] = std::move(jf.data()["props"]);
           DLOGI("Reloaded preset '{}' for engine '{}", name, engine);
