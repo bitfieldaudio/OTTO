@@ -2,6 +2,8 @@
 
 #include <variant>
 
+#include "util/meta.hpp"
+
 namespace otto::util {
 
   /// SOURCE: https://tower120.github.io/2018/05/18/variant_with_base.html
@@ -126,6 +128,44 @@ namespace otto::util {
       return res;
     }
 
+    template<int I, class... Args>
+    auto& emplace(Args&&... args)
+    {
+      auto& res = m_variant.template emplace<std::size_t{I}>(std::forward<Args>(args)...);
+      update_base();
+      return res;
+    }
+
+    template<int I, class U, class... Args>
+    auto& emplace(std::initializer_list<U> il, Args&&... args)
+    {
+      auto& res = m_variant.template emplace<std::size_t{I}>(std::move(il), std::forward<Args>(args)...);
+      update_base();
+      return res;
+    }
+
+    template<class... Args>
+    Base& emplace_by_index(int idx, Args&&... args)
+    {
+      // Use this recursive lambda to translate idx to a compile time index
+      // basically, it auto generates a switch statement for all possible indexes
+      const auto impl = [&](auto c_I, auto&& impl) {
+        constexpr int I = meta::_v<decltype(c_I)>;
+        if constexpr (I < 0) {
+          // ERROR;
+          return;
+        } else {
+          if (I == idx) {
+            emplace<I>(FWD(args)...);
+          } else {
+            impl(meta::c<I - 1>(), impl);
+          }
+        }
+      };
+      impl(meta::c<int(std::variant_size_v<Variant>) - 1>(), impl);
+      return *base();
+    }
+
     constexpr bool operator==(const basic_variant_w_base& other) const noexcept
     {
       return m_variant == other.m_variant;
@@ -134,7 +174,6 @@ namespace otto::util {
     {
       return m_variant != other.m_variant;
     }
-
 
     Base* base() noexcept
     {

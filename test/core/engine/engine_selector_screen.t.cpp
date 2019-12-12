@@ -32,36 +32,6 @@ namespace otto {
       {
         selected_engine_idx.on_change().connect([&] { selected_preset_idx = 0; });
       }
-
-      void encoder(EncoderEvent e) override
-      {
-        switch (e.encoder) {
-          case Encoder::blue:
-            if (current_screen != 0)
-              current_screen = 0;
-            else
-              selected_engine_idx.step(e.steps);
-            break;
-          case Encoder::green:
-            if (current_screen != 1)
-              current_screen = 1;
-            else
-              selected_preset_idx.step(e.steps);
-            break;
-          default: break;
-        }
-      }
-
-      bool keypress(Key key) override
-      {
-        switch (key) {
-          case Key::blue_click: //
-            current_screen = 1;
-            return true;
-          default: return false;
-        }
-      }
-
     } props{sender};
 
     test::show_gui([&](nvg::Canvas& ctx) { screen.draw(ctx); }, &props);

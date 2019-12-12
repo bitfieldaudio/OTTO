@@ -4,6 +4,7 @@
 #include "core/engine/nullengine.hpp"
 #include "util/flat_map.hpp"
 #include "util/variant_w_base.hpp"
+#include "util/spin_lock.hpp"
 
 namespace otto::core::engine {
 
@@ -16,18 +17,24 @@ namespace otto::core::engine {
 
   /// Owns engines of type `ET`, and dispatches to a selected one of them
   template<EngineType ET, typename... Engines>
-  struct EngineDispatcher {
+  struct EngineDispatcher : input::InputHandler {
     using Sender = services::UISender<EngineSelectorScreen>;
+
+    constexpr static std::array<util::string_ref, sizeof...(Engines)> engine_names = {{Engines::name...}};
 
     struct Props {
       template<typename Tag, typename Type, typename... Mixins>
       using Prop = typename Sender::template Prop<Tag, Type, Mixins...>;
 
       Sender sender;
-      CurrentScreen::Prop<Sender> current_screen = {sender, 0};
+      SelectedEngine::Prop<Sender> selected_engine_idx = {sender, 0, props::limits(0, sizeof...(Engines) - 1)};
+      SelectedPreset::Prop<Sender> selected_preset_idx = {sender, 0, props::limits(0, 12)};
+      CurrentScreen::Prop<Sender> current_screen = {sender, 0, props::limits(0, 1)};
     };
 
-    ui::Screen& selector_screen();
+    EngineDispatcher() noexcept;
+
+    ui::ScreenAndInput selector_screen();
     ITypedEngine<ET>& current();
     ITypedEngine<ET>* operator->();
 
@@ -36,9 +43,16 @@ namespace otto::core::engine {
 
     DECL_REFLECTION_EMPTY();
 
+    void encoder(input::EncoderEvent) override;
+    bool keypress(input::Key) override;
+
   private:
+    std::atomic<bool> engine_is_constructed_ = true;
     util::variant_w_base<ITypedEngine<ET>, Engines...> current_engine_ = std::in_place_index_t<0>();
+    std::unique_ptr<EngineSelectorScreen> screen_;
+    Props props = {{*screen_}};
   };
 } // namespace otto::core::engine
 
+#include "engine_selector_screen.hpp"
 #include "engine_dispatcher.inl"

@@ -1,9 +1,8 @@
 #pragma once
 
+#include "audio.hpp"
 #include "core/ui/screen.hpp"
 #include "ottofm.hpp"
-
-#include "audio.hpp"
 
 namespace otto::engines::ottofm {
 
@@ -11,7 +10,5 @@ namespace otto::engines::ottofm {
 
   struct OttofmScreen : ui::Screen {
     void draw(nvg::Canvas& ctx) override;
-
-
   };
-} // namespace otto::engines::goss
+} // namespace otto::engines::ottofm

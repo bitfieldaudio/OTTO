@@ -1,9 +1,10 @@
 #pragma once
-#include <tuple>
 #include <Gamma/Envelope.h>
 #include <Gamma/Filter.h>
-#include <Gamma/Oscillator.h>
 #include <Gamma/Noise.h>
+#include <Gamma/Oscillator.h>
+
+#include <tuple>
 
 #include "core/voices/voice_manager.hpp"
 #include "ottofm.hpp"
@@ -15,19 +16,18 @@ namespace otto::engines::ottofm {
   /// Defines its own action handlers, which is why it is templated.
   template<int I>
   struct FMOperator {
-  
     struct FMSine : public gam::AccumPhase<> {
       FMSine(float frq = 440, float phs = 0) : AccumPhase<>(frq, phs, 1) {}
       /// Generate next sample with phase offset
-      float operator()(float phsOffset) noexcept 
+      float operator()(float phsOffset) noexcept
       {
         return gam::scl::sinP9(gam::scl::wrap(this->nextPhase() + phsOffset, 1.f, -1.f));
-      };
+      }
     };
 
     FMOperator(float frq = 440, float outlevel = 1, bool modulator = false) {}
 
-    float operator()(float phaseMod = 0) noexcept 
+    float operator()(float phaseMod = 0) noexcept
     {
       if (modulator_)
         return env_() * sine(phaseMod) * outlevel_ * fm_amount_;
@@ -35,23 +35,23 @@ namespace otto::engines::ottofm {
         previous_value_ = sine(phaseMod + feedback_ * previous_value_) * outlevel_;
         return previous_value_;
       }
-    };
+    }
 
     /// Set frequency
     void freq(float frq) noexcept
     {
       sine.freq(frq * freq_ratio_ + detune_amount_);
-    }; 
+    }
 
     /// Get current level
     float level() noexcept
-    { 
-      return env_.value() * outlevel_; 
-    }; 
+    {
+      return env_.value() * outlevel_;
+    }
 
     /// For graphics
     /// If it is a carrier it output a constant value and sould be multiplied by the voice envelope
-    /// TODO: Refactor so just operator envelopes are used, so we don't need voice envelope. 
+    /// TODO: Refactor so just operator envelopes are used, so we don't need voice envelope.
     float get_activity_level() noexcept
     {
       if (modulator_)
@@ -60,70 +60,68 @@ namespace otto::engines::ottofm {
         return outlevel_;
     }
 
-    /// Set fm_amount
-    void fm_amount(float fm) noexcept
-    { 
-      fm_amount_ = fm; 
-    };
-
     /// Reset envelope
     void reset() noexcept
-    { 
-      env_.resetSoft(); 
-    };
+    {
+      env_.resetSoft();
+    }
 
     /// Release envelope
     void release() noexcept
-    { 
-      env_.release(); 
-    };
+    {
+      env_.release();
+    }
 
     /// Finish envelope
     void finish() noexcept
-    { 
-      env_.finish(); 
-    };
+    {
+      env_.finish();
+    }
 
     /// Set modulator flag
     void modulator(bool m) noexcept
-    { 
-      modulator_ = m; 
-    };
+    {
+      modulator_ = m;
+    }
 
     /// Actionhandlers. These are all the properties that can vary across operators.
     void action(itc::prop_change<&Props::OperatorProps<I>::feedback>, float f)
     {
       feedback_ = f;
-    };
-    void action(itc::prop_change<&Props::OperatorProps<I>::mAtt>, float a)
+    }
+    void action(itc::prop_change<&Props::OperatorProps<I>::attack>, float a)
     {
       env_.attack(3 * a);
-    };
-    void action(itc::prop_change<&Props::OperatorProps<I>::mSuspos>, float s)
+    }
+    void action(itc::prop_change<&Props::OperatorProps<I>::suspos>, float s)
     {
       suspos_ = s;
       env_.decay(3 * decrel_ * (1 - s));
       env_.release(3 * decrel_ * s);
       env_.sustain(s);
-    };
-    void action(itc::prop_change<&Props::OperatorProps<I>::mDecrel>, float dr)
+    }
+    void action(itc::prop_change<&Props::OperatorProps<I>::decay_release>, float dr)
     {
       decrel_ = dr;
       env_.decay(3 * dr * (1 - suspos_));
       env_.release(3 * dr * suspos_);
-    };
+    }
     void action(itc::prop_change<&Props::OperatorProps<I>::detune>, float d)
     {
       detune_amount_ = d * 25;
-    };
+    }
     void action(itc::prop_change<&Props::OperatorProps<I>::ratio_idx>, int idx)
     {
       freq_ratio_ = (float) fractions[idx];
-    };
-    void action(itc::prop_change<&Props::OperatorProps<I>::outLev>, float l)
+    }
+    void action(itc::prop_change<&Props::OperatorProps<I>::out_level>, float l)
     {
       outlevel_ = l;
-    };
+    }
+    void action(itc::prop_change<&Props::fmAmount>, float fm)
+    {
+      fm_amount_ = fm;
+    }
 
 
   private:
@@ -172,18 +170,21 @@ namespace otto::engines::ottofm {
     // It's all of the properties not being handled by individual operators.
     // While they could be placed in Audio, the suggested style is to keep
     // actionhandlers in Audio to Pre- and Post-processing, not properties affecting the voices.
-    void action(itc::prop_change<&Props::fmAmount>, float fm) noexcept
+
+    template<typename Action, typename... Args>
+    void action(Action action, Args... args) noexcept
     {
-      util::tuple_for_each(operators, [fm](auto& op){ op.fm_amount(fm);} );
-    };
+      util::for_each(operators, [&](auto& op) { itc::try_call_reciever(op, Action::data(args...)); });
+    }
+
     void action(itc::prop_change<&Props::algN>, int a) noexcept
     {
       int i = 0;
-      util::tuple_for_each(operators, [&i, a](auto& op){
+      util::for_each(operators, [&i, a](auto& op) {
         op.modulator(algorithms[a].modulator_flags[i]);
         i++;
       });
-    };
+    }
 
     void action(voices::attack_tag::action, float a) noexcept
     {
@@ -207,6 +208,8 @@ namespace otto::engines::ottofm {
   };
 
   struct Audio {
+    Audio(std::array<itc::Shared<float>, 4> activity) : shared_activity(activity) {}
+
     /// Passes unhandled actions to voices
     template<typename Tag, typename... Args>
     auto action(itc::Action<Tag, Args...> a, Args... args) noexcept
@@ -218,22 +221,14 @@ namespace otto::engines::ottofm {
     // Only a process call, since this sums the process calls of the voices.
     audio::ProcessData<1> process(audio::ProcessData<1>) noexcept;
 
-  private:
     friend Voice;
 
     int algN_ = 0;
     int cur_op_ = 0;
 
-    // Only used internally. At the end of the buffer, 
-    // update activity values of operators from last triggered voice
-    Voice* last_voice = nullptr;
-
-    std::atomic<float>* shared_activity0 = nullptr;
-    std::atomic<float>* shared_activity1 = nullptr;
-    std::atomic<float>* shared_activity2 = nullptr;
-    std::atomic<float>* shared_activity3 = nullptr;
+    std::array<itc::Shared<float>, 4> shared_activity;
 
     voices::VoiceManager<Voice, 6> voice_mgr_ = {*this};
   };
 
-}
+} // namespace otto::engines::ottofm

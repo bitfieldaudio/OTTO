@@ -173,7 +173,7 @@ namespace otto::util {
     void deserialize(std::tuple<Types...>& obj, const nlohmann::json& object)
     {
       int i = 0;
-      util::tuple::for_each(obj, [&](auto& v) {
+      util::for_each(obj, [&](auto& v) {
         deserialize(v, object.at(i));
         i++;
       });

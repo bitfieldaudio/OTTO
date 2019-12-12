@@ -8,6 +8,7 @@ AlignConsecutiveDeclarations: false
 AlignEscapedNewlinesLeft: false
 AlignOperands: true
 AlignTrailingComments: true
+AllowAllArgumentsOnNextLine: true
 AllowShortBlocksOnASingleLine: false
 AllowShortCaseLabelsOnASingleLine: true
 AllowShortFunctionsOnASingleLine: Empty
@@ -49,6 +50,7 @@ Language: Cpp
 MaxEmptyLinesToKeep: 3
 NamespaceIndentation: All
 PointerAlignment: Left
+ReflowComments: true
 SortIncludes: true
 SpaceAfterCStyleCast: true
 SpaceAfterTemplateKeyword: false
@@ -71,6 +73,7 @@ ForEachMacros: [
     'OBENCH', 
     'OBENCH_SECTION', 
     'TEST_CASE', 
-    'SECTION'
+    'SECTION',
+    'BENCHMARK'
 ]
 ...

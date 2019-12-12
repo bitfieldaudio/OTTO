@@ -164,7 +164,9 @@ namespace otto::core::voices {
     void handle_control_change(const midi::ControlChangeEvent&) noexcept;
 
     /// Return list of voices
-    std::array<Voice, voice_count_v>& voices();
+    std::array<Voice, voice_count_v>& voices() noexcept;
+
+    Voice& last_triggered_voice() noexcept;
 
     // -- PROPERTY SETTERS -- //
 
