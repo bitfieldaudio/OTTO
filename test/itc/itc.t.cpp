@@ -38,7 +38,8 @@ namespace otto::itc {
         void action(float_action, float){};
       };
       static_assert(InvalidActionReceiver::is<InvalidAR, void_action>);
-      static_assert(InvalidActionReceiver::is<InvalidAR, int_action>);
+      // We cant do this one - see below
+      static_assert(!InvalidActionReceiver::is<InvalidAR, int_action>);
       static_assert(InvalidActionReceiver::is<InvalidAR, float_action>);
 
       static_assert(!InvalidActionReceiver::is<InvalidAR1, void_action>);
@@ -54,9 +55,10 @@ namespace otto::itc {
       static_assert(ActionReceiver::is<VoidAR, void_action>);
       static_assert(!ActionReceiver::is<ARTest, void_action>);
       // This one is harder - we use a trick to avoid implicit conversions, but it only works on gcc and clang > 7
-      static_assert(
-        !ActionReceiver::is<ARTest, int_action>,
-        "This doesnt work on clang 7 and below, but it is just error detection. If it fails, comment it out");
+      // update: this trick breaks templated handlers
+      // static_assert(
+      //   !ActionReceiver::is<ARTest, int_action>,
+      //   "This doesnt work on clang 7 and below, but it is just error detection. If it fails, comment it out");
     }
 
     SECTION ("ActionData can be created using Action::data") {

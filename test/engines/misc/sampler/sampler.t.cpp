@@ -22,7 +22,7 @@ namespace otto::engines::sampler {
   using Sndr = JoinedActionSender<AudioAQH, GraphicsAQH>;
 
   struct Props {
-    Sndr* sndr;
+    Sndr sndr;
 
     Sndr::Prop<struct start_point_tag, int> start_point = {sndr, 0};
     Sndr::Prop<struct end_point_tag, int> end_point = {sndr, 0};
@@ -85,7 +85,7 @@ namespace otto::engines::sampler {
     GraphicsAQH graphics_sndr = services::UIManager::current().make_sndr(main_screen, envelope_screen);
     Sndr sndr = {audio_sndr, graphics_sndr};
 
-    Props props = {&sndr};
+    Props props = {sndr};
   };
 
   using namespace test;
@@ -97,7 +97,7 @@ namespace otto::engines::sampler {
     MainScreen main_screen;
     EnvelopeScreen env_screen;
     Sndr sndr{{audio_queue, audio}, {ui_queue, main_screen, env_screen}};
-    Props props{&sndr};
+    Props props{sndr};
 
     int ref_count = 0;
     auto the_buffer = util::generate_array<10>([](auto i) { return float(i); });
@@ -235,7 +235,7 @@ namespace otto::engines::sampler {
     sampler::AudioAQH audio_sndr = services::AudioManager::current().make_sndr(sampler_audio);
     sampler::GraphicsAQH graphics_sndr = {graphics_queue, main_screen, envelope_screen};
     sampler::Sndr sndr = {audio_sndr, graphics_sndr};
-    sampler::Props props = {&sndr};
+    sampler::Props props = {sndr};
 
     services::test::DummyEngineManager::current().on_process = [&](auto data) {
       auto buffer = services::AudioManager::current().buffer_pool().allocate();

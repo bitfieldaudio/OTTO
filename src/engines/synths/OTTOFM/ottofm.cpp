@@ -9,13 +9,18 @@ namespace otto::engines::ottofm {
   using namespace core::input;
 
   OttofmEngine::OttofmEngine()
-    : audio(std::make_unique<Audio>(std::array<itc::Shared<float>, 4>{
+    : screen_(std::make_unique<OttofmScreen>(std::array<itc::Shared<float>, 4>{
         activities_[0],
         activities_[1],
         activities_[2],
         activities_[3],
       })),
-      screen_(std::make_unique<OttofmScreen>())
+      audio(std::make_unique<Audio>(std::array<itc::Shared<float>, 4>{
+        activities_[0],
+        activities_[1],
+        activities_[2],
+        activities_[3],
+      }))
   {}
 
   bool OttofmEngine::keypress(Key key)
@@ -39,8 +44,7 @@ namespace otto::engines::ottofm {
       else
         props.algorithm_idx.step(e.steps);
     } else {
-      int i = 0;
-      util::for_each(props.operators, [&](auto& op) {
+      util::indexed_for_each(props.operators, [&](int i, auto& op) {
         if (i == props.cur_op.get()) {
           switch (e.encoder) {
             case Encoder::blue:
@@ -64,7 +68,6 @@ namespace otto::engines::ottofm {
               break;
             default: break;
           }
-          i++;
         }
       });
     }

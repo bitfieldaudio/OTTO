@@ -270,10 +270,8 @@ namespace otto::core::voices {
     template<typename Action, typename... Args>
     void fwd_action_to_voices(Action a, Args&&... args)
     {
-      if constexpr (itc::ActionReceiver::is<Voice, Action>) {
-        for (auto& v : voices_) {
-          v.action(a, args...);
-        }
+      for (auto& v : voices_) {
+        itc::try_call_receiver(v, Action::data(FWD(args)...));
       }
     }
 

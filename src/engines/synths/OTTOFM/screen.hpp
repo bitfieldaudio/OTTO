@@ -22,6 +22,42 @@ namespace otto::engines::ottofm {
       bool modulator;
     };
 
+    template<int I>
+    struct OperatorHelper {
+      OperatorData& data;
+
+      void action(itc::prop_change<&Props::OperatorProps<I>::feedback>, float f) noexcept
+      {
+        data.feedback = f / 0.4;
+      }
+      void action(itc::prop_change<&Props::OperatorProps<I>::attack>, float a) noexcept
+      {
+        data.attack = a;
+      }
+      void action(itc::prop_change<&Props::OperatorProps<I>::decay_release>, float dr) noexcept
+      {
+        data.decay_release = dr;
+      }
+      void action(itc::prop_change<&Props::OperatorProps<I>::suspos>, float s) noexcept
+      {
+        data.suspos = s;
+      }
+      void action(itc::prop_change<&Props::OperatorProps<I>::detune>, float d) noexcept
+      {
+        data.detune = d;
+      }
+      void action(itc::prop_change<&Props::OperatorProps<I>::ratio_idx>, int ri) noexcept
+      {
+        data.ratio_idx = ri;
+      }
+      void action(itc::prop_change<&Props::OperatorProps<I>::out_level>, float ol) noexcept
+      {
+        data.out_level = ol;
+      }
+    };
+
+    OttofmScreen(std::array<itc::Shared<float>, 4> activity) : shared_activity(activity) {}
+
     void draw(nvg::Canvas& ctx) override;
     void draw_with_shift(nvg::Canvas& ctx);
     void draw_no_shift(nvg::Canvas& ctx);
@@ -47,43 +83,12 @@ namespace otto::engines::ottofm {
       fm_amount = fm;
     }
 
+    template<typename Action, typename... Args>
+    void action(Action action, Args... args) noexcept
+    {
+      util::for_each(operator_helpers, [&](auto& op) { itc::try_call_receiver(op, Action::data(args...)); });
+    }
     // Operator handlers
-
-    template<int I>
-    void action(itc::prop_change<&Props::OperatorProps<I>::feedback>, float f) noexcept
-    {
-      ops[I].feedback = f;
-    }
-    template<int I>
-    void action(itc::prop_change<&Props::OperatorProps<I>::attack>, float a) noexcept
-    {
-      ops[I].attack = a;
-    }
-    template<int I>
-    void action(itc::prop_change<&Props::OperatorProps<I>::decay_release>, float dr) noexcept
-    {
-      ops[I].decay_release = dr;
-    }
-    template<int I>
-    void action(itc::prop_change<&Props::OperatorProps<I>::suspos>, float s) noexcept
-    {
-      ops[I].suspos = s;
-    }
-    template<int I>
-    void action(itc::prop_change<&Props::OperatorProps<I>::detune>, float d) noexcept
-    {
-      ops[I].detune = d;
-    }
-    template<int I>
-    void action(itc::prop_change<&Props::OperatorProps<I>::ratio_idx>, int ri) noexcept
-    {
-      ops[I].ratio_idx = ri;
-    }
-    template<int I>
-    void action(itc::prop_change<&Props::OperatorProps<I>::out_level>, float ol) noexcept
-    {
-      ops[I].out_level = ol;
-    }
 
   private:
     bool shift = false;
@@ -91,6 +96,16 @@ namespace otto::engines::ottofm {
     float fm_amount = 0;
     int algorithm_idx = 0;
 
+    std::array<itc::Shared<float>, 4> shared_activity;
+
     std::array<OperatorData, 4> ops;
+    std::tuple<OperatorHelper<0>, OperatorHelper<1>, OperatorHelper<2>, OperatorHelper<3>> operator_helpers = {
+      {ops[0]},
+      {ops[1]},
+      {ops[2]},
+      {ops[3]}};
   };
+
+  static_assert(itc::ActionReceiver::is<OttofmScreen::OperatorHelper<1>, itc::prop_change<&Props::OperatorProps<1>::feedback>>);
+  static_assert(itc::ActionReceiver::is<OttofmScreen, itc::prop_change<&Props::OperatorProps<1>::feedback>>);
 } // namespace otto::engines::ottofm

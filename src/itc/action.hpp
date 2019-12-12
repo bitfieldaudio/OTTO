@@ -48,7 +48,7 @@ namespace otto::itc {
              typename Tag,
              typename... Args,
              typename = std::void_t<decltype(std::declval<T>().action(Action<Tag, Args...>(),
-                                                                      std::declval<detail::no_implicits<Args>>()...))>>
+                                                                      std::declval<Args>()...))>>
     static constexpr auto _is(T&&, Action<Tag, Args...>) -> std::true_type;
 
   public:

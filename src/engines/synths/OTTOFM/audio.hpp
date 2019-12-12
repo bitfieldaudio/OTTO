@@ -123,7 +123,6 @@ namespace otto::engines::ottofm {
       fm_amount_ = fm;
     }
 
-
   private:
     FMSine sine;
     gam::ADSR<> env_;
@@ -145,10 +144,6 @@ namespace otto::engines::ottofm {
 
   struct Voice : voices::VoiceBase<Voice> {
     Voice(Audio& a) noexcept;
-
-    // Not private because we need to show activity levels on screen
-    std::tuple<FMOperator<0>, FMOperator<1>, FMOperator<2>, FMOperator<3>> operators;
-    gam::ADSR<> env_ = {0.1f, 0.1f, 0.7f, 2.0f, 1.f, -4.f};
 
     // These voices only have process calls.
     // This saves us from checking the current algorithm every sample.
@@ -203,7 +198,11 @@ namespace otto::engines::ottofm {
       env_.release(r * r * 8.f + 0.005f);
     }
 
+    // Not private because we need to show activity levels on screen
+    std::tuple<FMOperator<0>, FMOperator<1>, FMOperator<2>, FMOperator<3>> operators;
+
   private:
+    gam::ADSR<> env_ = {0.1f, 0.1f, 0.7f, 2.0f, 1.f, -4.f};
     Audio& audio;
   };
 

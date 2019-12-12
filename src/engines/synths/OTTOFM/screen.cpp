@@ -379,7 +379,7 @@ namespace otto::engines::ottofm {
       }
 
       // Draw activity levels
-      float op_level = 0; // TODO: ops[i].current_level;
+      float op_level = shared_activity[i];
       ctx.beginPath();
       if (algorithms[algorithm_idx].modulator_flags[i]) {
         ctx.rect(

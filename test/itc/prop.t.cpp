@@ -12,7 +12,7 @@ namespace otto::engines::test_engine {
   using Sndr = ActionSender<PropAR>;
 
   struct Props {
-    Sndr* sndr;
+    Sndr sndr;
 
     Sndr::Prop<struct float_prop_tag, float> float_prop = {sndr, 10};
     Sndr::Prop<struct int_prop_tag, int> int_prop = {sndr, 20};
@@ -44,7 +44,7 @@ namespace otto::engines::test_engine {
     ActionQueue queue;
     PropAR par;
     Sndr sndr{queue, par};
-    Props props{&sndr};
+    Props props{sndr};
 
     SECTION ("Upon construction, all properties send change actions") {
       REQUIRE(queue.size() == 3);

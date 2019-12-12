@@ -23,11 +23,13 @@ namespace otto::engines::ottofm {
   void Voice::reset_envelopes() noexcept
   {
     util::for_each(operators, [](auto& op) { op.reset(); });
+    env_.reset();
   }
 
   void Voice::release_envelopes() noexcept
   {
     util::for_each(operators, [](auto& op) { op.release(); });
+    env_.release();
   }
 
   void Voice::set_frequencies() noexcept
@@ -57,10 +59,10 @@ namespace otto::engines::ottofm {
         default: return 0.f;
       }
     };
-    for (auto f : data.audio) {
+    for (auto& f : data.audio) {
       next();
       set_frequencies();
-      f = callOps() * volume();
+      f = callOps() * volume() * env_();
     }
     return data;
   }
