@@ -4,6 +4,7 @@
 #include <Gamma/Filter.h>
 #include <Gamma/Oscillator.h>
 #include <Gamma/Noise.h>
+#include "util/dsp/overdrive.hpp"
 
 #include "core/voices/voice_manager.hpp"
 #include "goss.hpp"
@@ -29,11 +30,11 @@ namespace otto::engines::goss {
 
     void action(voices::attack_tag::action, float a) noexcept
     {
-      env_.attack(a * a * 8.f + 0.005f);
+      env_.attack(a * a * 8.f + 0.01f);
     }
     void action(voices::decay_tag::action, float d) noexcept
     {
-      env_.decay(d * d * 4.f + 0.005f);
+      env_.decay(d * d * 4.f + 0.01f);
     }
     void action(voices::sustain_tag::action, float s) noexcept
     {
@@ -41,7 +42,7 @@ namespace otto::engines::goss {
     }
     void action(voices::release_tag::action, float r) noexcept
     {
-      env_.release(r * r * 8.f + 0.005f);
+      env_.release(r * r * 8.f + 0.01f);
     }
 
   private:
@@ -85,7 +86,7 @@ namespace otto::engines::goss {
 
     std::array<gam::Osc<>, number_of_models> models;
 
-    gam::Osc<> percussion = {1, 0, 1024};
+    gam::Osc<> percussion = {1, 0, 2048};
 
     float gain = 0.f;
     float output_scaling = 0.f;

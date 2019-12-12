@@ -10,8 +10,7 @@ namespace otto::engines::ottofm {
   using namespace ui::vg;
   using namespace input;
 
-  void OttofmScreen::draw(ui::vg::Canvas& ctx) {}
-#if false
+  void OttofmScreen::draw(ui::vg::Canvas& ctx) 
   {
     using namespace ui::vg;
 
@@ -45,7 +44,7 @@ namespace otto::engines::ottofm {
     ctx.beginPath();
     ctx.fillStyle(Colours::Blue);
     ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fractions[engine.props.operators.at(cur_op).ratio_idx].to_string(),
+    ctx.fillText(fractions[ops.at(cur_op).ratio_idx].to_string(),
                  {width - x_pad, y_pad});
 
     // FM Amount
@@ -66,8 +65,8 @@ namespace otto::engines::ottofm {
     ctx.closePath();
     ctx.stroke(Colours::Red);
 
-    float x_middle = x_left * (1 - engine.props.fmAmount) + x_right * engine.props.fmAmount;
-    float y_middle = y_low * (1 - engine.props.fmAmount) + y_high * engine.props.fmAmount;
+    float x_middle = x_left * (1 - fm_amount) + x_right * fm_amount;
+    float y_middle = y_low * (1 - fm_amount) + y_high * fm_amount;
 
     ctx.beginPath();
     ctx.moveTo(x_left, y_low);
@@ -94,10 +93,10 @@ namespace otto::engines::ottofm {
     ctx.beginPath();
     ctx.moveTo(
       line_x - 0.5 * bar_width,
-      line_bot - engine.props.operators.at(cur_op).outLev.normalize() * (line_bot - line_top));
+      line_bot - ops.at(cur_op).out_level * (line_bot - line_top));
     ctx.lineTo(
       line_x + 0.5 * bar_width,
-      line_bot - engine.props.operators.at(cur_op).outLev.normalize() * (line_bot - line_top));
+      line_bot - ops.at(cur_op).out_level * (line_bot - line_top));
     ctx.lineWidth(6.0);
     ctx.lineCap(LineCap::ROUND);
     ctx.closePath();
@@ -122,7 +121,7 @@ namespace otto::engines::ottofm {
     ctx.beginPath();
     ctx.fillStyle(Colours::Blue);
     ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:2}", engine.props.operators.at(cur_op).detune),
+    ctx.fillText(fmt::format("{:2}", ops.at(cur_op).detune),
                  {width - x_pad, y_pad});
 
     // Operator level
@@ -143,10 +142,10 @@ namespace otto::engines::ottofm {
     ctx.beginPath();
     ctx.moveTo(
       line_x - 0.5 * bar_width,
-      line_bot - engine.props.operators.at(cur_op).outLev.normalize() * (line_bot - line_top));
+      line_bot - ops.at(cur_op).out_level * (line_bot - line_top));
     ctx.lineTo(
       line_x + 0.5 * bar_width,
-      line_bot - engine.props.operators.at(cur_op).outLev.normalize() * (line_bot - line_top));
+      line_bot - ops.at(cur_op).out_level * (line_bot - line_top));
     ctx.lineWidth(6.0);
     ctx.lineCap(LineCap::ROUND);
     ctx.closePath();
@@ -162,7 +161,7 @@ namespace otto::engines::ottofm {
     ctx.beginPath();
     ctx.fillStyle(Colours::Red);
     ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{}", engine.props.algN), {width - x_pad, y_pad + 3 * space});
+    ctx.fillText(fmt::format("{}", algorithm_idx), {width - x_pad, y_pad + 3 * space});
   }
 
   void OttofmScreen::draw_envelope(Canvas& ctx)
@@ -178,16 +177,16 @@ namespace otto::engines::ottofm {
     const float spacing = 10.f;
     const float max_width = (b.width - 3 * spacing) / 3.f;
 
-    bool is_modulator = algorithms[engine.props.algN].modulator_flags[cur_op];
+    bool is_modulator = algorithms[algorithm_idx].modulator_flags[cur_op];
 
     if (is_modulator) {
       float aw, dw, sh, rw;
-      aw = max_width * engine.props.operators.at(cur_op).mAtt.normalize();
-      dw = max_width * std::max(0.f, (engine.props.operators.at(cur_op).mDecrel.normalize() *
-                                      (1 - engine.props.operators.at(cur_op).mSuspos.normalize())));
-      sh = b.height * engine.props.operators.at(cur_op).mSuspos.normalize();
-      rw = max_width * std::max(0.f, (engine.props.operators.at(cur_op).mDecrel.normalize() *
-                                      engine.props.operators.at(cur_op).mSuspos.normalize()));
+      aw = max_width * ops.at(cur_op).attack;
+      dw = max_width * std::max(0.f, (ops.at(cur_op).decay_release *
+                                      (1 - ops.at(cur_op).suspos)));
+      sh = b.height * ops.at(cur_op).suspos;
+      rw = max_width * std::max(0.f, (ops.at(cur_op).decay_release *
+                                      ops.at(cur_op).suspos));
 
       ctx.lineWidth(6.f);
       // Drawing. Colors depend on whether or not shift is held
@@ -273,7 +272,7 @@ namespace otto::engines::ottofm {
 
       ctx.beginPath();
       ctx.arc(circ_x, circ_y, rad + 20,
-              (-1 + engine.props.operators.at(cur_op).feedback.normalize()) * M_PI, -M_PI, true);
+              (-1 + ops.at(cur_op).feedback) * M_PI, -M_PI, true);
       ctx.lineTo(circ_x - rad, circ_y);
       if (!shift)
         ctx.stroke(Colours::Yellow);
@@ -295,7 +294,7 @@ namespace otto::engines::ottofm {
     constexpr float space = (height - 2.f * y_pad) / 3.f;
 
     // Draw lines between operators
-    for (auto&& line : algorithms[engine.props.algN].operator_lines) {
+    for (auto&& line : algorithms[algorithm_idx].operator_lines) {
       int x_middle = x_pad + 12;
       int mid_to_side = 15;
       int horizontal_length = 13;
@@ -342,7 +341,7 @@ namespace otto::engines::ottofm {
     // draw operators
     for (int i = 0; i < 4; i++) {
       ctx.beginPath();
-      if (algorithms[engine.props.algN].modulator_flags[i]) { // draw modulator
+      if (algorithms[algorithm_idx].modulator_flags[i]) { // draw modulator
         ctx.rect({x_pad, y_pad + (3 - i) * space - 13}, {25, 25});
       } else { // draw carrier
         ctx.circle({x_pad + 12, y_pad + (3 - i) * space}, 15);
@@ -380,9 +379,9 @@ namespace otto::engines::ottofm {
       }
 
       // Draw activity levels
-      float op_level = engine.props.operators[i].current_level;
+      float op_level = 0; // TODO: ops[i].current_level;
       ctx.beginPath();
-      if (algorithms[engine.props.algN].modulator_flags[i]) {
+      if (algorithms[algorithm_idx].modulator_flags[i]) {
         ctx.rect(
           {x_pad + 12.5f * (1 - op_level), y_pad + (3 - i) * space - 13 + 12.5f * (1 - op_level)},
           {25 * op_level, 25 * op_level});
@@ -390,7 +389,7 @@ namespace otto::engines::ottofm {
         ctx.circle({x_pad + 12, y_pad + (3 - i) * space}, 15 * op_level);
       }
       // Choose colour
-      Colour cl;
+      Color cl;
       switch (i) {
       case 3: cl = Colours::Blue; break;
       case 2: cl = Colours::Green; break;
@@ -403,7 +402,7 @@ namespace otto::engines::ottofm {
     }
 
     // draw arrowheads
-    for (auto&& line : algorithms[engine.props.algN].operator_lines) {
+    for (auto&& line : algorithms[algorithm_idx].operator_lines) {
       int x_middle = x_pad + 12;
       int mid_to_side = 15;
       int side_length = 5;
@@ -455,7 +454,5 @@ namespace otto::engines::ottofm {
       }
     }
   }
-
-#endif
 
 } // namespace otto::engines::ottofm

@@ -34,6 +34,7 @@ namespace otto::engines::ottofm {
       for (auto&& [op, mod] : util::zip(ops, algorithms[a].modulator_flags)) {
         op.modulator = mod;
       }
+      algorithm_idx = a;
     }
 
     void action(itc::prop_change<&Props::cur_op>, int idx) noexcept
@@ -87,7 +88,8 @@ namespace otto::engines::ottofm {
   private:
     bool shift = false;
     int cur_op = 0;
-    float fm_amount;
+    float fm_amount = 0;
+    int algorithm_idx = 0;
 
     std::array<OperatorData, 4> ops;
   };
