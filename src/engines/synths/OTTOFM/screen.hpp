@@ -56,7 +56,15 @@ namespace otto::engines::ottofm {
       }
     };
 
-    OttofmScreen(std::array<itc::Shared<float>, 4> activity) : shared_activity(activity) {}
+    OttofmScreen(std::array<itc::Shared<float>, 4> activity) : shared_activity(activity) 
+    {
+      for (auto&& [i, w] : util::view::indexed(sinewave))
+        w = sin(M_2PI * (float)i / 30.f);
+      for (auto&& [i, w] : util::view::indexed(harmonics))
+        w = -0.5 * sin(2.f * M_2PI * (float)i / 30.f) 
+          + 0.33 * sin(3.f * M_2PI * (float)i / 30.f) 
+          - 0.25 * sin(4.f * M_2PI * (float)i / 30.f);
+    }
 
     void draw(nvg::Canvas& ctx) override;
     void draw_with_shift(nvg::Canvas& ctx);
@@ -104,6 +112,9 @@ namespace otto::engines::ottofm {
       {ops[1]},
       {ops[2]},
       {ops[3]}};
+
+    std::array<float, 30> sinewave;
+    std::array<float, 30> harmonics;
   };
 
   static_assert(itc::ActionReceiver::is<OttofmScreen::OperatorHelper<1>, itc::prop_change<&Props::OperatorProps<1>::feedback>>);

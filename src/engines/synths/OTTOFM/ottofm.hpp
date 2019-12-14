@@ -96,7 +96,8 @@ namespace otto::engines::ottofm {
 
     std::string to_string() const
     {
-      return fmt::format("{}/{}", numerator, denominator);
+      if (numerator == 0) return fmt::format("0");
+      else return fmt::format("{}/{}", numerator, denominator);
     }
   };
 

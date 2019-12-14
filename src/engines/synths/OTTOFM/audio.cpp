@@ -8,6 +8,7 @@ namespace otto::engines::ottofm {
   Voice::Voice(Audio& a) noexcept : audio(a)
   {
     util::for_each(operators, [](auto& op) { op.finish(); });
+    env_.finish();
   }
 
   void Voice::on_note_on(float freq_target) noexcept

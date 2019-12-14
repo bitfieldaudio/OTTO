@@ -48,32 +48,26 @@ namespace otto::engines::ottofm {
                  {width - x_pad, y_pad});
 
     // FM Amount
-    ctx.beginPath();
-    ctx.fillStyle(Colours::Red);
-    ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
-    ctx.fillText("FM", {x_pad_left, y_pad + 3 * space});
-
     ctx.lineWidth(6.f);
-    constexpr float x_left = width - 6 * x_pad;
+    constexpr float x_left = x_pad_left;
     constexpr float x_right = width - x_pad;
     constexpr float y_low = y_pad + 3 * space + 10;
-    constexpr float y_high = y_pad + 3 * space - 10;
+    // Gray line
     ctx.beginPath();
     ctx.moveTo(x_left, y_low);
-    ctx.lineTo(x_right, y_high);
     ctx.lineTo(x_right, y_low);
-    ctx.closePath();
-    ctx.stroke(Colours::Red);
-
-    float x_middle = x_left * (1 - fm_amount) + x_right * fm_amount;
-    float y_middle = y_low * (1 - fm_amount) + y_high * fm_amount;
-
+    ctx.stroke(Colours::Gray60);
+    // Red line
+    ctx.lineWidth(10.f);
     ctx.beginPath();
     ctx.moveTo(x_left, y_low);
-    ctx.lineTo(x_middle, y_middle);
-    ctx.lineTo(x_middle, y_low);
-    ctx.closePath();
+    ctx.lineTo(x_left + (x_right - x_left) * fm_amount, y_low);
+    ctx.stroke(Colours::Red);
+    //Red dot
+    ctx.beginPath();
+    ctx.circle({x_left + (x_right - x_left) * fm_amount, y_low}, 6.f);
     ctx.fill(Colours::Red);
+    ctx.stroke();
 
     // Operator level
     // vertical line
@@ -250,39 +244,28 @@ namespace otto::engines::ottofm {
       }
     } else {
       // Feedback
+      constexpr int rad = 45;
+      constexpr Point center = {width * 0.65, height * 0.5};
+      constexpr Point corner = {center.x - rad, center.y - rad};
+
+      ctx.group([&] {
+        ctx.scaleTowards({1.2, 0.8}, center);
+        ctx.rotateAround(center, M_PI_4 * ops.at(cur_op).feedback);
+        ctx.beginPath();
+        ctx.roundedRect(corner, {2 * rad, 2 * rad}, rad * (1 - 0.8f * ops.at(cur_op).feedback));
+        if (shift) ctx.stroke(Colours::Gray60);
+        else ctx.stroke(Colours::Yellow.mix(Colours::Gray60, 1 - ops.at(cur_op).feedback));
+
+      });
       ctx.beginPath();
-      if (!shift)
-        ctx.fillStyle(Colours::Yellow);
-      else
-        ctx.fillStyle(Colours::Gray60);
-
-      ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
-      ctx.fillText("Self-mod", {x_pad_left + 10, y_pad + 100});
-
-      float circ_x = 1.6 * x_pad_left;
-      float circ_y = 2.3 * y_pad;
-      int rad = 15;
-
-
-      ctx.beginPath();
-      ctx.moveTo(circ_x + rad, circ_y);
-      ctx.lineTo(circ_x + rad + 20, circ_y);
-      ctx.arc(circ_x, circ_y, rad + 20, 0, -M_PI, true);
-      ctx.stroke(Colours::Gray60);
-
-      ctx.beginPath();
-      ctx.arc(circ_x, circ_y, rad + 20,
-              (-1 + ops.at(cur_op).feedback) * M_PI, -M_PI, true);
-      ctx.lineTo(circ_x - rad, circ_y);
-      if (!shift)
-        ctx.stroke(Colours::Yellow);
-      else
-        ctx.stroke(Colours::White);
-
-      // Inner circle
-      ctx.beginPath();
-      ctx.circle({circ_x, circ_y}, rad);
-      ctx.stroke(Colours::Gray60);
+      ctx.moveTo({center.x - 30, center.y});
+      int i = 0;
+      for (auto&& [s, h] : util::zip(sinewave, harmonics)){
+        ctx.lineTo({center.x - 30 + 2 * i, center.y + 20.f * (s + ops.at(cur_op).feedback * h)});
+        i++;
+      }
+      if (shift) ctx.stroke(Colours::Gray60);
+      else ctx.stroke(Colours::Yellow);
     }
   }
 
