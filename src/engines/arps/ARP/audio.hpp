@@ -16,6 +16,13 @@ namespace otto::engines::arp {
     enum struct Direction : std::uint8_t {
       up, down
     } direction = Direction::up;
+
+    void reset()
+    {
+      current_step = 0;
+      last_t = 1;
+      rounds = 0;
+    };
   };
 
   /// The current step
@@ -30,10 +37,12 @@ namespace otto::engines::arp {
   /// PlayMode functions
   /// These increment the step according to the playmode and call the octavemode-function passed as a function pointer.
   void up(ArpeggiatorState& state, NoteArray& notes, std::uint8_t& current_step, OctaveModeFunc omf, NoteVector& output);
+  void down(ArpeggiatorState& state, NoteArray& notes, std::uint8_t& current_step, OctaveModeFunc omf, NoteVector& output);
 
   /// OctaveMode functions
   /// These adjust the note as needed. Unison-modes add other notes, Non-unison modes can shift by whole octaves.
   void standard(std::uint8_t rounds, std::uint8_t note, NoteVector& output);
+  void octaveunison(std::uint8_t rounds, std::uint8_t note, NoteVector& output);
 
   struct Audio {
     Audio() noexcept;

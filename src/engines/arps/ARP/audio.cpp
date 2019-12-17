@@ -45,6 +45,8 @@ namespace otto::engines::arp {
       for (auto note : current_notes_)
         data.midi.push_back(midi::NoteOffEvent(note));
       stop_flag = false;
+      _counter = 0;
+      state_.reset();
     }
 
     // Check for beat. will be obsolete with master clock
@@ -69,8 +71,11 @@ namespace otto::engines::arp {
     }
 
     // Increment counter. will be obsolete with master clock
-    _counter += data.nframes;
-    _counter %= _samples_per_beat;
+    if (running_) {
+      _counter += data.nframes;
+      _counter %= _samples_per_beat;
+    }
+    
 
     return data;
   }
@@ -91,10 +96,31 @@ namespace otto::engines::arp {
     }
   }
 
+  void down(ArpeggiatorState& state, NoteArray& notes, std::uint8_t& current_step, OctaveModeFunc oct_func, NoteVector& output)
+  {
+    NoteArray::reverse_iterator rit = notes.rend() - 1 - current_step;
+    auto next_step_rit = std::find_if(rit + 1, notes.rend(), [](std::uint8_t v){return v > 0;} );
+    if (next_step_rit == notes.rend()){
+      // Wrap
+      next_step_rit = std::find_if(notes.rbegin(), notes.rend(), [](std::uint8_t v){return v > 0;} );
+      state.rounds++;   
+    }
+    if (next_step_rit != notes.rend()){
+      current_step = std::distance(next_step_rit, notes.rend() - 1);
+      oct_func(state.rounds, current_step, output);
+    }
+  }
+
   // OctaveMode functions
   void standard(std::uint8_t rounds, std::uint8_t note, NoteVector& output)
   {
     output.push_back(note);
+  }
+
+  void octaveupunison(std::uint8_t rounds, std::uint8_t note, NoteVector& output)
+  {
+    output.push_back(note);
+    output.push_back(note + 12);
   }
 
   // Action Handlers //
@@ -102,6 +128,7 @@ namespace otto::engines::arp {
   {
     switch(pm){
     case Playmode::up: playmode_func_ = up; break;
+    case Playmode::down: playmode_func_ = down; break;
     default: playmode_func_ = up; break;
     }
   }
@@ -110,6 +137,7 @@ namespace otto::engines::arp {
   {
     switch(om){
     case OctaveMode::standard: octavemode_func_ = standard; break;
+    case OctaveMode::octaveupunison: octavemode_func_ = octaveupunison; break;
     default: octavemode_func_ = standard; break;
     }
   }
