@@ -6,6 +6,7 @@
 #include "engines/fx/wormhole/wormhole.hpp"
 #include "engines/synths/OTTOFM/ottofm.hpp"
 #include "engines/synths/goss/goss.hpp"
+#include "engines/arps/ARP/arp.hpp"
 #include "services/application.hpp"
 #include "services/clock_manager.hpp"
 
@@ -33,6 +34,7 @@ namespace otto::services {
     SynthDispatcher synth;
     engines::wormhole::Wormhole effect1;
     engines::wormhole::Wormhole effect2;
+    engines::arp::Arp arpeggiator;
     // ArpDispatcher arpeggiator{true};
     // EffectsDispatcher effect1{true};
     // EffectsDispatcher effect2{true};
@@ -63,7 +65,7 @@ namespace otto::services {
     reg_ss(ScreenEnum::fx2, [&]() { return effect2.screen(); });
     // reg_ss(ScreenEnum::fx2_selector, [&]() -> auto& { return effect2.selector_screen(); });
     // reg_ss(ScreenEnum::looper,         [&] () -> auto& { return  ; });
-    // reg_ss(ScreenEnum::arp, [&]() -> auto& { return arpeggiator->screen(); });
+    reg_ss(ScreenEnum::arp, [&]() { return arpeggiator.screen(); });
     // reg_ss(ScreenEnum::arp_selector, [&]() -> auto& { return arpeggiator.selector_screen(); });
     // reg_ss(ScreenEnum::master, [&]() -> auto& { return master.screen(); });
     // reg_ss(ScreenEnum::sequencer, [&]() -> auto& { return sequencer.screen(); });
@@ -96,13 +98,13 @@ namespace otto::services {
     // controller.register_key_handler(input::Key::sampler, [&](input::Key k) { ui_manager.display(ScreenEnum::sampler);
     // });
 
-    // controller.register_key_handler(input::Key::arp, [&](input::Key k) {
-    //   if (controller.is_pressed(input::Key::shift)) {
-    //     ui_manager.display(ScreenEnum::arp_selector);
-    //   } else {
-    //     ui_manager.display(ScreenEnum::arp);
-    //   }
-    // });
+    controller.register_key_handler(input::Key::arp, [&](input::Key k) {
+      if (controller.is_pressed(input::Key::shift)) {
+        //ui_manager.display(ScreenEnum::arp_selector);
+      } else {
+        ui_manager.display(ScreenEnum::arp);
+      }
+    });
 
     controller.register_key_handler(input::Key::synth, [&](input::Key k) {
       if (controller.is_pressed(input::Key::shift)) {
@@ -193,8 +195,8 @@ namespace otto::services {
     // Main processor function
     auto midi_in = external_in.midi_only();
     midi_in.clock = ClockManager::current().step_frames(external_in.nframes);
-    // auto arp_out = arpeggiator->process(midi_in);
-    auto synth_out = synth.process(external_in);
+    auto arp_out = arpeggiator.audio->process(midi_in);
+    auto synth_out = synth.process(arp_out.with(external_in.audio));
     auto right_chan = Application::current().audio_manager->buffer_pool().allocate();
 
     util::copy(synth_out.audio, right_chan.begin());
