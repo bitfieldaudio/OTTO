@@ -42,7 +42,11 @@ namespace otto::engines::arp {
   /// OctaveMode functions
   /// These adjust the note as needed. Unison-modes add other notes, Non-unison modes can shift by whole octaves.
   void standard(std::uint8_t rounds, std::uint8_t note, NoteVector& output);
-  void octaveunison(std::uint8_t rounds, std::uint8_t note, NoteVector& output);
+  void octaveupunison(std::uint8_t rounds, std::uint8_t note, NoteVector& output);
+  void fifthunison(std::uint8_t rounds, std::uint8_t note, NoteVector& output);
+  void octaveup(std::uint8_t rounds, std::uint8_t note, NoteVector& output);
+  void octaveupdown(std::uint8_t rounds, std::uint8_t note, NoteVector& output);
+  void octavedownup(std::uint8_t rounds, std::uint8_t note, NoteVector& output);
 
   struct Audio {
     Audio() noexcept;

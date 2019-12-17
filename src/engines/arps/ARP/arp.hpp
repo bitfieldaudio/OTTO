@@ -28,7 +28,8 @@ namespace otto::engines::arp {
       octaveup,
       octaveupunison,
       fifthunison,
-      octaveupdown
+      octaveupdown,
+      octavedownup
     );
 
   }

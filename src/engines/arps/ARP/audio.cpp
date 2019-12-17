@@ -123,6 +123,30 @@ namespace otto::engines::arp {
     output.push_back(note + 12);
   }
 
+  void fifthunison(std::uint8_t rounds, std::uint8_t note, NoteVector& output)
+  {
+    output.push_back(note);
+    output.push_back(note + 7);
+  }
+
+  void octaveup(std::uint8_t rounds, std::uint8_t note, NoteVector& output)
+  {
+    if (rounds % 2 == 0) output.push_back(note);
+    else output.push_back(note + 12);
+  }
+
+  void octaveupdown(std::uint8_t rounds, std::uint8_t note, NoteVector& output)
+  {
+    if (rounds % 2 == 0) output.push_back(note - 12);
+    else output.push_back(note + 12);
+  }
+
+  void octavedownup(std::uint8_t rounds, std::uint8_t note, NoteVector& output)
+  {
+    if (rounds % 2 == 0) output.push_back(note + 12);
+    else output.push_back(note - 12);
+  }
+
   // Action Handlers //
   void Audio::action(itc::prop_change<&Props::playmode>, Playmode pm) noexcept
   {
@@ -138,6 +162,10 @@ namespace otto::engines::arp {
     switch(om){
     case OctaveMode::standard: octavemode_func_ = standard; break;
     case OctaveMode::octaveupunison: octavemode_func_ = octaveupunison; break;
+    case OctaveMode::fifthunison: octavemode_func_ = fifthunison; break;
+    case OctaveMode::octaveup: octavemode_func_ = octaveup; break;
+    case OctaveMode::octaveupdown: octavemode_func_ = octaveupdown; break;
+    case OctaveMode::octavedownup: octavemode_func_ = octavedownup; break;
     default: octavemode_func_ = standard; break;
     }
   }
