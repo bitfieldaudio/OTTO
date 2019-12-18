@@ -3,9 +3,13 @@
 #include "core/engine/engine_dispatcher.hpp"
 #include "core/engine/engine_dispatcher.inl"
 #include "core/ui/vector_graphics.hpp"
+
 #include "engines/fx/wormhole/wormhole.hpp"
+#include "engines/fx/chorus/chorus.hpp"
 #include "engines/synths/OTTOFM/ottofm.hpp"
 #include "engines/synths/goss/goss.hpp"
+
+
 #include "services/application.hpp"
 #include "services/clock_manager.hpp"
 
@@ -32,7 +36,7 @@ namespace otto::services {
 
     SynthDispatcher synth;
     engines::wormhole::Wormhole effect1;
-    engines::wormhole::Wormhole effect2;
+    engines::chorus::Chorus effect2;
     // ArpDispatcher arpeggiator{true};
     // EffectsDispatcher effect1{true};
     // EffectsDispatcher effect2{true};
