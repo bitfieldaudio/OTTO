@@ -44,7 +44,9 @@ namespace otto::core::engine {
     if (engine_is_constructed_) {
       return util::match(current_engine_, [&](auto& engine) { return engine.audio->process(data); });
     }
-    if constexpr (ET == EngineType::effect) {
+    if constexpr (ET == EngineType::arpeggiator) {
+      return data;
+    } else if constexpr (ET == EngineType::effect) {
       auto buf = services::AudioManager::current().buffer_pool().allocate_multi_clear<2>();
       return data.with(buf);
     } else {
