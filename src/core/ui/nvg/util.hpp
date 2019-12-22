@@ -181,7 +181,7 @@ namespace otto::nvg {
 
 
   struct Point {
-    float x, y;
+    float x = 0, y = 0;
 
     constexpr Point() noexcept : Point(0, 0) {}
     constexpr Point(const Point&) noexcept = default;

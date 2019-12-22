@@ -10,6 +10,7 @@ namespace otto::engines::goss {
   using namespace itc;
 
   struct GossScreen : ui::Screen {
+    GossScreen(itc::Shared<float>) noexcept;
     void draw(nvg::Canvas& ctx) override;
     void draw_model(nvg::Canvas& ctx);
 
@@ -17,13 +18,12 @@ namespace otto::engines::goss {
     void action(itc::prop_change<&Props::click>, float c) noexcept;
     void action(itc::prop_change<&Props::drive>, float d) noexcept;
     void action(itc::prop_change<&Props::leslie>, float l) noexcept;
-    void action(Actions::rotation_variable, std::atomic<float>& v) noexcept;
 
+    itc::Shared<float> rotation;
     int model = 0;
     float drive = 0;
     float click = 0;
     float leslie = 0;
-    std::atomic<float>* rotation = nullptr;
 
     model_type model_param;
   };

@@ -5,9 +5,8 @@
 
 namespace otto::engines::chorus {
 
-  Chorus::Chorus() : audio(std::make_unique<Audio>()), screen_(std::make_unique<Screen>()), props{{*audio, *screen_}}
+  Chorus::Chorus() : audio(std::make_unique<Audio>(shared_phase_)), screen_(std::make_unique<Screen>(shared_phase_)), props{{*audio, *screen_}}
   {
-    sender_.push(Actions::phase_value::data(phase_));
   }
 
   using namespace core::input;

@@ -31,3 +31,4 @@ CMakeLists.txt.user
 test/core/voices/todo.md
 
 .ccls-cache
+.clangd

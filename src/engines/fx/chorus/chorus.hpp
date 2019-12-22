@@ -1,7 +1,6 @@
 #pragma once
 
 #include "core/engine/engine.hpp"
-
 #include "itc/itc.hpp"
 
 namespace otto::engines::chorus {
@@ -12,11 +11,6 @@ namespace otto::engines::chorus {
   struct Audio;
 
   using Sender = core::engine::EngineSender<Audio, Screen>;
-
-  struct Actions {
-    /// Publish the rotation variable, which is shared between the audio and screen
-    using phase_value = itc::Action<struct phase_value_tag, std::atomic<float>&>;
-  };
 
   struct Props {
     Sender sender;
@@ -32,16 +26,21 @@ namespace otto::engines::chorus {
     static constexpr util::string_ref name = "Chorus";
     Chorus();
 
-    std::atomic<float> phase_ = 0;
-
     void encoder(core::input::EncoderEvent e) override;
 
     core::ui::ScreenAndInput screen() override;
-  
+
+  private:
+    itc::Shared<float>::Storage shared_phase_;
+
+  public:
     const std::unique_ptr<Audio> audio;
+
+  private:
     const std::unique_ptr<Screen> screen_;
 
     Sender sender_ = {*audio, *screen_};
+  public:
     Props props{sender_};
   };
 

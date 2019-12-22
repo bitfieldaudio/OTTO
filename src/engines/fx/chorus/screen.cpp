@@ -7,68 +7,60 @@ namespace otto::engines::chorus {
   using namespace core::ui;
   using namespace core::ui::vg;
 
-  constexpr std::array<ui::vg::Color, 10> colour_list = {ui::vg::Colors::Blue,
-                                                  ui::vg::Colors::Green,
-                                                  ui::vg::Colors::Yellow,
-                                                  ui::vg::Colors::Red,
-                                                  ui::vg::Colors::Green,
-                                                  ui::vg::Colors::Blue,
-                                                  ui::vg::Colors::Red,
-                                                  ui::vg::Colors::Green,
-                                                  ui::vg::Colors::Yellow,
-                                                  ui::vg::Colors::Red};
-  
+  constexpr std::array<ui::vg::Color, 10> colour_list = {
+    ui::vg::Colors::Blue, ui::vg::Colors::Green, ui::vg::Colors::Yellow, ui::vg::Colors::Red,    ui::vg::Colors::Green,
+    ui::vg::Colors::Blue, ui::vg::Colors::Red,   ui::vg::Colors::Green,  ui::vg::Colors::Yellow, ui::vg::Colors::Red};
+
   constexpr float fadein_time = 100;
   constexpr float hold_time = 400;
   constexpr float fadeout_time = 400;
 
-  
+  Screen::Screen(itc::Shared<float> phase) noexcept : phase_(phase) {}
+
   void Screen::action(itc::prop_change<&Props::delay>, float d) noexcept
   {
     delay_ = d;
-    ui::vg::timeline().apply(&env_blue_)
+    ui::vg::timeline()
+      .apply(&env_blue_)
       .then<ch::RampTo>(1, fadein_time)
       .then<ch::Hold>(1, hold_time)
       .then<ch::RampTo>(0, fadeout_time);
   }
-  
+
   void Screen::action(itc::prop_change<&Props::depth>, float d) noexcept
   {
     depth_ = d;
-    ui::vg::timeline().apply(&env_red_)
+    ui::vg::timeline()
+      .apply(&env_red_)
       .then<ch::RampTo>(1, fadein_time)
       .then<ch::Hold>(1, hold_time)
       .then<ch::RampTo>(0, fadeout_time);
   }
-  
+
   void Screen::action(itc::prop_change<&Props::feedback>, float f) noexcept
   {
     feedback_ = f;
-    ui::vg::timeline().apply(&env_yellow_)
+    ui::vg::timeline()
+      .apply(&env_yellow_)
       .then<ch::RampTo>(1, fadein_time)
       .then<ch::Hold>(1, hold_time)
       .then<ch::RampTo>(0, fadeout_time);
 
-    for(auto&& [i, b] : util::view::indexed(brightness)) 
-      b = powf(cosh(abs(feedback_)*1.5)*0.4, 0.3 * float(i));
+    for (auto&& [i, b] : util::view::indexed(brightness)) b = powf(cosh(abs(feedback_) * 1.5) * 0.4, 0.3 * float(i));
   }
-  
+
   void Screen::action(itc::prop_change<&Props::rate>, float r) noexcept
   {
     rate_ = r;
-    ui::vg::timeline().apply(&env_green_)
+    ui::vg::timeline()
+      .apply(&env_green_)
       .then<ch::RampTo>(1, fadein_time)
       .then<ch::Hold>(1, hold_time)
       .then<ch::RampTo>(0, fadeout_time);
   }
 
-  void Screen::action(Actions::phase_value, std::atomic<float>& val) noexcept
-  {
-    phase_ = &val;
-  }
-  
-  
-  //TODO: Figure out the phase_delay handling
+
+  // TODO: Figure out the phase_delay handling
   void Screen::draw(ui::vg::Canvas& ctx)
   {
     using namespace ui::vg;
@@ -126,18 +118,17 @@ namespace otto::engines::chorus {
     ctx.fillText(fmt::format("{}", std::round(100 * delay_)), x_pad, y_pad + number_shift);
 
 
-    //Heads
+    // Heads
     constexpr float spacing_constant = 10;
     constexpr int num_heads = 10;
 
     float spacing = spacing_constant * delay_ + 10;
     Point start = {120 - delay_ * 50, 165};
 
-    OTTO_ASSERT(phase_ != nullptr);
-
-    for (int i=num_heads; i>=1; i--) {
-      float head_height = wave_height * gam::scl::sinP9(gam::scl::wrap(*phase_ - 0.2f*(float)i, 1.f, -1.f));
-      draw_background_head(ctx, {start.x + i*spacing, start.y + head_height}, colour_list[i].dim(1 - brightness[i]), 1 - i*0.07);
+    for (int i = num_heads; i >= 1; i--) {
+      float head_height = wave_height * gam::scl::sinP9(gam::scl::wrap(*phase_ - 0.2f * (float) i, 1.f, -1.f));
+      draw_background_head(ctx, {start.x + i * spacing, start.y + head_height}, colour_list[i].dim(1 - brightness[i]),
+                           1 - i * 0.07);
     }
 
     float wave_phase = *phase_;
@@ -152,23 +143,28 @@ namespace otto::engines::chorus {
     ctx.scaleTowards(scale, p);
     ctx.moveTo(p.x, p.y);
     ctx.lineTo(p.x, p.y - 173.0 + 153.6);
-    ctx.bezierCurveTo(p.x + 121.4 - 130.8, p.y - 173.0 + 148.5, p.x + 115.0 - 130.8, p.y - 173.0 + 138.6, p.x + 115.0 - 130.8, p.y - 173.0 + 127.1);
+    ctx.bezierCurveTo(p.x + 121.4 - 130.8, p.y - 173.0 + 148.5, p.x + 115.0 - 130.8, p.y - 173.0 + 138.6,
+                      p.x + 115.0 - 130.8, p.y - 173.0 + 127.1);
     ctx.lineTo(p.x + 115.0 - 130.8, p.y - 173.0 + 107.3);
-    ctx.bezierCurveTo(p.x + 115.0 - 130.8, p.y - 173.0 + 85.1, p.x + 133.0 - 130.8, p.y - 173.0 + 67.0, p.x + 155.2 - 130.8, p.y - 173.0 + 67.0);
-    ctx.bezierCurveTo(p.x + 177.4 - 130.8, p.y - 173.0 + 67.0, p.x + 195.5 - 130.8, p.y - 173.0 + 85.1, p.x + 195.5 - 130.8, p.y - 173.0 + 107.3);
+    ctx.bezierCurveTo(p.x + 115.0 - 130.8, p.y - 173.0 + 85.1, p.x + 133.0 - 130.8, p.y - 173.0 + 67.0,
+                      p.x + 155.2 - 130.8, p.y - 173.0 + 67.0);
+    ctx.bezierCurveTo(p.x + 177.4 - 130.8, p.y - 173.0 + 67.0, p.x + 195.5 - 130.8, p.y - 173.0 + 85.1,
+                      p.x + 195.5 - 130.8, p.y - 173.0 + 107.3);
     ctx.lineTo(p.x + 195.5 - 130.8, p.y - 173.0 + 117.8);
     ctx.lineTo(p.x + 204.4 - 130.8, p.y - 173.0 + 130.0);
-    ctx.bezierCurveTo(p.x + 205.4 - 130.8, p.y - 173.0 + 131.4, p.x + 205.1 - 130.8, p.y - 173.0 + 133.4, p.x + 203.7 - 130.8, p.y - 173.0 + 134.4);
-    ctx.bezierCurveTo(p.x + 203.2 - 130.8, p.y - 173.0 + 134.8, p.x + 202.5 - 130.8, p.y - 173.0 + 135.0, p.x + 201.8 - 130.8, p.y - 173.0 + 135.0);
+    ctx.bezierCurveTo(p.x + 205.4 - 130.8, p.y - 173.0 + 131.4, p.x + 205.1 - 130.8, p.y - 173.0 + 133.4,
+                      p.x + 203.7 - 130.8, p.y - 173.0 + 134.4);
+    ctx.bezierCurveTo(p.x + 203.2 - 130.8, p.y - 173.0 + 134.8, p.x + 202.5 - 130.8, p.y - 173.0 + 135.0,
+                      p.x + 201.8 - 130.8, p.y - 173.0 + 135.0);
     ctx.lineTo(p.x + 195.5 - 130.8, p.y - 173.0 + 135.0);
     ctx.lineTo(p.x + 195.5 - 130.8, p.y - 173.0 + 152.4);
-    ctx.bezierCurveTo(p.x + 195.5 - 130.8, p.y - 173.0 + 155.1, p.x + 193.3 - 130.8, p.y - 173.0 + 157.2, p.x + 190.7 - 130.8, p.y - 173.0 + 157.2);
+    ctx.bezierCurveTo(p.x + 195.5 - 130.8, p.y - 173.0 + 155.1, p.x + 193.3 - 130.8, p.y - 173.0 + 157.2,
+                      p.x + 190.7 - 130.8, p.y - 173.0 + 157.2);
     ctx.lineTo(p.x + 179.7 - 130.8, p.y - 173.0 + 157.2);
     ctx.lineTo(p.x + 179.7 - 130.8, p.y - 173.0 + 173.0);
     ctx.fill(Colours::Black);
     ctx.strokeStyle(c);
     ctx.stroke();
-
   }
   void Screen::draw_background_head(ui::vg::Canvas& ctx, Point p, Color c, float scale)
   {
@@ -199,4 +195,4 @@ namespace otto::engines::chorus {
       ctx.stroke();
     });
   }
-} // namespace otto::engines::wormhole
+} // namespace otto::engines::chorus

@@ -9,6 +9,7 @@ namespace otto::engines::chorus {
   using namespace core;
 
   struct Screen : ui::Screen {
+    Screen(itc::Shared<float> phase) noexcept;
     void draw(nvg::Canvas& ctx) override;
     void draw_front_head(nvg::Canvas&, nvg::Point, ui::vg::Color, float);
     void draw_background_head(nvg::Canvas&, nvg::Point, ui::vg::Color, float);
@@ -18,15 +19,14 @@ namespace otto::engines::chorus {
     void action(itc::prop_change<&Props::feedback>, float f) noexcept;
     void action(itc::prop_change<&Props::depth>, float d) noexcept;
 
-    void action(Actions::phase_value, std::atomic<float>& v) noexcept;
-
   private:
     float delay_ = 0.f;
     float rate_ = 0.f;
     float feedback_ = 0.f;
     float depth_ = 0.f;
-    std::atomic<float>* phase_ = nullptr;
     float wave_height = 20;
+
+    itc::Shared<float> phase_;
 
     // Individual brightness for the heads. Depends on feedback
     std::array<float, 10> brightness;

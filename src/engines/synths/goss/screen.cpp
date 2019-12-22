@@ -1,7 +1,6 @@
 #include "screen.hpp"
 
 #include "core/ui/vector_graphics.hpp"
-
 #include "util/string_conversions.hpp"
 
 namespace otto::engines::goss {
@@ -10,6 +9,8 @@ namespace otto::engines::goss {
 
   using namespace ui;
   using namespace ui::vg;
+
+  GossScreen::GossScreen(itc::Shared<float> rotation) noexcept : rotation(rotation) {}
 
   void GossScreen::action(prop_change<&Props::model>, int m) noexcept
   {
@@ -29,20 +30,15 @@ namespace otto::engines::goss {
   {
     leslie = l;
   }
-  void GossScreen::action(Actions::rotation_variable, std::atomic<float>& val) noexcept
-  {
-    rotation = &val;
-  }
 
-  void GossScreen::draw_model(nvg::Canvas &ctx)
+  void GossScreen::draw_model(nvg::Canvas& ctx)
   {
     ctx.fillStyle(Colours::Blue);
     ctx.textAlign(HorizontalAlign::Center, VerticalAlign::Bottom);
-    for (auto&& [i, p] : util::view::indexed(model_param)){
+    for (auto&& [i, p] : util::view::indexed(model_param)) {
       ctx.beginPath();
-      ctx.fillText(util::to_string(p), {30 + 20 * i, 50});
+      ctx.fillText(util::to_string(p), {float(40 + 20 * i), 50.f});
     }
-    
   }
 
   void GossScreen::draw(ui::vg::Canvas& ctx)
@@ -91,7 +87,7 @@ namespace otto::engines::goss {
       ctx.arc(160, 120, 75, 0, (2 * M_PI * drive), false);
       ctx.strokeStyle(Colours::Green);
       ctx.stroke();
-      
+
 
       // Ring 3
       /* Deprecated
@@ -104,20 +100,20 @@ namespace otto::engines::goss {
 
     // middle red ring
     ctx.group([&] {
+      constexpr Point ring_center = {160, 120};
       // Ring Base
       ctx.beginPath();
       ctx.lineWidth(6.0);
       ctx.strokeStyle(Colours::Red);
 
-      OTTO_ASSERT(rotation != nullptr);
-      ctx.rotateAround(ring_center, *rotation);
+      ctx.rotateAround(ring_center, rotation);
       ctx.circle({ring_center.x, height / 2 + leslie * 25}, 12.5);
       ctx.stroke();
 
       ctx.circle({ring_center.x, height / 2 + leslie * 25}, 12.5);
       ctx.stroke();
     });
-    
+
     draw_model(ctx);
   }
 } // namespace otto::engines::goss

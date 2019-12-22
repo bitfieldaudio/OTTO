@@ -38,11 +38,6 @@ namespace otto::engines::goss {
   struct Audio;
   using Sender = EngineSender<Audio, GossScreen, voices::SettingsScreen, voices::EnvelopeScreen>;
 
-  struct Actions {
-    /// Publish the rotation variable, which is shared between the audio and screen
-    using rotation_variable = itc::Action<struct rotation_variable_tag, std::atomic<float>&>;
-  };
-
   struct Props : voices::SynthPropsBase<Sender> {
     Sender::Prop<struct model_tag, int, wrap> model = {sender, 0, limits(0, number_of_models - 1)};
     Sender::Prop<struct drive_tag, float> drive = {sender, 0.5, limits(0, 1), step_size(0.01)};
@@ -68,14 +63,14 @@ namespace otto::engines::goss {
     DECL_REFLECTION(GossEngine, props);
 
   private:
+    itc::Shared<float>::Storage rotation_;
     const std::unique_ptr<GossScreen> screen_;
     voices::SettingsScreen voice_screen_;
     voices::EnvelopeScreen env_screen_;
 
     Sender sender_ = {*audio, *screen_, voice_screen_, env_screen_};
+  public:
     Props props{sender_};
-
-    std::atomic<float> rotation_ = 0;
   };
 
 } // namespace otto::engines::goss
