@@ -30,6 +30,7 @@ namespace otto::core::engine {
     std::vector<EngineSelectorData> engines = {};
 
   private:
+    bool first_engine_is_off_ = false;
     int selected_engine_ = 0;
     ch::Output<float> engine_scroll_ = 0;
     ch::Output<float> page_flip_ = 0;

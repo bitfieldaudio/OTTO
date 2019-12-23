@@ -3,11 +3,11 @@
 #include "core/engine/engine_dispatcher.hpp"
 #include "core/engine/engine_dispatcher.inl"
 #include "core/ui/vector_graphics.hpp"
+#include "engines/arps/ARP/arp.hpp"
 #include "engines/fx/chorus/chorus.hpp"
 #include "engines/fx/wormhole/wormhole.hpp"
 #include "engines/synths/OTTOFM/ottofm.hpp"
 #include "engines/synths/goss/goss.hpp"
-#include "engines/arps/ARP/arp.hpp"
 #include "services/application.hpp"
 #include "services/clock_manager.hpp"
 
@@ -25,10 +25,12 @@ namespace otto::services {
   private:
     using EffectsDispatcher = EngineDispatcher< //
       EngineType::effect,
+      engine::OffEngine<EngineType::effect>,
       engines::wormhole::Wormhole,
       engines::chorus::Chorus>;
     using ArpDispatcher = EngineDispatcher< //
       EngineType::arpeggiator,
+      engine::OffEngine<EngineType::arpeggiator>,
       engines::arp::Arp>;
     using SynthDispatcher = EngineDispatcher< //
       EngineType::synth,
@@ -63,18 +65,18 @@ namespace otto::services {
 
     // reg_ss(ScreenEnum::sends, [&]() -> auto& { return synth_send.screen(); });
     // reg_ss(ScreenEnum::routing, );
-    reg_ss(ScreenEnum::fx1, [&]() { return effect1->screen(); });
+    reg_ss(ScreenEnum::fx1, [&]() { return effect1.engine_screen(); });
     reg_ss(ScreenEnum::fx1_selector, [&]() { return effect1.selector_screen(); });
-    reg_ss(ScreenEnum::fx2, [&]() { return effect2->screen(); });
+    reg_ss(ScreenEnum::fx2, [&]() { return effect2.engine_screen(); });
     reg_ss(ScreenEnum::fx2_selector, [&]() { return effect2.selector_screen(); });
     // reg_ss(ScreenEnum::looper,         [&] () -> auto& { return  ; });
-    reg_ss(ScreenEnum::arp, [&]() { return arpeggiator->screen(); });
+    reg_ss(ScreenEnum::arp, [&]() { return arpeggiator.engine_screen(); });
     reg_ss(ScreenEnum::arp_selector, [&]() { return arpeggiator.selector_screen(); });
     // reg_ss(ScreenEnum::master, [&]() -> auto& { return master.screen(); });
     // reg_ss(ScreenEnum::sequencer, [&]() -> auto& { return sequencer.screen(); });
     // reg_ss(ScreenEnum::sampler, [&]() -> auto& { return sequencer.sampler_screen(); });
     // reg_ss(ScreenEnum::sampler_envelope, [&]() -> auto& { return sequencer.envelope_screen(); });
-    reg_ss(ScreenEnum::synth, [&]() { return synth->screen(); });
+    reg_ss(ScreenEnum::synth, [&]() { return synth.engine_screen(); });
     reg_ss(ScreenEnum::synth_selector, [&]() { return synth.selector_screen(); });
     reg_ss(ScreenEnum::synth_envelope, [&]() { return synth->envelope_screen(); });
     reg_ss(ScreenEnum::voices, [&]() { return synth->voices_screen(); });
@@ -179,7 +181,7 @@ namespace otto::services {
 
     auto save = [&] {
       return nlohmann::json({
-        {"Synth", util::serialize(synth)},
+        {"Synth", util::serialize(synth)}, //
         {"Effect1", util::serialize(effect1)},
         {"Effect2", util::serialize(effect2)},
         // {"Master", master.to_json()},

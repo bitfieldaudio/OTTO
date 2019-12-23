@@ -35,6 +35,9 @@ namespace otto::core::engine {
 
   void EngineSelectorScreen::action(PublishEngineNames::action, gsl::span<const util::string_ref> names)
   {
+    OTTO_ASSERT(!names.empty());
+		first_engine_is_off_ = names[0] == "OFF";
+    engines.clear();
     util::transform(names, std::back_inserter(engines), [](auto&& name) { return EngineSelectorData{name}; });
   }
 
@@ -74,14 +77,15 @@ namespace otto::core::engine {
       ctx.fillStyle(text_color.dim(0.5));
       ctx.fillText("Engine", {left_pad, y - left_pad});
 
-      for (auto& engine : engines) {
+      for (auto&& [i, engine]: util::view::indexed(engines)) {
         auto icon = engine.icon;
         icon.set_size({icon_size, icon_size});
         icon.set_color(text_color);
         icon.set_line_width(4.f);
         ctx.drawAt({left_pad, y + (line_height - icon_size) / 2.f}, icon);
         ctx.beginPath();
-        ctx.font(Fonts::Norm, font_size);
+				auto font = (first_engine_is_off_ && i == 0) ? Fonts::NormItalic : Fonts::Norm;
+        ctx.font(font, font_size);
         ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Baseline);
         ctx.fillStyle(text_color);
         ctx.fillText(engine.name, {left_pad + icon_size + icon_pad, y + (line_height + icon_size) / 2.f + 2});

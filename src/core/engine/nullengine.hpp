@@ -4,58 +4,58 @@
 
 namespace otto::core::engine {
 
-  /// An engine representing no engine.
-  ///
-  /// Used either as an "OFF" engine, or while the active engine is being switched.
+  struct OffScreen : ui::Screen {
+    void draw(ui::vg::Canvas& ctx) override;
+  };
+
+  /// An engine representing an off engine.
   ///
   /// For synths, the audio processing should just return an empty buffer, and for
   /// fx it returns the input. Any others should be fairly obvious then.
   template<EngineType ET>
-  struct NullEngine;
+  struct OffEngine;
 
   template<>
-  struct NullEngine<EngineType::effect> : EffectEngine<NullEngine<EngineType::effect>> {
+  struct OffEngine<EngineType::effect> : EffectEngine<OffEngine<EngineType::effect>> {
     static constexpr util::string_ref name = "OFF";
     struct Props {
       DECL_REFLECTION_EMPTY(Props);
     } props;
-    NullEngine();
+    OffEngine();
 
-    audio::ProcessData<2> process(audio::ProcessData<1> data) noexcept;
-  };
-
-  template<>
-  struct NullEngine<EngineType::arpeggiator>
-    : ArpeggiatorEngine<NullEngine<EngineType::arpeggiator>> {
-    static constexpr util::string_ref name = "OFF";
-    struct Props {
-      DECL_REFLECTION_EMPTY(Props);
-    } props;
-    NullEngine();
-    audio::ProcessData<0> process(audio::ProcessData<0> data) noexcept;
-  };
-
-  template<>
-  struct NullEngine<EngineType::synth> : SynthEngine<NullEngine<EngineType::synth>> {
-    static constexpr util::string_ref name = "OFF";
-    struct Props {
-      DECL_REFLECTION_EMPTY(Props);
-    } props;
-
-    NullEngine();
-    audio::ProcessData<1> process(audio::ProcessData<1> data) noexcept;
+    ui::ScreenAndInput screen() noexcept
+    {
+      return {_screen, this};
+    }
+		struct Audio {
+      audio::ProcessData<2> process(audio::ProcessData<1> data) noexcept;
+		} audio_;
+		Audio* const audio = &audio_;
 
   private:
-    // struct Voice : voices::VoiceBase<Voice> {
-    //   using voices::VoiceBase<Voice>::VoiceBase;
-    //   float operator()() noexcept
-    //   {
-    //     return 0;
-    //   }
-    // };
+    OffScreen _screen;
+  };
 
-    // using VoiceManager = voices::VoiceManager<Voice, 6>;
-    // VoiceManager voice_mgr_;
+  template<>
+  struct OffEngine<EngineType::arpeggiator> : ArpeggiatorEngine<OffEngine<EngineType::arpeggiator>> {
+    static constexpr util::string_ref name = "OFF";
+    struct Props {
+      DECL_REFLECTION_EMPTY(Props);
+    } props;
+    OffEngine();
+
+    ui::ScreenAndInput screen() noexcept
+    {
+      return {_screen, this};
+    }
+
+		struct Audio {
+      audio::ProcessData<0> process(audio::ProcessData<0> data) noexcept;
+		} audio_;
+		Audio* const audio = &audio_;
+
+  private:
+    OffScreen _screen;
   };
 
 } // namespace otto::core::engine

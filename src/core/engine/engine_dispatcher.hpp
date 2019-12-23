@@ -3,8 +3,8 @@
 #include "core/engine/engine.hpp"
 #include "core/engine/nullengine.hpp"
 #include "util/flat_map.hpp"
-#include "util/variant_w_base.hpp"
 #include "util/spin_lock.hpp"
+#include "util/variant_w_base.hpp"
 
 namespace otto::core::engine {
 
@@ -21,6 +21,7 @@ namespace otto::core::engine {
     using Sender = services::UISender<EngineSelectorScreen>;
 
     constexpr static std::array<util::string_ref, sizeof...(Engines)> engine_names = {{Engines::name...}};
+    constexpr static bool has_off_engine = std::is_same_v<meta::head_t<meta::list<Engines...>>, OffEngine<ET>>;
 
     struct Props {
       template<typename Tag, typename Type, typename... Mixins>
@@ -34,7 +35,8 @@ namespace otto::core::engine {
 
     EngineDispatcher() noexcept;
 
-    ui::ScreenAndInput selector_screen();
+    ui::ScreenAndInput selector_screen() noexcept;
+    ui::ScreenAndInput engine_screen() noexcept;
     ITypedEngine<ET>& current();
     ITypedEngine<ET>* operator->();
 
@@ -54,5 +56,5 @@ namespace otto::core::engine {
   };
 } // namespace otto::core::engine
 
-#include "engine_selector_screen.hpp"
 #include "engine_dispatcher.inl"
+#include "engine_selector_screen.hpp"

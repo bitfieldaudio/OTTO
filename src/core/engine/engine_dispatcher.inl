@@ -56,9 +56,16 @@ namespace otto::core::engine {
   }
 
   ENGDISPTEMPLATE
-  ui::ScreenAndInput ENGDISP::selector_screen()
+  ui::ScreenAndInput ENGDISP::selector_screen() noexcept
   {
     return {*screen_, *this};
+  }
+
+  ENGDISPTEMPLATE
+  ui::ScreenAndInput ENGDISP::engine_screen() noexcept
+  {
+    if (current().name() == "OFF") return selector_screen();
+    return current().screen();
   }
 
 
