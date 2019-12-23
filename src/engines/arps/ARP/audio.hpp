@@ -9,44 +9,118 @@ namespace otto::engines::arp {
 
   using namespace core;
 
+
   struct ArpeggiatorState {
     std::uint8_t current_step = 0;
     std::uint8_t last_t = 1;
     int rounds = 0;
     enum struct Direction : std::uint8_t {
-      up, down
-    } direction = Direction::up;
+      first, second
+    } direction = Direction::first;
+    enum struct Stage : std::uint8_t {
+      A, B
+    } stage = Stage::A; 
 
     void reset()
     {
       current_step = 0;
       last_t = 1;
       rounds = 0;
+      stage = Stage::A;
+      direction = Direction::first;
     };
+
+    // Increments the round. Primarily for playmodes with up first.
+    void next_round(bool doubledirection, bool doubleoctave)
+    {
+      rounds++;
+      if (direction == Direction::first && stage == Stage::A)
+      {
+        if (doubleoctave) stage = Stage::B;
+        else if (doubledirection) direction = Direction::second;
+      } 
+      else if (direction == Direction::first && stage == Stage::B)
+      {
+        if (doubledirection) direction = Direction::second;
+        else stage = Stage::A;
+      }
+      else if (direction == Direction::second && stage == Stage::A)
+      {
+        if (doubledirection) direction = Direction::first;
+        else if (doubleoctave) stage = Stage::B;
+      }
+      else
+      {
+        stage = Stage::A;
+      }
+    };
+
+    // Increments the round. For downup playmodes.
+    void next_round_downup(bool doubleoctave)
+    {
+      rounds++;
+      if (direction == Direction::first && stage == Stage::B)
+      {
+        stage = Stage::A;
+        direction = Direction::first;
+      } 
+      else if (direction == Direction::first && stage == Stage::A)
+      {
+        direction = Direction::second;
+      }
+      else if (direction == Direction::second && stage == Stage::A)
+      {
+        if (doubleoctave) stage = Stage::B;
+        else direction = Direction::first;
+      }
+      else
+      {
+        direction = Direction::first;
+      }
+    };
+
   };
 
-  /// The current step
+  enum End {
+    Low, High
+  };
+
+  enum Position {
+    Zeroth, First
+  };
+
+    /// The current step
   using NoteVector = util::local_vector<std::uint8_t, 24>;
   /// The list of all possible keys
   /// 0: not held
   /// All other numbers: the order they have been pressed in
   using NoteArray = std::array<std::uint8_t, 128>;
-  using OctaveModeFunc = util::function_ptr<void, std::uint8_t, std::uint8_t, NoteVector&>;
+  using OctaveModeFunc = util::function_ptr<void, ArpeggiatorState::Stage&, std::uint8_t, NoteVector&>;
   using PlayModeFunc = util::function_ptr<void, ArpeggiatorState&, NoteArray&, std::uint8_t&, OctaveModeFunc, NoteVector&>;
-  
+
   /// PlayMode functions
   /// These increment the step according to the playmode and call the octavemode-function passed as a function pointer.
   void up(ArpeggiatorState& state, NoteArray& notes, std::uint8_t& current_step, OctaveModeFunc omf, NoteVector& output);
   void down(ArpeggiatorState& state, NoteArray& notes, std::uint8_t& current_step, OctaveModeFunc omf, NoteVector& output);
+  void chord(ArpeggiatorState& state, NoteArray& notes, std::uint8_t& current_step, OctaveModeFunc omf, NoteVector& output);
+  void manual(ArpeggiatorState& state, NoteArray& notes, std::uint8_t& current_step, OctaveModeFunc omf, NoteVector& output);
+  /// These add extra steps to the sequence. Since the octavemode/range steps are completed before the extra steps 
+  /// from the playmode, they contain a check of the octavemode function. For 'octaveup', 'octaveupdown', 'octavedownup', 
+  /// the sequence repeats every 4 rounds, as opposed to the other octavemodes where it repeats every 2 rounds.
+  void updown(ArpeggiatorState& state, NoteArray& notes, std::uint8_t& current_step, OctaveModeFunc omf, NoteVector& output);
+  void downup(ArpeggiatorState& state, NoteArray& notes, std::uint8_t& current_step, OctaveModeFunc omf, NoteVector& output);
+  void updowninc(ArpeggiatorState& state, NoteArray& notes, std::uint8_t& current_step, OctaveModeFunc omf, NoteVector& output);
+  void downupinc(ArpeggiatorState& state, NoteArray& notes, std::uint8_t& current_step, OctaveModeFunc omf, NoteVector& output);
+
 
   /// OctaveMode functions
   /// These adjust the note as needed. Unison-modes add other notes, Non-unison modes can shift by whole octaves.
-  void standard(std::uint8_t rounds, std::uint8_t note, NoteVector& output);
-  void octaveupunison(std::uint8_t rounds, std::uint8_t note, NoteVector& output);
-  void fifthunison(std::uint8_t rounds, std::uint8_t note, NoteVector& output);
-  void octaveup(std::uint8_t rounds, std::uint8_t note, NoteVector& output);
-  void octaveupdown(std::uint8_t rounds, std::uint8_t note, NoteVector& output);
-  void octavedownup(std::uint8_t rounds, std::uint8_t note, NoteVector& output);
+  void standard(ArpeggiatorState::Stage& stage, std::uint8_t note, NoteVector& output);
+  void octaveupunison(ArpeggiatorState::Stage& stage, std::uint8_t note, NoteVector& output);
+  void fifthunison(ArpeggiatorState::Stage& stage, std::uint8_t note, NoteVector& output);
+  void octaveup(ArpeggiatorState::Stage& stage, std::uint8_t note, NoteVector& output);
+  void octaveupdown(ArpeggiatorState::Stage& stage, std::uint8_t note, NoteVector& output);
+  void octavedownup(ArpeggiatorState::Stage& stage, std::uint8_t note, NoteVector& output);
 
   struct Audio {
     Audio() noexcept;
