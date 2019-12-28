@@ -10,14 +10,23 @@ namespace otto::core::engine {
 
   struct EngineSelectorScreen;
 
+  BETTER_ENUM(ESSSubscreen, //
+              std::int8_t,
+              engine_selection,
+              preset_selection,
+              new_preset);
+
   using SelectedEngine = itc::PropTypes<struct selected_engine_tag, int>;
   using SelectedPreset = itc::PropTypes<struct selected_preset_tag, int>;
-  using CurrentScreen = itc::PropTypes<struct current_screen_tag, int>;
+  using CurrentScreen = itc::PropTypes<struct current_screen_tag, ESSSubscreen>;
   using PublishEngineNames = itc::PropTypes<struct publish_engine_names_tag, gsl::span<const util::string_ref>>;
+  using NewPresetName = itc::PropTypes<struct new_preset_name_tag, std::string>;
+  using CursorPos = itc::PropTypes<struct cursor_pos_tag, std::int8_t>;
 
   /// Owns engines of type `ET`, and dispatches to a selected one of them
   template<EngineType ET, typename... Engines>
   struct EngineDispatcher : input::InputHandler {
+    using Subscreen = ESSSubscreen;
     using Sender = services::UISender<EngineSelectorScreen>;
 
     constexpr static std::array<util::string_ref, sizeof...(Engines)> engine_names = {{Engines::name...}};
@@ -30,7 +39,7 @@ namespace otto::core::engine {
       Sender sender;
       SelectedEngine::Prop<Sender> selected_engine_idx = {sender, 0, props::limits(0, sizeof...(Engines) - 1)};
       SelectedPreset::Prop<Sender> selected_preset_idx = {sender, 0, props::limits(0, 12)};
-      CurrentScreen::Prop<Sender> current_screen = {sender, 0, props::limits(0, 1)};
+      CurrentScreen::Prop<Sender> current_screen = {sender, Subscreen::engine_selection};
     };
 
     EngineDispatcher() noexcept;

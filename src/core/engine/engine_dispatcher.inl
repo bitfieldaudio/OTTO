@@ -68,25 +68,27 @@ namespace otto::core::engine {
     return current().screen();
   }
 
-
   ENGDISPTEMPLATE
   void ENGDISP::encoder(input::EncoderEvent e)
   {
     using namespace input;
-    switch (e.encoder) {
-      case Encoder::blue:
-        if (props.current_screen != 0)
-          props.current_screen = 0;
-        else
-          props.selected_engine_idx.step(e.steps);
-        break;
-      case Encoder::green:
-        if (props.current_screen != 1)
-          props.current_screen = 1;
-        else
-          props.selected_preset_idx.step(e.steps);
-        break;
-      default: break;
+    if (props.current_screen == Subscreen::engine_selection) {
+      switch (e.encoder) {
+        case Encoder::blue: props.selected_engine_idx.step(e.steps); break;
+        case Encoder::green: props.current_screen = +Subscreen::preset_selection; break;
+        default: break;
+      }
+    } else if (props.current_screen == Subscreen::preset_selection) {
+      switch (e.encoder) {
+        case Encoder::blue: props.current_screen = +Subscreen::engine_selection; break;
+        case Encoder::green: props.selected_preset_idx.step(e.steps); break;
+        case Encoder::red: props.current_screen = +Subscreen::new_preset; break;
+        default: break;
+      }
+    } else if (props.current_screen == Subscreen::new_preset) {
+      switch (e.encoder) {
+        default: break;
+      }
     }
   }
 
@@ -96,7 +98,7 @@ namespace otto::core::engine {
     using namespace input;
     switch (key) {
       case Key::blue_click: //
-        props.current_screen = 1;
+        props.current_screen = +Subscreen::engine_selection;
         return true;
       default: return false;
     }

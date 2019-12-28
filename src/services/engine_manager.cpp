@@ -207,8 +207,8 @@ namespace otto::services {
       util::deserialize(synth, data["Synth"]);
       util::deserialize(effect1, data["Effect1"]);
       util::deserialize(effect2, data["Effect2"]);
+      util::deserialize(arpeggiator, data["Arpeggiator"]);
       // master.from_json(data["Master"]);
-      // arpeggiator.from_json(data["Arpeggiator"]);
       // sequencer.from_json(data["Sequencer"]);
     };
 
@@ -217,8 +217,8 @@ namespace otto::services {
         {"Synth", util::serialize(synth)}, //
         {"Effect1", util::serialize(effect1)},
         {"Effect2", util::serialize(effect2)},
+        {"Arpeggiator", util::serialize(arpeggiator)},
         // {"Master", master.to_json()},
-        // {"Arpeggiator", arpeggiator.to_json()},
         // {"Sequencer", sequencer.to_json()},
       });
     };
