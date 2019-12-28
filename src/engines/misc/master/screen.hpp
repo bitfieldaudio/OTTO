@@ -13,7 +13,7 @@ namespace otto::engines::master {
 
     float volume_ = 0.f;
     float rotation = 0.f;
-    int tempo_ = 120;
+    float tempo_ = 120;
   };
 
 } // namespace otto::engines::master

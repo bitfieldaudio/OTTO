@@ -1,6 +1,7 @@
 #include "audio.hpp"
 
 #include "services/audio_manager.hpp"
+#include "services/clock_manager.hpp"
 
 namespace otto::engines::master {
 
@@ -14,9 +15,10 @@ namespace otto::engines::master {
     volume_square_ = v * v;
   }
 
-  void Audio::action(itc::prop_change<&Props::tempo>, int t) noexcept
+  void Audio::action(itc::prop_change<&Props::tempo>, float t) noexcept
   {
     tempo_ = t;
+    services::ClockManager::current().set_bpm(t);
   }
 
   audio::ProcessData<2> Audio::process(audio::ProcessData<2> data) noexcept

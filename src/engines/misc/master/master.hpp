@@ -17,7 +17,7 @@ namespace otto::engines::master {
       Sender sender;
 
       Sender::Prop<struct volume_tag, float> volume = {sender, 0.5, limits(0, 1), step_size(0.01)};
-      Sender::Prop<struct tempo_tag, int> tempo = {sender, 120, limits(40, 220)};
+      Sender::Prop<struct tempo_tag, float> tempo = {sender, 120, limits(40, 220), step_size(0.5)};
 
       DECL_REFLECTION(Props, volume);
   };

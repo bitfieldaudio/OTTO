@@ -11,7 +11,7 @@ namespace otto::engines::master {
     audio::ProcessData<2> process(audio::ProcessData<2>) noexcept;
 
     void action(itc::prop_change<&Props::volume>, float v) noexcept;
-    void action(itc::prop_change<&Props::tempo>, int t) noexcept;
+    void action(itc::prop_change<&Props::tempo>, float t) noexcept;
 
   private:
     float volume_square_ = 0;

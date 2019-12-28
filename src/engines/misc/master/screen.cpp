@@ -63,7 +63,13 @@ namespace otto::engines::master {
     ctx.stroke();
     ctx.restore();
 
+    // Tempo
+    ctx.font(Fonts::Norm, 26);
+    ctx.fillStyle(Colours::Red);
+    ctx.fillText("tempo", 186.6, 89.9);
+    ctx.fillText(fmt::format("{:1}", tempo_), {186.6, 120});
+
   }
 
 
-} // namespace otto::engines::wormhole
+} // namespace otto::engines::master
