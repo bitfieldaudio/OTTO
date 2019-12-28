@@ -3,6 +3,7 @@
 #include "core/engine/engine_dispatcher.hpp"
 #include "core/engine/engine_dispatcher.inl"
 #include "core/ui/vector_graphics.hpp"
+#include "engines/misc/sends/sends.hpp"
 #include "engines/arps/ARP/arp.hpp"
 #include "engines/fx/chorus/chorus.hpp"
 #include "engines/fx/wormhole/wormhole.hpp"
@@ -44,7 +45,7 @@ namespace otto::services {
     // EffectsDispatcher effect1{true};
     // EffectsDispatcher effect2{true};
 
-    // engines::Sends synth_send;
+    engines::Sends synth_send;
     // engines::Sends line_in_send;
     // engines::Master master;
     // engines::Sequencer sequencer;
