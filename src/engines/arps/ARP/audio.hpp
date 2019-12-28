@@ -145,6 +145,7 @@ namespace otto::engines::arp {
 
     int _samples_per_quarternote = 22050;
     int _samples_per_beat = 22050;
+    core::clock::Time note = core::clock::notes::beat;
     int _counter = _samples_per_beat;
     bool has_changed_ = false;
     int note_off_frames = 1000;

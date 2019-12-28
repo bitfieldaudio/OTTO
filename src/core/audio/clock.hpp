@@ -13,7 +13,9 @@ namespace otto::core::clock {
     inline constexpr const Time whole = 4 * microsteps;
     inline constexpr const Time half = whole / 2;
     inline constexpr const Time quarter = whole / 4;
+    inline constexpr const Time quartertriplet = whole / 6;
     inline constexpr const Time eighth = whole / 8;
+    inline constexpr const Time eighthtriplet = whole / 12;
     inline constexpr const Time sixteenth = whole / 16;
     inline constexpr const Time thirtysecond = whole / 32;
     inline constexpr const Time sixtyfourth = whole / 64;
@@ -46,6 +48,11 @@ namespace otto::core::clock {
       return count_multiple(n) > 0;
     }
 
+    bool contains_multiple(Time n, float offset) const noexcept
+    {
+      return count_multiple(n, offset) > 0;
+    }
+
     /// Counts the number of times this range contains a multiple of n
     ///
     /// @requires count > 0
@@ -53,6 +60,12 @@ namespace otto::core::clock {
     {
       OTTO_ASSERT(n > 0);
       return (std::max(end, Time{1}) - 1) / n - (std::max(begin, Time{1}) - 1) / n;
+    }
+
+    int count_multiple(Time n, float offset) const noexcept
+    {
+      OTTO_ASSERT(n > 0);
+      return (std::max(end - (Time)(n * offset), Time{1}) - 1) / n - (std::max(begin - (Time)(n * offset), Time{1}) - 1) / n;
     }
 
     int position_of_multiple(Time n) const noexcept

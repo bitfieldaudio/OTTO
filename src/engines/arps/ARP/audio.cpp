@@ -1,6 +1,6 @@
 #include "arp.hpp"
 
-#include "core/ui/vector_graphics.hpp"
+#include "services/clock_manager.hpp"
 #include <algorithm>
 #include <numeric>
 
@@ -26,7 +26,11 @@ namespace otto::engines::arp {
                     notes_[ev.key] = state_.last_t;
                     state_.last_t++;
                     has_changed_ = true;
-                    running_ = true;
+                    if (running_ == false) {
+                      services::ClockManager::current().start();
+                      running_ = true;
+                    }
+                    
                   },
                   [&](midi::NoteOffEvent& ev) {
                     notes_[ev.key] = 0;
@@ -41,6 +45,7 @@ namespace otto::engines::arp {
     //Resets state. It is necessary to do this AFTER clearing the midi data, 
     //otherwise we miss note-off events.
     if (stop_flag){
+      services::ClockManager::current().stop(true);
       running_ = false;
       for (auto note : current_notes_)
         data.midi.push_back(midi::NoteOffEvent(note));
@@ -50,19 +55,23 @@ namespace otto::engines::arp {
     }
 
     // Check for beat. will be obsolete with master clock
-    auto next_beat = (_samples_per_beat - _counter) % _samples_per_beat;
+    //auto next_beat = (_samples_per_beat - _counter) % _samples_per_beat;
+    auto at_note_off = data.clock.contains_multiple(note, note_length_);
 
     // If we are running, at a note-off point, and the output stack is not empty send note-off
     // events
-    if (running_ && next_beat <= _samples_per_beat - note_off_frames) {
+    //if (running_ && next_beat <= _samples_per_beat - note_off_frames) {
+    if (running_ && at_note_off) {
       for (auto note : current_notes_) {
         data.midi.push_back(midi::NoteOffEvent(note));
       }
       current_notes_.clear();
     }
-
+    DLOGI("Clock: {}-{}", data.clock.begin, data.clock.end);
+    auto at_beat = data.clock.contains_multiple(note);
     // If we are running, and at a new beat, do stuff.
-    if (running_ && next_beat <= data.nframes) {
+    if (running_ && at_beat) {
+      DLOGI("Playing");
       playmode_func_(state_, notes_, state_.current_step, octavemode_func_, current_notes_);
       // Send note-on events to midi stream
       for (auto note : current_notes_) {
@@ -435,6 +444,13 @@ namespace otto::engines::arp {
   {
     _samples_per_beat = _samples_per_quarternote / sd;
     note_off_frames = (int)(note_length_ * (float)_samples_per_beat);
+    switch (sd){
+    case 1: note = core::clock::notes::quarter; break;
+    case 2: note = core::clock::notes::eighth; break;
+    case 3: note = core::clock::notes::eighthtriplet; break;
+    case 4: note = core::clock::notes::sixteenth; break;
+    default: note = core::clock::notes::quarter; break;
+    }
   }
 
   void Audio::action(Actions::graphics_outdated, std::atomic<bool>& ref) noexcept

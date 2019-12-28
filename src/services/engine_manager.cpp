@@ -3,6 +3,7 @@
 #include "core/engine/engine_dispatcher.hpp"
 #include "core/engine/engine_dispatcher.inl"
 #include "core/ui/vector_graphics.hpp"
+#include "engines/misc/master/master.hpp"
 #include "engines/fx/wormhole/wormhole.hpp"
 #include "engines/synths/OTTOFM/ottofm.hpp"
 #include "engines/synths/goss/goss.hpp"
@@ -41,7 +42,7 @@ namespace otto::services {
 
     // engines::Sends synth_send;
     // engines::Sends line_in_send;
-    // engines::Master master;
+    engines::master::Master master;
     // engines::Sequencer sequencer;
   };
 
@@ -67,7 +68,7 @@ namespace otto::services {
     // reg_ss(ScreenEnum::looper,         [&] () -> auto& { return  ; });
     reg_ss(ScreenEnum::arp, [&]() { return arpeggiator.screen(); });
     // reg_ss(ScreenEnum::arp_selector, [&]() -> auto& { return arpeggiator.selector_screen(); });
-    // reg_ss(ScreenEnum::master, [&]() -> auto& { return master.screen(); });
+    reg_ss(ScreenEnum::master, [&]() { return master.screen(); });
     // reg_ss(ScreenEnum::sequencer, [&]() -> auto& { return sequencer.screen(); });
     // reg_ss(ScreenEnum::sampler, [&]() -> auto& { return sequencer.sampler_screen(); });
     // reg_ss(ScreenEnum::sampler_envelope, [&]() -> auto& { return sequencer.envelope_screen(); });
@@ -142,18 +143,18 @@ namespace otto::services {
       }
     });
 
-    // static ScreenEnum master_last_screen = ScreenEnum::master;
+    static ScreenEnum master_last_screen = ScreenEnum::master;
     // static ScreenEnum send_last_screen = ScreenEnum::sends;
 
-    // controller.register_key_handler(
-    //   input::Key::master,
-    //   [&](input::Key k) {
-    //     master_last_screen = ui_manager.state.current_screen;
-    //     ui_manager.display(ScreenEnum::master);
-    //   },
-    //   [&](input::Key k) {
-    //     if (master_last_screen) ui_manager.display(master_last_screen);
-    //   });
+    controller.register_key_handler(
+      input::Key::master,
+      [&](input::Key k) {
+        master_last_screen = ui_manager.state.current_screen;
+        ui_manager.display(ScreenEnum::master);
+      },
+      [&](input::Key k) {
+        if (master_last_screen) ui_manager.display(master_last_screen);
+      });
 
     // controller.register_key_handler(
     //   input::Key::sends,
@@ -215,7 +216,7 @@ namespace otto::services {
     for (auto&& [snth, l, r] : util::zip(synth_out.audio, fx1_out.audio[0], fx1_out.audio[1])) {
       l = r = snth;
     }
-    return fx1_out;
+    return master.audio->process(fx1_out);
     // // Sequencer. Outputs L/R dry output and adds to fx busses.
     // // auto seq_dry = sequencer.process(midi_in, fx1_bus, fx2_bus);
     // auto fx1_out = effect1->process(audio::ProcessData<1>(fx1_bus));
@@ -228,7 +229,7 @@ namespace otto::services {
       fx1R += fx2R + snth * 0.5; // * synth_send.props.dry * (1 + synth_send.props.dry_pan);
     }
 
-    return fx1_out;
+    // return master.audio->process(std.move(fx1_out));
     // synth_out.audio.release();
     // fx2_out.audio[0].release();
     // fx2_out.audio[1].release();
