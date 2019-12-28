@@ -3,6 +3,57 @@
 
 namespace otto::core::engine {
 
+  // WriterUI
+
+  void WriterUI::step_idx(std::int8_t delta) noexcept
+  {
+    char_idx_ = std::clamp(char_idx_ + delta, 0, (std::int8_t) to_string(false).size() - 1);
+  }
+
+  void WriterUI::cycle_group(std::int8_t delta) noexcept
+  {
+    OTTO_ASSERT(char_idx_ < characters_.size());
+    auto& [group, c] = characters_[char_idx_];
+    group = std::clamp(group + delta, 0, (int) character_groups.size() - 1);
+    c = std::clamp(c, std::int8_t(0), std::int8_t(character_groups[group].size() - 1));
+  }
+
+  void WriterUI::cycle_char(std::int8_t delta) noexcept
+  {
+    OTTO_ASSERT(char_idx_ < characters_.size());
+    auto& [group, c] = characters_[char_idx_];
+    c += delta;
+    while (c >= int(character_groups[group].size())) {
+      c -= character_groups[group].size();
+      group++;
+      group = util::math::modulo(group, character_groups.size());
+    }
+    while (c < 0) {
+      group--;
+      group = util::math::modulo(group, character_groups.size());
+      c += character_groups[group].size();
+    }
+  }
+
+  std::string WriterUI::to_string(bool trim) const noexcept
+  {
+    std::string result;
+    result.resize(characters_.size(), ' ');
+    util::transform(characters_, result.begin(), [](auto pair) {
+      auto&& [group, c] = pair;
+      return character_groups[group][c];
+    });
+    if (trim) {
+      result = util::trim(result);
+    } else {
+      result = result.substr(0, std::min(result.find_last_not_of(" ") + 3, result.size()));
+    }
+    return result;
+  }
+
+
+  // EngineSelectorScreen
+
   using Subscreen = ESSSubscreen;
 
   void placeholder_engine_icon(ui::IconData& i, nvg::Canvas& ctx)
