@@ -7,9 +7,21 @@
 /// General purpose utilities. Mostly lambda magic
 
 namespace otto::util {
+  namespace utility_detail {
+    template<typename T>
+    struct function_ptr_impl;
+    template<typename Ret, typename... Args>
+    struct function_ptr_impl<Ret(Args...)> {
+      using type = Ret (*)(Args...);
+    };
+    template<typename Ret, typename... Args>
+    struct function_ptr_impl<Ret(Args...) noexcept> {
+      using type = Ret (*)(Args...) noexcept;
+    };
+  }
 
-  template<typename Ret, typename... Args>
-  using function_ptr = Ret (*)(Args...);
+  template<typename Func>
+  using function_ptr = typename utility_detail::function_ptr_impl<Func>::type;
 
   template<typename Class, typename Ret, typename... Args>
   using member_func_ptr = Ret (Class::*)(Args...);

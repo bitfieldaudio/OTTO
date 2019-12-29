@@ -1155,13 +1155,13 @@ namespace otto::util {
 
     template<typename WrappedIter>
     struct indexed_iterator : iterator_facade<indexed_iterator<WrappedIter>,
-                                              std::pair<std::size_t, iter_detail::value_type_t<WrappedIter>>,
+                                              std::pair<int, iter_detail::value_type_t<WrappedIter>>,
                                               iter_detail::iterator_category_t<WrappedIter>,
-                                              std::pair<std::size_t, iter_detail::reference_t<WrappedIter>>> {
+                                              std::pair<int, iter_detail::reference_t<WrappedIter>>> {
       static_assert(
         std::is_same_v<std::decay_t<decltype(*std::declval<WrappedIter>())>, iter_detail::value_type_t<WrappedIter>>);
 
-      indexed_iterator(WrappedIter iter, std::size_t index = 0) : iter(std::move(iter)), index(index) {}
+      indexed_iterator(WrappedIter iter, int index = 0) : iter(std::move(iter)), index(index) {}
 
       void advance(int n)
       {
@@ -1171,7 +1171,7 @@ namespace otto::util {
 
       auto dereference()
       {
-        return std::pair<std::size_t, iter_detail::reference_t<WrappedIter>>(index, *iter);
+        return std::pair<int, iter_detail::reference_t<WrappedIter>>(index, *iter);
       }
 
       bool equal(const indexed_iterator& o) const
@@ -1185,7 +1185,7 @@ namespace otto::util {
       }
 
       WrappedIter iter;
-      std::size_t index = 0;
+      int index = 0;
     };
 
 

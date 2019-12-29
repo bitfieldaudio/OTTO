@@ -1,54 +1,62 @@
-#include "arp.hpp"
-
-#include "services/clock_manager.hpp"
 #include <algorithm>
 #include <numeric>
+
+#include "arp.hpp"
+#include "services/clock_manager.hpp"
 
 namespace otto::engines::arp {
 
   using namespace ui;
   using namespace ui::vg;
 
-  using Playmode = detail::ArpPlaymode;
-  using OctaveMode = detail::ArpOctaveMode;
+  namespace view = util::view;
 
-  Audio::Audio() noexcept
+  using Direction = ArpeggiatorState::Direction;
+
+  static void insert_note(NoteArray& notes, std::uint8_t note)
   {
-
+    auto t = notes.empty() ? 0 : notes.back().t + 1;
+    notes.push_back({note, t});
   }
+
+  static void erase_note(NoteArray& notes, std::uint8_t note)
+  {
+    auto found = util::remove_if(notes, [&](auto& ntp) { return ntp.note == note; });
+    notes.erase(found, notes.end());
+  }
+
+  Audio::Audio() noexcept {}
 
   audio::ProcessData<0> Audio::process(audio::ProcessData<0> data) noexcept
   {
     // Updates array of notes and delete midi stream
     for (auto& event : data.midi) {
-      util::match(event,
-                  [&](midi::NoteOnEvent& ev) {
-                    notes_[ev.key] = state_.last_t;
-                    state_.last_t++;
-                    has_changed_ = true;
-                    if (running_ == false) {
-                      services::ClockManager::current().start();
-                      running_ = true;
-                    }
-                    
-                  },
-                  [&](midi::NoteOffEvent& ev) {
-                    notes_[ev.key] = 0;
-                    has_changed_ = true;
-                    if (std::accumulate(notes_.begin(), notes_.end(), 0) == 0){
-                      stop_flag = true;
-                    }
-                  },
-                  [](auto&&) {});
+      util::match(
+        event,
+        [&](midi::NoteOnEvent& ev) {
+          insert_note(notes_, ev.key);
+          has_changed_ = true;
+          if (!running_) {
+            services::ClockManager::current().start();
+            running_ = true;
+          }
+        },
+        [&](midi::NoteOffEvent& ev) {
+          erase_note(notes_, ev.key);
+          has_changed_ = true;
+          if (notes_.empty()) {
+            stop_flag = true;
+          }
+        },
+        [](auto&&) {});
     };
     data.midi.clear();
-    //Resets state. It is necessary to do this AFTER clearing the midi data, 
-    //otherwise we miss note-off events.
-    if (stop_flag){
+    // Resets state. It is necessary to do this AFTER clearing the midi data,
+    // otherwise we miss note-off events.
+    if (stop_flag) {
       services::ClockManager::current().stop(true);
       running_ = false;
-      for (auto note : current_notes_)
-        data.midi.push_back(midi::NoteOffEvent(note));
+      for (auto note : current_notes_) data.midi.push_back(midi::NoteOffEvent(note));
       stop_flag = false;
       _counter = 0;
       state_.reset();
@@ -64,377 +72,254 @@ namespace otto::engines::arp {
 
     auto at_beat = data.clock.contains_multiple(note);
     if (running_ && at_beat) {
-      playmode_func_(state_, notes_, state_.current_step, octavemode_func_, current_notes_);
+      current_notes_ = octavemode_func_(state_, notes_, playmode_func_);
       // Send note-on events to midi stream
       for (auto note : current_notes_) {
         data.midi.push_back(midi::NoteOnEvent(note));
       }
     }
-
     return data;
   }
 
   // PlayMode functions
-  auto get_next_upwards = [](NoteArray& notes, std::uint8_t& current_step)
+  template<typename Cmp>
+  tl::optional<NoteTPair> find_next_note(const NoteArray& notes, NoteTPair current, Cmp&& cmp)
   {
-    NoteArray::iterator it = ( notes.begin() + current_step );
-    return std::find_if(it + 1, notes.end(), [](std::uint8_t v){return v > 0;} );
-  };
-
-  auto get_next_downwards = [](NoteArray& notes, std::uint8_t& current_step)
-  {
-    NoteArray::reverse_iterator rit = notes.rend() - 1 - current_step;
-    return std::find_if(rit + 1, notes.rend(), [](std::uint8_t v){return v > 0;} );
-  };
-
-  auto set_current_step = [](NoteArray& notes, std::uint8_t& current_step, End end, Position pos)
-  {
-    if (end == End::Low){
-      if (pos == Position::First)
-      {
-        current_step = 0;
-        auto next_step_it = get_next_upwards(notes, current_step);
-        current_step = next_step_it - notes.begin();
-      } else {
-        current_step = 0;
-      }
-    } else {
-      if (pos == Position::First)
-      {
-        current_step = 128;
-        auto next_step_rit = get_next_downwards(notes, current_step);
-        current_step = std::distance(next_step_rit, notes.rend() - 1);
-      } else {
-        current_step = 128;
+    tl::optional<NoteTPair> res = tl::nullopt;
+    auto is_initial = current == NoteTPair::initial;
+    for (auto&& [note, t] : notes) {
+      auto is_after_break = (t > current.t) && (!res || res->t < current.t);
+      auto is_next_of_same_note = (t > current.t && note == current.note);
+      auto is_closest = (is_initial || cmp(note, current.note)) &&
+                        (!res || (cmp(res->note, note) || (is_after_break && note == res->note)));
+      if (is_next_of_same_note || is_closest) {
+        res = {note, t};
+        if (is_next_of_same_note) break;
       }
     }
-  };
-
-  void up(ArpeggiatorState& state, NoteArray& notes, std::uint8_t& current_step, OctaveModeFunc oct_func, NoteVector& output)
-  {
-    bool doubleoctave = ((oct_func == octaveup) || (oct_func == octaveupdown) || (oct_func == octavedownup));
-    auto next_step_it = get_next_upwards(notes, current_step);
-    if (next_step_it == notes.end()){
-      // Wrap
-      current_step = 0;
-      next_step_it = get_next_upwards(notes, current_step);
-      state.next_round(false, doubleoctave);   
-    }
-    if (next_step_it != notes.end()){
-      current_step = next_step_it - notes.begin();
-      oct_func(state.stage, current_step, output);
-    }
+    return res;
   }
 
-  void down(ArpeggiatorState& state, NoteArray& notes, std::uint8_t& current_step, OctaveModeFunc oct_func, NoteVector& output)
+  tl::optional<NoteTPair> find_next_note_up(const NoteArray& notes, NoteTPair current)
   {
-    bool doubleoctave = ((oct_func == octaveup) || (oct_func == octaveupdown) || (oct_func == octavedownup));
-    auto next_step_rit = get_next_downwards(notes, current_step);
-    if (next_step_rit == notes.rend()){
-      // Wrap
-      current_step = 128;
-      next_step_rit = get_next_downwards(notes, current_step);
-      state.next_round(false, doubleoctave);   
-    }
-    if (next_step_rit != notes.rend()){
-      current_step = std::distance(next_step_rit, notes.rend() - 1);
-      oct_func(state.stage, current_step, output);
-    }
+    return find_next_note(notes, current, std::greater<>());
   }
 
-  void chord(ArpeggiatorState& state, NoteArray& notes, std::uint8_t& current_step, OctaveModeFunc oct_func, NoteVector& output)
+  tl::optional<NoteTPair> find_next_note_down(const NoteArray& notes, NoteTPair current)
   {
-    bool doubleoctave = ((oct_func == octaveup) || (oct_func == octaveupdown) || (oct_func == octavedownup));
+    return find_next_note(notes, current, std::less<>());
+  }
 
-    for (auto&& [i, note] : util::view::indexed(notes))
+  namespace play_modes {
+
+    NoteVector manual(ArpeggiatorState& state, const NoteArray& notes)
     {
-      if (note > 0) {
-        oct_func(state.stage, i, output);
-      }
+      auto res = std::upper_bound(notes.begin(), notes.end(), state.current);
+      if (res == notes.end()) res = notes.begin();
+      state.current = *res;
+      return NoteVector{res->note};
     }
-    state.next_round(false, doubleoctave);
-  }
 
-  void manual(ArpeggiatorState& state, NoteArray& notes, std::uint8_t& current_step, OctaveModeFunc oct_func, NoteVector& output)
-  {
-    bool doubleoctave = ((oct_func == octaveup) || (oct_func == octaveupdown) || (oct_func == octavedownup));
-    // Look for the element in notes with the closest value higher than the one at current step
-    auto current_value = notes[current_step];
-    auto later_notes =
-      util::view::filter(notes, [&](uint8_t& n) { return n > current_value; });
-    auto next_note_it = util::min_element(later_notes);
-    if (next_note_it != later_notes.end())
+    NoteVector up(ArpeggiatorState& state, const NoteArray& notes)
     {
-      current_step = std::distance(notes.begin(), next_note_it.iter); 
-      oct_func(state.stage, current_step, output);
-    } else {
-      // Wrap
-      state.next_round(false, doubleoctave);
-      auto triggered_notes =
-        util::view::filter(notes, [&](uint8_t& n) { return n > 0; });
-      auto first_note_it = util::min_element(triggered_notes);
-      if (first_note_it.iter != first_note_it.last){
-        current_step = std::distance(notes.begin(), first_note_it.iter); 
-        oct_func(state.stage, current_step, output);
-      }
+      const auto next =
+        find_next_note_up(notes, state.current).or_else([&] { return find_next_note_up(notes, NoteTPair::initial); });
+      if (next) state.current = *next;
+      return next.map_or([](auto pair) { return NoteVector{pair.note}; }, NoteVector{});
     }
-  }
 
-  void updown(ArpeggiatorState& state, NoteArray& notes, std::uint8_t& current_step, OctaveModeFunc oct_func, NoteVector& output)
-  {
-    bool doubleoctave = ((oct_func == octaveup) || (oct_func == octaveupdown) || (oct_func == octavedownup));
-
-    if (state.direction == ArpeggiatorState::Direction::first)
+    NoteVector down(ArpeggiatorState& state, const NoteArray& notes)
     {
-      auto next_step_it = get_next_upwards(notes, current_step);
-      if (next_step_it == notes.end())
-      {
-        // Wrap
-        state.next_round(true, doubleoctave);
-        //Edge case: If there is only one note pressed
-        auto next_step_rit = get_next_downwards(notes, current_step);
-        if (next_step_rit == notes.rend()){oct_func(state.stage, current_step, output); return;}
-        // Still going up
-        if (state.direction == ArpeggiatorState::Direction::first) set_current_step(notes, current_step, End::Low, Position::Zeroth);
-        updown(state, notes, current_step, oct_func, output);
-      }
-      else
-      {
-        current_step = next_step_it - notes.begin();
-        oct_func(state.stage, current_step, output);
-      }  
-    } 
-    else // Going down 
-    {
-      auto next_step_rit = get_next_downwards(notes, current_step);
-      if (next_step_rit == notes.rend()){
-        // Wrap
-        state.next_round(true, doubleoctave);
-        //Edge case: If there is only one note pressed
-        auto next_step_it = get_next_upwards(notes, current_step);
-        if (next_step_it == notes.end()){oct_func(state.stage, current_step, output); return;}
-        // Still going down
-        if (state.direction == ArpeggiatorState::Direction::second) set_current_step(notes, current_step, End::High, Position::Zeroth);
-        updown(state, notes, current_step, oct_func, output);
-      }
-      else
-      {
-        current_step = std::distance(next_step_rit, notes.rend() - 1);
-        oct_func(state.stage, current_step, output);
-      }
+      const auto next = find_next_note_down(notes, state.current).or_else([&] {
+        return find_next_note_down(notes, NoteTPair::initial);
+      });
+      if (next) state.current = *next;
+      return next.map_or([](auto pair) { return NoteVector{pair.note}; }, NoteVector{});
     }
-  }
 
-  void updowninc(ArpeggiatorState& state, NoteArray& notes, std::uint8_t& current_step, OctaveModeFunc oct_func, NoteVector& output)
-  {
-    bool doubleoctave = ((oct_func == octaveup) || (oct_func == octaveupdown) || (oct_func == octavedownup));
-
-    if (state.direction == ArpeggiatorState::Direction::first)
+    NoteVector chord(ArpeggiatorState& state, const NoteArray& notes)
     {
-      auto next_step_it = get_next_upwards(notes, current_step);
-      if (next_step_it == notes.end())
-      {
-        // Wrap
-        state.next_round(true, doubleoctave);
-        // If still going up
-        if (state.direction == ArpeggiatorState::Direction::first) set_current_step(notes, current_step, End::Low, Position::Zeroth);
-        else set_current_step(notes, current_step, End::High, Position::Zeroth);
-        updowninc(state, notes, current_step, oct_func, output);
+      auto res = NoteVector();
+      for (auto& [note, t] : notes) {
+        res.insert(note);
       }
-      else
-      {
-        current_step = next_step_it - notes.begin();
-        oct_func(state.stage, current_step, output);
-      }  
-    } 
-    else // Going down 
-    {
-      auto next_step_rit = get_next_downwards(notes, current_step);
-      if (next_step_rit == notes.rend()){
-        // Wrap
-        state.next_round(true, doubleoctave);
-        // If still going down
-        if (state.direction == ArpeggiatorState::Direction::second) set_current_step(notes, current_step, End::High, Position::Zeroth);
-        else set_current_step(notes, current_step, End::Low, Position::Zeroth);
-        updowninc(state, notes, current_step, oct_func, output);
-      }
-      else
-      {
-        current_step = std::distance(next_step_rit, notes.rend() - 1);
-        oct_func(state.stage, current_step, output);
-      }
+      return res;
     }
-  }
 
-  void downup(ArpeggiatorState& state, NoteArray& notes, std::uint8_t& current_step, OctaveModeFunc oct_func, NoteVector& output)
-  {
-    bool doubleoctave = ((oct_func == octaveup) || (oct_func == octaveupdown) || (oct_func == octavedownup));
-
-    // Going down
-    if (state.direction == ArpeggiatorState::Direction::first)
+    NoteVector updown(ArpeggiatorState& state, const NoteArray& notes)
     {
-      auto next_step_rit = get_next_downwards(notes, current_step);
-      if (next_step_rit == notes.rend()){
-        // Wrap
-        state.next_round_downup(doubleoctave);
-        //Edge case: If there is only one note pressed
-        auto next_step_it = get_next_upwards(notes, current_step);
-        if (next_step_it == notes.end()){oct_func(state.stage, current_step, output); return;}
-        // Still going down
-        if (state.direction == ArpeggiatorState::Direction::first) set_current_step(notes, current_step, End::High, Position::Zeroth);
-        downup(state, notes, current_step, oct_func, output);
+      tl::optional<NoteTPair> next;
+      if (state.direction == Direction::first) {
+        next = find_next_note_up(notes, state.current).or_else([&] {
+          state.direction = Direction::second;
+          return find_next_note_down(notes, state.current);
+        });
+      } else if (state.direction == Direction::second) {
+        next = find_next_note_down(notes, state.current).or_else([&] {
+          state.direction = Direction::first;
+          return find_next_note_up(notes, state.current);
+        });
       }
-      else
-      {
-        current_step = std::distance(next_step_rit, notes.rend() - 1);
-        oct_func(state.stage, current_step, output);
-      }
-    } 
-    else // Going up
-    {
-      auto next_step_it = get_next_upwards(notes, current_step);
-      if (next_step_it == notes.end())
-      {
-        // Wrap
-        state.next_round_downup(doubleoctave);
-        //Edge case: If there is only one note pressed
-        auto next_step_rit = get_next_downwards(notes, current_step);
-        if (next_step_rit == notes.rend()){oct_func(state.stage, current_step, output); return;}
-        // Still going up
-        if (state.direction == ArpeggiatorState::Direction::second) set_current_step(notes, current_step, End::Low, Position::Zeroth);
-        downup(state, notes, current_step, oct_func, output);
-      }
-      else
-      {
-        current_step = next_step_it - notes.begin();
-        oct_func(state.stage, current_step, output);
-      }  
+      if (next) state.current = *next;
+      return next.map_or([](auto pair) { return NoteVector{pair.note}; }, NoteVector{});
     }
-  }
 
-  void downupinc(ArpeggiatorState& state, NoteArray& notes, std::uint8_t& current_step, OctaveModeFunc oct_func, NoteVector& output)
-  {
-    bool doubleoctave = ((oct_func == octaveup) || (oct_func == octaveupdown) || (oct_func == octavedownup));
-
-    if (state.direction == ArpeggiatorState::Direction::first)
+    NoteVector downup(ArpeggiatorState& state, const NoteArray& notes)
     {
-      auto next_step_rit = get_next_downwards(notes, current_step);
-      if (next_step_rit == notes.rend()){
-        // Wrap
-        state.next_round_downup(doubleoctave);
-        // If still going down
-        if (state.direction == ArpeggiatorState::Direction::first) set_current_step(notes, current_step, End::High, Position::Zeroth);
-        else set_current_step(notes, current_step, End::Low, Position::Zeroth);
-        downupinc(state, notes, current_step, oct_func, output);
+      tl::optional<NoteTPair> next;
+      if (state.direction == Direction::first) {
+        next = find_next_note_down(notes, state.current).or_else([&] {
+          state.direction = Direction::second;
+          return find_next_note_up(notes, state.current);
+        });
+      } else if (state.direction == Direction::second) {
+        next = find_next_note_up(notes, state.current).or_else([&] {
+          state.direction = Direction::first;
+          return find_next_note_down(notes, state.current);
+        });
       }
-      else
-      {
-        current_step = std::distance(next_step_rit, notes.rend() - 1);
-        oct_func(state.stage, current_step, output);
-      }
-    } 
-    else // Going down 
-    {
-      auto next_step_it = get_next_upwards(notes, current_step);
-      if (next_step_it == notes.end())
-      {
-        // Wrap
-        state.next_round_downup(doubleoctave);
-        // If still going up
-        if (state.direction == ArpeggiatorState::Direction::second) set_current_step(notes, current_step, End::Low, Position::Zeroth);
-        else set_current_step(notes, current_step, End::High, Position::Zeroth);
-        downupinc(state, notes, current_step, oct_func, output);
-      }
-      else
-      {
-        current_step = next_step_it - notes.begin();
-        oct_func(state.stage, current_step, output);
-      }    
+      if (next) state.current = *next;
+      return next.map_or([](auto pair) { return NoteVector{pair.note}; }, NoteVector{});
     }
-  }
 
-  // OctaveMode functions
-  void standard(ArpeggiatorState::Stage& stage, std::uint8_t note, NoteVector& output)
-  {
-    output.push_back(note);
-  }
+    NoteVector updowninc(ArpeggiatorState& state, const NoteArray& notes)
+    {
+      tl::optional<NoteTPair> next;
+      if (state.direction == Direction::first) {
+        next = find_next_note_up(notes, state.current).or_else([&] {
+          state.direction = Direction::second;
+          return find_next_note_down(notes, NoteTPair::initial);
+        });
+      } else if (state.direction == Direction::second) {
+        next = find_next_note_down(notes, state.current).or_else([&] {
+          state.direction = Direction::first;
+          return find_next_note_up(notes, NoteTPair::initial);
+        });
+      }
+      if (next) state.current = *next;
+      return next.map_or([](auto pair) { return NoteVector{pair.note}; }, NoteVector{});
+    }
 
-  void octaveupunison(ArpeggiatorState::Stage& stage, std::uint8_t note, NoteVector& output)
-  {
-    output.push_back(note);
-    output.push_back(note + 12);
-  }
+    NoteVector downupinc(ArpeggiatorState& state, const NoteArray& notes)
+    {
+      tl::optional<NoteTPair> next;
+      if (state.direction == Direction::first) {
+        next = find_next_note_down(notes, state.current).or_else([&] {
+          state.direction = Direction::second;
+          return find_next_note_up(notes, NoteTPair::initial);
+        });
+      } else if (state.direction == Direction::second) {
+        next = find_next_note_up(notes, state.current).or_else([&] {
+          state.direction = Direction::first;
+          return find_next_note_down(notes, NoteTPair::initial);
+        });
+      }
+      if (next) state.current = *next;
+      return next.map_or([](auto pair) { return NoteVector{pair.note}; }, NoteVector{});
+    }
 
-  void fifthunison(ArpeggiatorState::Stage& stage, std::uint8_t note, NoteVector& output)
-  {
-    output.push_back(note);
-    output.push_back(note + 7);
-  }
+  } // namespace play_modes
 
-  void octaveup(ArpeggiatorState::Stage& stage, std::uint8_t note, NoteVector& output)
-  {
-    
-    if (stage == ArpeggiatorState::Stage::A) output.push_back(note);
-    else output.push_back(note + 12);
-  }
+  namespace octave_modes {
 
-  void octavedownup(ArpeggiatorState::Stage& stage, std::uint8_t note, NoteVector& output)
-  {
-    if (stage == ArpeggiatorState::Stage::A) output.push_back(note - 12);
-    else output.push_back(note + 12);
-  }
+    // OctaveMode functions
+    NoteVector standard(ArpeggiatorState& state, const NoteArray& input, PlayModeFunc play_mode)
+    {
+      return play_mode(state, input);
+    }
 
-  void octaveupdown(ArpeggiatorState::Stage& stage, std::uint8_t note, NoteVector& output)
-  {
-    if (stage == ArpeggiatorState::Stage::A) output.push_back(note + 12);
-    else output.push_back(note - 12);
-  }
+    NoteVector octaveupunison(ArpeggiatorState& state, const NoteArray& input, PlayModeFunc play_mode)
+    {
+      auto notes = play_mode(state, input);
+      auto res = notes;
+      for (auto note : notes) {
+        res.insert(note + 12);
+      }
+      return res;
+    }
+
+    NoteVector fifthunison(ArpeggiatorState& state, const NoteArray& input, PlayModeFunc play_mode)
+    {
+      auto notes = play_mode(state, input);
+      auto res = notes;
+      for (auto note : notes) {
+        res.insert(note + 7);
+      }
+      return res;
+    }
+
+    NoteVector octaveup(ArpeggiatorState& state, const NoteArray& input, PlayModeFunc play_mode)
+    {
+      auto doubled_input = input;
+      auto max_t = input.back().t;
+      for (auto [i, pair] : util::view::indexed(input)) {
+        doubled_input.push_back({static_cast<std::uint8_t>(pair.note + 12), static_cast<std::int8_t>(max_t + 1 + i)});
+      }
+      return play_mode(state, doubled_input);
+    }
+
+    NoteVector octavedownup(ArpeggiatorState& state, const NoteArray& input, PlayModeFunc play_mode)
+    {
+      auto doubled_input = input;
+      for (auto& pair : doubled_input) {
+        pair.note -= 12;
+      }
+      auto max_t = input.back().t;
+      for (auto [i, pair] : util::view::indexed(input)) {
+        doubled_input.push_back({static_cast<std::uint8_t>(pair.note + 12), static_cast<std::int8_t>(max_t + 1 + i)});
+      }
+      return play_mode(state, doubled_input);
+    }
+  } // namespace octave_modes
+
+
 
   // Action Handlers //
   void Audio::action(itc::prop_change<&Props::playmode>, Playmode pm) noexcept
   {
-    switch(pm){
-    case Playmode::up: playmode_func_ = up; break;
-    case Playmode::down: playmode_func_ = down; break;
-    case Playmode::updown: playmode_func_ = updown; break;
-    case Playmode::downup: playmode_func_ = downup; set_current_step(notes_, state_.current_step, End::High, Position::Zeroth); break;
-    case Playmode::updowninc: playmode_func_ = updowninc; break;
-    case Playmode::downupinc: playmode_func_ = downupinc; set_current_step(notes_, state_.current_step, End::High, Position::Zeroth); break;
-    case Playmode::manual: playmode_func_ = manual; break;
-    case Playmode::chord: playmode_func_ = chord; break;
-    default: playmode_func_ = up; break;
+    using namespace play_modes;
+    switch (pm) {
+      case Playmode::up: playmode_func_ = up; break;
+      case Playmode::down: playmode_func_ = down; break;
+      case Playmode::updown: playmode_func_ = updown; break;
+      case Playmode::downup: playmode_func_ = downup; break;
+      case Playmode::updowninc: playmode_func_ = updowninc; break;
+      case Playmode::downupinc: playmode_func_ = downupinc; break;
+      case Playmode::manual: playmode_func_ = manual; break;
+      case Playmode::chord: playmode_func_ = chord; break;
+      default: playmode_func_ = play_modes::up; break;
     }
   }
-    
+
   void Audio::action(itc::prop_change<&Props::octavemode>, OctaveMode om) noexcept
   {
-    switch(om){
-    case OctaveMode::standard: octavemode_func_ = standard; break;
-    case OctaveMode::octaveupunison: octavemode_func_ = octaveupunison; break;
-    case OctaveMode::fifthunison: octavemode_func_ = fifthunison; break;
-    case OctaveMode::octaveup: octavemode_func_ = octaveup; break;
-    case OctaveMode::octaveupdown: octavemode_func_ = octaveupdown; break;
-    case OctaveMode::octavedownup: octavemode_func_ = octavedownup; break;
-    default: octavemode_func_ = standard; break;
+    using namespace octave_modes;
+    switch (om) {
+      case OctaveMode::standard: octavemode_func_ = standard; break;
+      case OctaveMode::octaveupunison: octavemode_func_ = octaveupunison; break;
+      case OctaveMode::fifthunison: octavemode_func_ = fifthunison; break;
+      case OctaveMode::octaveup: octavemode_func_ = octaveup; break;
+      case OctaveMode::octavedownup: octavemode_func_ = octavedownup; break;
+      default: octavemode_func_ = octave_modes::standard; break;
     }
   }
 
   void Audio::action(itc::prop_change<&Props::note_length>, float nl) noexcept
   {
     note_length_ = nl;
-    note_off_frames = (int)(nl * (float)_samples_per_beat);
+    note_off_frames = (int) (nl * (float) _samples_per_beat);
   }
 
   void Audio::action(itc::prop_change<&Props::subdivision>, int sd) noexcept
   {
     _samples_per_beat = _samples_per_quarternote / sd;
-    note_off_frames = (int)(note_length_ * (float)_samples_per_beat);
-    switch (sd){
-    case 1: note = core::clock::notes::quarter; break;
-    case 2: note = core::clock::notes::eighth; break;
-    case 3: note = core::clock::notes::eighthtriplet; break;
-    case 4: note = core::clock::notes::sixteenth; break;
-    default: note = core::clock::notes::quarter; break;
+    note_off_frames = (int) (note_length_ * (float) _samples_per_beat);
+    switch (sd) {
+      case 1: note = core::clock::notes::quarter; break;
+      case 2: note = core::clock::notes::eighth; break;
+      case 3: note = core::clock::notes::eighthtriplet; break;
+      case 4: note = core::clock::notes::sixteenth; break;
+      default: note = core::clock::notes::quarter; break;
     }
   }
 

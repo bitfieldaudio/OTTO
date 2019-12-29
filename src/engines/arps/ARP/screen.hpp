@@ -9,8 +9,6 @@ namespace otto::engines::arp {
 
   using namespace core;
 
-  using Playmode = detail::ArpPlaymode;
-  using OctaveMode = detail::ArpOctaveMode;
   inline std::string to_string(Playmode pm) noexcept
   {
     switch (pm) {
@@ -33,7 +31,6 @@ namespace otto::engines::arp {
     case OctaveMode::octaveup: return "+1";
     case OctaveMode::octaveupunison: return "+1Unison";
     case OctaveMode::fifthunison: return "Fifth";
-    case OctaveMode::octaveupdown: return "+1 & -1";
     case OctaveMode::octavedownup: return "-1 & +1";
     };
     OTTO_UNREACHABLE;
