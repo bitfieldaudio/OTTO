@@ -9,7 +9,7 @@ namespace otto::engines::sends {
   using namespace core::input;
 
   struct Screen : ui::Screen {
-    Screen() noexcept;
+  
     void draw(nvg::Canvas& ctx) override;
     
     void action(itc::prop_change<&Props::mix>, float m) noexcept;
