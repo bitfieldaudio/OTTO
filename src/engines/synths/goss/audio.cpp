@@ -1,4 +1,5 @@
 #include "audio.hpp"
+
 #include "util/math.hpp"
 
 namespace otto::engines::goss {
@@ -51,7 +52,7 @@ namespace otto::engines::goss {
   }
 
   // Audio
-  Audio::Audio() noexcept
+  Audio::Audio(itc::Shared<float> rotation) noexcept : shared_rotation_(rotation)
   {
     // Generate models
     for (auto&& [m, p] : util::zip(models, model_params)) {
@@ -81,11 +82,6 @@ namespace otto::engines::goss {
     }
   }
 
-  void Audio::action(Actions::rotation_variable, std::atomic<float>& ref) noexcept
-  {
-    shared_rotation = &ref;
-  }
-
   void Audio::action(itc::prop_change<&Props::drive>, float d) noexcept
   {
     gain = d + 0.1;
@@ -110,7 +106,7 @@ namespace otto::engines::goss {
   float Audio::operator()() noexcept
   {
     // TODO: Once per buffer
-    *shared_rotation = rotation.nextPhase();
+    shared_rotation_ = rotation.nextPhase();
 
     // Gets summed sample from all voices
     float voices = voice_mgr_();

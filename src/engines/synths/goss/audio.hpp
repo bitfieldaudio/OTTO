@@ -58,9 +58,7 @@ namespace otto::engines::goss {
   };
 
   struct Audio {
-    Audio() noexcept;
-
-    void action(Actions::rotation_variable, std::atomic<float>&) noexcept;
+    Audio(itc::Shared<float>) noexcept;
 
     void action(itc::prop_change<&Props::drive>, float d) noexcept;
 
@@ -80,7 +78,7 @@ namespace otto::engines::goss {
   private:
     friend Voice;
 
-    std::atomic<float>* shared_rotation = nullptr;
+    itc::Shared<float> shared_rotation_;
 
     void generate_model(gam::Osc<>&, model_type);
 

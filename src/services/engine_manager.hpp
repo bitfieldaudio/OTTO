@@ -22,7 +22,7 @@ namespace otto::services {
     /// EngineManager exceptions. Contain an ErrorCode
     using exception = util::as_exception<ErrorCode>;
 
-    /// Initialize engine manager
+    /// Initi alize engine manager
     ///
     /// \effects
     ///  - register engines.

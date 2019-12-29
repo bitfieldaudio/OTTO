@@ -14,9 +14,10 @@ namespace otto::core::engine {
 #define ENGDISP EngineDispatcher<ET, Engines...>
 
   ENGDISPTEMPLATE
-  ENGDISP::EngineDispatcher() noexcept : screen_(std::make_unique<EngineSelectorScreen>()) {
+  ENGDISP::EngineDispatcher() noexcept : screen_(std::make_unique<EngineSelectorScreen>())
+  {
     props.sender.push(PublishEngineNames::action::data(engine_names));
-    props.selected_engine_idx.on_change().connect([this] (int idx) {
+    props.selected_engine_idx.on_change().connect([this](int idx) {
       engine_is_constructed_ = false;
       services::AudioManager::current().wait_one();
       current_engine_.emplace_by_index(idx);
@@ -43,14 +44,28 @@ namespace otto::core::engine {
     if (engine_is_constructed_) {
       return util::match(current_engine_, [&](auto& engine) { return engine.audio->process(data); });
     }
-    util::fill(data.audio, 0);
-    return data;
+    if constexpr (ET == EngineType::arpeggiator) {
+      return data;
+    } else if constexpr (ET == EngineType::effect) {
+      auto buf = services::AudioManager::current().buffer_pool().allocate_multi_clear<2>();
+      return data.with(buf);
+    } else {
+      util::fill(data.audio, 0);
+      return data;
+    }
   }
 
   ENGDISPTEMPLATE
-  ui::ScreenAndInput ENGDISP::selector_screen()
+  ui::ScreenAndInput ENGDISP::selector_screen() noexcept
   {
     return {*screen_, *this};
+  }
+
+  ENGDISPTEMPLATE
+  ui::ScreenAndInput ENGDISP::engine_screen() noexcept
+  {
+    if (current().name() == "OFF") return selector_screen();
+    return current().screen();
   }
 
 

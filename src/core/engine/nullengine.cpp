@@ -5,33 +5,21 @@
 
 namespace otto::core::engine {
 
-  struct OffScreen : ui::Screen {
-    void draw(ui::vg::Canvas& ctx) override;
-  };
-
-  NullEngine<EngineType::effect>::NullEngine()
+  OffEngine<EngineType::effect>::OffEngine()
   {}
 
-  audio::ProcessData<2> NullEngine<EngineType::effect>::process(audio::ProcessData<1> data) noexcept
+  audio::ProcessData<2> OffEngine<EngineType::effect>::Audio::process(audio::ProcessData<1> data) noexcept
   {
     auto out = Application::current().audio_manager->buffer_pool().allocate_multi_clear<2>();
     return data.with(out);
   }
 
-  NullEngine<EngineType::arpeggiator>::NullEngine()
+  OffEngine<EngineType::arpeggiator>::OffEngine()
   {}
 
-  audio::ProcessData<0> NullEngine<EngineType::arpeggiator>::process(audio::ProcessData<0> data) noexcept
+  audio::ProcessData<0> OffEngine<EngineType::arpeggiator>::Audio::process(audio::ProcessData<0> data) noexcept
   {
     return data;
-  }
-
-  NullEngine<EngineType::synth>::NullEngine()
-  {}
-
-  audio::ProcessData<1> NullEngine<EngineType::synth>::process(audio::ProcessData<1> data) noexcept
-  {
-    return Application::current().audio_manager->buffer_pool().allocate_clear();
   }
 
   void OffScreen::draw(ui::vg::Canvas& ctx)
