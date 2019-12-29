@@ -8,8 +8,9 @@ namespace otto::engines::sends {
   using namespace core::props;
 
   struct Screen;
+  struct Audio;
 
-  using Sender = services::UISender<Screen>;
+  using Sender = services::UISender<Audio, Screen>;
 
   struct Props {
     Sender sender;
@@ -29,21 +30,15 @@ namespace otto::engines::sends {
 
     void encoder(core::input::EncoderEvent e) override;
 
-    void recalculate();
-
     core::ui::ScreenAndInput screen() override;
 
+    std::unique_ptr<Audio> audio;
     std::unique_ptr<Screen> screen_;
 
     Props props;
-
-    /// Actual values used in the enginemanager
-    float dryL = 1;
-    float dryR = 1;
-    float to_fx1 = 0;
-    float to_fx2 = 0;
 
   };
 } // namespace otto::engines::sends
 
 #include "screen.hpp"
+#include "audio.hpp"

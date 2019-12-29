@@ -25,7 +25,7 @@ namespace otto::engines::sends {
     OTTO_UNREACHABLE;
   }
 
-  Sends::Sends() : screen_(std::make_unique<Screen>()), props{{*screen_}} {}
+  Sends::Sends() : audio(std::make_unique<Audio>()), screen_(std::make_unique<Screen>()), props{{*audio, *screen_}} {}
 
   void Sends::encoder(EncoderEvent ev)
   {
@@ -35,15 +35,6 @@ namespace otto::engines::sends {
       case Encoder::yellow: props.pan.step(ev.steps); break;
       case Encoder::red: props.mix.step(ev.steps); break;
     }
-    recalculate();
-  }
-
-  void Sends::recalculate() 
-  {
-    dryL = props.volume * (1 - props.pan) * (1 - props.mix);
-    dryR = props.volume * props.pan * (1 - props.mix);
-    to_fx1 = props.volume * (1 - props.sendAB) * props.mix;
-    to_fx2 = props.volume * (1 - props.sendAB) * props.mix;
   }
 
   core::ui::ScreenAndInput Sends::screen()
