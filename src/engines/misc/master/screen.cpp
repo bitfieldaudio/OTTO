@@ -12,7 +12,7 @@ namespace otto::engines::master {
     volume_ = v;
     rotation = -2.15 + volume_ * 4.3;
   }
-  void Screen::action(itc::prop_change<&Props::tempo>, int t) noexcept
+  void Screen::action(itc::prop_change<&Props::tempo>, float t) noexcept
   {
     tempo_ = t;
   }
@@ -67,7 +67,7 @@ namespace otto::engines::master {
     ctx.font(Fonts::Norm, 26);
     ctx.fillStyle(Colours::Red);
     ctx.fillText("tempo", 186.6, 89.9);
-    ctx.fillText(fmt::format("{:1}", tempo_), {186.6, 120});
+    ctx.fillText(fmt::format("{:.1f}", tempo_), {186.6, 120});
 
   }
 

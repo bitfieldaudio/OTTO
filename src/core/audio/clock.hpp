@@ -4,7 +4,8 @@
 
 namespace otto::core::clock {
 
-  using Time = unsigned int;
+  /// Overflows after approx. 64 days at 120 bpm. Should be sufficient.
+  using Time = int;
   /// Number of microsteps per beat, i.e. fourth of whole note.
   static constexpr Time microsteps = 192;
 
@@ -48,24 +49,17 @@ namespace otto::core::clock {
       return count_multiple(n) > 0;
     }
 
-    bool contains_multiple(Time n, float offset) const noexcept
+    bool contains_multiple(Time n, Time offset) const noexcept
     {
       return count_multiple(n, offset) > 0;
     }
 
     /// Counts the number of times this range contains a multiple of n
-    ///
-    /// @requires count > 0
-    int count_multiple(Time n) const noexcept
+    /// Zero inclusive
+    int count_multiple(Time n, Time offset = 0) const noexcept
     {
       OTTO_ASSERT(n > 0);
-      return (std::max(end, Time{1}) - 1) / n - (std::max(begin, Time{1}) - 1) / n;
-    }
-
-    int count_multiple(Time n, float offset) const noexcept
-    {
-      OTTO_ASSERT(n > 0);
-      return (std::max(end - (Time)(n * offset), Time{1}) - 1) / n - (std::max(begin - (Time)(n * offset), Time{1}) - 1) / n;
+      return (end - offset - 1 + n) / n - (begin - offset - 1 + n) / n;
     }
 
     int position_of_multiple(Time n) const noexcept

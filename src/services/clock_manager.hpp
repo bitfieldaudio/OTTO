@@ -55,6 +55,7 @@ namespace otto::services {
     float bpm_ = 0;
     int samples_pr_beat_ = 0;
     ClockCounter counter_;
+    int remainder_ = 0;
   };
 
 

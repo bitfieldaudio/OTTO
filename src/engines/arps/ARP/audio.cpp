@@ -54,7 +54,7 @@ namespace otto::engines::arp {
       state_.reset();
     }
 
-    auto at_note_off = data.clock.contains_multiple(note, note_length_);
+    auto at_note_off = data.clock.contains_multiple(note, note * note_length_);
     if (running_ && at_note_off) {
       for (auto note : current_notes_) {
         data.midi.push_back(midi::NoteOffEvent(note));
