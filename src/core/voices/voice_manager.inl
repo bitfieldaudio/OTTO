@@ -172,13 +172,13 @@ namespace otto::core::voices {
       // Steal oldest playing note
       auto found = util::find_if(vm.note_stack, [](NoteStackEntry& nse) { return nse.has_voice(); });
       if (found != vm.note_stack.end()) {
-        DLOGI("Stealing voice {} from key {}", (found->voice - vm.voices_.data()), found->note);
+        //DLOGI("Stealing voice {} from key {}", (found->voice - vm.voices_.data()), found->note);
         Voice& v = *found->voice;
         v.release();
         found->voice = nullptr;
         return v;
       } else {
-        DLOGI("No voice found. Using voice 0");
+        //DLOGI("No voice found. Using voice 0");
         return vm.voices_[0];
       }
     }
@@ -318,7 +318,7 @@ namespace otto::core::voices {
         // Find the correct voice to steal
         // Every iteration in the loop, a new entry is added to the notestack.
         auto& note = *(vm.note_stack.end() - num_voices_used);
-        DLOGI("Stealing voice {} from key {}", (note.voice - vm.voices_.data()), note.note);
+        // DLOGI("Stealing voice {} from key {}", (note.voice - vm.voices_.data()), note.note);
         Voice& v = *note.voice;
         // v.release calls on_note_off. Don't do this if legato is engaged.
         if (!vm.legato_) v.release();
@@ -373,7 +373,7 @@ namespace otto::core::voices {
         // Find the correct voice to steal
         // Every iteration in the loop, a new entry is added to the notestack.
         auto& note = *(vm.note_stack.end() - num_voices_used);
-        DLOGI("Stealing voice {} from key {}", (note.voice - vm.voices_.data()), note.note);
+        //DLOGI("Stealing voice {} from key {}", (note.voice - vm.voices_.data()), note.note);
         Voice& v = *note.voice;
         // v.release calls on_note_off. Don't do this if legato is engaged.
         if (!vm.legato_) v.release();
@@ -528,7 +528,7 @@ namespace otto::core::voices {
       for (auto&& nvp : copy) {
         if (nvp.should_release) {
           voice_allocator->stop_voice(nvp.note);
-          DLOGI("Released note {}", nvp.note);
+          // DLOGI("Released note {}", nvp.note);
         }
       }
     }

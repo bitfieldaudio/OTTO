@@ -228,11 +228,11 @@ namespace otto::services {
     // auto fx2_out = effect2->process(audio::ProcessData<1>(fx2_bus));
 
     // Stereo output gathered in fx1_out
-    for (auto&& [snth, fx1L, fx1R, fx2L, fx2R] :
-         util::zip(synth_out.audio, fx1_out.audio[0], fx1_out.audio[1], fx2_out.audio[0], fx2_out.audio[1])) {
-      fx1L += fx2L + snth * 0.5; // * synth_send.props.dry * (1 - synth_send.props.dry_pan);
-      fx1R += fx2R + snth * 0.5; // * synth_send.props.dry * (1 + synth_send.props.dry_pan);
-    }
+    // for (auto&& [snth, fx1L, fx1R, fx2L, fx2R] :
+    //      util::zip(synth_out.audio, fx1_out.audio[0], fx1_out.audio[1], fx2_out.audio[0], fx2_out.audio[1])) {
+    //   fx1L += fx2L + snth * 0.5; // * synth_send.props.dry * (1 - synth_send.props.dry_pan);
+    //   fx1R += fx2R + snth * 0.5; // * synth_send.props.dry * (1 + synth_send.props.dry_pan);
+    // }
 
 
 
