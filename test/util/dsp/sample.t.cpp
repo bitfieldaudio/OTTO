@@ -1,3 +1,4 @@
+#include <nanorange.hpp>
 #include "testing.t.hpp"
 
 #include "util/algorithm.hpp"
@@ -148,21 +149,21 @@ namespace otto::dsp {
 
       SUBCASE ("Sample plays audio in reverse") {
         REQUIRE(sample.size() == 100);
-        auto expected = view::to_vec(view::reverse(data));
+        auto expected = view::to_vec(nano::views::reverse(data));
         REQUIRE(view::to_vec(sample) == expected);
       }
 
       SUBCASE ("start points work in reverse") {
         sample.start_point(10);
         REQUIRE(sample.size() == 90);
-        auto expected = view::to_vec(view::reverse(view::subrange(data, 10, 100)));
+        auto expected = view::to_vec(nano::views::reverse(view::subrange(data, 10, 100)));
         REQUIRE(view::to_vec(sample) == expected);
       }
 
       SUBCASE ("end points work in reverse") {
         sample.end_point(90);
         REQUIRE(sample.size() == 90);
-        auto expected = view::to_vec(view::reverse(view::subrange(data, 0, 90)));
+        auto expected = view::to_vec(nano::views::reverse(view::subrange(data, 0, 90)));
         REQUIRE(view::to_vec(sample) == expected);
       }
 
@@ -172,7 +173,7 @@ namespace otto::dsp {
 
         REQUIRE(sample.size() == 80);
 
-        auto expected = view::to_vec(view::reverse(view::subrange(data, 10, 90)));
+        auto expected = view::to_vec(nano::views::reverse(view::subrange(data, 10, 90)));
         REQUIRE(view::to_vec(sample) == expected);
       }
 
@@ -189,7 +190,7 @@ namespace otto::dsp {
           scale += 0.1;
           f *= scale;
         }
-        util::reverse(expected);
+        nano::reverse(expected);
 
         REQUIRE(sample.size() == expected.size());
         // TODO: REQUIRE_THAT(view::to_vec(sample), Catch::Approx(expected).margin(0.05));
@@ -207,7 +208,7 @@ namespace otto::dsp {
           scale -= 0.1;
           f *= scale;
         }
-        util::reverse(expected);
+        nano::reverse(expected);
 
         REQUIRE(sample.size() == expected.size());
         // TODO: REQUIRE_THAT(view::to_vec(sample), Catch::Approx(expected).margin(0.05));

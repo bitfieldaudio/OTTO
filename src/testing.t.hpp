@@ -88,7 +88,7 @@ namespace otto::test {
   auto sort(Cont&& c, Proj&& projection)
   {
     auto vec = util::view::to_vec(c);
-    util::sort(vec, [&](auto&& a, auto&& b) { return projection(a) < projection(b); });
+    nano::sort(vec, [&](auto&& a, auto&& b) { return projection(a) < projection(b); });
     return vec;
   }
 

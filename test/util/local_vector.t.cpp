@@ -85,7 +85,7 @@ namespace otto::test {
       }
 
       SUBCASE("Remove-Erase"){
-        auto it = util::remove_if(lv, [](int i) { return i%2 == 0; });
+        auto it = nano::remove_if(lv, [](int i) { return i%2 == 0; });
         auto endp = lv.erase(it, lv.end());
         REQUIRE(to_vec(lv) == vec(1, 3, 5, 7, 9));
       }

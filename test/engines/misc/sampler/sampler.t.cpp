@@ -177,12 +177,12 @@ namespace otto::engines::sampler {
         REQUIRE(progress == approx(0.1f));
       }
       SUBCASE ("after processing 90 frames, progress is 0.9") {
-        for (int i : util::view::ints(0, 9)) audio.process(buffer, true);
+        for (int i : nano::views::iota(0, 9)) audio.process(buffer, true);
         audio.action(Actions::get_progress(), progress);
         REQUIRE(progress == approx(0.9f));
       }
       SUBCASE ("After processing 100 frames, progress is 0") {
-        for (int i : util::view::ints(0, 11)) audio.process(buffer, true);
+        for (int i : nano::views::iota(0, 11)) audio.process(buffer, true);
         audio.action(Actions::get_progress(), progress);
         REQUIRE(progress == approx(0.f));
       }
@@ -215,7 +215,7 @@ namespace otto::engines::sampler {
           REQUIRE(progress == approx(0.8f));
         }
         SUBCASE ("after processing all 100 frames, progress is 1") {
-          for (int i : util::view::ints(0, 10)) audio.process(buffer, true);
+          for (int i : nano::views::iota(0, 10)) audio.process(buffer, true);
           audio.action(Actions::get_progress(), progress);
           REQUIRE(progress == approx(1.f));
         }
@@ -240,7 +240,7 @@ namespace otto::engines::sampler {
     services::test::DummyEngineManager::current().on_process = [&](auto data) {
       auto buffer = services::AudioManager::current().buffer_pool().allocate();
       sampler_audio.process(data.audio, false);
-      util::copy(data.audio, buffer.begin());
+      nano::copy(data.audio, buffer.begin());
       return data.with(std::array{data.audio, buffer});
     };
 

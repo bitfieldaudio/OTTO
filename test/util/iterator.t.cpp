@@ -241,27 +241,4 @@ namespace otto::util {
     }
   }
 
-  TEST_CASE ("[iterator][util] Filter view") {
-    std::vector data = {1, 2, 3, 4, 5, 5, 4, 3, 2, 1};
-    auto lt_3 = util::view::filter(data, [](int i) { return i < 3; });
-    auto gt_3 = util::view::filter(data, [](int i) { return i > 3; });
-    SUBCASE ("Simple filter test") {
-      auto first = lt_3.begin();
-      auto last = lt_3.end();
-      for (; first != last; first++) {
-        REQUIRE(*first < 3);
-      }
-
-      REQUIRE(util::view::to_vec(lt_3) == std::vector{1, 2, 2, 1});
-      REQUIRE(util::view::to_vec(lt_3) == std::vector{1, 2, 2, 1});
-      REQUIRE(util::view::to_vec(gt_3) == std::vector{4, 5, 5, 4});
-    }
-
-    SUBCASE ("[iterator][util] Filter -> Transform") {
-      auto transformed = util::view::transform(lt_3, [] (int i) { return i * 2; });
-      REQUIRE(util::view::to_vec(transformed) == std::vector{2,4,4,2});
-      REQUIRE(util::view::to_vec(transformed) == std::vector{2,4,4,2});
-    }
-  }
-
 } // namespace otto::util
