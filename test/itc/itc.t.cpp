@@ -26,7 +26,7 @@ namespace otto::itc {
       int value = 0;
     };
 
-    SECTION ("The InvalidActionReceiver concept") {
+    SUBCASE ("The InvalidActionReceiver concept") {
       struct InvalidAR {
         void action(void_action, int){};
         void action(int_action, float){};
@@ -47,7 +47,7 @@ namespace otto::itc {
       static_assert(!InvalidActionReceiver::is<InvalidAR1, float_action>);
     }
 
-    SECTION ("The ActionReceiver concept") {
+    SUBCASE ("The ActionReceiver concept") {
       struct ARTest {
         void action(int_action, float){};
       };
@@ -61,13 +61,13 @@ namespace otto::itc {
       //   "This doesnt work on clang 7 and below, but it is just error detection. If it fails, comment it out");
     }
 
-    SECTION ("ActionData can be created using Action::data") {
+    SUBCASE ("ActionData can be created using Action::data") {
       auto ad = int_action::data(10);
       static_assert(std::is_same_v<decltype(ad), ActionData<int_action>>);
       REQUIRE(std::get<0>(ad.args) == 10);
     }
 
-    SECTION ("Action with no data can be received using call_receiver") {
+    SUBCASE ("Action with no data can be received using call_receiver") {
       VoidAR void_ar;
 
       REQUIRE(void_ar.has_run == false);
@@ -75,33 +75,33 @@ namespace otto::itc {
       REQUIRE(void_ar.has_run == true);
     }
 
-    SECTION ("Action with an int argument can be received using call_receiver") {
+    SUBCASE ("Action with an int argument can be received using call_receiver") {
       IntAR int_ar;
 
       call_receiver(int_ar, int_action::data(10));
       REQUIRE(int_ar.value == 10);
     }
 
-    SECTION ("try_call_receiver calls action receiver and returns true") {
+    SUBCASE ("try_call_receiver calls action receiver and returns true") {
       IntAR int_ar;
 
       REQUIRE(try_call_receiver(int_ar, int_action::data(10)));
       REQUIRE(int_ar.value == 10);
     }
 
-    SECTION ("try_call_receiver returns false when no receiver avaliable") {
+    SUBCASE ("try_call_receiver returns false when no receiver avaliable") {
       IntAR int_ar;
       REQUIRE(!try_call_receiver(int_ar, void_action::data()));
       REQUIRE(int_ar.value == 0);
     }
 
-    SECTION ("ActionQueue") {
+    SUBCASE ("ActionQueue") {
       ActionQueue aq;
-      SECTION ("ActionQueue is initially empty") {
+      SUBCASE ("ActionQueue is initially empty") {
         REQUIRE(aq.size() == 0);
       }
 
-      SECTION ("ActionQueue.push(function)") {
+      SUBCASE ("ActionQueue.push(function)") {
         bool has_run = false;
         aq.push([&] { has_run = true; });
         REQUIRE(aq.size() == 1);
@@ -109,7 +109,7 @@ namespace otto::itc {
         REQUIRE(has_run);
       }
 
-      SECTION ("ActionQueue.pop_call_all()") {
+      SUBCASE ("ActionQueue.pop_call_all()") {
         IntAR iar;
         VoidAR var;
         aq.push(var, void_action::data());
@@ -120,7 +120,7 @@ namespace otto::itc {
         REQUIRE(iar.value == 10);
       }
 
-      SECTION ("ActionQueue.push(function) is FIFO ordered") {
+      SUBCASE ("ActionQueue.push(function) is FIFO ordered") {
         bool has_run = false;
         aq.push([&] { has_run = true; });
         aq.push([&] { REQUIRE(has_run); });
@@ -129,7 +129,7 @@ namespace otto::itc {
         REQUIRE(has_run);
       }
 
-      SECTION ("ActionQueue.push(ActionReceiver, ActionData) works") {
+      SUBCASE ("ActionQueue.push(ActionReceiver, ActionData) works") {
         VoidAR ar;
         aq.push(ar, void_action::data());
         aq.pop_call();
@@ -137,14 +137,14 @@ namespace otto::itc {
       }
 
 
-      SECTION ("ActionQueue.try_push(ActionReceiver, ActionData) works") {
+      SUBCASE ("ActionQueue.try_push(ActionReceiver, ActionData) works") {
         IntAR ar;
         aq.try_push(ar, int_action::data(10));
         aq.pop_call();
         REQUIRE(ar.value == 10);
       }
 
-      SECTION ("ActionQueue.try_push(ActionReceiver, ActionData) does not enqueue an action if the receiver cannot "
+      SUBCASE ("ActionQueue.try_push(ActionReceiver, ActionData) does not enqueue an action if the receiver cannot "
                "receive it") {
         IntAR ar;
         REQUIRE(aq.try_push(ar, void_action::data()) == false);
@@ -152,7 +152,7 @@ namespace otto::itc {
       }
     }
 
-    SECTION ("ActionSender") {
+    SUBCASE ("ActionSender") {
       struct OtherIntAR {
         void action(int_action, int val)
         {
@@ -165,13 +165,13 @@ namespace otto::itc {
       IntAR iar;
       ActionSender sndr = {queue, var, iar, oiar};
 
-      SECTION ("ActionSender holds references to receivers") {
+      SUBCASE ("ActionSender holds references to receivers") {
         REQUIRE(&sndr.receiver<VoidAR>() == &var);
         REQUIRE(&sndr.receiver<IntAR>() == &iar);
         REQUIRE(&sndr.receiver<OtherIntAR>() == &oiar);
       }
 
-      SECTION ("ActionSender queues actions to all receivers") {
+      SUBCASE ("ActionSender queues actions to all receivers") {
         sndr.push(int_action::data(10));
         REQUIRE(queue.size() == 2);
         queue.pop_call_all();
@@ -179,19 +179,19 @@ namespace otto::itc {
         REQUIRE(oiar.value == 10);
       }
 
-      SECTION ("ActionSender is copy constructible") {
+      SUBCASE ("ActionSender is copy constructible") {
         auto sndr2 = sndr;
         REQUIRE(&sndr.receiver<VoidAR>() == &var);
         REQUIRE(&sndr2.receiver<VoidAR>() == &var);
       }
 
-      SECTION ("JoinedActionSender") {
+      SUBCASE ("JoinedActionSender") {
         ActionQueue queue2;
         ActionSender sndr1 = {queue, var};
         ActionSender sndr2 = {queue2, iar, var};
         JoinedActionSender jsndr = {sndr1, sndr2};
 
-        SECTION ("can push the same action to multiple queues") {
+        SUBCASE ("can push the same action to multiple queues") {
           jsndr.push(void_action::data());
           REQUIRE(queue.size() == 1);
           REQUIRE(queue2.size() == 1);
@@ -203,7 +203,7 @@ namespace otto::itc {
       }
     }
 
-    SECTION ("Action with reference parameter") {
+    SUBCASE ("Action with reference parameter") {
       using ref_act = Action<struct ref_act_tag, int&>;
       struct RefAR {
         void action(ref_act, int& ref)

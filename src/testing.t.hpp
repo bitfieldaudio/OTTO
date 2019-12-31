@@ -2,6 +2,7 @@
 #include <fmt/format.h>
 
 #include <chrono>
+#include <doctest.hpp>
 #include <fstream>
 #include <random.hpp>
 #include <sstream>
@@ -10,14 +11,9 @@
 #include "services/log_manager.hpp"
 #include "util/algorithm.hpp"
 #include "util/filesystem.hpp"
+#include "util/iterator.hpp"
 #include "util/type_traits.hpp"
 #include "util/utility.hpp"
-
-#define CATCH_CONFIG_ENABLE_BENCHMARKING 1
-#include <catch.hpp>
-
-#include "benchmark_csv_reporter.hpp"
-#include "graphics.t.hpp"
 
 using Random = effolkronium::random_static;
 
@@ -104,20 +100,20 @@ namespace otto::test {
 
 } // namespace otto::test
 
-namespace Catch {
+namespace doctest {
   template<typename... Args>
   struct StringMaker<std::tuple<Args...>> {
-    static std::string convert(std::tuple<Args...> const& value)
+    static doctest::String convert(std::tuple<Args...> const& value)
     {
       if constexpr (sizeof...(Args) == 0) return "{}";
       std::ostringstream o;
       o << "{";
-      otto::util::for_each(
-        value, [&](const auto& a) { o << StringMaker<std::decay_t<decltype(a)>>::convert(a) << ", "; });
+      otto::util::for_each(value,
+                           [&](const auto& a) { o << StringMaker<std::decay_t<decltype(a)>>::convert(a) << ", "; });
       auto str = o.str();
       // Chop the extra ", "
       str.resize(str.size() - 2);
-      return str + "}";
+      return (str + "}").c_str();
     }
   };
-} // namespace Catch
+} // namespace doctest

@@ -1,16 +1,15 @@
-#include "testing.t.hpp"
-
+#include <AudioFile.h>
 #include <choreograph/Choreograph.h>
 
 #include "core/audio/waveform.hpp"
-
-#include <AudioFile.h>
+#include "testing.t.hpp"
+#include "graphics.t.hpp"
 
 namespace otto::test {
 
   using namespace core::audio;
 
-  TEST_CASE ("Waveform", "[.][graphics][waveform]") {
+  TEST_CASE ("[graphics] Waveform" * doctest::skip()) {
     AudioFile<float> file;
     file.load("data/samples/test.wav");
 
@@ -27,17 +26,19 @@ namespace otto::test {
     ch::Time duration = 1000;
 
     ch::Timeline timeline;
-    //timeline.apply(&start).rampTo(length, duration, ch::EaseOutQuad())
+    // timeline.apply(&start).rampTo(length, duration, ch::EaseOutQuad())
     //  .then<ch::RampTo>(0, duration)
-     // .then<ch::Hold>(0, 2 * duration);
-    timeline.apply(&length).holdUntil(2 * duration)
+    // .then<ch::Hold>(0, 2 * duration);
+    timeline.apply(&length)
+      .holdUntil(2 * duration)
       .then<ch::RampTo>(0, duration, ch::EaseOutExpo())
-      .then<ch::RampTo>(file_len - 1, duration).then<ch::Hold>(duration, duration);
-    //timeline.apply(&start).rampTo(file_len - 1, duration).finishFn([& m = *start.inputPtr()] {
+      .then<ch::RampTo>(file_len - 1, duration)
+      .then<ch::Hold>(duration, duration);
+    // timeline.apply(&start).rampTo(file_len - 1, duration).finishFn([& m = *start.inputPtr()] {
     //  m.setPlaybackSpeed(m.getPlaybackSpeed() * -1);
     //  m.resetTime();
     //});
-    //timeline.apply(&length).rampTo(0, duration).finishFn([& m = *length.inputPtr()] {
+    // timeline.apply(&length).rampTo(0, duration).finishFn([& m = *length.inputPtr()] {
     //  m.setPlaybackSpeed(m.getPlaybackSpeed() * -1);
     //  m.resetTime();
     //});

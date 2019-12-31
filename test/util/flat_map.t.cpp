@@ -34,17 +34,17 @@ namespace otto::test {
 
     StringIntMap map;
 
-    SECTION ("Upon construction, size() is zero") {
+    SUBCASE ("Upon construction, size() is zero") {
       REQUIRE(map.size() == 0);
     }
 
-    SECTION ("Insertion of element increases size") {
+    SUBCASE ("Insertion of element increases size") {
       auto res = map.insert("test", 5);
       REQUIRE(res == std::pair(map.begin(), true));
       REQUIRE(map.size() == 1);
     }
 
-    SECTION ("Inserting existing element returns iterator to that and false") {
+    SUBCASE ("Inserting existing element returns iterator to that and false") {
       auto res = map.insert("test", 5);
       REQUIRE(res == std::pair(map.begin(), true));
       res = map.insert("test", 5);
@@ -59,7 +59,7 @@ namespace otto::test {
 
     const auto& cmap = map;
 
-    SECTION ("Iteration") {
+    SUBCASE ("Iteration") {
       int i = 0;
       for (auto&& [k, v] : map) {
         REQUIRE(k == util::to_string(i));
@@ -69,17 +69,17 @@ namespace otto::test {
       REQUIRE(i == 5);
     }
 
-    SECTION ("Lookup of existing value") {
+    SUBCASE ("Lookup of existing value") {
       REQUIRE(map["0"] == 0);
       REQUIRE(map["2"] == 2);
       REQUIRE(map["4"] == 4);
     }
 
-    SECTION ("Lookup of nonexistant value returns nullopt") {
+    SUBCASE ("Lookup of nonexistant value returns nullopt") {
       REQUIRE(map["10"] == tl::nullopt);
     }
 
-    SECTION ("find existing value") {
+    SUBCASE ("find existing value") {
       REQUIRE(map.find("0") == map.begin());
       REQUIRE(map.find("2") == map.begin() + 2);
       REQUIRE(map.find("4") == map.begin() + 4);
@@ -88,56 +88,51 @@ namespace otto::test {
       REQUIRE(cmap.find("4") == cmap.begin() + 4);
     }
 
-    SECTION ("find nonexistant value") {
+    SUBCASE ("find nonexistant value") {
       REQUIRE(map.find("nope") == map.end());
       REQUIRE(cmap.find("nope") == cmap.end());
     }
 
-    SECTION ("Erase by key") {
+    SUBCASE ("Erase by key") {
       REQUIRE(map.erase("2") == true);
-      REQUIRE_THAT(to_vec(map),
-                   Catch::Equals(std::vector<StringIntMap::value_type>{{"0", 0}, {"1", 1}, {"3", 3}, {"4", 4}}));
+      REQUIRE(to_vec(map) == std::vector<StringIntMap::value_type>{{"0", 0}, {"1", 1}, {"3", 3}, {"4", 4}});
     }
 
-    SECTION ("Erase by nonexistant key") {
+    SUBCASE ("Erase by nonexistant key") {
       REQUIRE(map.erase("nope") == false);
-      REQUIRE_THAT(to_vec(map), Catch::Equals(std::vector<StringIntMap::value_type>{
-                                  {"0", 0}, {"1", 1}, {"2", 2}, {"3", 3}, {"4", 4}}));
+      REQUIRE(to_vec(map) == std::vector<StringIntMap::value_type>{
+                                  {"0", 0}, {"1", 1}, {"2", 2}, {"3", 3}, {"4", 4}});
     }
 
-    SECTION ("Erase by single iterator") {
-      SECTION ("first element") {
+    SUBCASE ("Erase by single iterator") {
+      SUBCASE ("first element") {
         auto erase_result = map.erase(map.begin());
         REQUIRE(erase_result == map.begin());
-        REQUIRE_THAT(to_vec(map),
-                     Catch::Equals(std::vector<StringIntMap::value_type>{{"1", 1}, {"2", 2}, {"3", 3}, {"4", 4}}));
+        REQUIRE(to_vec(map) == std::vector<StringIntMap::value_type>{{"1", 1}, {"2", 2}, {"3", 3}, {"4", 4}});
       }
-      SECTION ("middle element") {
+      SUBCASE ("middle element") {
         auto erase_result = map.erase(map.begin() + 2);
         REQUIRE(erase_result == map.begin() + 2);
-        REQUIRE_THAT(to_vec(map),
-                     Catch::Equals(std::vector<StringIntMap::value_type>{{"0", 0}, {"1", 1}, {"3", 3}, {"4", 4}}));
+        REQUIRE(to_vec(map) == std::vector<StringIntMap::value_type>{{"0", 0}, {"1", 1}, {"3", 3}, {"4", 4}});
       }
-      SECTION ("last element") {
+      SUBCASE ("last element") {
         auto erase_result = map.erase(map.begin() + 4);
         REQUIRE(erase_result == map.begin() + 4);
-        REQUIRE_THAT(to_vec(map),
-                     Catch::Equals(std::vector<StringIntMap::value_type>{{"0", 0}, {"1", 1}, {"2", 2}, {"3", 3}}));
+        REQUIRE(to_vec(map) == std::vector<StringIntMap::value_type>{{"0", 0}, {"1", 1}, {"2", 2}, {"3", 3}});
       }
     }
 
-    SECTION ("Transparent comparisons") {
+    SUBCASE ("Transparent comparisons") {
       StringLikeType key = {"2"};
-      SECTION( "find") {
+      SUBCASE( "find") {
         REQUIRE(map.find(key) == map.begin() + 2);
       }
-      SECTION( "contains") {
+      SUBCASE( "contains") {
         REQUIRE(map.contains(key));
       }
-      SECTION( "erase") {
+      SUBCASE( "erase") {
         REQUIRE(map.erase(key));
-        REQUIRE_THAT(to_vec(map),
-                     Catch::Equals(std::vector<StringIntMap::value_type>{{"0", 0}, {"1", 1}, {"3", 3}, {"4", 4}}));
+        REQUIRE(to_vec(map) == std::vector<StringIntMap::value_type>{{"0", 0}, {"1", 1}, {"3", 3}, {"4", 4}});
       }
     }
   }
