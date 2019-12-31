@@ -5,7 +5,7 @@ file(GLOB_RECURSE sources ${OTTO_SOURCE_DIR}/src/*.cpp)
 
 find_package (Threads)
 # Library
-add_library(otto OBJECT ${sources})
+add_library(otto ${sources})
 target_link_libraries(otto PUBLIC ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
 target_include_directories(otto PUBLIC ./)
 
@@ -34,6 +34,9 @@ target_link_libraries(otto PUBLIC foonathan_array)
 target_link_libraries(otto PUBLIC foonathan_type_safe)
 target_link_libraries(otto PUBLIC choreograph)
 target_link_libraries(otto PUBLIC BFG::Lyra)
+
+include("${OTTO_SOURCE_DIR}/cmake/doctest_force_link_static_lib_in_target.cmake")
+doctest_force_link_static_lib_in_target(otto_exec otto)
 
 # Enable warnings for local code
 if(MSVC)

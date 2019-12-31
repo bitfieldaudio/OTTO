@@ -30,9 +30,3 @@ namespace otto::engines::arp {
   }
 
 } // namespace otto::engines::arp
-
-#include "testing.t.hpp"
-
-TEST_CASE ("Test") {
-  REQUIRE(1 == 1);
-}
