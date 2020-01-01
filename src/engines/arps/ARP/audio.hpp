@@ -3,6 +3,7 @@
 #include "arp.hpp"
 #include "util/local_vector.hpp"
 #include "util/utility.hpp"
+#include "util/random.hpp"
 
 namespace otto::engines::arp {
 
@@ -43,6 +44,9 @@ namespace otto::engines::arp {
     /// whenever the notes or the octave mode changes.
     tl::optional<NoteArray> cached_notes = tl::nullopt;
 
+    /// State for the random number generator used for the Random playmode
+    unsigned int seed = 1234;
+
     void invalidate_om_cache() {
       cached_notes = tl::nullopt;
     }
@@ -60,6 +64,7 @@ namespace otto::engines::arp {
     NoteVector down(ArpeggiatorState& state, const NoteArray& notes);
     NoteVector chord(ArpeggiatorState& state, const NoteArray& notes);
     NoteVector manual(ArpeggiatorState& state, const NoteArray& notes);
+    NoteVector random(ArpeggiatorState& state, const NoteArray& notes);
     NoteVector updown(ArpeggiatorState& state, const NoteArray& notes);
     NoteVector downup(ArpeggiatorState& state, const NoteArray& notes);
     NoteVector updowninc(ArpeggiatorState& state, const NoteArray& notes);
@@ -72,6 +77,7 @@ namespace otto::engines::arp {
     NoteVector octaveupunison(ArpeggiatorState& state, const NoteArray& input, PlayModeFunc);
     NoteVector fifthunison(ArpeggiatorState& state, const NoteArray& input, PlayModeFunc);
     NoteVector octaveup(ArpeggiatorState& state, const NoteArray& input, PlayModeFunc);
+    NoteVector doubleoctaveup(ArpeggiatorState& state, const NoteArray& input, PlayModeFunc);
     NoteVector octavedownup(ArpeggiatorState& state, const NoteArray& input, PlayModeFunc);
 
   } // namespace octave_modes

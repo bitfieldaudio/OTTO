@@ -20,6 +20,7 @@ namespace otto::engines::arp {
     case Playmode::downupinc: return "Down/Up Inc.";
     case Playmode::manual: return "Manual";
     case Playmode::chord: return "Chord";
+    case Playmode::random: return "Random";
     };
     OTTO_UNREACHABLE;
   }
@@ -29,6 +30,7 @@ namespace otto::engines::arp {
     switch (om) {
     case OctaveMode::standard: return "Boring";
     case OctaveMode::octaveup: return "+1";
+    case OctaveMode::doubleoctaveup: return "+2";
     case OctaveMode::octaveupunison: return "+1Unison";
     case OctaveMode::fifthunison: return "Fifth";
     case OctaveMode::octavedownup: return "-1 & +1";

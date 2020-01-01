@@ -11,9 +11,9 @@ namespace otto::engines::arp {
   using namespace core::engine;
   using namespace props;
 
-  BETTER_ENUM(Playmode, std::int8_t, up, down, updown, downup, updowninc, downupinc, manual, chord);
+  BETTER_ENUM(Playmode, std::int8_t, up, down, updown, downup, updowninc, downupinc, manual, chord, random);
 
-  BETTER_ENUM(OctaveMode, std::int8_t, standard, octaveup, octaveupunison, fifthunison, octavedownup);
+  BETTER_ENUM(OctaveMode, std::int8_t, standard, octaveup, doubleoctaveup, octaveupunison, fifthunison, octavedownup);
 
   struct Screen;
   struct Audio;
@@ -28,7 +28,7 @@ namespace otto::engines::arp {
     Sender::Prop<struct playmode_tag, Playmode, wrap> playmode = {sender, Playmode::up};
     Sender::Prop<struct octavemode_tag, OctaveMode, wrap> octavemode = {sender, OctaveMode::standard};
     Sender::Prop<struct note_length_tag, float> note_length = {sender, 0.2f, limits(0.01f, 0.97f), step_size(0.01)};
-    Sender::Prop<struct subdivision_tag, int, wrap> subdivision = {sender, 1, limits(1, 4)};
+    Sender::Prop<struct subdivision_tag, int, wrap> subdivision = {sender, 1, limits(1, 5)};
 
     DECL_REFLECTION(Props, playmode, octavemode, note_length);
   };

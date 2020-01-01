@@ -2,6 +2,8 @@
 #include <numeric>
 
 #include "arp.hpp"
+#include "core/audio/clock.hpp"
+#include "engines/arps/ARP/audio.hpp"
 #include "services/clock_manager.hpp"
 
 namespace otto::engines::arp {
@@ -94,6 +96,7 @@ namespace otto::engines::arp {
       case Playmode::downupinc: playmode_func_ = downupinc; break;
       case Playmode::manual: playmode_func_ = manual; break;
       case Playmode::chord: playmode_func_ = chord; break;
+      case Playmode::random: playmode_func_ = random; break;
     }
   }
   void Audio::action(itc::prop_change<&Props::octavemode>, OctaveMode om) noexcept
@@ -104,6 +107,7 @@ namespace otto::engines::arp {
       case OctaveMode::octaveupunison: octavemode_func_ = octaveupunison; break;
       case OctaveMode::fifthunison: octavemode_func_ = fifthunison; break;
       case OctaveMode::octaveup: octavemode_func_ = octaveup; break;
+      case OctaveMode::doubleoctaveup: octavemode_func_ = doubleoctaveup; break;
       case OctaveMode::octavedownup: octavemode_func_ = octavedownup; break;
     }
     state_.invalidate_om_cache();
@@ -121,9 +125,10 @@ namespace otto::engines::arp {
     note_off_frames = (int) (note_length_ * (float) _samples_per_beat);
     switch (sd) {
       case 1: note = core::clock::notes::quarter; break;
-      case 2: note = core::clock::notes::eighth; break;
-      case 3: note = core::clock::notes::eighthtriplet; break;
-      case 4: note = core::clock::notes::sixteenth; break;
+      case 2: note = core::clock::notes::quartertriplet; break;
+      case 3: note = core::clock::notes::eighth; break;
+      case 4: note = core::clock::notes::eighthtriplet; break;
+      case 5: note = core::clock::notes::sixteenth; break;
       default: OTTO_UNREACHABLE;
     }
   }
@@ -199,6 +204,15 @@ namespace otto::engines::arp {
         res.insert(note);
       }
       return res;
+    }
+
+    NoteVector random(ArpeggiatorState& state, const NoteArray& notes)
+    {
+      unsigned int n = notes.size();
+      state.seed = (214013*state.seed+2531011);
+      unsigned int aux = ((state.seed>>16)&0x7FFF);
+      auto next = aux % n; 
+      return NoteVector{notes[next].note};
     }
 
     NoteVector updown(ArpeggiatorState& state, const NoteArray& notes)
@@ -311,6 +325,21 @@ namespace otto::engines::arp {
         for (auto [i, pair] : util::view::indexed(input)) {
           state.cached_notes->push_back(
             {static_cast<std::uint8_t>(pair.note + 12), static_cast<std::int8_t>(max_t + 1 + i)});
+        }
+      }
+      return play_mode(state, *state.cached_notes);
+    }
+
+    NoteVector doubleoctaveup(ArpeggiatorState& state, const NoteArray& input, PlayModeFunc play_mode)
+    {
+      if (!state.cached_notes) {
+        state.cached_notes = input;
+        auto max_t = input.back().t;
+        for (auto [i, pair] : util::view::indexed(input)) {
+          state.cached_notes->push_back(
+            {static_cast<std::uint8_t>(pair.note + 12), static_cast<std::int8_t>(max_t + 1 + i)});
+          state.cached_notes->push_back(
+            {static_cast<std::uint8_t>(pair.note + 24), static_cast<std::int8_t>(2 * max_t + 1 + i)});
         }
       }
       return play_mode(state, *state.cached_notes);
