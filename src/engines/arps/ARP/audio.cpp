@@ -209,9 +209,7 @@ namespace otto::engines::arp {
     NoteVector random(ArpeggiatorState& state, const NoteArray& notes)
     {
       unsigned int n = notes.size();
-      state.seed = (214013*state.seed+2531011);
-      unsigned int aux = ((state.seed>>16)&0x7FFF);
-      auto next = aux % n; 
+      auto next = state.rng(n); 
       return NoteVector{notes[next].note};
     }
 

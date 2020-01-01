@@ -44,8 +44,8 @@ namespace otto::engines::arp {
     /// whenever the notes or the octave mode changes.
     tl::optional<NoteArray> cached_notes = tl::nullopt;
 
-    /// State for the random number generator used for the Random playmode
-    unsigned int seed = 1234;
+    /// random number generator used for the Random playmode
+    util::fastrand_in_range rng{1234};
 
     void invalidate_om_cache() {
       cached_notes = tl::nullopt;
