@@ -33,6 +33,7 @@ namespace otto::services {
       case ScreenEnum::external: return LED(otto::core::input::Key::external);
       case ScreenEnum::twist1: return LED(otto::core::input::Key::twist1);
       case ScreenEnum::twist2: return LED(otto::core::input::Key::twist2);
+      case ScreenEnum::saveslots: return LED(otto::core::input::Key::slots);
     }
     OTTO_UNREACHABLE;
   }

@@ -2,12 +2,20 @@
 
 #include "core/engine/engine_dispatcher.hpp"
 #include "core/engine/engine_dispatcher.inl"
+#include "core/ui/screen.hpp"
 #include "core/ui/vector_graphics.hpp"
 #include "engines/arps/ARP/arp.hpp"
 #include "engines/fx/chorus/chorus.hpp"
 #include "engines/fx/wormhole/wormhole.hpp"
+#include "engines/misc/looper/screen.hpp"
+#include "engines/misc/mixer/screen.hpp"
+#include "engines/misc/sampler/screen.hpp"
+#include "engines/misc/sequencer/screen.hpp"
+#include "engines/misc/saveslots/screen.hpp"
 #include "engines/synths/OTTOFM/ottofm.hpp"
 #include "engines/synths/goss/goss.hpp"
+#include "engines/twists/twist1/screen.hpp"
+#include "engines/twists/twist2/screen.hpp"
 #include "services/application.hpp"
 #include "services/clock_manager.hpp"
 
@@ -44,6 +52,16 @@ namespace otto::services {
     // EffectsDispatcher effect1{true};
     // EffectsDispatcher effect2{true};
 
+    // Placeholder screens for future features
+    engines::twist1::Screen twist1screen;
+    engines::twist2::Screen twist2screen;
+    engines::looper::Screen looperscreen;
+    engines::sampler::Screen samplerscreen;
+    engines::sequencer::Screen sequencerscreen;
+    engines::mixer::Screen mixerscreen;
+    engines::saveslots::Screen savescreen;
+
+
     // engines::Sends synth_send;
     // engines::Sends line_in_send;
     // engines::Master master;
@@ -64,25 +82,27 @@ namespace otto::services {
     auto reg_ss = [&](auto se, auto&& f) { return ui_manager.register_screen_selector(se, f); };
 
     // reg_ss(ScreenEnum::sends, [&]() -> auto& { return synth_send.screen(); });
-    // reg_ss(ScreenEnum::routing, );
+    reg_ss(ScreenEnum::routing, [&]() { return (ui::ScreenAndInput){mixerscreen, mixerscreen.input}; });
+    reg_ss(ScreenEnum::saveslots, [&]() { return (ui::ScreenAndInput){savescreen, savescreen.input}; });
     reg_ss(ScreenEnum::fx1, [&]() { return effect1.engine_screen(); });
     reg_ss(ScreenEnum::fx1_selector, [&]() { return effect1.selector_screen(); });
     reg_ss(ScreenEnum::fx2, [&]() { return effect2.engine_screen(); });
     reg_ss(ScreenEnum::fx2_selector, [&]() { return effect2.selector_screen(); });
-    // reg_ss(ScreenEnum::looper,         [&] () -> auto& { return  ; });
+    reg_ss(ScreenEnum::looper, [&]() { return (ui::ScreenAndInput){looperscreen, looperscreen.input}; });
     reg_ss(ScreenEnum::arp, [&]() { return arpeggiator.engine_screen(); });
     reg_ss(ScreenEnum::arp_selector, [&]() { return arpeggiator.selector_screen(); });
     // reg_ss(ScreenEnum::master, [&]() -> auto& { return master.screen(); });
-    // reg_ss(ScreenEnum::sequencer, [&]() -> auto& { return sequencer.screen(); });
-    // reg_ss(ScreenEnum::sampler, [&]() -> auto& { return sequencer.sampler_screen(); });
+    reg_ss(ScreenEnum::sequencer, [&]() { return (ui::ScreenAndInput){sequencerscreen, sequencerscreen.input}; });
+    reg_ss(ScreenEnum::sampler, [&]() { return (ui::ScreenAndInput){samplerscreen, samplerscreen.input}; });
     // reg_ss(ScreenEnum::sampler_envelope, [&]() -> auto& { return sequencer.envelope_screen(); });
     reg_ss(ScreenEnum::synth, [&]() { return synth.engine_screen(); });
     reg_ss(ScreenEnum::synth_selector, [&]() { return synth.selector_screen(); });
     reg_ss(ScreenEnum::synth_envelope, [&]() { return synth->envelope_screen(); });
     reg_ss(ScreenEnum::voices, [&]() { return synth->voices_screen(); });
     // reg_ss(ScreenEnum::external,       [&] () -> auto& { return  ; });
-    // reg_ss(ScreenEnum::twist1,         [&] () -> auto& { return  ; });
-    // reg_ss(ScreenEnum::twist2,         [&] () -> auto& { return  ; });
+    reg_ss(ScreenEnum::twist1, [&]() { return (ui::ScreenAndInput){twist1screen, twist1screen.input}; });
+    reg_ss(ScreenEnum::twist2, [&]() { return (ui::ScreenAndInput){twist2screen, twist2screen.input}; });
+
 
     ui_manager.state.current_screen.on_change().connect([&](auto new_val) {
       switch (new_val) {
@@ -96,12 +116,20 @@ namespace otto::services {
       }
     });
 
-    // controller.register_key_handler(input::Key::sequencer, [&](input::Key k) {
-    // ui_manager.display(ScreenEnum::sequencer);
-    // });
+    controller.register_key_handler(input::Key::sequencer,
+                                    [&](input::Key k) { ui_manager.display(ScreenEnum::sequencer); });
 
-    // controller.register_key_handler(input::Key::sampler, [&](input::Key k) { ui_manager.display(ScreenEnum::sampler);
-    // });
+    controller.register_key_handler(input::Key::sampler,
+                                    [&](input::Key k) { ui_manager.display(ScreenEnum::sampler); });
+
+    controller.register_key_handler(input::Key::routing,
+                                    [&](input::Key k) { ui_manager.display(ScreenEnum::routing); });
+
+    controller.register_key_handler(input::Key::looper,
+                                    [&](input::Key k) { ui_manager.display(ScreenEnum::looper); });
+
+    controller.register_key_handler(input::Key::slots,
+                                    [&](input::Key k) { ui_manager.display(ScreenEnum::saveslots); });
 
     controller.register_key_handler(input::Key::arp, [&](input::Key k) {
       if (controller.is_pressed(input::Key::shift)) {
@@ -146,6 +174,9 @@ namespace otto::services {
         ui_manager.display(ScreenEnum::fx2);
       }
     });
+
+    controller.register_key_handler(input::Key::twist1, [&](input::Key k) { ui_manager.display(ScreenEnum::twist1); });
+    controller.register_key_handler(input::Key::twist2, [&](input::Key k) { ui_manager.display(ScreenEnum::twist2); });
 
     // static ScreenEnum master_last_screen = ScreenEnum::master;
     // static ScreenEnum send_last_screen = ScreenEnum::sends;
