@@ -26,7 +26,7 @@ namespace otto::engines::saveslots {
     ctx.font(Fonts::Norm, 20);
     ctx.fillText("Coming soon:", x_pad, 3 * y_pad);
     ctx.fillText("Used to save the state of OTTO", x_pad, 4 * y_pad);
-    ctx.fillText("at a session or project level.", x_pad, 5 * y_pad);
+    ctx.fillText("at a sound or project level.", x_pad, 5 * y_pad);
   }
 
 } // namespace otto::engines::saveslots
