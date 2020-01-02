@@ -50,6 +50,10 @@ endif()
 
 set(OTTO_EXTERNAL_DIR ${OTTO_SOURCE_DIR}/external/)
 
+if (NOT OTTO_BUILD_TESTS)
+  add_compile_definitions(DOCTEST_CONFIG_DISABLE=1)
+endif()
+
 add_subdirectory(src)
 
 otto_debug_definitions()

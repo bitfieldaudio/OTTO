@@ -1,4 +1,3 @@
-#define CATCH_CONFIG_RUNNER
 #include "testing.t.hpp"
 #include "util/filesystem.hpp"
 
@@ -15,7 +14,11 @@ int main( int argc, char* argv[] )
 
   core::midi::generateFreqTable();
 
-  int result = Catch::Session().run( argc, argv );
+  doctest::Context context;
+
+  context.applyCommandLine(argc, argv);
+
+  int result = context.run();
 
   fs::remove_all(test::dir);
 

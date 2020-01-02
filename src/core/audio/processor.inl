@@ -29,7 +29,7 @@ namespace otto::core::audio {
                               clock::ClockRange clock) noexcept
     : audio(audio), midi(midi), clock(clock), nframes(audio[0].size())
   {
-    util::for_each(audio, validate_audio);
+    nano::for_each(audio, validate_audio);
   }
 
   template<int N>

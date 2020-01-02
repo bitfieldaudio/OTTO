@@ -50,7 +50,7 @@ namespace otto::core::engine {
       auto buf = services::AudioManager::current().buffer_pool().allocate_multi_clear<2>();
       return data.with(buf);
     } else {
-      util::fill(data.audio, 0);
+      nano::fill(data.audio, 0);
       return data;
     }
   }
