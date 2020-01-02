@@ -4,6 +4,7 @@
 #include "core/engine/engine_dispatcher.inl"
 #include "core/ui/vector_graphics.hpp"
 #include "engines/misc/master/master.hpp"
+#include "engines/misc/sends/sends.hpp"
 #include "engines/arps/ARP/arp.hpp"
 #include "engines/fx/chorus/chorus.hpp"
 #include "engines/fx/wormhole/wormhole.hpp"
@@ -45,7 +46,7 @@ namespace otto::services {
     // EffectsDispatcher effect1{true};
     // EffectsDispatcher effect2{true};
 
-    // engines::Sends synth_send;
+    engines::sends::Sends synth_send;
     // engines::Sends line_in_send;
     engines::master::Master master;
     // engines::Sequencer sequencer;
@@ -64,7 +65,7 @@ namespace otto::services {
 
     auto reg_ss = [&](auto se, auto&& f) { return ui_manager.register_screen_selector(se, f); };
 
-    // reg_ss(ScreenEnum::sends, [&]() -> auto& { return synth_send.screen(); });
+    reg_ss(ScreenEnum::sends, [&]() { return synth_send.screen(); });
     // reg_ss(ScreenEnum::routing, );
     reg_ss(ScreenEnum::fx1, [&]() { return effect1.engine_screen(); });
     reg_ss(ScreenEnum::fx1_selector, [&]() { return effect1.selector_screen(); });
@@ -149,7 +150,7 @@ namespace otto::services {
     });
 
     static ScreenEnum master_last_screen = ScreenEnum::master;
-    // static ScreenEnum send_last_screen = ScreenEnum::sends;
+    static ScreenEnum send_last_screen = ScreenEnum::sends;
 
     controller.register_key_handler(
       input::Key::master,
@@ -161,15 +162,15 @@ namespace otto::services {
         if (master_last_screen) ui_manager.display(master_last_screen);
       });
 
-    // controller.register_key_handler(
-    //   input::Key::sends,
-    //   [&](input::Key k) {
-    //     send_last_screen = ui_manager.state.current_screen;
-    //     ui_manager.display(ScreenEnum::sends);
-    //   },
-    //   [&](input::Key k) {
-    //     if (send_last_screen) ui_manager.display(send_last_screen);
-    //   });
+    controller.register_key_handler(
+      input::Key::sends,
+      [&](input::Key k) {
+        send_last_screen = ui_manager.state.current_screen;
+        ui_manager.display(ScreenEnum::sends);
+      },
+      [&](input::Key k) {
+        if (send_last_screen) ui_manager.display(send_last_screen);
+      });
 
     auto load = [&](nlohmann::json& data) {
       util::deserialize(synth, data["Synth"]);
