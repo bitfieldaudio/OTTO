@@ -82,11 +82,6 @@ namespace otto::engines::arp {
     ArpeggiatorState state_;
     NoteArray notes_ = {0};
     NoteVector current_notes_;
-    std::uint8_t current_step_ = 0;
-
-    
-
-  
   };
 
 } // namespace otto::engines::arp

@@ -91,7 +91,7 @@ namespace otto::services {
     auto [first, last] = key_handlers.equal_range(key);
     if (first == last) return false;
 
-    for (auto&& [key, funcs] : util::sequence(first, last)) {
+    for (auto&& [key, funcs] : nano::subrange(first, last)) {
       auto& func = is_press ? funcs.first : funcs.second;
       if (func) func(key);
     }

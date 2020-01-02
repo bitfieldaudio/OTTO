@@ -116,7 +116,7 @@ namespace otto::services {
   int DefaultPresetManager::idx_of_name(util::string_ref engine_name, std::string_view name)
   {
     auto& names = preset_names(engine_name);
-    auto found = util::find(names, name);
+    auto found = nano::find(names, name);
     if (found == names.end()) {
       throw exception(ErrorCode::no_such_preset, "No preset named '{}' for engine '{}'", name,
                       engine_name);
@@ -132,7 +132,7 @@ namespace otto::services {
     if (pd_iter == _preset_data.end()) {
       throw exception(ErrorCode::no_such_engine, "No engine named '{}'", engine.name());
     }
-    auto niter = util::find(pd_iter->second.names, name);
+    auto niter = nano::find(pd_iter->second.names, name);
     if (niter == pd_iter->second.names.end()) {
       throw exception(ErrorCode::no_such_preset, "No preset named '{}' for engine '{}'", name,
                       engine.name());
@@ -183,7 +183,7 @@ namespace otto::services {
         std::string name = jf.data()["name"];
         auto pd_iter = _preset_data.insert(engine, {}).first;
         auto& pd = pd_iter->second;
-        if (auto found = util::find(pd.names, name); found != pd.names.end()) {
+        if (auto found = nano::find(pd.names, name); found != pd.names.end()) {
           pd.data[found - pd.names.begin()] = std::move(jf.data()["props"]);
           DLOGI("Reloaded preset '{}' for engine '{}", name, engine);
         } else {

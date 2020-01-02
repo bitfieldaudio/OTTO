@@ -4,6 +4,7 @@
 #include "core/engine/engine_dispatcher.inl"
 #include "core/ui/screen.hpp"
 #include "core/ui/vector_graphics.hpp"
+#include "engines/misc/sends/sends.hpp"
 #include "engines/arps/ARP/arp.hpp"
 #include "engines/fx/chorus/chorus.hpp"
 #include "engines/fx/wormhole/wormhole.hpp"
@@ -61,8 +62,8 @@ namespace otto::services {
     engines::mixer::Screen mixerscreen;
     engines::saveslots::Screen savescreen;
 
+    engines::sends::Sends synth_send;
 
-    // engines::Sends synth_send;
     // engines::Sends line_in_send;
     // engines::Master master;
     // engines::Sequencer sequencer;
@@ -81,9 +82,9 @@ namespace otto::services {
 
     auto reg_ss = [&](auto se, auto&& f) { return ui_manager.register_screen_selector(se, f); };
 
-    // reg_ss(ScreenEnum::sends, [&]() -> auto& { return synth_send.screen(); });
     reg_ss(ScreenEnum::routing, [&]() { return (ui::ScreenAndInput){mixerscreen, mixerscreen.input}; });
     reg_ss(ScreenEnum::saveslots, [&]() { return (ui::ScreenAndInput){savescreen, savescreen.input}; });
+    reg_ss(ScreenEnum::sends, [&]() { return synth_send.screen(); });
     reg_ss(ScreenEnum::fx1, [&]() { return effect1.engine_screen(); });
     reg_ss(ScreenEnum::fx1_selector, [&]() { return effect1.selector_screen(); });
     reg_ss(ScreenEnum::fx2, [&]() { return effect2.engine_screen(); });
@@ -179,7 +180,7 @@ namespace otto::services {
     controller.register_key_handler(input::Key::twist2, [&](input::Key k) { ui_manager.display(ScreenEnum::twist2); });
 
     // static ScreenEnum master_last_screen = ScreenEnum::master;
-    // static ScreenEnum send_last_screen = ScreenEnum::sends;
+    static ScreenEnum send_last_screen = ScreenEnum::sends;
 
     // controller.register_key_handler(
     //   input::Key::master,
@@ -191,15 +192,15 @@ namespace otto::services {
     //     if (master_last_screen) ui_manager.display(master_last_screen);
     //   });
 
-    // controller.register_key_handler(
-    //   input::Key::sends,
-    //   [&](input::Key k) {
-    //     send_last_screen = ui_manager.state.current_screen;
-    //     ui_manager.display(ScreenEnum::sends);
-    //   },
-    //   [&](input::Key k) {
-    //     if (send_last_screen) ui_manager.display(send_last_screen);
-    //   });
+    controller.register_key_handler(
+      input::Key::sends,
+      [&](input::Key k) {
+        send_last_screen = ui_manager.state.current_screen;
+        ui_manager.display(ScreenEnum::sends);
+      },
+      [&](input::Key k) {
+        if (send_last_screen) ui_manager.display(send_last_screen);
+      });
 
     auto load = [&](nlohmann::json& data) {
       util::deserialize(synth, data["Synth"]);
@@ -235,7 +236,7 @@ namespace otto::services {
     auto synth_out = synth.process(arp_out.with(external_in.audio));
     auto right_chan = Application::current().audio_manager->buffer_pool().allocate();
 
-    util::copy(synth_out.audio, right_chan.begin());
+    nano::copy(synth_out.audio, right_chan.begin());
 
     auto fx1_bus = Application::current().audio_manager->buffer_pool().allocate();
     auto fx2_bus = Application::current().audio_manager->buffer_pool().allocate();

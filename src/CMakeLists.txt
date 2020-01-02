@@ -35,6 +35,9 @@ target_link_libraries(otto PUBLIC foonathan_type_safe)
 target_link_libraries(otto PUBLIC choreograph)
 target_link_libraries(otto PUBLIC BFG::Lyra)
 
+include("${OTTO_SOURCE_DIR}/cmake/doctest_force_link_static_lib_in_target.cmake")
+doctest_force_link_static_lib_in_target(otto_exec otto)
+
 # Enable warnings for local code
 if(MSVC)
   if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")

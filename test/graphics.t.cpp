@@ -26,8 +26,7 @@ namespace otto::test {
                 std::function<void(core::ui::vg::Canvas& ctx)> draw,
                 core::input::InputHandler* input)
   {
-    glfw::NVGWindow window = {int(size.w), int(size.h),
-                              Catch::getCurrentContext().getResultCapture()->getCurrentTestName()};
+    glfw::NVGWindow window = {int(size.w), int(size.h), "OTTO TEST"};
 
     if (input) {
       window.key_callback = [input](auto&& action, auto&& mods, auto&& key) {

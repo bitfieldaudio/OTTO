@@ -81,4 +81,3 @@ namespace otto::util::math {
     return a1 + a2;
   }
 }// namespace otto::util::math
-

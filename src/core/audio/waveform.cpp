@@ -47,7 +47,7 @@ namespace otto::core::audio {
 
     if (res == 0) {
       // Res=0 is special.
-      util::transform(input_data_, dst, [](float f){return std::abs(f);} );
+      nano::transform(input_data_, dst, [](float f){return std::abs(f);} );
 
     } else {
       // For all other resolutions, the source of data is the previous resolution
@@ -101,7 +101,7 @@ namespace otto::core::audio {
   WaveformView& Waveform::view(WaveformView& v, int first, int last)
   {
     if (points_.size() == 0) {
-      util::fill(v.points_, 0);
+      nano::fill(v.points_, 0);
       return v;
     }
     DLOGI("Calculating view");
