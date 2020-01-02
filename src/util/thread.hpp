@@ -1,16 +1,11 @@
 #pragma once
 
 #include <atomic>
+#include <chrono>
 #include <condition_variable>
+#include <ctime>
 #include <functional>
 #include <mutex>
-#include <thread>
-
-#include <chrono>
-#include <ctime>
-
-#include <condition_variable>
-#include <functional>
 #include <thread>
 
 namespace otto::chrono {
@@ -66,8 +61,7 @@ namespace otto::util {
 
   struct triggered_thread {
     template<typename Func>
-    triggered_thread(Func&& func)
-      : std_thread(std::forward<Func>(func), [this] { return should_run(); })
+    triggered_thread(Func&& func) : std_thread(std::forward<Func>(func), [this] { return should_run(); })
     {}
 
     ~triggered_thread()
@@ -82,8 +76,11 @@ namespace otto::util {
 
     void join()
     {
-      _should_run = false;
-      _trigger.notify_all();
+      {
+        std::unique_lock lock{_mutex};
+        _should_run = false;
+      }
+      trigger();
       std_thread.join();
     }
 
@@ -103,8 +100,7 @@ namespace otto::util {
 
   struct sleeper_thread {
     template<typename Func>
-    sleeper_thread(Func&& func)
-      : std_thread(std::forward<Func>(func), [this] { return should_run(); })
+    sleeper_thread(Func&& func) : std_thread(std::forward<Func>(func), [this] { return should_run(); })
     {}
 
     ~sleeper_thread()
@@ -119,7 +115,10 @@ namespace otto::util {
 
     void join()
     {
-      _should_run = false;
+      {
+        std::unique_lock lock{_mutex};
+        _should_run = false;
+      }
       _trigger.notify_all();
       std_thread.join();
     }

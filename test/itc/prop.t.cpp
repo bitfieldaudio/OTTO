@@ -46,7 +46,7 @@ namespace otto::engines::test_engine {
     Sndr sndr{queue, par};
     Props props{sndr};
 
-    SECTION ("Upon construction, all properties send change actions") {
+    SUBCASE ("Upon construction, all properties send change actions") {
       REQUIRE(queue.size() == 3);
       queue.pop_call_all();
       REQUIRE(props.float_prop == 10);

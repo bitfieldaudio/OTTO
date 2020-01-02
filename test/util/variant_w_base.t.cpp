@@ -30,10 +30,10 @@ namespace otto::util {
     }
   };
 
-  TEST_CASE("variant_w_base", "[util]") {
+  TEST_CASE("[util] variant_w_base") {
     variant_w_base<Base, A, B, C> variant;
 
-    SECTION("emplace_by_index") {
+    SUBCASE("emplace_by_index") {
       variant.emplace_by_index(1);
       REQUIRE(variant->f() == "B");
       variant.emplace_by_index(0);

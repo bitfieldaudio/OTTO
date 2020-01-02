@@ -205,7 +205,7 @@ namespace otto::services {
     auto synth_out = synth.process(arp_out.with(external_in.audio));
     auto right_chan = Application::current().audio_manager->buffer_pool().allocate();
 
-    util::copy(synth_out.audio, right_chan.begin());
+    nano::copy(synth_out.audio, right_chan.begin());
 
     auto fx1_bus = Application::current().audio_manager->buffer_pool().allocate();
     auto fx2_bus = Application::current().audio_manager->buffer_pool().allocate();

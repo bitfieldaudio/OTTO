@@ -68,7 +68,7 @@ namespace otto::services {
   {
     write_buffer_.outer_locked([&](auto& b) {
       b.reserve(b.size() + message.size());
-      util::copy(message, std::back_inserter(b));
+      nano::copy(message, nano::back_inserter(b));
     });
   }
 

@@ -96,27 +96,27 @@ namespace otto::util {
       template<typename TransparentKey>
       iterator find(const TransparentKey& k)
       {
-        auto found = util::find(key_store_, k);
+        auto found = nano::find_if(key_store_, [&] (auto&& v) { return v == k; });
         return {found, corresponding(found)};
       }
 
       template<typename TransparentKey>
       const_iterator find(const TransparentKey& k) const
       {
-        auto found = util::find(key_store_, k);
+        auto found = nano::find_if(key_store_, [&] (auto&& v) { return v == k; });
         return {found, corresponding(found)};
       }
 
       template<typename TransparentKey>
       bool contains(const TransparentKey& k) const
       {
-        auto found = util::find(key_store_, k);
+        auto found = nano::find_if(key_store_, [&] (auto&& v) { return v == k; });
         return found != key_store_.end();
       }
 
       tl::optional<mapped_type&> operator[](const key_type& k)
       {
-        auto found = util::find(key_store_, k);
+        auto found = nano::find_if(key_store_, [&] (auto&& v) { return v == k; });
         if (found == key_store_.end()) return tl::nullopt;
         return *corresponding(found);
       }
@@ -152,7 +152,7 @@ namespace otto::util {
       template<typename... Args>
       std::pair<iterator, bool> try_emplace(key_type&& key, Args&&... args)
       {
-        if (auto found = util::find(key_store_, key); found != key_store_.end()) {
+        if (auto found = nano::find(key_store_, key); found != key_store_.end()) {
           return {{found, corresponding(found)}, false};
         }
         auto& kref = key_store_.emplace_back(std::move(key));
@@ -166,7 +166,7 @@ namespace otto::util {
       template<typename... Args>
       std::pair<iterator, bool> try_emplace(const key_type& key, Args&&... args)
       {
-        if (auto found = util::find(key_store_, key); found != key_store_.end()) {
+        if (auto found = nano::find(key_store_, key); found != key_store_.end()) {
           return {{found, corresponding(found)}, false};
         }
         auto& kref = key_store_.emplace_back(key);
@@ -183,7 +183,7 @@ namespace otto::util {
       template<typename TransparentKey>
       bool erase(const TransparentKey& k)
       {
-        auto found = util::find(key_store_, k);
+        auto found = nano::find_if(key_store_, [&] (auto&& v) { return v == k; });
         if (found == key_store_.end()) return false;
         val_store_.erase(corresponding(found));
         key_store_.erase(found);

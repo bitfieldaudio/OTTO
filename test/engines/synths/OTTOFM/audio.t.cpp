@@ -6,7 +6,7 @@ namespace otto::engines::ottofm {
 
   using namespace services;
 
-  TEST_CASE ("FM Benchmarks", "[.benchmarks]") {
+  TEST_CASE ("[.benchmarks] FM Benchmarks") {
     std::array<itc::Shared<float>::Storage, 4> activities;
     Audio audio{{
       activities[0],
@@ -19,9 +19,9 @@ namespace otto::engines::ottofm {
     audio.voice_mgr_.handle_midi(midi::NoteOnEvent(60));
     auto buf = AudioManager::current().buffer_pool().allocate_clear();
 
-    BENCHMARK ("Voice operator() inner switch lambda") {
-      v.process({buf});
-    };
+    // TODO: BENCHMARK ("Voice operator() inner switch lambda") {
+    // TODO:   v.process({buf});
+    // TODO: };
   }
 
 } // namespace otto::engines::ottofm

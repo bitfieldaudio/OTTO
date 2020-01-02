@@ -1,4 +1,5 @@
 #include "engine_selector_screen.hpp"
+#include <nanorange.hpp>
 
 namespace otto::core::engine {
 
@@ -38,7 +39,7 @@ namespace otto::core::engine {
     OTTO_ASSERT(!names.empty());
 		first_engine_is_off_ = names[0] == "OFF";
     engines.clear();
-    util::transform(names, std::back_inserter(engines), [](auto&& name) { return EngineSelectorData{name}; });
+    nano::transform(names, nano::back_inserter(engines), [](auto&& name) { return EngineSelectorData{name}; });
   }
 
   void EngineSelectorScreen::draw(nvg::Canvas& ctx)
