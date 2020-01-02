@@ -10,7 +10,7 @@ namespace otto::test {
     ClockRange cr{whole + sixteenth, whole + quarter};
 
 
-    SECTION ("contains_multiple") {
+    SUBCASE ("contains_multiple") {
       REQUIRE(cr.contains_multiple(sixtyfourth));
       REQUIRE(cr.contains_multiple(thirtysecond));
       REQUIRE(cr.contains_multiple(sixteenth));
@@ -34,7 +34,7 @@ namespace otto::test {
       REQUIRE(cr.contains_multiple(half));
     }
 
-    SECTION ("count_multiple") {
+    SUBCASE ("count_multiple") {
       REQUIRE(cr.count_multiple(sixtyfourth) == 12);
       REQUIRE(cr.count_multiple(thirtysecond) == 6);
       REQUIRE(cr.count_multiple(sixteenth) == 3);

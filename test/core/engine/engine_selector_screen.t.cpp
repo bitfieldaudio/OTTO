@@ -1,5 +1,6 @@
 #include "core/engine/engine_selector_screen.hpp"
 #include "testing.t.hpp"
+#include "graphics.t.hpp"
 
 
 namespace otto {
@@ -15,7 +16,7 @@ namespace otto {
     "Subtraction",
   };
 
-  TEST_CASE ("EngineSelectorScreen", "[.graphics]") {
+  TEST_CASE ("[graphics] EngineSelectorScreen" * doctest::skip()) {
     using Sender = itc::DirectActionSender<EngineSelectorScreen>;
 
     EngineSelectorScreen screen;

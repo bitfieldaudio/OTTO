@@ -23,7 +23,7 @@ namespace otto::engines::arp {
 
   static void erase_note(NoteArray& notes, std::uint8_t note)
   {
-    auto found = util::remove_if(notes, [&](auto& ntp) { return ntp.note == note; });
+    auto found = nano::remove(notes, note, &NoteTPair::note);
     notes.erase(found, notes.end());
   }
 

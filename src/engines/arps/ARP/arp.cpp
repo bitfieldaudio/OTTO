@@ -9,9 +9,7 @@ namespace otto::engines::arp {
 
   using namespace core::input;
 
-  Arp::Arp()
-    : audio(std::make_unique<Audio>()),
-      screen_(std::make_unique<Screen>())
+  Arp::Arp() : audio(std::make_unique<Audio>()), screen_(std::make_unique<Screen>())
   {
     props.sender.push(Actions::graphics_outdated::data(graphics_outdated_));
   }
@@ -19,10 +17,10 @@ namespace otto::engines::arp {
   void Arp::encoder(EncoderEvent ev)
   {
     switch (ev.encoder) {
-    case Encoder::blue: props.playmode.step(util::math::sgn(ev.steps)); break;
-    case Encoder::green: props.octavemode.step(util::math::sgn(ev.steps)); break;
-    case Encoder::yellow: props.subdivision.step(util::math::sgn(ev.steps)); break;
-    case Encoder::red: props.note_length.step(ev.steps); break;
+      case Encoder::blue: props.playmode.step(util::math::sgn(ev.steps)); break;
+      case Encoder::green: props.octavemode.step(util::math::sgn(ev.steps)); break;
+      case Encoder::yellow: props.subdivision.step(util::math::sgn(ev.steps)); break;
+      case Encoder::red: props.note_length.step(ev.steps); break;
     }
   }
 
@@ -31,4 +29,4 @@ namespace otto::engines::arp {
     return {*screen_, *this};
   }
 
-} // namespace otto::engines
+} // namespace otto::engines::arp

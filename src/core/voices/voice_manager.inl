@@ -1,5 +1,7 @@
 #pragma once
 
+#include <nanorange.hpp>
+
 #include "services/audio_manager.hpp"
 #include "services/ui_manager.hpp"
 #include "voice_manager.hpp"
@@ -142,7 +144,7 @@ namespace otto::core::voices {
     auto key = evt.key;
     if (vm.sustain_) {
       // TODO: Make sure ALL entries with this key are set to release, not just the first.
-      auto found = util::find_if(vm.note_stack, [&](auto& nvp) { return nvp.key == key; });
+      auto found = nano::find_if(vm.note_stack, [&](auto& nvp) { return nvp.key == key; });
       if (found != vm.note_stack.end()) {
         found->should_release = true;
       }
@@ -158,11 +160,11 @@ namespace otto::core::voices {
       // Usual behaviour is to return the next free voice
       auto fvit = vm.free_voices.begin();
       // Finds the voice that last played the note if it exists
-      auto it = util::find_if(vm.voices_, [note](Voice& vp) { return vp.midi_note_ == note; });
+      auto it = nano::find_if(vm.voices_, [note](Voice& vp) { return vp.midi_note_ == note; });
       // If there is/was a voice that is playing this note
       if (it != vm.voices_.end()) {
         // It's not currently playing; choose this voice
-        if (!it->is_triggered()) fvit = util::find(vm.free_voices, it);
+        if (!it->is_triggered()) fvit = nano::find(vm.free_voices, it);
         // Otherwise, do nothing - That would mean the voice is playing, and we should not steal it.
       }
       auto& v = **fvit;
@@ -170,15 +172,15 @@ namespace otto::core::voices {
       return v;
     } else {
       // Steal oldest playing note
-      auto found = util::find_if(vm.note_stack, [](NoteStackEntry& nse) { return nse.has_voice(); });
+      auto found = nano::find_if(vm.note_stack, [](NoteStackEntry& nse) { return nse.has_voice(); });
       if (found != vm.note_stack.end()) {
-        //DLOGI("Stealing voice {} from key {}", (found->voice - vm.voices_.data()), found->note);
+        // DLOGI("Stealing voice {} from key {}", (found->voice - vm.voices_.data()), found->note);
         Voice& v = *found->voice;
         v.release();
         found->voice = nullptr;
         return v;
       } else {
-        //DLOGI("No voice found. Using voice 0");
+        // DLOGI("No voice found. Using voice 0");
         return vm.voices_[0];
       }
     }
@@ -187,10 +189,9 @@ namespace otto::core::voices {
   template<typename V, int N>
   void VoiceManager<V, N>::VoiceAllocatorBase::stop_voice(int key) noexcept
   {
-    // find_if can work with reverse iterators, so we don't need a view.
     auto free_voice = [this](Voice& v) {
       auto found =
-        std::find_if(vm.note_stack.rbegin(), vm.note_stack.rend(), [](auto nse) { return !nse.has_voice(); });
+        std::find_if(vm.note_stack.rbegin(), vm.note_stack.rend(), [](auto&& nse) { return !nse.has_voice(); });
       if (found != vm.note_stack.rend()) {
         found->voice = &v;
         v.trigger(found->note, found->detune, found->velocity, vm.legato_, false);
@@ -204,17 +205,14 @@ namespace otto::core::voices {
     // [A1 A2 A3 B1 B2 B3 C1 C2 C3] for instance, where A, B, C are different held keys.
     // If only the C's have voices, when we lift that key, we want the voices to go to the B's
     // while the number is kept the same (e.g. C2 -> B2)
-    auto reverse_note_stack = util::view::reverse(vm.note_stack);
-    auto it = std::remove_if(reverse_note_stack.begin(), reverse_note_stack.end(), [&](auto nse) {
-      if (nse.key == key) {
-        if (nse.has_voice()) {
-          free_voice(*nse.voice);
-        }
-        return true;
+    auto reverse_note_stack = nano::views::reverse(vm.note_stack);
+
+    for (auto&& nse : reverse_note_stack | nano::views::filter([&] (auto&& nse) { return nse.key == key; })) {
+      if (nse.has_voice()) {
+        free_voice(*nse.voice);
       }
-      return false;
-    });
-    vm.note_stack.erase(reverse_note_stack.end().base(), it.base());
+      vm.note_stack.erase(&nse);
+    }
   }
 
   // PLAYMODE ALLOCATORS //
@@ -373,7 +371,7 @@ namespace otto::core::voices {
         // Find the correct voice to steal
         // Every iteration in the loop, a new entry is added to the notestack.
         auto& note = *(vm.note_stack.end() - num_voices_used);
-        //DLOGI("Stealing voice {} from key {}", (note.voice - vm.voices_.data()), note.note);
+        // DLOGI("Stealing voice {} from key {}", (note.voice - vm.voices_.data()), note.note);
         Voice& v = *note.voice;
         // v.release calls on_note_off. Don't do this if legato is engaged.
         if (!vm.legato_) v.release();
@@ -511,7 +509,7 @@ namespace otto::core::voices {
       case PlayMode::unison: voice_allocator.template emplace<UnisonAllocator>(*this); break;
       case PlayMode::interval: voice_allocator.template emplace<IntervalAllocator>(*this); break;
     }
-    util::for_each(voices(), &Voice::release);
+    nano::for_each(voices(), &Voice::release);
     note_stack.clear();
     free_voices.clear();
     for (auto&& voice : voices()) {

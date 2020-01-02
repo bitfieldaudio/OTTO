@@ -104,38 +104,38 @@ namespace otto {
 
   // meta::for_each ///////////////////////////////////////////////////////////
 
-  TEST_CASE("meta::for_each", "[util], [meta]")
+  TEST_CASE("[util][meta] meta::for_each")
   {
     std::vector<int> values;
 
-    SECTION("With values")
+    SUBCASE("With values")
     {
       meta::for_each<c_list<1, 2, 3, 4, 5>>(
         [&values](auto type) { values.push_back(meta::_tv<decltype(type)>); });
 
-      REQUIRE_THAT(values, Catch::Matchers::Equals(std::vector{1, 2, 3, 4, 5}));
+      REQUIRE(values == std::vector{1, 2, 3, 4, 5});
     }
 
-    SECTION("Empty list")
+    SUBCASE("Empty list")
     {
       meta::for_each<c_list<>>(
         [&values](auto type) { values.push_back(meta::_tv<decltype(type)>); });
 
-      REQUIRE_THAT(values, Catch::Matchers::Equals(std::vector<int>{}));
+      REQUIRE(values == std::vector<int>{});
     }
 
-    SECTION("One item")
+    SUBCASE("One item")
     {
       meta::for_each<c_list<100>>(
         [&values](auto type) { values.push_back(meta::_tv<decltype(type)>); });
 
-      REQUIRE_THAT(values, Catch::Matchers::Equals(std::vector<int>{100}));
+      REQUIRE(values == std::vector<int>{100});
     }
   }
 
   // meta::transform_to_tuple /////////////////////////////////////////////////
 
-  TEST_CASE("meta::transform_to_tuple", "[util], [meta]")
+  TEST_CASE("[util][meta] meta::transform_to_tuple")
   {
     auto res = meta::transform_to_tuple<c_list<1, 2, 3, 4, 5>>([](auto type) {
       constexpr int val = meta::_tv<decltype(type)>;

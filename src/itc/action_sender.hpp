@@ -1,5 +1,6 @@
 #pragma once
 
+#include <nanorange.hpp>
 #include "action_queue.hpp"
 
 namespace otto::itc {

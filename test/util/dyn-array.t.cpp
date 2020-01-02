@@ -1,8 +1,7 @@
 #include "testing.t.hpp"
-
 #include "util/dyn-array.hpp"
 
-SCENARIO("DynArrays can be resized", "[DynArray]")
+SCENARIO("DynArrays can be resized")
 {
   GIVEN("A DynArray of ints, with initial size 0")
   {
@@ -62,7 +61,7 @@ SCENARIO("DynArrays can be resized", "[DynArray]")
   }
 }
 
-SCENARIO("DynArrays can be random-accessed", "[DynArray]")
+SCENARIO("DynArrays can be random-accessed")
 {
   GIVEN("A DynArray of floats with a size greater than 0")
   {
@@ -100,7 +99,7 @@ SCENARIO("DynArrays can be random-accessed", "[DynArray]")
   }
 }
 
-SCENARIO("DynArrays can be cleared", "[DynArray]")
+SCENARIO("DynArrays can be cleared")
 {
   GIVEN("A DynArray of floats with a size greater than 0")
   {

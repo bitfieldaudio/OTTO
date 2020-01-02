@@ -1,6 +1,7 @@
 #pragma once
 
 #include <better_enum.hpp>
+#include <nanorange.hpp>
 
 #include "util/algorithm.hpp"
 
@@ -29,7 +30,7 @@ namespace otto::core::props {
       {
         if constexpr (util::BetterEnum::is<T>) {
           auto vals = T::_values();
-          auto iter = util::min_element(vals);
+          auto iter = nano::min_element(vals);
           if (iter == vals.end()) return T::_values()[0]._to_integral();
           return util::underlying(*iter);
         } else {
@@ -40,7 +41,7 @@ namespace otto::core::props {
       {
         if constexpr (util::BetterEnum::is<T>) {
           auto vals = T::_values();
-          auto iter = util::max_element(vals);
+          auto iter = nano::max_element(vals);
           if (iter == vals.end()) return T::_values()[T::_size() - 1]._to_integral();
           return util::underlying(*iter);
         } else {

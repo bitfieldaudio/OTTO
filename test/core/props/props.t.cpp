@@ -7,8 +7,8 @@
 
 namespace otto::core::props {
 
-  TEST_CASE ("Propeties", "[props]") {
-    SECTION ("Basic mixin tests") {
+  TEST_CASE ("Propeties") {
+    SUBCASE ("Basic mixin tests") {
       // Test the tags of a property
 
       Property<float, no_defaults, steppable> pf = 0;
@@ -46,7 +46,7 @@ namespace otto::core::props {
     // Test limits
     REQUIRE(props.pf1 == 5.f);
 
-    SECTION ("on_change hooks") {
+    SUBCASE ("on_change hooks") {
       Property<float> pf = 0;
       bool ran = false;
       pf.on_change().connect([&](float f) {
@@ -73,12 +73,12 @@ namespace otto::core::props {
   } props;
 
 
-  TEST_CASE ("Property conversions", "[props]") {
+  TEST_CASE ("[props] Property conversions") {
     const float& val = static_cast<const float&>(property);
     REQUIRE(&val == &property.get());
   }
 
-  TEST_CASE ("has_limits", "[props]") {
+  TEST_CASE ("[props] has_limits") {
     Property<float, steppable, has_limits> pp = {
       0,
       has_limits::init(1, 5),
@@ -111,7 +111,7 @@ namespace otto::core::props {
     REQUIRE(pp == -10.f);
   }
 
-  TEST_CASE ("wrap", "[props]") {
+  TEST_CASE ("[props] wrap") {
     Property<int, wrap> prop = {0, has_limits::init(-2, 2)};
 
     REQUIRE(prop == 0);
@@ -143,7 +143,7 @@ namespace otto::core::props {
 
     using namespace otto::test;
 
-    SECTION ("Floating point") {
+    SUBCASE ("Floating point") {
       Property<float, wrap> fprop = {0, limits(0, 1), step_size(0.1)};
 
       REQUIRE(fprop == approx(0));
