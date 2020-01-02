@@ -7,7 +7,7 @@
 
 namespace otto::core::voices {
 
-  namespace view = util::view;
+  using namespace nano::views;
 
   TEST_CASE ("VoiceManager") {
     using test_action = itc::Action<struct test_action_tag, float>;
@@ -45,11 +45,27 @@ namespace otto::core::voices {
 
     static_assert(!nano::view<std::decay_t<decltype(vmgr.voices())>>);
 
-    // This is a lazy view, so its computed each time you loop through it
-    auto triggered_voices =
-      nano::views::all(vmgr.voices()) | nano::views::filter([](Voice& v) { return v.is_triggered() && v.volume() != test::approx(0); });
+    auto triggered_voices = [&]() -> auto&
+    {
+      auto v = [&] {
+        return all(vmgr.voices()) | filter([](Voice& v) {
+                 return v.is_triggered() && v.volume() != test::approx(0);
+               });
+      };
+      thread_local static decltype(v()) cached;
+      cached = v();
+      return cached;
+    };
 
-    auto triggered_voice_ptrs = triggered_voices | nano::views::transform([](Voice& v) { return &v; });
+    auto triggered_voice_ptrs = [&]() -> auto&
+    {
+      auto v = [&] {
+        return triggered_voices() | transform([] (Voice& v) { return &v; });
+      };
+      thread_local static decltype(v()) cached;
+      cached = v();
+      return cached;
+    };
 
     SUBCASE("Voice receives actions sent to voice manager")
     {
@@ -65,6 +81,23 @@ namespace otto::core::voices {
       REQUIRE(n == 6);
     }
 
+
+    SUBCASE("triggered_voices()")
+    {
+      REQUIRE(util::count(triggered_voices()) == 0);
+      vmgr.handle_midi(midi::NoteOnEvent{1});
+      vmgr.handle_midi(midi::NoteOnEvent{2});
+      vmgr.handle_midi(midi::NoteOnEvent{3});
+
+      std::set<Voice*> vs;
+      for (auto& v : triggered_voices()) {
+        vs.insert(&v);
+        REQUIRE(v.is_triggered());
+      }
+      REQUIRE(vs.size() == 3);
+      REQUIRE(util::count(triggered_voices()) == 3);
+    }
+
     SUBCASE("When switching voice mode, all voices should be released")
     {
       vmgr.handle_midi(midi::NoteOnEvent{1});
@@ -74,7 +107,7 @@ namespace otto::core::voices {
       voices_props.play_mode = +PlayMode::mono;
       queue.pop_call_all();
 
-      REQUIRE(util::count(triggered_voices) == 0);
+      REQUIRE(util::count(triggered_voices()) == 0);
     }
 
     SUBCASE("Mono mode")
@@ -90,16 +123,16 @@ namespace otto::core::voices {
       SUBCASE("triggers one voice for a single note")
       {
         vmgr.handle_midi(midi::NoteOnEvent{50});
-        REQUIRE(util::count(triggered_voices) == 1);
-        REQUIRE(triggered_voices.front().midi_note() == 50);
-        REQUIRE(triggered_voices.front().frequency() == test::approx(midi::note_freq(50)));
+        REQUIRE(util::count(triggered_voices()) == 1);
+        REQUIRE(triggered_voices().front().midi_note() == 50);
+        REQUIRE(triggered_voices().front().frequency() == test::approx(midi::note_freq(50)));
       }
 
       SUBCASE("steals a voice for each new note")
       {
         vmgr.handle_midi(midi::NoteOnEvent{50});
         vmgr.handle_midi(midi::NoteOnEvent{60});
-        REQUIRE(test::sort(triggered_voices | nano::views::transform(MEMBER_CALLER(midi_note))) == std::vector{60});
+        REQUIRE(test::sort(triggered_voices() | transform(MEMBER_CALLER(midi_note))) == std::vector{60});
       }
 
       SUBCASE("Snaps back to playing old note when a note is released")
@@ -107,7 +140,7 @@ namespace otto::core::voices {
         vmgr.handle_midi(midi::NoteOnEvent{50});
         vmgr.handle_midi(midi::NoteOnEvent{60});
         vmgr.handle_midi(midi::NoteOffEvent{60});
-        REQUIRE(test::sort(triggered_voices | nano::views::transform(MEMBER_CALLER(midi_note))) == std::vector{50});
+        REQUIRE(test::sort(triggered_voices() | transform(MEMBER_CALLER(midi_note))) == std::vector{50});
       }
 
       SUBCASE("Snaps back to playing CORRECT old note when a note is released")
@@ -116,7 +149,7 @@ namespace otto::core::voices {
         vmgr.handle_midi(midi::NoteOnEvent{60});
         vmgr.handle_midi(midi::NoteOnEvent{70});
         vmgr.handle_midi(midi::NoteOffEvent{70});
-        REQUIRE(test::sort(triggered_voices | nano::views::transform(MEMBER_CALLER(midi_note))) == std::vector{60});
+        REQUIRE(test::sort(triggered_voices() | transform(MEMBER_CALLER(midi_note))) == std::vector{60});
       }
 
 
@@ -127,10 +160,10 @@ namespace otto::core::voices {
         queue.pop_call_all();
 
         vmgr.handle_midi(midi::NoteOnEvent{50});
-        REQUIRE(test::sort(triggered_voices | nano::views::transform(MEMBER_CALLER(midi_note))) == std::vector{38, 38, 50});
-        // TODO: REQUIRE_THAT(
-        // TODO:   test::sort(triggered_voices | nano::views::transform(MEMBER_CALLER(volume))),
-        // TODO:   Catch::Approx(std::vector{0.25f * vmgr.normal_volume, 0.5f * vmgr.normal_volume, vmgr.normal_volume}));
+        REQUIRE(test::sort(triggered_voices() | transform(MEMBER_CALLER(midi_note))) == std::vector{38, 38, 50});
+        // REQUIRE(test::sort(triggered_voices() | transform(MEMBER_CALLER(volume))) ==
+        //         std::vector<test::approx>{0.25f * vmgr.normal_volume, 0.5f * vmgr.normal_volume,
+        //         vmgr.normal_volume});
       }
     }
 
@@ -146,16 +179,16 @@ namespace otto::core::voices {
       SUBCASE("Poly mode triggers one voice for a single note")
       {
         vmgr.handle_midi(midi::NoteOnEvent{50});
-        REQUIRE(util::count(triggered_voices) == 1);
-        REQUIRE(triggered_voices.front().midi_note() == 50);
-        REQUIRE(triggered_voices.front().frequency() == test::approx(midi::note_freq(50)));
+        REQUIRE(util::count(triggered_voices()) == 1);
+        REQUIRE(triggered_voices().front().midi_note() == 50);
+        REQUIRE(triggered_voices().front().frequency() == test::approx(midi::note_freq(50)));
       }
 
       SUBCASE("Poly mode triggers one voice per note")
       {
         vmgr.handle_midi(midi::NoteOnEvent{50});
         vmgr.handle_midi(midi::NoteOnEvent{60});
-        REQUIRE(test::sort(triggered_voices | nano::views::transform(MEMBER_CALLER(midi_note))) == std::vector{50, 60});
+        REQUIRE(test::sort(triggered_voices() | transform(MEMBER_CALLER(midi_note))) == std::vector{50, 60});
       }
 
       SUBCASE("Poly mode discards the oldest note when voice count is exceeded and snaps back when released")
@@ -167,22 +200,20 @@ namespace otto::core::voices {
         vmgr.handle_midi(midi::NoteOnEvent{5});
         vmgr.handle_midi(midi::NoteOnEvent{6});
         vmgr.handle_midi(midi::NoteOnEvent{7});
-        REQUIRE(test::sort(triggered_voices | nano::views::transform(MEMBER_CALLER(midi_note))) ==
-                std::vector{2, 3, 4, 5, 6, 7});
+        REQUIRE(test::sort(triggered_voices() | transform(MEMBER_CALLER(midi_note))) == std::vector{2, 3, 4, 5, 6, 7});
         vmgr.handle_midi(midi::NoteOffEvent{2});
-        REQUIRE(test::sort(triggered_voices | nano::views::transform(MEMBER_CALLER(midi_note))) ==
-                std::vector{1, 3, 4, 5, 6, 7});
+        REQUIRE(test::sort(triggered_voices() | transform(MEMBER_CALLER(midi_note))) == std::vector{1, 3, 4, 5, 6, 7});
       }
 
       SUBCASE("Poly mode reuses last used voice")
       {
         vmgr.handle_midi(midi::NoteOnEvent{1});
-        Voice* triggered_voice = &triggered_voices.front();
+        Voice* triggered_voice = &triggered_voices().front();
         vmgr.handle_midi(midi::NoteOnEvent{2});
         vmgr.handle_midi(midi::NoteOnEvent{3});
         vmgr.handle_midi(midi::NoteOffEvent{1});
         vmgr.handle_midi(midi::NoteOnEvent{1});
-        Voice* new_voice = &*nano::find_if(triggered_voices, [](Voice& v) { return v.midi_note() == 1; });
+        Voice* new_voice = &*nano::find_if(triggered_voices(), [](Voice& v) { return v.midi_note() == 1; });
         REQUIRE(triggered_voice == new_voice);
       }
 
@@ -190,9 +221,10 @@ namespace otto::core::voices {
       {
         std::set<Voice*> used_voices;
 
-        for (int i : nano::views::iota(0, (int) vmgr.voices().size())) {
+        for (int i : iota(0, (int) vmgr.voices().size())) {
           vmgr.handle_midi(midi::NoteOnEvent{(int) i});
-          used_voices.insert(&*nano::find_if(triggered_voices, [i = i](Voice& v) { return v.midi_note() == (int) i; }));
+          used_voices.insert(
+            &*nano::find_if(triggered_voices(), [i = i](Voice& v) { return v.midi_note() == (int) i; }));
           vmgr.handle_midi(midi::NoteOffEvent{(int) i});
         }
         REQUIRE(used_voices.size() == vmgr.voices().size());
@@ -208,7 +240,7 @@ namespace otto::core::voices {
         for (int i = 0; i < 5; i++) {
           auto freq = midi::note_freq(50 + i);
           vmgr.handle_midi(midi::NoteOnEvent{50 + i});
-          auto& v = triggered_voices.front();
+          auto& v = triggered_voices().front();
           CAPTURE(i);
           CHECK(v.frequency() == test::approx(freq).margin(freq * 0.1));
           vals.insert(v.frequency() / freq);
@@ -222,13 +254,13 @@ namespace otto::core::voices {
         for (int i = 1; i <= 12 * vmgr.voice_count_v + 1; i++) {
           vmgr.handle_midi(midi::NoteOnEvent{i});
         }
-        // TODO: REQUIRE_THAT(test::sort(triggered_voices | nano::views::transform(MEMBER_CALLER(midi_note))),
+        // TODO: REQUIRE_THAT(test::sort(triggered_voices() | transform(MEMBER_CALLER(midi_note))),
         // TODO:              !Catch::Contains(std::vector{12 * vmgr.voice_count_v + 1}));
 
         for (int i = 1; i <= 12 * vmgr.voice_count_v; i++) {
           vmgr.handle_midi(midi::NoteOffEvent{i});
         }
-        REQUIRE(util::count(triggered_voices) == 0);
+        REQUIRE(util::count(triggered_voices()) == 0);
       }
     }
 
@@ -250,9 +282,9 @@ namespace otto::core::voices {
       SUBCASE("Unison triggers highest possible odd number of voices per note")
       {
         vmgr.handle_midi(midi::NoteOnEvent{1});
-        REQUIRE(util::count(triggered_voices) == VMgr::UnisonAllocator::num_voices_used);
+        REQUIRE(util::count(triggered_voices()) == VMgr::UnisonAllocator::num_voices_used);
         vmgr.handle_midi(midi::NoteOffEvent{1});
-        REQUIRE(util::count(triggered_voices) == 0);
+        REQUIRE(util::count(triggered_voices()) == 0);
       }
 
       SUBCASE("steals voices for each new note")
@@ -260,7 +292,7 @@ namespace otto::core::voices {
         vmgr.handle_midi(midi::NoteOnEvent{50});
         vmgr.handle_midi(midi::NoteOnEvent{60});
         auto expected_midi_notes = std::vector<int>(VMgr::UnisonAllocator::num_voices_used, 60);
-        REQUIRE(test::sort(triggered_voices | nano::views::transform(MEMBER_CALLER(midi_note))) == expected_midi_notes);
+        REQUIRE(test::sort(triggered_voices() | transform(MEMBER_CALLER(midi_note))) == expected_midi_notes);
       }
 
       SUBCASE("Snaps back to playing old notes when a note is released")
@@ -269,15 +301,15 @@ namespace otto::core::voices {
         vmgr.handle_midi(midi::NoteOnEvent{60});
         vmgr.handle_midi(midi::NoteOffEvent{60});
         auto expected_midi_notes = std::vector<int>(VMgr::UnisonAllocator::num_voices_used, 50);
-        REQUIRE(test::sort(triggered_voices | nano::views::transform(MEMBER_CALLER(midi_note))) == expected_midi_notes);
+        REQUIRE(test::sort(triggered_voices() | transform(MEMBER_CALLER(midi_note))) == expected_midi_notes);
       }
 
       SUBCASE("Voices keep same order (voice steal)")
       {
         vmgr.handle_midi(midi::NoteOnEvent{50});
-        auto ordered_voices_expected = test::sort(triggered_voice_ptrs, [](Voice* v) { return v->frequency(); });
+        auto ordered_voices_expected = test::sort(triggered_voice_ptrs(), [](Voice* v) { return v->frequency(); });
         vmgr.handle_midi(midi::NoteOnEvent{60});
-        auto ordered_voices_actual = test::sort(triggered_voice_ptrs, [](Voice* v) { return v->frequency(); });
+        auto ordered_voices_actual = test::sort(triggered_voice_ptrs(), [](Voice* v) { return v->frequency(); });
         REQUIRE(ordered_voices_expected == ordered_voices_actual);
       }
 
@@ -285,9 +317,9 @@ namespace otto::core::voices {
       {
         vmgr.handle_midi(midi::NoteOnEvent{50});
         vmgr.handle_midi(midi::NoteOnEvent{60});
-        auto ordered_voices_expected = test::sort(triggered_voice_ptrs, [](Voice* v) { return v->frequency(); });
+        auto ordered_voices_expected = test::sort(triggered_voice_ptrs(), [](Voice* v) { return v->frequency(); });
         vmgr.handle_midi(midi::NoteOffEvent{60});
-        auto ordered_voices_actual = test::sort(triggered_voice_ptrs, [](Voice* v) { return v->frequency(); });
+        auto ordered_voices_actual = test::sort(triggered_voice_ptrs(), [](Voice* v) { return v->frequency(); });
         REQUIRE(ordered_voices_expected == ordered_voices_actual);
       }
 
@@ -298,9 +330,9 @@ namespace otto::core::voices {
 
         vmgr.handle_midi(midi::NoteOnEvent{50});
         vmgr.handle_midi(midi::NoteOnEvent{60});
-        auto ordered_voices_expected = test::sort(triggered_voice_ptrs, [](Voice* v) { return v->frequency(); });
+        auto ordered_voices_expected = test::sort(triggered_voice_ptrs(), [](Voice* v) { return v->frequency(); });
         vmgr.handle_midi(midi::NoteOffEvent{60});
-        auto ordered_voices_actual = test::sort(triggered_voice_ptrs, [](Voice* v) { return v->frequency(); });
+        auto ordered_voices_actual = test::sort(triggered_voice_ptrs(), [](Voice* v) { return v->frequency(); });
         REQUIRE(ordered_voices_expected == ordered_voices_actual);
       }
     }
@@ -315,15 +347,15 @@ namespace otto::core::voices {
       SUBCASE("Interval mode triggers two voices for a single note")
       {
         vmgr.handle_midi(midi::NoteOnEvent{50});
-        REQUIRE(util::count(triggered_voices) == 2);
-        REQUIRE(test::sort(triggered_voices | nano::views::transform(MEMBER_CALLER(midi_note))) == std::vector{50, 51});
+        REQUIRE(util::count(triggered_voices()) == 2);
+        REQUIRE(test::sort(triggered_voices() | transform(MEMBER_CALLER(midi_note))) == std::vector{50, 51});
       }
 
       SUBCASE("Interval mode triggers two voices per note")
       {
         vmgr.handle_midi(midi::NoteOnEvent{50});
         vmgr.handle_midi(midi::NoteOnEvent{60});
-        REQUIRE(test::sort(triggered_voices | nano::views::transform(MEMBER_CALLER(midi_note))) == std::vector{50, 51, 60, 61});
+        REQUIRE(test::sort(triggered_voices() | transform(MEMBER_CALLER(midi_note))) == std::vector{50, 51, 60, 61});
       }
 
       SUBCASE("Note steal works like in poly")
@@ -333,11 +365,11 @@ namespace otto::core::voices {
         vmgr.handle_midi(midi::NoteOnEvent{70});
         vmgr.handle_midi(midi::NoteOnEvent{80});
         // Note steal
-        REQUIRE(test::sort(triggered_voices | nano::views::transform(MEMBER_CALLER(midi_note))) ==
+        REQUIRE(test::sort(triggered_voices() | transform(MEMBER_CALLER(midi_note))) ==
                 std::vector{60, 61, 70, 71, 80, 81});
         // Note return
         vmgr.handle_midi(midi::NoteOffEvent{70});
-        REQUIRE(test::sort(triggered_voices | nano::views::transform(MEMBER_CALLER(midi_note))) ==
+        REQUIRE(test::sort(triggered_voices() | transform(MEMBER_CALLER(midi_note))) ==
                 std::vector{50, 51, 60, 61, 80, 81});
       }
 
@@ -345,7 +377,7 @@ namespace otto::core::voices {
       {
         vmgr.handle_midi(midi::NoteOnEvent{50});
         vmgr.handle_midi(midi::NoteOnEvent{51});
-        REQUIRE(test::sort(triggered_voices | nano::views::transform(MEMBER_CALLER(midi_note))) == std::vector{50, 51, 51, 52});
+        REQUIRE(test::sort(triggered_voices() | transform(MEMBER_CALLER(midi_note))) == std::vector{50, 51, 51, 52});
       }
 
       SUBCASE("Playing base and interval keys and releasing one yields two voices")
@@ -353,7 +385,7 @@ namespace otto::core::voices {
         vmgr.handle_midi(midi::NoteOnEvent{50});
         vmgr.handle_midi(midi::NoteOnEvent{51});
         vmgr.handle_midi(midi::NoteOffEvent{50});
-        REQUIRE(test::sort(triggered_voices | nano::views::transform(MEMBER_CALLER(midi_note))) == std::vector{51, 52});
+        REQUIRE(test::sort(triggered_voices() | transform(MEMBER_CALLER(midi_note))) == std::vector{51, 52});
       }
 
       SUBCASE("Changing interval still allows removal of all notes")
@@ -362,12 +394,12 @@ namespace otto::core::voices {
 
         voices_props.interval = 2;
         queue.pop_call_all();
-        REQUIRE(test::sort(triggered_voices | nano::views::transform(MEMBER_CALLER(midi_note))) == std::vector{50, 51});
+        REQUIRE(test::sort(triggered_voices() | transform(MEMBER_CALLER(midi_note))) == std::vector{50, 51});
 
         vmgr.handle_midi(midi::NoteOnEvent{60});
-        REQUIRE(test::sort(triggered_voices | nano::views::transform(MEMBER_CALLER(midi_note))) == std::vector{50, 51, 60, 62});
+        REQUIRE(test::sort(triggered_voices() | transform(MEMBER_CALLER(midi_note))) == std::vector{50, 51, 60, 62});
         vmgr.handle_midi(midi::NoteOffEvent{50});
-        REQUIRE(test::sort(triggered_voices | nano::views::transform(MEMBER_CALLER(midi_note))) == std::vector{60, 62});
+        REQUIRE(test::sort(triggered_voices() | transform(MEMBER_CALLER(midi_note))) == std::vector{60, 62});
       }
     }
 
@@ -387,7 +419,7 @@ namespace otto::core::voices {
         queue.pop_call_all();
 
         vmgr.handle_midi(midi::NoteOnEvent{50});
-        auto& v = triggered_voices.front();
+        auto& v = triggered_voices().front();
         v.next();
         REQUIRE(v.frequency() == test::approx(midi::note_freq(50)).margin(0.01));
         vmgr.handle_midi(midi::NoteOnEvent{62});
@@ -405,7 +437,7 @@ namespace otto::core::voices {
         vmgr.handle_midi(midi::NoteOnEvent{50});
         vmgr.handle_midi(midi::NoteOnEvent{62});
 
-        auto& v = triggered_voices.front();
+        auto& v = triggered_voices().front();
         float f = midi::note_freq(50);
         // Skip first frame, which should be the start frequency
         v.next();
