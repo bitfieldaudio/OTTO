@@ -60,7 +60,8 @@ namespace otto::services {
               settings,
               external,
               twist1,
-              twist2)
+              twist2,
+              saveslots)
 
   BETTER_ENUM(KeyMode, std::int8_t, midi, seq);
 
