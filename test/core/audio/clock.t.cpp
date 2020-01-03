@@ -55,8 +55,9 @@ namespace otto::test {
 
       cr = {0, whole};
 
-      REQUIRE(cr.count_multiple(1) == whole - 1);
-      REQUIRE(cr.count_multiple(half) == 1);
+      REQUIRE(cr.count_multiple(1) == whole);
+      REQUIRE(cr.count_multiple(half) == 2);
+      REQUIRE(cr.count_multiple(2 * whole) == 1);
     }
   }
 } // namespace otto::test
