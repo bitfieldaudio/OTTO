@@ -43,7 +43,10 @@ namespace otto::services {
 
   ClockRange ClockManager::step_frames(int nframes)
   {
-    if (running()) counter_.step(notes::beat * nframes / samples_pr_beat_);
+    if (running()) {
+      counter_.step((notes::beat * nframes + remainder_) / samples_pr_beat_);
+      remainder_ = (notes::beat * nframes + remainder_) % samples_pr_beat_;
+    }
     return counter_.current();
   }
 

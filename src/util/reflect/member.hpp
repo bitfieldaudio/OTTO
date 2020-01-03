@@ -4,10 +4,9 @@
 
 #pragma once
 
-#include "util/utility.hpp"
-#include "util/string_ref.hpp"
-
 #include "./reflect.hpp"
+#include "util/string_ref.hpp"
+#include "util/utility.hpp"
 
 
 namespace otto::reflect {
@@ -25,35 +24,34 @@ namespace otto::reflect {
 
   template<typename Class, typename T, typename Data>
   struct MemberAccessor<Class, T, AccessorType::ReadOnly, Data> {
-    constexpr MemberAccessor(util::function_ptr<T, const Data&, const Class&> getter,
-                             Data const& data)
+    constexpr MemberAccessor(util::function_ptr<T(const Data&, const Class&)> getter, Data const& data)
       : get_const(getter), data(data)
     {}
-    util::function_ptr<T, const Data&, const Class&> get_const;
+    util::function_ptr<T(const Data&, const Class&)> get_const;
     Data data;
   };
 
   template<typename Class, typename T, typename Data>
   struct MemberAccessor<Class, T, AccessorType::ReadWrite, Data> {
-    constexpr MemberAccessor(util::function_ptr<T, const Data&, const Class&> get,
-                             util::function_ptr<void, const Data&, Class&, const T&> set,
+    constexpr MemberAccessor(util::function_ptr<T(const Data&, const Class&)> get,
+                             util::function_ptr<void(const Data&, Class&, const T&)> set,
                              const Data& data)
       : get_const(get), set(set), data(data)
     {}
-    util::function_ptr<T, const Data&, const Class&> get_const;
-    util::function_ptr<void, const Data&, Class&, const T&> set;
+    util::function_ptr<T(const Data&, const Class&)> get_const;
+    util::function_ptr<void(const Data&, Class&, const T&)> set;
     Data data;
   };
 
   template<typename Class, typename T, typename Data>
   struct MemberAccessor<Class, T, AccessorType::MutableRef, Data> {
-    constexpr MemberAccessor(util::function_ptr<T&, const Data&, Class&> get,
-                             util::function_ptr<const T&, const Data&, const Class&> get_const,
+    constexpr MemberAccessor(util::function_ptr<T&(const Data&, Class&)> get,
+                             util::function_ptr<const T&(const Data&, const Class&)> get_const,
                              const Data& data)
       : get(get), get_const(get_const), data(data)
     {}
-    util::function_ptr<T&, const Data&, Class&> get;
-    util::function_ptr<const T&, const Data&, const Class&> get_const;
+    util::function_ptr<T&(const Data&, Class&)> get;
+    util::function_ptr<const T&(const Data&, const Class&)> get_const;
     Data data;
   };
 
@@ -82,7 +80,7 @@ namespace otto::reflect {
     {
       return AT == AccessorType::MutableRef;
     }
-    
+
     // get sets methods can be used to add support
     // for getters/setters for members instead of
     // direct access to them
@@ -102,9 +100,7 @@ namespace otto::reflect {
   // Member<SomeClass, int>("someName", &SomeClass::someInt); and can just to this:
   // member("someName", &SomeClass::someInt);
 
-  template<typename Class,
-           typename Callable,
-           typename = std::enable_if_t<std::is_invocable_v<Callable, Class&>>>
+  template<typename Class, typename Callable, typename = std::enable_if_t<std::is_invocable_v<Callable, Class&>>>
   constexpr auto member(util::string_ref, Callable&& ref_getter);
 
   template<typename Class,
@@ -113,15 +109,15 @@ namespace otto::reflect {
            typename = std::enable_if_t<std::is_invocable_v<Getter, const Class&>>>
   constexpr auto member(util::string_ref, Getter&& getter, Setter&& setter);
 
-  template<typename Class,
-           typename ValueType,
-           typename SetterReturnType>
-  constexpr auto member(util::string_ref, ValueType (Class::*getter)() const, SetterReturnType (Class::*setter)(const ValueType&));
+  template<typename Class, typename ValueType, typename SetterReturnType>
+  constexpr auto member(util::string_ref,
+                        ValueType (Class::*getter)() const,
+                        SetterReturnType (Class::*setter)(const ValueType&));
 
-  template<typename Class,
-           typename ValueType,
-           typename SetterReturnType>
-  constexpr auto member(util::string_ref, ValueType (Class::*getter)() const, SetterReturnType (Class::*setter)(ValueType));
+  template<typename Class, typename ValueType, typename SetterReturnType>
+  constexpr auto member(util::string_ref,
+                        ValueType (Class::*getter)() const,
+                        SetterReturnType (Class::*setter)(ValueType));
   /// \}
 
 } // namespace otto::reflect

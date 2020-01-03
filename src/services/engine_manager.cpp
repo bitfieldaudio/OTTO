@@ -4,6 +4,7 @@
 #include "core/engine/engine_dispatcher.inl"
 #include "core/ui/screen.hpp"
 #include "core/ui/vector_graphics.hpp"
+#include "engines/misc/master/master.hpp"
 #include "engines/misc/sends/sends.hpp"
 #include "engines/arps/ARP/arp.hpp"
 #include "engines/fx/chorus/chorus.hpp"
@@ -65,7 +66,7 @@ namespace otto::services {
     engines::sends::Sends synth_send;
 
     // engines::Sends line_in_send;
-    // engines::Master master;
+    engines::master::Master master;
     // engines::Sequencer sequencer;
   };
 
@@ -92,9 +93,9 @@ namespace otto::services {
     reg_ss(ScreenEnum::looper, [&]() { return (ui::ScreenAndInput){looperscreen, looperscreen.input}; });
     reg_ss(ScreenEnum::arp, [&]() { return arpeggiator.engine_screen(); });
     reg_ss(ScreenEnum::arp_selector, [&]() { return arpeggiator.selector_screen(); });
-    // reg_ss(ScreenEnum::master, [&]() -> auto& { return master.screen(); });
     reg_ss(ScreenEnum::sequencer, [&]() { return (ui::ScreenAndInput){sequencerscreen, sequencerscreen.input}; });
     reg_ss(ScreenEnum::sampler, [&]() { return (ui::ScreenAndInput){samplerscreen, samplerscreen.input}; });
+    reg_ss(ScreenEnum::master, [&]() { return master.screen(); });
     // reg_ss(ScreenEnum::sampler_envelope, [&]() -> auto& { return sequencer.envelope_screen(); });
     reg_ss(ScreenEnum::synth, [&]() { return synth.engine_screen(); });
     reg_ss(ScreenEnum::synth_selector, [&]() { return synth.selector_screen(); });
@@ -179,18 +180,18 @@ namespace otto::services {
     controller.register_key_handler(input::Key::twist1, [&](input::Key k) { ui_manager.display(ScreenEnum::twist1); });
     controller.register_key_handler(input::Key::twist2, [&](input::Key k) { ui_manager.display(ScreenEnum::twist2); });
 
-    // static ScreenEnum master_last_screen = ScreenEnum::master;
+    static ScreenEnum master_last_screen = ScreenEnum::master;
     static ScreenEnum send_last_screen = ScreenEnum::sends;
 
-    // controller.register_key_handler(
-    //   input::Key::master,
-    //   [&](input::Key k) {
-    //     master_last_screen = ui_manager.state.current_screen;
-    //     ui_manager.display(ScreenEnum::master);
-    //   },
-    //   [&](input::Key k) {
-    //     if (master_last_screen) ui_manager.display(master_last_screen);
-    //   });
+    controller.register_key_handler(
+      input::Key::master,
+      [&](input::Key k) {
+        master_last_screen = ui_manager.state.current_screen;
+        ui_manager.display(ScreenEnum::master);
+      },
+      [&](input::Key k) {
+        if (master_last_screen) ui_manager.display(master_last_screen);
+      });
 
     controller.register_key_handler(
       input::Key::sends,
@@ -248,19 +249,26 @@ namespace otto::services {
     auto fx1_out = effect1.process(audio::ProcessData<1>(fx1_bus));
     auto fx2_out = effect2.process(audio::ProcessData<1>(fx2_bus));
 
+    // Temporary. Get only synth output for testing
+    for (auto&& [snth, l, r] : util::zip(synth_out.audio, fx1_out.audio[0], fx1_out.audio[1])) {
+      l = r = snth;
+    }
+    return master.audio->process(fx1_out);
     // // Sequencer. Outputs L/R dry output and adds to fx busses.
     // // auto seq_dry = sequencer.process(midi_in, fx1_bus, fx2_bus);
     // auto fx1_out = effect1->process(audio::ProcessData<1>(fx1_bus));
     // auto fx2_out = effect2->process(audio::ProcessData<1>(fx2_bus));
 
     // Stereo output gathered in fx1_out
-    for (auto&& [snth, fx1L, fx1R, fx2L, fx2R] :
-         util::zip(synth_out.audio, fx1_out.audio[0], fx1_out.audio[1], fx2_out.audio[0], fx2_out.audio[1])) {
-      fx1L += fx2L + snth * 0.5; // * synth_send.props.dry * (1 - synth_send.props.dry_pan);
-      fx1R += fx2R + snth * 0.5; // * synth_send.props.dry * (1 + synth_send.props.dry_pan);
-    }
+    // for (auto&& [snth, fx1L, fx1R, fx2L, fx2R] :
+    //      util::zip(synth_out.audio, fx1_out.audio[0], fx1_out.audio[1], fx2_out.audio[0], fx2_out.audio[1])) {
+    //   fx1L += fx2L + snth * 0.5; // * synth_send.props.dry * (1 - synth_send.props.dry_pan);
+    //   fx1R += fx2R + snth * 0.5; // * synth_send.props.dry * (1 + synth_send.props.dry_pan);
+    // }
 
-    return fx1_out;
+
+
+    // return master.audio->process(std.move(fx1_out));
     // synth_out.audio.release();
     // fx2_out.audio[0].release();
     // fx2_out.audio[1].release();
