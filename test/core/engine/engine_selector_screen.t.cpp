@@ -1,6 +1,6 @@
 #include "core/engine/engine_selector_screen.hpp"
-#include "testing.t.hpp"
 #include "graphics.t.hpp"
+#include "testing.t.hpp"
 
 
 namespace otto {

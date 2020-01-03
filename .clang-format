@@ -73,7 +73,7 @@ ForEachMacros: [
     'OBENCH', 
     'OBENCH_SECTION', 
     'TEST_CASE', 
-    'SECTION',
+    'SUBCASE',
     'BENCHMARK'
 ]
 ...

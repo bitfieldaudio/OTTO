@@ -39,7 +39,7 @@ namespace otto::core::engine {
   {
     std::string result;
     result.resize(characters_.size(), ' ');
-    util::transform(characters_, result.begin(), [](auto pair) {
+    nano::transform(characters_, result.begin(), [](auto pair) {
       auto&& [group, c] = pair;
       return character_groups[group][c];
     });
