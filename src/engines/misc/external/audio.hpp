@@ -11,7 +11,13 @@ namespace otto::engines::external {
 
     void recalculate()
     {
-    
+      // Temporary, to silence errors
+      L_to_fx1 = 0.5;
+      R_to_fx1 = 0.5;
+      L_to_fx2 = 0.5;
+      R_to_fx2 = 0.5;
+      dryL = 0.5;
+      dryR = 0.5;
     }
 
     void action(itc::prop_change<&Props::gain>, float g) noexcept
@@ -35,18 +41,18 @@ namespace otto::engines::external {
       recalculate();
     };
 
+    /// Actual values used in the enginemanager
+    float L_to_fx1 = 0.5;
+    float R_to_fx1 = 0.5;
+    float L_to_fx2 = 0.5;
+    float R_to_fx2 = 0.5;
+    float dryL = 0.5;
+    float dryR = 0.5;
+
   private:
     float gain_ = 0.5;
     bool enable_ = true;
     int routing_ = 0;
     float balance_ = 0.5;
-
-    /// Actual values used in the enginemanager
-    float L_to_fx1 = 0.5;
-    float R_to_fx1 = 0.5; 
-    float L_to_fx2 = 0.5;
-    float R_to_fx2 = 0.5;
-    float dryL = 0.5;
-    float dryR = 0.5;
   };
 } // namespace otto::engines::external
