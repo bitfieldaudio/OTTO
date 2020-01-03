@@ -259,13 +259,12 @@ namespace otto::services {
       fx1R += fx2R + snth * 0.5 * synth_send.audio->dryR;
     }
 
-    return master.audio->process(std::move(fx1_out));
     synth_out.audio.release();
     fx2_out.audio[0].release();
     fx2_out.audio[1].release();
     fx1_bus.release();
     fx2_bus.release();
-
+    return master.audio->process(std::move(fx1_out));
   }
 
 } // namespace otto::services
