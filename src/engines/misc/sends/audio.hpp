@@ -9,7 +9,7 @@ namespace otto::engines::sends {
   struct Audio {
     Audio() noexcept {};
 
-    void recalculate() 
+    void recalculate()
     {
       dryL = volume_ * (1 - pan_) * (1 - mix_);
       dryR = volume_ * pan_ * (1 - mix_);
@@ -17,7 +17,7 @@ namespace otto::engines::sends {
       to_fx2 = volume_ * (1 - sendAB_) * mix_;
     }
 
-    void action(itc::prop_change<&Props::mix>, float m) noexcept 
+    void action(itc::prop_change<&Props::mix>, float m) noexcept
     {
       mix_ = m;
       recalculate();
@@ -38,16 +38,16 @@ namespace otto::engines::sends {
       recalculate();
     };
 
-  private:
-    float mix_ = 0;
-    float volume_ = 1;
-    float sendAB_ = 0.5;
-    float pan_ = 0.5;
-
     /// Actual values used in the enginemanager
     float dryL = 0.5;
     float dryR = 0.5;
     float to_fx1 = 0;
     float to_fx2 = 0;
+
+  private:
+    float mix_ = 0;
+    float volume_ = 1;
+    float sendAB_ = 0.5;
+    float pan_ = 0.5;
   };
-} // namespace otto::engines::wormhole
+} // namespace otto::engines::sends
