@@ -36,8 +36,8 @@ int main(int argc, char* argv[])
       EngineManager::create_default
     };
 
-    Controller::current().register_key_handler(Key::settings, [] (auto) {
-      if (Controller::current().is_pressed(Key::shift)) {
+    Controller::current().register_key_handler(core::input::Key::settings, [] (auto) {
+      if (Controller::current().is_pressed(core::input::Key::shift)) {
         Application::current().exit(Application::ErrorCode::user_exit);
       } else {
         (void) std::system("shutdown -h now");

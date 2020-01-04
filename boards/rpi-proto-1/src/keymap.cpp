@@ -25,7 +25,7 @@ namespace otto::board::ui {
       }
     };
 
-    using OKey = services::Key;
+    using OKey = core::input::Key;
 
     auto send_key = [action](OKey k, bool repeat = false) {
       if (action == Action::press || (action == Action::repeat && repeat))
@@ -34,7 +34,7 @@ namespace otto::board::ui {
         Controller::current().keyrelease(k);
     };
 
-    auto send_encoder = [action](core::ui::Encoder rot, int n) {
+    auto send_encoder = [action](core::input::Encoder rot, int n) {
       if (action == Action::press || (action == Action::repeat))
         Controller::current().encoder({rot, n});
     };
