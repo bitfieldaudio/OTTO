@@ -45,7 +45,7 @@ namespace otto::services {
     virtual void start() = 0;
 
     /// Process the engine audio chain
-    virtual core::audio::ProcessData<2> process(core::audio::ProcessData<1> external_in) = 0;
+    virtual core::audio::ProcessData<2> process(core::audio::ProcessData<2> external_in) = 0;
 
     /// For now, this is the way to get the default EngineManager implementation
     /// 

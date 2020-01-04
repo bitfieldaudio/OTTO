@@ -99,7 +99,7 @@ namespace otto::services::test {
 
   struct DummyEngineManager final : EngineManager {
     void start() override {}
-    core::audio::ProcessData<2> process(core::audio::ProcessData<1> external_in) override
+    core::audio::ProcessData<2> process(core::audio::ProcessData<2> external_in) override
     {
       if (on_process) return on_process(external_in);
       OTTO_UNREACHABLE;
@@ -110,7 +110,7 @@ namespace otto::services::test {
       return dynamic_cast<DummyEngineManager&>(EngineManager::current());
     }
 
-    std::function<core::audio::ProcessData<2>(core::audio::ProcessData<1> external_in)> on_process = nullptr;
+    std::function<core::audio::ProcessData<2>(core::audio::ProcessData<2> external_in)> on_process = nullptr;
   };
 
   struct DummyAudioManager final : AudioManager {
@@ -139,7 +139,7 @@ namespace otto::services::test {
 
       midi_bufs.swap();
 
-      auto in_buf = Application::current().audio_manager->buffer_pool().allocate_clear();
+      auto in_buf = Application::current().audio_manager->buffer_pool().allocate_multi_clear<2>();
       // steal the inner midi buffer
       auto out = Application::current().engine_manager->process(
         {in_buf, {std::move(midi_bufs.inner())}, core::clock::ClockRange()});

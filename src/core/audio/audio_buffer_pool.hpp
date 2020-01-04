@@ -152,7 +152,7 @@ namespace otto::core::audio {
   };
 
   struct AudioBufferPool {
-    static constexpr int number_of_buffers = 8;
+    static constexpr int number_of_buffers = 10;
     AudioBufferPool(std::size_t buffer_size) : buffer_size(buffer_size)
     {
       // For now this is hardcoded, which is nice, cause we notice if we suddenly are using too many

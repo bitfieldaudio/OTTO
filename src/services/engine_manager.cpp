@@ -31,7 +31,7 @@ namespace otto::services {
     DefaultEngineManager();
 
     void start() override;
-    audio::ProcessData<2> process(audio::ProcessData<1> external_in) override;
+    audio::ProcessData<2> process(audio::ProcessData<2> external_in) override;
 
   private:
     using EffectsDispatcher = EngineDispatcher< //
@@ -231,16 +231,19 @@ namespace otto::services {
 
   void DefaultEngineManager::start() {}
 
-  audio::ProcessData<2> DefaultEngineManager::process(audio::ProcessData<1> external_in)
+  audio::ProcessData<2> DefaultEngineManager::process(audio::ProcessData<2> external_in)
   {
     // Main processor function
     auto midi_in = external_in.midi_only();
     midi_in.clock = ClockManager::current().step_frames(external_in.nframes);
     auto arp_out = arpeggiator.process(midi_in);
 
-    // TODO: Get external input. This is a mono signal? Should it not be stereo?
+    auto from_external = Application::current().audio_manager->buffer_pool().allocate();
+    for (auto&& [ext_out, extL, extR] : util::zip(from_external, external_in.audio[0], external_in.audio[1])) {
+      ext_out = extL + extR;
+    }
 
-    auto synth_out = synth.process(arp_out.with(external_in.audio));
+    auto synth_out = synth.process(arp_out.with(from_external));
 
     auto fx1_bus = Application::current().audio_manager->buffer_pool().allocate();
     auto fx2_bus = Application::current().audio_manager->buffer_pool().allocate();
