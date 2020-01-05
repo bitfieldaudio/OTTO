@@ -15,10 +15,18 @@ namespace otto::engines::external {
   void External::encoder(EncoderEvent ev)
   {
     switch (ev.encoder) {
-      case Encoder::blue: props.gain.step(ev.steps); break;
-      case Encoder::green: props.enabled.set(!props.enabled.get()); break;
-      case Encoder::yellow: props.stereo_balance.step(ev.steps); break;
-      case Encoder::red: props.stereo_routing.step(ev.steps); break;
+      case Encoder::blue: {
+        if (props.mode == 1) props.stereo_gain.step(ev.steps); 
+        else if (props.mode == 2) props.left_gain.step(ev.steps);
+        break;
+      }
+      case Encoder::green:  {
+        if (props.mode == 1) props.stereo_balance.step(ev.steps); 
+        else if (props.mode == 2) props.right_gain.step(ev.steps);
+        break;
+      }
+      case Encoder::yellow: props.active_send.step(ev.steps); break;
+      case Encoder::red: props.mode.step(ev.steps); break;
     }
   }
 

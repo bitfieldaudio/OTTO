@@ -15,19 +15,21 @@ namespace otto::engines::external {
   struct Props {
     Sender sender;
 
-    /// Input gain
-    Sender::Prop<struct gain_tag, float> gain = {sender, 0.5, limits(0, 1), step_size(0.01)};
-    /// On/off control
-    Sender::Prop<struct enabled_tag, bool> enabled = {sender, true};
-    /// Stereo balance of the sound mixed down and sent to the effects. 0: L -> FX. 0.5: L+R -> FX, 1: R -> FX.
-    /// Audio to dry is just normal sound (panned by sends)
+    /// Mode control
+    /// 0: off, 1: stereo, 2: dual mono
+    Sender::Prop<struct mode_tag, int> mode = {sender, 1, limits(0, 2)};
+    /// Input gains
+    /// Stereo mode
+    Sender::Prop<struct stereo_gain_tag, float> stereo_gain = {sender, 0.5, limits(0, 1), step_size(0.01)};
     Sender::Prop<struct balance_tag, float> stereo_balance = {sender, 0.5, limits(0, 1), step_size(0.01)};
-    /// TBD: Possible uses would be how to mix down to effects, such as L+R -> FX1, FX2 or L->FX1, R->FX
-    /// The property `stereo_balance` could then be the deviation from the 'simple' L+R to all FX
-    Sender::Prop<struct routing_tag, int, wrap> stereo_routing = {sender, 0, limits(0, 2)};
+    /// Dual Mono mode
+    Sender::Prop<struct left_gain_tag, float> left_gain = {sender, 0.5, limits(0, 1), step_size(0.01)};
+    Sender::Prop<struct right_gain_tag, float> right_gain = {sender, 0.5, limits(0, 1), step_size(0.01)};
+    /// TBD: Possible use is swithing between active send
+    Sender::Prop<struct active_send_tag, int> active_send = {sender, 0, limits(0, 1)};
 
 
-    DECL_REFLECTION(Props, gain, enabled, stereo_routing, stereo_balance);
+    DECL_REFLECTION(Props, mode, stereo_gain, stereo_balance, left_gain, right_gain, active_send);
   };
 
   struct External : core::engine::MiscEngine<External> {

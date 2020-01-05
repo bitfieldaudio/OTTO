@@ -20,26 +20,31 @@ namespace otto::engines::external {
       dryR = 0.5;
     }
 
-    void action(itc::prop_change<&Props::gain>, float g) noexcept
-    {
-      gain_ = g;
-      recalculate();
-    };
-    void action(itc::prop_change<&Props::enabled>, bool e) noexcept
-    {
-      enable_ = e;
-      recalculate();
-    }
-    void action(itc::prop_change<&Props::stereo_balance>, float b) noexcept
-    {
-      balance_ = b;
-      recalculate();
-    };
-    void action(itc::prop_change<&Props::stereo_routing>, int r) noexcept
-    {
-      routing_ = r;
-      recalculate();
-    };
+  void action(itc::prop_change<&Props::mode>, int m) noexcept
+  {
+    mode_ = m;
+    recalculate();
+  }
+  void action(itc::prop_change<&Props::stereo_gain>, float g) noexcept
+  {
+    stereo_gain_ = g;
+  }
+  void action(itc::prop_change<&Props::stereo_balance>, float b) noexcept
+  {
+    stereo_balance_ = b;
+  }
+  void action(itc::prop_change<&Props::left_gain>, float g) noexcept
+  {
+    left_gain_ = g;
+  }
+  void action(itc::prop_change<&Props::right_gain>, float g) noexcept
+  {
+    right_gain_ = g;
+  }
+  void action(itc::prop_change<&Props::active_send>, int a) noexcept
+  {
+    active_send_ = a;
+  }
 
     /// Actual values used in the enginemanager
     float L_to_fx1 = 0.5;
@@ -50,9 +55,11 @@ namespace otto::engines::external {
     float dryR = 0.5;
 
   private:
-    float gain_ = 0.5;
-    bool enable_ = true;
-    int routing_ = 0;
-    float balance_ = 0.5;
+    float stereo_gain_ = 0.5;
+    float stereo_balance_ = 0.5;
+    float left_gain_ = 0.5;
+    float right_gain_ = 0.5;
+    int active_send_ = 0;
+    int mode_ = 1;
   };
 } // namespace otto::engines::external
