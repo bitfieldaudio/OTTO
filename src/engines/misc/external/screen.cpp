@@ -1,6 +1,8 @@
 #include "screen.hpp"
 
 #include "core/ui/vector_graphics.hpp"
+#include "services/application.hpp"
+#include "services/ui_manager.hpp"
 
 namespace otto::engines::external {
 
@@ -25,6 +27,7 @@ namespace otto::engines::external {
         gain_1_val = stereo_gain_;
         gain_2 = "Balance";
         gain_2_val = stereo_balance_;
+        services::Application::current().ui_manager->state.active_channel = +services::ChannelEnum::external_stereo;
         break;
       }
       case 2: {
@@ -33,6 +36,8 @@ namespace otto::engines::external {
         gain_1_val = left_gain_;
         gain_2 = "Right Gain";
         gain_2_val = right_gain_;
+        if (active_send_ == 0) services::Application::current().ui_manager->state.active_channel = +services::ChannelEnum::external_left;
+        else services::Application::current().ui_manager->state.active_channel = +services::ChannelEnum::external_right;
         break;
       }
     }
@@ -56,10 +61,14 @@ namespace otto::engines::external {
   void Screen::action(itc::prop_change<&Props::active_send>, int a) noexcept
   {
     active_send_ = a;
-    if (active_send_ == 0)
+    if (active_send_ == 0) {
       active_send_str = "Left";
-    else
+      if (mode_ == 2) services::Application::current().ui_manager->state.active_channel = +services::ChannelEnum::external_left;
+    }
+    else {
       active_send_str = "Right";
+      if (mode_ == 2) services::Application::current().ui_manager->state.active_channel = +services::ChannelEnum::external_right;
+    }
   }
 
 
@@ -67,8 +76,6 @@ namespace otto::engines::external {
   {
     using namespace ui::vg;
     using namespace core::ui::vg;
-
-    // shift = Application::current().ui_manager->is_pressed(ui::Key::shift);
 
     ctx.font(Fonts::Norm, 35);
 

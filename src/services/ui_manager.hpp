@@ -34,7 +34,9 @@ namespace otto::services {
               sampler8 = 8,
               sampler9 = 9,
               internal,
-              external)
+              external_stereo,
+              external_left,
+              external_right)
 
   SourceEnum source_of(ChannelEnum) noexcept;
 

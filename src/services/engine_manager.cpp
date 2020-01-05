@@ -65,7 +65,9 @@ namespace otto::services {
     engines::saveslots::Screen savescreen;
 
     engines::sends::Sends synth_send;
-    engines::sends::Sends line_in_send;
+    engines::sends::Sends line_in_send_stereo;
+    engines::sends::Sends line_in_send_left;
+    engines::sends::Sends line_in_send_right;
 
     engines::master::Master master;
     // engines::Sequencer sequencer;
@@ -112,9 +114,21 @@ namespace otto::services {
         case ScreenEnum::synth: [[fallthrough]];
         case ScreenEnum::synth_envelope: [[fallthrough]];
         case ScreenEnum::synth_selector: [[fallthrough]];
-        case ScreenEnum::voices:
-          if (ui_manager.state.active_channel != +ChannelEnum::internal)
+        case ScreenEnum::voices: {
+          if (ui_manager.state.active_channel != +ChannelEnum::internal) {
             ui_manager.state.active_channel = +ChannelEnum::internal;
+            break;
+          }
+        }
+        case ScreenEnum::external: {
+          if (line_in.props.mode.get() == 2 && line_in.props.active_send.get() == 0)
+            ui_manager.state.active_channel = +ChannelEnum::external_left;
+          else if (line_in.props.mode.get() == 2 && line_in.props.active_send.get() == 1)
+            ui_manager.state.active_channel = +ChannelEnum::external_right;
+          else
+            ui_manager.state.active_channel = +ChannelEnum::external_stereo;
+          break;
+        }
         default: break;
       }
     });

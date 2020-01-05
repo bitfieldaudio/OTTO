@@ -10,7 +10,9 @@ namespace otto::engines::sends {
   LED led_for(ChannelEnum ce) {
     switch (+ce) {
       case ChannelEnum::internal: return LED{Key::synth};
-      case ChannelEnum::external: return LED{Key::external};
+      case ChannelEnum::external_stereo: return LED{Key::external};
+      case ChannelEnum::external_left: return LED{Key::external};
+      case ChannelEnum::external_right: return LED{Key::external};
       case ChannelEnum::sampler0: return LED{Key::S0};
       case ChannelEnum::sampler1: return LED{Key::S1};
       case ChannelEnum::sampler2: return LED{Key::S2};
