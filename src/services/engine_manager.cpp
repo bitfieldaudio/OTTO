@@ -247,30 +247,61 @@ namespace otto::services {
     midi_in.clock = ClockManager::current().step_frames(external_in.nframes);
     auto arp_out = arpeggiator.process(midi_in);
 
-    auto from_external = Application::current().audio_manager->buffer_pool().allocate();
-    for (auto&& [ext_out, extL, extR] : util::zip(from_external, external_in.audio[0], external_in.audio[1])) {
-      ext_out = extL + extR;
+    // In-place. Is this allowed?
+    for (auto&& [extL, extR] : util::zip(external_in.audio[0], external_in.audio[1])) {
+      extL *= line_in.audio->gainL;
+      extR *= line_in.audio->gainR;
     }
 
-    auto synth_out = synth.process(arp_out.with(from_external));
-
+    auto to_synth = Application::current().audio_manager->buffer_pool().allocate();
     auto fx1_bus = Application::current().audio_manager->buffer_pool().allocate();
     auto fx2_bus = Application::current().audio_manager->buffer_pool().allocate();
 
+    if (line_in.audio->mode_ == +engines::external::ModeEnum::stereo) {
+      for (auto&& [extL, extR, snth, fx1, fx2] :
+           util::zip(external_in.audio[0], external_in.audio[1], to_synth, fx1_bus, fx2_bus)) {
+        float mix = extL + extR;
+        snth = mix;
+        fx1 = mix * line_in_send_stereo.audio->to_fx1;
+        fx2 = mix * line_in_send_stereo.audio->to_fx2;
+        // Change external input in-place
+        extL = extL * line_in_send_stereo.audio->dryL;
+        extR = extL * line_in_send_stereo.audio->dryR;
+      }
+    } else if (line_in.audio->mode_ == +engines::external::ModeEnum::dual_mono) {
+      for (auto&& [extL, extR, snth, fx1, fx2] :
+           util::zip(external_in.audio[0], external_in.audio[1], to_synth, fx1_bus, fx2_bus)) {
+        snth = extL; // Just to choose something. There is no obvious choice
+        fx1 = extL * line_in_send_left.audio->to_fx1 + extR * line_in_send_right.audio->to_fx1;
+        fx2 = extL * line_in_send_left.audio->to_fx2 + extR * line_in_send_right.audio->to_fx2;
+        // Change external input in-place
+        extL = extL * line_in_send_left.audio->dryL + extR * line_in_send_right.audio->dryL;
+        extR = extL * line_in_send_left.audio->dryR + extR * line_in_send_right.audio->dryR;
+      }
+    } else {
+      nano::fill(to_synth, 0.f);
+      nano::fill(fx1_bus, 0.f);
+      nano::fill(fx2_bus, 0.f);
+    }
+
+    auto synth_out = synth.process(arp_out.with(to_synth));
+
     for (auto&& [snth, fx1, fx2] : util::zip(synth_out.audio, fx1_bus, fx2_bus)) {
-      fx1 = snth * synth_send.audio->to_fx1;
-      fx2 = snth * synth_send.audio->to_fx2;
+      fx1 += snth * synth_send.audio->to_fx1;
+      fx2 += snth * synth_send.audio->to_fx2;
     }
     auto fx1_out = effect1.process(audio::ProcessData<1>(fx1_bus));
     auto fx2_out = effect2.process(audio::ProcessData<1>(fx2_bus));
 
     // Stereo output gathered in fx1_out
-    for (auto&& [snth, fx1L, fx1R, fx2L, fx2R] :
-         util::zip(synth_out.audio, fx1_out.audio[0], fx1_out.audio[1], fx2_out.audio[0], fx2_out.audio[1])) {
-      fx1L += fx2L + snth * 0.5 * synth_send.audio->dryL;
-      fx1R += fx2R + snth * 0.5 * synth_send.audio->dryR;
+    for (auto&& [snth, fx1L, fx1R, fx2L, fx2R, extL, extR] :
+         util::zip(synth_out.audio, fx1_out.audio[0], fx1_out.audio[1], fx2_out.audio[0], fx2_out.audio[1],
+         external_in.audio[0], external_in.audio[1])) {
+      fx1L += fx2L + snth * synth_send.audio->dryL + extL;
+      fx1R += fx2R + snth * synth_send.audio->dryR + extR;
     }
 
+    to_synth.release();
     synth_out.audio.release();
     fx2_out.audio[0].release();
     fx2_out.audio[1].release();
