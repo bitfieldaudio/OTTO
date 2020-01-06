@@ -1,12 +1,17 @@
 #pragma once
 
-#include "core/ui/icons.hpp"
 #include "core/ui/vector_graphics.hpp"
 #include "engine_dispatcher.hpp"
 
 namespace otto::core::engine {
 
   using namespace std::literals;
+
+  BETTER_ENUM(ESSSubscreen, //
+              std::int8_t,
+              engine_selection,
+              preset_selection,
+              new_preset);
 
   struct WriterUI {
     static constexpr std::array character_groups = {
@@ -39,17 +44,6 @@ namespace otto::core::engine {
 
   void placeholder_engine_icon(ui::IconData& i, nvg::Canvas& ctx);
 
-  struct EngineSelectorData {
-    util::string_ref name;
-    ui::Icon icon = {placeholder_engine_icon};
-    std::vector<std::string> presets = name == "Potion"
-                                         ? std::vector<std::string>{"Last state"}
-                                         : std::vector<std::string>{
-                                             "Last State", "Yard",     "Wren", "Orange", "Smash",  "Pies", "Desire",
-                                             "Base",       "Religion", "Tent", "Branch", "Needle", "Egg",
-                                           };
-  };
-
   using EngineDispatcherReturnChannel = itc::DynamicActionSender<SelectedEngine::action, SelectedPreset::action>;
 
   struct EngineSelectorScreen : ui::Screen {
@@ -60,10 +54,11 @@ namespace otto::core::engine {
     void draw(nvg::Canvas& ctx) override;
 
     void action(input::EncoderAction, input::EncoderEvent e);
+    void action(input::KeyPressAction, input::Key);
 
     void action(SelectedEngine::action, int selected);
     void action(SelectedPreset::action, int selected);
-    void action(PublishEngineNames::action, gsl::span<const util::string_ref>);
+    void action(PublishEngineData::action, EngineSelectorData data);
     void navigate_to(Subscreen screen);
 
     std::vector<EngineSelectorData> engines = {};

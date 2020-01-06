@@ -80,7 +80,7 @@ namespace otto::core::engine {
     } else if (current_screen == +ESSSubscreen::preset_selection) {
       switch (e.encoder) {
         case Encoder::blue: navigate_to(ESSSubscreen::engine_selection); break;
-        case Encoder::green: return_channel.push(SelectedPreset::action::data(selected_engine_ + e.steps)); break;
+        case Encoder::green: return_channel.push(SelectedPreset::action::data(selected_preset_ + e.steps)); break;
         case Encoder::red:
           if (e.steps > 0) navigate_to(ESSSubscreen::new_preset);
           break;
@@ -99,15 +99,13 @@ namespace otto::core::engine {
     }
   }
 
-  //  bool EngineSelectorScreen::action(KeyAction, Key key)
-  //  {
-  //    switch (key) {
-  //      case Key::blue_click: //
-  //        current_screen = +ESSSubscreen::engine_selection;
-  //        return true;
-  //      default: return false;
-  //    }
-  //  }
+  void EngineSelectorScreen::action(KeyPressAction, Key key)
+  {
+    switch (key) {
+      case Key::blue_click: navigate_to(ESSSubscreen::preset_selection); break;
+      default: break;
+    }
+  }
 
 
   void EngineSelectorScreen::action(SelectedEngine::action, int selected)
@@ -132,12 +130,15 @@ namespace otto::core::engine {
     ui::vg::timeline().apply(&page_flip_).then<ch::RampTo>(screen._to_integral(), 500, ch::EaseOutExpo());
   }
 
-  void EngineSelectorScreen::action(PublishEngineNames::action, gsl::span<const util::string_ref> names)
+  void EngineSelectorScreen::action(PublishEngineData::action, EngineSelectorData data)
   {
-    OTTO_ASSERT(!names.empty());
-    first_engine_is_off_ = names[0] == "OFF";
-    engines.clear();
-    nano::transform(names, nano::back_inserter(engines), [](auto&& name) { return EngineSelectorData{name}; });
+    auto found = nano::find_if(engines, [&](auto&& e) { return e.name == data.name; });
+    if (found == engines.end()) {
+      engines.emplace_back(std::move(data));
+    } else {
+      *found = data;
+    }
+    first_engine_is_off_ = engines[0].name == "OFF";
   }
 
   void EngineSelectorScreen::draw(nvg::Canvas& ctx)

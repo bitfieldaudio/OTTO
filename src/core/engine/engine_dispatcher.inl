@@ -3,8 +3,8 @@
 
 #include "engine_dispatcher.hpp"
 #include "services/audio_manager.hpp"
-#include "services/engine_manager.hpp"
 #include "services/controller.hpp"
+#include "services/engine_manager.hpp"
 #include "services/preset_manager.hpp"
 #include "util/meta.hpp"
 #include "util/string_conversions.hpp"
@@ -14,16 +14,39 @@ namespace otto::core::engine {
 #define ENGDISPTEMPLATE template<EngineType ET, typename... Engines>
 #define ENGDISP EngineDispatcher<ET, Engines...>
 
+  void placeholder_engine_icon(ui::IconData& i, nvg::Canvas& ctx);
+
   ENGDISPTEMPLATE
-  ENGDISP::EngineDispatcher() noexcept : screen_(std::make_unique<EngineSelectorScreen>(services::ControllerSender(*this)))
+  ENGDISP::EngineDispatcher() noexcept
+    : screen_(std::make_unique<EngineSelectorScreen>(services::ControllerSender(*this)))
   {
-    props.sender.push(PublishEngineNames::action::data(engine_names));
+    for (auto name : engine_names) {
+      auto presets = std::vector<std::string>{"Last State"};
+      nano::copy(services::PresetManager::current().preset_names(name), nano::back_inserter(presets));
+      props.sender.push(PublishEngineData::action::data({
+        .name = name,
+        .icon = ui::Icon(placeholder_engine_icon),
+        .presets = presets,
+      }));
+    }
     props.selected_engine_idx.on_change().connect([this](int idx) {
       engine_is_constructed_ = false;
       services::AudioManager::current().wait_one();
       current_engine_.emplace_by_index(idx);
       engine_is_constructed_ = true;
+      update_max_preset_idx();
     });
+    props.selected_preset_idx.on_change().connect([this] (int idx) {
+      services::PresetManager::current().apply_preset(*current_engine_, idx);
+    });
+    update_max_preset_idx();
+  }
+
+  ENGDISPTEMPLATE
+  void ENGDISP::update_max_preset_idx()
+  {
+    OTTO_ASSERT(engine_is_constructed_.load());
+    props.selected_preset_idx.max = services::PresetManager::current().preset_names(current_engine_->name()).size();
   }
 
   ENGDISPTEMPLATE
@@ -78,15 +101,9 @@ namespace otto::core::engine {
   ENGDISPTEMPLATE
   bool ENGDISP::keypress(input::Key key)
   {
-    using namespace input;
-    switch (key) {
-      case Key::blue_click: //
-        props.current_screen = +Subscreen::engine_selection;
-        return true;
-      default: return false;
-    }
+    props.sender.push(input::KeyPressAction::data(key));
+    return false;
   }
-
 
 #undef ENGDISPTEMPLATE
 #undef ENGDISP

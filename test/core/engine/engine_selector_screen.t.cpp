@@ -22,7 +22,7 @@ namespace otto {
     EngineDispatcherReturnChannel ret_ch = {itc::DirectActionSender()};
     EngineSelectorScreen screen = {ret_ch};
     Sender sender = {screen};
-    sender.push(PublishEngineNames::action::data(engine_names));
+    //sender.push(PublishEngineNames::action::data(engine_names));
 
     struct Props : InputHandler {
       Sender sender;
