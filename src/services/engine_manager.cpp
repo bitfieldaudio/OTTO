@@ -7,7 +7,7 @@
 #include "engines/arps/ARP/arp.hpp"
 #include "engines/fx/chorus/chorus.hpp"
 #include "engines/fx/wormhole/wormhole.hpp"
-#include "engines/misc/external/external_in.hpp"
+#include "engines/misc/external/external.hpp"
 #include "engines/misc/looper/screen.hpp"
 #include "engines/misc/master/master.hpp"
 #include "engines/misc/mixer/screen.hpp"
@@ -121,12 +121,7 @@ namespace otto::services {
           }
         }
         case ScreenEnum::external: {
-          if (line_in.props.mode.get() == 2 && line_in.props.active_send.get() == 0)
-            ui_manager.state.active_channel = +ChannelEnum::external_left;
-          else if (line_in.props.mode.get() == 2 && line_in.props.active_send.get() == 1)
-            ui_manager.state.active_channel = +ChannelEnum::external_right;
-          else
-            ui_manager.state.active_channel = +ChannelEnum::external_stereo;
+          ui_manager.state.active_channel = line_in.channel();
           break;
         }
         default: break;

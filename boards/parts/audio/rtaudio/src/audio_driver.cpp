@@ -156,13 +156,17 @@ namespace otto::services {
     midi_bufs.swap();
 
     int ref_count = 0;
-    auto in_buf = Application::current().audio_manager->buffer_pool().allocate_multi_clear<2>();
+    auto in_buf = Application::current().audio_manager->buffer_pool().allocate_multi<2>();
     if (enable_input) {
       // Deinterleave
       for (int i = 0; i < nframes; i++) {
       in_buf[0][i] = in_data[2 * i];
       in_buf[1][i] = in_data[2 * i + 1];
       }
+    } else {
+      // Is this necessary? We could also just not even add it to the output.
+      nano::fill(in_buf[0], 0.f);
+      nano::fill(in_buf[1], 0.f);
     }
     ref_count++;
     

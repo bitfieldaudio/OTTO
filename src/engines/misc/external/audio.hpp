@@ -1,6 +1,6 @@
 #pragma once
 
-#include "external_in.hpp"
+#include "external.hpp"
 
 namespace otto::engines::external {
 
@@ -20,7 +20,7 @@ namespace otto::engines::external {
       dryR = 0.5;
     }
 
-  void action(itc::prop_change<&Props::mode>, int m) noexcept
+  void action(itc::prop_change<&Props::mode>, ModeEnum m) noexcept
   {
     mode_ = m;
     recalculate();
@@ -60,6 +60,6 @@ namespace otto::engines::external {
     float left_gain_ = 0.5;
     float right_gain_ = 0.5;
     int active_send_ = 0;
-    int mode_ = 1;
+    ModeEnum mode_ = ModeEnum::stereo;
   };
 } // namespace otto::engines::external

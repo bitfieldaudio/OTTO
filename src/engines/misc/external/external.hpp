@@ -1,7 +1,11 @@
 #pragma once
 
+#include <better_enum.hpp>
+#include <cstdint>
+
 #include "core/engine/engine.hpp"
 #include "itc/itc.hpp"
+#include "services/ui_manager.hpp"
 
 namespace otto::engines::external {
 
@@ -12,12 +16,13 @@ namespace otto::engines::external {
 
   using Sender = services::UISender<Audio, Screen>;
 
+  BETTER_ENUM(ModeEnum, std::int8_t, disabled, stereo, dual_mono);
+
   struct Props {
     Sender sender;
 
     /// Mode control
-    /// 0: off, 1: stereo, 2: dual mono
-    Sender::Prop<struct mode_tag, int> mode = {sender, 1, limits(0, 2)};
+    Sender::Prop<struct mode_tag, ModeEnum> mode = {sender, ModeEnum::stereo};
     /// Input gains
     /// Stereo mode
     Sender::Prop<struct stereo_gain_tag, float> stereo_gain = {sender, 0.5, limits(0, 1), step_size(0.01)};
@@ -25,7 +30,7 @@ namespace otto::engines::external {
     /// Dual Mono mode
     Sender::Prop<struct left_gain_tag, float> left_gain = {sender, 0.5, limits(0, 1), step_size(0.01)};
     Sender::Prop<struct right_gain_tag, float> right_gain = {sender, 0.5, limits(0, 1), step_size(0.01)};
-    /// TBD: Possible use is swithing between active send
+    /// TBD: Possible use is switching between active send
     Sender::Prop<struct active_send_tag, int> active_send = {sender, 0, limits(0, 1)};
 
 
@@ -38,6 +43,8 @@ namespace otto::engines::external {
     External();
 
     void encoder(core::input::EncoderEvent e) override;
+
+    services::ChannelEnum channel();
 
     core::ui::ScreenAndInput screen() override;
 

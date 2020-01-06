@@ -9,11 +9,11 @@ namespace otto::engines::external {
   using namespace core::ui;
   using namespace core::ui::vg;
 
-  void Screen::action(itc::prop_change<&Props::mode>, int m) noexcept
+  void Screen::action(itc::prop_change<&Props::mode>, ModeEnum m) noexcept
   {
     mode_ = m;
     switch (mode_) {
-      case 0: {
+      case ModeEnum::disabled: {
         mode_str = "Disabled";
         gain_1 = "---";
         gain_1_val = 0;
@@ -21,7 +21,7 @@ namespace otto::engines::external {
         gain_2_val = 0;
         break;
       }
-      case 1: {
+      case ModeEnum::stereo: {
         mode_str = "Stereo";
         gain_1 = "Gain";
         gain_1_val = stereo_gain_;
@@ -30,14 +30,17 @@ namespace otto::engines::external {
         services::Application::current().ui_manager->state.active_channel = +services::ChannelEnum::external_stereo;
         break;
       }
-      case 2: {
+      case ModeEnum::dual_mono: {
         mode_str = "Dual Mono";
         gain_1 = "Left Gain";
         gain_1_val = left_gain_;
         gain_2 = "Right Gain";
         gain_2_val = right_gain_;
-        if (active_send_ == 0) services::Application::current().ui_manager->state.active_channel = +services::ChannelEnum::external_left;
-        else services::Application::current().ui_manager->state.active_channel = +services::ChannelEnum::external_right;
+        if (active_send_ == 0) {
+          services::Application::current().ui_manager->state.active_channel = +services::ChannelEnum::external_left;
+        } else {
+          services::Application::current().ui_manager->state.active_channel = +services::ChannelEnum::external_right;
+        }
         break;
       }
     }
@@ -63,11 +66,12 @@ namespace otto::engines::external {
     active_send_ = a;
     if (active_send_ == 0) {
       active_send_str = "Left";
-      if (mode_ == 2) services::Application::current().ui_manager->state.active_channel = +services::ChannelEnum::external_left;
-    }
-    else {
+      if (mode_ == 2)
+        services::Application::current().ui_manager->state.active_channel = +services::ChannelEnum::external_left;
+    } else {
       active_send_str = "Right";
-      if (mode_ == 2) services::Application::current().ui_manager->state.active_channel = +services::ChannelEnum::external_right;
+      if (mode_ == 2)
+        services::Application::current().ui_manager->state.active_channel = +services::ChannelEnum::external_right;
     }
   }
 
@@ -103,7 +107,7 @@ namespace otto::engines::external {
     ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
     ctx.fillText(fmt::format("{:1}", gain_2_val), {width - x_pad, y_pad + space});
 
-    if (mode_ == 2) {
+    if (mode_ == +ModeEnum::dual_mono) {
       ctx.beginPath();
       ctx.fillStyle(Colours::Yellow);
       ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);

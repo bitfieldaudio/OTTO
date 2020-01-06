@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/ui/vector_graphics.hpp"
-#include "external_in.hpp"
+#include "external.hpp"
 
 namespace otto::engines::external {
 
@@ -11,7 +11,7 @@ namespace otto::engines::external {
   struct Screen : ui::Screen {
     void draw(nvg::Canvas& ctx) override;
 
-    void action(itc::prop_change<&Props::mode>, int m) noexcept;
+    void action(itc::prop_change<&Props::mode>, ModeEnum m) noexcept;
     void action(itc::prop_change<&Props::stereo_gain>, float g) noexcept;
     void action(itc::prop_change<&Props::stereo_balance>, float b) noexcept;
     void action(itc::prop_change<&Props::left_gain>, float g) noexcept;
@@ -24,7 +24,7 @@ namespace otto::engines::external {
     float left_gain_ = 0.5;
     float right_gain_ = 0.5;
     int active_send_ = 0;
-    int mode_ = 1;
+    ModeEnum mode_ = ModeEnum::stereo;
 
     std::string mode_str;
     std::string gain_1;
