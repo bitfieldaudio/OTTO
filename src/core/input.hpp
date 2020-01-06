@@ -2,6 +2,8 @@
 
 #include "util/enum.hpp"
 
+#include "itc/action.hpp"
+
 namespace otto::core::input {
 
   BETTER_ENUM(FuncKey,
@@ -127,6 +129,8 @@ namespace otto::core::input {
   struct KeyReleaseEvent : KeyEvent {
     KeyReleaseEvent(Key k) : KeyEvent{k} {}
   };
+
+  using EncoderAction = itc::Action<struct encoder_action_tag, EncoderEvent>;
 
   /// An object that handles input events
   ///

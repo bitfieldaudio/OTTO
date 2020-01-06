@@ -1,4 +1,5 @@
 #include "engine_selector_screen.hpp"
+
 #include <nanorange.hpp>
 
 namespace otto::core::engine {
@@ -66,6 +67,49 @@ namespace otto::core::engine {
     ctx.fill(i.color);
   }
 
+  using namespace core::input;
+
+  void EngineSelectorScreen::action(EncoderAction, EncoderEvent e)
+  {
+    if (current_screen == +ESSSubscreen::engine_selection) {
+      switch (e.encoder) {
+        case Encoder::blue: return_channel.push(SelectedEngine::action::data(selected_engine_ + e.steps)); break;
+        case Encoder::green: navigate_to(ESSSubscreen::preset_selection); break;
+        default: break;
+      }
+    } else if (current_screen == +ESSSubscreen::preset_selection) {
+      switch (e.encoder) {
+        case Encoder::blue: navigate_to(ESSSubscreen::engine_selection); break;
+        case Encoder::green: return_channel.push(SelectedPreset::action::data(selected_engine_ + e.steps)); break;
+        case Encoder::red:
+          if (e.steps > 0) navigate_to(ESSSubscreen::new_preset);
+          break;
+        default: break;
+      }
+    } else if (current_screen == +ESSSubscreen::new_preset) {
+      switch (e.encoder) {
+        case Encoder::blue: preset_name_writer.cycle_char(e.steps); break;
+        case Encoder::green: preset_name_writer.cycle_group(e.steps); break;
+        case Encoder::yellow: preset_name_writer.step_idx(e.steps); break;
+        case Encoder::red:
+          if (e.steps < 0) navigate_to(ESSSubscreen::preset_selection);
+          break;
+        default: break;
+      }
+    }
+  }
+
+  //  bool EngineSelectorScreen::action(KeyAction, Key key)
+  //  {
+  //    switch (key) {
+  //      case Key::blue_click: //
+  //        current_screen = +ESSSubscreen::engine_selection;
+  //        return true;
+  //      default: return false;
+  //    }
+  //  }
+
+
   void EngineSelectorScreen::action(SelectedEngine::action, int selected)
   {
     selected_engine_ = selected;
@@ -82,8 +126,9 @@ namespace otto::core::engine {
     }
   }
 
-  void EngineSelectorScreen::action(CurrentScreen::action, Subscreen screen)
+  void EngineSelectorScreen::navigate_to(Subscreen screen)
   {
+    current_screen = screen;
     ui::vg::timeline().apply(&page_flip_).then<ch::RampTo>(screen._to_integral(), 500, ch::EaseOutExpo());
   }
 
@@ -93,16 +138,6 @@ namespace otto::core::engine {
     first_engine_is_off_ = names[0] == "OFF";
     engines.clear();
     nano::transform(names, nano::back_inserter(engines), [](auto&& name) { return EngineSelectorData{name}; });
-  }
-
-  void EngineSelectorScreen::action(CursorPos::action, std::int8_t cursor)
-  {
-    cursor_pos = cursor;
-  }
-
-  void EngineSelectorScreen::action(NewPresetName::action, std::string name)
-  {
-    new_preset_name = name;
   }
 
   void EngineSelectorScreen::draw(nvg::Canvas& ctx)
@@ -240,6 +275,8 @@ namespace otto::core::engine {
         ctx.beginPath();
         ctx.font(Fonts::Norm, font_size);
         ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Baseline);
+        const auto new_preset_name = preset_name_writer.to_string();
+        const auto cursor_pos = preset_name_writer.cursor();
         auto cursor_left = ctx.measureText(new_preset_name.substr(0, cursor_pos));
         auto cursor_right = ctx.measureText(new_preset_name.substr(0, cursor_pos + 1));
 

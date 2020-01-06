@@ -52,10 +52,18 @@ namespace otto::core::engine {
     template<int N>
     auto process(audio::ProcessData<N> data) noexcept;
 
-    DECL_REFLECTION_EMPTY();
-
     void encoder(input::EncoderEvent) override;
     bool keypress(input::Key) override;
+
+    void action(SelectedEngine::action, int v) {
+      props.selected_engine_idx = v;
+    }
+
+    void action(SelectedPreset::action, int v) {
+      props.selected_preset_idx = v;
+    }
+
+    DECL_REFLECTION_EMPTY();
 
   private:
     std::atomic<bool> engine_is_constructed_ = true;

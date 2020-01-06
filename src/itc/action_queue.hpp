@@ -27,6 +27,11 @@ namespace otto::itc {
       return queue_.size();
     }
 
+    bool empty() const noexcept
+    {
+      return queue_.empty();
+    }
+
     /// Push a call to `call_receiver` to the queue.
     template<typename AR, typename Tag, typename... Args>
     auto push(AR& ar, ActionData<Action<Tag, Args...>> action_data)

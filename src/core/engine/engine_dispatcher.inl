@@ -4,6 +4,7 @@
 #include "engine_dispatcher.hpp"
 #include "services/audio_manager.hpp"
 #include "services/engine_manager.hpp"
+#include "services/controller.hpp"
 #include "services/preset_manager.hpp"
 #include "util/meta.hpp"
 #include "util/string_conversions.hpp"
@@ -14,7 +15,7 @@ namespace otto::core::engine {
 #define ENGDISP EngineDispatcher<ET, Engines...>
 
   ENGDISPTEMPLATE
-  ENGDISP::EngineDispatcher() noexcept : screen_(std::make_unique<EngineSelectorScreen>())
+  ENGDISP::EngineDispatcher() noexcept : screen_(std::make_unique<EngineSelectorScreen>(services::ControllerSender(*this)))
   {
     props.sender.push(PublishEngineNames::action::data(engine_names));
     props.selected_engine_idx.on_change().connect([this](int idx) {
@@ -71,25 +72,7 @@ namespace otto::core::engine {
   ENGDISPTEMPLATE
   void ENGDISP::encoder(input::EncoderEvent e)
   {
-    using namespace input;
-    if (props.current_screen == Subscreen::engine_selection) {
-      switch (e.encoder) {
-        case Encoder::blue: props.selected_engine_idx.step(e.steps); break;
-        case Encoder::green: props.current_screen = +Subscreen::preset_selection; break;
-        default: break;
-      }
-    } else if (props.current_screen == Subscreen::preset_selection) {
-      switch (e.encoder) {
-        case Encoder::blue: props.current_screen = +Subscreen::engine_selection; break;
-        case Encoder::green: props.selected_preset_idx.step(e.steps); break;
-        case Encoder::red: props.current_screen = +Subscreen::new_preset; break;
-        default: break;
-      }
-    } else if (props.current_screen == Subscreen::new_preset) {
-      switch (e.encoder) {
-        default: break;
-      }
-    }
+    props.sender.push(input::EncoderAction::data(e));
   }
 
   ENGDISPTEMPLATE
