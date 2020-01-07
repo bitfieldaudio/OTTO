@@ -118,7 +118,7 @@ namespace otto::core::voices {
   }
 
   template<typename D>
-  core::audio::ProcessData<1> VoiceBase<D>::process(core::audio::ProcessData<1> data) noexcept
+  core::audio::ProcessData<1> VoiceBase<D>::process(core::audio::ProcessData<0> data) noexcept
   {
     auto buf = services::AudioManager::current().buffer_pool().allocate();
     for (auto& f : buf) {
@@ -453,15 +453,16 @@ namespace otto::core::voices {
   }
 
   template<typename V, int N>
-  audio::ProcessData<1> VoiceManager<V, N>::process(audio::ProcessData<1> data) noexcept
+  audio::ProcessData<1> VoiceManager<V, N>::process(audio::ProcessData<0> data) noexcept
   {
     for (auto& event : data.midi) handle_midi(event);
     auto buf = services::AudioManager::current().buffer_pool().allocate_clear();
     for (auto& v : voices()) {
-      auto v_out = v.process(data.audio_only());
+      auto v_out = v.process(data);
       for (auto&& [vf, b] : util::zip(v_out.audio, buf)) {
         b += vf;
       }
+      v_out.audio.release();
     }
     return data.with(buf);
   }

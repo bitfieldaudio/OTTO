@@ -274,13 +274,12 @@ namespace otto::services {
       extR *= line_in.audio->gainR;
     }
 
-    auto to_synth = Application::current().audio_manager->buffer_pool().allocate();
     auto fx1_bus = Application::current().audio_manager->buffer_pool().allocate();
     auto fx2_bus = Application::current().audio_manager->buffer_pool().allocate();
 
     line_in.audio->apply_sends(external_in.audio[0], external_in.audio[1], fx1_bus, fx2_bus);
 
-    auto synth_out = synth.process(arp_out.with(to_synth));
+    auto synth_out = synth.process(arp_out);
 
     for (auto&& [snth, fx1, fx2] : util::zip(synth_out.audio, fx1_bus, fx2_bus)) {
       fx1 += snth * synth_send.audio->to_fx1;
@@ -297,7 +296,6 @@ namespace otto::services {
       fx1R += fx2R + snth * synth_send.audio->dryR + extR;
     }
 
-    to_synth.release();
     synth_out.audio.release();
     fx2_out.audio[0].release();
     fx2_out.audio[1].release();

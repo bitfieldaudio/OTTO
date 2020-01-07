@@ -73,7 +73,7 @@ namespace otto::engines::goss {
 
     float operator()() noexcept;
 
-    audio::ProcessData<1> process(audio::ProcessData<1>) noexcept;
+    audio::ProcessData<1> process(audio::ProcessData<0>) noexcept;
 
   private:
     friend Voice;

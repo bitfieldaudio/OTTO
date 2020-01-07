@@ -147,7 +147,7 @@ namespace otto::engines::ottofm {
 
     // These voices only have process calls.
     // This saves us from checking the current algorithm every sample.
-    core::audio::ProcessData<1> process(core::audio::ProcessData<1> data) noexcept;
+    core::audio::ProcessData<1> process(core::audio::ProcessData<0> data) noexcept;
 
     void on_note_on(float) noexcept;
     void on_note_off() noexcept;
@@ -218,7 +218,7 @@ namespace otto::engines::ottofm {
     }
 
     // Only a process call, since this sums the process calls of the voices.
-    audio::ProcessData<1> process(audio::ProcessData<1>) noexcept;
+    audio::ProcessData<1> process(audio::ProcessData<0>) noexcept;
 
     friend Voice;
 

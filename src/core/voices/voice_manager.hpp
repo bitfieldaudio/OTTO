@@ -91,7 +91,7 @@ namespace otto::core::voices {
     void action(portamento_tag::action, float p) noexcept;
 
     /// This should multiply by volume_. If you write you own, remember to do that!
-    core::audio::ProcessData<1> process(core::audio::ProcessData<1>) noexcept;
+    core::audio::ProcessData<1> process(core::audio::ProcessData<0>) noexcept;
 
   private:
     template<typename T, int N>
@@ -153,7 +153,7 @@ namespace otto::core::voices {
 
 
     /// Process audio, applying Preprocessing, each voice and then postprocessing
-    audio::ProcessData<1> process(audio::ProcessData<1> data) noexcept;
+    audio::ProcessData<1> process(audio::ProcessData<0> data) noexcept;
 
     /// Process audio, applying Preprocessing, each voice and then postprocessing.
     /// Individual volume of voices are applied here.

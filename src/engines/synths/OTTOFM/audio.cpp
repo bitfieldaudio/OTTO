@@ -40,8 +40,9 @@ namespace otto::engines::ottofm {
 
   // Voice process. We apply voice volume and increment voice frequency with next() manually,
   // since we are overwriting the default process method.
-  core::audio::ProcessData<1> Voice::process(core::audio::ProcessData<1> data) noexcept
+  core::audio::ProcessData<1> Voice::process(core::audio::ProcessData<0> data) noexcept
   {
+    auto buf = services::AudioManager::current().buffer_pool().allocate();
     auto callOps = [&] {
       auto& [op0, op1, op2, op3] = operators;
       float aux = 0;
@@ -60,17 +61,17 @@ namespace otto::engines::ottofm {
         default: return 0.f;
       }
     };
-    for (auto& f : data.audio) {
+    for (auto& f : buf) {
       next();
       set_frequencies();
       f = callOps() * volume() * env_();
     }
-    return data;
+    return data.with(buf);
   }
 
   // Audio //
 
-  audio::ProcessData<1> Audio::process(audio::ProcessData<1> data) noexcept
+  audio::ProcessData<1> Audio::process(audio::ProcessData<0> data) noexcept
   {
     util::indexed_for_each(voice_mgr_.last_triggered_voice().operators,
                            [&](auto i, auto& op) { shared_activity[i] = op.get_activity_level(); });

@@ -49,8 +49,10 @@ namespace otto::core::engine {
     } else if constexpr (ET == EngineType::effect) {
       auto buf = services::AudioManager::current().buffer_pool().allocate_multi_clear<2>();
       return data.with(buf);
+    } else  if constexpr (ET == EngineType::synth){
+      auto buf = services::AudioManager::current().buffer_pool().allocate_clear();
+      return data.with(buf);
     } else {
-      nano::fill(data.audio, 0);
       return data;
     }
   }

@@ -57,8 +57,6 @@ namespace otto::services {
     static EngineManager& current() noexcept {
       return Application::current().engine_manager;
     }
-
-    engines::sends::Sends sends_of(ChannelEnum);
   };
 
 } // namespace otto::services
