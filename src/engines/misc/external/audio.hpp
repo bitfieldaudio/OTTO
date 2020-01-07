@@ -1,5 +1,7 @@
 #pragma once
 
+#include "core/audio/audio_buffer_pool.hpp"
+#include "engines/misc/sends/audio.hpp"
 #include "external.hpp"
 #include "services/log_manager.hpp"
 
@@ -8,7 +10,8 @@ namespace otto::engines::external {
   using namespace core;
 
   struct Audio {
-    Audio() noexcept {};
+    Audio(sends::Audio& stereo, sends::Audio& left, sends::Audio& right) noexcept
+      : send_stereo(stereo), send_left(left), send_right(right){};
 
     void recalculate()
     {
@@ -62,6 +65,34 @@ namespace otto::engines::external {
       active_send_ = a;
     }
 
+    using abh = core::audio::AudioBufferHandle;
+    void apply_sends(abh& inL, abh& inR, abh& fx1_bus, abh& fx2_bus) noexcept
+    {
+      if (mode_ == +ModeEnum::stereo) {
+        for (auto&& [extL, extR, fx1, fx2] :
+             util::zip(inL, inR, fx1_bus, fx2_bus)) {
+          float mix = extL + extR;
+          fx1 = mix * send_stereo.to_fx1;
+          fx2 = mix * send_stereo.to_fx2;
+          // Change external input in-place
+          extL = extL * send_stereo.dryL;
+          extR = extL * send_stereo.dryR;
+        }
+      } else if (mode_ == +ModeEnum::dual_mono) {
+        for (auto&& [extL, extR, fx1, fx2] :
+             util::zip(inL, inR, fx1_bus, fx2_bus)) {
+          fx1 = extL * send_left.to_fx1 + extR * send_right.to_fx1;
+          fx2 = extL * send_left.to_fx2 + extR * send_right.to_fx2;
+          // Change external input in-place
+          extL = extL * send_left.dryL + extR * send_right.dryL;
+          extR = extL * send_left.dryR + extR * send_right.dryR;
+        }
+      } else {
+        nano::fill(fx1_bus, 0.f);
+        nano::fill(fx2_bus, 0.f);
+      }
+    }
+
     /// Actual values used in the enginemanager
     float gainL = 1;
     float gainR = 1;
@@ -74,5 +105,10 @@ namespace otto::engines::external {
     float left_gain_ = 0.5;
     float right_gain_ = 0.5;
     int active_send_ = 0;
+
+    /// References to the Audio objects of the Sends owned by External.
+    sends::Audio& send_stereo;
+    sends::Audio& send_left;
+    sends::Audio& send_right;
   };
 } // namespace otto::engines::external

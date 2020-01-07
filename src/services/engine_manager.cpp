@@ -65,9 +65,6 @@ namespace otto::services {
     engines::saveslots::Screen savescreen;
 
     engines::sends::Sends synth_send;
-    engines::sends::Sends line_in_send_stereo;
-    engines::sends::Sends line_in_send_left;
-    engines::sends::Sends line_in_send_right;
 
     engines::master::Master master;
     // engines::Sequencer sequencer;
@@ -78,8 +75,30 @@ namespace otto::services {
     return std::make_unique<DefaultEngineManager>();
   }
 
+  
+
   DefaultEngineManager::DefaultEngineManager()
   {
+    auto sends_of = [&](ChannelEnum c) -> engines::sends::Sends& 
+    {
+      switch (c) {
+        case ChannelEnum::sampler0: [[fallthrough]];
+        case ChannelEnum::sampler1: [[fallthrough]];
+        case ChannelEnum::sampler2: [[fallthrough]];
+        case ChannelEnum::sampler3: [[fallthrough]];
+        case ChannelEnum::sampler4: [[fallthrough]];
+        case ChannelEnum::sampler5: [[fallthrough]];
+        case ChannelEnum::sampler6: [[fallthrough]];
+        case ChannelEnum::sampler7: [[fallthrough]];
+        case ChannelEnum::sampler8: [[fallthrough]];
+        case ChannelEnum::sampler9: [[fallthrough]]; // Change this to sequencer.send() or similar
+        case ChannelEnum::internal: return synth_send; break;
+        case ChannelEnum::external_left: [[fallthrough]];
+        case ChannelEnum::external_right: [[fallthrough]];
+        case ChannelEnum::external_stereo: return line_in.active_send(); break;
+      }
+    };
+    
     auto& ui_manager = *Application::current().ui_manager;
     auto& state_manager = *Application::current().state_manager;
     auto& controller = *Application::current().controller;
@@ -88,7 +107,7 @@ namespace otto::services {
 
     reg_ss(ScreenEnum::routing, [&]() { return (ui::ScreenAndInput){mixerscreen, mixerscreen.input}; });
     reg_ss(ScreenEnum::saveslots, [&]() { return (ui::ScreenAndInput){savescreen, savescreen.input}; });
-    reg_ss(ScreenEnum::sends, [&]() { return synth_send.screen(); });
+    reg_ss(ScreenEnum::sends, [&]() { return sends_of(ui_manager.state.active_channel).screen(); });
     reg_ss(ScreenEnum::fx1, [&]() { return effect1.engine_screen(); });
     reg_ss(ScreenEnum::fx1_selector, [&]() { return effect1.selector_screen(); });
     reg_ss(ScreenEnum::fx2, [&]() { return effect2.engine_screen(); });
@@ -127,6 +146,8 @@ namespace otto::services {
         default: break;
       }
     });
+
+    
 
     controller.register_key_handler(input::Key::sequencer,
                                     [&](input::Key k) { ui_manager.display(ScreenEnum::sequencer); });
@@ -257,32 +278,7 @@ namespace otto::services {
     auto fx1_bus = Application::current().audio_manager->buffer_pool().allocate();
     auto fx2_bus = Application::current().audio_manager->buffer_pool().allocate();
 
-    if (line_in.audio->mode_ == +engines::external::ModeEnum::stereo) {
-      for (auto&& [extL, extR, snth, fx1, fx2] :
-           util::zip(external_in.audio[0], external_in.audio[1], to_synth, fx1_bus, fx2_bus)) {
-        float mix = extL + extR;
-        snth = mix;
-        fx1 = mix * line_in_send_stereo.audio->to_fx1;
-        fx2 = mix * line_in_send_stereo.audio->to_fx2;
-        // Change external input in-place
-        extL = extL * line_in_send_stereo.audio->dryL;
-        extR = extL * line_in_send_stereo.audio->dryR;
-      }
-    } else if (line_in.audio->mode_ == +engines::external::ModeEnum::dual_mono) {
-      for (auto&& [extL, extR, snth, fx1, fx2] :
-           util::zip(external_in.audio[0], external_in.audio[1], to_synth, fx1_bus, fx2_bus)) {
-        snth = extL; // Just to choose something. There is no obvious choice
-        fx1 = extL * line_in_send_left.audio->to_fx1 + extR * line_in_send_right.audio->to_fx1;
-        fx2 = extL * line_in_send_left.audio->to_fx2 + extR * line_in_send_right.audio->to_fx2;
-        // Change external input in-place
-        extL = extL * line_in_send_left.audio->dryL + extR * line_in_send_right.audio->dryL;
-        extR = extL * line_in_send_left.audio->dryR + extR * line_in_send_right.audio->dryR;
-      }
-    } else {
-      nano::fill(to_synth, 0.f);
-      nano::fill(fx1_bus, 0.f);
-      nano::fill(fx2_bus, 0.f);
-    }
+    line_in.audio->apply_sends(external_in.audio[0], external_in.audio[1], fx1_bus, fx2_bus);
 
     auto synth_out = synth.process(arp_out.with(to_synth));
 
@@ -296,7 +292,7 @@ namespace otto::services {
     // Stereo output gathered in fx1_out
     for (auto&& [snth, fx1L, fx1R, fx2L, fx2R, extL, extR] :
          util::zip(synth_out.audio, fx1_out.audio[0], fx1_out.audio[1], fx2_out.audio[0], fx2_out.audio[1],
-         external_in.audio[0], external_in.audio[1])) {
+                   external_in.audio[0], external_in.audio[1])) {
       fx1L += fx2L + snth * synth_send.audio->dryL + extL;
       fx1R += fx2R + snth * synth_send.audio->dryR + extR;
     }

@@ -11,6 +11,8 @@
 #include "services/ui_manager.hpp"
 #include "services/application.hpp"
 
+#include "engines/misc/sends/sends.hpp"
+
 namespace otto::services {
 
   struct EngineManager : core::Service {
@@ -55,6 +57,8 @@ namespace otto::services {
     static EngineManager& current() noexcept {
       return Application::current().engine_manager;
     }
+
+    engines::sends::Sends sends_of(ChannelEnum);
   };
 
 } // namespace otto::services

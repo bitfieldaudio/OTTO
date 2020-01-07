@@ -10,7 +10,9 @@ namespace otto::engines::external {
   using namespace core::input;
 
   External::External()
-    : audio(std::make_unique<Audio>()), screen_(std::make_unique<Screen>()), props({{*audio, *screen_}})
+    : audio(std::make_unique<Audio>(*send_stereo.audio, *send_left.audio, *send_right.audio)),
+      screen_(std::make_unique<Screen>()),
+      props({{*audio, *screen_}})
   {}
 
   void External::encoder(EncoderEvent ev)
@@ -44,6 +46,18 @@ namespace otto::engines::external {
     else
       return ChannelEnum::external_stereo;
   }
+
+  sends::Sends& External::active_send()
+  {
+    if (props.mode.get() == +ModeEnum::dual_mono && props.active_send.get() == 0)
+      return send_left;
+    else if (props.mode.get() == +ModeEnum::dual_mono && props.active_send.get() == 1)
+      return send_right;
+    else
+      return send_stereo;
+  }
+
+
 
   core::ui::ScreenAndInput External::screen()
   {

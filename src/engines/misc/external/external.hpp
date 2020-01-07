@@ -3,7 +3,9 @@
 #include <better_enum.hpp>
 #include <cstdint>
 
+#include "core/audio/audio_buffer_pool.hpp"
 #include "core/engine/engine.hpp"
+#include "engines/misc/sends/sends.hpp"
 #include "itc/itc.hpp"
 #include "services/ui_manager.hpp"
 
@@ -45,8 +47,15 @@ namespace otto::engines::external {
     void encoder(core::input::EncoderEvent e) override;
 
     services::ChannelEnum channel();
+    sends::Sends& active_send();
 
     core::ui::ScreenAndInput screen() override;
+
+    
+
+    sends::Sends send_stereo;
+    sends::Sends send_left;
+    sends::Sends send_right;
 
     std::unique_ptr<Audio> audio;
     std::unique_ptr<Screen> screen_;
