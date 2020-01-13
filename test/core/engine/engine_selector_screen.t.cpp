@@ -47,9 +47,9 @@ namespace otto {
       REQUIRE(ws.to_string() == "");
     }
 
-    SUBCASE ("Changing first letter to 9") {
+    SUBCASE ("Changing first letter to ?") {
       ws.cycle_char(-1);
-      REQUIRE(ws.to_string() == "9");
+      REQUIRE(ws.to_string() == "?");
     }
 
     SUBCASE ("Changing first letter to A") {
@@ -67,7 +67,7 @@ namespace otto {
       ws.cycle_char(-12);
       ws.step_idx(2);
       ws.cycle_char(27);
-      REQUIRE(ws.to_string() == "y a");
+      REQUIRE(ws.to_string() == "= a");
     }
 
     SUBCASE ("Two letters") {
@@ -75,13 +75,6 @@ namespace otto {
       ws.step_idx(1);
       ws.cycle_char(2);
       REQUIRE(ws.to_string() == "AB");
-    }
-
-    SUBCASE ("cycling to a shorter group and cycling back doesnt change char") {
-      ws.cycle_char(25);
-      ws.cycle_group(2);
-      ws.cycle_group(-1);
-      REQUIRE(ws.to_string() == "Y");
     }
 
     SUBCASE ("No trim preserves all spaces at beginning, and two at the end") {

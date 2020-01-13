@@ -29,7 +29,7 @@ namespace otto::core::engine {
     void cycle_group(std::int8_t delta = 1) noexcept;
     void cycle_char(std::int8_t delta = 1) noexcept;
 
-    std::string to_string(bool trim = false) const noexcept;
+    std::string to_string(bool trim = true) const noexcept;
 
     void clear() noexcept;
 
