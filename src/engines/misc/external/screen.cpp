@@ -48,18 +48,22 @@ namespace otto::engines::external {
   void Screen::action(itc::prop_change<&Props::stereo_gain>, float g) noexcept
   {
     stereo_gain_ = g;
+    gain_1_val = g;
   }
   void Screen::action(itc::prop_change<&Props::stereo_balance>, float b) noexcept
   {
     stereo_balance_ = b;
+    gain_2_val = b;
   }
   void Screen::action(itc::prop_change<&Props::left_gain>, float g) noexcept
   {
     left_gain_ = g;
+    gain_1_val = g;
   }
   void Screen::action(itc::prop_change<&Props::right_gain>, float g) noexcept
   {
     right_gain_ = g;
+    gain_2_val = g;
   }
   void Screen::action(itc::prop_change<&Props::active_send>, int a) noexcept
   {
@@ -75,7 +79,6 @@ namespace otto::engines::external {
     }
   }
 
-
   void Screen::draw(nvg::Canvas& ctx)
   {
     using namespace ui::vg;
@@ -87,25 +90,27 @@ namespace otto::engines::external {
     constexpr float y_pad = 50;
     constexpr float space = (height - 2.f * y_pad) / 3.f;
 
-    ctx.beginPath();
-    ctx.fillStyle(Colours::Blue);
-    ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
-    ctx.fillText(gain_1, {x_pad, y_pad});
+    if (mode_ != +ModeEnum::disabled) {
+      ctx.beginPath();
+      ctx.fillStyle(Colours::Blue);
+      ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
+      ctx.fillText(gain_1, {x_pad, y_pad});
 
-    ctx.beginPath();
-    ctx.fillStyle(Colours::Blue);
-    ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:1}", gain_1_val), {width - x_pad, y_pad});
+      ctx.beginPath();
+      ctx.fillStyle(Colours::Blue);
+      ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
+      ctx.fillText(fmt::format("{:1}", gain_1_val), {width - x_pad, y_pad});
 
-    ctx.beginPath();
-    ctx.fillStyle(Colours::Green);
-    ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
-    ctx.fillText(gain_2, {x_pad, y_pad + space});
+      ctx.beginPath();
+      ctx.fillStyle(Colours::Green);
+      ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Middle);
+      ctx.fillText(gain_2, {x_pad, y_pad + space});
 
-    ctx.beginPath();
-    ctx.fillStyle(Colours::Green);
-    ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
-    ctx.fillText(fmt::format("{:1}", gain_2_val), {width - x_pad, y_pad + space});
+      ctx.beginPath();
+      ctx.fillStyle(Colours::Green);
+      ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Middle);
+      ctx.fillText(fmt::format("{:1}", gain_2_val), {width - x_pad, y_pad + space});
+    }
 
     if (mode_ == +ModeEnum::dual_mono) {
       ctx.beginPath();

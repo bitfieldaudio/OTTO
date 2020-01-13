@@ -16,7 +16,7 @@ namespace otto::engines::external {
   struct Screen;
   struct Audio;
 
-  using Sender = services::UISender<Audio, Screen>;
+  using Sender = core::engine::EngineSender<Audio, Screen>;
 
   BETTER_ENUM(ModeEnum, std::int8_t, disabled, stereo, dual_mono);
 
@@ -24,7 +24,7 @@ namespace otto::engines::external {
     Sender sender;
 
     /// Mode control
-    Sender::Prop<struct mode_tag, ModeEnum> mode = {sender, ModeEnum::stereo};
+    Sender::Prop<struct mode_tag, ModeEnum> mode = {sender, ModeEnum::disabled};
     /// Input gains
     /// Stereo mode
     Sender::Prop<struct stereo_gain_tag, float> stereo_gain = {sender, 0.5, limits(0, 1), step_size(0.01)};

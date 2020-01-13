@@ -107,7 +107,7 @@ namespace otto::services {
 
     reg_ss(ScreenEnum::routing, [&]() { return (ui::ScreenAndInput){mixerscreen, mixerscreen.input}; });
     reg_ss(ScreenEnum::saveslots, [&]() { return (ui::ScreenAndInput){savescreen, savescreen.input}; });
-    reg_ss(ScreenEnum::sends, [&]() { return sends_of(ui_manager.state.active_channel).screen(); });
+    reg_ss(ScreenEnum::sends, [sends_of, &ui_manager]() { return sends_of(ui_manager.state.active_channel).screen(); });
     reg_ss(ScreenEnum::fx1, [&]() { return effect1.engine_screen(); });
     reg_ss(ScreenEnum::fx1_selector, [&]() { return effect1.selector_screen(); });
     reg_ss(ScreenEnum::fx2, [&]() { return effect2.engine_screen(); });
@@ -128,7 +128,8 @@ namespace otto::services {
     reg_ss(ScreenEnum::twist2, [&]() { return (ui::ScreenAndInput){twist2screen, twist2screen.input}; });
 
 
-    ui_manager.state.current_screen.on_change().connect([&](auto new_val) {
+    ui_manager.state.current_screen.on_change().connect([&](auto new_val, auto old_val) {
+      if (new_val == old_val) return;
       switch (new_val) {
         case ScreenEnum::synth: [[fallthrough]];
         case ScreenEnum::synth_envelope: [[fallthrough]];
@@ -136,8 +137,8 @@ namespace otto::services {
         case ScreenEnum::voices: {
           if (ui_manager.state.active_channel != +ChannelEnum::internal) {
             ui_manager.state.active_channel = +ChannelEnum::internal;
-            break;
           }
+          break;
         }
         case ScreenEnum::external: {
           ui_manager.state.active_channel = line_in.channel();

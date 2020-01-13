@@ -31,7 +31,7 @@ namespace otto::engines::external {
           gainR = right_gain_;
           break;
         }
-          OTTO_UNREACHABLE;
+        default: OTTO_UNREACHABLE;
       }
     }
 
