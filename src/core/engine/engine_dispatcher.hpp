@@ -19,8 +19,10 @@ namespace otto::core::engine {
 
   using SelectedEngine = itc::PropTypes<struct selected_engine_tag, int>;
   using SelectedPreset = itc::PropTypes<struct selected_preset_tag, int>;
-  using PublishEngineData = itc::PropTypes<struct publish_engine_names_tag, EngineSelectorData>;
-  using NewPresetName = itc::PropTypes<struct new_preset_name_tag, std::string>;
+  struct Actions {
+    using publish_engine_data = itc::Action<struct publish_engine_data_tag, EngineSelectorData>;
+    using make_new_preset = itc::Action<struct make_new_preset_tag, std::string>;
+  };
 
   /// Owns engines of type `ET`, and dispatches to a selected one of them
   template<EngineType ET, typename... Engines>
@@ -62,17 +64,23 @@ namespace otto::core::engine {
       props.selected_preset_idx = v;
     }
 
-    DECL_REFLECTION_EMPTY();
+    void action(Actions::make_new_preset, std::string name);
+
+    void from_json(const nlohmann::json&);
+    nlohmann::json to_json() const;
 
   private:
-
+    void send_presets_for(util::string_ref engine_name);
     void update_max_preset_idx();
+    void save_engine_state();
 
     std::atomic<bool> engine_is_constructed_ = true;
     util::variant_w_base<ITypedEngine<ET>, Engines...> current_engine_ = std::in_place_index_t<0>();
     std::unique_ptr<EngineSelectorScreen> screen_;
+    util::flat_map<std::string, nlohmann::json> engine_states_;
     Props props = {{*screen_}};
   };
+
 } // namespace otto::core::engine
 
 #include "engine_dispatcher.inl"

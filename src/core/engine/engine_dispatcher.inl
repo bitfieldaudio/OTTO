@@ -21,13 +21,7 @@ namespace otto::core::engine {
     : screen_(std::make_unique<EngineSelectorScreen>(services::ControllerSender(*this)))
   {
     for (auto name : engine_names) {
-      auto presets = std::vector<std::string>{"Last State"};
-      nano::copy(services::PresetManager::current().preset_names(name), nano::back_inserter(presets));
-      props.sender.push(PublishEngineData::action::data({
-        .name = name,
-        .icon = ui::Icon(placeholder_engine_icon),
-        .presets = presets,
-      }));
+      send_presets_for(name);
     }
     props.selected_engine_idx.on_change().connect([this](int idx) {
       engine_is_constructed_ = false;
@@ -36,10 +30,26 @@ namespace otto::core::engine {
       engine_is_constructed_ = true;
       update_max_preset_idx();
     });
-    props.selected_preset_idx.on_change().connect([this] (int idx) {
-      services::PresetManager::current().apply_preset(*current_engine_, idx);
+    props.selected_preset_idx.on_change().connect([this](int idx) {
+      if (idx == 0) {
+        engine_states_[current_engine_->name()].map([&](auto&& json) { current_engine_->from_json(json); });
+      } else {
+        services::PresetManager::current().apply_preset(*current_engine_, idx - 1);
+      }
     });
     update_max_preset_idx();
+  }
+
+  ENGDISPTEMPLATE
+  void ENGDISP::send_presets_for(util::string_ref engine_name)
+  {
+    auto presets = std::vector<std::string>{"Last State"};
+    nano::copy(services::PresetManager::current().preset_names(engine_name), nano::back_inserter(presets));
+    props.sender.push(Actions::publish_engine_data::data({
+      .name = engine_name,
+      .icon = ui::Icon(placeholder_engine_icon),
+      .presets = presets,
+    }));
   }
 
   ENGDISPTEMPLATE
@@ -47,6 +57,21 @@ namespace otto::core::engine {
   {
     OTTO_ASSERT(engine_is_constructed_.load());
     props.selected_preset_idx.max = services::PresetManager::current().preset_names(current_engine_->name()).size();
+  }
+
+
+  ENGDISPTEMPLATE
+  void ENGDISP::save_engine_state()
+  {
+    OTTO_ASSERT(engine_is_constructed_.load());
+    engine_states_.insert_or_assign(current_engine_->name(), current_engine_->to_json());
+  }
+
+  ENGDISPTEMPLATE
+  void ENGDISP::action(Actions::make_new_preset, std::string name)
+  {
+    services::PresetManager::current().create_preset(current_engine_->name(), name, current_engine_->to_json());
+    send_presets_for(current_engine_->name());
   }
 
   ENGDISPTEMPLATE
@@ -103,6 +128,38 @@ namespace otto::core::engine {
   {
     props.sender.push(input::KeyPressAction::data(key));
     return false;
+  }
+
+  ENGDISPTEMPLATE
+  nlohmann::json ENGDISP::to_json() const
+  {
+    return {
+      {"selected", current_engine_->name()},
+      {"states", util::serialize(engine_states_)},
+    };
+  }
+  ENGDISPTEMPLATE
+  void ENGDISP::from_json(const nlohmann::json& j)
+  {
+    auto idx = nano::find(engine_names, j.at("selected")) - engine_names.begin();
+    util::deserialize(engine_states_, j.at("states"));
+    if (idx < engine_names.size()) {
+      current_engine_.emplace_by_index(idx);
+    }
+    engine_states_[current_engine_->name()].map([&](auto&& j) { current_engine_->from_json(j); });
+  }
+
+  // Free functions to actually integrate with nlohmann::json
+
+  ENGDISPTEMPLATE
+  void to_json(nlohmann::json& j, const ENGDISP& e)
+  {
+    j = e.to_json();
+  }
+  ENGDISPTEMPLATE
+  void from_json(const nlohmann::json& j, ENGDISP& e)
+  {
+    e.from_json(j);
   }
 
 #undef ENGDISPTEMPLATE

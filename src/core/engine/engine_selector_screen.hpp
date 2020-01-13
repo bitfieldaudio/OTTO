@@ -31,6 +31,8 @@ namespace otto::core::engine {
 
     std::string to_string(bool trim = false) const noexcept;
 
+    void clear() noexcept;
+
   private:
     struct GroupCharPair {
       std::int8_t group = 2;
@@ -44,7 +46,7 @@ namespace otto::core::engine {
 
   void placeholder_engine_icon(ui::IconData& i, nvg::Canvas& ctx);
 
-  using EngineDispatcherReturnChannel = itc::DynamicActionSender<SelectedEngine::action, SelectedPreset::action>;
+  using EngineDispatcherReturnChannel = itc::DynamicActionSender<SelectedEngine::action, SelectedPreset::action, Actions::make_new_preset>;
 
   struct EngineSelectorScreen : ui::Screen {
     using Subscreen = ESSSubscreen;
@@ -58,7 +60,7 @@ namespace otto::core::engine {
 
     void action(SelectedEngine::action, int selected);
     void action(SelectedPreset::action, int selected);
-    void action(PublishEngineData::action, EngineSelectorData data);
+    void action(Actions::publish_engine_data, EngineSelectorData data);
     void navigate_to(Subscreen screen);
 
     std::vector<EngineSelectorData> engines = {};

@@ -36,6 +36,11 @@ namespace otto::core::engine {
     }
   }
 
+  void WriterUI::clear() noexcept
+  {
+    *this = WriterUI();
+  }
+
   std::string WriterUI::to_string(bool trim) const noexcept
   {
     std::string result;
@@ -51,7 +56,6 @@ namespace otto::core::engine {
     }
     return result;
   }
-
 
   // EngineSelectorScreen
 
@@ -93,6 +97,11 @@ namespace otto::core::engine {
         case Encoder::yellow: preset_name_writer.step_idx(e.steps); break;
         case Encoder::red:
           if (e.steps < 0) navigate_to(ESSSubscreen::preset_selection);
+          if (e.steps > 0) {
+            return_channel.push(Actions::make_new_preset::data(std::string(util::trim(preset_name_writer.to_string()))));
+            preset_name_writer.clear();
+            navigate_to(ESSSubscreen::preset_selection);
+          }
           break;
         default: break;
       }
@@ -130,7 +139,7 @@ namespace otto::core::engine {
     ui::vg::timeline().apply(&page_flip_).then<ch::RampTo>(screen._to_integral(), 500, ch::EaseOutExpo());
   }
 
-  void EngineSelectorScreen::action(PublishEngineData::action, EngineSelectorData data)
+  void EngineSelectorScreen::action(Actions::publish_engine_data, EngineSelectorData data)
   {
     auto found = nano::find_if(engines, [&](auto&& e) { return e.name == data.name; });
     if (found == engines.end()) {
