@@ -207,15 +207,13 @@ namespace otto::util {
         return {{ki, vi}, true};
       }
 
-      std::pair<iterator, bool> insert_or_assign(key_type k, mapped_type v)
+      iterator insert_or_assign(key_type k, mapped_type v)
       {
         return emplace_or_assign(std::move(k), std::move(v));
       }
 
       template<typename... KArgs, typename... VArgs>
-      std::pair<iterator, bool> emplace_or_assign(std::piecewise_construct_t,
-                                                  std::tuple<KArgs...> kargs,
-                                                  std::tuple<VArgs...> vargs)
+      iterator emplace_or_assign(std::piecewise_construct_t, std::tuple<KArgs...> kargs, std::tuple<VArgs...> vargs)
       {
         return std::apply(
           [&](auto&&... args) {
@@ -226,7 +224,7 @@ namespace otto::util {
       }
 
       template<typename KRef, typename VRef>
-      std::pair<iterator, bool> emplace_or_assign(KRef&& k, VRef&& v)
+      iterator emplace_or_assign(KRef&& k, VRef&& v)
       {
         return emplace_or_assign(std::piecewise_construct_t(), std::forward_as_tuple(k), std::forward_as_tuple(v));
       }

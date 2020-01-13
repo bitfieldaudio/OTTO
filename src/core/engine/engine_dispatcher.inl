@@ -24,6 +24,7 @@ namespace otto::core::engine {
       send_presets_for(name);
     }
     props.selected_engine_idx.on_change().connect([this](int idx) {
+      save_engine_state();
       engine_is_constructed_ = false;
       services::AudioManager::current().wait_one();
       current_engine_.emplace_by_index(idx);
@@ -64,7 +65,7 @@ namespace otto::core::engine {
   void ENGDISP::save_engine_state()
   {
     OTTO_ASSERT(engine_is_constructed_.load());
-    engine_states_.insert_or_assign(current_engine_->name(), current_engine_->to_json());
+    engine_states_.insert_or_assign(std::string(current_engine_->name()), current_engine_->to_json());
   }
 
   ENGDISPTEMPLATE
@@ -72,6 +73,7 @@ namespace otto::core::engine {
   {
     services::PresetManager::current().create_preset(current_engine_->name(), name, current_engine_->to_json());
     send_presets_for(current_engine_->name());
+    update_max_preset_idx();
   }
 
   ENGDISPTEMPLATE
@@ -133,9 +135,13 @@ namespace otto::core::engine {
   ENGDISPTEMPLATE
   nlohmann::json ENGDISP::to_json() const
   {
+    auto states = engine_states_;
+    if (engine_is_constructed_) {
+      states.insert_or_assign(std::string(current_engine_->name()), current_engine_->to_json());
+    }
     return {
       {"selected", current_engine_->name()},
-      {"states", util::serialize(engine_states_)},
+      {"states", util::serialize(states)},
     };
   }
   ENGDISPTEMPLATE
