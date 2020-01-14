@@ -147,11 +147,11 @@ namespace otto::core::engine {
       {
         return name_of_engine_v<Derived>;
       }
-      nlohmann::json to_json() const override
+      nlohmann::json to_json() const final
       {
         return util::serialize(this->derived());
       }
-      void from_json(const nlohmann::json& j) override
+      void from_json(const nlohmann::json& j) final
       {
         util::deserialize(this->derived(), j);
       }

@@ -21,6 +21,7 @@
 #include "engines/twists/twist2/screen.hpp"
 #include "services/application.hpp"
 #include "services/clock_manager.hpp"
+#include "util/serialize.hpp"
 
 namespace otto::services {
 
@@ -241,8 +242,10 @@ namespace otto::services {
       util::deserialize(synth, data["Synth"]);
       util::deserialize(effect1, data["Effect1"]);
       util::deserialize(effect2, data["Effect2"]);
-      // master.from_json(data["Master"]);
-      // arpeggiator.from_json(data["Arpeggiator"]);
+      util::deserialize(line_in, data["LineIn"]);
+      util::deserialize(master, data["Master"]);
+      util::deserialize(arpeggiator, data["Arpeggiator"]);
+      util::deserialize(synth_send, data["SynthSend"]);
       // sequencer.from_json(data["Sequencer"]);
     };
 
@@ -251,8 +254,10 @@ namespace otto::services {
         {"Synth", util::serialize(synth)}, //
         {"Effect1", util::serialize(effect1)},
         {"Effect2", util::serialize(effect2)},
-        // {"Master", master.to_json()},
-        // {"Arpeggiator", arpeggiator.to_json()},
+        {"LineIn", util::serialize(line_in)},
+        {"Master", util::serialize(master)},
+        {"Arpeggiator", util::serialize(arpeggiator)},
+        {"SynthSend", util::serialize(synth_send)},
         // {"Sequencer", sequencer.to_json()},
       });
     };

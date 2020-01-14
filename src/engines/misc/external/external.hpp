@@ -8,6 +8,7 @@
 #include "engines/misc/sends/sends.hpp"
 #include "itc/itc.hpp"
 #include "services/ui_manager.hpp"
+#include "util/reflection.hpp"
 
 namespace otto::engines::external {
 
@@ -51,11 +52,11 @@ namespace otto::engines::external {
 
     core::ui::ScreenAndInput screen() override;
 
-    
-
     sends::Sends send_stereo;
     sends::Sends send_left;
     sends::Sends send_right;
+
+    DECL_REFLECTION(External, props, send_stereo, send_left, send_right);
 
     std::unique_ptr<Audio> audio;
     std::unique_ptr<Screen> screen_;
