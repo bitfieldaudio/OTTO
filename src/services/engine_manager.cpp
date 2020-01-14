@@ -21,6 +21,7 @@
 #include "engines/twists/twist2/screen.hpp"
 #include "services/application.hpp"
 #include "services/clock_manager.hpp"
+#include "services/log_manager.hpp"
 #include "util/serialize.hpp"
 
 namespace otto::services {
@@ -97,6 +98,7 @@ namespace otto::services {
         case ChannelEnum::external_left: [[fallthrough]];
         case ChannelEnum::external_right: [[fallthrough]];
         case ChannelEnum::external_stereo: return line_in.active_send(); break;
+        default: OTTO_UNREACHABLE;
       }
     };
     
