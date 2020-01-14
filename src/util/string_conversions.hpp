@@ -1,11 +1,10 @@
 #pragma once
 
+#include <better_enum.hpp>
 #include <cerrno>
 #include <cstdlib>
 #include <string_view>
 #include <tl/expected.hpp>
-
-#include <better_enum.hpp>
 #include <tl/optional.hpp>
 
 #include "util/exception.hpp"
@@ -49,11 +48,9 @@ namespace otto::util {
   template<>
   [[nodiscard]] tl::expected<unsigned int, StringConvErr> from_string(std::string_view sv) noexcept;
   template<>
-  [[nodiscard]] tl::expected<unsigned long, StringConvErr> from_string(
-    std::string_view sv) noexcept;
+  [[nodiscard]] tl::expected<unsigned long, StringConvErr> from_string(std::string_view sv) noexcept;
   template<>
-  [[nodiscard]] tl::expected<unsigned long long, StringConvErr> from_string(
-    std::string_view sv) noexcept;
+  [[nodiscard]] tl::expected<unsigned long long, StringConvErr> from_string(std::string_view sv) noexcept;
 
   template<>
   [[nodiscard]] tl::expected<float, StringConvErr> from_string(std::string_view sv) noexcept;
@@ -65,8 +62,7 @@ namespace otto::util {
   template<>
   [[nodiscard]] tl::expected<bool, StringConvErr> from_string(std::string_view sv) noexcept;
   template<>
-  [[nodiscard]] tl::expected<std::string_view, StringConvErr> from_string(
-    std::string_view sv) noexcept;
+  [[nodiscard]] tl::expected<std::string_view, StringConvErr> from_string(std::string_view sv) noexcept;
 
 } // namespace otto::util
 
@@ -302,6 +298,12 @@ namespace otto::util {
   inline tl::expected<std::string_view, StringConvErr> from_string(std::string_view sv) noexcept
   {
     return sv;
+  }
+
+  template<>
+  inline tl::expected<std::string, StringConvErr> from_string(std::string_view sv) noexcept
+  {
+    return std::string{sv};
   }
 
 } // namespace otto::util

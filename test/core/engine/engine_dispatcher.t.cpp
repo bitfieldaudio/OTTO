@@ -3,5 +3,4 @@
 
 namespace otto::test {
   using namespace otto::core::engine;
-
 } // namespace otto::test

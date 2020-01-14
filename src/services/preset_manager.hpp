@@ -70,6 +70,10 @@ namespace otto::services {
 
     static std::unique_ptr<PresetManager> create_default();
 
+    static PresetManager& current() {
+      return *Application::current().preset_manager;
+    }
+
   };
 
 } // namespace otto::services

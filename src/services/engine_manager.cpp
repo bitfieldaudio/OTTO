@@ -207,8 +207,8 @@ namespace otto::services {
       util::deserialize(synth, data["Synth"]);
       util::deserialize(effect1, data["Effect1"]);
       util::deserialize(effect2, data["Effect2"]);
+      util::deserialize(arpeggiator, data["Arpeggiator"]);
       // master.from_json(data["Master"]);
-      // arpeggiator.from_json(data["Arpeggiator"]);
       // sequencer.from_json(data["Sequencer"]);
     };
 
@@ -217,8 +217,8 @@ namespace otto::services {
         {"Synth", util::serialize(synth)}, //
         {"Effect1", util::serialize(effect1)},
         {"Effect2", util::serialize(effect2)},
+        {"Arpeggiator", util::serialize(arpeggiator)},
         // {"Master", master.to_json()},
-        // {"Arpeggiator", arpeggiator.to_json()},
         // {"Sequencer", sequencer.to_json()},
       });
     };
@@ -253,22 +253,22 @@ namespace otto::services {
     for (auto&& [snth, l, r] : util::zip(synth_out.audio, fx1_out.audio[0], fx1_out.audio[1])) {
       l = r = snth;
     }
-    return master.audio->process(fx1_out);
+    //return master.audio->process(fx1_out);
     // // Sequencer. Outputs L/R dry output and adds to fx busses.
     // // auto seq_dry = sequencer.process(midi_in, fx1_bus, fx2_bus);
     // auto fx1_out = effect1->process(audio::ProcessData<1>(fx1_bus));
     // auto fx2_out = effect2->process(audio::ProcessData<1>(fx2_bus));
 
     // Stereo output gathered in fx1_out
-    // for (auto&& [snth, fx1L, fx1R, fx2L, fx2R] :
-    //      util::zip(synth_out.audio, fx1_out.audio[0], fx1_out.audio[1], fx2_out.audio[0], fx2_out.audio[1])) {
-    //   fx1L += fx2L + snth * 0.5; // * synth_send.props.dry * (1 - synth_send.props.dry_pan);
-    //   fx1R += fx2R + snth * 0.5; // * synth_send.props.dry * (1 + synth_send.props.dry_pan);
-    // }
+    for (auto&& [snth, fx1L, fx1R, fx2L, fx2R] :
+         util::zip(synth_out.audio, fx1_out.audio[0], fx1_out.audio[1], fx2_out.audio[0], fx2_out.audio[1])) {
+      fx1L += fx2L + snth * 0.5; // * synth_send.props.dry * (1 - synth_send.props.dry_pan);
+      fx1R += fx2R + snth * 0.5; // * synth_send.props.dry * (1 + synth_send.props.dry_pan);
+    }
 
 
 
-    // return master.audio->process(std.move(fx1_out));
+    return master.audio->process(std::move(fx1_out));
     // synth_out.audio.release();
     // fx2_out.audio[0].release();
     // fx2_out.audio[1].release();

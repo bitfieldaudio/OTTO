@@ -58,7 +58,7 @@ namespace otto::engines::ottofm {
   };
 
   struct OttofmEngine : core::engine::SynthEngine<OttofmEngine> {
-    static constexpr auto name = "otto.FM";
+    static constexpr auto name = "OTTO.FM";
     OttofmEngine();
 
     void encoder(core::input::EncoderEvent e) override;

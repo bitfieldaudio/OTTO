@@ -62,6 +62,29 @@ namespace otto::util {
       return join_strings(std::begin(cont), std::end(cont), js);
     }
 
+    inline std::string_view trim_begin(std::string_view sv, std::string_view rem = " ") noexcept
+    {
+      auto idx = sv.find_first_not_of(rem);
+      idx = idx == std::string_view::npos ? sv.size() : idx;
+      return sv.substr(idx, std::string_view::npos);
+    }
+
+    inline std::string_view trim_end(std::string_view sv, std::string_view rem = " ") noexcept
+    {
+      auto idx = sv.find_last_not_of(rem);
+      idx = idx == std::string_view::npos ? sv.size() : idx + 1;
+      return sv.substr(0, idx);
+    }
+
+    inline std::string_view trim(std::string_view sv, std::string_view rem = " ") noexcept
+    {
+      auto first_idx = sv.find_first_not_of(rem);
+      first_idx = (first_idx == std::string_view::npos) ? sv.size() : first_idx;
+      auto last_idx = sv.find_last_not_of(rem);
+      last_idx = (last_idx == std::string_view::npos) ? sv.size() : last_idx + 1;
+      return sv.substr(first_idx, last_idx - first_idx);
+    }
+
     namespace algo_detail {
       template<class Func, int... ns>
       constexpr auto generate_array_impl(std::integer_sequence<int, ns...>&&, Func&& gen)
@@ -69,7 +92,7 @@ namespace otto::util {
         return std::array<std::decay_t<decltype(std::invoke(gen, std::declval<int>()))>, sizeof...(ns)>{
           {std::invoke(gen, ns)...}};
       }
-    } // namespace detail
+    } // namespace algo_detail
 
     template<int n, class Func>
     constexpr auto generate_array(Func&& gen)

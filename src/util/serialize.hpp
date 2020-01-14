@@ -50,7 +50,6 @@ namespace otto::util {
     template<typename T1, typename T2>
     nlohmann::json serialize_basic(const std::pair<T1, T2>& obj);
 
-
     /////////////////// DESERIALIZATION
 
     template<typename Class, typename = std::enable_if_t<reflect::is_registered<Class>()>>
