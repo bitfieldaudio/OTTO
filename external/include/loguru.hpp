@@ -1796,7 +1796,8 @@ namespace loguru
 	{
 		char buff[256];
 	#ifdef __linux__
-		return Text(strdup(strerror_r(errno, buff, sizeof(buff))));
+    strerror_r(errno, buff, sizeof(buff));
+		return Text(strdup(buff));
 	#elif __APPLE__
 		strerror_r(errno, buff, sizeof(buff));
 		return Text(strdup(buff));

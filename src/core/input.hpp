@@ -1,5 +1,6 @@
 #pragma once
 
+#include "itc/action.hpp"
 #include "util/enum.hpp"
 
 namespace otto::core::input {
@@ -127,6 +128,10 @@ namespace otto::core::input {
   struct KeyReleaseEvent : KeyEvent {
     KeyReleaseEvent(Key k) : KeyEvent{k} {}
   };
+
+  using EncoderAction = itc::Action<struct encoder_action_tag, EncoderEvent>;
+  using KeyPressAction = itc::Action<struct key_press_action_tag, Key>;
+  using KeyReleaseAction = itc::Action<struct key_release_action_tag, Key>;
 
   /// An object that handles input events
   ///

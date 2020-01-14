@@ -9,7 +9,7 @@
 
 #include "core/input.hpp"
 #include "core/service.hpp"
-
+#include "itc/action_sender.hpp"
 #include "services/application.hpp"
 #include "util/locked.hpp"
 #include "util/thread.hpp"
@@ -83,7 +83,7 @@ namespace otto::services {
   struct Controller : core::Service, core::input::InputHandler {
     using Key = core::input::Key;
     using EncoderEvent = core::input::EncoderEvent;
-    using KeyPressEvent= core::input::KeyPressEvent;
+    using KeyPressEvent = core::input::KeyPressEvent;
     using KeyReleaseEvent = core::input::KeyReleaseEvent;
     /// Function type for key handlers
     using KeyHandler = std::function<void(Key k)>;
@@ -140,11 +140,33 @@ namespace otto::services {
   private:
     bool handle_global(Key key, bool is_press = true);
 
+    template<typename... Receivers>
+    friend struct ControllerSender;
+
     foonathan::array::flat_map<Key, std::pair<KeyHandler, KeyHandler>> key_handlers;
     std::array<bool, Key::_size()> keys;
     util::double_buffered<EventBag> events_;
+    itc::ActionQueue action_queue_;
 
     /// Essentially the logic thread, since most logic will happen in key handlers and property change events
     util::triggered_thread key_handler_thread;
+  };
+
+  /// Sends actions on the logic thread
+  template<typename... Receivers>
+  struct ControllerSender : itc::ActionSender<Receivers...> {
+    template<typename Tag, typename Type, typename... Mixins>
+    using Prop = typename itc::ActionSender<Receivers...>::template Prop<Tag, Type, Mixins...>;
+    ControllerSender(Receivers&... r) noexcept
+      : itc::ActionSender<Receivers...>(Controller::current().action_queue_, r...)
+    {}
+
+    /// Push an action to be received by all receivers that support it
+    template<typename Tag, typename... Args>
+    void push(itc::ActionData<itc::Action<Tag, Args...>> action_data)
+    {
+      itc::ActionSender<Receivers...>::push(std::move(action_data));
+      Controller::current().key_handler_thread.trigger();
+    }
   };
 } // namespace otto::services

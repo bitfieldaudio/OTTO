@@ -13,6 +13,8 @@ namespace otto::services {
   using EventBag = TMFC::EventBag;
 
   using byte = std::uint8_t;
+  using Key = core::input::Key;
+  using Encoder = core::input::Encoder;
 
   BETTER_ENUM(Command,
               std::uint8_t,
@@ -64,7 +66,7 @@ namespace otto::services {
   {
     write_buffer_.outer_locked([&](auto& b) {
       b.reserve(b.size() + message.size());
-      util::copy(message, std::back_inserter(b));
+      nano::copy(message, nano::back_inserter(b));
     });
   }
 

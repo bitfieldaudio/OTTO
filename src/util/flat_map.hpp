@@ -7,19 +7,40 @@
 #include "util/algorithm.hpp"
 #include "util/iterator.hpp"
 #include "util/macros.hpp"
+#include "util/serialize.hpp"
 
 namespace otto::util {
   inline namespace flat_map_ns {
     namespace detail {
 
-      template<typename K, typename V, typename key_iterator, typename mapped_iterator>
-      struct flat_map_iterator : iterator_facade<flat_map_iterator<K, V, key_iterator, mapped_iterator>,
+      template<typename K, typename V, bool is_const>
+      struct flat_map_reference {
+        std::conditional_t<is_const, const K&, K&> first;
+        std::conditional_t<is_const, const V&, V&> second;
+
+        operator std::pair<K, V>() const&
+        {
+          return {first, second};
+        }
+
+        operator std::pair<K, V>() &&
+        {
+          if constexpr (is_const) {
+            return {first, second};
+          } else {
+            return {std::move(first), std::move(second)};
+          }
+        }
+      };
+
+      template<typename K, typename V, typename key_iterator, typename mapped_iterator, bool is_const>
+      struct flat_map_iterator : iterator_facade<flat_map_iterator<K, V, key_iterator, mapped_iterator, is_const>,
                                                  std::pair<K, V>,
                                                  std::random_access_iterator_tag,
-                                                 std::pair<K&, V&>> {
+                                                 flat_map_reference<K, V, is_const>> {
         using iterator_category = std::random_access_iterator_tag;
         using value_type = std::pair<K, V>;
-        using reference = std::pair<K&, V&>;
+        using reference = flat_map_reference<K, V, is_const>;
         struct pointer {
           mutable reference pair;
           reference* operator->() const noexcept
@@ -38,7 +59,7 @@ namespace otto::util {
 
         reference dereference() const
         {
-          return {*key_iter, *mapped_iter};
+          return reference{*key_iter, *mapped_iter};
         }
 
         pointer operator->() const
@@ -65,8 +86,8 @@ namespace otto::util {
       using mapped_iterator = typename std::vector<mapped_type>::iterator;
       using const_key_iterator = typename std::vector<key_type>::const_iterator;
       using const_mapped_iterator = typename std::vector<mapped_type>::const_iterator;
-      using iterator = detail::flat_map_iterator<K, V, key_iterator, mapped_iterator>;
-      using const_iterator = detail::flat_map_iterator<K, V, const_key_iterator, const_mapped_iterator>;
+      using iterator = detail::flat_map_iterator<K, V, key_iterator, mapped_iterator, false>;
+      using const_iterator = detail::flat_map_iterator<K, V, const_key_iterator, const_mapped_iterator, true>;
 
       std::size_t size() const noexcept
       {
@@ -96,27 +117,36 @@ namespace otto::util {
       template<typename TransparentKey>
       iterator find(const TransparentKey& k)
       {
-        auto found = nano::find_if(key_store_, [&] (auto&& v) { return v == k; });
+        auto found = nano::find_if(key_store_, [&](auto&& v) { return v == k; });
         return {found, corresponding(found)};
       }
 
       template<typename TransparentKey>
       const_iterator find(const TransparentKey& k) const
       {
-        auto found = nano::find_if(key_store_, [&] (auto&& v) { return v == k; });
+        auto found = nano::find_if(key_store_, [&](auto&& v) { return v == k; });
         return {found, corresponding(found)};
       }
 
       template<typename TransparentKey>
       bool contains(const TransparentKey& k) const
       {
-        auto found = nano::find_if(key_store_, [&] (auto&& v) { return v == k; });
+        auto found = nano::find_if(key_store_, [&](auto&& v) { return v == k; });
         return found != key_store_.end();
       }
 
-      tl::optional<mapped_type&> operator[](const key_type& k)
+      template<typename TransparentKey>
+      tl::optional<mapped_type&> operator[](TransparentKey&& k)
       {
-        auto found = nano::find_if(key_store_, [&] (auto&& v) { return v == k; });
+        auto found = nano::find_if(key_store_, [&](auto&& v) { return v == k; });
+        if (found == key_store_.end()) return tl::nullopt;
+        return *corresponding(found);
+      }
+
+      template<typename TransparentKey>
+      tl::optional<mapped_type&> operator[](TransparentKey&& k) const
+      {
+        auto found = nano::find_if(key_store_, [&](auto&& v) { return v == k; });
         if (found == key_store_.end()) return tl::nullopt;
         return *corresponding(found);
       }
@@ -177,13 +207,56 @@ namespace otto::util {
         return {{ki, vi}, true};
       }
 
+      iterator insert_or_assign(key_type k, mapped_type v)
+      {
+        return emplace_or_assign(std::move(k), std::move(v));
+      }
+
+      template<typename... KArgs, typename... VArgs>
+      iterator emplace_or_assign(std::piecewise_construct_t, std::tuple<KArgs...> kargs, std::tuple<VArgs...> vargs)
+      {
+        return std::apply(
+          [&](auto&&... args) {
+            return try_emplace_or_assign(std::apply([](auto&&... args) { return key_type{FWD(args)...}; }, kargs),
+                                         FWD(args)...);
+          },
+          vargs);
+      }
+
+      template<typename KRef, typename VRef>
+      iterator emplace_or_assign(KRef&& k, VRef&& v)
+      {
+        return emplace_or_assign(std::piecewise_construct_t(), std::forward_as_tuple(k), std::forward_as_tuple(v));
+      }
+
+
+      template<typename... Args>
+      iterator try_emplace_or_assign(key_type&& key, Args&&... args)
+      {
+        if (auto found = nano::find(key_store_, key); found != key_store_.end()) {
+          *corresponding(found) = mapped_type(args...);
+          return {found, corresponding(found)};
+        }
+        return try_emplace(key, FWD(args)...).first;
+      }
+
+      template<typename... Args>
+      iterator try_emplace_or_assign(const key_type& key, Args&&... args)
+      {
+        if (auto found = nano::find(key_store_, key); found != key_store_.end()) {
+          *corresponding(found) = mapped_type(args...);
+          return {found, corresponding(found)};
+        }
+        return try_emplace(key, FWD(args)...).first;
+      }
+
       /// Erase the element mapped to by k
       ///
       /// @return true if the element existed, false otherwise
       template<typename TransparentKey>
       bool erase(const TransparentKey& k)
       {
-        auto found = nano::find_if(key_store_, [&] (auto&& v) { return v == k; });
+        auto found = nano::find_if(key_store_, [&](auto&& v) { return v == k; });
         if (found == key_store_.end()) return false;
         val_store_.erase(corresponding(found));
         key_store_.erase(found);
@@ -224,6 +297,23 @@ namespace otto::util {
       std::vector<key_type> key_store_;
       std::vector<mapped_type> val_store_;
     };
-  } // namespace flat_map_detail
+
+    template<typename K, typename V>
+    void to_json(nlohmann::json& res, const util::flat_map<K, V>& map)
+    {
+      for (auto&& pair : map) {
+        res.emplace(to_string(pair.first), serialize(pair.second));
+      }
+    }
+
+    template<typename K, typename V>
+    void from_json(const nlohmann::json& res, util::flat_map<K, V>& map)
+    {
+      for (auto it = res.begin(); it != res.end(); ++it) {
+        map.emplace(*from_string<K>(it.key()), it.value());
+      }
+    }
+
+  } // namespace flat_map_ns
 
 } // namespace otto::util

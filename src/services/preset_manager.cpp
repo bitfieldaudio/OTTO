@@ -158,7 +158,8 @@ namespace otto::services {
     try {
       engine.from_json(pd.data[idx]);
     } catch(std::exception& e) {
-      throw util::exception("Error applying preset: {}", e.what());
+      LOGE("Error applying preset: {}", e.what());
+      return;
     }
     engine.current_preset(idx);
   }
@@ -179,12 +180,12 @@ namespace otto::services {
       if (de.is_regular_file() || de.is_symlink()) {
         util::JsonFile jf{de.path()};
         jf.read();
-        std::string engine = jf.data()["engine"];
-        std::string name = jf.data()["name"];
+        std::string engine = jf.data().at("engine");
+        std::string name = jf.data().at("name");
         auto pd_iter = _preset_data.insert(engine, {}).first;
         auto& pd = pd_iter->second;
         if (auto found = nano::find(pd.names, name); found != pd.names.end()) {
-          pd.data[found - pd.names.begin()] = std::move(jf.data()["props"]);
+          pd.data[found - pd.names.begin()] = std::move(jf.data().at("props"));
           DLOGI("Reloaded preset '{}' for engine '{}", name, engine);
         } else {
           pd.names.push_back(name);

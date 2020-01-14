@@ -30,7 +30,7 @@ namespace otto::engines::arp {
     Sender::Prop<struct note_length_tag, float> note_length = {sender, 0.2f, limits(0.01f, 0.97f), step_size(0.01)};
     Sender::Prop<struct subdivision_tag, int, wrap> subdivision = {sender, 1, limits(1, 5)};
 
-    DECL_REFLECTION(Props, playmode, octavemode, note_length);
+    DECL_REFLECTION(Props, playmode, octavemode, note_length, subdivision);
   };
 
   struct Arp : core::engine::ArpeggiatorEngine<Arp> {

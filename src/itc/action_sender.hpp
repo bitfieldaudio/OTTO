@@ -1,6 +1,8 @@
 #pragma once
 
+#include <any>
 #include <nanorange.hpp>
+
 #include "action_queue.hpp"
 
 namespace otto::itc {
@@ -58,9 +60,9 @@ namespace otto::itc {
 
 
   /// Directly-invoking action sender
-  /// 
+  ///
   /// Calls the action handler directly instead of pushing to a queue.
-  /// 
+  ///
   /// @note mainly used for single-threaded testing
   template<typename... Receivers>
   struct DirectActionSender {
@@ -87,4 +89,55 @@ namespace otto::itc {
     std::tuple<Receivers&...> receivers_;
   };
 
+  namespace detail {
+    template<typename Action>
+    struct VirtualActionReceiverBase;
+    template<typename Tag, typename... Args>
+    struct VirtualActionReceiverBase<Action<Tag, Args...>> {
+      virtual void action(Action<Tag, Args...>, Args...) = 0;
+    };
+  } // namespace detail
+
+  /// Base class for receivers to type erase action handlers
+  template<typename... Actions>
+  struct VirtualActionReceiver : detail::VirtualActionReceiverBase<Actions>... {};
+
+  namespace detail {
+    template<typename Action>
+    struct DynamicActionSenderBase;
+    template<typename Tag, typename... Args>
+    struct DynamicActionSenderBase<Action<Tag, Args...>> {
+      template<typename Sender>
+      DynamicActionSenderBase(Sender& sender)
+      {
+        caller = [](std::any* sender, ActionData<Action<Tag, Args...>>&& data) {
+          std::any_cast<std::decay_t<Sender>>(sender)->push(std::move(data));
+        };
+      }
+
+      util::function_ptr<void(std::any* sender, ActionData<Action<Tag, Args...>>&& data)> caller;
+    };
+  } // namespace detail
+
+
+  /// Type erased sender of multiple actions
+  template<typename... Actions>
+  struct DynamicActionSender : private detail::DynamicActionSenderBase<Actions>... {
+    template<typename Sender>
+    DynamicActionSender(const Sender& s) : detail::DynamicActionSenderBase<Actions>(s)...
+    {
+      sender = std::make_any<Sender>(s);
+    }
+
+    template<typename Tag,
+             typename... Args,
+             typename = std::enable_if_t<util::is_one_of_v<Action<Tag, Args...>, Actions...>>>
+    void push(ActionData<Action<Tag, Args...>> data)
+    {
+      detail::DynamicActionSenderBase<Action<Tag, Args...>>::caller(&sender, std::move(data));
+    }
+
+  private:
+    std::any sender;
+  };
 } // namespace otto::itc

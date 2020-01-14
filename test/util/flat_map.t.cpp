@@ -135,6 +135,18 @@ namespace otto::test {
         REQUIRE(to_vec(map) == std::vector<StringIntMap::value_type>{{"0", 0}, {"1", 1}, {"3", 3}, {"4", 4}});
       }
     }
+
+    SUBCASE ("Serialization") {
+      nlohmann::json j = {
+        {"0", 0},
+        {"1", 1},
+        {"2", 2},
+        {"3", 3},
+        {"4", 4},
+      };
+
+      REQUIRE(nlohmann::json(map) == j);
+    }
   }
 
 } // namespace otto::test
