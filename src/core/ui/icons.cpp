@@ -1,4 +1,8 @@
 #include "icons.hpp"
+#include <cmath>
+#include "core/ui/nvg/Text.hpp"
+#include "core/ui/nvg/Canvas.hpp"
+#include "core/ui/vector_graphics.hpp"
 
 namespace otto::core::ui {
 
@@ -89,6 +93,62 @@ namespace otto::core::ui {
       ctx.stroke(i.color);
       ctx.restore();
     }
+
+
+    void synth_icon(IconData& i, nvg::Canvas& ctx)
+    {
+      auto box = i.square();
+      ctx.translate(box.pmin());
+      ctx.fillStyle(i.color);
+      float step = box.width / 6;
+      ctx.beginPath();
+      ctx.moveTo(box.x, box.y + box.height * 0.5);
+      ctx.lineTo(box.x + step, box.y + box.height * 0.5);
+      ctx.lineTo(box.x + step, box.y + box.height * 0.65);
+      ctx.lineTo(box.x + 2 * step, box.y + box.height * 0.65);
+      ctx.lineTo(box.x + 2 * step, box.y + box.height * 0.1);
+      ctx.lineTo(box.x + 3 * step, box.y + box.height * 0.1);
+      ctx.lineTo(box.x + 3 * step, box.y + box.height * 0.9);
+      ctx.lineTo(box.x + 4 * step, box.y + box.height * 0.9);
+      ctx.lineTo(box.x + 4 * step, box.y + box.height * 0.35);
+      ctx.lineTo(box.x + 5 * step, box.y + box.height * 0.35);
+      ctx.lineTo(box.x + 5 * step, box.y + box.height * 0.5);
+      ctx.lineTo(box.x + box.width, box.y + box.height* 0.5);
+      ctx.lineWidth(i.line_width);
+      ctx.stroke(i.color);
+      ctx.restore();
+    }
+
+    void line_in_icon(IconData& i, nvg::Canvas& ctx)
+    {
+      auto box = i.square();
+      ctx.translate(box.pmin());
+      ctx.fillStyle(i.color);
+      float arc_radius = box.height / 7;
+      float arc_pad = arc_radius * 1.2;
+      constexpr float rect_pad = 5;
+      ctx.translate(0, -1.5 * arc_radius);
+      ctx.beginPath();
+      ctx.moveTo(box.x + arc_radius, box.y + box.height);
+      ctx.lineTo(box.x + box.width - arc_pad, box.y + box.height);
+      ctx.arc({box.x + box.width - arc_pad, box.y + box.height - arc_radius}, arc_radius, M_PI_2, -M_PI_2, true);
+      ctx.moveTo(box.x + box.width - arc_pad, box.y + box.height - 2 * arc_radius);
+      ctx.lineTo(box.x + arc_pad, box.y + box.height - 2 * arc_radius);
+      ctx.arc({box.x + arc_pad, box.y + box.height - 3 * arc_radius}, arc_radius, M_PI_2, -M_PI_2, false);
+      ctx.stroke(i.color);
+      ctx.closePath();
+
+      ctx.beginPath();
+      ctx.roundedRect(box.x + arc_pad + rect_pad, box.y + box.height - 5 * arc_radius, 3 * arc_radius, 2 * arc_radius, 3);
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.moveTo(box.x + arc_pad + 2 * rect_pad, box.y + box.height - 4 * arc_radius);
+      ctx.lineTo(box.x + box.width - arc_radius, box.y + box.height - 4 * arc_radius);
+      ctx.stroke(i.color);
+      ctx.restore();
+    }
+
   } // namespace icons
 
 } // namespace otto::core::ui

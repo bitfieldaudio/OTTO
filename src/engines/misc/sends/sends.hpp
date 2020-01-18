@@ -2,6 +2,7 @@
 
 #include "core/engine/engine.hpp"
 #include "itc/itc.hpp"
+#include "core/ui/icons.hpp"
 
 namespace otto::engines::sends {
 
@@ -33,7 +34,7 @@ namespace otto::engines::sends {
   struct Sends : core::engine::MiscEngine<Sends> {
     static constexpr util::string_ref name = "Sends";
 
-    Sends();
+    Sends(core::ui::Icon i);
 
     void step_scale(int steps);
     void set_scale(float x);

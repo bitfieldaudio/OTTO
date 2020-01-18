@@ -29,7 +29,7 @@ namespace otto::engines::sends {
     OTTO_UNREACHABLE;
   }
 
-  Sends::Sends() : audio(std::make_unique<Audio>()), screen_(std::make_unique<Screen>()), props{{*audio, *screen_}}
+  Sends::Sends(core::ui::Icon i) : audio(std::make_unique<Audio>()), screen_(std::make_unique<Screen>(i)), props{{*audio, *screen_}}
   {
     props.dry.on_change().connect([&](float a) {
       if (is_recursive) return;

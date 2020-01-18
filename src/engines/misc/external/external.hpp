@@ -9,6 +9,7 @@
 #include "itc/itc.hpp"
 #include "services/ui_manager.hpp"
 #include "util/reflection.hpp"
+#include "core/ui/icons.hpp"
 
 namespace otto::engines::external {
 
@@ -52,9 +53,10 @@ namespace otto::engines::external {
 
     core::ui::ScreenAndInput screen() override;
 
-    sends::Sends send_stereo;
-    sends::Sends send_left;
-    sends::Sends send_right;
+    core::ui::Icon line_icon = core::ui::Icon(core::ui::icons::line_in_icon);
+    sends::Sends send_stereo{line_icon};
+    sends::Sends send_left{line_icon};
+    sends::Sends send_right{line_icon};
 
     DECL_REFLECTION(External, props, send_stereo, send_left, send_right);
 

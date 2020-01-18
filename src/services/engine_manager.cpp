@@ -2,6 +2,7 @@
 
 #include "core/engine/engine_dispatcher.hpp"
 #include "core/engine/engine_dispatcher.inl"
+#include "core/ui/icons.hpp"
 #include "core/ui/screen.hpp"
 #include "core/ui/vector_graphics.hpp"
 #include "engines/arps/ARP/arp.hpp"
@@ -66,7 +67,8 @@ namespace otto::services {
     engines::mixer::Screen mixerscreen;
     engines::saveslots::Screen savescreen;
 
-    engines::sends::Sends synth_send;
+    ui::Icon synth_icon = ui::Icon(ui::icons::synth_icon);
+    engines::sends::Sends synth_send{synth_icon};
 
     engines::master::Master master;
     // engines::Sequencer sequencer;
@@ -98,8 +100,8 @@ namespace otto::services {
         case ChannelEnum::external_left: [[fallthrough]];
         case ChannelEnum::external_right: [[fallthrough]];
         case ChannelEnum::external_stereo: return line_in.active_send(); break;
-        default: OTTO_UNREACHABLE;
       }
+      OTTO_UNREACHABLE;
     };
     
     auto& ui_manager = *Application::current().ui_manager;

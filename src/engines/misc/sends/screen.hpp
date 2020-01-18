@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/ui/vector_graphics.hpp"
+#include "core/ui/icons.hpp"
 #include "sends.hpp"
 
 namespace otto::engines::sends {
@@ -10,8 +11,9 @@ namespace otto::engines::sends {
   using namespace nvg;
 
   struct Screen : ui::Screen {
+
+    Screen(core::ui::Icon i) : icon_(i) {}
     
-  
     void draw(Canvas& ctx) override;
     void draw_coloured_circle(Canvas& ctx, Point p, Color cl, float value);
     void draw_radial_lines(Canvas& ctx, float pan_float);
@@ -26,6 +28,8 @@ namespace otto::engines::sends {
     float fx1_ = 0;
     float fx2_ = 0;
     float pan_ = 0.5;
+
+    core::ui::Icon icon_;
   };
 
 

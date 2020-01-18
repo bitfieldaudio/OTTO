@@ -38,10 +38,17 @@ namespace otto::engines::sends {
     constexpr float y_fx2 = 130 + 26;
 
     // Input
+    constexpr float input_radius = 30;
+    constexpr float input_x = 45;
     ctx.beginPath();
-    ctx.circle({17 + 18, y_dry}, 18);
+    ctx.circle({input_x, y_dry}, input_radius);
     ctx.stroke();
     ctx.fill(Colours::White);
+    // Icon
+    icon_.set_size({input_radius * 1.5, input_radius * 1.5});
+    icon_.set_color(Colours::Gray50);
+    icon_.set_line_width(6.f);
+    ctx.drawAt({input_x - input_radius * 0.75, y_dry - input_radius * 0.75}, icon_);
     
     // Control indicators
     bool shift = services::Controller::current().is_pressed(Key::shift);

@@ -31,6 +31,11 @@ namespace otto::core::ui {
   namespace icons {
     void plus(IconData& i, nvg::Canvas& ctx);
     void plus_clockwise_circle_arrow(IconData& i, nvg::Canvas& ctx);
+
+    // Audio sources
+    void line_in_icon(IconData& i, nvg::Canvas& ctx);
+    void synth_icon(IconData& i, nvg::Canvas& ctx);
+  
   } // namespace icons
 
 
