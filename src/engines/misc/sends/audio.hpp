@@ -9,45 +9,40 @@ namespace otto::engines::sends {
   struct Audio {
     Audio() noexcept {};
 
-    void recalculate() 
+    void recalculate_dry()
     {
-      dryL = volume_ * (1 - pan_) * (1 - mix_);
-      dryR = volume_ * pan_ * (1 - mix_);
-      to_fx1 = volume_ * (1 - sendAB_) * mix_;
-      to_fx2 = volume_ * (1 - sendAB_) * mix_;
+      // TODO: Use real panning object
+      dryL = (1 - pan_) * dry_;
+      dryR = pan_ * dry_;
     }
 
-    void action(itc::prop_change<&Props::mix>, float m) noexcept 
+    void action(itc::prop_change<&Props::dry>, float d) noexcept
     {
-      mix_ = m;
-      recalculate();
+      dry_ = d;
+      recalculate_dry();
     };
-    void action(itc::prop_change<&Props::volume>, float v) noexcept
+    void action(itc::prop_change<&Props::fx1>, float fx1) noexcept
     {
-      volume_ = v;
-      recalculate();
-    }
-    void action(itc::prop_change<&Props::sendAB>, float s) noexcept
+      to_fx1 = fx1;
+    };
+    void action(itc::prop_change<&Props::fx2>, float fx2) noexcept
     {
-      sendAB_ = s;
-      recalculate();
+      to_fx2 = fx2;
     };
     void action(itc::prop_change<&Props::pan>, float p) noexcept
     {
       pan_ = p;
-      recalculate();
+      recalculate_dry();
     };
-
-  private:
-    float mix_ = 0;
-    float volume_ = 1;
-    float sendAB_ = 0.5;
-    float pan_ = 0.5;
 
     /// Actual values used in the enginemanager
     float dryL = 0.5;
     float dryR = 0.5;
     float to_fx1 = 0;
     float to_fx2 = 0;
+
+  private:
+    float dry_ = 1;
+    float pan_ = 0.5;
   };
-} // namespace otto::engines::wormhole
+} // namespace otto::engines::sends

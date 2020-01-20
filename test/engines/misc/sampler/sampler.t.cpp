@@ -239,9 +239,9 @@ namespace otto::engines::sampler {
 
     services::test::DummyEngineManager::current().on_process = [&](auto data) {
       auto buffer = services::AudioManager::current().buffer_pool().allocate();
-      sampler_audio.process(data.audio, false);
-      nano::copy(data.audio, buffer.begin());
-      return data.with(std::array{data.audio, buffer});
+      sampler_audio.process(data.audio[0], false);
+      nano::copy(data.audio[0], buffer.begin());
+      return data.with(std::array{data.audio[0], buffer});
     };
 
     app.engine_manager->start();

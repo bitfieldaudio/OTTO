@@ -1,5 +1,6 @@
 #include "audio.hpp"
 
+#include "services/application.hpp"
 #include "util/math.hpp"
 
 namespace otto::engines::goss {
@@ -116,12 +117,13 @@ namespace otto::engines::goss {
     return s_lo + s_hi;
   }
 
-  audio::ProcessData<1> Audio::process(audio::ProcessData<1> data) noexcept
+  audio::ProcessData<1> Audio::process(audio::ProcessData<0> data) noexcept
   {
+    auto buf = services::AudioManager::current().buffer_pool().allocate();
     for (auto& m : data.midi) voice_mgr_.handle_midi(m);
-    for (float& f : data.audio) {
+    for (float& f : buf) {
       f = (*this)();
     }
-    return data;
+    return data.with(buf);
   }
 } // namespace otto::engines::goss

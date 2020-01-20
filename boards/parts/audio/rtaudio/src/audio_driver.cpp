@@ -62,7 +62,7 @@ namespace otto::services {
     outParameters.firstChannel = 0;
     RtAudio::StreamParameters inParameters;
     inParameters.deviceId = device_in_;
-    inParameters.nChannels = 1;
+    inParameters.nChannels = 2;
     inParameters.firstChannel = 0;
 
     RtAudio::StreamOptions options;
@@ -155,9 +155,21 @@ namespace otto::services {
 
     midi_bufs.swap();
 
-    int ref_count = 0;
-    auto in_buf = enable_input ? core::audio::AudioBufferHandle(in_data, nframes, ref_count)
-                               : Application::current().audio_manager->buffer_pool().allocate_clear();
+    auto in_buf = Application::current().audio_manager->buffer_pool().allocate_multi<2>();
+    if (enable_input) {
+      // Deinterleave. TODO: Get real stereo data
+      for (int i = 0; i < nframes; i++) {
+      in_buf[0][i] = in_data[2 * i];
+      in_buf[1][i] = in_data[2 * i + 1];
+      //in_buf[0][i] = in_data[i];
+      //in_buf[1][i] = in_data[i];
+      }
+    } else {
+      // Is this necessary? We could also just not even add it to the output.
+      nano::fill(in_buf[0], 0.f);
+      nano::fill(in_buf[1], 0.f);
+    }
+
     // steal the inner midi buffer
     auto out = Application::current().engine_manager->process(
       {in_buf, {std::move(midi_bufs.inner())}, core::clock::ClockRange{}});

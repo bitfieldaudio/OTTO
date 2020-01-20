@@ -576,16 +576,16 @@ namespace otto::core::voices {
         AudioBufferHandle bh = services::AudioManager::current().buffer_pool().allocate_clear();
         // When running the default voice.process(), volume is applied. This carries over to
         // voice_manager.process()
-        auto res = vmgr.voices()[0].process(ProcessData<1>{bh});
+        auto res = vmgr.voices()[0].process(ProcessData<0>{{}, {}, {}});
         REQUIRE(nano::all_of(res.audio, util::does_equal(1 * vmgr.normal_volume)));
-        auto res2 = vmgr.process(ProcessData<1>{bh});
+        auto res2 = vmgr.process(ProcessData<0>{{}, {}, {}});
         REQUIRE(nano::all_of(res2.audio, util::does_equal(4 * vmgr.normal_volume)));
       }
 
       SUBCASE("when voice has a process(), vmgr only has process()")
       {
         struct SVoice : voices::VoiceBase<SVoice> {
-          ProcessData<1> process(ProcessData<1> data) noexcept
+          ProcessData<1> process(ProcessData<0> data) noexcept
           {
             auto buf = services::AudioManager::current().buffer_pool().allocate();
             nano::fill(buf, 1);
@@ -594,13 +594,12 @@ namespace otto::core::voices {
         };
 
         VoiceManager<SVoice, 4> vmgr;
-        auto buf = services::AudioManager::current().buffer_pool().allocate_clear();
 
         // We have written our own voice.process() so volume is not applied.
-        auto res = vmgr.voices()[0].process(ProcessData<1>{buf});
+        auto res = vmgr.voices()[0].process(ProcessData<0>{{}, {}, {}});
         REQUIRE(nano::all_of(res.audio, util::does_equal(1)));
 
-        auto res2 = vmgr.process(ProcessData<1>{buf});
+        auto res2 = vmgr.process(ProcessData<0>{{}, {}, {}});
         REQUIRE(nano::all_of(res2.audio, util::does_equal(4)));
       }
     }
