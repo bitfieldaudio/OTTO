@@ -10,6 +10,9 @@
 #include "testing.t.hpp"
 #include "util/algorithm.hpp"
 
+// Skipped for now
+// TODO: Move this to test the actual sends object
+
 using namespace otto::test;
 using namespace otto::core::props;
 
@@ -115,7 +118,7 @@ struct Sendstest {
   }
 };
 
-TEST_CASE ("Sends Calculation") {
+TEST_CASE ("Sends Calculation" * doctest::skip()) {
   Sendstest send;
   SUBCASE("Init")
   {

@@ -1,8 +1,8 @@
 #pragma once
 
 #include "core/engine/engine.hpp"
-#include "itc/itc.hpp"
 #include "core/ui/icons.hpp"
+#include "itc/itc.hpp"
 
 namespace otto::engines::sends {
 
@@ -22,10 +22,10 @@ namespace otto::engines::sends {
     Sender::Prop<struct pan_tag, float> pan = {sender, 0.5, limits(0, 1), step_size(0.01)};
 
     struct StoredLevels {
-    float fx1 = 0;
-    float fx2 = 0;
-    float dry = 1;
-    float s = 1;
+      float fx1 = 0;
+      float fx2 = 0;
+      float dry = 1;
+      float s = 1;
     } stored_levels;
 
     DECL_REFLECTION(Props, dry, fx1, fx2, pan);
@@ -50,10 +50,12 @@ namespace otto::engines::sends {
     Props props;
 
   private:
+    /// This bool stops the on_change handlers from doing anything when the properties are set by the macro control
+    /// This would otherwise lead to a never-ending recursion.
     bool is_recursive = false;
     static constexpr float threshold = 0.0001;
   };
 } // namespace otto::engines::sends
 
-#include "screen.hpp"
 #include "audio.hpp"
+#include "screen.hpp"

@@ -19,17 +19,19 @@ namespace otto::engines::external {
   {
     switch (ev.encoder) {
       case Encoder::blue: {
-        if (props.mode == ModeEnum::stereo)
+        if (props.mode == ModeEnum::stereo) {
           props.stereo_gain.step(ev.steps);
-        else if (props.mode == ModeEnum::dual_mono)
+        } else if (props.mode == ModeEnum::dual_mono) {
           props.left_gain.step(ev.steps);
+        }
         break;
       }
       case Encoder::green: {
-        if (props.mode == ModeEnum::stereo)
+        if (props.mode == ModeEnum::stereo) {
           props.stereo_balance.step(ev.steps);
-        else if (props.mode == ModeEnum::dual_mono)
+        } else if (props.mode == ModeEnum::dual_mono) {
           props.right_gain.step(ev.steps);
+        }
         break;
       }
       case Encoder::yellow: props.active_send.step(ev.steps); break;

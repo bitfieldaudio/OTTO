@@ -12,11 +12,12 @@ namespace otto::engines::sends {
 
   struct Screen : ui::Screen {
 
-    Screen(core::ui::Icon i) : icon_(i) {}
+    Screen(core::ui::Icon i);
     
     void draw(Canvas& ctx) override;
     void draw_coloured_circle(Canvas& ctx, Point p, Color cl, float value);
     void draw_radial_lines(Canvas& ctx, float pan_float);
+    void draw_background(Canvas& ctx);
     
     void action(itc::prop_change<&Props::dry>, float d) noexcept;
     void action(itc::prop_change<&Props::fx1>, float fx1) noexcept;

@@ -1,7 +1,9 @@
 #include "screen.hpp"
+#include <cmath>
 
 #include "core/ui/nvg/Canvas.hpp"
 #include "core/ui/nvg/Color.hpp"
+#include "core/ui/nvg/Text.hpp"
 #include "core/ui/vector_graphics.hpp"
 #include "services/controller.hpp"
 #include "services/ui_manager.hpp"
@@ -10,6 +12,14 @@ namespace otto::engines::sends {
 
   using namespace core::ui;
   using namespace core::ui::vg;
+
+  Screen::Screen(core::ui::Icon i) : icon_(i)
+  {
+    constexpr float input_radius = 30;
+    icon_.set_size({input_radius * 1.5, input_radius * 1.5});
+    icon_.set_color(Colours::Gray50);
+    icon_.set_line_width(5.f);
+  }
 
   void Screen::action(itc::prop_change<&Props::dry>, float d) noexcept
   {
@@ -30,6 +40,8 @@ namespace otto::engines::sends {
 
   void Screen::draw(nvg::Canvas &ctx)
   {
+    draw_background(ctx);
+
     // circles
     constexpr float x_fx = 119 + 26;
     constexpr float x_dry = 167 + 26;
@@ -45,9 +57,6 @@ namespace otto::engines::sends {
     ctx.stroke();
     ctx.fill(Colours::White);
     // Icon
-    icon_.set_size({input_radius * 1.5, input_radius * 1.5});
-    icon_.set_color(Colours::Gray50);
-    icon_.set_line_width(6.f);
     ctx.drawAt({input_x - input_radius * 0.75, y_dry - input_radius * 0.75}, icon_);
     
     // Control indicators
@@ -64,16 +73,18 @@ namespace otto::engines::sends {
     ctx.fillStyle(Colours::Red);
     ctx.fillText("L", 249.2, 41.0);
     ctx.fillText("R", 249.5, 181.0);
-    ctx.fillText("pan", 264.4, 224.0);
+    ctx.fillText("pan", 254.4, 224.0);
     ctx.fillStyle(Colours::Blue);
-    ctx.fillText("f", 131.0, 224.0);
+    ctx.fillText("f", 126.0, 224.0);
     ctx.fillStyle(Colours::Green);
-    ctx.fillText("x", 138.0, 224.0);
+    ctx.fillText("x", 133.0, 224.0);
     ctx.fillStyle(Colours::White);
-    ctx.fillText("in", 20.1, 224.0);
-    ctx.fillText("&", 152.0, 224.0);
+    ctx.fillText("&", 147.0, 224.0);
     ctx.fillStyle(Colours::Yellow);
-    ctx.fillText("dry", 171.0, 224.0);
+    ctx.fillText("dry", 166.0, 224.0);
+    ctx.fillStyle(Colours::White);
+    ctx.textAlign(HorizontalAlign::Center, VerticalAlign::Baseline);
+    ctx.fillText("in", input_x, 224.0);
   }
 
   void Screen::draw_coloured_circle(Canvas& ctx, Point p, Color cl, float value)
@@ -141,6 +152,106 @@ namespace otto::engines::sends {
       ctx.stroke(Colours::Red);
       ctx.fill(Colours::Red);
     });
+  }
+
+  void Screen::draw_background(Canvas &ctx)
+  {
+    // Rounded rectangle around the three circles
+    ctx.beginPath();
+    ctx.roundedRect({(115.7 + 96.7)/2, 15}, {126, 178}, 10);
+    ctx.lineWidth(3.f);
+    ctx.stroke(Colours::Gray50);
+
+    // Blocking squares
+    ctx.beginPath();
+    ctx.moveTo(96.7, 37.0);
+    ctx.lineTo(115.7, 37.0);
+    ctx.lineTo(115.7, 173.0);
+    ctx.lineTo(96.7, 173.0);
+    ctx.lineTo(96.7, 37.0);
+    ctx.closePath();
+    ctx.fill(Colours::Black);
+
+    ctx.fillStyle(Colours::Black);
+    ctx.beginPath();
+    ctx.moveTo(220.7, 84.0);
+    ctx.lineTo(242.7, 84.0);
+    ctx.lineTo(242.7, 126.0);
+    ctx.lineTo(220.7, 126.0);
+    ctx.closePath();
+    ctx.fill();
+
+    // White lines
+    // layer1/Clip Group/Path
+    ctx.lineWidth(4.f);
+    ctx.beginPath();
+    ctx.moveTo(52.7, 104.0);
+    ctx.lineTo(167.0, 104.0);
+    ctx.strokeStyle(Colours::White);
+    ctx.lineJoin(LineJoin::ROUND);
+    ctx.stroke();
+
+    // layer1/Clip Group/Path
+    ctx.beginPath();
+    ctx.moveTo(64.7, 104.0);
+    ctx.lineTo(84.9, 104.0);
+    ctx.bezierCurveTo(88.8, 104.0, 91.9, 100.9, 91.9, 97.0);
+    ctx.lineTo(91.9, 59.0);
+    ctx.bezierCurveTo(91.9, 55.1, 95.0, 52.0, 98.9, 52.0);
+    ctx.lineTo(119.7, 52.0);
+    ctx.stroke();
+
+    // layer1/Clip Group/Path
+    ctx.beginPath();
+    ctx.moveTo(51.7, 104.0);
+    ctx.lineTo(84.9, 104.0);
+    ctx.bezierCurveTo(88.8, 104.0, 91.9, 107.1, 91.9, 111.0);
+    ctx.lineTo(91.9, 149.0);
+    ctx.bezierCurveTo(91.9, 152.9, 95.0, 156.0, 98.9, 156.0);
+    ctx.lineTo(119.7, 156.0);
+    ctx.stroke();
+  
+    // layer1/Clip Group/Path
+    ctx.beginPath();
+    ctx.moveTo(216.4, 104.0);
+    ctx.lineTo(252.3, 104.0);
+    ctx.lineWidth(4.f);
+    ctx.stroke(Colours::Gray50);
+
+    ctx.beginPath();
+    ctx.arc({247, 104.0}, 8.0, -M_PI_2, M_PI_2, false);
+    ctx.closePath();
+    ctx.fill(Colours::Gray50);    
+
+    // layer1/Clip Group/Path
+    ctx.beginPath();
+    ctx.moveTo(247.7, 118.0);
+    ctx.bezierCurveTo(255.4, 118.0, 261.7, 111.7, 261.7, 104.0);
+    ctx.bezierCurveTo(261.7, 96.3, 255.4, 90.0, 247.7, 90.0);
+    ctx.lineWidth(4.0f);
+    ctx.strokeStyle(Colours::Gray50);
+    ctx.lineCap(LineCap::SQUARE);
+    ctx.stroke();
+    
+
+    // layer1/Clip Group/Path
+    ctx.beginPath();
+    ctx.moveTo(247.7, 126.0);
+    ctx.bezierCurveTo(259.9, 126.0, 269.7, 116.2, 269.7, 104.0);
+    ctx.bezierCurveTo(269.7, 91.8, 259.9, 82.0, 247.7, 82.0);
+    ctx.stroke();
+
+    // layer1/Clip Group/Path
+    ctx.beginPath();
+    ctx.moveTo(247.7, 134.0);
+    ctx.bezierCurveTo(264.3, 134.0, 277.7, 120.6, 277.7, 104.0);
+    ctx.bezierCurveTo(277.7, 87.4, 264.3, 74.0, 247.7, 74.0);
+    ctx.stroke();
+
+
+    
+      
+
   }
 
 }
