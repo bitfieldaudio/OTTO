@@ -2,6 +2,7 @@
 
 #include "core/ui/vector_graphics.hpp"
 #include "services/audio_manager.hpp"
+#include "services/controller.hpp"
 #include "services/engine_manager.hpp"
 #include "services/state_manager.hpp"
 
@@ -76,8 +77,8 @@ namespace otto::services {
     });
 
     state.active_channel.on_change().connect([&](auto new_chan, auto old_chan) {
-      if (new_chan == old_chan) return; 
-      state.current_screen = state.current_screen.get(); 
+      if (new_chan == old_chan) return;
+      state.current_screen = state.current_screen.get();
     });
 
     state.octave.on_change().connect([&](auto octave) {
@@ -155,5 +156,9 @@ namespace otto::services {
     vg::timeline().step(chrono::duration_cast<chrono::milliseconds>(now - last_frame).count());
     last_frame = now;
   }
+
+  void UIManager::register_screen_key(ScreenEnum, core::input::Key key) {}
+  void UIManager::register_screen_key(ScreenEnum, core::input::Key key, core::input::Key modifier) {}
+  void UIManager::pop_back() {}
 
 } // namespace otto::services
