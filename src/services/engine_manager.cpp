@@ -153,6 +153,7 @@ namespace otto::services {
       }
     });
 
+<<<<<<< Updated upstream
     
 
     controller.register_key_handler(input::Key::sequencer,
@@ -184,6 +185,26 @@ namespace otto::services {
         ui_manager.display(ScreenEnum::synth);
       }
     });
+=======
+    using namespace input;
+
+    ui_manager.register_screen_key(ScreenEnum::sequencer, Key::sequencer);
+    ui_manager.register_screen_key(ScreenEnum::sampler, Key::sampler);
+    ui_manager.register_screen_key(ScreenEnum::routing, Key::routing);
+    ui_manager.register_screen_key(ScreenEnum::looper, Key::looper);
+    ui_manager.register_screen_key(ScreenEnum::saveslots, Key::slots);
+
+    ui_manager.register_screen_key(ScreenEnum::arp, Key::arp);
+    ui_manager.register_screen_key(ScreenEnum::arp_selector, Key::arp, Key::shift);
+    ui_manager.register_screen_key(ScreenEnum::synth, Key::synth);
+    ui_manager.register_screen_key(ScreenEnum::synth_selector, Key::synth, Key::shift);
+    ui_manager.register_screen_key(ScreenEnum::fx1, Key::fx1);
+    ui_manager.register_screen_key(ScreenEnum::fx1_selector, Key::fx1, Key::shift);
+    ui_manager.register_screen_key(ScreenEnum::fx2, Key::fx2);
+    ui_manager.register_screen_key(ScreenEnum::fx2_selector, Key::fx2, Key::shift);
+    ui_manager.register_screen_key(ScreenEnum::twist1, Key::twist1);
+    ui_manager.register_screen_key(ScreenEnum::twist2, Key::twist2);
+>>>>>>> Stashed changes
 
     controller.register_key_handler(input::Key::envelope, [&](input::Key k) {
       if (ui_manager.state.active_channel == ChannelEnum::internal) {
@@ -197,6 +218,7 @@ namespace otto::services {
       }
     });
 
+<<<<<<< Updated upstream
     controller.register_key_handler(input::Key::fx1, [&](input::Key k) {
       if (controller.is_pressed(input::Key::shift)) {
         ui_manager.display(ScreenEnum::fx1_selector);
@@ -219,6 +241,8 @@ namespace otto::services {
     controller.register_key_handler(input::Key::twist1, [&](input::Key k) { ui_manager.display(ScreenEnum::twist1); });
     controller.register_key_handler(input::Key::twist2, [&](input::Key k) { ui_manager.display(ScreenEnum::twist2); });
 
+=======
+>>>>>>> Stashed changes
     static ScreenEnum master_last_screen = ScreenEnum::master;
     static ScreenEnum send_last_screen = ScreenEnum::sends;
 

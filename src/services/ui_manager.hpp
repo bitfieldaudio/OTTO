@@ -98,6 +98,10 @@ namespace otto::services {
 
     /// Select an engine
     void display(ScreenEnum screen);
+    /// Pop back to previous screen
+    /// 
+    /// Only one level is saved, so can only be used once. Otherwise, has no effect
+    void pop_back();
 
     core::ui::Screen& current_screen();
     core::input::InputHandler& current_input_handler();
@@ -108,6 +112,8 @@ namespace otto::services {
     }
 
     void register_screen_selector(ScreenEnum, ScreenSelector);
+    void register_screen_key(ScreenEnum, core::input::Key key);
+    void register_screen_key(ScreenEnum, core::input::Key key, core::input::Key modifier);
 
     State state;
 
@@ -143,8 +149,8 @@ namespace otto::services {
     } empty_screen;
     core::input::InputHandler empty_input;
     core::ui::ScreenAndInput empty_sai = {empty_screen, empty_input};
-
     core::ui::ScreenAndInput cur_sai = empty_sai;
+    core::ui::ScreenAndInput last_sai = empty_sai;
 
     util::enum_map<ScreenEnum, ScreenSelector> screen_selectors_;
 
