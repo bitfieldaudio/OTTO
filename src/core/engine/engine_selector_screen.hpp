@@ -39,7 +39,7 @@ namespace otto::core::engine {
       std::int8_t character = 25;
     };
     std::int8_t char_idx_ = 0;
-    std::array<GroupCharPair, 12> characters_;
+    std::array<GroupCharPair, 12> characters_ = {};
     // TODO:
     std::string cached_str_;
   };

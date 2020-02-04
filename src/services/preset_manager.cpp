@@ -166,7 +166,7 @@ namespace otto::services {
 
   void DefaultPresetManager::load_preset_files()
   {
-    LOG_SCOPE_FUNCTION(INFO);
+    LOGI_SCOPE(__PRETTY_FUNCTION__);
     if (!fs::exists(presets_dir)) {
       DLOGI("Creating preset directory");
       fs::create_directories(presets_dir);
@@ -200,7 +200,7 @@ namespace otto::services {
                                     std::string_view preset_name,
                                     const nlohmann::json& preset_data)
   {
-    LOG_SCOPE_FUNCTION(INFO);
+    LOGI_SCOPE(__PRETTY_FUNCTION__);
     util::JsonFile jf{presets_dir / engine_name.c_str() / (std::string(preset_name) + ".json")};
 
     jf.data() = nlohmann::json::object();

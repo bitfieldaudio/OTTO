@@ -1,6 +1,7 @@
 otto_include_board(parts/ui/egl)
 otto_include_board(parts/audio/rtaudio)
 otto_include_board(parts/controller/toot-mcu-fifo)
+otto_include_board(parts/rpi)
 set(CMAKE_LINKER_FLAGS_RELEASE "${CMAKE_LINKER_FLAGS_RELEASE} -ffast-math -funsafe-math-optimizations -mfpu=neon-vfpv4")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -ffast-math -funsafe-math-optimizations -mfpu=neon-vfpv4")
 add_compile_definitions("LOGURU_STACKTRACES=0")

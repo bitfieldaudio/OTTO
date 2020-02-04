@@ -114,6 +114,10 @@ namespace otto::services {
       util::Signal<Event> on_input;
     } signals;
 
+    itc::PushOnlyActionQueue& action_queue() noexcept {
+      return action_queue_;
+    }
+
   protected:
     /// Dispatches to the event handler for the current screen, and handles
     /// global keys.
@@ -144,7 +148,7 @@ namespace otto::services {
     friend struct ControllerSender;
 
     foonathan::array::flat_map<Key, std::pair<KeyHandler, KeyHandler>> key_handlers;
-    std::array<bool, Key::_size()> keys;
+    std::array<bool, Key::_size()> keys = {};
     util::double_buffered<EventBag> events_;
     itc::ActionQueue action_queue_;
 

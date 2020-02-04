@@ -36,6 +36,7 @@ namespace otto::services {
 
   Application::~Application()
   {
+    DLOGI("~Application");
     events.pre_exit.emit();
   }
 

@@ -132,6 +132,10 @@ namespace otto::services {
 
   void TMFC::set_color(LED led, LEDColor color)
   {
+    constexpr std::uint8_t black = 0x01u;
+    color.r = std::max(black, color.r);
+    color.g = std::max(black, color.g);
+    color.b = std::max(black, color.b);
     std::array<std::uint8_t, 6> msg = {0xEC, led.key._to_integral(), color.r, color.g, color.b,
                                        '\n'};
     queue_message(msg);

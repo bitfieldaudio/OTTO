@@ -3,6 +3,8 @@
 #include <functional>
 #include <tuple>
 
+#include "services/log_manager.hpp"
+#include "testing.t.hpp"
 #include "util/macros.hpp"
 #include "util/meta.hpp"
 #include "util/type_traits.hpp"
@@ -44,11 +46,11 @@ namespace otto::itc {
   /// I.e. `call_receiver(AR, Action)` is valid, i.e. `AR` implements an `action(Action, Args...)` member function
   class ActionReceiver {
     static constexpr auto _is(...) -> std::false_type;
-    template<typename T,
-             typename Tag,
-             typename... Args,
-             typename = std::void_t<decltype(std::declval<T>().action(Action<Tag, Args...>(),
-                                                                      std::declval<Args>()...))>>
+    template<
+      typename T,
+      typename Tag,
+      typename... Args,
+      typename = std::void_t<decltype(std::declval<T>().action(Action<Tag, Args...>(), std::declval<Args>()...))>>
     static constexpr auto _is(T&&, Action<Tag, Args...>) -> std::true_type;
 
   public:
@@ -95,6 +97,24 @@ namespace otto::itc {
 
   } // namespace detail
 
+  template<typename Tag>
+  constexpr std::string_view get_type_name()
+  {
+    std::string_view func_name = __PRETTY_FUNCTION__;
+#ifdef __clang__
+    func_name = func_name.substr(func_name.find("[Tag = ") + 7);
+    func_name = func_name.substr(0, func_name.find_first_of("]"));
+#elif defined(__GNUC__) && __GNUC__ >= 9
+    func_name = func_name.substr(func_name.find("[with Tag = ") + 12);
+    func_name = func_name.substr(0, func_name.find_first_of(";]"));
+#else
+#warning cannot get action name on this compiler
+#endif
+    return func_name;
+  }
+
+  static_assert(get_type_name<int>() == "int");
+
   /// Concept: `InvalidActionReceiver::is<AR, Action>` is true if `AR` has an invalid receiver for `Action`.
   ///
   /// An invalid receiver is a function called `action`, which takes `Action` as the first parameter, but
@@ -119,6 +139,8 @@ namespace otto::itc {
   auto call_receiver(AR&& ar, ActionData<Action<Tag, Args...>> action_data)
     -> std::enable_if_t<ActionReceiver::is<AR, Action<Tag, Args...>>>
   {
+      DLOGI("Action {} received by {}, args: {}", get_type_name<Tag>(), get_type_name<std::decay_t<AR>>(),
+          doctest::StringMaker<std::tuple<Args...>>::convert(action_data.args).c_str());
     static_assert(ActionReceiver::is<AR, Action<Tag, Args...>>);
     std::apply([](auto&& ar, auto&&... args) { FWD(ar).action(FWD(args)...); },
                std::tuple_cat(std::forward_as_tuple<AR>(ar), std::tuple<Action<Tag, Args...>>(), action_data.args));
@@ -133,6 +155,8 @@ namespace otto::itc {
     static_assert(!InvalidActionReceiver::is<AR, Action<Tag, Args...>>,
                   "The ActionReceiver (AR) has an invalid action receiver for the given action");
     if constexpr (ActionReceiver::is<AR, Action<Tag, Args...>>) {
+      DLOGI("Action {} received by {}, args: {}", get_type_name<Tag>(), get_type_name<std::decay_t<AR>>(),
+            doctest::StringMaker<std::tuple<Args...>>::convert(action_data.args).c_str());
       std::apply([](auto&& ar, auto&&... args) { FWD(ar).action(FWD(args)...); },
                  std::tuple_cat(std::forward_as_tuple<AR>(ar), std::tuple<Action<Tag, Args...>>(), action_data.args));
       return true;

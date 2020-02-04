@@ -34,15 +34,6 @@ namespace otto::board::ui {
         Controller::current().keyrelease(k);
     };
 
-    auto send_encoder = [action](core::input::Encoder rot, int n) {
-      if (action == Action::press || (action == Action::repeat))
-        Controller::current().encoder({rot, n});
-    };
-
-    auto shutdown = [action] {
-      if (action == Action::press) Application::current().exit(Application::ErrorCode::ui_closed); 
-    };
-
     switch (key) {
     // Midi
     case Key::a: send_midi(17); break;

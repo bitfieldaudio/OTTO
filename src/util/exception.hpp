@@ -22,7 +22,7 @@ namespace otto::util {
     {}
 
     const char* what() const noexcept override {
-      return message.c_str();
+     return message.c_str();
     }
 
     /// Create a new `exception` with `v` appended to the message
