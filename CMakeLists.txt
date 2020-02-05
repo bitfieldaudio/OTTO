@@ -1,11 +1,12 @@
-# Version 3.8 is required for c++17
-cmake_minimum_required(VERSION 3.9)
+# Version 3.12 is required for Object library linking
+cmake_minimum_required(VERSION 3.12)
 project(OTTO VERSION 0.0.1 LANGUAGES CXX C)
 
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_BUILD_TYPE Release)
 #set(CMAKE_CXX_FLAGS_DEBUG "-ggdb3 -O0" CACHE STRING "" FORCE)
 
 include(cmake/utils.cmake)
