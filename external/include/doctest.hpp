@@ -756,28 +756,12 @@ namespace detail {
     { static const bool value = false; };
 
     namespace has_insertion_operator_impl {
-        typedef char no;
-        typedef char yes[2];
-
-        struct any_t
-        {
-            template <typename T>
-            // cppcheck-suppress noExplicitConstructor
-            any_t(const DOCTEST_REF_WRAP(T));
-        };
-
-        yes& testStreamable(std::ostream&);
-        no   testStreamable(no);
-
-        no operator<<(const std::ostream&, const any_t&);
+        template<typename T, typename = std::void_t<decltype(std::declval<std::ostream&>() << std::declval<T>())>>
+        std::true_type testStreamable(T*) noexcept;
+        std::false_type testStreamable(...) noexcept;
 
         template <typename T>
-        struct has_insertion_operator
-        {
-            static std::ostream& s;
-            static const DOCTEST_REF_WRAP(T) t;
-            static const bool value = sizeof(decltype(testStreamable(s << t))) == sizeof(yes);
-        };
+        struct has_insertion_operator : decltype(testStreamable(std::declval<T*>())) {};
     } // namespace has_insertion_operator_impl
 
     template <typename T>

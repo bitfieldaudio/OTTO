@@ -23,18 +23,18 @@ namespace otto::board::ui {
     void initEGL();
 
     struct EGLData {
-      int width;
-      int height;
+      int width = 0;
+      int height = 0;
       int bitdepth = 4;
-      int screenDatasize;
+      int screenDatasize = 0;
 
-      DMXDisplay display;
-      DMXResource resource;
-      DMXWindow nativeWindow;
+      DMXDisplay display = {};
+      DMXResource resource = {};
+      DMXWindow nativeWindow = {};
       unsigned short* data = nullptr;
 
-      int nConfig;
-      VCRect rect;
+      int nConfig = 0;
+      VCRect rect = {};
     } eglData;
 
     struct Size {
@@ -43,11 +43,11 @@ namespace otto::board::ui {
     } draw_size;
 
     struct EGLState {
-      uint width;
-      uint height;
-      EGLDisplay display;
-      EGLSurface surface;
-      EGLContext context;
+      uint width = 0;
+      uint height = 0;
+      EGLDisplay display = nullptr;
+      EGLSurface surface = nullptr;
+      EGLContext context = nullptr;
     } state;
   };
 

@@ -5,38 +5,38 @@ file(GLOB_RECURSE sources ${OTTO_SOURCE_DIR}/src/*.cpp)
 
 find_package (Threads)
 # Library
-add_library(otto ${sources})
-target_link_libraries(otto PUBLIC ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
-target_include_directories(otto PUBLIC ./)
+add_library(otto_src OBJECT ${sources})
+target_include_directories(otto_src PUBLIC ${OTTO_SOURCE_DIR}/src)
+target_link_libraries(otto_src PUBLIC ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
 
 # Executable
 add_executable(otto_exec ${OTTO_SOURCE_DIR}/boards/${OTTO_BOARD}/src/main.cpp)
-target_link_libraries(otto_exec PUBLIC otto)
+target_link_libraries(otto_exec PUBLIC otto_src)
 set_target_properties(otto_exec PROPERTIES OUTPUT_NAME otto)
 
 add_subdirectory(${OTTO_EXTERNAL_DIR} ${OTTO_BINARY_DIR}/external)
 
 # This updates configurations and includes board specific files
 otto_include_board(${OTTO_BOARD})
-otto_add_definitions(otto)
+otto_add_definitions(otto_src)
 otto_add_definitions(otto_exec)
 
 if (NOT OTTO_USE_LIBCXX)
-  target_link_libraries(otto PUBLIC atomic)
+  target_link_libraries(otto_src PUBLIC atomic)
 endif()
 
-target_link_libraries(otto PUBLIC external)
-target_link_libraries(otto PUBLIC nanovg)
-target_link_libraries(otto PUBLIC GSL)
-target_link_libraries(otto PUBLIC fmt)
-target_link_libraries(otto PUBLIC gamma)
-target_link_libraries(otto PUBLIC foonathan_array)
-target_link_libraries(otto PUBLIC foonathan_type_safe)
-target_link_libraries(otto PUBLIC choreograph)
-target_link_libraries(otto PUBLIC BFG::Lyra)
+target_link_libraries(otto_src PUBLIC external)
+target_link_libraries(otto_src PUBLIC nanovg)
+target_link_libraries(otto_src PUBLIC GSL)
+target_link_libraries(otto_src PUBLIC fmt)
+target_link_libraries(otto_src PUBLIC gamma)
+target_link_libraries(otto_src PUBLIC foonathan_array)
+target_link_libraries(otto_src PUBLIC foonathan_type_safe)
+target_link_libraries(otto_src PUBLIC choreograph)
+target_link_libraries(otto_src PUBLIC BFG::Lyra)
 
-include("${OTTO_SOURCE_DIR}/cmake/doctest_force_link_static_lib_in_target.cmake")
-doctest_force_link_static_lib_in_target(otto_exec otto)
+#include("${OTTO_SOURCE_DIR}/cmake/doctest_force_link_static_lib_in_target.cmake")
+#doctest_force_link_static_lib_in_target(otto_exec otto)
 
 # Enable warnings for local code
 if(MSVC)

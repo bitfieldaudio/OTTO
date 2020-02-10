@@ -117,33 +117,33 @@ namespace otto::util {
       return _store[_inner_idx];
     }
 
-    constexpr T& outer() noexcept
+    T& outer() noexcept
     {
       std::unique_lock lock(_outer_lock);
       return _store[(_inner_idx + 1) % 2];
     }
 
-    constexpr const T& outer() const noexcept
+    const T& outer() const noexcept
     {
       std::unique_lock lock(_outer_lock);
       return _store[(_inner_idx + 1) % 2];
     }
 
     template<typename Func>
-    constexpr decltype(auto) outer_locked(Func&& f) noexcept(std::is_nothrow_invocable_v<Func, T&>)
+    decltype(auto) outer_locked(Func&& f) noexcept(std::is_nothrow_invocable_v<Func, T&>)
     {
       std::unique_lock lock(_outer_lock);
       return std::invoke(std::forward<Func>(f), _store[(_inner_idx + 1) % 2]);
     }
 
     template<typename Func>
-    constexpr decltype(auto) outer_locked(Func&& f) const noexcept(std::is_nothrow_invocable_v<Func, const T&>)
+    decltype(auto) outer_locked(Func&& f) const noexcept(std::is_nothrow_invocable_v<Func, const T&>)
     {
       std::unique_lock lock(_outer_lock);
       return std::invoke(std::forward<Func>(f), _store[(_inner_idx + 1) % 2]);
     }
 
-    constexpr void swap() noexcept
+    void swap() noexcept
     {
       std::unique_lock lock(_outer_lock);
       _inner_idx = (_inner_idx + 1) % 2;

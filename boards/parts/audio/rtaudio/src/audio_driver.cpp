@@ -1,21 +1,18 @@
 #include "board/audio_driver.hpp"
 
+#include <Gamma/Domain.h>
+#include <fmt/format.h>
+
 #include <chrono>
 #include <string>
 #include <vector>
 
-#include <fmt/format.h>
-
-#include "util/algorithm.hpp"
-
 #include "core/audio/processor.hpp"
-
 #include "services/audio_manager.hpp"
 #include "services/clock_manager.hpp"
 #include "services/engine_manager.hpp"
 #include "services/log_manager.hpp"
-
-#include <Gamma/Domain.h>
+#include "util/algorithm.hpp"
 
 namespace otto::services {
 
@@ -157,12 +154,10 @@ namespace otto::services {
 
     auto in_buf = Application::current().audio_manager->buffer_pool().allocate_multi<2>();
     if (enable_input) {
-      // Deinterleave. TODO: Get real stereo data
+      // Deinterleave
       for (int i = 0; i < nframes; i++) {
-      in_buf[0][i] = in_data[2 * i];
-      in_buf[1][i] = in_data[2 * i + 1];
-      //in_buf[0][i] = in_data[i];
-      //in_buf[1][i] = in_data[i];
+        in_buf[0][i] = in_data[2 * i];
+        in_buf[1][i] = in_data[2 * i + 1];
       }
     } else {
       // Is this necessary? We could also just not even add it to the output.

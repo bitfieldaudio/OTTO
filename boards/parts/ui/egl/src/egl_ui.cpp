@@ -70,7 +70,7 @@ namespace otto::services {
     auto t0 = clock::now();
 
     bool showFps = config["Debug"];
-    float fps;
+    float fps = 0;
     duration<double> lastFrameTime;
 
 //    std::thread kbd_thread = std::thread([this] { read_keyboard(); });

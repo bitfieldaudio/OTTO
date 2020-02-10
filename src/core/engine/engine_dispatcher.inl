@@ -28,6 +28,7 @@ namespace otto::core::engine {
       engine_is_constructed_ = false;
       services::AudioManager::current().wait_one();
       current_engine_.emplace_by_index(idx);
+      engine_states_[current_engine_->name()].map([&](auto&& j) { current_engine_->from_json(j); });
       engine_is_constructed_ = true;
       update_max_preset_idx();
     });
@@ -149,12 +150,9 @@ namespace otto::core::engine {
   ENGDISPTEMPLATE
   void ENGDISP::from_json(const nlohmann::json& j)
   {
-    auto idx = nano::find(engine_names, j.at("selected")) - engine_names.begin();
     util::deserialize(engine_states_, j.at("states"));
-    if (idx < engine_names.size()) {
-      current_engine_.emplace_by_index(idx);
-    }
-    engine_states_[current_engine_->name()].map([&](auto&& j) { current_engine_->from_json(j); });
+    auto idx = nano::find(engine_names, j.at("selected")) - engine_names.begin();
+    props.selected_engine_idx = idx;
   }
 
   // Free functions to actually integrate with nlohmann::json

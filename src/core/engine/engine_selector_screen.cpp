@@ -285,7 +285,7 @@ namespace otto::core::engine {
         ctx.beginPath();
         ctx.font(Fonts::Norm, font_size);
         ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Baseline);
-        const auto new_preset_name = preset_name_writer.to_string();
+        const auto new_preset_name = preset_name_writer.to_string(false);
         const auto cursor_pos = preset_name_writer.cursor();
         auto cursor_left = ctx.measureText(new_preset_name.substr(0, cursor_pos));
         auto cursor_right = ctx.measureText(new_preset_name.substr(0, cursor_pos + 1));

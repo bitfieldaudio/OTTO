@@ -27,76 +27,76 @@ namespace otto::services {
 } // namespace otto::services
 
 /// Shorthand to the loguru macro LOG_F(INFO, ...)
-#define LOGI(...) LOG_F(INFO, __VA_ARGS__)
+#define LOGI(...) VLOG_F(loguru::Verbosity_INFO, __VA_ARGS__)
 
 /// Shorthand to the loguru macro LOG_F(WARNING, ...)
-#define LOGW(...) LOG_F(WARNING, __VA_ARGS__)
+#define LOGW(...) VLOG_F(loguru::Verbosity_WARNING, __VA_ARGS__)
 
 /// Shorthand to the loguru macro LOG_F(ERROR, ...)
-#define LOGE(...) LOG_F(ERROR, __VA_ARGS__)
+#define LOGE(...) VLOG_F(loguru::Verbosity_ERROR, __VA_ARGS__)
 
 /// Shorthand to the loguru macro LOG_F(FATAL, ...)
-#define LOGF(...) LOG_F(FATAL, __VA_ARGS__)
+#define LOGF(...) VLOG_F(loguru::Verbosity_FATAL, __VA_ARGS__)
 
 /// Shorthand to the loguru macro DLOG_F(INFO, ...)
-#define DLOGI(...) DLOG_F(INFO, __VA_ARGS__)
+#define DLOGI(...) DVLOG_F(loguru::Verbosity_INFO, __VA_ARGS__)
 
 /// Shorthand to the loguru macro DLOG_F(WARNING, ...)
-#define DLOGW(...) DLOG_F(WARNING, __VA_ARGS__)
+#define DLOGW(...) DVLOG_F(loguru::Verbosity_WARNING, __VA_ARGS__)
 
 /// Shorthand to the loguru macro DLOG_F(ERROR, ...)
-#define DLOGE(...) DLOG_F(ERROR, __VA_ARGS__)
+#define DLOGE(...) DVLOG_F(loguru::Verbosity_ERROR, __VA_ARGS__)
 
 /// Shorthand to the loguru macro DLOG_F(FATAL, ...)
-#define DLOGF(...) DLOG_F(FATAL, __VA_ARGS__)
+#define DLOGF(...) DVLOG_F(loguru::Verbosity_FATAL, __VA_ARGS__)
 
 /// Shorthand to the loguru macro LOG_IF_F(INFO, ...)
-#define LOGI_IF(...) LOG_IF_F(INFO, __VA_ARGS__)
+#define LOGI_IF(...) VLOG_IF_F(loguru::Verbosity_INFO, __VA_ARGS__)
 
 /// Shorthand to the loguru macro LOG_IF_F(WARNING, ...)
-#define LOGW_IF(...) LOG_IF_F(WARNING, __VA_ARGS__)
+#define LOGW_IF(...) VLOG_IF_F(loguru::Verbosity_WARNING, __VA_ARGS__)
 
 /// Shorthand to the loguru macro LOG_IF_F(ERROR, ...)
-#define LOGE_IF(...) LOG_IF_F(ERROR, __VA_ARGS__)
+#define LOGE_IF(...) VLOG_IF_F(loguru::Verbosity_ERROR, __VA_ARGS__)
 
 /// Shorthand to the loguru macro LOG_IF_F(FATAL, ...)
-#define LOGF_IF(...) LOG_IF_F(FATAL, __VA_ARGS__)
+#define LOGF_IF(...) VLOG_IF_F(loguru::Verbosity_FATAL, __VA_ARGS__)
 
 /// Shorthand to the loguru macro DLOG_IF_F(INFO, ...)
-#define DLOGI_IF(...) DLOG_IF_F(INFO, __VA_ARGS__)
+#define DLOGI_IF(...) DVLOG_IF_F(loguru::Verbosity_INFO, __VA_ARGS__)
 
 /// Shorthand to the loguru macro DLOG_IF_F(WARNING, ...)
-#define DLOGW_IF(...) DLOG_IF_F(WARNING, __VA_ARGS__)
+#define DLOGW_IF(...) DVLOG_IF_F(loguru::Verbosity_WARNING, __VA_ARGS__)
 
 /// Shorthand to the loguru macro DLOG_IF_F(ERROR, ...)
-#define DLOGE_IF(...) DLOG_IF_F(ERROR, __VA_ARGS__)
+#define DLOGE_IF(...) DVLOG_IF_F(loguru::Verbosity_ERROR, __VA_ARGS__)
 
 /// Shorthand to the loguru macro DLOG_IF_F(FATAL, ...)
-#define DLOGF_IF(...) DLOG_IF_F(FATAL, __VA_ARGS__)
+#define DLOGF_IF(...) DVLOG_IF_F(loguru::Verbosity_FATAL, __VA_ARGS__)
 
 /// Shorthand to the loguru macro LOG_SCOPE_F(INFO, ...)
-#define LOGI_SCOPE(...) LOG_SCOPE_F(INFO, __VA_ARGS__)
+#define LOGI_SCOPE(...) VLOG_SCOPE_F(loguru::Verbosity_INFO, __VA_ARGS__)
 
 /// Shorthand to the loguru macro LOG_SCOPE_F(WARNING, ...)
-#define LOGW_SCOPE(...) LOG_SCOPE_F(WARNING, __VA_ARGS__)
+#define LOGW_SCOPE(...) VLOG_SCOPE_F(loguru::Verbosity_WARNING, __VA_ARGS__)
 
 /// Shorthand to the loguru macro LOG_SCOPE_F(ERROR, ...)
-#define LOGE_SCOPE(...) LOG_SCOPE_F(ERROR, __VA_ARGS__)
+#define LOGE_SCOPE(...) VLOG_SCOPE_F(loguru::Verbosity_ERROR, __VA_ARGS__)
 
 /// Shorthand to the loguru macro LOG_SCOPE_F(FATAL, ...)
-#define LOGF_SCOPE(...) LOG_SCOPE_F(FATAL, __VA_ARGS__)
+#define LOGF_SCOPE(...) VLOG_SCOPE_F(loguru::Verbosity_FATAL, __VA_ARGS__)
 
 /// Shorthand to the loguru macro DLOG_SCOPE_F(INFO, ...)
-#define DLOGI_SCOPE(...) DLOG_SCOPE_F(INFO, __VA_ARGS__)
+#define DLOGI_SCOPE(...) DVLOG_SCOPE_F(loguru::Verbosity_INFO, __VA_ARGS__)
 
 /// Shorthand to the loguru macro DLOG_SCOPE_F(WARNING, ...)
-#define DLOGW_SCOPE(...) DLOG_SCOPE_F(WARNING, __VA_ARGS__)
+#define DLOGW_SCOPE(...) DVLOG_SCOPE_F(loguru::Verbosity_WARNING, __VA_ARGS__)
 
 /// Shorthand to the loguru macro DLOG_SCOPE_F(ERROR, ...)
-#define DLOGE_SCOPE(...) DLOG_SCOPE_F(ERROR, __VA_ARGS__)
+#define DLOGE_SCOPE(...) DVLOG_SCOPE_F(loguru::Verbosity_ERROR, __VA_ARGS__)
 
 /// Shorthand to the loguru macro DLOG_SCOPE_F(FATAL, ...)
-#define DLOGF_SCOPE(...) DLOG_SCOPE_F(FATAL, __VA_ARGS__)
+#define DLOGF_SCOPE(...) DVLOG_SCOPE_F(loguru::Verbosity_FATAL, __VA_ARGS__)
 
 namespace otto {
   struct assert_module : debug_assert::set_level<999> {

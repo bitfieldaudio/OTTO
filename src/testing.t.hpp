@@ -1,13 +1,12 @@
 #pragma once
-#include <fmt/format.h>
-
 #include <ctype.h>
 #include <fcntl.h>
+#include <fmt/format.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
-static bool debuggerIsAttached()
+[[maybe_unused]] static bool debuggerIsAttached()
 {
   char buf[4096];
 
@@ -33,12 +32,13 @@ static bool debuggerIsAttached()
   return false;
 }
 
-static bool doctestDebuggerCheck() {
+[[maybe_unused]] static bool doctestDebuggerCheck()
+{
   static bool res = debuggerIsAttached();
   return res;
 }
 
-#include "./debugbreak.h"
+#include "debugbreak.h"
 #define DOCTEST_BREAK_INTO_DEBUGGER() debug_break();
 #define DOCTEST_IS_DEBUGGER_ACTIVE() doctestDebuggerCheck();
 
