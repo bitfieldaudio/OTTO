@@ -106,7 +106,7 @@ namespace otto::services {
     
     auto& ui_manager = *Application::current().ui_manager;
     auto& state_manager = *Application::current().state_manager;
-    auto& controller = *Application::current().controller;
+    //auto& controller = *Application::current().controller;
 
     auto reg_ss = [&](auto se, auto&& f) { return ui_manager.register_screen_selector(se, f); };
 
