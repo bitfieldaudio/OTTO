@@ -93,7 +93,7 @@ namespace otto::services {
 
     for (auto&& [key, funcs] : nano::subrange(first, last)) {
       auto& func = is_press ? funcs.first : funcs.second;
-      if (func) func(key);
+      if (func) func();
     }
 
     return true;

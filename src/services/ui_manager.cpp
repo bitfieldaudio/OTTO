@@ -95,9 +95,9 @@ namespace otto::services {
       Controller::current().set_color(LED{Key::minus}, octave < 0 ? c : LEDColor::Black);
     });
 
-    Application::current().events.post_init.connect([&] {
-      Controller::current().register_key_handler(Key::plus, [&](auto&&) { state.octave.step(1); });
-      Controller::current().register_key_handler(Key::minus, [&](auto&&) { state.octave.step(-1); });
+    Application::current().events.post_init.connect([this] {
+      Controller::current().register_key_handler(Key::plus, [this] { state.octave.step(1); });
+      Controller::current().register_key_handler(Key::minus, [this] { state.octave.step(-1); });
     });
 
     auto load = [this](const nlohmann::json& j) { util::deserialize(state, j); };
@@ -157,8 +157,60 @@ namespace otto::services {
     last_frame = now;
   }
 
-  void UIManager::register_screen_key(ScreenEnum, core::input::Key key) {}
-  void UIManager::register_screen_key(ScreenEnum, core::input::Key key, core::input::Key modifier) {}
-  void UIManager::pop_back() {}
+  void UIManager::register_screen_key(core::input::Key key, ScreenEnum se)
+  {
+    Controller::current().register_key_handler(
+      key,
+      [this, se] {
+        reset_timer();
+        display(se);
+      },
+      [this] {
+        if (timer_done()) {
+          display(pop_back());
+        } else {
+          push_back(state.current_screen);
+        }
+      });
+  }
+  void UIManager::register_screen_key(core::input::Key key, ScreenEnum s, ScreenEnum sm, core::input::Key modifier)
+  {
+    Controller::current().register_key_handler(
+      key,
+      [this, s, sm, modifier] {
+        reset_timer();
+        if (Controller::current().is_pressed(modifier)) {
+          display(sm);
+        } else {
+          display(s);
+        }
+      },
+      [this] {
+        if (timer_done()) {
+          display(pop_back());
+        } else {
+          push_back(state.current_screen);
+        }
+      });
+  }
+
+  ScreenEnum UIManager::pop_back()
+  {
+    return screen_stack;
+  }
+  void UIManager::push_back(ScreenEnum se)
+  {
+    screen_stack = se;
+  }
+
+  void UIManager::reset_timer()
+  {
+    press_time = chrono::clock::now();
+  }
+
+  bool UIManager::timer_done()
+  {
+    return (chrono::clock::now() - press_time) > peek_time;
+  }
 
 } // namespace otto::services

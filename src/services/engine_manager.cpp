@@ -154,28 +154,24 @@ namespace otto::services {
 
     using namespace input;
 
-    ui_manager.register_screen_key(ScreenEnum::sequencer, Key::sequencer);
-    ui_manager.register_screen_key(ScreenEnum::sampler, Key::sampler);
-    ui_manager.register_screen_key(ScreenEnum::routing, Key::routing);
-    ui_manager.register_screen_key(ScreenEnum::looper, Key::looper);
-    ui_manager.register_screen_key(ScreenEnum::saveslots, Key::slots);
+    ui_manager.register_screen_key(Key::sequencer, ScreenEnum::sequencer);
+    ui_manager.register_screen_key(Key::sampler, ScreenEnum::sampler);
+    ui_manager.register_screen_key(Key::routing, ScreenEnum::routing);
+    ui_manager.register_screen_key(Key::looper, ScreenEnum::looper);
+    ui_manager.register_screen_key(Key::slots, ScreenEnum::saveslots);
 
-    ui_manager.register_screen_key(ScreenEnum::arp, Key::arp);
-    ui_manager.register_screen_key(ScreenEnum::arp_selector, Key::arp, Key::shift);
-    ui_manager.register_screen_key(ScreenEnum::synth, Key::synth);
-    ui_manager.register_screen_key(ScreenEnum::synth_selector, Key::synth, Key::shift);
-    ui_manager.register_screen_key(ScreenEnum::fx1, Key::fx1);
-    ui_manager.register_screen_key(ScreenEnum::fx1_selector, Key::fx1, Key::shift);
-    ui_manager.register_screen_key(ScreenEnum::fx2, Key::fx2);
-    ui_manager.register_screen_key(ScreenEnum::fx2_selector, Key::fx2, Key::shift);
-    ui_manager.register_screen_key(ScreenEnum::twist1, Key::twist1);
-    ui_manager.register_screen_key(ScreenEnum::twist2, Key::twist2);
+    ui_manager.register_screen_key(Key::arp, ScreenEnum::arp, ScreenEnum::arp_selector, Key::shift);
+    ui_manager.register_screen_key(Key::synth, ScreenEnum::synth, ScreenEnum::synth_selector, Key::shift);
+    ui_manager.register_screen_key(Key::fx1, ScreenEnum::fx1, ScreenEnum::fx1_selector,  Key::shift);
+    ui_manager.register_screen_key(Key::fx2, ScreenEnum::fx2, ScreenEnum::fx2_selector,  Key::shift);
 
-    ui_manager.register_screen_key(ScreenEnum::sends, Key::sends);
-    ui_manager.register_screen_key(ScreenEnum::master, Key::master);
-    ui_manager.register_screen_key(ScreenEnum::synth_envelope, Key::envelope);
-    ui_manager.register_screen_key(ScreenEnum::voices, Key::envelope, Key::shift);
-    ui_manager.register_screen_key(ScreenEnum::external, Key::external);
+    ui_manager.register_screen_key(Key::twist1, ScreenEnum::twist1);
+    ui_manager.register_screen_key(Key::twist2, ScreenEnum::twist2);
+
+    ui_manager.register_screen_key(Key::sends, ScreenEnum::sends);
+    ui_manager.register_screen_key(Key::master, ScreenEnum::master);
+    ui_manager.register_screen_key(Key::envelope, ScreenEnum::synth_envelope, ScreenEnum::voices, Key::shift);
+    ui_manager.register_screen_key(Key::external, ScreenEnum::external);
 
     auto load = [&](nlohmann::json& data) {
       util::deserialize(synth, data["Synth"]);
