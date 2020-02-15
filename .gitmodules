@@ -10,9 +10,6 @@
 [submodule "external/glfw"]
 	path = external/glfw
 	url = https://github.com/glfw/glfw
-[submodule "external/imgui"]
-	path = external/imgui
-	url = https://github.com/ocornut/imgui
 [submodule "external/Gamma"]
 	path = external/Gamma
 	url = https://github.com/LancePutnam/Gamma
@@ -25,6 +22,3 @@
 [submodule "external/choreograph"]
 	path = external/choreograph
 	url = https://github.com/topisani/Choreograph
-[submodule "external/lyra"]
-	path = external/lyra
-	url = https://github.com/bfgroup/Lyra

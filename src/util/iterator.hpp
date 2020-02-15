@@ -5,6 +5,7 @@
 #include <iterator>
 #include <memory>
 #include <nanorange.hpp>
+#include <tl/optional.hpp>
 #include <tuple>
 #include <type_traits>
 
@@ -173,12 +174,12 @@ namespace otto::util {
         return derived().dereference();
       }
 
-      pointer operator-> ()
+      pointer operator->()
       {
         return &derived().dereference();
       }
 
-      pointer operator-> () const
+      pointer operator->() const
       {
         return &derived().dereference();
       }
@@ -677,7 +678,7 @@ namespace otto::util {
     };
 
     template<typename Iterator>
-    float_step_iterator(const Iterator& iter, float step)->float_step_iterator<Iterator>;
+    float_step_iterator(const Iterator& iter, float step) -> float_step_iterator<Iterator>;
 
     /// Create a float_step_iterator
     template<typename I, typename V = typename iter_detail::value_type<std::decay_t<I>>::type>
@@ -690,7 +691,6 @@ namespace otto::util {
 
     namespace iter_detail {} // namespace iter_detail
 
-
     ///
     /// Generating iterator
     ///
@@ -700,21 +700,25 @@ namespace otto::util {
     template<typename Generator>
     struct generating_iterator
       : iterator_facade<generating_iterator<Generator>, std::invoke_result_t<Generator>, std::input_iterator_tag> {
-      using value_type = std::invoke_result_t<Generator>;
+      using value_type = typename std::invoke_result_t<Generator>::value_type;
       using iterator_category = std::input_iterator_tag;
 
+      static_assert(nano::assignable_from<Generator&, Generator>);
+
+      generating_iterator() {}
       generating_iterator(Generator generator) : generator{std::move(generator)} {}
+      generating_iterator(generating_iterator&&) = default;
 
       void advance(int n)
       {
         for (int i = 0; i < n; i++) {
-          val = std::invoke(generator);
+          val = std::invoke(*generator);
         }
       }
 
-      value_type& dereference()
+      value_type dereference()
       {
-        return val;
+        return *val;
       }
 
       bool equal(const generating_iterator& o) const
@@ -722,18 +726,30 @@ namespace otto::util {
         return o.val == val;
       }
 
+      bool operator==(nano::default_sentinel_t)
+      {
+        return !val.has_value();
+      }
+
+      bool operator!=(nano::default_sentinel_t)
+      {
+        return val.has_value();
+      }
+
     private:
-      value_type val;
-      Generator generator;
+      tl::optional<value_type> val = tl::nullopt;
+      tl::optional<Generator> generator = tl::nullopt;
     };
 
+
+    /// Create a Generating range
     ///
-    /// Create a generating iterator
-    ///
+    /// @param Generator Must have type: `tl::optional<T>()`. Returning `tl::nullopt` means
+    /// the end has been reached
     template<typename Generator>
-    generating_iterator<Generator> generator(Generator&& gen)
+    auto generator(Generator&& gen)
     {
-      return generating_iterator<Generator>(std::forward<Generator>(gen));
+      return nano::subrange(generating_iterator<Generator>(std::forward<Generator>(gen)), nano::default_sentinel);
     }
 
     /// Zipped iterator
@@ -831,7 +847,7 @@ namespace otto::util {
 
     template<typename... Ranges>
     struct ZippedRange {
-      ZippedRange(Ranges&&... ranges) : first{std::begin(ranges)...}, last{std::end(ranges)...} {}
+      ZippedRange(Ranges&&... ranges) : first{nano::begin(ranges)...}, last{nano::end(ranges)...} {}
 
       auto begin()
       {
@@ -853,9 +869,9 @@ namespace otto::util {
         return last;
       }
 
-      zipped_iterator<std::decay_t<decltype(std::begin(std::declval<Ranges>()))>...> first;
+      zipped_iterator<std::decay_t<decltype(nano::begin(std::declval<Ranges>()))>...> first;
 
-      zipped_iterator<std::decay_t<decltype(std::end(std::declval<Ranges>()))>...> last;
+      zipped_iterator<std::decay_t<decltype(nano::end(std::declval<Ranges>()))>...> last;
     };
 
     /// Create a ZippedRange from ranges
@@ -1020,9 +1036,9 @@ namespace otto::util {
 
       template<typename WrappedIter>
       using indexed_super = iterator_facade<indexed_iterator<WrappedIter>,
-                                              iter_detail::with_index<iter_detail::value_type_t<WrappedIter>>,
-                                              std::common_type_t<iter_detail::iterator_category_t<WrappedIter>>,
-                                              iter_detail::with_index<iter_detail::reference_t<WrappedIter>>>;
+                                            iter_detail::with_index<iter_detail::value_type_t<WrappedIter>>,
+                                            std::common_type_t<iter_detail::iterator_category_t<WrappedIter>>,
+                                            iter_detail::with_index<iter_detail::reference_t<WrappedIter>>>;
     } // namespace iter_detail
 
     template<typename WrappedIter>
@@ -1066,7 +1082,7 @@ namespace otto::util {
 
   } // namespace iterator
 
-  
+
   namespace view {
 
     template<typename Range>

@@ -99,9 +99,19 @@ namespace otto::util {
   };
 
   struct sleeper_thread {
+    sleeper_thread() {}
     template<typename Func>
     sleeper_thread(Func&& func) : std_thread(std::forward<Func>(func), [this] { return should_run(); })
     {}
+
+    sleeper_thread(const sleeper_thread&) = delete;
+    sleeper_thread(sleeper_thread&&) = delete;
+
+    template<typename Func>
+    sleeper_thread& operator=(Func&& func) {
+      std_thread = std::thread{std::forward<Func>(func), [this] { return should_run(); }};
+      return *this;
+    }
 
     ~sleeper_thread()
     {
@@ -125,9 +135,6 @@ namespace otto::util {
 
     bool should_run() noexcept
     {
-      std::unique_lock lock{_mutex};
-      if (!_should_run) return false;
-      _trigger.wait(lock);
       return _should_run;
     }
 
@@ -141,6 +148,11 @@ namespace otto::util {
     {
       auto lock = std::unique_lock(_mutex);
       return _trigger.wait_until(lock, time);
+    }
+
+    auto wait() {
+      auto lock = std::unique_lock(_mutex);
+      _trigger.wait(lock);
     }
 
     auto wake_up() noexcept

@@ -66,7 +66,3 @@ execute_process(COMMAND git submodule update --init -- choreograph WORKING_DIREC
 file(GLOB_RECURSE choreograph_src "${CMAKE_CURRENT_SOURCE_DIR}/choreograph/src/**.cpp")
 add_library(choreograph ${choreograph_src})
 target_include_directories(choreograph SYSTEM PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/choreograph/src")
-
-# Lyra
-execute_process(COMMAND git submodule update --init -- lyra WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/lyra)

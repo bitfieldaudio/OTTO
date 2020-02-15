@@ -14,6 +14,14 @@ namespace otto::util {
     using iterator = typename std::array<T, Enum::_size()>::iterator;
     using const_iterator = typename std::array<T, Enum::_size()>::const_iterator;
 
+    constexpr enum_map() = default;
+    constexpr enum_map(std::initializer_list<std::pair<Enum, T>> init)
+    {
+      for (auto&& [k, v] : init) {
+        (*this)[k] = v;
+      }
+    }
+
     static constexpr std::size_t size() noexcept
     {
       return Enum::_size();
@@ -95,8 +103,7 @@ namespace otto::util {
 
 /// Serialize a BetterEnum to json
 template<typename Enum>
-inline auto serialize(const Enum& e)
-  -> std::enable_if_t<otto::util::BetterEnum::is<Enum>, nlohmann::json>
+inline auto serialize(const Enum& e) -> std::enable_if_t<otto::util::BetterEnum::is<Enum>, nlohmann::json>
 {
   return serialize(e._to_string());
 }

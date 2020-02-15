@@ -16,7 +16,8 @@
 
 namespace otto::services {
 
-  RTAudioAudioManager::RTAudioAudioManager()
+  RTAudioAudioManager::RTAudioAudioManager(int in_device, int out_device)
+    : device_in_(in_device), device_out_(out_device)
   {
     init_audio();
     try {

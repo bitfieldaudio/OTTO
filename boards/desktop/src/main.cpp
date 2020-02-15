@@ -1,18 +1,18 @@
 #include <csignal>
 
-#include <lyra/lyra.hpp>
+#include <lyra.hpp>
 
 #include "core/audio/midi.hpp"
 
 #include "services/audio_manager.hpp"
+#include "services/clock_manager.hpp"
+#include "services/controller.hpp"
 #include "services/engine_manager.hpp"
 #include "services/log_manager.hpp"
 #include "services/preset_manager.hpp"
-#include "services/state_manager.hpp"
-#include "services/clock_manager.hpp"
-#include "services/ui_manager.hpp"
-#include "services/controller.hpp"
 #include "services/settings.hpp"
+#include "services/state_manager.hpp"
+#include "services/ui_manager.hpp"
 
 #include "board/audio_driver.hpp"
 #include "board/controller.hpp"
@@ -29,21 +29,43 @@ int handle_exception();
 int main(int argc, char* argv[])
 {
   try {
-    Application app {
+    int sysex_in_port = -1;
+    int sysex_out_port = -1;
+    int audio_in = -1;
+    int audio_out = -1;
+
+    bool show_help = false;
+
+    auto cli = lyra::cli_parser();
+
+    cli |= lyra::opt(sysex_in_port, "device number") //
+      ["--sysex-ctl-in-device"]                      //
+      ("Number of the input midi device to use as a controller over sysex");
+    cli |= lyra::opt(sysex_out_port, "device number") //
+      ["--sysex-ctl-out-device"]                      //
+      ("Number of the output midi device to use as a controller over sysex");
+
+    cli |= lyra::opt(audio_in, "input device")["--audio-in"]("The input device number");
+    cli |= lyra::opt(audio_out, "output device")["--audio-out"]("The output device number");
+    cli |= lyra::help(show_help);
+
+    auto parse_result = cli.parse({argc, argv});
+
+    if (show_help || !parse_result) {
+      std::cout << cli << '\n';
+      return 0;
+    }
+
+    Application app = {
       [&] { return std::make_unique<LogManager>(argc, argv); },
       StateManager::create_default,
       PresetManager::create_default,
-      std::make_unique<RTAudioAudioManager>,
+      [&] { return std::make_unique<RTAudioAudioManager>(audio_in, audio_out); },
       ClockManager::create_default,
       std::make_unique<GLFWUIManager>,
-      PrOTTO1SerialController::make_or_emulator,
-      EngineManager::create_default
+      [&] { return MCUSysexController::make_or_emulator(sysex_in_port, sysex_out_port); },
+      EngineManager::create_default,
     };
-
-    auto cli = lyra::cli_parser();
-    RTAudioAudioManager::current().add_args(cli);
-
-    cli.parse({argc, argv});
 
     RTAudioAudioManager::current().log_devices();
 

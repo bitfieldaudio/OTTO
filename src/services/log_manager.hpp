@@ -22,6 +22,10 @@ namespace otto::services {
 
     /// Set how the current thread appears in the log
     void set_thread_name(const std::string& name);
+
+    static LogManager& current() {
+      return Application::current().log_manager;
+    }
   };
 
 } // namespace otto::services

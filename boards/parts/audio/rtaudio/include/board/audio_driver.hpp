@@ -17,7 +17,7 @@
 namespace otto::services {
 
   struct RTAudioAudioManager final : AudioManager {
-    RTAudioAudioManager();
+    RTAudioAudioManager(int in_device, int out_device);
 
     template<typename Parser>
     void add_args(Parser& cli);
@@ -41,16 +41,14 @@ namespace otto::services {
     std::optional<RtMidiOut> midi_out = std::nullopt;
     bool enable_input = true;
 
-    int device_in_ = client.getDefaultInputDevice();
-    int device_out_ = client.getDefaultOutputDevice();
+    int device_in_;
+    int device_out_;
   };
 
 #ifdef LYRA_OPT_HPP
   template<typename Parser>
   void RTAudioAudioManager::add_args(Parser& cli)
   {
-    cli |= lyra::opt(device_in_, "input device")["--audio-in"]("The input device number");
-    cli |= lyra::opt(device_out_, "output device")["--audio-out"]("The output device number");
   }
 #endif
 

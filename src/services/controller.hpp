@@ -64,6 +64,16 @@ namespace otto::services {
               static_cast<std::uint8_t>(b + o.b)};
     }
 
+    bool operator==(const LEDColor& o) const noexcept
+    {
+      return r == o.r && g == o.g && b == o.b;
+    }
+
+    bool operator!=(const LEDColor& o) const noexcept
+    {
+      return !((*this) == o);
+    }
+
     static const LEDColor Black;
     static const LEDColor White;
     static const LEDColor Blue;
