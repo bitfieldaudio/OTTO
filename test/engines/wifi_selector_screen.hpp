@@ -84,6 +84,7 @@ namespace otto::board::wifi {
     WFSSSubscreen current_screen = WFSSSubscreen::network_selection;
     WriterUI password_writer;
     ch::Output<float> network_scroll_ = 0;
+    ch::Output<float> network_scroll_horizontal_ = 0;
     ch::Output<float> page_flip_ = 0;
     ch::Output<float> new_indicator_transparency_ = 0;
   };

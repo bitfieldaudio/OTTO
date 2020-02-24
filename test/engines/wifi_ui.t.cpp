@@ -39,6 +39,18 @@ namespace otto {
       itc::PropTypes<struct selected_network_tag, int>::Prop<Sender> selected_network_idx = {sender, 0, limits(0, 3)};
 
       Props(const Sender& sender) : sender(sender) {}
+
+      void encoder(core::input::EncoderEvent e) override
+      {
+        sender.push(core::input::EncoderAction::data(e));
+      }
+
+      bool keypress(core::input::Key key) override
+      {
+        sender.push(core::input::KeyPressAction::data(key));
+        return false;
+      }
+
     } props{sender};
 
     test::show_gui([&](nvg::Canvas& ctx) { 

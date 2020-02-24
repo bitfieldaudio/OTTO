@@ -2,6 +2,8 @@
 
 #include <nanorange.hpp>
 
+#include "core/ui/vector_graphics.hpp"
+
 namespace otto::board::wifi {
 
   // WriterUI
@@ -78,8 +80,16 @@ namespace otto::board::wifi {
     if (current_screen == +Subscreen::network_selection) {
       switch (e.encoder) {
         case Encoder::blue: {
-          selected_network_ += e.steps; 
+          selected_network_ += e.steps;
+          // Vertical scroll
           core::ui::vg::timeline().apply(&network_scroll_).then<ch::RampTo>(selected_network_, 500, ch::EaseOutExpo());
+          // Reset horizontal scroll
+          core::ui::vg::timeline()
+            .apply(&network_scroll_horizontal_)
+            .then<ch::Hold>(0.f, 1000)
+            .then<ch::RampTo>(1.f, 1000)
+            .then<ch::Hold>(1.f, 1000)
+            .finishFn([& m = *network_scroll_horizontal_.inputPtr()] { m.resetTime(); });
           break;
         }
         default: break;
@@ -93,6 +103,7 @@ namespace otto::board::wifi {
           if (e.steps < 0) navigate_to(Subscreen::network_selection);
           if (e.steps > 0) {
             // Try to connect?
+            // Perhaps sanitize password string - remove trailing spaces, etc.
           }
           break;
         default: break;
@@ -132,7 +143,7 @@ namespace otto::board::wifi {
 
     constexpr float page_flip_limit = left_pad + icon_size + icon_pad;
 
-    const float password_page_pos = (1 - std::max(0.f, page_flip_ - 1)) * vg::width;
+    const float password_page_pos = (1 - page_flip_) * vg::width;
 
     if (page_flip_ < 1) {
       ctx.group([&] {
@@ -146,7 +157,7 @@ namespace otto::board::wifi {
         ctx.fillStyle(text_color.dim(0.5));
         ctx.fillText("Wi-Fi Networks", {left_pad, first_name_y - left_pad});
 
-        auto draw_names = [&](Color text_color) {
+        auto draw_names = [&](Color text_color, bool scroll) {
           float y = first_name_y;
           for (auto&& [i, network] : util::view::indexed(networks)) {
             auto icon = strength_icons(network.strength);
@@ -159,17 +170,22 @@ namespace otto::board::wifi {
             ctx.font(font, font_size);
             ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Baseline);
             ctx.fillStyle(text_color);
-            ctx.fillText(network.name, {left_pad + icon_size + icon_pad, y + (line_height + icon_size) / 2.f + 2});
+            float x_pos_start = left_pad + icon_size + icon_pad;
+            float x_pos_scrolled = x_pos_start - std::max(0.f, x_pos_start + ctx.measureText(network.name) + left_pad - vg::width) * network_scroll_horizontal_ * scroll;
+            ctx.save();
+            ctx.clip(x_pos_start, 0, vg::width - x_pos_start - left_pad, vg::height);
+            ctx.fillText(network.name, {x_pos_scrolled, y + (line_height + icon_size) / 2.f + 2});
+            ctx.restore();
             y += line_height;
           }
         };
-        draw_names(text_color);
+        draw_names(text_color, false);
         ctx.group([&] {
           ctx.clip(0, line_height * 2.f, 320, line_height);
           ctx.beginPath();
           ctx.rect({0, line_height * 2.f}, {320, line_height});
           ctx.fill(Colors::Blue);
-          draw_names(Colors::Black);
+          draw_names(Colors::Black, true);
         });
       });
     }
@@ -225,6 +241,7 @@ namespace otto::board::wifi {
 
           const char cur_char = password_str.at(cursor_pos);
 
+
           for (const auto& [y, group] : util::view::indexed(WriterUI::character_groups)) {
             for (const auto& [x, c] : util::view::indexed(group)) {
               std::string s;
@@ -248,4 +265,4 @@ namespace otto::board::wifi {
       });
     }
   }
-} // namespace otto::core::engine
+} // namespace otto::board::wifi
