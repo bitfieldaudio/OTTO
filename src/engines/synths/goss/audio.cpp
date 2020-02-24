@@ -101,13 +101,13 @@ namespace otto::engines::goss {
     leslie_amount_lo = leslie * 0.5;
     pitch_modulation_hi.freq(leslie * leslie_speed_hi);
 
-    rotation.freq(leslie_speed_hi / 4.f);
+    rotation.freq(leslie_speed_hi);
   }
 
   float Audio::operator()() noexcept
   {
     // TODO: Once per buffer
-    shared_rotation_ = rotation.nextPhase();
+    shared_rotation_ = rotation();
 
     // Gets summed sample from all voices
     float voices = voice_mgr_();

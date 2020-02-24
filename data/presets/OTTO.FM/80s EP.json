@@ -1,0 +1,65 @@
+{
+  "engine": "OTTO.FM",
+  "name": "80s EP",
+  "props": {
+    "props": {
+      "algorithm_idx": 0,
+      "cur_op": 2,
+      "envelope": {
+        "attack": 0.0,
+        "decay": 0.0,
+        "release": 0.20000000298023224,
+        "sustain": 1.0
+      },
+      "fm_amount": 0.9300000667572021,
+      "operators": [
+        {
+          "attack": 0.059999994933605194,
+          "decay_release": 0.5,
+          "detune": -0.6499996781349182,
+          "feedback": 0.059999994933605194,
+          "out_level": 1.0,
+          "ratio_idx": 13,
+          "suspos": 0.5099999904632568
+        },
+        {
+          "attack": 0.0,
+          "decay_release": 0.6699998378753662,
+          "detune": 0.08000064641237259,
+          "feedback": 0.0,
+          "out_level": 1.0,
+          "ratio_idx": 19,
+          "suspos": 1.0
+        },
+        {
+          "attack": 0.0,
+          "decay_release": 1.0,
+          "detune": 0.0,
+          "feedback": 0.0,
+          "out_level": 0.9900000095367432,
+          "ratio_idx": 0,
+          "suspos": 0.019999999552965164
+        },
+        {
+          "attack": 0.01999998465180397,
+          "decay_release": 0.5,
+          "detune": 0.0,
+          "feedback": 0.0,
+          "out_level": 6.705522537231445e-07,
+          "ratio_idx": 5,
+          "suspos": 0.09000018239021301
+        }
+      ],
+      "settings": {
+        "detune": 0.0,
+        "interval": 0,
+        "legato": true,
+        "play_mode": "poly",
+        "portamento": 0.0,
+        "rand": 0.0,
+        "retrig": true,
+        "sub": 0.4699998199939728
+      }
+    }
+  }
+}

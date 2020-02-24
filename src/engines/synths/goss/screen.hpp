@@ -12,7 +12,9 @@ namespace otto::engines::goss {
   struct GossScreen : ui::Screen {
     GossScreen(itc::Shared<float>) noexcept;
     void draw(nvg::Canvas& ctx) override;
-    void draw_model(nvg::Canvas& ctx);
+    void draw_model(nvg::Canvas& ctx, float interpolation_value);
+    void draw_horn(nvg::Canvas& ctx, float phase);
+
 
     void action(itc::prop_change<&Props::model>, int m) noexcept;
     void action(itc::prop_change<&Props::click>, float c) noexcept;
@@ -26,5 +28,7 @@ namespace otto::engines::goss {
     float leslie = 0;
 
     model_type model_param;
+    model_type prev_model_param;
+    ch::Output<float> model_interp = 0;
   };
 } // namespace otto::engines::goss

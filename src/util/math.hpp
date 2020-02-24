@@ -80,4 +80,15 @@ namespace otto::util::math {
     const float a2 = 0.273f * x * (1.f - std::abs(x));
     return a1 + a2;
   }
+
+  inline float triangle(const float x, const float center, const float width)
+  {
+    return std::max(0.f, 1.f - std::abs((center - x) / width));
+  }
+
+  inline float trianglewrap(const float x, const float center, const float width, const float total_width)
+  {
+    float wrapped_dist = std::min( std::abs(center - x), total_width - std::abs(center - x));
+    return std::max(0.f, 1.f - wrapped_dist / width);
+  }
 }// namespace otto::util::math
