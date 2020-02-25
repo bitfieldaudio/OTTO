@@ -5,6 +5,7 @@
 #include "core/ui/icons.hpp"
 #include "util/flat_map.hpp"
 #include "util/spin_lock.hpp"
+#include "util/string_ref.hpp"
 #include "util/variant_w_base.hpp"
 
 namespace otto::core::engine {
@@ -69,8 +70,12 @@ namespace otto::core::engine {
     void from_json(const nlohmann::json&);
     nlohmann::json to_json() const;
 
+    /// Returns the icon draw function for a given engine
+    // TODO: move this to an actual engine register!
+    ui::Icon::IconDrawer icon_register(util::string_ref);
+
   private:
-    void send_presets_for(util::string_ref engine_name);
+    void send_data_for(util::string_ref engine_name);
     void update_max_preset_idx();
     void save_engine_state();
 

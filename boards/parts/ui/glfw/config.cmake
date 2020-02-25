@@ -19,4 +19,4 @@ else()
     add_subdirectory(${OTTO_EXTERNAL_DIR}/glfw ${OTTO_BINARY_DIR}/external/glfw)
 endif()
 
-target_link_libraries(otto PUBLIC glfw)
+target_link_libraries(otto_src PUBLIC glfw)

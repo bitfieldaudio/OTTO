@@ -7,6 +7,7 @@
 
 #include "core/audio/processor.hpp"
 #include "core/props/props.hpp"
+#include "core/ui/icons.hpp"
 #include "core/ui/screen.hpp"
 #include "services/audio_manager.hpp"
 #include "services/ui_manager.hpp"

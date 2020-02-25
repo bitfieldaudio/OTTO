@@ -1,6 +1,7 @@
 #pragma once
 #include <thread>
 
+#include "core/ui/nvg/util.hpp"
 #include "engine_dispatcher.hpp"
 #include "services/audio_manager.hpp"
 #include "services/controller.hpp"
@@ -21,7 +22,7 @@ namespace otto::core::engine {
     : screen_(std::make_unique<EngineSelectorScreen>(services::ControllerSender(*this)))
   {
     for (auto name : engine_names) {
-      send_presets_for(name);
+      send_data_for(name);
     }
     props.selected_engine_idx.on_change().connect([this](int idx) {
       save_engine_state();
@@ -43,13 +44,13 @@ namespace otto::core::engine {
   }
 
   ENGDISPTEMPLATE
-  void ENGDISP::send_presets_for(util::string_ref engine_name)
+  void ENGDISP::send_data_for(util::string_ref engine_name)
   {
     auto presets = std::vector<std::string>{"Last State"};
     nano::copy(services::PresetManager::current().preset_names(engine_name), nano::back_inserter(presets));
     props.sender.push(Actions::publish_engine_data::data({
       .name = engine_name,
-      .icon = ui::Icon(placeholder_engine_icon),
+      .icon = ui::Icon(icon_register(engine_name)),
       .presets = presets,
     }));
   }
@@ -73,7 +74,7 @@ namespace otto::core::engine {
   void ENGDISP::action(Actions::make_new_preset, std::string name)
   {
     services::PresetManager::current().create_preset(current_engine_->name(), name, current_engine_->to_json());
-    send_presets_for(current_engine_->name());
+    send_data_for(current_engine_->name());
     update_max_preset_idx();
   }
 
@@ -101,7 +102,7 @@ namespace otto::core::engine {
     } else if constexpr (ET == EngineType::effect) {
       auto buf = services::AudioManager::current().buffer_pool().allocate_multi_clear<2>();
       return data.with(buf);
-    } else  if constexpr (ET == EngineType::synth){
+    } else if constexpr (ET == EngineType::synth) {
       auto buf = services::AudioManager::current().buffer_pool().allocate_clear();
       return data.with(buf);
     } else {
@@ -166,6 +167,84 @@ namespace otto::core::engine {
   void from_json(const nlohmann::json& j, ENGDISP& e)
   {
     e.from_json(j);
+  }
+
+  ENGDISPTEMPLATE
+  ui::Icon::IconDrawer ENGDISP::icon_register(util::string_ref engine_name)
+  {
+    if (engine_name == "OTTO.FM") {
+      return [](ui::IconData& i, nvg::Canvas& ctx) {
+        // Body
+        ctx.beginPath();
+        ctx.moveTo({0, i.size.h});
+        ctx.bezierCurveTo(0, i.size.h, i.size.w / 6.f, 2.f * i.size.h / 3.f, 3.f * i.size.w / 6.f, 2.f * i.size.h / 3.f);
+        ctx.bezierCurveTo(5.f * i.size.w / 6.f, 2.f * i.size.w / 3.f, i.size.w, i.size.h, i.size.w, i.size.h);
+        ctx.closePath();
+        ctx.stroke(i.color, i.line_width);
+        ctx.fill(i.color);
+        // Antennas
+        ctx.beginPath();
+        ctx.moveTo(i.size.w / 2.f, 3.f * i.size.h / 4.f);
+        ctx.lineTo(0, 0);
+        ctx.moveTo(i.size.w / 2.f, 3.f * i.size.h / 4.f);
+        ctx.lineTo(3.f * i.size.w / 4.f, i.size.h / 4.f);
+        ctx.stroke(i.color, i.line_width);
+      };
+    }
+    if (engine_name == "Goss") {
+      return [](ui::IconData& i, nvg::Canvas& ctx) {
+      };
+    }
+    if (engine_name == "Chorus") {
+      return [](ui::IconData& i, nvg::Canvas& ctx) {
+        ctx.beginPath();
+        ctx.translate({-5, 10});
+        ctx.scaleTowards(0.33, {i.size.w / 2.f, i.size.h});
+        ctx.moveTo(0, 0);
+        ctx.lineTo(0, - 173.0 + 153.6);
+        ctx.bezierCurveTo(121.4 - 130.8, - 173.0 + 148.5, 115.0 - 130.8, - 173.0 + 138.6,
+                          115.0 - 130.8, - 173.0 + 127.1);
+        ctx.lineTo(115.0 - 130.8, - 173.0 + 107.3);
+        ctx.bezierCurveTo(115.0 - 130.8, - 173.0 + 85.1, 133.0 - 130.8, - 173.0 + 67.0,
+                          155.2 - 130.8, - 173.0 + 67.0);
+        ctx.bezierCurveTo(177.4 - 130.8, - 173.0 + 67.0, 195.5 - 130.8, - 173.0 + 85.1,
+                          195.5 - 130.8, - 173.0 + 107.3);
+        ctx.lineTo(195.5 - 130.8, - 173.0 + 117.8);
+        ctx.lineTo(204.4 - 130.8, - 173.0 + 130.0);
+        ctx.bezierCurveTo(205.4 - 130.8, - 173.0 + 131.4, 205.1 - 130.8, - 173.0 + 133.4,
+                          203.7 - 130.8, - 173.0 + 134.4);
+        ctx.bezierCurveTo(203.2 - 130.8, - 173.0 + 134.8, 202.5 - 130.8, - 173.0 + 135.0,
+                          201.8 - 130.8, - 173.0 + 135.0);
+        ctx.lineTo(195.5 - 130.8, - 173.0 + 135.0);
+        ctx.lineTo(195.5 - 130.8, - 173.0 + 152.4);
+        ctx.bezierCurveTo(195.5 - 130.8, - 173.0 + 155.1, 193.3 - 130.8, - 173.0 + 157.2,
+                          190.7 - 130.8, - 173.0 + 157.2);
+        ctx.lineTo(179.7 - 130.8, - 173.0 + 157.2);
+        ctx.lineTo(179.7 - 130.8, - 173.0 + 173.0);
+        ctx.stroke(i.color, i.line_width * 3);
+      };
+    }
+    if (engine_name == "Wormhole") {
+      return [](ui::IconData& i, nvg::Canvas& ctx) {
+        ctx.beginPath();
+        ctx.moveTo({0, 0});
+        ctx.bezierCurveTo(0, 0, 2.f * i.size.w / 6.f, i.size.h / 3.f, 3.f * i.size.w / 6.f, i.size.h / 3.f);
+        ctx.bezierCurveTo(4.f * i.size.w / 6.f, i.size.w / 3.f, i.size.w, 0, i.size.w, 0);
+        ctx.lineTo(i.size.w, i.size.h);
+        ctx.bezierCurveTo(i.size.w, i.size.h, 4.f * i.size.w / 6.f, 2.f * i.size.h / 3.f, 3.f * i.size.w / 6.f, 2.f * i.size.h / 3.f);
+        ctx.bezierCurveTo(2.f * i.size.w / 6.f, 2.f * i.size.w / 3.f, 0, i.size.h, 0, i.size.h);
+        ctx.closePath();
+        ctx.stroke(i.color, i.line_width);
+      };
+    }
+    return [](ui::IconData& i, nvg::Canvas& ctx) {
+      ctx.beginPath();
+      ctx.roundedRect({0, 0}, i.size, i.size.min() / 4.f);
+      ctx.stroke(i.color, i.line_width);
+      ctx.beginPath();
+      ctx.circle(i.size.center(), i.size.min() / 4.f);
+      ctx.fill(i.color);
+    };
   }
 
 #undef ENGDISPTEMPLATE
