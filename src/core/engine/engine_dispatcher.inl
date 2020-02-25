@@ -172,6 +172,13 @@ namespace otto::core::engine {
   ENGDISPTEMPLATE
   ui::Icon::IconDrawer ENGDISP::icon_register(util::string_ref engine_name)
   {
+    if (engine_name == "OFF") {
+      return [](ui::IconData& i, nvg::Canvas& ctx) {
+        ctx.beginPath();
+        ctx.circle(i.size.center(), i.size.min() / 4.f);
+        ctx.fill(i.color);
+      };
+    }
     if (engine_name == "OTTO.FM") {
       return [](ui::IconData& i, nvg::Canvas& ctx) {
         // Body
@@ -193,12 +200,22 @@ namespace otto::core::engine {
     }
     if (engine_name == "Goss") {
       return [](ui::IconData& i, nvg::Canvas& ctx) {
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(0, i.size.h * 0.5);
+        ctx.moveTo(i.size.h * 0.33, 0);
+        ctx.lineTo(i.size.h * 0.33, i.size.h * 0.9);
+        ctx.moveTo(i.size.h * 0.66, 0);
+        ctx.lineTo(i.size.h * 0.66, i.size.h * 0.3);
+        ctx.moveTo(i.size.h, 0);
+        ctx.lineTo(i.size.h, i.size.h * 0.6);
+        ctx.stroke(i.color, i.line_width);
       };
     }
     if (engine_name == "Chorus") {
       return [](ui::IconData& i, nvg::Canvas& ctx) {
         ctx.beginPath();
-        ctx.translate({-5, 10});
+        ctx.translate({-5, 12});
         ctx.scaleTowards(0.33, {i.size.w / 2.f, i.size.h});
         ctx.moveTo(0, 0);
         ctx.lineTo(0, - 173.0 + 153.6);
@@ -237,6 +254,7 @@ namespace otto::core::engine {
         ctx.stroke(i.color, i.line_width);
       };
     }
+    // Default icon
     return [](ui::IconData& i, nvg::Canvas& ctx) {
       ctx.beginPath();
       ctx.roundedRect({0, 0}, i.size, i.size.min() / 4.f);
