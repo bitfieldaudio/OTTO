@@ -1,5 +1,6 @@
 #include "wifi_selector_screen.hpp"
 
+#include <algorithm>
 #include <nanorange.hpp>
 
 #include "core/ui/vector_graphics.hpp"
@@ -80,7 +81,7 @@ namespace otto::board::wifi {
     if (current_screen == +Subscreen::network_selection) {
       switch (e.encoder) {
         case Encoder::blue: {
-          selected_network_ += e.steps;
+          selected_network_ = std::clamp(selected_network_ + e.steps, 0, (int)networks.size() - 1);
           // Vertical scroll
           core::ui::vg::timeline().apply(&network_scroll_).then<ch::RampTo>(selected_network_, 500, ch::EaseOutExpo());
           // Reset horizontal scroll
@@ -89,6 +90,7 @@ namespace otto::board::wifi {
             .then<ch::Hold>(0.f, 1000)
             .then<ch::RampTo>(1.f, 1000)
             .then<ch::Hold>(1.f, 1000)
+            .then<ch::RampTo>(0.f, 500)
             .finishFn([& m = *network_scroll_horizontal_.inputPtr()] { m.resetTime(); });
           break;
         }
