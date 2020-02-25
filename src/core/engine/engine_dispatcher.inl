@@ -1,6 +1,7 @@
 #pragma once
 #include <thread>
 
+#include "core/ui/nvg/Canvas.hpp"
 #include "core/ui/nvg/util.hpp"
 #include "engine_dispatcher.hpp"
 #include "services/audio_manager.hpp"
@@ -181,20 +182,16 @@ namespace otto::core::engine {
     }
     if (engine_name == "OTTO.FM") {
       return [](ui::IconData& i, nvg::Canvas& ctx) {
-        // Body
         ctx.beginPath();
-        ctx.moveTo({0, i.size.h});
-        ctx.bezierCurveTo(0, i.size.h, i.size.w / 6.f, 2.f * i.size.h / 3.f, 3.f * i.size.w / 6.f, 2.f * i.size.h / 3.f);
-        ctx.bezierCurveTo(5.f * i.size.w / 6.f, 2.f * i.size.w / 3.f, i.size.w, i.size.h, i.size.w, i.size.h);
-        ctx.closePath();
-        ctx.stroke(i.color, i.line_width);
+        ctx.roundedRect({0, 0}, {i.size.w * 0.4f, i.size.h * 0.4f}, i.size.min() / 8.f);
+        ctx.roundedRect({i.size.w, i.size.h}, {-i.size.w * 0.4f, -i.size.h * 0.4f}, i.size.min() / 8.f);
         ctx.fill(i.color);
-        // Antennas
+        ctx.stroke(i.color, i.line_width);
         ctx.beginPath();
-        ctx.moveTo(i.size.w / 2.f, 3.f * i.size.h / 4.f);
-        ctx.lineTo(0, 0);
-        ctx.moveTo(i.size.w / 2.f, 3.f * i.size.h / 4.f);
-        ctx.lineTo(3.f * i.size.w / 4.f, i.size.h / 4.f);
+        ctx.lineJoin(ui::vg::LineJoin::ROUND);
+        ctx.moveTo(i.size.w * 0.2f, i.size.h * 0.2f);
+        ctx.lineTo(i.size.w * 0.8f, i.size.h * 0.2f);
+        ctx.lineTo(i.size.w * 0.8f, i.size.h * 0.8f);
         ctx.stroke(i.color, i.line_width);
       };
     }
