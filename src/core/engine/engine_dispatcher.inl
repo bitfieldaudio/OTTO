@@ -215,26 +215,20 @@ namespace otto::core::engine {
         ctx.translate({-5, 12});
         ctx.scaleTowards(0.33, {i.size.w / 2.f, i.size.h});
         ctx.moveTo(0, 0);
-        ctx.lineTo(0, - 173.0 + 153.6);
-        ctx.bezierCurveTo(121.4 - 130.8, - 173.0 + 148.5, 115.0 - 130.8, - 173.0 + 138.6,
-                          115.0 - 130.8, - 173.0 + 127.1);
-        ctx.lineTo(115.0 - 130.8, - 173.0 + 107.3);
-        ctx.bezierCurveTo(115.0 - 130.8, - 173.0 + 85.1, 133.0 - 130.8, - 173.0 + 67.0,
-                          155.2 - 130.8, - 173.0 + 67.0);
-        ctx.bezierCurveTo(177.4 - 130.8, - 173.0 + 67.0, 195.5 - 130.8, - 173.0 + 85.1,
-                          195.5 - 130.8, - 173.0 + 107.3);
-        ctx.lineTo(195.5 - 130.8, - 173.0 + 117.8);
-        ctx.lineTo(204.4 - 130.8, - 173.0 + 130.0);
-        ctx.bezierCurveTo(205.4 - 130.8, - 173.0 + 131.4, 205.1 - 130.8, - 173.0 + 133.4,
-                          203.7 - 130.8, - 173.0 + 134.4);
-        ctx.bezierCurveTo(203.2 - 130.8, - 173.0 + 134.8, 202.5 - 130.8, - 173.0 + 135.0,
-                          201.8 - 130.8, - 173.0 + 135.0);
-        ctx.lineTo(195.5 - 130.8, - 173.0 + 135.0);
-        ctx.lineTo(195.5 - 130.8, - 173.0 + 152.4);
-        ctx.bezierCurveTo(195.5 - 130.8, - 173.0 + 155.1, 193.3 - 130.8, - 173.0 + 157.2,
-                          190.7 - 130.8, - 173.0 + 157.2);
-        ctx.lineTo(179.7 - 130.8, - 173.0 + 157.2);
-        ctx.lineTo(179.7 - 130.8, - 173.0 + 173.0);
+        ctx.lineTo(0, -173.0 + 153.6);
+        ctx.bezierCurveTo(121.4 - 130.8, -173.0 + 148.5, 115.0 - 130.8, -173.0 + 138.6, 115.0 - 130.8, -173.0 + 127.1);
+        ctx.lineTo(115.0 - 130.8, -173.0 + 107.3);
+        ctx.bezierCurveTo(115.0 - 130.8, -173.0 + 85.1, 133.0 - 130.8, -173.0 + 67.0, 155.2 - 130.8, -173.0 + 67.0);
+        ctx.bezierCurveTo(177.4 - 130.8, -173.0 + 67.0, 195.5 - 130.8, -173.0 + 85.1, 195.5 - 130.8, -173.0 + 107.3);
+        ctx.lineTo(195.5 - 130.8, -173.0 + 117.8);
+        ctx.lineTo(204.4 - 130.8, -173.0 + 130.0);
+        ctx.bezierCurveTo(205.4 - 130.8, -173.0 + 131.4, 205.1 - 130.8, -173.0 + 133.4, 203.7 - 130.8, -173.0 + 134.4);
+        ctx.bezierCurveTo(203.2 - 130.8, -173.0 + 134.8, 202.5 - 130.8, -173.0 + 135.0, 201.8 - 130.8, -173.0 + 135.0);
+        ctx.lineTo(195.5 - 130.8, -173.0 + 135.0);
+        ctx.lineTo(195.5 - 130.8, -173.0 + 152.4);
+        ctx.bezierCurveTo(195.5 - 130.8, -173.0 + 155.1, 193.3 - 130.8, -173.0 + 157.2, 190.7 - 130.8, -173.0 + 157.2);
+        ctx.lineTo(179.7 - 130.8, -173.0 + 157.2);
+        ctx.lineTo(179.7 - 130.8, -173.0 + 173.0);
         ctx.stroke(i.color, i.line_width * 3);
       };
     }
@@ -245,7 +239,8 @@ namespace otto::core::engine {
         ctx.bezierCurveTo(0, 0, 2.f * i.size.w / 6.f, i.size.h / 3.f, 3.f * i.size.w / 6.f, i.size.h / 3.f);
         ctx.bezierCurveTo(4.f * i.size.w / 6.f, i.size.w / 3.f, i.size.w, 0, i.size.w, 0);
         ctx.lineTo(i.size.w, i.size.h);
-        ctx.bezierCurveTo(i.size.w, i.size.h, 4.f * i.size.w / 6.f, 2.f * i.size.h / 3.f, 3.f * i.size.w / 6.f, 2.f * i.size.h / 3.f);
+        ctx.bezierCurveTo(i.size.w, i.size.h, 4.f * i.size.w / 6.f, 2.f * i.size.h / 3.f, 3.f * i.size.w / 6.f,
+                          2.f * i.size.h / 3.f);
         ctx.bezierCurveTo(2.f * i.size.w / 6.f, 2.f * i.size.w / 3.f, 0, i.size.h, 0, i.size.h);
         ctx.closePath();
         ctx.stroke(i.color, i.line_width);
