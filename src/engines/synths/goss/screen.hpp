@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/ui/nvg/Canvas.hpp"
 #include "core/ui/screen.hpp"
 #include "goss.hpp"
 
@@ -14,6 +15,8 @@ namespace otto::engines::goss {
     void draw(nvg::Canvas& ctx) override;
     void draw_model(nvg::Canvas& ctx, float interpolation_value);
     void draw_horn(nvg::Canvas& ctx, float phase);
+    void draw_drive(nvg::Canvas& ctx, float drive);
+    void draw_click(nvg::Canvas& ctx, float click);
 
 
     void action(itc::prop_change<&Props::model>, int m) noexcept;

@@ -27,7 +27,7 @@ namespace otto::engines::goss {
     percussion_player.freq(frequency());
     float s = voice_player() + (percussion_player() + noise() * 0.4) * perc_env();
     float s_drive = util::math::fasttanh3(audio.gain * s) * audio.output_scaling;
-    return s_drive * env_();
+    return s_drive * env_() * gam::scl::eqLoudAmp(frequency());
   }
 
   void Voice::on_note_on(float freq_target) noexcept

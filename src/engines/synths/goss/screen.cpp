@@ -3,6 +3,7 @@
 #include <cmath>
 
 #include "core/ui/vector_graphics.hpp"
+#include "fmt/format.h"
 #include "util/math.hpp"
 #include "util/string_conversions.hpp"
 
@@ -37,11 +38,27 @@ namespace otto::engines::goss {
     leslie = l;
   }
 
+  void GossScreen::draw_click(nvg::Canvas& ctx, float click)
+  {
+    constexpr float x_pad = 35.f;
+    constexpr float y_height = 60.f;
+    constexpr float y_bot_pad = 35.f;
+    ctx.beginPath();
+    ctx.moveTo(x_pad, vg::height - y_bot_pad - y_height * click);
+    ctx.bezierCurveTo(x_pad, vg::height - y_bot_pad - y_height * click, vg::width * 0.45 * (1 - click) + x_pad * click,
+                      vg::height - y_bot_pad, vg::width * 0.45, vg::height - y_bot_pad);
+    ctx.lineTo(x_pad, vg::height - y_bot_pad);
+    ctx.closePath();
+    ctx.lineWidth(6.f);
+    ctx.stroke(Colours::Yellow);
+    ctx.fill(Colours::Yellow);
+  }
+
   void GossScreen::draw_model(nvg::Canvas& ctx, float interpolation_value)
   {
-    constexpr float left_pad = 40.f;
+    constexpr float left_pad = 30.f;
     constexpr float step_size = 20.f;
-    constexpr float y_pos = 35.f;
+    constexpr float y_pos = 65.f;
     // Lines
     constexpr float y_pad = 5.f;
     constexpr float min_length = 5.f;
@@ -64,9 +81,23 @@ namespace otto::engines::goss {
     }
   }
 
+  void GossScreen::draw_drive(nvg::Canvas& ctx, float drive)
+  {
+    constexpr float x_pad = 30.f;
+    constexpr float y_pad = 65.f;
+    constexpr float y_space = 35.f;
+
+    ctx.fillStyle(Colours::White);
+    ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Bottom);
+    ctx.beginPath();
+    ctx.fillText("bias", {vg::width - x_pad, y_pad});
+    ctx.fillStyle(Colours::Green);
+    ctx.fillText(util::to_string((int) (drive * 998 + 1)), {vg::width - x_pad, y_pad + y_space});
+  }
+
   void GossScreen::draw_horn(nvg::Canvas& ctx, float phase)
   {
-    constexpr Point real_center = {120, 150};
+    constexpr Point real_center = {vg::width - 65.f, vg::height - 65.f};
     constexpr float shift = 5.f;
     // On axis isometric length
     constexpr float side = 20;
@@ -81,7 +112,7 @@ namespace otto::engines::goss {
     float sw = util::math::trianglewrap(rotation, 1.0f, 0.3f, 1.f);
 
     Point center = {real_center.x - shift, real_center.y - shift};
-    
+
     // North-west
     ctx.beginPath();
     ctx.moveTo(center);
@@ -91,9 +122,9 @@ namespace otto::engines::goss {
     ctx.lineTo(center);
     ctx.lineTo({center.x - side_long, center.y - side});
     ctx.stroke(Colours::Red.dim(1 - nw));
-    
+
     center = {real_center.x + shift, real_center.y - shift};
-    
+
     // North-east
     ctx.beginPath();
     ctx.moveTo(center);
@@ -103,9 +134,9 @@ namespace otto::engines::goss {
     ctx.lineTo(center);
     ctx.lineTo({center.x + side_long, center.y - side});
     ctx.stroke(Colours::Red.dim(1 - ne));
-    
+
     center = {real_center.x - shift, real_center.y + shift};
-    
+
     // South-west
     ctx.beginPath();
     ctx.moveTo(center);
@@ -118,9 +149,9 @@ namespace otto::engines::goss {
     ctx.moveTo({center.x - side_short, center.y + 0.5 * side});
     ctx.lineTo({center.x - side_long, center.y});
     ctx.stroke(Colours::Red.dim(1 - sw));
-    
+
     center = {real_center.x + shift, real_center.y + shift};
-    
+
     // South-east
     ctx.beginPath();
     ctx.moveTo(center);
@@ -133,75 +164,15 @@ namespace otto::engines::goss {
     ctx.moveTo({center.x + side_short, center.y + 0.5 * side});
     ctx.lineTo({center.x + side_long, center.y});
     ctx.stroke(Colours::Red.dim(1 - se));
-    
   }
 
   void GossScreen::draw(ui::vg::Canvas& ctx)
   {
     using namespace ui::vg;
     ctx.font(Fonts::Norm, 35);
-
-    constexpr Point ring_center = {160, 120};
-    /*
-    // Gray Base Layers
-    ctx.group([&] {
-      // Ring 1 Base
-      ctx.beginPath();
-      ctx.circle(ring_center, 55);
-      ctx.lineWidth(6.0);
-      ctx.strokeStyle(Colours::Gray50);
-      ctx.lineCap(LineCap::ROUND);
-      ctx.lineJoin(LineJoin::ROUND);
-      ctx.stroke();
-
-      // Ring 2 Base
-      ctx.beginPath();
-      ctx.circle(ring_center, 75);
-      ctx.stroke();
-
-      // Ring 3 Base
-      ctx.beginPath();
-      ctx.circle(ring_center, 95);
-      ctx.stroke();
-    });
-
-    // Coloured Parameters
-    ctx.group([&] {
-      // Ring 1
-      ctx.beginPath();
-      ctx.rotateAround(ring_center, 55);
-      ctx.arc(ring_center.x, ring_center.y, 55, 0, (2 * M_PI * click), false);
-      ctx.lineWidth(6.0);
-      ctx.strokeStyle(Colours::Yellow);
-      ctx.lineCap(LineCap::ROUND);
-      ctx.lineJoin(LineJoin::ROUND);
-      ctx.stroke();
-
-      // Ring 2
-      ctx.beginPath();
-      ctx.arc(160, 120, 75, 0, (2 * M_PI * drive), false);
-      ctx.strokeStyle(Colours::Green);
-      ctx.stroke();
-    });
-
-    // middle red ring
-    ctx.group([&] {
-      constexpr Point ring_center = {160, 120};
-      // Ring Base
-      ctx.beginPath();
-      ctx.lineWidth(6.0);
-      ctx.strokeStyle(Colours::Red);
-
-      ctx.rotateAround(ring_center, rotation);
-      ctx.circle({ring_center.x, height / 2 + leslie * 25}, 12.5);
-      ctx.stroke();
-
-      ctx.circle({ring_center.x, height / 2 + leslie * 25}, 12.5);
-      ctx.stroke();
-    });
-
-    */
     draw_model(ctx, model_interp);
+    draw_drive(ctx, drive);
+    draw_click(ctx, click);
     draw_horn(ctx, rotation);
   }
 } // namespace otto::engines::goss
