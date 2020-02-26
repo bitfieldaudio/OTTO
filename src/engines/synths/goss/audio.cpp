@@ -27,7 +27,7 @@ namespace otto::engines::goss {
     percussion_player.freq(frequency());
     float s = voice_player() + (percussion_player() + noise() * 0.4) * perc_env();
     float s_drive = util::math::fasttanh3(audio.gain * s) * audio.output_scaling;
-    return s_drive * env_();
+    return s_drive * env_() * gam::scl::eqLoudAmp(frequency());
   }
 
   void Voice::on_note_on(float freq_target) noexcept
@@ -101,13 +101,13 @@ namespace otto::engines::goss {
     leslie_amount_lo = leslie * 0.5;
     pitch_modulation_hi.freq(leslie * leslie_speed_hi);
 
-    rotation.freq(leslie_speed_hi / 4.f);
+    rotation.freq(leslie_speed_hi);
   }
 
   float Audio::operator()() noexcept
   {
     // TODO: Once per buffer
-    shared_rotation_ = rotation.nextPhase();
+    shared_rotation_ = rotation();
 
     // Gets summed sample from all voices
     float voices = voice_mgr_();

@@ -100,7 +100,7 @@ namespace otto::engines::goss {
     gam::LFO<> leslie_filter_lo;
     gam::LFO<> pitch_modulation_hi;
 
-    gam::AccumPhase<> rotation;
+    gam::Sweep<> rotation;
 
     gam::Biquad<> lpf;
     gam::Biquad<> hpf;
