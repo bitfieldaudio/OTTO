@@ -115,7 +115,7 @@ namespace otto::util {
 
     ~sleeper_thread()
     {
-      join();
+      if (std_thread.joinable()) join();
     }
 
     void trigger()

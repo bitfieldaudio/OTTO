@@ -97,7 +97,7 @@ namespace otto::util {
       return _data.data();
     }
 
-    std::array<T, Enum::_size()> _data;
+    std::array<T, Enum::_size()> _data = {};
   };
 } // namespace otto::util
 
