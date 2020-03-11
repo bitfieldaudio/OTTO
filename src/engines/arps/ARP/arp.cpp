@@ -62,8 +62,12 @@ namespace otto::engines::arp {
 
     NoteVector manual(ArpeggiatorState& state, const NoteArray& notes)
     {
+      state.count++;
       auto res = std::upper_bound(notes.begin(), notes.end(), state.current);
-      if (res == notes.end()) res = notes.begin();
+      if (res == notes.end()) {
+        state.count = 0;
+        res = notes.begin();
+      }
       state.current = *res;
       return NoteVector{res->note};
     }
@@ -102,7 +106,9 @@ namespace otto::engines::arp {
 
     NoteVector random(ArpeggiatorState& state, const NoteArray& notes)
     {
-      state.count = 0;
+      // Note that the count variable only works for graphics. It has no other use
+      state.count++;
+      if (state.count > 8) state.count = 0;
       unsigned int n = notes.size();
       auto next = state.rng(n);
       return NoteVector{notes[next].note};

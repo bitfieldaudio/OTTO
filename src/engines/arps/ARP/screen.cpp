@@ -22,9 +22,9 @@ namespace otto::engines::arp {
   Screen::Screen()
   {
     // Insert notes to visualize
-    notes.push_back({40, 0});
-    notes.push_back({41, 1});
-    notes.push_back({42, 2});
+    notes.push_back({44, 0});
+    notes.push_back({40, 1});
+    notes.push_back({47, 2});
   }
 
   void Screen::action(itc::prop_change<&Props::playmode>, Playmode pm) noexcept
@@ -113,7 +113,7 @@ namespace otto::engines::arp {
     do {
       dots.push_back(octavemode_func_(state, notes, playmode_func_));
     } while (state.count != 0);
-    dots.pop_back();
+    if (playmode_func_ != play_modes::chord) dots.pop_back();
     state.reset();
 
     // Graphics options
@@ -149,7 +149,7 @@ namespace otto::engines::arp {
           p.y = y_bot - y_size / 2;
 
         // Check if original
-        constexpr std::array<int, 3> orig_notes = {40, 41, 42};
+        constexpr std::array<int, 3> orig_notes = {40, 44, 47};
         bool is_original = nano::find(orig_notes, note) != orig_notes.end();
         dots_coords.push_back({p, is_original});
       }
