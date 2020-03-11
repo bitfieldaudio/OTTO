@@ -65,8 +65,8 @@ namespace otto::engines::arp {
                      OctaveModeFunc octavemode_func_,
                      ArpeggiatorState state,
                      NoteArray notes,
-                     util::local_vector<nvg::Point, 48>& dots_coords) noexcept;
-    void draw_dots(nvg::Canvas& ctx, util::local_vector<nvg::Point, 48>& coords);
+                     util::local_vector<std::pair<nvg::Point, bool>, 48>& dots_coords) noexcept;
+    void draw_dots(nvg::Canvas& ctx, util::local_vector<std::pair<nvg::Point, bool>, 48>& coords);
 
   private:
     ch::Output<float> blue_fade_key = 0;
@@ -81,7 +81,7 @@ namespace otto::engines::arp {
     ArpeggiatorState dummy_state;
     NoteArray notes;
     Dots dots;
-    util::local_vector<nvg::Point, 48> dots_coords;
+    util::local_vector<std::pair<nvg::Point, bool>, 48> dots_coords;
   };
 
 } // namespace otto::engines::arp

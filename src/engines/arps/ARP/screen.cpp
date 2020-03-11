@@ -22,9 +22,9 @@ namespace otto::engines::arp {
   Screen::Screen()
   {
     // Insert notes to visualize
-    notes.push_back({1, 0});
-    notes.push_back({2, 1});
-    notes.push_back({3, 2});
+    notes.push_back({40, 0});
+    notes.push_back({41, 1});
+    notes.push_back({42, 2});
   }
 
   void Screen::action(itc::prop_change<&Props::playmode>, Playmode pm) noexcept
@@ -104,7 +104,7 @@ namespace otto::engines::arp {
                            OctaveModeFunc octavemode_func_,
                            ArpeggiatorState state,
                            NoteArray notes,
-                           util::local_vector<nvg::Point, 48>& dots_coords) noexcept
+                           util::local_vector<std::pair<nvg::Point, bool>, 48>& dots_coords) noexcept
   {
     // Calculate notes
     //
@@ -147,7 +147,11 @@ namespace otto::engines::arp {
           p.y = y_bot - ((float) note - (float) min) / ((float) max - (float) min) * y_size;
         else
           p.y = y_bot - y_size / 2;
-        dots_coords.push_back(p);
+
+        // Check if original
+        constexpr std::array<int, 3> orig_notes = {40, 41, 42};
+        bool is_original = nano::find(orig_notes, note) != orig_notes.end();
+        dots_coords.push_back({p, is_original});
       }
     }
   }
@@ -220,12 +224,13 @@ namespace otto::engines::arp {
     draw_dots(ctx, dots_coords);
   }
 
-  void Screen::draw_dots(nvg::Canvas& ctx, util::local_vector<nvg::Point, 48>& coords)
+  void Screen::draw_dots(nvg::Canvas& ctx, util::local_vector<std::pair<nvg::Point, bool>, 48>& coords)
   {
     for (auto& p : coords) {
       ctx.beginPath();
-      ctx.circle(p, 5);
-      ctx.fill(Colours::White);
+      ctx.circle(p.first, 5);
+      auto cl = p.second ? Colours::White : Colours::Green;
+      ctx.fill(cl);
     }
   }
 
