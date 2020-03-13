@@ -27,7 +27,7 @@ namespace otto::engines::arp {
     notes.push_back({47, 2});
   }
 
-  inline util::string_ref display(Playmode pm) noexcept
+  util::string_ref display(Playmode pm) noexcept
   {
     switch (pm) {
       case Playmode::up: return "UP";
@@ -42,7 +42,7 @@ namespace otto::engines::arp {
     };
     OTTO_UNREACHABLE;
   }
-  inline util::string_ref display(OctaveMode om) noexcept
+  util::string_ref display(OctaveMode om) noexcept
   {
     switch (om) {
       case OctaveMode::standard: return "STANDARD";

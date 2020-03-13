@@ -13,8 +13,8 @@ namespace otto::engines::arp {
 
   using namespace core;
 
-  inline util::string_ref display(Playmode pm) noexcept;
-  inline util::string_ref display(OctaveMode om) noexcept;
+  util::string_ref display(Playmode pm) noexcept;
+  util::string_ref display(OctaveMode om) noexcept;
 
   struct Screen : ui::Screen {
     Screen();
