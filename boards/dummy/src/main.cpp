@@ -25,9 +25,15 @@ struct DummyUIManager final : UIManager {
 };
 
 struct DummyController final : Controller {
-  void set_color(LED, LEDColor) override{};
+  void set_color(LED, LEDColor) override{}
   void flush_leds() override {}
   void clear_leds() override {}
+};
+
+struct DummyAudioManager final : AudioManager {
+    void line_in_gain_l(float) override {}
+    void line_in_gain_r(float) override {}
+    void output_vol(float) override {}
 };
 
 int main(int argc, char* argv[])
@@ -36,7 +42,7 @@ int main(int argc, char* argv[])
     Application app{[&] { return std::make_unique<LogManager>(argc, argv); },
                     StateManager::create_default,
                     PresetManager::create_default,
-                    std::make_unique<AudioManager>,
+                    std::make_unique<DummyAudioManager>,
                     ClockManager::create_default,
                     std::make_unique<DummyUIManager>,
                     std::make_unique<DummyController>,
