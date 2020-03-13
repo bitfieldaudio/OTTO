@@ -184,8 +184,7 @@ script:
     if [[ "$DEPLOY_DOCS" == "ON" ]]; then
     scripts/deploy-docs
     else
-    cmake --build build -- -j${JOBS}
-    build/bin/test || RESULT=$?
+    (cmake --build build -- -j${JOBS} && build/bin/test) || RESULT=$?
     if [[ -n "$RESULT" ]]; then
     echo "Tests failed, running in GDB for stacktrace"
     gdb -return-child-result -batch -ex "run" -ex "thread apply all bt" -ex "quit" --args build/bin/test
