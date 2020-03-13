@@ -11,8 +11,8 @@
 
 #include "RtMidi.h"
 
-#include "hardware_map.hpp"
-#include "mcu_controller.hpp"
+#include "board/hardware_map.hpp"
+#include "board/mcu_controller.hpp"
 
 namespace otto::services {
 

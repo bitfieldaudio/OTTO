@@ -29,10 +29,15 @@ namespace otto::services {
     /// @param Callable: `void(Key, bool down_now)`
     template<typename Callable>
     void for_updated_keys(const InputData&, Callable&&);
+
+
+    /// @param Callable: `void(Encoder, int steps)`
+    template<typename Callable>
+    void for_updated_encoders(const InputData&, Callable&&);
   };
 
   /// Base class for controllers that communicate with the OTTO MCU over a binary protocol
-  /// 
+  ///
   /// Extend this class, implement `queue_message`, and call `handle_response`.
   struct MCUController : Controller {
     static constexpr chrono::duration sleep_time = chrono::milliseconds(20);
@@ -69,11 +74,25 @@ namespace otto::services {
         bool cur = rows[r] & mask;
         bool prev = o.rows[r] & mask;
         if (cur != prev) {
-          HardwareMap::keyCodes[r][c].map_or_else([&](core::input::Key k) { f(k, cur); }, [&] {
-            DLOGI("Invalid key: r{} c{}", r, c);
-          });
+          HardwareMap::keyCodes[r][c].map_or_else([&](core::input::Key k) { f(k, cur); },
+                                                  [&] { DLOGI("Invalid key: r{} c{}", r, c); });
         }
       }
+    }
+  }
+
+  template<typename Callable>
+  void InputData::for_updated_encoders(const InputData& o, Callable&& f)
+  {
+    for (int i = 0; i < 4; i++) {
+      int cur = encoders[i];
+      int prev = o.encoders[i];
+      if (cur == prev) continue;
+      auto sc = cur, sp = prev;
+      if (cur < prev && (prev - cur) > 128) cur += 256;
+      if (cur > prev && (cur - prev) > 128) prev += 256;
+      LOGI("C: {} P: {} d: {}", sc, sp, cur - prev);
+      f(core::input::Encoder::_from_index(i), cur - prev);
     }
   }
 
@@ -95,6 +114,9 @@ namespace otto::services {
           } else {
             keyrelease(k);
           }
+        });
+        input_data.for_updated_encoders(last_input_data, [this](core::input::Encoder e, int steps) {
+          encoder({e, steps});
         });
         last_input_data = input_data;
       } break;
@@ -120,7 +142,8 @@ namespace otto::services {
       auto& [color, has_changed] = led_colors[key];
       if (has_changed) {
         auto lm = HardwareMap::led_map[key];
-        std::array<std::uint8_t, 6> msg = {static_cast<std::uint8_t>(Command::led_set), lm.string, lm.num, color.r, color.g, color.b};
+        std::array<std::uint8_t, 6> msg = {
+          static_cast<std::uint8_t>(Command::led_set), lm.string, lm.num, color.r, color.g, color.b};
         queue_message(msg);
         has_changed = false;
       }
@@ -131,6 +154,5 @@ namespace otto::services {
   {
     queue_message(std::array{static_cast<std::uint8_t>(Command::leds_clear)});
   }
-
 
 } // namespace otto::services
