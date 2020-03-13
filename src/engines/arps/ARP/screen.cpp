@@ -27,9 +27,37 @@ namespace otto::engines::arp {
     notes.push_back({47, 2});
   }
 
+  inline util::string_ref display(Playmode pm) noexcept
+  {
+    switch (pm) {
+      case Playmode::up: return "UP";
+      case Playmode::down: return "DOWN";
+      case Playmode::updown: return "UP/DOWN";
+      case Playmode::downup: return "DOWN/UP";
+      case Playmode::updowninc: return "UP/DOWN INC.";
+      case Playmode::downupinc: return "DOWN/UP INC.";
+      case Playmode::manual: return "MANUAL";
+      case Playmode::chord: return "CHORD";
+      case Playmode::random: return "RANDOM";
+    };
+    OTTO_UNREACHABLE;
+  }
+  inline util::string_ref display(OctaveMode om) noexcept
+  {
+    switch (om) {
+      case OctaveMode::standard: return "STANDARD";
+      case OctaveMode::octaveup: return "+1";
+      case OctaveMode::doubleoctaveup: return "+2";
+      case OctaveMode::octaveupunison: return "+1 UNISON";
+      case OctaveMode::fifthunison: return "FIFTH";
+      case OctaveMode::octavedownup: return "-1 & +1";
+    };
+    OTTO_UNREACHABLE;
+  }
+
   void Screen::action(itc::prop_change<&Props::playmode>, Playmode pm) noexcept
   {
-    playmode_ = to_string(pm);
+    playmode_ = display(pm);
     // TODO: Move this switch out to arp.hpp so they are shared between graphics and audio
     switch (pm) {
       case Playmode::up: playmode_func_ = play_modes::up; break;
@@ -57,7 +85,7 @@ namespace otto::engines::arp {
 
   void Screen::action(itc::prop_change<&Props::octavemode>, OctaveMode om) noexcept
   {
-    octavemode_ = to_string(om);
+    octavemode_ = display(om);
     // TODO: Move switch to function in arp.hpp
     switch (om) {
       case OctaveMode::standard: octavemode_func_ = octave_modes::standard; break;
@@ -113,7 +141,7 @@ namespace otto::engines::arp {
     do {
       dots.push_back(octavemode_func_(state, notes, playmode_func_));
     } while (state.count != 0);
-    if (playmode_func_ != play_modes::chord) dots.pop_back();
+    if (dots.size() > 1) dots.pop_back();
     state.reset();
 
     // Graphics options
@@ -128,7 +156,6 @@ namespace otto::engines::arp {
     int max = 0;
     // Find minimum and maximum key values
     for (auto& s : dots) {
-      // s is a set so is it ordered by note?
       auto current_min = s[0];
       min = min > current_min ? current_min : min;
       auto current_max = s.back();

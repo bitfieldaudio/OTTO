@@ -7,39 +7,14 @@
 #include "core/ui/nvg/Canvas.hpp"
 #include "core/ui/screen.hpp"
 #include "util/local_vector.hpp"
+#include "util/string_ref.hpp"
 
 namespace otto::engines::arp {
 
   using namespace core;
 
-  inline std::string to_string(Playmode pm) noexcept
-  {
-    switch (pm) {
-      case Playmode::up: return "UP";
-      case Playmode::down: return "DOWN";
-      case Playmode::updown: return "UP/DOWN";
-      case Playmode::downup: return "DOWN/UP";
-      case Playmode::updowninc: return "UP/DOWN INC.";
-      case Playmode::downupinc: return "DOWN/UP INC.";
-      case Playmode::manual: return "MANUAL";
-      case Playmode::chord: return "CHORD";
-      case Playmode::random: return "RANDOM";
-    };
-    OTTO_UNREACHABLE;
-  }
-
-  inline std::string to_string(OctaveMode om) noexcept
-  {
-    switch (om) {
-      case OctaveMode::standard: return "STANDARD";
-      case OctaveMode::octaveup: return "+1";
-      case OctaveMode::doubleoctaveup: return "+2";
-      case OctaveMode::octaveupunison: return "+1 UNISON";
-      case OctaveMode::fifthunison: return "FIFTH";
-      case OctaveMode::octavedownup: return "-1 & +1";
-    };
-    OTTO_UNREACHABLE;
-  }
+  inline util::string_ref display(Playmode pm) noexcept;
+  inline util::string_ref display(OctaveMode om) noexcept;
 
   struct Screen : ui::Screen {
     Screen();
