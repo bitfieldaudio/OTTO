@@ -123,6 +123,10 @@ namespace otto::meta {
   template<typename List, typename T>
   struct remove;
 
+  /// Metafunction to pop the last item from the list
+  template<typename List>
+  struct pop_back;
+
   /// Metafunction to make sure every type only exists once in the list.
   ///
   /// Only the first appearance of each type is kept.
@@ -194,6 +198,10 @@ namespace otto::meta {
   /// Metafunction to remove an item from a list
   template<typename List, typename T>
   using remove_t = _t<remove<List, T>>;
+
+  /// Metafunction to pop the last item from a list
+  template<typename List>
+  using pop_back_t = _t<pop_back<List>>;
 
   /// Metafunction to make sure every type only exists once in the list.
   ///
@@ -318,14 +326,11 @@ namespace otto::meta {
     template<template<typename V> typename Predicate, typename... Types>
     struct filter_impl;
 
-    template<template<typename V> typename Predicate,
-             typename T,
-             typename... Types>
+    template<template<typename V> typename Predicate, typename T, typename... Types>
     struct filter_impl<Predicate, T, Types...> {
-      using type = _t<std::conditional_t<
-        _v<Predicate<T>>,
-        concat<list<T>, _t<filter<list<Types...>, Predicate>>>,
-        filter<list<Types...>, Predicate>>>;
+      using type = _t<std::conditional_t<_v<Predicate<T>>,
+                                         concat<list<T>, _t<filter<list<Types...>, Predicate>>>,
+                                         filter<list<Types...>, Predicate>>>;
     };
 
     template<template<typename V> typename Predicate, typename T>
@@ -337,7 +342,7 @@ namespace otto::meta {
     struct filter_impl<Predicate> {
       using type = list<>;
     };
-  }
+  } // namespace detail
 
   template<template<typename T> typename Predicate, typename... Types>
   struct filter<list<Types...>, Predicate> {
@@ -352,6 +357,7 @@ namespace otto::meta {
     struct predicate {
       static constexpr const bool value = !_v<Predicate<T>>;
     };
+
   public:
     using type = _t<detail::filter_impl<predicate, Types...>>;
   };
@@ -363,8 +369,38 @@ namespace otto::meta {
   private:
     template<typename T1>
     using predicate = equals<T, T1>;
+
   public:
     using type = _t<remove_if<list<Types...>, predicate>>;
+  };
+
+  // pop_back //
+
+  namespace detail {
+    template<typename... Types>
+    struct pop_back_impl;
+
+    template<typename T, typename... Types>
+    struct pop_back_impl<T, Types...> {
+      using type = _t<concat<list<T>, _t<pop_back<list<Types...>>>>>;
+    };
+
+    template<typename T>
+    struct pop_back_impl<T> {
+      using type = list<>;
+    };
+
+    template<>
+    struct pop_back_impl<> {
+      using type = list<>;
+    };
+  } // namespace detail
+
+  template<typename... Types>
+  struct pop_back<list<Types...>> {
+  private:
+  public:
+    using type = _t<detail::pop_back_impl<list<Types...>>>;
   };
 
   // uniquify //
@@ -375,10 +411,9 @@ namespace otto::meta {
 
     template<typename T, typename... Types>
     struct uniquify_impl<T, Types...> {
-      using type = _t<std::conditional_t<
-        util::is_one_of_v<T, Types...>,
-        uniquify<list<Types...>>,
-        concat<list<T>, _t<uniquify<list<Types...>>>>>>;
+      using type = _t<std::conditional_t<util::is_one_of_v<T, Types...>,
+                                         uniquify<list<Types...>>,
+                                         concat<list<T>, _t<uniquify<list<Types...>>>>>>;
     };
 
     template<typename T>
@@ -390,7 +425,7 @@ namespace otto::meta {
     struct uniquify_impl<> {
       using type = list<>;
     };
-  }
+  } // namespace detail
 
   template<typename... Types>
   struct uniquify<list<Types...>> {
@@ -417,6 +452,7 @@ namespace otto::meta {
         }
       }
     }
+
   public:
     using type = decltype(impl());
   };
@@ -426,16 +462,15 @@ namespace otto::meta {
   template<template<class T1, class T2> typename Compare, typename... Types>
   struct sort<list<Types...>, Compare> {
   private:
-    constexpr static auto impl() {
+    constexpr static auto impl()
+    {
       if constexpr (sizeof...(Types) == 0) {
         return list<>{};
       } else {
         using TL = list<Types...>;
         using Pivot = _t<head<TL>>;
-        using R     = _t<partition<_t<tail<TL>>, Pivot, Compare>>;
-        return _t<concat<_t<sort<_first<R>, Compare>>,
-                    list<Pivot>,
-                    _t<sort<_second<R>, Compare>>>>();
+        using R = _t<partition<_t<tail<TL>>, Pivot, Compare>>;
+        return _t<concat<_t<sort<_first<R>, Compare>>, list<Pivot>, _t<sort<_second<R>, Compare>>>>();
       }
     };
 
@@ -452,7 +487,8 @@ namespace otto::meta {
     template<typename T, typename... Types>
     struct for_each_impl<T, Types...> {
       template<typename Callable>
-      static constexpr void apply(Callable&& cb) {
+      static constexpr void apply(Callable&& cb)
+      {
         std::invoke(cb, one<T>());
         for_each_impl<Types...>::apply(std::forward<Callable>(cb));
       }
@@ -461,7 +497,8 @@ namespace otto::meta {
     template<>
     struct for_each_impl<> {
       template<typename Callable>
-      static constexpr void apply(Callable&& cb) {}
+      static constexpr void apply(Callable&& cb)
+      {}
     };
 
     template<typename List>
@@ -469,10 +506,11 @@ namespace otto::meta {
 
     template<typename... Types>
     struct for_each<list<Types...>> : for_each_impl<Types...> {};
-  }
+  } // namespace impl
 
   template<typename List, typename Callable>
-  constexpr void for_each(Callable&& cb) {
+  constexpr void for_each(Callable&& cb)
+  {
     impl::for_each<List>::apply(std::forward<Callable>(cb));
   }
 
@@ -485,7 +523,8 @@ namespace otto::meta {
     template<typename T, typename... Types>
     struct transform_to_tuple_impl<T, Types...> {
       template<typename Callable, typename Tuple>
-      static constexpr auto apply(Callable&& cb, Tuple&& tuple) {
+      static constexpr auto apply(Callable&& cb, Tuple&& tuple)
+      {
         auto t2 = std::tuple_cat(std::forward<Tuple>(tuple), std::make_tuple(cb(one<T>())));
         return transform_to_tuple_impl<Types...>::apply(std::forward<Callable>(cb), std::move(t2));
       }
@@ -494,7 +533,8 @@ namespace otto::meta {
     template<>
     struct transform_to_tuple_impl<> {
       template<typename Callable, typename Tuple>
-      static constexpr auto apply(Callable&& cb, Tuple&& tuple) {
+      static constexpr auto apply(Callable&& cb, Tuple&& tuple)
+      {
         return tuple;
       }
     };
@@ -503,15 +543,15 @@ namespace otto::meta {
     struct transform_to_tuple;
 
     template<typename... Types>
-    struct transform_to_tuple<list<Types...>>
-      : transform_to_tuple_impl<Types...> {};
-  }
+    struct transform_to_tuple<list<Types...>> : transform_to_tuple_impl<Types...> {};
+  } // namespace impl
 
   template<typename List, typename Callable>
-  constexpr auto transform_to_tuple(Callable&& cb) {
+  constexpr auto transform_to_tuple(Callable&& cb)
+  {
     return impl::transform_to_tuple<List>::apply(std::forward<Callable>(cb), std::tuple<>());
   }
 
-}
+} // namespace otto::meta
 
 #define OTTO_META_ASSERT_EQUAL(...) static_assert(std::is_same_v<__VA_ARGS__>)

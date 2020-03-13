@@ -5,14 +5,11 @@
 
 namespace otto::engines::master {
 
-  Audio::Audio() noexcept
-  {
-    
-  }
+  Audio::Audio() noexcept {}
 
   void Audio::action(itc::prop_change<&Props::volume>, float v) noexcept
   {
-    volume_square_ = v * v;
+    services::AudioManager::current().output_vol(v);
   }
 
   void Audio::action(itc::prop_change<&Props::tempo>, float t) noexcept
@@ -24,13 +21,13 @@ namespace otto::engines::master {
   audio::ProcessData<2> Audio::process(audio::ProcessData<2> data) noexcept
   {
     for (auto&& l : data.audio[0]) {
-      l = util::math::fastatan( l * volume_square_ );
+      l = util::math::fastatan(l);
     }
     for (auto&& r : data.audio[1]) {
-      r = util::math::fastatan( r * volume_square_ );
+      r = util::math::fastatan(r);
     }
 
     return data;
   }
 
-} // namespace otto::engines::wormhole
+} // namespace otto::engines::master

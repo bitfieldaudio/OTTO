@@ -41,7 +41,7 @@ namespace otto::services {
     //   ScreenEnum::settings, [this]() -> auto& { return *screen_; });
 
     Controller::current().register_key_handler(Key::settings,
-                                               [](auto) { UIManager::current().display(ScreenEnum::settings); });
+                                               [] { UIManager::current().display(ScreenEnum::settings); });
   }
 
   Settings::Screen::Screen()

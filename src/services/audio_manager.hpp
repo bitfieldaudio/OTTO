@@ -84,6 +84,10 @@ namespace otto::services {
       return Application::current().audio_manager;
     }
 
+    virtual void line_in_gain_l(float) = 0;
+    virtual void line_in_gain_r(float) = 0;
+    virtual void output_vol(float) = 0;
+
     struct Events {
       /// Triggered first in constructor
       util::Signal<> pre_init;

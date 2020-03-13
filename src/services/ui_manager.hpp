@@ -16,6 +16,7 @@
 
 #include "services/application.hpp"
 #include "services/controller.hpp"
+#include "util/thread.hpp"
 
 namespace otto::services {
 
@@ -98,6 +99,12 @@ namespace otto::services {
 
     /// Select an engine
     void display(ScreenEnum screen);
+    /// Pop back to previous screen
+    /// 
+    /// Only one level is saved, so can only be used once. Otherwise, has no effect
+    ScreenEnum pop_back();
+    /// Push current screen to single-element stack. Overrides previous screen.
+    void push_back(ScreenEnum);
 
     core::ui::Screen& current_screen();
     core::input::InputHandler& current_input_handler();
@@ -108,6 +115,10 @@ namespace otto::services {
     }
 
     void register_screen_selector(ScreenEnum, ScreenSelector);
+    /// Register a single screen to a key
+    void register_screen_key(core::input::Key key, ScreenEnum);
+    /// Register a two screens to a key, one of them with a modifier
+    void register_screen_key(core::input::Key key, ScreenEnum, ScreenEnum, core::input::Key modifier);
 
     State state;
 
@@ -143,8 +154,8 @@ namespace otto::services {
     } empty_screen;
     core::input::InputHandler empty_input;
     core::ui::ScreenAndInput empty_sai = {empty_screen, empty_input};
-
     core::ui::ScreenAndInput cur_sai = empty_sai;
+    core::ui::ScreenAndInput last_sai = empty_sai;
 
     util::enum_map<ScreenEnum, ScreenSelector> screen_selectors_;
 
@@ -152,6 +163,12 @@ namespace otto::services {
 
     chrono::time_point last_frame = chrono::clock::now();
     itc::ActionQueue action_queue_;
+
+    ScreenEnum screen_stack = ScreenEnum::synth;
+    void reset_timer();
+    bool timer_done();
+    chrono::seconds peek_time = chrono::seconds(1); // 1 second
+    decltype(chrono::clock::now()) press_time = chrono::clock::now();
   };
 
   template<typename... Receivers>

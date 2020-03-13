@@ -106,7 +106,7 @@ namespace otto::services {
     
     auto& ui_manager = *Application::current().ui_manager;
     auto& state_manager = *Application::current().state_manager;
-    auto& controller = *Application::current().controller;
+    //auto& controller = *Application::current().controller;
 
     auto reg_ss = [&](auto se, auto&& f) { return ui_manager.register_screen_selector(se, f); };
 
@@ -132,7 +132,6 @@ namespace otto::services {
     reg_ss(ScreenEnum::twist1, [&]() { return (ui::ScreenAndInput){twist1screen, twist1screen.input}; });
     reg_ss(ScreenEnum::twist2, [&]() { return (ui::ScreenAndInput){twist2screen, twist2screen.input}; });
 
-
     ui_manager.state.current_screen.on_change().connect([&](auto new_val, auto old_val) {
       if (new_val == old_val) return;
       switch (new_val) {
@@ -153,94 +152,26 @@ namespace otto::services {
       }
     });
 
-    
+    using namespace input;
 
-    controller.register_key_handler(input::Key::sequencer,
-                                    [&](input::Key k) { ui_manager.display(ScreenEnum::sequencer); });
+    ui_manager.register_screen_key(Key::sequencer, ScreenEnum::sequencer);
+    ui_manager.register_screen_key(Key::sampler, ScreenEnum::sampler);
+    ui_manager.register_screen_key(Key::routing, ScreenEnum::routing);
+    ui_manager.register_screen_key(Key::looper, ScreenEnum::looper);
+    ui_manager.register_screen_key(Key::slots, ScreenEnum::saveslots);
 
-    controller.register_key_handler(input::Key::sampler,
-                                    [&](input::Key k) { ui_manager.display(ScreenEnum::sampler); });
+    ui_manager.register_screen_key(Key::arp, ScreenEnum::arp, ScreenEnum::arp_selector, Key::shift);
+    ui_manager.register_screen_key(Key::synth, ScreenEnum::synth, ScreenEnum::synth_selector, Key::shift);
+    ui_manager.register_screen_key(Key::fx1, ScreenEnum::fx1, ScreenEnum::fx1_selector,  Key::shift);
+    ui_manager.register_screen_key(Key::fx2, ScreenEnum::fx2, ScreenEnum::fx2_selector,  Key::shift);
 
-    controller.register_key_handler(input::Key::routing,
-                                    [&](input::Key k) { ui_manager.display(ScreenEnum::routing); });
+    ui_manager.register_screen_key(Key::twist1, ScreenEnum::twist1);
+    ui_manager.register_screen_key(Key::twist2, ScreenEnum::twist2);
 
-    controller.register_key_handler(input::Key::looper, [&](input::Key k) { ui_manager.display(ScreenEnum::looper); });
-
-    controller.register_key_handler(input::Key::slots,
-                                    [&](input::Key k) { ui_manager.display(ScreenEnum::saveslots); });
-
-    controller.register_key_handler(input::Key::arp, [&](input::Key k) {
-      if (controller.is_pressed(input::Key::shift)) {
-        ui_manager.display(ScreenEnum::arp_selector);
-      } else {
-        ui_manager.display(ScreenEnum::arp);
-      }
-    });
-
-    controller.register_key_handler(input::Key::synth, [&](input::Key k) {
-      if (controller.is_pressed(input::Key::shift)) {
-        ui_manager.display(ScreenEnum::synth_selector);
-      } else {
-        ui_manager.display(ScreenEnum::synth);
-      }
-    });
-
-    controller.register_key_handler(input::Key::envelope, [&](input::Key k) {
-      if (ui_manager.state.active_channel == ChannelEnum::internal) {
-        if (controller.is_pressed(input::Key::shift)) {
-          ui_manager.display(ScreenEnum::voices);
-        } else {
-          ui_manager.display(ScreenEnum::synth_envelope);
-        }
-      } else {
-        ui_manager.display(ScreenEnum::sampler_envelope);
-      }
-    });
-
-    controller.register_key_handler(input::Key::fx1, [&](input::Key k) {
-      if (controller.is_pressed(input::Key::shift)) {
-        ui_manager.display(ScreenEnum::fx1_selector);
-      } else {
-        ui_manager.display(ScreenEnum::fx1);
-      }
-    });
-
-    controller.register_key_handler(input::Key::fx2, [&](input::Key k) {
-      if (controller.is_pressed(input::Key::shift)) {
-        ui_manager.display(ScreenEnum::fx2_selector);
-      } else {
-        ui_manager.display(ScreenEnum::fx2);
-      }
-    });
-
-    controller.register_key_handler(input::Key::external,
-                                    [&](input::Key k) { ui_manager.display(ScreenEnum::external); });
-
-    controller.register_key_handler(input::Key::twist1, [&](input::Key k) { ui_manager.display(ScreenEnum::twist1); });
-    controller.register_key_handler(input::Key::twist2, [&](input::Key k) { ui_manager.display(ScreenEnum::twist2); });
-
-    static ScreenEnum master_last_screen = ScreenEnum::master;
-    static ScreenEnum send_last_screen = ScreenEnum::sends;
-
-    controller.register_key_handler(
-      input::Key::master,
-      [&](input::Key k) {
-        master_last_screen = ui_manager.state.current_screen;
-        ui_manager.display(ScreenEnum::master);
-      },
-      [&](input::Key k) {
-        if (master_last_screen) ui_manager.display(master_last_screen);
-      });
-
-    controller.register_key_handler(
-      input::Key::sends,
-      [&](input::Key k) {
-        send_last_screen = ui_manager.state.current_screen;
-        ui_manager.display(ScreenEnum::sends);
-      },
-      [&](input::Key k) {
-        if (send_last_screen) ui_manager.display(send_last_screen);
-      });
+    ui_manager.register_screen_key(Key::sends, ScreenEnum::sends);
+    ui_manager.register_screen_key(Key::master, ScreenEnum::master);
+    ui_manager.register_screen_key(Key::envelope, ScreenEnum::synth_envelope, ScreenEnum::voices, Key::shift);
+    ui_manager.register_screen_key(Key::external, ScreenEnum::external);
 
     auto load = [&](nlohmann::json& data) {
       util::deserialize(synth, data["Synth"]);

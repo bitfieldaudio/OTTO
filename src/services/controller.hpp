@@ -96,7 +96,7 @@ namespace otto::services {
     using KeyPressEvent = core::input::KeyPressEvent;
     using KeyReleaseEvent = core::input::KeyReleaseEvent;
     /// Function type for key handlers
-    using KeyHandler = std::function<void(Key k)>;
+    using KeyHandler = std::function<void()>;
 
     using Event = std::variant<EncoderEvent, KeyPressEvent, KeyReleaseEvent>;
     using EventBag = std::vector<Event>;
