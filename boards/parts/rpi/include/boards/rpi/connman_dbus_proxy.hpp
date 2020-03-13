@@ -7,277 +7,283 @@
 #include <cassert>
 
 namespace net {
-namespace connman {
+  namespace connman {
 
-class Manager_proxy
-  : public ::DBus::InterfaceProxy
-{
-public:
-    Manager_proxy()
-    : ::DBus::InterfaceProxy("net.connman.Manager")
-    {
+    class Manager_proxy : public ::DBus::InterfaceProxy {
+    public:
+      Manager_proxy() : ::DBus::InterfaceProxy("net.connman.Manager")
+      {
         connect_signal(Manager_proxy, PropertyChanged, _PropertyChanged_stub);
         connect_signal(Manager_proxy, TechnologyAdded, _TechnologyAdded_stub);
         connect_signal(Manager_proxy, TechnologyRemoved, _TechnologyRemoved_stub);
         connect_signal(Manager_proxy, ServicesChanged, _ServicesChanged_stub);
-    }
+      }
 
-    /* properties exported by this interface */
-    /* methods exported by this interface.
-     * these functions will invoke the corresponding methods
-     * on the remote objects.
-     */
-    std::map< std::string, ::DBus::Variant > GetProperties()
-    {
+      /* properties exported by this interface */
+      /* methods exported by this interface.
+       * these functions will invoke the corresponding methods
+       * on the remote objects.
+       */
+      std::map<std::string, ::DBus::Variant> GetProperties()
+      {
         ::DBus::CallMessage __call;
         __call.member("GetProperties");
         ::DBus::Message __ret = invoke_method(__call);
         ::DBus::MessageIter __ri = __ret.reader();
-        std::map< std::string, ::DBus::Variant > __argout;
+        std::map<std::string, ::DBus::Variant> __argout;
         __ri >> __argout;
         return __argout;
-    }
+      }
 
-    void SetProperty(const std::string& name, const ::DBus::Variant& value)
-    {
+      void SetProperty(const std::string& name, const ::DBus::Variant& value)
+      {
         ::DBus::CallMessage __call;
         ::DBus::MessageIter __wi = __call.writer();
         __wi << name;
         __wi << value;
         __call.member("SetProperty");
         invoke_method(__call);
-    }
+      }
 
-    std::vector< ::DBus::Struct< ::DBus::Path, std::map< std::string, ::DBus::Variant > > > GetServices()
-    {
+      std::vector<::DBus::Struct<::DBus::Path, std::map<std::string, ::DBus::Variant>>> GetServices()
+      {
         ::DBus::CallMessage __call;
         __call.member("GetServices");
         ::DBus::Message __ret = invoke_method(__call);
         ::DBus::MessageIter __ri = __ret.reader();
-        std::vector< ::DBus::Struct< ::DBus::Path, std::map< std::string, ::DBus::Variant > > > __argout;
+        std::vector<::DBus::Struct<::DBus::Path, std::map<std::string, ::DBus::Variant>>> __argout;
         __ri >> __argout;
         return __argout;
-    }
+      }
 
-    std::vector< ::DBus::Struct< ::DBus::Path, std::map< std::string, ::DBus::Variant > > > GetTechnologies()
-    {
+      std::vector<::DBus::Struct<::DBus::Path, std::map<std::string, ::DBus::Variant>>> GetTechnologies()
+      {
         ::DBus::CallMessage __call;
         __call.member("GetTechnologies");
         ::DBus::Message __ret = invoke_method(__call);
         ::DBus::MessageIter __ri = __ret.reader();
-        std::vector< ::DBus::Struct< ::DBus::Path, std::map< std::string, ::DBus::Variant > > > __argout;
+        std::vector<::DBus::Struct<::DBus::Path, std::map<std::string, ::DBus::Variant>>> __argout;
         __ri >> __argout;
         return __argout;
-    }
+      }
 
-    void RegisterAgent(const ::DBus::Path& path)
-    {
+      void RegisterAgent(const ::DBus::Path& path)
+      {
         ::DBus::CallMessage __call;
         ::DBus::MessageIter __wi = __call.writer();
         __wi << path;
         __call.member("RegisterAgent");
         invoke_method(__call);
-    }
+      }
 
-    void UnregisterAgent(const ::DBus::Path& path)
-    {
+      void UnregisterAgent(const ::DBus::Path& path)
+      {
         ::DBus::CallMessage __call;
         ::DBus::MessageIter __wi = __call.writer();
         __wi << path;
         __call.member("UnregisterAgent");
         invoke_method(__call);
-    }
+      }
 
-    /* signal handlers for this interface.
-     * you will have to implement them in your ObjectProxy.
-     */
-    virtual void PropertyChanged(const std::string &name, const ::DBus::Variant &value) {}
-    virtual void TechnologyAdded(const ::DBus::Path &path, const std::map< std::string, ::DBus::Variant > &properties) {}
-    virtual void TechnologyRemoved(const ::DBus::Path &path) {}
-    virtual void ServicesChanged(const std::vector< ::DBus::Struct< ::DBus::Path, std::map< std::string, ::DBus::Variant > > > &changed, const std::vector< ::DBus::Path > &removed) {}
+      /* signal handlers for this interface.
+       * you will have to implement them in your ObjectProxy.
+       */
+      virtual void PropertyChanged(const std::string& name, const ::DBus::Variant& value) {}
+      virtual void TechnologyAdded(const ::DBus::Path& path, const std::map<std::string, ::DBus::Variant>& properties)
+      {}
+      virtual void TechnologyRemoved(const ::DBus::Path& path) {}
+      virtual void ServicesChanged(
+        const std::vector<::DBus::Struct<::DBus::Path, std::map<std::string, ::DBus::Variant>>>& changed,
+        const std::vector<::DBus::Path>& removed)
+      {}
 
-protected:
-private:
-    /* unmarshallers (to unpack the DBus message before
-     * calling the actual signal handler)
-     */
-    void _PropertyChanged_stub(const ::DBus::SignalMessage &__sig)
-    {
+    protected:
+    private:
+      /* unmarshallers (to unpack the DBus message before
+       * calling the actual signal handler)
+       */
+      void _PropertyChanged_stub(const ::DBus::SignalMessage& __sig)
+      {
         ::DBus::MessageIter __ri = __sig.reader();
-        std::string name; __ri >> name;
-        ::DBus::Variant value; __ri >> value;
+        std::string name;
+        __ri >> name;
+        ::DBus::Variant value;
+        __ri >> value;
         PropertyChanged(name, value);
-    }
+      }
 
-    void _TechnologyAdded_stub(const ::DBus::SignalMessage &__sig)
-    {
+      void _TechnologyAdded_stub(const ::DBus::SignalMessage& __sig)
+      {
         ::DBus::MessageIter __ri = __sig.reader();
-        ::DBus::Path path; __ri >> path;
-        std::map< std::string, ::DBus::Variant > properties; __ri >> properties;
+        ::DBus::Path path;
+        __ri >> path;
+        std::map<std::string, ::DBus::Variant> properties;
+        __ri >> properties;
         TechnologyAdded(path, properties);
-    }
+      }
 
-    void _TechnologyRemoved_stub(const ::DBus::SignalMessage &__sig)
-    {
+      void _TechnologyRemoved_stub(const ::DBus::SignalMessage& __sig)
+      {
         ::DBus::MessageIter __ri = __sig.reader();
-        ::DBus::Path path; __ri >> path;
+        ::DBus::Path path;
+        __ri >> path;
         TechnologyRemoved(path);
-    }
+      }
 
-    void _ServicesChanged_stub(const ::DBus::SignalMessage &__sig)
-    {
+      void _ServicesChanged_stub(const ::DBus::SignalMessage& __sig)
+      {
         ::DBus::MessageIter __ri = __sig.reader();
-        std::vector< ::DBus::Struct< ::DBus::Path, std::map< std::string, ::DBus::Variant > > > changed; __ri >> changed;
-        std::vector< ::DBus::Path > removed; __ri >> removed;
+        std::vector<::DBus::Struct<::DBus::Path, std::map<std::string, ::DBus::Variant>>> changed;
+        __ri >> changed;
+        std::vector<::DBus::Path> removed;
+        __ri >> removed;
         ServicesChanged(changed, removed);
-    }
-
-};
-}}
+      }
+    };
+  } // namespace connman
+} // namespace net
 namespace net {
-namespace connman {
+  namespace connman {
 
-class Technology_proxy
-  : public ::DBus::InterfaceProxy
-{
-public:
-    Technology_proxy()
-    : ::DBus::InterfaceProxy("net.connman.Technology")
-    {
+    class Technology_proxy : public ::DBus::InterfaceProxy {
+    public:
+      Technology_proxy() : ::DBus::InterfaceProxy("net.connman.Technology")
+      {
         connect_signal(Technology_proxy, PropertyChanged, _PropertyChanged_stub);
-    }
+      }
 
-    /* properties exported by this interface */
-    /* methods exported by this interface.
-     * these functions will invoke the corresponding methods
-     * on the remote objects.
-     */
-    std::map< std::string, ::DBus::Variant > GetProperties()
-    {
+      /* properties exported by this interface */
+      /* methods exported by this interface.
+       * these functions will invoke the corresponding methods
+       * on the remote objects.
+       */
+      std::map<std::string, ::DBus::Variant> GetProperties()
+      {
         ::DBus::CallMessage __call;
         __call.member("GetProperties");
         ::DBus::Message __ret = invoke_method(__call);
         ::DBus::MessageIter __ri = __ret.reader();
-        std::map< std::string, ::DBus::Variant > __argout;
+        std::map<std::string, ::DBus::Variant> __argout;
         __ri >> __argout;
         return __argout;
-    }
+      }
 
-    void SetProperty(const std::string& name, const ::DBus::Variant& value)
-    {
+      void SetProperty(const std::string& name, const ::DBus::Variant& value)
+      {
         ::DBus::CallMessage __call;
         ::DBus::MessageIter __wi = __call.writer();
         __wi << name;
         __wi << value;
         __call.member("SetProperty");
         invoke_method(__call);
-    }
+      }
 
-    void Scan()
-    {
+      void Scan()
+      {
         ::DBus::CallMessage __call;
         __call.member("Scan");
         invoke_method(__call);
-    }
+      }
 
-    /* signal handlers for this interface.
-     * you will have to implement them in your ObjectProxy.
-     */
-    virtual void PropertyChanged(const std::string &name, const ::DBus::Variant &value) {}
+      /* signal handlers for this interface.
+       * you will have to implement them in your ObjectProxy.
+       */
+      virtual void PropertyChanged(const std::string& name, const ::DBus::Variant& value) {}
 
-protected:
-private:
-    /* unmarshallers (to unpack the DBus message before
-     * calling the actual signal handler)
-     */
-    void _PropertyChanged_stub(const ::DBus::SignalMessage &__sig)
-    {
+    protected:
+    private:
+      /* unmarshallers (to unpack the DBus message before
+       * calling the actual signal handler)
+       */
+      void _PropertyChanged_stub(const ::DBus::SignalMessage& __sig)
+      {
         ::DBus::MessageIter __ri = __sig.reader();
-        std::string name; __ri >> name;
-        ::DBus::Variant value; __ri >> value;
+        std::string name;
+        __ri >> name;
+        ::DBus::Variant value;
+        __ri >> value;
         PropertyChanged(name, value);
-    }
-
-};
-}}
+      }
+    };
+  } // namespace connman
+} // namespace net
 namespace net {
-namespace connman {
+  namespace connman {
 
-class Service_proxy
-  : public ::DBus::InterfaceProxy
-{
-public:
-    Service_proxy()
-    : ::DBus::InterfaceProxy("net.connman.Service")
-    {
+    class Service_proxy : public ::DBus::InterfaceProxy {
+    public:
+      Service_proxy() : ::DBus::InterfaceProxy("net.connman.Service")
+      {
         connect_signal(Service_proxy, PropertyChanged, _PropertyChanged_stub);
-    }
+      }
 
-    /* properties exported by this interface */
-    /* methods exported by this interface.
-     * these functions will invoke the corresponding methods
-     * on the remote objects.
-     */
-    std::map< std::string, ::DBus::Variant > GetProperties()
-    {
+      /* properties exported by this interface */
+      /* methods exported by this interface.
+       * these functions will invoke the corresponding methods
+       * on the remote objects.
+       */
+      std::map<std::string, ::DBus::Variant> GetProperties()
+      {
         ::DBus::CallMessage __call;
         __call.member("GetProperties");
         ::DBus::Message __ret = invoke_method(__call);
         ::DBus::MessageIter __ri = __ret.reader();
-        std::map< std::string, ::DBus::Variant > __argout;
+        std::map<std::string, ::DBus::Variant> __argout;
         __ri >> __argout;
         return __argout;
-    }
+      }
 
-    void SetProperty(const std::string& name, const ::DBus::Variant& value)
-    {
+      void SetProperty(const std::string& name, const ::DBus::Variant& value)
+      {
         ::DBus::CallMessage __call;
         ::DBus::MessageIter __wi = __call.writer();
         __wi << name;
         __wi << value;
         __call.member("SetProperty");
         invoke_method(__call);
-    }
+      }
 
-    void Connect()
-    {
+      void Connect()
+      {
         ::DBus::CallMessage __call;
         __call.member("Connect");
         invoke_method(__call);
-    }
+      }
 
-    void Disconnect()
-    {
+      void Disconnect()
+      {
         ::DBus::CallMessage __call;
         __call.member("Disconnect");
         invoke_method(__call);
-    }
+      }
 
-    void Remove()
-    {
+      void Remove()
+      {
         ::DBus::CallMessage __call;
         __call.member("Remove");
         invoke_method(__call);
-    }
+      }
 
-    /* signal handlers for this interface.
-     * you will have to implement them in your ObjectProxy.
-     */
-    virtual void PropertyChanged(const std::string &name, const ::DBus::Variant &value) {}
+      /* signal handlers for this interface.
+       * you will have to implement them in your ObjectProxy.
+       */
+      virtual void PropertyChanged(const std::string& name, const ::DBus::Variant& value) {}
 
-protected:
-private:
-    /* unmarshallers (to unpack the DBus message before
-     * calling the actual signal handler)
-     */
-    void _PropertyChanged_stub(const ::DBus::SignalMessage &__sig)
-    {
+    protected:
+    private:
+      /* unmarshallers (to unpack the DBus message before
+       * calling the actual signal handler)
+       */
+      void _PropertyChanged_stub(const ::DBus::SignalMessage& __sig)
+      {
         ::DBus::MessageIter __ri = __sig.reader();
-        std::string name; __ri >> name;
-        ::DBus::Variant value; __ri >> value;
+        std::string name;
+        __ri >> name;
+        ::DBus::Variant value;
+        __ri >> value;
         PropertyChanged(name, value);
-    }
-
-};
-}}
-#endif  // __dbusxx__connman_dbus_proxy_hpp__PROXY_MARSHALL_H
+      }
+    };
+  } // namespace connman
+} // namespace net
+#endif // __dbusxx__connman_dbus_proxy_hpp__PROXY_MARSHALL_H

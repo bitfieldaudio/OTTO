@@ -33,7 +33,6 @@ namespace otto::util {
       }
     }
 
-    // TODO: C++20, can be constexpr
     ~local_vector() noexcept
     {
       // Destroy elements

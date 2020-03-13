@@ -41,6 +41,7 @@ namespace otto::services {
 
   void LogManager::set_thread_name(const std::string& name)
   {
+		pthread_setname_np(pthread_self(), name.c_str());
     loguru::set_thread_name(name.c_str());
   }
 } // namespace otto::services

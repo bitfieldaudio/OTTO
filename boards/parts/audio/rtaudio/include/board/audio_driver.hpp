@@ -44,7 +44,7 @@ namespace otto::services {
   };
 
   struct RTAudioAudioManager final : AudioManager {
-    RTAudioAudioManager(int in_device, int out_device);
+    RTAudioAudioManager(int in_device = -1, int out_device = -1);
 
     template<typename Parser>
     void add_args(Parser& cli);
