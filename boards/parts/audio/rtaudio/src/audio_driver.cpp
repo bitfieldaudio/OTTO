@@ -16,6 +16,94 @@
 
 namespace otto::services {
 
+#ifndef __LINUX_ALSA__
+  AlsaMixer::AlsaMixer() = default;
+  AlsaMixer::~AlsaMixer() = default;
+
+  void AlsaMixer::set_volume(float both) {}
+  void AlsaMixer::set_volume_l(float l) {}
+  void AlsaMixer::set_volume_r(float r) {}
+
+  AlsaMixer::AlsaMixer(util::string_ref card, int subdevice_idx, util::string_ref elem_name, bool is_capture) {}
+#else
+  AlsaMixer::AlsaMixer() = default;
+  AlsaMixer::AlsaMixer(util::string_ref card, int subdevice_idx, util::string_ref elem_name, bool is_capture)
+    : is_capture(is_capture)
+  {
+    ::snd_mixer_open(&snd_mixer_, 0);
+    ::snd_mixer_attach(snd_mixer_, "default");
+    ::snd_mixer_selem_register(snd_mixer_, nullptr, nullptr);
+    ::snd_mixer_load(snd_mixer_);
+
+    ::snd_mixer_selem_id_t* sid;
+    snd_mixer_selem_id_alloca(&sid);
+    snd_mixer_selem_id_set_index(sid, subdevice_idx);
+    snd_mixer_selem_id_set_name(sid, elem_name.c_str());
+    snd_mixer_elem_ = ::snd_mixer_find_selem(snd_mixer_, sid);
+    if (!snd_mixer_elem_) {
+      LOGE("snd_mixer_elem_ was not found!");
+      return;
+    } 
+
+    if (is_capture) {
+      snd_mixer_selem_get_capture_volume_range(snd_mixer_elem_, &min_vol, &max_vol);
+    } else {
+      snd_mixer_selem_get_playback_volume_range(snd_mixer_elem_, &min_vol, &max_vol);
+    }
+  }
+  AlsaMixer::~AlsaMixer()
+  {
+    if (snd_mixer_) ::snd_mixer_close(snd_mixer_);
+  }
+
+  void AlsaMixer::set_volume(float both)
+  {
+    if (!snd_mixer_) return;
+    if (!snd_mixer_elem_) return;
+    if (is_capture) {
+    // TODO: These lines fail on my machine - figure what is going wrong --Jonatan
+    //  snd_mixer_selem_set_capture_volume_all(snd_mixer_elem_, (max_vol - min_vol) * both + min_vol);
+    } else {
+    //  snd_mixer_selem_set_playback_volume_all(snd_mixer_elem_, (max_vol - min_vol) * both + min_vol);
+    }
+  }
+  void AlsaMixer::set_volume_l(float l)
+  {
+    if (!snd_mixer_) return;
+    if (!snd_mixer_elem_) return;
+    if (is_capture) {
+      snd_mixer_selem_set_capture_volume(snd_mixer_elem_, SND_MIXER_SCHN_FRONT_LEFT, (max_vol - min_vol) * l + min_vol);
+    } else {
+      snd_mixer_selem_set_playback_volume(snd_mixer_elem_, SND_MIXER_SCHN_FRONT_LEFT,
+                                          (max_vol - min_vol) * l + min_vol);
+    }
+  }
+
+  void AlsaMixer::set_volume_r(float r)
+  {
+    if (!snd_mixer_) return;
+    if (!snd_mixer_elem_) return;
+    if (is_capture) {
+      snd_mixer_selem_set_capture_volume(snd_mixer_elem_, SND_MIXER_SCHN_FRONT_RIGHT,
+                                         (max_vol - min_vol) * r + min_vol);
+    } else {
+      snd_mixer_selem_set_playback_volume(snd_mixer_elem_, SND_MIXER_SCHN_FRONT_RIGHT,
+                                          (max_vol - min_vol) * r + min_vol);
+    }
+  }
+
+#endif
+
+  AlsaMixer AlsaMixer::playback(RtAudio& client, int device_idx)
+  {
+    return AlsaMixer("default", 0, "Master", false);
+  }
+  AlsaMixer AlsaMixer::capture(RtAudio& client, int device_idx)
+  {
+    return AlsaMixer("default", 0, "Mic", true);
+  }
+
+
   RTAudioAudioManager::RTAudioAudioManager(int in_device, int out_device)
     : device_in_(in_device), device_out_(out_device)
   {
@@ -91,6 +179,8 @@ namespace otto::services {
         throw;
       }
     }
+    output_volume = AlsaMixer::playback(client, device_out_);
+    line_in_gain = AlsaMixer::capture(client, device_in_);
   }
 
   void RTAudioAudioManager::init_midi()
@@ -201,6 +291,27 @@ namespace otto::services {
 
     return 0;
   }
+
+#ifndef __LINUX_ALSA__
+  void RTAudioAudioManager::line_in_gain_l(float gain) {}
+  void RTAudioAudioManager::line_in_gain_r(float) {}
+  void RTAudioAudioManager::output_vol(float) {}
+#else
+
+  void RTAudioAudioManager::line_in_gain_l(float gain)
+  {
+    line_in_gain.set_volume_l(gain);
+  }
+  void RTAudioAudioManager::line_in_gain_r(float gain)
+  {
+    line_in_gain.set_volume_r(gain);
+  }
+  void RTAudioAudioManager::output_vol(float vol)
+  {
+    output_volume.set_volume(vol);
+  }
+#endif
+
 } // namespace otto::services
 
 // kak: other_file=../include/board/audio_driver.hpp

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Gamma/Domain.h>
+
 #include "services/application.hpp"
 #include "services/audio_manager.hpp"
 #include "services/clock_manager.hpp"
@@ -8,8 +10,6 @@
 #include "services/preset_manager.hpp"
 #include "services/state_manager.hpp"
 #include "services/ui_manager.hpp"
-
-#include <Gamma/Domain.h>
 
 namespace otto::services::test {
 
@@ -165,6 +165,10 @@ namespace otto::services::test {
     {
       return dynamic_cast<DummyAudioManager&>(*Application::current().audio_manager);
     }
+
+    void line_in_gain_l(float) override {}
+    void line_in_gain_r(float) override {}
+    void output_vol(float) override {}
   };
 
   inline Application make_dummy_application()
