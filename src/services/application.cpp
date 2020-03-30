@@ -19,7 +19,7 @@ namespace otto::services {
                            ServiceStorage<AudioManager>::Factory audio_fact,
                            ServiceStorage<ClockManager>::Factory clock_fact,
                            ServiceStorage<UIManager>::Factory ui_fact,
-                           ServiceStorage<Controller>::Factory controller,
+                           ServiceStorage<Controller>::Factory controller_fact,
                            ServiceStorage<EngineManager>::Factory engine_fact)
     : log_manager(std::move(log_fact)),
       state_manager(std::move(state_fact)),
@@ -27,10 +27,20 @@ namespace otto::services {
       audio_manager(std::move(audio_fact)),
       clock_manager(std::move(clock_fact)),
       ui_manager(std::move(ui_fact)),
-      controller(std::move(controller)),
+      controller(std::move(controller_fact)),
       engine_manager(std::move(engine_fact))
   {
     _current = this;
+
+    log_manager.construct();
+    state_manager.construct();
+    preset_manager.construct();
+    audio_manager.construct();
+    clock_manager.construct();
+    ui_manager.construct();
+    controller.construct();
+    engine_manager.construct();
+
     events.post_init.emit();
   }
 

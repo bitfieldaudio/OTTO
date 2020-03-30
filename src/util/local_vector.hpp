@@ -375,7 +375,7 @@ namespace otto::util {
     {
       auto pos = std::upper_bound(begin(), end(), e);
       auto prev = pos - 1;
-      if (prev < begin() || *prev != e) return super::insert(pos, e);
+      if (prev < begin() || *prev != e) return super::insert_before(pos, e);
       return prev;
     }
 
@@ -383,7 +383,7 @@ namespace otto::util {
     {
       auto pos = std::upper_bound(begin(), end(), e);
       auto prev = pos - 1;
-      if (prev < begin() || *prev != e) return super::insert(pos, std::move(e));
+      if (prev < begin() || *prev != e) return super::insert_before(pos, std::move(e));
       return prev;
     }
 

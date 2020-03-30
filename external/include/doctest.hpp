@@ -2838,9 +2838,8 @@ namespace detail {
         return oss.str().c_str();
     }
 
-    DOCTEST_THREAD_LOCAL std::ostringstream g_oss; // NOLINT(cert-err58-cpp)
-
     std::ostream* getTlsOss() {
+        DOCTEST_THREAD_LOCAL std::ostringstream g_oss; // NOLINT(cert-err58-cpp)
         g_oss.clear(); // there shouldn't be anything worth clearing in the flags
         g_oss.str(""); // the slow way of resetting a string stream
         //g_oss.seekp(0); // optimal reset - as seen here: https://stackoverflow.com/a/624291/3162383
@@ -2849,7 +2848,7 @@ namespace detail {
 
     String getTlsOssResult() {
         //g_oss << std::ends; // needed - as shown here: https://stackoverflow.com/a/624291/3162383
-        return g_oss.str().c_str();
+        return static_cast<std::ostringstream*>(getTlsOss())->str().c_str();
     }
 
 #ifndef DOCTEST_CONFIG_DISABLE

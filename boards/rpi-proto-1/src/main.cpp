@@ -33,11 +33,11 @@ int main(int argc, char* argv[])
                     std::make_unique<MCUI2CController>,
                     EngineManager::create_default};
 
-    Controller::current().register_key_handler(core::input::Key::settings, [](auto) {
+    Controller::current().register_key_handler(core::input::Key::settings, [] {
       if (Controller::current().is_pressed(core::input::Key::shift)) {
         Application::current().exit(Application::ErrorCode::user_exit);
       } else {
-        [[maybe_unused]] int res = std::system("shutdown -h now");
+        //[[maybe_unused]] int res = std::system("shutdown -h now");
       }
     });
 
@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
     std::signal(SIGABRT, Application::handle_signal);
     std::signal(SIGTERM, Application::handle_signal);
     std::signal(SIGINT, Application::handle_signal);
-    std::signal(SIGKILL, Application::handle_signal);
+    //std::signal(SIGKILL, Application::handle_signal);
 
     app.audio_manager->start();
     app.engine_manager->start();

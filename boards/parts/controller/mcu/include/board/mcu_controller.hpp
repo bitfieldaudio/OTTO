@@ -88,10 +88,10 @@ namespace otto::services {
       int cur = encoders[i];
       int prev = o.encoders[i];
       if (cur == prev) continue;
-      auto sc = cur, sp = prev;
+      //auto sc = cur, sp = prev;
       if (cur < prev && (prev - cur) > 128) cur += 256;
       if (cur > prev && (cur - prev) > 128) prev += 256;
-      LOGI("C: {} P: {} d: {}", sc, sp, cur - prev);
+      //DLOGI("P: {} C: {} steps: {}", sp, sc, cur - prev);
       f(core::input::Encoder::_from_index(i), cur - prev);
     }
   }

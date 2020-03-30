@@ -100,7 +100,9 @@ namespace otto::services {
   }
 
   Controller::Controller()
-    : key_handler_thread([this](auto&& should_run) {
+  {
+    Application::current().events.post_init.connect([this] {
+      key_handler_thread = [this](auto&& should_run) {
         while ((!events_.inner().empty() || !action_queue_.empty()) || should_run()) {
           events_.swap();
           for (auto& event : events_.inner()) {
@@ -121,8 +123,9 @@ namespace otto::services {
           }
           action_queue_.pop_call_all();
         }
-      })
-  {}
+      };
+    });
+  }
 
   // DummyController //
   struct DummyController final : Controller {

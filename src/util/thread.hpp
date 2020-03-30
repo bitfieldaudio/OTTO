@@ -40,6 +40,7 @@ namespace otto::util {
 
     ~thread()
     {
+      if (!std_thread.joinable()) return;
       join();
     }
 
@@ -60,12 +61,25 @@ namespace otto::util {
   };
 
   struct triggered_thread {
+    triggered_thread() = default;
+
     template<typename Func>
     triggered_thread(Func&& func) : std_thread(std::forward<Func>(func), [this] { return should_run(); })
     {}
 
+    triggered_thread(const triggered_thread&) = delete;
+    triggered_thread(triggered_thread&&) = delete;
+
+    template<typename Func>
+    triggered_thread& operator=(Func&& func)
+    {
+      std_thread = std::thread{std::forward<Func>(func), [this] { return should_run(); }};
+      return *this;
+    }
+
     ~triggered_thread()
     {
+      if (!std_thread.joinable()) return;
       join();
     }
 
@@ -99,7 +113,7 @@ namespace otto::util {
   };
 
   struct sleeper_thread {
-    sleeper_thread() {}
+    sleeper_thread() = default;
     template<typename Func>
     sleeper_thread(Func&& func) : std_thread(std::forward<Func>(func), [this] { return should_run(); })
     {}
@@ -108,7 +122,8 @@ namespace otto::util {
     sleeper_thread(sleeper_thread&&) = delete;
 
     template<typename Func>
-    sleeper_thread& operator=(Func&& func) {
+    sleeper_thread& operator=(Func&& func)
+    {
       std_thread = std::thread{std::forward<Func>(func), [this] { return should_run(); }};
       return *this;
     }
@@ -150,7 +165,8 @@ namespace otto::util {
       return _trigger.wait_until(lock, time);
     }
 
-    auto wait() {
+    auto wait()
+    {
       auto lock = std::unique_lock(_mutex);
       _trigger.wait(lock);
     }

@@ -40,10 +40,10 @@ namespace otto::services {
     snd_mixer_selem_id_set_index(sid, subdevice_idx);
     snd_mixer_selem_id_set_name(sid, elem_name.c_str());
     snd_mixer_elem_ = ::snd_mixer_find_selem(snd_mixer_, sid);
-    if (!snd_mixer_elem_) {
+    if (snd_mixer_elem_ == nullptr) {
       LOGE("snd_mixer_elem_ was not found!");
       return;
-    } 
+    }
 
     if (is_capture) {
       snd_mixer_selem_get_capture_volume_range(snd_mixer_elem_, &min_vol, &max_vol);
@@ -53,7 +53,7 @@ namespace otto::services {
   }
   AlsaMixer::~AlsaMixer()
   {
-    if (snd_mixer_) ::snd_mixer_close(snd_mixer_);
+    if (snd_mixer_elem_) ::snd_mixer_close(snd_mixer_);
   }
 
   void AlsaMixer::set_volume(float both)
@@ -61,10 +61,10 @@ namespace otto::services {
     if (!snd_mixer_) return;
     if (!snd_mixer_elem_) return;
     if (is_capture) {
-    // TODO: These lines fail on my machine - figure what is going wrong --Jonatan
-    //  snd_mixer_selem_set_capture_volume_all(snd_mixer_elem_, (max_vol - min_vol) * both + min_vol);
+      // TODO: These lines fail on my machine - figure what is going wrong --Jonatan
+      snd_mixer_selem_set_capture_volume_all(snd_mixer_elem_, (max_vol - min_vol) * both + min_vol);
     } else {
-    //  snd_mixer_selem_set_playback_volume_all(snd_mixer_elem_, (max_vol - min_vol) * both + min_vol);
+      snd_mixer_selem_set_playback_volume_all(snd_mixer_elem_, (max_vol - min_vol) * both + min_vol);
     }
   }
   void AlsaMixer::set_volume_l(float l)

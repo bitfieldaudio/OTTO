@@ -13,12 +13,6 @@
 [submodule "external/Gamma"]
 	path = external/Gamma
 	url = https://github.com/LancePutnam/Gamma
-[submodule "external/foonathan_array"]
-	path = external/foonathan_array
-	url = https://github.com/foonathan/array
-[submodule "external/foonathan_type_safe"]
-	path = external/foonathan_type_safe
-	url = https://github.com/foonathan/type_safe
 [submodule "external/choreograph"]
 	path = external/choreograph
 	url = https://github.com/topisani/Choreograph

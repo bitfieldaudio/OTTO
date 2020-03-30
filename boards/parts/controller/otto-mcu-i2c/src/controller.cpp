@@ -24,34 +24,48 @@ namespace otto::services {
 
   using byte = std::uint8_t;
 
-  void MSC::queue_message(BytesView message)
+  I2C::I2C(std::uint16_t address) : address(address) {}
+
+  I2C::~I2C() noexcept
   {
-    //write_buffer_.outer_locked([&](auto& buf) { nano::copy(message, buf.emplace_back().begin()); });
+    if (is_open()) (void) close();
   }
 
-  void MSC::init_i2c(util::string_ref node)
+  bool I2C::is_open() const noexcept
+  {
+    return i2c_fd > 0;
+  }
+
+  std::error_code I2C::open(const fs::path& path)
   {
     unsigned long i2c_funcs = 0;
 
-    i2c_fd = open(node.c_str(), O_RDWR);
+    i2c_fd = ::open(path.c_str(), O_RDWR);
     if (i2c_fd < 0) {
       LOGE("Check that the i2c-dev & i2c-bcm2708 kernel modules "
            "are loaded.");
-      throw util::exception("Error opening {}", node);
+      return std::error_code{errno, std::generic_category()};
     }
 
     /*
      * Make sure the driver supports plain I2C I/O:
      */
     int rc = ioctl(i2c_fd, I2C_FUNCS, &i2c_funcs);
-    OTTO_ASSERT(rc >= 0);
     OTTO_ASSERT(i2c_funcs & I2C_FUNC_I2C);
+    if (rc) return std::error_code{errno, std::generic_category()};
+    return {};
   }
 
-  void MSC::send_i2c(gsl::span<std::uint8_t> message)
+  std::error_code I2C::close()
+  {
+    if (::close(i2c_fd)) return std::error_code{errno, std::generic_category()};
+    return {};
+  }
+
+  std::error_code I2C::write(gsl::span<std::uint8_t> message)
   {
     ::i2c_msg iomsg = {
-      .addr = I2C_SLAVE_ADDR,
+      .addr = address,
       .flags = 0,
       .len = message.size(),
       .buf = message.data(),
@@ -61,18 +75,17 @@ namespace otto::services {
       .nmsgs = 1,
     };
     auto res = ioctl(i2c_fd, I2C_RDWR, &msgset);
-    if (res < 0) LOGE("Error sending message to MCU over i2c: {}", strerror(errno));
+    if (res < 0) return std::error_code{errno, std::generic_category()};
+    return {};
   }
 
-  void MSC::read_i2c()
+  std::error_code I2C::read_into(gsl::span<std::uint8_t> buffer)
   {
-    std::array<std::uint8_t, 12> data;
-
     ::i2c_msg iomsg = {
-      .addr = I2C_SLAVE_ADDR,
+      .addr = address,
       .flags = I2C_M_RD,
-      .len = data.size(),
-      .buf = data.data(),
+      .len = buffer.size(),
+      .buf = buffer.data(),
     };
     ::i2c_rdwr_ioctl_data msgset = {
       .msgs = &iomsg,
@@ -80,16 +93,31 @@ namespace otto::services {
     };
 
     auto res = ioctl(i2c_fd, I2C_RDWR, &msgset);
-    if (res < 0) {
-      LOGE("Error receiving message from MCU over i2c: {}", strerror(errno));
-    } else {
-      handle_response(data);
+    if (res < 0) return std::error_code{errno, std::generic_category()};
+    return {};
+  }
+
+  void MSC::queue_message(BytesView message)
+  {
+    // write_buffer_.outer_locked([&](auto& buf) { nano::copy(message, buf.emplace_back().begin()); });
+  }
+
+  void MSC::read_i2c()
+  {
+    std::array<std::uint8_t, 12> data;
+    if (auto err = i2c_obj.read_into(data)) {
+      LOGE("Error reading from i2c: {} ", err);
+      return;
     }
+    handle_response(data);
   }
 
   MSC::MCUI2CController()
   {
-    init_i2c("/dev/i2c-1");
+    if (auto err = i2c_obj.open("/dev/i2c-1")) {
+      LOGE("Error opening i2c device: {}", err);
+      throw std::system_error(err, "Error opening i2c device");
+    }
 
     i2c_thread = [this](auto&& should_run) {
       services::LogManager::current().set_thread_name("MCUi2c");
@@ -100,18 +128,15 @@ namespace otto::services {
           wb.push_back({0x00});
         }
         for (auto& message : wb) {
-          send_i2c({message.data(), message.size()});
+          if (auto err = i2c_obj.write({message.data(), message.size()})) {
+            LOGE("Error writing to i2c: {}", err);
+          }
           i2c_thread.sleep_for(chrono::microseconds(200));
           read_i2c();
         }
         i2c_thread.sleep_for(sleep_time);
       }
     };
-  }
-
-  MSC::~MCUI2CController() noexcept
-  {
-    if (i2c_fd >= 0) ::close(i2c_fd);
   }
 
 } // namespace otto::services

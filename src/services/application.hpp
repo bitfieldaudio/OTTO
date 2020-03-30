@@ -25,7 +25,12 @@ namespace otto::services {
   struct ServiceStorage {
     using Factory = std::function<std::unique_ptr<Service>()>;
 
-    ServiceStorage(Factory f) : _storage(f()) {}
+    ServiceStorage(Factory f) : factory_(f) {}
+
+    Service& construct() {
+      _storage = factory_();
+      return *_storage;
+    }
 
     Service* operator->() noexcept
     {
@@ -42,7 +47,8 @@ namespace otto::services {
       return *_storage;
     }
 
-    const std::unique_ptr<Service> _storage;
+    Factory factory_;
+    std::unique_ptr<Service> _storage;
   };
 
   struct ApplicationHandler {
