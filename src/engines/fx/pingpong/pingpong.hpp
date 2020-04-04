@@ -14,6 +14,8 @@ namespace otto::engines::pingpong {
 
   using Sender = core::engine::EngineSender<Audio, Screen>;
 
+  BETTER_ENUM(SubdivisionEnum, std::int8_t, sixteenths, eighthtriplets, eights, quartertriplets, quarter, half, whole);
+
   struct Props {
     Sender sender;
 
@@ -22,10 +24,10 @@ namespace otto::engines::pingpong {
     /// Only changed when timetype is false.
     Sender::Prop<struct free_time_tag, float> free_time = {sender, 0, limits(0, 1), step_size(0.01)};
     /// Only changed when timetype is true
-    Sender::Prop<struct subdivision_tag, int> subdivision = {sender, 0, limits(0, 6)};
+    Sender::Prop<struct subdivision_tag, SubdivisionEnum> subdivision = {sender, SubdivisionEnum::quarter};
     /// Actual delaytime in ms. Sent to the audio thread
     // 6 seconds is the length of a measure at 40 bpm
-    Sender::Prop<struct free_time_tag, float> delaytime = {sender, 500, limits(0, 6)};
+    Sender::Prop<struct free_time_tag, float> delaytime = {sender, 0.5, limits(0, 6)};
 
     // 0.5 is neutral
     Sender::Prop<struct filter_tag, float> filter = {sender, 0.5, limits(0, 1), step_size(0.01)};
@@ -43,7 +45,7 @@ namespace otto::engines::pingpong {
     static constexpr util::string_ref name = "PingPong";
     PingPong();
 
-    float calculate_delaytime(bool type, float free, int sd);
+    float calculate_delaytime(bool type, float free, SubdivisionEnum sd);
 
     bool keypress(core::input::Key k) override;
     void encoder(core::input::EncoderEvent e) override;
