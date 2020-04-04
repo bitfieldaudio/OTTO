@@ -1,5 +1,4 @@
 #pragma once
-
 #include "Gamma/Delay.h"
 #include "pingpong.hpp"
 #include "services/application.hpp"
