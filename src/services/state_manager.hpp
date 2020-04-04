@@ -3,10 +3,10 @@
 #include <functional>
 #include <json.hpp>
 #include <string>
-#include <foonathan/array/flat_map.hpp>
 
 #include "core/service.hpp"
 #include "services/application.hpp"
+#include "util/flat_map.hpp"
 
 namespace otto::services {
 
@@ -44,7 +44,7 @@ namespace otto::services {
     };
 
     bool _loaded = false;
-    foonathan::array::flat_map<std::string, Client> _clients;
+    util::flat_map<std::string, Client> _clients;
   };
 
 } // namespace otto::services

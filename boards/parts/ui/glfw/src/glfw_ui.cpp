@@ -4,8 +4,6 @@
 #include <thread>
 #include <gsl/gsl_util>
 
-#include <type_safe/optional_ref.hpp>
-
 #include "core/ui/vector_graphics.hpp"
 
 #include "services/log_manager.hpp"

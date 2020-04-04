@@ -1,7 +1,5 @@
 #pragma once
 
-#include <foonathan/array/flat_map.hpp>
-
 #include "core/engine/engine.hpp"
 #include "core/service.hpp"
 #include "services/application.hpp"

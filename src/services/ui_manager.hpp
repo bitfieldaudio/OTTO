@@ -2,8 +2,6 @@
 
 #include <chrono>
 #include <json.hpp>
-#include <type_safe/bounded_type.hpp>
-#include <type_safe/strong_typedef.hpp>
 #include <unordered_map>
 
 #include "core/props/props.hpp"
@@ -100,7 +98,7 @@ namespace otto::services {
     /// Select an engine
     void display(ScreenEnum screen);
     /// Pop back to previous screen
-    /// 
+    ///
     /// Only one level is saved, so can only be used once. Otherwise, has no effect
     ScreenEnum pop_back();
     /// Push current screen to single-element stack. Overrides previous screen.
@@ -176,9 +174,7 @@ namespace otto::services {
     template<typename Tag, typename Type, typename... Mixins>
     using Prop = typename itc::ActionSender<Receivers...>::template Prop<Tag, Type, Mixins...>;
 
-    UISender(Receivers&... r) noexcept
-      : itc::ActionSender<Receivers...>(UIManager::current().action_queue(), r...)
-    {}
+    UISender(Receivers&... r) noexcept : itc::ActionSender<Receivers...>(UIManager::current().action_queue(), r...) {}
   };
 
   // IMPLEMENTATION //

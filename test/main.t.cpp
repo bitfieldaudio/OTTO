@@ -4,6 +4,7 @@
 #include "core/audio/midi.hpp"
 
 #include <Gamma/Domain.h>
+#include <iostream>
 
 int main( int argc, char* argv[] )
 {

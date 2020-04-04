@@ -30,8 +30,6 @@ target_link_libraries(otto_src PUBLIC nanovg)
 target_link_libraries(otto_src PUBLIC GSL)
 target_link_libraries(otto_src PUBLIC fmt)
 target_link_libraries(otto_src PUBLIC gamma)
-target_link_libraries(otto_src PUBLIC foonathan_array)
-target_link_libraries(otto_src PUBLIC foonathan_type_safe)
 target_link_libraries(otto_src PUBLIC choreograph)
 
 #include("${OTTO_SOURCE_DIR}/cmake/doctest_force_link_static_lib_in_target.cmake")

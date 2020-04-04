@@ -15,6 +15,9 @@
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <charconv>
+
+#include "testing.t.hpp"
 
 namespace otto::services {
   using MSC = MCUI2CController;
@@ -23,6 +26,17 @@ namespace otto::services {
   using namespace core::input;
 
   using byte = std::uint8_t;
+
+  struct hex {
+    std::uint8_t data;
+    friend std::ostream& operator<<(std::ostream& str, const hex& self)
+    {
+      auto flags = str.flags();
+      auto& res = str << std::setfill('0') << std::setw(2) << std::hex << (int) self.data;
+      str.flags(flags);
+      return res;
+    }
+  };
 
   I2C::I2C(std::uint16_t address) : address(address) {}
 
@@ -67,7 +81,7 @@ namespace otto::services {
     ::i2c_msg iomsg = {
       .addr = address,
       .flags = 0,
-      .len = message.size(),
+      .len = static_cast<std::uint16_t>(message.size()),
       .buf = message.data(),
     };
     ::i2c_rdwr_ioctl_data msgset = {
@@ -84,7 +98,7 @@ namespace otto::services {
     ::i2c_msg iomsg = {
       .addr = address,
       .flags = I2C_M_RD,
-      .len = buffer.size(),
+      .len = static_cast<std::uint16_t>(buffer.size()),
       .buf = buffer.data(),
     };
     ::i2c_rdwr_ioctl_data msgset = {
@@ -99,7 +113,7 @@ namespace otto::services {
 
   void MSC::queue_message(BytesView message)
   {
-    // write_buffer_.outer_locked([&](auto& buf) { nano::copy(message, buf.emplace_back().begin()); });
+    write_buffer_.outer_locked([&](auto& buf) { nano::copy(message, nano::back_inserter(buf.emplace_back())); });
   }
 
   void MSC::read_i2c()
@@ -107,6 +121,13 @@ namespace otto::services {
     std::array<std::uint8_t, 12> data;
     if (auto err = i2c_obj.read_into(data)) {
       LOGE("Error reading from i2c: {} ", err);
+      return;
+    }
+    // std::cout << "Read [";
+    // for (auto b : data) std::cout << hex{b} << " ";
+    // std::cout << "]" << std::endl;
+    if (data[0] > 0x77) {
+      LOGE("Unexpected data");
       return;
     }
     handle_response(data);
@@ -128,15 +149,78 @@ namespace otto::services {
           wb.push_back({0x00});
         }
         for (auto& message : wb) {
+          if (message.size() == 0) continue;
+          if (message[0] != 0) {
+            std::cout << "Writing [";
+            for (auto b : message) std::cout << hex{b} << " ";
+            std::cout << "]" << std::endl;
+          }
           if (auto err = i2c_obj.write({message.data(), message.size()})) {
             LOGE("Error writing to i2c: {}", err);
           }
-          i2c_thread.sleep_for(chrono::microseconds(200));
+          i2c_thread.sleep_for(chrono::microseconds(100));
           read_i2c();
         }
         i2c_thread.sleep_for(sleep_time);
       }
     };
+  }
+
+  TEST_CASE ("i2c" * doctest::skip()) {
+    I2C i2c_obj = MCUI2CController::I2C_SLAVE_ADDR;
+    if (auto err = i2c_obj.open("/dev/i2c-1")) {
+      LOGE("Error opening i2c device: {}", err);
+      return;
+    }
+    while (true) {
+      std::vector<std::uint8_t> buffer;
+      std::string line;
+      std::cout << "\n> ";
+      std::getline(std::cin, line);
+      auto stream = std::stringstream(line);
+      std::string cmd;
+      std::getline(stream, cmd, ' ');
+      if (cmd == "w") {
+        std::string arg;
+        while (std::getline(stream, arg, ' ')) {
+          errno = 0;
+          std::uint8_t byte = std::strtol(arg.c_str(), nullptr, 16);
+          if (errno != 0) {
+            std::cout << "Error parsing: " << strerror(errno) << std::endl;
+            continue;
+          }
+          buffer.push_back(byte);
+        }
+        if (buffer.size() == 0) {
+          std::cout << "Usage: w <space separated bytes>" << std::endl;
+          continue;
+        }
+        std::cout << "Writing ";
+        for (auto b : buffer) std::cout << hex{b} << " ";
+        std::cout << std::endl;
+        if (auto err = i2c_obj.write(buffer)) {
+          std::cout << "Error: " << err.message() << std::endl;
+        }
+      } else if (cmd == "r") {
+        int arg = -1;
+        stream >> arg;
+        if (arg < 1) {
+          std::cout << "Expected count larger than 0. Usage: r <count>" << std::endl;
+          continue;
+        }
+        buffer.resize(arg);
+        std::cout << std::dec << "Reading " << arg << " bytes" << std::endl;
+        if (auto err = i2c_obj.read_into(buffer)) {
+          std::cout << "Error: " << err.message() << std::endl;
+          continue;
+        }
+        std::cout << "Result: ";
+        for (auto b : buffer) std::cout << hex{b} << " ";
+        std::cout << std::endl;
+      } else if (cmd == "q") {
+        break;
+      }
+    }
   }
 
 } // namespace otto::services

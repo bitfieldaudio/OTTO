@@ -3,7 +3,6 @@
 #include <array>
 #include <better_enum.hpp>
 #include <cstdint>
-#include <foonathan/array/flat_map.hpp>
 #include <variant>
 #include <vector>
 
@@ -13,6 +12,7 @@
 #include "services/application.hpp"
 #include "util/locked.hpp"
 #include "util/thread.hpp"
+#include "util/flat_map.hpp"
 
 namespace otto::board::ui {
   enum struct Action;
@@ -124,7 +124,8 @@ namespace otto::services {
       util::Signal<Event> on_input;
     } signals;
 
-    itc::PushOnlyActionQueue& action_queue() noexcept {
+    itc::PushOnlyActionQueue& action_queue() noexcept
+    {
       return action_queue_;
     }
 
@@ -157,7 +158,7 @@ namespace otto::services {
     template<typename... Receivers>
     friend struct ControllerSender;
 
-    foonathan::array::flat_map<Key, std::pair<KeyHandler, KeyHandler>> key_handlers;
+    util::flat_map<Key, std::pair<KeyHandler, KeyHandler>> key_handlers;
     std::array<bool, Key::_size()> keys = {};
     util::double_buffered<EventBag> events_;
     itc::ActionQueue action_queue_;

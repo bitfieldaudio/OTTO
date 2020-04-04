@@ -31,11 +31,11 @@ endif()
 
 # fmtlib
 execute_process(COMMAND git submodule update --init -- fmt WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/fmt)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/fmt EXCLUDE_FROM_ALL)
 
 # Guideline Support library
 execute_process(COMMAND git submodule update --init -- GSL WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/GSL)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/GSL EXCLUDE_FROM_ALL)
 
 # Gamma
 execute_process(COMMAND git submodule update --init -- Gamma WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
@@ -48,18 +48,6 @@ list(REMOVE_ITEM gamma_src
   "${CMAKE_CURRENT_SOURCE_DIR}/Gamma/src/AudioIO.cpp")
 add_library(gamma ${gamma_src})
 target_include_directories(gamma SYSTEM PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/include")
-
-# foonathan/array
-execute_process(COMMAND git submodule update --init -- foonathan_array WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-add_library(foonathan_array INTERFACE)
-target_include_directories(foonathan_array SYSTEM INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/foonathan_array/include")
-
-# foonathan/array
-execute_process(COMMAND git submodule update --init -- foonathan_type_safe WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-execute_process(COMMAND git submodule update --init -- external/debug_assert WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/foonathan_type_safe)
-add_library(foonathan_type_safe INTERFACE)
-target_include_directories(foonathan_type_safe SYSTEM INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/foonathan_type_safe/include")
-target_include_directories(foonathan_type_safe SYSTEM INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/foonathan_type_safe/external/debug_assert")
 
 # Choreograph
 execute_process(COMMAND git submodule update --init -- choreograph WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})

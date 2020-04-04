@@ -42,7 +42,7 @@ namespace otto::services {
   struct MCUI2CController final : MCUController {
     using HardwareMap = board::controller::Proto1MCUHardwareMap;
     static constexpr auto I2C_SLAVE_ADDR = 0x77;
-    static constexpr chrono::duration sleep_time = chrono::milliseconds(1000);
+    static constexpr chrono::duration sleep_time = chrono::milliseconds(10);
 
     MCUI2CController();
 

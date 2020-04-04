@@ -128,7 +128,7 @@ namespace otto::util {
         });
       } else {
         throw util::exception("Error: can't deserialize from nlohmann::json to {}. Json: {}",
-                              reflect::get_name<Class>(), object);
+                              reflect::get_name<Class>(), std::string(object));
       }
     }
 

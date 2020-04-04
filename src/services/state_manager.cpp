@@ -49,7 +49,7 @@ namespace otto::services {
       data = {};
     }
 
-    for (const auto& [name, client] : _clients) {
+    for (const auto&& [name, client] : _clients) {
       try {
         client.load(data[name]);
       } catch (std::exception& e) {
@@ -70,7 +70,7 @@ namespace otto::services {
 
     data.clear();
 
-    for (const auto& [name, client] : _clients) {
+    for (const auto&& [name, client] : _clients) {
       data[name] = client.save();
     }
 
@@ -85,7 +85,7 @@ namespace otto::services {
     }
 
     // cannot move load, used below
-    _clients.insert_or_replace(name, Client{name, load, std::move(save)});
+    _clients.insert_or_assign(name, Client{name, load, std::move(save)});
 
     if (_loaded) {
       auto& data = data_file.data();
@@ -99,7 +99,7 @@ namespace otto::services {
       throw util::exception("Tried to detach a state client that was never attached: " + name);
     }
 
-    _clients.erase_all(name);
+    _clients.erase(name);
   }
 
 } // namespace otto::services

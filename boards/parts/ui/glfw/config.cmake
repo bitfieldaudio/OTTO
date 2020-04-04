@@ -1,7 +1,8 @@
 # Generate gl3w files
 include("${OTTO_EXTERNAL_DIR}/gl3w_gen.cmake")
-gl3w_gen("${OTTO_EXTERNAL_DIR}/")
-target_sources(external PRIVATE "${OTTO_EXTERNAL_DIR}/src/gl3w.c")
+gl3w_gen("${OTTO_BINARY_DIR}/external/")
+target_sources(external PRIVATE "${OTTO_BINARY_DIR}/external/src/gl3w.c")
+target_include_directories(external PUBLIC "${OTTO_BINARY_DIR}/external/include")
 
 # GLFW
 find_package(glfw3 QUIET)

@@ -88,13 +88,10 @@ namespace otto::services {
 
   bool Controller::handle_global(Key key, bool is_press)
   {
-    auto [first, last] = key_handlers.equal_range(key);
-    if (first == last) return false;
-
-    for (auto&& [key, funcs] : nano::subrange(first, last)) {
-      auto& func = is_press ? funcs.first : funcs.second;
-      if (func) func();
-    }
+    auto funcs = key_handlers[key];
+    if (!funcs) return false;
+    auto& func = is_press ? funcs->first : funcs->second;
+    if (func) func();
 
     return true;
   }

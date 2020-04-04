@@ -4,6 +4,8 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <fmt/format.h>
+#include <fmt/ostream.h>
 
 #include "util/reflection.hpp"
 #include "util/string_conversions.hpp"

@@ -98,7 +98,7 @@ namespace otto::services {
 
   inline void MCUController::handle_response(BytesView bytes)
   {
-    assert(bytes.size() > 0);
+    OTTO_ASSERT(bytes.size() > 0);
     auto command = Command::read_inputs;
     // auto command = Command::_from_integral_unchecked(bytes[0]);
     // bytes = bytes.subspan(1, gsl::dynamic_extent);

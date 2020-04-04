@@ -13,7 +13,7 @@ namespace otto::test {
     AudioFile<float> file;
     file.load("data/samples/test.wav");
 
-    Waveform wf = {{file.samples[0].data(), file.getNumSamplesPerChannel()}, 300};
+    Waveform wf = {{file.samples[0].data(), static_cast<std::size_t>(file.getNumSamplesPerChannel())}, 300};
 
     using namespace core::ui::vg;
 
