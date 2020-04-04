@@ -10,10 +10,9 @@ namespace otto::engines::pingpong {
   struct Screen : ui::Screen {
     Screen() noexcept;
     void draw(nvg::Canvas& ctx) override;
-    
+
 
   private:
-    
   };
- 
-} // namespace otto::engines::chorus
+
+} // namespace otto::engines::pingpong

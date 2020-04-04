@@ -25,7 +25,7 @@ namespace otto::engines::pingpong {
   {
     input_filter.set_position(f);
     loop_filter.set_position(f);
-    DLOGI("LO: {}   HI: {}",input_filter.get_lo_freq(), input_filter.get_hi_freq());
+    DLOGI("LO: {}   HI: {}", input_filter.get_lo_freq(), input_filter.get_hi_freq());
   }
 
   audio::ProcessData<2> Audio::process(audio::ProcessData<1> data) noexcept
@@ -37,11 +37,11 @@ namespace otto::engines::pingpong {
       auto out0 = delay_line();
       auto loop0 = loop_filter(out0); // Filter
       delay_line(in + feedback_ * loop0);
-      
+
       bufL = 1.f * out0;
-      bufR = 1.f * out0;  
+      bufR = 1.f * out0;
     }
     return data.with(buf);
   }
 
-} // namespace otto::engines::wormhole
+} // namespace otto::engines::pingpong

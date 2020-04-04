@@ -1,7 +1,7 @@
 #pragma once
 #include "Gamma/Delay.h"
-#include "util/dsp/dj_filter.hpp"
 #include "pingpong.hpp"
+#include "util/dsp/dj_filter.hpp"
 
 namespace otto::engines::pingpong {
 
@@ -13,7 +13,7 @@ namespace otto::engines::pingpong {
 
 
     void action(itc::prop_change<&Props::filter>, float f) noexcept;
-    //void action(itc::prop_change<&Props::stereo>, float s) noexcept;
+    // void action(itc::prop_change<&Props::stereo>, float s) noexcept;
 
     void action(itc::prop_change<&Props::delaytime>, float t) noexcept;
 
@@ -29,6 +29,5 @@ namespace otto::engines::pingpong {
     DJFilter<gam::OnePole<>> loop_filter{2000, 15000};
 
     float feedback_;
-    
   };
-} // namespace otto::engines::wormhole
+} // namespace otto::engines::pingpong

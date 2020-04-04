@@ -61,14 +61,14 @@ namespace otto::engines::pingpong {
       auto res = 60.f / services::ClockManager::current().bpm();
       // Identification of the subdivisions
       switch (sd) {
-      case 0: res /= 4.f; break; //sixteenths 
-      case 1: res /= 3.f; break; // eighthtriplets
-      case 2: res *= 0.5f; break; // eights
-      case 3: res *= 2.f/3.f; break; // quartertriplets
-      case 4: break; // quarter step is equal to a beat
-      case 5: res *= 2.f; break; // half measure (2 beats)
-      case 6: res *= 4.f; break; // whole measure (4 beats)
-      default: OTTO_UNREACHABLE;
+        case 0: res /= 4.f; break;       // sixteenths
+        case 1: res /= 3.f; break;       // eighthtriplets
+        case 2: res *= 0.5f; break;      // eights
+        case 3: res *= 2.f / 3.f; break; // quartertriplets
+        case 4: break;                   // quarter step is equal to a beat
+        case 5: res *= 2.f; break;       // half measure (2 beats)
+        case 6: res *= 4.f; break;       // whole measure (4 beats)
+        default: OTTO_UNREACHABLE;
       }
       return res;
     } else {

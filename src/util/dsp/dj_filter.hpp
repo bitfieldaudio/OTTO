@@ -7,7 +7,6 @@
 /// \tparam Filter  Filter type. Must accept Low- and High-pass types
 template<class Filter>
 struct DJFilter {
-
   DJFilter(float lower = 300.f, float upper = 15000.f) : lower_freq_(lower), upper_freq_(upper)
   {
     lowpass.type(gam::LOW_PASS);

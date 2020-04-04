@@ -2,7 +2,6 @@
 
 #include "core/audio/clock.hpp"
 #include "core/engine/engine.hpp"
-
 #include "core/input.hpp"
 #include "itc/itc.hpp"
 
@@ -20,7 +19,7 @@ namespace otto::engines::pingpong {
 
     /// Changes between free delay time and subdivisions
     Sender::Prop<struct timetype_tag, bool> timetype = {sender, false};
-    /// Only changed when timetype is false. 
+    /// Only changed when timetype is false.
     Sender::Prop<struct free_time_tag, float> free_time = {sender, 0, limits(0, 1), step_size(0.01)};
     /// Only changed when timetype is true
     Sender::Prop<struct subdivision_tag, int> subdivision = {sender, 0, limits(0, 6)};
@@ -30,7 +29,7 @@ namespace otto::engines::pingpong {
 
     // 0.5 is neutral
     Sender::Prop<struct filter_tag, float> filter = {sender, 0.5, limits(0, 1), step_size(0.01)};
-    
+
     // 0.5 is neutral
     Sender::Prop<struct stereo_tag, float> stereo = {sender, 0.5, limits(0, 1), step_size(0.01)};
     Sender::Prop<struct stereo_invert_tag, bool> stereo_invert = {sender, false};
@@ -57,7 +56,7 @@ namespace otto::engines::pingpong {
     Props props;
   };
 
-} // namespace otto::engines::wormhole
+} // namespace otto::engines::pingpong
 
 #include "audio.hpp"
 #include "screen.hpp"
