@@ -1,5 +1,5 @@
 #pragma once
-#include <bits/stdint-uintn.h>
+
 #include "Gamma/Delay.h"
 #include "pingpong.hpp"
 #include "services/application.hpp"
