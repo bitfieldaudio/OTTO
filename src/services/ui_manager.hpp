@@ -66,7 +66,7 @@ namespace otto::services {
 
   BETTER_ENUM(KeyMode, std::int8_t, midi, seq);
 
-  struct UIManager : core::Service {
+  struct UIManager : core::Service, util::OwnsObservers {
     /// The UI state
     ///
     /// This will dictate which state-leds light up, and which channel is currently selected etc.

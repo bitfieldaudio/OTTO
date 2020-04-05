@@ -79,12 +79,11 @@ namespace otto::services {
     return std::make_unique<DefaultEngineManager>();
   }
 
-  
+
 
   DefaultEngineManager::DefaultEngineManager()
   {
-    auto sends_of = [&](ChannelEnum c) -> engines::sends::Sends& 
-    {
+    auto sends_of = [&](ChannelEnum c) -> engines::sends::Sends& {
       switch (c) {
         case ChannelEnum::sampler0: [[fallthrough]];
         case ChannelEnum::sampler1: [[fallthrough]];
@@ -103,10 +102,10 @@ namespace otto::services {
       }
       OTTO_UNREACHABLE;
     };
-    
+
     auto& ui_manager = *Application::current().ui_manager;
     auto& state_manager = *Application::current().state_manager;
-    //auto& controller = *Application::current().controller;
+    // auto& controller = *Application::current().controller;
 
     auto reg_ss = [&](auto se, auto&& f) { return ui_manager.register_screen_selector(se, f); };
 
@@ -132,25 +131,27 @@ namespace otto::services {
     reg_ss(ScreenEnum::twist1, [&]() { return (ui::ScreenAndInput){twist1screen, twist1screen.input}; });
     reg_ss(ScreenEnum::twist2, [&]() { return (ui::ScreenAndInput){twist2screen, twist2screen.input}; });
 
-    ui_manager.state.current_screen.on_change().connect([&](auto new_val, auto old_val) {
-      if (new_val == old_val) return;
-      switch (new_val) {
-        case ScreenEnum::synth: [[fallthrough]];
-        case ScreenEnum::synth_envelope: [[fallthrough]];
-        case ScreenEnum::synth_selector: [[fallthrough]];
-        case ScreenEnum::voices: {
-          if (ui_manager.state.active_channel != +ChannelEnum::internal) {
-            ui_manager.state.active_channel = +ChannelEnum::internal;
+    ui_manager.state.current_screen.observe(
+      this, [this, &ui_manager, old_val = ui_manager.state.current_screen.get()](auto new_val) mutable {
+        if (new_val == old_val) return;
+        old_val = new_val;
+        switch (new_val) {
+          case ScreenEnum::synth: [[fallthrough]];
+          case ScreenEnum::synth_envelope: [[fallthrough]];
+          case ScreenEnum::synth_selector: [[fallthrough]];
+          case ScreenEnum::voices: {
+            if (ui_manager.state.active_channel != +ChannelEnum::internal) {
+              ui_manager.state.active_channel = +ChannelEnum::internal;
+            }
+            break;
           }
-          break;
+          case ScreenEnum::external: {
+            ui_manager.state.active_channel = line_in.channel();
+            break;
+          }
+          default: break;
         }
-        case ScreenEnum::external: {
-          ui_manager.state.active_channel = line_in.channel();
-          break;
-        }
-        default: break;
-      }
-    });
+      });
 
     using namespace input;
 
@@ -162,8 +163,8 @@ namespace otto::services {
 
     ui_manager.register_screen_key(Key::arp, ScreenEnum::arp, ScreenEnum::arp_selector, Key::shift);
     ui_manager.register_screen_key(Key::synth, ScreenEnum::synth, ScreenEnum::synth_selector, Key::shift);
-    ui_manager.register_screen_key(Key::fx1, ScreenEnum::fx1, ScreenEnum::fx1_selector,  Key::shift);
-    ui_manager.register_screen_key(Key::fx2, ScreenEnum::fx2, ScreenEnum::fx2_selector,  Key::shift);
+    ui_manager.register_screen_key(Key::fx1, ScreenEnum::fx1, ScreenEnum::fx1_selector, Key::shift);
+    ui_manager.register_screen_key(Key::fx2, ScreenEnum::fx2, ScreenEnum::fx2_selector, Key::shift);
 
     ui_manager.register_screen_key(Key::twist1, ScreenEnum::twist1);
     ui_manager.register_screen_key(Key::twist2, ScreenEnum::twist2);

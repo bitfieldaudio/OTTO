@@ -20,28 +20,28 @@ namespace otto::core::props {
   template<typename T, typename Enable>
   struct default_mixins {
     using type = std::conditional_t<std::is_enum_v<T> || util::BetterEnum::is<T>,
-                                    tag_list<signal, has_limits, steppable>,
-                                    tag_list<signal>>;
+                                    tag_list<observable, has_limits, steppable>,
+                                    tag_list<observable>>;
   };
 
   template<>
   struct default_mixins<int> {
-    using type = tag_list<signal, has_limits, steppable>;
+    using type = tag_list<observable, has_limits, steppable>;
   };
 
   template<>
   struct default_mixins<bool> {
-    using type = tag_list<signal, steppable>;
+    using type = tag_list<observable, steppable>;
   };
 
   template<>
   struct default_mixins<float> {
-    using type = tag_list<signal, has_limits, steppable>;
+    using type = tag_list<observable, has_limits, steppable>;
   };
 
   template<>
   struct default_mixins<double> {
-    using type = tag_list<signal, has_limits, steppable>;
+    using type = tag_list<observable, has_limits, steppable>;
   };
 
   // Void is for branches
@@ -50,7 +50,7 @@ namespace otto::core::props {
     using type = tag_list<>;
   };
 
-  using no_signal = no<signal>;
+  using no_observable = no<observable>;
 
   /// A property of type `ValueType` with mixins `Tags...`
   ///

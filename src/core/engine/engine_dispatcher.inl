@@ -25,7 +25,7 @@ namespace otto::core::engine {
     for (auto name : engine_names) {
       send_data_for(name);
     }
-    props.selected_engine_idx.on_change().connect([this](int idx) {
+    props.selected_engine_idx.observe(this, [this](int idx) {
       save_engine_state();
       engine_is_constructed_ = false;
       services::AudioManager::current().wait_one();
@@ -34,7 +34,7 @@ namespace otto::core::engine {
       engine_is_constructed_ = true;
       update_max_preset_idx();
     });
-    props.selected_preset_idx.on_change().connect([this](int idx) {
+    props.selected_preset_idx.observe(this, [this](int idx) {
       if (idx == 0) {
         engine_states_[current_engine_->name()].map([&](auto&& json) { current_engine_->from_json(json); });
       } else {

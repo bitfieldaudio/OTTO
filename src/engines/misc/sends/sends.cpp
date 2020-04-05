@@ -29,17 +29,18 @@ namespace otto::engines::sends {
     OTTO_UNREACHABLE;
   }
 
-  Sends::Sends(core::ui::Icon i) : audio(std::make_unique<Audio>()), screen_(std::make_unique<Screen>(i)), props{{*audio, *screen_}}
+  Sends::Sends(core::ui::Icon i)
+    : audio(std::make_unique<Audio>()), screen_(std::make_unique<Screen>(i)), props{{*audio, *screen_}}
   {
-    props.dry.on_change().connect([&](float a) {
+    props.dry.observe(this, [&](float a) {
       if (is_recursive) return;
       set(a, props.stored_levels.dry, props.stored_levels.fx1, props.stored_levels.fx2);
     });
-    props.fx1.on_change().connect([&](float a) {
+    props.fx1.observe(this, [&](float a) {
       if (is_recursive) return;
       set(a, props.stored_levels.fx1, props.stored_levels.dry, props.stored_levels.fx2);
     });
-    props.fx2.on_change().connect([&](float a) {
+    props.fx2.observe(this, [&](float a) {
       if (is_recursive) return;
       set(a, props.stored_levels.fx2, props.stored_levels.dry, props.stored_levels.fx1);
     });
