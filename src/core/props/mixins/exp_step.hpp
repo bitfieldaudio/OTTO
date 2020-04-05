@@ -4,6 +4,8 @@
 #include "../internal/property.hpp"
 #include "../internal/mixin_macros.hpp"
 
+#include "has_limits.hpp"
+
 #include <cmath>
 
 #include "steppable.hpp"

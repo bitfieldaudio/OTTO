@@ -16,7 +16,9 @@
 
 namespace otto::services {
 
-#ifndef OTTO_USE_ALSAMIXER
+//#ifndef __LINUX_ALSA__
+// TODO: Why does this segfault on desktop sometimes?
+#ifndef OTTO_BOARD_rpi
   AlsaMixer::AlsaMixer() = default;
   AlsaMixer::~AlsaMixer() = default;
 

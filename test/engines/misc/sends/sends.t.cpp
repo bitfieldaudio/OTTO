@@ -45,15 +45,15 @@ std::ostream& operator<<(std::ostream& s, const Props& v)
 struct Sendstest {
   Sendstest()
   {
-    props.dry.on_change().connect([&](float a) {
+    props.dry.observe(nullptr, [&](float a) {
       if (is_recursive) return;
       set(a, props.stored_levels.dry, props.stored_levels.fx1, props.stored_levels.fx2);
     });
-    props.fx1.on_change().connect([&](float a) {
+    props.fx1.observe(nullptr, [&](float a) {
       if (is_recursive) return;
       set(a, props.stored_levels.fx1, props.stored_levels.dry, props.stored_levels.fx2);
     });
-    props.fx2.on_change().connect([&](float a) {
+    props.fx2.observe(nullptr, [&](float a) {
       if (is_recursive) return;
       set(a, props.stored_levels.fx2, props.stored_levels.dry, props.stored_levels.fx1);
     });

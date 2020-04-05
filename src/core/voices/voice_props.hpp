@@ -99,13 +99,13 @@ namespace otto::core::voices {
   };
 
   template<typename Sender>
-  struct SettingsProps : core::input::InputHandler {
+  struct SettingsProps : core::input::InputHandler, util::OwnsObservers {
     template<typename Val, typename Tag, typename... Mixins>
     using Prop = typename Sender::template Prop<Val, Tag, Mixins...>;
 
     SettingsProps(const Sender& sender) : sender(sender)
     {
-      play_mode.on_change().connect([this]() {
+      play_mode.observe_no_imidiate_call(this, [this] {
         rand.send_actions();
         sub.send_actions();
         detune.send_actions();

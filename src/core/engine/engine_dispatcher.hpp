@@ -27,7 +27,7 @@ namespace otto::core::engine {
 
   /// Owns engines of type `ET`, and dispatches to a selected one of them
   template<EngineType ET, typename... Engines>
-  struct EngineDispatcher : input::InputHandler {
+  struct EngineDispatcher : input::InputHandler, util::OwnsObservers {
     using Sender = services::UISender<EngineSelectorScreen>;
 
     constexpr static std::array<util::string_ref, sizeof...(Engines)> engine_names = {{Engines::name...}};

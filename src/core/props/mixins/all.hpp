@@ -4,5 +4,5 @@
 #include "steppable.hpp"
 #include "wrap.hpp"
 #include "square.hpp"
-#include "signal.hpp"
+#include "observable.hpp"
 #include "exp_step.hpp"

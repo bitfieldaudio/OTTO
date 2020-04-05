@@ -1,5 +1,6 @@
 #pragma once
 
+#include <gsl/span>
 #include <tl/optional.hpp>
 #include <tuple>
 #include <vector>
@@ -151,6 +152,26 @@ namespace otto::util {
         return *corresponding(found);
       }
 
+      gsl::span<const mapped_type> values() const noexcept
+      {
+        return val_store_;
+      }
+
+      gsl::span<mapped_type> values() noexcept
+      {
+        return val_store_;
+      }
+
+      gsl::span<const key_type> keys() const noexcept
+      {
+        return key_store_;
+      }
+
+      gsl::span<key_type> keys() noexcept
+      {
+        return key_store_;
+      }
+
       /// Insert element and return iterator to it.
       ///
       /// If it already exists, return iterator to the existing element
@@ -298,6 +319,7 @@ namespace otto::util {
       std::vector<mapped_type> val_store_;
     };
 
+
     template<typename K, typename V>
     void to_json(nlohmann::json& res, const util::flat_map<K, V>& map)
     {
@@ -313,6 +335,173 @@ namespace otto::util {
         map.emplace(*from_string<K>(it.key()), it.value());
       }
     }
+
+    template<typename T>
+    struct flat_set {
+      using Vector = std::vector<T>;
+      using value_type = typename Vector::value_type;
+      using iterator = typename Vector::iterator;
+      using const_iterator = typename Vector::const_iterator;
+
+      flat_set() {}
+
+      flat_set(std::initializer_list<value_type> il)
+      {
+        for (const T& v : il) {
+          insert(v);
+        }
+      }
+
+      // Queries
+
+      std::size_t capacity() noexcept
+      {
+        return vector_.capacity();
+      }
+
+      std::size_t size() const noexcept
+      {
+        return vector_.size();
+      }
+
+      bool empty() const noexcept
+      {
+        return vector_.empty();
+      }
+
+      bool full() const noexcept
+      {
+        return vector_.full();
+      }
+
+      // Iterators
+
+      auto begin() noexcept
+      {
+        return vector_.begin();
+      }
+
+      auto begin() const noexcept
+      {
+        return vector_.begin();
+      }
+
+      auto end() noexcept
+      {
+        return vector_.end();
+      }
+
+      auto end() const noexcept
+      {
+        return vector_.end();
+      }
+
+      auto rbegin() noexcept
+      {
+        return vector_.rbegin();
+      }
+
+      auto rbegin() const noexcept
+      {
+        return vector_.rbegin();
+      }
+
+      auto rend() noexcept
+      {
+        return vector_.rend();
+      }
+
+      auto rend() const noexcept
+      {
+        return vector_.rend();
+      }
+
+      // Accessors
+
+      value_type& front() noexcept
+      {
+        return vector_.front();
+      }
+
+      const value_type& front() const noexcept
+      {
+        return vector_.front();
+      }
+
+      value_type& back() noexcept
+      {
+        return vector_.back();
+      }
+
+      const value_type& back() const noexcept
+      {
+        return vector_.back();
+      }
+
+      value_type& operator[](std::size_t idx) noexcept
+      {
+        return vector_.operator[](idx);
+      }
+      const value_type& operator[](std::size_t idx) const noexcept
+      {
+        return vector_.operator[](idx);
+      }
+      value_type* data() noexcept
+      {
+        return vector_.data();
+      }
+
+      const value_type* data() const noexcept
+      {
+        return vector_.data();
+      }
+
+      // Modifiers
+
+      std::pair<iterator, bool> insert(const value_type& e)
+      {
+        auto pos = std::upper_bound(begin(), end(), e);
+        auto prev = pos - 1;
+        if (pos == begin() || *prev != e) return {vector_.insert(pos, e), true};
+        return {prev, false};
+      }
+
+      std::pair<iterator, bool> insert(value_type&& e)
+      {
+        auto pos = std::upper_bound(begin(), end(), e);
+        auto prev = pos - 1;
+        if (pos == begin() || *prev != e) return {vector_.insert(pos, std::move(e)), true};
+        return {prev, false};
+      }
+
+      void pop_back() noexcept
+      {
+        return vector_.pop_back();
+      }
+
+      void clear() noexcept
+      {
+        vector_.clear();
+      }
+
+      iterator erase(iterator first, iterator last) noexcept
+      {
+        return vector_.erase(first, last);
+      }
+
+      iterator erase(iterator it) noexcept
+      {
+        return vector_.erase(it);
+      }
+
+      iterator erase(const value_type& val) noexcept
+      {
+        return erase(std::find(begin(), end(), val));
+      }
+
+    private:
+      Vector vector_;
+    };
 
   } // namespace flat_map_ns
 

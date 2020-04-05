@@ -24,7 +24,7 @@ namespace otto {
     Sender sender = {screen};
     //sender.push(PublishEngineNames::action::data(engine_names));
 
-    struct Props : InputHandler {
+    struct Props : InputHandler, util::OwnsObservers {
       Sender sender;
 
       SelectedEngine::Prop<Sender> selected_engine_idx = {sender, 0, limits(0, engine_names.size() - 1)};
@@ -32,7 +32,7 @@ namespace otto {
 
       Props(const Sender& sender) : sender(sender)
       {
-        selected_engine_idx.on_change().connect([&] { selected_preset_idx = 0; });
+        selected_engine_idx.observe(this, [&] { selected_preset_idx = 0; });
       }
 
     } props{sender};

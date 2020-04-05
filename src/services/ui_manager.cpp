@@ -65,7 +65,7 @@ namespace otto::services {
 
   UIManager::UIManager()
   {
-    state.current_screen.on_change().connect([&](auto new_val) {
+    state.current_screen.observe(this, [&](auto new_val) {
       if (!screen_selectors_[new_val]) return;
       display(screen_selectors_[new_val]());
       for (auto scrn : ScreenEnum::_values()) {
@@ -76,12 +76,13 @@ namespace otto::services {
       key_mode_for(new_val).map([&](auto&& km) { state.key_mode.set(km); });
     });
 
-    state.active_channel.on_change().connect([&](auto new_chan, auto old_chan) {
+    state.active_channel.observe_no_imidiate_call(this, [this, old_chan = state.active_channel.get()](auto new_chan) mutable {
       if (new_chan == old_chan) return;
+      old_chan = new_chan;
       state.current_screen = state.current_screen.get();
     });
 
-    state.octave.on_change().connect([&](auto octave) {
+    state.octave.observe_no_imidiate_call(this, [&](auto octave) {
       LEDColor c = [&] {
         switch (std::abs(octave)) {
           case 1: return LEDColor::Blue;

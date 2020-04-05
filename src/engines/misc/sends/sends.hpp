@@ -31,7 +31,7 @@ namespace otto::engines::sends {
     DECL_REFLECTION(Props, dry, fx1, fx2, pan);
   };
 
-  struct Sends : core::engine::MiscEngine<Sends> {
+  struct Sends : core::engine::MiscEngine<Sends>, util::OwnsObservers {
     static constexpr util::string_ref name = "Sends";
 
     Sends(core::ui::Icon i);

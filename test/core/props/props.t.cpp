@@ -46,10 +46,10 @@ namespace otto::core::props {
     // Test limits
     REQUIRE(props.pf1 == 5.f);
 
-    SUBCASE ("on_change hooks") {
+    SUBCASE ("observer hooks") {
       Property<float> pf = 0;
       bool ran = false;
-      pf.on_change().connect([&](float f) {
+      pf.observe_no_imidiate_call(nullptr, [&](float f) {
         REQUIRE(f == 10);
         ran = true;
       });

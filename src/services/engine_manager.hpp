@@ -15,7 +15,7 @@
 
 namespace otto::services {
 
-  struct EngineManager : core::Service {
+  struct EngineManager : core::Service, util::OwnsObservers {
     /// Error codes. Thrown with exceptions
     enum struct ErrorCode {
       no_such_engine,
