@@ -70,10 +70,6 @@ namespace otto::engines::external {
 
     ctx.font(Fonts::Norm, 35);
 
-    constexpr float x_pad = 30;
-    constexpr float y_pad = 50;
-    constexpr float space = (height - 2.f * y_pad) / 3.f;
-
     // Mode name
     ctx.beginPath();
     ctx.fillStyle(Colours::Red);
@@ -173,7 +169,6 @@ namespace otto::engines::external {
 
     if (mode == +ModeEnum::dual_mono) 
     {
-      constexpr float min_width = 5.f;
       float change_width = 60.f;
       ctx.save();
       ctx.transform(1.000000, 0.000000, 0.000000, 1.444440, -1022.000000, -123.111000);
