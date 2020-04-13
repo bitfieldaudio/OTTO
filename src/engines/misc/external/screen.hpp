@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/ui/nvg/Canvas.hpp"
 #include "core/ui/vector_graphics.hpp"
 #include "external.hpp"
 
@@ -10,6 +11,10 @@ namespace otto::engines::external {
 
   struct Screen : ui::Screen {
     void draw(nvg::Canvas& ctx) override;
+    void draw_jack(nvg::Canvas& ctx, bool active);
+    void draw_pan(nvg::Canvas& ctx, float pan_float);
+    void draw_levels(nvg::Canvas& ctx, ModeEnum mode);
+    void draw_active_send(nvg::Canvas& ctx, int active_send);
 
     void action(itc::prop_change<&Props::mode>, ModeEnum m) noexcept;
     void action(itc::prop_change<&Props::stereo_gain>, float g) noexcept;
@@ -27,10 +32,6 @@ namespace otto::engines::external {
     ModeEnum mode_ = ModeEnum::stereo;
 
     std::string mode_str;
-    std::string gain_1;
-    std::string gain_2;
     std::string active_send_str;
-    float gain_1_val = 0;
-    float gain_2_val = 0;
   };
 } // namespace otto::engines::external
