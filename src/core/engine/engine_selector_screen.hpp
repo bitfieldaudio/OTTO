@@ -46,27 +46,30 @@ namespace otto::core::engine {
 
   void placeholder_engine_icon(ui::IconData& i, nvg::Canvas& ctx);
 
-  using EngineDispatcherReturnChannel = itc::DynamicActionSender<SelectedEngine::action, SelectedPreset::action, Actions::make_new_preset>;
+  struct EngineSelectorScreen : ui::Screen,
+                                itc::ActionReceiverOnBus<itc::GraphicsBus,
+                                                         input::EncoderAction,
+                                                         input::KeyPressAction,
+                                                         SelectedEngine::action,
+                                                         SelectedPreset::action,
+                                                         Actions::publish_engine_data> //
 
-  struct EngineSelectorScreen : ui::Screen {
+  {
     using Subscreen = ESSSubscreen;
-
-    EngineSelectorScreen(EngineDispatcherReturnChannel ret) : return_channel(std::move(ret)) {}
 
     void draw(nvg::Canvas& ctx) override;
 
-    void action(input::EncoderAction, input::EncoderEvent e);
-    void action(input::KeyPressAction, input::Key);
+    void action(input::EncoderAction, input::EncoderEvent e) noexcept final;
+    void action(input::KeyPressAction, input::Key) noexcept final;
 
-    void action(SelectedEngine::action, int selected);
-    void action(SelectedPreset::action, int selected);
-    void action(Actions::publish_engine_data, EngineSelectorData data);
+    void action(SelectedEngine::action, int selected) noexcept final;
+    void action(SelectedPreset::action, int selected) noexcept final;
+    void action(Actions::publish_engine_data, EngineSelectorData data) noexcept final;
     void navigate_to(Subscreen screen);
 
     std::vector<EngineSelectorData> engines = {};
 
   private:
-    EngineDispatcherReturnChannel return_channel;
     bool first_engine_is_off_ = false;
     int selected_engine_ = 0;
     int selected_preset_ = 0;

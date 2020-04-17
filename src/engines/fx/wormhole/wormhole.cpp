@@ -5,7 +5,7 @@
 
 namespace otto::engines::wormhole {
 
-  Wormhole::Wormhole() : audio(std::make_unique<Audio>()), screen_(std::make_unique<Screen>()), props{{*audio, *screen_}} {}
+  Wormhole::Wormhole() : audio(std::make_unique<Audio>()), screen_(std::make_unique<Screen>()) {}
 
   using namespace core::input;
 

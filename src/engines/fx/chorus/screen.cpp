@@ -46,7 +46,7 @@ namespace otto::engines::chorus {
       .then<ch::Hold>(1, hold_time)
       .then<ch::RampTo>(0, fadeout_time);
 
-    for (auto&& [i, b] : util::view::indexed(brightness)) b = powf(cosh(abs(feedback_) * 1.5) * 0.4, 0.3 * float(i));
+    for (auto&& [i, b] : util::view::indexed(brightness)) b = powf(std::cosh(std::abs(feedback_) * 1.5) * 0.4, 0.3 * float(i));
   }
 
   void Screen::action(itc::prop_change<&Props::rate>, float r) noexcept

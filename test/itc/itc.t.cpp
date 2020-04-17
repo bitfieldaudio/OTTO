@@ -1,6 +1,7 @@
 #include "itc/itc.hpp"
 #include "testing.t.hpp"
 
+#if false
 namespace otto::itc {
 
   TEST_CASE ("ActionReceiver") {
@@ -220,3 +221,4 @@ namespace otto::itc {
   }
 
 } // namespace otto::itc
+#endif

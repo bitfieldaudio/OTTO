@@ -4,6 +4,7 @@
 #include "core/ui/nvg/Canvas.hpp"
 #include "core/ui/nvg/util.hpp"
 #include "engine_dispatcher.hpp"
+#include "engine_selector_screen.hpp"
 #include "services/audio_manager.hpp"
 #include "services/controller.hpp"
 #include "services/engine_manager.hpp"
@@ -19,8 +20,7 @@ namespace otto::core::engine {
   void placeholder_engine_icon(ui::IconData& i, nvg::Canvas& ctx);
 
   ENGDISPTEMPLATE
-  ENGDISP::EngineDispatcher() noexcept
-    : screen_(std::make_unique<EngineSelectorScreen>(services::ControllerSender(*this)))
+  ENGDISP::EngineDispatcher() noexcept : screen_(std::make_unique<EngineSelectorScreen>())
   {
     for (auto name : engine_names) {
       send_data_for(name);
@@ -49,11 +49,12 @@ namespace otto::core::engine {
   {
     auto presets = std::vector<std::string>{"Last State"};
     nano::copy(services::PresetManager::current().preset_names(engine_name), nano::back_inserter(presets));
-    props.sender.push(Actions::publish_engine_data::data({
-      .name = engine_name,
-      .icon = ui::Icon(icon_register(engine_name)),
-      .presets = presets,
-    }));
+    itc::send_to_bus<itc::AudioBus, itc::GraphicsBus>(Actions::publish_engine_data(),
+                                                      EngineSelectorData{
+                                                        .name = engine_name,
+                                                        .icon = ui::Icon(icon_register(engine_name)),
+                                                        .presets = presets,
+                                                      });
   }
 
   ENGDISPTEMPLATE
@@ -72,7 +73,7 @@ namespace otto::core::engine {
   }
 
   ENGDISPTEMPLATE
-  void ENGDISP::action(Actions::make_new_preset, std::string name)
+  void ENGDISP::action(Actions::make_new_preset, std::string name) noexcept
   {
     services::PresetManager::current().create_preset(current_engine_->name(), name, current_engine_->to_json());
     send_data_for(current_engine_->name());
@@ -127,13 +128,13 @@ namespace otto::core::engine {
   ENGDISPTEMPLATE
   void ENGDISP::encoder(input::EncoderEvent e)
   {
-    props.sender.push(input::EncoderAction::data(e));
+    itc::send_to_bus<itc::GraphicsBus>(input::EncoderAction(), e);
   }
 
   ENGDISPTEMPLATE
   bool ENGDISP::keypress(input::Key key)
   {
-    props.sender.push(input::KeyPressAction::data(key));
+    itc::send_to_bus<itc::GraphicsBus>(input::KeyPressAction(), key);
     return false;
   }
 

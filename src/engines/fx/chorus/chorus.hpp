@@ -10,15 +10,11 @@ namespace otto::engines::chorus {
   struct Screen;
   struct Audio;
 
-  using Sender = core::engine::EngineSender<Audio, Screen>;
-
   struct Props {
-    Sender sender;
-
-    Sender::Prop<struct delay_tag, float> delay = {sender, 0.8, limits(0, 1), step_size(0.01)};
-    Sender::Prop<struct rate_tag, float> rate = {sender, 0, limits(0, 2), step_size(0.02)};
-    Sender::Prop<struct feedback_tag, float> feedback = {sender, 0, limits(-0.99, 0.99), step_size(0.02)};
-    Sender::Prop<struct depth_tag, float> depth = {sender, 0.5, limits(0, 1), step_size(0.01)};
+    itc::GAProp<struct delay_tag, float> delay = {0.8, limits(0, 1), step_size(0.01)};
+    itc::GAProp<struct rate_tag, float> rate = {0, limits(0, 2), step_size(0.02)};
+    itc::GAProp<struct feedback_tag, float> feedback = {0, limits(-0.99, 0.99), step_size(0.02)};
+    itc::GAProp<struct depth_tag, float> depth = {0.5, limits(0, 1), step_size(0.01)};
     DECL_REFLECTION(Props, delay, depth, feedback, rate);
   };
 
@@ -35,16 +31,10 @@ namespace otto::engines::chorus {
 
   public:
     const std::unique_ptr<Audio> audio;
+    Props props;
 
   private:
     const std::unique_ptr<Screen> screen_;
-
-    Sender sender_ = {*audio, *screen_};
-  public:
-    Props props{sender_};
   };
 
 } // namespace otto::engines::chorus
-
-#include "audio.hpp"
-#include "screen.hpp"

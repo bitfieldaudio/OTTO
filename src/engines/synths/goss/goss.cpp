@@ -1,9 +1,10 @@
 #include "goss.hpp"
 
-#include "audio.hpp"
-#include "screen.hpp"
 #include "services/audio_manager.hpp"
 #include "services/ui_manager.hpp"
+
+#include "screen.hpp"
+#include "audio.hpp"
 
 namespace otto::engines::goss {
 

@@ -207,7 +207,7 @@ namespace otto::core::voices {
     // while the number is kept the same (e.g. C2 -> B2)
     auto reverse_note_stack = nano::views::reverse(vm.note_stack);
 
-    for (auto&& nse : reverse_note_stack | nano::views::filter([&] (auto&& nse) { return nse.key == key; })) {
+    for (auto&& nse : reverse_note_stack | nano::views::filter([&](auto&& nse) { return nse.key == key; })) {
       if (nse.has_voice()) {
         free_voice(*nse.voice);
       }
@@ -498,7 +498,6 @@ namespace otto::core::voices {
   void VoiceManager<V, N>::action(itc::prop_tag_change<play_mode_tag, PlayMode> a, PlayMode pm) noexcept
   {
     set_playmode(pm);
-    fwd_action_to_voices(a, pm);
   }
 
   template<typename V, int N>
@@ -537,38 +536,32 @@ namespace otto::core::voices {
   void VoiceManager<V, N>::action(legato_tag::action a, bool l) noexcept
   {
     legato_ = l;
-    fwd_action_to_voices(a, l);
   }
   template<typename V, int N>
   void VoiceManager<V, N>::action(retrig_tag::action a, bool r) noexcept
   {
     retrig_ = r;
-    fwd_action_to_voices(a, r);
   }
 
   template<typename V, int N>
   void VoiceManager<V, N>::action(rand_tag::action a, float rand) noexcept
   {
     util::partial_match(voice_allocator, [&](PolyAllocator& a) { a.set_rand(rand); });
-    fwd_action_to_voices(a, rand);
   }
   template<typename V, int N>
   void VoiceManager<V, N>::action(sub_tag::action a, float sub) noexcept
   {
     util::partial_match(voice_allocator, [&](MonoAllocator& a) { a.set_sub(sub); });
-    fwd_action_to_voices(a, sub);
   }
   template<typename V, int N>
   void VoiceManager<V, N>::action(detune_tag::action a, float detune) noexcept
   {
     util::partial_match(voice_allocator, [&](UnisonAllocator& a) { a.set_detune(detune); });
-    fwd_action_to_voices(a, detune);
   }
   template<typename V, int N>
   void VoiceManager<V, N>::action(interval_tag::action a, int interval) noexcept
   {
     util::partial_match(voice_allocator, [&](IntervalAllocator& a) { a.set_interval(interval); });
-    fwd_action_to_voices(a, interval);
   }
 
   template<typename V, int N>

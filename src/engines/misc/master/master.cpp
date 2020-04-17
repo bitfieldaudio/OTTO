@@ -5,6 +5,9 @@
 
 #include "util/math.hpp"
 
+#include "audio.hpp"
+#include "screen.hpp"
+
 namespace otto::engines::master {
 
   using namespace core::input;

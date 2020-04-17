@@ -44,7 +44,8 @@ namespace otto::core::voices {
   /// @tparam Derived the derived voice type
   /// @tparam Props the Props type of the engine.
   template<typename DerivedT>
-  struct VoiceBase : util::crtp<DerivedT, VoiceBase<DerivedT>> {
+  struct VoiceBase : util::crtp<DerivedT, VoiceBase<DerivedT>>,
+                     itc::ActionReceiverOnBus<itc::AudioBus, portamento_tag::action> {
     VoiceBase() noexcept;
     VoiceBase(const VoiceBase&) = delete;
 
@@ -84,11 +85,11 @@ namespace otto::core::voices {
     bool is_triggered() noexcept;
 
     /// Calculate the next glide points, envelope etc..
-    /// 
+    ///
     /// @note Must be called before calling operator(). VoiceManager::operator() and ::process do this.
     void next() noexcept;
 
-    void action(portamento_tag::action, float p) noexcept;
+    void action(portamento_tag::action, float p) noexcept override;
 
     /// This should multiply by volume_. If you write you own, remember to do that!
     core::audio::ProcessData<1> process(core::audio::ProcessData<0>) noexcept;
@@ -97,11 +98,11 @@ namespace otto::core::voices {
     template<typename T, int N>
     friend struct VoiceManager;
 
-    /// Triggers a new voice. 
-    /// 
+    /// Triggers a new voice.
+    ///
     /// @param midi_note base frequency.
     /// @param detune is multiplied on frequency
-    /// @param legato controls legato on envelope + on_note_on. 
+    /// @param legato controls legato on envelope + on_note_on.
     ///        If `true`, `on_note_on` will not be called.
     /// @param jump controls legato for portamento
     ///        If `true`, portamento will not be applied.
@@ -109,7 +110,7 @@ namespace otto::core::voices {
 
     void release() noexcept;
 
-    /// Set the volume (typically 1 divided by number of voices, 
+    /// Set the volume (typically 1 divided by number of voices,
     /// but might be different for sub-octaves or in unison mode)
     void volume(float) noexcept;
 
@@ -132,7 +133,14 @@ namespace otto::core::voices {
   // -- VOICE MANAGER -- //
 
   template<typename VoiceT, int NumberOfVoices>
-  struct VoiceManager {
+  struct VoiceManager : itc::ActionReceiverOnBus<itc::AudioBus,
+                                                 play_mode_tag::action,
+                                                 legato_tag::action,
+                                                 retrig_tag::action,
+                                                 rand_tag::action,
+                                                 sub_tag::action,
+                                                 detune_tag::action,
+                                                 interval_tag::action> {
     using Voice = VoiceT;
 
     static_assert(std::is_base_of_v<VoiceBase<Voice>, Voice>,
@@ -143,7 +151,7 @@ namespace otto::core::voices {
     static constexpr int sub_voice_count_v = 2;
     /// Voice range is approximately -1 to 1. This ensures the synth range is
     /// approximately the same.
-    static constexpr float normal_volume = 1.f/(float)NumberOfVoices;
+    static constexpr float normal_volume = 1.f / (float) NumberOfVoices;
 
     /// Constructor
     ///
@@ -170,20 +178,13 @@ namespace otto::core::voices {
 
     // -- PROPERTY SETTERS -- //
 
-    void action(play_mode_tag::action, PlayMode) noexcept;
-    void action(legato_tag::action, bool) noexcept;
-    void action(retrig_tag::action, bool) noexcept;
-    void action(rand_tag::action, float rand) noexcept;
-    void action(sub_tag::action, float sub) noexcept;
-    void action(detune_tag::action, float detune) noexcept;
-    void action(interval_tag::action, int interval) noexcept;
-
-    /// If avaliable, call the action receivers in the voices for all other actions.
-    template<typename Action, typename... Args>
-    auto action(Action a, Args&&... args) noexcept -> std::enable_if_t<itc::ActionReceiver::is<Voice, Action>, void>
-    {
-      fwd_action_to_voices(a, args...);
-    }
+    void action(play_mode_tag::action, PlayMode) noexcept final;
+    void action(legato_tag::action, bool) noexcept final;
+    void action(retrig_tag::action, bool) noexcept final;
+    void action(rand_tag::action, float rand) noexcept final;
+    void action(sub_tag::action, float sub) noexcept final;
+    void action(detune_tag::action, float detune) noexcept final;
+    void action(interval_tag::action, int interval) noexcept final;
 
     // -- GETTERS -- //
 
@@ -233,7 +234,7 @@ namespace otto::core::voices {
       float rand_ = 0;
 
       PolyAllocator(VoiceManager& vm_in);
-      
+
       void handle_midi_on(const midi::NoteOnEvent&) noexcept override;
       void set_rand(float rand) noexcept;
     };
@@ -267,14 +268,6 @@ namespace otto::core::voices {
 
     // -- PRIVATE FIELDS -- //
   private:
-    template<typename Action, typename... Args>
-    void fwd_action_to_voices(Action a, Args&&... args)
-    {
-      for (auto& v : voices_) {
-        itc::try_call_receiver(v, Action::data(FWD(args)...));
-      }
-    }
-
     void set_playmode(PlayMode pm) noexcept;
 
     void set_sustain(bool s) noexcept;
@@ -296,9 +289,8 @@ namespace otto::core::voices {
     // Contains the currently untriggered voices
     util::local_vector<Voice*, voice_count_v> free_voices;
     // Contains informatins about the currently held keys/playing voices.
-    // One key pushes more than one entry in other playmodes than poly 
+    // One key pushes more than one entry in other playmodes than poly
     util::local_vector<NoteStackEntry, 12 * voice_count_v> note_stack;
-    
 
     util::variant_w_base<VoiceAllocatorBase, PolyAllocator, MonoAllocator, UnisonAllocator, IntervalAllocator>
       voice_allocator = {std::in_place_type<PolyAllocator>, *this};

@@ -100,7 +100,7 @@ namespace otto::services {
   {
     Application::current().events.post_init.connect([this] {
       key_handler_thread = [this](auto&& should_run) {
-        while ((!events_.inner().empty() || !action_queue_.empty()) || should_run()) {
+        while ((!events_.inner().empty() || !itc::ActionBus<itc::LogicBus>::queue.empty()) || should_run()) {
           events_.swap();
           for (auto& event : events_.inner()) {
             signals.on_input.emit(event);
@@ -118,7 +118,7 @@ namespace otto::services {
               },
               [](EncoderEvent& ev) { UIManager::current().current_input_handler().encoder(ev); });
           }
-          action_queue_.pop_call_all();
+          itc::ActionBus<itc::LogicBus>::queue.pop_call_all();
         }
       };
     });

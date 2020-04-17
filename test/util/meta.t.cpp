@@ -17,13 +17,13 @@ namespace otto {
     using tl3 = meta::list<>;
     using tl4 = meta::list<bool>;
 
-    OTTO_META_ASSERT_EQUAL(meta::_t<meta::concat<tl1, tl2>>, meta::list<int, bool, char, long, long, char>);
-    OTTO_META_ASSERT_EQUAL(meta::_t<meta::concat<tl1, tl2, tl3>>, meta::list<int, bool, char, long, long, char>);
-    OTTO_META_ASSERT_EQUAL(meta::_t<meta::concat<tl4, tl4, tl4>>, meta::list<bool, bool, bool>);
+    OTTO_META_ASSERT_EQUAL(meta::concat_t<tl1, tl2>, meta::list<int, bool, char, long, long, char>);
+    OTTO_META_ASSERT_EQUAL(meta::concat_t<tl1, tl2, tl3>, meta::list<int, bool, char, long, long, char>);
+    OTTO_META_ASSERT_EQUAL(meta::concat_t<tl4, tl4, tl4>, meta::list<bool, bool, bool>);
 
-    OTTO_META_ASSERT_EQUAL(meta::_t<meta::concat<tl3>>, meta::list<>);
-    OTTO_META_ASSERT_EQUAL(meta::_t<meta::concat<tl4>>, meta::list<bool>);
-    OTTO_META_ASSERT_EQUAL(meta::_t<meta::concat<tl3, tl3>>, meta::list<>);
+    OTTO_META_ASSERT_EQUAL(meta::concat_t<tl3>, meta::list<>);
+    OTTO_META_ASSERT_EQUAL(meta::concat_t<tl4>, meta::list<bool>);
+    OTTO_META_ASSERT_EQUAL(meta::concat_t<tl3, tl3>, meta::list<>);
   }
 
   // meta::flatten ////////////////////////////////////////////////////////////

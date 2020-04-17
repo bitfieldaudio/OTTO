@@ -3,9 +3,12 @@
 #include "services/audio_manager.hpp"
 #include "services/ui_manager.hpp"
 
+#include "audio.hpp"
+#include "screen.hpp"
+
 namespace otto::engines::chorus {
 
-  Chorus::Chorus() : audio(std::make_unique<Audio>(shared_phase_)), screen_(std::make_unique<Screen>(shared_phase_)), props{{*audio, *screen_}}
+  Chorus::Chorus() : audio(std::make_unique<Audio>(shared_phase_)), screen_(std::make_unique<Screen>(shared_phase_))
   {
   }
 

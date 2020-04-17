@@ -9,6 +9,8 @@
 #include "itc/itc.hpp"
 #include "util/dsp/sample.hpp"
 
+#if false
+
 namespace otto::engines::sampler {
 
   using namespace core;
@@ -324,3 +326,4 @@ namespace otto::engines::sampler {
   }
 
 } // namespace otto::engines::sampler
+#endif

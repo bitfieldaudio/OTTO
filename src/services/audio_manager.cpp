@@ -15,11 +15,6 @@ namespace otto::services {
     return _buffer_pool;
   }
 
-  itc::PushOnlyActionQueue& AudioManager::action_queue() noexcept
-  {
-    return action_queue_;
-  }
-
   void AudioManager::start() noexcept
   {
     _running = true;
@@ -55,7 +50,7 @@ namespace otto::services {
     _buffer_number++;
     auto running = this->running() && Application::current().running();
     if (running) {
-      action_queue_.pop_call_all();
+      itc::ActionBus<itc::AudioBus>::queue.pop_call_all();
     }
   }
 

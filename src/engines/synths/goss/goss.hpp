@@ -36,13 +36,12 @@ namespace otto::engines::goss {
 
   struct GossScreen;
   struct Audio;
-  using Sender = EngineSender<Audio, GossScreen, voices::SettingsScreen, voices::EnvelopeScreen>;
 
-  struct Props : voices::SynthPropsBase<Sender> {
-    Sender::Prop<struct model_tag, int, wrap> model = {sender, 0, limits(0, number_of_models - 1)};
-    Sender::Prop<struct drive_tag, float> drive = {sender, 0.5, limits(0, 1), step_size(0.01)};
-    Sender::Prop<struct click_tag, float> click = {sender, 0.5, limits(0, 1), step_size(0.01)};
-    Sender::Prop<struct leslie_tag, float> leslie = {sender, 0.3, limits(0, 1), step_size(0.01)};
+  struct Props : voices::SynthPropsBase {
+    itc::GAProp<struct model_tag, int, wrap> model = {0, limits(0, number_of_models - 1)};
+    itc::GAProp<struct drive_tag, float> drive = {0.5, limits(0, 1), step_size(0.01)};
+    itc::GAProp<struct click_tag, float> click = {0.5, limits(0, 1), step_size(0.01)};
+    itc::GAProp<struct leslie_tag, float> leslie = {0.3, limits(0, 1), step_size(0.01)};
 
     DECL_REFLECTION(Props, envelope, settings, model, drive, click, leslie);
   };
@@ -62,18 +61,13 @@ namespace otto::engines::goss {
 
     DECL_REFLECTION(GossEngine, props);
 
+    Props props;
+
   private:
     itc::Shared<float>::Storage rotation_;
     const std::unique_ptr<GossScreen> screen_;
     voices::SettingsScreen voice_screen_;
     voices::EnvelopeScreen env_screen_;
-
-    Sender sender_ = {*audio, *screen_, voice_screen_, env_screen_};
-  public:
-    Props props{sender_};
   };
 
 } // namespace otto::engines::goss
-
-#include "audio.hpp"
-#include "screen.hpp"

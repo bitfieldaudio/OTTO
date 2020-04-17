@@ -11,13 +11,10 @@ namespace otto::engines::master {
 
   struct Screen;
   struct Audio;
-  using Sender = EngineSender<Audio, Screen>;
 
   struct Props {
-      Sender sender;
-
-      Sender::Prop<struct volume_tag, float> volume = {sender, 0.5, limits(0, 1), step_size(0.01)};
-      Sender::Prop<struct tempo_tag, float> tempo = {sender, 120, limits(40, 220), step_size(0.5)};
+      itc::GAProp<struct volume_tag, float> volume = {0.5, limits(0, 1), step_size(0.01)};
+      itc::GAProp<struct tempo_tag, float> tempo = {120, limits(40, 220), step_size(0.5)};
 
       DECL_REFLECTION(Props, volume, tempo);
   };
@@ -33,16 +30,11 @@ namespace otto::engines::master {
 
     const std::unique_ptr<Audio> audio;
 
-    DECL_REFLECTION(Master, props);
+    Props props;
 
+    DECL_REFLECTION(Master, props);
   private:
     const std::unique_ptr<Screen> screen_;
-
-    Sender sender_ = {*audio, *screen_};
-    Props props{sender_};
   };
 
 } // namespace otto::engines::master
-
-#include "audio.hpp"
-#include "screen.hpp"

@@ -5,13 +5,16 @@
 #include "services/audio_manager.hpp"
 #include "services/ui_manager.hpp"
 
+#include "audio.hpp"
+#include "screen.hpp"
+
 namespace otto::engines::arp {
 
   using namespace core::input;
 
   Arp::Arp() : audio(std::make_unique<Audio>()), screen_(std::make_unique<Screen>())
   {
-    props.sender.push(Actions::graphics_outdated::data(graphics_outdated_));
+    itc::send_to_bus<itc::AudioBus, itc::GraphicsBus>(Actions::graphics_outdated(), graphics_outdated_);
   }
 
   void Arp::encoder(EncoderEvent ev)

@@ -17,25 +17,18 @@ namespace otto {
   };
 
   TEST_CASE ("[graphics] EngineSelectorScreen" * doctest::skip()) {
-    using Sender = itc::DirectActionSender<EngineSelectorScreen>;
-
-    EngineDispatcherReturnChannel ret_ch = {itc::DirectActionSender()};
-    EngineSelectorScreen screen = {ret_ch};
-    Sender sender = {screen};
-    //sender.push(PublishEngineNames::action::data(engine_names));
+    EngineSelectorScreen screen;
 
     struct Props : InputHandler, util::OwnsObservers {
-      Sender sender;
+      SelectedEngine::GAProp<> selected_engine_idx = {0, limits(0, engine_names.size() - 1)};
+      SelectedPreset::GAProp<> selected_preset_idx = {0, limits(0, 12)};
 
-      SelectedEngine::Prop<Sender> selected_engine_idx = {sender, 0, limits(0, engine_names.size() - 1)};
-      SelectedPreset::Prop<Sender> selected_preset_idx = {sender, 0, limits(0, 12)};
-
-      Props(const Sender& sender) : sender(sender)
+      Props() 
       {
         selected_engine_idx.observe(this, [&] { selected_preset_idx = 0; });
       }
 
-    } props{sender};
+    } props;
 
     test::show_gui([&](nvg::Canvas& ctx) { screen.draw(ctx); }, &props);
   }

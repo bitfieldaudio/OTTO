@@ -18,24 +18,20 @@ namespace otto::engines::external {
   struct Screen;
   struct Audio;
 
-  using Sender = core::engine::EngineSender<Audio, Screen>;
-
   BETTER_ENUM(ModeEnum, std::int8_t, disabled, stereo, dual_mono);
 
   struct Props {
-    Sender sender;
-
     /// Mode control
-    Sender::Prop<struct mode_tag, ModeEnum> mode = {sender, ModeEnum::disabled};
+    itc::GAProp<struct mode_tag, ModeEnum> mode = {ModeEnum::disabled};
     /// Input gains
     /// Stereo mode
-    Sender::Prop<struct stereo_gain_tag, float> stereo_gain = {sender, 0.5, limits(0, 1), step_size(0.01)};
-    Sender::Prop<struct balance_tag, float> stereo_balance = {sender, 0.5, limits(0, 1), step_size(0.01)};
+    itc::GAProp<struct stereo_gain_tag, float> stereo_gain = {0.5, limits(0, 1), step_size(0.01)};
+    itc::GAProp<struct balance_tag, float> stereo_balance = {0.5, limits(0, 1), step_size(0.01)};
     /// Dual Mono mode
-    Sender::Prop<struct left_gain_tag, float> left_gain = {sender, 0.5, limits(0, 1), step_size(0.01)};
-    Sender::Prop<struct right_gain_tag, float> right_gain = {sender, 0.5, limits(0, 1), step_size(0.01)};
+    itc::GAProp<struct left_gain_tag, float> left_gain = {0.5, limits(0, 1), step_size(0.01)};
+    itc::GAProp<struct right_gain_tag, float> right_gain = {0.5, limits(0, 1), step_size(0.01)};
     /// TBD: Possible use is switching between active send
-    Sender::Prop<struct active_send_tag, int> active_send = {sender, 0, limits(0, 1)};
+    itc::GAProp<struct active_send_tag, int> active_send = {0, limits(0, 1)};
 
 
     DECL_REFLECTION(Props, mode, stereo_gain, stereo_balance, left_gain, right_gain, active_send);
@@ -66,6 +62,3 @@ namespace otto::engines::external {
     Props props;
   };
 } // namespace otto::engines::external
-
-#include "audio.hpp"
-#include "screen.hpp"

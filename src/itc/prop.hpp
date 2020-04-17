@@ -1,37 +1,35 @@
 #pragma once
 
 #include "action.hpp"
+#include "action_bus.hpp"
 #include "core/props/props.hpp"
 
 namespace otto::core::props::mixin {
 
-  template<typename Tag, typename ActionSender>
+  template<typename Tag, typename ActionBusOrList>
+  struct action;
+
+  template<typename Tag, typename ActionBusTag>
   struct action {
-    using tag_type = action<Tag, ActionSender>;
-    using hooks = ::otto::core::props::mixin::hooks<action<Tag, ActionSender>>;
+    using ActionBusList = meta::list<ActionBusTag>;
+    using tag_type = action<Tag, ActionBusList>;
+    using hooks = ::otto::core::props::mixin::hooks<action<Tag, ActionBusList>>;
     constexpr static const char* name = "action";
-    template<typename... Args>
-    static auto init(Args&&... args)
-    {
-      return ::otto::core::props::make_initializer<action<Tag, ActionSender>>(std::forward<Args>(args)...);
-    }
   };
 
-  template<typename PropTag, typename Sender, typename ValueType, typename TagList>
-  struct leaf<action<PropTag, Sender>, ValueType, TagList> {
-    using action_mixin = action<PropTag, Sender>;
+  template<typename Tag, typename... ActionBusTags>
+  struct action<Tag, meta::list<ActionBusTags...>> {
+    using ActionBusList = meta::list<ActionBusTags...>;
+    using tag_type = action<Tag, ActionBusList>;
+    using hooks = ::otto::core::props::mixin::hooks<action<Tag, ActionBusList>>;
+    constexpr static const char* name = "action";
+  };
+
+  template<typename PropTag, typename BusList, typename ValueType, typename TagList>
+  struct leaf<action<PropTag, BusList>, ValueType, TagList> {
+    using action_mixin = action<PropTag, BusList>;
     OTTO_PROPS_MIXIN_DECLS(action_mixin);
     using change_action = itc::Action<PropTag, value_type>;
-
-    void init(Sender& sndr) noexcept
-    {
-      sender = &sndr;
-    }
-
-    void init(Sender* sndr) noexcept
-    {
-      sender = sndr;
-    }
 
     void on_hook(hook<common::hooks::after_set>& hook) noexcept
     {
@@ -41,12 +39,11 @@ namespace otto::core::props::mixin {
     /// Send change actions with the current value to all receivers
     void send_actions() const noexcept
     {
-      OTTO_ASSERT(sender != nullptr);
-      sender->push(change_action::data(as_prop().get()));
+      meta::for_each<typename action_mixin::ActionBusList>([this](auto type) {
+        using BusTag = meta::_t<decltype(type)>;
+        itc::ActionBus<BusTag>::send(change_action::data(as_prop().get()));
+      });
     }
-
-  private:
-    Sender* sender = nullptr;
   };
 
 } // namespace otto::core::props::mixin
@@ -58,26 +55,14 @@ namespace otto::itc {
   /// @tparam Tag A unique tag type for this property
   /// @tparam Val The property value type
   /// @tparam Mixins property mixins for this property
-  template<typename Sndr, typename Tag, typename Val, typename... Mixins>
-  struct ActionProp : core::props::Property<Val, core::props::mixin::action<Tag, Sndr>, Mixins...> {
-    using prop_impl_t = core::props::Property<Val, core::props::mixin::action<Tag, Sndr>, Mixins...>;
+  template<typename BusTags, typename Tag, typename Val, typename... Mixins>
+  struct ActionProp : core::props::Property<Val, core::props::mixin::action<Tag, BusTags>, Mixins...> {
+    using prop_impl_t = core::props::Property<Val, core::props::mixin::action<Tag, BusTags>, Mixins...>;
     using value_type = Val;
-    using action_mixin = core::props::mixin::action<Tag, Sndr>;
+    using action_mixin = core::props::mixin::action<Tag, BusTags>;
     using change_action = itc::Action<Tag, value_type>;
 
-    template<typename TRef, typename... Args>
-    ActionProp(Sndr* sndr, TRef&& value, Args&&... args)
-      : core::props::Property<Val, core::props::mixin::action<Tag, Sndr>, Mixins...>(std::forward<TRef>(value),
-                                                                                     action_mixin::init(sndr),
-                                                                                     FWD(args)...)
-    {
-      this->send_actions();
-    }
-
-    template<typename TRef, typename... Args>
-    ActionProp(Sndr& sndr, TRef&& value, Args&&... args) : ActionProp(&sndr, FWD(value), FWD(args)...)
-    {}
-
+    using prop_impl_t::prop_impl_t;
     using prop_impl_t::operator=;
     using prop_impl_t::operator const value_type&;
 
@@ -85,16 +70,16 @@ namespace otto::itc {
   };
 
   /// Serialize a property to json
-  template<typename Sndr, typename Tag, typename ValueType, typename... Mixins>
-  inline nlohmann::json serialize(const ActionProp<Sndr, Tag, ValueType, Mixins...>& prop)
+  template<typename Bus, typename Tag, typename ValueType, typename... Mixins>
+  inline nlohmann::json serialize(const ActionProp<Bus, Tag, ValueType, Mixins...>& prop)
   {
     using ::otto::util::serialize;
     return serialize(prop.get());
   }
 
   /// Deserialize a property from json
-  template<typename Sndr, typename Tag, typename ValueType, typename... Mixins>
-  inline void deserialize(ActionProp<Sndr, Tag, ValueType, Mixins...>& prop, const nlohmann::json& json)
+  template<typename Bus, typename Tag, typename ValueType, typename... Mixins>
+  inline void deserialize(ActionProp<Bus, Tag, ValueType, Mixins...>& prop, const nlohmann::json& json)
   {
     using ::otto::util::deserialize;
     static_assert(std::is_default_constructible_v<ValueType>,

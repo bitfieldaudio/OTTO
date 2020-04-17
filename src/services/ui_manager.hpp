@@ -124,18 +124,6 @@ namespace otto::services {
       util::Signal<core::ui::vg::Canvas&> on_draw;
     } signals;
 
-    /// Push-only access to the action queue
-    ///
-    /// This queue is consumed at the start of each buffer.
-    itc::PushOnlyActionQueue& action_queue() noexcept
-    {
-      return action_queue_;
-    }
-
-    /// Make an {@ref ActionSender} for the audio action queue
-    template<typename... Receivers>
-    auto make_sndr(Receivers&...) noexcept;
-
   protected:
     /// Draws the current screen and overlays.
     void draw_frame(core::ui::vg::Canvas& ctx);
@@ -160,7 +148,6 @@ namespace otto::services {
     unsigned _frame_count = 0;
 
     chrono::time_point last_frame = chrono::clock::now();
-    itc::ActionQueue action_queue_;
 
     ScreenEnum screen_stack = ScreenEnum::synth;
     void reset_timer();
@@ -168,21 +155,5 @@ namespace otto::services {
     chrono::seconds peek_time = chrono::seconds(1); // 1 second
     decltype(chrono::clock::now()) press_time = chrono::clock::now();
   };
-
-  template<typename... Receivers>
-  struct UISender : itc::ActionSender<Receivers...> {
-    template<typename Tag, typename Type, typename... Mixins>
-    using Prop = typename itc::ActionSender<Receivers...>::template Prop<Tag, Type, Mixins...>;
-
-    UISender(Receivers&... r) noexcept : itc::ActionSender<Receivers...>(UIManager::current().action_queue(), r...) {}
-  };
-
-  // IMPLEMENTATION //
-
-  template<typename... Receivers>
-  auto UIManager::make_sndr(Receivers&... receivers) noexcept
-  {
-    return itc::ActionSender(action_queue_, receivers...);
-  }
 
 } // namespace otto::services

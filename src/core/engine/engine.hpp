@@ -212,12 +212,4 @@ namespace otto::core::engine {
   template<typename E>
   constexpr EngineType engine_type_v = meta::_v<decltype(detail::engine_type_impl_func(std::declval<E>()))>;
 
-  // EngineScreen /////////////////////////////////////////////////////////////
-
-  template<typename Audio, typename... Screens>
-  struct EngineSender : itc::JoinedActionSender<services::AudioSender<Audio>, services::UISender<Screens...>> {
-    EngineSender(Audio& audio, Screens&... screens) noexcept
-      : itc::JoinedActionSender<services::AudioSender<Audio>, services::UISender<Screens...>>(audio, {screens...})
-    {}
-  };
 } // namespace otto::core::engine

@@ -12,7 +12,7 @@ namespace otto::core::voices {
   TEST_CASE ("VoiceManager") {
     using test_action = itc::Action<struct test_action_tag, float>;
 
-    struct Voice : voices::VoiceBase<Voice> {
+    struct Voice : voices::VoiceBase<Voice>, itc::ActionReceiver<test_action> {
       Voice(int& r) noexcept : reference(r){};
 
       float operator()() noexcept
@@ -20,12 +20,10 @@ namespace otto::core::voices {
         return 1.f;
       }
 
-      void action(test_action, float f)
+      void action(test_action, float f) noexcept final
       {
         this->f += f;
       }
-
-      using voices::VoiceBase<Voice>::action;
 
       int& reference;
       float f = 0;
@@ -36,12 +34,8 @@ namespace otto::core::voices {
     using VMgr = VoiceManager<Voice, 6>;
     VMgr vmgr = {shared_int};
 
-    using Sndr = itc::ActionSender<VoiceManager<Voice, 6>>;
-    itc::ActionQueue queue;
-    Sndr sndr = {queue, vmgr};
-
-    // EnvelopeProps<Sndr> envelope_props = {&sndr};
-    SettingsProps<Sndr> voices_props = {sndr};
+    // EnvelopeProps envelope_props;
+    SettingsProps voices_props;
 
     static_assert(!nano::view<std::decay_t<decltype(vmgr.voices())>>);
 
@@ -67,10 +61,7 @@ namespace otto::core::voices {
       return cached;
     };
 
-    SUBCASE("Voice receives actions sent to voice manager")
-    {
-      itc::call_receiver(vmgr, test_action::data(1));
-    }
+    auto& queue = itc::ActionBus<itc::AudioBus>::queue;
 
     SUBCASE("Simple voice loop")
     {
@@ -408,8 +399,6 @@ namespace otto::core::voices {
       voices_props.play_mode = +PlayMode::mono;
       queue.pop_call_all();
 
-      static_assert(itc::ActionReceiver::is<VMgr, portamento_tag::action>);
-
       gam::sampleRate(100);
       float target_freq = midi::note_freq(62);
 
@@ -458,99 +447,6 @@ namespace otto::core::voices {
     /// TODO: Make test for expected behaviour then legato is
     /// engaged for glide (jump the portamento step)
     /// and normal legato (on_note_on and on_note_off is not called).
-
-    SUBCASE("Voice receives all envelope and voice settings actions")
-    {
-      struct Voice : VoiceBase<Voice> {
-        float attack = 0;
-        void action(attack_tag::action, float attack) noexcept
-        {
-          this->attack = attack;
-        }
-        float decay = 0;
-        void action(decay_tag::action, float decay) noexcept
-        {
-          this->decay = decay;
-        }
-        float sustain = 0;
-        void action(sustain_tag::action, float sustain) noexcept
-        {
-          this->sustain = sustain;
-        }
-        float release_ = 0;
-        void action(release_tag::action, float release) noexcept
-        {
-          this->release_ = release;
-        }
-        PlayMode play_mode = PlayMode::poly;
-        void action(play_mode_tag::action, PlayMode play_mode) noexcept
-        {
-          this->play_mode = play_mode;
-        }
-        bool legato = false;
-        void action(legato_tag::action, bool legato) noexcept
-        {
-          this->legato = legato;
-        }
-        bool retrig = false;
-        void action(retrig_tag::action, bool retrig) noexcept
-        {
-          this->retrig = retrig;
-        }
-        float rand = 0;
-        void action(rand_tag::action, float rand) noexcept
-        {
-          this->rand = rand;
-        }
-        float sub = 0;
-        void action(sub_tag::action, float sub) noexcept
-        {
-          this->sub = sub;
-        }
-        float detune = 0;
-        void action(detune_tag::action, float detune) noexcept
-        {
-          this->detune = detune;
-        }
-        int interval = 0;
-        void action(interval_tag::action, int interval) noexcept
-        {
-          this->interval = interval;
-        }
-        float portamento = 0;
-        void action(portamento_tag::action, float portamento) noexcept
-        {
-          this->portamento = portamento;
-        }
-      };
-
-      VoiceManager<Voice, 6> vmgr;
-
-      call_receiver(vmgr, attack_tag::action::data(1.f));
-      for (auto& v : vmgr.voices()) REQUIRE(v.attack == 1.f);
-      call_receiver(vmgr, decay_tag::action::data(1.f));
-      for (auto& v : vmgr.voices()) REQUIRE(v.decay == 1.f);
-      call_receiver(vmgr, sustain_tag::action::data(1.f));
-      for (auto& v : vmgr.voices()) REQUIRE(v.sustain == 1.f);
-      call_receiver(vmgr, release_tag::action::data(1.f));
-      for (auto& v : vmgr.voices()) REQUIRE(v.release_ == 1.f);
-      call_receiver(vmgr, play_mode_tag::action::data(PlayMode::mono));
-      for (auto& v : vmgr.voices()) REQUIRE(v.play_mode == +PlayMode::mono);
-      call_receiver(vmgr, legato_tag::action::data(true));
-      for (auto& v : vmgr.voices()) REQUIRE(v.legato == true);
-      call_receiver(vmgr, retrig_tag::action::data(true));
-      for (auto& v : vmgr.voices()) REQUIRE(v.retrig == true);
-      call_receiver(vmgr, rand_tag::action::data(0.5));
-      for (auto& v : vmgr.voices()) REQUIRE(v.rand == 0.5);
-      call_receiver(vmgr, sub_tag::action::data(0.5));
-      for (auto& v : vmgr.voices()) REQUIRE(v.sub == 0.5);
-      call_receiver(vmgr, detune_tag::action::data(0.5));
-      for (auto& v : vmgr.voices()) REQUIRE(v.detune == 0.5);
-      call_receiver(vmgr, interval_tag::action::data(5));
-      for (auto& v : vmgr.voices()) REQUIRE(v.interval == 5);
-      call_receiver(vmgr, portamento_tag::action::data(0.5));
-      for (auto& v : vmgr.voices()) REQUIRE(v.portamento == 0.5);
-    }
 
     SUBCASE("call operators and process calls")
     {

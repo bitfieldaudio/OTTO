@@ -15,44 +15,37 @@ namespace otto::engines::ottofm {
 
   struct OttofmScreen;
   struct Audio;
-  using Sender = EngineSender<Audio, OttofmScreen, voices::SettingsScreen, voices::EnvelopeScreen>;
 
-  struct Props : voices::SynthPropsBase<Sender> {
+  struct Props : voices::SynthPropsBase {
     template<int I>
     struct OperatorProps {
       template<typename Tag>
       using i_tag = meta::list<Tag, meta::c<I>>;
 
-      OperatorProps(Sender sender) 
-      : sender(sender) {}
-
+      OperatorProps() = default;
       OperatorProps(const OperatorProps&) = delete;
 
-      Sender sender;
       // Envelopes
-      Sender::Prop<i_tag<struct feedback_tag>, float> feedback = {sender, 0, limits(0, 0.4), step_size(0.01)};
-      Sender::Prop<i_tag<struct attack_tag>, float> attack = {sender, 0.2f, limits(0.f, 1.f), step_size(0.01f)};
-      Sender::Prop<i_tag<struct decay_release_tag>, float> decay_release = {sender, 0.5, limits(0, 1), step_size(0.01)};
-      Sender::Prop<i_tag<struct suspos_tag>, float> suspos = {sender, 0.5, limits(0, 1), step_size(0.01)};
+      itc::GAProp<i_tag<struct feedback_tag>, float> feedback = {0, limits(0, 0.4), step_size(0.01)};
+      itc::GAProp<i_tag<struct attack_tag>, float> attack = {0.2f, limits(0.f, 1.f), step_size(0.01f)};
+      itc::GAProp<i_tag<struct decay_release_tag>, float> decay_release = {0.5, limits(0, 1), step_size(0.01)};
+      itc::GAProp<i_tag<struct suspos_tag>, float> suspos = {0.5, limits(0, 1), step_size(0.01)};
       // Oscillator
-      Sender::Prop<i_tag<struct detune_tag>, float> detune = {sender, 0, limits(-1, 1), step_size(0.01)};
-      Sender::Prop<i_tag<struct ratio_idx_tag>, int> ratio_idx = {sender, 0, limits(0, 19), step_size(1)};
+      itc::GAProp<i_tag<struct detune_tag>, float> detune = {0, limits(-1, 1), step_size(0.01)};
+      itc::GAProp<i_tag<struct ratio_idx_tag>, int> ratio_idx = {0, limits(0, 19), step_size(1)};
       // Amp
-      Sender::Prop<i_tag<struct out_level_tag>, float> out_level = {sender, 1, limits(0, 1), step_size(0.01)};
+      itc::GAProp<i_tag<struct out_level_tag>, float> out_level = {1, limits(0, 1), step_size(0.01)};
 
       float current_level = 0;
 
       DECL_REFLECTION(OperatorProps, feedback, attack, decay_release, suspos, detune, ratio_idx, out_level);
     };
 
-    using voices::SynthPropsBase<Sender>::SynthPropsBase;
+    itc::GAProp<struct algorithm_idx_tag, int, wrap> algorithm_idx = {0, limits(0, 10), step_size(1)};
+    itc::GAProp<struct fm_amount_tag, float> fm_amount = {1, limits(0, 1), step_size(0.01)};
+    itc::GAProp<struct cur_op_tag, int> cur_op = {0, limits(0, 3)};
 
-    Sender::Prop<struct algorithm_idx_tag, int, wrap> algorithm_idx = {sender, 0, limits(0, 10), step_size(1)};
-    Sender::Prop<struct fm_amount_tag, float> fm_amount = {sender, 1, limits(0, 1), step_size(0.01)};
-    Sender::Prop<struct cur_op_tag, int> cur_op = {sender, 0, limits(0, 3)};
-
-    std::tuple<OperatorProps<0>, OperatorProps<1>, OperatorProps<2>, OperatorProps<3>> operators = //
-      {sender, sender, sender, sender};
+    std::tuple<OperatorProps<0>, OperatorProps<1>, OperatorProps<2>, OperatorProps<3>> operators;
 
     DECL_REFLECTION(Props, envelope, settings, algorithm_idx, fm_amount, operators, cur_op);
   };
@@ -77,7 +70,7 @@ namespace otto::engines::ottofm {
 
   public:
     const std::unique_ptr<Audio> audio;
-    Props props = {{*audio, *screen_, voice_screen_, env_screen_}};
+    Props props;
 
     DECL_REFLECTION(OttofmEngine, props);
   };
@@ -198,6 +191,3 @@ namespace otto::engines::ottofm {
 
 
 } // namespace otto::engines::ottofm
-
-#include "audio.hpp"
-#include "screen.hpp"

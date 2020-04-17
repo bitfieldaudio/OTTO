@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/input.hpp"
-#include "itc/prop.hpp"
+#include "itc/itc.hpp"
 
 namespace otto::core::voices {
 
@@ -68,19 +68,11 @@ namespace otto::core::voices {
     using action = itc::Action<retrig_tag, bool>;
   };
 
-  template<typename Sender>
   struct EnvelopeProps : core::input::InputHandler {
-    template<typename Val, typename Tag, typename... Mixins>
-    using Prop = typename Sender::template Prop<Val, Tag, Mixins...>;
-
-    EnvelopeProps(const Sender& sender) : sender(sender){};
-
-    Sender sender;
-
-    Prop<attack_tag, float> attack = {sender, 0, props::limits(0, 1), props::step_size(0.02)};
-    Prop<decay_tag, float> decay = {sender, 0, props::limits(0, 1), props::step_size(0.02)};
-    Prop<sustain_tag, float> sustain = {sender, 1, props::limits(0, 1), props::step_size(0.02)};
-    Prop<release_tag, float> release = {sender, 0.2, props::limits(0, 1), props::step_size(0.02)};
+    itc::GAProp<attack_tag, float> attack = {0, props::limits(0, 1), props::step_size(0.02)};
+    itc::GAProp<decay_tag, float> decay = {0, props::limits(0, 1), props::step_size(0.02)};
+    itc::GAProp<sustain_tag, float> sustain = {1, props::limits(0, 1), props::step_size(0.02)};
+    itc::GAProp<release_tag, float> release = {0.2, props::limits(0, 1), props::step_size(0.02)};
 
     // TODO: Move to separate input handler
     void encoder(core::input::EncoderEvent evt)
@@ -98,12 +90,8 @@ namespace otto::core::voices {
     DECL_REFLECTION(EnvelopeProps, attack, decay, sustain, release);
   };
 
-  template<typename Sender>
   struct SettingsProps : core::input::InputHandler, util::OwnsObservers {
-    template<typename Val, typename Tag, typename... Mixins>
-    using Prop = typename Sender::template Prop<Val, Tag, Mixins...>;
-
-    SettingsProps(const Sender& sender) : sender(sender)
+    SettingsProps()
     {
       play_mode.observe_no_imidiate_call(this, [this] {
         rand.send_actions();
@@ -113,17 +101,15 @@ namespace otto::core::voices {
       });
     }
 
-    Sender sender;
+    itc::GAProp<play_mode_tag, PlayMode, props::wrap> play_mode = {PlayMode::poly};
+    itc::GAProp<rand_tag, float> rand = {0, props::limits(0, 1), props::step_size(0.01)};
+    itc::GAProp<sub_tag, float> sub = {0, props::limits(0.01, 1), props::step_size(0.01)};
+    itc::GAProp<detune_tag, float> detune = {0, props::limits(0, 1), props::step_size(0.01)};
+    itc::GAProp<interval_tag, int> interval = {0, props::limits(-12, 12)};
 
-    Prop<play_mode_tag, PlayMode, props::wrap> play_mode = {sender, PlayMode::poly};
-    Prop<rand_tag, float> rand = {sender, 0, props::limits(0, 1), props::step_size(0.01)};
-    Prop<sub_tag, float> sub = {sender, 0, props::limits(0.01, 1), props::step_size(0.01)};
-    Prop<detune_tag, float> detune = {sender, 0, props::limits(0, 1), props::step_size(0.01)};
-    Prop<interval_tag, int> interval = {sender, 0, props::limits(-12, 12)};
-
-    Prop<portamento_tag, float> portamento = {sender, 0, props::limits(0, 1), props::step_size(0.01)};
-    Prop<legato_tag, bool> legato = {sender, false};
-    Prop<retrig_tag, bool> retrig = {sender, false};
+    itc::GAProp<portamento_tag, float> portamento = {0, props::limits(0, 1), props::step_size(0.01)};
+    itc::GAProp<legato_tag, bool> legato = {false};
+    itc::GAProp<retrig_tag, bool> retrig = {false};
 
     DECL_REFLECTION(SettingsProps, play_mode, rand, sub, detune, interval, portamento, legato, retrig);
 
@@ -157,14 +143,9 @@ namespace otto::core::voices {
     }
   };
 
-
-  template<typename Sender>
   struct SynthPropsBase {
-    SynthPropsBase(const Sender& sender) : sender(sender) {}
-
-    Sender sender;
-    EnvelopeProps<Sender> envelope = {sender};
-    SettingsProps<Sender> settings = {sender};
+    EnvelopeProps envelope;
+    SettingsProps settings;
 
     DECL_REFLECTION(SynthPropsBase, envelope, settings);
   };

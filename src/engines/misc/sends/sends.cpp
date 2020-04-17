@@ -1,7 +1,9 @@
 #include "sends.hpp"
 
 #include "core/input.hpp"
+
 #include "screen.hpp"
+#include "audio.hpp"
 
 namespace otto::engines::sends {
 
@@ -29,8 +31,7 @@ namespace otto::engines::sends {
     OTTO_UNREACHABLE;
   }
 
-  Sends::Sends(core::ui::Icon i)
-    : audio(std::make_unique<Audio>()), screen_(std::make_unique<Screen>(i)), props{{*audio, *screen_}}
+  Sends::Sends(core::ui::Icon i) : audio(std::make_unique<Audio>()), screen_(std::make_unique<Screen>(i))
   {
     props.dry.observe(this, [&](float a) {
       if (is_recursive) return;
@@ -45,6 +46,8 @@ namespace otto::engines::sends {
       set(a, props.stored_levels.fx2, props.stored_levels.dry, props.stored_levels.fx1);
     });
   }
+
+  Sends::~Sends() noexcept = default;
 
   void Sends::step_scale(int steps)
   {

@@ -11,15 +11,11 @@ namespace otto::engines::wormhole {
   struct Screen;
   struct Audio;
 
-  using Sndr = core::engine::EngineSender<Audio, Screen>;
-
   struct Props {
-    Sndr sender;
-
-    Sndr::Prop<struct filter_tag, float> filter = {sender, 0, limits(0, 1), step_size(0.01)};
-    Sndr::Prop<struct shimmer_tag, float> shimmer = {sender, 0, limits(0, 1), step_size(0.01)};
-    Sndr::Prop<struct length_tag, float> length = {sender, 0.5, limits(0, 1), step_size(0.01)};
-    Sndr::Prop<struct damping_tag, float> damping = {sender, 0.4, limits(0, 0.99), step_size(0.01)};
+    itc::GAProp<struct filter_tag, float> filter = {0, limits(0, 1), step_size(0.01)};
+    itc::GAProp<struct shimmer_tag, float> shimmer = {0, limits(0, 1), step_size(0.01)};
+    itc::GAProp<struct length_tag, float> length = {0.5, limits(0, 1), step_size(0.01)};
+    itc::GAProp<struct damping_tag, float> damping = {0.4, limits(0, 0.99), step_size(0.01)};
 
     DECL_REFLECTION(Props, filter, shimmer, length, damping);
   };
@@ -39,6 +35,3 @@ namespace otto::engines::wormhole {
   };
 
 } // namespace otto::engines::wormhole
-
-#include "audio.hpp"
-#include "screen.hpp"

@@ -22,6 +22,8 @@ namespace otto::itc {
   struct PushOnlyActionQueue {
     using value_type = std::function<void()>;
 
+    virtual ~PushOnlyActionQueue() = default;
+
     int size() const noexcept
     {
       return queue_.size();
@@ -30,27 +32,6 @@ namespace otto::itc {
     bool empty() const noexcept
     {
       return queue_.empty();
-    }
-
-    /// Push a call to `call_receiver` to the queue.
-    template<typename AR, typename Tag, typename... Args>
-    auto push(AR& ar, ActionData<Action<Tag, Args...>> action_data)
-      -> std::enable_if_t<ActionReceiver::is<AR, Action<Tag, Args...>>>
-    {
-      push([&ar, action_data] { call_receiver(ar, action_data); });
-    }
-
-    /// Push a call to `call_receiver` to the queue, if such a call is valid.
-    ///
-    /// Returns `true` if `AR` implements a receiver for the action, false otherwise
-    template<typename AR, typename Tag, typename... Args>
-    bool try_push(AR& ar, ActionData<Action<Tag, Args...>> action_data)
-    {
-      if constexpr (ActionReceiver::is<AR, Action<Tag, Args...>>) {
-        push([&ar, action_data] { call_receiver(ar, action_data); });
-        return true;
-      }
-      return false;
     }
 
     /// Push a function to the queue

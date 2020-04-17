@@ -11,15 +11,11 @@ namespace otto::engines::sends {
   struct Screen;
   struct Audio;
 
-  using Sender = core::engine::EngineSender<Audio, Screen>;
-
   struct Props {
-    Sender sender;
-
-    Sender::Prop<struct dry_tag, float> dry = {sender, 1, limits(0, 1), step_size(0.01)};
-    Sender::Prop<struct fx1_tag, float> fx1 = {sender, 0, limits(0, 1), step_size(0.01)};
-    Sender::Prop<struct fx2_tag, float> fx2 = {sender, 0, limits(0, 1), step_size(0.01)};
-    Sender::Prop<struct pan_tag, float> pan = {sender, 0.5, limits(0, 1), step_size(0.01)};
+    itc::GAProp<struct dry_tag, float> dry = {1, limits(0, 1), step_size(0.01)};
+    itc::GAProp<struct fx1_tag, float> fx1 = {0, limits(0, 1), step_size(0.01)};
+    itc::GAProp<struct fx2_tag, float> fx2 = {0, limits(0, 1), step_size(0.01)};
+    itc::GAProp<struct pan_tag, float> pan = {0.5, limits(0, 1), step_size(0.01)};
 
     struct StoredLevels {
       float fx1 = 0;
@@ -35,6 +31,7 @@ namespace otto::engines::sends {
     static constexpr util::string_ref name = "Sends";
 
     Sends(core::ui::Icon i);
+    ~Sends() noexcept;
 
     void step_scale(int steps);
     void set_scale(float x);
@@ -56,6 +53,3 @@ namespace otto::engines::sends {
     static constexpr float threshold = 0.0001;
   };
 } // namespace otto::engines::sends
-
-#include "audio.hpp"
-#include "screen.hpp"

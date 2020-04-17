@@ -73,18 +73,22 @@ namespace otto::core::engine {
 
   using namespace core::input;
 
-  void EngineSelectorScreen::action(EncoderAction, EncoderEvent e)
+  void EngineSelectorScreen::action(EncoderAction, EncoderEvent e) noexcept
   {
     if (current_screen == +ESSSubscreen::engine_selection) {
       switch (e.encoder) {
-        case Encoder::blue: return_channel.push(SelectedEngine::action::data(selected_engine_ + e.steps)); break;
+        case Encoder::blue:
+          itc::send_to_bus<itc::LogicBus>(SelectedEngine::action(), selected_engine_ + e.steps);
+          break;
         case Encoder::green: navigate_to(ESSSubscreen::preset_selection); break;
         default: break;
       }
     } else if (current_screen == +ESSSubscreen::preset_selection) {
       switch (e.encoder) {
         case Encoder::blue: navigate_to(ESSSubscreen::engine_selection); break;
-        case Encoder::green: return_channel.push(SelectedPreset::action::data(selected_preset_ + e.steps)); break;
+        case Encoder::green:
+          itc::send_to_bus<itc::LogicBus>(SelectedPreset::action(), selected_preset_ + e.steps);
+          break;
         case Encoder::red:
           if (e.steps > 0) navigate_to(ESSSubscreen::new_preset);
           break;
@@ -98,7 +102,8 @@ namespace otto::core::engine {
         case Encoder::red:
           if (e.steps < 0) navigate_to(ESSSubscreen::preset_selection);
           if (e.steps > 0) {
-            return_channel.push(Actions::make_new_preset::data(std::string(util::trim(preset_name_writer.to_string()))));
+            itc::send_to_bus<itc::LogicBus>(Actions::make_new_preset(),
+                                            std::string(util::trim(preset_name_writer.to_string())));
             preset_name_writer.clear();
             navigate_to(ESSSubscreen::preset_selection);
           }
@@ -108,7 +113,7 @@ namespace otto::core::engine {
     }
   }
 
-  void EngineSelectorScreen::action(KeyPressAction, Key key)
+  void EngineSelectorScreen::action(KeyPressAction, Key key) noexcept
   {
     switch (key) {
       case Key::blue_click: navigate_to(ESSSubscreen::preset_selection); break;
@@ -117,13 +122,13 @@ namespace otto::core::engine {
   }
 
 
-  void EngineSelectorScreen::action(SelectedEngine::action, int selected)
+  void EngineSelectorScreen::action(SelectedEngine::action, int selected) noexcept
   {
     selected_engine_ = selected;
     ui::vg::timeline().apply(&engine_scroll_).then<ch::RampTo>(selected, 500, ch::EaseOutExpo());
   }
 
-  void EngineSelectorScreen::action(SelectedPreset::action, int selected)
+  void EngineSelectorScreen::action(SelectedPreset::action, int selected) noexcept
   {
     selected_preset_ = selected;
     ui::vg::timeline().apply(&preset_scroll_).then<ch::RampTo>(selected, 500, ch::EaseOutExpo());
@@ -139,7 +144,7 @@ namespace otto::core::engine {
     ui::vg::timeline().apply(&page_flip_).then<ch::RampTo>(screen._to_integral(), 500, ch::EaseOutExpo());
   }
 
-  void EngineSelectorScreen::action(Actions::publish_engine_data, EngineSelectorData data)
+  void EngineSelectorScreen::action(Actions::publish_engine_data, EngineSelectorData data) noexcept
   {
     auto found = nano::find_if(engines, [&](auto&& e) { return e.name == data.name; });
     if (found == engines.end()) {
@@ -314,8 +319,8 @@ namespace otto::core::engine {
 
           const char cur_char = new_preset_name.at(cursor_pos);
 
-          for (const auto& [y, group] : util::view::indexed(WriterUI::character_groups)) {
-            for (const auto& [x, c] : util::view::indexed(group)) {
+          for (const auto&& [y, group] : util::view::indexed(WriterUI::character_groups)) {
+            for (const auto&& [x, c] : util::view::indexed(group)) {
               std::string s;
               s.push_back(c);
               const Point center = Point(x * w + 1, y * h) + Vec2(w, h) / 2.f;

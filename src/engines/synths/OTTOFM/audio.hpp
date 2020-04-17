@@ -11,11 +11,21 @@
 
 namespace otto::engines::ottofm {
 
+  template<int I>
+  using OperatorActions = meta::list<itc::prop_change<&Props::OperatorProps<I>::feedback>,
+                                     itc::prop_change<&Props::OperatorProps<I>::attack>,
+                                     itc::prop_change<&Props::OperatorProps<I>::decay_release>,
+                                     itc::prop_change<&Props::OperatorProps<I>::suspos>,
+                                     itc::prop_change<&Props::OperatorProps<I>::detune>,
+                                     itc::prop_change<&Props::OperatorProps<I>::ratio_idx>,
+                                     itc::prop_change<&Props::OperatorProps<I>::out_level>>;
+
   /// Custom version of the 'Sine' in Gamma. We need to call it with a phase offset
   /// instead of a frequency offset. (Phase modulation, not frequency modulation)
   /// Defines its own action handlers, which is why it is templated.
   template<int I>
-  struct FMOperator {
+  struct FMOperator final : itc::ActionReceiverOnBus<itc::AudioBus, OperatorActions<I>, itc::prop_change<&Props::fm_amount>> {
+
     struct FMSine : public gam::AccumPhase<> {
       FMSine(float frq = 440, float phs = 0) : AccumPhase<>(frq, phs, 1) {}
       /// Generate next sample with phase offset
@@ -85,40 +95,40 @@ namespace otto::engines::ottofm {
     }
 
     /// Actionhandlers. These are all the properties that can vary across operators.
-    void action(itc::prop_change<&Props::OperatorProps<I>::feedback>, float f)
+    void action(itc::prop_change<&Props::OperatorProps<I>::feedback>, float f) noexcept final
     {
       feedback_ = f;
     }
-    void action(itc::prop_change<&Props::OperatorProps<I>::attack>, float a)
+    void action(itc::prop_change<&Props::OperatorProps<I>::attack>, float a) noexcept final
     {
       env_.attack(3 * a);
     }
-    void action(itc::prop_change<&Props::OperatorProps<I>::suspos>, float s)
+    void action(itc::prop_change<&Props::OperatorProps<I>::suspos>, float s) noexcept final
     {
       suspos_ = s;
       env_.decay(3 * decrel_ * (1 - s));
       env_.release(3 * decrel_ * s);
       env_.sustain(s);
     }
-    void action(itc::prop_change<&Props::OperatorProps<I>::decay_release>, float dr)
+    void action(itc::prop_change<&Props::OperatorProps<I>::decay_release>, float dr) noexcept final
     {
       decrel_ = dr;
       env_.decay(3 * dr * (1 - suspos_));
       env_.release(3 * dr * suspos_);
     }
-    void action(itc::prop_change<&Props::OperatorProps<I>::detune>, float d)
+    void action(itc::prop_change<&Props::OperatorProps<I>::detune>, float d) noexcept final
     {
       detune_amount_ = d * 25;
     }
-    void action(itc::prop_change<&Props::OperatorProps<I>::ratio_idx>, int idx)
+    void action(itc::prop_change<&Props::OperatorProps<I>::ratio_idx>, int idx) noexcept final
     {
       freq_ratio_ = (float) fractions[idx];
     }
-    void action(itc::prop_change<&Props::OperatorProps<I>::out_level>, float l)
+    void action(itc::prop_change<&Props::OperatorProps<I>::out_level>, float l) noexcept final
     {
       outlevel_ = l;
     }
-    void action(itc::prop_change<&Props::fm_amount>, float fm)
+    void action(itc::prop_change<&Props::fm_amount>, float fm) noexcept final
     {
       fm_amount_ = fm;
     }
@@ -208,14 +218,6 @@ namespace otto::engines::ottofm {
 
   struct Audio {
     Audio(std::array<itc::Shared<float>, 4> activity) : shared_activity(activity) {}
-
-    /// Passes unhandled actions to voices
-    template<typename Tag, typename... Args>
-    auto action(itc::Action<Tag, Args...> a, Args... args) noexcept
-      -> std::enable_if_t<itc::ActionReceiver::is<voices::VoiceManager<Voice, 6>, itc::Action<Tag, Args...>>>
-    {
-      voice_mgr_.action(a, args...);
-    }
 
     // Only a process call, since this sums the process calls of the voices.
     audio::ProcessData<1> process(audio::ProcessData<0>) noexcept;

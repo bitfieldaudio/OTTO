@@ -66,7 +66,7 @@ namespace otto::engines::goss {
 
     template<typename Tag, typename... Args>
     auto action(itc::Action<Tag, Args...> a, Args... args) noexcept
-      -> std::enable_if_t<itc::ActionReceiver::is<voices::VoiceManager<Voice, 6>, itc::Action<Tag, Args...>>>
+      -> std::enable_if_t<itc::is_action_receiver_v<voices::VoiceManager<Voice, 6>, itc::Action<Tag, Args...>>>
     {
       voice_mgr_.action(a, args...);
     }

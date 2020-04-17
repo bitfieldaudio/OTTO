@@ -12,6 +12,8 @@
 
 namespace otto::services {
 
+  struct AudioBusTag {};
+
   struct AudioManager : core::Service {
     /// Fires Events::pre_init and generates midi frequency table.
     ///
@@ -23,15 +25,6 @@ namespace otto::services {
     /// Use this to get audio buffers. There are currently a maximum of 4 avaliable, so make sure to
     /// release them when you're done with them!
     core::audio::AudioBufferPool& buffer_pool() noexcept;
-
-    /// Push-only access to the action queue
-    ///
-    /// This queue is consumed at the start of each buffer.
-    itc::PushOnlyActionQueue& action_queue() noexcept;
-
-    /// Make an {@ref ActionSender} for the audio action queue
-    template<typename... Receivers>
-    auto make_sndr(Receivers&...) noexcept;
 
     /// Send a midi event into the system.
     ///
@@ -104,28 +97,11 @@ namespace otto::services {
     std::atomic_uint _buffer_size = 256;
     std::atomic_uint _buffer_number = 0;
     util::audio::Graph _cpu_time;
-    itc::ActionQueue action_queue_;
-
   private:
     core::audio::AudioBufferPool _buffer_pool{1};
     std::atomic_bool _running{false};
   };
 
   // IMPLEMENTATION //
-
-  template<typename... Receivers>
-  auto AudioManager::make_sndr(Receivers&... receivers) noexcept
-  {
-    return itc::ActionSender(action_queue_, receivers...);
-  }
-
-  template<typename... Receivers>
-  struct AudioSender : itc::ActionSender<Receivers...> {
-    template<typename Tag, typename Type, typename... Mixins>
-    using Prop = typename itc::ActionSender<Receivers...>::template Prop<Tag, Type, Mixins...>;
-    AudioSender(Receivers&... r) noexcept
-      : itc::ActionSender<Receivers...>(AudioManager::current().action_queue(), r...)
-    {}
-  };
 
 } // namespace otto::services

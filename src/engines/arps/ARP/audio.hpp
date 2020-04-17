@@ -2,8 +2,8 @@
 
 #include "arp.hpp"
 #include "util/local_vector.hpp"
-#include "util/utility.hpp"
 #include "util/random.hpp"
+#include "util/utility.hpp"
 
 namespace otto::engines::arp {
 
@@ -11,16 +11,22 @@ namespace otto::engines::arp {
 
   inline NoteTPair NoteTPair::initial = {128, -1};
 
-  struct Audio {
+  struct Audio final : itc::ActionReceiverOnBus<itc::AudioBus,
+                                          itc::prop_change<&Props::playmode>,
+                                          itc::prop_change<&Props::octavemode>,
+                                          itc::prop_change<&Props::note_length>,
+                                          itc::prop_change<&Props::subdivision>,
+                                          Actions::graphics_outdated> //
+  {
     Audio() noexcept;
     audio::ProcessData<0> process(audio::ProcessData<0>) noexcept;
 
-    void action(itc::prop_change<&Props::playmode>, Playmode pm) noexcept;
-    void action(itc::prop_change<&Props::octavemode>, OctaveMode om) noexcept;
-    void action(itc::prop_change<&Props::note_length>, float nl) noexcept;
-    void action(itc::prop_change<&Props::subdivision>, int sd) noexcept;
+    void action(itc::prop_change<&Props::playmode>, Playmode pm) noexcept final;
+    void action(itc::prop_change<&Props::octavemode>, OctaveMode om) noexcept final;
+    void action(itc::prop_change<&Props::note_length>, float nl) noexcept final;
+    void action(itc::prop_change<&Props::subdivision>, int sd) noexcept final;
 
-    void action(Actions::graphics_outdated, std::atomic<bool>&) noexcept;
+    void action(Actions::graphics_outdated, std::atomic<bool>&) noexcept final;
 
   private:
     PlayModeFunc playmode_func_ = play_modes::up;

@@ -4,10 +4,15 @@
 
 #include "action.hpp"
 #include "action_queue.hpp"
-#include "action_sender.hpp"
+#include "action_bus.hpp"
 #include "prop.hpp"
 
 namespace otto::itc {
+
+  /// A property that sends change events to the Graphics and Audio busses.
+  template<typename Tag, typename ValueType, typename... Mixins>
+  using GAProp = ActionProp<meta::list<AudioBus, GraphicsBus>, Tag, ValueType, Mixins...>;
+
   /// A helper type to declare Prop and action types.
   ///
   /// This is useful especially when the Screen/audio is not templated,
@@ -22,7 +27,7 @@ namespace otto::itc {
   ///
   /// struct Props {
   ///   Sender sender;
-  ///   FilterFreq::Prop<Sender, props::wrap> filter_freq = {sender, 0};
+  ///   FilterFreq::Prop<props::wrap> filter_freq = {0};
   /// };
   ///
   /// struct Screen {
@@ -33,10 +38,11 @@ namespace otto::itc {
   struct PropTypes {
     using tag = Tag;
     using action = itc::Action<Tag, ValueType>;
-    template<typename Sender, typename... Mixins>
-    using Prop = typename Sender::template Prop<Tag, ValueType, Mixins...>;
+    template<typename BusTags, typename... Mixins>
+    using Prop = ActionProp<BusTags, Tag, ValueType, Mixins...>;
+    template<typename... Mixins>
+    using GAProp = GAProp<Tag, ValueType, Mixins...>;
   };
-
 
   template<typename ValueType>
   struct Shared {
