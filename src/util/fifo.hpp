@@ -2,6 +2,8 @@
 
 #include <gsl/span>
 #include <string>
+#include <vector>
+#include <array>
 #include <tl/expected.hpp>
 
 #include "util/exception.hpp"
