@@ -111,32 +111,36 @@ namespace otto::engines::sends {
     constexpr Point center = {245 + 3.5, 99 + 5};
     constexpr float inner_radius = 35;
     constexpr int num_of_lines = 17;
+
     constexpr float outer_length = 2;
     constexpr float middle_length = 10;
+    constexpr float length_step = (middle_length - outer_length) / ((num_of_lines - 1) / 2);
+
     constexpr float lines_to_marker_pad = 13;
     constexpr float marker_radius = 3;
     constexpr float middle_marker_pad = 5;
     ctx.lineWidth(4.f);
 
     float angle_step = M_PI / (num_of_lines - 1);
-    float line_length = 0; 
+    float line_length = outer_length; 
     ctx.group([&] {
       ctx.rotateAround(center, -M_PI_2);
       for (int i = 0; i < num_of_lines; i++) {
         float i_rel = (float)i/(num_of_lines - 1);
-        if (i <= num_of_lines / 2) {
-          line_length = 2 * i * middle_length / num_of_lines + (1 -  2 * (float)i /num_of_lines) * outer_length;
-        } else {
-          line_length = 2 * (1 - (float)i /num_of_lines) * middle_length + (2 * (float)i / num_of_lines - 1) * outer_length;
-        }
+        // Draw line
         ctx.beginPath();
-        if (i == (num_of_lines - 1) / 2) {ctx.moveTo(center.x + inner_radius - middle_marker_pad, center.y);}
-        else {ctx.moveTo(center.x + inner_radius, center.y); }
+        ctx.moveTo(center.x + inner_radius - middle_marker_pad * ((i == (num_of_lines - 1) / 2)), center.y);
         ctx.lineTo(center.x + inner_radius + line_length, center.y);
-        ctx.rotateAround(center, angle_step);
         bool cl_mix = pan_float > 0.5 ? ((i_rel >= 0.5) && (i_rel <= pan_float)) : ((i_rel <= 0.5) && (i_rel >= pan_float));
         Color cl = cl_mix ? Colours::Red : Colours::White;
         ctx.stroke(cl);
+        // Increment line length
+        if (i < num_of_lines / 2) {
+          line_length += length_step;
+        } else {
+          line_length -= length_step;
+        }
+        ctx.rotateAround(center, angle_step);
       }
     });
     // Dot
