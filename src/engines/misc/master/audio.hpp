@@ -6,12 +6,15 @@ namespace otto::engines::master {
 
   using namespace core;
 
-  struct Audio {
+  struct Audio final : itc::ActionReceiverOnBus<itc::AudioBus, //
+                                                itc::prop_change<&Props::volume>,
+                                                itc::prop_change<&Props::tempo>> //
+  {
     Audio() noexcept;
     audio::ProcessData<2> process(audio::ProcessData<2>) noexcept;
 
-    void action(itc::prop_change<&Props::volume>, float v) noexcept;
-    void action(itc::prop_change<&Props::tempo>, float t) noexcept;
+    void action(itc::prop_change<&Props::volume>, float v) noexcept final;
+    void action(itc::prop_change<&Props::tempo>, float t) noexcept final;
 
   private:
     float tempo_ = 120;

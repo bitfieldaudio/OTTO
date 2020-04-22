@@ -46,13 +46,14 @@ namespace otto::core::engine {
 
   void placeholder_engine_icon(ui::IconData& i, nvg::Canvas& ctx);
 
+  template<EngineSlot ES>
   struct EngineSelectorScreen : ui::Screen,
                                 itc::ActionReceiverOnBus<itc::GraphicsBus,
                                                          input::EncoderAction,
                                                          input::KeyPressAction,
-                                                         SelectedEngine::action,
-                                                         SelectedPreset::action,
-                                                         Actions::publish_engine_data> //
+                                                         typename SelectedEngine<ES>::action,
+                                                         typename SelectedPreset<ES>::action,
+                                                         typename Actions<ES>::publish_engine_data> //
 
   {
     using Subscreen = ESSSubscreen;
@@ -62,9 +63,9 @@ namespace otto::core::engine {
     void action(input::EncoderAction, input::EncoderEvent e) noexcept final;
     void action(input::KeyPressAction, input::Key) noexcept final;
 
-    void action(SelectedEngine::action, int selected) noexcept final;
-    void action(SelectedPreset::action, int selected) noexcept final;
-    void action(Actions::publish_engine_data, EngineSelectorData data) noexcept final;
+    void action(typename SelectedEngine<ES>::action, int selected) noexcept final;
+    void action(typename SelectedPreset<ES>::action, int selected) noexcept final;
+    void action(typename Actions<ES>::publish_engine_data, EngineSelectorData data) noexcept final;
     void navigate_to(Subscreen screen);
 
     std::vector<EngineSelectorData> engines = {};
@@ -80,4 +81,10 @@ namespace otto::core::engine {
     ch::Output<float> preset_scroll_ = 0;
     ch::Output<float> new_indicator_transparency_ = 0;
   };
+
+  extern template struct EngineSelectorScreen<EngineSlot::arp>;
+  extern template struct EngineSelectorScreen<EngineSlot::synth>;
+  extern template struct EngineSelectorScreen<EngineSlot::fx1>;
+  extern template struct EngineSelectorScreen<EngineSlot::fx2>;
+
 } // namespace otto::core::engine

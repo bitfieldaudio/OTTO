@@ -14,13 +14,13 @@
 
 namespace otto::core::engine {
 
-#define ENGDISPTEMPLATE template<EngineType ET, typename... Engines>
-#define ENGDISP EngineDispatcher<ET, Engines...>
+#define ENGDISPTEMPLATE template<EngineSlot ES, typename... Engines>
+#define ENGDISP EngineDispatcher<ES, Engines...>
 
   void placeholder_engine_icon(ui::IconData& i, nvg::Canvas& ctx);
 
   ENGDISPTEMPLATE
-  ENGDISP::EngineDispatcher() noexcept : screen_(std::make_unique<EngineSelectorScreen>())
+  ENGDISP::EngineDispatcher() noexcept : screen_(std::make_unique<EngineSelectorScreen<ES>>())
   {
     for (auto name : engine_names) {
       send_data_for(name);
@@ -49,7 +49,7 @@ namespace otto::core::engine {
   {
     auto presets = std::vector<std::string>{"Last State"};
     nano::copy(services::PresetManager::current().preset_names(engine_name), nano::back_inserter(presets));
-    itc::send_to_bus<itc::AudioBus, itc::GraphicsBus>(Actions::publish_engine_data(),
+    itc::send_to_bus<itc::AudioBus, itc::GraphicsBus>(typename Actions<ES>::publish_engine_data(),
                                                       EngineSelectorData{
                                                         .name = engine_name,
                                                         .icon = ui::Icon(icon_register(engine_name)),
@@ -73,7 +73,7 @@ namespace otto::core::engine {
   }
 
   ENGDISPTEMPLATE
-  void ENGDISP::action(Actions::make_new_preset, std::string name) noexcept
+  void ENGDISP::action(typename Actions<ES>::make_new_preset, std::string name) noexcept
   {
     services::PresetManager::current().create_preset(current_engine_->name(), name, current_engine_->to_json());
     send_data_for(current_engine_->name());
@@ -81,13 +81,13 @@ namespace otto::core::engine {
   }
 
   ENGDISPTEMPLATE
-  ITypedEngine<ET>& ENGDISP::current()
+  auto ENGDISP::current() -> ITypedEngine<engine_type>&
   {
     return *current_engine_;
   }
 
   ENGDISPTEMPLATE
-  ITypedEngine<ET>* ENGDISP::operator->()
+  auto ENGDISP::operator->() -> ITypedEngine<engine_type>*
   {
     return &*current_engine_;
   }
@@ -99,12 +99,12 @@ namespace otto::core::engine {
     if (engine_is_constructed_) {
       return util::match(current_engine_, [&](auto& engine) { return engine.audio->process(data); });
     }
-    if constexpr (ET == EngineType::arpeggiator) {
+    if constexpr (engine_type == EngineType::arpeggiator) {
       return data;
-    } else if constexpr (ET == EngineType::effect) {
+    } else if constexpr (engine_type == EngineType::effect) {
       auto buf = services::AudioManager::current().buffer_pool().allocate_multi_clear<2>();
       return data.with(buf);
-    } else if constexpr (ET == EngineType::synth) {
+    } else if constexpr (engine_type == EngineType::synth) {
       auto buf = services::AudioManager::current().buffer_pool().allocate_clear();
       return data.with(buf);
     } else {

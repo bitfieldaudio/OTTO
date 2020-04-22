@@ -12,17 +12,14 @@
 
 namespace otto::itc {
 
-  /// The push-only interface of an {@ref ActionQueue}.
-  ///
-  /// Queue-owners can expose a reference to this to make sure the internal pop functions aren't
-  /// callable from the outside.
+  /// A queue one can push actionData/receiver pairs to to have the receiver called on another thread
   ///
   /// @TODO Implement as a lock-free thread safe queue
   /// @TODO Implement using a fixed size std::function alternative.
-  struct PushOnlyActionQueue {
+  struct ActionQueue {
     using value_type = std::function<void()>;
 
-    virtual ~PushOnlyActionQueue() = default;
+    ActionQueue() = default;
 
     int size() const noexcept
     {
@@ -37,25 +34,13 @@ namespace otto::itc {
     /// Push a function to the queue
     ///
     /// This is completely separate from actions, and just allows you to run any old function on the other thread
-    ///
-    /// @TODO Consider, should this be removed from the interface?
     void push(const value_type& v) noexcept
     {
       lock_.lock();
       queue_.push(v);
       lock_.unlock();
+      if (on_available_) on_available_();
     }
-
-  protected:
-    PushOnlyActionQueue() = default;
-
-    util::spin_lock lock_;
-    std::queue<value_type, std::deque<value_type>> queue_;
-  };
-
-  /// A queue one can push actionData/receiver pairs to to have the receiver called on another thread
-  struct ActionQueue : PushOnlyActionQueue {
-    using value_type = PushOnlyActionQueue::value_type;
 
     /// Pop a function off the queue and return it
     value_type pop() noexcept
@@ -83,5 +68,16 @@ namespace otto::itc {
       }
       lock_.unlock();
     }
+
+    void on_available(std::function<void()> handler) noexcept
+    {
+      on_available_ = handler;
+    }
+
+  private:
+    std::function<void()> on_available_;
+
+    util::spin_lock lock_;
+    std::queue<value_type, std::deque<value_type>> queue_;
   };
 } // namespace otto::itc

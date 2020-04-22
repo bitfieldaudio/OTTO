@@ -16,7 +16,13 @@ namespace otto::engines::arp {
   util::string_ref display(Playmode pm) noexcept;
   util::string_ref display(OctaveMode om) noexcept;
 
-  struct Screen : ui::Screen {
+  struct Screen final : ui::Screen,
+                  itc::ActionReceiverOnBus<itc::GraphicsBus,
+                                           itc::prop_change<&Props::playmode>,
+                                           itc::prop_change<&Props::octavemode>,
+                                           itc::prop_change<&Props::note_length>,
+                                           itc::prop_change<&Props::subdivision>> //
+  {
     Screen();
 
     int min = 88;
@@ -30,10 +36,10 @@ namespace otto::engines::arp {
 
     void draw(nvg::Canvas& ctx) override;
 
-    void action(itc::prop_change<&Props::playmode>, Playmode pm) noexcept;
-    void action(itc::prop_change<&Props::octavemode>, OctaveMode om) noexcept;
-    void action(itc::prop_change<&Props::note_length>, float nl) noexcept;
-    void action(itc::prop_change<&Props::subdivision>, int s) noexcept;
+    void action(itc::prop_change<&Props::playmode>, Playmode pm) noexcept final;
+    void action(itc::prop_change<&Props::octavemode>, OctaveMode om) noexcept final;
+    void action(itc::prop_change<&Props::note_length>, float nl) noexcept final;
+    void action(itc::prop_change<&Props::subdivision>, int s) noexcept final;
 
     using Dots = util::local_vector<NoteVector, 24>;
     void update_dots(PlayModeFunc playmode_func_,

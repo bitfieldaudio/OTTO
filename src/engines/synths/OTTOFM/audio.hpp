@@ -24,8 +24,10 @@ namespace otto::engines::ottofm {
   /// instead of a frequency offset. (Phase modulation, not frequency modulation)
   /// Defines its own action handlers, which is why it is templated.
   template<int I>
-  struct FMOperator final : itc::ActionReceiverOnBus<itc::AudioBus, OperatorActions<I>, itc::prop_change<&Props::fm_amount>> {
-
+  struct FMOperator final : itc::ActionReceiverOnBus<itc::AudioBus,
+                                                     OperatorActions<I>,
+                                                     itc::prop_change<&Props::fm_amount>,
+                                                     itc::prop_change<&Props::algorithm_idx>> {
     struct FMSine : public gam::AccumPhase<> {
       FMSine(float frq = 440, float phs = 0) : AccumPhase<>(frq, phs, 1) {}
       /// Generate next sample with phase offset
@@ -133,6 +135,11 @@ namespace otto::engines::ottofm {
       fm_amount_ = fm;
     }
 
+    void action(itc::prop_change<&Props::algorithm_idx>, int a) noexcept final
+    {
+      modulator(algorithms[a].modulator_flags[I]);
+    }
+
   private:
     FMSine sine;
     gam::ADSR<> env_;
@@ -152,7 +159,12 @@ namespace otto::engines::ottofm {
     float previous_value_ = 0;
   };
 
-  struct Voice : voices::VoiceBase<Voice> {
+  struct Voice : voices::VoiceBase<Voice>,
+                 itc::ActionReceiverOnBus<itc::AudioBus,
+                                          voices::attack_tag::action,
+                                          voices::decay_tag::action,
+                                          voices::sustain_tag::action,
+                                          voices::release_tag::action> {
     Voice(Audio& a) noexcept;
 
     // These voices only have process calls.
@@ -171,39 +183,19 @@ namespace otto::engines::ottofm {
     /// Use actions from base class
     using VoiceBase::action;
 
-    // Here are declarations for actionhandlers for the voice.
-    // It's all of the properties not being handled by individual operators.
-    // While they could be placed in Audio, the suggested style is to keep
-    // actionhandlers in Audio to Pre- and Post-processing, not properties affecting the voices.
-
-    template<typename Action, typename... Args>
-    void action(Action action, Args... args) noexcept
-    {
-      util::for_each(operators, [&](auto& op) { itc::try_call_receiver(op, Action::data(args...)); });
-    }
-
-    void action(itc::prop_change<&Props::algorithm_idx>, int a) noexcept
-    {
-      int i = 0;
-      util::for_each(operators, [&i, a](auto& op) {
-        op.modulator(algorithms[a].modulator_flags[i]);
-        i++;
-      });
-    }
-
-    void action(voices::attack_tag::action, float a) noexcept
+    void action(voices::attack_tag::action, float a) noexcept final
     {
       env_.attack(a * a * 8.f + 0.005f);
     }
-    void action(voices::decay_tag::action, float d) noexcept
+    void action(voices::decay_tag::action, float d) noexcept final
     {
       env_.decay(d * d * 4.f + 0.005f);
     }
-    void action(voices::sustain_tag::action, float s) noexcept
+    void action(voices::sustain_tag::action, float s) noexcept final
     {
       env_.sustain(s);
     }
-    void action(voices::release_tag::action, float r) noexcept
+    void action(voices::release_tag::action, float r) noexcept final
     {
       env_.release(r * r * 8.f + 0.005f);
     }

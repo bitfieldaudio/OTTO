@@ -10,7 +10,13 @@ namespace otto::engines::goss {
 
   using namespace itc;
 
-  struct GossScreen : ui::Screen {
+  struct GossScreen final : ui::Screen,
+                            itc::ActionReceiverOnBus<itc::GraphicsBus,
+                                                     itc::prop_change<&Props::model>,
+                                                     itc::prop_change<&Props::click>,
+                                                     itc::prop_change<&Props::drive>,
+                                                     itc::prop_change<&Props::leslie>> //
+  {
     GossScreen(itc::Shared<float>) noexcept;
     void draw(nvg::Canvas& ctx) override;
     void draw_model(nvg::Canvas& ctx, float interpolation_value);
@@ -18,11 +24,10 @@ namespace otto::engines::goss {
     void draw_drive(nvg::Canvas& ctx, float drive);
     void draw_click(nvg::Canvas& ctx, float click);
 
-
-    void action(itc::prop_change<&Props::model>, int m) noexcept;
-    void action(itc::prop_change<&Props::click>, float c) noexcept;
-    void action(itc::prop_change<&Props::drive>, float d) noexcept;
-    void action(itc::prop_change<&Props::leslie>, float l) noexcept;
+    void action(itc::prop_change<&Props::model>, int m) noexcept final;
+    void action(itc::prop_change<&Props::click>, float c) noexcept final;
+    void action(itc::prop_change<&Props::drive>, float d) noexcept final;
+    void action(itc::prop_change<&Props::leslie>, float l) noexcept final;
 
     itc::Shared<float> rotation;
     int model = 0;

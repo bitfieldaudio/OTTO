@@ -9,19 +9,27 @@ namespace otto::engines::external {
   using namespace core;
   using namespace core::input;
 
-  struct Screen : ui::Screen {
+  struct Screen final : ui::Screen,
+                        itc::ActionReceiverOnBus<itc::GraphicsBus,
+                                                 itc::prop_change<&Props::mode>,
+                                                 itc::prop_change<&Props::stereo_gain>,
+                                                 itc::prop_change<&Props::stereo_balance>,
+                                                 itc::prop_change<&Props::left_gain>,
+                                                 itc::prop_change<&Props::right_gain>,
+                                                 itc::prop_change<&Props::active_send>> //
+  {
     void draw(nvg::Canvas& ctx) override;
     void draw_jack(nvg::Canvas& ctx, bool active);
     void draw_pan(nvg::Canvas& ctx, float pan_float);
     void draw_levels(nvg::Canvas& ctx, ModeEnum mode);
     void draw_active_send(nvg::Canvas& ctx, int active_send);
 
-    void action(itc::prop_change<&Props::mode>, ModeEnum m) noexcept;
-    void action(itc::prop_change<&Props::stereo_gain>, float g) noexcept;
-    void action(itc::prop_change<&Props::stereo_balance>, float b) noexcept;
-    void action(itc::prop_change<&Props::left_gain>, float g) noexcept;
-    void action(itc::prop_change<&Props::right_gain>, float g) noexcept;
-    void action(itc::prop_change<&Props::active_send>, int a) noexcept;
+    void action(itc::prop_change<&Props::mode>, ModeEnum m) noexcept final;
+    void action(itc::prop_change<&Props::stereo_gain>, float g) noexcept final;
+    void action(itc::prop_change<&Props::stereo_balance>, float b) noexcept final;
+    void action(itc::prop_change<&Props::left_gain>, float g) noexcept final;
+    void action(itc::prop_change<&Props::right_gain>, float g) noexcept final;
+    void action(itc::prop_change<&Props::active_send>, int a) noexcept final;
 
   private:
     float stereo_gain_ = 0.5;

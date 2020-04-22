@@ -14,12 +14,12 @@
 #include "engines/fx/wormhole/audio.hpp"
 #include "engines/fx/wormhole/screen.hpp"
 
+#include "engines/misc/sends/audio.hpp"
+#include "engines/misc/sends/screen.hpp"
 #include "engines/misc/external/audio.hpp"
 #include "engines/misc/external/screen.hpp"
 #include "engines/misc/master/audio.hpp"
 #include "engines/misc/master/screen.hpp"
-#include "engines/misc/sends/audio.hpp"
-#include "engines/misc/sends/screen.hpp"
 
 #include "engines/synths/OTTOFM/audio.hpp"
 #include "engines/synths/OTTOFM/screen.hpp"
@@ -52,24 +52,25 @@ namespace otto::services {
     audio::ProcessData<2> process(audio::ProcessData<2> external_in) override;
 
   private:
+    template<EngineSlot ES>
     using EffectsDispatcher = EngineDispatcher< //
-      EngineType::effect,
+      ES,
       engine::OffEngine<EngineType::effect>,
       engines::wormhole::Wormhole,
       engines::chorus::Chorus>;
     using ArpDispatcher = EngineDispatcher< //
-      EngineType::arpeggiator,
+      EngineSlot::arp,
       engine::OffEngine<EngineType::arpeggiator>,
       engines::arp::Arp>;
     using SynthDispatcher = EngineDispatcher< //
-      EngineType::synth,
+      EngineSlot::synth,
       engines::ottofm::OttofmEngine,
       engines::goss::GossEngine>;
 
     engines::external::External line_in;
     SynthDispatcher synth;
-    EffectsDispatcher effect1;
-    EffectsDispatcher effect2;
+    EffectsDispatcher<EngineSlot::fx1> effect1;
+    EffectsDispatcher<EngineSlot::fx2> effect2;
     ArpDispatcher arpeggiator;
 
 

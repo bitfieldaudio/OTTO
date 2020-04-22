@@ -34,9 +34,21 @@ namespace otto::chrono {
 namespace otto::util {
 
   struct thread {
+    thread() = default;
+
     template<typename Func>
     thread(Func&& func) : std_thread(std::forward<Func>(func), [this] { return should_run(); })
     {}
+
+    thread(const thread&) = delete;
+    thread(thread&&) = delete;
+
+    template<typename Func>
+    thread& operator=(Func&& func)
+    {
+      std_thread = std::thread{std::forward<Func>(func), [this] { return should_run(); }};
+      return *this;
+    }
 
     ~thread()
     {
@@ -96,6 +108,18 @@ namespace otto::util {
       }
       trigger();
       std_thread.join();
+    }
+
+    std::mutex& mutex() noexcept {
+      return _mutex;
+    }
+
+    std::condition_variable& cond_var() noexcept {
+      return _trigger;
+    }
+
+    std::atomic_bool& running() noexcept {
+      return _should_run;
     }
 
   private:

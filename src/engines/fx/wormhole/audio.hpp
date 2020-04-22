@@ -7,14 +7,19 @@ namespace otto::engines::wormhole {
 
   using namespace core;
 
-  struct Audio {
+  struct Audio final : itc::ActionReceiverOnBus<itc::AudioBus,
+                                                itc::prop_change<&Props::filter>,
+                                                itc::prop_change<&Props::shimmer>,
+                                                itc::prop_change<&Props::length>,
+                                                itc::prop_change<&Props::damping>> //
+  {
     Audio() noexcept;
     audio::ProcessData<2> process(audio::ProcessData<1>) noexcept;
 
-    void action(itc::prop_change<&Props::filter>, float f) noexcept;
-    void action(itc::prop_change<&Props::shimmer>, float s) noexcept;
-    void action(itc::prop_change<&Props::length>, float l) noexcept;
-    void action(itc::prop_change<&Props::damping>, float d) noexcept;
+    void action(itc::prop_change<&Props::filter>, float f) noexcept final;
+    void action(itc::prop_change<&Props::shimmer>, float s) noexcept final;
+    void action(itc::prop_change<&Props::length>, float l) noexcept final;
+    void action(itc::prop_change<&Props::damping>, float d) noexcept final;
 
   private:
     float last_sample = 0;

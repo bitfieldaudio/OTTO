@@ -9,18 +9,25 @@ namespace otto::engines::external {
 
   using namespace core;
 
-  struct Audio {
+  struct Audio final : itc::ActionReceiverOnBus<itc::AudioBus,
+                                                itc::prop_change<&Props::mode>,
+                                                itc::prop_change<&Props::stereo_gain>,
+                                                itc::prop_change<&Props::stereo_balance>,
+                                                itc::prop_change<&Props::left_gain>,
+                                                itc::prop_change<&Props::right_gain>,
+                                                itc::prop_change<&Props::active_send>> //
+  {
     Audio(sends::Audio& stereo, sends::Audio& left, sends::Audio& right) noexcept
       : send_stereo(stereo), send_left(left), send_right(right){};
 
     void recalculate() noexcept;
 
-    void action(itc::prop_change<&Props::mode>, ModeEnum m) noexcept;
-    void action(itc::prop_change<&Props::stereo_gain>, float g) noexcept;
-    void action(itc::prop_change<&Props::stereo_balance>, float b) noexcept;
-    void action(itc::prop_change<&Props::left_gain>, float g) noexcept;
-    void action(itc::prop_change<&Props::right_gain>, float g) noexcept;
-    void action(itc::prop_change<&Props::active_send>, int a) noexcept;
+    void action(itc::prop_change<&Props::mode>, ModeEnum m) noexcept final;
+    void action(itc::prop_change<&Props::stereo_gain>, float g) noexcept final;
+    void action(itc::prop_change<&Props::stereo_balance>, float b) noexcept final;
+    void action(itc::prop_change<&Props::left_gain>, float g) noexcept final;
+    void action(itc::prop_change<&Props::right_gain>, float g) noexcept final;
+    void action(itc::prop_change<&Props::active_send>, int a) noexcept final;
 
     using abh = core::audio::AudioBufferHandle;
     void apply_sends(abh& inL, abh& inR, abh& fx1_bus, abh& fx2_bus) noexcept;

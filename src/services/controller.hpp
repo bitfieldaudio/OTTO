@@ -102,6 +102,7 @@ namespace otto::services {
     using EventBag = std::vector<Event>;
 
     Controller();
+    virtual ~Controller() noexcept;
 
     static std::unique_ptr<Controller> make_dummy();
     static Controller& current() noexcept
@@ -158,7 +159,9 @@ namespace otto::services {
     util::double_buffered<EventBag> events_;
 
     /// Essentially the logic thread, since most logic will happen in key handlers and property change events
-    util::triggered_thread key_handler_thread;
+    util::thread logic_thread;
+    std::mutex logic_bus_mtx;
+    std::condition_variable logic_cond;
   };
 
 } // namespace otto::services

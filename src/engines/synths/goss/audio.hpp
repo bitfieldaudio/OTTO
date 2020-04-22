@@ -2,18 +2,26 @@
 
 #include <Gamma/Envelope.h>
 #include <Gamma/Filter.h>
-#include <Gamma/Oscillator.h>
 #include <Gamma/Noise.h>
+#include <Gamma/Oscillator.h>
 #include "util/dsp/overdrive.hpp"
 
 #include "core/voices/voice_manager.hpp"
 #include "goss.hpp"
 
-//TODO: draw model
+// TODO: draw model
 
 namespace otto::engines::goss {
 
-  struct Voice : voices::VoiceBase<Voice> {
+  struct Voice final : voices::VoiceBase<Voice>,
+                       itc::ActionReceiverOnBus<itc::AudioBus,
+                                                itc::prop_change<&Props::click>,
+                                                itc::prop_change<&Props::model>,
+                                                voices::attack_tag::action,
+                                                voices::decay_tag::action,
+                                                voices::sustain_tag::action,
+                                                voices::release_tag::action> //
+  {
     Voice(Audio& a) noexcept;
 
     float operator()() noexcept;
@@ -24,23 +32,23 @@ namespace otto::engines::goss {
     /// Use actions from base class
     using VoiceBase::action;
 
-    void action(itc::prop_change<&Props::click>, float c) noexcept;
+    void action(itc::prop_change<&Props::click>, float c) noexcept final;
 
-    void action(itc::prop_change<&Props::model>, int m) noexcept;
+    void action(itc::prop_change<&Props::model>, int m) noexcept final;
 
-    void action(voices::attack_tag::action, float a) noexcept
+    void action(voices::attack_tag::action, float a) noexcept final
     {
       env_.attack(a * a * 8.f + 0.01f);
     }
-    void action(voices::decay_tag::action, float d) noexcept
+    void action(voices::decay_tag::action, float d) noexcept final
     {
       env_.decay(d * d * 4.f + 0.01f);
     }
-    void action(voices::sustain_tag::action, float s) noexcept
+    void action(voices::sustain_tag::action, float s) noexcept final
     {
       env_.sustain(s);
     }
-    void action(voices::release_tag::action, float r) noexcept
+    void action(voices::release_tag::action, float r) noexcept final
     {
       env_.release(r * r * 8.f + 0.01f);
     }
@@ -57,19 +65,14 @@ namespace otto::engines::goss {
     gam::ADSR<> env_ = {0.1f, 0.1f, 0.7f, 2.0f, 1.f, -4.f};
   };
 
-  struct Audio {
+  struct Audio final : itc::ActionReceiverOnBus<itc::AudioBus, //
+                                                itc::prop_change<&Props::drive>,
+                                                itc::prop_change<&Props::leslie>> //
+  {
     Audio(itc::Shared<float>) noexcept;
 
-    void action(itc::prop_change<&Props::drive>, float d) noexcept;
-
-    void action(itc::prop_change<&Props::leslie>, float l) noexcept;
-
-    template<typename Tag, typename... Args>
-    auto action(itc::Action<Tag, Args...> a, Args... args) noexcept
-      -> std::enable_if_t<itc::is_action_receiver_v<voices::VoiceManager<Voice, 6>, itc::Action<Tag, Args...>>>
-    {
-      voice_mgr_.action(a, args...);
-    }
+    void action(itc::prop_change<&Props::drive>, float d) noexcept final;
+    void action(itc::prop_change<&Props::leslie>, float l) noexcept final;
 
     float operator()() noexcept;
 

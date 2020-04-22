@@ -89,7 +89,7 @@ namespace otto::core::voices {
     /// @note Must be called before calling operator(). VoiceManager::operator() and ::process do this.
     void next() noexcept;
 
-    void action(portamento_tag::action, float p) noexcept override;
+    void action(portamento_tag::action, float p) noexcept final override;
 
     /// This should multiply by volume_. If you write you own, remember to do that!
     core::audio::ProcessData<1> process(core::audio::ProcessData<0>) noexcept;

@@ -16,7 +16,7 @@ namespace otto::itc {
 
   namespace detail {
     template<typename BusTag, typename Action>
-    static inline ActionReceiverRegistry<Action> action_receiver_registry;
+    ActionReceiverRegistry<Action> action_receiver_registry;
   }
 
   template<typename BusTag_>
@@ -30,12 +30,17 @@ namespace otto::itc {
     static void send(ActionData<Action<Tag, Args...>> action_data)
     {
       queue.push([ad = std::move(action_data)] { //
-        detail::action_receiver_registry<BusTag, Action<Tag, Args...>>.call_all(ad.args);
+        auto& registry = detail::action_receiver_registry<BusTag, Action<Tag, Args...>>;
+        DLOGI("Action {} received on {} by {} receivers", get_type_name<Tag>(), get_type_name<BusTag>(), registry.size());
+        registry.call_all(ad.args);
       });
     }
 
-    static inline ActionQueue queue;
+    static ActionQueue queue;
   };
+
+  template<typename BusTag>
+  ActionQueue ActionBus<BusTag>::queue;
 
   /// Send an action to receivers on one or more busses
   template<typename... BusTags, typename Tag, typename... Args, typename... ArgRefs>
@@ -61,6 +66,7 @@ namespace otto::itc {
     {
       meta::for_each<ActionList>([this](auto one) {
         using Action = meta::_t<decltype(one)>;
+        DLOGI("Receiver registered on {} for {}", get_type_name<BusTag>(), get_type_name<typename Action::tag_type>());
         detail::action_receiver_registry<BusTag, Action>.add(this);
       });
     }
@@ -69,6 +75,7 @@ namespace otto::itc {
     {
       meta::for_each<ActionList>([this](auto one) {
         using Action = meta::_t<decltype(one)>;
+        DLOGI("Receiver unregistered on {} for {}", get_type_name<BusTag>(), get_type_name<typename Action::tag_type>());
         detail::action_receiver_registry<BusTag, Action>.remove(this);
       });
     }

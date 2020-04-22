@@ -6,7 +6,12 @@ namespace otto::engines::sends {
 
   using namespace core;
 
-  struct Audio {
+  struct Audio final : itc::ActionReceiverOnBus<itc::AudioBus,
+                                                itc::prop_change<&Props::dry>,
+                                                itc::prop_change<&Props::fx1>,
+                                                itc::prop_change<&Props::fx2>,
+                                                itc::prop_change<&Props::pan>> //
+  {
     Audio() noexcept {};
 
     void recalculate_dry()
@@ -16,20 +21,20 @@ namespace otto::engines::sends {
       dryR = pan_ * dry_;
     }
 
-    void action(itc::prop_change<&Props::dry>, float d) noexcept
+    void action(itc::prop_change<&Props::dry>, float d) noexcept final
     {
       dry_ = d;
       recalculate_dry();
     };
-    void action(itc::prop_change<&Props::fx1>, float fx1) noexcept
+    void action(itc::prop_change<&Props::fx1>, float fx1) noexcept final
     {
       to_fx1 = fx1;
     };
-    void action(itc::prop_change<&Props::fx2>, float fx2) noexcept
+    void action(itc::prop_change<&Props::fx2>, float fx2) noexcept final
     {
       to_fx2 = fx2;
     };
-    void action(itc::prop_change<&Props::pan>, float p) noexcept
+    void action(itc::prop_change<&Props::pan>, float p) noexcept final
     {
       pan_ = p;
       recalculate_dry();

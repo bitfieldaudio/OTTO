@@ -59,20 +59,20 @@ namespace otto::services {
   bool Controller::keypress(Key key)
   {
     if (!send_midi_for(key, true)) events_.outer().push_back(KeyPressEvent{key});
-    key_handler_thread.trigger();
+    logic_cond.notify_one();
     return true;
   }
 
   void Controller::encoder(EncoderEvent ev)
   {
     events_.outer().push_back(ev);
-    key_handler_thread.trigger();
+    logic_cond.notify_one();
   }
 
   bool Controller::keyrelease(Key key)
   {
     if (!send_midi_for(key, false)) events_.outer().push_back(KeyReleaseEvent{key});
-    key_handler_thread.trigger();
+    logic_cond.notify_one();
     return true;
   }
 
@@ -99,9 +99,15 @@ namespace otto::services {
   Controller::Controller()
   {
     Application::current().events.post_init.connect([this] {
-      key_handler_thread = [this](auto&& should_run) {
-        while ((!events_.inner().empty() || !itc::ActionBus<itc::LogicBus>::queue.empty()) || should_run()) {
+      logic_thread = [this](auto&& should_run) {
+        while (should_run()) {
           events_.swap();
+          if (events_.inner().empty()){
+            auto lock = std::unique_lock(logic_bus_mtx);
+            if (itc::ActionBus<itc::LogicBus>::queue.empty()) {
+              logic_cond.wait_for(lock, chrono::milliseconds(20));
+            }
+          }
           for (auto& event : events_.inner()) {
             signals.on_input.emit(event);
             util::match(
@@ -121,7 +127,16 @@ namespace otto::services {
           itc::ActionBus<itc::LogicBus>::queue.pop_call_all();
         }
       };
+      itc::ActionBus<itc::LogicBus>::queue.on_available([this] {
+        // TODO: why does this crash?
+        // auto lock = std::unique_lock(logic_bus_mtx);
+        logic_cond.notify_one();
+      });
     });
+  }
+
+  Controller::~Controller() noexcept {
+    itc::ActionBus<itc::LogicBus>::queue.on_available(nullptr);
   }
 
   // DummyController //

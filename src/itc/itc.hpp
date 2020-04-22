@@ -31,7 +31,7 @@ namespace otto::itc {
   /// };
   ///
   /// struct Screen {
-  ///   void action(FilterFreq::action, float) noexcept;
+  ///   void action(FilterFreq::action, float) noexcept final;
   /// };
   /// ```
   template<typename Tag, typename ValueType>

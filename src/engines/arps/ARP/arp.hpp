@@ -12,7 +12,6 @@ namespace otto::engines::arp {
   using namespace props;
 
   BETTER_ENUM(Playmode, std::int8_t, up, down, updown, downup, updowninc, downupinc, manual, chord, random);
-
   BETTER_ENUM(OctaveMode, std::int8_t, standard, octaveup, doubleoctaveup, octaveupunison, fifthunison, octavedownup);
 
   struct Screen;

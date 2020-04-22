@@ -18,11 +18,8 @@ namespace otto::engines::ottofm {
                                      itc::prop_change<&Props::OperatorProps<I>::out_level>>;
 
   struct OttofmScreen : ui::Screen,
-                        ActionReceiver< //
-                          OperatorActions<0>,
-                          OperatorActions<1>,
-                          OperatorActions<2>,
-                          OperatorActions<3>,
+                        ActionReceiverOnBus< //
+                          itc::GraphicsBus,
                           itc::prop_change<&Props::algorithm_idx>,
                           itc::prop_change<&Props::cur_op>,
                           itc::prop_change<&Props::fm_amount>> //
@@ -41,7 +38,7 @@ namespace otto::engines::ottofm {
     };
 
     template<int I>
-    struct OperatorHelper : ActionReceiver<OperatorActions<I>> {
+    struct OperatorHelper : ActionReceiverOnBus<itc::GraphicsBus, OperatorActions<I>> {
       OperatorHelper(OperatorData& data) : data(data) {}
 
       void action(itc::prop_change<&Props::OperatorProps<I>::feedback>, float f) noexcept final
@@ -108,44 +105,6 @@ namespace otto::engines::ottofm {
       fm_amount = fm;
     }
 
-#define OTTOFM_FWD_TO_HELPERS(PropName, ArgType, I)                                                                    \
-  void action(itc::prop_change<&Props::OperatorProps<I>::PropName>, ArgType a) noexcept final                          \
-  {                                                                                                                    \
-    util::for_each(operator_helpers, [&](auto& op) {                                                                   \
-      itc::try_call_receiver(op, itc::prop_change<&Props::OperatorProps<I>::PropName>::data(a));                       \
-    });                                                                                                                \
-  }
-
-    OTTOFM_FWD_TO_HELPERS(feedback, float, 0)
-    OTTOFM_FWD_TO_HELPERS(attack, float, 0)
-    OTTOFM_FWD_TO_HELPERS(decay_release, float, 0)
-    OTTOFM_FWD_TO_HELPERS(suspos, float, 0)
-    OTTOFM_FWD_TO_HELPERS(detune, float, 0)
-    OTTOFM_FWD_TO_HELPERS(ratio_idx, int, 0)
-    OTTOFM_FWD_TO_HELPERS(out_level, float, 0)
-    OTTOFM_FWD_TO_HELPERS(feedback, float, 1)
-    OTTOFM_FWD_TO_HELPERS(attack, float, 1)
-    OTTOFM_FWD_TO_HELPERS(decay_release, float, 1)
-    OTTOFM_FWD_TO_HELPERS(suspos, float, 1)
-    OTTOFM_FWD_TO_HELPERS(detune, float, 1)
-    OTTOFM_FWD_TO_HELPERS(ratio_idx, int, 1)
-    OTTOFM_FWD_TO_HELPERS(out_level, float, 1)
-    OTTOFM_FWD_TO_HELPERS(feedback, float, 2)
-    OTTOFM_FWD_TO_HELPERS(attack, float, 2)
-    OTTOFM_FWD_TO_HELPERS(decay_release, float, 2)
-    OTTOFM_FWD_TO_HELPERS(suspos, float, 2)
-    OTTOFM_FWD_TO_HELPERS(detune, float, 2)
-    OTTOFM_FWD_TO_HELPERS(ratio_idx, int, 2)
-    OTTOFM_FWD_TO_HELPERS(out_level, float, 2)
-    OTTOFM_FWD_TO_HELPERS(feedback, float, 3)
-    OTTOFM_FWD_TO_HELPERS(attack, float, 3)
-    OTTOFM_FWD_TO_HELPERS(decay_release, float, 3)
-    OTTOFM_FWD_TO_HELPERS(suspos, float, 3)
-    OTTOFM_FWD_TO_HELPERS(detune, float, 3)
-    OTTOFM_FWD_TO_HELPERS(ratio_idx, int, 3)
-    OTTOFM_FWD_TO_HELPERS(out_level, float, 3)
-
-#undef OTTOFM_FWD_TO_HELPERS
   private:
     bool shift = false;
     int cur_op = 0;
@@ -164,8 +123,4 @@ namespace otto::engines::ottofm {
     std::array<float, 30> sinewave;
     std::array<float, 30> harmonics;
   };
-
-  static_assert(
-    itc::is_action_receiver_v<OttofmScreen::OperatorHelper<1>, itc::prop_change<&Props::OperatorProps<1>::feedback>>);
-  static_assert(itc::is_action_receiver_v<OttofmScreen, itc::prop_change<&Props::OperatorProps<1>::feedback>>);
 } // namespace otto::engines::ottofm

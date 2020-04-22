@@ -6,10 +6,14 @@ namespace otto::engines::master {
 
   using namespace core;
 
-  struct Screen : ui::Screen {
+  struct Screen final : ui::Screen,
+                        itc::ActionReceiverOnBus<itc::GraphicsBus,
+                                                 itc::prop_change<&Props::volume>,
+                                                 itc::prop_change<&Props::tempo>> //
+  {
     void draw(nvg::Canvas& ctx) override;
-    void action(itc::prop_change<&Props::volume>, float v) noexcept;
-    void action(itc::prop_change<&Props::tempo>, float t) noexcept;
+    void action(itc::prop_change<&Props::volume>, float v) noexcept final;
+    void action(itc::prop_change<&Props::tempo>, float t) noexcept final;
 
     float volume_ = 0.f;
     float rotation = 0.f;

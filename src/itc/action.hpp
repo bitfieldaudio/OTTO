@@ -21,6 +21,7 @@ namespace otto::itc {
   /// An Action is a statically-dispatched signal to one or more receivers.
   template<typename Tag, typename... Args>
   struct Action {
+    using tag_type = Tag;
     using args_tuple = std::tuple<Args...>;
     /// Construct an @ref ActionData object  for this action
     static auto data(Args... args)
@@ -84,34 +85,5 @@ namespace otto::itc {
   // Test get_type_name
   static_assert(get_type_name<int>() == "int",
                 "get_type_name works using some compiler hacks, and appears to not work on this compiler");
-
-  /// Calls the correct `action` function in an `ActionReceiver` with the given
-  /// `action_data`
-  template<typename AR, typename Tag, typename... Args>
-  auto call_receiver(AR& ar, ActionData<Action<Tag, Args...>> action_data)
-  {
-    static_assert(is_action_receiver_v<AR, Action<Tag, Args...>>);
-
-    DLOGI("Action {} received by {}, args: {}", get_type_name<Tag>(), get_type_name<std::decay_t<AR>>(),
-          doctest::StringMaker<std::tuple<Args...>>::convert(action_data.args).c_str());
-    std::apply([&ar](auto&&... args) { ar.action(Action<Tag, Args...>{}, FWD(args)...); }, action_data.args);
-  }
-
-  /// Calls the correct `action` function in an `ActionReceiver` with the given
-  /// `action_data`, if such a function exists
-  ///
-  /// @return `true` if `AR` has a receiver for the action and that action has
-  /// been called. `false` otherwise.
-  template<typename AR, typename Tag, typename... Args>
-  bool try_call_receiver(AR&& ar, ActionData<Action<Tag, Args...>> action_data)
-  {
-    if constexpr (is_action_receiver_v<AR, Action<Tag, Args...>>) {
-      DLOGI("Action {} received by {}, args: {}", get_type_name<Tag>(), get_type_name<std::decay_t<AR>>(),
-            doctest::StringMaker<std::tuple<Args...>>::convert(action_data.args).c_str());
-      std::apply([&ar](auto&&... args) { ar.action(Action<Tag, Args...>{}, FWD(args)...); }, action_data.args);
-      return true;
-    }
-    return false;
-  }
 
 } // namespace otto::itc

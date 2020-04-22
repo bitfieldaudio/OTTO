@@ -12,6 +12,11 @@ namespace otto::itc {
   struct ActionReceiverRegistry<Action<Tag, Args...>> {
     using Action = Action<Tag, Args...>;
 
+    std::size_t size() const noexcept
+    {
+      return receivers.size();
+    }
+
     /// Add to the registry.
     ///
     /// Precondition: Registry must not contain `rec` already

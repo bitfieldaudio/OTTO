@@ -10,45 +10,77 @@
 
 namespace otto::core::engine {
 
-  struct EngineSelectorScreen;
-
   struct EngineSelectorData {
     util::string_ref name;
     ui::Icon icon;
     std::vector<std::string> presets;
   };
 
-  using SelectedEngine = itc::PropTypes<struct selected_engine_tag, int>;
-  using SelectedPreset = itc::PropTypes<struct selected_preset_tag, int>;
+  enum struct EngineSlot {
+    arp,
+    synth,
+    fx1,
+    fx2,
+  };
+
+  template<EngineSlot ES>
+  struct EngineSelectorScreen;
+
+  constexpr EngineType engine_type_for(EngineSlot es)
+  {
+    switch (es) {
+      case EngineSlot::arp: return EngineType::arpeggiator;
+      case EngineSlot::synth: return EngineType::synth;
+      case EngineSlot::fx1: return EngineType::effect;
+      case EngineSlot::fx2: return EngineType::effect;
+    }
+  }
+
+  template<EngineSlot ES>
+  struct selected_engine_tag;
+  template<EngineSlot ES>
+  struct selected_preset_tag;
+  template<EngineSlot ES>
+  struct publish_engine_data_tag;
+  template<EngineSlot ES>
+  struct make_new_preset_tag;
+
+  template<EngineSlot ES>
+  using SelectedEngine = itc::PropTypes<selected_engine_tag<ES>, int>;
+  template<EngineSlot ES>
+  using SelectedPreset = itc::PropTypes<selected_preset_tag<ES>, int>;
+  template<EngineSlot ES>
   struct Actions {
-    using publish_engine_data = itc::Action<struct publish_engine_data_tag, EngineSelectorData>;
-    using make_new_preset = itc::Action<struct make_new_preset_tag, std::string>;
+    using publish_engine_data = itc::Action<publish_engine_data_tag<ES>, EngineSelectorData>;
+    using make_new_preset = itc::Action<make_new_preset_tag<ES>, std::string>;
   };
 
   /// Owns engines of type `ET`, and dispatches to a selected one of them
-  template<EngineType ET, typename... Engines>
+  template<EngineSlot ES, typename... Engines>
   struct EngineDispatcher : input::InputHandler,
                             util::OwnsObservers,
                             itc::ActionReceiverOnBus< //
                               itc::LogicBus,
-                              SelectedEngine::action,
-                              SelectedPreset::action,
-                              Actions::make_new_preset> //
+                              typename SelectedEngine<ES>::action,
+                              typename SelectedPreset<ES>::action,
+                              typename Actions<ES>::make_new_preset> //
   {
+    static constexpr EngineType engine_type = engine_type_for(ES);
     constexpr static std::array<util::string_ref, sizeof...(Engines)> engine_names = {{Engines::name...}};
-    constexpr static bool has_off_engine = std::is_same_v<meta::head_t<meta::list<Engines...>>, OffEngine<ET>>;
+    constexpr static bool has_off_engine = std::is_same_v<meta::head_t<meta::list<Engines...>>, OffEngine<engine_type>>;
 
     struct Props {
-      SelectedEngine::GAProp<> selected_engine_idx = {0, props::limits(0, sizeof...(Engines) - 1)};
-      SelectedPreset::GAProp<> selected_preset_idx = {0, props::limits(0, 12)};
+      typename SelectedEngine<ES>::template GAProp<> selected_engine_idx = {0,
+                                                                            props::limits(0, sizeof...(Engines) - 1)};
+      typename SelectedPreset<ES>::template GAProp<> selected_preset_idx = {0, props::limits(0, 12)};
     };
 
     EngineDispatcher() noexcept;
 
     ui::ScreenAndInput selector_screen() noexcept;
     ui::ScreenAndInput engine_screen() noexcept;
-    ITypedEngine<ET>& current();
-    ITypedEngine<ET>* operator->();
+    ITypedEngine<engine_type>& current();
+    ITypedEngine<engine_type>* operator->();
 
     template<int N>
     auto process(audio::ProcessData<N> data) noexcept;
@@ -56,17 +88,17 @@ namespace otto::core::engine {
     void encoder(input::EncoderEvent) override;
     bool keypress(input::Key) override;
 
-    void action(SelectedEngine::action, int v) noexcept final
+    void action(typename SelectedEngine<ES>::action, int v) noexcept final
     {
       props.selected_engine_idx = v;
     }
 
-    void action(SelectedPreset::action, int v) noexcept final
+    void action(typename SelectedPreset<ES>::action, int v) noexcept final
     {
       props.selected_preset_idx = v;
     }
 
-    void action(Actions::make_new_preset, std::string name) noexcept final;
+    void action(typename Actions<ES>::make_new_preset, std::string name) noexcept final;
 
     void from_json(const nlohmann::json&);
     nlohmann::json to_json() const;
@@ -81,8 +113,8 @@ namespace otto::core::engine {
     void save_engine_state();
 
     std::atomic<bool> engine_is_constructed_ = true;
-    util::variant_w_base<ITypedEngine<ET>, Engines...> current_engine_ = std::in_place_index_t<0>();
-    std::unique_ptr<EngineSelectorScreen> screen_;
+    util::variant_w_base<ITypedEngine<engine_type>, Engines...> current_engine_ = std::in_place_index_t<0>();
+    std::unique_ptr<EngineSelectorScreen<ES>> screen_;
     util::flat_map<std::string, nlohmann::json> engine_states_;
     Props props;
   };
