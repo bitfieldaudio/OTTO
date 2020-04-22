@@ -115,10 +115,10 @@ namespace otto::engines::ottofm {
 
     std::array<OperatorData, 4> ops;
     std::tuple<OperatorHelper<0>, OperatorHelper<1>, OperatorHelper<2>, OperatorHelper<3>> operator_helpers = {
-      {ops[0]},
-      {ops[1]},
-      {ops[2]},
-      {ops[3]}};
+      ops[0],
+      ops[1],
+      ops[2],
+      ops[3]};
 
     std::array<float, 30> sinewave;
     std::array<float, 30> harmonics;

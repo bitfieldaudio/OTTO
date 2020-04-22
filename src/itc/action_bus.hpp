@@ -62,6 +62,11 @@ namespace otto::itc {
 
     static_assert(is_bus_tag_v<BusTag>, "First template parameter to ActionReceiverOnBus must be the tag of a bus");
 
+    /// It's not strictly necessary to delete the copy constructor,
+    /// so if we ever have a real usecase for keeping it, remove this.
+    /// Usually though, these are objects that we dont want to be copied.
+    ActionReceiverOnBus(const ActionReceiverOnBus&) = delete;
+
     ActionReceiverOnBus() noexcept
     {
       meta::for_each<ActionList>([this](auto one) {
