@@ -2,9 +2,24 @@
 
 #include <cmath>
 
+#include "core/ui/nvg/Text.hpp"
 #include "core/ui/vector_graphics.hpp"
 
 namespace otto::engines::pingpong {
+
+  std::string to_string(SubdivisionEnum sd)
+  {
+    switch (sd) {
+        case SubdivisionEnum::sixteenths: return "16THS";
+        case SubdivisionEnum::eighthtriplets: return "D.16THS";
+        case SubdivisionEnum::eights: return "8THS";
+        case SubdivisionEnum::quartertriplets: return "D.8THS";
+        case SubdivisionEnum::quarter: return "QUARTER";
+        case SubdivisionEnum::half: return "HALF";
+        case SubdivisionEnum::whole: return "WHOLE";
+        default: OTTO_UNREACHABLE;
+      }
+  }
 
   using namespace core::ui;
   using namespace core::ui::vg;
@@ -58,6 +73,12 @@ namespace otto::engines::pingpong {
 
     if (timetype_) {
       // draw subdivision
+      // TODO: draw actual note icons
+      ctx.font(Fonts::Bold, 25);
+      ctx.beginPath();
+      ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Bottom);
+      ctx.fillStyle(Colours::Blue);
+      ctx.fillText(to_string(subdivision_), {x_pad, height - y_pad - spacing});
     } else {
       ctx.beginPath();
       ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Bottom);
@@ -104,6 +125,12 @@ namespace otto::engines::pingpong {
                10 + 8 * (cur_step_size + i), spread_amount);
     
       });
+    }
+    if (stereo_invert_) {
+      ctx.beginPath();
+      ctx.fillStyle(Colours::Red);
+      ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Top);
+      ctx.fillText("X", {x_pad, x_pad / 2.f});
     }
 
   }

@@ -6,6 +6,8 @@
 
 namespace otto::engines::pingpong {
 
+  std::string to_string(SubdivisionEnum sd);
+
   using namespace core;
 
   struct Screen : ui::Screen {
