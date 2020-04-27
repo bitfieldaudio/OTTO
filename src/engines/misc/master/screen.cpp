@@ -1,5 +1,6 @@
 #include "screen.hpp"
 
+#include "core/ui/nvg/Text.hpp"
 #include "core/ui/vector_graphics.hpp"
 
 namespace otto::engines::master {
@@ -23,51 +24,53 @@ namespace otto::engines::master {
     using namespace nvg;
     using namespace ui::vg;
 
+    constexpr Point volume_center = {75, 110};
+
     // Text
+    ctx.beginPath();
     ctx.font(Fonts::Bold, 26);
-    ctx.fillStyle(Color::bytes(255, 255, 255));
-    ctx.fillText("master volume", 86.6, 189.9);
+    ctx.fillStyle(Colours::White);
+    ctx.textAlign(HorizontalAlign::Center, VerticalAlign::Bottom);
+    ctx.fillText("VOLUME", volume_center.x, 189.9);
 
     // Dot
-    ctx.save();
     ctx.beginPath();
-    ctx.circle({160,110},4);
+    ctx.circle(volume_center,4);
     ctx.fillStyle(Colours::Green);
     ctx.fill();
     ctx.lineWidth(6.0);
-    ctx.strokeStyle(Color::bytes(147, 192, 34));
+    ctx.strokeStyle(Colours::Green);
     ctx.lineCap(LineCap::ROUND);
     ctx.lineJoin(LineJoin::ROUND);
-    ctx.stroke();
+    ctx.stroke(Colours::Green);
 
-    ctx.save();
-    ctx.rotateAround({160,110}, rotation);
-    ctx.beginPath();
-    ctx.moveTo(160.0, 110.8);
-    ctx.lineTo(160.0, 73.4);
-    ctx.stroke();
-    ctx.restore();
+    ctx.group([&]{
+      ctx.rotateAround(volume_center, rotation);
+      ctx.beginPath();
+      ctx.moveTo(volume_center);
+      ctx.lineTo(volume_center.x, volume_center.y - 37);
+      ctx.lineWidth(6.f);
+      ctx.stroke(Colours::Green);
+    });
 
+    constexpr float radius = 55.f;
+    constexpr float angle = M_PI * 0.7; 
     // Outer circle
-    ctx.restore();
     ctx.beginPath();
-    ctx.moveTo(109.4, 144.9);
-    ctx.bezierCurveTo(102.8, 135.1, 99.0, 123.4, 99.0, 110.8);
-    ctx.bezierCurveTo(99.0, 77.1, 126.3, 49.8, 160.0, 49.8);
-    ctx.bezierCurveTo(193.7, 49.8, 221.0, 77.1, 221.0, 110.8);
-    ctx.bezierCurveTo(221.0, 122.6, 217.6, 133.7, 211.8, 143.0);
+    ctx.arc(volume_center, radius, -angle - M_PI_2, angle - M_PI_2);
     ctx.lineWidth(6.0);
-    ctx.strokeStyle(Color::bytes(99, 99, 99));
+    ctx.strokeStyle(Colours::Gray50);
     ctx.lineCap(LineCap::ROUND);
     ctx.lineJoin(LineJoin::ROUND);
     ctx.stroke();
-    ctx.restore();
 
     // Tempo
-    ctx.font(Fonts::Norm, 26);
+    ctx.fillStyle(Colours::White);
+    ctx.textAlign(HorizontalAlign::Right, VerticalAlign::Bottom);
+    ctx.fillText("TEMPO", width - 25, 189.9);
     ctx.fillStyle(Colours::Red);
-    ctx.fillText("tempo", 186.6, 89.9);
-    ctx.fillText(fmt::format("{:.1f}", tempo_), {186.6, 120});
+    ctx.font(Fonts::Bold, 40);
+    ctx.fillText(fmt::format("{:.1f}", tempo_), {width - 25, 150});
 
   }
 
