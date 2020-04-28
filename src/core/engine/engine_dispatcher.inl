@@ -128,13 +128,15 @@ namespace otto::core::engine {
   ENGDISPTEMPLATE
   void ENGDISP::encoder(input::EncoderEvent e)
   {
-    itc::send_to_bus<itc::GraphicsBus>(input::EncoderAction(), e);
+    // TODO: Find a propper way to do this
+    itc::send_to_bus<itc::GraphicsBus>([this, e] { screen_->action(input::EncoderAction(), e); });
   }
 
   ENGDISPTEMPLATE
   bool ENGDISP::keypress(input::Key key)
   {
-    itc::send_to_bus<itc::GraphicsBus>(input::KeyPressAction(), key);
+    // TODO: Find a propper way to do this
+    itc::send_to_bus<itc::GraphicsBus>([this, key] { screen_->action(input::KeyPressAction(), key); });
     return false;
   }
 

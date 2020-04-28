@@ -51,6 +51,15 @@ namespace otto::itc {
     });
   }
 
+  /// Send a function to be executed on one or more busses
+  template<typename... BusTags, typename Callable, typename = std::enable_if_t<std::is_invocable_v<Callable>>>
+  void send_to_bus(Callable&& c) {
+    meta::for_each<meta::flatten_t<meta::list<BusTags...>>>([&] (auto one) {
+        using BusTag = meta::_t<decltype(one)>;
+        ActionBus<BusTag>::queue.push(c);
+    });
+  }
+
   /// An @ref ActionReceiver that registers and unregisters itself on a global action bus.
   ///
   /// @tparam BusTag the tag type denoting the bus to register on
