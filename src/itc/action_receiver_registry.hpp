@@ -1,6 +1,8 @@
 #pragma once
 
 #include "action.hpp"
+#include "itc/action_bus.hpp"
+#include "util/flat_map.hpp"
 
 namespace otto::itc {
 
@@ -20,30 +22,31 @@ namespace otto::itc {
     /// Add to the registry.
     ///
     /// Precondition: Registry must not contain `rec` already
-    void add(ActionReceiver<Action>* rec) noexcept
+    void add(itc::ActionChannel channel, ActionReceiver<Action>* rec) noexcept
     {
-      receivers.push_back(rec);
+      receivers.insert(channel, {}).first->insert(rec);
     }
 
-    void remove(ActionReceiver<Action>* rec) noexcept
+    /// Removes an ActionReceiver from all channels
+    void remove_all(ActionReceiver<Action>* rec) noexcept
     {
-      util::erase(receivers, rec);
-    }
-
-    bool contains(ActionReceiver<Action>* rec) noexcept
-    {
-      return nano::find(receivers, rec) != receivers.end();
+      // Note that empty sets are being left. They can be deleted afterwards if needed
+      for (auto& channel : receivers.values()) {
+        channel.erase(rec);
+      }
     }
 
     void call_all(typename Action::args_tuple args) noexcept
     {
-      for (auto& receiver : receivers) {
-        std::apply([&](Args... args) { receiver->action(Action(), args...); }, args);
+      for (auto& channel : receivers) {
+        for (auto& actrec : channel) {
+          std::apply([&](Args... args) { actrec->action(Action(), args...); }, args);  
+        }
       }
     }
 
   private:
-    std::vector<ActionReceiver<Action>*> receivers;
+    util::flat_map<itc::ActionChannel, util::flat_set<ActionReceiver<Action>*>> receivers;
   };
 
 } // namespace otto::itc

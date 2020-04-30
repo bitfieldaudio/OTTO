@@ -11,6 +11,25 @@ namespace otto::itc {
   struct GraphicsBus {};
   struct LogicBus {};
 
+  /// ActionChannels are 'sub-busses'. They exist to, for instance, differentiate between two identical engines loaded
+  /// into different slots (e.g. Audio Effects or Sampler engines)
+  enum struct ActionChannel {
+    arpeggiator_AC,
+    instrument_AC,
+    fx1_AC,
+    fx2_AC,
+    sequencer_AC,
+    sampler1_AC,
+    sampler2_AC,
+    sampler3_AC,
+    sampler4_AC,
+    sampler5_AC,
+    sampler6_AC,
+    sampler7_AC,
+    sampler8_AC,
+    sampler9_AC,
+  };
+
   template<typename T>
   constexpr bool is_bus_tag_v = util::is_one_of_v<T, AudioBus, GraphicsBus, LogicBus>;
 
@@ -31,7 +50,8 @@ namespace otto::itc {
     {
       queue.push([ad = std::move(action_data)] { //
         auto& registry = detail::action_receiver_registry<BusTag, Action<Tag, Args...>>;
-        DLOGI("Action {} received on {} by {} receivers", get_type_name<Tag>(), get_type_name<BusTag>(), registry.size());
+        DLOGI("Action {} received on {} by {} receivers", get_type_name<Tag>(), get_type_name<BusTag>(),
+              registry.size());
         registry.call_all(ad.args);
       });
     }
@@ -44,19 +64,21 @@ namespace otto::itc {
 
   /// Send an action to receivers on one or more busses
   template<typename... BusTags, typename Tag, typename... Args, typename... ArgRefs>
-  void send_to_bus(Action<Tag, Args...> a, ArgRefs&&... args) {
-    meta::for_each<meta::flatten_t<meta::list<BusTags...>>>([&] (auto one) {
-        using BusTag = meta::_t<decltype(one)>;
-        ActionBus<BusTag>::send(Action<Tag, Args...>::data(args...));
+  void send_to_bus(Action<Tag, Args...> a, ArgRefs&&... args)
+  {
+    meta::for_each<meta::flatten_t<meta::list<BusTags...>>>([&](auto one) {
+      using BusTag = meta::_t<decltype(one)>;
+      ActionBus<BusTag>::send(Action<Tag, Args...>::data(args...));
     });
   }
 
   /// Send a function to be executed on one or more busses
   template<typename... BusTags, typename Callable, typename = std::enable_if_t<std::is_invocable_v<Callable>>>
-  void send_to_bus(Callable&& c) {
-    meta::for_each<meta::flatten_t<meta::list<BusTags...>>>([&] (auto one) {
-        using BusTag = meta::_t<decltype(one)>;
-        ActionBus<BusTag>::queue.push(c);
+  void send_to_bus(Callable&& c)
+  {
+    meta::for_each<meta::flatten_t<meta::list<BusTags...>>>([&](auto one) {
+      using BusTag = meta::_t<decltype(one)>;
+      ActionBus<BusTag>::queue.push(c);
     });
   }
 
@@ -76,12 +98,14 @@ namespace otto::itc {
     /// Usually though, these are objects that we dont want to be copied.
     ActionReceiverOnBus(const ActionReceiverOnBus&) = delete;
 
-    ActionReceiverOnBus() noexcept
+    ActionReceiverOnBus() noexcept {}
+
+    void register_to(ActionChannel channel) 
     {
-      meta::for_each<ActionList>([this](auto one) {
+      meta::for_each<ActionList>([channel, this](auto one) {
         using Action = meta::_t<decltype(one)>;
         DLOGI("Receiver registered on {} for {}", get_type_name<BusTag>(), get_type_name<typename Action::tag_type>());
-        detail::action_receiver_registry<BusTag, Action>.add(this);
+        detail::action_receiver_registry<BusTag, Action>.add(channel, this);
       });
     }
 
@@ -89,9 +113,11 @@ namespace otto::itc {
     {
       meta::for_each<ActionList>([this](auto one) {
         using Action = meta::_t<decltype(one)>;
-        DLOGI("Receiver unregistered on {} for {}", get_type_name<BusTag>(), get_type_name<typename Action::tag_type>());
-        detail::action_receiver_registry<BusTag, Action>.remove(this);
+        DLOGI("Receiver unregistered on {} for {}", get_type_name<BusTag>(),
+              get_type_name<typename Action::tag_type>());
+        detail::action_receiver_registry<BusTag, Action>.remove_all(this);
       });
     }
+
   };
 } // namespace otto::itc
