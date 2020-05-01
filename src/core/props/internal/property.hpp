@@ -139,5 +139,13 @@ namespace otto::core::props {
     value_type value_;
   };
 
+  template<typename T>
+  struct is_property : std::false_type {};
+
+  template<typename T, typename TagList>
+  struct is_property<PropertyImpl<T, TagList>> : std::true_type {};
+
+  constexpr bool is_property_v = is_property<T>::value;
+
 } // namespace otto::core::props
 

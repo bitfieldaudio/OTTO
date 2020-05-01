@@ -2,6 +2,7 @@
 
 #include "audio.hpp"
 #include "screen.hpp"
+#include "itc/action_bus.hpp"
 #include "services/audio_manager.hpp"
 #include "services/ui_manager.hpp"
 
@@ -12,8 +13,12 @@ namespace otto::engines::arp {
 
   using namespace core::input;
 
-  Arp::Arp() : audio(std::make_unique<Audio>()), screen_(std::make_unique<Screen>())
+  Arp::Arp(itc::ActionChannel channel) : audio(std::make_unique<Audio>()), screen_(std::make_unique<Screen>())
   {
+    set_children({{audio.get(), screen_.get()}});
+    register_to(channel);
+    props.send_actions();
+    
     itc::send_to_bus<itc::AudioBus, itc::GraphicsBus>(Actions::graphics_outdated(), graphics_outdated_);
   }
 

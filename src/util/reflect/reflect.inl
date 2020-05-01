@@ -2,9 +2,9 @@
 #include <cstring>
 #include <tuple>
 
-#include "member.hpp"
 #include "detail/meta_holder.hpp"
 #include "detail/template_helpers.hpp"
+#include "member.hpp"
 
 namespace otto::reflect {
 
@@ -28,7 +28,7 @@ namespace otto::reflect {
   // {
   //     return "";
   // }
-  // 
+  //
   template<typename Class>
   constexpr util::string_ref get_name()
   {
@@ -107,16 +107,14 @@ namespace otto::reflect {
   T get_member_value(Class& obj, const char* name)
   {
     T value;
-    for_member<Class, T>(name,
-                          [&value, &obj](const auto& member) { value = member.get_copy(obj); });
+    for_member<Class, T>(name, [&value, &obj](const auto& member) { value = member.get_copy(obj); });
     return value;
   }
 
   template<typename T, typename Class, typename V, typename>
   void set_member_value(Class& obj, const char* name, V&& value)
   {
-    for_member<Class, T>(
-      name, [&obj, value = std::forward<V>(value)](const auto& member) { member.set(obj, value); });
+    for_member<Class, T>(name, [&obj, value = std::forward<V>(value)](const auto& member) { member.set(obj, value); });
   }
 
 } // namespace otto::reflect

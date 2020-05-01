@@ -14,6 +14,11 @@
 
 namespace otto::core::engine {
 
+  constexpr itc::ActionChannel channel_for(EngineSlot es) {
+      // SWITCH
+      return itc::ActionChannel::fx1;
+  }
+
 #define ENGDISPTEMPLATE template<EngineSlot ES, typename... Engines>
 #define ENGDISP EngineDispatcher<ES, Engines...>
 
@@ -29,7 +34,7 @@ namespace otto::core::engine {
       save_engine_state();
       engine_is_constructed_ = false;
       services::AudioManager::current().wait_one();
-      current_engine_.emplace_by_index(idx);
+      current_engine_.emplace_by_index(idx, channel_for(ES));
       engine_states_[current_engine_->name()].map([&](auto&& j) { current_engine_->from_json(j); });
       engine_is_constructed_ = true;
       update_max_preset_idx();

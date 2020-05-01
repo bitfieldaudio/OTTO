@@ -61,13 +61,14 @@ namespace otto::engines::goss {
 
     DECL_REFLECTION(GossEngine, props);
 
-    Props props;
-
   private:
     itc::Shared<float>::Storage rotation_;
     const std::unique_ptr<GossScreen> screen_;
     voices::SettingsScreen voice_screen_;
     voices::EnvelopeScreen env_screen_;
+
+  public:
+    Props props;
   };
 
 } // namespace otto::engines::goss

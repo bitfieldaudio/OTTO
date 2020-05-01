@@ -4,6 +4,7 @@
 
 #include "action_queue.hpp"
 #include "action_receiver_registry.hpp"
+#include "util/local_vector.hpp"
 
 namespace otto::itc {
 
@@ -11,24 +12,6 @@ namespace otto::itc {
   struct GraphicsBus {};
   struct LogicBus {};
 
-  /// ActionChannels are 'sub-busses'. They exist to, for instance, differentiate between two identical engines loaded
-  /// into different slots (e.g. Audio Effects or Sampler engines)
-  enum struct ActionChannel {
-    arpeggiator_AC,
-    instrument_AC,
-    fx1_AC,
-    fx2_AC,
-    sequencer_AC,
-    sampler1_AC,
-    sampler2_AC,
-    sampler3_AC,
-    sampler4_AC,
-    sampler5_AC,
-    sampler6_AC,
-    sampler7_AC,
-    sampler8_AC,
-    sampler9_AC,
-  };
 
   template<typename T>
   constexpr bool is_bus_tag_v = util::is_one_of_v<T, AudioBus, GraphicsBus, LogicBus>;
@@ -82,14 +65,22 @@ namespace otto::itc {
     });
   }
 
+  /// Interface for actionreceiveronbus
+  struct ActionReceiverOnBusBase {
+    virtual ~ActionReceiverOnBusBase() noexcept = default;
+    virtual void register_to(ActionChannel) noexcept = 0;
+    virtual void unregister_from(ActionChannel) noexcept = 0;
+    virtual void unregister_from_all() noexcept = 0;
+  };
+
   /// An @ref ActionReceiver that registers and unregisters itself on a global action bus.
   ///
   /// @tparam BusTag the tag type denoting the bus to register on
   /// @tparam Actions the actions to register for. Can be a mixture of actions and `meta::list`s of actions
   template<typename BusTag, typename... Actions>
-  struct ActionReceiverOnBus : ActionReceiver<Actions...> {
-    using ActionReceiver = ActionReceiver<Actions...>;
-    using typename ActionReceiver::ActionList;
+  struct ActionReceiverOnBus : ActionReceiverOnBusBase, ActionReceiver<Actions...> {
+    using ActionReceiverType = ActionReceiver<Actions...>;
+    using typename ActionReceiverType::ActionList;
 
     static_assert(is_bus_tag_v<BusTag>, "First template parameter to ActionReceiverOnBus must be the tag of a bus");
 
@@ -100,24 +91,52 @@ namespace otto::itc {
 
     ActionReceiverOnBus() noexcept {}
 
-    void register_to(ActionChannel channel) 
+    ~ActionReceiverOnBus() noexcept
+    {
+      unregister_from_all();
+    }
+
+    // ActionReceivers can maximally have 16 children
+    using Children = util::local_vector<ActionReceiverOnBusBase*, 16>;
+    void set_children(Children children)
+    {
+      OTTO_ASSERT(children_.size() == 0);
+      children_ = children;
+    }
+
+    void register_to(ActionChannel channel) noexcept override
     {
       meta::for_each<ActionList>([channel, this](auto one) {
         using Action = meta::_t<decltype(one)>;
         DLOGI("Receiver registered on {} for {}", get_type_name<BusTag>(), get_type_name<typename Action::tag_type>());
-        detail::action_receiver_registry<BusTag, Action>.add(channel, this);
+        detail::action_receiver_registry<BusTag, Action>.add_to(channel, this);
       });
+      for (auto* child : children_) child->register_to(channel);
     }
 
-    ~ActionReceiverOnBus() noexcept
+    void unregister_from(ActionChannel channel) noexcept override
+    {
+      meta::for_each<ActionList>([&](auto one) {
+        using Action = meta::_t<decltype(one)>;
+        DLOGI("Receiver unregistered on {} for {}", get_type_name<BusTag>(),
+              get_type_name<typename Action::tag_type>());
+        detail::action_receiver_registry<BusTag, Action>.remove_from(channel, this);
+      });
+      for (auto* child : children_) child->unregister_from(channel);
+    }
+
+    void unregister_from_all() noexcept override
     {
       meta::for_each<ActionList>([this](auto one) {
         using Action = meta::_t<decltype(one)>;
         DLOGI("Receiver unregistered on {} for {}", get_type_name<BusTag>(),
               get_type_name<typename Action::tag_type>());
-        detail::action_receiver_registry<BusTag, Action>.remove_all(this);
+        detail::action_receiver_registry<BusTag, Action>.remove_from_all(this);
       });
+      for (auto* child : children_) child->unregister_from_all();
     }
 
+  private:
+    Children children_;
   };
 } // namespace otto::itc

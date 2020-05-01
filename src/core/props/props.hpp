@@ -17,6 +17,27 @@
 /// to use it.
 namespace otto::core::props {
 
+  /// CRTP base class for `Props` structs.
+  ///
+  /// Usage:
+  /// ```cpp
+  /// struct Props : props::Properties<Props> {
+  ///   // props...
+  /// };
+  /// ```
+  template<typename Derived>
+  struct Properties : util::crtp<Derived, Properties<Derived>> {
+   
+    /// Send change_events for all props registered with DECL_REFLECTION
+    void send_actions() {
+      reflect::for_all_members<Props>([]<typename M>(M member) {
+        if constexpr (props::is_property_v<M::member_type>) {
+          member.get_ref().send_actions();
+        }
+      });
+    }
+  };
+
   template<typename T, typename Enable>
   struct default_mixins {
     using type = std::conditional_t<std::is_enum_v<T> || util::BetterEnum::is<T>,

@@ -21,7 +21,7 @@ namespace otto::engines::arp {
     using graphics_outdated = itc::Action<struct graphics_outdated_tag, std::atomic<bool>&>;
   };
 
-  struct Props {
+  struct Props : props::Properties<Props> {
     itc::GAProp<struct playmode_tag, Playmode, wrap> playmode = {Playmode::up};
     itc::GAProp<struct octavemode_tag, OctaveMode, wrap> octavemode = {OctaveMode::standard};
     itc::GAProp<struct note_length_tag, float> note_length = {0.2f, limits(0.01f, 0.97f), step_size(0.01)};
@@ -102,10 +102,10 @@ namespace otto::engines::arp {
   } // namespace octave_modes
   
 
-  struct Arp : core::engine::ArpeggiatorEngine<Arp> {
+  struct Arp : core::engine::ArpeggiatorEngine<Arp>, itc::ActionReceiverOnBus<itc::LogicBus> {
     static constexpr util::string_ref name = "Arp";
 
-    Arp();
+    Arp(itc::ActionChannel);
 
     void encoder(core::input::EncoderEvent e) override;
 
