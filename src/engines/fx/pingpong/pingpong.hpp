@@ -14,7 +14,7 @@ namespace otto::engines::pingpong {
 
   using Sender = core::engine::EngineSender<Audio, Screen>;
 
-  BETTER_ENUM(SubdivisionEnum, std::int8_t, sixteenths, eighthtriplets, eights, quartertriplets, quarter, half, whole);
+  BETTER_ENUM(SubdivisionEnum, std::int8_t, thirtysecondth, sixteenth, eighthtriplet, eighth, quartertriplet, doteighth, quarter, halftriplet, dotquarter, half, dothalf, whole);
 
   struct Props {
     Sender sender;

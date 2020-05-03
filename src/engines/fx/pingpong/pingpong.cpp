@@ -59,17 +59,22 @@ namespace otto::engines::pingpong {
   float PingPong::calculate_delaytime(bool type, float free, SubdivisionEnum sd)
   {
     if (type) {
-      // Using subdivisions. Result is sec. per beat
-      auto res = 60.f / services::ClockManager::current().bpm();
+      // Using subdivisions. Result is sec. per bar (whole note)
+      auto res = 240.f / services::ClockManager::current().bpm();
       // Identification of the subdivisions
       switch (sd) {
-        case SubdivisionEnum::sixteenths: res /= 4.f; break;
-        case SubdivisionEnum::eighthtriplets: res /= 3.f; break;
-        case SubdivisionEnum::eights: res *= 0.5f; break;
-        case SubdivisionEnum::quartertriplets: res *= 2.f / 3.f; break;
-        case SubdivisionEnum::quarter: break;
-        case SubdivisionEnum::half: res *= 2.f; break;
-        case SubdivisionEnum::whole: res *= 4.f; break;
+        case SubdivisionEnum::thirtysecondth: res *= 1.f/32.f; break;
+        case SubdivisionEnum::sixteenth: res *= 1.f/16.f; break;
+        case SubdivisionEnum::eighthtriplet: res *= 1.f/12.f; break;
+        case SubdivisionEnum::eighth: res *= 1.f/8.f; break;
+        case SubdivisionEnum::doteighth: res *= 3.f/16.f; break;
+        case SubdivisionEnum::quartertriplet: res *= 1.f / 6.f; break;
+        case SubdivisionEnum::quarter: res *= 1.f/4.f; break;
+        case SubdivisionEnum::dotquarter: res *= 3.f/8.f; break;
+        case SubdivisionEnum::halftriplet: res *= 1.f/3.f; break;
+        case SubdivisionEnum::half: res *= 1.f/2.f; break;
+        case SubdivisionEnum::dothalf: res *= 3.f/4.f; break;
+        case SubdivisionEnum::whole: break;
         default: OTTO_UNREACHABLE;
       }
       return res;
