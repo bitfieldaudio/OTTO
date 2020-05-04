@@ -111,7 +111,7 @@ namespace otto::core::voices {
   }
 
   template<typename D>
-  void VoiceBase<D>::action(portamento_tag::action, float p) noexcept
+  void VoiceBase<D>::portamento(float p) noexcept
   {
     glide_ = glide_.getEnd();
     glide_.period(p);
@@ -562,6 +562,14 @@ namespace otto::core::voices {
   void VoiceManager<V, N>::action(interval_tag::action a, int interval) noexcept
   {
     util::partial_match(voice_allocator, [&](IntervalAllocator& a) { a.set_interval(interval); });
+  }
+
+  template<typename V, int N>
+  void VoiceManager<V, N>::action(portamento_tag::action, float p) noexcept
+  {
+    for (auto& voice : voices_) {
+      voice.portamento(p);
+    }
   }
 
   template<typename V, int N>

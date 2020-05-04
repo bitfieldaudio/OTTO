@@ -27,7 +27,7 @@ namespace otto::engines::arp {
     itc::GAProp<struct note_length_tag, float> note_length = {0.2f, limits(0.01f, 0.97f), step_size(0.01)};
     itc::GAProp<struct subdivision_tag, int, wrap> subdivision = {1, limits(1, 5)};
 
-    DECL_REFLECTION(Props, playmode, octavemode, note_length, subdivision);
+    REFLECT_PROPS(Props, playmode, octavemode, note_length, subdivision);
   };
 
   struct NoteTPair {

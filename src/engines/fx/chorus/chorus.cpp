@@ -8,8 +8,11 @@
 
 namespace otto::engines::chorus {
 
-  Chorus::Chorus() : audio(std::make_unique<Audio>(shared_phase_)), screen_(std::make_unique<Screen>(shared_phase_))
+  Chorus::Chorus(itc::ActionChannel channel) : audio(std::make_unique<Audio>(shared_phase_)), screen_(std::make_unique<Screen>(shared_phase_))
   {
+    set_children(props, audio, screen_);
+    register_to(channel);
+    props.send_actions();
   }
 
   using namespace core::input;

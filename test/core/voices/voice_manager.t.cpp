@@ -450,7 +450,7 @@ namespace otto::core::voices {
 
     SUBCASE("call operators and process calls")
     {
-      auto app = services::test::make_dummy_application();
+      auto app = test::make_dummy_application();
 
       using namespace core::audio;
       SUBCASE("when voice has an operator(), voice and vmgr gets process() and operator()")

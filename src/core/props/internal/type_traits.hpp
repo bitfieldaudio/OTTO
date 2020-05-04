@@ -163,7 +163,7 @@ namespace otto::core::props {
              typename = std::enable_if_t<
                !std::is_void_v<typename T::value_type> && !std::is_void_v<typename T::tag_list> &&
                !std::is_void_v<typename T::hooks> && !std::is_void_v<typename T::property_type>>>
-    static std::true_type _is(T);
+    static std::true_type _is(const T&);
 
   public:
     template<typename T>

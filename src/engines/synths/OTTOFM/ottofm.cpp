@@ -1,6 +1,7 @@
 #include "ottofm.hpp"
 
 #include "audio.hpp"
+#include "itc/action_receiver_registry.hpp"
 #include "screen.hpp"
 #include "services/audio_manager.hpp"
 #include "services/ui_manager.hpp"
@@ -8,7 +9,7 @@
 namespace otto::engines::ottofm {
   using namespace core::input;
 
-  OttofmEngine::OttofmEngine()
+  OttofmEngine::OttofmEngine(itc::ActionChannel channel)
     : screen_(std::make_unique<OttofmScreen>(std::array<itc::Shared<float>, 4>{
         activities_[0],
         activities_[1],
@@ -21,7 +22,11 @@ namespace otto::engines::ottofm {
         activities_[2],
         activities_[3],
       }))
-  {}
+  {
+    set_children(props, audio, screen_);
+    register_to(channel);
+    props.send_actions();
+  }
 
   bool OttofmEngine::keypress(Key key)
   {

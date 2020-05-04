@@ -26,7 +26,7 @@ namespace otto::core::props::mixin {
   };
 
   template<typename PropTag, typename BusList, typename ValueType, typename TagList>
-  struct leaf<action<PropTag, BusList>, ValueType, TagList> {
+  struct leaf<action<PropTag, BusList>, ValueType, TagList> : itc::ActionReceiverOnBus<itc::LogicBus> {
     using action_mixin = action<PropTag, BusList>;
     OTTO_PROPS_MIXIN_DECLS(action_mixin);
     using change_action = itc::Action<PropTag, value_type>;
@@ -39,10 +39,7 @@ namespace otto::core::props::mixin {
     /// Send change actions with the current value to all receivers
     void send_actions() const noexcept
     {
-      meta::for_each<typename action_mixin::ActionBusList>([this](auto type) {
-        using BusTag = meta::_t<decltype(type)>;
-        itc::ActionBus<BusTag>::send(change_action::data(as_prop().get()));
-      });
+      send_action(change_action(), as_prop().get());
     }
   };
 

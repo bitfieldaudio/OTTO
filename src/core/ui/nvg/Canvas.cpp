@@ -1,6 +1,7 @@
 #include "Canvas.hpp"
 
 #include <nanovg.h>
+#include "util/type_traits.hpp"
 
 namespace otto::nvg {
 
@@ -204,8 +205,8 @@ namespace otto::nvg {
 
   Canvas& Canvas::textAlign(HorizontalAlign hAlign, VerticalAlign vAlign)
   {
-    nvgTextAlign(m_nvgCtx, hAlign | vAlign);
-    return *this;
+    nvgTextAlign(m_nvgCtx, util::underlying(hAlign) | util::underlying(vAlign));
+       return *this;
   }
 
   void applyTextStyle(Canvas& canvas, const TextStyle& textStyle)

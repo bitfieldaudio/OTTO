@@ -14,27 +14,26 @@
 
 namespace otto::core::engine {
 
-  constexpr itc::ActionChannel channel_for(EngineSlot es) {
-      // SWITCH
-      return itc::ActionChannel::fx1;
-  }
-
-#define ENGDISPTEMPLATE template<EngineSlot ES, typename... Engines>
-#define ENGDISP EngineDispatcher<ES, Engines...>
+#define ENGDISPTEMPLATE template<EngineType ET, typename... Engines>
+#define ENGDISP EngineDispatcher<ET, Engines...>
 
   void placeholder_engine_icon(ui::IconData& i, nvg::Canvas& ctx);
 
   ENGDISPTEMPLATE
-  ENGDISP::EngineDispatcher() noexcept : screen_(std::make_unique<EngineSelectorScreen<ES>>())
+  ENGDISP::EngineDispatcher(itc::ActionChannel channel) noexcept
+    : current_engine_(std::in_place_index<0>, channel), //
+      screen_(std::make_unique<EngineSelectorScreen>())
   {
+    set_children(screen_, props);
+    register_to(channel);
     for (auto name : engine_names) {
       send_data_for(name);
     }
-    props.selected_engine_idx.observe(this, [this](int idx) {
+    props.selected_engine_idx.observe(this, [this, channel](int idx) {
       save_engine_state();
       engine_is_constructed_ = false;
       services::AudioManager::current().wait_one();
-      current_engine_.emplace_by_index(idx, channel_for(ES));
+      current_engine_.emplace_by_index(idx, channel);
       engine_states_[current_engine_->name()].map([&](auto&& j) { current_engine_->from_json(j); });
       engine_is_constructed_ = true;
       update_max_preset_idx();
@@ -54,8 +53,7 @@ namespace otto::core::engine {
   {
     auto presets = std::vector<std::string>{"Last State"};
     nano::copy(services::PresetManager::current().preset_names(engine_name), nano::back_inserter(presets));
-    itc::send_to_bus<itc::AudioBus, itc::GraphicsBus>(typename Actions<ES>::publish_engine_data(),
-                                                      EngineSelectorData{
+    this->send_action(Actions::publish_engine_data(), EngineSelectorData{
                                                         .name = engine_name,
                                                         .icon = ui::Icon(icon_register(engine_name)),
                                                         .presets = presets,
@@ -78,7 +76,7 @@ namespace otto::core::engine {
   }
 
   ENGDISPTEMPLATE
-  void ENGDISP::action(typename Actions<ES>::make_new_preset, std::string name) noexcept
+  void ENGDISP::action(Actions::make_new_preset, std::string name) noexcept
   {
     services::PresetManager::current().create_preset(current_engine_->name(), name, current_engine_->to_json());
     send_data_for(current_engine_->name());
@@ -133,15 +131,13 @@ namespace otto::core::engine {
   ENGDISPTEMPLATE
   void ENGDISP::encoder(input::EncoderEvent e)
   {
-    // TODO: Find a propper way to do this
-    itc::send_to_bus<itc::GraphicsBus>([this, e] { screen_->action(input::EncoderAction(), e); });
+    send_action(input::EncoderAction(), e);
   }
 
   ENGDISPTEMPLATE
   bool ENGDISP::keypress(input::Key key)
   {
-    // TODO: Find a propper way to do this
-    itc::send_to_bus<itc::GraphicsBus>([this, key] { screen_->action(input::KeyPressAction(), key); });
+    send_action(input::KeyPressAction(), key);
     return false;
   }
 

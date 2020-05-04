@@ -3,7 +3,9 @@
 #include "core/engine/engine.hpp"
 #include "core/ui/screen.hpp"
 #include "core/voices/voice_manager.hpp"
+#include "core/voices/voice_props.hpp"
 #include "core/voices/voices_ui.hpp"
+#include "itc/action_bus.hpp"
 #include "itc/prop.hpp"
 #include "util/reflection.hpp"
 
@@ -16,9 +18,12 @@ namespace otto::engines::ottofm {
   struct OttofmScreen;
   struct Audio;
 
-  struct Props : voices::SynthPropsBase {
+  struct Props : core::props::Properties<Props> {
+    voices::SettingsProps settings;
+    voices::EnvelopeProps envelope;
+
     template<int I>
-    struct OperatorProps {
+    struct OperatorProps : core::props::Properties<Props> {
       template<typename Tag>
       using i_tag = meta::list<Tag, meta::c<I>>;
 
@@ -38,7 +43,7 @@ namespace otto::engines::ottofm {
 
       float current_level = 0;
 
-      DECL_REFLECTION(OperatorProps, feedback, attack, decay_release, suspos, detune, ratio_idx, out_level);
+      REFLECT_PROPS(OperatorProps, feedback, attack, decay_release, suspos, detune, ratio_idx, out_level);
     };
 
     itc::GAProp<struct algorithm_idx_tag, int, wrap> algorithm_idx = {0, limits(0, 10), step_size(1)};
@@ -47,12 +52,12 @@ namespace otto::engines::ottofm {
 
     std::tuple<OperatorProps<0>, OperatorProps<1>, OperatorProps<2>, OperatorProps<3>> operators;
 
-    DECL_REFLECTION(Props, envelope, settings, algorithm_idx, fm_amount, operators, cur_op);
+    REFLECT_PROPS(Props, envelope, settings, algorithm_idx, fm_amount, operators, cur_op);
   };
 
-  struct OttofmEngine : core::engine::SynthEngine<OttofmEngine> {
+  struct OttofmEngine : core::engine::SynthEngine<OttofmEngine>, itc::ActionReceiverOnBus<itc::LogicBus> {
     static constexpr auto name = "OTTO.FM";
-    OttofmEngine();
+    OttofmEngine(itc::ActionChannel);
 
     void encoder(core::input::EncoderEvent e) override;
     bool keypress(core::input::Key key) override;

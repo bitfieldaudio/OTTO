@@ -5,8 +5,7 @@
 
 namespace otto::core::engine {
 
-  OffEngine<EngineType::effect>::OffEngine()
-  {}
+  OffEngine<EngineType::effect>::OffEngine(itc::ActionChannel) {}
 
   audio::ProcessData<2> OffEngine<EngineType::effect>::Audio::process(audio::ProcessData<1> data) noexcept
   {
@@ -14,8 +13,7 @@ namespace otto::core::engine {
     return data.with(out);
   }
 
-  OffEngine<EngineType::arpeggiator>::OffEngine()
-  {}
+  OffEngine<EngineType::arpeggiator>::OffEngine(itc::ActionChannel) {}
 
   audio::ProcessData<0> OffEngine<EngineType::arpeggiator>::Audio::process(audio::ProcessData<0> data) noexcept
   {

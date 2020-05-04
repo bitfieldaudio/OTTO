@@ -15,11 +15,11 @@ namespace otto::engines::arp {
 
   Arp::Arp(itc::ActionChannel channel) : audio(std::make_unique<Audio>()), screen_(std::make_unique<Screen>())
   {
-    set_children({{audio.get(), screen_.get()}});
+    set_children(props, audio.get(), screen_.get());
     register_to(channel);
     props.send_actions();
     
-    itc::send_to_bus<itc::AudioBus, itc::GraphicsBus>(Actions::graphics_outdated(), graphics_outdated_);
+    send_action(Actions::graphics_outdated(), graphics_outdated_);
   }
 
   void Arp::encoder(EncoderEvent ev)

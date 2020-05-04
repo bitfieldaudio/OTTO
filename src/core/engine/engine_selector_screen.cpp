@@ -73,17 +73,11 @@ namespace otto::core::engine {
 
   using namespace core::input;
 
-#define ENGSCRNTEMPLATE template<EngineSlot ES>
-#define ENGSCRN EngineSelectorScreen<ES>
-
-  ENGSCRNTEMPLATE
-  void ENGSCRN::action(EncoderAction, EncoderEvent e) noexcept
+  void EngineSelectorScreen::action(EncoderAction, EncoderEvent e) noexcept
   {
     if (current_screen == +ESSSubscreen::engine_selection) {
       switch (e.encoder) {
-        case Encoder::blue:
-          itc::send_to_bus<itc::LogicBus>(typename SelectedEngine<ES>::action(), selected_engine_ + e.steps);
-          break;
+        case Encoder::blue: send_action(SelectedEngine::action(), selected_engine_ + e.steps); break;
         case Encoder::green: navigate_to(ESSSubscreen::preset_selection); break;
         default: break;
       }
@@ -91,7 +85,7 @@ namespace otto::core::engine {
       switch (e.encoder) {
         case Encoder::blue: navigate_to(ESSSubscreen::engine_selection); break;
         case Encoder::green:
-          itc::send_to_bus<itc::LogicBus>(typename SelectedPreset<ES>::action{}, selected_preset_ + e.steps);
+          send_action(SelectedPreset::action(), selected_preset_ + e.steps);
           break;
         case Encoder::red:
           if (e.steps > 0) navigate_to(ESSSubscreen::new_preset);
@@ -106,8 +100,7 @@ namespace otto::core::engine {
         case Encoder::red:
           if (e.steps < 0) navigate_to(ESSSubscreen::preset_selection);
           if (e.steps > 0) {
-            itc::send_to_bus<itc::LogicBus>(typename Actions<ES>::make_new_preset{},
-                                            std::string(util::trim(preset_name_writer.to_string())));
+            send_action(Actions::make_new_preset{}, std::string(util::trim(preset_name_writer.to_string())));
             preset_name_writer.clear();
             navigate_to(ESSSubscreen::preset_selection);
           }
@@ -117,8 +110,7 @@ namespace otto::core::engine {
     }
   }
 
-  ENGSCRNTEMPLATE
-  void ENGSCRN::action(KeyPressAction, Key key) noexcept
+  void EngineSelectorScreen::action(KeyPressAction, Key key) noexcept
   {
     switch (key) {
       case Key::blue_click: navigate_to(ESSSubscreen::preset_selection); break;
@@ -127,33 +119,31 @@ namespace otto::core::engine {
   }
 
 
-  ENGSCRNTEMPLATE
-  void ENGSCRN::action(typename SelectedEngine<ES>::action, int selected) noexcept
+  void EngineSelectorScreen::action(SelectedEngine::action, int selected) noexcept
   {
     selected_engine_ = selected;
-    ui::vg::timeline().apply(&engine_scroll_).template then<ch::RampTo>(selected, 500, ch::EaseOutExpo());
+    ui::vg::timeline().apply(&engine_scroll_).then<ch::RampTo>(selected, 500, ch::EaseOutExpo());
   }
 
-  ENGSCRNTEMPLATE
-  void ENGSCRN::action(typename SelectedPreset<ES>::action, int selected) noexcept
+  void EngineSelectorScreen::action(SelectedPreset::action, int selected) noexcept
   {
     selected_preset_ = selected;
     ui::vg::timeline().apply(&preset_scroll_).template then<ch::RampTo>(selected, 500, ch::EaseOutExpo());
     bool is_first = selected == 0;
     if (!is_first != new_indicator_transparency_.endValue()) {
-      ui::vg::timeline().apply(&new_indicator_transparency_).template then<ch::RampTo>(!is_first, 500, ch::EaseOutExpo());
+      ui::vg::timeline()
+        .apply(&new_indicator_transparency_)
+        .template then<ch::RampTo>(!is_first, 500, ch::EaseOutExpo());
     }
   }
 
-  ENGSCRNTEMPLATE
-  void ENGSCRN::navigate_to(Subscreen screen)
+  void EngineSelectorScreen::navigate_to(Subscreen screen)
   {
     current_screen = screen;
     ui::vg::timeline().apply(&page_flip_).template then<ch::RampTo>(screen._to_integral(), 500, ch::EaseOutExpo());
   }
 
-  ENGSCRNTEMPLATE
-  void ENGSCRN::action(typename Actions<ES>::publish_engine_data, EngineSelectorData data) noexcept
+  void EngineSelectorScreen::action(Actions::publish_engine_data, EngineSelectorData data) noexcept
   {
     auto found = nano::find_if(engines, [&](auto&& e) { return e.name == data.name; });
     if (found == engines.end()) {
@@ -164,8 +154,7 @@ namespace otto::core::engine {
     first_engine_is_off_ = engines[0].name == "OFF";
   }
 
-  ENGSCRNTEMPLATE
-  void ENGSCRN::draw(nvg::Canvas& ctx)
+  void EngineSelectorScreen::draw(nvg::Canvas& ctx)
   {
     using namespace core::ui;
     using namespace core::ui::vg;
@@ -352,12 +341,4 @@ namespace otto::core::engine {
       });
     }
   }
-
-#undef ENGSCRN
-#undef ENGSCRNTEMPLATE
-
-  template struct EngineSelectorScreen<EngineSlot::arp>;
-  template struct EngineSelectorScreen<EngineSlot::synth>;
-  template struct EngineSelectorScreen<EngineSlot::fx1>;
-  template struct EngineSelectorScreen<EngineSlot::fx2>;
 } // namespace otto::core::engine

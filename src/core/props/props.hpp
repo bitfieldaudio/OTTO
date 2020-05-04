@@ -5,7 +5,10 @@
 
 #include "internal/property.hpp"
 #include "mixins/all.hpp"
+#include "util/crtp.hpp"
 #include "util/serialize.hpp"
+
+#include "itc/action_bus.hpp"
 
 /// The property system
 ///
@@ -14,8 +17,14 @@
 ///
 /// \warning The implementation of this relies on a lot of template metaprogramming and
 /// generally complicated C++. You don't need to know how it works, but I'll try to explain how
-/// to use it.
+/// to use it... some day.
 namespace otto::core::props {
+
+  namespace detail {
+    template<typename T>
+    auto has_send_actions(T& t) noexcept -> decltype(t.send_actions(), std::true_type());
+    auto has_send_actions(...) noexcept -> std::false_type;
+  } // namespace detail
 
   /// CRTP base class for `Props` structs.
   ///
@@ -26,17 +35,51 @@ namespace otto::core::props {
   /// };
   /// ```
   template<typename Derived>
-  struct Properties : util::crtp<Derived, Properties<Derived>> {
-   
-    /// Send change_events for all props registered with DECL_REFLECTION
-    void send_actions() {
-      reflect::for_all_members<Props>([]<typename M>(M member) {
-        if constexpr (props::is_property_v<M::member_type>) {
-          member.get_ref().send_actions();
-        }
-      });
-    }
+  struct Properties : util::crtp<Derived, Properties<Derived>>, itc::ActionReceiverOnBusBase {
+    Properties() noexcept {}
   };
+
+#define REFLECT_PROPS(Type, ...)                                                                                       \
+  DECL_REFLECTION(Type, __VA_ARGS__)                                                                                   \
+  void register_to(itc::ActionChannel channel) noexcept final                                                          \
+  {                                                                                                                    \
+    reflect::for_all_members<std::decay_t<decltype(*this)>>([this, channel](auto member) {                             \
+      using M = typename decltype(member)::member_type;                                                                                      \
+      if constexpr (std::is_base_of_v<itc::ActionReceiverOnBusBase, M>) {                                              \
+        member.get_ref(*this).register_to(channel);                                                                    \
+      }                                                                                                                \
+    });                                                                                                                \
+  }                                                                                                                    \
+                                                                                                                       \
+  void unregister_from(itc::ActionChannel channel) noexcept final                                                      \
+  {                                                                                                                    \
+    reflect::for_all_members<std::decay_t<decltype(*this)>>([this, channel](auto member) {                             \
+      using M = typename decltype(member)::member_type;                                                                                      \
+      if constexpr (std::is_base_of_v<itc::ActionReceiverOnBusBase, M>) {                                              \
+        member.get_ref(*this).unregister_from(channel);                                                                \
+      }                                                                                                                \
+    });                                                                                                                \
+  }                                                                                                                    \
+                                                                                                                       \
+  void unregister_from_all() noexcept final                                                                            \
+  {                                                                                                                    \
+    reflect::for_all_members<std::decay_t<decltype(*this)>>([this](auto member) {                                      \
+      using M = typename decltype(member)::member_type;                                                                                      \
+      if constexpr (std::is_base_of_v<itc::ActionReceiverOnBusBase, M>) {                                              \
+        member.get_ref(*this).unregister_from_all();                                                                   \
+      }                                                                                                                \
+    });                                                                                                                \
+  }                                                                                                                    \
+                                                                                                                       \
+  void send_actions() noexcept                                                                                         \
+  {                                                                                                                    \
+    reflect::for_all_members<std::decay_t<decltype(*this)>>([this](auto member) {                                      \
+      auto& ref = member.get_ref(*this);                                                                               \
+      if constexpr (decltype(::otto::core::props::detail::has_send_actions(ref))::value) {                                                  \
+        ref.send_actions();                                                                                            \
+      }                                                                                                                \
+    });                                                                                                                \
+  }
 
   template<typename T, typename Enable>
   struct default_mixins {
@@ -98,7 +141,6 @@ namespace otto::core::props {
     deserialize(v, json);
     prop.set(std::move(v));
   }
-
 
   template<typename ValueType, typename TagList>
   void to_json(nlohmann::json& j, PropertyImpl<ValueType, TagList>& t)

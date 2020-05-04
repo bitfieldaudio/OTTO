@@ -37,19 +37,25 @@ namespace otto::engines::goss {
   struct GossScreen;
   struct Audio;
 
-  struct Props : voices::SynthPropsBase {
+  struct Props : core::props::Properties<Props> {
+    // SettingsProps is mandatory for a synth. This gives it the necessary settings for the voice manager
+    voices::SettingsProps settings;
+    // EnvelopeProps gives settings for a standard ADSR envelope. It is optional if you would rather do something
+    // different.
+    voices::EnvelopeProps envelope;
+
     itc::GAProp<struct model_tag, int, wrap> model = {0, limits(0, number_of_models - 1)};
     itc::GAProp<struct drive_tag, float> drive = {0.5, limits(0, 1), step_size(0.01)};
     itc::GAProp<struct click_tag, float> click = {0.5, limits(0, 1), step_size(0.01)};
     itc::GAProp<struct leslie_tag, float> leslie = {0.3, limits(0, 1), step_size(0.01)};
 
-    DECL_REFLECTION(Props, envelope, settings, model, drive, click, leslie);
+    REFLECT_PROPS(Props, settings, envelope, model, drive, click, leslie);
   };
 
-  struct GossEngine : core::engine::SynthEngine<GossEngine> {
+  struct GossEngine : core::engine::SynthEngine<GossEngine>, itc::ActionReceiverOnBus<itc::LogicBus> {
     static constexpr auto name = "Goss";
 
-    GossEngine();
+    GossEngine(itc::ActionChannel);
 
     void encoder(core::input::EncoderEvent e) override;
 

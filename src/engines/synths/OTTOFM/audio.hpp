@@ -180,9 +180,6 @@ namespace otto::engines::ottofm {
     /// Sets operator frequencies. Call after next() to use updated voice frequency
     void set_frequencies() noexcept;
 
-    /// Use actions from base class
-    using VoiceBase::action;
-
     void action(voices::attack_tag::action, float a) noexcept final
     {
       env_.attack(a * a * 8.f + 0.005f);
@@ -208,8 +205,10 @@ namespace otto::engines::ottofm {
     Audio& audio;
   };
 
-  struct Audio {
-    Audio(std::array<itc::Shared<float>, 4> activity) : shared_activity(activity) {}
+  struct Audio : itc::ActionReceiverOnBus<itc::AudioBus> {
+    Audio(std::array<itc::Shared<float>, 4> activity) : shared_activity(activity) {
+      set_children(voice_mgr_);
+    }
 
     // Only a process call, since this sums the process calls of the voices.
     audio::ProcessData<1> process(audio::ProcessData<0>) noexcept;

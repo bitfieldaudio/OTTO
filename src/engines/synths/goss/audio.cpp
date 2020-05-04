@@ -55,6 +55,7 @@ namespace otto::engines::goss {
   // Audio
   Audio::Audio(itc::Shared<float> rotation) noexcept : shared_rotation_(rotation)
   {
+    set_children(voice_mgr_);
     // Generate models
     for (auto&& [m, p] : util::zip(models, model_params)) {
       generate_model(m, p);

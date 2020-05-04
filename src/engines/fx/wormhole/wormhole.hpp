@@ -6,23 +6,25 @@
 
 namespace otto::engines::wormhole {
 
-  using namespace core::props;
+  using namespace core;
+  using namespace core::engine;
+  using namespace props;
 
   struct Screen;
   struct Audio;
 
-  struct Props {
+  struct Props : core::props::Properties<Props> {
     itc::GAProp<struct filter_tag, float> filter = {0, limits(0, 1), step_size(0.01)};
     itc::GAProp<struct shimmer_tag, float> shimmer = {0, limits(0, 1), step_size(0.01)};
     itc::GAProp<struct length_tag, float> length = {0.5, limits(0, 1), step_size(0.01)};
     itc::GAProp<struct damping_tag, float> damping = {0.4, limits(0, 0.99), step_size(0.01)};
 
-    DECL_REFLECTION(Props, filter, shimmer, length, damping);
+    REFLECT_PROPS(Props, filter, shimmer, length, damping);
   };
 
-  struct Wormhole : core::engine::EffectEngine<Wormhole> {
+  struct Wormhole : core::engine::EffectEngine<Wormhole>, itc::ActionReceiverOnBus<itc::LogicBus> {
     static constexpr util::string_ref name = "Wormhole";
-    Wormhole();
+    Wormhole(itc::ActionChannel);
 
     void encoder(core::input::EncoderEvent e) override;
 

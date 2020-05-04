@@ -10,8 +10,12 @@ namespace otto::engines::goss {
 
   using namespace core::input;
 
-  GossEngine::GossEngine() : audio(std::make_unique<Audio>(rotation_)), screen_(std::make_unique<GossScreen>(rotation_))
-  {}
+  GossEngine::GossEngine(itc::ActionChannel channel) : audio(std::make_unique<Audio>(rotation_)), screen_(std::make_unique<GossScreen>(rotation_))
+  {
+    set_children(props, audio, screen_);
+    register_to(channel);
+    props.send_actions();
+  }
 
   void GossEngine::encoder(EncoderEvent e)
   {

@@ -11,7 +11,9 @@
 #include "services/state_manager.hpp"
 #include "services/ui_manager.hpp"
 
-namespace otto::services::test {
+namespace otto::test {
+
+  using namespace services;
 
   struct DummyStateManager final : StateManager {
     void load() override
@@ -102,7 +104,7 @@ namespace otto::services::test {
     core::audio::ProcessData<2> process(core::audio::ProcessData<2> external_in) override
     {
       if (on_process) return on_process(external_in);
-      OTTO_UNREACHABLE;
+      return external_in;
     }
 
     static DummyEngineManager& current()

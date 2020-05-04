@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/engine/engine.hpp"
+#include "itc/action_bus.hpp"
 #include "itc/itc.hpp"
 
 namespace otto::engines::master {
@@ -12,17 +13,17 @@ namespace otto::engines::master {
   struct Screen;
   struct Audio;
 
-  struct Props {
+  struct Props : core::props::Properties<Props> {
       itc::GAProp<struct volume_tag, float> volume = {0.5, limits(0, 1), step_size(0.01)};
       itc::GAProp<struct tempo_tag, float> tempo = {120, limits(40, 220), step_size(0.5)};
 
-      DECL_REFLECTION(Props, volume, tempo);
+      REFLECT_PROPS(Props, volume, tempo);
   };
 
-  struct Master : core::engine::MiscEngine<Master> {
+  struct Master : core::engine::MiscEngine<Master>, itc::ActionReceiverOnBus<itc::LogicBus> {
     static constexpr util::string_ref name = "Master";
 
-    Master();
+    Master(itc::ActionChannel);
 
     void encoder(core::input::EncoderEvent e) override;
 

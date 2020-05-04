@@ -11,7 +11,7 @@ namespace otto::engines::sends {
   struct Screen;
   struct Audio;
 
-  struct Props {
+  struct Props : core::props::Properties<Props> {
     itc::GAProp<struct dry_tag, float> dry = {1, limits(0, 1), step_size(0.01)};
     itc::GAProp<struct fx1_tag, float> fx1 = {0, limits(0, 1), step_size(0.01)};
     itc::GAProp<struct fx2_tag, float> fx2 = {0, limits(0, 1), step_size(0.01)};
@@ -24,13 +24,13 @@ namespace otto::engines::sends {
       float s = 1;
     } stored_levels;
 
-    DECL_REFLECTION(Props, dry, fx1, fx2, pan);
+    REFLECT_PROPS(Props, dry, fx1, fx2, pan);
   };
 
-  struct Sends : core::engine::MiscEngine<Sends>, util::OwnsObservers {
+  struct Sends : core::engine::MiscEngine<Sends>, util::OwnsObservers, itc::ActionReceiverOnBus<itc::LogicBus> {
     static constexpr util::string_ref name = "Sends";
 
-    Sends(core::ui::Icon i);
+    Sends(itc::ActionChannel, core::ui::Icon i);
     ~Sends() noexcept;
 
     void step_scale(int steps);

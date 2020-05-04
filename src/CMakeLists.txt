@@ -1,4 +1,4 @@
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 
 file(GLOB_RECURSE headers ${OTTO_SOURCE_DIR}/src/*.hpp)
 file(GLOB_RECURSE sources ${OTTO_SOURCE_DIR}/src/*.cpp)

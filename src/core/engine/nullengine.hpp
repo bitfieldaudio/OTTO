@@ -21,7 +21,7 @@ namespace otto::core::engine {
     struct Props {
       DECL_REFLECTION_EMPTY(Props);
     } props;
-    OffEngine();
+    OffEngine(itc::ActionChannel);
 
     ui::ScreenAndInput screen() noexcept
     {
@@ -42,7 +42,7 @@ namespace otto::core::engine {
     struct Props {
       DECL_REFLECTION_EMPTY(Props);
     } props;
-    OffEngine();
+    OffEngine(itc::ActionChannel);
 
     ui::ScreenAndInput screen() noexcept
     {

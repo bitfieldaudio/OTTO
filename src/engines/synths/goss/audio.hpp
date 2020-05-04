@@ -29,9 +29,6 @@ namespace otto::engines::goss {
     void on_note_on(float) noexcept;
     void on_note_off() noexcept;
 
-    /// Use actions from base class
-    using VoiceBase::action;
-
     void action(itc::prop_change<&Props::click>, float c) noexcept final;
 
     void action(itc::prop_change<&Props::model>, int m) noexcept final;

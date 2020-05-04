@@ -491,6 +491,7 @@ namespace otto::util {
 
       iterator erase(iterator it) noexcept
       {
+        if (it == end()) return it;
         return vector_.erase(it);
       }
 

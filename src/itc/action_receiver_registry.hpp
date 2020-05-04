@@ -8,8 +8,14 @@ namespace otto::itc {
   /// ActionChannels are 'sub-busses'. They exist to, for instance, differentiate between two identical engines loaded
   /// into different slots (e.g. Audio Effects or Sampler engines)
   enum struct ActionChannel {
+    master,
+    ext_send_left,
+    ext_send_right,
+    ext_send_stereo,
+    external,
     arpeggiator,
     instrument,
+    instrument_send,
     fx1,
     fx2,
     sequencer,
@@ -22,6 +28,15 @@ namespace otto::itc {
     sampler7,
     sampler8,
     sampler9,
+    sampler1_send,
+    sampler2_send,
+    sampler3_send,
+    sampler4_send,
+    sampler5_send,
+    sampler6_send,
+    sampler7_send,
+    sampler8_send,
+    sampler9_send,
   };
 
   template<typename ActionType>
@@ -40,7 +55,7 @@ namespace otto::itc {
     /// Add to the registry.
     void add_to(itc::ActionChannel channel, ActionReceiver<ActionType>* rec) noexcept
     {
-      channels.insert(channel, {}).first->insert(rec);
+      channels.insert(channel, {}).first->second.insert(rec);
     }
 
     /// Removes an ActionReceiver from a single channel
@@ -48,7 +63,7 @@ namespace otto::itc {
     {
       auto&& opt_receivers = channels[channel];
       if (opt_receivers) {
-        opt_receivers.erase(rec);
+        opt_receivers->erase(rec);
       }
     }
 
@@ -56,6 +71,9 @@ namespace otto::itc {
     void remove_from_all(ActionReceiver<ActionType>* rec) noexcept
     {
       // Note that empty sets are being left. They can be deleted afterwards if needed
+      // Since there is a finite set of channels, and erasing the sets is a fairly expensive
+      // operation, especially if the set is in the middle of a list, it probably makes 
+      // sense to leave them
       for (auto&& channel : channels.values()) {
         channel.erase(rec);
       }
@@ -63,7 +81,7 @@ namespace otto::itc {
 
     void call_all(typename ActionType::args_tuple args) noexcept
     {
-      for (auto&& channel : channels) {
+      for (auto&& channel : channels.values()) {
         for (auto&& actrec : channel) {
           std::apply([&](Args... args) { actrec->action(ActionType(), args...); }, args);  
         }

@@ -235,7 +235,7 @@ namespace otto::engines::wormhole {
     ctx.save();
     ctx.font(Fonts::Norm, 40);
     ctx.fillStyle(Colors::Blue);
-    ctx.fillText(fmt::format("{}", std::round(filter_ * 100)), 22.9, 76.2);
+    ctx.fillText(fmt::format("{:.0}", std::round(filter_ * 100)), 22.9, 76.2);
 
     // mass text
     ctx.font(Fonts::Norm, 25);
@@ -248,7 +248,7 @@ namespace otto::engines::wormhole {
     ctx.save();
     ctx.font(Fonts::Norm, 40);
     ctx.fillStyle(Colors::Yellow);
-    ctx.fillText(fmt::format("{}", std::round(shimmer_ * 100)), 22.9, 147.9);
+    ctx.fillText(fmt::format("{:.0}", std::round(shimmer_ * 100)), 22.9, 147.9);
 
     // stars text
     ctx.font(Fonts::Norm, 25);
@@ -406,7 +406,7 @@ namespace otto::engines::wormhole {
       ctx.lineTo(226.4, 134.9);
       ctx.bezierCurveTo(226.4, 161.5, 213.9, 169.4, 192.7, 158.6);
       ctx.closePath();
-      ctx.fill();
+      ctx.fill(Color::bytes(250, 249, 249));
       ctx.strokeStyle(Color::bytes(250, 249, 249));
       ctx.lineCap(LineCap::ROUND);
       ctx.lineJoin(LineJoin::ROUND);

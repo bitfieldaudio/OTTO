@@ -52,26 +52,25 @@ namespace otto::services {
     audio::ProcessData<2> process(audio::ProcessData<2> external_in) override;
 
   private:
-    template<EngineSlot ES>
     using EffectsDispatcher = EngineDispatcher< //
-      ES,
+      EngineType::effect,
       engine::OffEngine<EngineType::effect>,
       engines::wormhole::Wormhole,
       engines::chorus::Chorus>;
     using ArpDispatcher = EngineDispatcher< //
-      EngineSlot::arp,
+      EngineType::arpeggiator,
       engine::OffEngine<EngineType::arpeggiator>,
       engines::arp::Arp>;
     using SynthDispatcher = EngineDispatcher< //
-      EngineSlot::synth,
+      EngineType::synth,
       engines::ottofm::OttofmEngine,
       engines::goss::GossEngine>;
 
     engines::external::External line_in;
-    SynthDispatcher synth;
-    EffectsDispatcher<EngineSlot::fx1> effect1;
-    EffectsDispatcher<EngineSlot::fx2> effect2;
-    ArpDispatcher arpeggiator;
+    SynthDispatcher synth = {itc::ActionChannel::instrument};
+    EffectsDispatcher effect1 = {itc::ActionChannel::fx1};
+    EffectsDispatcher effect2 = {itc::ActionChannel::fx2};
+    ArpDispatcher arpeggiator = {itc::ActionChannel::arpeggiator};
 
 
     // Placeholder screens for future features
@@ -84,9 +83,9 @@ namespace otto::services {
     engines::saveslots::Screen savescreen;
 
     ui::Icon synth_icon = ui::Icon(ui::icons::synth_icon);
-    engines::sends::Sends synth_send{synth_icon};
+    engines::sends::Sends synth_send{itc::ActionChannel::instrument_send, synth_icon};
 
-    engines::master::Master master;
+    engines::master::Master master = {itc::ActionChannel::master};
     // engines::Sequencer sequencer;
   };
 

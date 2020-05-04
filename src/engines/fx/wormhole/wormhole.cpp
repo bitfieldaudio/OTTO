@@ -5,7 +5,12 @@
 
 namespace otto::engines::wormhole {
 
-  Wormhole::Wormhole() : audio(std::make_unique<Audio>()), screen_(std::make_unique<Screen>()) {}
+  Wormhole::Wormhole(itc::ActionChannel channel) : audio(std::make_unique<Audio>()), screen_(std::make_unique<Screen>()) 
+  {
+    set_children(props, audio.get(), screen_.get());
+    register_to(channel);
+    props.send_actions();
+  }
 
   using namespace core::input;
 

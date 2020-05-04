@@ -20,7 +20,7 @@ namespace otto::engines::external {
 
   BETTER_ENUM(ModeEnum, std::int8_t, disabled, stereo, dual_mono);
 
-  struct Props {
+  struct Props : core::props::Properties<Props>{
     /// Mode control
     itc::GAProp<struct mode_tag, ModeEnum> mode = {ModeEnum::disabled};
     /// Input gains
@@ -34,10 +34,10 @@ namespace otto::engines::external {
     itc::GAProp<struct active_send_tag, int> active_send = {0, limits(0, 1)};
 
 
-    DECL_REFLECTION(Props, mode, stereo_gain, stereo_balance, left_gain, right_gain, active_send);
+    REFLECT_PROPS(Props, mode, stereo_gain, stereo_balance, left_gain, right_gain, active_send);
   };
 
-  struct External : core::engine::MiscEngine<External> {
+  struct External : core::engine::MiscEngine<External>, itc::ActionReceiverOnBus<itc::LogicBus> {
     static constexpr util::string_ref name = "External";
 
     External();
@@ -50,13 +50,15 @@ namespace otto::engines::external {
     core::ui::ScreenAndInput screen() override;
 
     core::ui::Icon line_icon = core::ui::Icon(core::ui::icons::line_in_icon);
-    sends::Sends send_stereo{line_icon};
-    sends::Sends send_left{line_icon};
-    sends::Sends send_right{line_icon};
+    sends::Sends send_stereo = {itc::ActionChannel::ext_send_stereo, line_icon};
+    sends::Sends send_left = {itc::ActionChannel::ext_send_left, line_icon};
+    sends::Sends send_right = {itc::ActionChannel::ext_send_right, line_icon};
 
     DECL_REFLECTION(External, props, send_stereo, send_left, send_right);
 
     std::unique_ptr<Audio> audio;
+  
+  private:
     std::unique_ptr<Screen> screen_;
 
     Props props;

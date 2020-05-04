@@ -15,7 +15,7 @@ namespace otto::engines::ottofm {
       activities[3],
     }};
     Voice& v = audio.voice_mgr_.voices()[0];
-    auto app = services::test::make_dummy_application();
+    auto app = test::make_dummy_application();
     audio.voice_mgr_.handle_midi(midi::NoteOnEvent(60));
     auto buf = AudioManager::current().buffer_pool().allocate_clear();
 

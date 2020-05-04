@@ -68,7 +68,7 @@ namespace otto::core::voices {
     using action = itc::Action<retrig_tag, bool>;
   };
 
-  struct EnvelopeProps : core::input::InputHandler {
+  struct EnvelopeProps : props::Properties<EnvelopeProps>, core::input::InputHandler {
     itc::GAProp<attack_tag, float> attack = {0, props::limits(0, 1), props::step_size(0.02)};
     itc::GAProp<decay_tag, float> decay = {0, props::limits(0, 1), props::step_size(0.02)};
     itc::GAProp<sustain_tag, float> sustain = {1, props::limits(0, 1), props::step_size(0.02)};
@@ -87,10 +87,10 @@ namespace otto::core::voices {
       }
     }
 
-    DECL_REFLECTION(EnvelopeProps, attack, decay, sustain, release);
+    REFLECT_PROPS(EnvelopeProps, attack, decay, sustain, release);
   };
 
-  struct SettingsProps : core::input::InputHandler, util::OwnsObservers {
+  struct SettingsProps : props::Properties<SettingsProps>, core::input::InputHandler, util::OwnsObservers {
     SettingsProps()
     {
       play_mode.observe_no_imidiate_call(this, [this] {
@@ -111,7 +111,7 @@ namespace otto::core::voices {
     itc::GAProp<legato_tag, bool> legato = {false};
     itc::GAProp<retrig_tag, bool> retrig = {false};
 
-    DECL_REFLECTION(SettingsProps, play_mode, rand, sub, detune, interval, portamento, legato, retrig);
+    REFLECT_PROPS(SettingsProps, play_mode, rand, sub, detune, interval, portamento, legato, retrig);
 
     // TODO: Move to some separate InputHandler
     void encoder(core::input::EncoderEvent ev) override
@@ -141,13 +141,6 @@ namespace otto::core::voices {
         }
       }
     }
-  };
-
-  struct SynthPropsBase {
-    EnvelopeProps envelope;
-    SettingsProps settings;
-
-    DECL_REFLECTION(SynthPropsBase, envelope, settings);
   };
 
 } // namespace otto::core::voices

@@ -31,8 +31,12 @@ namespace otto::engines::sends {
     OTTO_UNREACHABLE;
   }
 
-  Sends::Sends(core::ui::Icon i) : audio(std::make_unique<Audio>()), screen_(std::make_unique<Screen>(i))
+  Sends::Sends(itc::ActionChannel channel, core::ui::Icon i) : audio(std::make_unique<Audio>()), screen_(std::make_unique<Screen>(i))
   {
+    set_children(props, audio, screen_);
+    register_to(channel);
+    props.send_actions();
+
     props.dry.observe(this, [&](float a) {
       if (is_recursive) return;
       set(a, props.stored_levels.dry, props.stored_levels.fx1, props.stored_levels.fx2);

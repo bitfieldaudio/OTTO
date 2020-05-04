@@ -12,10 +12,14 @@ namespace otto::engines::master {
 
   using namespace core::input;
 
-  Master::Master()
+  Master::Master(itc::ActionChannel channel)
     : audio(std::make_unique<Audio>()),
       screen_(std::make_unique<Screen>())
-  {}
+  {
+    set_children(props, audio, screen_);
+    register_to(channel);
+    props.send_actions();
+  }
 
   void Master::encoder(EncoderEvent e)
   {

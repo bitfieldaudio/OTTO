@@ -17,11 +17,11 @@ namespace otto {
   };
 
   TEST_CASE ("[graphics] EngineSelectorScreen" * doctest::skip()) {
-    EngineSelectorScreen<EngineSlot::synth> screen;
+    EngineSelectorScreen screen;
 
     struct Props : InputHandler, util::OwnsObservers {
-      SelectedEngine<EngineSlot::synth>::GAProp<> selected_engine_idx = {0, limits(0, engine_names.size() - 1)};
-      SelectedPreset<EngineSlot::synth>::GAProp<> selected_preset_idx = {0, limits(0, 12)};
+      SelectedEngine::GAProp<> selected_engine_idx = {0, limits(0, engine_names.size() - 1)};
+      SelectedPreset::GAProp<> selected_preset_idx = {0, limits(0, 12)};
 
       Props() 
       {

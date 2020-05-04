@@ -44,8 +44,7 @@ namespace otto::core::voices {
   /// @tparam Derived the derived voice type
   /// @tparam Props the Props type of the engine.
   template<typename DerivedT>
-  struct VoiceBase : util::crtp<DerivedT, VoiceBase<DerivedT>>,
-                     itc::ActionReceiverOnBus<itc::AudioBus, portamento_tag::action> {
+  struct VoiceBase : util::crtp<DerivedT, VoiceBase<DerivedT>> {
     VoiceBase() noexcept;
     VoiceBase(const VoiceBase&) = delete;
 
@@ -89,7 +88,6 @@ namespace otto::core::voices {
     /// @note Must be called before calling operator(). VoiceManager::operator() and ::process do this.
     void next() noexcept;
 
-    void action(portamento_tag::action, float p) noexcept final override;
 
     /// This should multiply by volume_. If you write you own, remember to do that!
     core::audio::ProcessData<1> process(core::audio::ProcessData<0>) noexcept;
@@ -97,6 +95,8 @@ namespace otto::core::voices {
   private:
     template<typename T, int N>
     friend struct VoiceManager;
+
+    void portamento(float p) noexcept;    
 
     /// Triggers a new voice.
     ///
@@ -140,7 +140,8 @@ namespace otto::core::voices {
                                                  rand_tag::action,
                                                  sub_tag::action,
                                                  detune_tag::action,
-                                                 interval_tag::action> {
+                                                 interval_tag::action,
+                                                 portamento_tag::action> {
     using Voice = VoiceT;
 
     static_assert(std::is_base_of_v<VoiceBase<Voice>, Voice>,
@@ -185,6 +186,7 @@ namespace otto::core::voices {
     void action(sub_tag::action, float sub) noexcept final;
     void action(detune_tag::action, float detune) noexcept final;
     void action(interval_tag::action, int interval) noexcept final;
+    void action(portamento_tag::action, float interval) noexcept final;
 
     // -- GETTERS -- //
 

@@ -12,6 +12,14 @@ namespace otto::itc {
   struct GraphicsBus {};
   struct LogicBus {};
 
+  namespace detail {
+    auto other_busses(AudioBus) -> meta::list<GraphicsBus, LogicBus>;
+    auto other_busses(GraphicsBus) -> meta::list<LogicBus, AudioBus>;
+    auto other_busses(LogicBus) -> meta::list<AudioBus, GraphicsBus>;
+  } // namespace detail
+
+  template<typename BusTag>
+  using others = decltype(detail::other_busses(BusTag()));
 
   template<typename T>
   constexpr bool is_bus_tag_v = util::is_one_of_v<T, AudioBus, GraphicsBus, LogicBus>;
@@ -39,6 +47,17 @@ namespace otto::itc {
       });
     }
 
+    template<typename Tag, typename... Args>
+    static void send_to(ActionChannel channel, ActionData<Action<Tag, Args...>> action_data)
+    {
+      queue.push([channel, ad = std::move(action_data)] { //
+        auto& registry = detail::action_receiver_registry<BusTag, Action<Tag, Args...>>;
+        DLOGI("Action {} received on ({}, {}) by {} receivers", channel, get_type_name<Tag>(), get_type_name<BusTag>(),
+              registry.size());
+        registry.call_for_channel(channel, ad.args);
+      });
+    }
+
     static ActionQueue queue;
   };
 
@@ -47,11 +66,11 @@ namespace otto::itc {
 
   /// Send an action to receivers on one or more busses
   template<typename... BusTags, typename Tag, typename... Args, typename... ArgRefs>
-  void send_to_bus(Action<Tag, Args...> a, ArgRefs&&... args)
+  void send_to_bus(ActionChannel c, Action<Tag, Args...> a, ArgRefs&&... args)
   {
     meta::for_each<meta::flatten_t<meta::list<BusTags...>>>([&](auto one) {
       using BusTag = meta::_t<decltype(one)>;
-      ActionBus<BusTag>::send(Action<Tag, Args...>::data(args...));
+      ActionBus<BusTag>::send_to(c, Action<Tag, Args...>::data(args...));
     });
   }
 
@@ -93,7 +112,12 @@ namespace otto::itc {
 
     ~ActionReceiverOnBus() noexcept
     {
-      unregister_from_all();
+      meta::for_each<ActionList>([this](auto one) {
+        using Action = meta::_t<decltype(one)>;
+        DLOGI("Receiver destroyed on {} for {}", get_type_name<BusTag>(),
+              get_type_name<typename Action::tag_type>());
+        detail::action_receiver_registry<BusTag, Action>.remove_from_all(this);
+      });
     }
 
     // ActionReceivers can maximally have 16 children
@@ -104,11 +128,19 @@ namespace otto::itc {
       children_ = children;
     }
 
+    template<typename... Ts>
+    void set_children(Ts&&... children)
+    {
+      (add_child(FWD(children)), ...);
+    }
+
     void register_to(ActionChannel channel) noexcept override
     {
+      channels_.insert(channel);
       meta::for_each<ActionList>([channel, this](auto one) {
         using Action = meta::_t<decltype(one)>;
-        DLOGI("Receiver registered on {} for {}", get_type_name<BusTag>(), get_type_name<typename Action::tag_type>());
+        DLOGI("Receiver registered on ({},{}) for {}", channel, get_type_name<BusTag>(),
+              get_type_name<typename Action::tag_type>());
         detail::action_receiver_registry<BusTag, Action>.add_to(channel, this);
       });
       for (auto* child : children_) child->register_to(channel);
@@ -116,9 +148,10 @@ namespace otto::itc {
 
     void unregister_from(ActionChannel channel) noexcept override
     {
+      channels_.erase(channel);
       meta::for_each<ActionList>([&](auto one) {
         using Action = meta::_t<decltype(one)>;
-        DLOGI("Receiver unregistered on {} for {}", get_type_name<BusTag>(),
+        DLOGI("Receiver registered on ({},{}) for {}", channel, get_type_name<BusTag>(),
               get_type_name<typename Action::tag_type>());
         detail::action_receiver_registry<BusTag, Action>.remove_from(channel, this);
       });
@@ -127,16 +160,44 @@ namespace otto::itc {
 
     void unregister_from_all() noexcept override
     {
+      channels_.clear();
       meta::for_each<ActionList>([this](auto one) {
         using Action = meta::_t<decltype(one)>;
-        DLOGI("Receiver unregistered on {} for {}", get_type_name<BusTag>(),
+        DLOGI("Receiver unregistered from (all,{}) for {}", get_type_name<BusTag>(),
               get_type_name<typename Action::tag_type>());
         detail::action_receiver_registry<BusTag, Action>.remove_from_all(this);
       });
       for (auto* child : children_) child->unregister_from_all();
     }
 
+    template<typename ActionTag, typename... Args, typename... ArgRefs>
+    void send_action(Action<ActionTag, Args...> a, ArgRefs&&... args) const noexcept
+    {
+      for (auto channel : channels_) {
+        send_to_bus<others<BusTag>>(channel, a, FWD(args)...);
+      }
+    }
+
   private:
+    void add_child(ActionReceiverOnBusBase* c)
+    {
+      children_.push_back(c);
+    }
+
+    void add_child(ActionReceiverOnBusBase& c)
+    {
+      children_.push_back(&c);
+    }
+    template<typename T, typename = std::enable_if_t<std::is_base_of_v<ActionReceiverOnBusBase, T>>>
+    void add_child(const std::unique_ptr<T>& c)
+    {
+      children_.push_back(c.get());
+    }
+    /// What are you doing, don't move the children in here!
+    template<typename T>
+    void add_child(std::unique_ptr<T>&& c) = delete;
+
     Children children_;
+    util::flat_set<ActionChannel> channels_;
   };
 } // namespace otto::itc

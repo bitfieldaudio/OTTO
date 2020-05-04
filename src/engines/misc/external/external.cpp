@@ -12,7 +12,11 @@ namespace otto::engines::external {
   External::External()
     : audio(std::make_unique<Audio>(*send_stereo.audio, *send_left.audio, *send_right.audio)),
       screen_(std::make_unique<Screen>())
-  {}
+  {
+    set_children(props, audio, screen_);
+    register_to(itc::ActionChannel::external);
+    props.send_actions();
+  }
 
   void External::encoder(EncoderEvent ev)
   {
