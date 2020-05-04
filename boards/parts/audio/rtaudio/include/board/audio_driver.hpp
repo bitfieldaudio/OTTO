@@ -34,7 +34,7 @@ namespace otto::services {
 
   private:
     AlsaMixer(util::string_ref card, int subdevice_idx, util::string_ref elem_name, bool is_capture);
-#ifdef __LINUX_ALSA__
+#ifndef OTTO_USE_ALSAMIXER
     ::snd_mixer_t* snd_mixer_ = nullptr;
     ::snd_mixer_elem_t* snd_mixer_elem_ = nullptr;
     long min_vol = 0;

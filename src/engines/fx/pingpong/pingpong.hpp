@@ -26,13 +26,14 @@ namespace otto::engines::pingpong {
     /// Only changed when timetype is true
     Sender::Prop<struct subdivision_tag, SubdivisionEnum> subdivision = {sender, SubdivisionEnum::quarter};
     /// Actual delaytime in ms. Sent to the audio thread
-    // 6 seconds is the length of a measure at 40 bpm
+    ///
+    /// 6 seconds is the length of a measure at 40 bpm
     Sender::Prop<struct delaytime_tag, float> delaytime = {sender, 0.5, limits(0, 6)};
 
-    // 0.5 is neutral
+    /// 0.5 is neutral
     Sender::Prop<struct filter_tag, float> filter = {sender, 0.5, limits(0, 1), step_size(0.01)};
 
-    // 0.5 is neutral
+    /// 0.5 is neutral
     Sender::Prop<struct stereo_tag, float> stereo = {sender, 0.5, limits(0, 1), step_size(0.01)};
     Sender::Prop<struct stereo_invert_tag, bool> stereo_invert = {sender, false};
 

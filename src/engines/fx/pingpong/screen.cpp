@@ -52,19 +52,18 @@ namespace otto::engines::pingpong {
     if (timetype_) {
       draw_subdivision(ctx, {x_pad + 10, height - 2 * y_pad}, 80, subdivision_);
     } else {
-        // Time label
-        /*
-      ctx.fillStyle(Colours::White);
-      ctx.beginPath();
-      ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Top);
-      ctx.fillText("TIME", {x_pad, height - y_pad});
-      */
+      // Time label
+      /*
+    ctx.fillStyle(Colours::White);
+    ctx.beginPath();
+    ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Top);
+    ctx.fillText("TIME", {x_pad, height - y_pad});
+    */
       ctx.beginPath();
       ctx.font(Fonts::Norm, 55);
       ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Bottom);
       ctx.fillStyle(Colours::Blue);
       ctx.fillText(fmt::format("{0:04d}", (int) (delaytime_ * 1000.f)), {x_pad - 4, height - 11});
-      
     }
 
     // Filter
@@ -101,12 +100,11 @@ namespace otto::engines::pingpong {
     float cur_step_size = 1;
     for (int i = 0; i < 5; i++) {
       cur_step_size = powf(step_scale, (float) i);
-      ctx.group([&]{
-        float rotation = i % 2 == 0 ? M_PI_4 * pingpong_amount : -M_PI_4 * pingpong_amount; 
-        ctx.rotateAround(line_start, 0.15 * rotation);
+      ctx.group([&] {
+        float rotation = pingpong_amount * (i % 2 == 0 ? 1 : -1);
+        // ctx.rotateAround(line_start, 0.15 * rotation * M_PI_4);
         draw_arc(ctx, {line_start.x + arc_pad + (cur_step_size + i) * arc_step, line_start.y},
-               10 + 8 * (cur_step_size + i), spread_amount);
-    
+                 10 + 8 * (cur_step_size + i), spread_amount, rotation);
       });
     }
     if (stereo_invert_) {
@@ -117,7 +115,6 @@ namespace otto::engines::pingpong {
       ctx.font(Fonts::NormItalic);
       ctx.fillText("X", {x_pad, x_pad * 0.7});
     }
-
   }
 
   void Screen::draw_filter(nvg::Canvas& ctx, float val, nvg::Point pos, nvg::Size size)
@@ -142,34 +139,38 @@ namespace otto::engines::pingpong {
   }
 
 
-  void Screen::draw_arc(nvg::Canvas& ctx, nvg::Point position, float size, float spread)
+  void Screen::draw_arc(nvg::Canvas& ctx, nvg::Point position, float size, float spread, float rotation)
   {
     constexpr float angle = M_PI_4 * 1.4;
     constexpr float spread_px = 10;
+    rotation *= angle;
+    // rotation = 0;
+    float top_angle = rotation > 0 ? -angle + rotation : -angle;
+    float bot_angle = rotation > 0 ? angle : angle + rotation;
     // First half, not gonna lie
     nvg::Point center = {position.x - size + spread_px * spread, position.y};
     ctx.lineWidth(12.f);
     ctx.beginPath();
-    ctx.arc(center, size, -angle, 0);
+    ctx.arc(center, size, top_angle, 0);
     ctx.stroke(Colours::Black);
 
     // Second half
     center = {position.x - size - spread_px * spread, position.y};
     ctx.lineWidth(12.f);
     ctx.beginPath();
-    ctx.arc(center, size, 0, angle);
+    ctx.arc(center, size, 0, bot_angle);
     ctx.stroke(Colours::Black);
 
     ctx.lineWidth(6.f);
     ctx.beginPath();
-    ctx.arc(center, size, 0, angle);
+    ctx.arc(center, size, 0, bot_angle);
     ctx.stroke(Colours::Red);
 
     // First half again
     center = {position.x - size + spread_px * spread, position.y};
     ctx.lineWidth(6.f);
     ctx.beginPath();
-    ctx.arc(center, size, -angle, 0);
+    ctx.arc(center, size, top_angle, 0);
     ctx.stroke(Colours::Red);
   }
 
@@ -201,13 +202,13 @@ namespace otto::engines::pingpong {
       ctx.stroke();
     } else {
       // Normal note
-      // Draw outline   
+      // Draw outline
       ctx.beginPath();
       ctx.circle(foot, foot_size);
       ctx.stroke();
 
       if (sd == +SubdivisionEnum::half || sd == +SubdivisionEnum::halftriplet || sd == +SubdivisionEnum::dothalf)
-        ctx.fill(); 
+        ctx.fill();
 
       ctx.beginPath();
       ctx.moveTo(foot.x + foot_size, foot.y);
@@ -215,7 +216,8 @@ namespace otto::engines::pingpong {
       ctx.stroke();
 
       // TRIPLETNUMBER
-      if (sd == +SubdivisionEnum::halftriplet || sd == +SubdivisionEnum::quartertriplet || sd == +SubdivisionEnum::eighthtriplet) {
+      if (sd == +SubdivisionEnum::halftriplet || sd == +SubdivisionEnum::quartertriplet ||
+          sd == +SubdivisionEnum::eighthtriplet) {
         ctx.save();
         ctx.transform(1.000000, 0.000000, 0.000000, 1.000000, -168.131000, -140.436000);
         ctx.transform(1.0, 0.0, 0.0, 1.0, position.x + size * 0.2, position.y + size * 0.3);
@@ -246,13 +248,14 @@ namespace otto::engines::pingpong {
       float flag_len = size * 0.1;
       float flag_spacing = size * 0.12;
       float raise = flag_len * 0.5;
-      if (sd == +SubdivisionEnum::eighth || sd == +SubdivisionEnum::doteighth || sd == +SubdivisionEnum::eighthtriplet) {
+      if (sd == +SubdivisionEnum::eighth || sd == +SubdivisionEnum::doteighth ||
+          sd == +SubdivisionEnum::eighthtriplet) {
         ctx.beginPath();
         ctx.moveTo(foot.x + foot_size, foot.y - line_length);
         ctx.lineTo(center.x + 2 * foot_size, foot.y - line_length - raise);
         ctx.stroke();
       }
-      if ( sd == +SubdivisionEnum::sixteenth) {
+      if (sd == +SubdivisionEnum::sixteenth) {
         ctx.beginPath();
         ctx.moveTo(foot.x + foot_size, foot.y - line_length);
         ctx.lineTo(center.x + 2 * foot_size, foot.y - line_length - raise);
@@ -263,7 +266,7 @@ namespace otto::engines::pingpong {
         ctx.lineTo(center.x + 2 * foot_size, foot.y - line_length - raise + flag_spacing);
         ctx.stroke();
       }
-      if (sd == +SubdivisionEnum::thirtysecondth){
+      if (sd == +SubdivisionEnum::thirtysecondth) {
         ctx.beginPath();
         ctx.moveTo(foot.x + foot_size, foot.y - line_length);
         ctx.lineTo(center.x + 2 * foot_size, foot.y - line_length - raise);
@@ -279,17 +282,7 @@ namespace otto::engines::pingpong {
         ctx.lineTo(center.x + 2 * foot_size, foot.y - line_length - raise + 2 * flag_spacing);
         ctx.stroke();
       }
-
-
-
-      
-      
-
-
-      
     }
-    
-
   }
 
 } // namespace otto::engines::pingpong

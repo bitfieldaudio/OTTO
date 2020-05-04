@@ -16,7 +16,7 @@
 
 namespace otto::services {
 
-#ifndef __LINUX_ALSA__
+#ifndef OTTO_USE_ALSAMIXER
   AlsaMixer::AlsaMixer() = default;
   AlsaMixer::~AlsaMixer() = default;
 
@@ -292,7 +292,7 @@ namespace otto::services {
     return 0;
   }
 
-#ifndef __LINUX_ALSA__
+#ifndef OTTO_USE_ALSAMIXER
   void RTAudioAudioManager::line_in_gain_l(float gain) {}
   void RTAudioAudioManager::line_in_gain_r(float) {}
   void RTAudioAudioManager::output_vol(float) {}
