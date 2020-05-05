@@ -144,9 +144,9 @@ namespace otto::engines::goss {
     ctx.lineTo({center.x - side_long, center.y + side});
     ctx.lineTo({center.x - side_long + side_short, center.y + 1.5f * side});
     ctx.lineTo(center);
-    ctx.lineTo({center.x - side_short, center.y + 0.5 * side});
+    ctx.lineTo({center.x - side_short, center.y + 0.5f * side});
     ctx.lineTo({center.x - side_long + side_short, center.y + 1.5f * side});
-    ctx.moveTo({center.x - side_short, center.y + 0.5 * side});
+    ctx.moveTo({center.x - side_short, center.y + 0.5f * side});
     ctx.lineTo({center.x - side_long, center.y});
     ctx.stroke(Colours::Red.dim(1 - sw));
 
@@ -159,9 +159,9 @@ namespace otto::engines::goss {
     ctx.lineTo({center.x + side_long, center.y + side});
     ctx.lineTo({center.x + side_long - side_short, center.y + 1.5f * side});
     ctx.lineTo(center);
-    ctx.lineTo({center.x + side_short, center.y + 0.5 * side});
+    ctx.lineTo({center.x + side_short, center.y + 0.5f * side});
     ctx.lineTo({center.x + side_long - side_short, center.y + 1.5f * side});
-    ctx.moveTo({center.x + side_short, center.y + 0.5 * side});
+    ctx.moveTo({center.x + side_short, center.y + 0.5f * side});
     ctx.lineTo({center.x + side_long, center.y});
     ctx.stroke(Colours::Red.dim(1 - se));
   }

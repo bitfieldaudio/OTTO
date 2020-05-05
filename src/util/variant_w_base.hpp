@@ -149,7 +149,7 @@ namespace otto::util {
     {
       // Use this recursive lambda to translate idx to a compile time index
       // basically, it auto generates a switch statement for all possible indexes
-      const auto impl = [&](auto c_I, auto&& impl) {
+      const auto impl = [&, args...](auto c_I, auto&& impl) {
         constexpr int I = meta::_v<decltype(c_I)>;
         if constexpr (I < 0) {
           // ERROR;

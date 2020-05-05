@@ -45,7 +45,7 @@ namespace otto::services {
       *(output++) = (resp[i] << 4) | (resp[i + 1] & 0x0F);
       if (b == 0xF7) break;
     };
-    handle_response({resp.data(), output - resp.begin()});
+    handle_response({resp.data(), gsl::narrow_cast<std::size_t>(output - resp.begin())});
     if (i < resp.size()) {
       parse_midi_response(resp.subspan(i, gsl::dynamic_extent));
     }

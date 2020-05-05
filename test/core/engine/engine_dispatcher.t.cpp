@@ -1,5 +1,7 @@
 #include "testing.t.hpp"
 
+#ifdef OTTO_BOARD_DESKTOP
+
 #include "services/audio_manager.hpp"
 #include "services/clock_manager.hpp"
 #include "services/controller.hpp"
@@ -52,3 +54,4 @@ namespace otto::test {
     run_single_engine<engines::goss::GossEngine>();
   }
 } // namespace otto::test
+#endif
