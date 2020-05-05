@@ -21,7 +21,7 @@ namespace otto::engines::pingpong {
 
     void draw(nvg::Canvas& ctx) override;
     void draw_filter(nvg::Canvas& ctx, float val, nvg::Point pos, nvg::Size size);
-    void draw_arc(nvg::Canvas& ctx, nvg::Point position, float size, float spread, float rotation);
+    void draw_arc(nvg::Canvas& ctx, nvg::Point position, float size, float spread, float rotation, bool invert);
     void draw_subdivision(nvg::Canvas& ctx, nvg::Point position, float size, SubdivisionEnum sd);
 
   private:

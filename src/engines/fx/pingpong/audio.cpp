@@ -18,7 +18,7 @@ namespace otto::engines::pingpong {
 
   void Audio::action(itc::prop_change<&Props::feedback>, float f) noexcept
   {
-    feedback_ = f;
+    feedback_ = f * 1.5;
   }
 
   void Audio::action(itc::prop_change<&Props::filter>, float f) noexcept

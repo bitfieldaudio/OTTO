@@ -246,6 +246,17 @@ namespace otto::core::engine {
         ctx.stroke(i.color, i.line_width);
       };
     }
+    if (engine_name == "PingPong") {
+      return [](ui::IconData& i, nvg::Canvas& ctx) {
+        ctx.beginPath();
+        ctx.arc({0, i.size.h / 2.f}, i.size.h / 4.f, -M_PI_2, M_PI_2);
+        ctx.stroke(i.color, i.line_width);
+
+        ctx.beginPath();
+        ctx.arc({i.size.w / 2.f, i.size.h / 2.f}, i.size.h / 2.f, -M_PI_2, M_PI_2);
+        ctx.stroke(i.color, i.line_width);
+      };
+    }
     // Default icon
     return [](ui::IconData& i, nvg::Canvas& ctx) {
       ctx.beginPath();

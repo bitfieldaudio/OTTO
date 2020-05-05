@@ -89,6 +89,16 @@ namespace otto::engines::pingpong {
     ctx.lineTo(line_start.x + length, line_start.y);
     ctx.stroke(Colours::Green);
 
+    // infinity symbol
+    ctx.group([&](){
+      ctx.save();
+      ctx.font(Fonts::Norm, 45);
+      ctx.fillStyle(Colours::Gray50.mix(Colours::Green, 10.f * std::clamp(feedback_ - 0.8f, 0.f, 0.1f)));
+      ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Top);
+      ctx.fillText("\u221E", {x_pad - 8, 15});
+      ctx.restore();
+    });
+
     // Red Arcs
     float pingpong_amount = std::clamp(stereo_ * 2 - 1, 0.f, 1.f);
     float spread_amount = std::clamp(-stereo_ * 2 + 1, 0.f, 1.f);
@@ -104,16 +114,8 @@ namespace otto::engines::pingpong {
         float rotation = pingpong_amount * (i % 2 == 0 ? 1 : -1);
         // ctx.rotateAround(line_start, 0.15 * rotation * M_PI_4);
         draw_arc(ctx, {line_start.x + arc_pad + (cur_step_size + i) * arc_step, line_start.y},
-                 10 + 8 * (cur_step_size + i), spread_amount, rotation);
+                 10 + 8 * (cur_step_size + i), spread_amount, rotation, stereo_invert_);
       });
-    }
-    if (stereo_invert_) {
-      ctx.beginPath();
-      ctx.fillStyle(Colours::Red);
-      ctx.font(Fonts::Norm, 45);
-      ctx.textAlign(HorizontalAlign::Left, VerticalAlign::Top);
-      ctx.font(Fonts::NormItalic);
-      ctx.fillText("X", {x_pad, x_pad * 0.7});
     }
   }
 
@@ -139,14 +141,22 @@ namespace otto::engines::pingpong {
   }
 
 
-  void Screen::draw_arc(nvg::Canvas& ctx, nvg::Point position, float size, float spread, float rotation)
+  void Screen::draw_arc(nvg::Canvas& ctx, nvg::Point position, float size, float spread, float rotation, bool invert)
   {
     constexpr float angle = M_PI_4 * 1.4;
-    constexpr float spread_px = 10;
+    float spread_px = 10;
     rotation *= angle;
     // rotation = 0;
+
+    if (invert) {
+      spread_px = -spread_px;
+      rotation = -rotation;
+    }
+
     float top_angle = rotation > 0 ? -angle + rotation : -angle;
     float bot_angle = rotation > 0 ? angle : angle + rotation;
+
+    
     // First half, not gonna lie
     nvg::Point center = {position.x - size + spread_px * spread, position.y};
     ctx.lineWidth(12.f);
@@ -176,6 +186,7 @@ namespace otto::engines::pingpong {
 
   void Screen::draw_subdivision(nvg::Canvas& ctx, nvg::Point position, float size, SubdivisionEnum sd)
   {
+    ctx.save();
     nvg::Point center = {position.x + size / 2.f, position.y + size / 2.f};
     nvg::Point foot = {center.x - size * 0.07f, center.y + size * 0.25f};
     float foot_size = size * 0.1;
@@ -283,6 +294,7 @@ namespace otto::engines::pingpong {
         ctx.stroke();
       }
     }
+    ctx.restore();
   }
 
 } // namespace otto::engines::pingpong
