@@ -23,7 +23,7 @@ namespace otto::engines::ottofm {
         activities_[3],
       }))
   {
-    set_children(props, audio, screen_);
+    set_children(props, audio, screen_, env_screen_, voice_screen_);
     register_to(channel);
     props.send_actions();
   }

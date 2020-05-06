@@ -18,6 +18,7 @@ namespace otto::engines::goss {
     env_.decay(0.5);
     env_.sustain(1.f);
     env_.release(4.f);
+
   }
 
   float Voice::operator()() noexcept

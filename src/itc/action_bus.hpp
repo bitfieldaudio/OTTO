@@ -134,6 +134,21 @@ namespace otto::itc {
       (add_child(FWD(children)), ...);
     }
 
+    void add_child(ActionReceiverOnBusBase* c)
+    {
+      children_.push_back(c);
+    }
+
+    void add_child(ActionReceiverOnBusBase& c)
+    {
+      children_.push_back(&c);
+    }
+    template<typename T, typename = std::enable_if_t<std::is_base_of_v<ActionReceiverOnBusBase, T>>>
+    void add_child(const std::unique_ptr<T>& c)
+    {
+      children_.push_back(c.get());
+    }
+
     void register_to(ActionChannel channel) noexcept override
     {
       channels_.insert(channel);
@@ -179,20 +194,6 @@ namespace otto::itc {
     }
 
   private:
-    void add_child(ActionReceiverOnBusBase* c)
-    {
-      children_.push_back(c);
-    }
-
-    void add_child(ActionReceiverOnBusBase& c)
-    {
-      children_.push_back(&c);
-    }
-    template<typename T, typename = std::enable_if_t<std::is_base_of_v<ActionReceiverOnBusBase, T>>>
-    void add_child(const std::unique_ptr<T>& c)
-    {
-      children_.push_back(c.get());
-    }
     /// What are you doing, don't move the children in here!
     template<typename T>
     void add_child(std::unique_ptr<T>&& c) = delete;

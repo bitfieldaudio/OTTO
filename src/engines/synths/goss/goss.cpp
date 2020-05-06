@@ -12,7 +12,7 @@ namespace otto::engines::goss {
 
   GossEngine::GossEngine(itc::ActionChannel channel) : audio(std::make_unique<Audio>(rotation_)), screen_(std::make_unique<GossScreen>(rotation_))
   {
-    set_children(props, audio, screen_);
+    set_children(props, audio, screen_, env_screen_, voice_screen_);
     register_to(channel);
     props.send_actions();
   }

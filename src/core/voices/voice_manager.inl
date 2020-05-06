@@ -2,6 +2,7 @@
 
 #include <nanorange.hpp>
 
+#include "itc/action_bus.hpp"
 #include "services/audio_manager.hpp"
 #include "services/ui_manager.hpp"
 #include "voice_manager.hpp"
@@ -403,6 +404,11 @@ namespace otto::core::voices {
       v.pitch_bend_ = &pitch_bend_;
     }
     set_playmode(PlayMode::poly);
+
+    if constexpr (std::is_base_of_v<itc::ActionReceiverOnBusBase, Voice>) {
+      for (auto& v : voices_) add_child(&v);
+    }
+
     for (int i = 0; i < voice_count_v; ++i) {
       // auto& voice = voices_[i];
       // envelope_props.attack.on_change().connect(
