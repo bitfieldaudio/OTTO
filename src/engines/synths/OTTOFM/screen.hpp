@@ -74,6 +74,9 @@ namespace otto::engines::ottofm {
 
     OttofmScreen(std::array<itc::Shared<float>, 4> activity) : shared_activity(activity)
     {
+      util::for_each(operator_helpers, [&] (auto& h) {
+        add_child(h);
+      });
       for (auto&& [i, w] : util::view::indexed(sinewave)) w = sin(M_2PI * (float) i / 30.f);
       for (auto&& [i, w] : util::view::indexed(harmonics))
         w = -0.5 * sin(2.f * M_2PI * (float) i / 30.f) + 0.33 * sin(3.f * M_2PI * (float) i / 30.f) -

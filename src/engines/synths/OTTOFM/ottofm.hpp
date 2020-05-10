@@ -50,7 +50,23 @@ namespace otto::engines::ottofm {
     itc::GAProp<struct fm_amount_tag, float> fm_amount = {1, limits(0, 1), step_size(0.01)};
     itc::GAProp<struct cur_op_tag, int> cur_op = {0, limits(0, 3)};
 
-    std::tuple<OperatorProps<0>, OperatorProps<1>, OperatorProps<2>, OperatorProps<3>> operators;
+    // TODO: Make REFLECT_PROPS compatible with a tuple so this can be replaced.
+    struct Ops : core::props::Properties<Ops> {
+      OperatorProps<0> op0;
+      OperatorProps<1> op1;
+      OperatorProps<2> op2;
+      OperatorProps<3> op3;
+
+      template<typename Callable>
+      void indexed_for_each(Callable&& c) {
+        c(0, op0);
+        c(1, op1);
+        c(2, op2);
+        c(3, op3);
+      }
+
+      REFLECT_PROPS(Ops, op0, op1, op2, op3);
+    } operators;
 
     REFLECT_PROPS(Props, envelope, settings, algorithm_idx, fm_amount, operators, cur_op);
   };

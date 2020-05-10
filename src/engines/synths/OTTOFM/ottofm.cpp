@@ -49,7 +49,7 @@ namespace otto::engines::ottofm {
       else
         props.algorithm_idx.step(e.steps);
     } else {
-      util::indexed_for_each(props.operators, [&](int i, auto& op) {
+      props.operators.indexed_for_each([&](int i, auto& op) {
         if (i == props.cur_op.get()) {
           switch (e.encoder) {
             case Encoder::blue:
