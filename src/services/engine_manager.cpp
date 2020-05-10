@@ -8,6 +8,7 @@
 #include "engines/arps/ARP/arp.hpp"
 #include "engines/fx/chorus/chorus.hpp"
 #include "engines/fx/wormhole/wormhole.hpp"
+#include "engines/fx/pingpong/pingpong.hpp"
 #include "engines/misc/external/external.hpp"
 #include "engines/misc/looper/screen.hpp"
 #include "engines/misc/master/master.hpp"
@@ -41,7 +42,8 @@ namespace otto::services {
       EngineType::effect,
       engine::OffEngine<EngineType::effect>,
       engines::wormhole::Wormhole,
-      engines::chorus::Chorus>;
+      engines::chorus::Chorus,
+      engines::pingpong::PingPong>;
     using ArpDispatcher = EngineDispatcher< //
       EngineType::arpeggiator,
       engine::OffEngine<EngineType::arpeggiator>,
