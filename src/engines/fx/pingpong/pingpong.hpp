@@ -42,7 +42,7 @@ namespace otto::engines::pingpong {
     DECL_REFLECTION(Props, free_time, delaytime, subdivision, timetype, filter, stereo, stereo_invert, feedback);
   };
 
-  struct PingPong : core::engine::EffectEngine<PingPong> {
+  struct PingPong : core::engine::EffectEngine<PingPong>, util::OwnsObservers {
     static constexpr util::string_ref name = "PingPong";
     PingPong();
 

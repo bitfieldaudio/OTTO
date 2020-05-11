@@ -11,6 +11,14 @@
 
 namespace otto::services {
 
+  using namespace core::props;
+
+  struct Props {
+    Property<float> bpm = 120.f;
+
+    DECL_REFLECTION(Props, bpm);
+  };
+
   /// The service managing the clock
   ///
   /// The clock can be started or stopped by an internal or external source,
@@ -50,9 +58,10 @@ namespace otto::services {
 
     ClockRange step_frames(int nframes);
 
+    Props props;
+
   private:
     bool running_ = false;
-    float bpm_ = 0;
     int samples_pr_beat_ = 0;
     ClockCounter counter_;
     int remainder_ = 0;

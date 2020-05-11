@@ -20,7 +20,7 @@ namespace otto::services {
 
   float ClockManager::bpm() const noexcept
   {
-    return bpm_;
+    return props.bpm.get();
   }
 
   int ClockManager::samples_pr_beat() const noexcept
@@ -37,7 +37,7 @@ namespace otto::services {
 
   void ClockManager::set_bpm(float bpm) noexcept
   {
-    bpm_ = bpm;
+    props.bpm = bpm;
     samples_pr_beat_ = AudioManager::current().samplerate() / (bpm / 60.f);
   }
 

@@ -1,6 +1,7 @@
 #include "pingpong.hpp"
 
 #include "core/service.hpp"
+#include "engines/misc/master/master.hpp"
 #include "services/application.hpp"
 #include "services/audio_manager.hpp"
 #include "services/clock_manager.hpp"
@@ -13,11 +14,13 @@ namespace otto::engines::pingpong {
   PingPong::PingPong()
     : audio(std::make_unique<Audio>()), screen_(std::make_unique<Screen>()), props{{*audio, *screen_}}
   {
-    props.timetype.on_change()
-      .connect([this](bool tt) {
-        props.delaytime.set(calculate_delaytime(props.timetype, props.free_time, props.subdivision));
-      })
-      .call_now();
+    // Extra observers for when delaytime should change
+    props.timetype.observe(this, [&](bool tt) {
+      props.delaytime.set(calculate_delaytime(props.timetype, props.free_time, props.subdivision));
+    });
+    services::ClockManager::current().props.bpm.observe(this, [&](float b) {
+      props.delaytime.set(calculate_delaytime(props.timetype, props.free_time, props.subdivision));
+    });
   }
 
   using namespace core::input;
@@ -63,17 +66,17 @@ namespace otto::engines::pingpong {
       auto res = 240.f / services::ClockManager::current().bpm();
       // Identification of the subdivisions
       switch (sd) {
-        case SubdivisionEnum::thirtysecondth: res *= 1.f/32.f; break;
-        case SubdivisionEnum::sixteenth: res *= 1.f/16.f; break;
-        case SubdivisionEnum::eighthtriplet: res *= 1.f/12.f; break;
-        case SubdivisionEnum::eighth: res *= 1.f/8.f; break;
-        case SubdivisionEnum::doteighth: res *= 3.f/16.f; break;
+        case SubdivisionEnum::thirtysecondth: res *= 1.f / 32.f; break;
+        case SubdivisionEnum::sixteenth: res *= 1.f / 16.f; break;
+        case SubdivisionEnum::eighthtriplet: res *= 1.f / 12.f; break;
+        case SubdivisionEnum::eighth: res *= 1.f / 8.f; break;
+        case SubdivisionEnum::doteighth: res *= 3.f / 16.f; break;
         case SubdivisionEnum::quartertriplet: res *= 1.f / 6.f; break;
-        case SubdivisionEnum::quarter: res *= 1.f/4.f; break;
-        case SubdivisionEnum::dotquarter: res *= 3.f/8.f; break;
-        case SubdivisionEnum::halftriplet: res *= 1.f/3.f; break;
-        case SubdivisionEnum::half: res *= 1.f/2.f; break;
-        case SubdivisionEnum::dothalf: res *= 3.f/4.f; break;
+        case SubdivisionEnum::quarter: res *= 1.f / 4.f; break;
+        case SubdivisionEnum::dotquarter: res *= 3.f / 8.f; break;
+        case SubdivisionEnum::halftriplet: res *= 1.f / 3.f; break;
+        case SubdivisionEnum::half: res *= 1.f / 2.f; break;
+        case SubdivisionEnum::dothalf: res *= 3.f / 4.f; break;
         case SubdivisionEnum::whole: break;
         default: OTTO_UNREACHABLE;
       }
