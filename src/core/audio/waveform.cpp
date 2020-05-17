@@ -37,7 +37,7 @@ namespace otto::core::audio {
     // Calculate number of points at a certain resolution
     int length = std::ceil(input_data_.size() * std::pow(2.f, -float(res)));
     DLOGI("start: {}, length: {}", start, length);
-    return {points_.data() + start, length};
+    return {points_.data() + start, (std::size_t) length};
   }
 
   void Waveform::generate_res(int res) {
@@ -52,10 +52,10 @@ namespace otto::core::audio {
     } else {
       // For all other resolutions, the source of data is the previous resolution
       auto src_data = at_resolution(res - 1);
-      auto src = src_data.cbegin();
+      auto src = src_data.begin();
       // Pick out every second point
       *dst = *src;
-      while (src < src_data.cend()-2) {
+      while (src < src_data.end()-2) {
         dst++;
         src += 2;
         *dst = *src;

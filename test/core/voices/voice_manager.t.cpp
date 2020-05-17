@@ -1,9 +1,9 @@
-#include <nanorange.hpp>
 #include <set>
 
 #include "core/voices/voice_manager.hpp"
 #include "dummy_services.hpp"
 #include "testing.t.hpp"
+#include <nanorange.hpp>
 
 namespace otto::core::voices {
 
@@ -48,7 +48,7 @@ namespace otto::core::voices {
     auto triggered_voices = [&]() -> auto&
     {
       auto v = [&] {
-        return all(vmgr.voices()) | filter([](Voice& v) {
+        return vmgr.voices() | filter([](Voice& v) {
                  return v.is_triggered() && v.volume() != test::approx(0);
                });
       };

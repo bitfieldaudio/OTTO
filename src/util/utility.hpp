@@ -18,7 +18,7 @@ namespace otto::util {
     struct function_ptr_impl<Ret(Args...) noexcept> {
       using type = Ret (*)(Args...) noexcept;
     };
-  }
+  } // namespace utility_detail
 
   template<typename Func>
   using function_ptr = typename utility_detail::function_ptr_impl<Func>::type;
@@ -39,7 +39,7 @@ namespace otto::util {
   };
 
   template<typename... Ls>
-  overloaded(Ls...)->overloaded<std::decay_t<Ls>...>;
+  overloaded(Ls...) -> overloaded<std::decay_t<Ls>...>;
 
   // match ////////////////////////////////////////////////////////////////////
 
@@ -90,6 +90,15 @@ namespace otto::util {
 
   // Tuple for_each ///////////////////////////////////////////////////////////
 
+
+  template<typename T>
+  struct is_tuple : std::false_type {};
+  template<typename... Args>
+  struct is_tuple<std::tuple<Args...>> : std::true_type {};
+
+  template<typename T>
+  concept CTupleRef = is_tuple<std::remove_cvref_t<T>>::value;
+
   namespace details {
     template<typename T, typename F, std::size_t... Is>
     void tuple_for_each_impl(T&& t, F&& f, std::integer_sequence<std::size_t, Is...> is)
@@ -102,51 +111,57 @@ namespace otto::util {
     {
       (f(Is, std::get<Is>(t)), ...);
     }
+
+    template<typename T, typename F, std::size_t... Is>
+    auto tuple_transform_impl(T&& t, F&& f, std::integer_sequence<std::size_t, Is...> is)
+    {
+      return std::tuple(f(std::get<Is>(t))...);
+    }
+
+    template<CTupleRef T1, CTupleRef T2, std::size_t... Is>
+    auto tuple_zip_impl(T1&& t1, T2&& t2, std::integer_sequence<std::size_t, Is...> is)
+    {
+      return std::tuple(std::make_pair(std::get<Is>(t1), std::get<Is>(t2))...);
+    }
+
+    template<typename F, std::size_t... Is>
+    decltype(auto) apply_idxs_impl(F&& f, std::integer_sequence<std::size_t, Is...> is)
+    {
+      return FWD(f)(Is...);
+    }
+
   } // namespace details
 
-  template<typename F, typename... Args>
-  void for_each(const std::tuple<Args...>& tuple, F&& f)
+  template<typename F, CTupleRef Tuple>
+  void for_each(Tuple&& tuple, F&& f)
   {
-    details::tuple_for_each_impl(tuple, FWD(f),
-                                 std::make_index_sequence<std::tuple_size<std::tuple<Args...>>::value>());
-  }
-
-  template<typename F, typename... Args>
-  void for_each(std::tuple<Args...>& tuple, F&& f)
-  {
-    details::tuple_for_each_impl(tuple, FWD(f),
-                                 std::make_index_sequence<std::tuple_size<std::tuple<Args...>>::value>());
-  }
-
-  template<typename F, typename... Args>
-  void for_each(std::tuple<Args...>&& tuple, F&& f)
-  {
-    details::tuple_for_each_impl(tuple, FWD(f),
-                                 std::make_index_sequence<std::tuple_size<std::tuple<Args...>>::value>());
+    details::tuple_for_each_impl(FWD(tuple), FWD(f), std::make_index_sequence<std::tuple_size<std::remove_cvref_t<Tuple>>::value>());
   }
 
   /// Call `f(idx, element)` for each `element` in `tuple`
-  template<typename F, typename... Args>
-  void indexed_for_each(const std::tuple<Args...>& tuple, F&& f)
+  template<typename F, CTupleRef Tuple>
+  void indexed_for_each(Tuple&& tuple, F&& f)
   {
-    details::tuple_for_each_i_impl(tuple, FWD(f),
-                                   std::make_index_sequence<std::tuple_size<std::tuple<Args...>>::value>());
+    details::tuple_for_each_i_impl(FWD(tuple), FWD(f), std::make_index_sequence<std::tuple_size<std::remove_cvref_t<Tuple>>::value>());
   }
 
-  /// Call `f(idx, element)` for each `element` in `tuple`
-  template<typename F, typename... Args>
-  void indexed_for_each(std::tuple<Args...>& tuple, F&& f)
+  template<typename F, CTupleRef Tuple>
+  void transform(Tuple&& tuple, F&& f)
   {
-    details::tuple_for_each_i_impl(tuple, FWD(f),
-                                   std::make_index_sequence<std::tuple_size<std::tuple<Args...>>::value>());
+    details::tuple_transform_impl(FWD(tuple), FWD(f), std::make_index_sequence<std::tuple_size<std::remove_cvref_t<Tuple>>::value>());
   }
 
-  /// Call `f(idx, element)` for each `element` in `tuple`
-  template<typename F, typename... Args>
-  void indexed_for_each(std::tuple<Args...>&& tuple, F&& f)
+  template<typename F, CTupleRef Tuple>
+  decltype(auto) apply_idxs(Tuple&& tuple, F&& f)
   {
-    details::tuple_for_each_i_impl(tuple, FWD(f),
-                                   std::make_index_sequence<std::tuple_size<std::tuple<Args...>>::value>());
+    return std::apply(FWD(f), std::make_index_sequence<std::tuple_size<std::remove_cvref_t<Tuple>>::value>());
+  }
+
+  template<CTupleRef T1, CTupleRef T2>
+  auto zip(T1&& t1, T2&& t2)
+  {
+    return details::tuple_zip_impl(
+      FWD(t1), FWD(t2), std::make_index_sequence<std::min(std::tuple_size<std::remove_cvref_t<T1>>::value, std::tuple_size<std::remove_cvref_t<T2>>::value)>());
   }
 
   inline namespace tuple {

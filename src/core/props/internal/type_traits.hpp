@@ -90,7 +90,7 @@ namespace otto::core::props {
 
   // Concepts //
 
-  // namespace cpts = ranges::concepts;
+  // namespace cpts = nano::concepts;
 
   template<typename T>
   constexpr auto is_MixinValue = !std::is_void_v<T>;

@@ -10,6 +10,7 @@
 #include <type_traits>
 
 #include "type_traits.hpp"
+#include "utility.hpp"
 
 namespace otto::util {
 
@@ -185,14 +186,9 @@ namespace otto::util {
       }
 
       // Comparison (Any)
-      bool operator==(const Derived& r) const
+      friend bool operator==(const Derived& l, const Derived& r)
       {
-        return derived().equal(r);
-      }
-
-      bool operator!=(const Derived& r) const
-      {
-        return !derived().equal(r);
+        return l.equal(r);
       }
 
     private:
@@ -222,8 +218,6 @@ namespace otto::util {
       using Super::operator++;
       using Super::operator*;
       using Super::operator->;
-      using Super::operator==;
-      using Super::operator!=;
 
       // Decrement (Bidirectional)
 
@@ -268,8 +262,6 @@ namespace otto::util {
       using Super::operator++;
       using Super::operator*;
       using Super::operator->;
-      using Super::operator==;
-      using Super::operator!=;
 
       using Super::operator--;
 
@@ -1041,6 +1033,7 @@ namespace otto::util {
                                             iter_detail::with_index<iter_detail::reference_t<WrappedIter>>>;
     } // namespace iter_detail
 
+
     template<typename WrappedIter>
     struct indexed_iterator : iter_detail::indexed_super<WrappedIter> {
       static_assert(
@@ -1079,9 +1072,7 @@ namespace otto::util {
       WrappedIter iter;
       int index = 0;
     };
-
   } // namespace iterator
-
 
   namespace view {
 
@@ -1102,6 +1093,7 @@ namespace otto::util {
       using Iter = indexed_iterator<decltype(begin(r))>;
       static_assert(nano::weakly_incrementable<Iter>);
       static_assert(nano::input_or_output_iterator<Iter>);
+      static_assert(nano::sentinel_for<Iter, Iter>);
       auto first = Iter(begin(r));
       auto last = Iter(end(r));
       return nano::subrange(first, last);

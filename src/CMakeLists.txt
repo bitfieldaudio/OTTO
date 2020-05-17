@@ -1,4 +1,4 @@
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 file(GLOB_RECURSE headers ${OTTO_SOURCE_DIR}/src/*.hpp)
 file(GLOB_RECURSE sources ${OTTO_SOURCE_DIR}/src/*.cpp)
@@ -46,7 +46,7 @@ elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long -Wno-pedantic -Wno-c++14-compat -Wno-psabi -Wno-unknown-pragmas -Wno-vla -Wno-sign-compare")
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long -Wpedantic \
--Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wc++17-compat \
+-Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wno-c++17-compat -Wc++20-compat \
 -Wno-shadow-field-in-constructor \
 -Wno-documentation-unknown-command \
 -Wno-unknown-pragmas \

@@ -1,10 +1,11 @@
 #pragma once
 
-#include <nanorange.hpp>
 
 #include "services/audio_manager.hpp"
 #include "services/ui_manager.hpp"
 #include "voice_manager.hpp"
+
+#include <nanorange.hpp>
 
 namespace otto::core::voices {
 

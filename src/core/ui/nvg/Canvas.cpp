@@ -1,6 +1,7 @@
 #include "Canvas.hpp"
 
 #include <nanovg.h>
+#include "util/type_traits.hpp"
 
 namespace otto::nvg {
 
@@ -204,7 +205,7 @@ namespace otto::nvg {
 
   Canvas& Canvas::textAlign(HorizontalAlign hAlign, VerticalAlign vAlign)
   {
-    nvgTextAlign(m_nvgCtx, hAlign | vAlign);
+    nvgTextAlign(m_nvgCtx, util::underlying(hAlign) | util::underlying(vAlign));
     return *this;
   }
 
@@ -214,7 +215,7 @@ namespace otto::nvg {
     if (!std::isnan(textStyle.lineHeight)) nvgTextLineHeight(canvas.nvgContext(), textStyle.lineHeight);
     if (std::isnan(textStyle.blur)) nvgFontBlur(canvas.nvgContext(), textStyle.blur);
     if (!std::isnan(textStyle.letterSpace)) nvgTextLetterSpacing(canvas.nvgContext(), textStyle.letterSpace);
-    nvgTextAlign(canvas.nvgContext(), textStyle.hAlign | textStyle.vAlign);
+    nvgTextAlign(canvas.nvgContext(), util::underlying(textStyle.hAlign) | util::underlying(textStyle.vAlign));
     nvgFontSize(canvas.nvgContext(), textStyle.size);
   }
 

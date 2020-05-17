@@ -22,7 +22,7 @@ namespace otto::util {
   /// thus, it can represent an arbitrary type.
   struct arbitrary_t {
     template<typename T>
-    operator T &&();
+    operator T&&();
 
     template<typename T>
     operator T&();

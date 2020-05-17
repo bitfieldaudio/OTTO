@@ -1,9 +1,9 @@
 #pragma once
 
 #include <better_enum.hpp>
-#include <nanorange.hpp>
 
 #include "util/algorithm.hpp"
+#include <nanorange.hpp>
 
 #include "services/log_manager.hpp"
 
