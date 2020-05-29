@@ -1,4 +1,5 @@
 #include "log_manager.hpp"
+
 #include "services/application.hpp"
 
 #define LOGURU_IMPLEMENTATION 1
@@ -31,8 +32,7 @@ namespace otto::services {
     loguru::add_file(logFilePath, loguru::Append, loguru::Verbosity_MAX);
 
     loguru::set_fatal_handler([](const loguru::Message& message) {
-      throw Application::exception(Application::ErrorCode::none,
-                                   std::string(message.prefix) + message.message);
+      throw Application::exception(Application::ErrorCode::none, std::string(message.prefix) + message.message);
     });
 
     LOGI("LOGGING NOW");
@@ -41,7 +41,11 @@ namespace otto::services {
 
   void LogManager::set_thread_name(const std::string& name)
   {
-		pthread_setname_np(pthread_self(), name.c_str());
+#if defined(__APPLE__)
+    pthread_setname_np(name.c_str());
+#else
+    pthread_setname_np(pthread_self(), name.c_str());
+#endif
     loguru::set_thread_name(name.c_str());
   }
 } // namespace otto::services

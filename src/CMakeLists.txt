@@ -24,7 +24,9 @@ otto_add_definitions(otto_exec)
 if (NOT OTTO_USE_LIBCXX)
   target_link_libraries(otto_src PUBLIC atomic)
 else() 
-  target_link_libraries(otto_src PUBLIC c++fs)
+  target_link_libraries(otto_src PUBLIC
+    $<$<AND:$<NOT:$<PLATFORM_ID:Windows>>,$<AND:$<CXX_COMPILER_ID:Clang>,$<AND:$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,7>,$<VERSION_LESS:$<CXX_COMPILER_VERSION>,9>>>>:-lc++fs>
+    )
 endif()
 
 target_link_libraries(otto_src PUBLIC external)
