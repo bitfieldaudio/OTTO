@@ -17,23 +17,6 @@
 #include <alsa/mixer.h>
 #endif
 
-#ifndef __LINUX_ALSA__
-/**
- * It seems from what I can tell the snd_mixer_t is an Alsa
- * construct that doesn't exist on macOS. Eventually this should
- * be removed to support macOS' CoreAudio (I think), but this
- * unblocks basic compilation.
- *
- */
-struct _snd_mixer;
-struct _snd_mixer_elem;
-struct _snd_mixer_selem_id;
-typedef struct _snd_mixer snd_mixer_t;
-typedef struct _snd_mixer_elem snd_mixer_elem_t;
-typedef struct _snd_mixer_selem_id snd_mixer_selem_id_t;
-
-#endif
-
 #include "services/audio_manager.hpp"
 
 namespace otto::services {
