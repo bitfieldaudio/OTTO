@@ -18,7 +18,7 @@ matrix:
       addons:
         apt:
           sources:
-            - llvm-toolchain-xenial-10
+            - sourceline: "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-10 main"
             - ubuntu-toolchain-r-test
           packages:
             - clang-10
@@ -35,7 +35,7 @@ matrix:
       addons:
         apt:
           sources:
-            - llvm-toolchain-xenial-10
+            - sourceline: "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-10 main"
             - ubuntu-toolchain-r-test
           packages:
             - clang-10
@@ -83,7 +83,7 @@ matrix:
       addons:
         apt:
           sources:
-            - llvm-toolchain-xenial-10
+            - sourceline: "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-10 main"
             - ubuntu-toolchain-r-test
           packages:
             - clang-10
