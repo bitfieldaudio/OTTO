@@ -144,7 +144,7 @@ install:
     LLVM_INSTALL=${DEPS_DIR}/llvm/install
     # if in linux and compiler clang and llvm not installed
     if [[ "${TRAVIS_OS_NAME}" == "linux" && "$USE_LIBCXX" == "1" && ! -d $LLVM_INSTALL ]]; then
-    [[ "${CXX}" == "clang++-10.0" ]] && LLVM_VERSION="10.0.0";
+    [[ "${CXX}" == "clang++-10" ]] && LLVM_VERSION="10.0.0";
     LLVM_URL="https://github.com/llvm/llvm-project/releases/download/llvmorg-${LLVM_VERSION}/llvm-${LLVM_VERSION}.src.tar.xz"
     LIBCXX_URL="https://github.com/llvm/llvm-project/releases/download/llvmorg-${LLVM_VERSION}/libcxx-${LLVM_VERSION}.src.tar.xz"
     LIBCXXABI_URL="https://github.com/llvm/llvm-project/releases/download/llvmorg-${LLVM_VERSION}/libcxxabi-${LLVM_VERSION}.src.tar.xz"
