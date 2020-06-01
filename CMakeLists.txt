@@ -47,7 +47,6 @@ set_property(CACHE OTTO_BOARD PROPERTY STRINGS ${OTTO_BOARDS})
 if (OTTO_USE_LIBCXX)
   message("Using libc++ instead of libstdc++")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-  set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -lc++fs")
 endif()
 
 set(OTTO_EXTERNAL_DIR ${OTTO_SOURCE_DIR}/external/)

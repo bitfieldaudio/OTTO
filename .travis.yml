@@ -13,67 +13,69 @@ cache:
 
 matrix:
   include:
-
-    - name: "Linux, Clang 8, Debug, libc++"
+    - name: "Linux, Clang 10, Debug, libc++"
       os: linux
       addons:
         apt:
           sources:
-            - llvm-toolchain-xenial-8
+            - sourceline: "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-10 main"
+              key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
             - ubuntu-toolchain-r-test
           packages:
-            - clang-8
+            - clang-10
             - gdb-minimal
             - libasound-dev
       env:
-        - CC=clang-8 CXX=clang++-8
+        - CC=clang-10 CXX=clang++-10
         - BUILD_TYPE=Debug
         - USE_LIBCXX=1
         - DEPLOY_DOCS=OFF
 
-    - name: "Linux, Clang 8, Release, libstdc++"
+    - name: "Linux, Clang 10, Release, libstdc++"
       os: linux
       addons:
         apt:
           sources:
-            - llvm-toolchain-xenial-8
+            - sourceline: "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-10 main"
+              key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
             - ubuntu-toolchain-r-test
           packages:
-            - clang-8
+            - clang-10
             - libstdc++-9-dev
             - gdb-minimal
             - libasound-dev
       env:
-        - CC=clang-8 CXX=clang++-8
+        - CC=clang-10 CXX=clang++-10
         - BUILD_TYPE=Release
         - USE_LIBCXX=0
         - DEPLOY_DOCS=OFF
-    - name: "Linux, GCC, Debug"	
-      os: linux	
-      addons:	
-        apt:	
-          sources:	
-            - ubuntu-toolchain-r-test	
-          packages:	
-            - g++-9	
-            - gdb-minimal	
-            - libasound-dev	
-      env:	
-        - CC=gcc-9 CXX=g++-9	
-        - BUILD_TYPE=Debug	
-        - USE_LIBCXX=0	
-        - DEPLOY_DOCS=OFF	
-#    - name: "OSX, Clang, Debug, libc++"
-#      os: osx
-#      osx_image: xcode9.1
-#      env:
-#        - CC=clang CXX=clang++
-#        - MATRIX_EVAL="brew update; brew install gdb llvm"
-#        - LDFLAGS="-L/usr/local/opt/llvm/lib -Wl,-rpath,/usr/local/opt/llvm/lib"
-#        - PATH="/usr/local/opt/llvm/bin:$PATH"
-#        - CXXFLAGS="-I/usr/local/opt/llvm/include -I/usr/local/opt/llvm/include/c++/v1/"
-#        - USE_LIBCXX=1
-#        - DEPLOY_DOCS=OFF
+
+    - name: "Linux, GCC, Debug"
+      os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-9
+            - gdb-minimal
+            - libasound-dev
+      env:
+        - CC=gcc-9 CXX=g++-9
+        - BUILD_TYPE=Debug
+        - USE_LIBCXX=0
+        - DEPLOY_DOCS=OFF
+    #    - name: "OSX, Clang, Debug, libc++"
+    #      os: osx
+    #      osx_image: xcode9.1
+    #      env:
+    #        - CC=clang CXX=clang++
+    #        - MATRIX_EVAL="brew update; brew install gdb llvm"
+    #        - LDFLAGS="-L/usr/local/opt/llvm/lib -Wl,-rpath,/usr/local/opt/llvm/lib"
+    #        - PATH="/usr/local/opt/llvm/bin:$PATH"
+    #        - CXXFLAGS="-I/usr/local/opt/llvm/include -I/usr/local/opt/llvm/include/c++/v1/"
+    #        - USE_LIBCXX=1
+    #        - DEPLOY_DOCS=OFF
 
     - name: "Deploy Docs"
       os: linux
@@ -83,15 +85,16 @@ matrix:
       addons:
         apt:
           sources:
-            - llvm-toolchain-xenial-8
+            - sourceline: "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-10 main"
+              key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
             - ubuntu-toolchain-r-test
           packages:
-            - clang-8
-            - libclang-8-dev
+            - clang-10
+            - libclang-10-dev
             - libasound-dev
             - libtinfo-dev
       env:
-        - CC=clang-8 CXX=clang++-8
+        - CC=clang-10 CXX=clang++-10
         - BUILD_TYPE=Debug
         - USE_LIBCXX=1
         - DEPLOY_DOCS=ON
@@ -141,12 +144,10 @@ install:
     LLVM_INSTALL=${DEPS_DIR}/llvm/install
     # if in linux and compiler clang and llvm not installed
     if [[ "${TRAVIS_OS_NAME}" == "linux" && "$USE_LIBCXX" == "1" && ! -d $LLVM_INSTALL ]]; then
-    [[ "${CXX}" == "clang++-6.0" ]] && LLVM_VERSION="6.0.0";
-    [[ "${CXX}" == "clang++-7.0" ]] && LLVM_VERSION="7.0.0";
-    [[ "${CXX}" == "clang++-8" ]] && LLVM_VERSION="8.0.0";
-    LLVM_URL="http://llvm.org/releases/${LLVM_VERSION}/llvm-${LLVM_VERSION}.src.tar.xz"
-    LIBCXX_URL="http://llvm.org/releases/${LLVM_VERSION}/libcxx-${LLVM_VERSION}.src.tar.xz"
-    LIBCXXABI_URL="http://llvm.org/releases/${LLVM_VERSION}/libcxxabi-${LLVM_VERSION}.src.tar.xz"
+    [[ "${CXX}" == "clang++-10" ]] && LLVM_VERSION="10.0.0";
+    LLVM_URL="https://github.com/llvm/llvm-project/releases/download/llvmorg-${LLVM_VERSION}/llvm-${LLVM_VERSION}.src.tar.xz"
+    LIBCXX_URL="https://github.com/llvm/llvm-project/releases/download/llvmorg-${LLVM_VERSION}/libcxx-${LLVM_VERSION}.src.tar.xz"
+    LIBCXXABI_URL="https://github.com/llvm/llvm-project/releases/download/llvmorg-${LLVM_VERSION}/libcxxabi-${LLVM_VERSION}.src.tar.xz"
     mkdir -p llvm llvm/build llvm/projects/libcxx llvm/projects/libcxxabi
     travis_retry wget -O - ${LLVM_URL} | tar --strip-components=1 -xJ -C llvm
     travis_retry wget -O - ${LIBCXX_URL} | tar --strip-components=1 -xJ -C llvm/projects/libcxx
