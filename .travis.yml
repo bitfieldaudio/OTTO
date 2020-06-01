@@ -19,6 +19,7 @@ matrix:
         apt:
           sources:
             - sourceline: "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-10 main"
+              key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
             - ubuntu-toolchain-r-test
           packages:
             - clang-10
@@ -36,6 +37,7 @@ matrix:
         apt:
           sources:
             - sourceline: "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-10 main"
+              key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
             - ubuntu-toolchain-r-test
           packages:
             - clang-10
@@ -84,6 +86,7 @@ matrix:
         apt:
           sources:
             - sourceline: "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-10 main"
+              key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
             - ubuntu-toolchain-r-test
           packages:
             - clang-10
