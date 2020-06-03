@@ -20,7 +20,7 @@ matrix:
           sources:
             - sourceline: "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-10 main"
               key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
-            - ubuntu-toolchain-r-test
+            - sourceline: "ppa:ubuntu-toolchain-r/test"
           packages:
             - clang-10
             - gdb-minimal
@@ -38,7 +38,7 @@ matrix:
           sources:
             - sourceline: "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-10 main"
               key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
-            - ubuntu-toolchain-r-test
+            - sourceline: "ppa:ubuntu-toolchain-r/test"
           packages:
             - clang-10
             - libstdc++-9-dev
@@ -55,7 +55,7 @@ matrix:
       addons:
         apt:
           sources:
-            - ubuntu-toolchain-r-test
+            - sourceline: "ppa:ubuntu-toolchain-r/test"
           packages:
             - g++-9
             - gdb-minimal
@@ -87,7 +87,7 @@ matrix:
           sources:
             - sourceline: "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-10 main"
               key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
-            - ubuntu-toolchain-r-test
+            - sourceline: "ppa:ubuntu-toolchain-r/test"
           packages:
             - clang-10
             - libclang-10-dev
