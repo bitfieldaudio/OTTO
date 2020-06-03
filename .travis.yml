@@ -1,5 +1,5 @@
 language: generic
-dist: focal
+dist: bionic
 
 env:
   global:
