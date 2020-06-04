@@ -101,6 +101,7 @@ matrix:
 
   allow_failures:
     - name: "Deploy Docs"
+    - name: "Linux, Clang 10, Release, libstdc++ (GCC 10)"
     - os: osx
 
   fast_finish: true
