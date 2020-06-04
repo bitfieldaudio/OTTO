@@ -1,5 +1,5 @@
 language: generic
-dist: xenial
+dist: bionic
 
 env:
   global:
@@ -18,9 +18,9 @@ matrix:
       addons:
         apt:
           sources:
-            - sourceline: "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-10 main"
+            - sourceline: "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-10 main"
               key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
-            - ubuntu-toolchain-r-test
+            - sourceline: "ppa:ubuntu-toolchain-r/test"
           packages:
             - clang-10
             - gdb-minimal
@@ -31,17 +31,17 @@ matrix:
         - USE_LIBCXX=1
         - DEPLOY_DOCS=OFF
 
-    - name: "Linux, Clang 10, Release, libstdc++"
+    - name: "Linux, Clang 10, Release, libstdc++ (GCC 10)"
       os: linux
       addons:
         apt:
           sources:
-            - sourceline: "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-10 main"
+            - sourceline: "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-10 main"
               key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
-            - ubuntu-toolchain-r-test
+            - sourceline: "ppa:ubuntu-toolchain-r/test"
           packages:
             - clang-10
-            - libstdc++-9-dev
+            - libstdc++-10-dev
             - gdb-minimal
             - libasound-dev
       env:
@@ -50,18 +50,18 @@ matrix:
         - USE_LIBCXX=0
         - DEPLOY_DOCS=OFF
 
-    - name: "Linux, GCC, Debug"
+    - name: "Linux, GCC 10, Debug"
       os: linux
       addons:
         apt:
           sources:
-            - ubuntu-toolchain-r-test
+            - sourceline: "ppa:ubuntu-toolchain-r/test"
           packages:
-            - g++-9
+            - g++-10
             - gdb-minimal
             - libasound-dev
       env:
-        - CC=gcc-9 CXX=g++-9
+        - CC=gcc-10 CXX=g++-10
         - BUILD_TYPE=Debug
         - USE_LIBCXX=0
         - DEPLOY_DOCS=OFF
@@ -85,9 +85,9 @@ matrix:
       addons:
         apt:
           sources:
-            - sourceline: "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-10 main"
+            - sourceline: "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-10 main"
               key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
-            - ubuntu-toolchain-r-test
+            - sourceline: "ppa:ubuntu-toolchain-r/test"
           packages:
             - clang-10
             - libclang-10-dev
@@ -101,6 +101,7 @@ matrix:
 
   allow_failures:
     - name: "Deploy Docs"
+    - name: "Linux, Clang 10, Release, libstdc++ (GCC 10)"
     - os: osx
 
   fast_finish: true
