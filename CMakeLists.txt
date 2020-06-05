@@ -12,6 +12,13 @@ set(CMAKE_BUILD_TYPE Release)
 include(cmake/utils.cmake)
 include(cmake/CPM.cmake)
 
+# Download External Dependencies
+CPMFindPackage(
+  NAME fmt
+  GITHUB_REPOSITORY fmtlib/fmt
+  GIT_TAG 6.2.0
+)
+
 otto_option(BUILD_DOCS "Build documentation" OFF)
 otto_option(BUILD_TESTS "Build tests" ON)
 otto_option(USE_LIBCXX "Link towards libc++ instead of libstdc++. This is the default on OSX" ${APPLE})
