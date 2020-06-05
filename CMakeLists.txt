@@ -1,5 +1,5 @@
 # Version 3.12 is required for Object library linking
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.14)
 project(OTTO VERSION 0.0.1 LANGUAGES CXX C)
 
 set(CMAKE_CXX_EXTENSIONS OFF)
