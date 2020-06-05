@@ -10,6 +10,7 @@ set(CMAKE_BUILD_TYPE Release)
 #set(CMAKE_CXX_FLAGS_DEBUG "-ggdb3 -O0" CACHE STRING "" FORCE)
 
 include(cmake/utils.cmake)
+include(cmake/CPM.cmake)
 
 otto_option(BUILD_DOCS "Build documentation" OFF)
 otto_option(BUILD_TESTS "Build tests" ON)
