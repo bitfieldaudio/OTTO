@@ -27,6 +27,24 @@ CPMFindPackage(
   GIT_TAG 1999b48a519196711f0d03af3b7eedd49fcc6db3
 )
 
+CPMFindPackage(
+  NAME Choreograph
+  GIT_REPOSITORY https://github.com/topisani/Choreograph.git
+  # We're on version v0.3.0-123-gff67c1a which is not officially tagged in Github
+  # so we're going to use the SHA directly.
+  GIT_TAG ff67c1a
+  DOWNLOAD_ONLY
+)
+
+if (Choreograph_ADDED)
+  file(GLOB_RECURSE choreograph_sources ${Choreograph_SOURCE_DIR}/src/**.cpp)
+  add_library(choreograph ${choreograph_sources})
+  target_include_directories(choreograph
+  SYSTEM PUBLIC
+    $<BUILD_INTERFACE:${Choreograph_SOURCE_DIR}/src>
+)
+endif()
+
 otto_option(BUILD_DOCS "Build documentation" OFF)
 otto_option(BUILD_TESTS "Build tests" ON)
 otto_option(USE_LIBCXX "Link towards libc++ instead of libstdc++. This is the default on OSX" ${APPLE})

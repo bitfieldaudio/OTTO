@@ -7,6 +7,3 @@
 [submodule "external/Gamma"]
 	path = external/Gamma
 	url = https://github.com/LancePutnam/Gamma
-[submodule "external/choreograph"]
-	path = external/choreograph
-	url = https://github.com/topisani/Choreograph

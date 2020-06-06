@@ -40,9 +40,3 @@ list(REMOVE_ITEM gamma_src
   "${CMAKE_CURRENT_SOURCE_DIR}/Gamma/src/AudioIO.cpp")
 add_library(gamma ${gamma_src})
 target_include_directories(gamma SYSTEM PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/include")
-
-# Choreograph
-execute_process(COMMAND git submodule update --init -- choreograph WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-file(GLOB_RECURSE choreograph_src "${CMAKE_CURRENT_SOURCE_DIR}/choreograph/src/**.cpp")
-add_library(choreograph ${choreograph_src})
-target_include_directories(choreograph SYSTEM PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/choreograph/src")
