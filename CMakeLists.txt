@@ -12,11 +12,19 @@ set(CMAKE_BUILD_TYPE Release)
 include(cmake/utils.cmake)
 include(cmake/CPM.cmake)
 
-# Download External Dependencies
+# Download External Dependencies via CPM
 CPMFindPackage(
   NAME fmt
   GITHUB_REPOSITORY fmtlib/fmt
   GIT_TAG 6.2.0
+)
+
+CPMFindPackage(
+  NAME GSL
+  GIT_REPOSITORY https://github.com/microsoft/GSL.git
+  # We're on version v1.0.0-289-g1999b48 which is not officially tagged in Github
+  # so we're going to use the SHA directly.
+  GIT_TAG 1999b48a519196711f0d03af3b7eedd49fcc6db3
 )
 
 otto_option(BUILD_DOCS "Build documentation" OFF)

@@ -29,10 +29,6 @@ if (APPLE)
   target_link_libraries(external ${CORE_FOUNDATION})
 endif()
 
-# Guideline Support library
-execute_process(COMMAND git submodule update --init -- GSL WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/GSL EXCLUDE_FROM_ALL)
-
 # Gamma
 execute_process(COMMAND git submodule update --init -- Gamma WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 execute_process(COMMAND mkdir -p "${CMAKE_CURRENT_BINARY_DIR}/include")
