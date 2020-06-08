@@ -5,22 +5,25 @@
 
 #include "util/math.hpp"
 
+#include "services/clock_manager.hpp"
+
 namespace otto::engines::master {
 
   using namespace core::input;
 
-  Master::Master()
-    : audio(std::make_unique<Audio>()),
-      screen_(std::make_unique<Screen>())
-  {}
+  Master::Master() : audio(std::make_unique<Audio>()), screen_(std::make_unique<Screen>())
+  {
+    // TODO: These properties are the same, this is definitely not the right way to link them!
+    props.tempo.observe_no_immediate_call(this, [](float val) { services::ClockManager::current().set_bpm(val); });
+  }
 
   void Master::encoder(EncoderEvent e)
   {
-    switch (e.encoder){
-    case Encoder::blue: props.volume.step(e.steps); break;
-    case Encoder::green: props.volume.step(e.steps); break;
-    case Encoder::yellow: props.volume.step(e.steps); break;
-    case Encoder::red: props.tempo.step(e.steps); break;
+    switch (e.encoder) {
+      case Encoder::blue: props.volume.step(e.steps); break;
+      case Encoder::green: props.volume.step(e.steps); break;
+      case Encoder::yellow: props.volume.step(e.steps); break;
+      case Encoder::red: props.tempo.step(e.steps); break;
     }
   }
 
@@ -29,5 +32,4 @@ namespace otto::engines::master {
     return {*screen_, *this};
   }
 
-} // namespace otto::engines
-
+} // namespace otto::engines::master

@@ -19,9 +19,9 @@ namespace otto::engines::pingpong {
       props.delaytime.set(calculate_delaytime(props.timetype, props.free_time, props.subdivision));
     });
     // TODO: 
-    // services::ClockManager::current().props.bpm.observe(this, [&](float b) {
-    //   props.delaytime.set(calculate_delaytime(props.timetype, props.free_time, props.subdivision));
-    // });
+    services::ClockManager::current().props.bpm.observe_no_immediate_call(this, [&](float b) {
+      props.delaytime.set(calculate_delaytime(props.timetype, props.free_time, props.subdivision));
+    });
   }
 
   using namespace core::input;

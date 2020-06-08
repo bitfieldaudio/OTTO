@@ -22,7 +22,7 @@ namespace otto::engines::master {
       DECL_REFLECTION(Props, volume, tempo);
   };
 
-  struct Master : core::engine::MiscEngine<Master> {
+  struct Master : core::engine::MiscEngine<Master>, util::OwnsObservers {
     static constexpr util::string_ref name = "Master";
 
     Master();

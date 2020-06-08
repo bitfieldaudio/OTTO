@@ -15,7 +15,6 @@ namespace otto::engines::master {
   void Audio::action(itc::prop_change<&Props::tempo>, float t) noexcept
   {
     tempo_ = t;
-    services::ClockManager::current().set_bpm(t);
   }
 
   audio::ProcessData<2> Audio::process(audio::ProcessData<2> data) noexcept
