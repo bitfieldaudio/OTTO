@@ -1,9 +1,0 @@
-[submodule "external/nanovg"]
-	path = external/nanovg
-	url = https://github.com/memononen/nanovg
-[submodule "external/glfw"]
-	path = external/glfw
-	url = https://github.com/glfw/glfw
-[submodule "external/Gamma"]
-	path = external/Gamma
-	url = https://github.com/LancePutnam/Gamma

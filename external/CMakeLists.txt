@@ -14,29 +14,92 @@ file(GLOB_RECURSE external_src
 add_library(external ${external_src})
 target_include_directories(external SYSTEM PUBLIC  ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-# Nanovg
-execute_process(COMMAND git submodule update --init -- nanovg WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-file(GLOB_RECURSE nanovg_src "${CMAKE_CURRENT_SOURCE_DIR}/nanovg/src/*.c")
-add_library(nanovg ${nanovg_src})
-target_include_directories(nanovg SYSTEM INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/nanovg/src)
-
-# Link to the OpenGL framework on OSX
 if (APPLE)
-  find_package(OpenGL)
-  target_include_directories(nanovg SYSTEM INTERFACE ${OPENGL_INCLUDE_DIR})
-  target_link_libraries(nanovg INTERFACE ${OPENGL_LIBRARIES})
   find_library(CORE_FOUNDATION CoreFoundation)
   target_link_libraries(external ${CORE_FOUNDATION})
 endif()
 
-# Gamma
-execute_process(COMMAND git submodule update --init -- Gamma WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-execute_process(COMMAND mkdir -p "${CMAKE_CURRENT_BINARY_DIR}/include")
-execute_process(COMMAND rm "${CMAKE_CURRENT_BINARY_DIR}/include/Gamma")
-execute_process(COMMAND ln -s "${CMAKE_CURRENT_SOURCE_DIR}/Gamma/Gamma" "${CMAKE_CURRENT_BINARY_DIR}/include/Gamma")
-file(GLOB_RECURSE gamma_src "${CMAKE_CURRENT_SOURCE_DIR}/Gamma/src/*.cpp")
-list(REMOVE_ITEM gamma_src 
-  "${CMAKE_CURRENT_SOURCE_DIR}/Gamma/src/SoundFile.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/Gamma/src/AudioIO.cpp")
-add_library(gamma ${gamma_src})
-target_include_directories(gamma SYSTEM PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/include")
+# Download External Dependencies via CPM
+CPMAddPackage(
+  NAME fmt
+  GITHUB_REPOSITORY fmtlib/fmt
+  GIT_TAG 6.2.0
+)
+
+# We're on version v1.0.0-289-g1999b48 which is not officially tagged in Github
+# so we're going to use the SHA directly.
+CPMAddPackage(
+  NAME GSL
+  GITHUB_REPOSITORY microsoft/GSL
+  GIT_TAG 1999b48a519196711f0d03af3b7eedd49fcc6db3
+)
+
+# We're on version v0.3.0-123-gff67c1a which is not officially tagged in Github
+# so we're going to use the SHA directly.
+CPMAddPackage(
+  NAME Choreograph
+  GITHUB_REPOSITORY topisani/Choreograph
+  GIT_TAG ff67c1a
+  DOWNLOAD_ONLY
+)
+if (Choreograph_ADDED)
+  file(GLOB_RECURSE choreograph_sources ${Choreograph_SOURCE_DIR}/src/**.cpp)
+  add_library(choreograph ${choreograph_sources})
+  target_include_directories(choreograph
+    SYSTEM PUBLIC
+      $<BUILD_INTERFACE:${Choreograph_SOURCE_DIR}/src>
+  )
+endif()
+
+CPMAddPackage(
+  NAME gamma
+  GITHUB_REPOSITORY LancePutnam/Gamma
+  GIT_TAG 6c2ef03734c44f32c8cc02f63d528e96c980ed23
+  DOWNLOAD_ONLY
+)
+if (gamma_ADDED)
+  execute_process(COMMAND mkdir -p "${CMAKE_CURRENT_BINARY_DIR}/include")
+  execute_process(COMMAND ln -sf "${gamma_SOURCE_DIR}/Gamma" "${CMAKE_CURRENT_BINARY_DIR}/include/Gamma")
+  file(GLOB_RECURSE gamma_src "${gamma_SOURCE_DIR}/src/*.cpp")
+  list(REMOVE_ITEM gamma_src 
+    "${gamma_SOURCE_DIR}/src/SoundFile.cpp"
+    "${gamma_SOURCE_DIR}/src/AudioIO.cpp")
+  add_library(gamma ${gamma_src})
+  target_include_directories(gamma SYSTEM PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/include")
+endif()
+
+CPMAddPackage(
+  NAME nanovg
+  GITHUB_REPOSITORY memononen/nanovg
+  GIT_TAG 2bead03bea43b2418060aaa154f972829995e663 
+  DOWNLOAD_ONLY
+)
+if (nanovg_ADDED) 
+  file(GLOB_RECURSE nanovg_src "${nanovg_SOURCE_DIR}/src/*.c")
+  add_library(nanovg ${nanovg_src})
+  target_include_directories(nanovg SYSTEM INTERFACE "${nanovg_SOURCE_DIR}/src")
+  if (APPLE)
+    find_package(OpenGL)
+    target_include_directories(nanovg SYSTEM INTERFACE ${OPENGL_INCLUDE_DIR})
+    target_link_libraries(nanovg INTERFACE ${OPENGL_LIBRARIES})
+  endif()
+endif()
+
+CPMAddPackage(
+  NAME nlohmann_json
+  GITHUB_REPOSITORY nlohmann/json
+  GIT_TAG 28048d82077916b88e373479dad64c269aecdeb5
+  DOWNLOAD_ONLY
+  GIT_SHALLOW ON
+)
+
+if (nlohmann_json_ADDED)
+  add_library(nlohmann_json INTERFACE IMPORTED)
+  target_include_directories(nlohmann_json SYSTEM INTERFACE "${nlohmann_json_SOURCE_DIR}/include/nlohmann")
+endif()
+
+CPMAddPackage(
+  NAME doctest
+  GITHUB_REPOSITORY onqtam/doctest
+  GIT_TAG 2.3.2
+)

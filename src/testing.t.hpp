@@ -43,7 +43,7 @@
 #define DOCTEST_IS_DEBUGGER_ACTIVE() doctestDebuggerCheck();
 
 #include <chrono>
-#include <doctest.hpp>
+#include <doctest/doctest.h>
 #include <fstream>
 #include <random.hpp>
 #include <sstream>

@@ -6,44 +6,10 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_BUILD_TYPE Release)
 #set(CMAKE_CXX_FLAGS_DEBUG "-ggdb3 -O0" CACHE STRING "" FORCE)
 
+
 include(cmake/utils.cmake)
-include(cmake/CPM.cmake)
-
-# Download External Dependencies via CPM
-CPMFindPackage(
-  NAME fmt
-  GITHUB_REPOSITORY fmtlib/fmt
-  GIT_TAG 6.2.0
-)
-
-CPMFindPackage(
-  NAME GSL
-  GIT_REPOSITORY https://github.com/microsoft/GSL.git
-  # We're on version v1.0.0-289-g1999b48 which is not officially tagged in Github
-  # so we're going to use the SHA directly.
-  GIT_TAG 1999b48a519196711f0d03af3b7eedd49fcc6db3
-)
-
-CPMFindPackage(
-  NAME Choreograph
-  GIT_REPOSITORY https://github.com/topisani/Choreograph.git
-  # We're on version v0.3.0-123-gff67c1a which is not officially tagged in Github
-  # so we're going to use the SHA directly.
-  GIT_TAG ff67c1a
-  DOWNLOAD_ONLY
-)
-
-if (Choreograph_ADDED)
-  file(GLOB_RECURSE choreograph_sources ${Choreograph_SOURCE_DIR}/src/**.cpp)
-  add_library(choreograph ${choreograph_sources})
-  target_include_directories(choreograph
-  SYSTEM PUBLIC
-    $<BUILD_INTERFACE:${Choreograph_SOURCE_DIR}/src>
-)
-endif()
 
 otto_option(BUILD_DOCS "Build documentation" OFF)
 otto_option(BUILD_TESTS "Build tests" ON)
@@ -54,6 +20,10 @@ otto_option(ENABLE_LTO "Enable link time optimization on release builds. Only wo
 
 otto_option(ENABLE_TIMERS "Enable debugging timers" OFF)
 otto_option(DEBUG_UI "Enable the imgui based debug ui" OFF)
+
+include(cmake/CPM.cmake)
+set(CPM_USE_LOCAL_PACKAGES OFF)
+set(CPM_LOCAL_PACKAGES_ONLY OFF)
 
 if (OTTO_ENABLE_ASAN) 
   set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
