@@ -49,7 +49,7 @@ namespace otto::core::props {
     SUBCASE ("observer hooks") {
       Property<float> pf = 0;
       bool ran = false;
-      pf.observe_no_imidiate_call(nullptr, [&](float f) {
+      pf.observe_no_immediate_call(nullptr, [&](float f) {
         REQUIRE(f == 10);
         ran = true;
       });

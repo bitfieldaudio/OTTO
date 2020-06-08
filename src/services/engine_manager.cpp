@@ -133,7 +133,7 @@ namespace otto::services {
     reg_ss(ScreenEnum::twist1, [&]() { return (ui::ScreenAndInput){twist1screen, twist1screen.input}; });
     reg_ss(ScreenEnum::twist2, [&]() { return (ui::ScreenAndInput){twist2screen, twist2screen.input}; });
 
-    ui_manager.state.current_screen.observe(
+    ui_manager.state.current_screen.observe_no_immediate_call(
       this, [this, &ui_manager, old_val = ui_manager.state.current_screen.get()](auto new_val) mutable {
         if (new_val == old_val) return;
         old_val = new_val;

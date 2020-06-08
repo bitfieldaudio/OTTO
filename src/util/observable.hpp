@@ -134,7 +134,7 @@ namespace otto::util {
     ///
     /// @returns the key of the observer. Can later be used to manually remove the observer using
     /// @ref remove_observer
-    KeyType observe_no_imidiate_call(OwnsObservers* owner, Observer o)
+    KeyType observe_no_immediate_call(OwnsObservers* owner, Observer o)
     {
       observers.emplace(last_key, std::move(o));
       if (owner) {
@@ -154,9 +154,9 @@ namespace otto::util {
     ///
     /// @returns the key of the observer. Can later be used to manually remove the observer using
     /// @ref remove_observer
-    KeyType observe_no_imidiate_call(OwnsObservers& owner, Observer o)
+    KeyType observe_no_immediate_call(OwnsObservers& owner, Observer o)
     {
-      return observe_no_imidiate_call(&owner, std::move(o));
+      return observe_no_immediate_call(&owner, std::move(o));
     }
 
     /// Add a function as an observer of this observable, tied to the lifetime of an owner.
@@ -169,9 +169,9 @@ namespace otto::util {
     /// @returns the key of the observer. Can later be used to manually remove the observer using
     /// @ref remove_observer
     template<typename Callable, typename = std::enable_if_t<std::is_invocable_v<Callable>>>
-    KeyType observe_no_imidiate_call(OwnsObservers* owner, Callable&& c)
+    KeyType observe_no_immediate_call(OwnsObservers* owner, Callable&& c)
     {
-      return observe_no_imidiate_call(owner, [func = FWD(c)](T) { func(); });
+      return observe_no_immediate_call(owner, [func = FWD(c)](T) { func(); });
     }
 
     /// Add a function as an observer of this observable, tied to the lifetime of an owner.
@@ -184,9 +184,9 @@ namespace otto::util {
     /// @returns the key of the observer. Can later be used to manually remove the observer using
     /// @ref remove_observer
     template<typename Callable, typename = std::enable_if_t<std::is_invocable_v<Callable>>>
-    KeyType observe_no_imidiate_call(OwnsObservers& owner, Callable&& c)
+    KeyType observe_no_immediate_call(OwnsObservers& owner, Callable&& c)
     {
-      return observe_no_imidiate_call(&owner, [func = FWD(c)](T) { func(); });
+      return observe_no_immediate_call(&owner, [func = FWD(c)](T) { func(); });
     }
 
     /// Notify all attached observers

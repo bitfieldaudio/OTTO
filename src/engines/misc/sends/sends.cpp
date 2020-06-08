@@ -32,15 +32,16 @@ namespace otto::engines::sends {
   Sends::Sends(core::ui::Icon i)
     : audio(std::make_unique<Audio>()), screen_(std::make_unique<Screen>(i)), props{{*audio, *screen_}}
   {
-    props.dry.observe(this, [&](float a) {
+    // TODO: Immediate call?
+    props.dry.observe_no_immediate_call(this, [&](float a) {
       if (is_recursive) return;
       set(a, props.stored_levels.dry, props.stored_levels.fx1, props.stored_levels.fx2);
     });
-    props.fx1.observe(this, [&](float a) {
+    props.fx1.observe_no_immediate_call(this, [&](float a) {
       if (is_recursive) return;
       set(a, props.stored_levels.fx1, props.stored_levels.dry, props.stored_levels.fx2);
     });
-    props.fx2.observe(this, [&](float a) {
+    props.fx2.observe_no_immediate_call(this, [&](float a) {
       if (is_recursive) return;
       set(a, props.stored_levels.fx2, props.stored_levels.dry, props.stored_levels.fx1);
     });

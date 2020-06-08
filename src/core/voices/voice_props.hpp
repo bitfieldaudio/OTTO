@@ -105,7 +105,7 @@ namespace otto::core::voices {
 
     SettingsProps(const Sender& sender) : sender(sender)
     {
-      play_mode.observe_no_imidiate_call(this, [this] {
+      play_mode.observe_no_immediate_call(this, [this] {
         rand.send_actions();
         sub.send_actions();
         detune.send_actions();
