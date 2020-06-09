@@ -51,7 +51,7 @@ if (${FORCE_COLORED_OUTPUT})
     endif ()
 endif ()
 
-add_compile_options (-ftemplate-backtrace-limit=0)
+add_compile_options(-ftemplate-backtrace-limit=0)
 
 set(OTTO_BOARD "desktop" CACHE STRING "The board configuration to use")
 

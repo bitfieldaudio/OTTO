@@ -146,7 +146,9 @@ namespace otto::test {
 namespace doctest {
   template<typename... Args>
   struct StringMaker<std::tuple<Args...>> {
-    static doctest::String convert(std::tuple<Args...> const& value)
+    static doctest::String convert(std::tuple<Args...> const& value) requires(requires {
+      StringMaker<std::decay_t<Args>>::convert(std::declval<Args>());
+    } && ...)
     {
       if constexpr (sizeof...(Args) == 0) return "{}";
       std::ostringstream o;

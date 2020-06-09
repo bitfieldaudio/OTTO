@@ -16,8 +16,6 @@ namespace otto::services {
   using EventBag = MSC::EventBag;
   using namespace core::input;
 
-  using byte = std::uint8_t;
-
   void MSC::queue_message(BytesView message)
   {
     write_buffer_.outer_locked([&](auto& buf) {
@@ -41,11 +39,11 @@ namespace otto::services {
     auto output = resp.begin();
     int i = 3;
     for (; i < resp.size() - 1; i += 2) {
-      byte b = resp[i];
+      std::uint8_t b = resp[i];
       *(output++) = (resp[i] << 4) | (resp[i + 1] & 0x0F);
       if (b == 0xF7) break;
     };
-    handle_response({resp.data(), output - resp.begin()});
+    handle_response({resp.data(), static_cast<std::size_t>(output - resp.begin())});
     if (i < resp.size()) {
       parse_midi_response(resp.subspan(i, gsl::dynamic_extent));
     }
