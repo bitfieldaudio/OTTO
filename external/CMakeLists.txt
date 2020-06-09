@@ -94,7 +94,9 @@ CPMAddPackage(
 )
 
 if (nlohmann_json_ADDED)
-  add_library(nlohmann_json INTERFACE IMPORTED)
+  add_library(nlohmann_json INTERFACE)
+  target_include_directories(nlohmann_json SYSTEM INTERFACE "${nlohmann_json_SOURCE_DIR}/include")
+  # TODO: Remove this when we no longer depend on better_enum
   target_include_directories(nlohmann_json SYSTEM INTERFACE "${nlohmann_json_SOURCE_DIR}/include/nlohmann")
 endif()
 
@@ -103,3 +105,15 @@ CPMAddPackage(
   GITHUB_REPOSITORY onqtam/doctest
   GIT_TAG 2.3.2
 )
+
+CPMAddPackage(
+  NAME nanobench
+  GITHUB_REPOSITORY martinus/nanobench
+  VERSION 3.1.0
+  DOWNLOAD_ONLY
+)
+
+if (nanobench_ADDED) 
+  add_library(nanobench INTERFACE)
+  target_include_directories(nanobench INTERFACE "${nanobench_SOURCE_DIR}/src/include")
+endif()

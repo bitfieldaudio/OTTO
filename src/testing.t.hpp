@@ -39,11 +39,13 @@
 }
 
 #include "debugbreak.h"
+
+#include <doctest/doctest.h>
+#undef DOCTEST_BREAK_INTO_DEBUGGER
 #define DOCTEST_BREAK_INTO_DEBUGGER() debug_break();
 #define DOCTEST_IS_DEBUGGER_ACTIVE() doctestDebuggerCheck();
 
 #include <chrono>
-#include <doctest/doctest.h>
 #include <fstream>
 #include <random.hpp>
 #include <sstream>
