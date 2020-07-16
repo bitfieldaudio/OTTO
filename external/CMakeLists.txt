@@ -40,7 +40,7 @@ CPMAddPackage(
   NAME Choreograph
   GITHUB_REPOSITORY topisani/Choreograph
   GIT_TAG ff67c1a
-  DOWNLOAD_ONLY
+  DOWNLOAD_ONLY YES
 )
 if (Choreograph_ADDED)
   file(GLOB_RECURSE choreograph_sources ${Choreograph_SOURCE_DIR}/src/**.cpp)
@@ -55,7 +55,7 @@ CPMAddPackage(
   NAME gamma
   GITHUB_REPOSITORY LancePutnam/Gamma
   GIT_TAG 6c2ef03734c44f32c8cc02f63d528e96c980ed23
-  DOWNLOAD_ONLY
+  DOWNLOAD_ONLY YES
 )
 if (gamma_ADDED)
   execute_process(COMMAND mkdir -p "${CMAKE_CURRENT_BINARY_DIR}/include")
@@ -72,7 +72,7 @@ CPMAddPackage(
   NAME nanovg
   GITHUB_REPOSITORY memononen/nanovg
   GIT_TAG 2bead03bea43b2418060aaa154f972829995e663 
-  DOWNLOAD_ONLY
+  DOWNLOAD_ONLY YES
 )
 if (nanovg_ADDED) 
   file(GLOB_RECURSE nanovg_src "${nanovg_SOURCE_DIR}/src/*.c")
@@ -88,8 +88,8 @@ endif()
 CPMAddPackage(
   NAME nlohmann_json
   GITHUB_REPOSITORY nlohmann/json
-  GIT_TAG 28048d82077916b88e373479dad64c269aecdeb5
-  DOWNLOAD_ONLY
+  VERSION 3.8.0
+  DOWNLOAD_ONLY YES
   GIT_SHALLOW ON
 )
 
@@ -108,12 +108,12 @@ CPMAddPackage(
 
 CPMAddPackage(
   NAME nanobench
+  VERSION 4.0.0
   GITHUB_REPOSITORY martinus/nanobench
-  VERSION 3.1.0
-  DOWNLOAD_ONLY
+  DOWNLOAD_ONLY YES
 )
 
 if (nanobench_ADDED) 
   add_library(nanobench INTERFACE)
-  target_include_directories(nanobench INTERFACE "${nanobench_SOURCE_DIR}/src/include")
+  target_include_directories(nanobench SYSTEM INTERFACE "${nanobench_SOURCE_DIR}/src/include")
 endif()

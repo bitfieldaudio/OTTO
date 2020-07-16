@@ -158,8 +158,8 @@ namespace otto::itc {
   auto call_receiver(AR&& ar, ActionData<Action<Tag, Args...>> action_data)
     -> std::enable_if_t<ActionReceiver::is<AR, Action<Tag, Args...>>>
   {
-    DLOGI("Action {} received by {}, args: {}", get_type_name<Tag>(), get_type_name<std::decay_t<AR>>(),
-          doctest::StringMaker<std::tuple<Args...>>::convert(action_data.args).c_str());
+    //DLOGI("Action {} received by {}, args: {}", get_type_name<Tag>(), get_type_name<std::decay_t<AR>>(),
+    //      doctest::StringMaker<std::tuple<Args...>>::convert(action_data.args).c_str());
     static_assert(ActionReceiver::is<AR, Action<Tag, Args...>>);
     std::apply([](auto&& ar, auto&&... args) { FWD(ar).action(FWD(args)...); },
                std::tuple_cat(std::forward_as_tuple<AR>(ar), std::tuple<Action<Tag, Args...>>(), action_data.args));
@@ -177,8 +177,8 @@ namespace otto::itc {
                   "The ActionReceiver (AR) has an invalid action receiver for "
                   "the given action");
     if constexpr (ActionReceiver::is<AR, Action<Tag, Args...>>) {
-      DLOGI("Action {} received by {}, args: {}", get_type_name<Tag>(), get_type_name<std::decay_t<AR>>(),
-            doctest::StringMaker<std::tuple<Args...>>::convert(action_data.args).c_str());
+      //DLOGI("Action {} received by {}, args: {}", get_type_name<Tag>(), get_type_name<std::decay_t<AR>>(),
+      //      doctest::StringMaker<std::tuple<Args...>>::convert(action_data.args).c_str());
       std::apply([](auto&& ar, auto&&... args) { FWD(ar).action(FWD(args)...); },
                  std::tuple_cat(std::forward_as_tuple<AR>(ar), std::tuple<Action<Tag, Args...>>(), action_data.args));
       return true;

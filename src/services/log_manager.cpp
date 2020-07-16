@@ -5,6 +5,7 @@
 #include <loguru.hpp>
 
 namespace otto::services {
+  using namespace std::literals;
 
   LogManager::LogManager(int argc, char* argv[], bool enable_console, const char* logFilePath)
   {
@@ -31,17 +32,17 @@ namespace otto::services {
     loguru::add_file(logFilePath, loguru::Append, loguru::Verbosity_MAX);
 
     loguru::set_fatal_handler([](const loguru::Message& message) {
-      throw Application::exception(Application::ErrorCode::none,
-                                   std::string(message.prefix) + message.message);
+      if (message.prefix != "Signal: "sv)
+        throw Application::exception(Application::ErrorCode::none, std::string(message.prefix) + message.message);
     });
 
-    LOGI("LOGGING NOW");
+    LOGI("Logging initialized");
     initialized = true;
   }
 
   void LogManager::set_thread_name(const std::string& name)
   {
-		pthread_setname_np(pthread_self(), name.c_str());
+    pthread_setname_np(pthread_self(), name.c_str());
     loguru::set_thread_name(name.c_str());
   }
 } // namespace otto::services

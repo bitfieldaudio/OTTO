@@ -219,6 +219,13 @@ namespace otto::services {
         std::cout << std::endl;
       } else if (cmd == "q") {
         break;
+      } else {
+        std::cout << R"(
+Commands:
+  w <space separated bytes>        write bytes to i2c
+  r <count>                        read <count> bytes from i2c
+  q                                quit
+)";
       }
     }
   }
