@@ -1,10 +1,10 @@
 #include "testing.t.hpp"
-#include "util/filesystem.hpp"
-
-#include "core/audio/midi.hpp"
 
 #include <Gamma/Domain.h>
 #include <iostream>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 int main( int argc, char* argv[] )
 {
@@ -12,8 +12,6 @@ int main( int argc, char* argv[] )
   fs::remove_all(test::dir);
   fs::create_directories(test::dir);
   //service::logger::init(argc, argv, true, (test::dir / "test-log.txt").c_str());
-
-  core::midi::generateFreqTable();
 
   doctest::Context context;
 

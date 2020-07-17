@@ -47,23 +47,20 @@
 
 #include <chrono>
 #include <fstream>
-#include <random.hpp>
 #include <sstream>
 #include <unordered_map>
+#include <filesystem>
 
-#include "services/log_manager.hpp"
 #include "util/algorithm.hpp"
-#include "util/filesystem.hpp"
-#include "util/iterator.hpp"
 #include "util/type_traits.hpp"
 #include "util/utility.hpp"
 
-using Random = effolkronium::random_static;
+namespace fs = std::filesystem;
 
 namespace otto::test {
   inline fs::path dir = fs::current_path() / "testdir";
 
-  inline void truncateFile(const filesystem::path& p)
+  inline void truncateFile(const fs::path& p)
   {
     std::fstream fstream;
     fstream.open(p.c_str(), std::ios::trunc | std::ios::out | std::ios::binary);
@@ -127,19 +124,19 @@ namespace otto::test {
     float margin_ = 0.0001;
   };
 
-  template<typename Cont, typename Proj>
-  auto sort(Cont&& c, Proj&& projection)
-  {
-    auto vec = util::view::to_vec(c);
-    nano::sort(vec, [&](auto&& a, auto&& b) { return projection(a) < projection(b); });
-    return vec;
-  }
-
-  template<typename Cont>
-  auto sort(Cont&& c)
-  {
-    return test::sort(c, util::identity);
-  }
+//  template<typename Cont, typename Proj>
+//  auto sort(Cont&& c, Proj&& projection)
+//  {
+//    auto vec = util::view::to_vec(c);
+//    nano::sort(vec, [&](auto&& a, auto&& b) { return projection(a) < projection(b); });
+//    return vec;
+//  }
+//
+//  template<typename Cont>
+//  auto sort(Cont&& c)
+//  {
+//    return test::sort(c, util::identity);
+//  }
 
 } // namespace otto::test
 

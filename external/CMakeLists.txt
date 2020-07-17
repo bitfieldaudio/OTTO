@@ -117,3 +117,9 @@ if (nanobench_ADDED)
   add_library(nanobench INTERFACE)
   target_include_directories(nanobench SYSTEM INTERFACE "${nanobench_SOURCE_DIR}/src/include")
 endif()
+
+CPMAddPackage(
+  NAME magic_enum
+  GITHUB_REPOSITORY Neargye/magic_enum
+  VERSION 0.6.6
+)

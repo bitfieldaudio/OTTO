@@ -1,3 +1,4 @@
+/*
 #include "graphics.t.hpp"
 
 #include "dummy_services.hpp"
@@ -61,3 +62,4 @@ namespace otto::test {
 
 } // namespace otto::test
 #endif
+*/
