@@ -5,7 +5,7 @@ using namespace otto;
 using namespace otto::itc;
 
 // Tests
-TEST_CASE ("Basic Channel/Consumer/Producer linking and lifetime" * doctest::test_suite("itc")) {
+TEST_CASE (doctest::test_suite("itc") * "Basic Channel/Consumer/Producer linking and lifetime") {
   struct State {
     int i = 0;
   };
@@ -68,7 +68,7 @@ TEST_CASE ("Basic Channel/Consumer/Producer linking and lifetime" * doctest::tes
       }
       SUBCASE ("Channel destroyed before producer") {
         auto ch = std::make_unique<Channel<State>>();
-        Producer p = {*ch};
+        Producer<State> p = {*ch};
         ch.reset();
         REQUIRE(p.channels().empty());
       }
@@ -83,10 +83,91 @@ TEST_CASE ("Basic Channel/Consumer/Producer linking and lifetime" * doctest::tes
       }
       SUBCASE ("Channel destroyed before consumer") {
         auto ch = std::make_unique<Channel<State>>();
-        Consumer c = {*ch};
+        Consumer<State> c = {*ch};
         ch.reset();
         REQUIRE(c.channel() == nullptr);
       }
     }
   }
 }
+
+TEST_CASE (doctest::test_suite("itc") * "Basic state passing") {
+  struct S {
+    int i = 0;
+  };
+  Channel<S> ch;
+  Producer<S> p = {ch};
+  struct C1 : Consumer<S> {
+    using Consumer<S>::Consumer;
+
+    void check_i(int i)
+    {
+      REQUIRE(state().i == i);
+    }
+
+    void on_new_state(const S& s) override
+    {
+      new_state_called++;
+    }
+
+    int new_state_called = 0;
+  } c1 = {ch};
+
+  SUBCASE ("Access default state in Consumer") {
+    c1.check_i(0);
+  }
+
+  struct P1 : Producer<S> {
+    void test_produce(int i)
+    {
+      produce(S{.i = i});
+    }
+  } p1 = {ch};
+
+  SUBCASE ("Publish new state from producer") {
+    p1.test_produce(1);
+    c1.check_i(1);
+    REQUIRE(c1.new_state_called == 1);
+  }
+}
+
+/*
+TEST_CASE(doctest::test_suite("itc") * "prod/cons/chan of multiple states") {
+  struct S1 {
+    int i1 = 1;
+  };
+
+  struct S2 {
+    int i2 = 2;
+  };
+
+  struct S3 {
+    int i3 = 3;
+  };
+
+  using Ch12 = Channel<S1, S2>;
+  using C12 = Consumer<S1, S2>;
+  using P12 = Producer<S1, S2>;
+
+  static_assert(std::is_base_of_v<Channel<S1>, Ch12>);
+  static_assert(std::is_base_of_v<Channel<S2>, Ch12>);
+  static_assert(std::is_base_of_v<Consumer<S1>, C12>);
+  static_assert(std::is_base_of_v<Consumer<S2>, C12>);
+  static_assert(std::is_base_of_v<Producer<S1>, P12>);
+  static_assert(std::is_base_of_v<Producer<S2>, P12>);
+
+  using Ch123 = Channel<S1, meta::list<S2, S3>>;
+  using C123 = Consumer<S1, meta::list<S2, S3>>;
+  using P123 = Producer<S1, meta::list<S2, S3>>;
+
+  static_assert(std::is_base_of_v<Channel<S1>, Ch123>);
+  static_assert(std::is_base_of_v<Channel<S2>, Ch123>);
+  static_assert(std::is_base_of_v<Channel<S3>, Ch123>);
+  static_assert(std::is_base_of_v<Consumer<S1>, C123>);
+  static_assert(std::is_base_of_v<Consumer<S2>, C123>);
+  static_assert(std::is_base_of_v<Consumer<S3>, C123>);
+  static_assert(std::is_base_of_v<Producer<S1>, P123>);
+  static_assert(std::is_base_of_v<Producer<S2>, P123>);
+  static_assert(std::is_base_of_v<Producer<S3>, P123>);
+}
+*/

@@ -13,11 +13,8 @@
 namespace otto::itc {
 
   /// The concept that state types need to fulfill.
-  ///
-  /// Currently any type can be a state type, but it might make sense to constrain
-  /// it layer
   template<typename State>
-  concept AState = true;
+  concept AState = std::is_copy_constructible_v<State>;
 
   // Forward Declarations
 
@@ -47,7 +44,7 @@ namespace otto::itc {
       for (auto* c : consumers_) {
         c->channel_ = nullptr;
       }
-      if (producer_) producer_->remove_channel(*this);
+      if (producer_) producer_->internal_remove_channel(*this);
     }
 
     const std::vector<Consumer*>& consumers() const noexcept
@@ -76,16 +73,22 @@ namespace otto::itc {
     }
 
   protected:
+  private:
     friend Producer;
     friend Consumer;
 
     /// Only called from Consumer constructor
-    void add_consumer(Consumer* c)
+    void internal_add_consumer(Consumer* c)
     {
       consumers_.push_back(c);
     }
 
-  private:
+    ///
+    void internal_produce(const State& s)
+    {
+      for (auto* cons : consumers_) cons->internal_produce(s);
+    }
+
     std::vector<Consumer*> consumers_;
     Producer* producer_ = nullptr;
   };
@@ -100,7 +103,7 @@ namespace otto::itc {
 
     ~Producer() noexcept
     {
-      for (auto ch : channels_) {
+      for (auto* ch : channels_) {
         ch->set_producer(nullptr);
       }
     }
@@ -112,20 +115,28 @@ namespace otto::itc {
     }
 
   protected:
+    void produce(const State& s)
+    {
+      for (auto* chan : channels_) {
+        chan->internal_produce(s);
+      }
+    }
+
+  private:
     friend Channel;
 
     /// Called only from set_producer in Channel
-    void add_channel(Channel& ch)
+    void internal_add_channel(Channel& ch)
     {
       channels_.push_back(ch);
     }
+
     /// Called only from Channel destructor
-    void remove_channel(Channel& ch)
+    void internal_remove_channel(Channel& ch)
     {
       std::erase(channels_, &ch);
     }
 
-  private:
     std::vector<Channel*> channels_;
   };
 
@@ -135,10 +146,10 @@ namespace otto::itc {
 
     Consumer(Channel& ch) : channel_(&ch)
     {
-      ch.add_consumer(this);
+      ch.internal_add_consumer(this);
     }
 
-    ~Consumer() noexcept
+    virtual ~Consumer() noexcept
     {
       if (channel_) std::erase(channel_->consumers_, this);
     }
@@ -149,9 +160,31 @@ namespace otto::itc {
       return channel_;
     }
 
+  protected:
+    /// Access the newest state available.
+    const State& state() const noexcept
+    {
+      return state_;
+    }
+
+    /// Hook called with the new state right before the state is updated
+    ///
+    /// In this hook, the old state is available through the {@ref state()} member function
+    /// Override in subclass if needed
+    virtual void on_new_state(const State& s) {}
+
   private:
     friend Channel;
+
+    /// Called from {@ref Channel::internal_produce}
+    void internal_produce(const State& s)
+    {
+      on_new_state(s);
+      state_ = s;
+    }
+
     Channel* channel_;
+    State state_;
   };
 
-}
+} // namespace otto::itc
