@@ -3,6 +3,7 @@
 #include <functional>
 #include <type_traits>
 #include <utility>
+#include "util/type_traits.hpp"
 
 namespace otto::util {
 
@@ -51,10 +52,7 @@ namespace otto::util {
   concept floating_point = std::is_floating_point_v<T>;
   /// specifies that a type is assignable from another type
   template<typename LHS, typename RHS>
-  concept assignable_from = std::is_lvalue_reference_v<LHS>&&
-    requires(
-      LHS lhs,
-      RHS&& rhs)
+  concept assignable_from = std::is_lvalue_reference_v<LHS>&& requires(LHS lhs, RHS&& rhs)
   {
     {
       lhs = std::forward<RHS>(rhs)
@@ -136,8 +134,8 @@ namespace otto::util {
   concept movable = std::is_object_v<T>&& move_constructible<T>&& assignable_from<T&, T>&& swappable<T>;
   /// specifies that an object of a type can be copied, moved, and swapped
   template<typename T>
-  concept copyable = copy_constructible<T>&& movable<T>&& assignable_from<T&, T&>&&
-    assignable_from<T&, const T&>&& assignable_from<T&, const T>;
+  concept copyable = copy_constructible<T>&& movable<T>&& assignable_from<T&, T&>&& assignable_from<T&, const T&>&&
+    assignable_from<T&, const T>;
   /// specifies that an object of a type can be copied, moved, swapped, and default constructed
   template<typename T>
   concept semiregular = copyable<T>&& default_initializable<T>;
@@ -190,12 +188,15 @@ namespace otto::util {
 
     template<typename Ret, typename... Args>
     struct is_function_shape<Ret(Args...)> : std::true_type {};
-  }
+  } // namespace detail
 
   template<typename T>
   concept function_shape = detail::is_function_shape<T>::value;
 
   template<typename F, typename Shape>
   concept callable = detail::is_callable_impl<F, Shape>::value;
+
+  template<typename T, typename... Ts>
+  concept one_of = is_one_of_v<T, Ts...>;
 
 } // namespace otto::util

@@ -1,6 +1,12 @@
 #pragma once
+
 #include <functional>
 #include <vector>
+
+#include "util/concepts.hpp"
+#include "util/meta.hpp"
+
+#include "executor.hpp"
 
 /// A State-based inter-thread communication library.
 ///
@@ -12,41 +18,36 @@
 /// require so.
 namespace otto::itc {
 
+  namespace detail {
+    template<typename T>
+    struct is_meta_list : std::false_type {};
+
+    template<typename... Args>
+    struct is_meta_list<meta::list<Args...>> : std::true_type {};
+  } // namespace detail
+
   /// The concept that state types need to fulfill.
-  template<typename State>
-  concept AState = std::is_copy_constructible_v<State>;
+  template<typename T>
+  concept AState = std::is_copy_constructible_v<T> && !detail::is_meta_list<T>::value;
 
   // Forward Declarations
 
   /// A Channel through which a single Producer can send state to multiple consumers
-  template<AState State>
+  template<AState... States>
   struct Channel;
 
   /// Sends state to multiple Consumers through a Channel
-  template<AState State>
+  template<AState... States>
   struct Producer;
 
   /// Receives state from a single producer through a Channel
-  template<AState State>
+  template<AState... States>
   struct Consumer;
 
   // Declarations
 
-  struct IExecutor {
-    virtual ~IExecutor() = default;
-
-    // TODO: Allocator for the std::function object
-    /// Execute a function on this executor
-    ///
-    /// Most likely adds it to some queue or calls it directly.
-    /// Guarantees:
-    /// - Functions will be executed exactly once
-    /// - Functions will be executed in order
-    virtual void execute(std::function<void()>) = 0;
-  };
-
   template<AState State>
-  struct Channel {
+  struct Channel<State> {
     using Consumer = Consumer<State>;
     using Producer = Producer<State>;
 
@@ -107,7 +108,7 @@ namespace otto::itc {
   };
 
   template<AState State>
-  struct Producer {
+  struct Producer<State> {
     using Channel = Channel<State>;
     Producer(Channel& ch)
     {
@@ -128,6 +129,10 @@ namespace otto::itc {
     }
 
   protected:
+    /// Produce a new state
+    /// 
+    /// Sends the state to all attached channels, to be sent to all consumers
+    /// registered on said channels.
     void produce(const State& s)
     {
       for (auto* chan : channels_) {
@@ -154,7 +159,7 @@ namespace otto::itc {
   };
 
   template<AState State>
-  struct Consumer {
+  struct Consumer<State> {
     using Channel = Channel<State>;
 
     Consumer(IExecutor& executor, Channel& ch) : executor_(executor), channel_(&ch)
@@ -198,9 +203,41 @@ namespace otto::itc {
       });
     }
 
+    State state_;
     IExecutor& executor_;
     Channel* channel_;
-    State state_;
+  };
+
+  // Concepts
+
+  template<typename T, typename... States>
+  concept AChannelFor = (AState<States> && ...) && (std::is_convertible_v<T&, Channel<States>&> && ...);
+
+  // Definitions for multiple states
+
+  template<AState... States>
+  struct Channel : Channel<States>... {};
+
+  template<AState... States>
+  struct Consumer : Consumer<States>... {
+    template<AChannelFor<States...> Ch>
+    Consumer(IExecutor& ex, Ch& channel) : Consumer<States>(ex, channel)...
+    {}
+
+    template<util::one_of<States...> S>
+    const S& state() const noexcept
+    {
+      return Consumer<S>::state();
+    }
+  };
+
+  template<AState... States>
+  struct Producer : Producer<States>... {
+    template<AChannelFor<States...> Ch>
+    Producer(Ch& channel) : Producer<States>(channel)...
+    {}
+
+    using Producer<States>::produce...;
   };
 
 } // namespace otto::itc

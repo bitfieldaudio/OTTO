@@ -3,12 +3,6 @@
 
 using namespace otto;
 using namespace otto::itc;
-struct DummyExecutor : IExecutor {
-  void execute(std::function<void()> f) override
-  {
-    f();
-  }
-};
 
 // Tests
 TEST_CASE (doctest::test_suite("itc") * "Basic Channel/Consumer/Producer linking and lifetime") {
@@ -16,7 +10,7 @@ TEST_CASE (doctest::test_suite("itc") * "Basic Channel/Consumer/Producer linking
     int i = 0;
   };
 
-  DummyExecutor ex;
+  ImmediateExecutor ex;
 
   SUBCASE ("Constructing consumer with channel registers it") {
     Channel<State> ch;
@@ -100,7 +94,7 @@ TEST_CASE (doctest::test_suite("itc") * "Basic Channel/Consumer/Producer linking
 }
 
 TEST_CASE (doctest::test_suite("itc") * "Basic state passing") {
-  DummyExecutor ex;
+  ImmediateExecutor ex;
   struct S {
     int i = 0;
   };
@@ -140,7 +134,6 @@ TEST_CASE (doctest::test_suite("itc") * "Basic state passing") {
   }
 }
 
-/*
 TEST_CASE(doctest::test_suite("itc") * "prod/cons/chan of multiple states") {
   struct S1 {
     int i1 = 1;
@@ -165,18 +158,79 @@ TEST_CASE(doctest::test_suite("itc") * "prod/cons/chan of multiple states") {
   static_assert(std::is_base_of_v<Producer<S1>, P12>);
   static_assert(std::is_base_of_v<Producer<S2>, P12>);
 
-  using Ch123 = Channel<S1, meta::list<S2, S3>>;
-  using C123 = Consumer<S1, meta::list<S2, S3>>;
-  using P123 = Producer<S1, meta::list<S2, S3>>;
+//  using Ch123 = Channel<S1, meta::list<S2, S3>>;
+//  using C123 = Consumer<S1, meta::list<S2, S3>>;
+//  using P123 = Producer<S1, meta::list<S2, S3>>;
+//
+//  static_assert(std::is_base_of_v<Channel<S1>, Ch123>);
+//  static_assert(std::is_base_of_v<Channel<S2>, Ch123>);
+//  static_assert(std::is_base_of_v<Channel<S3>, Ch123>);
+//  static_assert(std::is_base_of_v<Consumer<S1>, C123>);
+//  static_assert(std::is_base_of_v<Consumer<S2>, C123>);
+//  static_assert(std::is_base_of_v<Consumer<S3>, C123>);
+//  static_assert(std::is_base_of_v<Producer<S1>, P123>);
+//  static_assert(std::is_base_of_v<Producer<S2>, P123>);
+//  static_assert(std::is_base_of_v<Producer<S3>, P123>);
 
-  static_assert(std::is_base_of_v<Channel<S1>, Ch123>);
-  static_assert(std::is_base_of_v<Channel<S2>, Ch123>);
-  static_assert(std::is_base_of_v<Channel<S3>, Ch123>);
-  static_assert(std::is_base_of_v<Consumer<S1>, C123>);
-  static_assert(std::is_base_of_v<Consumer<S2>, C123>);
-  static_assert(std::is_base_of_v<Consumer<S3>, C123>);
-  static_assert(std::is_base_of_v<Producer<S1>, P123>);
-  static_assert(std::is_base_of_v<Producer<S2>, P123>);
-  static_assert(std::is_base_of_v<Producer<S3>, P123>);
+  ImmediateExecutor ex;
+  Ch12 ch;
+
+  struct C1 : Consumer<S1, S2> {
+    // Inherit the constructor
+    using Consumer<S1, S2>::Consumer;
+
+    void check_i1(int i)
+    {
+      REQUIRE(state<S1>().i1 == i);
+    }
+
+    void check_i2(int i)
+    {
+      REQUIRE(state<S2>().i2 == i);
+    }
+
+    void on_new_state(const S1& s) override
+    {
+      new_state1_called++;
+    }
+
+    void on_new_state(const S2& s) override
+    {
+      new_state2_called++;
+    }
+
+    int new_state1_called = 0;
+    int new_state2_called = 0;
+  } c1 = {ex, ch};
+
+  SUBCASE ("Access default state in Consumer") {
+    c1.check_i1(1);
+    c1.check_i2(2);
+  }
+
+  struct P1 : Producer<S1, S2> {
+    void test_produce1(int i)
+    {
+      produce(S1{.i1 = i});
+    }
+    void test_produce2(int i)
+    {
+      produce(S2{.i2 = i});
+    }
+  } p1 = {ch};
+
+  SUBCASE ("Publish new state from producer") {
+    p1.test_produce1(10);
+    c1.check_i1(10);
+    REQUIRE(c1.new_state1_called == 1);
+    c1.check_i2(2);
+    REQUIRE(c1.new_state2_called == 0);
+
+    p1.test_produce2(20);
+    c1.check_i1(10);
+    REQUIRE(c1.new_state1_called == 1);
+    c1.check_i2(20);
+    REQUIRE(c1.new_state2_called == 1);
+  }
+
 }
-*/
