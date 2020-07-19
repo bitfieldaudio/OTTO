@@ -63,7 +63,7 @@ SpacesInAngles: false
 SpacesInCStyleCastParentheses: false
 SpacesInParentheses: false
 SpacesInSquareBrackets: false
-Standard: Cpp11
+Standard: Latest
 UseTab: Never
 ForEachMacros: [
     'OTTO_PROPS_MIXIN_INTERFACE', 

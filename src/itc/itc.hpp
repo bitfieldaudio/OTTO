@@ -1,6 +1,6 @@
 #pragma once
+#include <functional>
 #include <vector>
-
 
 /// A State-based inter-thread communication library.
 ///
@@ -31,6 +31,19 @@ namespace otto::itc {
   struct Consumer;
 
   // Declarations
+
+  struct IExecutor {
+    virtual ~IExecutor() = default;
+
+    // TODO: Allocator for the std::function object
+    /// Execute a function on this executor
+    ///
+    /// Most likely adds it to some queue or calls it directly.
+    /// Guarantees:
+    /// - Functions will be executed exactly once
+    /// - Functions will be executed in order
+    virtual void execute(std::function<void()>) = 0;
+  };
 
   template<AState State>
   struct Channel {
@@ -144,7 +157,7 @@ namespace otto::itc {
   struct Consumer {
     using Channel = Channel<State>;
 
-    Consumer(Channel& ch) : channel_(&ch)
+    Consumer(IExecutor& executor, Channel& ch) : executor_(executor), channel_(&ch)
     {
       ch.internal_add_consumer(this);
     }
@@ -179,10 +192,13 @@ namespace otto::itc {
     /// Called from {@ref Channel::internal_produce}
     void internal_produce(const State& s)
     {
-      on_new_state(s);
-      state_ = s;
+      executor_.execute([this, s] {
+        on_new_state(s);
+        state_ = std::move(s);
+      });
     }
 
+    IExecutor& executor_;
     Channel* channel_;
     State state_;
   };

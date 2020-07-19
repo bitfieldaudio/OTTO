@@ -3,6 +3,12 @@
 
 using namespace otto;
 using namespace otto::itc;
+struct DummyExecutor : IExecutor {
+  void execute(std::function<void()> f) override
+  {
+    f();
+  }
+};
 
 // Tests
 TEST_CASE (doctest::test_suite("itc") * "Basic Channel/Consumer/Producer linking and lifetime") {
@@ -10,14 +16,16 @@ TEST_CASE (doctest::test_suite("itc") * "Basic Channel/Consumer/Producer linking
     int i = 0;
   };
 
+  DummyExecutor ex;
+
   SUBCASE ("Constructing consumer with channel registers it") {
     Channel<State> ch;
-    Consumer<State> c1 = {ch};
+    Consumer<State> c1 = {ex, ch};
 
     REQUIRE(ch.consumers().size() == 1);
     REQUIRE(ch.consumers()[0] == &c1);
 
-    Consumer<State> c2 = {ch};
+    Consumer<State> c2 = {ex, ch};
 
     REQUIRE(ch.consumers().size() == 2);
     REQUIRE(ch.consumers()[1] == &c2);
@@ -53,7 +61,7 @@ TEST_CASE (doctest::test_suite("itc") * "Basic Channel/Consumer/Producer linking
 
   SUBCASE ("Consumer has a reference to its channel") {
     Channel<State> ch;
-    Consumer<State> c = {ch};
+    Consumer<State> c = {ex, ch};
     REQUIRE(c.channel() == &ch);
   }
 
@@ -77,13 +85,13 @@ TEST_CASE (doctest::test_suite("itc") * "Basic Channel/Consumer/Producer linking
       SUBCASE ("Consumer destroyed before channel") {
         Channel<State> ch;
         {
-          Consumer<State> p = {ch};
+          Consumer<State> p = {ex, ch};
         }
         REQUIRE(ch.consumers().empty());
       }
       SUBCASE ("Channel destroyed before consumer") {
         auto ch = std::make_unique<Channel<State>>();
-        Consumer<State> c = {*ch};
+        Consumer<State> c = {ex, *ch};
         ch.reset();
         REQUIRE(c.channel() == nullptr);
       }
@@ -92,6 +100,7 @@ TEST_CASE (doctest::test_suite("itc") * "Basic Channel/Consumer/Producer linking
 }
 
 TEST_CASE (doctest::test_suite("itc") * "Basic state passing") {
+  DummyExecutor ex;
   struct S {
     int i = 0;
   };
@@ -111,7 +120,7 @@ TEST_CASE (doctest::test_suite("itc") * "Basic state passing") {
     }
 
     int new_state_called = 0;
-  } c1 = {ch};
+  } c1 = {ex, ch};
 
   SUBCASE ("Access default state in Consumer") {
     c1.check_i(0);

@@ -123,3 +123,15 @@ CPMAddPackage(
   GITHUB_REPOSITORY Neargye/magic_enum
   VERSION 0.6.6
 )
+
+CPMAddPackage(
+  NAME concurrentqueue
+  VERSION 1.0.1
+  GITHUB_REPOSITORY cameron314/concurrentqueue
+  DOWNLOAD_ONLY YES
+)
+
+if (concurrentqueue_ADDED) 
+  add_library(concurrentqueue INTERFACE)
+  target_include_directories(concurrentqueue SYSTEM INTERFACE "${concurrentqueue_SOURCE_DIR}")
+endif()
