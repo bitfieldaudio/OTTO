@@ -48,9 +48,6 @@ namespace otto::itc {
 
   template<AState State>
   struct Channel<State> {
-    using Consumer = Consumer<State>;
-    using Producer = Producer<State>;
-
     Channel() noexcept {}
     Channel(const Channel&) = delete;
     ~Channel() noexcept
@@ -61,12 +58,12 @@ namespace otto::itc {
       if (producer_) producer_->internal_remove_channel(*this);
     }
 
-    const std::vector<Consumer*>& consumers() const noexcept
+    const std::vector<Consumer<State>*>& consumers() const noexcept
     {
       return consumers_;
     }
 
-    Producer* producer() const noexcept
+    Producer<State>* producer() const noexcept
     {
       return producer_;
     }
@@ -74,25 +71,25 @@ namespace otto::itc {
     /// Set the producer for this channel
     ///
     /// Can be `nullptr` to clear the current producer
-    void set_producer(Producer* p) noexcept
+    void set_producer(Producer<State>* p) noexcept
     {
       producer_ = p;
       if (p) p->channels_.emplace_back(this);
     }
 
     /// Set the producer for this channel
-    void set_producer(Producer& p) noexcept
+    void set_producer(Producer<State>& p) noexcept
     {
       set_producer(&p);
     }
 
   protected:
   private:
-    friend Producer;
-    friend Consumer;
+    friend Producer<State>;
+    friend Consumer<State>;
 
     /// Only called from Consumer constructor
-    void internal_add_consumer(Consumer* c)
+    void internal_add_consumer(Consumer<State>* c)
     {
       consumers_.push_back(c);
     }
@@ -103,14 +100,13 @@ namespace otto::itc {
       for (auto* cons : consumers_) cons->internal_produce(s);
     }
 
-    std::vector<Consumer*> consumers_;
-    Producer* producer_ = nullptr;
+    std::vector<Consumer<State>*> consumers_;
+    Producer<State>* producer_ = nullptr;
   };
 
   template<AState State>
   struct Producer<State> {
-    using Channel = Channel<State>;
-    Producer(Channel& ch)
+    Producer(Channel<State>& ch)
     {
       ch.set_producer(this);
     }
@@ -123,7 +119,7 @@ namespace otto::itc {
     }
 
     /// The channels this producer is currently linked to
-    const std::vector<Channel*>& channels() const noexcept
+    const std::vector<Channel<State>*>& channels() const noexcept
     {
       return channels_;
     }
@@ -141,28 +137,26 @@ namespace otto::itc {
     }
 
   private:
-    friend Channel;
+    friend Channel<State>;
 
     /// Called only from set_producer in Channel
-    void internal_add_channel(Channel& ch)
+    void internal_add_channel(Channel<State>& ch)
     {
       channels_.push_back(ch);
     }
 
     /// Called only from Channel destructor
-    void internal_remove_channel(Channel& ch)
+    void internal_remove_channel(Channel<State>& ch)
     {
       std::erase(channels_, &ch);
     }
 
-    std::vector<Channel*> channels_;
+    std::vector<Channel<State>*> channels_;
   };
 
   template<AState State>
   struct Consumer<State> {
-    using Channel = Channel<State>;
-
-    Consumer(IExecutor& executor, Channel& ch) : executor_(executor), channel_(&ch)
+    Consumer(IExecutor& executor, Channel<State>& ch) : executor_(executor), channel_(&ch)
     {
       ch.internal_add_consumer(this);
     }
@@ -173,7 +167,7 @@ namespace otto::itc {
     }
 
     /// The channel this consumer is registered on
-    Channel* channel() const noexcept
+    Channel<State>* channel() const noexcept
     {
       return channel_;
     }
@@ -192,7 +186,7 @@ namespace otto::itc {
     virtual void on_new_state(const State& s) {}
 
   private:
-    friend Channel;
+    friend Channel<State>;
 
     /// Called from {@ref Channel::internal_produce}
     void internal_produce(const State& s)
@@ -205,7 +199,7 @@ namespace otto::itc {
 
     State state_;
     IExecutor& executor_;
-    Channel* channel_;
+    Channel<State>* channel_;
   };
 
   // Concepts

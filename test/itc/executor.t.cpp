@@ -19,19 +19,23 @@ TEST_CASE ("QueueExecutor") {
   }
 
   SUBCASE ("Multithreading") {
-    int count = 0;
-    auto inc = [&count] { count++; };
     QueueExecutor e;
+    /// The loop condition for the application
     std::atomic_bool run = true;
+    /// Synchronization of destruction. See below
     std::atomic_int active_producers = 0;
     auto consumer = std::thread([&] {
-      while (run || active_producers != 0) {
+      while (run) {
         e.run_queued_functions();
         std::this_thread::sleep_for(std::chrono::nanoseconds(4));
+      }
+      while (active_producers != 0) {
+        e.run_queued_functions();
       }
       e.run_queued_functions();
     });
 
+    int count = 0;
     std::atomic_int expected_count = 0;
 
     std::array<std::thread, 10> producers;
@@ -40,12 +44,13 @@ TEST_CASE ("QueueExecutor") {
         active_producers++;
         while (run) {
           int i = expected_count++;
-          e.execute(inc);
+          e.execute([&count] { count++; });
           std::this_thread::sleep_for(std::chrono::nanoseconds(i % 8));
         }
         active_producers--;
       });
     }
+    // Let the threads run for 100ns
     std::this_thread::sleep_for(std::chrono::nanoseconds(100));
     // Here is where a few questions come up.
     // - Are we actually able to kill the producers before the consumers?
@@ -59,6 +64,9 @@ TEST_CASE ("QueueExecutor") {
     //   this is used in other contexts as well
     // The only practical way to manage this issue, might be to do manual two-phase destruction
     // per usecase.
+    // 
+    // For this test, it is done by each producer incrementing the active_producers count, 
+    // which means the consumer will run until all producers 
     run = false;
     for (auto& p : producers) p.join();
     consumer.join();
