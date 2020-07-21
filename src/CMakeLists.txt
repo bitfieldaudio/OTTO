@@ -36,6 +36,7 @@ target_link_libraries(otto_src PUBLIC doctest)
 target_link_libraries(otto_src PUBLIC nanobench)
 target_link_libraries(otto_src PUBLIC magic_enum)
 target_link_libraries(otto_src PUBLIC concurrentqueue)
+target_link_libraries(otto_src PUBLIC skia)
 
 #include("${OTTO_SOURCE_DIR}/cmake/doctest_force_link_static_lib_in_target.cmake")
 #doctest_force_link_static_lib_in_target(otto_exec otto)

@@ -1,39 +1,56 @@
-#include "board/ui/glfw_ui_manager.hpp"
+#include "board/ui/glfw_ui.hpp"
+
+#include <GrBackendSurface.h>
+#include <GrContext.h>
+#include <SkCanvas.h>
+#include <SkColorSpace.h>
+#include <SkSurface.h>
+#include <gl/GrGLAssembleInterface.h>
+#include <gl/GrGLInterface.h>
 
 #include <chrono>
+#include <iostream>
 #include <thread>
-#include <gsl/gsl_util>
 
-#include "core/ui/vector_graphics.hpp"
-
-#include "services/log_manager.hpp"
-#include "services/ui_manager.hpp"
-
-#define NANOVG_GL3_IMPLEMENTATION
-#define OTTO_NVG_CREATE nvgCreateGL3
-#define OTTO_NVG_DELETE nvgDeleteGL3
-
-#include "board/ui/keys.hpp"
-
-// C APIs. Include last
-#include <GL/gl3w.h>
-#include <GLFW/glfw3.h>
-#include <nanovg_gl.h>
-
-#include "board/emulator.hpp"
+#include "util/exception.hpp"
 
 namespace otto::glfw {
+  using namespace std::literals;
+
+  static GrGLFuncPtr glfw_get(void* ctx, const char name[])
+  {
+    SkASSERT(nullptr == ctx);
+    SkASSERT(glfwGetCurrentContext());
+    if (name == "eglQueryString"sv) {
+      return nullptr;
+      return (GrGLFuncPtr)(static_cast<GrEGLQueryStringFn*>([](void* dpy, int name) -> const char* { return ""; }));
+    }
+    return glfwGetProcAddress(name);
+  }
+
+  sk_sp<const GrGLInterface> GrGLMakeNativeInterface_glfw()
+  {
+    if (nullptr == glfwGetCurrentContext()) {
+      return nullptr;
+    }
+
+    return GrGLMakeAssembledInterface(nullptr, glfw_get);
+  }
 
   Window::Window(int width, int height, const std::string& name)
   {
     if (!glfwInit()) {
-      LOG_F(ERROR, "Failed to init GLFW.");
+      // LOG_F(ERROR, "Failed to init GLFW.");
     }
 
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    //(uncomment to enable correct color spaces) glfwWindowHint(GLFW_SRGB_CAPABLE, GL_TRUE);
+    glfwWindowHint(GLFW_STENCIL_BITS, 0);
+    // glfwWindowHint(GLFW_ALPHA_BITS, 0);
+    glfwWindowHint(GLFW_DEPTH_BITS, 0);
 
     _glfw_win = glfwCreateWindow(width, height, name.c_str(), NULL, NULL);
     if (!_glfw_win) {
@@ -131,11 +148,11 @@ namespace otto::glfw {
     return glfwWindowShouldClose(_glfw_win);
   }
 
-  vg::Point Window::cursor_pos()
+  SkPoint Window::cursor_pos()
   {
     double x, y;
     glfwGetCursorPos(_glfw_win, &x, &y);
-    return vg::Point{(float) x, (float) y};
+    return SkPoint::Make(x, y);
   }
 
   std::pair<int, int> Window::window_size()
@@ -153,53 +170,76 @@ namespace otto::glfw {
   }
 
 
-  NVGWindow::NVGWindow(int width, int height, const std::string& name)
-    : Window(width, height, name),
-      _vg(OTTO_NVG_CREATE(NVG_ANTIALIAS | NVG_STENCIL_STROKES | NVG_DEBUG)),
-      _canvas(_vg, width, height)
-  {}
-
-  NVGWindow::~NVGWindow() noexcept
-  {
-    OTTO_NVG_DELETE(_vg);
-  }
-
-  vg::Canvas& NVGWindow::canvas()
-  {
-    return _canvas;
-  }
-
-  void NVGWindow::begin_frame()
+  SkiaWindow::SkiaWindow(int width, int height, const std::string& name) : Window(width, height, name)
   {
     make_current();
-    auto [winWidth, winHeight] = window_size();
-    auto [fbWidth, fbHeight] = framebuffer_size();
+    auto interface = GrGLMakeNativeInterface_glfw();
+    context_ = GrContext::MakeGL(interface);
+    GrGLFramebufferInfo fbInfo;
+    fbInfo.fFBOID = 0;
+    fbInfo.fFormat = GL_RGBA8;
+    GrBackendRenderTarget backendRenderTarget(width, height,
+                                              0, // sample count
+                                              0, // stencil bits
+                                              fbInfo);
 
-    _canvas.setSize(winWidth, winHeight);
-
-    // Update and render
-    glViewport(0, 0, fbWidth, fbHeight);
-
-    glClearColor(0, 0, 0, 0);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glEnable(GL_CULL_FACE);
-    glDisable(GL_DEPTH_TEST);
-
-    _canvas.clearColor(vg::Colours::Black);
-    _canvas.beginFrame(winWidth, winHeight);
+    surface_ = SkSurface::MakeFromBackendRenderTarget(context_.get(), backendRenderTarget, kBottomLeft_GrSurfaceOrigin,
+                                                      kN32_SkColorType, nullptr, nullptr);
+    if (!surface_) {
+      SkDebugf("SkSurface::MakeRenderTarget returned null\n");
+      return;
+    }
+    canvas_ = surface_->getCanvas();
   }
 
-  void NVGWindow::end_frame()
+  SkiaWindow::~SkiaWindow() noexcept {}
+
+  SkCanvas& SkiaWindow::canvas()
   {
-    _canvas.endFrame();
-    glEnable(GL_DEPTH_TEST);
+    return *canvas_;
+  }
+
+  void SkiaWindow::begin_frame()
+  {
+    make_current();
+  }
+
+  void SkiaWindow::end_frame()
+  {
+    context_->flush();
     swap_buffers();
   }
 } // namespace otto::glfw
 
+#include "testing.t.hpp"
+
+using namespace otto;
+
+TEST_CASE ("Graphics test") {
+  glfw::SkiaWindow win = glfw::SkiaWindow(320, 240, "OTTO Test");
+
+  glfwSetTime(0);
+  double t, spent;
+
+  while (!win.should_close()) {
+    t = glfwGetTime();
+    win.begin_frame();
+    SkPaint paint;
+    paint.setColor(SK_ColorWHITE);
+    win.canvas().drawPaint(paint);
+    paint.setColor(SK_ColorBLUE);
+    win.canvas().drawRect({0, 0, 20, 20}, paint);
+    win.end_frame();
+
+    glfwPollEvents();
+
+    spent = glfwGetTime() - t;
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(int(1000.0 / 120 - spent * 1000)));
+  }
+}
+
+#if false
 namespace otto::services {
 
   using namespace core::ui;
@@ -219,7 +259,7 @@ namespace otto::services {
     gsl::final_action terminate_glfw(glfwTerminate);
     gsl::final_action exit_application([] { Application::current().exit(Application::ErrorCode::ui_closed); });
 
-    glfw::NVGWindow main_win(vg::width, vg::height, "OTTO");
+    glfw::SkiaWindow main_win(vg::width, vg::height, "OTTO");
 
     board::Emulator* const emulator = dynamic_cast<board::Emulator*>(&services::Controller::current());
 
@@ -230,19 +270,19 @@ namespace otto::services {
       main_win.set_window_aspect_ration(emulator->size.w, emulator->size.h);
       main_win.set_window_size(emulator->size.w, emulator->size.h);
       canvas_size = emulator->size;
-      main_win.mouse_button_callback = [&] (glfw::Button b, glfw::Action a, glfw::Modifiers)  {
-        if (a == glfw::Action::press) emulator->handle_click(main_win.cursor_pos() / scale, board::Emulator::ClickAction::down);
-        if (a == glfw::Action::release) emulator->handle_click(main_win.cursor_pos() / scale, board::Emulator::ClickAction::up);
+      main_win.mouse_button_callback = [&](glfw::Button b, glfw::Action a, glfw::Modifiers) {
+        if (a == glfw::Action::press)
+          emulator->handle_click(main_win.cursor_pos() / scale, board::Emulator::ClickAction::down);
+        if (a == glfw::Action::release)
+          emulator->handle_click(main_win.cursor_pos() / scale, board::Emulator::ClickAction::up);
       };
-      main_win.scroll_callback = [&] (double x, double y) {
-        emulator->handle_scroll(main_win.cursor_pos() / scale, y);
-      };
+      main_win.scroll_callback = [&](double x, double y) { emulator->handle_scroll(main_win.cursor_pos() / scale, y); };
     } else {
       main_win.set_window_aspect_ration(4, 3);
       main_win.set_window_size_limits(320, 240, GLFW_DONT_CARE, GLFW_DONT_CARE);
     }
 
-    main_win.key_callback = [] (auto&& action, auto&& mods, auto&& key) {
+    main_win.key_callback = [](auto&& action, auto&& mods, auto&& key) {
       board::ui::handle_keyevent(action, mods, key, services::Controller::current());
     };
 
@@ -252,7 +292,6 @@ namespace otto::services {
 
     double t, spent;
     while (!main_win.should_close() && Application::current().running()) {
-
       t = glfwGetTime();
 
       auto [winWidth, winHeight] = main_win.window_size();
@@ -276,9 +315,9 @@ namespace otto::services {
       spent = glfwGetTime() - t;
 
       std::this_thread::sleep_for(std::chrono::milliseconds(int(1000 / 120 - spent * 1000)));
-
     }
   }
 } // namespace otto::services
+#endif
 
-// kak: other_file=../include/board/ui/glfw_ui_manager.hpp
+// kak: other_file=../include/board/ui/glfw_ui.hpp

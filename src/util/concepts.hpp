@@ -140,8 +140,8 @@ namespace otto::util {
   template<typename T>
   concept semiregular = copyable<T>&& default_initializable<T>;
   /// specifies that a type is regular, that is, it is both semiregular and equality_comparable
-  // template<typename T>
-  // concept regular = std::is_regular_v<T>;
+  template<typename T>
+  concept regular = semiregular<T> && equality_comparable<T, T>;
 
   /// Callable concepts
 

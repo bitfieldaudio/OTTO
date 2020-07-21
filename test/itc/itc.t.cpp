@@ -8,6 +8,7 @@ using namespace otto::itc;
 TEST_CASE (doctest::test_suite("itc") * "Basic Channel/Consumer/Producer linking and lifetime") {
   struct State {
     int i = 0;
+    bool operator==(const State&) const = default;
   };
 
   ImmediateExecutor ex;
@@ -97,6 +98,7 @@ TEST_CASE (doctest::test_suite("itc") * "Basic state passing") {
   ImmediateExecutor ex;
   struct S {
     int i = 0;
+    bool operator==(const S&) const = default;
   };
   Channel<S> ch;
   Producer<S> p = {ch};
@@ -137,14 +139,17 @@ TEST_CASE (doctest::test_suite("itc") * "Basic state passing") {
 TEST_CASE(doctest::test_suite("itc") * "prod/cons/chan of multiple states") {
   struct S1 {
     int i1 = 1;
+    bool operator==(const S1&) const = default;
   };
 
   struct S2 {
     int i2 = 2;
+    bool operator==(const S2&) const = default;
   };
 
   struct S3 {
     int i3 = 3;
+    bool operator==(const S3&) const = default;
   };
 
   using Ch12 = Channel<S1, S2>;

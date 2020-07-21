@@ -11,7 +11,7 @@
 /// A State-based inter-thread communication library.
 ///
 /// A single `Producer` can send a new `State` object to multiple `Channels`, which in
-/// turn pass it on to multiple `Consumers` which receive the state on some `Bus`
+/// turn pass it on to multiple `Consumers` which receive the state on some `Executor`
 ///
 /// State is intended to be little more than a simple `POD`-style struct, and it is up
 /// to the individual consumers to determine which members have actually changed if they
@@ -28,7 +28,7 @@ namespace otto::itc {
 
   /// The concept that state types need to fulfill.
   template<typename T>
-  concept AState = std::is_copy_constructible_v<T> && !detail::is_meta_list<T>::value;
+  concept AState = util::regular<T> && !detail::is_meta_list<T>::value;
 
   // Forward Declarations
 
@@ -94,7 +94,7 @@ namespace otto::itc {
       consumers_.push_back(c);
     }
 
-    ///
+    /// Only called from {@ref Producer::produce}
     void internal_produce(const State& s)
     {
       for (auto* cons : consumers_) cons->internal_produce(s);
@@ -172,13 +172,13 @@ namespace otto::itc {
       return channel_;
     }
 
-  protected:
     /// Access the newest state available.
     const State& state() const noexcept
     {
       return state_;
     }
 
+  protected:
     /// Hook called with the new state right before the state is updated
     ///
     /// In this hook, the old state is available through the {@ref state()} member function
@@ -204,6 +204,7 @@ namespace otto::itc {
 
   // Concepts
 
+  /// Any type convertible to all of Channel<States>&...
   template<typename T, typename... States>
   concept AChannelFor = (AState<States> && ...) && (std::is_convertible_v<T&, Channel<States>&> && ...);
 

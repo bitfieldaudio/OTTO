@@ -66,7 +66,12 @@ TEST_CASE ("QueueExecutor") {
     // per usecase.
     // 
     // For this test, it is done by each producer incrementing the active_producers count, 
-    // which means the consumer will run until all producers 
+    // which means the consumer will run until all producers have decremented it back down,
+    // and thus stopped producing items. This ensures, that the last call to
+    // `e.run_queued_functions()` will happen strictly after the last call to `e.execute`.
+    // 
+    // This aproach probably makes sense in other contexts as well, though the `active_producers`
+    // variable should probably be encapsulated in some scoped lock or similar.
     run = false;
     for (auto& p : producers) p.join();
     consumer.join();

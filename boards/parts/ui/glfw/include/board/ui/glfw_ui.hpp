@@ -1,10 +1,11 @@
 #pragma once
 
-#include "services/debug_ui.hpp"
-#include "services/ui_manager.hpp"
+#include <SkCanvas.h>
 
 #include "board/ui/keys.hpp"
-#include "core/ui/canvas.hpp"
+
+#include <GL/gl3w.h>
+#include <GLFW/glfw3.h>
 
 struct GLFWwindow;
 namespace otto::glfw {
@@ -12,9 +13,7 @@ namespace otto::glfw {
   using board::ui::Button;
   using board::ui::Action;
   using board::ui::Key;
-  using board::ui::Modifier;
   using board::ui::Modifiers;
-  namespace vg = core::ui::vg;
 
   struct Window {
     Window(int width, int height, const std::string& name);
@@ -33,7 +32,7 @@ namespace otto::glfw {
 
     bool should_close();
 
-    vg::Point cursor_pos();
+    SkPoint cursor_pos();
     std::pair<int, int> window_size();
     std::pair<int, int> framebuffer_size();
 
@@ -46,30 +45,21 @@ namespace otto::glfw {
     GLFWwindow* _glfw_win;
   };
 
-  struct NVGWindow : Window {
-    NVGWindow(int width, int height, const std::string& name);
-    ~NVGWindow() noexcept;
+  struct SkiaWindow : Window {
+    SkiaWindow(int width, int height, const std::string& name);
+    ~SkiaWindow() noexcept;
 
-    vg::Canvas& canvas();
+    SkCanvas& canvas();
 
     void begin_frame();
     void end_frame();
 
   private:
-    NVGcontext* _vg;
-    vg::Canvas _canvas;
+    sk_sp<GrContext> context_;
+    sk_sp<SkSurface> surface_;
+    SkCanvas* canvas_;
   };
 
 } // namespace otto::glfw
-
-namespace otto::services {
-
-  struct GLFWUIManager final : UIManager {
-    GLFWUIManager() = default;
-
-    void main_ui_loop() override;
-  };
-
-} // namespace otto::services
 
 // kak: other_file=../../../src/glfw_ui.cpp
