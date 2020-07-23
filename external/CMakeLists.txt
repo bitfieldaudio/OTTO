@@ -179,14 +179,21 @@ skia_use_system_freetype2=true \
 skia_use_x11=false \
 skia_use_xps=false \
 skia_use_zlib=false")
+
+  message("Downloading skia third party dependencies (might take a while)...")
   execute_process(
-    COMMAND python2 tools/git-sync-deps
+    COMMAND python tools/git-sync-deps
+    WORKING_DIRECTORY "${skia_SOURCE_DIR}"  
+  )
+  message("Generating skia cmake project...")
+  execute_process(
     COMMAND bin/gn gen out/config --ide=json --json-ide-script=../../gn/gn_to_cmake.py --args=${skia_ARGS}
     WORKING_DIRECTORY "${skia_SOURCE_DIR}"  
   )
   add_definitions("-Wno-unknown-warning-option -Wno-gnu-zero-variadic-macro-arguments")
   add_subdirectory("${skia_SOURCE_DIR}/out/config" "${skia_BINARY_DIR}" EXCLUDE_FROM_ALL)
-  target_include_directories(skia PUBLIC "${skia_SOURCE_DIR}/")
-  target_include_directories(skia PUBLIC "${skia_SOURCE_DIR}/include/core")
-  target_include_directories(skia PUBLIC "${skia_SOURCE_DIR}/include/gpu")
+  target_include_directories(skia PUBLIC SYSTEM "${skia_SOURCE_DIR}/")
+  target_include_directories(skia PUBLIC SYSTEM "${skia_SOURCE_DIR}/include/core")
+  target_include_directories(skia PUBLIC SYSTEM "${skia_SOURCE_DIR}/include/gpu")
 endif()
+
