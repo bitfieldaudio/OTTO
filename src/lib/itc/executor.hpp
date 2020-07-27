@@ -1,9 +1,10 @@
 #pragma once
 
-#include "concurrentqueue.h"
-#include "util/utility.hpp"
+#include <concurrentqueue.h>
 
-namespace otto::itc {
+#include "lib/util/utility.hpp"
+
+namespace otto::lib::itc {
 
   struct IExecutor {
     virtual ~IExecutor() = default;

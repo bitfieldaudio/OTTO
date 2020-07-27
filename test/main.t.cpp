@@ -4,13 +4,14 @@
 #include <iostream>
 #include <filesystem>
 
-#include "services/log_manager.hpp"
+#include "app/services/log_manager.hpp"
 
 namespace fs = std::filesystem;
 
 int main( int argc, char* argv[] )
 {
   using namespace otto;
+  using namespace otto::app;
   fs::remove_all(test::dir);
   fs::create_directories(test::dir);
   //service::logger::init(argc, argv, true, (test::dir / "test-log.txt").c_str());

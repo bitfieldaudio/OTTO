@@ -5,10 +5,12 @@
 
 //#include "core/input.hpp"
 
-#include "util/algorithm.hpp"
-#include "util/utility.hpp"
+#include "lib/util/algorithm.hpp"
+#include "lib/util/utility.hpp"
 
 namespace otto::board::ui {
+
+  using namespace otto::lib;
 
   /// GLFW keys
   enum struct Key {

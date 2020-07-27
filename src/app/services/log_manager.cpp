@@ -1,11 +1,16 @@
-#include "log_manager.hpp"
-#include "util/exception.hpp"
-
 #define LOGURU_IMPLEMENTATION 1
+
+#include "log_manager.hpp"
+#include "lib/util/exception.hpp"
+
+#include "lib/logging.hpp"
 #include <loguru.hpp>
 
-namespace otto::services {
+
+namespace otto::app::services {
   using namespace std::literals;
+
+  using namespace otto::lib;
 
   tl::optional<LogManager> LogManager::instance_;
 

@@ -3,8 +3,8 @@
 #include <functional>
 #include <vector>
 
-#include "util/concepts.hpp"
-#include "util/meta.hpp"
+#include "lib/util/concepts.hpp"
+#include "lib/meta.hpp"
 
 #include "executor.hpp"
 
@@ -16,7 +16,7 @@
 /// State is intended to be little more than a simple `POD`-style struct, and it is up
 /// to the individual consumers to determine which members have actually changed if they
 /// require so.
-namespace otto::itc {
+namespace otto::lib::itc {
 
   namespace detail {
     template<typename T>

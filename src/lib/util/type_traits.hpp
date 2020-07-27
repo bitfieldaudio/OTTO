@@ -5,9 +5,9 @@
 #include <type_traits>
 #include <variant>
 
-#include "util/macros.hpp"
+#include "lib/util/macros.hpp"
 
-namespace otto::util {
+namespace otto::lib::util {
   /// Any arithmetic type except bool
   template<typename T, typename Enable = void>
   struct is_number : std::false_type {};
@@ -28,30 +28,11 @@ namespace otto::util {
     operator T&();
   };
 
-  /// Concept of a @ref better_enum.hpp enum
-  class BetterEnum {
-    static std::false_type _is(...);
-    template<typename T, typename = std::enable_if_t<!std::is_void_v<typename T::_enumerated>>>
-    static std::true_type _is(T);
-
-    static std::false_type _is_enumerated(...);
-
-    template<typename T, typename E, typename = std::enable_if_t<std::is_same_v<typename T::_enumerated, E>>>
-    static std::true_type _is_enumerated(T, E);
-
-  public:
-    template<typename T>
-    static constexpr auto is = decltype(_is(std::declval<T>()))::value;
-
-    template<typename T, typename E>
-    static constexpr auto is_enumerated = decltype(_is_enumerated(std::declval<T>(), std::declval<E>()))::value;
-  };
-
   template<typename T, typename Enable = void>
   struct is_number_or_enum : std::false_type {};
 
   template<typename T>
-  struct is_number_or_enum<T, std::enable_if_t<BetterEnum::is<T> || std::is_enum_v<T> || is_number_v<T>>>
+  struct is_number_or_enum<T, std::enable_if_t<std::is_enum_v<T> || is_number_v<T>>>
     : std::true_type {};
 
 
@@ -109,11 +90,6 @@ namespace otto::util {
   template<typename T>
   struct enum_decay<T, std::enable_if_t<std::is_enum_v<T>>> {
     using type = std::underlying_type_t<T>;
-  };
-
-  template<typename T>
-  struct enum_decay<T, std::enable_if_t<BetterEnum::is<T>>> {
-    using type = typename T::_integral;
   };
 
   template<typename T>
@@ -219,9 +195,7 @@ namespace otto::util {
   template<typename E>
   constexpr auto underlying(E e) noexcept
   {
-    if constexpr (BetterEnum::is<E>) {
-      return e._to_integral();
-    } else if constexpr (std::is_enum_v<E>) {
+    if constexpr (std::is_enum_v<E>) {
       return static_cast<std::underlying_type_t<E>>(e);
     } else {
       return e;

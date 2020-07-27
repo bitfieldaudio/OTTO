@@ -1,8 +1,8 @@
-#include "core/service.hpp"
+#include "lib/core/service.hpp"
 #include "testing.t.hpp"
 
-using namespace otto;
-using namespace otto::core;
+using namespace otto::lib;
+using namespace otto::lib::core;
 
 TEST_CASE ("ServiceProvider / ServiceAccessor") {
   struct TestService : Service<TestService> {
@@ -64,6 +64,7 @@ TEST_CASE ("ServiceProvider / ServiceAccessor") {
   };
 
   struct ServiceFactory {
+    virtual ~ServiceFactory() = default;
     virtual ServiceProvider<TestService> make(util::tag_t<TestService>) = 0;
     virtual ServiceProvider<Service2> make(util::tag_t<Service2>) = 0;
   };

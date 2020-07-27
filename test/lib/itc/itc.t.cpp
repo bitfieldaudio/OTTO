@@ -1,8 +1,8 @@
-#include "itc/itc.hpp"
+#include "lib/itc/itc.hpp"
 #include "testing.t.hpp"
 
-using namespace otto;
-using namespace otto::itc;
+using namespace otto::lib;
+using namespace otto::lib::itc;
 
 // Tests
 TEST_CASE (doctest::test_suite("itc") * "Basic Channel/Consumer/Producer linking and lifetime") {

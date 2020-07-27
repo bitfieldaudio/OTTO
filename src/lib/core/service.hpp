@@ -1,11 +1,13 @@
 #pragma once
 
-#include "util/concepts.hpp"
-#include "util/meta.hpp"
+#include <memory>
 
-#include "services/log_manager.hpp"
+#include "lib/util/concepts.hpp"
+#include "lib/meta.hpp"
 
-namespace otto::core {
+#include "lib/logging.hpp"
+
+namespace otto::lib::core {
 
   /// Base class of all services. Don't extend this directly, use `Service` instead
   ///

@@ -51,9 +51,9 @@
 #include <unordered_map>
 #include <filesystem>
 
-#include "util/algorithm.hpp"
-#include "util/type_traits.hpp"
-#include "util/utility.hpp"
+#include "lib/util/algorithm.hpp"
+#include "lib/util/type_traits.hpp"
+#include "lib/util/utility.hpp"
 
 namespace fs = std::filesystem;
 
@@ -150,7 +150,7 @@ namespace doctest {
       if constexpr (sizeof...(Args) == 0) return "{}";
       std::ostringstream o;
       o << "{";
-      otto::util::for_each(value,
+      otto::lib::util::for_each(value,
                            [&](const auto& a) { o << StringMaker<std::decay_t<decltype(a)>>::convert(a) << ", "; });
       auto str = o.str();
       // Chop the extra ", "

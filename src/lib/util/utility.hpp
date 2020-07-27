@@ -6,7 +6,7 @@
 /// \file
 /// General purpose utilities. Mostly lambda magic
 
-namespace otto::util {
+namespace otto::lib::util {
   namespace utility_detail {
     template<typename T>
     struct function_ptr_impl;
@@ -135,20 +135,23 @@ namespace otto::util {
   template<typename F, CTupleRef Tuple>
   void for_each(Tuple&& tuple, F&& f)
   {
-    details::tuple_for_each_impl(FWD(tuple), FWD(f), std::make_index_sequence<std::tuple_size<std::remove_cvref_t<Tuple>>::value>());
+    details::tuple_for_each_impl(FWD(tuple), FWD(f),
+                                 std::make_index_sequence<std::tuple_size<std::remove_cvref_t<Tuple>>::value>());
   }
 
   /// Call `f(idx, element)` for each `element` in `tuple`
   template<typename F, CTupleRef Tuple>
   void indexed_for_each(Tuple&& tuple, F&& f)
   {
-    details::tuple_for_each_i_impl(FWD(tuple), FWD(f), std::make_index_sequence<std::tuple_size<std::remove_cvref_t<Tuple>>::value>());
+    details::tuple_for_each_i_impl(FWD(tuple), FWD(f),
+                                   std::make_index_sequence<std::tuple_size<std::remove_cvref_t<Tuple>>::value>());
   }
 
   template<typename F, CTupleRef Tuple>
   void transform(Tuple&& tuple, F&& f)
   {
-    details::tuple_transform_impl(FWD(tuple), FWD(f), std::make_index_sequence<std::tuple_size<std::remove_cvref_t<Tuple>>::value>());
+    details::tuple_transform_impl(FWD(tuple), FWD(f),
+                                  std::make_index_sequence<std::tuple_size<std::remove_cvref_t<Tuple>>::value>());
   }
 
   template<typename F, CTupleRef Tuple>
@@ -161,7 +164,9 @@ namespace otto::util {
   auto zip(T1&& t1, T2&& t2)
   {
     return details::tuple_zip_impl(
-      FWD(t1), FWD(t2), std::make_index_sequence<std::min(std::tuple_size<std::remove_cvref_t<T1>>::value, std::tuple_size<std::remove_cvref_t<T2>>::value)>());
+      FWD(t1), FWD(t2),
+      std::make_index_sequence<std::min(std::tuple_size<std::remove_cvref_t<T1>>::value,
+                                        std::tuple_size<std::remove_cvref_t<T2>>::value)>());
   }
 
   inline namespace tuple {
@@ -196,4 +201,4 @@ namespace otto::util {
 
   template<typename T>
   auto tag = tag_t<T>();
-} // namespace otto::util
+} // namespace otto::lib::util

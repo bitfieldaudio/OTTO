@@ -3,9 +3,9 @@
 #include <functional>
 #include <type_traits>
 #include <utility>
-#include "util/type_traits.hpp"
+#include "lib/util/type_traits.hpp"
 
-namespace otto::util {
+namespace otto::lib::util {
 
   /* *********************************************************************** */
   /* Implementations of standard concepts                                    */

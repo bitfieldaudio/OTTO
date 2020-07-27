@@ -2,7 +2,7 @@
 
 #include <functional> // invoke
 
-#include "util/type_traits.hpp"
+#include "lib/util/type_traits.hpp"
 
 /// OTTO Metaprogramming utilities
 ///
@@ -25,7 +25,7 @@
 /// metafunctions
 ///
 /// For more information, take a look at the test file
-namespace otto::meta {
+namespace otto::lib::meta {
 
   /// Get return type from metafunction
   template<typename MetaFunc>

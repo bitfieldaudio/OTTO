@@ -13,7 +13,7 @@
 #include <iostream>
 #include <thread>
 
-#include "util/exception.hpp"
+#include "lib/util/exception.hpp"
 
 namespace otto::glfw {
   using namespace std::literals;

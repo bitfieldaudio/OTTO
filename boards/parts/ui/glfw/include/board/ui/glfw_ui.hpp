@@ -8,10 +8,12 @@
 #include <GLFW/glfw3.h>
 #include <thread>
 
-#include "util/concepts.hpp"
+#include "lib/util/concepts.hpp"
 
 struct GLFWwindow;
 namespace otto::glfw {
+
+  using namespace otto::lib;
 
   using board::ui::Action;
   using board::ui::Button;

@@ -1,7 +1,7 @@
 #pragma once
 #include "itc.hpp"
 
-namespace otto::itc {
+namespace otto::lib::itc {
 
   template<typename T>
   concept AnEvent = true;

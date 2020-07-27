@@ -1,9 +1,9 @@
 #include <algorithm>
-#include "util/concepts.hpp"
+#include "lib/util/concepts.hpp"
 
 #include "testing.t.hpp"
 
-namespace otto::util {
+namespace otto::lib::util {
 
   /// A numeric type with static limits
   /// Limits are only enforced on assignments, meaning it should behave like a numeric type T in all other respects

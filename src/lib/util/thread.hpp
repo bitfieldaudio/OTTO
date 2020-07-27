@@ -8,7 +8,7 @@
 #include <mutex>
 #include <thread>
 
-namespace otto::chrono {
+namespace otto::lib::chrono {
 
   using namespace std::chrono;
 
@@ -28,10 +28,10 @@ namespace otto::chrono {
     return time_point(duration_cast<duration>(seconds(t.tv_sec) + nanoseconds(t.tv_nsec)));
   }
 
-} // namespace otto::chrono
+} // namespace otto::lib::chrono
 
 
-namespace otto::util {
+namespace otto::lib::util {
 
   struct thread {
     template<typename Func>
@@ -188,4 +188,4 @@ namespace otto::util {
     std::thread std_thread;
   };
 
-} // namespace otto::util
+} // namespace otto::lib::util

@@ -2,34 +2,8 @@
 
 #define LOGURU_USE_FMTLIB 1
 #include <loguru.hpp>
-#include <tl/optional.hpp>
 
-#include "util/macros.hpp"
-
-namespace otto::services {
-
-  struct LogManager {
-    /// Initialize the logger
-    LogManager(int argc = 0, char** argv = nullptr, bool enable_console = true, const char* logFilePath = nullptr);
-
-    /// Set how the current thread appears in the log
-    void set_thread_name(const std::string& name);
-
-    static LogManager& get()
-    {
-      return instance_.value();
-    }
-
-    static LogManager& init()
-    {
-      return instance_.emplace();
-    }
-
-  private:
-    static tl::optional<LogManager> instance_;
-  };
-
-} // namespace otto::services
+#include "lib/util/macros.hpp"
 
 /// Shorthand to the loguru macro LOG_F(INFO, ...)
 #define LOGI(...) VLOG_F(loguru::Verbosity_INFO, __VA_ARGS__)
@@ -103,7 +77,7 @@ namespace otto::services {
 /// Shorthand to the loguru macro DLOG_SCOPE_F(FATAL, ...)
 #define DLOGF_SCOPE(...) DVLOG_SCOPE_F(loguru::Verbosity_FATAL, __VA_ARGS__)
 
-namespace otto::detail {
+namespace otto::lib::detail {
   template<typename... Args>
   inline void handle_assert(const char* file,
                             int line_number,
@@ -128,15 +102,14 @@ namespace otto::detail {
       LOGF("Unreachable code reached at {}:{}", file, line_number);
     }
   }
-} // namespace otto::detail
+} // namespace otto::lib::detail
 
 #ifdef NDEBUG
-  #define OTTO_ASSERT(Expr, ...) (void)
-  #define OTTO_UNREACHABLE(...) (void)
+#define OTTO_ASSERT(Expr, ...) (void)
+#define OTTO_UNREACHABLE(...) (void)
 #else
-  #define OTTO_ASSERT(Expr, ...) otto::detail::handle_assert(__FILE__, __LINE__, #Expr, Expr __VA_OPT__(,) __VA_ARGS__)
-  #define OTTO_UNREACHABLE(...)                                                                                        \
-    (otto::detail::handle_unreachable(__FILE__, __LINE__ __VA_OPT__(,) __VA_ARGS__), __builtin_unreachable())
+#define OTTO_ASSERT(Expr, ...)                                                                                         \
+  ::otto::lib::detail::handle_assert(__FILE__, __LINE__, #Expr, Expr __VA_OPT__(, ) __VA_ARGS__)
+#define OTTO_UNREACHABLE(...)                                                                                          \
+  (::otto::lib::detail::handle_unreachable(__FILE__, __LINE__ __VA_OPT__(, ) __VA_ARGS__), __builtin_unreachable())
 #endif
-
-

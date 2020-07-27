@@ -1,10 +1,10 @@
-#include "itc/executor.hpp"
+#include "lib/itc/executor.hpp"
 #include "testing.t.hpp"
 
 #include <thread>
 
-using namespace otto;
-using namespace otto::itc;
+using namespace otto::lib;
+using namespace otto::lib::itc;
 
 TEST_CASE ("QueueExecutor") {
   SUBCASE ("queued functions are executed on run_queued_functions") {
