@@ -3,105 +3,71 @@
 #include <chrono>
 #include <cmath>
 #include <cstdio>
+#include <functional>
 #include <string>
 #include <thread>
 
-#include "core/ui/canvas.hpp"
-#include "core/ui/vector_graphics.hpp"
-#include "services/ui_manager.hpp"
+#include <GrBackendSurface.h>
+#include <GrContext.h>
+#include <SkCanvas.h>
+#include <SkColorSpace.h>
+#include <SkFont.h>
+#include <SkSurface.h>
+#include <gl/GrGLAssembleInterface.h>
+#include <gl/GrGLInterface.h>
 
-#define NANOVG_GLES2_IMPLEMENTATION
+#include <json.hpp>
+
+#include "util/concepts.hpp"
 
 #include "./egl_connection.hpp"
 #include "./egl_deps.hpp"
-#include "./fbcp.hpp"
-#include "board/ui/egl_ui_manager.hpp"
+#include "board/ui/egl_ui.hpp"
 
-static nlohmann::json config = {{"FPS", 30.f}, {"Debug", false}};
+#define GR_GL_RGB8                           0x8051
+#define GR_GL_RGBA8                          0x8058
 
-namespace otto::services {
+namespace otto::board::ui {
 
-  using namespace core::ui;
-  using namespace board::ui;
-
-  void EGLUIManager::main_ui_loop()
+  void show_ui(util::callable<void(SkCanvas&)> auto&& f)
   {
     EGLConnection egl;
     egl.init();
-#if OTTO_USE_FBCP
-    auto fbcp = RpiFBCP{egl.eglData};
-    bool use_fbcp = true;
-    try {
-      fbcp.init();
-    } catch (util::exception& e) {
-      LOGW("Error starting FBCP: {}", e.what());
-      LOGI("If you are using an HDMI screen you probably meant to compile with OTTO_USE_FBCP=OFF");
-      LOGI("FBCP has been disabled. /dev/fb0 will not be copied to /dev/fb1");
-      use_fbcp = false;
-    }
-#endif
 
-    NVGcontext* nvg = nvgCreateGLES2(NVG_ANTIALIAS | NVG_STENCIL_STROKES | NVG_DEBUG);
-    if (nvg == NULL) {
-      LOGF("Could not init nanovg.\n");
-      Application::current().exit(Application::ErrorCode::graphics_error);
-      return;
-    }
+    auto width = 320, height = 240;
 
-    vg::Canvas canvas(nvg, vg::width, vg::height);
-    vg::initUtils(canvas);
+    auto interface = GrGLMakeNativeInterface();
+    sk_sp<GrContext> context = GrContext::MakeGL(interface);
+    GrGLFramebufferInfo fbInfo;
+    fbInfo.fFBOID = 0;
+    fbInfo.fFormat = GR_GL_RGB8;
+    auto backendRenderTarget = GrBackendRenderTarget(width, height, 0, 0, fbInfo);
 
-    // I am unable to resize the EGL display, it is fixed at 720x480px, so this
-    // is the temporary fix. Stretch everything to fill the display, and then
-    // scale it down in fbcp. Actually only rendering 320x240 should also help
-    // performance, so it is definately desired at some point
-    float xscale = egl.draw_size.width / float(vg::width);
-    float yscale = egl.draw_size.height / float(vg::height);
+    auto surface = SkSurface::MakeFromBackendRenderTarget(
+      context.get(), backendRenderTarget, kBottomLeft_GrSurfaceOrigin, kRGB_888x_SkColorType, nullptr, nullptr);
 
-    canvas.setSize(egl.draw_size.width, egl.draw_size.height);
+    auto* canvas = surface->getCanvas();
 
     using std::chrono::duration;
     using std::chrono::nanoseconds;
     using clock = std::chrono::high_resolution_clock;
     auto one_second = 1e9f;
 
-    auto targetFPS = config["FPS"].get<float>();
+    auto targetFPS = 30.f;
     auto waitTime = nanoseconds(int(one_second / targetFPS));
     auto t0 = clock::now();
 
-    bool showFps = config["Debug"];
     float fps = 0;
     duration<double> lastFrameTime;
 
-//    std::thread kbd_thread = std::thread([this] { read_keyboard(); });
-
-    while (Application::current().running()) {
+    while (true) {
       t0 = clock::now();
-
-      Controller::current().flush_leds();
 
       // Update and render
       egl.beginFrame();
-      canvas.clearColor(vg::Colours::Black);
-      canvas.beginFrame(egl.draw_size.width, egl.draw_size.height);
-      canvas.scale(xscale, yscale);
-      draw_frame(canvas);
-
-      if (showFps) {
-        canvas.beginPath();
-        canvas.font(15);
-        canvas.font(vg::Fonts::Norm);
-        canvas.fillStyle(vg::Colours::White);
-        canvas.textAlign(vg::TextAlign::Left, vg::TextAlign::Baseline);
-        canvas.fillText(fmt::format("{:.2f} FPS", fps), {0, vg::height});
-      }
-
-      canvas.endFrame();
+      std::invoke(f, *canvas);
+      context->flush();
       egl.endFrame();
-
-#if OTTO_USE_FBCP
-      if (use_fbcp) fbcp.copy();
-#endif
 
       lastFrameTime = clock::now() - t0;
       std::this_thread::sleep_for(waitTime - lastFrameTime);
@@ -110,10 +76,30 @@ namespace otto::services {
       fps = one_second / ms;
     }
 
-    nvgDeleteGLES2(nvg);
-
     egl.exit();
-
-//    kbd_thread.join();
   }
-} // namespace otto::services
+
+} // namespace otto::board::ui
+
+#include "testing.t.hpp"
+
+using namespace otto::board::ui;
+
+TEST_CASE ("ui") {
+  show_ui([&](SkCanvas& ctx) {
+    SkPaint paint;
+    paint.setColor(SK_ColorBLACK);
+    ctx.drawRect({0, 0, 320, 240}, paint);
+    paint.setColor(SK_ColorBLUE);
+    paint.setStrokeJoin(SkPaint::kRound_Join);
+    paint.setStrokeCap(SkPaint::kRound_Cap);
+    ctx.drawRect({100, 60, 220, 180}, paint);
+    paint.setColor(SK_ColorWHITE);
+    SkFont font = {SkTypeface::MakeFromFile("data/fonts/Roboto-Medium.ttf"), 20};
+    font.setEmbolden(true);
+    ctx.drawString("OTTO", 20, 20, font, paint);
+  });
+}
+
+
+// kak: other_file=../include/board/ui/egl_ui.hpp

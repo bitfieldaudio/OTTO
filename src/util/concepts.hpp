@@ -141,7 +141,7 @@ namespace otto::util {
   concept semiregular = copyable<T>&& default_initializable<T>;
   /// specifies that a type is regular, that is, it is both semiregular and equality_comparable
   template<typename T>
-  concept regular = semiregular<T> && equality_comparable<T, T>;
+  concept regular = semiregular<T>&& equality_comparable<T, T>;
 
   /// Callable concepts
 
@@ -181,7 +181,15 @@ namespace otto::util {
     struct is_callable_impl;
 
     template<typename F, typename Ret, typename... Args>
-    struct is_callable_impl<F, Ret(Args...)> : std::is_invocable_r<Ret, F, Args...> {};
+    struct is_callable_impl<F, Ret(Args...)> {
+      static constexpr bool value = requires(F f, Args... args)
+      {
+        {
+          std::invoke(f, args...)
+        }
+        ->same_as<Ret>;
+      };
+    };
 
     template<typename Shape>
     struct is_function_shape : std::false_type {};
@@ -194,7 +202,7 @@ namespace otto::util {
   concept function_shape = detail::is_function_shape<T>::value;
 
   template<typename F, typename Shape>
-  concept callable = detail::is_callable_impl<F, Shape>::value;
+  concept callable = function_shape<Shape> && detail::is_callable_impl<F, Shape>::value;
 
   template<typename T, typename... Ts>
   concept one_of = is_one_of_v<T, Ts...>;

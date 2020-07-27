@@ -6,12 +6,15 @@
 
 #include <GL/gl3w.h>
 #include <GLFW/glfw3.h>
+#include <thread>
+
+#include "util/concepts.hpp"
 
 struct GLFWwindow;
 namespace otto::glfw {
 
-  using board::ui::Button;
   using board::ui::Action;
+  using board::ui::Button;
   using board::ui::Key;
   using board::ui::Modifiers;
 
@@ -29,6 +32,8 @@ namespace otto::glfw {
     void set_window_aspect_ration(int x, int y);
     void set_window_size_limits(int min_x, int min_y, int max_x, int max_y);
     void set_window_size(int x, int y);
+
+    void close();
 
     bool should_close();
 
@@ -49,6 +54,35 @@ namespace otto::glfw {
     SkiaWindow(int width, int height, const std::string& name);
     ~SkiaWindow() noexcept;
 
+    /// Show graphics until the window is closed or the draw function returns false
+    void show(util::callable<bool(SkCanvas&)> auto&& f)
+    {
+      glfwSetTime(0);
+      double t, spent;
+
+      bool run = true;
+      while (run && !should_close()) {
+        t = glfwGetTime();
+        begin_frame();
+        run = std::invoke(f, canvas());
+        end_frame();
+        glfwPollEvents();
+        spent = glfwGetTime() - t;
+        std::this_thread::sleep_for(std::chrono::milliseconds(int(1000.0 / 120 - spent * 1000)));
+      }
+      close();
+    }
+
+    /// Show graphics until the window is closed
+    void show(util::callable<void(SkCanvas&)> auto&& f)
+    {
+      show([f = FWD(f)](SkCanvas& ctx) -> bool {
+        std::invoke(f, ctx);
+        return true;
+      });
+    }
+
+  protected:
     SkCanvas& canvas();
 
     void begin_frame();

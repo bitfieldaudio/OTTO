@@ -190,4 +190,10 @@ namespace otto::util {
       return std::apply(detail::tuple_remove_last, t);
     }
   } // namespace tuple
+
+  template<typename T>
+  struct tag_t {};
+
+  template<typename T>
+  auto tag = tag_t<T>();
 } // namespace otto::util

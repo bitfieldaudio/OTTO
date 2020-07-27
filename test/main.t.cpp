@@ -4,6 +4,8 @@
 #include <iostream>
 #include <filesystem>
 
+#include "services/log_manager.hpp"
+
 namespace fs = std::filesystem;
 
 int main( int argc, char* argv[] )
@@ -12,6 +14,7 @@ int main( int argc, char* argv[] )
   fs::remove_all(test::dir);
   fs::create_directories(test::dir);
   //service::logger::init(argc, argv, true, (test::dir / "test-log.txt").c_str());
+  services::LogManager::init();
 
   doctest::Context context;
 

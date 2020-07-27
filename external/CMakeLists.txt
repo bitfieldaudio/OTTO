@@ -1,4 +1,4 @@
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-pedantic -Wno-unused-function")
@@ -119,81 +119,91 @@ if (concurrentqueue_ADDED)
   target_include_directories(concurrentqueue SYSTEM INTERFACE "${concurrentqueue_SOURCE_DIR}")
 endif()
 
-CPMFindPackage(
-  NAME skia
-  GIT_REPOSITORY https://skia.googlesource.com/skia.git
-  GIT_TAG c8ae494401bc38b5d0d9c99c962d207f4668ad63
-  DOWNLOAD_ONLY YES
-)
+find_package(PkgConfig) 
 
-if (skia_ADDED)
-  set(skia_LIB_LOCATION "${skia_SOURCE_DIR}/out/Static/libskia.a")
-  set(skia_ARGS "\
-is_debug=true \
-paragraph_gms_enabled=false \
-paragraph_tests_enabled=false \
-skia_enable_android_utils=false \
-skia_enable_api_available_macro=true \
-skia_enable_ccpr=true \
-skia_enable_direct3d_debug_layer=false \
-skia_enable_discrete_gpu=true \
-skia_enable_fontmgr_FontConfigInterface=true \
-skia_enable_fontmgr_android=false \
-skia_enable_fontmgr_custom_directory=true \
-skia_enable_fontmgr_custom_embedded=true \
-skia_enable_fontmgr_custom_empty=true \
-skia_enable_fontmgr_fontconfig=true \
-skia_enable_gpu=true \
-skia_enable_gpu_debug_layers=true \
-skia_enable_nvpr=false \
-skia_enable_particles=false \
-skia_enable_pdf=false \
-skia_enable_skottie=false \
-skia_enable_skparagraph=true \
-skia_enable_skrive=false \
-skia_enable_skshaper=false \
-skia_enable_sksl_interpreter=false \
-skia_enable_skvm_jit=false \
-skia_enable_spirv_validation=false \
-skia_enable_tools=false \
-skia_enable_vulkan_debug_layers=false \
-skia_use_dng_sdk=false \
-skia_use_expat=false \
-skia_use_fontconfig=true \
-skia_use_freetype=true \
-skia_use_gl=true \
-skia_use_harfbuzz=false \
-skia_use_icu=false \
-skia_use_libgifcodec=false \
-skia_use_libheif=false \
-skia_use_libjpeg_turbo_decode=false \
-skia_use_libjpeg_turbo_encode=false \
-skia_use_libpng_decode=true \
-skia_use_libpng_encode=false \
-skia_use_libwebp_decode=false \
-skia_use_libwebp_encode=false \
-skia_use_lua=false \
-skia_use_piex=false \
-skia_use_sfntly=false \
-skia_use_system_freetype2=true \
-skia_use_x11=false \
-skia_use_xps=false \
-skia_use_zlib=false")
+pkg_check_modules(SKIA IMPORTED_TARGET skia)
 
-  message("Downloading skia third party dependencies (might take a while)...")
-  execute_process(
-    COMMAND python tools/git-sync-deps
-    WORKING_DIRECTORY "${skia_SOURCE_DIR}"  
+if (SKIA_FOUND)
+  message("Found system skia")
+  add_library(skia INTERFACE)
+  target_link_libraries(skia INTERFACE PkgConfig::SKIA)
+else()
+  CPMAddPackage(
+    NAME skia
+    GIT_REPOSITORY https://skia.googlesource.com/skia.git
+    GIT_TAG c8ae494401bc38b5d0d9c99c962d207f4668ad63
+    DOWNLOAD_ONLY YES
   )
-  message("Generating skia cmake project...")
-  execute_process(
-    COMMAND bin/gn gen out/config --ide=json --json-ide-script=../../gn/gn_to_cmake.py --args=${skia_ARGS}
-    WORKING_DIRECTORY "${skia_SOURCE_DIR}"  
-  )
-  add_definitions("-Wno-unknown-warning-option -Wno-gnu-zero-variadic-macro-arguments")
-  add_subdirectory("${skia_SOURCE_DIR}/out/config" "${skia_BINARY_DIR}" EXCLUDE_FROM_ALL)
-  target_include_directories(skia PUBLIC SYSTEM "${skia_SOURCE_DIR}/")
-  target_include_directories(skia PUBLIC SYSTEM "${skia_SOURCE_DIR}/include/core")
-  target_include_directories(skia PUBLIC SYSTEM "${skia_SOURCE_DIR}/include/gpu")
+
+  if (skia_ADDED)
+    set(skia_LIB_LOCATION "${skia_SOURCE_DIR}/out/Static/libskia.a")
+    set(skia_ARGS "\
+  is_debug=true \
+  paragraph_gms_enabled=false \
+  paragraph_tests_enabled=false \
+  skia_enable_android_utils=false \
+  skia_enable_api_available_macro=true \
+  skia_enable_ccpr=true \
+  skia_enable_direct3d_debug_layer=false \
+  skia_enable_discrete_gpu=true \
+  skia_enable_fontmgr_FontConfigInterface=true \
+  skia_enable_fontmgr_android=false \
+  skia_enable_fontmgr_custom_directory=true \
+  skia_enable_fontmgr_custom_embedded=true \
+  skia_enable_fontmgr_custom_empty=true \
+  skia_enable_fontmgr_fontconfig=true \
+  skia_enable_gpu=true \
+  skia_enable_gpu_debug_layers=true \
+  skia_enable_nvpr=false \
+  skia_enable_particles=false \
+  skia_enable_pdf=false \
+  skia_enable_skottie=false \
+  skia_enable_skparagraph=true \
+  skia_enable_skrive=false \
+  skia_enable_skshaper=false \
+  skia_enable_sksl_interpreter=false \
+  skia_enable_skvm_jit=false \
+  skia_enable_spirv_validation=false \
+  skia_enable_tools=false \
+  skia_enable_vulkan_debug_layers=false \
+  skia_use_dng_sdk=false \
+  skia_use_expat=false \
+  skia_use_fontconfig=true \
+  skia_use_freetype=true \
+  skia_use_gl=true \
+  skia_use_harfbuzz=false \
+  skia_use_icu=false \
+  skia_use_libgifcodec=false \
+  skia_use_libheif=false \
+  skia_use_libjpeg_turbo_decode=false \
+  skia_use_libjpeg_turbo_encode=false \
+  skia_use_libpng_decode=true \
+  skia_use_libpng_encode=false \
+  skia_use_libwebp_decode=false \
+  skia_use_libwebp_encode=false \
+  skia_use_lua=false \
+  skia_use_piex=false \
+  skia_use_sfntly=false \
+  skia_use_system_freetype2=true \
+  skia_use_x11=false \
+  skia_use_xps=false \
+  skia_use_zlib=false")
+
+    message("Downloading skia third party dependencies (might take a while)...")
+    execute_process(
+      COMMAND python tools/git-sync-deps
+      WORKING_DIRECTORY "${skia_SOURCE_DIR}"  
+    )
+    message("Generating skia cmake project...")
+    execute_process(
+      COMMAND bin/gn gen out/config --ide=json --json-ide-script=../../gn/gn_to_cmake.py --args=${skia_ARGS}
+      WORKING_DIRECTORY "${skia_SOURCE_DIR}"  
+    )
+    add_definitions("-Wno-unknown-warning-option -Wno-gnu-zero-variadic-macro-arguments")
+    set(CMAKE_CXX_STANDARD 17)
+    add_subdirectory("${skia_SOURCE_DIR}/out/config" "${skia_BINARY_DIR}" EXCLUDE_FROM_ALL)
+    target_include_directories(skia PUBLIC SYSTEM "${skia_SOURCE_DIR}/")
+    target_include_directories(skia PUBLIC SYSTEM "${skia_SOURCE_DIR}/include/core")
+    target_include_directories(skia PUBLIC SYSTEM "${skia_SOURCE_DIR}/include/gpu")
+  endif()
 endif()
-

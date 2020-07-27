@@ -1,11 +1,10 @@
+#if false
 #include <fcntl.h>
 #include <stdio.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 
 #include "util/exception.hpp"
-
-#include "services/log_manager.hpp"
 
 #include "./fbcp.hpp"
 
@@ -65,3 +64,4 @@ namespace otto::board::ui {
   }
 
 } // namespace otto::board::ui
+#endif

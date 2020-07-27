@@ -118,7 +118,7 @@ namespace otto::itc {
       }
     }
 
-    /// The channels this producer is currently linked to
+   /// The channels this producer is currently linked to
     const std::vector<Channel<State>*>& channels() const noexcept
     {
       return channels_;

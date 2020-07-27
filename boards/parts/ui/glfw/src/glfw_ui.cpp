@@ -4,6 +4,7 @@
 #include <GrContext.h>
 #include <SkCanvas.h>
 #include <SkColorSpace.h>
+#include <SkFont.h>
 #include <SkSurface.h>
 #include <gl/GrGLAssembleInterface.h>
 #include <gl/GrGLInterface.h>
@@ -70,20 +71,6 @@ namespace otto::glfw {
       }
     });
 
-#if false
-    glfwSetKeyboardCallback(_glfw_win, [](GLFWwindow* window, int key, int scancode, int action,
-                                          int mods, const char* str, int) {
-      if (auto* win = get_for(window); win) {
-        if (win->key_callback) {
-          win->key_callback(board::ui::Action{action}, board::ui::Modifiers{mods},
-                            board::ui::Key{key});
-        }
-        if (win->char_callback && strlen(str) == 1) {
-          win->char_callback(str[0]);
-        }
-      }
-    });
-#else
     glfwSetKeyCallback(_glfw_win, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
       if (auto* win = get_for(window); win && win->key_callback) {
         win->key_callback(board::ui::Action{action}, board::ui::Modifiers{mods}, board::ui::Key{key});
@@ -95,7 +82,6 @@ namespace otto::glfw {
         win->char_callback((char) ch);
       }
     });
-#endif
 
     make_current();
     gl3wInit();
@@ -141,6 +127,11 @@ namespace otto::glfw {
   void Window::set_window_size(int x, int y)
   {
     glfwSetWindowSize(_glfw_win, x, y);
+  }
+
+  void Window::close()
+  {
+    glfwSetWindowShouldClose(_glfw_win, true);
   }
 
   bool Window::should_close()
@@ -215,109 +206,20 @@ namespace otto::glfw {
 
 using namespace otto;
 
-TEST_CASE ("Graphics test") {
+TEST_CASE (doctest::skip() * "Graphics test") {
   glfw::SkiaWindow win = glfw::SkiaWindow(320, 240, "OTTO Test");
-
-  glfwSetTime(0);
-  double t, spent;
-
-  while (!win.should_close()) {
-    t = glfwGetTime();
-    win.begin_frame();
+  win.show([&](SkCanvas& ctx) {
     SkPaint paint;
-    paint.setColor(SK_ColorWHITE);
-    win.canvas().drawPaint(paint);
+    paint.setColor(SK_ColorBLACK);
+    ctx.drawPaint(paint);
     paint.setColor(SK_ColorBLUE);
-    win.canvas().drawRect({0, 0, 20, 20}, paint);
-    win.end_frame();
-
-    glfwPollEvents();
-
-    spent = glfwGetTime() - t;
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(int(1000.0 / 120 - spent * 1000)));
-  }
+    paint.setStrokeJoin(SkPaint::kRound_Join);
+    paint.setStrokeCap(SkPaint::kRound_Cap);
+    ctx.drawRect({0, 0, 20, 20}, paint);
+    SkFont font = {SkTypeface::MakeDefault(), 20};
+    font.setEmbolden(true);
+    ctx.drawString("OTTO", 20, 20, font, paint);
+  });
 }
-
-#if false
-namespace otto::services {
-
-  using namespace core::ui;
-
-  static void error_callback(int error, const char* description)
-  {
-    LOG_F(ERROR, "GLFW UI: {}", description);
-  }
-
-  void GLFWUIManager::main_ui_loop()
-  {
-    glfwSetErrorCallback(error_callback);
-
-    if (!glfwInit()) {
-      LOG_F(ERROR, "Failed to init GLFW.");
-    }
-    gsl::final_action terminate_glfw(glfwTerminate);
-    gsl::final_action exit_application([] { Application::current().exit(Application::ErrorCode::ui_closed); });
-
-    glfw::SkiaWindow main_win(vg::width, vg::height, "OTTO");
-
-    board::Emulator* const emulator = dynamic_cast<board::Emulator*>(&services::Controller::current());
-
-    vg::Size canvas_size = {vg::width, vg::height};
-    float scale = 1;
-
-    if (emulator) {
-      main_win.set_window_aspect_ration(emulator->size.w, emulator->size.h);
-      main_win.set_window_size(emulator->size.w, emulator->size.h);
-      canvas_size = emulator->size;
-      main_win.mouse_button_callback = [&](glfw::Button b, glfw::Action a, glfw::Modifiers) {
-        if (a == glfw::Action::press)
-          emulator->handle_click(main_win.cursor_pos() / scale, board::Emulator::ClickAction::down);
-        if (a == glfw::Action::release)
-          emulator->handle_click(main_win.cursor_pos() / scale, board::Emulator::ClickAction::up);
-      };
-      main_win.scroll_callback = [&](double x, double y) { emulator->handle_scroll(main_win.cursor_pos() / scale, y); };
-    } else {
-      main_win.set_window_aspect_ration(4, 3);
-      main_win.set_window_size_limits(320, 240, GLFW_DONT_CARE, GLFW_DONT_CARE);
-    }
-
-    main_win.key_callback = [](auto&& action, auto&& mods, auto&& key) {
-      board::ui::handle_keyevent(action, mods, key, services::Controller::current());
-    };
-
-    vg::initUtils(main_win.canvas());
-
-    glfwSetTime(0);
-
-    double t, spent;
-    while (!main_win.should_close() && Application::current().running()) {
-      t = glfwGetTime();
-
-      auto [winWidth, winHeight] = main_win.window_size();
-      // Calculate pixel ration for hi-dpi devices.
-
-      main_win.begin_frame();
-      scale = std::min((float) winWidth / (float) canvas_size.w, (float) winHeight / (float) canvas_size.h);
-      main_win.canvas().scale(scale, scale);
-
-      if (emulator) {
-        emulator->draw(main_win.canvas());
-        main_win.canvas().translate(518, 28);
-        main_win.canvas().scale(215.f / 320.f, 161.f / 240.f);
-      }
-      draw_frame(main_win.canvas());
-
-      main_win.end_frame();
-
-      glfwPollEvents();
-
-      spent = glfwGetTime() - t;
-
-      std::this_thread::sleep_for(std::chrono::milliseconds(int(1000 / 120 - spent * 1000)));
-    }
-  }
-} // namespace otto::services
-#endif
 
 // kak: other_file=../include/board/ui/glfw_ui.hpp
