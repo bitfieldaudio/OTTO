@@ -14,6 +14,9 @@
 #include <thread>
 
 #include "lib/util/exception.hpp"
+#include "lib/util/thread.hpp"
+
+#include "app/services/impl/graphics.hpp"
 
 namespace otto::glfw {
   using namespace std::literals;
@@ -84,7 +87,6 @@ namespace otto::glfw {
     });
 
     make_current();
-    gl3wInit();
   }
 
   Window::~Window() noexcept {}
@@ -202,24 +204,27 @@ namespace otto::glfw {
   }
 } // namespace otto::glfw
 
-#include "testing.t.hpp"
+namespace otto::board {
+  struct GlfwGraphics final : app::services::GraphicsImpl {
+    void show(std::function<void(SkCanvas&)> f) override
+    {
+      thread_ = [this, f = std::move(f)](auto&& should_run) {
+        otto::glfw::SkiaWindow win = {320, 240, "OTTO"};
+        win.show([this, f = std::move(f), should_run](SkCanvas& ctx) {
+          f(ctx);
+          return service<app::services::Runtime>().should_run() && should_run();
+        });
+      };
+    }
 
-using namespace otto;
+  private:
+    lib::util::thread thread_;
+  };
 
-TEST_CASE (doctest::skip() * "Graphics test") {
-  glfw::SkiaWindow win = glfw::SkiaWindow(320, 240, "OTTO Test");
-  win.show([&](SkCanvas& ctx) {
-    SkPaint paint;
-    paint.setColor(SK_ColorBLACK);
-    ctx.drawPaint(paint);
-    paint.setColor(SK_ColorBLUE);
-    paint.setStrokeJoin(SkPaint::kRound_Join);
-    paint.setStrokeCap(SkPaint::kRound_Cap);
-    ctx.drawRect({0, 0, 20, 20}, paint);
-    SkFont font = {SkTypeface::MakeDefault(), 20};
-    font.setEmbolden(true);
-    ctx.drawString("OTTO", 20, 20, font, paint);
-  });
-}
+  lib::core::ServiceHandle<app::services::Graphics> make_graphics_service()
+  {
+    return lib::core::make_handle<GlfwGraphics>();
+  }
+} // namespace otto::board
 
 // kak: other_file=../include/board/ui/glfw_ui.hpp

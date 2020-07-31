@@ -6,6 +6,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include <magic_enum.hpp>
+
 [[maybe_unused]] static bool debuggerIsAttached()
 {
   char buf[4096];
@@ -46,10 +48,10 @@
 #define DOCTEST_IS_DEBUGGER_ACTIVE() doctestDebuggerCheck();
 
 #include <chrono>
+#include <filesystem>
 #include <fstream>
 #include <sstream>
 #include <unordered_map>
-#include <filesystem>
 
 #include "lib/util/algorithm.hpp"
 #include "lib/util/type_traits.hpp"
@@ -124,19 +126,19 @@ namespace otto::test {
     float margin_ = 0.0001;
   };
 
-//  template<typename Cont, typename Proj>
-//  auto sort(Cont&& c, Proj&& projection)
-//  {
-//    auto vec = util::view::to_vec(c);
-//    nano::sort(vec, [&](auto&& a, auto&& b) { return projection(a) < projection(b); });
-//    return vec;
-//  }
-//
-//  template<typename Cont>
-//  auto sort(Cont&& c)
-//  {
-//    return test::sort(c, util::identity);
-//  }
+  //  template<typename Cont, typename Proj>
+  //  auto sort(Cont&& c, Proj&& projection)
+  //  {
+  //    auto vec = util::view::to_vec(c);
+  //    nano::sort(vec, [&](auto&& a, auto&& b) { return projection(a) < projection(b); });
+  //    return vec;
+  //  }
+  //
+  //  template<typename Cont>
+  //  auto sort(Cont&& c)
+  //  {
+  //    return test::sort(c, util::identity);
+  //  }
 
 } // namespace otto::test
 
@@ -150,12 +152,53 @@ namespace doctest {
       if constexpr (sizeof...(Args) == 0) return "{}";
       std::ostringstream o;
       o << "{";
-      otto::lib::util::for_each(value,
-                           [&](const auto& a) { o << StringMaker<std::decay_t<decltype(a)>>::convert(a) << ", "; });
+      otto::lib::util::for_each(
+        value, [&](const auto& a) { o << StringMaker<std::decay_t<decltype(a)>>::convert(a) << ", "; });
       auto str = o.str();
       // Chop the extra ", "
       str.resize(str.size() - 2);
       return (str + "}").c_str();
     }
   };
+
+  template<>
+  struct StringMaker<std::string_view> {
+    static doctest::String convert(std::string_view const& value)
+    {
+      return {value.data(), static_cast<unsigned int>(value.size())};
+    }
+  };
+
+  template<typename E>
+  requires(std::is_enum_v<E>) //
+    struct StringMaker<E> {
+    static doctest::String convert(E const& value)
+    {
+      std::string_view name = magic_enum::enum_name(value);
+      if (name.data() != nullptr)
+        return toString(name);
+      return String("{index:") + toString(magic_enum::enum_integer(value)) + "}";
+    }
+  };
+
+  template<typename T, typename... Args>
+  struct StringMaker<std::vector<T, Args...>> {
+    static doctest::String convert(std::vector<T, Args...> const& value) requires requires
+    {
+      StringMaker<std::decay_t<T>>::convert(std::declval<T>());
+    }
+    {
+      if (value.empty()) return "{}";
+      std::ostringstream o;
+      o << "{";
+      for (const auto v : value) {
+        o << toString(v) << ", ";
+      }
+      auto str = o.str();
+      // Chop the extra ", "
+      str.resize(str.size() - 2);
+      return (str + "}").c_str();
+    }
+  };
+
 } // namespace doctest

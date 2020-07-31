@@ -36,6 +36,7 @@ target_link_libraries(otto_src PUBLIC nanobench)
 target_link_libraries(otto_src PUBLIC magic_enum)
 target_link_libraries(otto_src PUBLIC concurrentqueue)
 target_link_libraries(otto_src PUBLIC skia)
+target_link_libraries(otto_src PUBLIC nameof)
 
 #include("${OTTO_SOURCE_DIR}/cmake/doctest_force_link_static_lib_in_target.cmake")
 #doctest_force_link_static_lib_in_target(otto_exec otto)
@@ -48,7 +49,12 @@ if(MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
   endif()
 elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long -Wno-pedantic -Wno-c++14-compat -Wno-psabi -Wno-unknown-pragmas -Wno-vla -Wno-sign-compare")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long -Wpedantic \
+-Wno-c++14-compat -Wno-psabi \
+-Wno-unknown-pragmas \
+-Wno-vla \
+-Wno-sign-compare \
+")
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long -Wpedantic \
 -Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wno-c++17-compat -Wc++20-compat \
@@ -58,6 +64,9 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 -Wno-missing-braces \
 -Wno-vla-extension \
 -Wno-c99-extensions \
+-Wno-gnu-zero-variadic-macro-arguments \
+-Wno-gnu-anonymous-struct \
+-Wno-nested-anon-types \
 ")
 endif()
 

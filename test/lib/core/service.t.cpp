@@ -13,30 +13,31 @@ TEST_CASE ("ServiceProvider / ServiceAccessor") {
   struct TSImpl : TestService {
     int get_int() override
     {
-      // Chosen by fair dice roll, guaranteed to be random
+      // Chosen by fair dice roll
+      // Guaranteed to be random
       return 4;
     }
   };
   static_assert(AServiceImpl<TSImpl>);
   static_assert(!AService<TSImpl>);
 
-  SUBCASE ("Register/unregister service manually") {
+  SUBCASE ("set/unset active service manually") {
     TSImpl tsi;
-    REQUIRE(core::detail::service_registry_<TestService> == nullptr);
-    register_service(tsi);
+    REQUIRE(core::unsafe_get_active_service<TestService>() == nullptr);
+    set_active_service(tsi);
     // NOT A PUBLIC API!
-    REQUIRE(core::detail::service_registry_<TestService> == &tsi);
-    unregister_service(tsi);
+    REQUIRE(core::unsafe_get_active_service<TestService>() == &tsi);
+    unset_active_service(tsi);
     // NOT A PUBLIC API!
-    REQUIRE(core::detail::service_registry_<TestService> == nullptr);
+    REQUIRE(core::unsafe_get_active_service<TestService>() == nullptr);
   }
 
-  SUBCASE ("Auto register/unregister service using ServiceProvider") {
+  SUBCASE ("Auto register/unregister service using ServiceHandle") {
     {
-      auto prov = ServiceProvider(std::make_unique<TSImpl>());
-      REQUIRE(core::detail::service_registry_<TestService> == &prov.service());
+      auto prov = make_handle<TSImpl>().start();
+      REQUIRE(core::unsafe_get_active_service<TestService>() == &prov.service());
     }
-    REQUIRE(core::detail::service_registry_<TestService> == nullptr);
+    REQUIRE(core::unsafe_get_active_service<TestService>() == nullptr);
   }
 
   struct TSAccessor : ServiceAccessor<TestService> {
@@ -47,49 +48,7 @@ TEST_CASE ("ServiceProvider / ServiceAccessor") {
   };
 
   SUBCASE ("Access registered service through ServiceAccessor") {
-    auto prov = ServiceProvider(std::make_unique<TSImpl>());
-    TSAccessor a;
-    a.test_4();
-  }
-
-  struct Service2 : Service<Service2> {
-    virtual int get_bool() = 0;
-  };
-
-  struct S2Impl : Service2 {
-    int get_bool() override
-    {
-      return true;
-    }
-  };
-
-  struct ServiceFactory {
-    virtual ~ServiceFactory() = default;
-    virtual ServiceProvider<TestService> make(util::tag_t<TestService>) = 0;
-    virtual ServiceProvider<Service2> make(util::tag_t<Service2>) = 0;
-  };
-
-  struct Fact1 : ServiceFactory {
-    ServiceProvider<TestService> make(util::tag_t<TestService>) override
-    {
-      return std::make_unique<TSImpl>();
-    }
-    ServiceProvider<Service2> make(util::tag_t<Service2>) override
-    {
-      return std::make_unique<S2Impl>();
-    }
-  };
-
-  SUBCASE ("ServiceFactory") {}
-  SUBCASE ("Application") {
-    struct Application {
-      std::unique_ptr<ServiceFactory> factory;
-      ServiceProvider<TestService> test_service = factory->make(util::tag<TestService>);
-      ServiceProvider<Service2> service2 = factory->make(util::tag<Service2>);
-    };
-
-    Application app = {.factory = std::make_unique<Fact1>()};
-
+    auto serv = make_handle<TSImpl>().start();
     TSAccessor a;
     a.test_4();
   }

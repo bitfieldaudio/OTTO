@@ -4,7 +4,6 @@
 
 #include "board/ui/keys.hpp"
 
-#include <GL/gl3w.h>
 #include <GLFW/glfw3.h>
 #include <thread>
 

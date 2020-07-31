@@ -34,9 +34,18 @@ namespace otto::lib::chrono {
 namespace otto::lib::util {
 
   struct thread {
+    thread() = default;
+
     template<typename Func>
     thread(Func&& func) : std_thread(std::forward<Func>(func), [this] { return should_run(); })
     {}
+
+    template<typename Func>
+    thread& operator=(Func&& func)
+    {
+      std_thread = std::thread{std::forward<Func>(func), [this] { return should_run(); }};
+      return *this;
+    }
 
     ~thread()
     {

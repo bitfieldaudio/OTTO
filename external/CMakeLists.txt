@@ -119,10 +119,16 @@ if (concurrentqueue_ADDED)
   target_include_directories(concurrentqueue SYSTEM INTERFACE "${concurrentqueue_SOURCE_DIR}")
 endif()
 
+CPMAddPackage(
+  NAME nameof
+  GITHUB_REPOSITORY Neargye/nameof
+  VERSION 0.9.4
+)
+
+# SKIA
+
 find_package(PkgConfig) 
-
 pkg_check_modules(SKIA IMPORTED_TARGET skia)
-
 if (SKIA_FOUND)
   message("Found system skia")
   add_library(skia INTERFACE)
@@ -187,7 +193,9 @@ else()
   skia_use_system_freetype2=true \
   skia_use_x11=false \
   skia_use_xps=false \
-  skia_use_zlib=false")
+  skia_use_zlib=false \
+  extra_cflags=[\"-Wno-unknown-warning-option\", \"-Wno-gnu-zero-variadic-macro-arguments\"] \
+")
 
     message("Downloading skia third party dependencies (might take a while)...")
     execute_process(

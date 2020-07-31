@@ -1,24 +1,15 @@
 #define LOGURU_IMPLEMENTATION 1
 
-#include "log_manager.hpp"
+#include "logging.hpp"
+
 #include "lib/util/exception.hpp"
 
-#include "lib/logging.hpp"
-#include <loguru.hpp>
+namespace otto::lib::logging {
 
-
-namespace otto::app::services {
   using namespace std::literals;
 
-  using namespace otto::lib;
-
-  tl::optional<LogManager> LogManager::instance_;
-
-  LogManager::LogManager(int argc, char* argv[], bool enable_console, const char* logFilePath)
+  void init(int argc, char* argv[], bool enable_console, const char* logFilePath)
   {
-    static bool initialized = false;
-    if (initialized) return;
-
     // std::string def_path = Application::current().data_dir / "log.txt";
     if (logFilePath == nullptr) {
       // logFilePath = def_path.c_str();
@@ -39,16 +30,15 @@ namespace otto::app::services {
     if (logFilePath) loguru::add_file(logFilePath, loguru::Append, loguru::Verbosity_MAX);
 
     loguru::set_fatal_handler([](const loguru::Message& message) {
-      if (message.prefix != "Signal: "sv) throw util::exception(std::string(message.prefix) + message.message);
+      if (message.prefix != "Signal: "sv) throw lib::util::exception(std::string(message.prefix) + message.message);
     });
 
     LOGI("Logging initialized");
-    initialized = true;
   }
 
-  void LogManager::set_thread_name(const std::string& name)
+  void set_thread_name(const std::string& name)
   {
     pthread_setname_np(pthread_self(), name.c_str());
     loguru::set_thread_name(name.c_str());
   }
-} // namespace otto::services
+}

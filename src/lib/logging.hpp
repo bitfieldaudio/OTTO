@@ -5,6 +5,13 @@
 
 #include "lib/util/macros.hpp"
 
+namespace otto::lib::logging {
+  void init(int argc = 0, char** argv = nullptr, bool enable_console = true, const char* logFilePath = nullptr);
+
+  /// Set how the current thread appears in the log
+  void set_thread_name(const std::string& name);
+}
+
 /// Shorthand to the loguru macro LOG_F(INFO, ...)
 #define LOGI(...) VLOG_F(loguru::Verbosity_INFO, __VA_ARGS__)
 
