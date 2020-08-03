@@ -19,4 +19,8 @@ namespace otto::app::services {
     stage_.store(static_cast<std::underlying_type_t<Stage>>(s));
   }
 
+  void RuntimeImpl::request_stop(ExitCode) noexcept
+  {
+    set_stage(Stage::stopping);
+  }
 } // namespace otto::app::services

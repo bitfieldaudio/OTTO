@@ -15,6 +15,8 @@ namespace otto::app::services {
     /// When this turns to false, all threads should stop
     bool should_run() const noexcept override;
 
+    void request_stop(ExitCode) noexcept override;
+
     void set_stage(Stage s) noexcept;
 
   private:

@@ -1,6 +1,8 @@
 #include "lib/itc/executor.hpp"
 #include "testing.t.hpp"
 
+#include "lib/logging.hpp"
+
 #include <thread>
 
 using namespace otto::lib;
@@ -64,17 +66,86 @@ TEST_CASE ("QueueExecutor") {
     //   this is used in other contexts as well
     // The only practical way to manage this issue, might be to do manual two-phase destruction
     // per usecase.
-    // 
-    // For this test, it is done by each producer incrementing the active_producers count, 
+    //
+    // For this test, it is done by each producer incrementing the active_producers count,
     // which means the consumer will run until all producers have decremented it back down,
     // and thus stopped producing items. This ensures, that the last call to
     // `e.run_queued_functions()` will happen strictly after the last call to `e.execute`.
-    // 
+    //
     // This aproach probably makes sense in other contexts as well, though the `active_producers`
     // variable should probably be encapsulated in some scoped lock or similar.
     run = false;
     for (auto& p : producers) p.join();
     consumer.join();
     REQUIRE(count == expected_count);
+  }
+}
+
+TEST_CASE (doctest::may_fail(true) * "ExecutorLock") {
+  int iteration = 0;
+  for (; iteration < 1000; iteration++) {
+    // LOGI("Iteration {}", iteration);
+
+    /// The data needed by the threads
+    struct Data {
+      /// The loop condition for the application
+      std::atomic_bool run = true;
+
+      std::atomic_int actual_count = 0;
+      std::atomic_int expected_count = 0;
+
+      std::array<std::pair<QueueExecutor, std::thread>, 3> threads;
+    } data;
+
+    // Allows recursion easier than lambdas
+    struct Incrementer {
+      void operator()()
+      {
+        int i = data.expected_count;
+        // choose "random" other queue to add function to
+        auto& [e2, t2] = data.threads[i % data.threads.size()];
+        for (int j = i % 2; j >= 0; j--) {
+          data.expected_count++;
+          e2.execute([&ac = data.actual_count] { ac++; });
+        }
+        if (data.run) {
+          // also execute this function on the other thread
+          e2.execute(*this);
+        } else {
+          // Only some of the time when stopping
+          if (i % 4 == 0) {
+            e2.execute(*this);
+          }
+        }
+      }
+      Data& data;
+    } inc = {data};
+
+    ExecutorLockable lockable;
+
+    std::atomic_int threads_ready = 0;
+
+    int i = 0;
+    for (auto& [e, t] : data.threads) {
+      t = std::thread([&, &e = e, i] {
+        auto lock = lockable.acquire();
+        threads_ready++;
+        while (data.run) {
+          e.run_queued_functions();
+        }
+        lock.exit_synchronized(e);
+      });
+      i++;
+    }
+    for (int i = 0; i < 100; i++) inc();
+
+    // Let the threads run for 100ns
+    while (threads_ready != data.threads.size())
+      ;
+    std::this_thread::sleep_for(std::chrono::nanoseconds(200));
+    data.run = false;
+    for (auto& [e, t] : data.threads) t.join();
+    REQUIRE(data.actual_count == data.expected_count);
+    REQUIRE(data.expected_count > data.threads.size());
   }
 }

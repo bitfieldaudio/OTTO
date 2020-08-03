@@ -6,6 +6,7 @@ namespace otto::app::services {
 
   /// Manages the runtime of the application
   struct Runtime : lib::core::Service<Runtime> {
+    enum struct ExitCode { normal };
     enum struct Stage {
       initializing,
       running,
@@ -15,9 +16,11 @@ namespace otto::app::services {
     virtual Stage stage() const noexcept = 0;
 
     /// The loop variable of all main loops
-    /// 
+    ///
     /// When this turns to false, all threads should stop
     virtual bool should_run() const noexcept = 0;
+
+    virtual void request_stop(ExitCode = ExitCode::normal) noexcept = 0;
   };
 
 } // namespace otto::app::services

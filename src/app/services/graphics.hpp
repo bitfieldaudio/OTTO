@@ -9,14 +9,15 @@
 
 namespace otto::app::services {
 
-  struct Graphics : lib::core::Service<Graphics>, lib::core::ServiceAccessor<Runtime> {
+  using namespace lib;
+
+  struct Graphics : core::Service<Graphics> {
     /// Open a window/display drawing the given draw function
     virtual void show(std::function<void(SkCanvas&)>) = 0;
 
-    ///
-    virtual lib::itc::IExecutor& executor() const noexcept = 0;
+    virtual itc::IExecutor& executor() noexcept = 0;
 
-    /// Run the board-specfic graphics service
+    /// The board-specfic graphics service
     [[nodiscard]] static auto make_board();
   };
 

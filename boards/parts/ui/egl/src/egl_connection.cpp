@@ -1,6 +1,6 @@
 #include "./egl_connection.hpp"
 
-#include "services/log_manager.hpp"
+#include "lib/logging.hpp"
 
 namespace otto::board::ui {
 

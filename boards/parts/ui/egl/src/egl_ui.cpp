@@ -18,7 +18,8 @@
 
 #include <json.hpp>
 
-#include "util/concepts.hpp"
+#include "app/services/impl/graphics.hpp"
+#include "lib/util/concepts.hpp"
 
 #include "./egl_connection.hpp"
 #include "./egl_deps.hpp"
@@ -28,8 +29,9 @@
 #define GR_GL_RGBA8                          0x8058
 
 namespace otto::board::ui {
+  using namespace otto::lib;
 
-  void show_ui(util::callable<void(SkCanvas&)> auto&& f)
+  void show_ui(util::callable<bool(SkCanvas&)> auto&& f)
   {
     EGLConnection egl;
     egl.init();
@@ -60,12 +62,14 @@ namespace otto::board::ui {
     float fps = 0;
     duration<double> lastFrameTime;
 
-    while (true) {
+    bool run = true;
+
+    while (run) {
       t0 = clock::now();
 
       // Update and render
       egl.beginFrame();
-      std::invoke(f, *canvas);
+      run = std::invoke(f, *canvas);
       context->flush();
       egl.endFrame();
 
@@ -81,25 +85,27 @@ namespace otto::board::ui {
 
 } // namespace otto::board::ui
 
-#include "testing.t.hpp"
-
 using namespace otto::board::ui;
 
-TEST_CASE ("ui") {
-  show_ui([&](SkCanvas& ctx) {
-    SkPaint paint;
-    paint.setColor(SK_ColorBLACK);
-    ctx.drawRect({0, 0, 320, 240}, paint);
-    paint.setColor(SK_ColorBLUE);
-    paint.setStrokeJoin(SkPaint::kRound_Join);
-    paint.setStrokeCap(SkPaint::kRound_Cap);
-    ctx.drawRect({100, 60, 220, 180}, paint);
-    paint.setColor(SK_ColorWHITE);
-    SkFont font = {SkTypeface::MakeFromFile("data/fonts/Roboto-Medium.ttf"), 20};
-    font.setEmbolden(true);
-    ctx.drawString("OTTO", 20, 20, font, paint);
-  });
-}
+namespace otto::board {
+  struct EGLGraphics final : app::services::GraphicsImpl {
+    EGLGraphics()
+      : thread_([this](auto should_run) {
+          show_ui([this](SkCanvas& ctx) { return loop_function(ctx); });
+          service<app::services::Runtime>().request_stop();
+          exit_thread();
+        })
+    {}
+
+  private:
+    lib::util::thread thread_;
+  };
+
+  lib::core::ServiceHandle<app::services::Graphics> make_graphics_service()
+  {
+    return lib::core::make_handle<EGLGraphics>();
+  }
+} // namespace otto::board
 
 
 // kak: other_file=../include/board/ui/egl_ui.hpp

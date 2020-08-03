@@ -206,16 +206,14 @@ namespace otto::glfw {
 
 namespace otto::board {
   struct GlfwGraphics final : app::services::GraphicsImpl {
-    void show(std::function<void(SkCanvas&)> f) override
-    {
-      thread_ = [this, f = std::move(f)](auto&& should_run) {
-        otto::glfw::SkiaWindow win = {320, 240, "OTTO"};
-        win.show([this, f = std::move(f), should_run](SkCanvas& ctx) {
-          f(ctx);
-          return service<app::services::Runtime>().should_run() && should_run();
-        });
-      };
-    }
+    GlfwGraphics()
+      : thread_([this](auto should_run) {
+          otto::glfw::SkiaWindow win = {320, 240, "OTTO"};
+          win.show([this](SkCanvas& ctx) { return loop_function(ctx); });
+          service<app::services::Runtime>().request_stop();
+          exit_thread();
+        })
+    {}
 
   private:
     lib::util::thread thread_;

@@ -8,13 +8,12 @@
 
 using namespace otto::app;
 using namespace otto::lib;
+using namespace otto::app::services;
 
 TEST_CASE (doctest::skip() * "Graphics test") {
+  auto app = start_app(Graphics::make_board());
   SUBCASE ("Simple graphics and text for 2 second") {
-    auto app = services::start_app(
-      services::Graphics::make_board()
-    );
-    app.service<services::Graphics>().show([&](SkCanvas& ctx) {
+    app.service<Graphics>().show([&](SkCanvas& ctx) {
       SkPaint paint;
       paint.setColor(SK_ColorBLACK);
       ctx.drawPaint(paint);
@@ -29,5 +28,27 @@ TEST_CASE (doctest::skip() * "Graphics test") {
     std::this_thread::sleep_for(std::chrono::seconds(2));
     app.stop();
   }
-  SUBCASE ("Graphics service executor") {}
+}
+
+TEST_CASE ("Graphics service tests (no graphics)") {
+  auto app = start_app(Graphics::make_board());
+  SUBCASE ("Graphics executor") {
+    itc::IExecutor& executor = app.service<Graphics>().executor();
+    int count = 0;
+    executor.execute([&] { count++; });
+    executor.execute([&] {
+      REQUIRE(count == 1);
+      count++;
+    });
+    executor.execute([&] {
+      REQUIRE(count == 2);
+      count++;
+      app.service<Runtime>().request_stop();
+    });
+    for (int i = 0; i < 100; i++) {
+      executor.execute([&] { count++; });
+    }
+    app.stop();
+    REQUIRE(count == 103);
+  }
 }
