@@ -14,11 +14,6 @@ namespace otto::glfw {
 
   using namespace otto::lib;
 
-  using board::ui::Action;
-  using board::ui::Button;
-  using board::ui::Key;
-  using board::ui::Modifiers;
-
   struct Window {
     Window(int width, int height, const std::string& name);
     ~Window() noexcept;

@@ -39,6 +39,10 @@ namespace otto::lib::itc {
   /// call to {@ref execute} to ensure that the function will indeed be called.
   /// This is nowhere near as trivial as it sounds!
   struct QueueExecutor final : IExecutor {
+    ~QueueExecutor() noexcept
+    {
+      notify();
+    }
     /// Enqueue a function
     ///
     /// Can be called from any thread. Functions queued from one thread
@@ -51,18 +55,30 @@ namespace otto::lib::itc {
     /// @return true if any functions were run
     bool run_queued_functions() noexcept;
 
+    /// Run functions from the queue until none are available.
+    ///
+    /// If none are available initially, block and wait for `notify()`
+    /// or `execute` to be called.
+    void run_queued_functions_blocking(std::chrono::system_clock::duration timeout) noexcept;
+
     /// Check if the queue contains any functions.
     ///
     /// If this returns true, `run_queued_functions` will have functions to run
     /// If it returns false, you learned basically nothing.
     bool has_queued() noexcept;
 
+
+    /// Wake up the thread waiting on `run_queued_functions_blocking`
+    void notify() noexcept;
+
   private:
     moodycamel::ConcurrentQueue<std::function<void()>> queue_;
+    std::condition_variable cond_;
+    std::mutex mutex_;
   };
 
   /// Synchronize the exit of multiple threads running `QueueExecutor`s
-  /// 
+  ///
   /// This facilitates multiple threads which mutually enqueue functions onto
   /// eachother to shut down correctly.
   struct ExecutorLockable {
@@ -80,6 +96,7 @@ namespace otto::lib::itc {
 
       /// Run the functions that remain in the queue until all queues are done.
       void exit_synchronized(QueueExecutor& e) noexcept;
+
     private:
       void release() noexcept;
       bool attempt_sync_exit(QueueExecutor& e) noexcept;
@@ -90,7 +107,7 @@ namespace otto::lib::itc {
       friend ExecutorLockable;
     };
 
-    /// Acquire a scoped lock 
+    /// Acquire a scoped lock
     Lock acquire();
 
   private:

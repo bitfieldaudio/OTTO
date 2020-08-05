@@ -207,4 +207,7 @@ namespace otto::lib::util {
   template<typename T, typename... Ts>
   concept one_of = is_one_of_v<T, Ts...>;
 
+  template<typename T>
+  concept AnEnum = std::is_enum_v<T>;
+
 } // namespace otto::util

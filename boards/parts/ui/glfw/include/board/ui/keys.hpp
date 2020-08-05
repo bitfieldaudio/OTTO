@@ -1,16 +1,11 @@
 #pragma once
 
-#include <GL/gl3w.h>
 #include <GLFW/glfw3.h>
-
-//#include "core/input.hpp"
 
 #include "lib/util/algorithm.hpp"
 #include "lib/util/utility.hpp"
 
-namespace otto::board::ui {
-
-  using namespace otto::lib;
+namespace otto::glfw {
 
   /// GLFW keys
   enum struct Key {
@@ -157,36 +152,36 @@ namespace otto::board::ui {
     std::underlying_type_t<Modifier> data = 0;
 
     constexpr Modifiers(std::initializer_list<Modifier> mods = {}) noexcept
-      : data{util::accumulate(mods, 0, [](auto m1, Modifier m2) {
-          return util::underlying(m1) | util::underlying(m2);
+      : data{lib::util::accumulate(mods, 0, [](auto m1, Modifier m2) {
+          return lib::util::underlying(m1) | lib::util::underlying(m2);
         })}
     {}
 
-    constexpr Modifiers(Modifier data) noexcept : data(util::underlying(data)) {}
+    constexpr Modifiers(Modifier data) noexcept : data(lib::util::underlying(data)) {}
 
     constexpr Modifiers(std::underlying_type_t<Modifier> data) noexcept : data(data) {}
 
     constexpr bool is(Modifier m) const noexcept
     {
-      return util::underlying(m) & data;
+      return lib::util::underlying(m) & data;
     }
 
     constexpr void set(Modifier m, bool flag = true) noexcept
     {
       if (flag)
-        data |= util::underlying(m);
+        data |= lib::util::underlying(m);
       else
-        data &= ~util::underlying(m);
+        data &= ~lib::util::underlying(m);
     }
 
     constexpr Modifiers operator&(Modifier m) const noexcept
     {
-      return {data & util::underlying(m)};
+      return {data & lib::util::underlying(m)};
     }
 
     constexpr Modifiers operator|(Modifier m) const noexcept
     {
-      return {data | util::underlying(m)};
+      return {data | lib::util::underlying(m)};
     }
 
     constexpr Modifiers operator|(Modifiers m) const noexcept
@@ -208,7 +203,6 @@ namespace otto::board::ui {
     right = GLFW_MOUSE_BUTTON_RIGHT
   };
 
-  /// Bind keys by implementing this function
-  //void handle_keyevent(Action, Modifiers, Key, core::input::InputHandler&);
-
 } // namespace otto::board::ui
+
+// kak: other_file=../../../src/keys.cpp

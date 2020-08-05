@@ -13,9 +13,11 @@
 #include <iostream>
 #include <thread>
 
+#include "app/services/logic_thread.hpp"
 #include "lib/util/exception.hpp"
 #include "lib/util/thread.hpp"
 
+#include "app/services/controller.hpp"
 #include "app/services/impl/graphics.hpp"
 
 namespace otto::glfw {
@@ -44,7 +46,7 @@ namespace otto::glfw {
   Window::Window(int width, int height, const std::string& name)
   {
     if (!glfwInit()) {
-      // LOG_F(ERROR, "Failed to init GLFW.");
+      LOGF("Failed to init GLFW.");
     }
 
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -64,7 +66,7 @@ namespace otto::glfw {
 
     glfwSetMouseButtonCallback(_glfw_win, [](GLFWwindow* window, int button, int action, int mods) {
       if (auto* win = get_for(window); win && win->mouse_button_callback) {
-        win->mouse_button_callback(board::ui::Button{button}, board::ui::Action{action}, board::ui::Modifiers{mods});
+        win->mouse_button_callback(Button{button}, Action{action}, Modifiers{mods});
       }
     });
 
@@ -76,7 +78,7 @@ namespace otto::glfw {
 
     glfwSetKeyCallback(_glfw_win, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
       if (auto* win = get_for(window); win && win->key_callback) {
-        win->key_callback(board::ui::Action{action}, board::ui::Modifiers{mods}, board::ui::Key{key});
+        win->key_callback(Action{action}, Modifiers{mods}, Key{key});
       }
     });
 
@@ -89,7 +91,10 @@ namespace otto::glfw {
     make_current();
   }
 
-  Window::~Window() noexcept {}
+  Window::~Window() noexcept
+  {
+    glfwDestroyWindow(_glfw_win);
+  }
 
   GLFWwindow* Window::unwrap()
   {
@@ -195,6 +200,7 @@ namespace otto::glfw {
   void SkiaWindow::begin_frame()
   {
     make_current();
+    canvas_->clear(SK_ColorBLACK);
   }
 
   void SkiaWindow::end_frame()
@@ -205,24 +211,63 @@ namespace otto::glfw {
 } // namespace otto::glfw
 
 namespace otto::board {
-  struct GlfwGraphics final : app::services::GraphicsImpl {
+
+  void handle_keyevent(glfw::Action action,
+                       glfw::Modifiers mods,
+                       glfw::Key key,
+                       lib::itc::IExecutor& executor,
+                       app::services::InputHandler& handler);
+
+  using namespace app::services;
+
+  struct GlfwGraphics final : GraphicsImpl,
+                              lib::core::ServiceAccessor<Runtime>,
+                              lib::core::UnsafeServiceAccessor<LogicThread, Controller> {
     GlfwGraphics()
       : thread_([this](auto should_run) {
           otto::glfw::SkiaWindow win = {320, 240, "OTTO"};
+          win.key_callback = [this](glfw::Action a, glfw::Modifiers m, glfw::Key k) { key_callback(a, m, k); };
           win.show([this](SkCanvas& ctx) { return loop_function(ctx); });
-          service<app::services::Runtime>().request_stop();
+          service<Runtime>().request_stop();
           exit_thread();
         })
     {}
 
   private:
+    void key_callback(glfw::Action a, glfw::Modifiers m, glfw::Key k) noexcept;
     lib::util::thread thread_;
   };
 
-  lib::core::ServiceHandle<app::services::Graphics> make_graphics_service()
+  lib::core::ServiceHandle<Graphics> make_graphics()
   {
     return lib::core::make_handle<GlfwGraphics>();
   }
+
+  struct GlfwController final : Controller, lib::core::ServiceAccessor<LogicThread> {
+    void set_input_handler(InputHandler& handler) override
+    {
+      handler_ = &handler;
+    }
+
+  private:
+    friend GlfwGraphics;
+    InputHandler* handler_ = nullptr;
+  };
+
+  void GlfwGraphics::key_callback(glfw::Action a, glfw::Modifiers m, glfw::Key k) noexcept
+  {
+    if (auto* gc = dynamic_cast<GlfwController*>(service_unsafe<Controller>()); //
+        gc != nullptr) {
+      if (gc->handler_ == nullptr) return;
+      handle_keyevent(a, m, k, service_unsafe<LogicThread>()->executor(), *gc->handler_);
+    }
+  }
+
+  lib::core::ServiceHandle<Controller> make_controller()
+  {
+    return lib::core::make_handle<GlfwController>();
+  }
+
 } // namespace otto::board
 
 // kak: other_file=../include/board/ui/glfw_ui.hpp

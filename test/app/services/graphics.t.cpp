@@ -17,7 +17,7 @@ TEST_CASE (doctest::skip() * "Graphics test") {
       SkPaint paint;
       paint.setColor(SK_ColorBLACK);
       ctx.drawPaint(paint);
-      paint.setColor(SK_ColorBLUE);
+      paint.setColor(SK_ColorGREEN);
       paint.setStrokeJoin(SkPaint::kRound_Join);
       paint.setStrokeCap(SkPaint::kRound_Cap);
       ctx.drawRect({0, 0, 20, 20}, paint);

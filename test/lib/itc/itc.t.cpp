@@ -239,3 +239,28 @@ TEST_CASE(doctest::test_suite("itc") * "prod/cons/chan of multiple states") {
   }
 
 }
+
+TEST_CASE("Sample engine") {
+
+  struct State {
+    float frequency = 40.f;
+    float resonance = 0.5;
+
+    bool operator==(const State&) const = default;
+  };
+
+  struct FilterLogic : Producer<State> {
+    void handle_encoder(int steps) {
+      produce(State{.frequency = 0.f, .resonance = 0.4});
+    };
+  };
+
+
+  struct FilterAudio : Consumer<State> {
+
+  };
+
+  struct FilterScreen : Consumer<State> {
+
+  };
+}

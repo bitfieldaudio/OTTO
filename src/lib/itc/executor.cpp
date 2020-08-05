@@ -16,6 +16,7 @@ namespace otto::lib::itc {
   void QueueExecutor::execute(std::function<void()> f) noexcept
   {
     queue_.enqueue(std::move(f));
+    notify();
   }
   bool QueueExecutor::run_queued_functions() noexcept
   {
@@ -30,6 +31,17 @@ namespace otto::lib::itc {
   bool QueueExecutor::has_queued() noexcept
   {
     return queue_.size_approx() > 0;
+  }
+
+  void QueueExecutor::notify() noexcept
+  {
+    cond_.notify_all();
+  }
+
+  void QueueExecutor::run_queued_functions_blocking(std::chrono::system_clock::duration timeout) noexcept
+  {
+    std::unique_lock lock(mutex_);
+    cond_.wait_for(lock, timeout, [this] { return run_queued_functions(); });
   }
 
   // ExecutorLockable
@@ -108,4 +120,5 @@ namespace otto::lib::itc {
       cond_.notify_all();
     }
   }
+
 } // namespace otto::lib::itc

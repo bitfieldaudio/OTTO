@@ -24,12 +24,12 @@ namespace otto::app::services {
 } // namespace otto::app::services
 
 namespace otto::board {
-  lib::core::ServiceHandle<app::services::Graphics> make_graphics_service();
+  lib::core::ServiceHandle<app::services::Graphics> make_graphics();
 }
 
 namespace otto::app::services {
   inline auto Graphics::make_board()
   {
-    return board::make_graphics_service();
+    return board::make_graphics();
   }
 } // namespace otto::app::services

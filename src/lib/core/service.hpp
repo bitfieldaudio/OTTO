@@ -90,13 +90,14 @@ namespace otto::lib::core {
     return detail::active_service_<S>;
   }
 
-  template<AService Service>
-  struct ServiceHandle {
+  template<typename Service>
+  struct [[nodiscard]] ServiceHandle
+  {
     using Constructor = std::function<std::unique_ptr<Service>()>;
 
     ServiceHandle(Constructor c) noexcept : constructor_(std::move(c)) {}
 
-    ServiceHandle(ServiceHandle&&) = default;
+    ServiceHandle(ServiceHandle &&) = default;
 
     ~ServiceHandle() noexcept
     {
@@ -113,14 +114,14 @@ namespace otto::lib::core {
       return service_.get();
     }
 
-    ServiceHandle& start() & noexcept 
+    ServiceHandle& start()& noexcept
     {
       service_ = constructor_();
       set_active_service(*service_);
       return *this;
     }
 
-    ServiceHandle&& start() && noexcept 
+    ServiceHandle&& start()&& noexcept
     {
       start();
       return std::move(*this);
@@ -150,20 +151,51 @@ namespace otto::lib::core {
   }
 
 
+  /// Gain access to the running instance of a service
+  ///
+  /// This class is only a wrapper to make sure service access is declared in the header of a
+  /// component. It asserts that a service implementation is registered for each required service
+  /// **in the constructor!**. This means any component using this to access a service must be
+  /// constructed _after_ the given service. For a version that does not have this requirement,
+  /// see {@ref UnsafeServiceAccessor}.
+  ///
+  /// There are two main ways to use it:
+  ///
+  ///   1. By inheriting from `private ServiceAccessor<Runtime, Graphics, Controller>`.
+  ///      This method is prefered for `final` classes, since it clearly declares the needed services
+  ///      at the top of the class definition.
+  ///      Services can be accessed using `service<Runtime>()`
+  ///      Make sure to use `private` inheritance for maximum effect!
+  ///
+  ///   2. By declaring members of the form `[[no_unique_address]] ServiceAccessor<Runtime> runtime`.
+  ///      This method is prefered whenever the class is intended to be inherited from, to avoid
+  ///      ambiguities when multiple points of the inheritance hierarchy inherit from `ServiceAccessor`.
+  ///      When using this method, make a separate member for each service, and use their `operator->()`
+  ///      to access the service.
+  ///      We recommend marking the member as `private` and `[[no_unique_address]]`. The latter makes
+  ///      sure the member doesn't take up space in your class.
+  ///
+  /// In theory, either method could be used either with single or multiple template argumets, but they
+  /// lend themselves best to the aproaches described above.
   template<AService... Services>
-  struct ServiceAccessor {
+  requires(sizeof...(Services) > 0) //
+    struct ServiceAccessor {
     ServiceAccessor()
     {
       (check_service<Services>(), ...);
     }
 
-  protected:
     template<util::one_of<Services...> S>
     S& service() const noexcept
     {
       OTTO_ASSERT(detail::active_service_<S> != nullptr, "Tried to access service '{}' with none registered",
                   NAMEOF_TYPE(S));
       return *detail::active_service_<S>;
+    }
+
+    auto* operator->() const noexcept requires(sizeof...(Services) == 1)
+    {
+      return &service<Services...>();
     }
 
   private:
@@ -176,7 +208,7 @@ namespace otto::lib::core {
     }
   };
 
-  /// Require access to a service from a type that might be constructed before the service
+  /// Require access to a service from a type that might be constructed before the service.
   template<AService... Services>
   struct UnsafeServiceAccessor {
   protected:
@@ -184,6 +216,15 @@ namespace otto::lib::core {
     S* service_unsafe() const noexcept
     {
       return detail::active_service_<S>;
+    }
+
+    auto* operator->() const noexcept requires(sizeof...(Services) == 1)
+    {
+      return &service_unsafe<Services...>();
+    }
+
+    bool is_active() const noexcept requires(sizeof...(Services) == 1) {
+      return (operator->()) != nullptr;
     }
   };
 } // namespace otto::lib::core

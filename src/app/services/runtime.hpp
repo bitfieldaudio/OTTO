@@ -1,5 +1,6 @@
 #pragma once
 
+#include "lib/chrono.hpp"
 #include "lib/core/service.hpp"
 
 namespace otto::app::services {
@@ -21,6 +22,17 @@ namespace otto::app::services {
     virtual bool should_run() const noexcept = 0;
 
     virtual void request_stop(ExitCode = ExitCode::normal) noexcept = 0;
+
+    /// Block calling thread until we enter the given stage
+    ///
+    /// Returns false if we are in a stage past the given one, and will
+    /// thus never enter it.
+    [[nodiscard]] virtual bool wait_for_stage(Stage s, lib::chrono::duration timeout) noexcept = 0;
+
+    [[nodiscard]] bool wait_for_stage(Stage s) noexcept
+    {
+      return wait_for_stage(s, lib::chrono::duration::zero());
+    }
   };
 
 } // namespace otto::app::services
