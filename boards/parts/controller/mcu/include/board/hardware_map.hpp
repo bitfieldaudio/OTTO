@@ -12,8 +12,10 @@ namespace otto::board::controller {
 
   struct HardwareMap {
     virtual ~HardwareMap() noexcept = default;
-    virtual tl::optional<Key> key_at(std::uint8_t row, std::uint8_t col) = 0;
-    virtual std::uint8_t led_for(Key) = 0;
+    virtual int row_count() const noexcept = 0;
+    virtual int col_count() const noexcept = 0;
+    virtual tl::optional<Key> key_at(std::uint8_t row, std::uint8_t col) const noexcept = 0;
+    virtual std::uint8_t led_for(Key) const noexcept = 0;
   };
 
   template<int Rows, int Cols>
@@ -24,12 +26,21 @@ namespace otto::board::controller {
     static constexpr auto n_rows = 8;
     static constexpr auto n_cols = 7;
 
-    tl::optional<Key> key_at(std::uint8_t row, std::uint8_t col) override
+    int row_count() const noexcept override
+    {
+      return n_rows;
+    }
+    int col_count() const noexcept override
+    {
+      return n_cols;
+    }
+
+    tl::optional<Key> key_at(std::uint8_t row, std::uint8_t col) const noexcept override
     {
       if (row >= n_rows || col >= n_cols) return tl::nullopt;
       return key_codes[row][col];
     }
-    std::uint8_t led_for(Key k) override
+    std::uint8_t led_for(Key k) const noexcept override
     {
       return led_map[k];
     }

@@ -26,14 +26,6 @@ CPMAddPackage(
   GIT_TAG 6.2.0
 )
 
-# We're on version v1.0.0-289-g1999b48 which is not officially tagged in Github
-# so we're going to use the SHA directly.
-CPMAddPackage(
-  NAME GSL
-  GITHUB_REPOSITORY microsoft/GSL
-  GIT_TAG 1999b48a519196711f0d03af3b7eedd49fcc6db3
-)
-
 # We're on version v0.3.0-123-gff67c1a which is not officially tagged in Github
 # so we're going to use the SHA directly.
 CPMAddPackage(

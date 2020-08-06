@@ -21,9 +21,6 @@
 
 namespace otto::services {
   using MSC = MCUI2CController;
-  using Event = MSC::Event;
-  using EventBag = MSC::EventBag;
-  using namespace core::input;
 
   using byte = std::uint8_t;
 

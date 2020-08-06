@@ -10,7 +10,7 @@ namespace otto::lib::util {
 
   using namespace magic_enum;
 
-  template<AnEnum Enum, semiregular T>
+  template<AnEnum Enum, std::semiregular T>
   struct enum_map {
     using value_type = T;
     using iterator = typename std::array<T, enum_count<Enum>()>::iterator;

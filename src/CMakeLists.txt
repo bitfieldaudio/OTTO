@@ -26,7 +26,6 @@ if (NOT OTTO_USE_LIBCXX)
 endif()
 
 target_link_libraries(otto_src PUBLIC external)
-target_link_libraries(otto_src PUBLIC GSL)
 target_link_libraries(otto_src PUBLIC fmt)
 target_link_libraries(otto_src PUBLIC gamma)
 target_link_libraries(otto_src PUBLIC choreograph)

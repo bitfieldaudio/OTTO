@@ -1,18 +1,25 @@
 #pragma once
 
-#include <gsl/span>
+#include <algorithm>
+#include <ranges>
+#include <span>
 #include <tl/optional.hpp>
 
-#include "app/services/controller.hpp"
-#include "lib/util/serial.hpp"
+#include "app/services/logic_thread.hpp"
+#include "lib/chrono.hpp"
 
-#include "RtMidi.h"
+#include "app/services/controller.hpp"
 
 #include "hardware_map.hpp"
 
-namespace otto::services {
+namespace otto::board::controller {
+  using namespace app;
+  using namespace lib;
 
-  using BytesView = gsl::span<const std::uint8_t>;
+  using app::services::Encoder;
+  using app::services::Key;
+
+  using BytesView = std::span<const std::uint8_t>;
 
   enum struct Command : std::uint8_t {
     read_inputs = 0x00,
@@ -20,38 +27,26 @@ namespace otto::services {
     leds_clear = 0x02,
   };
 
-  using HardwareMap = board::controller::Proto1MCUHardwareMap;
-
   struct InputData {
     std::array<std::uint8_t, 8> rows = {0};
     std::array<std::uint8_t, 4> encoders = {0};
 
-    /// @param Callable: `void(Key, bool down_now)`
-    template<typename Callable>
-    void for_updated_keys(const InputData&, Callable&&);
-
-
-    /// @param Callable: `void(Encoder, int steps)`
-    template<typename Callable>
-    void for_updated_encoders(const InputData&, Callable&&);
+    void for_updated_keys(const InputData&, const HardwareMap&, const util::callable<void(Key, bool)> auto&);
+    void for_updated_encoders(const InputData&, const util::callable<void(Encoder, bool)> auto&);
   };
+
+  // TODO: Move
+  inline Proto1MCUHardwareMap default_hw_map;
 
   /// Base class for controllers that communicate with the OTTO MCU over a binary protocol
   ///
   /// Extend this class, implement `queue_message`, and call `handle_response`.
-  struct MCUController : Controller {
-    static constexpr chrono::duration sleep_time = chrono::milliseconds(20);
+  struct MCUController : services::Controller {
+    static constexpr lib::chrono::duration sleep_time = lib::chrono::milliseconds(20);
 
-    template<typename Parser>
-    void add_args(Parser& cli);
-
-    void set_color(LED, LEDColor) override;
-    void flush_leds() override;
-    void clear_leds() override;
-
-    static MCUController& current()
+    void set_input_handler(services::InputHandler& h) override
     {
-      return dynamic_cast<MCUController&>(Controller::current());
+      handler = &h;
     }
 
   protected:
@@ -61,28 +56,29 @@ namespace otto::services {
   private:
     static constexpr std::uint8_t n_encoders = 4;
 
+    [[no_unique_address]] lib::core::ServiceAccessor<services::LogicThread> logic_thread;
+    services::InputHandler* handler = nullptr;
+    HardwareMap* hw_map = &default_hw_map;
     InputData last_input_data;
-    util::enum_map<Key, std::pair<LEDColor, bool>> led_colors;
   };
 
-  template<typename Callable>
-  void InputData::for_updated_keys(const InputData& o, Callable&& f)
+  void InputData::for_updated_keys(const InputData& o,
+                                   const HardwareMap& map,
+                                   const util::callable<void(Key, bool)> auto& f)
   {
-    for (auto r : nano::views::iota(0, HardwareMap::n_rows)) {
-      for (auto c : nano::views::iota(0, HardwareMap::n_cols)) {
+    for (auto r : std::views::iota(0, map.row_count())) {
+      for (auto c : std::views::iota(0, map.col_count())) {
         auto mask = 1 << c;
         bool cur = rows[r] & mask;
         bool prev = o.rows[r] & mask;
         if (cur != prev) {
-          HardwareMap::keyCodes[r][c].map_or_else([&](core::input::Key k) { f(k, cur); },
-                                                  [&] { DLOGI("Invalid key: r{} c{}", r, c); });
+          map.key_at(r, c).map_or_else([&](Key k) { f(k, cur); }, [&] { DLOGI("Invalid key: r{} c{}", r, c); });
         }
       }
     }
   }
 
-  template<typename Callable>
-  void InputData::for_updated_encoders(const InputData& o, Callable&& f)
+  void InputData::for_updated_encoders(const InputData& o, const util::callable<void(Encoder, bool)> auto& f)
   {
     for (int i = 0; i < 4; i++) {
       int cur = encoders[i];
@@ -92,7 +88,11 @@ namespace otto::services {
       if (cur < prev && (prev - cur) > 128) cur += 256;
       if (cur > prev && (cur - prev) > 128) prev += 256;
       // DLOGI("P: {} C: {} steps: {}", sp, sc, cur - prev);
-      f(core::input::Encoder::_from_index(i), cur - prev);
+      if (auto opt = util::enum_cast<app::services::Encoder>(i); opt.has_value()) {
+        f(*opt, cur - prev);
+      } else {
+        LOGE("Got update for non-existant encoder {}", i);
+      }
     }
   }
 
@@ -102,21 +102,25 @@ namespace otto::services {
     auto command = Command::read_inputs;
     // auto command = Command::_from_integral_unchecked(bytes[0]);
     // bytes = bytes.subspan(1, gsl::dynamic_extent);
+    auto& executor = logic_thread->executor();
+    auto send_event = [&](auto event) {
+      executor.execute([event, handler = this->handler] { handler->handle(event); });
+    };
     switch (command) {
       case Command::read_inputs: {
-        OTTO_ASSERT(bytes.size() == HardwareMap::n_rows + n_encoders);
+        OTTO_ASSERT(bytes.size() == hw_map->row_count() + n_encoders);
         InputData input_data;
-        nano::copy(bytes.subspan(0, HardwareMap::n_rows), input_data.rows.begin());
-        nano::copy(bytes.subspan(HardwareMap::n_rows, n_encoders), input_data.encoders.begin());
-        input_data.for_updated_keys(last_input_data, [this](Key k, bool down) {
+        std::ranges::copy(bytes.subspan(0, hw_map->row_count()), input_data.rows.begin());
+        std::ranges::copy(bytes.subspan(hw_map->row_count(), n_encoders), input_data.encoders.begin());
+        input_data.for_updated_keys(last_input_data, *hw_map, [&](Key k, bool down) {
           if (down) {
-            keypress(k);
+            send_event(services::KeyPress{{k}});
           } else {
-            keyrelease(k);
+            send_event(services::KeyRelease{{k}});
           }
         });
-        input_data.for_updated_encoders(last_input_data, [this](core::input::Encoder e, int steps) {
-          encoder({e, steps});
+        input_data.for_updated_encoders(last_input_data, [&](Encoder e, int steps) {
+          send_event(services::EncoderEvent{e, steps});
         });
         last_input_data = input_data;
       } break;
@@ -126,33 +130,4 @@ namespace otto::services {
       }
     }
   }
-
-  inline void MCUController::set_color(LED led, LEDColor color)
-  {
-    auto& [old_c, updated] = led_colors[led.key];
-    if (old_c != color) {
-      old_c = color;
-      updated = true;
-    }
-  }
-
-  inline void MCUController::flush_leds()
-  {
-    for (auto key : Key::_values()) {
-      auto& [color, has_changed] = led_colors[key];
-      if (has_changed) {
-        auto lm = HardwareMap::led_map[key];
-        std::array<std::uint8_t, 6> msg = {
-          static_cast<std::uint8_t>(Command::led_set), lm.string, lm.num, color.r, color.g, color.b};
-        queue_message(msg);
-        has_changed = false;
-      }
-    }
-  }
-
-  inline void MCUController::clear_leds()
-  {
-    queue_message(std::array{static_cast<std::uint8_t>(Command::leds_clear)});
-  }
-
-} // namespace otto::services
+} // namespace otto::board::controller

@@ -19,7 +19,7 @@ namespace otto::lib::util {
     StaticallyBounded(T init_val)
     {
       value_ = std::clamp(static_cast<T>(init_val), static_cast<T>(min), static_cast<T>(max));
-    };
+    }
 
     void operator=(const T in)
     {
@@ -67,14 +67,14 @@ namespace otto::lib::util {
                   const StaticallyBounded<T, min, max>& rhs)
                   {
                     return static_cast<T>(lhs) == static_cast<T>(rhs);
-                  };
+                  }
 
   template<numeric T, int min, int max>
   bool operator!=(const StaticallyBounded<T, min, max>& lhs, 
                   const StaticallyBounded<T, min, max>& rhs)
                   {
                     return static_cast<T>(lhs) != static_cast<T>(rhs);
-                  };                 
+                  }                 
 
   /// A numeric type with dynamic limits
   /// Limits are only enforced on assignments, meaning it should behave like a numeric type T in all other respects
@@ -91,11 +91,11 @@ namespace otto::lib::util {
 
     // Getters and setters for limits
     // New limits can be determined run-time.
-    T min() const {return min_;};
+    T min() const {return min_;}
     void min(const T new_min){
       if (new_min <= max_) min_ = new_min;
     }
-    T max() const {return max_;};
+    T max() const {return max_;}
     void max(const T new_max){
       if (min_ <= new_max) max_ = new_max;
     }
@@ -146,13 +146,13 @@ namespace otto::lib::util {
                   const DynamicallyBounded<T>& rhs)
                   {
                     return static_cast<T>(lhs) == static_cast<T>(rhs) && lhs.min() == rhs.min() && lhs.max() == rhs.max();
-                  };
+                  }
 
   template<numeric T>
   bool operator!=(const DynamicallyBounded<T>& lhs, 
                   const DynamicallyBounded<T>& rhs)
                   {
                     return static_cast<T>(lhs) != static_cast<T>(rhs) || lhs.min() != rhs.min() || lhs.max() != rhs.max();
-                  };
+                  }
 
 } // namespace otto::util
