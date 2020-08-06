@@ -60,10 +60,6 @@ namespace otto::app::services {
   };
 
   struct KeyEvent {
-    enum struct Type {
-      press,
-      release,
-    };
     Key key = {};
   };
 

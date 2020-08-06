@@ -25,8 +25,8 @@
 #include "./egl_deps.hpp"
 #include "board/ui/egl_ui.hpp"
 
-#define GR_GL_RGB8                           0x8051
-#define GR_GL_RGBA8                          0x8058
+#define GR_GL_RGB8 0x8051
+#define GR_GL_RGBA8 0x8058
 
 namespace otto::board::ui {
   using namespace otto::lib;
@@ -69,6 +69,7 @@ namespace otto::board::ui {
 
       // Update and render
       egl.beginFrame();
+      canvas->clear(SK_ColorBLACK);
       run = std::invoke(f, *canvas);
       context->flush();
       egl.endFrame();
@@ -88,9 +89,9 @@ namespace otto::board::ui {
 using namespace otto::board::ui;
 
 namespace otto::board {
-  struct EGLGraphics final : app::services::GraphicsImpl {
+  struct EGLGraphics final : app::services::GraphicsImpl, lib::core::ServiceAccessor<app::services::Runtime> {
     EGLGraphics()
-      : thread_([this](auto should_run) {
+      : thread_([this] {
           show_ui([this](SkCanvas& ctx) { return loop_function(ctx); });
           service<app::services::Runtime>().request_stop();
           exit_thread();
@@ -98,7 +99,7 @@ namespace otto::board {
     {}
 
   private:
-    lib::util::thread thread_;
+    std::jthread thread_;
   };
 
   lib::core::ServiceHandle<app::services::Graphics> make_graphics_service()

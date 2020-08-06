@@ -1,6 +1,6 @@
 #pragma once
 
-#include "lib/util/thread.hpp"
+#include <thread>
 
 #include "app/services/logic_thread.hpp"
 #include "app/services/runtime.hpp"
@@ -17,6 +17,6 @@ namespace otto::app::services {
 
   protected:
     lib::itc::QueueExecutor executor_;
-    lib::util::thread thread_;
+    std::jthread thread_;
   };
 } // namespace otto::app::services

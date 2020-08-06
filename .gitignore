@@ -7,7 +7,7 @@ Makefile
 cmake_install.cmake
 install_manifest.txt
 /.gdb_history
-/compile_commands.json
+/compile_commands.*
 
 deploy_key
 /external/src/gl3w.c

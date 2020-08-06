@@ -11,42 +11,6 @@
 
 namespace otto::lib::util {
 
-  struct thread {
-    thread() = default;
-
-    template<typename Func>
-    thread(Func&& func) : std_thread(std::forward<Func>(func), [this] { return should_run(); })
-    {}
-
-    template<typename Func>
-    thread& operator=(Func&& func)
-    {
-      std_thread = std::thread{std::forward<Func>(func), [this] { return should_run(); }};
-      return *this;
-    }
-
-    ~thread()
-    {
-      if (!std_thread.joinable()) return;
-      join();
-    }
-
-    void join()
-    {
-      _should_run = false;
-      std_thread.join();
-    }
-
-  private:
-    bool should_run() const noexcept
-    {
-      return _should_run;
-    }
-
-    std::atomic_bool _should_run = true;
-    std::thread std_thread;
-  };
-
   struct triggered_thread {
     triggered_thread() = default;
 

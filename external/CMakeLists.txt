@@ -125,6 +125,18 @@ CPMAddPackage(
   VERSION 0.9.4
 )
 
+CPMAddPackage(
+  NAME reflcpp
+  GITHUB_REPOSITORY veselink1/refl-cpp
+  VERSION 0.12.0
+  DOWNLOAD_ONLY YES
+)
+
+if (reflcpp_ADDED)
+  add_library(reflcpp INTERFACE)
+  target_include_directories(reflcpp SYSTEM INTERFACE "${reflcpp_SOURCE_DIR}")
+endif()
+
 # SKIA
 
 find_package(PkgConfig) 

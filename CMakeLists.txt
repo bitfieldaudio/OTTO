@@ -16,9 +16,6 @@ otto_option(ENABLE_ASAN "Enable the adress sanitizer on development builds" OFF)
 otto_option(ENABLE_UBSAN "Enable the undefined behaviour sanitizer on development builds" OFF)
 otto_option(ENABLE_LTO "Enable link time optimization on release builds. Only works on clang" OFF)
 
-otto_option(ENABLE_TIMERS "Enable debugging timers" OFF)
-otto_option(DEBUG_UI "Enable the imgui based debug ui" OFF)
-
 include(cmake/CPM.cmake)
 set(CPM_USE_LOCAL_PACKAGES OFF)
 set(CPM_LOCAL_PACKAGES_ONLY OFF)
@@ -58,6 +55,8 @@ list(REMOVE_ITEM OTTO_BOARDS parts)
 set_property(CACHE OTTO_BOARD PROPERTY STRINGS ${OTTO_BOARDS})
 
 if (OTTO_USE_LIBCXX)
+  message(FATAL_ERROR "libc++ support is currently disabled, until it supports more of c++17/20. "
+    "Use a recent version of libstdc++ instead, by setting OTTO_USE_LIBCXX to false in cmake. ")
   message("Using libc++ instead of libstdc++")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
 endif()

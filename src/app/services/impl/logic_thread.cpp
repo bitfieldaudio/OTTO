@@ -8,8 +8,8 @@ namespace otto::app::services {
   }
 
   LogicThreadImpl::LogicThreadImpl()
-    : thread_([this](auto should_run) {
-        while (runtime->should_run() && should_run()) {
+    : thread_([this] {
+        while (runtime->should_run()) {
           executor_.run_queued_functions_blocking(std::chrono::milliseconds(100));
         }
         // TODO: propper shutdown!

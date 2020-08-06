@@ -3,12 +3,8 @@
 #include <gsl/span>
 #include <tl/optional.hpp>
 
-#include "util/locked.hpp"
-#include "util/thread.hpp"
-
-#include "services/controller.hpp"
-#include "services/log_manager.hpp"
-#include "util/serial.hpp"
+#include "app/services/controller.hpp"
+#include "lib/util/serial.hpp"
 
 #include "RtMidi.h"
 
@@ -18,7 +14,11 @@ namespace otto::services {
 
   using BytesView = gsl::span<const std::uint8_t>;
 
-  BETTER_ENUM(Command, std::uint8_t, read_inputs = 0x00, led_set = 0x01, leds_clear = 0x02);
+  enum struct Command : std::uint8_t {
+    read_inputs = 0x00,
+    led_set = 0x01,
+    leds_clear = 0x02,
+  };
 
   using HardwareMap = board::controller::Proto1MCUHardwareMap;
 
@@ -88,10 +88,10 @@ namespace otto::services {
       int cur = encoders[i];
       int prev = o.encoders[i];
       if (cur == prev) continue;
-      //auto sc = cur, sp = prev;
+      // auto sc = cur, sp = prev;
       if (cur < prev && (prev - cur) > 128) cur += 256;
       if (cur > prev && (cur - prev) > 128) prev += 256;
-      //DLOGI("P: {} C: {} steps: {}", sp, sc, cur - prev);
+      // DLOGI("P: {} C: {} steps: {}", sp, sc, cur - prev);
       f(core::input::Encoder::_from_index(i), cur - prev);
     }
   }

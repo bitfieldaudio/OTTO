@@ -7,6 +7,7 @@
 
 using namespace otto::lib;
 using namespace otto::lib::itc;
+using namespace std::literals;
 
 TEST_CASE ("QueueExecutor") {
   SUBCASE ("queued functions are executed on run_queued_functions") {
@@ -94,7 +95,7 @@ TEST_CASE (doctest::may_fail(true) * "ExecutorLock") {
       std::atomic_int actual_count = 0;
       std::atomic_int expected_count = 0;
 
-      std::array<std::pair<QueueExecutor, std::thread>, 3> threads;
+      std::array<std::pair<QueueExecutor, std::thread>, 10> threads;
     } data;
 
     // Allows recursion easier than lambdas
@@ -131,7 +132,7 @@ TEST_CASE (doctest::may_fail(true) * "ExecutorLock") {
         auto lock = lockable.acquire();
         threads_ready++;
         while (data.run) {
-          e.run_queued_functions();
+          e.run_queued_functions_blocking(10ns);
         }
         lock.exit_synchronized(e);
       });
@@ -139,9 +140,9 @@ TEST_CASE (doctest::may_fail(true) * "ExecutorLock") {
     }
     for (int i = 0; i < 100; i++) inc();
 
-    // Let the threads run for 100ns
     while (threads_ready != data.threads.size())
       ;
+    // Let the threads run for a little while
     std::this_thread::sleep_for(std::chrono::nanoseconds(200));
     data.run = false;
     for (auto& [e, t] : data.threads) t.join();

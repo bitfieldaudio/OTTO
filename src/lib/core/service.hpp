@@ -19,6 +19,7 @@ namespace otto::lib::core {
     IService(const IService&) = delete;
     IService(IService&&) = delete;
     virtual ~IService() = default;
+    virtual std::string_view name() const noexcept = 0;
   };
 
   /// CRTP Base class for services. All services should extend this class.
@@ -38,6 +39,17 @@ namespace otto::lib::core {
   template<typename Derived>
   struct Service : IService {
     using ServiceType = Derived;
+    static constexpr std::string_view service_name = [] {
+      std::string_view sv = NAMEOF_TYPE(Derived);
+      auto pos = sv.find_last_of(':');
+      if (pos != sv.npos) sv = sv.substr(pos + 1);
+      return sv;
+    }();
+
+    std::string_view name() const noexcept override
+    {
+      return service_name;
+    }
   };
 
   template<typename S>
@@ -48,6 +60,14 @@ namespace otto::lib::core {
 
   template<typename SI, typename S>
   concept AServiceImplOf = AServiceImpl<SI>&& AService<S>&& std::is_same_v<typename SI::ServiceType, S>;
+
+  /// Statically get the name of the service from either the service itself, or an implementation
+  template<typename S>
+  requires(AService<S> || AServiceImpl<S>) //
+    constexpr std::string_view service_name() noexcept
+  {
+    return S::service_name;
+  }
 
   namespace detail {
     template<AService S>
@@ -223,7 +243,8 @@ namespace otto::lib::core {
       return &service_unsafe<Services...>();
     }
 
-    bool is_active() const noexcept requires(sizeof...(Services) == 1) {
+    bool is_active() const noexcept requires(sizeof...(Services) == 1)
+    {
       return (operator->()) != nullptr;
     }
   };

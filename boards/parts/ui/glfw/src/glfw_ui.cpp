@@ -224,7 +224,7 @@ namespace otto::board {
                               lib::core::ServiceAccessor<Runtime>,
                               lib::core::UnsafeServiceAccessor<LogicThread, Controller> {
     GlfwGraphics()
-      : thread_([this](auto should_run) {
+      : thread_([this] {
           otto::glfw::SkiaWindow win = {320, 240, "OTTO"};
           win.key_callback = [this](glfw::Action a, glfw::Modifiers m, glfw::Key k) { key_callback(a, m, k); };
           win.show([this](SkCanvas& ctx) { return loop_function(ctx); });
@@ -235,7 +235,7 @@ namespace otto::board {
 
   private:
     void key_callback(glfw::Action a, glfw::Modifiers m, glfw::Key k) noexcept;
-    lib::util::thread thread_;
+    std::jthread thread_;
   };
 
   lib::core::ServiceHandle<Graphics> make_graphics()

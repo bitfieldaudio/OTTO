@@ -28,7 +28,7 @@ namespace otto::lib::itc {
 
   /// The concept that state types need to fulfill.
   template<typename T>
-  concept AState = util::regular<T> && !detail::is_meta_list<T>::value;
+  concept AState = std::regular<T> && !detail::is_meta_list<T>::value;
 
   // Forward Declarations
 

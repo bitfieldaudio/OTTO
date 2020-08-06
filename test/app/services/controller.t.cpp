@@ -28,6 +28,7 @@ TEST_CASE (doctest::skip() * "Controller") {
             case Encoder::yellow: return SK_ColorYELLOW;
             case Encoder::red: return SK_ColorRED;
           }
+          OTTO_UNREACHABLE();
         }();
         n += e.steps;
       }
