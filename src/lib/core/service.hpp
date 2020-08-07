@@ -3,6 +3,7 @@
 #include <memory>
 
 #include <nameof.hpp>
+#include <function2/function2.hpp>
 
 #include "lib/meta.hpp"
 #include "lib/util/concepts.hpp"
@@ -113,7 +114,7 @@ namespace otto::core {
   template<typename Service>
   struct [[nodiscard]] ServiceHandle
   {
-    using Constructor = std::function<std::unique_ptr<Service>()>;
+    using Constructor = fu2::unique_function<std::unique_ptr<Service>()>;
 
     ServiceHandle(Constructor c) noexcept : constructor_(std::move(c)) {}
 
@@ -159,7 +160,7 @@ namespace otto::core {
     }
 
   private:
-    std::function<std::unique_ptr<Service>()> constructor_;
+    Constructor constructor_;
     std::unique_ptr<Service> service_;
   };
 
@@ -167,7 +168,10 @@ namespace otto::core {
   requires(std::is_constructible_v<SI, Args...>)
     [[nodiscard("The returned handle manages the lifetime of the service")]] auto make_handle(Args&&... args)
   {
-    return ServiceHandle<typename SI::ServiceType>([... as = FWD(args)] { return std::make_unique<SI>(FWD(as)...); });
+    return ServiceHandle<typename SI::ServiceType>(   //
+      [... as = FWD(args)]() mutable { //
+        return std::make_unique<SI>(FWD(as)...);
+      });
   }
 
 

@@ -37,6 +37,7 @@ target_link_libraries(otto_src PUBLIC concurrentqueue)
 target_link_libraries(otto_src PUBLIC skia)
 target_link_libraries(otto_src PUBLIC nameof)
 target_link_libraries(otto_src PUBLIC reflcpp)
+target_link_libraries(otto_src PUBLIC function2)
 
 #include("${OTTO_SOURCE_DIR}/cmake/doctest_force_link_static_lib_in_target.cmake")
 #doctest_force_link_static_lib_in_target(otto_exec otto)

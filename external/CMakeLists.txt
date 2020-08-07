@@ -129,6 +129,12 @@ if (reflcpp_ADDED)
   target_include_directories(reflcpp SYSTEM INTERFACE "${reflcpp_SOURCE_DIR}")
 endif()
 
+CPMAddPackage(
+  NAME function2
+  GITHUB_REPOSITORY Naios/function2
+  GIT_TAG 4.1.0
+)
+
 # SKIA
 
 find_package(PkgConfig) 
