@@ -7,7 +7,7 @@
 
 #include "lib/util/type_traits.hpp"
 
-namespace otto::lib::util {
+namespace otto::util {
 
   /// Any arithmetic type except bool
   template<typename T>
@@ -47,4 +47,4 @@ namespace otto::lib::util {
   template<typename T>
   concept AnEnum = std::is_enum_v<T>;
 
-} // namespace otto::lib::util
+} // namespace otto::util

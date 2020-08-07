@@ -1,8 +1,8 @@
 #include "logic_thread.hpp"
 
-namespace otto::app::services {
+namespace otto::services {
 
-  lib::itc::IExecutor& LogicThreadImpl::executor() noexcept
+  itc::IExecutor& LogicThreadImpl::executor() noexcept
   {
     return executor_;
   }
@@ -16,7 +16,7 @@ namespace otto::app::services {
       })
   {}
 
-  lib::core::ServiceHandle<LogicThread> LogicThread::make_default() {
-    return lib::core::make_handle<LogicThreadImpl>();
+  core::ServiceHandle<LogicThread> LogicThread::make_default() {
+    return core::make_handle<LogicThreadImpl>();
   }
-} // namespace otto::app::services
+} // namespace otto::services

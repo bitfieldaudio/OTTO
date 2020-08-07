@@ -6,7 +6,7 @@
 /// \file
 /// General purpose utilities. Mostly lambda magic
 
-namespace otto::lib::util {
+namespace otto::util {
   namespace utility_detail {
     template<typename T>
     struct function_ptr_impl;
@@ -213,4 +213,4 @@ namespace otto::lib::util {
 
   template<typename T>
   auto tag = tag_t<T>();
-} // namespace otto::lib::util
+} // namespace otto::util

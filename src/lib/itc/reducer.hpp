@@ -1,7 +1,7 @@
 #pragma once
 #include "itc.hpp"
 
-namespace otto::lib::itc {
+namespace otto::itc {
 
   template<typename T>
   concept AnEvent = true;
@@ -58,4 +58,4 @@ namespace otto::lib::itc {
     State state_;
   };
 
-} // namespace otto::lib::itc
+} // namespace otto::itc

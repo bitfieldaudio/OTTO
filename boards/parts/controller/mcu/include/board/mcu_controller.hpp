@@ -13,8 +13,6 @@
 #include "hardware_map.hpp"
 
 namespace otto::board::controller {
-  using namespace app;
-  using namespace lib;
 
   using app::services::Encoder;
   using app::services::Key;

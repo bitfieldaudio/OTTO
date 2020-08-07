@@ -2,9 +2,8 @@
 
 #include "app/services/impl/runtime.hpp"
 
-using namespace otto::app;
-using namespace otto::lib;
-using namespace otto::app::services;
+using namespace otto;
+using namespace otto::services;
 
 using Stage = RuntimeImpl::Stage;
 

@@ -6,9 +6,8 @@
 #include <SkFont.h>
 #include <SkTypeface.h>
 
-using namespace otto::app;
-using namespace otto::lib;
-using namespace otto::app::services;
+using namespace otto;
+using namespace otto::services;
 
 TEST_CASE (doctest::skip() * "Graphics test") {
   auto app = start_app(Graphics::make_board());

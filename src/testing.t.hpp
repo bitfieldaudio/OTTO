@@ -152,7 +152,7 @@ namespace doctest {
       if constexpr (sizeof...(Args) == 0) return "{}";
       std::ostringstream o;
       o << "{";
-      otto::lib::util::for_each(
+      otto::util::for_each(
         value, [&](const auto& a) { o << StringMaker<std::decay_t<decltype(a)>>::convert(a) << ", "; });
       auto str = o.str();
       // Chop the extra ", "

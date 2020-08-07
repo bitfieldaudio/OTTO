@@ -5,7 +5,7 @@
 #include <iosfwd>
 #include <iostream>
 
-namespace otto::lib::util {
+namespace otto::util {
 
   /// This class is a non owning reference to a null terminated string.
   struct string_ref {

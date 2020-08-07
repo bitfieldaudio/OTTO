@@ -4,7 +4,7 @@
 
 #include "lib/util/exception.hpp"
 
-namespace otto::lib::logging {
+namespace otto::logging {
 
   using namespace std::literals;
 
@@ -30,7 +30,7 @@ namespace otto::lib::logging {
     if (logFilePath) loguru::add_file(logFilePath, loguru::Append, loguru::Verbosity_MAX);
 
     loguru::set_fatal_handler([](const loguru::Message& message) {
-      if (message.prefix != "Signal: "sv) throw lib::util::exception(std::string(message.prefix) + message.message);
+      if (message.prefix != "Signal: "sv) throw util::exception(std::string(message.prefix) + message.message);
     });
 
     LOGI("Logging initialized");

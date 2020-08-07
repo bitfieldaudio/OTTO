@@ -8,7 +8,7 @@
 
 namespace otto::board::controller {
 
-  using app::services::Key;
+  using services::Key;
 
   struct HardwareMap {
     virtual ~HardwareMap() noexcept = default;
@@ -20,7 +20,7 @@ namespace otto::board::controller {
 
   template<int Rows, int Cols>
   using KeyMatrix = std::array<std::array<tl::optional<Key>, Cols>, Rows>;
-  using LedSequence = lib::util::enum_map<Key, std::uint8_t>;
+  using LedSequence = util::enum_map<Key, std::uint8_t>;
 
   struct Proto1MCUHardwareMap final : HardwareMap {
     static constexpr auto n_rows = 8;

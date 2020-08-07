@@ -4,9 +4,9 @@
 
 #include "app/services/graphics.hpp"
 
-namespace otto::app::services {
+namespace otto::services {
 
-  using namespace lib;
+
 
   struct GraphicsImpl : Graphics {
     /// Open a window/display drawing the given draw function
@@ -37,4 +37,4 @@ namespace otto::app::services {
     itc::QueueExecutor executor_;
   };
 
-} // namespace otto::app::services
+} // namespace otto::services

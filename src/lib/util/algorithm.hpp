@@ -10,9 +10,9 @@
 #include "lib/util/type_traits.hpp"
 
 /// \file
-/// This file contains the \ref otto::lib::util::algorithm namespace
+/// This file contains the \ref otto::util::algorithm namespace
 
-namespace otto::lib::util {
+namespace otto::util {
 
   /// Inline namespace with algorithms similar to the ones found in the standard `<algorithm>`
   /// header.
@@ -20,8 +20,8 @@ namespace otto::lib::util {
   /// Also, this namespace includes container-based wrappers for all standard algorithms. For more
   /// on those, see \ref container_algos
   ///
-  /// \attention `otto::lib::util::algorithm` is an inline namespace, meaning all members can and should
-  /// be accessed directly from the `otto::lib::util` namespace i.e. as `nano::find_if(...)`, not
+  /// \attention `otto::util::algorithm` is an inline namespace, meaning all members can and should
+  /// be accessed directly from the `otto::util` namespace i.e. as `nano::find_if(...)`, not
   /// `util::algorithm::find_if(...)`. It is only a separate namespace for clarification of
   /// documentation and name resolution.
   inline namespace algorithm {
@@ -262,4 +262,4 @@ namespace otto::lib::util {
     }
   } // namespace algorithm
 
-} // namespace otto::lib::util
+} // namespace otto::util

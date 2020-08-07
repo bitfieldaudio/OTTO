@@ -2,12 +2,13 @@
 
 #include <concurrentqueue.h>
 #include <condition_variable>
+#include <functional>
 #include <mutex>
 #include <vector>
 
 #include "lib/util/utility.hpp"
 
-namespace otto::lib::itc {
+namespace otto::itc {
 
   struct IExecutor {
     virtual ~IExecutor() = default;
@@ -120,4 +121,4 @@ namespace otto::lib::itc {
     std::vector<Lock*> locks_;
   };
 
-} // namespace otto::lib::itc
+} // namespace otto::itc

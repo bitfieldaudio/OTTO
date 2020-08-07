@@ -2,7 +2,7 @@
 
 #include "lib/core/service.hpp"
 
-namespace otto::app {
+namespace otto {
 
   struct Config {
     virtual ~Config() = default;
@@ -13,7 +13,7 @@ namespace otto::app {
 
   namespace services {
 
-    struct ConfigManager : lib::core::Service<ConfigManager> {
+    struct ConfigManager : core::Service<ConfigManager> {
       template<AConfig Conf>
       void register_config() noexcept
       {

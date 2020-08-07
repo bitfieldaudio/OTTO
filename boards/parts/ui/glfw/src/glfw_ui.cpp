@@ -215,14 +215,14 @@ namespace otto::board {
   void handle_keyevent(glfw::Action action,
                        glfw::Modifiers mods,
                        glfw::Key key,
-                       lib::itc::IExecutor& executor,
-                       app::services::InputHandler& handler);
+                       itc::IExecutor& executor,
+                       services::InputHandler& handler);
 
-  using namespace app::services;
+  using namespace services;
 
   struct GlfwGraphics final : GraphicsImpl,
-                              lib::core::ServiceAccessor<Runtime>,
-                              lib::core::UnsafeServiceAccessor<LogicThread, Controller> {
+                              core::ServiceAccessor<Runtime>,
+                              core::UnsafeServiceAccessor<LogicThread, Controller> {
     GlfwGraphics()
       : thread_([this] {
           otto::glfw::SkiaWindow win = {320, 240, "OTTO"};
@@ -238,12 +238,12 @@ namespace otto::board {
     std::jthread thread_;
   };
 
-  lib::core::ServiceHandle<Graphics> make_graphics()
+  core::ServiceHandle<Graphics> make_graphics()
   {
-    return lib::core::make_handle<GlfwGraphics>();
+    return core::make_handle<GlfwGraphics>();
   }
 
-  struct GlfwController final : Controller, lib::core::ServiceAccessor<LogicThread> {
+  struct GlfwController final : Controller, core::ServiceAccessor<LogicThread> {
     void set_input_handler(InputHandler& handler) override
     {
       handler_ = &handler;
@@ -263,9 +263,9 @@ namespace otto::board {
     }
   }
 
-  lib::core::ServiceHandle<Controller> make_controller()
+  core::ServiceHandle<Controller> make_controller()
   {
-    return lib::core::make_handle<GlfwController>();
+    return core::make_handle<GlfwController>();
   }
 
 } // namespace otto::board

@@ -1,8 +1,7 @@
 #include "lib/itc/reducer.hpp"
 #include "testing.t.hpp"
 
-using namespace otto::lib;
-using namespace otto::lib::itc;
+using namespace otto::itc;
 
 TEST_CASE (doctest::test_suite("itc") * "Reducer") {
   struct State {

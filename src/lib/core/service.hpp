@@ -9,7 +9,7 @@
 
 #include "lib/logging.hpp"
 
-namespace otto::lib::core {
+namespace otto::core {
 
   /// Base class of all services. Don't extend this directly, use `Service` instead
   ///
@@ -248,4 +248,4 @@ namespace otto::lib::core {
       return (operator->()) != nullptr;
     }
   };
-} // namespace otto::lib::core
+} // namespace otto::core

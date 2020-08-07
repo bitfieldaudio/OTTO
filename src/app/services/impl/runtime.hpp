@@ -6,7 +6,7 @@
 
 #include "lib/util/utility.hpp"
 
-namespace otto::app::services {
+namespace otto::services {
 
   struct RuntimeImpl : Runtime {
     Stage stage() const noexcept override;
@@ -18,24 +18,24 @@ namespace otto::app::services {
 
     void request_stop(ExitCode) noexcept override;
 
-    [[nodiscard]] bool wait_for_stage(Stage s, lib::chrono::duration timeout) noexcept override;
+    [[nodiscard]] bool wait_for_stage(Stage s, chrono::duration timeout) noexcept override;
 
     void set_stage(Stage s) noexcept;
 
   private:
-    std::atomic<std::underlying_type_t<Stage>> stage_ = lib::util::underlying(Stage::initializing);
+    std::atomic<std::underlying_type_t<Stage>> stage_ = util::underlying(Stage::initializing);
     std::mutex mutex_;
     std::condition_variable cond_;
   };
-  static_assert(lib::core::AServiceImplOf<RuntimeImpl, Runtime>);
+  static_assert(core::AServiceImplOf<RuntimeImpl, Runtime>);
 
 
   /// Utility type used to manage service lifetimes.
   ///
   /// Start one with `start_app`.
-  template<lib::core::AService... Ss>
+  template<core::AService... Ss>
   struct Application {
-    Application(std::tuple<lib::core::ServiceHandle<Ss>...> t) noexcept : services_(std::move(t)) {}
+    Application(std::tuple<core::ServiceHandle<Ss>...> t) noexcept : services_(std::move(t)) {}
 
     Application(Application&&) = default;
 
@@ -45,16 +45,16 @@ namespace otto::app::services {
     }
 
     /// Get one of the running services
-    template<lib::util::one_of<Ss...> Service>
+    template<util::one_of<Ss...> Service>
     Service& service()
     {
-      return std::get<lib::core::ServiceHandle<Service>>(services_).service();
+      return std::get<core::ServiceHandle<Service>>(services_).service();
     }
 
     /// Start all services, and set `service<Runtime>().stage()` to `running`
     Application& start() & noexcept
     {
-      lib::util::for_each(services_, [this](auto& handle) { handle.start(); });
+      util::for_each(services_, [this](auto& handle) { handle.start(); });
       dynamic_cast<RuntimeImpl&>(service<Runtime>()).set_stage(Runtime::Stage::running);
       return *this;
     }
@@ -70,26 +70,26 @@ namespace otto::app::services {
     void stop() noexcept
     {
       dynamic_cast<RuntimeImpl&>(service<Runtime>()).set_stage(Runtime::Stage::stopping);
-      lib::util::reverse_for_each(services_, [this](auto& handle) { handle.stop(); });
+      util::reverse_for_each(services_, [this](auto& handle) { handle.stop(); });
     }
 
     /// Wait for application to be stopped, with an optional timeout
-    bool wait_for_stop(lib::chrono::duration timeout = lib::chrono::duration::zero()) noexcept
+    bool wait_for_stop(chrono::duration timeout = chrono::duration::zero()) noexcept
     {
       return service<Runtime>().wait_for_stage(Runtime::Stage::stopping, timeout);
     }
 
   private:
-    std::tuple<lib::core::ServiceHandle<Ss>...> services_;
+    std::tuple<core::ServiceHandle<Ss>...> services_;
   };
 
-  template<lib::core::AService... Ss>
+  template<core::AService... Ss>
   [[nodiscard("The resulting handle stops the app in the destructor")]] Application<Runtime, Ss...> start_app(
-    lib::core::ServiceHandle<Ss>... service_handles)
+    core::ServiceHandle<Ss>... service_handles)
   {
-    auto app = Application{std::tuple(lib::core::make_handle<RuntimeImpl>(), std::move(service_handles)...)};
+    auto app = Application{std::tuple(core::make_handle<RuntimeImpl>(), std::move(service_handles)...)};
     app.start();
     return app;
   }
 
-} // namespace otto::app::services
+} // namespace otto::services

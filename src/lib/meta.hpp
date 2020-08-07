@@ -25,7 +25,7 @@
 /// metafunctions
 ///
 /// For more information, take a look at the test file
-namespace otto::lib::meta {
+namespace otto::meta {
 
   /// Get return type from metafunction
   template<typename MetaFunc>

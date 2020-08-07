@@ -16,7 +16,7 @@
 /// State is intended to be little more than a simple `POD`-style struct, and it is up
 /// to the individual consumers to determine which members have actually changed if they
 /// require so.
-namespace otto::lib::itc {
+namespace otto::itc {
 
   namespace detail {
     template<typename T>

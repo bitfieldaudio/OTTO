@@ -8,9 +8,8 @@
 
 #include "lib/util/with_limits.hpp"
 
-using namespace otto::app;
-using namespace otto::lib;
-using namespace otto::app::services;
+using namespace otto;
+using namespace otto::services;
 
 TEST_CASE (doctest::skip() * "Controller") {
   SUBCASE ("Controller with graphics") {

@@ -12,8 +12,6 @@
 struct GLFWwindow;
 namespace otto::glfw {
 
-  using namespace otto::lib;
-
   struct Window {
     Window(int width, int height, const std::string& name);
     ~Window() noexcept;

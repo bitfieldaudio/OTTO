@@ -5,8 +5,7 @@
 
 #include <thread>
 
-using namespace otto::lib;
-using namespace otto::lib::itc;
+using namespace otto::itc;
 using namespace std::literals;
 
 TEST_CASE ("QueueExecutor") {

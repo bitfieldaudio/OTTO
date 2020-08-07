@@ -5,12 +5,12 @@
 
 #include "lib/util/macros.hpp"
 
-namespace otto::lib::logging {
+namespace otto::logging {
   void init(int argc = 0, char** argv = nullptr, bool enable_console = true, const char* logFilePath = nullptr);
 
   /// Set how the current thread appears in the log
   void set_thread_name(const std::string& name);
-}
+} // namespace otto::logging
 
 /// Shorthand to the loguru macro LOG_F(INFO, ...)
 #define LOGI(...) VLOG_F(loguru::Verbosity_INFO, __VA_ARGS__)
@@ -84,7 +84,7 @@ namespace otto::lib::logging {
 /// Shorthand to the loguru macro DLOG_SCOPE_F(FATAL, ...)
 #define DLOGF_SCOPE(...) DVLOG_SCOPE_F(loguru::Verbosity_FATAL, __VA_ARGS__)
 
-namespace otto::lib::detail {
+namespace otto::detail {
   template<typename... Args>
   inline void handle_assert(const char* file,
                             int line_number,
@@ -109,14 +109,13 @@ namespace otto::lib::detail {
       LOGF("Unreachable code reached at {}:{}", file, line_number);
     }
   }
-} // namespace otto::lib::detail
+} // namespace otto::detail
 
 #ifdef NDEBUG
 #define OTTO_ASSERT(Expr, ...) (void)
 #define OTTO_UNREACHABLE(...) (void)
 #else
-#define OTTO_ASSERT(Expr, ...)                                                                                         \
-  ::otto::lib::detail::handle_assert(__FILE__, __LINE__, #Expr, Expr __VA_OPT__(, ) __VA_ARGS__)
+#define OTTO_ASSERT(Expr, ...) ::otto::detail::handle_assert(__FILE__, __LINE__, #Expr, Expr __VA_OPT__(, ) __VA_ARGS__)
 #define OTTO_UNREACHABLE(...)                                                                                          \
-  (::otto::lib::detail::handle_unreachable(__FILE__, __LINE__ __VA_OPT__(, ) __VA_ARGS__), __builtin_unreachable())
+  (::otto::detail::handle_unreachable(__FILE__, __LINE__ __VA_OPT__(, ) __VA_ARGS__), __builtin_unreachable())
 #endif

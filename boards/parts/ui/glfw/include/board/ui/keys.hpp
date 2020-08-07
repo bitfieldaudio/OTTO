@@ -152,36 +152,36 @@ namespace otto::glfw {
     std::underlying_type_t<Modifier> data = 0;
 
     constexpr Modifiers(std::initializer_list<Modifier> mods = {}) noexcept
-      : data{lib::util::accumulate(mods, 0, [](auto m1, Modifier m2) {
-          return lib::util::underlying(m1) | lib::util::underlying(m2);
+      : data{util::accumulate(mods, 0, [](auto m1, Modifier m2) {
+          return util::underlying(m1) | util::underlying(m2);
         })}
     {}
 
-    constexpr Modifiers(Modifier data) noexcept : data(lib::util::underlying(data)) {}
+    constexpr Modifiers(Modifier data) noexcept : data(util::underlying(data)) {}
 
     constexpr Modifiers(std::underlying_type_t<Modifier> data) noexcept : data(data) {}
 
     constexpr bool is(Modifier m) const noexcept
     {
-      return lib::util::underlying(m) & data;
+      return util::underlying(m) & data;
     }
 
     constexpr void set(Modifier m, bool flag = true) noexcept
     {
       if (flag)
-        data |= lib::util::underlying(m);
+        data |= util::underlying(m);
       else
-        data &= ~lib::util::underlying(m);
+        data &= ~util::underlying(m);
     }
 
     constexpr Modifiers operator&(Modifier m) const noexcept
     {
-      return {data & lib::util::underlying(m)};
+      return {data & util::underlying(m)};
     }
 
     constexpr Modifiers operator|(Modifier m) const noexcept
     {
-      return {data | lib::util::underlying(m)};
+      return {data | util::underlying(m)};
     }
 
     constexpr Modifiers operator|(Modifiers m) const noexcept

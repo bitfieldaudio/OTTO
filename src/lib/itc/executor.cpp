@@ -9,7 +9,7 @@
 #undef DLOGI
 #define DLOGI(...)
 
-namespace otto::lib::itc {
+namespace otto::itc {
 
   // QueueExecutor
 
@@ -105,7 +105,7 @@ namespace otto::lib::itc {
       }
     }
     return true;
-  } // namespace otto::lib::itc
+  } // namespace otto::itc
 
   void ExecutorLockable::notify_next()
   {
@@ -121,4 +121,4 @@ namespace otto::lib::itc {
     }
   }
 
-} // namespace otto::lib::itc
+} // namespace otto::itc

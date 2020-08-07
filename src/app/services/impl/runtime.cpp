@@ -1,6 +1,6 @@
 #include "runtime.hpp"
 
-namespace otto::app::services {
+namespace otto::services {
 
   using Stage = Runtime::Stage;
 
@@ -26,14 +26,14 @@ namespace otto::app::services {
     set_stage(Stage::stopping);
   }
 
-  bool RuntimeImpl::wait_for_stage(Stage s, lib::chrono::duration timeout) noexcept
+  bool RuntimeImpl::wait_for_stage(Stage s, chrono::duration timeout) noexcept
   {
     std::unique_lock lock(mutex_);
-    if (timeout == lib::chrono::duration::zero()) {
-      cond_.wait(lock, [&] { return stage_ >= lib::util::underlying(s); });
+    if (timeout == chrono::duration::zero()) {
+      cond_.wait(lock, [&] { return stage_ >= util::underlying(s); });
     } else {
-      cond_.wait_for(lock, timeout, [&] { return stage_ >= lib::util::underlying(s); });
+      cond_.wait_for(lock, timeout, [&] { return stage_ >= util::underlying(s); });
     }
-    return stage_ == lib::util::underlying(s);
+    return stage_ == util::underlying(s);
   }
-} // namespace otto::app::services
+} // namespace otto::services

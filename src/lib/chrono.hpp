@@ -2,7 +2,7 @@
 
 #include <chrono>
 
-namespace otto::lib::chrono {
+namespace otto::chrono {
 
   using namespace std::chrono;
 
@@ -22,4 +22,4 @@ namespace otto::lib::chrono {
     return time_point(duration_cast<duration>(seconds(t.tv_sec) + nanoseconds(t.tv_nsec)));
   }
 
-} // namespace otto::lib::chrono
+} // namespace otto::chrono

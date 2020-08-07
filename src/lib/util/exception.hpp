@@ -6,7 +6,7 @@
 
 #include <fmt/format.h>
 
-namespace otto::lib::util {
+namespace otto::util {
 
   struct exception : public std::exception {
     /// String formatting constructor. Models `fmt::format`
@@ -104,4 +104,4 @@ namespace otto::lib::util {
 
   template<typename DataRef, typename... Args>
   as_exception(DataRef&& dr, const std::string& message, Args&&... args) -> as_exception<std::decay_t<DataRef>>;
-} // namespace otto::lib::util
+} // namespace otto::util

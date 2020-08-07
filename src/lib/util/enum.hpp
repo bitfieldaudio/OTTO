@@ -6,7 +6,7 @@
 
 #include "lib/util/concepts.hpp"
 
-namespace otto::lib::util {
+namespace otto::util {
 
   using namespace magic_enum;
 
@@ -101,4 +101,4 @@ namespace otto::lib::util {
 
     std::array<T, enum_count<Enum>()> _data = {};
   };
-} // namespace otto::lib::util
+} // namespace otto::util

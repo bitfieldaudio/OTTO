@@ -7,7 +7,7 @@
 
 #include "lib/util/macros.hpp"
 
-namespace otto::lib::util {
+namespace otto::util {
   /// Any arithmetic type except bool
   template<typename T, typename Enable = void>
   struct is_number : std::false_type {};

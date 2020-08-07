@@ -1,8 +1,8 @@
 #include "graphics.hpp"
 
-namespace otto::app::services {
+namespace otto::services {
 
-  lib::itc::IExecutor& GraphicsImpl::executor() noexcept
+  itc::IExecutor& GraphicsImpl::executor() noexcept
   {
     return executor_;
   }
@@ -23,4 +23,4 @@ namespace otto::app::services {
   {
     executor_.run_queued_functions();
   }
-} // namespace otto::app::services
+} // namespace otto::services

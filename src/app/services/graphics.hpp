@@ -7,9 +7,9 @@
 
 #include "runtime.hpp"
 
-namespace otto::app::services {
+namespace otto::services {
 
-  using namespace lib;
+
 
   struct Graphics : core::Service<Graphics> {
     /// Open a window/display drawing the given draw function
@@ -21,15 +21,15 @@ namespace otto::app::services {
     [[nodiscard]] static auto make_board();
   };
 
-} // namespace otto::app::services
+} // namespace otto::services
 
 namespace otto::board {
-  lib::core::ServiceHandle<app::services::Graphics> make_graphics();
+  core::ServiceHandle<services::Graphics> make_graphics();
 }
 
-namespace otto::app::services {
+namespace otto::services {
   inline auto Graphics::make_board()
   {
     return board::make_graphics();
   }
-} // namespace otto::app::services
+} // namespace otto::services

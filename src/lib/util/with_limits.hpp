@@ -3,7 +3,7 @@
 
 #include "testing.t.hpp"
 
-namespace otto::lib::util {
+namespace otto::util {
 
   /// A numeric type with static limits
   /// Limits are only enforced on assignments, meaning it should behave like a numeric type T in all other respects
@@ -35,7 +35,7 @@ namespace otto::lib::util {
     }
     void operator*=(const T in)
     {
-      operator=(this->value_ * in);
+      operator=(this->value_* in);
     }
     void operator/=(const T in)
     {
@@ -63,18 +63,16 @@ namespace otto::lib::util {
   // Comparison
   // Note: I think it is best if we don't allow comparisons with other StaticallyBounded<> with different limits.
   template<numeric T, int min, int max>
-  bool operator==(const StaticallyBounded<T, min, max>& lhs, 
-                  const StaticallyBounded<T, min, max>& rhs)
-                  {
-                    return static_cast<T>(lhs) == static_cast<T>(rhs);
-                  }
+  bool operator==(const StaticallyBounded<T, min, max>& lhs, const StaticallyBounded<T, min, max>& rhs)
+  {
+    return static_cast<T>(lhs) == static_cast<T>(rhs);
+  }
 
   template<numeric T, int min, int max>
-  bool operator!=(const StaticallyBounded<T, min, max>& lhs, 
-                  const StaticallyBounded<T, min, max>& rhs)
-                  {
-                    return static_cast<T>(lhs) != static_cast<T>(rhs);
-                  }                 
+  bool operator!=(const StaticallyBounded<T, min, max>& lhs, const StaticallyBounded<T, min, max>& rhs)
+  {
+    return static_cast<T>(lhs) != static_cast<T>(rhs);
+  }
 
   /// A numeric type with dynamic limits
   /// Limits are only enforced on assignments, meaning it should behave like a numeric type T in all other respects
@@ -84,19 +82,28 @@ namespace otto::lib::util {
     // You must initialize with default value and limits
     DynamicallyBounded() = delete;
     // For construction, max is changed if min is largest.
-    DynamicallyBounded(T init_val, T min, T max) : min_(min), max_(max) {
+    DynamicallyBounded(T init_val, T min, T max) : min_(min), max_(max)
+    {
       max_ = std::max(min_, max_);
       value_ = std::clamp(init_val, min, max);
-    } 
+    }
 
     // Getters and setters for limits
     // New limits can be determined run-time.
-    T min() const {return min_;}
-    void min(const T new_min){
+    T min() const
+    {
+      return min_;
+    }
+    void min(const T new_min)
+    {
       if (new_min <= max_) min_ = new_min;
     }
-    T max() const {return max_;}
-    void max(const T new_max){
+    T max() const
+    {
+      return max_;
+    }
+    void max(const T new_max)
+    {
       if (min_ <= new_max) max_ = new_max;
     }
 
@@ -114,7 +121,7 @@ namespace otto::lib::util {
     }
     void operator*=(const T in)
     {
-      operator=(this->value_ * in);
+      operator=(this->value_* in);
     }
     void operator/=(const T in)
     {
@@ -142,17 +149,15 @@ namespace otto::lib::util {
 
   // Comparison
   template<numeric T>
-  bool operator==(const DynamicallyBounded<T>& lhs, 
-                  const DynamicallyBounded<T>& rhs)
-                  {
-                    return static_cast<T>(lhs) == static_cast<T>(rhs) && lhs.min() == rhs.min() && lhs.max() == rhs.max();
-                  }
+  bool operator==(const DynamicallyBounded<T>& lhs, const DynamicallyBounded<T>& rhs)
+  {
+    return static_cast<T>(lhs) == static_cast<T>(rhs) && lhs.min() == rhs.min() && lhs.max() == rhs.max();
+  }
 
   template<numeric T>
-  bool operator!=(const DynamicallyBounded<T>& lhs, 
-                  const DynamicallyBounded<T>& rhs)
-                  {
-                    return static_cast<T>(lhs) != static_cast<T>(rhs) || lhs.min() != rhs.min() || lhs.max() != rhs.max();
-                  }
+  bool operator!=(const DynamicallyBounded<T>& lhs, const DynamicallyBounded<T>& rhs)
+  {
+    return static_cast<T>(lhs) != static_cast<T>(rhs) || lhs.min() != rhs.min() || lhs.max() != rhs.max();
+  }
 
 } // namespace otto::util

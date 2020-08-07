@@ -13,7 +13,7 @@ int main(int argc, char* argv[])
   using namespace otto;
   // fs::remove_all(test::dir);
   // fs::create_directories(test::dir);
-  lib::logging::init();
+  logging::init();
 
   doctest::Context context;
 

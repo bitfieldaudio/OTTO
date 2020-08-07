@@ -29,7 +29,6 @@
 #define GR_GL_RGBA8 0x8058
 
 namespace otto::board::ui {
-  using namespace otto::lib;
 
   void show_ui(util::callable<bool(SkCanvas&)> auto&& f)
   {
@@ -89,11 +88,11 @@ namespace otto::board::ui {
 using namespace otto::board::ui;
 
 namespace otto::board {
-  struct EGLGraphics final : app::services::GraphicsImpl, lib::core::ServiceAccessor<app::services::Runtime> {
+  struct EGLGraphics final : services::GraphicsImpl, core::ServiceAccessor<services::Runtime> {
     EGLGraphics()
       : thread_([this] {
           show_ui([this](SkCanvas& ctx) { return loop_function(ctx); });
-          service<app::services::Runtime>().request_stop();
+          service<services::Runtime>().request_stop();
           exit_thread();
         })
     {}
@@ -102,9 +101,9 @@ namespace otto::board {
     std::jthread thread_;
   };
 
-  lib::core::ServiceHandle<app::services::Graphics> make_graphics_service()
+  core::ServiceHandle<services::Graphics> make_graphics_service()
   {
-    return lib::core::make_handle<EGLGraphics>();
+    return core::make_handle<EGLGraphics>();
   }
 } // namespace otto::board
 

@@ -5,8 +5,7 @@
 
 #include "app/services/config.hpp"
 
-using namespace otto::app;
-using namespace otto::lib;
+using namespace otto;
 
 struct TestConfig : Config {
   int option1 = 4;
@@ -16,7 +15,7 @@ struct TestConfig : Config {
 REFL_AUTO(type(TestConfig), field(option1), field(option2));
 
 TEST_CASE ("Config service") {
-  auto app = services::start_app(core::make_handle<otto::app::services::ConfigManager>());
+  auto app = services::start_app(core::make_handle<otto::services::ConfigManager>());
   core::ServiceAccessor<services::ConfigManager> confman;
   //TestConfig& tc1 = confman->register_config<TestConfig>();
 }

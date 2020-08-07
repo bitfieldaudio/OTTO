@@ -9,7 +9,7 @@
 
 #include "lib/chrono.hpp"
 
-namespace otto::lib::util {
+namespace otto::util {
 
   struct triggered_thread {
     triggered_thread() = default;
@@ -139,4 +139,4 @@ namespace otto::lib::util {
     std::thread std_thread;
   };
 
-} // namespace otto::lib::util
+} // namespace otto::util

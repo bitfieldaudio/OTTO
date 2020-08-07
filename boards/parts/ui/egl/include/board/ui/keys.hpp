@@ -2,7 +2,7 @@
 
 #include <linux/input-event-codes.h>
 
-#include "util/algorithm.hpp"
+#include "lib/util/algorithm.hpp"
 
 namespace otto::board::ui {
 

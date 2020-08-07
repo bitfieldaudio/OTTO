@@ -3,10 +3,10 @@
 #include "lib/chrono.hpp"
 #include "lib/core/service.hpp"
 
-namespace otto::app::services {
+namespace otto::services {
 
   /// Manages the runtime of the application
-  struct Runtime : lib::core::Service<Runtime> {
+  struct Runtime : core::Service<Runtime> {
     enum struct ExitCode { normal };
     enum struct Stage {
       initializing,
@@ -27,12 +27,12 @@ namespace otto::app::services {
     ///
     /// Returns false if we are in a stage past the given one, and will
     /// thus never enter it.
-    [[nodiscard]] virtual bool wait_for_stage(Stage s, lib::chrono::duration timeout) noexcept = 0;
+    [[nodiscard]] virtual bool wait_for_stage(Stage s, chrono::duration timeout) noexcept = 0;
 
     [[nodiscard]] bool wait_for_stage(Stage s) noexcept
     {
-      return wait_for_stage(s, lib::chrono::duration::zero());
+      return wait_for_stage(s, chrono::duration::zero());
     }
   };
 
-} // namespace otto::app::services
+} // namespace otto::services

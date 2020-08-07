@@ -7,26 +7,26 @@ namespace otto::board {
   void handle_keyevent(glfw::Action action,
                        glfw::Modifiers mods,
                        glfw::Key key,
-                       lib::itc::IExecutor& executor,
-                       app::services::InputHandler& handler)
+                       itc::IExecutor& executor,
+                       services::InputHandler& handler)
   {
     using glfw::Action;
     using glfw::Key;
     using glfw::Modifier;
-    using OKey = app::services::Key;
-    using Encoder = app::services::Encoder;
+    using OKey = services::Key;
+    using Encoder = services::Encoder;
 
     auto send_event = [&](auto event) { executor.execute([event, &handler] { handler.handle(event); }); };
 
     auto send_key = [&, action](OKey k, bool repeat = false) {
       if (action == Action::press || (action == Action::repeat && repeat))
-        send_event(app::services::KeyPress{k});
+        send_event(services::KeyPress{k});
       else if (action == Action::release)
-        send_event(app::services::KeyRelease{k});
+        send_event(services::KeyRelease{k});
     };
 
     auto send_encoder = [&, action](Encoder rot, int n) {
-      if (action == Action::press || (action == Action::repeat)) send_event(app::services::EncoderEvent{rot, n});
+      if (action == Action::press || (action == Action::repeat)) send_event(services::EncoderEvent{rot, n});
     };
 
 

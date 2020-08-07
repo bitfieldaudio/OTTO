@@ -1,8 +1,8 @@
 #include "lib/core/service.hpp"
 #include "testing.t.hpp"
 
-using namespace otto::lib;
-using namespace otto::lib::core;
+using namespace otto;
+using namespace otto::core;
 
 TEST_CASE ("ServiceProvider / ServiceAccessor") {
   struct TestService : Service<TestService> {

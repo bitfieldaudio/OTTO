@@ -3,7 +3,7 @@
 #include "lib/core/service.hpp"
 #include "lib/itc/reducer.hpp"
 
-namespace otto::app::services {
+namespace otto::services {
 
   enum struct Key : std::uint8_t {
     channel0,
@@ -78,24 +78,24 @@ namespace otto::app::services {
     int steps = 0;
   };
 
-  using InputHandler = lib::itc::IEventHandler<KeyPress, KeyRelease, EncoderEvent>;
+  using InputHandler = itc::IEventHandler<KeyPress, KeyRelease, EncoderEvent>;
 
-  struct Controller : lib::core::Service<Controller> {
+  struct Controller : core::Service<Controller> {
     virtual void set_input_handler(InputHandler& handler) = 0;
 
     /// The board-specfic graphics service
     [[nodiscard]] static auto make_board();
   };
 
-} // namespace otto::app::services
+} // namespace otto::services
 
 namespace otto::board {
-  lib::core::ServiceHandle<app::services::Controller> make_controller();
+  core::ServiceHandle<services::Controller> make_controller();
 }
 
-namespace otto::app::services {
+namespace otto::services {
   inline auto Controller::make_board()
   {
     return board::make_controller();
   }
-} // namespace otto::app::services
+} // namespace otto::services
