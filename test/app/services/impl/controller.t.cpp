@@ -77,7 +77,7 @@ struct Handler final : services::InputHandler {
   Events events;
 };
 
-TEST_CASE ("MCUController") {
+TEST_CASE ("MCUController::read_input_data") {
   StubMCUCommunicator com;
   Handler handler;
   auto app = services::start_app(core::make_handle<LogicThreadStub>(), //
@@ -87,81 +87,81 @@ TEST_CASE ("MCUController") {
 
   SUBCASE ("Read seq0 keypress") {
     com.data = {1, 0, 0, 0, 0, 0, 0, 0};
-    ctrl->read_data();
+    ctrl->read_input_data();
     REQUIRE(handler.events == Events{KeyPress{Key::seq0}});
   }
   SUBCASE ("Read seq1 keypress") {
     com.data = {2, 0, 0, 0, 0, 0, 0, 0};
-    ctrl->read_data();
+    ctrl->read_input_data();
     REQUIRE(handler.events == Events{KeyPress{Key::seq1}});
   }
   SUBCASE ("Read seq0 and seq1 keypress") {
     com.data = {3, 0, 0, 0, 0, 0, 0, 0};
-    ctrl->read_data();
+    ctrl->read_input_data();
     REQUIRE(handler.events == Events{KeyPress{Key::seq0}, KeyPress{Key::seq1}});
   }
   SUBCASE ("Read more keypresses") {
     com.data = {5, 3, 0, 0, 0, 0, 0, 0};
-    ctrl->read_data();
+    ctrl->read_input_data();
     REQUIRE(handler.events ==
             Events{KeyPress{Key::seq0}, KeyPress{Key::seq2}, KeyPress{Key::channel0}, KeyPress{Key::channel1}});
   }
   SUBCASE ("No recurring keypresses") {
     com.data = {1, 0, 0, 0, 0, 0, 0, 0};
-    ctrl->read_data();
+    ctrl->read_input_data();
     com.data = {1, 0, 0, 0, 0, 0, 0, 0};
-    ctrl->read_data();
+    ctrl->read_input_data();
     REQUIRE(handler.events == Events{KeyPress{Key::seq0}});
   }
   SUBCASE ("KeyRelease") {
     com.data = {5, 3, 0, 0, 0, 0, 0, 0};
-    ctrl->read_data();
+    ctrl->read_input_data();
     handler.events.clear();
 
     com.data = {4, 3, 0, 0, 0, 0, 0, 0};
-    ctrl->read_data();
+    ctrl->read_input_data();
     REQUIRE(handler.events == Events{KeyRelease{Key::seq0}});
   }
 
   SUBCASE ("Single EncoderEvent") {
     com.data = {0, 0, 0, 0, 20, 0, 0, 0};
-    ctrl->read_data();
+    ctrl->read_input_data();
     REQUIRE(handler.events == Events{EncoderEvent{Encoder::blue, 20}});
   }
 
   SUBCASE ("Two EncoderEvents") {
     com.data = {0, 0, 0, 0, 20, 0, 0, 0};
-    ctrl->read_data();
+    ctrl->read_input_data();
     com.data = {0, 0, 0, 0, 40, 0, 0, 0};
-    ctrl->read_data();
+    ctrl->read_input_data();
     REQUIRE(handler.events == Events{EncoderEvent{Encoder::blue, 20}, EncoderEvent{Encoder::blue, 20}});
   }
 
   SUBCASE ("Negative EncoderEvents") {
     com.data = {0, 0, 0, 0, 20, 0, 0, 0};
-    ctrl->read_data();
+    ctrl->read_input_data();
     com.data = {0, 0, 0, 0, 0, 0, 0, 0};
-    ctrl->read_data();
+    ctrl->read_input_data();
     REQUIRE(handler.events == Events{EncoderEvent{Encoder::blue, 20}, EncoderEvent{Encoder::blue, -20}});
   }
 
   SUBCASE ("EncoderEvents with rollover") {
     com.data = {0, 0, 0, 0, 255, 0, 0, 0};
-    ctrl->read_data();
+    ctrl->read_input_data();
     com.data = {0, 0, 0, 0, 0, 0, 0, 0};
-    ctrl->read_data();
+    ctrl->read_input_data();
     REQUIRE(handler.events == Events{EncoderEvent{Encoder::blue, -1}, EncoderEvent{Encoder::blue, 1}});
   }
 
   SUBCASE ("Rollover limits") {
     SUBCASE ("lower") {
       com.data = {0, 0, 0, 0, 128, 0, 0, 0};
-      ctrl->read_data();
+      ctrl->read_input_data();
       REQUIRE(handler.events == Events{EncoderEvent{Encoder::blue, -128}});
     }
     SUBCASE ("upper") {
       com.data = {0, 0, 0, 0, 127, 0, 0, 0};
-      ctrl->read_data();
+      ctrl->read_input_data();
       REQUIRE(handler.events == Events{EncoderEvent{Encoder::blue, 127}});
     }
   }
@@ -169,11 +169,13 @@ TEST_CASE ("MCUController") {
   SUBCASE ("Errors") {
     SUBCASE ("Too little data") {
       com.data = {0, 0, 0, 0, 0, 0, 0};
-      REQUIRE_THROWS_WITH_AS(ctrl->read_data(), "Data had invalid length. Got 7 bytes, expected 8", util::exception);
+      REQUIRE_THROWS_WITH_AS(ctrl->read_input_data(), "Data had invalid length. Got 7 bytes, expected 8", util::exception);
     }
     SUBCASE ("Too much data") {
       com.data = {0, 0, 0, 0, 0, 0, 0, 0, 0};
-      REQUIRE_THROWS_WITH_AS(ctrl->read_data(), "Data had invalid length. Got 9 bytes, expected 8", util::exception);
+      REQUIRE_THROWS_WITH_AS(ctrl->read_input_data(), "Data had invalid length. Got 9 bytes, expected 8", util::exception);
     }
   }
 }
+
+TEST_CASE("MCUController thread")
