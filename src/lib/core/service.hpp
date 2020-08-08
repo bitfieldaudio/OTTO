@@ -2,8 +2,8 @@
 
 #include <memory>
 
-#include <nameof.hpp>
 #include <function2/function2.hpp>
+#include <nameof.hpp>
 
 #include "lib/meta.hpp"
 #include "lib/util/concepts.hpp"
@@ -59,13 +59,15 @@ namespace otto::core {
   template<typename SI>
   concept AServiceImpl = !std::is_abstract_v<SI> && std::is_base_of_v<IService, SI>;
 
+  template<typename SSI>
+  concept AServiceOrImpl = (AService<SSI> || AServiceImpl<SSI>);
+
   template<typename SI, typename S>
   concept AServiceImplOf = AServiceImpl<SI>&& AService<S>&& std::is_same_v<typename SI::ServiceType, S>;
 
   /// Statically get the name of the service from either the service itself, or an implementation
-  template<typename S>
-  requires(AService<S> || AServiceImpl<S>) //
-    constexpr std::string_view service_name() noexcept
+  template<AServiceOrImpl S>
+  constexpr std::string_view service_name() noexcept
   {
     return S::service_name;
   }
@@ -168,8 +170,8 @@ namespace otto::core {
   requires(std::is_constructible_v<SI, Args...>)
     [[nodiscard("The returned handle manages the lifetime of the service")]] auto make_handle(Args&&... args)
   {
-    return ServiceHandle<typename SI::ServiceType>(   //
-      [... as = FWD(args)]() mutable { //
+    return ServiceHandle<typename SI::ServiceType>( //
+      [... as = FWD(args)]() mutable {              //
         return std::make_unique<SI>(FWD(as)...);
       });
   }
@@ -201,7 +203,7 @@ namespace otto::core {
   ///
   /// In theory, either method could be used either with single or multiple template argumets, but they
   /// lend themselves best to the aproaches described above.
-  template<AService... Services>
+  template<AServiceOrImpl... Services>
   requires(sizeof...(Services) > 0) //
     struct ServiceAccessor {
     ServiceAccessor()
@@ -212,9 +214,9 @@ namespace otto::core {
     template<util::one_of<Services...> S>
     S& service() const noexcept
     {
-      OTTO_ASSERT(detail::active_service_<S> != nullptr, "Tried to access service '{}' with none registered",
-                  NAMEOF_TYPE(S));
-      return *detail::active_service_<S>;
+      S* res = dynamic_cast<S*>(detail::active_service_<typename S::ServiceType>);
+      OTTO_ASSERT(res != nullptr, "Tried to access service '{}' with none registered", NAMEOF_TYPE(S));
+      return *res;
     }
 
     auto* operator->() const noexcept requires(sizeof...(Services) == 1)
@@ -226,8 +228,14 @@ namespace otto::core {
     template<util::one_of<Services...> S>
     void check_service()
     {
-      if (detail::active_service_<S> == nullptr) {
+      if (detail::active_service_<typename S::ServiceType> == nullptr) {
         LOGF("ServiceAccessor constructed with no service {} available", NAMEOF_TYPE(S));
+      }
+      if constexpr (AServiceImpl<S>) {
+        if (dynamic_cast<S*>(detail::active_service_<typename S::ServiceType>) == nullptr) {
+          LOGF("ServiceAccessor<{}> constructed with the wrong service {} available", NAMEOF_TYPE(S),
+               NAMEOF_TYPE(typename S::ServiceType));
+        }
       }
     }
   };

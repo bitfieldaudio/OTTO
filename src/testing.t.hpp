@@ -152,8 +152,8 @@ namespace doctest {
       if constexpr (sizeof...(Args) == 0) return "{}";
       std::ostringstream o;
       o << "{";
-      otto::util::for_each(
-        value, [&](const auto& a) { o << StringMaker<std::decay_t<decltype(a)>>::convert(a) << ", "; });
+      otto::util::for_each(value,
+                           [&](const auto& a) { o << StringMaker<std::decay_t<decltype(a)>>::convert(a) << ", "; });
       auto str = o.str();
       // Chop the extra ", "
       str.resize(str.size() - 2);
@@ -175,18 +175,14 @@ namespace doctest {
     static doctest::String convert(E const& value)
     {
       std::string_view name = magic_enum::enum_name(value);
-      if (name.data() != nullptr)
-        return toString(name);
+      if (name.data() != nullptr) return toString(name);
       return String("{index:") + toString(magic_enum::enum_integer(value)) + "}";
     }
   };
 
   template<typename T, typename... Args>
   struct StringMaker<std::vector<T, Args...>> {
-    static doctest::String convert(std::vector<T, Args...> const& value) requires requires
-    {
-      StringMaker<std::decay_t<T>>::convert(std::declval<T>());
-    }
+    static doctest::String convert(std::vector<T, Args...> const& value)
     {
       if (value.empty()) return "{}";
       std::ostringstream o;
@@ -198,6 +194,15 @@ namespace doctest {
       // Chop the extra ", "
       str.resize(str.size() - 2);
       return (str + "}").c_str();
+    }
+  };
+
+  template<typename... Ts>
+  struct StringMaker<std::variant<Ts...>> {
+    static doctest::String convert(const std::variant<Ts...>& value)
+    {
+      if (value.valueless_by_exception()) return "{valuless by exception}";
+      return std::visit([](const auto& v) { return toString(v); }, value);
     }
   };
 

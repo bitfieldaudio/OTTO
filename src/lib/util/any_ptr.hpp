@@ -37,11 +37,11 @@ namespace otto::util {
 
     pointer get() const noexcept
     {
-      std::visit(variant_,                                      //
-                 overloaded(                                    //
+      return std::visit(overloaded(                                    //
                    [](pointer p) { return p; },                 //
                    [](const unique_ptr& p) { return p.get(); }, //
-                   [](const shared_ptr& p) { return p.get(); }));
+                   [](const shared_ptr& p) { return p.get(); }),
+                 variant_);
     }
 
     T& operator*() const noexcept

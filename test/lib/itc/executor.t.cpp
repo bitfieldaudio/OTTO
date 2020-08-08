@@ -94,7 +94,7 @@ TEST_CASE (doctest::may_fail(true) * "ExecutorLock") {
       std::atomic_int actual_count = 0;
       std::atomic_int expected_count = 0;
 
-      std::array<std::pair<QueueExecutor, std::thread>, 10> threads;
+      std::array<std::pair<QueueExecutor, std::thread>, 3> threads;
     } data;
 
     // Allows recursion easier than lambdas

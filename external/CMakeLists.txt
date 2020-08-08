@@ -78,7 +78,7 @@ endif()
 CPMAddPackage(
   NAME doctest
   GITHUB_REPOSITORY onqtam/doctest
-  GIT_TAG 2.3.2
+  GIT_TAG 2.4.0
 )
 
 CPMAddPackage(

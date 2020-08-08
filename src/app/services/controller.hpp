@@ -1,5 +1,7 @@
 #pragma once
 
+#include "lib/util/enum.hpp"
+
 #include "lib/core/service.hpp"
 #include "lib/itc/reducer.hpp"
 
@@ -61,10 +63,15 @@ namespace otto::services {
 
   struct KeyEvent {
     Key key = {};
+    auto operator<=>(const KeyEvent&) const = default;
   };
 
-  struct KeyPress : KeyEvent {};
-  struct KeyRelease : KeyEvent {};
+  struct KeyPress : KeyEvent {
+    auto operator<=>(const KeyPress&) const = default;
+  };
+  struct KeyRelease : KeyEvent {
+    auto operator<=>(const KeyRelease&) const = default;
+  };
 
   enum struct Encoder : std::uint8_t {
     blue,
@@ -76,6 +83,7 @@ namespace otto::services {
   struct EncoderEvent {
     Encoder encoder = {};
     int steps = 0;
+    auto operator<=>(const EncoderEvent&) const = default;
   };
 
   using InputHandler = itc::IEventHandler<KeyPress, KeyRelease, EncoderEvent>;
@@ -87,6 +95,20 @@ namespace otto::services {
     [[nodiscard]] static auto make_board();
   };
 
+  inline std::ostream& operator<<(std::ostream& os, const KeyPress& k)
+  {
+    return os << fmt::format("KeyPress({})", util::enum_name(k.key));
+  }
+
+  inline std::ostream& operator<<(std::ostream& os, const KeyRelease& k)
+  {
+    return os << fmt::format("KeyRelease({})", util::enum_name(k.key));
+  }
+
+  inline std::ostream& operator<<(std::ostream& os, const EncoderEvent& e)
+  {
+    return os << fmt::format("EncoderEvent({}, {})", util::enum_name(e.encoder), e.steps);
+  }
 } // namespace otto::services
 
 namespace otto::board {
