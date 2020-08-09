@@ -112,12 +112,6 @@ if (concurrentqueue_ADDED)
 endif()
 
 CPMAddPackage(
-  NAME nameof
-  GITHUB_REPOSITORY Neargye/nameof
-  VERSION 0.9.4
-)
-
-CPMAddPackage(
   NAME reflcpp
   GITHUB_REPOSITORY veselink1/refl-cpp
   VERSION 0.12.0

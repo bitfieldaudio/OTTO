@@ -3,10 +3,10 @@
 #include <memory>
 
 #include <function2/function2.hpp>
-#include <nameof.hpp>
 
 #include "lib/meta.hpp"
 #include "lib/util/concepts.hpp"
+#include "lib/util/name_of.hpp"
 
 #include "lib/logging.hpp"
 
@@ -40,12 +40,7 @@ namespace otto::core {
   template<typename Derived>
   struct Service : IService {
     using ServiceType = Derived;
-    static constexpr std::string_view service_name = [] {
-      std::string_view sv = NAMEOF_TYPE(Derived);
-      auto pos = sv.find_last_of(':');
-      if (pos != sv.npos) sv = sv.substr(pos + 1);
-      return sv;
-    }();
+    static constexpr util::string_ref service_name = util::name_of<Derived>;
 
     std::string_view name() const noexcept override
     {
@@ -67,7 +62,7 @@ namespace otto::core {
 
   /// Statically get the name of the service from either the service itself, or an implementation
   template<AServiceOrImpl S>
-  constexpr std::string_view service_name() noexcept
+  constexpr util::string_ref service_name() noexcept
   {
     return S::service_name;
   }
@@ -215,7 +210,7 @@ namespace otto::core {
     S& service() const noexcept
     {
       S* res = dynamic_cast<S*>(detail::active_service_<typename S::ServiceType>);
-      OTTO_ASSERT(res != nullptr, "Tried to access service '{}' with none registered", NAMEOF_TYPE(S));
+      OTTO_ASSERT(res != nullptr, "Tried to access service '{}' with none registered", util::name_of<S>);
       return *res;
     }
 
@@ -229,12 +224,12 @@ namespace otto::core {
     void check_service()
     {
       if (detail::active_service_<typename S::ServiceType> == nullptr) {
-        LOGF("ServiceAccessor constructed with no service {} available", NAMEOF_TYPE(S));
+        LOGF("ServiceAccessor constructed with no service {} available", util::name_of<S>);
       }
       if constexpr (AServiceImpl<S>) {
         if (dynamic_cast<S*>(detail::active_service_<typename S::ServiceType>) == nullptr) {
-          LOGF("ServiceAccessor<{}> constructed with the wrong service {} available", NAMEOF_TYPE(S),
-               NAMEOF_TYPE(typename S::ServiceType));
+          LOGF("ServiceAccessor<{}> constructed with the wrong service {} available", util::name_of<S>,
+               util::name_of<typename S::ServiceType>);
         }
       }
     }

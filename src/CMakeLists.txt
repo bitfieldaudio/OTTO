@@ -35,7 +35,6 @@ target_link_libraries(otto_src PUBLIC nanobench)
 target_link_libraries(otto_src PUBLIC magic_enum)
 target_link_libraries(otto_src PUBLIC concurrentqueue)
 target_link_libraries(otto_src PUBLIC skia)
-target_link_libraries(otto_src PUBLIC nameof)
 target_link_libraries(otto_src PUBLIC reflcpp)
 target_link_libraries(otto_src PUBLIC function2)
 

@@ -56,7 +56,7 @@ TEST_CASE ("ServiceProvider / ServiceAccessor") {
   SUBCASE ("name") {
     TSImpl tsi;
     REQUIRE(tsi.name() == "TestService");
-    static_assert(service_name<TestService>() == "TestService");
-    static_assert(service_name<TSImpl>() == "TestService");
+    REQUIRE(service_name<TestService>() == "TestService");
+    REQUIRE(service_name<TSImpl>() == "TestService");
   }
 }

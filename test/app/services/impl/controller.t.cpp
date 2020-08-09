@@ -177,5 +177,3 @@ TEST_CASE ("MCUController::read_input_data") {
     }
   }
 }
-
-TEST_CASE("MCUController thread")
