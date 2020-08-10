@@ -1,17 +1,17 @@
 #pragma once
 
-#include <string>
-#include <string_view>
 #include <iosfwd>
 #include <iostream>
+#include <string>
+#include <string_view>
 
 namespace otto::util {
 
   /// This class is a non owning reference to a null terminated string.
   struct string_ref {
     /// types
-    using  const_iterator = const char*;
-    using  const_reverse_iterator = std::reverse_iterator<const_iterator>;
+    using const_iterator = const char*;
+    using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
     /// constants
     const static size_t npos;
@@ -31,7 +31,8 @@ namespace otto::util {
     }
     string_ref(const std::string& s) : data_(s.data()), length_(s.length()) {}
 
-    constexpr operator std::string_view() const noexcept {
+    constexpr operator std::string_view() const noexcept
+    {
       return {data_, length_};
     }
 
@@ -129,39 +130,39 @@ namespace otto::util {
       return data_;
     }
 
+    constexpr std::strong_ordering operator<=>(string_ref rhs) const noexcept
+    {
+      return std::string_view(*this) <=> std::string_view(rhs);
+    }
+
+    constexpr bool operator==(const string_ref& rhs) const noexcept
+    {
+      if (!std::is_constant_evaluated()) {
+        // This pointer comparison is not allowed in a constant expression
+        if (data_ == rhs.data_) return true;
+      }
+      return std::string_view(*this) == std::string_view(rhs);
+    }
+
   private:
     const char* data_;
     std::size_t length_;
   };
 
-  inline std::ostream& operator<<(std::ostream& ostream, const string_ref& sr) {
+  inline std::ostream& operator<<(std::ostream& ostream, const string_ref& sr)
+  {
     return ostream << sr.c_str();
   }
 
-  /// Comparison operators
-  constexpr bool operator==(string_ref x, string_ref y)
-  {
-    return x.compare(y) == 0;
-  }
-  constexpr bool operator!=(string_ref x, string_ref y)
-  {
-    return x.compare(y) != 0;
-  }
-  constexpr bool operator<(string_ref x, string_ref y)
-  {
-    return x.compare(y) < 0;
-  }
-  constexpr bool operator<=(string_ref x, string_ref y)
-  {
-    return x.compare(y) <= 0;
-  }
-  constexpr bool operator>(string_ref x, string_ref y)
-  {
-    return x.compare(y) > 0;
-  }
-  constexpr bool operator>=(string_ref x, string_ref y)
-  {
-    return x.compare(y) >= 0;
-  }
-
 } // namespace otto::util
+
+namespace std {
+
+  template<>
+  struct hash<otto::util::string_ref> {
+    std::size_t operator()(const otto::util::string_ref& sr) const
+    {
+      return std::hash<std::string_view>()(std::string_view(sr));
+    }
+  };
+} // namespace std

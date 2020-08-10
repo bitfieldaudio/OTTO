@@ -112,22 +112,22 @@ if (concurrentqueue_ADDED)
 endif()
 
 CPMAddPackage(
-  NAME reflcpp
-  GITHUB_REPOSITORY veselink1/refl-cpp
-  VERSION 0.12.0
-  DOWNLOAD_ONLY YES
-)
-
-if (reflcpp_ADDED)
-  add_library(reflcpp INTERFACE)
-  target_include_directories(reflcpp SYSTEM INTERFACE "${reflcpp_SOURCE_DIR}")
-endif()
-
-CPMAddPackage(
   NAME function2
   GITHUB_REPOSITORY Naios/function2
   GIT_TAG 4.1.0
 )
+
+CPMAddPackage(
+  NAME toml11
+  GITHUB_REPOSITORY ToruNiina/toml11
+  VERSION 3.5.0
+  DOWNLOAD_ONLY YES
+)
+
+if (toml11_ADDED) 
+  add_library(toml11 INTERFACE)
+  target_include_directories(toml11 SYSTEM INTERFACE "${toml11_SOURCE_DIR}")
+endif()
 
 # SKIA
 
@@ -198,7 +198,6 @@ else()
   skia_use_x11=false \
   skia_use_xps=false \
   skia_use_zlib=false \
-  extra_cflags=[\"-Wno-unknown-warning-option\", \"-Wno-gnu-zero-variadic-macro-arguments\"] \
 ")
 
     message("Downloading skia third party dependencies (might take a while)...")
@@ -211,9 +210,10 @@ else()
       COMMAND bin/gn gen out/config --ide=json --json-ide-script=../../gn/gn_to_cmake.py --args=${skia_ARGS}
       WORKING_DIRECTORY "${skia_SOURCE_DIR}"  
     )
-    add_definitions("-Wno-unknown-warning-option -Wno-gnu-zero-variadic-macro-arguments")
     set(CMAKE_CXX_STANDARD 17)
     add_subdirectory("${skia_SOURCE_DIR}/out/config" "${skia_BINARY_DIR}" EXCLUDE_FROM_ALL)
+    # Remove the include directories to make sure they are added as system includes
+    set_target_properties(skia PROPERTIES INCLUDE_DIRECTORIES "")
     target_include_directories(skia PUBLIC SYSTEM "${skia_SOURCE_DIR}/")
     target_include_directories(skia PUBLIC SYSTEM "${skia_SOURCE_DIR}/include/core")
     target_include_directories(skia PUBLIC SYSTEM "${skia_SOURCE_DIR}/include/gpu")

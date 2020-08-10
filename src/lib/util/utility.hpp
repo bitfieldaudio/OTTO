@@ -3,6 +3,8 @@
 #include <tuple>
 #include <utility>
 
+#include "lib/util/string_ref.hpp"
+
 /// \file
 /// General purpose utilities. Mostly lambda magic
 
@@ -147,8 +149,8 @@ namespace otto::util {
   template<typename F, ATupleRef Tuple>
   void reverse_for_each(Tuple&& tuple, F&& f)
   {
-    details::tuple_reverse_for_each_impl(FWD(tuple), FWD(f),
-                                 std::make_index_sequence<std::tuple_size<std::remove_cvref_t<Tuple>>::value>());
+    details::tuple_reverse_for_each_impl(
+      FWD(tuple), FWD(f), std::make_index_sequence<std::tuple_size<std::remove_cvref_t<Tuple>>::value>());
   }
 
   /// Call `f(idx, element)` for each `element` in `tuple`
@@ -181,36 +183,35 @@ namespace otto::util {
                                         std::tuple_size<std::remove_cvref_t<T2>>::value)>());
   }
 
-  inline namespace tuple {
-    namespace detail {
-      template<class X>
-      constexpr auto remove_last_impl(X&& x)
-      {
-        return std::tuple<>();
-      }
-
-      template<class X, class... Xs>
-      constexpr auto remove_last_impl(X&& x, Xs&&... xs);
-
-      constexpr auto tuple_remove_last = [](auto&&... args) { return remove_last_impl(FWD(args)...); };
-
-      template<class X, class... Xs>
-      constexpr auto remove_last_impl(X&& x, Xs&&... xs)
-      {
-        return std::tuple_cat(std::tuple<X>(FWD(x)), std::apply(tuple_remove_last, std::tuple<Xs...>(FWD(xs)...)));
-      }
-    } // namespace detail
-
-    template<class T, class... Args>
-    constexpr auto remove_last(const std::tuple<T, Args...>& t)
+  namespace detail {
+    template<class X>
+    constexpr auto remove_last_impl(X&& x)
     {
-      return std::apply(detail::tuple_remove_last, t);
+      return std::tuple<>();
     }
-  } // namespace tuple
+
+    template<class X, class... Xs>
+    constexpr auto remove_last_impl(X&& x, Xs&&... xs);
+
+    constexpr auto tuple_remove_last = [](auto&&... args) { return remove_last_impl(FWD(args)...); };
+
+    template<class X, class... Xs>
+    constexpr auto remove_last_impl(X&& x, Xs&&... xs)
+    {
+      return std::tuple_cat(std::tuple<X>(FWD(x)), std::apply(tuple_remove_last, std::tuple<Xs...>(FWD(xs)...)));
+    }
+  } // namespace detail
+
+  template<class T, class... Args>
+  constexpr auto remove_last(const std::tuple<T, Args...>& t)
+  {
+    return std::apply(detail::tuple_remove_last, t);
+  }
 
   template<typename T>
   struct tag_t {};
 
   template<typename T>
   auto tag = tag_t<T>();
+
 } // namespace otto::util

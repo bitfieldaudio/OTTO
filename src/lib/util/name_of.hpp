@@ -43,15 +43,9 @@ namespace otto::util {
       auto biter = buffer.begin();
       std::size_t last_word_start = 0;
       for (int i = 0; i < qual.size(); i++) {
-        if (qual[i] == ':') last_word_start = i + 1;
-        bool alnum = [c = qual[i]] {
-          if (c == 0) return false;
-          for (char k : "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_") {
-            if (k == c) return true;
-          }
-          return false;
-        }();
-        if (!alnum) {
+        const auto c = qual[i];
+        if (c == ':') last_word_start = i + 1;
+        if (c == '<' || c == ',' || c == ' ') {
           biter = std::copy(qual.begin() + last_word_start, qual.begin() + i + 1, biter);
           last_word_start = i + 1;
         }
@@ -65,12 +59,20 @@ namespace otto::util {
   } // namespace detail
 
   /// Compile time fully qualified name of a type.
+  /// 
+  /// Guarantees that `qualified_name_of<T> == qualified_name_of<U>` is equivalent
+  /// to `T == U`, which also applies to `qualified_name_of.c_str()`. Hence, comparing
+  /// the `const char*` is enough to determine equality of the types.
   template<typename T>
   constexpr string_ref qualified_name_of = detail::qualified_name_of_buffer<T>.data();
 
   /// Compile time name of a type with qualifiers removed.
   ///
   /// Also removes qualifiers of nested template parameters
+  /// 
+  /// Does not guarantee that `name_of<T> == name_of<U>` is equivalent to `T == U`,
+  /// but comparing the pointers `name_of.c_str()` does. Hence, comparing
+  /// the `const char*` is determines equality of the types.
   template<typename T>
   constexpr string_ref name_of = detail::name_of_buffer<T>.data();
 } // namespace otto::util

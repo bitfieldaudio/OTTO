@@ -46,7 +46,10 @@ if (${FORCE_COLORED_OUTPUT})
     endif ()
 endif ()
 
-add_compile_options(-ftemplate-backtrace-limit=0)
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ftemplate-backtrace-limit=0")
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fconcepts-diagnostics-depth=1000")
+endif()
 
 set(OTTO_BOARD "desktop" CACHE STRING "The board configuration to use")
 
