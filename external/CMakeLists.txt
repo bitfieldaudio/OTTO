@@ -198,6 +198,7 @@ else()
   skia_use_x11=false \
   skia_use_xps=false \
   skia_use_zlib=false \
+  extra_cflags=[\"-Wno-unknown-warning-option\",\"-Wno-uninitialized\"]
 ")
 
     message("Downloading skia third party dependencies (might take a while)...")

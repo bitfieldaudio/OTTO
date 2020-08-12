@@ -23,3 +23,7 @@ namespace otto::chrono {
   }
 
 } // namespace otto::chrono
+
+namespace otto {
+  using namespace std::literals::chrono_literals;
+}
