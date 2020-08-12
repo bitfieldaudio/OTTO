@@ -4,7 +4,7 @@
 namespace otto::itc {
 
   template<typename T>
-  concept AnEvent = true;
+  concept AnEvent = std::copyable<T>;
 
   template<AnEvent... Events>
   struct IEventHandler : IEventHandler<Events>... {
@@ -13,6 +13,7 @@ namespace otto::itc {
 
   template<AnEvent Event>
   struct IEventHandler<Event> {
+    virtual ~IEventHandler() = default;
     /// Handle the event
     virtual void handle(const Event&) noexcept = 0;
   };

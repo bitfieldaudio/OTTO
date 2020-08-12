@@ -3,8 +3,6 @@
 #include <memory>
 #include <variant>
 
-#include "lib/util/utility.hpp"
-
 namespace otto::util {
 
   /// A smart² pointer, which is either a raw pointer, a `std::unique_ptr` or a `std::shared_ptr`.
@@ -18,9 +16,9 @@ namespace otto::util {
     using shared_ptr = std::shared_ptr<T>;
 
     any_ptr() : variant_(static_cast<pointer>(nullptr)) {}
-    any_ptr(pointer p) noexcept : variant_(p) {}
-    any_ptr(unique_ptr&& up) noexcept : variant_(std::move(up)) {}
-    any_ptr(shared_ptr sp) noexcept : variant_(std::move(sp)) {}
+    any_ptr(pointer p) noexcept : pointer_(p), variant_(p) {}
+    any_ptr(unique_ptr&& up) noexcept : pointer_(up.get()), variant_(std::move(up)) {}
+    any_ptr(shared_ptr sp) noexcept : pointer_(sp.get()), variant_(std::move(sp)) {}
 
     template<std::derived_from<T> U>
     any_ptr(std::unique_ptr<U>&& up) noexcept : any_ptr(static_cast<unique_ptr>(std::move(up)))
@@ -37,11 +35,7 @@ namespace otto::util {
 
     pointer get() const noexcept
     {
-      return std::visit(overloaded(                                    //
-                   [](pointer p) { return p; },                 //
-                   [](const unique_ptr& p) { return p.get(); }, //
-                   [](const shared_ptr& p) { return p.get(); }),
-                 variant_);
+      return pointer_;
     }
 
     T& operator*() const noexcept
@@ -89,6 +83,8 @@ namespace otto::util {
     }
 
   private:
+    /// Cached, so we dont have to switch on the variant type for each access
+    pointer pointer_;
     std::variant<pointer, unique_ptr, shared_ptr> variant_;
   };
 } // namespace otto::util

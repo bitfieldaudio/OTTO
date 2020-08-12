@@ -6,7 +6,8 @@
 using namespace otto;
 
 struct TestConfig final : Config<TestConfig> {
-  static constexpr util::string_ref name = "TestConfig";
+  // Optional, uses util::qualified_name_of by default:
+  // static constexpr util::string_ref name = "TestConfig";
   int option1 = 4;
   std::string option2 = "test";
 

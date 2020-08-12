@@ -10,7 +10,7 @@
 
 namespace otto::itc {
 
-    struct IExecutor {
+  struct IExecutor {
     virtual ~IExecutor() = default;
 
     // TODO: Allocator for the std::function object

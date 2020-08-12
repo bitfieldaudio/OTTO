@@ -1,232 +1,144 @@
-#include "board/controller.hpp"
+#include "app/services/impl/controller.hpp"
+#include "app/services/config.hpp"
 
-#include "util/algorithm.hpp"
-#include "util/exception.hpp"
-#include "util/utility.hpp"
-
-#include "services/audio_manager.hpp"
-#include "services/log_manager.hpp"
-#include "services/ui_manager.hpp"
-
-#include <linux/i2c-dev.h>
-#include <linux/i2c.h>
-#include <linux/input.h>
-#include <linux/uinput.h>
-#include <sys/ioctl.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <charconv>
-
-#include "testing.t.hpp"
+#include "lib/util/i2c.hpp"
 
 namespace otto::services {
-  using MSC = MCUI2CController;
 
-  using byte = std::uint8_t;
+  template<int Rows, int Cols>
+  using KeyMatrix = std::array<std::array<tl::optional<Key>, Cols>, Rows>;
+  using LedSequence = util::enum_map<Key, std::uint8_t>;
 
-  struct hex {
-    std::uint8_t data;
-    friend std::ostream& operator<<(std::ostream& str, const hex& self)
+  struct Betav01HWMap final : HardwareMap {
+    static constexpr auto n_rows = 8;
+    static constexpr auto n_cols = 7;
+
+    int row_count() const noexcept override
     {
-      auto flags = str.flags();
-      auto& res = str << std::setfill('0') << std::setw(2) << std::hex << (int) self.data;
-      str.flags(flags);
-      return res;
+      return n_rows;
     }
+    int col_count() const noexcept override
+    {
+      return n_cols;
+    }
+
+    tl::optional<Key> key_at(std::uint8_t row, std::uint8_t col) const noexcept override
+    {
+      if (row >= n_rows || col >= n_cols) return tl::nullopt;
+      return key_codes[row][col];
+    }
+    std::uint8_t led_for(Key k) const noexcept override
+    {
+      return led_map[k];
+    }
+
+    static constexpr KeyMatrix<n_rows, n_cols> key_codes = {{
+      {Key::channel0, Key::channel3, Key::channel7, Key::shift, Key::sends, tl::nullopt, Key::blue_enc_click},
+      {Key::seq1, Key::seq6, Key::seq11, Key::plus, Key::routing, Key::rec, Key::yellow_enc_click},
+      {Key::seq2, Key::seq7, Key::seq12, Key::minus, Key::fx2, Key::master, tl::nullopt},
+      {Key::channel1, Key::channel4, Key::channel8, Key::seq0, Key::fx1, Key::play, Key::red_enc_click},
+      {Key::seq3, Key::seq8, Key::seq13, Key::seq15, Key::arp, Key::slots, tl::nullopt},
+      {Key::seq4, Key::seq9, Key::seq14, Key::twist2, Key::looper, Key::twist1, tl::nullopt},
+      {Key::channel2, Key::channel5, Key::channel9, Key::external, Key::sampler, Key::envelope, Key::green_enc_click},
+      {Key::seq5, Key::channel6, Key::seq10, Key::settings, Key::sequencer, Key::synth, tl::nullopt},
+    }};
+
+    static constexpr LedSequence led_map = {{
+      {Key::channel0, 0},
+      {Key::channel3, 3},
+      {Key::channel7, 7},
+      {Key::shift, 2},
+      {Key::sends, 3},
+      {Key::blue_enc_click, 25},
+      {Key::seq1, 1},
+      {Key::seq6, 6},
+      {Key::seq11, 11},
+      {Key::plus, 1},
+      {Key::routing, 10},
+      {Key::rec, 11},
+      {Key::yellow_enc_click, 25},
+      {Key::seq2, 2},
+      {Key::seq7, 7},
+      {Key::seq12, 12},
+      {Key::minus, 0},
+      {Key::fx2, 9},
+      {Key::master, 13},
+      {Key::channel1, 1},
+      {Key::channel4, 4},
+      {Key::channel8, 8},
+      {Key::seq0, 0},
+      {Key::fx1, 4},
+      {Key::play, 12},
+      {Key::red_enc_click, 25},
+      {Key::seq3, 3},
+      {Key::seq8, 8},
+      {Key::seq13, 13},
+      {Key::seq15, 15},
+      {Key::arp, 8},
+      {Key::slots, 14},
+      {Key::seq4, 4},
+      {Key::seq9, 9},
+      {Key::seq14, 14},
+      {Key::twist2, 16},
+      {Key::looper, 5},
+      {Key::twist1, 15},
+      {Key::channel2, 2},
+      {Key::channel5, 5},
+      {Key::channel9, 9},
+      {Key::external, 17},
+      {Key::sampler, 7},
+      {Key::envelope, 18},
+      {Key::green_enc_click, 25},
+      {Key::seq5, 5},
+      {Key::channel6, 6},
+      {Key::seq10, 10},
+      {Key::settings, 20},
+      {Key::sequencer, 6},
+      {Key::synth, 19},
+    }};
   };
 
-  I2C::I2C(std::uint16_t address) : address(address) {}
-
-  I2C::~I2C() noexcept
-  {
-    if (is_open()) (void) close();
-  }
-
-  bool I2C::is_open() const noexcept
-  {
-    return i2c_fd > 0;
-  }
-
-  std::error_code I2C::open(const fs::path& path)
-  {
-    unsigned long i2c_funcs = 0;
-
-    i2c_fd = ::open(path.c_str(), O_RDWR);
-    if (i2c_fd < 0) {
-      LOGE("Check that the i2c-dev & i2c-bcm2708 kernel modules "
-           "are loaded.");
-      return std::error_code{errno, std::generic_category()};
-    }
-
-    /*
-     * Make sure the driver supports plain I2C I/O:
-     */
-    int rc = ioctl(i2c_fd, I2C_FUNCS, &i2c_funcs);
-    OTTO_ASSERT(i2c_funcs & I2C_FUNC_I2C);
-    if (rc) return std::error_code{errno, std::generic_category()};
-    return {};
-  }
-
-  std::error_code I2C::close()
-  {
-    if (::close(i2c_fd)) return std::error_code{errno, std::generic_category()};
-    return {};
-  }
-
-  std::error_code I2C::write(gsl::span<std::uint8_t> message)
-  {
-    ::i2c_msg iomsg = {
-      .addr = address,
-      .flags = 0,
-      .len = static_cast<std::uint16_t>(message.size()),
-      .buf = message.data(),
-    };
-    ::i2c_rdwr_ioctl_data msgset = {
-      .msgs = &iomsg,
-      .nmsgs = 1,
-    };
-    auto res = ioctl(i2c_fd, I2C_RDWR, &msgset);
-    if (res < 0) return std::error_code{errno, std::generic_category()};
-    return {};
-  }
-
-  std::error_code I2C::read_into(gsl::span<std::uint8_t> buffer)
-  {
-    ::i2c_msg iomsg = {
-      .addr = address,
-      .flags = I2C_M_RD,
-      .len = static_cast<std::uint16_t>(buffer.size()),
-      .buf = buffer.data(),
-    };
-    ::i2c_rdwr_ioctl_data msgset = {
-      .msgs = &iomsg,
-      .nmsgs = 1,
-    };
-
-    auto res = ioctl(i2c_fd, I2C_RDWR, &msgset);
-    if (res < 0) return std::error_code{errno, std::generic_category()};
-    return {};
-  }
-
-  void MSC::queue_message(BytesView message)
-  {
-    write_buffer_.outer_locked([&](auto& buf) { nano::copy(message, nano::back_inserter(buf.emplace_back())); });
-  }
-
-  void MSC::read_i2c()
-  {
-    std::array<std::uint8_t, 12> data;
-    if (auto err = i2c_obj.read_into(data)) {
-      LOGE("Error reading from i2c: {} ", err);
-      return;
-    }
-    // std::cout << "Read [";
-    // for (auto b : data) std::cout << hex{b} << " ";
-    // std::cout << "]" << std::endl;
-    if (data[0] > 0x77) {
-      LOGE("Unexpected data");
-      return;
-    }
-    handle_response(data);
-  }
-
-  MSC::MCUI2CController()
-  {
-    if (auto err = i2c_obj.open("/dev/i2c-1")) {
-      LOGE("Error opening i2c device: {}", err);
-      throw std::system_error(err, "Error opening i2c device");
-    }
-
-    i2c_thread = [this](auto&& should_run) {
-      services::LogManager::current().set_thread_name("MCUi2c");
-      while (should_run()) {
-        write_buffer_.swap();
-        auto& wb = write_buffer_.inner();
-        if (wb.empty()) {
-          wb.push_back({0x00});
-        }
-        for (auto& message : wb) {
-          if (message.size() == 0) continue;
-          if (message[0] != 0) {
-            std::cout << "Writing [";
-            for (auto b : message) std::cout << hex{b} << " ";
-            std::cout << "]" << std::endl;
-          }
-          if (auto err = i2c_obj.write({message.data(), message.size()})) {
-            LOGE("Error writing to i2c: {}", err);
-          }
-          i2c_thread.sleep_for(chrono::microseconds(100));
-          read_i2c();
-        }
-        i2c_thread.sleep_for(sleep_time);
-      }
-    };
-  }
-
-  TEST_CASE ("i2c" * doctest::skip()) {
-    I2C i2c_obj = MCUI2CController::I2C_SLAVE_ADDR;
-    if (auto err = i2c_obj.open("/dev/i2c-1")) {
-      LOGE("Error opening i2c device: {}", err);
-      return;
-    }
-    while (true) {
-      std::vector<std::uint8_t> buffer;
-      std::string line;
-      std::cout << "\n> ";
-      std::getline(std::cin, line);
-      auto stream = std::stringstream(line);
-      std::string cmd;
-      std::getline(stream, cmd, ' ');
-      if (cmd == "w") {
-        std::string arg;
-        while (std::getline(stream, arg, ' ')) {
-          errno = 0;
-          std::uint8_t byte = std::strtol(arg.c_str(), nullptr, 16);
-          if (errno != 0) {
-            std::cout << "Error parsing: " << strerror(errno) << std::endl;
-            continue;
-          }
-          buffer.push_back(byte);
-        }
-        if (buffer.size() == 0) {
-          std::cout << "Usage: w <space separated bytes>" << std::endl;
-          continue;
-        }
-        std::cout << "Writing ";
-        for (auto b : buffer) std::cout << hex{b} << " ";
-        std::cout << std::endl;
-        if (auto err = i2c_obj.write(buffer)) {
-          std::cout << "Error: " << err.message() << std::endl;
-        }
-      } else if (cmd == "r") {
-        int arg = -1;
-        stream >> arg;
-        if (arg < 1) {
-          std::cout << "Expected count larger than 0. Usage: r <count>" << std::endl;
-          continue;
-        }
-        buffer.resize(arg);
-        std::cout << std::dec << "Reading " << arg << " bytes" << std::endl;
-        if (auto err = i2c_obj.read_into(buffer)) {
-          std::cout << "Error: " << err.message() << std::endl;
-          continue;
-        }
-        std::cout << "Result: ";
-        for (auto b : buffer) std::cout << hex{b} << " ";
-        std::cout << std::endl;
-      } else if (cmd == "q") {
-        break;
-      } else {
-        std::cout << R"(
-Commands:
-  w <space separated bytes>        write bytes to i2c
-  r <count>                        read <count> bytes from i2c
-  q                                quit
-)";
-      }
-    }
-  }
-
 } // namespace otto::services
+
+namespace otto::board {
+  struct I2CMCUPort final : services::MCUPort {
+    struct Config : otto::Config<Config> {
+      std::uint16_t address = 0x77;
+      std::filesystem::path device_path = "/dev/i2c-1";
+    };
+
+    I2CMCUPort() : I2CMCUPort(core::ServiceAccessor<services::ConfigManager>()->register_config<Config>()) {}
+
+    I2CMCUPort(const Config& conf) : i2c(conf.address)
+    {
+      auto ec = i2c.open(conf.device_path);
+      if (ec) throw std::system_error(ec);
+    }
+
+    std::size_t write(std::span<std::uint8_t> data) override
+    {
+      auto ec = i2c.write(data);
+      if (ec) throw std::system_error(ec);
+      return data.size();
+    }
+
+    std::span<std::uint8_t> read(std::size_t count) override
+    {
+      data.resize(count);
+      auto ec = i2c.read_into(data);
+      if (ec) throw std::system_error(ec);
+      return data;
+    }
+
+    util::I2C i2c;
+    std::vector<std::uint8_t> data;
+  };
+
+  core::ServiceHandle<services::Controller> make_controller()
+  {
+    return core::make_handle<services::MCUController>(std::make_unique<I2CMCUPort>(),
+                                                      std::make_unique<services::Betav01HWMap>());
+  }
+} // namespace otto::board
 
 // kak: other_file=../include/board/controller.hpp

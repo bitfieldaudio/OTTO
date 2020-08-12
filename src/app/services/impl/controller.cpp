@@ -2,42 +2,78 @@
 
 namespace otto::services {
 
-  MCUController::MCUController(util::any_ptr<MCUCommunicator>&& com, util::any_ptr<HardwareMap>&& hw)
+  struct ExecutorWrapper : InputHandler {
+    ExecutorWrapper(itc::IExecutor& executor, util::any_ptr<InputHandler>&& delegate)
+      : executor_(executor), delegate_(std::move(delegate))
+    {}
+
+    void handle(const KeyPress& e) noexcept override
+    {
+      executor_.execute([h = delegate_.get(), e] { h->handle(e); });
+    }
+    void handle(const KeyRelease& e) noexcept override
+    {
+      executor_.execute([h = delegate_.get(), e] { h->handle(e); });
+    }
+    void handle(const EncoderEvent& e) noexcept override
+    {
+      executor_.execute([h = delegate_.get(), e] { h->handle(e); });
+    }
+
+  private:
+    itc::IExecutor& executor_;
+    util::any_ptr<InputHandler> delegate_;
+  };
+
+  MCUController::MCUController(util::any_ptr<MCUPort>&& port, util::any_ptr<HardwareMap>&& hw)
+    : com_(std::move(port), std::move(hw)), thread_([this] {
+        while (runtime->should_run()) {
+          com_.request_input();
+          std::this_thread::sleep_for(wait_time);
+        }
+      })
+  {}
+
+  void MCUController::set_input_handler(InputHandler& h)
+  {
+    com_.handler = std::make_unique<ExecutorWrapper>(logic_thread->executor(), &h);
+  }
+
+  MCUCommunicator::MCUCommunicator(util::any_ptr<MCUPort>&& com, util::any_ptr<HardwareMap>&& hw)
     : com_(std::move(com)), hw_(std::move(hw))
   {
     old_data_.resize(hw_->row_count() + 4);
   }
 
-  void MCUController::set_input_handler(InputHandler& h)
+  void MCUCommunicator::read_input_response()
   {
-    handler_ = &h;
-  }
-
-  void MCUController::read_input_data()
-  {
-    std::span data = com_->read();
-    if (data.size() != hw_->row_count() + 4)
-      throw util::exception("Data had invalid length. Got {} bytes, expected {}", data.size(), hw_->row_count() + 4);
+    auto nrows = hw_->row_count();
+    auto ncols = hw_->col_count();
+    std::span data = com_->read(nrows + 4);
+    if (data.empty()) return;
+    if (data.size() != nrows + 4)
+      throw util::exception("Data had invalid length. Got {} bytes, expected {}", data.size(), nrows + 4);
+    if (!handler) return;
     for (int r = 0; r < data.size(); r++) {
-      for (int c = 0; c < hw_->col_count(); c++) {
+      for (int c = 0; c < ncols; c++) {
         auto key = hw_->key_at(r, c);
         if (!key) continue;
         if ((data[r] & (1 << c)) == (old_data_[r] & (1 << c))) continue;
         if (data[r] & (1 << c)) {
-          logic_thread->executor().execute([h = handler_, k = *key] { h->handle(KeyPress{k}); });
+          handler->handle(KeyPress{*key});
         } else {
-          logic_thread->executor().execute([h = handler_, k = *key] { h->handle(KeyRelease{k}); });
+          handler->handle(KeyRelease{*key});
         }
       }
     }
     for (int i = 0; i < 4; i++) {
-      auto didx = i + hw_->row_count();
+      auto didx = i + nrows;
       if (old_data_[didx] == data[didx]) continue;
       auto enc = *util::enum_cast<Encoder>(i);
       int val = data[didx] - old_data_[didx];
       // Handle rollover correctly
       if (std::abs(val) > 127) val -= std::copysign(256, val);
-      logic_thread->executor().execute([h = handler_, enc, val] { h->handle(EncoderEvent{enc, val}); });
+      handler->handle(EncoderEvent{enc, val});
     }
     std::ranges::copy(data, old_data_.begin());
   }

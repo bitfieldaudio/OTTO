@@ -1,6 +1,6 @@
 #!/bin/bash
 
-(cat > .git/hooks/pre-commit) <<EOF
+(cat > .git/hooks/pre-commit) <<- "EOF"
 #!/bin/bash
 
 format_file() {
@@ -22,3 +22,5 @@ case "${1}" in
     ;;
 esac
 EOF
+
+chmod +x .git/hooks/pre-commit

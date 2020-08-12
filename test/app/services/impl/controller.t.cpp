@@ -16,14 +16,20 @@ using services::Key;
 using services::KeyPress;
 using services::KeyRelease;
 
+constexpr std::uint8_t operator"" _u8(unsigned long long int v) noexcept
+{
+  return static_cast<std::uint8_t>(v);
+}
+
+template<std::derived_from<itc::IExecutor> Executor>
 struct LogicThreadStub final : services::LogicThread {
-  itc::ImmediateExecutor& executor() noexcept override
+  Executor& executor() noexcept override
   {
     return executor_;
   }
 
 private:
-  itc::ImmediateExecutor executor_;
+  Executor executor_;
 };
 
 struct TestHWMap final : services::HardwareMap {
@@ -49,8 +55,13 @@ struct TestHWMap final : services::HardwareMap {
   }
 };
 
-struct StubMCUCommunicator final : services::MCUCommunicator {
-  std::span<std::uint8_t> read() override
+struct StubMCUPort final : services::MCUPort {
+  std::size_t write(std::span<std::uint8_t> data) override
+  {
+    OTTO_UNREACHABLE();
+  }
+
+  std::span<std::uint8_t> read(std::size_t count) override
   {
     return data;
   }
@@ -78,102 +89,142 @@ struct Handler final : services::InputHandler {
 };
 
 TEST_CASE ("MCUController::read_input_data") {
-  StubMCUCommunicator com;
+  StubMCUPort port;
+  services::MCUCommunicator com = {&port, std::make_unique<TestHWMap>()};
   Handler handler;
-  auto app = services::start_app(core::make_handle<LogicThreadStub>(), //
-                                 core::make_handle<services::MCUController>(&com, std::make_unique<TestHWMap>()));
-  core::ServiceAccessor<services::MCUController> ctrl;
-  ctrl->set_input_handler(handler);
+  com.handler = &handler;
 
   SUBCASE ("Read seq0 keypress") {
-    com.data = {1, 0, 0, 0, 0, 0, 0, 0};
-    ctrl->read_input_data();
+    port.data = {1, 0, 0, 0, 0, 0, 0, 0};
+    com.read_input_response();
     REQUIRE(handler.events == Events{KeyPress{Key::seq0}});
   }
   SUBCASE ("Read seq1 keypress") {
-    com.data = {2, 0, 0, 0, 0, 0, 0, 0};
-    ctrl->read_input_data();
+    port.data = {2, 0, 0, 0, 0, 0, 0, 0};
+    com.read_input_response();
     REQUIRE(handler.events == Events{KeyPress{Key::seq1}});
   }
   SUBCASE ("Read seq0 and seq1 keypress") {
-    com.data = {3, 0, 0, 0, 0, 0, 0, 0};
-    ctrl->read_input_data();
+    port.data = {3, 0, 0, 0, 0, 0, 0, 0};
+    com.read_input_response();
     REQUIRE(handler.events == Events{KeyPress{Key::seq0}, KeyPress{Key::seq1}});
   }
   SUBCASE ("Read more keypresses") {
-    com.data = {5, 3, 0, 0, 0, 0, 0, 0};
-    ctrl->read_input_data();
+    port.data = {5, 3, 0, 0, 0, 0, 0, 0};
+    com.read_input_response();
     REQUIRE(handler.events ==
             Events{KeyPress{Key::seq0}, KeyPress{Key::seq2}, KeyPress{Key::channel0}, KeyPress{Key::channel1}});
   }
   SUBCASE ("No recurring keypresses") {
-    com.data = {1, 0, 0, 0, 0, 0, 0, 0};
-    ctrl->read_input_data();
-    com.data = {1, 0, 0, 0, 0, 0, 0, 0};
-    ctrl->read_input_data();
+    port.data = {1, 0, 0, 0, 0, 0, 0, 0};
+    com.read_input_response();
+    port.data = {1, 0, 0, 0, 0, 0, 0, 0};
+    com.read_input_response();
     REQUIRE(handler.events == Events{KeyPress{Key::seq0}});
   }
   SUBCASE ("KeyRelease") {
-    com.data = {5, 3, 0, 0, 0, 0, 0, 0};
-    ctrl->read_input_data();
+    port.data = {5, 3, 0, 0, 0, 0, 0, 0};
+    com.read_input_response();
     handler.events.clear();
 
-    com.data = {4, 3, 0, 0, 0, 0, 0, 0};
-    ctrl->read_input_data();
+    port.data = {4, 3, 0, 0, 0, 0, 0, 0};
+    com.read_input_response();
     REQUIRE(handler.events == Events{KeyRelease{Key::seq0}});
   }
 
   SUBCASE ("Single EncoderEvent") {
-    com.data = {0, 0, 0, 0, 20, 0, 0, 0};
-    ctrl->read_input_data();
+    port.data = {0, 0, 0, 0, 20, 0, 0, 0};
+    com.read_input_response();
     REQUIRE(handler.events == Events{EncoderEvent{Encoder::blue, 20}});
   }
 
   SUBCASE ("Two EncoderEvents") {
-    com.data = {0, 0, 0, 0, 20, 0, 0, 0};
-    ctrl->read_input_data();
-    com.data = {0, 0, 0, 0, 40, 0, 0, 0};
-    ctrl->read_input_data();
+    port.data = {0, 0, 0, 0, 20, 0, 0, 0};
+    com.read_input_response();
+    port.data = {0, 0, 0, 0, 40, 0, 0, 0};
+    com.read_input_response();
     REQUIRE(handler.events == Events{EncoderEvent{Encoder::blue, 20}, EncoderEvent{Encoder::blue, 20}});
   }
 
   SUBCASE ("Negative EncoderEvents") {
-    com.data = {0, 0, 0, 0, 20, 0, 0, 0};
-    ctrl->read_input_data();
-    com.data = {0, 0, 0, 0, 0, 0, 0, 0};
-    ctrl->read_input_data();
+    port.data = {0, 0, 0, 0, 20, 0, 0, 0};
+    com.read_input_response();
+    port.data = {0, 0, 0, 0, 0, 0, 0, 0};
+    com.read_input_response();
     REQUIRE(handler.events == Events{EncoderEvent{Encoder::blue, 20}, EncoderEvent{Encoder::blue, -20}});
   }
 
   SUBCASE ("EncoderEvents with rollover") {
-    com.data = {0, 0, 0, 0, 255, 0, 0, 0};
-    ctrl->read_input_data();
-    com.data = {0, 0, 0, 0, 0, 0, 0, 0};
-    ctrl->read_input_data();
+    port.data = {0, 0, 0, 0, 255, 0, 0, 0};
+    com.read_input_response();
+    port.data = {0, 0, 0, 0, 0, 0, 0, 0};
+    com.read_input_response();
     REQUIRE(handler.events == Events{EncoderEvent{Encoder::blue, -1}, EncoderEvent{Encoder::blue, 1}});
   }
 
-  SUBCASE ("Rollover limits") {
+  SUBCASE ("Encoder rollover limits") {
     SUBCASE ("lower") {
-      com.data = {0, 0, 0, 0, 128, 0, 0, 0};
-      ctrl->read_input_data();
+      port.data = {0, 0, 0, 0, 128, 0, 0, 0};
+      com.read_input_response();
       REQUIRE(handler.events == Events{EncoderEvent{Encoder::blue, -128}});
     }
     SUBCASE ("upper") {
-      com.data = {0, 0, 0, 0, 127, 0, 0, 0};
-      ctrl->read_input_data();
+      port.data = {0, 0, 0, 0, 127, 0, 0, 0};
+      com.read_input_response();
       REQUIRE(handler.events == Events{EncoderEvent{Encoder::blue, 127}});
     }
   }
 
   SUBCASE ("Errors") {
     SUBCASE ("Too little data") {
-      com.data = {0, 0, 0, 0, 0, 0, 0};
-      REQUIRE_THROWS_WITH_AS(ctrl->read_input_data(), "Data had invalid length. Got 7 bytes, expected 8", util::exception);
+      port.data = {0, 0, 0, 0, 0, 0, 0};
+      REQUIRE_THROWS_WITH_AS(com.read_input_response(), "Data had invalid length. Got 7 bytes, expected 8",
+                             util::exception);
     }
     SUBCASE ("Too much data") {
-      com.data = {0, 0, 0, 0, 0, 0, 0, 0, 0};
-      REQUIRE_THROWS_WITH_AS(ctrl->read_input_data(), "Data had invalid length. Got 9 bytes, expected 8", util::exception);
+      port.data = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+      REQUIRE_THROWS_WITH_AS(com.read_input_response(), "Data had invalid length. Got 9 bytes, expected 8",
+                             util::exception);
     }
   }
+}
+
+
+struct InputMockMCUPort final : services::MCUPort {
+  std::size_t write(std::span<std::uint8_t> data) override
+  {
+    REQUIRE(std::ranges::equal(data, std::array{1_u8}));
+    response_ready = true;
+    return 1;
+  }
+
+  std::span<std::uint8_t> read(std::size_t count) override
+  {
+    if (!response_ready) return {};
+    response_ready = false;
+    return data;
+  }
+
+  std::vector<std::uint8_t> data;
+
+private:
+  bool response_ready = false;
+};
+
+
+TEST_CASE ("MCUController thread") {
+  InputMockMCUPort port;
+  Handler handler;
+  auto app = services::start_app(core::make_handle<LogicThreadStub<itc::QueueExecutor>>(), //
+                                 core::make_handle<services::MCUController>(&port, std::make_unique<TestHWMap>()));
+  core::ServiceAccessor<services::MCUController> ctrl;
+  core::ServiceAccessor<LogicThreadStub<itc::QueueExecutor>> logic_thread;
+  ctrl->set_input_handler(handler);
+
+  port.data = {3, 0, 0, 0, 0, 0, 0, 25};
+  REQUIRE(handler.events == Events{});
+
+  std::this_thread::sleep_for(50ms);
+  logic_thread->executor().run_queued_functions();
+  REQUIRE(handler.events == Events{KeyPress{Key::seq0}, KeyPress{Key::seq1}, EncoderEvent{Encoder::red, 25}});
 }

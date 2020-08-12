@@ -1,5 +1,6 @@
 #include "testing.t.hpp"
 
+#include "app/services/config.hpp"
 #include "app/services/controller.hpp"
 #include "app/services/graphics.hpp"
 #include "app/services/logic_thread.hpp"
@@ -13,7 +14,8 @@ using namespace otto::services;
 
 TEST_CASE (doctest::skip() * "Controller") {
   SUBCASE ("Controller with graphics") {
-    auto app = start_app(LogicThread::make_default(), Controller::make_board(), Graphics::make_board());
+    auto app = start_app(ConfigManager::make_default(), LogicThread::make_default(), Controller::make_board(),
+                         Graphics::make_board());
 
     struct Handler final : InputHandler {
       void handle(const KeyPress& e) noexcept override {}
@@ -45,5 +47,7 @@ TEST_CASE (doctest::skip() * "Controller") {
       if (handler.n == 0) app.service<Runtime>().request_stop();
     });
     app.wait_for_stop();
+
+    std::cout << app.service<ConfigManager>().into_toml() << std::endl;
   }
 }

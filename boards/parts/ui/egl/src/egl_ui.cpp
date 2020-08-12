@@ -101,7 +101,7 @@ namespace otto::board {
     std::jthread thread_;
   };
 
-  core::ServiceHandle<services::Graphics> make_graphics_service()
+  core::ServiceHandle<services::Graphics> make_graphics()
   {
     return core::make_handle<EGLGraphics>();
   }

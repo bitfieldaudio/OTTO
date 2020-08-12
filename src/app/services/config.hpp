@@ -41,6 +41,17 @@ namespace otto {
       template<AConfig Conf>
       const Conf& get() const;
 
+      static core::ServiceHandle<ConfigManager> make_default()
+      {
+        std::filesystem::path config_path = "./ottoconf.toml";
+        if (std::filesystem::is_regular_file(config_path)) {
+          return core::make_handle<ConfigManager>(config_path);
+        }
+        return core::make_handle<ConfigManager>();
+      }
+
+      toml::value into_toml() const;
+
     private:
       template<AConfig Conf>
       static constexpr const char* key_of() noexcept;
@@ -54,7 +65,7 @@ namespace otto {
   template<typename Derived>
   struct Config : IConfig {
     /// The name as it will be shown in the config file
-    /// 
+    ///
     /// Can be overridden in `Derived` by defining a similar constant.
     static constexpr util::string_ref name = util::qualified_name_of<Derived>;
 
@@ -101,6 +112,15 @@ namespace otto::services {
     : ConfigManager(toml::parse<toml::preserve_comments>(config_path))
   {}
 
+  inline toml::value ConfigManager::into_toml() const
+  {
+    toml::value res;
+    for (auto& [k, v] : configs_) {
+      v->to_toml(res[v->get_name().c_str()]);
+    }
+    return res;
+  }
+
   template<AConfig Conf>
   const Conf& ConfigManager::register_config() noexcept
   {
@@ -131,4 +151,5 @@ namespace otto::services {
   {
     return util::qualified_name_of<Conf>.c_str();
   }
+
 } // namespace otto::services
