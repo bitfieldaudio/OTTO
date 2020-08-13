@@ -18,19 +18,28 @@
 
 #include <json.hpp>
 
+#include "app/services/config.hpp"
 #include "app/services/impl/graphics.hpp"
 #include "lib/util/concepts.hpp"
 
 #include "./egl_connection.hpp"
 #include "./egl_deps.hpp"
-#include "board/ui/egl_ui.hpp"
+#include "./fbcp.hpp"
 
 #define GR_GL_RGB8 0x8051
 #define GR_GL_RGBA8 0x8058
 
 namespace otto::board::ui {
 
-  void show_ui(util::callable<bool(SkCanvas&)> auto&& f)
+  struct EGLUIConfig : Config<EGLUIConfig> {
+    static constexpr util::string_ref name = "EGLGraphics";
+    int fps = 30;
+    bool framebuffer_copy = true;
+
+    DECL_VISIT(fps, framebuffer_copy)
+  };
+
+  void show_ui(EGLUIConfig& conf, util::callable<bool(SkCanvas&)> auto&& f)
   {
     EGLConnection egl;
     egl.init();
@@ -54,12 +63,15 @@ namespace otto::board::ui {
     using clock = std::chrono::high_resolution_clock;
     auto one_second = 1e9f;
 
-    auto targetFPS = 30.f;
-    auto waitTime = nanoseconds(int(one_second / targetFPS));
+    auto waitTime = nanoseconds(int(one_second / conf.fps));
     auto t0 = clock::now();
 
     float fps = 0;
     duration<double> lastFrameTime;
+
+    std::optional<RpiFBCP> fbcp = std::nullopt;
+    if (conf.framebuffer_copy) fbcp.emplace(egl.eglData);
+    if (fbcp) fbcp->init();
 
     bool run = true;
 
@@ -72,6 +84,8 @@ namespace otto::board::ui {
       run = std::invoke(f, *canvas);
       context->flush();
       egl.endFrame();
+
+      if (fbcp) fbcp->copy();
 
       lastFrameTime = clock::now() - t0;
       std::this_thread::sleep_for(waitTime - lastFrameTime);
@@ -89,15 +103,17 @@ using namespace otto::board::ui;
 
 namespace otto::board {
   struct EGLGraphics final : services::GraphicsImpl, core::ServiceAccessor<services::Runtime> {
-    EGLGraphics()
-      : thread_([this] {
-          show_ui([this](SkCanvas& ctx) { return loop_function(ctx); });
+    EGLGraphics() : EGLGraphics(core::ServiceAccessor<services::ConfigManager>()->register_config<EGLUIConfig>()) {}
+    EGLGraphics(EGLUIConfig c)
+      : conf(c), thread_([this] {
+          show_ui(conf, [this](SkCanvas& ctx) { return loop_function(ctx); });
           service<services::Runtime>().request_stop();
           exit_thread();
         })
     {}
 
   private:
+    EGLUIConfig conf;
     std::jthread thread_;
   };
 

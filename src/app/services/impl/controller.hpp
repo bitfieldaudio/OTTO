@@ -8,6 +8,7 @@
 #include "lib/util/any_ptr.hpp"
 #include "lib/util/exception.hpp"
 
+#include "app/services/config.hpp"
 #include "app/services/controller.hpp"
 #include "app/services/logic_thread.hpp"
 
@@ -42,8 +43,9 @@ namespace otto::services {
 
     void request_input()
     {
-      std::array<std::uint8_t, 1> data = {1};
-      com_->write(data);
+      std::array<std::uint8_t, 1> data = {0};
+      port_->write(data);
+      std::this_thread::sleep_for(400ms);
       read_input_response();
     }
 
@@ -55,17 +57,24 @@ namespace otto::services {
     util::any_ptr<InputHandler> handler = nullptr;
 
   private:
+    friend struct MCUController;
     std::vector<std::uint8_t> old_data_;
-    util::any_ptr<MCUPort> com_;
+    util::any_ptr<MCUPort> port_;
     util::any_ptr<HardwareMap> hw_;
   };
 
   struct MCUController final : Controller {
-    static constexpr chrono::duration wait_time = 20ms;
+    struct Config : otto::Config<Config> {
+      chrono::duration wait_time = 20ms;
+      DECL_VISIT(wait_time);
+    };
+
     explicit MCUController(util::any_ptr<MCUPort>&& com, util::any_ptr<HardwareMap>&& hw);
+    explicit MCUController(util::any_ptr<MCUPort>&& com, util::any_ptr<HardwareMap>&& hw, Config conf);
     void set_input_handler(InputHandler& h) override;
 
   private:
+    Config conf_;
     MCUCommunicator com_;
     [[no_unique_address]] core::ServiceAccessor<services::Runtime> runtime;
     [[no_unique_address]] core::ServiceAccessor<services::LogicThread> logic_thread;

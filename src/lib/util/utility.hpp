@@ -3,6 +3,7 @@
 #include <tuple>
 #include <utility>
 
+#include "lib/util/macros.hpp"
 #include "lib/util/string_ref.hpp"
 
 /// \file

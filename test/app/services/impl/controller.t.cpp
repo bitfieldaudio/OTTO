@@ -193,7 +193,7 @@ TEST_CASE ("MCUController::read_input_data") {
 struct InputMockMCUPort final : services::MCUPort {
   std::size_t write(std::span<std::uint8_t> data) override
   {
-    REQUIRE(std::ranges::equal(data, std::array{1_u8}));
+    REQUIRE(std::ranges::equal(data, std::array{0_u8}));
     response_ready = true;
     return 1;
   }

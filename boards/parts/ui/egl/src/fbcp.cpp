@@ -1,10 +1,11 @@
-#if false
 #include <fcntl.h>
 #include <stdio.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 
-#include "util/exception.hpp"
+#include "lib/util/exception.hpp"
+
+#include "lib/logging.hpp"
 
 #include "./fbcp.hpp"
 
@@ -27,19 +28,16 @@ namespace otto::board::ui {
       throw util::exception("Unable to get secondary display information");
     }
 
-    LOGI("Second display is {} x {} {}bps\n", vinfo.xres, vinfo.yres,
-         vinfo.bits_per_pixel);
+    LOGI("Second display is {} x {} {}bps\n", vinfo.xres, vinfo.yres, vinfo.bits_per_pixel);
 
     uint32_t image_prt;
-    screen_resource = vc_dispmanx_resource_create(VC_IMAGE_RGB565, vinfo.xres,
-                                                  vinfo.yres, &image_prt);
+    screen_resource = vc_dispmanx_resource_create(VC_IMAGE_RGB565, vinfo.xres, vinfo.yres, &image_prt);
     if (!screen_resource) {
       close(fbfd);
       throw util::exception("Unable to create screen buffer");
     }
 
-    fbp = (char*) mmap(0, finfo.smem_len, PROT_READ | PROT_WRITE, MAP_SHARED,
-                       fbfd, 0);
+    fbp = (char*) mmap(0, finfo.smem_len, PROT_READ | PROT_WRITE, MAP_SHARED, fbfd, 0);
     if (fbp == nullptr) {
       close(fbfd);
       vc_dispmanx_resource_delete(screen_resource);
@@ -52,8 +50,7 @@ namespace otto::board::ui {
   void RpiFBCP::copy()
   {
     vc_dispmanx_snapshot(egl_data.display, screen_resource, DISPMANX_NO_ROTATE);
-    vc_dispmanx_resource_read_data(screen_resource, &rect1, fbp,
-                                   vinfo.xres * vinfo.bits_per_pixel / 8);
+    vc_dispmanx_resource_read_data(screen_resource, &rect1, fbp, vinfo.xres * vinfo.bits_per_pixel / 8);
   }
 
   void RpiFBCP::exit() noexcept
@@ -64,4 +61,3 @@ namespace otto::board::ui {
   }
 
 } // namespace otto::board::ui
-#endif

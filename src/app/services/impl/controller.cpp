@@ -25,13 +25,20 @@ namespace otto::services {
     util::any_ptr<InputHandler> delegate_;
   };
 
-  MCUController::MCUController(util::any_ptr<MCUPort>&& port, util::any_ptr<HardwareMap>&& hw)
-    : com_(std::move(port), std::move(hw)), thread_([this] {
+  MCUController::MCUController(util::any_ptr<MCUPort>&& port, util::any_ptr<HardwareMap>&& hw, Config conf)
+    : conf_(std::move(conf)), com_(std::move(port), std::move(hw)), thread_([this] {
         while (runtime->should_run()) {
-          com_.request_input();
-          std::this_thread::sleep_for(wait_time);
+          std::array<std::uint8_t, 1> data = {0};
+          com_.port_->write(data);
+          std::this_thread::sleep_for(conf_.wait_time);
+          com_.read_input_response();
+          std::this_thread::sleep_for(conf_.wait_time);
         }
       })
+  {}
+
+  MCUController::MCUController(util::any_ptr<MCUPort>&& port, util::any_ptr<HardwareMap>&& hw)
+    : MCUController(std::move(port), std::move(hw), core::ServiceAccessor<ConfigManager>()->register_config<Config>())
   {}
 
   void MCUController::set_input_handler(InputHandler& h)
@@ -40,7 +47,7 @@ namespace otto::services {
   }
 
   MCUCommunicator::MCUCommunicator(util::any_ptr<MCUPort>&& com, util::any_ptr<HardwareMap>&& hw)
-    : com_(std::move(com)), hw_(std::move(hw))
+    : port_(std::move(com)), hw_(std::move(hw))
   {
     old_data_.resize(hw_->row_count() + 4);
   }
@@ -49,7 +56,7 @@ namespace otto::services {
   {
     auto nrows = hw_->row_count();
     auto ncols = hw_->col_count();
-    std::span data = com_->read(nrows + 4);
+    std::span data = port_->read(nrows + 4);
     if (data.empty()) return;
     if (data.size() != nrows + 4)
       throw util::exception("Data had invalid length. Got {} bytes, expected {}", data.size(), nrows + 4);

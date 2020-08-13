@@ -91,3 +91,14 @@ namespace otto::toml {
     return literals::operator""_toml(str.c_str(), str.size());
   }
 } // namespace otto::toml
+
+namespace toml {
+
+  template<>
+  struct into<std::filesystem::path> {
+    static toml::string into_toml(const std::filesystem::path& v)
+    {
+      return toml::string(v.c_str());
+    }
+  };
+} // namespace toml

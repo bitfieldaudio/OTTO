@@ -81,7 +81,9 @@ namespace otto {
           val[name.c_str()] = v;
         });
       } else {
-        OTTO_UNREACHABLE("{} must either implement visit or override to_toml and from_toml", util::name_of<Derived>);
+        // Find a way to make this a compile time error?
+        OTTO_UNREACHABLE("{} must either implement visit or override to_toml and from_toml",
+                         util::qualified_name_of<Derived>);
       }
     }
 
@@ -96,7 +98,9 @@ namespace otto {
           }
         });
       } else {
-        OTTO_UNREACHABLE("{} must either implement visit or override to_toml and from_toml", util::name_of<Derived>);
+        // Find a way to make this a compile time error?
+        OTTO_UNREACHABLE("{} must either implement visit or override to_toml and from_toml",
+                         util::qualified_name_of<Derived>);
       }
     }
   };
@@ -114,7 +118,7 @@ namespace otto::services {
 
   inline toml::value ConfigManager::into_toml() const
   {
-    toml::value res;
+    toml::value res = config_data_;
     for (auto& [k, v] : configs_) {
       v->to_toml(res[v->get_name().c_str()]);
     }

@@ -1,8 +1,12 @@
 #pragma once
 
+#include <concepts>
+#include <span>
+
 #define LOGURU_USE_FMTLIB 1
 #include <loguru.hpp>
 
+#include "lib/util/concepts.hpp"
 #include "lib/util/macros.hpp"
 
 namespace otto::logging {

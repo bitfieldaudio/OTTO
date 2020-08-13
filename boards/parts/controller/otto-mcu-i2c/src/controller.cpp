@@ -104,7 +104,8 @@ namespace otto::board {
   struct I2CMCUPort final : services::MCUPort {
     struct Config : otto::Config<Config> {
       std::uint16_t address = 0x77;
-      std::filesystem::path device_path = "/dev/i2c-1";
+      std::string device_path = "/dev/i2c-1";
+      DECL_VISIT(address, device_path)
     };
 
     I2CMCUPort() : I2CMCUPort(core::ServiceAccessor<services::ConfigManager>()->register_config<Config>()) {}
@@ -117,7 +118,12 @@ namespace otto::board {
 
     std::size_t write(std::span<std::uint8_t> data) override
     {
+      LOGI("Writing {:02X}", fmt::join(data, " "));
       auto ec = i2c.write(data);
+      if (ec.value() == EREMOTEIO) {
+        LOGW("MCU nack'd i2c write");
+        ec = {};
+      }
       if (ec) throw std::system_error(ec);
       return data.size();
     }
@@ -126,6 +132,11 @@ namespace otto::board {
     {
       data.resize(count);
       auto ec = i2c.read_into(data);
+      LOGI("Read: {:02X}", fmt::join(data, " "));
+      if (ec.value() == EREMOTEIO) {
+        LOGW("MCU nack'd i2c read");
+        ec = {};
+      }
       if (ec) throw std::system_error(ec);
       return data;
     }
@@ -136,8 +147,10 @@ namespace otto::board {
 
   core::ServiceHandle<services::Controller> make_controller()
   {
-    return core::make_handle<services::MCUController>(std::make_unique<I2CMCUPort>(),
-                                                      std::make_unique<services::Betav01HWMap>());
+    return core::ServiceHandle<services::Controller>([] {
+      return std::make_unique<services::MCUController>(std::make_unique<I2CMCUPort>(),
+                                                       std::make_unique<services::Betav01HWMap>());
+    });
   }
 } // namespace otto::board
 
