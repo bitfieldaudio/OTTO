@@ -11,20 +11,6 @@ struct TestConfig final : Config<TestConfig> {
   int option1 = 4;
   std::string option2 = "test";
 
-  // void to_toml(toml::value& val) const
-  // {
-  //   val["option1"] = option1;
-  //   val["option2"] = option2;
-  // }
-  // void from_toml(const toml::value& val)
-  // {
-  //   option1 = toml::find<decltype(option1)>(val, "option1");
-  //   option2 = toml::find<decltype(option2)>(val, "option2");
-  // }
-  //
-  // Both of those will be implemented to something that looks basically like the above
-  // by using DECL_VISIT:
-
   DECL_VISIT(option1, option2);
 };
 

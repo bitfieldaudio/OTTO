@@ -42,12 +42,12 @@ namespace otto::services {
     sends,
     plus,
     routing,
-    rec,
     minus,
     fx1,
     fx2,
     master,
     play,
+    record,
     arp,
     slots,
     twist1,
@@ -56,9 +56,16 @@ namespace otto::services {
     external,
     sampler,
     envelope,
+    voices,
     settings,
     sequencer,
-    synth
+    synth,
+    unassigned_a,
+    unassigned_b,
+    unassigned_c,
+    unassigned_d,
+    unassigned_e,
+    unassigned_f,
   };
 
   struct KeyEvent {
