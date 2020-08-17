@@ -216,7 +216,8 @@ TEST_CASE ("MCUController thread") {
   InputMockMCUPort port;
   Handler handler;
   auto app = services::start_app(core::make_handle<LogicThreadStub<itc::QueueExecutor>>(), //
-                                 core::make_handle<services::MCUController>(&port, std::make_unique<TestHWMap>()));
+                                 core::make_handle<services::MCUController>(&port, std::make_unique<TestHWMap>(),
+                                                                            otto::services::MCUController::Config()));
   core::ServiceAccessor<services::MCUController> ctrl;
   core::ServiceAccessor<LogicThreadStub<itc::QueueExecutor>> logic_thread;
   ctrl->set_input_handler(handler);

@@ -69,12 +69,11 @@ namespace otto::services {
       DECL_VISIT(wait_time);
     };
 
-    explicit MCUController(util::any_ptr<MCUPort>&& com, util::any_ptr<HardwareMap>&& hw);
-    explicit MCUController(util::any_ptr<MCUPort>&& com, util::any_ptr<HardwareMap>&& hw, Config conf);
+    explicit MCUController(util::any_ptr<MCUPort>&& com, util::any_ptr<HardwareMap>&& hw, Config::Handle conf = {});
     void set_input_handler(InputHandler& h) override;
 
   private:
-    Config conf_;
+    Config::Handle conf_;
     MCUCommunicator com_;
     [[no_unique_address]] core::ServiceAccessor<services::Runtime> runtime;
     [[no_unique_address]] core::ServiceAccessor<services::LogicThread> logic_thread;

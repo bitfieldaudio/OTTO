@@ -25,20 +25,16 @@ namespace otto::services {
     util::any_ptr<InputHandler> delegate_;
   };
 
-  MCUController::MCUController(util::any_ptr<MCUPort>&& port, util::any_ptr<HardwareMap>&& hw, Config conf)
+  MCUController::MCUController(util::any_ptr<MCUPort>&& port, util::any_ptr<HardwareMap>&& hw, Config::Handle conf)
     : conf_(std::move(conf)), com_(std::move(port), std::move(hw)), thread_([this] {
         while (runtime->should_run()) {
           std::array<std::uint8_t, 1> data = {0};
           com_.port_->write(data);
-          std::this_thread::sleep_for(conf_.wait_time);
+          std::this_thread::sleep_for(conf_->wait_time);
           com_.read_input_response();
-          std::this_thread::sleep_for(conf_.wait_time);
+          std::this_thread::sleep_for(conf_->wait_time);
         }
       })
-  {}
-
-  MCUController::MCUController(util::any_ptr<MCUPort>&& port, util::any_ptr<HardwareMap>&& hw)
-    : MCUController(std::move(port), std::move(hw), core::ServiceAccessor<ConfigManager>()->register_config<Config>())
   {}
 
   void MCUController::set_input_handler(InputHandler& h)

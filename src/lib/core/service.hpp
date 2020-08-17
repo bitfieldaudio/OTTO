@@ -207,17 +207,24 @@ namespace otto::core {
     }
 
     template<util::one_of<Services...> S>
-    S& service() const noexcept
+    S& service() const& noexcept
     {
       S* res = dynamic_cast<S*>(detail::active_service_<typename S::ServiceType>);
       OTTO_ASSERT(res != nullptr, "Tried to access service '{}' with none registered", util::name_of<S>);
       return *res;
     }
 
-    auto* operator->() const noexcept requires(sizeof...(Services) == 1)
+    auto* operator->() const& noexcept requires(sizeof...(Services) == 1)
     {
       return &service<Services...>();
     }
+
+
+    // Do not allow service access from temporary
+    template<util::one_of<Services...> S>
+    S& service() && = delete;
+    // Do not allow service access from temporary
+    auto* operator->() && = delete;
 
   private:
     template<util::one_of<Services...> S>
@@ -238,16 +245,15 @@ namespace otto::core {
   /// Require access to a service from a type that might be constructed before the service.
   template<AService... Services>
   struct UnsafeServiceAccessor {
-  protected:
     template<util::one_of<Services...> S>
     S* service_unsafe() const noexcept
     {
-      return detail::active_service_<S>;
+      return unsafe_get_active_service<S>;
     }
 
     auto* operator->() const noexcept requires(sizeof...(Services) == 1)
     {
-      return &service_unsafe<Services...>();
+      return service_unsafe<Services...>();
     }
 
     bool is_active() const noexcept requires(sizeof...(Services) == 1)

@@ -108,11 +108,9 @@ namespace otto::board {
       DECL_VISIT(address, device_path)
     };
 
-    I2CMCUPort() : I2CMCUPort(core::ServiceAccessor<services::ConfigManager>()->register_config<Config>()) {}
-
-    I2CMCUPort(const Config& conf) : i2c(conf.address)
+    I2CMCUPort(Config::Handle c = {}) : conf(c), i2c(conf->address)
     {
-      auto ec = i2c.open(conf.device_path);
+      auto ec = i2c.open(conf->device_path);
       if (ec) throw std::system_error(ec);
     }
 
@@ -141,6 +139,7 @@ namespace otto::board {
       return data;
     }
 
+    Config::Handle conf;
     util::I2C i2c;
     std::vector<std::uint8_t> data;
   };

@@ -1,7 +1,10 @@
 #pragma once
 
 #include <toml.hpp>
+
 #include "lib/util/string_ref.hpp"
+
+#include "lib/util/visitor.hpp"
 
 namespace otto::toml {
 

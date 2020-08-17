@@ -11,14 +11,59 @@
 #include "lib/core/service.hpp"
 
 namespace otto {
+  template<typename Conf>
+  struct ConfHandle;
 
-  struct IConfig : toml::TomlSerializable {
-    virtual ~IConfig() = default;
-    virtual util::string_ref get_name() const noexcept = 0;
+  /// CRTP Base class for Config objects.
+  template<typename Derived>
+  struct Config {
+    using Handle = ConfHandle<Derived>;
+    /// The name as it will be shown in the config file
+    ///
+    /// Can be overridden in `Derived` by defining a similar constant.
+    static constexpr util::string_ref name = util::qualified_name_of<Derived>;
+
+    // TODO: BUG IN GCC 10.1 - https://godbolt.org/z/qeTM6P
+    // This is just there to disable aggregate initialization
+    // to circumvent the bug.
+    // We should require GCC 10.2 as soon as poky (yocto) uses it
+    virtual ~Config() = default;
+
+    util::string_ref get_name() const noexcept
+    {
+      return Derived::name;
+    }
+
+    void to_toml(toml::value& val) const
+    {
+      static_assert(util::AVisitable<Derived>, "Config types must be visitable. Add DECL_VISIT(members...)");
+      static_cast<const Derived&>(*this).visit([&](util::string_ref name, const auto& v) { //
+        val[name.c_str()] = v;
+      });
+    }
+
+    void from_toml(const toml::value& val)
+    {
+      static_assert(util::AVisitable<Derived>, "Config types must be visitable. Add DECL_VISIT(members...)");
+      static_cast<Derived&>(*this).visit([&](util::string_ref name, auto& v) { //
+        try {
+          v = toml::find<std::remove_reference_t<decltype(v)>>(val, name.c_str());
+        } catch (std::out_of_range& e) {
+          LOGI("Using default value for option {}.{}", get_name(), name);
+        }
+      });
+    }
+
+    toml::value into_toml() const
+    {
+      toml::value v;
+      static_cast<Derived&>(*this).to_toml(v);
+      return v;
+    }
   };
 
   template<typename T>
-  concept AConfig = std::is_base_of_v<IConfig, T>;
+  concept AConfig = std::is_base_of_v<Config<T>, T>;
 
   namespace services {
 
@@ -29,17 +74,11 @@ namespace otto {
       /// Initialize the configurations from a toml file
       ConfigManager(std::filesystem::path config_path);
 
-      /// Register a config type, and initialize it from the config data
+      /// Construct a config type, and initialize it from the config data
+      ///
+      /// Also adds the constructed data back to the stored toml
       template<AConfig Conf>
-      const Conf& register_config() noexcept;
-
-      /// Check whether a config type has been registered
-      template<AConfig Conf>
-      bool is_registered() const noexcept;
-
-      /// Get registered config object
-      template<AConfig Conf>
-      const Conf& get() const;
+      Conf make_conf() noexcept;
 
       static core::ServiceHandle<ConfigManager> make_default()
       {
@@ -57,59 +96,42 @@ namespace otto {
       static constexpr const char* key_of() noexcept;
 
       toml::value config_data_;
-      std::pmr::unordered_map<const char*, std::unique_ptr<IConfig>> configs_;
     };
   } // namespace services
 
-  /// CRTP Base class for Config objects.
-  template<typename Derived>
-  struct Config : IConfig {
-    /// The name as it will be shown in the config file
-    ///
-    /// Can be overridden in `Derived` by defining a similar constant.
-    static constexpr util::string_ref name = util::qualified_name_of<Derived>;
 
-    util::string_ref get_name() const noexcept final
+  template<AConfig Conf>
+  struct ConfHandle<Conf> {
+    ConfHandle() noexcept
+      : ConfHandle([&] {
+          OTTO_ASSERT(confman.is_active(), "{} constructed with no ConfigManager active",
+                      util::qualified_name_of<Conf>);
+          return confman->make_conf<Conf>();
+        }())
+    {}
+    ConfHandle(Conf c) noexcept : conf(std::move(c)) {}
+
+    const Conf* operator->() const noexcept
     {
-      return Derived::name;
+      return &conf;
     }
 
-    void to_toml(toml::value& val) const override
+    const Conf& operator*() const noexcept
     {
-      if constexpr (util::AVisitable<Derived>) {
-        static_cast<const Derived&>(*this).visit([&](util::string_ref name, const auto& v) { //
-          val[name.c_str()] = v;
-        });
-      } else {
-        // Find a way to make this a compile time error?
-        OTTO_UNREACHABLE("{} must either implement visit or override to_toml and from_toml",
-                         util::qualified_name_of<Derived>);
-      }
+      return conf;
     }
 
-    void from_toml(const toml::value& val) override
-    {
-      if constexpr (util::AVisitable<Derived>) {
-        static_cast<Derived&>(*this).visit([&](util::string_ref name, auto& v) { //
-          try {
-            v = toml::find<std::remove_reference_t<decltype(v)>>(val, name.c_str());
-          } catch (std::out_of_range& e) {
-            LOGI("Using default value for option {}.{}", get_name(), name);
-          }
-        });
-      } else {
-        // Find a way to make this a compile time error?
-        OTTO_UNREACHABLE("{} must either implement visit or override to_toml and from_toml",
-                         util::qualified_name_of<Derived>);
-      }
-    }
+  private:
+    [[no_unique_address]] core::UnsafeServiceAccessor<services::ConfigManager> confman;
+    Conf conf;
   };
 
 } // namespace otto
 
+namespace toml {}
+
 // Implementations:
 namespace otto::services {
-
 
   inline ConfigManager::ConfigManager(toml::value config_data) : config_data_(std::move(config_data)) {}
   inline ConfigManager::ConfigManager(std::filesystem::path config_path)
@@ -118,38 +140,29 @@ namespace otto::services {
 
   inline toml::value ConfigManager::into_toml() const
   {
-    toml::value res = config_data_;
-    for (auto& [k, v] : configs_) {
-      v->to_toml(res[v->get_name().c_str()]);
-    }
-    return res;
+    return config_data_;
   }
 
   template<AConfig Conf>
-  const Conf& ConfigManager::register_config() noexcept
+  Conf ConfigManager::make_conf() noexcept
   {
-    auto ptr = std::make_unique<Conf>();
-    auto& res = *ptr;
+    Conf res;
+    auto& data = config_data_[res.get_name().c_str()];
     try {
-      res.from_toml(config_data_[res.get_name().c_str()]);
+      res.from_toml(data);
     } catch (const std::exception& e) {
       LOGW("Error in config {}, using default: ", res.get_name());
       LOGW("{}", e.what());
     }
-    configs_[key_of<Conf>()] = std::move(ptr);
+    try {
+      res.to_toml(data);
+    } catch (const std::exception& e) {
+      data = toml::value();
+      res.to_toml(data);
+    }
     return res;
   }
 
-  template<AConfig Conf>
-  bool ConfigManager::is_registered() const noexcept
-  {
-    return configs_.contains(key_of<Conf>());
-  }
-  template<AConfig Conf>
-  const Conf& ConfigManager::get() const
-  {
-    return static_cast<Conf&>(*configs_.at(key_of<Conf>()));
-  }
   template<AConfig Conf>
   constexpr const char* ConfigManager::key_of() noexcept
   {

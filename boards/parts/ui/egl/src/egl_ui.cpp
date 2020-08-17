@@ -39,7 +39,7 @@ namespace otto::board::ui {
     DECL_VISIT(fps, framebuffer_copy)
   };
 
-  void show_ui(EGLUIConfig& conf, util::callable<bool(SkCanvas&)> auto&& f)
+  void show_ui(const EGLUIConfig& conf, util::callable<bool(SkCanvas&)> auto&& f)
   {
     EGLConnection egl;
     egl.init();
@@ -103,17 +103,16 @@ using namespace otto::board::ui;
 
 namespace otto::board {
   struct EGLGraphics final : services::GraphicsImpl, core::ServiceAccessor<services::Runtime> {
-    EGLGraphics() : EGLGraphics(core::ServiceAccessor<services::ConfigManager>()->register_config<EGLUIConfig>()) {}
-    EGLGraphics(EGLUIConfig c)
+    EGLGraphics(EGLUIConfig::Handle c = {})
       : conf(c), thread_([this] {
-          show_ui(conf, [this](SkCanvas& ctx) { return loop_function(ctx); });
+          show_ui(*conf, [this](SkCanvas& ctx) { return loop_function(ctx); });
           service<services::Runtime>().request_stop();
           exit_thread();
         })
     {}
 
   private:
-    EGLUIConfig conf;
+    EGLUIConfig::Handle conf;
     std::jthread thread_;
   };
 
