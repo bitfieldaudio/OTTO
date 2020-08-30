@@ -25,13 +25,21 @@ namespace otto::services {
     util::any_ptr<InputHandler> delegate_;
   };
 
-  MCUController::MCUController(util::any_ptr<MCUPort>&& port, util::any_ptr<HardwareMap>&& hw, Config::Handle conf)
-    : conf_(std::move(conf)), com_(std::move(port), std::move(hw)), thread_([this] {
+  MCUController::MCUController(util::any_ptr<MCUPort>&& port, Config::Handle conf)
+    : conf_(std::move(conf)), com_(std::move(port)), thread_([this] {
         while (runtime->should_run()) {
-          std::array<std::uint8_t, 1> data = {0};
-          com_.port_->write(data);
-          std::this_thread::sleep_for(conf_->wait_time);
-          com_.read_input_response();
+          {
+            std::unique_lock l(queue_mutex_);
+            for (const auto& data : queue_) {
+              com_.port_->write(data);
+            }
+            queue_.clear();
+          }
+          Packet p;
+          do {
+            p = com_.port_->read();
+            com_.handle_packet(p);
+          } while (p.cmd != Command::none);
           std::this_thread::sleep_for(conf_->wait_time);
         }
       })
@@ -42,42 +50,32 @@ namespace otto::services {
     com_.handler = std::make_unique<ExecutorWrapper>(logic_thread->executor(), &h);
   }
 
-  MCUCommunicator::MCUCommunicator(util::any_ptr<MCUPort>&& com, util::any_ptr<HardwareMap>&& hw)
-    : port_(std::move(com)), hw_(std::move(hw))
+  void MCUController::set_led_color(LED led, LEDColor c)
   {
-    old_data_.resize(hw_->row_count() + 4);
+    std::unique_lock l(queue_mutex_);
+    queue_.push_back({Command::led_set, {util::enum_integer(led.key), c.r, c.g, c.b}});
   }
 
-  void MCUCommunicator::read_input_response()
+  MCUCommunicator::MCUCommunicator(util::any_ptr<MCUPort>&& com) : port_(std::move(com)) {}
+
+  void MCUCommunicator::handle_packet(Packet p)
   {
-    auto nrows = hw_->row_count();
-    auto ncols = hw_->col_count();
-    std::span data = port_->read(nrows + 4);
-    if (data.empty()) return;
-    if (data.size() != nrows + 4)
-      throw util::exception("Data had invalid length. Got {} bytes, expected {}", data.size(), nrows + 4);
-    if (!handler) return;
-    for (int r = 0; r < data.size(); r++) {
-      for (int c = 0; c < ncols; c++) {
-        auto key = hw_->key_at(r, c);
-        if (!key) continue;
-        if ((data[r] & (1 << c)) == (old_data_[r] & (1 << c))) continue;
-        if (data[r] & (1 << c)) {
-          handler->handle(KeyPress{*key});
-        } else {
-          handler->handle(KeyRelease{*key});
+    switch (p.cmd) {
+      case Command::key_events: {
+        std::span<std::uint8_t> presses = {p.data.data(), 8};
+        std::span<std::uint8_t> releases = {p.data.data() + 8, 8};
+        for (auto k : util::enum_values<Key>()) {
+          if (util::get_bit(presses, util::enum_integer(k))) handler->handle(KeyPress{{k}});
+          if (util::get_bit(releases, util::enum_integer(k))) handler->handle(KeyRelease{{k}});
         }
-      }
+      } break;
+      case Command::encoder_events: {
+        for (auto e : util::enum_values<Encoder>()) {
+          if (p.data[util::enum_integer(e)] == 0) continue;
+          handler->handle(EncoderEvent{e, static_cast<std::int8_t>(p.data[util::enum_integer(e)])});
+        }
+      } break;
+      default: break;
     }
-    for (int i = 0; i < 4; i++) {
-      auto didx = i + nrows;
-      if (old_data_[didx] == data[didx]) continue;
-      auto enc = *util::enum_cast<Encoder>(i);
-      int val = data[didx] - old_data_[didx];
-      // Handle rollover correctly
-      if (std::abs(val) > 127) val -= std::copysign(256, val);
-      handler->handle(EncoderEvent{enc, val});
-    }
-    std::ranges::copy(data, old_data_.begin());
   }
 } // namespace otto::services

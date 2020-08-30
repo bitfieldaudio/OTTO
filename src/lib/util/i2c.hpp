@@ -1,9 +1,10 @@
 #pragma once
 
-#include <span>
 #include <cstdint>
 #include <filesystem>
+#include <span>
 #include <system_error>
+#include <vector>
 
 namespace otto::util {
 
@@ -16,12 +17,13 @@ namespace otto::util {
     [[nodiscard]] std::error_code open(const std::filesystem::path&);
     [[nodiscard]] std::error_code close();
 
-    [[nodiscard]] std::error_code write(std::span<std::uint8_t> message);
+    [[nodiscard]] std::error_code write(std::span<const std::uint8_t> message);
     [[nodiscard]] std::error_code read_into(std::span<std::uint8_t> buffer);
 
   private:
+    std::vector<std::uint8_t> buffer;
     int i2c_fd = -1;
     std::uint16_t address = 0;
   };
 
-}
+} // namespace otto::util

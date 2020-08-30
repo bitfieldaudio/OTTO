@@ -34,7 +34,7 @@ namespace otto::board::ui {
   struct EGLUIConfig : Config<EGLUIConfig> {
     static constexpr util::string_ref name = "EGLGraphics";
     int fps = 30;
-    bool framebuffer_copy = true;
+    bool framebuffer_copy = false;
 
     DECL_VISIT(fps, framebuffer_copy)
   };

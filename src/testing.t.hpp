@@ -60,6 +60,18 @@
 namespace fs = std::filesystem;
 
 namespace otto::test {
+
+  struct interactive {
+    void fill(doctest::detail::TestCase& state) const
+    {
+      state* doctest::skip() * doctest::test_suite("interactive");
+    }
+    void fill(doctest::detail::TestSuite& state) const
+    {
+      state* doctest::skip() * doctest::test_suite("interactive");
+    }
+  };
+
   inline fs::path dir = fs::current_path() / "testdir";
 
   inline void truncateFile(const fs::path& p)

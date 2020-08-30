@@ -51,13 +51,15 @@ namespace otto::util {
     return {};
   }
 
-  std::error_code I2C::write(std::span<std::uint8_t> message)
+  std::error_code I2C::write(std::span<const std::uint8_t> message)
   {
+    buffer.clear();
+    std::ranges::copy(message, std::back_inserter(buffer));
     ::i2c_msg iomsg = {
       .addr = address,
       .flags = 0,
       .len = static_cast<std::uint16_t>(message.size()),
-      .buf = message.data(),
+      .buf = buffer.data(),
     };
     ::i2c_rdwr_ioctl_data msgset = {
       .msgs = &iomsg,

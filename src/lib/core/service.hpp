@@ -248,7 +248,7 @@ namespace otto::core {
     template<util::one_of<Services...> S>
     S* service_unsafe() const noexcept
     {
-      return unsafe_get_active_service<S>;
+      return unsafe_get_active_service<S>();
     }
 
     auto* operator->() const noexcept requires(sizeof...(Services) == 1)

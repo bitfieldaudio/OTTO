@@ -12,13 +12,21 @@
 using namespace otto;
 using namespace otto::services;
 
-TEST_CASE (doctest::skip() * "EncoderGUI") {
+TEST_CASE (test::interactive() * "EncoderGUI") {
   auto app = start_app(ConfigManager::make_default(), LogicThread::make_default(), Controller::make_board(),
                        Graphics::make_board());
 
   struct Handler final : InputHandler {
-    void handle(const KeyPress& e) noexcept override {}
-    void handle(const KeyRelease& e) noexcept override {}
+    void handle(const KeyPress& e) noexcept override
+    {
+      LOGI("Keypress {}", util::enum_name(e.key));
+      controller->set_led_color({e.key}, {0xFF, 0xFF, 0xFF});
+    }
+    void handle(const KeyRelease& e) noexcept override
+    {
+      LOGI("Keyrelease {}", util::enum_name(e.key));
+      controller->set_led_color({e.key}, {0x00, 0x00, 0x00});
+    }
     void handle(const EncoderEvent& e) noexcept override
     {
       color = [&] {
@@ -32,6 +40,7 @@ TEST_CASE (doctest::skip() * "EncoderGUI") {
       }();
       n += e.steps;
     }
+    [[no_unique_address]] core::ServiceAccessor<Controller> controller;
     SkColor color = SK_ColorWHITE;
     util::StaticallyBounded<int, 0, 160> n = 80;
   } handler;
@@ -46,10 +55,4 @@ TEST_CASE (doctest::skip() * "EncoderGUI") {
     if (handler.n == 0) app.service<Runtime>().request_stop();
   });
   app.wait_for_stop();
-
-  std::cout << app.service<ConfigManager>().into_toml() << std::endl;
-}
-
-TEST_CASE (doctest::skip() * "Controller") {
-  SUBCASE ("Controller with graphics") {}
 }

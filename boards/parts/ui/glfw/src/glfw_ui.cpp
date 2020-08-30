@@ -216,7 +216,7 @@ namespace otto::board {
                        glfw::Modifiers mods,
                        glfw::Key key,
                        itc::IExecutor& executor,
-                       services::InputHandler& handler);
+                       InputHandler& handler);
 
   using namespace services;
 
@@ -248,6 +248,8 @@ namespace otto::board {
     {
       handler_ = &handler;
     }
+
+    void set_led_color(LED led, LEDColor) override {}
 
   private:
     friend GlfwGraphics;

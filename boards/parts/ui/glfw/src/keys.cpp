@@ -8,25 +8,24 @@ namespace otto::board {
                        glfw::Modifiers mods,
                        glfw::Key key,
                        itc::IExecutor& executor,
-                       services::InputHandler& handler)
+                       InputHandler& handler)
   {
     using glfw::Action;
     using glfw::Key;
     using glfw::Modifier;
-    using OKey = services::Key;
-    using Encoder = services::Encoder;
+    using OKey = otto::Key;
 
     auto send_event = [&](auto event) { executor.execute([event, &handler] { handler.handle(event); }); };
 
     auto send_key = [&, action](OKey k, bool repeat = false) {
       if (action == Action::press || (action == Action::repeat && repeat))
-        send_event(services::KeyPress{k});
+        send_event(KeyPress{k});
       else if (action == Action::release)
-        send_event(services::KeyRelease{k});
+        send_event(KeyRelease{k});
     };
 
     auto send_encoder = [&, action](Encoder rot, int n) {
-      if (action == Action::press || (action == Action::repeat)) send_event(services::EncoderEvent{rot, n});
+      if (action == Action::press || (action == Action::repeat)) send_event(EncoderEvent{rot, n});
     };
 
 
@@ -140,6 +139,6 @@ namespace otto::board {
       default: break;
     }
   }
-} // namespace otto::board::ui
+} // namespace otto::board
 
 // kak: other_file=../include/board/ui/keys.hpp
