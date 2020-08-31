@@ -1,0 +1,10 @@
+[EGLGraphics]
+framebuffer_copy = false
+fps = 30
+
+["otto::services::MCUController::Config"]
+wait_time = 00:00:00.020
+
+["otto::board::I2CMCUPort::Config"]
+device_path = "/dev/i2c-1"
+address = 119

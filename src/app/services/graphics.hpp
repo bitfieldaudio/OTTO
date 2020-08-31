@@ -9,8 +9,6 @@
 
 namespace otto::services {
 
-
-
   struct Graphics : core::Service<Graphics> {
     /// Open a window/display drawing the given draw function
     virtual void show(std::function<void(SkCanvas&)>) = 0;
