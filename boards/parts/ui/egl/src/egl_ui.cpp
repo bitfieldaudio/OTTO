@@ -43,7 +43,10 @@ namespace otto::board::ui {
     EGLSurface surface = nullptr;
     EGLContext context = nullptr;
 
-    ~CubeState() { exit(); };
+    ~CubeState()
+    {
+      exit();
+    };
 
     void init();
     void exit();
@@ -157,14 +160,14 @@ namespace otto::board::ui {
     GrGLFramebufferInfo fbInfo;
     fbInfo.fFBOID = 0;
     fbInfo.fFormat = 0x8051;
-    // Screen sizes are gathered from graphics driver    
+    // Screen sizes are gathered from graphics driver
     GrBackendRenderTarget desc(state.screen_width, state.screen_height, 0, 8, fbInfo);
-    
+
     SkSurface* surface = SkSurface::MakeFromBackendRenderTarget(grContext.release(), desc, kBottomLeft_GrSurfaceOrigin,
                                                                 SkColorType::kRGB_888x_SkColorType, nullptr, nullptr)
-                          .release();
+                           .release();
     SkCanvas* canvas = surface->getCanvas();
-    
+
     // Timing setup
     using std::chrono::duration;
     using std::chrono::nanoseconds;
@@ -183,7 +186,6 @@ namespace otto::board::ui {
       t0 = clock::now();
 
       // Update and render
-      std::cout << "Rendering frame";
       canvas->clear(SK_ColorBLACK);
       run = std::invoke(f, *canvas);
       canvas->flush();

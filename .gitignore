@@ -32,3 +32,4 @@ test/core/voices/todo.md
 
 .ccls-cache
 .clangd/
+.cache

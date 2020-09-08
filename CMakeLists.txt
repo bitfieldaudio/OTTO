@@ -37,7 +37,7 @@ if (DEFINED CMAKE_CXX_FLAGS_DEBUG_INIT AND
     endif()
 endif()
 
-option (FORCE_COLORED_OUTPUT "Always produce ANSI-colored output (GNU/Clang only)." FALSE)
+option (FORCE_COLORED_OUTPUT "Always produce ANSI-colored output (GNU/Clang only)." TRUE)
 if (${FORCE_COLORED_OUTPUT})
     if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
        add_compile_options (-fdiagnostics-color=always)
@@ -59,9 +59,21 @@ set_property(CACHE OTTO_BOARD PROPERTY STRINGS ${OTTO_BOARDS})
 
 if (OTTO_USE_LIBCXX)
   message(FATAL_ERROR "libc++ support is currently disabled, until it supports more of c++17/20. "
-    "Use a recent version of libstdc++ instead, by setting OTTO_USE_LIBCXX to false in cmake. ")
+    "Use a recent version of libstdc++ instead, and set OTTO_USE_LIBCXX to false in cmake. ")
   message("Using libc++ instead of libstdc++")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+endif()
+
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 10.2)
+        message(FATAL_ERROR "GCC version must be at least 10.2!")
+    endif()
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 10.0)
+        message(FATAL_ERROR "Clang version must be at least 10.0!")
+    endif()
+else()
+    message(WARNING "You are using an unsupported compiler! Compilation has only been tested with Clang and GCC.")
 endif()
 
 set(OTTO_EXTERNAL_DIR ${OTTO_SOURCE_DIR}/external/)

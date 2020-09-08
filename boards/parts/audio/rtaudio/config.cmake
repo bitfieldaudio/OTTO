@@ -1,14 +1,21 @@
-if(APPLE) 
-    target_compile_definitions(otto_src PUBLIC "__MACOSX_CORE__")
-    target_link_libraries(otto_src PUBLIC 
-        "-framework CoreAudio"
-        "-framework CoreMIDI"
-        "-framework AudioToolbox")
-else()
-    target_compile_definitions(otto_src PUBLIC "__LINUX_ALSA__")
-    target_link_libraries(otto_src PUBLIC asound)
+CPMAddPackage(
+  NAME rtaudio
+  GITHUB_REPOSITORY thestk/rtaudio
+  GIT_TAG 5.1.0
+  OPTIONS
+    "BUILD_SHARED_LIBS Off"
+    "RTAUDIO_TARGETNAME_UNINSTALL rtaudio-uninstall"
+    "BUILD_TESTING Off"
+)
+target_link_libraries(otto_src PUBLIC rtaudio)
 
-    # Enable jack: - both alsa and jack can be enabled at the same time
-    # target_compile_definitions(otto_src PUBLIC "__UNIX_JACK__")
-    # target_link_libraries(otto_src PUBLIC jack)
-endif()
+CPMAddPackage(
+  NAME rtmidi
+  GITHUB_REPOSITORY thestk/rtmidi
+  GIT_TAG 4.0.0
+  OPTIONS
+    "BUILD_SHARED_LIBS Off"
+    "RTMIDI_TARGETNAME_UNINSTALL rtmidi-uninstall"
+    "BUILD_TESTING Off"
+)
+target_link_libraries(otto_src PUBLIC rtmidi)

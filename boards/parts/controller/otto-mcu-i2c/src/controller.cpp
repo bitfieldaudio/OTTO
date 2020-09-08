@@ -24,7 +24,7 @@ namespace otto::board {
     {
       std::this_thread::sleep_until(next_allowed_time);
       next_allowed_time = chrono::clock::now() + chrono::milliseconds(5);
-      LOGI("Sending packet: {} {:02X}", util::enum_name(p.cmd), fmt::join(p.data, " "));
+      // LOGI("Sending packet: {} {:02X}", util::enum_name(p.cmd), fmt::join(p.data, " "));
       auto ec = i2c.write(p.to_array());
       if (ec.value() == EREMOTEIO) {
         LOGW("MCU nack'd i2c write");
@@ -39,7 +39,7 @@ namespace otto::board {
       next_allowed_time = chrono::clock::now() + chrono::milliseconds(5);
       std::array<std::uint8_t, 17> data;
       auto ec = i2c.read_into(data);
-      LOGI("Read: {:02X}", fmt::join(data, " "));
+      // LOGI("Read: {:02X}", fmt::join(data, " "));
       if (ec.value() == EREMOTEIO) {
         LOGW("MCU nack'd i2c read");
         ec = {};

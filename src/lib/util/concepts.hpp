@@ -2,6 +2,7 @@
 
 #include <concepts>
 #include <functional>
+#include <ranges>
 #include <type_traits>
 #include <utility>
 
@@ -47,4 +48,32 @@ namespace otto::util {
   template<typename T>
   concept AnEnum = std::is_enum_v<T>;
 
+  template<typename R, typename V>
+  concept range_of = std::ranges::range<R>&& std::common_reference_with<std::ranges::range_value_t<R>, V>;
+  template<typename R, typename V>
+  concept sized_range_of = std::ranges::sized_range<R>&& std::common_reference_with<std::ranges::range_value_t<R>, V>;
+  template<typename R, typename V>
+  concept view_of = std::ranges::view<R>&& std::common_reference_with<std::ranges::range_value_t<R>, V>;
+  template<typename R, typename V>
+  concept input_range_of = std::ranges::input_range<R>&& std::common_reference_with<std::ranges::range_value_t<R>, V>;
+  template<typename R, typename V>
+  concept output_range_of =
+    std::ranges::output_range<R, V>&& std::common_reference_with<std::ranges::range_value_t<R>, V>;
+  template<typename R, typename V>
+  concept forward_range_of =
+    std::ranges::forward_range<R>&& std::common_reference_with<std::ranges::range_value_t<R>, V>;
+  template<typename R, typename V>
+  concept bidirectional_range_of =
+    std::ranges::bidirectional_range<R>&& std::common_reference_with<std::ranges::range_value_t<R>, V>;
+  template<typename R, typename V>
+  concept random_access_range_of =
+    std::ranges::random_access_range<R>&& std::common_reference_with<std::ranges::range_value_t<R>, V>;
+  template<typename R, typename V>
+  concept contiguous_range_of =
+    std::ranges::contiguous_range<R>&& std::common_reference_with<std::ranges::range_value_t<R>, V>;
+  template<typename R, typename V>
+  concept common_range_of = std::ranges::common_range<R>&& std::common_reference_with<std::ranges::range_value_t<R>, V>;
+  template<typename R, typename V>
+  concept viewable_range_of =
+    std::ranges::viewable_range<R>&& std::common_reference_with<std::ranges::range_value_t<R>, V>;
 } // namespace otto::util

@@ -32,8 +32,7 @@ namespace otto::util {
   struct is_number_or_enum : std::false_type {};
 
   template<typename T>
-  struct is_number_or_enum<T, std::enable_if_t<std::is_enum_v<T> || is_number_v<T>>>
-    : std::true_type {};
+  struct is_number_or_enum<T, std::enable_if_t<std::is_enum_v<T> || is_number_v<T>>> : std::true_type {};
 
 
   template<typename T>
@@ -140,9 +139,11 @@ namespace otto::util {
     type,
     category,
     std::enable_if_t<
-      std::is_same_v<std::remove_reference_t<iter>, std::iterator_traits<std::remove_reference_t<iter>>::value_type> &&
+      std::is_same_v<std::remove_reference_t<iter>,
+                     typename std::iterator_traits<std::remove_reference_t<iter>>::value_type> &&
       std::is_base_of_v<std::remove_reference_t<iter>,
-                        std::iterator_traits<std::remove_reference_t<iter>>::iterator_category>>> : std::true_type {};
+                        typename std::iterator_traits<std::remove_reference_t<iter>>::iterator_category>>>
+    : std::true_type {};
 
 
   /// `true` if `iter` is an iterator over `type`,
