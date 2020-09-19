@@ -3,10 +3,9 @@
 #include "lib/util/thread.hpp"
 
 #include "app/services/graphics.hpp"
+#include "app/services/runtime.hpp"
 
 namespace otto::services {
-
-
 
   struct GraphicsImpl : Graphics {
     /// Open a window/display drawing the given draw function

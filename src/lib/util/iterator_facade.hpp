@@ -149,7 +149,7 @@ namespace otto::util {
         return std::addressof(ref);
       } else {
         // Ref is not a reference, returning the address would return the address of a temporary
-        return arrow_proxy(std::move(ref));
+        return arrow_proxy<decltype(ref)>{std::move(ref)};
       }
     }
 
@@ -280,7 +280,7 @@ namespace otto::util {
     }
     constexpr const self_type& _self() const noexcept
     {
-      return static_cast<self_type&>(*this);
+      return static_cast<const self_type&>(*this);
     }
   };
 } // namespace otto::util

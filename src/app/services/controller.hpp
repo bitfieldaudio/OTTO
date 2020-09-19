@@ -1,7 +1,6 @@
 #pragma once
 
 #include "lib/core/service.hpp"
-#include "lib/itc/reducer.hpp"
 
 #include "app/input.hpp"
 #include "app/leds.hpp"

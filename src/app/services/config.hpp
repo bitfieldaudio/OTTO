@@ -23,12 +23,6 @@ namespace otto {
     /// Can be overridden in `Derived` by defining a similar constant.
     static constexpr util::string_ref name = util::qualified_name_of<Derived>;
 
-    // TODO: BUG IN GCC 10.1 - https://godbolt.org/z/qeTM6P
-    // This is just there to disable aggregate initialization
-    // to circumvent the bug.
-    // We should require GCC 10.2 as soon as poky (yocto) uses it
-    virtual ~Config() = default;
-
     util::string_ref get_name() const noexcept
     {
       return Derived::name;

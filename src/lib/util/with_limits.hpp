@@ -56,6 +56,11 @@ namespace otto::util {
       return value_;
     }
 
+    float normalize() const noexcept
+    {
+      return static_cast<float>(value_ - min) / static_cast<float>(max - min);
+    }
+
   private:
     T value_;
   };
@@ -105,6 +110,11 @@ namespace otto::util {
     void max(const T new_max)
     {
       if (min_ <= new_max) max_ = new_max;
+    }
+
+    float normalize() const noexcept
+    {
+      return static_cast<float>(value_ - min_) / static_cast<float>(max_ - min_);
     }
 
     void operator=(const T in)

@@ -30,17 +30,17 @@ namespace otto::util {
     };
 
     template<typename Shape>
-    struct is_function_shape : std::false_type {};
+    struct is_function_sig : std::false_type {};
 
     template<typename Ret, typename... Args>
-    struct is_function_shape<Ret(Args...)> : std::true_type {};
+    struct is_function_sig<Ret(Args...)> : std::true_type {};
   } // namespace detail
 
   template<typename T>
-  concept function_shape = detail::is_function_shape<T>::value;
+  concept function_sig = detail::is_function_sig<T>::value;
 
   template<typename F, typename Shape>
-  concept callable = function_shape<Shape>&& detail::is_callable_impl<F, Shape>::value;
+  concept callable = function_sig<Shape>&& detail::is_callable_impl<F, Shape>::value;
 
   template<typename T, typename... Ts>
   concept one_of = is_one_of_v<T, Ts...>;

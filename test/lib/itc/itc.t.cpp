@@ -14,12 +14,12 @@ TEST_CASE (doctest::test_suite("itc") * "Basic Channel/Consumer/Producer linking
 
   SUBCASE ("Constructing consumer with channel registers it") {
     Channel<State> ch;
-    Consumer<State> c1 = {ex, ch};
+    Consumer<State> c1 = {ch, ex};
 
     REQUIRE(ch.consumers().size() == 1);
     REQUIRE(ch.consumers()[0] == &c1);
 
-    Consumer<State> c2 = {ex, ch};
+    Consumer<State> c2 = {ch, ex};
 
     REQUIRE(ch.consumers().size() == 2);
     REQUIRE(ch.consumers()[1] == &c2);
@@ -55,7 +55,7 @@ TEST_CASE (doctest::test_suite("itc") * "Basic Channel/Consumer/Producer linking
 
   SUBCASE ("Consumer has a reference to its channel") {
     Channel<State> ch;
-    Consumer<State> c = {ex, ch};
+    Consumer<State> c = {ch, ex};
     REQUIRE(c.channel() == &ch);
   }
 
@@ -79,13 +79,13 @@ TEST_CASE (doctest::test_suite("itc") * "Basic Channel/Consumer/Producer linking
       SUBCASE ("Consumer destroyed before channel") {
         Channel<State> ch;
         {
-          Consumer<State> p = {ex, ch};
+          Consumer<State> p = {ch, ex};
         }
         REQUIRE(ch.consumers().empty());
       }
       SUBCASE ("Channel destroyed before consumer") {
         auto ch = std::make_unique<Channel<State>>();
-        Consumer<State> c = {ex, *ch};
+        Consumer<State> c = {*ch, ex};
         ch.reset();
         REQUIRE(c.channel() == nullptr);
       }
@@ -109,13 +109,13 @@ TEST_CASE (doctest::test_suite("itc") * "Basic state passing") {
       REQUIRE(state().i == i);
     }
 
-    void on_new_state(const S& s) override
+    void on_state_change(const S& s) noexcept override
     {
       new_state_called++;
     }
 
     int new_state_called = 0;
-  } c1 = {ex, ch};
+  } c1 = {ch, ex};
 
   SUBCASE ("Access default state in Consumer") {
     c1.check_i(0);
@@ -124,7 +124,7 @@ TEST_CASE (doctest::test_suite("itc") * "Basic state passing") {
   struct P1 : Producer<S> {
     void test_produce(int i)
     {
-      produce(S{.i = i});
+      produce(replace(S{.i = i}));
     }
   } p1 = {ch};
 
@@ -135,7 +135,7 @@ TEST_CASE (doctest::test_suite("itc") * "Basic state passing") {
   }
 }
 
-TEST_CASE(doctest::test_suite("itc") * "prod/cons/chan of multiple states") {
+TEST_CASE (doctest::test_suite("itc") * "prod/cons/chan of multiple states") {
   struct S1 {
     int i1 = 1;
     bool operator==(const S1&) const = default;
@@ -162,19 +162,19 @@ TEST_CASE(doctest::test_suite("itc") * "prod/cons/chan of multiple states") {
   static_assert(std::is_base_of_v<Producer<S1>, P12>);
   static_assert(std::is_base_of_v<Producer<S2>, P12>);
 
-//  using Ch123 = Channel<S1, meta::list<S2, S3>>;
-//  using C123 = Consumer<S1, meta::list<S2, S3>>;
-//  using P123 = Producer<S1, meta::list<S2, S3>>;
-//
-//  static_assert(std::is_base_of_v<Channel<S1>, Ch123>);
-//  static_assert(std::is_base_of_v<Channel<S2>, Ch123>);
-//  static_assert(std::is_base_of_v<Channel<S3>, Ch123>);
-//  static_assert(std::is_base_of_v<Consumer<S1>, C123>);
-//  static_assert(std::is_base_of_v<Consumer<S2>, C123>);
-//  static_assert(std::is_base_of_v<Consumer<S3>, C123>);
-//  static_assert(std::is_base_of_v<Producer<S1>, P123>);
-//  static_assert(std::is_base_of_v<Producer<S2>, P123>);
-//  static_assert(std::is_base_of_v<Producer<S3>, P123>);
+  //  using Ch123 = Channel<S1, meta::list<S2, S3>>;
+  //  using C123 = Consumer<S1, meta::list<S2, S3>>;
+  //  using P123 = Producer<S1, meta::list<S2, S3>>;
+  //
+  //  static_assert(std::is_base_of_v<Channel<S1>, Ch123>);
+  //  static_assert(std::is_base_of_v<Channel<S2>, Ch123>);
+  //  static_assert(std::is_base_of_v<Channel<S3>, Ch123>);
+  //  static_assert(std::is_base_of_v<Consumer<S1>, C123>);
+  //  static_assert(std::is_base_of_v<Consumer<S2>, C123>);
+  //  static_assert(std::is_base_of_v<Consumer<S3>, C123>);
+  //  static_assert(std::is_base_of_v<Producer<S1>, P123>);
+  //  static_assert(std::is_base_of_v<Producer<S2>, P123>);
+  //  static_assert(std::is_base_of_v<Producer<S3>, P123>);
 
   ImmediateExecutor ex;
   Ch12 ch;
@@ -193,19 +193,19 @@ TEST_CASE(doctest::test_suite("itc") * "prod/cons/chan of multiple states") {
       REQUIRE(state<S2>().i2 == i);
     }
 
-    void on_new_state(const S1& s) override
+    void on_state_change(const S1& s) noexcept override
     {
       new_state1_called++;
     }
 
-    void on_new_state(const S2& s) override
+    void on_state_change(const S2& s) noexcept override
     {
       new_state2_called++;
     }
 
     int new_state1_called = 0;
     int new_state2_called = 0;
-  } c1 = {ex, ch};
+  } c1 = {ch, ex};
 
   SUBCASE ("Access default state in Consumer") {
     c1.check_i1(1);
@@ -215,11 +215,11 @@ TEST_CASE(doctest::test_suite("itc") * "prod/cons/chan of multiple states") {
   struct P1 : Producer<S1, S2> {
     void test_produce1(int i)
     {
-      produce(S1{.i1 = i});
+      produce(set(&S1::i1, i));
     }
     void test_produce2(int i)
     {
-      produce(S2{.i2 = i});
+      produce(replace(S2{.i2 = i}));
     }
   } p1 = {ch};
 
@@ -236,11 +236,9 @@ TEST_CASE(doctest::test_suite("itc") * "prod/cons/chan of multiple states") {
     c1.check_i2(20);
     REQUIRE(c1.new_state2_called == 1);
   }
-
 }
 
-TEST_CASE("Sample engine") {
-
+TEST_CASE ("Sample engine") {
   struct State {
     float frequency = 40.f;
     float resonance = 0.5;
@@ -249,17 +247,14 @@ TEST_CASE("Sample engine") {
   };
 
   struct FilterLogic : Producer<State> {
-    void handle_encoder(int steps) {
-      produce(State{.frequency = 0.f, .resonance = 0.4});
+    void handle_encoder(int steps)
+    {
+      produce(replace(State{.frequency = 0.f, .resonance = 0.4}));
     };
   };
 
 
-  struct FilterAudio : Consumer<State> {
+  struct FilterAudio : Consumer<State> {};
 
-  };
-
-  struct FilterScreen : Consumer<State> {
-
-  };
+  struct FilterScreen : Consumer<State> {};
 }

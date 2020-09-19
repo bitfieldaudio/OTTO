@@ -1,15 +1,16 @@
 #include "audio_buffer.hpp"
+#include "lib/logging.hpp"
 
 namespace otto::util {
 
-  audio_buffer::audio_buffer(std::span<float> d, int* ref_count) noexcept : data_(d), ref_count_(ref_count)
+  audio_buffer::audio_buffer(std::span<float> d, std::int8_t* ref_count) noexcept : data_(d), ref_count_(ref_count)
   {
     if (ref_count_) (*ref_count_)++;
   }
 
-  audio_buffer::audio_buffer(const audio_buffer& rhs) noexcept : data_(rhs.data_), ref_count_(rhs.ref_count_)
+  audio_buffer::audio_buffer(audio_buffer&& rhs) noexcept : data_(rhs.data_), ref_count_(rhs.ref_count_)
   {
-    if (ref_count_) (*ref_count_)++;
+    rhs.ref_count_ = nullptr;
   }
 
   audio_buffer::~audio_buffer() noexcept
@@ -58,6 +59,22 @@ namespace otto::util {
     return data_.data();
   }
 
+  float& audio_buffer::operator[](std::size_t i) noexcept
+  {
+    return data_[i];
+  }
+
+  const float& audio_buffer::operator[](std::size_t i) const noexcept
+  {
+    return data_[i];
+  }
+
+  audio_buffer& audio_buffer::operator=(const audio_buffer& rhs)
+  {
+    std::copy(rhs.begin(), rhs.end(), begin());
+    return *this;
+  }
+
   // AudioBufferPool
 
   AudioBufferPool::AudioBufferPool(std::size_t max_buf_count, std::size_t bufsize) : bufsize_(bufsize)
@@ -71,10 +88,10 @@ namespace otto::util {
     // Find unused buffer
     int idx = 0;
     int n_found = 0;
-    int first_rc = 0;
+    int actual_rc = 0;
     for (const int rc : ref_counts_) {
-      if (rc >= 0) first_rc = rc;
-      if (first_rc == 0) {
+      if (rc >= 0) actual_rc = rc;
+      if (actual_rc == 0) {
         n_found++;
         if (n_found == multiplier) break;
       } else {
@@ -83,7 +100,7 @@ namespace otto::util {
       idx++;
     }
     // TODO: error handling?
-    if (idx >= ref_counts_.size()) std::terminate();
+    OTTO_ASSERT(n_found == multiplier);
 
     auto first_idx = idx - multiplier + 1;
     ref_counts_[first_idx] = 0;

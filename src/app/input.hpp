@@ -5,9 +5,8 @@
 #include <compare>
 #include <cstdint>
 
-#include "lib/util/enum.hpp"
-
 #include "lib/itc/reducer.hpp"
+#include "lib/util/enum.hpp"
 
 namespace otto {
 
@@ -97,8 +96,13 @@ namespace otto {
     auto operator<=>(const EncoderEvent&) const = default;
   };
 
-  using InputHandler = itc::IEventHandler<KeyPress, KeyRelease, EncoderEvent>;
+  using IInputHandler = IEventHandler<KeyPress, KeyRelease, EncoderEvent>;
 
+  struct InputHandler : IInputHandler {
+    void handle(const KeyPress&) noexcept override {}
+    void handle(const KeyRelease&) noexcept override {}
+    void handle(const EncoderEvent&) noexcept override {}
+  };
 
   inline std::ostream& operator<<(std::ostream& os, const KeyPress& k)
   {

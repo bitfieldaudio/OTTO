@@ -3,8 +3,8 @@
 #include <functional>
 #include <vector>
 
-#include "lib/util/concepts.hpp"
 #include "lib/meta.hpp"
+#include "lib/util/concepts.hpp"
 
 #include "executor.hpp"
 
@@ -28,7 +28,11 @@ namespace otto::itc {
 
   /// The concept that state types need to fulfill.
   template<typename T>
-  concept AState = std::regular<T> && !detail::is_meta_list<T>::value;
+  concept AState = std::semiregular<T> && !detail::is_meta_list<T>::value;
+
+  /// A function that modifies a state
+  template<typename T, typename State>
+  concept AnAction = util::callable<T, void(State&)>;
 
   // Forward Declarations
 
@@ -95,9 +99,9 @@ namespace otto::itc {
     }
 
     /// Only called from {@ref Producer::produce}
-    void internal_produce(const State& s)
+    void internal_produce(AnAction<State> auto& action)
     {
-      for (auto* cons : consumers_) cons->internal_produce(s);
+      for (auto* cons : consumers_) cons->internal_produce(action);
     }
 
     std::vector<Consumer<State>*> consumers_;
@@ -118,23 +122,24 @@ namespace otto::itc {
       }
     }
 
-   /// The channels this producer is currently linked to
+    /// The channels this producer is currently linked to
     const std::vector<Channel<State>*>& channels() const noexcept
     {
       return channels_;
     }
 
-  protected:
-    /// Produce a new state
-    /// 
-    /// Sends the state to all attached channels, to be sent to all consumers
-    /// registered on said channels.
-    void produce(const State& s)
+    /// Produce one or more actions, and send them on the channel to be applied on all
+    /// consumers.
+    void produce(AnAction<State> auto&&... actions)
     {
+      auto a = [actions...](State& s) { (actions(s), ...); };
       for (auto* chan : channels_) {
-        chan->internal_produce(s);
+        chan->internal_produce(a);
       }
     }
+
+    template<AState... States>
+    friend auto produce_func(Producer<States...>& p);
 
   private:
     friend Channel<State>;
@@ -156,7 +161,7 @@ namespace otto::itc {
 
   template<AState State>
   struct Consumer<State> {
-    Consumer(IExecutor& executor, Channel<State>& ch) : executor_(executor), channel_(&ch)
+    Consumer(Channel<State>& ch, IExecutor& executor) : executor_(executor), channel_(&ch)
     {
       ch.internal_add_consumer(this);
     }
@@ -179,21 +184,24 @@ namespace otto::itc {
     }
 
   protected:
-    /// Hook called with the new state right before the state is updated
+    /// Hook called immediately after the state is updated.
     ///
-    /// In this hook, the old state is available through the {@ref state()} member function
+    /// Gets the new state as a parameter, even though it is also available as
+    ///
+    /// if you consume multiple states.
+    ///
     /// Override in subclass if needed
-    virtual void on_new_state(const State& s) {}
+    virtual void on_state_change(const State& s) noexcept {}
 
   private:
     friend Channel<State>;
 
     /// Called from {@ref Channel::internal_produce}
-    void internal_produce(const State& s)
+    void internal_produce(AnAction<State> auto& action)
     {
-      executor_.execute([this, s] {
-        on_new_state(s);
-        state_ = std::move(s);
+      executor_.execute([this, action] {
+        action(state_);
+        on_state_change(state_);
       });
     }
 
@@ -216,7 +224,7 @@ namespace otto::itc {
   template<AState... States>
   struct Consumer : Consumer<States>... {
     template<AChannelFor<States...> Ch>
-    Consumer(IExecutor& ex, Ch& channel) : Consumer<States>(ex, channel)...
+    Consumer(Ch& channel, IExecutor& ex) : Consumer<States>(channel, ex)...
     {}
 
     template<util::one_of<States...> S>
@@ -234,5 +242,40 @@ namespace otto::itc {
 
     using Producer<States>::produce...;
   };
+
+  template<AState... States>
+  auto produce_func(Producer<States...>& p)
+  {
+    return [&p](auto&&... actions) { p.produce(FWD(actions)...); };
+  }
+
+  template<AState... States>
+  using ProduceFunc = decltype(produce_func(std::declval<Producer<States...>&>()));
+
+  // Actions //
+
+  /// Create an action that replaces the entire state struct with new object
+  template<AState State>
+  auto replace(State s)
+  {
+    return [s = std::move(s)](State& ref) { ref = std::move(s); };
+  }
+
+  /// Create an action that sets a single member
+  template<AState State, typename T>
+  auto set(T State::*mem_ptr, T val)
+  {
+    return [val = std::move(val), mem_ptr](State& ref) { ref.*mem_ptr = std::move(val); };
+  }
+
+  /// Create an action that increments a member
+  template<AState State, typename T, typename U>
+  auto increment(T State::*mem_ptr, U val) requires requires(T& t)
+  {
+    t += val;
+  }
+  {
+    return [val = std::move(val), mem_ptr](State& ref) { ref.*mem_ptr += std::move(val); };
+  }
 
 } // namespace otto::itc

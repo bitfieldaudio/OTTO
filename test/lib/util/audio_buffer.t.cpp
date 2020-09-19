@@ -8,18 +8,13 @@ using namespace otto;
 namespace rngs = std::ranges;
 
 TEST_CASE ("audio_buffer") {
-  int refc = 0;
+  std::int8_t refc = 0;
   std::vector<float> data = {0, 0.1, 0.2, 0.3, 0.4, 0.5};
   SUBCASE ("scoped reference counting") {
     {
-      util::audio_buffer ab = util::audio_buffer(data, &refc);
+      util::audio_buffer ab = util::audio_buffer(std::span(data), &refc);
       REQUIRE(refc == 1);
       REQUIRE(rngs::equal(data, ab));
-      {
-        util::audio_buffer a2 = ab;
-        REQUIRE(refc == 2);
-      }
-      REQUIRE(refc == 1);
     }
     REQUIRE(refc == 0);
   }
@@ -27,7 +22,6 @@ TEST_CASE ("audio_buffer") {
   SUBCASE ("Disable refcount with nullptr") {
     // No REQUIRE, the test is that we dont get a segfault
     util::audio_buffer ab = util::audio_buffer(data, nullptr);
-    auto a2 = ab;
   }
 }
 
@@ -46,6 +40,7 @@ TEST_CASE ("AudioBufferPool") {
     tl::optional b1 = abp.allocate();
     tl::optional b2 = abp.allocate();
     REQUIRE(b2->size() == 64);
+    REQUIRE(idx(*b1) == 0);
     REQUIRE(idx(*b2) == 1);
     b1 = tl::nullopt;
     auto b3 = abp.allocate();

@@ -16,7 +16,7 @@ namespace otto::services {
     virtual itc::IExecutor& executor() noexcept = 0;
 
     /// The board-specfic graphics service
-    [[nodiscard]] static auto make_board();
+    [[nodiscard]] static core::ServiceHandle<services::Graphics> make_board();
   };
 
 } // namespace otto::services
@@ -26,7 +26,7 @@ namespace otto::board {
 }
 
 namespace otto::services {
-  inline auto Graphics::make_board()
+  inline core::ServiceHandle<services::Graphics> Graphics::make_board()
   {
     return board::make_graphics();
   }

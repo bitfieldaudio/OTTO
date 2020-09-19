@@ -14,13 +14,6 @@ struct TestConfig final : Config<TestConfig> {
   DECL_VISIT(option1, option2);
 };
 
-// BUG IN GCC 10.1 - https://godbolt.org/z/qeTM6P
-// toml::get results in an ambiguous overload here when this assertion fails.
-// To make it work, aggregate initialization has been blocked for config types,
-// which is a shame (see Config::~Config()).
-static_assert(!std::is_constructible<TestConfig, otto::toml::value>::value);
-static_assert(util::AVisitable<TestConfig>);
-
 TEST_CASE ("ConfigManager") {
   SUBCASE ("Registry") {
     auto app = services::start_app(core::make_handle<otto::services::ConfigManager>());
@@ -73,15 +66,8 @@ TEST_CASE ("ConfigManager") {
 
   SUBCASE ("ConfHandle") {
     SUBCASE ("With no service") {
-      // TODO: GCC 10.2 - uncomment this
-      // TestConfig::Handle tc1 = TestConfig{.option1 = 42, .option2 = "yay"};
-      TestConfig::Handle tc1 = [] {
-        auto t = TestConfig();
-        t.option1 = 10;
-        t.option2 = "yay";
-        return t;
-      }();
-      REQUIRE(tc1->option1 == 10);
+      TestConfig::Handle tc1 = TestConfig{.option1 = 42, .option2 = "yay"};
+      REQUIRE(tc1->option1 == 42);
     }
     SUBCASE ("With service") {
       auto app = services::start_app(core::make_handle<services::ConfigManager>(config_data));
