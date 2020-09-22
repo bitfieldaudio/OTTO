@@ -18,6 +18,7 @@ namespace otto::services {
   void RuntimeImpl::set_stage(Stage s) noexcept
   {
     stage_.store(static_cast<std::underlying_type_t<Stage>>(s));
+    std::erase_if(hooks_, [s](auto& f) { return f(s); });
     cond_.notify_all();
   }
 

@@ -19,10 +19,15 @@ namespace otto::services {
     void request_stop(ExitCode) noexcept override;
 
     [[nodiscard]] bool wait_for_stage(Stage s, chrono::duration timeout) noexcept override;
+    void on_stage_change(std::function<bool(Stage s)> f) noexcept override
+    {
+      hooks_.emplace_back(std::move(f));
+    }
 
     void set_stage(Stage s) noexcept;
 
   private:
+    std::vector<std::function<bool(Stage)>> hooks_;
     std::atomic<std::underlying_type_t<Stage>> stage_ = util::underlying(Stage::initializing);
     std::mutex mutex_;
     std::condition_variable cond_;
@@ -54,7 +59,7 @@ namespace otto::services {
     /// Start all services, and set `service<Runtime>().stage()` to `running`
     Application& start() & noexcept
     {
-      util::for_each(services_, [this](auto& handle) { handle.start(); });
+      util::for_each(services_, [](auto& handle) { handle.start(); });
       dynamic_cast<RuntimeImpl&>(service<Runtime>()).set_stage(Runtime::Stage::running);
       return *this;
     }
@@ -70,7 +75,7 @@ namespace otto::services {
     void stop() noexcept
     {
       dynamic_cast<RuntimeImpl&>(service<Runtime>()).set_stage(Runtime::Stage::stopping);
-      util::reverse_for_each(services_, [this](auto& handle) { handle.stop(); });
+      util::reverse_for_each(services_, [](auto& handle) { handle.stop(); });
     }
 
     /// Wait for application to be stopped, with an optional timeout

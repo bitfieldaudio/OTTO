@@ -3,6 +3,7 @@
 #include <memory_resource>
 #include <unordered_map>
 
+#include "app/services/runtime.hpp"
 #include "lib/toml.hpp"
 #include "lib/util/crtp.hpp"
 #include "lib/util/string_ref.hpp"
@@ -80,6 +81,7 @@ namespace otto {
         if (std::filesystem::is_regular_file(config_path)) {
           return core::make_handle<ConfigManager>(config_path);
         }
+        LOGI("Config file {} not found", config_path.c_str());
         return core::make_handle<ConfigManager>();
       }
 
@@ -89,6 +91,7 @@ namespace otto {
       template<AConfig Conf>
       static constexpr const char* key_of() noexcept;
 
+      [[no_unique_address]] core::ServiceAccessor<Runtime> runtime;
       toml::value config_data_;
     };
   } // namespace services
@@ -129,8 +132,18 @@ namespace otto::services {
 
   inline ConfigManager::ConfigManager(toml::value config_data) : config_data_(std::move(config_data)) {}
   inline ConfigManager::ConfigManager(std::filesystem::path config_path)
-    : ConfigManager(toml::parse<toml::preserve_comments>(config_path))
-  {}
+  try : ConfigManager(toml::parse<toml::preserve_comments>(config_path)) {
+    runtime->on_enter_stage(Runtime::Stage::running, [path = std::move(config_path), this] {
+      LOGI("Writing config to {}", path.c_str());
+      std::ofstream file;
+      file.open(path);
+      file << into_toml();
+      file.close();
+    });
+  } catch (std::runtime_error& e) {
+    LOGE("Error reading config file:");
+    LOGE("{}", e.what());
+  }
 
   inline toml::value ConfigManager::into_toml() const
   {
