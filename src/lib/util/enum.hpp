@@ -1,8 +1,8 @@
 #pragma once
 
 #include <array>
-#include <json.hpp>
 #include <magic_enum.hpp>
+#include <nlohmann/json.hpp>
 #include <tl/optional.hpp>
 
 #include "lib/util/concepts.hpp"
@@ -11,29 +11,33 @@ namespace otto::util {
 
   using namespace magic_enum;
 
-  template <AnEnum E, std::predicate<char, char> BP>
-  [[nodiscard]] constexpr tl::optional<E> enum_cast(std::string_view value, BP p) {
+  template<AnEnum E, std::predicate<char, char> BP>
+  [[nodiscard]] constexpr tl::optional<E> enum_cast(std::string_view value, BP p)
+  {
     auto opt = magic_enum::enum_cast<E>(value, p);
     if (opt.has_value()) return opt.value();
     return tl::nullopt;
   }
 
-  template <AnEnum E>
-  [[nodiscard]] constexpr tl::optional<E> enum_cast(std::string_view value) noexcept {
+  template<AnEnum E>
+  [[nodiscard]] constexpr tl::optional<E> enum_cast(std::string_view value) noexcept
+  {
     auto opt = magic_enum::enum_cast<E>(value);
     if (opt.has_value()) return opt.value();
     return tl::nullopt;
   }
 
-  template <AnEnum E>
-  [[nodiscard]] constexpr tl::optional<E> enum_cast(magic_enum::underlying_type_t<E> value) noexcept {
+  template<AnEnum E>
+  [[nodiscard]] constexpr tl::optional<E> enum_cast(magic_enum::underlying_type_t<E> value) noexcept
+  {
     auto opt = magic_enum::enum_cast<E>(value);
     if (opt.has_value()) return opt.value();
     return tl::nullopt;
   }
 
-  template <AnEnum E>
-  [[nodiscard]] constexpr tl::optional<std::size_t> enum_index(E value) noexcept {
+  template<AnEnum E>
+  [[nodiscard]] constexpr tl::optional<std::size_t> enum_index(E value) noexcept
+  {
     auto opt = magic_enum::enum_index(value);
     if (opt.has_value()) return opt.value();
     return tl::nullopt;

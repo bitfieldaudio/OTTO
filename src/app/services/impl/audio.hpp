@@ -27,7 +27,7 @@ namespace otto::services {
     [[no_unique_address]] core::ServiceAccessor<Runtime> runtime;
 
   protected:
-    void set_buffer_size(int bufsize)
+    void set_buffer_size(std::size_t bufsize)
     {
       abp_ = util::AudioBufferPool{16, bufsize};
     }

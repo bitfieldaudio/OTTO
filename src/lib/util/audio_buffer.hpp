@@ -5,6 +5,7 @@
 #include <span>
 
 #include "concepts.hpp"
+#include "lib/util/ranges.hpp"
 
 namespace otto::util {
 
@@ -79,6 +80,34 @@ namespace otto::util {
       left.clear();
       right.clear();
       return std::move(*this);
+    }
+
+    auto zipped() noexcept
+    {
+      return util::zip(left, right);
+    }
+
+    auto zipped() const noexcept
+    {
+      return util::zip(left, right);
+    }
+
+    auto begin() noexcept
+    {
+      return zipped().begin();
+    }
+    auto begin() const noexcept
+    {
+      return zipped().begin();
+    }
+
+    auto end() noexcept
+    {
+      return zipped().end();
+    }
+    auto end() const noexcept
+    {
+      return zipped().end();
     }
   };
 

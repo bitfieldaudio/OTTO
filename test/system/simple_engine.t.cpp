@@ -95,9 +95,8 @@ TEST_CASE (test::interactive() * "simple_engine") {
   engines::Simple::Handler h(l);
 
   app.service<Audio>().set_process_callback([&](auto& data) {
-    auto res = a.process();
-    std::ranges::copy(res, data.output.left.begin());
-    std::ranges::copy(res, data.output.right.begin());
+    const auto res = a.process();
+    std::ranges::copy(util::zip(res, res), data.output.begin());
   });
   app.service<Graphics>().show([&](SkCanvas& ctx) { s.draw(ctx); });
   app.service<Controller>().set_input_handler(h);

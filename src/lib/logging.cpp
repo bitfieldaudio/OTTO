@@ -1,5 +1,3 @@
-#define LOGURU_IMPLEMENTATION 1
-
 #include "logging.hpp"
 
 #include "lib/util/exception.hpp"
@@ -41,4 +39,4 @@ namespace otto::logging {
     pthread_setname_np(pthread_self(), name.c_str());
     loguru::set_thread_name(name.c_str());
   }
-}
+} // namespace otto::logging

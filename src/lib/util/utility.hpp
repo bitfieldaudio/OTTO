@@ -124,7 +124,7 @@ namespace otto::util {
     template<ATupleRef T, typename F, std::size_t... Is>
     auto tuple_transform_impl(T&& t, F&& f, std::integer_sequence<std::size_t, Is...> is)
     {
-      return std::tuple(f(std::get<Is>(t))...);
+      return std::forward_as_tuple(f(std::get<Is>(t))...);
     }
 
     template<ATupleRef T1, ATupleRef T2, std::size_t... Is>
@@ -164,10 +164,10 @@ namespace otto::util {
   }
 
   template<typename F, ATupleRef Tuple>
-  void transform(Tuple&& tuple, F&& f)
+  auto transform(Tuple&& tuple, F&& f)
   {
-    details::tuple_transform_impl(FWD(tuple), FWD(f),
-                                  std::make_index_sequence<std::tuple_size<std::remove_cvref_t<Tuple>>::value>());
+    return details::tuple_transform_impl(
+      FWD(tuple), FWD(f), std::make_index_sequence<std::tuple_size<std::remove_cvref_t<Tuple>>::value>());
   }
 
   template<typename F, ATupleRef Tuple>
