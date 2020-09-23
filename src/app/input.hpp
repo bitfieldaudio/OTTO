@@ -99,9 +99,9 @@ namespace otto {
   using IInputHandler = IEventHandler<KeyPress, KeyRelease, EncoderEvent>;
 
   struct InputHandler : IInputHandler {
-    void handle(const KeyPress&) noexcept override {}
-    void handle(const KeyRelease&) noexcept override {}
-    void handle(const EncoderEvent&) noexcept override {}
+    void handle(KeyPress) noexcept override {}
+    void handle(KeyRelease) noexcept override {}
+    void handle(EncoderEvent) noexcept override {}
   };
 
   inline std::ostream& operator<<(std::ostream& os, const KeyPress& k)

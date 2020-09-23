@@ -49,15 +49,15 @@ struct StubMCUPort final : services::MCUPort {
 using Events = std::vector<std::variant<KeyPress, KeyRelease, EncoderEvent>>;
 
 struct Handler final : InputHandler {
-  void handle(const KeyPress& e) noexcept override
+  void handle(KeyPress e) noexcept override
   {
     events.push_back(e);
   }
-  void handle(const KeyRelease& e) noexcept override
+  void handle(KeyRelease e) noexcept override
   {
     events.push_back(e);
   }
-  void handle(const EncoderEvent& e) noexcept override
+  void handle(EncoderEvent e) noexcept override
   {
     events.push_back(e);
   }

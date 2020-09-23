@@ -7,15 +7,15 @@ namespace otto::services {
       : executor_(executor), delegate_(std::move(delegate))
     {}
 
-    void handle(const KeyPress& e) noexcept override
+    void handle(KeyPress e) noexcept override
     {
       executor_.execute([h = delegate_.get(), e] { h->handle(e); });
     }
-    void handle(const KeyRelease& e) noexcept override
+    void handle(KeyRelease e) noexcept override
     {
       executor_.execute([h = delegate_.get(), e] { h->handle(e); });
     }
-    void handle(const EncoderEvent& e) noexcept override
+    void handle(EncoderEvent e) noexcept override
     {
       executor_.execute([h = delegate_.get(), e] { h->handle(e); });
     }

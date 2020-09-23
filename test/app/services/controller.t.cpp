@@ -17,17 +17,17 @@ TEST_CASE (test::interactive() * "EncoderGUI") {
                        Graphics::make_board());
 
   struct Handler final : InputHandler {
-    void handle(const KeyPress& e) noexcept override
+    void handle(KeyPress e) noexcept override
     {
       LOGI("Keypress {}", util::enum_name(e.key));
       controller->set_led_color({e.key}, {0xFF, 0xFF, 0xFF});
     }
-    void handle(const KeyRelease& e) noexcept override
+    void handle(KeyRelease e) noexcept override
     {
       LOGI("Keyrelease {}", util::enum_name(e.key));
       controller->set_led_color({e.key}, {0x00, 0x00, 0x00});
     }
-    void handle(const EncoderEvent& e) noexcept override
+    void handle(EncoderEvent e) noexcept override
     {
       color = [&] {
         switch (e.encoder) {

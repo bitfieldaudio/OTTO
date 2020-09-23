@@ -34,7 +34,7 @@ namespace otto::engines {
       Handler(Logic& l) : logic(l) {}
       Logic& logic;
 
-      void handle(const EncoderEvent& e) noexcept final
+      void handle(EncoderEvent e) noexcept final
       {
         logic.produce(itc::increment(&State::freq, e.steps));
       }

@@ -15,7 +15,7 @@ namespace otto {
   struct IEventHandler<Event> {
     virtual ~IEventHandler() = default;
     /// Handle the event
-    virtual void handle(const Event&) noexcept = 0;
+    virtual void handle(Event) noexcept = 0;
   };
 } // namespace otto
 
