@@ -26,21 +26,21 @@ namespace otto::engines {
     };
 
     struct Logic final : itc::Producer<State> {
-      Logic(itc::Channel<State>& c) : itc::Producer<State>(c) {}
+      using Producer::Producer;
     };
 
     struct Handler final : InputHandler {
       Handler(Logic& l) : logic(l) {}
       Logic& logic;
 
-      void handle(const EncoderEvent& e) noexcept final
+      void handle(EncoderEvent e) noexcept final
       {
         logic.produce(itc::increment(&State::freq, e.steps));
       }
     };
 
-    struct Audio final : itc::Consumer<State>, core::ServiceAccessor<services::Audio> {
-      Audio(itc::Channel<State>& c) : itc::Consumer<State>(c, service<services::Audio>().executor()) {}
+    struct Audio final : services::Audio::Consumer<State>, core::ServiceAccessor<services::Audio> {
+      using Consumer::Consumer;
 
       void on_state_change(const State& s) noexcept override
       {
@@ -55,8 +55,9 @@ namespace otto::engines {
       gam::Sine<> osc;
     };
 
-    struct Screen final : itc::Consumer<State>, core::ServiceAccessor<services::Graphics>, otto::engines::IScreen {
-      Screen(itc::Channel<State>& c) : itc::Consumer<State>(c, service<services::Graphics>().executor()) {}
+    struct Screen final : services::Graphics::Consumer<State>, otto::engines::IScreen {
+      using Consumer::Consumer;
+
       void draw(SkCanvas& ctx) noexcept override
       {
         SkPaint paint;
@@ -96,7 +97,8 @@ int main(int argc, char* argv[])
 
   app.service<Audio>().set_process_callback([&](auto& data) {
     const auto res = a.process();
-    std::ranges::copy(util::zip(res, res), data.output.begin());
+    std::ranges::copy(res, data.output.left.begin());
+    std::ranges::copy(res, data.output.right.begin());
   });
   app.service<Graphics>().show([&](SkCanvas& ctx) { s.draw(ctx); });
   app.service<Controller>().set_input_handler(h);

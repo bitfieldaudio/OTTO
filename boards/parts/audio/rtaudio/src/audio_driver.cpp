@@ -17,7 +17,7 @@ namespace otto::services {
     DECL_VISIT(input_device, output_device)
   };
 
-  struct RtAudioService final : AudioImpl {
+  struct RtAudioService final : AudioImpl, core::ServiceAccessor<Runtime> {
     RtAudioService()
     {
       i_params.nChannels = 2;
@@ -68,8 +68,7 @@ namespace otto::services {
       LOGI("Buffer size: {}", buffer_size);
       set_buffer_size(buffer_size);
       gam::sampleRate(samplerate);
-
-      adac.startStream();
+      service<Runtime>().on_enter_stage(Runtime::Stage::running, [this] { adac.startStream(); });
     }
 
   private:

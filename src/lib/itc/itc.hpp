@@ -130,6 +130,8 @@ namespace otto::itc {
 
     /// Produce one or more actions, and send them on the channel to be applied on all
     /// consumers.
+    ///
+    /// When producing multiple actions, they will be aggregated into one, and applied atomically.
     void produce(AnAction<State> auto&&... actions)
     {
       auto a = [actions...](State& s) { (actions(s), ...); };
