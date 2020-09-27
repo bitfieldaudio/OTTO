@@ -3,6 +3,9 @@
 #include <concepts>
 #include <span>
 
+#include <fmt/format.h>
+#include <fmt/ostream.h>
+
 #define LOGURU_USE_FMTLIB 1
 #include <loguru.hpp>
 

@@ -130,7 +130,9 @@ namespace otto::util {
     template<ATupleRef T1, ATupleRef T2, std::size_t... Is>
     auto tuple_zip_impl(T1&& t1, T2&& t2, std::integer_sequence<std::size_t, Is...> is)
     {
-      return std::tuple(std::make_pair(std::get<Is>(t1), std::get<Is>(t2))...);
+      return std::tuple(
+        std::pair<std::tuple_element_t<Is, std::remove_cvref_t<T1>>, std::tuple_element_t<Is, std::remove_cvref_t<T2>>>(
+          std::get<Is>(t1), std::get<Is>(t2))...);
     }
 
     template<typename F, std::size_t... Is>

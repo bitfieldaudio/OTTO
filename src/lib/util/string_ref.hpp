@@ -14,7 +14,7 @@ namespace otto::util {
     using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
     /// constants
-    const static size_t npos;
+    const static size_t npos = std::string_view::npos;
 
     /// construct/copy.
     constexpr string_ref() : data_(""), length_(0) {}
@@ -149,9 +149,9 @@ namespace otto::util {
     std::size_t length_;
   };
 
-  inline std::ostream& operator<<(std::ostream& ostream, const string_ref& sr)
+  inline std::ostream& operator<<(std::ostream& ostream, string_ref sr)
   {
-    return ostream << sr.c_str();
+    return ostream << static_cast<std::string_view>(sr);
   }
 
 } // namespace otto::util

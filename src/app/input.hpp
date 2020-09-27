@@ -106,17 +106,17 @@ namespace otto {
 
   inline std::ostream& operator<<(std::ostream& os, const KeyPress& k)
   {
-    return os << fmt::format("KeyPress({})", util::enum_name(k.key));
+    return os << fmt::format("{{{}}}", util::enum_name(k.key));
   }
 
   inline std::ostream& operator<<(std::ostream& os, const KeyRelease& k)
   {
-    return os << fmt::format("KeyRelease({})", util::enum_name(k.key));
+    return os << fmt::format("{{{}}}", util::enum_name(k.key));
   }
 
   inline std::ostream& operator<<(std::ostream& os, const EncoderEvent& e)
   {
-    return os << fmt::format("EncoderEvent({}, {})", util::enum_name(e.encoder), e.steps);
+    return os << fmt::format("{{{}, {}}}", util::enum_name(e.encoder), e.steps);
   }
 
 } // namespace otto

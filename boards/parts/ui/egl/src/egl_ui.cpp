@@ -16,8 +16,6 @@
 #include <gl/GrGLAssembleInterface.h>
 #include <gl/GrGLInterface.h>
 
-#include <json.hpp>
-
 #include "app/services/config.hpp"
 #include "app/services/impl/graphics.hpp"
 #include "lib/util/concepts.hpp"

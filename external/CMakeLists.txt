@@ -23,7 +23,7 @@ endif()
 CPMAddPackage(
   NAME fmt
   GITHUB_REPOSITORY fmtlib/fmt
-  GIT_TAG 6.2.0
+  GIT_TAG 7.0.3
 )
 
 # We're on version v0.3.0-123-gff67c1a which is not officially tagged in Github
@@ -83,8 +83,9 @@ CPMAddPackage(
 
 if (loguru_ADDED)
   add_library(loguru "${loguru_SOURCE_DIR}/loguru.cpp")
-  target_compile_definitions(loguru PUBLIC "-DLOGURU_USE_FMTLIB=1")
+    target_compile_definitions(loguru PUBLIC "-DLOGURU_USE_FMTLIB=1")
   target_link_libraries(loguru PUBLIC fmt)
+  #target_link_libraries(loguru PUBLIC execinfo)
   target_include_directories(loguru SYSTEM PUBLIC "${loguru_SOURCE_DIR}")
 endif()
 

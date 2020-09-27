@@ -20,6 +20,23 @@ namespace otto::engines {
 
   struct IScreen : IDrawable {};
 
+  /// InputHandler linked to a logic component
+  template<typename Logic>
+  struct LinkedInputHandler : InputHandler {
+    LinkedInputHandler(Logic& l) : logic(l) {}
+
+    auto produce(auto&&... actions) requires requires(Logic& l)
+    {
+      l.produce(FWD(actions)...);
+    }
+    {
+      return logic.produce(FWD(actions)...);
+    }
+
+  protected:
+    Logic& logic;
+  };
+
   namespace simple {
     struct State {
       util::StaticallyBounded<float, 11, 880> freq = 340;
@@ -29,13 +46,12 @@ namespace otto::engines {
       using Producer::Producer;
     };
 
-    struct Handler final : InputHandler {
-      Handler(Logic& l) : logic(l) {}
-      Logic& logic;
+    struct Handler final : LinkedInputHandler<Logic> {
+      using LinkedInputHandler::LinkedInputHandler;
 
       void handle(EncoderEvent e) noexcept final
       {
-        logic.produce(itc::increment(&State::freq, e.steps));
+        produce(itc::increment(&State::freq, e.steps));
       }
     };
 
@@ -69,6 +85,17 @@ namespace otto::engines {
     };
   } // namespace simple
 
+  template<typename T>
+  concept AnEngine = requires
+  {
+    typename T::State;
+    typename T::Logic;
+    typename T::Audio;
+    typename T::Screen;
+    typename T::Handler;
+  }
+  &&itc::AState<typename T::State>;
+
   struct Simple {
     using State = simple::State;
     using Logic = simple::Logic;
@@ -76,6 +103,8 @@ namespace otto::engines {
     using Screen = simple::Screen;
     using Handler = simple::Handler;
   };
+
+  static_assert(AnEngine<Simple>);
 
 }; // namespace otto::engines
 
@@ -97,10 +126,9 @@ int main(int argc, char* argv[])
 
   app.service<Audio>().set_process_callback([&](auto& data) {
     const auto res = a.process();
-    std::ranges::copy(res, data.output.left.begin());
-    std::ranges::copy(res, data.output.right.begin());
+    std::ranges::copy(util::zip(res, res), data.output.begin());
   });
-  app.service<Graphics>().show([&](SkCanvas& ctx) { s.draw(ctx); });
+  app.service<Graphics>().show([&s](SkCanvas& ctx) { s.draw(ctx); });
   app.service<Controller>().set_input_handler(h);
 
   app.wait_for_stop();

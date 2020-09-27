@@ -7,6 +7,7 @@
 #include <unistd.h>
 
 #include <magic_enum.hpp>
+#include "lib/util/name_of.hpp"
 
 [[maybe_unused]] static bool debuggerIsAttached()
 {
@@ -129,7 +130,7 @@ namespace otto::test {
 
     friend std::ostream& operator<<(std::ostream& os, const approx& a)
     {
-      os << "approx(" << a.value_ << ", ±" << a.margin_ << ")";
+      os << a.value_ << "±" << a.margin_;
       return os;
     }
 
@@ -214,7 +215,11 @@ namespace doctest {
     static doctest::String convert(const std::variant<Ts...>& value)
     {
       if (value.valueless_by_exception()) return "{valuless by exception}";
-      return std::visit([](const auto& v) { return toString(v); }, value);
+      return std::visit(
+        [](const auto& v) {
+          return String(otto::util::name_of<std::remove_cvref_t<decltype(v)>>.c_str()) + "(" + toString(v) + ")";
+        },
+        value);
     }
   };
 
