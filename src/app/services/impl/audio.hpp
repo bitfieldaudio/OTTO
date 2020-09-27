@@ -23,6 +23,16 @@ namespace otto::services {
       return *abp_;
     }
 
+    void enqueue_midi(midi::MidiEvent e) noexcept override
+    {
+      midi_queue_.enqueue(std::move(e));
+    }
+
+    void set_midi_handler(util::any_ptr<midi::IMidiHandler> h) noexcept override
+    {
+      midi_handler_ = std::move(h);
+    }
+
   private:
     [[no_unique_address]] core::ServiceAccessor<Runtime> runtime;
 
@@ -34,6 +44,8 @@ namespace otto::services {
 
     Callback callback_ = nullptr;
     itc::QueueExecutor executor_;
+    moodycamel::ConcurrentQueue<midi::MidiEvent> midi_queue_;
+    util::any_ptr<midi::IMidiHandler> midi_handler_;
     tl::optional<util::AudioBufferPool> abp_ = tl::nullopt;
   };
 } // namespace otto::services

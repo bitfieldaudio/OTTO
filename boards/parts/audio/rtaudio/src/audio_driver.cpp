@@ -93,6 +93,8 @@ namespace otto::services {
       } else if (i_params.nChannels == 0) {
         input_buf.clear();
       }
+      midi::MidiEvent evt;
+      while (midi_queue_.try_dequeue(evt)) midi_handler_->handle(evt);
       if (callback_) callback_(cbd);
       executor_.run_queued_functions();
       // Interleave audio

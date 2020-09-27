@@ -6,17 +6,29 @@ namespace otto {
   template<typename T>
   concept AnEvent = std::copyable<T>;
 
-  template<AnEvent... Events>
-  struct IEventHandler : IEventHandler<Events>... {
+  template<typename... Events>
+  requires(AnEvent<std::remove_cvref_t<Events>>&&...) //
+    struct IEventHandler : IEventHandler<Events>... {
     using IEventHandler<Events>::handle...;
+
+    void handle(std::variant<std::remove_cvref_t<Events>...>& evt) noexcept
+    {
+      std::visit([this](auto&& evt) { handle(evt); }, evt);
+    }
+    void handle(std::variant<std::remove_cvref_t<Events>...>&& evt) noexcept
+    {
+      std::visit([this](auto&& evt) { handle(evt); }, std::move(evt));
+    }
   };
 
-  template<AnEvent Event>
-  struct IEventHandler<Event> {
+  template<typename Event>
+  requires(AnEvent<std::remove_cvref_t<Event>>) //
+    struct IEventHandler<Event> {
     virtual ~IEventHandler() = default;
     /// Handle the event
     virtual void handle(Event) noexcept = 0;
   };
+
 } // namespace otto
 
 namespace otto::itc {

@@ -131,6 +131,7 @@ namespace toml {}
 namespace otto::services {
 
   inline ConfigManager::ConfigManager(toml::value config_data) : config_data_(std::move(config_data)) {}
+
   inline ConfigManager::ConfigManager(std::filesystem::path config_path)
   try : ConfigManager(toml::parse<toml::preserve_comments>(config_path)) {
     runtime->on_enter_stage(Runtime::Stage::running, [path = std::move(config_path), this] {

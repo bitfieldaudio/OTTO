@@ -2,6 +2,8 @@
 
 #include "lib/itc/executor.hpp"
 #include "lib/itc/itc.hpp"
+#include "lib/midi.hpp"
+#include "lib/util/any_ptr.hpp"
 #include "lib/util/audio_buffer.hpp"
 
 #include "lib/core/service.hpp"
@@ -24,6 +26,9 @@ namespace otto::services {
     [[nodiscard]] static core::ServiceHandle<Audio> make_board();
 
     virtual util::AudioBufferPool& buffer_pool() noexcept = 0;
+
+    virtual void set_midi_handler(util::any_ptr<midi::IMidiHandler>) noexcept = 0;
+    virtual void enqueue_midi(midi::MidiEvent) = 0;
   };
 
 

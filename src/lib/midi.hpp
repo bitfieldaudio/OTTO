@@ -7,6 +7,7 @@
 #include <fmt/format.h>
 #include <fmt/ostream.h>
 
+#include "lib/itc/reducer.hpp"
 #include "lib/util/exception.hpp"
 
 namespace otto::midi {
@@ -76,6 +77,7 @@ namespace otto::midi {
   }
 
   struct NoteOn {
+    std::uint8_t channel = 0;
     std::uint8_t note = 0;
     fixed_point_ratio<std::uint8_t, 127> velocity = 0;
 
@@ -83,6 +85,7 @@ namespace otto::midi {
   };
 
   struct NoteOff {
+    std::uint8_t channel = 0;
     std::uint8_t note = 0;
     fixed_point_ratio<std::uint8_t, 127> velocity = 0;
 
@@ -90,12 +93,14 @@ namespace otto::midi {
   };
 
   struct Aftertouch {
+    std::uint8_t channel = 0;
     fixed_point_ratio<std::uint8_t, 127> aftertouch = 0;
 
     auto operator<=>(const Aftertouch&) const = default;
   };
 
   struct PolyAftertouch {
+    std::uint8_t channel = 0;
     std::uint8_t note = 0;
     fixed_point_ratio<std::uint8_t, 127> aftertouch = 0;
 
@@ -103,41 +108,25 @@ namespace otto::midi {
   };
 
   struct PitchBend {
+    std::uint8_t channel = 0;
     fixed_point_ratio<std::uint16_t, 16384> pitch_bend = 0;
 
     auto operator<=>(const PitchBend&) const = default;
   };
 
-  template<typename Event>
-  struct WithChannel : Event {
-    std::uint8_t channel;
+  using MidiEvent = std::variant<NoteOn, NoteOff, Aftertouch, PolyAftertouch, PitchBend>;
 
-    Event& base()
-    {
-      return static_cast<Event&>(*this);
-    }
+  using IMidiHandler = IEventHandler<NoteOn, NoteOff, Aftertouch, PolyAftertouch, PitchBend>;
 
-    const Event& base() const
-    {
-      return static_cast<const Event&>(*this);
-    }
-
-    auto operator<=>(const WithChannel&) const = default;
+  struct MidiHandler : IMidiHandler {
+    void handle(NoteOn) noexcept override {}
+    void handle(NoteOff) noexcept override {}
+    void handle(Aftertouch) noexcept override {}
+    void handle(PolyAftertouch) noexcept override {}
+    void handle(PitchBend) noexcept override {}
   };
 
-  using MidiEvent = std::variant<NoteOn, //
-                                 NoteOff,
-                                 Aftertouch,
-                                 PolyAftertouch,
-                                 PitchBend>;
-
-  using MidiEventWithChannel = std::variant<WithChannel<NoteOn>,
-                                            WithChannel<NoteOff>,
-                                            WithChannel<Aftertouch>,
-                                            WithChannel<PolyAftertouch>,
-                                            WithChannel<PitchBend>>;
-
-  inline MidiEventWithChannel from_bytes(std::span<std::uint8_t> bytes)
+  inline MidiEvent from_bytes(std::span<std::uint8_t> bytes)
   {
     std::uint8_t status = bytes[0];
     std::uint8_t evt = status & 0xF0;
@@ -149,19 +138,19 @@ namespace otto::midi {
       return bytes[idx];
     };
     if (evt == 0x80) {
-      return WithChannel<NoteOff>{{.note = byte_n(1), .velocity = byte_n(2)}, chan};
+      return NoteOff{.channel = chan, .note = byte_n(1), .velocity = byte_n(2)};
     }
     if (evt == 0x90) {
-      return WithChannel<NoteOn>{{.note = byte_n(1), .velocity = byte_n(2)}, chan};
+      return NoteOn{.channel = chan, .note = byte_n(1), .velocity = byte_n(2)};
     }
     if (evt == 0xA0) {
-      return WithChannel<PolyAftertouch>{{.note = byte_n(1), .aftertouch = byte_n(2)}, chan};
+      return PolyAftertouch{.channel = chan, .note = byte_n(1), .aftertouch = byte_n(2)};
     }
     if (evt == 0xD0) {
-      return WithChannel<Aftertouch>{{.aftertouch = byte_n(1)}, chan};
+      return Aftertouch{.channel = chan, .aftertouch = byte_n(1)};
     }
     if (evt == 0xE0) {
-      return WithChannel<PitchBend>{{.pitch_bend = (byte_n(2) << 7) | (byte_n(1))}, chan};
+      return PitchBend{.channel = chan, .pitch_bend = (byte_n(2) << 7) | (byte_n(1))};
     }
     throw util::exception("Invalid midi event");
   }
@@ -189,12 +178,6 @@ namespace otto::midi {
   inline std::ostream& operator<<(std::ostream& os, const PitchBend& e)
   {
     return os << fmt::format("{{bend = {}}}", e.pitch_bend);
-  }
-
-  template<typename Event>
-  inline std::ostream& operator<<(std::ostream& os, const WithChannel<Event>& e)
-  {
-    return os << fmt::format("{{channel = {}, {}}}", e.channel, e.base());
   }
 
 } // namespace otto::midi

@@ -71,7 +71,9 @@ namespace otto::services {
       return std::move(*this);
     }
 
-    /// Set `service<Runtime>().stage()` to `stopping`, and stop all services
+    /// Set `service<Runtime>().stage()` to `stopping`, and stop (destroy) all services
+    ///
+    /// Must only be called from main thread
     void stop() noexcept
     {
       dynamic_cast<RuntimeImpl&>(service<Runtime>()).set_stage(Runtime::Stage::stopping);
