@@ -1,7 +1,6 @@
 #include "testing.t.hpp"
 
 #include "app/services/graphics.hpp"
-#include "app/services/impl/runtime.hpp"
 
 #include <SkFont.h>
 #include <SkTypeface.h>
@@ -10,7 +9,7 @@ using namespace otto;
 using namespace otto::services;
 
 TEST_CASE (doctest::skip() * "Graphics test") {
-  auto app = start_app(Graphics::make_board());
+  auto app = start_app(Graphics::make());
   SUBCASE ("Simple graphics and text for 2 second") {
     app.service<Graphics>().show([&](SkCanvas& ctx) {
       SkPaint paint;
@@ -30,7 +29,7 @@ TEST_CASE (doctest::skip() * "Graphics test") {
 }
 
 TEST_CASE ("Graphics service tests (no graphics)") {
-  auto app = start_app(Graphics::make_board());
+  auto app = start_app(Graphics::make());
   SUBCASE ("Graphics executor") {
     itc::IExecutor& executor = app.service<Graphics>().executor();
     int count = 0;

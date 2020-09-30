@@ -25,9 +25,9 @@ namespace otto::services {
     util::any_ptr<InputHandler> delegate_;
   };
 
-  MCUController::MCUController(util::any_ptr<MCUPort>&& port, Config::Handle conf)
-    : conf_(std::move(conf)), com_(std::move(port)), thread_([this] {
-        while (runtime->should_run()) {
+  Controller::Controller(util::any_ptr<MCUPort>&& port, Config::Handle conf)
+    : conf_(std::move(conf)), com_(std::move(port)), thread_([this](std::stop_token stop_token) {
+        while (runtime->should_run() && !stop_token.stop_requested()) {
           {
             std::unique_lock l(queue_mutex_);
             for (const auto& data : queue_) {
@@ -45,12 +45,12 @@ namespace otto::services {
       })
   {}
 
-  void MCUController::set_input_handler(InputHandler& h)
+  void Controller::set_input_handler(InputHandler& h)
   {
     com_.handler = std::make_unique<ExecutorWrapper>(logic_thread->executor(), &h);
   }
 
-  void MCUController::set_led_color(LED led, LEDColor c)
+  void Controller::set_led_color(LED led, LEDColor c)
   {
     std::unique_lock l(queue_mutex_);
     queue_.push_back({Command::led_set, {util::enum_integer(led.key), c.r, c.g, c.b}});

@@ -75,14 +75,17 @@ namespace otto {
       template<AConfig Conf>
       Conf make_conf() noexcept;
 
+      /// Attempts to read the default config file `./ottoconf.toml`.
+      ///
+      /// If this file is not found, simply runs the default constructor
       static core::ServiceHandle<ConfigManager> make_default()
       {
         std::filesystem::path config_path = "./ottoconf.toml";
         if (std::filesystem::is_regular_file(config_path)) {
-          return core::make_handle<ConfigManager>(config_path);
+          return make(config_path);
         }
         LOGI("Config file {} not found", config_path.c_str());
-        return core::make_handle<ConfigManager>();
+        return make();
       }
 
       toml::value into_toml() const;

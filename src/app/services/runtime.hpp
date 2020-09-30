@@ -1,7 +1,10 @@
 #pragma once
 
+#include <condition_variable>
+#include <mutex>
 #include "lib/chrono.hpp"
 #include "lib/core/service.hpp"
+#include "lib/util/utility.hpp"
 
 namespace otto::services {
 
@@ -13,40 +16,95 @@ namespace otto::services {
       running,
       stopping,
     };
-
-    virtual Stage stage() const noexcept = 0;
+    Stage stage() const noexcept;
 
     /// The loop variable of all main loops
     ///
     /// When this turns to false, all threads should stop
-    virtual bool should_run() const noexcept = 0;
+    bool should_run() const noexcept;
 
-    virtual void request_stop(ExitCode = ExitCode::normal) noexcept = 0;
+    void request_stop(ExitCode = ExitCode::normal) noexcept;
 
-    /// Block calling thread until we enter the given stage
-    ///
-    /// Returns false if we are in a stage past the given one, and will
-    /// thus never enter it.
-    [[nodiscard]] virtual bool wait_for_stage(Stage s, chrono::duration timeout) noexcept = 0;
+    [[nodiscard]] bool wait_for_stage(Stage s, chrono::duration timeout = chrono::duration::zero()) noexcept;
+    void on_stage_change(std::function<bool(Stage s)> f) noexcept;
 
-    /// Queue a function for execution whenever the stage changes
-    ///
-    /// The function takes the new stage as an argument, and returns true if it wants to
-    /// be removed from the list, and not be called on the next stage change.
-    virtual void on_stage_change(std::function<bool(Stage s)>) noexcept = 0;
+    void set_stage(Stage s) noexcept;
 
-    void on_enter_stage(Stage s, std::function<void()> f) noexcept
-    {
-      on_stage_change([s, f = std::move(f)](Stage new_s) {
-        if (new_s == s) f();
-        return new_s == s;
-      });
-    }
+    void on_enter_stage(Stage s, std::function<void()> f) noexcept;
 
-    [[nodiscard]] bool wait_for_stage(Stage s) noexcept
-    {
-      return wait_for_stage(s, chrono::duration::zero());
-    }
+    [[nodiscard]] bool wait_for_stage(Stage s) noexcept;
+
+  private:
+    std::vector<std::function<bool(Stage)>> hooks_;
+    std::atomic<std::underlying_type_t<Stage>> stage_ = util::underlying(Stage::initializing);
+    std::mutex mutex_;
+    std::condition_variable cond_;
   };
+  static_assert(core::AServiceImplOf<Runtime, Runtime>);
+
+  /// Utility type used to manage service lifetimes.
+  ///
+  /// Start one with `start_app`.
+  template<core::AService... Ss>
+  struct Application {
+    Application(std::tuple<core::ServiceHandle<Ss>...> t) noexcept : services_(std::move(t)) {}
+
+    Application(Application&&) = default;
+
+    ~Application() noexcept
+    {
+      if (std::get<0>(services_).started()) stop();
+    }
+
+    /// Get one of the running services
+    template<util::one_of<Ss...> Service>
+    Service& service()
+    {
+      return std::get<core::ServiceHandle<Service>>(services_).service();
+    }
+
+    /// Start all services, and set `service<Runtime>().stage()` to `running`
+    Application& start() & noexcept
+    {
+      util::for_each(services_, [](auto& handle) { handle.start(); });
+      dynamic_cast<Runtime&>(service<Runtime>()).set_stage(Runtime::Stage::running);
+      return *this;
+    }
+
+    /// Start all services, and set `service<Runtime>().stage()` to `running`
+    Application&& start() && noexcept
+    {
+      start();
+      return std::move(*this);
+    }
+
+    /// Set `service<Runtime>().stage()` to `stopping`, and stop (destroy) all services
+    ///
+    /// Must only be called from main thread
+    void stop() noexcept
+    {
+      dynamic_cast<Runtime&>(service<Runtime>()).set_stage(Runtime::Stage::stopping);
+      util::reverse_for_each(services_, [](auto& handle) { handle.stop(); });
+    }
+
+    /// Wait for application to be stopped, with an optional timeout
+    bool wait_for_stop(chrono::duration timeout = chrono::duration::zero()) noexcept
+    {
+      return service<Runtime>().wait_for_stage(Runtime::Stage::stopping, timeout);
+    }
+
+  private:
+    std::tuple<core::ServiceHandle<Ss>...> services_;
+  };
+
+  template<core::AService... Ss>
+  [[nodiscard("The resulting handle stops the app in the destructor")]] Application<Runtime, Ss...> start_app(
+    core::ServiceHandle<Ss>... service_handles)
+  {
+    auto app = Application{std::tuple(core::make_handle<Runtime>(), std::move(service_handles)...)};
+    app.start();
+    return app;
+  }
+
 
 } // namespace otto::services

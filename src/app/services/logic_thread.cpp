@@ -2,12 +2,12 @@
 
 namespace otto::services {
 
-  itc::IExecutor& LogicThreadImpl::executor() noexcept
+  itc::IExecutor& LogicThread::executor() noexcept
   {
     return executor_;
   }
 
-  LogicThreadImpl::LogicThreadImpl()
+  LogicThread::LogicThread()
     : thread_([this] {
         while (runtime->should_run()) {
           executor_.run_queued_functions_blocking(std::chrono::milliseconds(100));
@@ -15,8 +15,4 @@ namespace otto::services {
         // TODO: propper shutdown!
       })
   {}
-
-  core::ServiceHandle<LogicThread> LogicThread::make_default() {
-    return core::make_handle<LogicThreadImpl>();
-  }
 } // namespace otto::services

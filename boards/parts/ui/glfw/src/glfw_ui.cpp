@@ -13,12 +13,14 @@
 #include <iostream>
 #include <thread>
 
+#include <blockingconcurrentqueue.h>
+
 #include "app/services/logic_thread.hpp"
 #include "lib/util/exception.hpp"
 #include "lib/util/thread.hpp"
 
 #include "app/services/controller.hpp"
-#include "app/services/impl/graphics.hpp"
+#include "app/services/graphics.hpp"
 
 namespace otto::glfw {
   using namespace std::literals;
@@ -210,66 +212,99 @@ namespace otto::glfw {
   }
 } // namespace otto::glfw
 
-namespace otto::board {
+namespace otto::services {
 
-  void handle_keyevent(glfw::Action action,
-                       glfw::Modifiers mods,
-                       glfw::Key key,
-                       itc::IExecutor& executor,
-                       InputHandler& handler);
+  void handle_keyevent(glfw::Action action, glfw::Modifiers mods, glfw::Key key, IInputHandler& handler);
 
-  using namespace services;
-
-  struct GlfwGraphics final : GraphicsImpl,
-                              core::ServiceAccessor<Runtime>,
-                              core::UnsafeServiceAccessor<LogicThread, Controller> {
-    GlfwGraphics()
-      : thread_([this] {
-          otto::glfw::SkiaWindow win = {320, 240, "OTTO"};
-          win.key_callback = [this](glfw::Action a, glfw::Modifiers m, glfw::Key k) { key_callback(a, m, k); };
-          win.show([this](SkCanvas& ctx) { return loop_function(ctx); });
-          service<Runtime>().request_stop();
-          exit_thread();
-        })
-    {}
+  struct GlfwGraphicsDriver final : IGraphicsDriver, core::UnsafeServiceAccessor<LogicThread, Controller> {
+    void run(std::function<bool(SkCanvas&)> f) override
+    {
+      otto::glfw::SkiaWindow win = {320, 240, "OTTO"};
+      win.key_callback = [this](glfw::Action a, glfw::Modifiers m, glfw::Key k) { key_callback(a, m, k); };
+      win.show(std::move(f));
+    }
 
   private:
     void key_callback(glfw::Action a, glfw::Modifiers m, glfw::Key k) noexcept;
-    std::jthread thread_;
   };
 
-  core::ServiceHandle<Graphics> make_graphics()
+  std::unique_ptr<IGraphicsDriver> IGraphicsDriver::make_default()
   {
-    return core::make_handle<GlfwGraphics>();
+    return std::make_unique<GlfwGraphicsDriver>();
   }
 
-  struct GlfwController final : Controller, core::ServiceAccessor<LogicThread> {
-    void set_input_handler(InputHandler& handler) override
+  struct GlfwMCUPort final : MCUPort, IInputHandler {
+    static GlfwMCUPort* instance;
+    GlfwMCUPort()
     {
-      handler_ = &handler;
+      instance = this;
+    }
+    ~GlfwMCUPort()
+    {
+      instance = nullptr;
+    }
+    GlfwMCUPort(const GlfwMCUPort&) = delete;
+    GlfwMCUPort(GlfwMCUPort&&) = delete;
+
+    // UNIMPLEMENTED
+    void write(const Packet& p) override{};
+
+    /// Block until the next packet is ready
+    Packet read() override
+    {
+      Packet res;
+      packets.wait_dequeue(res);
+      return res;
     }
 
-    void set_led_color(LED led, LEDColor) override {}
+    void stop() override
+    {
+      packets.enqueue(Packet());
+      packets.enqueue(Packet());
+    }
 
-  private:
-    friend GlfwGraphics;
-    InputHandler* handler_ = nullptr;
+    void handle(KeyPress e) noexcept override
+    {
+      Packet p;
+      p.cmd = Command::key_events;
+      std::span<std::uint8_t> presses = {p.data.data(), 8};
+      util::set_bit(presses, util::enum_integer(e.key), true);
+      packets.enqueue(p);
+    }
+
+    void handle(KeyRelease e) noexcept override
+    {
+      Packet p;
+      p.cmd = Command::key_events;
+      std::span<std::uint8_t> releases = {p.data.data() + 8, 8};
+      util::set_bit(releases, util::enum_integer(e.key), true);
+      packets.enqueue(p);
+    }
+
+    void handle(EncoderEvent e) noexcept override
+    {
+      Packet p;
+      p.cmd = Command::encoder_events;
+      p.data[util::enum_integer(e.encoder)] = static_cast<std::uint8_t>(e.steps);
+      packets.enqueue(p);
+    }
+
+    moodycamel::BlockingConcurrentQueue<Packet> packets;
   };
 
-  void GlfwGraphics::key_callback(glfw::Action a, glfw::Modifiers m, glfw::Key k) noexcept
+  GlfwMCUPort* GlfwMCUPort::instance = nullptr;
+
+  std::unique_ptr<MCUPort> MCUPort::make_default()
   {
-    if (auto* gc = dynamic_cast<GlfwController*>(service_unsafe<Controller>()); //
-        gc != nullptr) {
-      if (gc->handler_ == nullptr) return;
-      handle_keyevent(a, m, k, service_unsafe<LogicThread>()->executor(), *gc->handler_);
+    return std::make_unique<GlfwMCUPort>();
+  }
+
+  void GlfwGraphicsDriver::key_callback(glfw::Action a, glfw::Modifiers m, glfw::Key k) noexcept
+  {
+    if (auto* port = GlfwMCUPort::instance; //
+        port != nullptr) {
+      handle_keyevent(a, m, k, *port);
     }
   }
 
-  core::ServiceHandle<Controller> make_controller()
-  {
-    return core::make_handle<GlfwController>();
-  }
-
-} // namespace otto::board
-
-// kak: other_file=../include/board/ui/glfw_ui.hpp
+} // namespace otto::services

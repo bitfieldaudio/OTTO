@@ -3,20 +3,16 @@
 #include "app/services/controller.hpp"
 #include "lib/itc/executor.hpp"
 
-namespace otto::board {
+namespace otto::services {
 
-  void handle_keyevent(glfw::Action action,
-                       glfw::Modifiers mods,
-                       glfw::Key key,
-                       itc::IExecutor& executor,
-                       InputHandler& handler)
+  void handle_keyevent(glfw::Action action, glfw::Modifiers mods, glfw::Key key, IInputHandler& handler)
   {
     using glfw::Action;
     using glfw::Key;
     using glfw::Modifier;
     using OKey = otto::Key;
 
-    auto send_event = [&](auto event) { executor.execute([event, &handler] { handler.handle(event); }); };
+    auto send_event = [&](auto event) { handler.handle(event); };
 
     auto send_key = [&, action](OKey k, bool repeat = false) {
       if (action == Action::press || (action == Action::repeat && repeat))
@@ -140,6 +136,6 @@ namespace otto::board {
       default: break;
     }
   }
-} // namespace otto::board
+} // namespace otto::services
 
 // kak: other_file=../include/board/ui/keys.hpp

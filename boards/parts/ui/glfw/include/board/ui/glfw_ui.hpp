@@ -89,5 +89,3 @@ namespace otto::glfw {
   };
 
 } // namespace otto::glfw
-
-// kak: other_file=../../../src/glfw_ui.cpp

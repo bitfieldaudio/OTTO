@@ -46,6 +46,14 @@ namespace otto::core {
     {
       return service_name;
     }
+
+    /// Construct a `ServiceHandle` to this service, capturing the given arguments.
+    ///
+    /// An alias of `make_handle`
+    template<typename... Args>
+    requires(std::is_constructible_v<Derived, Args...>)
+      [[nodiscard("The returned handle manages the lifetime of the service")]] //
+      static auto make(Args&&... args);
   };
 
   template<typename S>
@@ -109,13 +117,12 @@ namespace otto::core {
   }
 
   template<typename Service>
-  struct [[nodiscard]] ServiceHandle
-  {
+  struct [[nodiscard]] ServiceHandle {
     using Constructor = fu2::unique_function<std::unique_ptr<Service>()>;
 
     ServiceHandle(Constructor c) noexcept : constructor_(std::move(c)) {}
 
-    ServiceHandle(ServiceHandle &&) = default;
+    ServiceHandle(ServiceHandle&&) = default;
 
     ~ServiceHandle() noexcept
     {
@@ -132,14 +139,14 @@ namespace otto::core {
       return service_.get();
     }
 
-    ServiceHandle& start()& noexcept
+    ServiceHandle& start() & noexcept
     {
       service_ = constructor_();
       set_active_service(*service_);
       return *this;
     }
 
-    ServiceHandle&& start()&& noexcept
+    ServiceHandle&& start() && noexcept
     {
       start();
       return std::move(*this);
@@ -171,6 +178,13 @@ namespace otto::core {
       });
   }
 
+  template<typename Derived>
+  template<typename... Args>
+  requires(std::is_constructible_v<Derived, Args...>) //
+    auto Service<Derived>::make(Args&&... args)
+  {
+    return make_handle<Derived>(FWD(args)...);
+  }
 
   /// Gain access to the running instance of a service
   ///

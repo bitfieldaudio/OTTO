@@ -1,5 +1,6 @@
 #pragma once
 
+#include "app/services/runtime.hpp"
 #include "lib/core/service.hpp"
 #include "lib/itc/executor.hpp"
 #include "lib/itc/itc.hpp"
@@ -10,9 +11,17 @@ namespace otto::services {
     /// An {@ref itc::Consumer} with the executor hardcoded to `LogicThread::executor()`
     template<itc::AState State>
     struct Consumer;
-    virtual itc::IExecutor& executor() noexcept = 0;
 
-    static core::ServiceHandle<LogicThread> make_default();
+    LogicThread();
+
+    virtual itc::IExecutor& executor() noexcept;
+
+  private:
+    [[no_unique_address]] core::ServiceAccessor<Runtime> runtime;
+
+  protected:
+    itc::QueueExecutor executor_;
+    std::jthread thread_;
   };
 
 

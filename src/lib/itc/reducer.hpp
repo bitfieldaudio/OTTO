@@ -13,11 +13,11 @@ namespace otto {
 
     void handle(std::variant<std::remove_cvref_t<Events>...>& evt) noexcept
     {
-      std::visit([this](auto&& evt) { handle(evt); }, evt);
+      std::visit([this](auto&& evt) { this->handle(evt); }, evt);
     }
     void handle(std::variant<std::remove_cvref_t<Events>...>&& evt) noexcept
     {
-      std::visit([this](auto&& evt) { handle(evt); }, std::move(evt));
+      std::visit([this](auto&& evt) { this->handle(evt); }, std::move(evt));
     }
   };
 

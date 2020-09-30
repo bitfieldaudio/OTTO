@@ -9,8 +9,8 @@
 #include "app/services/config.hpp"
 #include "app/services/controller.hpp"
 #include "app/services/graphics.hpp"
-#include "app/services/impl/runtime.hpp"
 #include "app/services/logic_thread.hpp"
+#include "app/services/runtime.hpp"
 
 using namespace otto;
 
@@ -82,10 +82,10 @@ namespace otto::engines {
 TEST_CASE (test::interactive() * "simple_engine") {
   using namespace services;
   auto app = start_app(core::make_handle<ConfigManager>(), //
-                       LogicThread::make_default(),        //
-                       Controller::make_board(),           //
-                       Audio::make_board(),                //
-                       Graphics::make_board()              //
+                       LogicThread::make(),                //
+                       Controller::make(),                 //
+                       Audio::make(),                      //
+                       Graphics::make()                    //
   );
 
   itc::Channel<otto::engines::Simple::State> chan;
@@ -94,7 +94,7 @@ TEST_CASE (test::interactive() * "simple_engine") {
   engines::Simple::Screen s(chan);
   engines::Simple::Handler h(l);
 
-  app.service<Audio>().set_process_callback([&](auto& data) {
+  app.service<Audio>().set_process_callback([&](Audio::CallbackData data) {
     const auto res = a.process();
     std::ranges::copy(util::zip(res, res), data.output.begin());
   });

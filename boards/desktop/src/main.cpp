@@ -7,8 +7,8 @@
 #include "app/services/config.hpp"
 #include "app/services/controller.hpp"
 #include "app/services/graphics.hpp"
-#include "app/services/impl/runtime.hpp"
 #include "app/services/logic_thread.hpp"
+#include "app/services/runtime.hpp"
 
 using namespace otto;
 using namespace otto::services;
@@ -40,6 +40,7 @@ namespace otto::engines {
   namespace simple {
     struct State {
       util::StaticallyBounded<float, 11, 880> freq = 340;
+      DECL_VISIT(freq);
     };
 
     struct Logic final : itc::Producer<State> {
@@ -65,10 +66,10 @@ namespace otto::engines {
       util::audio_buffer process() noexcept
       {
         auto buf = service<services::Audio>().buffer_pool().allocate();
-        std::ranges::generate(buf, osc);
+        for (float& f : buf) f = osc();
         return buf;
       }
-      gam::Sine<> osc;
+      gam::Sine<> osc = {state().freq};
     };
 
     struct Screen final : services::Graphics::Consumer<State>, otto::engines::IScreen {
@@ -112,10 +113,10 @@ int main(int argc, char* argv[])
 {
   using namespace services;
   auto app = start_app(ConfigManager::make_default(), //
-                       LogicThread::make_default(),   //
-                       Controller::make_board(),      //
-                       Audio::make_board(),           //
-                       Graphics::make_board()         //
+                       LogicThread::make(),           //
+                       Controller::make(),            //
+                       Audio::make(),                 //
+                       Graphics::make()               //
   );
 
   itc::Channel<otto::engines::Simple::State> chan;
@@ -124,7 +125,7 @@ int main(int argc, char* argv[])
   engines::Simple::Screen s(chan);
   engines::Simple::Handler h(l);
 
-  app.service<Audio>().set_process_callback([&](auto& data) {
+  app.service<Audio>().set_process_callback([&](Audio::CallbackData data) {
     const auto res = a.process();
     std::ranges::copy(util::zip(res, res), data.output.begin());
   });

@@ -6,6 +6,7 @@
 #include <tl/optional.hpp>
 
 #include "lib/util/concepts.hpp"
+#include "lib/util/ranges/zip_view.hpp"
 
 namespace otto::util {
 
@@ -64,22 +65,22 @@ namespace otto::util {
 
     constexpr auto begin() noexcept
     {
-      return _data.begin();
+      return view().begin();
     }
 
     constexpr auto begin() const noexcept
     {
-      return _data.begin();
+      return view().begin();
     }
 
     constexpr auto end() noexcept
     {
-      return _data.end();
+      return view().end();
     }
 
     constexpr auto end() const noexcept
     {
-      return _data.end();
+      return view().end();
     }
 
     constexpr value_type& front() noexcept
@@ -132,6 +133,11 @@ namespace otto::util {
       return _data.data();
     }
 
+  private:
+    auto view()
+    {
+      return util::zip(enum_values<Enum>(), _data);
+    }
     std::array<T, enum_count<Enum>()> _data = {};
   };
 } // namespace otto::util

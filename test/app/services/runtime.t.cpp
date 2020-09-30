@@ -1,15 +1,15 @@
 #include "testing.t.hpp"
 
-#include "app/services/impl/runtime.hpp"
+#include "app/services/runtime.hpp"
 
 using namespace otto;
 using namespace otto::services;
 
-using Stage = RuntimeImpl::Stage;
+using Stage = Runtime::Stage;
 
 TEST_CASE ("Runtime service") {
   SUBCASE ("Manual start/stop") {
-    RuntimeImpl rt;
+    Runtime rt;
     REQUIRE(rt.stage() == Stage::initializing);
     REQUIRE(rt.should_run());
     rt.set_stage(Stage::running);

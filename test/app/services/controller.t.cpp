@@ -1,58 +1,110 @@
 #include "testing.t.hpp"
 
+#include <queue>
+
 #include "app/services/config.hpp"
 #include "app/services/controller.hpp"
 #include "app/services/graphics.hpp"
 #include "app/services/logic_thread.hpp"
 
-#include "app/services/impl/runtime.hpp"
+#include "app/services/runtime.hpp"
 
 #include "lib/util/with_limits.hpp"
 
 using namespace otto;
-using namespace otto::services;
+using services::Command;
+using services::Packet;
 
-TEST_CASE (test::interactive() * "EncoderGUI") {
-  auto app = start_app(ConfigManager::make_default(), LogicThread::make_default(), Controller::make_board(),
-                       Graphics::make_board());
+constexpr std::uint8_t operator"" _u8(unsigned long long int v) noexcept
+{
+  return static_cast<std::uint8_t>(v);
+}
 
-  struct Handler final : InputHandler {
-    void handle(KeyPress e) noexcept override
-    {
-      LOGI("Keypress {}", util::enum_name(e.key));
-      controller->set_led_color({e.key}, {0xFF, 0xFF, 0xFF});
-    }
-    void handle(KeyRelease e) noexcept override
-    {
-      LOGI("Keyrelease {}", util::enum_name(e.key));
-      controller->set_led_color({e.key}, {0x00, 0x00, 0x00});
-    }
-    void handle(EncoderEvent e) noexcept override
-    {
-      color = [&] {
-        switch (e.encoder) {
-          case Encoder::blue: return SK_ColorBLUE;
-          case Encoder::green: return SK_ColorGREEN;
-          case Encoder::yellow: return SK_ColorYELLOW;
-          case Encoder::red: return SK_ColorRED;
-        }
-        OTTO_UNREACHABLE();
-      }();
-      n += e.steps;
-    }
-    [[no_unique_address]] core::ServiceAccessor<Controller> controller;
-    SkColor color = SK_ColorWHITE;
-    util::StaticallyBounded<int, 0, 160> n = 80;
-  } handler;
+template<std::derived_from<itc::IExecutor> Executor>
+struct LogicThreadStub final : services::LogicThread {
+  Executor& executor() noexcept override
+  {
+    return executor_;
+  }
 
-  app.service<Controller>().set_input_handler(handler);
-  app.service<Graphics>().show([&](SkCanvas& ctx) {
-    SkPaint paint;
-    paint.setAntiAlias(true);
-    paint.setStyle(SkPaint::kFill_Style);
-    paint.setColor(handler.color);
-    ctx.drawCircle({160, 120}, handler.n, paint);
-    if (handler.n == 0) app.service<Runtime>().request_stop();
-  });
-  app.wait_for_stop();
+private:
+  Executor executor_;
+};
+
+struct StubMCUPort final : services::MCUPort {
+  void write(const Packet& p) override
+  {
+    OTTO_UNREACHABLE();
+  }
+
+  Packet read() override
+  {
+    if (data.empty()) return {};
+    auto res = data.front();
+    data.pop();
+    return res;
+  }
+
+  void stop() override {}
+
+  std::queue<Packet> data;
+};
+
+using Events = std::vector<std::variant<KeyPress, KeyRelease, EncoderEvent>>;
+
+struct Handler final : InputHandler {
+  void handle(KeyPress e) noexcept override
+  {
+    events.push_back(e);
+  }
+  void handle(KeyRelease e) noexcept override
+  {
+    events.push_back(e);
+  }
+  void handle(EncoderEvent e) noexcept override
+  {
+    events.push_back(e);
+  }
+
+  Events events;
+};
+
+TEST_CASE ("Controller::read_input_data") {
+  StubMCUPort port;
+  services::MCUCommunicator com = {&port};
+  Handler handler;
+  com.handler = &handler;
+
+  SUBCASE ("Read keypresses") {
+    Packet p = {Command::key_events};
+    auto presses = std::span(p.data.data(), 8);
+    auto releases = std::span(p.data.data() + 8, 8);
+    util::set_bit(presses, util::enum_integer(Key::seq0), true);
+    util::set_bit(presses, util::enum_integer(Key::unassigned_f), true);
+    util::set_bit(releases, util::enum_integer(Key::seq5), true);
+    com.handle_packet(p);
+    REQUIRE(handler.events == Events{KeyPress{Key::seq0}, KeyRelease{Key::seq5}, KeyPress{Key::unassigned_f}});
+  }
+  SUBCASE ("Read encoderevents") {
+    Packet p = {Command::encoder_events, {10, 2, 251, 0}};
+    com.handle_packet(p);
+    REQUIRE(handler.events == Events{EncoderEvent{Encoder::blue, 10}, EncoderEvent{Encoder::green, 2},
+                                     EncoderEvent{Encoder::yellow, -5}});
+  }
+}
+
+TEST_CASE ("Controller thread") {
+  StubMCUPort port;
+  Handler handler;
+  auto app = services::start_app(core::make_handle<LogicThreadStub<itc::QueueExecutor>>(), //
+                                 services::ConfigManager::make(), services::Controller::make(&port));
+  core::ServiceAccessor<services::Controller> ctrl;
+  core::ServiceAccessor<LogicThreadStub<itc::QueueExecutor>> logic_thread;
+  ctrl->set_input_handler(handler);
+
+  port.data.push({Command::encoder_events, {10, 2, 251, 0}});
+  std::this_thread::sleep_for(50ms);
+  logic_thread->executor().run_queued_functions();
+  REQUIRE(handler.events ==
+          Events{EncoderEvent{Encoder::blue, 10}, EncoderEvent{Encoder::green, 2}, EncoderEvent{Encoder::yellow, -5}});
 }

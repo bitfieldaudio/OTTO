@@ -79,7 +79,7 @@ namespace otto::midi {
   struct NoteOn {
     std::uint8_t channel = 0;
     std::uint8_t note = 0;
-    fixed_point_ratio<std::uint8_t, 127> velocity = 0;
+    fixed_point_ratio<std::uint8_t, 1 << 7> velocity = 0;
 
     auto operator<=>(const NoteOn&) const = default;
   };
@@ -87,14 +87,14 @@ namespace otto::midi {
   struct NoteOff {
     std::uint8_t channel = 0;
     std::uint8_t note = 0;
-    fixed_point_ratio<std::uint8_t, 127> velocity = 0;
+    fixed_point_ratio<std::uint8_t, 1 << 7> velocity = 0;
 
     auto operator<=>(const NoteOff&) const = default;
   };
 
   struct Aftertouch {
     std::uint8_t channel = 0;
-    fixed_point_ratio<std::uint8_t, 127> aftertouch = 0;
+    fixed_point_ratio<std::uint8_t, 1 << 7> aftertouch = 0;
 
     auto operator<=>(const Aftertouch&) const = default;
   };
@@ -102,14 +102,14 @@ namespace otto::midi {
   struct PolyAftertouch {
     std::uint8_t channel = 0;
     std::uint8_t note = 0;
-    fixed_point_ratio<std::uint8_t, 127> aftertouch = 0;
+    fixed_point_ratio<std::uint8_t, 1 << 7> aftertouch = 0;
 
     auto operator<=>(const PolyAftertouch&) const = default;
   };
 
   struct PitchBend {
     std::uint8_t channel = 0;
-    fixed_point_ratio<std::uint16_t, 16384> pitch_bend = 0;
+    fixed_point_ratio<std::uint16_t, 1 << 14> pitch_bend = 0;
 
     auto operator<=>(const PitchBend&) const = default;
   };
