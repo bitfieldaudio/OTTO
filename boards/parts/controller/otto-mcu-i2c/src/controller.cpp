@@ -1,13 +1,11 @@
-#include "app/services/impl/controller.hpp"
+#include "app/services/controller.hpp"
 #include "app/services/config.hpp"
 
 #include "lib/util/i2c.hpp"
 
-namespace otto::board {
-  using services::Command;
-  using services::Packet;
+namespace otto::services {
 
-  struct I2CMCUPort final : services::MCUPort {
+  struct I2CMCUPort final : MCUPort {
     struct Config : otto::Config<Config> {
       std::uint16_t address = 0x77;
       std::string device_path = "/dev/i2c-1";
@@ -51,16 +49,20 @@ namespace otto::board {
       return res;
     }
 
+    void stop() override
+    {
+      // TODO: Unimplemented - is it needed?
+    }
+
     chrono::time_point next_allowed_time;
     Config::Handle conf;
     util::I2C i2c;
   };
 
-  core::ServiceHandle<services::Controller> make_controller()
+  std::unique_ptr<MCUPort> MCUPort::make_default()
   {
-    return core::ServiceHandle<services::Controller>(
-      [] { return std::make_unique<services::MCUController>(std::make_unique<I2CMCUPort>()); });
+    return std::make_unique<I2CMCUPort>();
   }
-} // namespace otto::board
+} // namespace otto::services
 
 // kak: other_file=../include/board/controller.hpp

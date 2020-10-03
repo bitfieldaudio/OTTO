@@ -17,7 +17,7 @@
 #include <gl/GrGLInterface.h>
 
 #include "app/services/config.hpp"
-#include "app/services/impl/graphics.hpp"
+#include "app/services/graphics.hpp"
 #include "lib/util/concepts.hpp"
 
 #include "./egl_deps.hpp"
@@ -201,26 +201,24 @@ namespace otto::board::ui {
 
 using namespace otto::board::ui;
 
-namespace otto::board {
-  struct EGLGraphics final : services::GraphicsImpl, core::ServiceAccessor<services::Runtime> {
-    EGLGraphics(EGLUIConfig::Handle c = {})
-      : conf(c), thread_([this] {
-          show_ui(*conf, [this](SkCanvas& ctx) { return loop_function(ctx); });
-          service<services::Runtime>().request_stop();
-          exit_thread();
-        })
-    {}
+namespace otto::services {
+
+  struct EGLGraphicsDriver final : IGraphicsDriver {
+    void run(std::function<bool(SkCanvas&)> f) override
+    {
+      show_ui(*conf, f);
+    }
 
   private:
     EGLUIConfig::Handle conf;
-    std::jthread thread_;
   };
 
-  core::ServiceHandle<services::Graphics> make_graphics()
+  std::unique_ptr<IGraphicsDriver> IGraphicsDriver::make_default()
   {
-    return core::make_handle<EGLGraphics>();
+    return std::make_unique<EGLGraphicsDriver>();
   }
-} // namespace otto::board
+
+} // namespace otto::services
 
 
 // kak: other_file=../include/board/ui/egl_ui.hpp
