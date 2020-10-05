@@ -121,3 +121,46 @@ TEST_CASE ("DynamicallyBounded") {
 
   // TODO: Changing limits
 }
+
+TEST_CASE ("Wrapping") {
+  util::StaticallyBounded<int, -2, 5> a = -1;
+  util::StaticallyBounded<float, -2, 5> b = 3;
+  util::DynamicallyBounded<float> c = {1, -2, 5};
+
+  SUBCASE ("Upwards") {
+    SUBCASE("Static Int") {
+      REQUIRE(a == -1);
+      a = 5;
+      a++;
+      REQUIRE(a == -2);
+    }
+    SUBCASE("Static float") {
+      REQUIRE(b == doctest::Approx(3.f));
+      b = 6;
+      REQUIRE(b == doctest::Approx(-1.f));
+      b = 14;
+      REQUIRE(b == doctest::Approx(0.f));
+    }
+    SUBCASE("Dynamic float") {
+      REQUIRE(c == doctest::Approx(1.f));
+      c = 6;
+      REQUIRE(c == doctest::Approx(-1.f));
+      c = 14;
+      REQUIRE(c == doctest::Approx(0.f));
+    }
+  }
+  SUBCASE ("Downwards") {
+    SUBCASE("Static Int") {
+      REQUIRE(a == -1);
+      a = -5;
+      REQUIRE(a == 3);
+    }
+    SUBCASE("Static float") {
+      REQUIRE(b == doctest::Approx(3.f));
+      b = -6;
+      REQUIRE(b == doctest::Approx(1.f));
+      b = -14;
+      REQUIRE(b == doctest::Approx(0.f));
+    }
+  }
+

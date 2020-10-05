@@ -1,5 +1,7 @@
+#pragma once
 #include <algorithm>
 #include "lib/util/concepts.hpp"
+#include "math.hpp"
 
 #include "testing.t.hpp"
 
@@ -12,7 +14,7 @@ namespace otto::util {
   /// http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1907r1.html
   /// Hence, integer limits must be used. If floats are needed, use the types with dynamic limits.
   /// TODO: This should be available in C++20, so we could remove this constraint.
-  template<numeric T, int min, int max>
+  template<numeric T, int min, int max, bool wrap=false>
   struct StaticallyBounded {
     // You must initialize with default value
     StaticallyBounded() = delete;
@@ -23,8 +25,21 @@ namespace otto::util {
 
     void operator=(const T in)
     {
-      value_ = std::clamp(in, static_cast<T>(min), static_cast<T>(max));
+      if constexpr (wrap)  {
+        T min_ = static_cast<T>(min);
+        T max_ = static_cast<T>(max);
+        if (in < min_ || in > max_) {
+          T length = static_cast<T>(max) - static_cast<T>(min);
+          if constexpr (std::is_integral_v<T>)  length += 1;
+          value_ = min_ + util::math::modulo(in - min_, length);
+        } else {
+          value_ = in;
+        }
+      } else {
+        value_ = std::clamp(in, static_cast<T>(min), static_cast<T>(max)); 
+      }
     }
+
     void operator+=(const T in)
     {
       operator=(this->value_ + in);
@@ -67,14 +82,14 @@ namespace otto::util {
 
   // Comparison
   // Note: I think it is best if we don't allow comparisons with other StaticallyBounded<> with different limits.
-  template<numeric T, int min, int max>
-  bool operator==(const StaticallyBounded<T, min, max>& lhs, const StaticallyBounded<T, min, max>& rhs)
+  template<numeric T, int min, int max, bool wrap>
+  bool operator==(const StaticallyBounded<T, min, max, wrap>& lhs, const StaticallyBounded<T, min, max, wrap>& rhs)
   {
     return static_cast<T>(lhs) == static_cast<T>(rhs);
   }
 
-  template<numeric T, int min, int max>
-  bool operator!=(const StaticallyBounded<T, min, max>& lhs, const StaticallyBounded<T, min, max>& rhs)
+  template<numeric T, int min, int max, bool wrap>
+  bool operator!=(const StaticallyBounded<T, min, max, wrap>& lhs, const StaticallyBounded<T, min, max, wrap>& rhs)
   {
     return static_cast<T>(lhs) != static_cast<T>(rhs);
   }
@@ -82,7 +97,7 @@ namespace otto::util {
   /// A numeric type with dynamic limits
   /// Limits are only enforced on assignments, meaning it should behave like a numeric type T in all other respects
   /// (under arithmetic operations, etc.) i.e. the result of a+b can be outside the limits.
-  template<numeric T>
+  template<numeric T, bool wrap=false>
   struct DynamicallyBounded {
     // You must initialize with default value and limits
     DynamicallyBounded() = delete;
@@ -119,7 +134,17 @@ namespace otto::util {
 
     void operator=(const T in)
     {
-      value_ = std::clamp(in, min_, max_);
+      if constexpr (wrap)  {
+        if (in < min_ || in > max_) {
+          T length = static_cast<T>(max) - static_cast<T>(min);
+          if constexpr (std::is_integral_v<T>)  length += 1;
+          value_ = min_ + util::math::modulo(in - min_, length);
+        } else {
+          value_ = in;
+        }
+      } else {
+        value_ = std::clamp(in, min_, max_); 
+      }
     }
     void operator+=(const T in)
     {
@@ -158,14 +183,14 @@ namespace otto::util {
   };
 
   // Comparison
-  template<numeric T>
-  bool operator==(const DynamicallyBounded<T>& lhs, const DynamicallyBounded<T>& rhs)
+  template<numeric T, bool wrap>
+  bool operator==(const DynamicallyBounded<T, wrap>& lhs, const DynamicallyBounded<T, wrap>& rhs)
   {
     return static_cast<T>(lhs) == static_cast<T>(rhs) && lhs.min() == rhs.min() && lhs.max() == rhs.max();
   }
 
-  template<numeric T>
-  bool operator!=(const DynamicallyBounded<T>& lhs, const DynamicallyBounded<T>& rhs)
+  template<numeric T, bool wrap>
+  bool operator!=(const DynamicallyBounded<T, wrap>& lhs, const DynamicallyBounded<T, wrap>& rhs)
   {
     return static_cast<T>(lhs) != static_cast<T>(rhs) || lhs.min() != rhs.min() || lhs.max() != rhs.max();
   }
