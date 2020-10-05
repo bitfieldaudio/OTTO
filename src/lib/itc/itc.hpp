@@ -135,9 +135,15 @@ namespace otto::itc {
     void produce(AnAction<State> auto&&... actions)
     {
       auto a = [actions...](State& s) { (actions(s), ...); };
+      a(state_);
       for (auto* chan : channels_) {
         chan->internal_produce(a);
       }
+    }
+
+    const State& state() const noexcept
+    {
+      return state_;
     }
 
     template<AState... States>
@@ -159,6 +165,7 @@ namespace otto::itc {
     }
 
     std::vector<Channel<State>*> channels_;
+    State state_;
   };
 
   template<AState State>
@@ -241,6 +248,12 @@ namespace otto::itc {
     template<AChannelFor<States...> Ch>
     Producer(Ch& channel) : Producer<States>(channel)...
     {}
+
+    template<util::one_of<States...> S>
+    const S& state() const noexcept
+    {
+      return Producer<S>::state();
+    }
 
     using Producer<States>::produce...;
   };

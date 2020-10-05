@@ -125,6 +125,7 @@ TEST_CASE (doctest::test_suite("itc") * "Basic state passing") {
     void test_produce(int i)
     {
       produce(replace(S{.i = i}));
+      REQUIRE(state().i == i);
     }
   } p1 = {ch};
 
