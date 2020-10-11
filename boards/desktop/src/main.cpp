@@ -1,3 +1,4 @@
+#include "lib/engine.hpp"
 #include "lib/itc/itc.hpp"
 #include "lib/util/with_limits.hpp"
 
@@ -14,22 +15,6 @@ using namespace otto;
 using namespace otto::services;
 
 namespace otto::engines {
-  /// InputHandler linked to a logic component
-  template<typename Logic>
-  struct LinkedInputHandler : InputHandler {
-    LinkedInputHandler(Logic& l) : logic(l) {}
-
-    auto produce(auto&&... actions) requires requires(Logic& l)
-    {
-      l.produce(FWD(actions)...);
-    }
-    {
-      return logic.produce(FWD(actions)...);
-    }
-
-  protected:
-    Logic& logic;
-  };
 
   namespace simple {
     struct State {

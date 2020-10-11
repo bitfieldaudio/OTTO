@@ -14,7 +14,7 @@ namespace otto::util {
   /// http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1907r1.html
   /// Hence, integer limits must be used. If floats are needed, use the types with dynamic limits.
   /// TODO: This should be available in C++20, so we could remove this constraint.
-  template<numeric T, int min, int max, bool wrap=false>
+  template<numeric T, int min, int max, bool wrap = false>
   struct StaticallyBounded {
     // You must initialize with default value
     StaticallyBounded() = delete;
@@ -25,44 +25,62 @@ namespace otto::util {
 
     void operator=(const T in)
     {
-      if constexpr (wrap)  {
+      if constexpr (wrap) {
         T min_ = static_cast<T>(min);
         T max_ = static_cast<T>(max);
         if (in < min_ || in > max_) {
           T length = static_cast<T>(max) - static_cast<T>(min);
-          if constexpr (std::is_integral_v<T>)  length += 1;
+          if constexpr (std::is_integral_v<T>) length += 1;
           value_ = min_ + util::math::modulo(in - min_, length);
         } else {
           value_ = in;
         }
       } else {
-        value_ = std::clamp(in, static_cast<T>(min), static_cast<T>(max)); 
+        value_ = std::clamp(in, static_cast<T>(min), static_cast<T>(max));
       }
     }
 
-    void operator+=(const T in)
+    StaticallyBounded& operator+=(const T in)
     {
       operator=(this->value_ + in);
+      return *this;
     }
-    void operator-=(const T in)
+    StaticallyBounded& operator-=(const T in)
     {
       operator=(this->value_ - in);
+      return *this;
     }
-    void operator*=(const T in)
+    StaticallyBounded& operator*=(const T in)
     {
       operator=(this->value_* in);
+      return *this;
     }
-    void operator/=(const T in)
+    StaticallyBounded& operator/=(const T in)
     {
       operator=(this->value_ / in);
+      return *this;
     }
-    void operator++()
+    StaticallyBounded operator++()
+    {
+      auto tmp = *this;
+      operator=(this->value_ + static_cast<T>(1));
+      return tmp;
+    }
+    StaticallyBounded& operator++(int)
     {
       operator=(this->value_ + static_cast<T>(1));
+      return *this;
     }
-    void operator--()
+    StaticallyBounded operator--()
+    {
+      auto tmp = *this;
+      operator=(this->value_ - static_cast<T>(1));
+      return tmp;
+    }
+    StaticallyBounded& operator--(int)
     {
       operator=(this->value_ - static_cast<T>(1));
+      return *this;
     }
     // If needed, binary operators can be added
 
@@ -97,7 +115,7 @@ namespace otto::util {
   /// A numeric type with dynamic limits
   /// Limits are only enforced on assignments, meaning it should behave like a numeric type T in all other respects
   /// (under arithmetic operations, etc.) i.e. the result of a+b can be outside the limits.
-  template<numeric T, bool wrap=false>
+  template<numeric T, bool wrap = false>
   struct DynamicallyBounded {
     // You must initialize with default value and limits
     DynamicallyBounded() = delete;
@@ -134,16 +152,16 @@ namespace otto::util {
 
     void operator=(const T in)
     {
-      if constexpr (wrap)  {
+      if constexpr (wrap) {
         if (in < min_ || in > max_) {
-          T length = static_cast<T>(max) - static_cast<T>(min);
-          if constexpr (std::is_integral_v<T>)  length += 1;
+          T length = static_cast<T>(max()) - static_cast<T>(min());
+          if constexpr (std::is_integral_v<T>) length += 1;
           value_ = min_ + util::math::modulo(in - min_, length);
         } else {
           value_ = in;
         }
       } else {
-        value_ = std::clamp(in, min_, max_); 
+        value_ = std::clamp(in, min_, max_);
       }
     }
     void operator+=(const T in)

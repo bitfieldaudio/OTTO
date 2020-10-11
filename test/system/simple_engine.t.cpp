@@ -1,3 +1,4 @@
+#include "lib/engine.hpp"
 #include "testing.t.hpp"
 
 #include "lib/itc/itc.hpp"
@@ -30,13 +31,11 @@ namespace otto::engines {
       Logic(itc::Channel<State>& c) : itc::Producer<State>(c) {}
     };
 
-    struct Handler final : InputHandler {
-      Handler(Logic& l) : logic(l) {}
-      Logic& logic;
-
+    struct Handler final : LinkedInputHandler<Logic> {
+      using LinkedInputHandler::LinkedInputHandler;
       void handle(EncoderEvent e) noexcept final
       {
-        logic.produce(itc::increment(&State::freq, e.steps));
+        produce(itc::increment(&State::freq, e.steps));
       }
     };
 

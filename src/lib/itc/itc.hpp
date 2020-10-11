@@ -141,7 +141,20 @@ namespace otto::itc {
       }
     }
 
-    const State& state() const noexcept
+    void update(std::invocable<State&> auto&&... funcs) requires requires(State& s)
+    {
+      funcs(s) = funcs(s);
+    }
+    {
+      produce([... vals = funcs(state()), ... funcs = FWD(funcs)](State& s) { ((funcs(s) = vals), ...); });
+    }
+
+    State& state() noexcept
+    {
+      return state_;
+    }
+
+    State& state() const noexcept
     {
       return state_;
     }
@@ -250,12 +263,19 @@ namespace otto::itc {
     {}
 
     template<util::one_of<States...> S>
+    S& state() noexcept
+    {
+      return Producer<S>::state();
+    }
+
+    template<util::one_of<States...> S>
     const S& state() const noexcept
     {
       return Producer<S>::state();
     }
 
     using Producer<States>::produce...;
+    using Producer<States>::update...;
   };
 
   template<AState... States>
@@ -277,10 +297,24 @@ namespace otto::itc {
   }
 
   /// Create an action that sets a single member
-  template<AState State, typename T>
-  auto set(T State::*mem_ptr, T val)
+  template<AState State, typename T, typename U>
+  auto set(T State::*mem_ptr, U&& val) requires requires(T& t, U u)
   {
-    return [val = std::move(val), mem_ptr](State& ref) { ref.*mem_ptr = std::move(val); };
+    t = u;
+  }
+  {
+    return [val = FWD(val), mem_ptr](State& ref) { ref.*mem_ptr = std::move(val); };
+  }
+
+  /// Create an action that sets a single member
+  template<AState State, typename T>
+  auto set(auto&& f, T val) //
+    requires requires(State& s, T& t)
+  {
+    std::move(f)(s) = val;
+  }
+  {
+    return [val = std::move(val), f = std::move(f)](State& ref) { std::move(f)(ref) = std::move(val); };
   }
 
   /// Create an action that increments a member
@@ -291,6 +325,17 @@ namespace otto::itc {
   }
   {
     return [val = std::move(val), mem_ptr](State& ref) { ref.*mem_ptr += std::move(val); };
+  }
+
+  /// Create an action that sets a single member
+  template<AState State, typename T>
+  auto increment(auto&& f, T val) //
+    requires requires(State& s, T& t)
+  {
+    std::move(f)(s) += val;
+  }
+  {
+    return [val = std::move(val), f = std::move(f)](State& ref) { std::move(f)(ref) += std::move(val); };
   }
 
 } // namespace otto::itc

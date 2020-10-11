@@ -99,9 +99,9 @@ namespace toml {
 
   template<>
   struct into<std::filesystem::path> {
-    static toml::string into_toml(const std::filesystem::path& v)
+    static ::toml::string into_toml(const std::filesystem::path& v)
     {
-      return toml::string(v.c_str());
+      return ::toml::string(v.c_str());
     }
   };
 } // namespace toml

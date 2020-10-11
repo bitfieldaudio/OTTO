@@ -7,7 +7,7 @@ using namespace otto;
 namespace otto::engines::ottofm {
 
   // Envelopes
-  // step_sizes 0.1 
+  // step_sizes 0.1
   struct ADSRState {
     util::StaticallyBounded<float, 0, 1> attack = 0.2;
     util::StaticallyBounded<float, 0, 1> decay = 0.2;
@@ -32,8 +32,13 @@ namespace otto::engines::ottofm {
     util::StaticallyBounded<int, 0, 10, true> algorithm_idx = 0;
     util::StaticallyBounded<float, 0, 1> fm_amount = 1;
     std::array<OperatorState, 4> operators;
-    int cur_op = 0;
+    util::StaticallyBounded<int, 0, 4> cur_op_idx = 0;
 
-    DECL_VISIT(algorithm_idx, fm_amount, operators, cur_op);
+    OperatorState& current_op()
+    {
+      return operators[cur_op_idx];
+    }
+
+    DECL_VISIT(algorithm_idx, fm_amount, operators, cur_op_idx);
   };
-}
+} // namespace otto::engines::ottofm

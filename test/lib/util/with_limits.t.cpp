@@ -123,25 +123,25 @@ TEST_CASE ("DynamicallyBounded") {
 }
 
 TEST_CASE ("Wrapping") {
-  util::StaticallyBounded<int, -2, 5> a = -1;
-  util::StaticallyBounded<float, -2, 5> b = 3;
-  util::DynamicallyBounded<float> c = {1, -2, 5};
+  util::StaticallyBounded<int, -2, 5, true> a = -1;
+  util::StaticallyBounded<float, -2, 5, true> b = 3;
+  util::DynamicallyBounded<float, true> c = {1, -2, 5};
 
   SUBCASE ("Upwards") {
-    SUBCASE("Static Int") {
+    SUBCASE ("Static Int") {
       REQUIRE(a == -1);
       a = 5;
       a++;
       REQUIRE(a == -2);
     }
-    SUBCASE("Static float") {
+    SUBCASE ("Static float") {
       REQUIRE(b == doctest::Approx(3.f));
       b = 6;
       REQUIRE(b == doctest::Approx(-1.f));
       b = 14;
       REQUIRE(b == doctest::Approx(0.f));
     }
-    SUBCASE("Dynamic float") {
+    SUBCASE ("Dynamic float") {
       REQUIRE(c == doctest::Approx(1.f));
       c = 6;
       REQUIRE(c == doctest::Approx(-1.f));
@@ -150,12 +150,12 @@ TEST_CASE ("Wrapping") {
     }
   }
   SUBCASE ("Downwards") {
-    SUBCASE("Static Int") {
+    SUBCASE ("Static Int") {
       REQUIRE(a == -1);
       a = -5;
       REQUIRE(a == 3);
     }
-    SUBCASE("Static float") {
+    SUBCASE ("Static float") {
       REQUIRE(b == doctest::Approx(3.f));
       b = -6;
       REQUIRE(b == doctest::Approx(1.f));
@@ -163,4 +163,4 @@ TEST_CASE ("Wrapping") {
       REQUIRE(b == doctest::Approx(0.f));
     }
   }
-
+}
