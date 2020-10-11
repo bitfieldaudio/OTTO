@@ -13,7 +13,7 @@ namespace otto::itc {
 
   // QueueExecutor
 
-  void QueueExecutor::execute(std::function<void()> f) noexcept
+  void QueueExecutor::execute(Function f) noexcept
   {
     queue_.enqueue(std::move(f));
     notify();
@@ -21,7 +21,7 @@ namespace otto::itc {
   bool QueueExecutor::run_queued_functions() noexcept
   {
     bool res = false;
-    std::function<void()> f;
+    Function f;
     while (queue_.try_dequeue(f)) {
       f();
       res = true;

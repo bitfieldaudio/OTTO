@@ -11,46 +11,14 @@
 
 #include "lib/util/with_limits.hpp"
 
+#include "stubs/controller.hpp"
+#include "stubs/logic_thread.hpp"
+
 using namespace otto;
-using services::Command;
-using services::Packet;
+using drivers::Command;
+using drivers::Packet;
 
-constexpr std::uint8_t operator"" _u8(unsigned long long int v) noexcept
-{
-  return static_cast<std::uint8_t>(v);
-}
-
-template<std::derived_from<itc::IExecutor> Executor>
-struct LogicThreadStub final : services::LogicThread {
-  Executor& executor() noexcept override
-  {
-    return executor_;
-  }
-
-private:
-  Executor executor_;
-};
-
-struct StubMCUPort final : services::MCUPort {
-  void write(const Packet& p) override
-  {
-    OTTO_UNREACHABLE();
-  }
-
-  Packet read() override
-  {
-    if (data.empty()) return {};
-    auto res = data.front();
-    data.pop();
-    return res;
-  }
-
-  void stop() override {}
-
-  std::queue<Packet> data;
-};
-
-using Events = std::vector<std::variant<KeyPress, KeyRelease, EncoderEvent>>;
+using Events = std::vector<IInputHandler::variant>;
 
 struct Handler final : InputHandler {
   void handle(KeyPress e) noexcept override
@@ -70,7 +38,7 @@ struct Handler final : InputHandler {
 };
 
 TEST_CASE ("Controller::read_input_data") {
-  StubMCUPort port;
+  test::StubMCUPort port;
   services::MCUCommunicator com = {&port};
   Handler handler;
   com.handler = &handler;
@@ -94,12 +62,13 @@ TEST_CASE ("Controller::read_input_data") {
 }
 
 TEST_CASE ("Controller thread") {
-  StubMCUPort port;
+  otto::test::StubMCUPort port;
   Handler handler;
-  auto app = services::start_app(core::make_handle<LogicThreadStub<itc::QueueExecutor>>(), //
-                                 services::ConfigManager::make(), services::Controller::make(&port));
+  auto app =
+    services::start_app(services::LogicThread::make(), //
+                        services::ConfigManager::make(), services::Controller::make([&port] { return &port; }));
   core::ServiceAccessor<services::Controller> ctrl;
-  core::ServiceAccessor<LogicThreadStub<itc::QueueExecutor>> logic_thread;
+  core::ServiceAccessor<services::LogicThread> logic_thread;
   ctrl->set_input_handler(handler);
 
   port.data.push({Command::encoder_events, {10, 2, 251, 0}});

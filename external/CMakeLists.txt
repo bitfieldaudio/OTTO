@@ -143,6 +143,18 @@ if (toml11_ADDED)
   target_include_directories(toml11 SYSTEM INTERFACE "${toml11_SOURCE_DIR}")
 endif()
 
+CPMAddPackage(
+  NAME yamc
+  GITHUB_REPOSITORY yohhoy/yamc
+  GIT_TAG fc378ad9c4169a876e769b91c7d2bddf669d1a91
+  DOWNLOAD_ONLY YES
+)
+
+if (yamc_ADDED)
+  add_library(yamc INTERFACE)
+  target_include_directories(yamc SYSTEM INTERFACE "${yamc_SOURCE_DIR}/include")
+endif()
+
 # BOOST
 
 find_package(

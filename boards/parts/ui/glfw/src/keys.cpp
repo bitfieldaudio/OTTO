@@ -3,7 +3,7 @@
 #include "app/services/controller.hpp"
 #include "lib/itc/executor.hpp"
 
-namespace otto::services {
+namespace otto::drivers {
 
   void handle_keyevent(glfw::Action action, glfw::Modifiers mods, glfw::Key key, IInputHandler& handler)
   {
@@ -64,7 +64,7 @@ namespace otto::services {
 
     bool ctrl = mods & Modifier::ctrl;
     switch (key) {
-        // Rotaries
+        // Encoders
       case Key::q:
         if (ctrl)
           send_key(OKey::blue_enc_click);
@@ -114,28 +114,28 @@ namespace otto::services {
           send_encoder(Encoder::red, -1);
         break;
 
-        // Engines
-        // case Key::n1: send_key(OKey::arp); break;
-        // case Key::n2: send_key(OKey::synth); break;
-        // case Key::n3: send_key(OKey::envelope); break;
-        // case Key::n4: send_key(OKey::voices); break;
-        // case Key::n5: send_key(OKey::fx1); break;
-        // case Key::n6: send_key(OKey::fx2); break;
-        // case Key::n8: send_key(OKey::sequencer); break;
-        // case Key::p: send_key(OKey::play); break;
-        // case Key::m: send_key(OKey::master); break;
+      // Engines
+      case Key::n1: send_key(OKey::arp); break;
+      case Key::n2: send_key(OKey::synth); break;
+      case Key::n3: send_key(OKey::envelope); break;
+      case Key::n4: send_key(OKey::voices); break;
+      case Key::n5: send_key(OKey::fx1); break;
+      case Key::n6: send_key(OKey::fx2); break;
+      case Key::n8: send_key(OKey::sequencer); break;
+      case Key::p: send_key(OKey::play); break;
+      case Key::m: send_key(OKey::master); break;
 
-        // case Key::up: send_key(OKey::plus); break;
-        // case Key::down: send_key(OKey::minus); break;
+      case Key::up: send_key(OKey::plus); break;
+      case Key::down: send_key(OKey::minus); break;
 
-        // case Key::n7: send_key(OKey::sends); break;
+      case Key::n7: send_key(OKey::sends); break;
 
-        // case Key::left_shift: [[fallthrough]];
-        // case Key::right_shift: send_key(OKey::shift); break;
+      case Key::left_shift: [[fallthrough]];
+      case Key::right_shift: send_key(OKey::shift); break;
 
       default: break;
     }
   }
-} // namespace otto::services
+} // namespace otto::drivers
 
 // kak: other_file=../include/board/ui/keys.hpp

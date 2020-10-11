@@ -39,6 +39,7 @@ target_link_libraries(otto_src PUBLIC skia)
 target_link_libraries(otto_src PUBLIC function2)
 target_link_libraries(otto_src PUBLIC toml11)
 target_link_libraries(otto_src PUBLIC otto_boost)
+target_link_libraries(otto_src PUBLIC yamc)
 
 #include("${OTTO_SOURCE_DIR}/cmake/doctest_force_link_static_lib_in_target.cmake")
 #doctest_force_link_static_lib_in_target(otto_exec otto)

@@ -14,12 +14,6 @@ using namespace otto;
 using namespace otto::services;
 
 namespace otto::engines {
-  struct IDrawable {
-    virtual void draw(SkCanvas& ctx) noexcept = 0;
-  };
-
-  struct IScreen : IDrawable {};
-
   /// InputHandler linked to a logic component
   template<typename Logic>
   struct LinkedInputHandler : InputHandler {
@@ -72,7 +66,7 @@ namespace otto::engines {
       gam::Sine<> osc = {state().freq};
     };
 
-    struct Screen final : services::Graphics::Consumer<State>, otto::engines::IScreen {
+    struct Screen final : services::Graphics::Consumer<State>, otto::IScreen {
       using Consumer::Consumer;
 
       void draw(SkCanvas& ctx) noexcept override

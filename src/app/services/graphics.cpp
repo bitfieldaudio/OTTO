@@ -2,33 +2,29 @@
 
 namespace otto::services {
 
-  Graphics::Graphics(util::any_ptr<IGraphicsDriver> driver)
-    : driver_(std::move(driver)), thread_([this] {
+  Graphics::Graphics(util::any_ptr<IGraphicsDriver>::factory&& make_driver)
+    : driver_(make_driver()), thread_([this] {
         driver_->run(std::bind_front(&Graphics::loop_function, this));
         runtime->request_stop();
         exit_thread();
       })
   {}
 
-  itc::IExecutor& Graphics::executor() noexcept
+  void Graphics::show(DrawFunc f)
   {
-    return executor_;
-  }
-
-  void Graphics::show(std::function<void(SkCanvas&)> f)
-  {
-    draw_func_ = f;
+    draw_func_ = std::move(f);
   }
 
   bool Graphics::loop_function(SkCanvas& ctx)
   {
     if (draw_func_) draw_func_(ctx);
-    executor_.run_queued_functions();
+    executor().run_queued_functions();
     return runtime->should_run();
   }
 
   void Graphics::exit_thread()
   {
-    executor_.run_queued_functions();
+    // TODO: Propper exit syncing with ExecutorLock
+    executor().run_queued_functions();
   }
 } // namespace otto::services

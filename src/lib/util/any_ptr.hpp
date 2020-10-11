@@ -1,5 +1,6 @@
 #pragma once
 
+#include <function2/function2.hpp>
 #include <memory>
 #include <variant>
 
@@ -14,6 +15,7 @@ namespace otto::util {
     using pointer = T*;
     using unique_ptr = std::unique_ptr<T>;
     using shared_ptr = std::shared_ptr<T>;
+    using factory = fu2::unique_function<any_ptr<T>()>;
 
     any_ptr() : variant_(static_cast<pointer>(nullptr)) {}
     any_ptr(pointer p) noexcept : pointer_(p), variant_(p) {}

@@ -2,8 +2,10 @@
 
 namespace otto::services {
 
+  using namespace drivers;
+
   struct ExecutorWrapper : InputHandler {
-    ExecutorWrapper(itc::IExecutor& executor, util::any_ptr<InputHandler>&& delegate)
+    ExecutorWrapper(itc::IExecutor& executor, util::any_ptr<IInputHandler>&& delegate)
       : executor_(executor), delegate_(std::move(delegate))
     {}
 
@@ -22,11 +24,11 @@ namespace otto::services {
 
   private:
     itc::IExecutor& executor_;
-    util::any_ptr<InputHandler> delegate_;
+    util::any_ptr<IInputHandler> delegate_;
   };
 
-  Controller::Controller(util::any_ptr<MCUPort>&& port, Config::Handle conf)
-    : conf_(std::move(conf)), com_(std::move(port)), thread_([this](std::stop_token stop_token) {
+  Controller::Controller(util::any_ptr<MCUPort>::factory&& make_port, Config::Handle conf)
+    : conf_(std::move(conf)), com_(make_port()), thread_([this](std::stop_token stop_token) {
         while (runtime->should_run() && !stop_token.stop_requested()) {
           {
             std::unique_lock l(queue_mutex_);
@@ -45,7 +47,7 @@ namespace otto::services {
       })
   {}
 
-  void Controller::set_input_handler(InputHandler& h)
+  void Controller::set_input_handler(IInputHandler& h)
   {
     com_.handler = std::make_unique<ExecutorWrapper>(logic_thread->executor(), &h);
   }
@@ -60,6 +62,7 @@ namespace otto::services {
 
   void MCUCommunicator::handle_packet(Packet p)
   {
+    if (!handler) return;
     switch (p.cmd) {
       case Command::key_events: {
         std::span<std::uint8_t> presses = {p.data.data(), 8};

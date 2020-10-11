@@ -4,7 +4,7 @@
 
 namespace otto::services {
 
-  Audio::Audio(util::any_ptr<AudioDriver>&& d) : driver_(std::move(d))
+  Audio::Audio(util::any_ptr<AudioDriver>::factory&& d) : driver_(d())
   {
     driver_->set_callback(std::bind_front(&Audio::loop_func, this));
     abp_ = util::AudioBufferPool{16, driver_->buffer_size()};
@@ -28,11 +28,6 @@ namespace otto::services {
     return *abp_;
   }
 
-  itc::IExecutor& Audio::executor() noexcept
-  {
-    return executor_;
-  }
-
   void Audio::set_process_callback(Callback&& cb) noexcept
   {
     callback_ = std::move(cb);
@@ -50,7 +45,19 @@ namespace otto::services {
     } else {
       data.output.clear();
     }
-    executor_.run_queued_functions();
+    executor().run_queued_functions();
+    buffer_count_++;
   }
 
+  unsigned Audio::buffer_count() noexcept
+  {
+    return buffer_count_;
+  }
+
+  void Audio::wait_for_n_buffers(int n) noexcept
+  {
+    unsigned start = buffer_count();
+    while (buffer_count() <= (start + n))
+      std::this_thread::sleep_for(chrono::nanoseconds((1ns / 1s) * driver_->buffer_size() / driver_->sample_rate()));
+  }
 } // namespace otto::services

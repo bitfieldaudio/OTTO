@@ -212,7 +212,9 @@ namespace otto::glfw {
   }
 } // namespace otto::glfw
 
-namespace otto::services {
+namespace otto::drivers {
+
+  using namespace services;
 
   void handle_keyevent(glfw::Action action, glfw::Modifiers mods, glfw::Key key, IInputHandler& handler);
 
@@ -233,7 +235,7 @@ namespace otto::services {
     return std::make_unique<GlfwGraphicsDriver>();
   }
 
-  struct GlfwMCUPort final : MCUPort, IInputHandler {
+  struct GlfwMCUPort final : LocalMCUPort {
     static GlfwMCUPort* instance;
     GlfwMCUPort()
     {
@@ -245,51 +247,6 @@ namespace otto::services {
     }
     GlfwMCUPort(const GlfwMCUPort&) = delete;
     GlfwMCUPort(GlfwMCUPort&&) = delete;
-
-    // UNIMPLEMENTED
-    void write(const Packet& p) override{};
-
-    /// Block until the next packet is ready
-    Packet read() override
-    {
-      Packet res;
-      packets.wait_dequeue(res);
-      return res;
-    }
-
-    void stop() override
-    {
-      packets.enqueue(Packet());
-      packets.enqueue(Packet());
-    }
-
-    void handle(KeyPress e) noexcept override
-    {
-      Packet p;
-      p.cmd = Command::key_events;
-      std::span<std::uint8_t> presses = {p.data.data(), 8};
-      util::set_bit(presses, util::enum_integer(e.key), true);
-      packets.enqueue(p);
-    }
-
-    void handle(KeyRelease e) noexcept override
-    {
-      Packet p;
-      p.cmd = Command::key_events;
-      std::span<std::uint8_t> releases = {p.data.data() + 8, 8};
-      util::set_bit(releases, util::enum_integer(e.key), true);
-      packets.enqueue(p);
-    }
-
-    void handle(EncoderEvent e) noexcept override
-    {
-      Packet p;
-      p.cmd = Command::encoder_events;
-      p.data[util::enum_integer(e.encoder)] = static_cast<std::uint8_t>(e.steps);
-      packets.enqueue(p);
-    }
-
-    moodycamel::BlockingConcurrentQueue<Packet> packets;
   };
 
   GlfwMCUPort* GlfwMCUPort::instance = nullptr;
@@ -307,4 +264,4 @@ namespace otto::services {
     }
   }
 
-} // namespace otto::services
+} // namespace otto::drivers

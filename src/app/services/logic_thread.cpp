@@ -2,15 +2,10 @@
 
 namespace otto::services {
 
-  itc::IExecutor& LogicThread::executor() noexcept
-  {
-    return executor_;
-  }
-
   LogicThread::LogicThread()
     : thread_([this] {
         while (runtime->should_run()) {
-          executor_.run_queued_functions_blocking(std::chrono::milliseconds(100));
+          executor().run_queued_functions_blocking(std::chrono::milliseconds(100));
         }
         // TODO: propper shutdown!
       })

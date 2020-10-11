@@ -2,6 +2,7 @@
 
 #include <concurrentqueue.h>
 #include <condition_variable>
+#include <function2/function2.hpp>
 #include <functional>
 #include <mutex>
 #include <vector>
@@ -12,6 +13,7 @@ namespace otto::itc {
 
   struct IExecutor {
     virtual ~IExecutor() = default;
+    using Function = fu2::unique_function<void()>;
 
     // TODO: Allocator for the std::function object
     /// Execute a function on this executor
@@ -20,12 +22,12 @@ namespace otto::itc {
     /// Guarantees:
     /// - Functions will be executed exactly once
     /// - Functions will be executed in order
-    virtual void execute(std::function<void()>) = 0;
+    virtual void execute(Function) = 0;
   };
 
   /// An executor that immediately calls the function
   struct ImmediateExecutor final : IExecutor {
-    void execute(std::function<void()> f) override
+    void execute(Function f) override
     {
       std::move(f)();
     }
@@ -49,7 +51,7 @@ namespace otto::itc {
     /// Can be called from any thread. Functions queued from one thread
     /// will be executed in order, but not necessarily in order with
     /// functions enqueued from other threads.
-    void execute(std::function<void()> f) noexcept override;
+    void execute(Function) noexcept override;
 
     /// Run functions from the queue until none are available
     ///
@@ -73,7 +75,7 @@ namespace otto::itc {
     void notify() noexcept;
 
   private:
-    moodycamel::ConcurrentQueue<std::function<void()>> queue_;
+    moodycamel::ConcurrentQueue<Function> queue_;
     std::condition_variable cond_;
     std::mutex mutex_;
   };

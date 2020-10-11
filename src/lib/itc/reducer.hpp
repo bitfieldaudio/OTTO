@@ -10,12 +10,13 @@ namespace otto {
   requires(AnEvent<std::remove_cvref_t<Events>>&&...) //
     struct IEventHandler : IEventHandler<Events>... {
     using IEventHandler<Events>::handle...;
+    using variant = std::variant<std::remove_cvref_t<Events>...>;
 
-    void handle(std::variant<std::remove_cvref_t<Events>...>& evt) noexcept
+    void handle(variant& evt) noexcept
     {
       std::visit([this](auto&& evt) { this->handle(evt); }, evt);
     }
-    void handle(std::variant<std::remove_cvref_t<Events>...>&& evt) noexcept
+    void handle(variant&& evt) noexcept
     {
       std::visit([this](auto&& evt) { this->handle(evt); }, std::move(evt));
     }

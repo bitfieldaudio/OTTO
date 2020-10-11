@@ -157,27 +157,27 @@ namespace otto::midi {
 
   inline std::ostream& operator<<(std::ostream& os, const NoteOn& e)
   {
-    return os << fmt::format("{{note = {}, velocity = {}}}", e.note, e.velocity);
+    return os << fmt::format("{{channel = {}, note = {}, velocity = {}}}", e.channel, e.note, e.velocity);
   }
 
   inline std::ostream& operator<<(std::ostream& os, const NoteOff& e)
   {
-    return os << fmt::format("{{note = {}, velocity = {}}}", e.note, e.velocity);
+    return os << fmt::format("{{channel = {}, note = {}, velocity = {}}}", e.channel, e.note, e.velocity);
   }
 
   inline std::ostream& operator<<(std::ostream& os, const Aftertouch& e)
   {
-    return os << fmt::format("{{aftertouch = {}}}", e.aftertouch);
+    return os << fmt::format("{{channel = {}, aftertouch = {}}}", e.channel, e.aftertouch);
   }
 
   inline std::ostream& operator<<(std::ostream& os, const PolyAftertouch& e)
   {
-    return os << fmt::format("{{note = {}, aftertouch = {}}}", e.note, e.aftertouch);
+    return os << fmt::format("{{channel = {}, note = {}, aftertouch = {}}}", e.channel, e.note, e.aftertouch);
   }
 
   inline std::ostream& operator<<(std::ostream& os, const PitchBend& e)
   {
-    return os << fmt::format("{{bend = {}}}", e.pitch_bend);
+    return os << fmt::format("{{channel = {}, bend = {}}}", e.channel, e.pitch_bend);
   }
 
 } // namespace otto::midi

@@ -2,34 +2,25 @@
 
 #include "lib/util/any_ptr.hpp"
 
+#include "app/drivers/graphics_driver.hpp"
 #include "lib/core/service.hpp"
 #include "lib/itc/executor.hpp"
+#include "lib/itc/executor_provider.hpp"
 #include "lib/itc/itc.hpp"
-
-#include <SkCanvas.h>
 
 #include "runtime.hpp"
 
 namespace otto::services {
 
-  struct IGraphicsDriver {
-    virtual ~IGraphicsDriver() = default;
-    virtual void run(std::function<bool(SkCanvas&)>) = 0;
-
-    /// Construct the default graphics driver
-    static std::unique_ptr<IGraphicsDriver> make_default();
-  };
-
-  struct Graphics : core::Service<Graphics> {
-    Graphics(util::any_ptr<IGraphicsDriver> driver = IGraphicsDriver::make_default());
+  struct Graphics : core::Service<Graphics>, itc::ExecutorProvider {
+    using IGraphicsDriver = drivers::IGraphicsDriver;
+    Graphics(util::any_ptr<IGraphicsDriver>::factory&& driver = IGraphicsDriver::make_default);
 
     /// An @ref itc::Consumer with the graphics executor hardcoded
     template<itc::AState State>
     struct Consumer;
     /// Open a window/display drawing the given draw function
-    void show(std::function<void(SkCanvas&)> f);
-
-    itc::IExecutor& executor() noexcept;
+    void show(DrawFunc f);
 
   private:
     /// The function to run in the main loop on the graphics thread.
@@ -49,8 +40,7 @@ namespace otto::services {
 
   protected:
     util::any_ptr<IGraphicsDriver> driver_;
-    std::function<void(SkCanvas&)> draw_func_ = nullptr;
-    itc::QueueExecutor executor_;
+    DrawFunc draw_func_ = nullptr;
     std::jthread thread_;
   };
 
