@@ -8,8 +8,7 @@ We would like to invite you to our **[discord server](https://discord.gg/4cV9Ucz
 # Support the project
 
 
-<a href="https://www.patreon.com/bePatron?u=21164987" data-patreon-widget-type="become-patron-button"><img src="https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fshieldsio-patreon.herokuapp.com%2Fottosynthesizer&style=for-the-badge"></a>
+<a href="https://www.patreon.com/bePatron?u=21164987" data-patreon-widget-type="become-patron-button"><img src="https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fshieldsio-patreon.vercel.app%2Fapi%3Fusername%3Dottosynthesizer%26type%3Dpatrons&style=for-the-badge"></a>
 
 As hardware test boards costs money, and many of you have asked how you can contribute in a financial way, we have decided to set up a Patreon account. With Patreon, you can send us a small monthly amount of money, or make a one-time donation by cancelling the monthly subscription after the first payment (Note that this usually happens on the first of the month, not immediately.)
 
-**All funds go directly towards the OTTO**
