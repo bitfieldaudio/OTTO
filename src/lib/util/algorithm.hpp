@@ -229,14 +229,6 @@ namespace otto::util {
       for_both(std::begin(r1), std::end(r1), std::begin(r2), std::end(r2), std::forward<F>(f));
     }
 
-    template<typename Cont>
-    constexpr std::size_t count(Cont&& cont)
-    {
-      std::size_t n = 0;
-      for (auto&& el : cont) n++;
-      return n;
-    }
-
     /// Container based wrapper for \ref std::accumulate()
     template<typename Cont, typename T>
     constexpr auto accumulate(Cont&& cont, T&& init)

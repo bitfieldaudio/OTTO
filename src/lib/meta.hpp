@@ -41,7 +41,9 @@ namespace otto::meta {
 
   /// List of types. Base for most manipulations here
   template<typename... Args>
-  struct list {};
+  struct list {
+    constexpr static std::size_t size = sizeof...(Args);
+  };
 
   /// An integral constant value
   template<auto val>
@@ -50,6 +52,19 @@ namespace otto::meta {
   /// A list of integral constant values
   template<auto... vals>
   using c_list = list<c<vals>...>;
+
+  template<typename T>
+  struct is_list : std::false_type {};
+
+  template<typename... Ts>
+  struct is_list<list<Ts...>> : std::true_type {};
+
+  template<typename T>
+  constexpr bool is_list_v = _v<is_list<T>>;
+
+  /// A type that is a meta::list
+  template<typename T>
+  concept AList = is_list_v<T>;
 
   /// Pair of types
   template<typename First, typename Second>
@@ -86,21 +101,25 @@ namespace otto::meta {
   struct compare;
 
   /// Metafunction to get first element in a list.
-  template<typename List>
-  struct head;
+  template<AList List>
+  requires(List::size > 0) struct head;
 
   /// Metafunction to get everything but the first element in a list.
-  template<typename List>
+  template<AList List>
   struct tail;
 
+  /// Metafunction to get nth element in list
+  template<std::size_t Idx, AList List>
+  requires(List::size > Idx) struct at;
+
   /// Metafunction to see if `List` contains `T`
-  template<typename List, typename T>
+  template<AList List, typename T>
   struct contains;
 
   /// Metafunction to see if `List` has an element matching `Predicate`
   ///
   /// Has a static constexpr bool member `value`
-  template<typename List, template<typename T> typename Predicate>
+  template<AList List, template<typename T> typename Predicate>
   struct has_one;
 
   /// Metafunction to concattenate lists.
@@ -108,29 +127,30 @@ namespace otto::meta {
   struct concat;
 
   /// Metafunction to flatten a list of lists.
-  template<typename List>
+  /// When called with a non-list type, wrap it in a list
+  template<typename ListOrOtherType>
   struct flatten;
 
   /// Metafunction to filter items by predicate
-  template<typename List, template<typename T> typename Predicate>
+  template<AList List, template<typename T> typename Predicate>
   struct filter;
 
   /// Metafunction to remove items by predicate
-  template<typename List, template<typename T> typename Predicate>
+  template<AList List, template<typename T> typename Predicate>
   struct remove_if;
 
   /// Metafunction to remove an item from a list
-  template<typename List, typename T>
+  template<AList List, typename T>
   struct remove;
 
   /// Metafunction to pop the last item from the list
-  template<typename List>
+  template<AList List>
   struct pop_back;
 
   /// Metafunction to make sure every type only exists once in the list.
   ///
   /// Only the first appearance of each type is kept.
-  template<typename List>
+  template<AList List>
   struct uniquify;
 
   /// Partition List around Pivot.
@@ -141,14 +161,14 @@ namespace otto::meta {
   /// \returns a pair of lists, where the first one contains all types T for
   /// which `Compare<T, Pivot>` returns true, and the second one where it
   /// returns false.
-  template<typename List, typename Pivot, template<class T1, class T2> typename Compare = compare>
+  template<AList List, typename Pivot, template<class T1, class T2> typename Compare = compare>
   struct partition;
 
   /// Quicksort a list using the metafunction `Compare`
   ///
   /// \tparam List the list to partition
   /// \tparam Compare a metafunction that compares two types and returns a bool
-  template<typename List, template<class T1, class T2> typename Compare = compare>
+  template<AList List, template<class T1, class T2> typename Compare = compare>
   struct sort;
 
   // _t and _v aliases ////////////////////////////////////////////////////////
@@ -162,51 +182,55 @@ namespace otto::meta {
   constexpr const bool compare_v = _v<compare<T1, T2>>;
 
   /// Metafunction to get first element in a list.
-  template<typename List>
+  template<AList List>
   using head_t = _t<head<List>>;
 
   /// Metafunction to get everything but the first element in a list.
-  template<typename List>
+  template<AList List>
   using tail_t = _t<tail<List>>;
+
+  /// Metafunction to get nth element in list
+  template<std::size_t Idx, AList List>
+  using at_t = _t<at<Idx, List>>;
 
   /// Metafunction to concattenate lists.
   template<typename... Lists>
   using concat_t = _t<concat<Lists...>>;
 
   /// Metafunction to flatten a list of lists.
-  template<typename List>
+  template<AList List>
   using flatten_t = _t<flatten<List>>;
 
   /// Metafunction to see if `List` contains `T`
-  template<typename List, typename T>
+  template<AList List, typename T>
   constexpr const bool contains_v = _v<contains<List, T>>;
 
   /// Metafunction to see if `List` has an element matching `Predicate`
   ///
   /// Has a static constexpr bool member `value`
-  template<typename List, template<typename T> typename Predicate>
+  template<AList List, template<typename T> typename Predicate>
   constexpr const bool has_one_v = _v<has_one<List, Predicate>>;
 
   /// Metafunction to filter items by predicate
-  template<typename List, template<typename T> typename Predicate>
+  template<AList List, template<typename T> typename Predicate>
   using filter_t = _t<filter<List, Predicate>>;
 
   /// Metafunction to remove items by predicate
-  template<typename List, template<typename T> typename Predicate>
+  template<AList List, template<typename T> typename Predicate>
   using remove_if_t = _t<remove_if<List, Predicate>>;
 
   /// Metafunction to remove an item from a list
-  template<typename List, typename T>
+  template<AList List, typename T>
   using remove_t = _t<remove<List, T>>;
 
   /// Metafunction to pop the last item from a list
-  template<typename List>
+  template<AList List>
   using pop_back_t = _t<pop_back<List>>;
 
   /// Metafunction to make sure every type only exists once in the list.
   ///
   /// Only the first appearance of each type is kept.
-  template<typename List>
+  template<AList List>
   using uniquify_t = _t<uniquify<List>>;
 
   /// Partition List around Pivot.
@@ -217,14 +241,14 @@ namespace otto::meta {
   /// \returns a pair of lists, where the first one contains all types T for
   /// which `Compare<T, Pivot>` returns true, and the second one where it
   /// returns false.
-  template<typename List, typename Pivot, template<class T1, class T2> typename Compare = compare>
+  template<AList List, typename Pivot, template<class T1, class T2> typename Compare = compare>
   using partition_t = _t<partition<List, Pivot, Compare>>;
 
   /// Quicksort a list using the metafunction `Compare`
   ///
   /// \tparam List the list to partition
   /// \tparam Compare a metafunction that compares two types and returns a bool
-  template<typename List, template<class T1, class T2> typename Compare = compare>
+  template<AList List, template<class T1, class T2> typename Compare = compare>
   using sort_t = _t<sort<List, Compare>>;
 
   // Normal functions to work with type lists at runtime ///////////////////////
@@ -232,7 +256,7 @@ namespace otto::meta {
   /// A normal function to call another normal function for each argument
   ///
   /// \param cb will be invoked as `cb(meta::one<T>{})` for each type in `List`
-  template<typename List, typename Callable>
+  template<AList List, typename Callable>
   constexpr void for_each(Callable&& cb);
 
   /// A normal function to call another normal function that transforms a list
@@ -240,7 +264,7 @@ namespace otto::meta {
   ///
   /// \param cb will be invoked as `cb(meta::one<T>{})` for each type in `List`,
   /// and its return value will be put in the returned tuple
-  template<typename List, typename Callable>
+  template<AList List, typename Callable>
   constexpr auto transform_to_tuple(Callable&& cb);
 
   // Implementations ////////////////////////////////////////////////////////
@@ -269,6 +293,18 @@ namespace otto::meta {
   template<typename T, typename... Types>
   struct tail<list<T, Types...>> {
     using type = list<Types...>;
+  };
+
+  // at //
+
+  template<typename T, typename... Types>
+  struct at<0, list<T, Types...>> {
+    using type = T;
+  };
+
+  template<std::size_t Idx, typename T, typename... Types>
+  struct at<Idx, list<T, Types...>> {
+    using type = at_t<Idx - 1, list<Types...>>;
   };
 
   // concat //
@@ -501,14 +537,14 @@ namespace otto::meta {
       {}
     };
 
-    template<typename List>
+    template<AList List>
     struct for_each;
 
     template<typename... Types>
     struct for_each<list<Types...>> : for_each_impl<Types...> {};
   } // namespace impl
 
-  template<typename List, typename Callable>
+  template<AList List, typename Callable>
   constexpr void for_each(Callable&& cb)
   {
     impl::for_each<List>::apply(std::forward<Callable>(cb));
@@ -539,14 +575,14 @@ namespace otto::meta {
       }
     };
 
-    template<typename List>
+    template<AList List>
     struct transform_to_tuple;
 
     template<typename... Types>
     struct transform_to_tuple<list<Types...>> : transform_to_tuple_impl<Types...> {};
   } // namespace impl
 
-  template<typename List, typename Callable>
+  template<AList List, typename Callable>
   constexpr auto transform_to_tuple(Callable&& cb)
   {
     return impl::transform_to_tuple<List>::apply(std::forward<Callable>(cb), std::tuple<>());

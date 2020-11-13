@@ -13,6 +13,8 @@
 namespace otto::midi {
 
   namespace detail {
+    inline float freq_table[128];
+
 
     constexpr std::array<const char*, 128> note_names = {{
       "C-2",  "C#-2", "D-2", "D#-2", "E-2", "F-2",  "F#-2", "G-2",  "G#-2", "A-2", "A#-2", "B-2", "C-1", "C#-1", "D-1",
@@ -27,6 +29,21 @@ namespace otto::midi {
     }};
 
   } // namespace detail
+
+
+  inline void generateFreqTable(double tuning = 440)
+  {
+    for (int i = 0; i < 128; i++) {
+      detail::freq_table[i] = tuning * std::pow(2.0, double(i - 69) / double(12));
+    }
+  }
+
+  inline float note_freq(int key) noexcept
+  {
+    [[maybe_unused]] static bool once = (generateFreqTable(), true);
+    return detail::freq_table[key];
+  }
+
 
   /// A type that represents a value in the range [0; 1], stored as an int from
   /// 0 to `divisor`
@@ -77,39 +94,39 @@ namespace otto::midi {
   }
 
   struct NoteOn {
-    std::uint8_t channel = 0;
     std::uint8_t note = 0;
     fixed_point_ratio<std::uint8_t, 1 << 7> velocity = 0;
+    std::uint8_t channel = 0;
 
     auto operator<=>(const NoteOn&) const = default;
   };
 
   struct NoteOff {
-    std::uint8_t channel = 0;
     std::uint8_t note = 0;
     fixed_point_ratio<std::uint8_t, 1 << 7> velocity = 0;
+    std::uint8_t channel = 0;
 
     auto operator<=>(const NoteOff&) const = default;
   };
 
   struct Aftertouch {
-    std::uint8_t channel = 0;
     fixed_point_ratio<std::uint8_t, 1 << 7> aftertouch = 0;
+    std::uint8_t channel = 0;
 
     auto operator<=>(const Aftertouch&) const = default;
   };
 
   struct PolyAftertouch {
-    std::uint8_t channel = 0;
     std::uint8_t note = 0;
     fixed_point_ratio<std::uint8_t, 1 << 7> aftertouch = 0;
+    std::uint8_t channel = 0;
 
     auto operator<=>(const PolyAftertouch&) const = default;
   };
 
   struct PitchBend {
-    std::uint8_t channel = 0;
     fixed_point_ratio<std::uint16_t, 1 << 14> pitch_bend = 0;
+    std::uint8_t channel = 0;
 
     auto operator<=>(const PitchBend&) const = default;
   };
@@ -138,19 +155,19 @@ namespace otto::midi {
       return bytes[idx];
     };
     if (evt == 0x80) {
-      return NoteOff{.channel = chan, .note = byte_n(1), .velocity = byte_n(2)};
+      return NoteOff{.note = byte_n(1), .velocity = byte_n(2), .channel = chan};
     }
     if (evt == 0x90) {
-      return NoteOn{.channel = chan, .note = byte_n(1), .velocity = byte_n(2)};
+      return NoteOn{.note = byte_n(1), .velocity = byte_n(2), .channel = chan};
     }
     if (evt == 0xA0) {
-      return PolyAftertouch{.channel = chan, .note = byte_n(1), .aftertouch = byte_n(2)};
+      return PolyAftertouch{.note = byte_n(1), .aftertouch = byte_n(2), .channel = chan};
     }
     if (evt == 0xD0) {
-      return Aftertouch{.channel = chan, .aftertouch = byte_n(1)};
+      return Aftertouch{.aftertouch = byte_n(1), .channel = chan};
     }
     if (evt == 0xE0) {
-      return PitchBend{.channel = chan, .pitch_bend = (byte_n(2) << 7) | (byte_n(1))};
+      return PitchBend{.pitch_bend = (byte_n(2) << 7) | (byte_n(1)), .channel = chan};
     }
     throw util::exception("Invalid midi event");
   }

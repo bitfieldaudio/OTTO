@@ -39,11 +39,14 @@ namespace otto::util {
   template<typename T>
   concept function_sig = detail::is_function_sig<T>::value;
 
-  template<typename F, typename Shape>
-  concept callable = function_sig<Shape>&& detail::is_callable_impl<F, Shape>::value;
+  template<typename F, typename Signature>
+  concept callable = function_sig<Signature>&& detail::is_callable_impl<F, Signature>::value;
 
   template<typename T, typename... Ts>
   concept one_of = is_one_of_v<T, Ts...>;
+
+  template<typename T, typename U>
+  concept different_from = !std::same_as<T, U>;
 
   template<typename T>
   concept AnEnum = std::is_enum_v<T>;

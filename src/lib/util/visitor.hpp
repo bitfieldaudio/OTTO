@@ -42,11 +42,12 @@ namespace otto::util {
 /// }
 /// ```
 #define DECL_VISIT(...)                                                                                                \
-  void visit(otto::util::AVisitorOf<FOR_EACH_LAST_SEP(OTTO_VISIT_DECLTYPE_, IGNORE, __VA_ARGS__)> auto&& visitor)       \
+  void visit(otto::util::AVisitorOf<FOR_EACH_LAST_SEP(OTTO_VISIT_DECLTYPE_, IGNORE, __VA_ARGS__)> auto&& visitor)      \
   {                                                                                                                    \
     FOR_EACH(OTTO_VISIT_CALL_VISITOR_, __VA_ARGS__)                                                                    \
   }                                                                                                                    \
-  void visit(otto::util::AVisitorOf<FOR_EACH_LAST_SEP(OTTO_VISIT_DECLTYPE_, IGNORE, __VA_ARGS__)> auto&& visitor) const \
+  void visit(otto::util::AVisitorOf<FOR_EACH_LAST_SEP(OTTO_VISIT_DECLTYPE_, IGNORE, __VA_ARGS__)> auto&& visitor)      \
+    const                                                                                                              \
   {                                                                                                                    \
     FOR_EACH(OTTO_VISIT_CALL_VISITOR_, __VA_ARGS__)                                                                    \
   }

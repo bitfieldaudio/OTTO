@@ -194,8 +194,15 @@ namespace otto::util {
     constexpr tl::expected<void, error> pop_back() noexcept
     {
       if (empty()) return tl::unexpected(error::empty);
-      data()[_size].~T();
       _size--;
+      data()[_size].~T();
+      return {};
+    }
+
+    constexpr tl::expected<void, error> pop_front() noexcept
+    {
+      if (empty()) return tl::unexpected(error::empty);
+      erase(begin());
       return {};
     }
 

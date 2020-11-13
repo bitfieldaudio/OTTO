@@ -1,7 +1,7 @@
 set(CMAKE_CXX_STANDARD 20)
 
-file(GLOB_RECURSE headers ${OTTO_SOURCE_DIR}/src/*.hpp)
-file(GLOB_RECURSE sources ${OTTO_SOURCE_DIR}/src/*.cpp)
+file(GLOB_RECURSE headers RELATIVE "${OTTO_SOURCE_DIR}/src" "${OTTO_SOURCE_DIR}/src/*.hpp")
+file(GLOB_RECURSE sources "${OTTO_SOURCE_DIR}/src/*.cpp")
 
 find_package (Threads)
 # Library
@@ -41,6 +41,9 @@ target_link_libraries(otto_src PUBLIC toml11)
 target_link_libraries(otto_src PUBLIC otto_boost)
 target_link_libraries(otto_src PUBLIC yamc)
 
+ocpppp_generate(otto_src_gen "${OTTO_SOURCE_DIR}/src" "${OTTO_BINARY_DIR}" "${headers}")
+target_link_libraries(otto_src PUBLIC otto_src_gen)
+
 #include("${OTTO_SOURCE_DIR}/cmake/doctest_force_link_static_lib_in_target.cmake")
 #doctest_force_link_static_lib_in_target(otto_exec otto)
 
@@ -58,6 +61,7 @@ elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
 -Wno-vla \
 -Wno-sign-compare \
 -Wno-error=pedantic \
+-Wno-unknown-attributes \
 ")
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long -Wpedantic \
@@ -71,6 +75,7 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 -Wno-gnu-zero-variadic-macro-arguments \
 -Wno-gnu-anonymous-struct \
 -Wno-nested-anon-types \
+-Wno-unknown-attributes \
 ")
 endif()
 

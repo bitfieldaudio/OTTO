@@ -46,14 +46,14 @@ namespace otto::services {
   void UIManager::handle(KeyPress e) noexcept
   {
     if (int note = note_of(e.key); note > 0) {
-      service<Audio>().enqueue_midi(midi::NoteOn{.channel = 0, .note = note, .velocity = 0x40});
+      service<Audio>().enqueue_midi(midi::NoteOn{.note = note, .velocity = 0x40, .channel = 0});
     }
   }
 
   void UIManager::handle(KeyRelease e) noexcept
   {
     if (int note = note_of(e.key); note > 0) {
-      service<Audio>().enqueue_midi(midi::NoteOff{.channel = 0, .note = note, .velocity = 0x00});
+      service<Audio>().enqueue_midi(midi::NoteOff{.note = note, .velocity = 0x00, .channel = 0});
     }
   }
 } // namespace otto::services

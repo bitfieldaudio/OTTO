@@ -208,12 +208,11 @@ namespace otto::itc {
   protected:
     /// Hook called immediately after the state is updated.
     ///
-    /// Gets the new state as a parameter, even though it is also available as
-    ///
-    /// if you consume multiple states.
+    /// Gets the old state as a parameter, while the new state is available
+    /// as `state()`
     ///
     /// Override in subclass if needed
-    virtual void on_state_change(const State& s) noexcept {}
+    virtual void on_state_change(const State& old_state) noexcept {}
 
   private:
     friend Channel<State>;
@@ -223,11 +222,13 @@ namespace otto::itc {
     {
       executor_.execute([this, action] {
         action(state_);
-        on_state_change(state_);
+        on_state_change(old_state_);
+        action(old_state_);
       });
     }
 
     State state_;
+    State old_state_;
     IExecutor& executor_;
     Channel<State>* channel_;
   };

@@ -185,13 +185,13 @@ namespace otto::util {
   static_assert(std::indirectly_writable<zip_iterator<int*>, std::tuple<int>>);
 
   template<std::ranges::view... Ranges>
-  struct zip_view : boost::stl_interfaces::view_interface<zip_view<Ranges...>> {
+  struct zip_view : boost::stl_interfaces::view_interface<zip_view<Ranges...>>, std::ranges::view_base {
     using base_type = std::tuple<Ranges...>;
 
     constexpr zip_view() = default;
     constexpr zip_view(Ranges... rngs) : base_(std::move(rngs)...) {}
 
-    base_type base() const
+    base_type& base() const
     {
       return base_;
     }

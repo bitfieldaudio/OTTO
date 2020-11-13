@@ -37,7 +37,7 @@ TEST_CASE ("midi queue") {
 
   auto app = start_app(ConfigManager::make_default(), Audio::make());
   app.service<Audio>().set_midi_handler(&handler);
-  app.service<Audio>().enqueue_midi(midi::NoteOn{.channel = 0, .note = 5});
+  app.service<Audio>().enqueue_midi(midi::NoteOn{5});
   app.service<Audio>().set_process_callback([&](Audio::CallbackData) {
     if (handler.note != 0) app.service<Runtime>().request_stop();
   });

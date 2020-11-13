@@ -238,4 +238,9 @@ namespace otto::util {
     return get_bit(array[idx / 8], idx % 8);
   }
 
+  // Lambdas matching overload sets
+
+  /// std::addressof wrapped in a lambda so it can be passed to algorithms
+  constexpr auto addressof = CALLABLE(std::addressof);
+
 } // namespace otto::util

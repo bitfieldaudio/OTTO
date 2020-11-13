@@ -1,4 +1,4 @@
-#include "ottofm.hpp"
+#include "app/engines/synths/ottofm/ottofm.gen.hpp"
 
 #include "lib/engine.hpp"
 #include "lib/itc/itc.hpp"

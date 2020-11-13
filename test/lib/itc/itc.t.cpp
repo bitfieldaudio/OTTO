@@ -1,4 +1,5 @@
 #include "lib/itc/itc.hpp"
+#include <bitset>
 #include "testing.t.hpp"
 
 using namespace otto::itc;
@@ -109,12 +110,14 @@ TEST_CASE (doctest::test_suite("itc") * "Basic state passing") {
       REQUIRE(state().i == i);
     }
 
-    void on_state_change(const S& s) noexcept override
+    void on_state_change(const S& old_state) noexcept override
     {
+      old_i = old_state.i;
       new_state_called++;
     }
 
     int new_state_called = 0;
+    int old_i = 0;
   } c1 = {ch, ex};
 
   SUBCASE ("Access default state in Consumer") {
@@ -133,6 +136,11 @@ TEST_CASE (doctest::test_suite("itc") * "Basic state passing") {
     p1.test_produce(1);
     c1.check_i(1);
     REQUIRE(c1.new_state_called == 1);
+    REQUIRE(c1.old_i == 0);
+    p1.test_produce(2);
+    c1.check_i(2);
+    REQUIRE(c1.new_state_called == 2);
+    REQUIRE(c1.old_i == 1);
   }
 }
 
@@ -258,4 +266,157 @@ TEST_CASE ("Sample engine") {
   struct FilterAudio : Consumer<State> {};
 
   struct FilterScreen : Consumer<State> {};
+}
+
+//#define DECL_REFL(Type, ...)
+
+template<typename T>
+struct remove_member_pointer {
+  using type = T;
+};
+template<typename C, typename T>
+struct remove_member_pointer<T C::*> {
+  using type = T;
+};
+
+template<typename T>
+using remove_member_pointer_t = typename remove_member_pointer<T>::type;
+
+template<typename Struct, auto Struct::*MemPtr, std::size_t Idx>
+struct MemberBase {
+  static constexpr std::size_t index = Idx;
+  static constexpr std::size_t next = index + 1;
+  using value_type = std::remove_pointer_t<decltype(MemPtr)>;
+};
+
+template<typename T>
+concept StructureTraits = true;
+
+struct EmptyStructureTraits {
+  template<typename Struct, auto Struct::*MemPtr, std::size_t Idx>
+  struct Member {};
+};
+
+template<typename Struct, StructureTraits Tr = EmptyStructureTraits, std::size_t Idx = 0>
+struct structure {};
+
+template<typename T>
+concept WithStructure = requires
+{
+  structure<T>::next;
+};
+
+template<typename Struct>
+struct StructureBase {
+  template<auto Struct::*MemPtr, StructureTraits Traits, std::size_t Idx>
+  struct Member : MemberBase<Struct, MemPtr, Idx>, Traits::template Member<Struct, MemPtr, Idx> {
+    using Traits::template Member<Struct, MemPtr, Idx>::Member;
+  };
+};
+
+template<typename Struct>
+template<auto Struct::*MemPtr, StructureTraits Traits, std::size_t Idx>
+requires WithStructure<remove_member_pointer_t<decltype(MemPtr)>> //
+  struct StructureBase<Struct>::Member<MemPtr, Traits, Idx>
+  : MemberBase<Struct, MemPtr, Idx>,
+    Traits::template Member<Struct, MemPtr, Idx>,
+    structure<remove_member_pointer_t<decltype(MemPtr)>, Traits, Idx + 1> {
+  using TraitMem = typename Traits::template Member<Struct, MemPtr, Idx>;
+  using Structure = structure<remove_member_pointer_t<decltype(MemPtr)>, Traits, Idx + 1>;
+
+  constexpr Member(auto&&... args) requires std::is_constructible_v<TraitMem, decltype(args)...>&& std::
+    is_constructible_v<Structure, decltype(args)...> : TraitMem(args...),
+                                                       Structure(args...)
+  {}
+
+  using Structure::next;
+};
+
+struct State {
+  /// The filter frequency
+  int i1 = 0;
+  int i2 = 0;
+  struct SubState {
+    int subi1 = 0;
+  } substate;
+};
+
+template<StructureTraits Tr, std::size_t Idx>
+struct structure<::State, Tr, Idx> : StructureBase<::State> {
+  [[no_unique_address]] Member<&::State::i1, Tr, Idx + 0> i1;
+  [[no_unique_address]] Member<&::State::i2, Tr, Idx + decltype(i1)::next> i2;
+  [[no_unique_address]] Member<&::State::substate, Tr, Idx + decltype(i2)::next> substate;
+  static constexpr std::size_t next = Idx + decltype(substate)::next;
+
+  constexpr structure(auto&&... args) requires std::is_constructible_v<decltype(i1), decltype(args)...>&& std::
+    is_constructible_v<decltype(i2), decltype(args)...>&& std::is_constructible_v<decltype(substate), decltype(args)...>
+    : i1(args...), i2(args...), substate(args...)
+  {}
+  constexpr structure(const structure&) = default;
+  constexpr structure(structure&&) = default;
+  constexpr structure& operator=(const structure&) = default;
+  constexpr structure& operator=(structure&&) = default;
+};
+
+template<StructureTraits Tr, std::size_t Idx>
+struct structure<::State::SubState, Tr, Idx> : StructureBase<::State::SubState> {
+  [[no_unique_address]] Member<&::State::SubState::subi1, Tr, Idx + 0> subi1;
+  static constexpr std::size_t next = Idx + decltype(subi1)::next;
+
+  constexpr structure(auto&&... args) requires std::is_constructible_v<decltype(subi1), decltype(args)...>
+    : subi1(args...)
+  {}
+  constexpr structure(const structure&) = default;
+  constexpr structure(structure&&) = default;
+  constexpr structure& operator=(const structure&) = default;
+  constexpr structure& operator=(structure&&) = default;
+};
+
+static_assert(structure<State>().substate.index == 2);
+static_assert(structure<State>().substate.subi1.index == 3);
+
+struct StateDiffTraits {
+  template<typename Struct, auto Struct::*MemPtr, std::size_t Idx>
+  struct Member {
+    using BitSet = std::bitset<structure<State>::next>;
+
+    Member(BitSet& b) : bitset_(b) {}
+
+    bool has_changed()
+    {
+      return bitset_.test(Idx);
+    }
+
+    void has_changed(bool b)
+    {
+      bitset_[Idx] = b;
+    }
+
+  private:
+    BitSet& bitset_;
+  };
+};
+
+template<WithStructure State>
+struct StateDiff : structure<State, StateDiffTraits> {
+  using BitSet = std::bitset<structure<State>::next>;
+
+  StateDiff(BitSet b = {}) : bitset_(b), structure<State, StateDiffTraits>(bitset_) {}
+
+  BitSet bitset()
+  {
+    return bitset_;
+  }
+
+private:
+  BitSet bitset_;
+};
+
+TEST_CASE ("StateDiff") {
+  StateDiff<State> diff;
+  diff.i1.has_changed(true);
+  REQUIRE(diff.i1.has_changed());
+  REQUIRE(!diff.i2.has_changed());
+  diff.substate.subi1.has_changed(true);
+  REQUIRE(diff.substate.subi1.has_changed());
 }
