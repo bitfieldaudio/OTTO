@@ -9,3 +9,9 @@ target_include_directories(otto_test PUBLIC ${OTTO_SOURCE_DIR}/test)
 set_target_properties(otto_test PROPERTIES OUTPUT_NAME test)
 
 otto_add_definitions(otto_test)
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OTTO_CXX_FLAGS}")
+
+file(GLOB_RECURSE headers RELATIVE "${OTTO_SOURCE_DIR}/test" "${OTTO_SOURCE_DIR}/test/*.hpp")
+ocpppp_generate(otto_test_gen "${OTTO_SOURCE_DIR}/test" "${OTTO_BINARY_DIR}" "${headers}")
+target_link_libraries(otto_test PUBLIC otto_test_gen)

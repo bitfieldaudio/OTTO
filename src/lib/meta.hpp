@@ -2,6 +2,7 @@
 
 #include <functional> // invoke
 
+#include "lib/util/concepts.hpp"
 #include "lib/util/type_traits.hpp"
 
 /// OTTO Metaprogramming utilities
@@ -112,6 +113,10 @@ namespace otto::meta {
   template<std::size_t Idx, AList List>
   requires(List::size > Idx) struct at;
 
+  /// Metafunction to get first n elements in list
+  template<std::size_t N, AList List>
+  requires(List::size >= N) struct take;
+
   /// Metafunction to see if `List` contains `T`
   template<AList List, typename T>
   struct contains;
@@ -193,6 +198,10 @@ namespace otto::meta {
   template<std::size_t Idx, AList List>
   using at_t = _t<at<Idx, List>>;
 
+  /// Metafunction to get first n elements in list
+  template<std::size_t N, AList List>
+  using take_t = _t<take<N, List>>;
+
   /// Metafunction to concattenate lists.
   template<typename... Lists>
   using concat_t = _t<concat<Lists...>>;
@@ -267,6 +276,11 @@ namespace otto::meta {
   template<AList List, typename Callable>
   constexpr auto transform_to_tuple(Callable&& cb);
 
+  /// std::apply for lists. Callable is invoked once with meta::one<T>()... where
+  /// T... are all elements in the list
+  template<AList List, typename Callable>
+  constexpr auto apply(Callable&& cb);
+
   // Implementations ////////////////////////////////////////////////////////
 
   template<typename T1, typename T2>
@@ -305,6 +319,27 @@ namespace otto::meta {
   template<std::size_t Idx, typename T, typename... Types>
   struct at<Idx, list<T, Types...>> {
     using type = at_t<Idx - 1, list<Types...>>;
+  };
+
+  // take //
+  namespace detail {
+    template<std::size_t N, AList Res, AList List>
+    struct take_impl;
+
+    template<AList Res, AList Input>
+    struct take_impl<0, Res, Input> {
+      using type = Res;
+    };
+
+    template<std::size_t N, typename... Res, typename T, typename... Input>
+    requires(N > 0) struct take_impl<N, list<Res...>, list<T, Input...>> {
+      using type = _t<take_impl<N - 1, list<Res..., T>, list<Input...>>>;
+    };
+  } // namespace detail
+
+  template<std::size_t N, AList L>
+  requires(L::size >= N) struct take {
+    using type = _t<detail::take_impl<N, list<>, L>>;
   };
 
   // concat //
@@ -586,6 +621,16 @@ namespace otto::meta {
   constexpr auto transform_to_tuple(Callable&& cb)
   {
     return impl::transform_to_tuple<List>::apply(std::forward<Callable>(cb), std::tuple<>());
+  }
+
+  template<AList List, typename Callable>
+  constexpr auto apply(Callable&& cb)
+  {
+    auto impl = [&cb]<typename... Ts>(list<Ts...>)
+    {
+      return FWD(cb)(one<Ts>()...);
+    };
+    return impl();
   }
 
 } // namespace otto::meta

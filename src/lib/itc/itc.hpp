@@ -143,7 +143,7 @@ namespace otto::itc {
 
     void update(std::invocable<State&> auto&&... funcs) requires requires(State& s)
     {
-      funcs(s) = funcs(s);
+      ((funcs(s) = funcs(s)), ...);
     }
     {
       produce([... vals = funcs(state()), ... funcs = FWD(funcs)](State& s) { ((funcs(s) = vals), ...); });

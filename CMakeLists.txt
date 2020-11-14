@@ -82,6 +82,32 @@ if (NOT OTTO_BUILD_TESTS)
   add_compile_definitions(DOCTEST_CONFIG_DISABLE=1)
 endif()
 
+# Enable warnings for local code
+if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
+  set(OTTO_CXX_FLAGS "-Wall -Wno-long-long -Wpedantic \
+-Wno-c++14-compat -Wno-psabi \
+-Wno-unknown-pragmas \
+-Wno-vla \
+-Wno-sign-compare \
+-Wno-error=pedantic \
+-Wno-attributes \
+")
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  set(OTTO_CXX_FLAGS "-Wall -Wno-long-long -Wpedantic \
+-Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wno-c++17-compat -Wc++20-compat \
+-Wno-shadow-field-in-constructor \
+-Wno-documentation-unknown-command \
+-Wno-unknown-pragmas \
+-Wno-missing-braces \
+-Wno-vla-extension \
+-Wno-c99-extensions \
+-Wno-gnu-zero-variadic-macro-arguments \
+-Wno-gnu-anonymous-struct \
+-Wno-nested-anon-types \
+-Wno-unknown-attributes \
+")
+endif()
+
 add_subdirectory(src)
 
 otto_debug_definitions()
