@@ -182,16 +182,12 @@ else()
 endif()
 
 # OCPPPP
-CPMAddPackage(
-  NAME ocpppp
-  GITHUB_REPOSITORY otto-project/ocpppp
-  GIT_TAG b394ed3499ec4a507048e51ec3a6e5f714a13dd3
-)
-if (ocpppp_ADDED)
-  # Exclude from all to make sure ocpppp is only built if needed, i.e. if not
-  # cross-compiling
-  set_target_properties(ocpppp PROPERTIES EXCLUDE_FROM_ALL TRUE)
-  include("${ocpppp_SOURCE_DIR}/cmake/ocpppp.cmake")
+if (NOT OTTO_USE_SYSTEM_OCPPPP)
+  CPMAddPackage(
+    NAME ocpppp
+    GITHUB_REPOSITORY otto-project/ocpppp
+    GIT_TAG b394ed3499ec4a507048e51ec3a6e5f714a13dd3
+  )
 endif()
 
 # SKIA

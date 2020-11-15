@@ -41,8 +41,7 @@ target_link_libraries(otto_src PUBLIC toml11)
 target_link_libraries(otto_src PUBLIC otto_boost)
 target_link_libraries(otto_src PUBLIC yamc)
 
-ocpppp_generate(otto_src_gen "${OTTO_SOURCE_DIR}/src" "${OTTO_BINARY_DIR}" "${headers}")
-target_link_libraries(otto_src PUBLIC otto_src_gen)
+ocpppp_generate(otto_src "${OTTO_SOURCE_DIR}/src" "${OTTO_BINARY_DIR}" "${headers}")
 
 #include("${OTTO_SOURCE_DIR}/cmake/doctest_force_link_static_lib_in_target.cmake")
 #doctest_force_link_static_lib_in_target(otto_exec otto)
@@ -61,7 +60,6 @@ if (DOXYGEN_FOUND)
     configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
     message("Doxygen build started")
 
-    # note the option ALL which allows to build the docs together with the application
     add_custom_target(docs
         COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
         WORKING_DIRECTORY ${OTTO_SOURCE_DIR}/doxygen
