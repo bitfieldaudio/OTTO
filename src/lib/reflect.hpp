@@ -52,17 +52,17 @@ namespace otto::reflect {
     struct is_member_data<MemberInfo<MemPtr>> : std::true_type {};
   } // namespace detail
 
+  // clang-format off
   template<typename Info>
-  concept AMemberInfo = detail::is_member_data<Info>::value&& requires
+  concept AMemberInfo = detail::is_member_data<Info>::value && requires
   {
-    // clang-format off
     typename Info::struct_t;
     typename Info::value_type;
-    { Info::mem_ptr } -> std::same_as<typename Info::value_type Info::struct_t::* const>;
-    { Info::index }   -> std::same_as<const std::size_t>;
-    { Info::name }    -> std::same_as<const util::string_ref>;
-    // clang-format on
+    { Info::mem_ptr } -> util::decays_to<typename Info::value_type Info::struct_t::*>;
+    { Info::index }   -> util::decays_to<std::size_t>;
+    { Info::name }    -> util::decays_to<util::string_ref>;
   };
+  // clang-format on
 
   template<typename Struct>
   struct StructInfo;
