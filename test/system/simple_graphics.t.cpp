@@ -7,8 +7,9 @@
 #include <SkFont.h>
 #include <SkPath.h>
 #include <SkTypeface.h>
+#include <SkTextBlob.h>
 
-#include <iostream>
+#include <string>
 
 using namespace otto;
 using namespace otto::services;
@@ -26,14 +27,16 @@ SkPaint OTTO_paint(void) {
 }
 
 namespace Colours {
-  constexpr SkColor Blue = SK_ColorBLUE;
-  constexpr SkColor Green = SK_ColorGREEN;
-  constexpr SkColor Yellow = SK_ColorYELLOW;
-  constexpr SkColor Red = SK_ColorRED;
+  constexpr SkColor Blue = SkColorSetRGB(22, 184, 254);
+  constexpr SkColor Green = SkColorSetRGB(22, 254, 101);
+  constexpr SkColor Yellow = SkColorSetRGB(254, 245, 22);
+  constexpr SkColor Red = SkColorSetRGB(254, 22, 22);
   constexpr SkColor White = SK_ColorWHITE;
+  constexpr SkColor Grey50 = SK_ColorGRAY;
+  constexpr SkColor Black = SK_ColorBLACK;
 }
 
-constexpr std::array<SkColor, 4> operator_colours = {Colours::Red, Colours::Yellow, Colours::Green, Colours::Blue};
+
 
 // Not the real one, just for testing now
 SkColor mix(SkColor a, SkColor b, float m) { return a; }
@@ -150,6 +153,8 @@ struct Algorithm {
   }
 };
 
+constexpr std::array<SkColor, 4> operator_colours = {Colours::Red, Colours::Yellow, Colours::Green, Colours::Blue};
+
 const std::array<Fraction, 20> fractions = {{
   {1, 1}, {1, 64}, {1, 32}, {3, 32}, {1, 8}, {5, 16}, {1, 2}, {5, 8},  {2, 1}, {3, 2},
   {3, 4}, {1, 4},  {5, 32}, {1, 16}, {5, 8}, {4, 1},  {7, 4}, {7, 16}, {7, 2}, {0, 1},
@@ -217,132 +222,122 @@ const std::array<Algorithm, 11> algorithms = {{
   Algorithm({}),
 }};
 
-void draw_operators(SkCanvas& ctx)
-{
-  SkPaint paint = OTTO_paint();
-  constexpr float x_pad = 35;
-  constexpr float y_pad = 50;
-  float space = (ctx.imageInfo().height() - 2.f * y_pad) / 3.f;
+struct Operators : otto::graphics::Widget<Operators> {
+  int algorithm_idx, cur_op;
+  std::array<float, 4> activity_levels;
+  std::array<SkColor, 4> operator_colours = {Colours::Red, Colours::Yellow, Colours::Green, Colours::Blue};
 
-  int algorithm_idx = 4;
-  int cur_op = 2;
+  Operators(int alg, int op, std::array<float, 4> levels) : algorithm_idx(alg), cur_op(op), activity_levels(levels) {}
 
-  // Draw lines between operators
-  for (auto&& line : algorithms[algorithm_idx].operator_lines) {
-    int x_middle = x_pad + 12;
-    int mid_to_side = 15;
-    int horizontal_length = 13;
+  void do_draw(SkCanvas& ctx) {
+    // Anchor is TopLeft
+    SkPaint paint = OTTO_paint();
+    const float width = bounding_box.width();
+    const float height = bounding_box.height();
+    const float operator_size = width / 2.f;
+    const float operator_radius = operator_size / 2.f;
+    constexpr float square_scale = 0.9f;
+    float space = (height - operator_size) / 3.f;
 
-    SkPath path;
-    if (line.side == Drawside::left) {
-      int x_close = x_middle - mid_to_side;
-      int x_far = x_close - horizontal_length;
-
-      int y_start = y_pad + (3 - line.start) * space;
-      int y_end = y_pad + (3 - line.end) * space;
-
-      path.moveTo(x_close, y_start);
-      path.lineTo(x_far, y_start);
-      path.lineTo(x_far, y_end);
-      path.lineTo(x_close, y_end);
-    } else if (line.side == Drawside::right) {
-      int x_close = x_middle + mid_to_side;
-      int x_far = x_close + horizontal_length;
-
-      int y_start = y_pad + (3 - line.start) * space;
-      int y_end = y_pad + (3 - line.end) * space;
-
-      path.moveTo(x_close, y_start);
-      path.lineTo(x_far, y_start);
-      path.lineTo(x_far, y_end);
-      path.lineTo(x_close, y_end);
-    } else {
-      int y_start = y_pad + (3 - line.start) * space + 16;
-      int y_end = y_pad + (3 - line.end) * space - 16;
-
-      path.moveTo(x_middle, y_start);
-      path.lineTo(x_middle, y_end);
-      path.lineTo(x_middle, y_end);
-      path.lineTo(x_middle, y_end);
+    // Draw lines between operators
+    float x_middle = width / 2.f;
+    constexpr float line_shift = 0.f;
+    float x_left = x_middle - operator_radius - line_shift;
+    float x_right = x_middle + operator_radius + line_shift;
+    for (auto&& line : algorithms[algorithm_idx].operator_lines) {
+      SkPath path;
+      if (line.side == Drawside::left) {
+        int y_start = operator_size / 2.f + (3 - line.start) * space;
+        int y_end = operator_size / 2.f + (3 - line.end) * space;
+        path.moveTo(x_left, y_start);
+        path.lineTo(0, y_start);
+        path.lineTo(0, y_end);
+        path.lineTo(x_left, y_end);
+      } else if (line.side == Drawside::right) {
+        int y_start = operator_size / 2.f + (3 - line.start) * space;
+        int y_end = operator_size / 2.f + (3 - line.end) * space;
+        path.moveTo(x_right, y_start);
+        path.lineTo(width, y_start);
+        path.lineTo(width, y_end);
+        path.lineTo(x_right, y_end);
+      } else {
+        int y_start = operator_size + (3 - line.start) * space;
+        int y_end = operator_size + (3 - line.end) * space;
+        path.moveTo(x_middle, y_start);
+        path.lineTo(x_middle, y_end);
+        path.lineTo(x_middle, y_end);
+        path.lineTo(x_middle, y_end);
+      }
+      paint.setColor(Colours::White);
+      ctx.drawPath(path, paint);
     }
-    paint.setColor(Colours::White);
-    ctx.drawPath(path, paint);
-  }
 
-  // draw operators
-  SkPaint fillPaint = OTTO_paint();
-  SkPaint strokePaint = OTTO_paint();
-  fillPaint.setStyle(SkPaint::kFill_Style);
-  fillPaint.setColor(Colours::White);
-  for (int i = 0; i < 4; i++) {
-    // Choose colour
-    strokePaint.setColor(mix(operator_colours[i], Colours::White, 0.5*(i == cur_op)));
+    // draw operators
+    SkPaint fillPaint = OTTO_paint();
+    SkPaint strokePaint = OTTO_paint();
+    fillPaint.setStyle(SkPaint::kFill_Style);
+    fillPaint.setColor(Colours::White);
+    for (int i = 0; i < 4; i++) {
+      float level = activity_levels[i];
+      // Choose colour
+      strokePaint.setColor(mix(operator_colours[i], Colours::White, 0.5*(i == cur_op)));
 
-    if (algorithms[algorithm_idx].modulator_flags[i]) { // draw modulator
-      SkRect rect = SkRect::MakeXYWH(x_pad, y_pad + (3 - i) * space - 13, 25, 25);
-      if (i == cur_op) ctx.drawRect(rect, fillPaint);
-      ctx.drawRect(rect, strokePaint);
-    } else { // draw carrier
-      if (i == cur_op) ctx.drawCircle(x_pad + 12, y_pad + (3 - i) * space, 15, fillPaint);
-      ctx.drawCircle(x_pad + 12, y_pad + (3 - i) * space, 15, strokePaint);
+      if (algorithms[algorithm_idx].modulator_flags[i]) { // draw modulator
+        SkRect rect = SkRect::MakeXYWH(x_middle - operator_radius * square_scale, (3 - i) * space, operator_size * square_scale, operator_size * square_scale);
+        if (i == cur_op) ctx.drawRect(rect, fillPaint);
+        ctx.drawRect(rect, strokePaint);
+        // Draw activity level
+        fillPaint.setColor(mix(operator_colours[i], Colours::White, 0.5*(i == cur_op)));
+        rect.inset(operator_radius * square_scale * (1 - level), operator_radius * square_scale * (1 - level));
+        ctx.drawRect(rect, fillPaint);
+
+      } else { // draw carrier
+        float y_pos = operator_radius + (3 - i) * space;
+        if (i == cur_op) ctx.drawCircle(x_middle, y_pos, operator_radius, fillPaint);
+        ctx.drawCircle(x_middle, y_pos, operator_radius, strokePaint);
+        // Draw activity level
+        fillPaint.setColor(mix(operator_colours[i], Colours::White, 0.5*(i == cur_op)));
+        ctx.drawCircle(x_middle, y_pos, operator_radius * level, fillPaint);
+      }
     }
-    
-    // Draw activity levels
-    float op_level = 0.3;
-    fillPaint.setColor(mix(operator_colours[i], Colours::White, 0.5*(i == cur_op)));
 
-    if (algorithms[algorithm_idx].modulator_flags[i]) {
-      ctx.drawRect(SkRect::MakeXYWH(x_pad + 12.5f * (1 - op_level), 
-                                    y_pad + (3 - i) * space - 13 + 12.5f * (1 - op_level),
-                                    25 * op_level, 
-                                    25 * op_level), fillPaint);
-    } else { // draw carrier
-      ctx.drawCircle(x_pad + 12, y_pad + (3 - i) * space, 15 * op_level, fillPaint);
-    }
-  }
-
-  // draw arrowheads
-  strokePaint.setStrokeWidth(4.f);
-  strokePaint.setColor(Colours::White);
-  strokePaint.setStyle(SkPaint::kStrokeAndFill_Style);
-  SkPath path;
-  for (auto&& line : algorithms[algorithm_idx].operator_lines) {
-    int x_middle = x_pad + 12;
-    int mid_to_side = 15;
+    // draw arrowheads
+    strokePaint.setStrokeWidth(4.f);
+    strokePaint.setColor(Colours::White);
+    strokePaint.setStyle(SkPaint::kStrokeAndFill_Style);
     int side_length = 5;
-
-    if (line.side == Drawside::left) {
-      int x = x_middle - mid_to_side;
-      int y = y_pad + (3 - line.end) * space;
-      path.moveTo(x, y);
-      path.lineTo(x - side_length, y - side_length);
-      path.lineTo(x - side_length, y + side_length);
-      path.close();
-    } else if (line.side == Drawside::right) {
-      int x = x_middle + mid_to_side;
-      int y = y_pad + (3 - line.end) * space;
-      path.moveTo(x, y);
-      path.lineTo(x + side_length, y - side_length);
-      path.lineTo(x + side_length, y + side_length);
-      path.close();
-    } else {
-      int x = x_middle;
-      int y = y_pad + (3 - line.end) * space - mid_to_side;
-      path.moveTo(x, y);
-      path.lineTo(x + side_length, y - side_length);
-      path.lineTo(x - side_length, y - side_length);
-      path.close();
+    SkPath path;
+    for (auto&& line : algorithms[algorithm_idx].operator_lines) {
+      if (line.side == Drawside::left) {
+        int y = operator_radius + (3 - line.end) * space;
+        path.moveTo(x_left, y);
+        path.lineTo(x_left - side_length, y - side_length);
+        path.lineTo(x_left - side_length, y + side_length);
+        path.close();
+      } else if (line.side == Drawside::right) {
+        int y = operator_radius + (3 - line.end) * space;
+        path.moveTo(x_right, y);
+        path.lineTo(x_right + side_length, y - side_length);
+        path.lineTo(x_right + side_length, y + side_length);
+        path.close();
+      } else {
+        int y = (3 - line.end) * space;
+        path.moveTo(x_middle, y);
+        path.lineTo(x_middle + side_length, y - side_length);
+        path.lineTo(x_middle - side_length, y - side_length);
+        path.close();
+      }
+      ctx.drawPath(path, strokePaint);
     }
-    ctx.drawPath(path, strokePaint);
   }
-}
+};
 
 void draw_envelopes(SkCanvas& ctx) {
-  constexpr int active_y = 50;
+  constexpr int active_y = 60;
   constexpr int not_active_y = 0;
   constexpr int y_pad = 40;
-  constexpr int x_start = 100;
-  constexpr int x_size = 180;
+  constexpr int x_start = 90;
+  constexpr int x_size = 190;
   float step = (ctx.imageInfo().height()  - 2 * y_pad - active_y - not_active_y * 3) / 3.f;
 
   // op_sizes are Choreograph outputs
@@ -358,7 +353,72 @@ void draw_envelopes(SkCanvas& ctx) {
     env.bounding_box.resize({x_size, size_y});
     env.draw(ctx);
     upper_y += size_y + step;
+  } 
+}
+
+// Should be resized when expanding and compressing
+struct FractionGraphic : otto::graphics::Widget<FractionGraphic> {
+  int numerator, denominator;
+  float expansion;
+  bool active;
+  FractionGraphic(int num, int denom, float exp, bool act) : numerator(num), denominator(denom), expansion(exp), active(act) {}
+
+  void do_draw(SkCanvas& ctx) {
+    SkPaint paint = OTTO_paint();
+    if (active) paint.setColor(Colours::Blue);
+    else paint.setColor(Colours::Grey50);
+
+    const float width = bounding_box.width();
+    const float height = bounding_box.height();
+    
+    // Text
+    paint.setStrokeWidth(2.f);
+    paint.setStyle(SkPaint::kStrokeAndFill_Style);
+    sk_sp<SkTextBlob> n = SkTextBlob::MakeFromString(std::to_string(numerator).c_str(), SkFont(nullptr, 26));
+    sk_sp<SkTextBlob> d = SkTextBlob::MakeFromString(std::to_string(denominator).c_str(), SkFont(nullptr, 26));
+    //SkRect db = d.bounds();
+    //paint.setTextAlign(SK_TextAlign::Left);
+    SkRect rect = SkRect();
+    SkFont font = SkFont(nullptr, 20);
+    SkScalar wid = font.measureText("3", 1, SkTextEncoding(), &rect, &paint);
+    ctx.drawTextBlob(n.get(), 0, rect.height(), paint);
+    float denominator_y = std::max(height, rect.height());
+    wid = font.measureText("2", 1, SkTextEncoding(), &rect, &paint);
+    ctx.drawTextBlob(d.get(), width - rect.width(), denominator_y , paint);
+
+    //  Line
+    SkPath path;
+    // It's hard to align text. Use this to adjust manually
+    constexpr float fudge_factor = 1.5f;
+    path.moveTo(0 + width * 0.5f * (1 - expansion) + fudge_factor, denominator_y);
+    path.lineTo(0.5f * width  * (1 + expansion) + fudge_factor, 0);
+    paint.setStrokeWidth(6.f);
+    ctx.drawPath(path, paint);
+  } 
+};
+
+struct DetuneGraphic : otto::graphics::Widget<DetuneGraphic> {
+  float value;
+  float expansion;
+  bool active;
+  DetuneGraphic(float v, float e, bool a) : value(v), expansion(e), active(a) {}
+
+  void do_draw(SkCanvas& ctx) {
+    SkPaint paint = OTTO_paint();
+    if (active) paint.setColor(Colours::Blue);
+    else paint.setColor(Colours::Grey50);
+    paint.setStrokeWidth(2.f);
+    paint.setStyle(SkPaint::kStrokeAndFill_Style);
+
+    sk_sp<SkTextBlob> val = SkTextBlob::MakeFromString(std::to_string(value).c_str(), SkFont(nullptr, 26));
+    sk_sp<SkTextBlob> dtune = SkTextBlob::MakeFromString("D.T", SkFont(nullptr, 26));
+    ctx.drawTextBlob(val.get(), 0, 0, paint);
+    //paint.setColor(mix(Colours::Black, paint.getColor(), expansion));
+    ctx.drawTextBlob(dtune.get(), 0, 30, paint);
   }
+};
+
+struct LevelGraphic : otto::graphics::Widget<Levelgraphic> {
   
 }
 
@@ -366,8 +426,37 @@ TEST_CASE ("Non-trivial graphics test") {
   auto app = start_app(ConfigManager::make(), Graphics::make());
   SUBCASE ("FM stub") {
     app.service<Graphics>().show([&](SkCanvas& ctx) {
-      draw_operators(ctx);
-      draw_envelopes(ctx);
+     
+      
+      Operators ops(3, 2, {0.f, 0.f, 0.5f, 0.0f});
+      ops.bounding_box.move_to({20, 30});
+      ops.bounding_box.resize({55, 180});
+      ops.draw(ctx);
+      //draw_envelopes(ctx);
+
+      FractionGraphic fract(3, 2, 1.f, true);
+      fract.bounding_box.move_to({80, 20});
+      fract.bounding_box.resize({40, 40});
+      fract.draw(ctx);
+
+      fract.bounding_box.move_to({150, 20});
+      fract.bounding_box.resize({40, 32});
+      fract.expansion = 0.5f;
+      fract.draw(ctx);
+
+      fract.bounding_box.move_to({220, 20});
+      fract.bounding_box.resize({40, 12});
+      fract.expansion = 0.0f;
+      fract.active = false;
+      fract.draw(ctx);
+
+      DetuneGraphic detune(0.2f, 1.0f, true);
+      detune.bounding_box.move_to({90, 100});
+      detune.bounding_box.resize({50, 40});
+      detune.draw(ctx);
+
+      
+
     });
     std::this_thread::sleep_for(std::chrono::seconds(20));
     app.stop();
