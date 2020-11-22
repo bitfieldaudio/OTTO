@@ -41,7 +41,8 @@ target_link_libraries(otto_src PUBLIC toml11)
 target_link_libraries(otto_src PUBLIC otto_boost)
 target_link_libraries(otto_src PUBLIC yamc)
 
-ocpppp_generate(otto_src "${OTTO_SOURCE_DIR}/src" "${OTTO_BINARY_DIR}" "${headers}")
+list(GET sources 0 A_SOURCE_FILE)
+ocpppp_generate(otto_src "${OTTO_SOURCE_DIR}/src" "${A_SOURCE_FILE}" "${headers}")
 
 #include("${OTTO_SOURCE_DIR}/cmake/doctest_force_link_static_lib_in_target.cmake")
 #doctest_force_link_static_lib_in_target(otto_exec otto)

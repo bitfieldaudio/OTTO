@@ -186,7 +186,7 @@ if (NOT OTTO_USE_SYSTEM_OCPPPP)
   CPMAddPackage(
     NAME ocpppp
     GITHUB_REPOSITORY otto-project/ocpppp
-    GIT_TAG b394ed3499ec4a507048e51ec3a6e5f714a13dd3
+    GIT_TAG cc06bc3eb2d09d462e1b880fe4a55fa5b1eec6af
   )
 endif()
 

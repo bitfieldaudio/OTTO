@@ -3,7 +3,7 @@
 #include "lib/itc/itc.hpp"
 #include "lib/util/with_limits.hpp"
 
-#include "ottofm.hpp"
+#include "app/engines/synths/ottofm/ottofm.gen.hpp"
 
 using namespace otto;
 

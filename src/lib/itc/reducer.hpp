@@ -7,10 +7,10 @@ namespace otto {
   concept AnEvent = std::copyable<T>;
 
   template<typename... Events>
-  requires(AnEvent<std::remove_cvref_t<Events>>&&...) //
-    struct IEventHandler : IEventHandler<Events>... {
+  requires(AnEvent<std::decay_t<Events>>&&...) //
+    struct IEventHandler : virtual IEventHandler<Events>... {
     using IEventHandler<Events>::handle...;
-    using variant = std::variant<std::remove_cvref_t<Events>...>;
+    using variant = std::variant<std::decay_t<Events>...>;
 
     void handle(variant& evt) noexcept
     {
@@ -23,7 +23,7 @@ namespace otto {
   };
 
   template<typename Event>
-  requires(AnEvent<std::remove_cvref_t<Event>>) //
+  requires(AnEvent<std::decay_t<Event>>) //
     struct IEventHandler<Event> {
     virtual ~IEventHandler() = default;
     /// Handle the event
@@ -36,11 +36,14 @@ namespace otto::itc {
 
   namespace detail {
     template<typename Derived, AState State, AnEvent Event>
-    struct ReducerImpl : IEventHandler<Event> {
-      void reduce(Event, ProduceFunc<State> produce) noexcept = 0;
+    struct ReducerImpl : virtual IEventHandler<Event> {
+      virtual void reduce(Event, Updater<State> updater) noexcept = 0;
       void handle(Event e) noexcept final
       {
-        reduce(e, itc::produce_func(static_cast<Derived*>(this)->producer_));
+        auto& producer = static_cast<Derived*>(this)->producer_;
+        Updater<State> updater = {producer};
+        reduce(e, updater);
+        producer.produce(updater.bitset());
       }
     };
   } // namespace detail

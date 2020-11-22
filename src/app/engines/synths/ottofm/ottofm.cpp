@@ -15,47 +15,40 @@ namespace otto::engines::ottofm {
     Logic(itc::Channel<State>& c) : itc::Producer<State>(c) {}
   };
 
-  struct Handler final : LinkedInputHandler<Logic> {
-    using LinkedInputHandler::LinkedInputHandler;
-
-    void handle(KeyPress e) noexcept final
+  struct Handler final : InputReducer<State> {
+    void reduce(KeyPress e, itc::Updater<State> updater) noexcept final
     {
       switch (e.key) {
-        case Key::blue_enc_click: produce(itc::set(&State::cur_op_idx, 3)); break;
-        case Key::green_enc_click: produce(itc::set(&State::cur_op_idx, 2)); break;
-        case Key::yellow_enc_click: produce(itc::set(&State::cur_op_idx, 1)); break;
-        case Key::red_enc_click: produce(itc::set(&State::cur_op_idx, 0)); break;
+        case Key::blue_enc_click: updater.cur_op_idx() = 3; break;
+        case Key::green_enc_click: updater.cur_op_idx() = 2; break;
+        case Key::yellow_enc_click: updater.cur_op_idx() = 1; break;
+        case Key::red_enc_click: updater.cur_op_idx() = 0; break;
         default: break;
       }
     }
-#define GET_MEMBER(...) [](auto& self) -> decltype(auto) { return self.__VA_ARGS__; }
 
-    void handle(EncoderEvent e) noexcept final
+    void reduce(EncoderEvent e, itc::Updater<State> updater) noexcept final
     {
       // TODO
       bool shift = false;
 
       switch (e.encoder) {
         case Encoder::blue: {
-          state().algorithm_idx += e.steps;
-          update(GET_MEMBER(algorithm_idx));
+          updater.algorithm_idx() += e.steps;
           return;
         } break;
         case Encoder::green: {
           if (!shift) {
-            state().current_op().ratio_idx += e.steps;
-            update(GET_MEMBER(current_op().ratio_idx));
+            updater.operators.get<3>().ratio_idx() += e.steps;
             return;
           } else {
-            state().current_op().detune += e.steps * 0.01;
-            update(GET_MEMBER(current_op().detune));
+            updater.operators.get<3>().detune() += e.steps * 0.01;
             return;
           }
         } break;
         case Encoder::yellow: {
           if (!shift) {
-            state().current_op().level += e.steps * 0.01;
-            update(GET_MEMBER(current_op().level));
+            updater.operators.get<3>().level() += e.steps * 0.01;
             return;
           } else {
             produce([steps = e.steps](State& s) {
@@ -66,8 +59,7 @@ namespace otto::engines::ottofm {
         } break;
         case Encoder::red: {
           if (!shift) {
-            state().current_op().feedback += e.steps * 0.01;
-            update(GET_MEMBER(current_op().feedback));
+            updater.operators.get<3>().feedback() += e.steps * 0.01;
             return;
           } else {
             produce([steps = e.steps](State& s) {

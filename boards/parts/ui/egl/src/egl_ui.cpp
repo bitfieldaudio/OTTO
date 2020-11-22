@@ -201,7 +201,7 @@ namespace otto::board::ui {
 
 using namespace otto::board::ui;
 
-namespace otto::services {
+namespace otto::drivers {
 
   struct EGLGraphicsDriver final : IGraphicsDriver {
     void run(std::function<bool(SkCanvas&)> f) override
@@ -210,7 +210,7 @@ namespace otto::services {
     }
 
   private:
-    EGLUIConfig::Handle conf;
+    ConfHandle<EGLUIConfig> conf;
   };
 
   std::unique_ptr<IGraphicsDriver> IGraphicsDriver::make_default()
@@ -218,7 +218,7 @@ namespace otto::services {
     return std::make_unique<EGLGraphicsDriver>();
   }
 
-} // namespace otto::services
+} // namespace otto::drivers
 
 
 // kak: other_file=../include/board/ui/egl_ui.hpp

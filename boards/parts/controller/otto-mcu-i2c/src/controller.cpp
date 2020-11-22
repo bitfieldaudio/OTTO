@@ -3,7 +3,7 @@
 
 #include "lib/util/i2c.hpp"
 
-namespace otto::services {
+namespace otto::drivers {
 
   struct I2CMCUPort final : MCUPort {
     struct Config : otto::Config<Config> {
@@ -63,6 +63,6 @@ namespace otto::services {
   {
     return std::make_unique<I2CMCUPort>();
   }
-} // namespace otto::services
+} // namespace otto::drivers
 
 // kak: other_file=../include/board/controller.hpp

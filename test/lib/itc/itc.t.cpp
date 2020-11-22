@@ -7,16 +7,12 @@
 using namespace otto;
 using namespace otto::itc;
 
-static_assert(reflect::AMemberInfo<reflect::MemberInfo<&stubs::State::i1>>);
+static_assert(reflect::AMemberInfo<reflect::MemberInfo<&stubs::State1::i1>>);
 
 // Tests
 TEST_CASE (doctest::test_suite("itc") * "Basic Channel/Consumer/Producer linking and lifetime") {
-  struct State {
-    int i = 0;
-    bool operator==(const State&) const = default;
-  };
-
   ImmediateExecutor ex;
+  using State = stubs::State2;
 
   SUBCASE ("Constructing consumer with channel registers it") {
     Channel<State> ch;
@@ -101,10 +97,7 @@ TEST_CASE (doctest::test_suite("itc") * "Basic Channel/Consumer/Producer linking
 
 TEST_CASE (doctest::test_suite("itc") * "Basic state passing") {
   ImmediateExecutor ex;
-  struct S {
-    int i = 0;
-    bool operator==(const S&) const = default;
-  };
+  using S = stubs::State2;
   Channel<S> ch;
   Producer<S> p = {ch};
   struct C1 : Consumer<S> {
@@ -115,9 +108,9 @@ TEST_CASE (doctest::test_suite("itc") * "Basic state passing") {
       REQUIRE(state().i == i);
     }
 
-    void on_state_change(const S& old_state) noexcept override
+    void on_state_change(itc::Diff<S> diff) noexcept override
     {
-      old_i = old_state.i;
+      old_i = state().i;
       new_state_called++;
     }
 
@@ -132,7 +125,9 @@ TEST_CASE (doctest::test_suite("itc") * "Basic state passing") {
   struct P1 : Producer<S> {
     void test_produce(int i)
     {
-      produce(replace(S{.i = i}));
+      auto updater = make_updater();
+      updater.i() = i;
+      produce(updater);
       REQUIRE(state().i == i);
     }
   } p1 = {ch};
@@ -150,21 +145,7 @@ TEST_CASE (doctest::test_suite("itc") * "Basic state passing") {
 }
 
 TEST_CASE (doctest::test_suite("itc") * "prod/cons/chan of multiple states") {
-  struct S1 {
-    int i1 = 1;
-    bool operator==(const S1&) const = default;
-  };
-
-  struct S2 {
-    int i2 = 2;
-    bool operator==(const S2&) const = default;
-  };
-
-  struct S3 {
-    int i3 = 3;
-    bool operator==(const S3&) const = default;
-  };
-
+  using namespace stubs::simple_states;
   using Ch12 = Channel<S1, S2>;
   using C12 = Consumer<S1, S2>;
   using P12 = Producer<S1, S2>;
@@ -273,56 +254,10 @@ TEST_CASE ("Sample engine") {
   struct FilterScreen : Consumer<State> {};
 }
 
-static_assert(reflect::info(reflect::structure<stubs::State>().substate).index == 2);
-static_assert(reflect::info(reflect::structure<stubs::State>().substate.subi1).index == 0);
+static_assert(reflect::info(reflect::structure<stubs::State1>().nested).index == 2);
+static_assert(reflect::info(reflect::structure<stubs::State1>().nested.f1).index == 0);
 
-static_assert(reflect::flat_idx(reflect::structure<stubs::State>().i1) == 0);
-static_assert(reflect::flat_idx(reflect::structure<stubs::State>().i2) == 1);
-static_assert(reflect::flat_idx(reflect::structure<stubs::State>().substate) == 2);
-static_assert(reflect::flat_idx(reflect::structure<stubs::State>().substate.subi1) == 3);
-
-struct StateDiffTraits {
-  template<reflect::AMemberInfo Info, reflect::AMemberInfo... Parents>
-  struct Member {
-    using BitSet = std::bitset<reflect::flat_size<typename meta::head_t<meta::list<Parents..., Info>>::struct_t>()>;
-
-    Member(BitSet& b) : bitset_(b) {}
-
-    bool has_changed()
-    {
-      return bitset_.test(reflect::flat_idx<Info, Parents...>());
-    }
-
-    void has_changed(bool b)
-    {
-      bitset_[reflect::flat_idx<Info, Parents...>()] = b;
-    }
-
-  private:
-    BitSet& bitset_;
-  };
-};
-
-template<reflect::WithStructure State>
-struct StateDiff : reflect::structure<State, StateDiffTraits> {
-  using BitSet = std::bitset<reflect::flat_size<State>()>;
-
-  StateDiff(BitSet b = {}) : reflect::structure<State, StateDiffTraits>(bitset_), bitset_(b) {}
-
-  BitSet bitset()
-  {
-    return bitset_;
-  }
-
-private:
-  BitSet bitset_;
-};
-
-TEST_CASE ("StateDiff") {
-  StateDiff<stubs::State> diff;
-  diff.i1.has_changed(true);
-  REQUIRE(diff.i1.has_changed());
-  REQUIRE(!diff.i2.has_changed());
-  diff.substate.subi1.has_changed(true);
-  REQUIRE(diff.substate.subi1.has_changed());
-}
+static_assert(reflect::flat_idx(reflect::structure<stubs::State1>().i1) == 0);
+static_assert(reflect::flat_idx(reflect::structure<stubs::State1>().i2) == 1);
+static_assert(reflect::flat_idx(reflect::structure<stubs::State1>().nested) == 2);
+static_assert(reflect::flat_idx(reflect::structure<stubs::State1>().nested.f1) == 3);
