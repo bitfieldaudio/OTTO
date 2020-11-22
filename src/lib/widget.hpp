@@ -7,13 +7,13 @@ namespace otto::graphics {
   using Anchor = std::array<float, 2>;
   namespace Anchors {
     constexpr Anchor TopLeft = {0.f, 0.f};
-    constexpr Anchor TopCenter = {0.f, 0.5f};
-    constexpr Anchor TopRight = {0.f, 1.f};
-    constexpr Anchor MiddleLeft = {0.5f, 0.f}; 
+    constexpr Anchor TopCenter = {0.5f, 0.f};
+    constexpr Anchor TopRight = {1.f, 0.f};
+    constexpr Anchor MiddleLeft = {0.f, 0.5f}; 
     constexpr Anchor Center = {0.5f, 0.5f};
-    constexpr Anchor MiddleRight = {0.5, 1.f};
-    constexpr Anchor BottomLeft = {1.f, 0.f};
-    constexpr Anchor BottomCenter = {1.f, 0.5f};
+    constexpr Anchor MiddleRight = {1.f, 0.5f};
+    constexpr Anchor BottomLeft = {0.f, 1.f};
+    constexpr Anchor BottomCenter = {0.5f, 1.0f};
     constexpr Anchor BottomRight = {1.f, 1.f};
   }
 
@@ -40,6 +40,10 @@ namespace otto::graphics {
 
     Point get_point(Anchor a) {
       return {top_left_[0] + s_[0] * a[0], top_left_[1] + s_[1] * a[1]};
+    }
+
+    Point get_diff(Anchor start, Anchor end) {
+      return {(end[0] - start[0]) * s_[0], (end[1] - start[1]) * s_[1]};
     }
 
     float width() { return s_[0]; }

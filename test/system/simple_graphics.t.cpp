@@ -9,7 +9,11 @@
 #include <SkTypeface.h>
 #include <SkTextBlob.h>
 
+#include <fmt/format.h>
 #include <string>
+
+#include <choreograph/Choreograph.h>
+
 
 using namespace otto;
 using namespace otto::services;
@@ -374,8 +378,8 @@ struct FractionGraphic : otto::graphics::Widget<FractionGraphic> {
     // Text
     paint.setStrokeWidth(2.f);
     paint.setStyle(SkPaint::kStrokeAndFill_Style);
-    sk_sp<SkTextBlob> n = SkTextBlob::MakeFromString(std::to_string(numerator).c_str(), SkFont(nullptr, 26));
-    sk_sp<SkTextBlob> d = SkTextBlob::MakeFromString(std::to_string(denominator).c_str(), SkFont(nullptr, 26));
+    sk_sp<SkTextBlob> n = SkTextBlob::MakeFromString(std::to_string(numerator).c_str(), SkFont(nullptr, 20));
+    sk_sp<SkTextBlob> d = SkTextBlob::MakeFromString(std::to_string(denominator).c_str(), SkFont(nullptr, 20));
     //SkRect db = d.bounds();
     //paint.setTextAlign(SK_TextAlign::Left);
     SkRect rect = SkRect();
@@ -389,10 +393,10 @@ struct FractionGraphic : otto::graphics::Widget<FractionGraphic> {
     //  Line
     SkPath path;
     // It's hard to align text. Use this to adjust manually
-    constexpr float fudge_factor = 1.5f;
+    constexpr float fudge_factor = 0.5f;
     path.moveTo(0 + width * 0.5f * (1 - expansion) + fudge_factor, denominator_y);
     path.lineTo(0.5f * width  * (1 + expansion) + fudge_factor, 0);
-    paint.setStrokeWidth(6.f);
+    paint.setStrokeWidth(3.f);
     ctx.drawPath(path, paint);
   } 
 };
@@ -407,56 +411,189 @@ struct DetuneGraphic : otto::graphics::Widget<DetuneGraphic> {
     SkPaint paint = OTTO_paint();
     if (active) paint.setColor(Colours::Blue);
     else paint.setColor(Colours::Grey50);
-    paint.setStrokeWidth(2.f);
+    paint.setStrokeWidth(1.f);
     paint.setStyle(SkPaint::kStrokeAndFill_Style);
 
-    sk_sp<SkTextBlob> val = SkTextBlob::MakeFromString(std::to_string(value).c_str(), SkFont(nullptr, 26));
-    sk_sp<SkTextBlob> dtune = SkTextBlob::MakeFromString("D.T", SkFont(nullptr, 26));
-    ctx.drawTextBlob(val.get(), 0, 0, paint);
+    sk_sp<SkTextBlob> val;
+    if (value == 0) val = SkTextBlob::MakeFromString("±.0", SkFont(nullptr, 20));
+    else if (value > 0) val = SkTextBlob::MakeFromString(fmt::format("+.{:1.0}", value * 10).c_str(), SkFont(nullptr, 20));
+    else val = SkTextBlob::MakeFromString(fmt::format("-.{:1.0}", value * 10).c_str(), SkFont(nullptr, 20));
+    sk_sp<SkTextBlob> dtune = SkTextBlob::MakeFromString("DTUNE", SkFont(nullptr, 12));
+    SkRect rect = SkRect();
+    SkFont font = SkFont(nullptr, 20);
+    SkScalar wid = font.measureText("3", 1, SkTextEncoding(), &rect, &paint);
+    ctx.drawTextBlob(val.get(), 0, rect.height(), paint);
+    paint.setColor(SkColorSetRGB(22*expansion, 184*expansion, 254*expansion));
     //paint.setColor(mix(Colours::Black, paint.getColor(), expansion));
-    ctx.drawTextBlob(dtune.get(), 0, 30, paint);
+    ctx.drawTextBlob(dtune.get(), 0, bounding_box.height(), paint);
   }
 };
 
-struct LevelGraphic : otto::graphics::Widget<Levelgraphic> {
-  
-}
+struct LevelGraphic : otto::graphics::Widget<LevelGraphic> {
+  float value;
+  float expansion;
+  bool active;
+  LevelGraphic(float v, float e, bool a) : value(v), expansion(e), active(a) {}
+
+  void do_draw(SkCanvas& ctx) {
+    float rotation_scale = 270.f * expansion + 180.f * (1 - expansion);
+    // Anchor is center
+    otto::graphics::Point diff = bounding_box.get_diff(otto::graphics::Anchors::TopLeft, otto::graphics::Anchors::Center);
+    ctx.save();
+    ctx.translate(diff[0], diff[1]);
+
+    const float radius = bounding_box.width() / 2.f;
+    const float radius_line1 = radius * 0.9f;
+    const float radius_line2 = radius * 0.6f;
+    SkPaint paint = OTTO_paint();
+    paint.setColor(Colours::Green);
+    // Level indicator
+    ctx.save();
+    ctx.rotate((value - 0.5f) * rotation_scale);
+    SkPath path;
+    path.moveTo(0, 0);
+    path.lineTo(0, -radius);
+    ctx.drawPath(path, paint);
+    ctx.restore();
+
+    //Line1
+    paint.setStrokeWidth(3.f);
+    SkRect rect = SkRect::MakeXYWH(-radius_line1, -radius_line1, 2.f * radius_line1, 2.f * radius_line1);
+    path.reset();
+    path.arcTo(rect, -90.f - 0.5f * rotation_scale ,  rotation_scale, false);
+    ctx.drawPath(path, paint);
+
+    // Text
+    paint.setStrokeWidth(1.f);
+    paint.setColor(SkColorSetRGB(22*expansion, 254*expansion, 101*expansion));
+    sk_sp<SkTextBlob> val = SkTextBlob::MakeFromString("LVL", SkFont(nullptr, 12));
+    SkFont font = SkFont(nullptr, 12);
+    SkScalar wid = font.measureText("LVL", 1, SkTextEncoding(), &rect, &paint);
+    ctx.drawTextBlob(val.get(), -rect.width() - 2, radius, paint);
+
+    ctx.restore();
+
+  }
+};
+
+// Should only be constructed once.
+struct WaveShapeGraphic : otto::graphics::Widget<WaveShapeGraphic> {
+  float value, l_value, r_value;
+  float expansion;
+  bool active;
+  std::array<float, 30> sinewave;
+  std::array<float, 30> right_harmonics;
+  std::array<float, 30> left_harmonics;
+  WaveShapeGraphic(float v, float e, bool a) : value(v), expansion(e), active(a) {
+    int i = 0;
+    for (auto& w : sinewave) {
+      w = sin(2.f * M_PI * (float)i / 30.f);
+      i++;
+    }
+    i = 0;
+    for (auto& w : right_harmonics) {
+      w = -0.5 * sin(4 * M_PI * (float)i / 30.f) 
+        + 0.33 * sin(6.f * M_PI * (float)i / 30.f) 
+        - 0.25 * sin(8.f * M_PI * (float)i / 30.f);
+      i++;
+    }
+    i = 0;
+    for (auto& w : left_harmonics) {
+      w = 0.33f * sin(6.f * M_PI * (float)i / 30.f) 
+        + 0.2f * sin(10.f * M_PI * (float)i / 30.f) 
+        + 0.14f * sin(14.f * M_PI * (float)i / 30.f);
+      i++;
+    }
+  }
+
+  void do_draw(SkCanvas& ctx) {
+    // Anchor is MiddleLeft
+    otto::graphics::Point diff = bounding_box.get_diff(otto::graphics::Anchors::TopLeft, otto::graphics::Anchors::MiddleLeft);
+    ctx.save();
+    ctx.translate(diff[0], diff[1]);
+
+    float step = bounding_box.width() / sinewave.size();
+    float scale = bounding_box.height() / 2.f;
+    l_value = std::max(0.f, (0.5f - value) * 2.f);
+    r_value = std::max(0.f, (value - 0.5f) * 2.f);
+
+    SkPath path;
+    path.moveTo(0, 0);
+    float x = 0;
+    int i = 0;
+    for (auto& s : sinewave){
+      path.lineTo(x,  scale * (s + l_value * left_harmonics[i] + r_value * right_harmonics[i]));
+      x += step;
+      i++;
+    }
+    SkPaint paint = OTTO_paint();
+    paint.setStrokeWidth(3.f);
+    paint.setColor(Colours::Yellow);
+    ctx.drawPath(path, paint);
+    ctx.restore();
+  }
+
+
+};
 
 TEST_CASE ("Non-trivial graphics test") {
+  namespace ch = choreograph;
+  ch::Timeline timeline;
+  ch::Output<float> expansion = 1.0f;
+  auto sequence = ch::Sequence<float>( expansion.value() )
+    .then<ch::RampTo>( 0.f, 2.0f, ch::EaseInOutQuad() )
+    .then<ch::Hold>(0.f, 1.f)
+    .then<ch::RampTo>( 1.0f, 2.0f, ch::EaseInOutQuad() )
+    .then<ch::Hold>(1.f, 1.f);
+
+  auto looped = makeRepeat<float>( sequence.asPhrase(), 100.f );
+
+  timeline.apply(&expansion, looped);
+    
+
   auto app = start_app(ConfigManager::make(), Graphics::make());
   SUBCASE ("FM stub") {
+    WaveShapeGraphic ws(0.0f, 1.0f, true);
     app.service<Graphics>().show([&](SkCanvas& ctx) {
      
       
       Operators ops(3, 2, {0.f, 0.f, 0.5f, 0.0f});
-      ops.bounding_box.move_to({20, 30});
-      ops.bounding_box.resize({55, 180});
+      ops.bounding_box.move_to({10, 30});
+      ops.bounding_box.resize({50, 180});
       ops.draw(ctx);
       //draw_envelopes(ctx);
 
       FractionGraphic fract(3, 2, 1.f, true);
-      fract.bounding_box.move_to({80, 20});
-      fract.bounding_box.resize({40, 40});
-      fract.draw(ctx);
-
-      fract.bounding_box.move_to({150, 20});
-      fract.bounding_box.resize({40, 32});
-      fract.expansion = 0.5f;
-      fract.draw(ctx);
-
-      fract.bounding_box.move_to({220, 20});
-      fract.bounding_box.resize({40, 12});
-      fract.expansion = 0.0f;
-      fract.active = false;
+      fract.bounding_box.move_to({80, 30});
+      fract.bounding_box.resize({40, 17 + 23 * expansion});
+      fract.expansion = expansion;
       fract.draw(ctx);
 
       DetuneGraphic detune(0.2f, 1.0f, true);
-      detune.bounding_box.move_to({90, 100});
-      detune.bounding_box.resize({50, 40});
+      detune.bounding_box.move_to({140, 30});
+      detune.bounding_box.resize({40, 40});
+      detune.expansion = expansion;
       detune.draw(ctx);
 
-      
+      LevelGraphic lev(0.1, 1.0f, true);
+      lev.bounding_box.move_to({200, 30});
+      lev.bounding_box.resize({40, 40});
+      lev.expansion = expansion;
+      lev.draw(ctx);
 
+      ws.bounding_box.move_to({260, 30});
+      ws.value = 0.3;
+      ws.bounding_box.resize({40, 20 + 20 * expansion});
+      ws.draw(ctx);
+
+      ws.bounding_box.move_to({250, 130});
+      ws.value = expansion;
+      ws.bounding_box.resize({40, 40});
+      ws.draw(ctx);
+
+     
+
+      timeline.step( 1.0 / 60.0 );
     });
     std::this_thread::sleep_for(std::chrono::seconds(20));
     app.stop();
