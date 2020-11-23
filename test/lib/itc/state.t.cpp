@@ -32,7 +32,7 @@ TEST_CASE ("itc::Updater") {
     REQUIRE(updater.bitset().test(reflect::flat_idx(updater.nested)));
     REQUIRE(updater.bitset().test(reflect::flat_idx(updater.nested.f1)));
     REQUIRE(updater.bitset().test(reflect::flat_idx(updater.nested.f2)));
-    REQUIRE(updater.bitset().count() == 3);
+    REQUIRE(updater.bitset().count() == reflect::flat_size<stubs::State1::Nested>());
     REQUIRE(state.nested.f1 == 1);
     REQUIRE(state.nested.f2 == 2);
   }

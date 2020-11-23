@@ -32,8 +32,8 @@ namespace otto::itc {
     void produce(BitSet<State> changes)
     {
       for_each_changed(state(), changes, [this](auto member) {
-        auto f = [val = reflect::get(state(), member)](State& s) {
-          reflect::get(s, decltype(member)()) = std::move(val);
+        auto f = [val = reflect::get(member, state())](State& s) {
+          reflect::get(decltype(member)(), s) = std::move(val);
         };
         for (auto* chan : channels_) chan->internal_produce(f);
       });
@@ -47,9 +47,15 @@ namespace otto::itc {
       produce(bitset);
     }
 
-    void produce(Updater<State> u)
+    void produce(Updater<State>&& u)
     {
       produce(u.bitset());
+    }
+
+    void produce(Updater<State>& u)
+    {
+      produce(u.bitset());
+      u.bitset().reset();
     }
 
     State& state() noexcept
@@ -104,8 +110,13 @@ namespace otto::itc {
       return Producer<S>::state();
     }
 
+    template<util::one_of<States...> S>
+    auto make_updater() noexcept
+    {
+      return Producer<S>::make_updater();
+    }
+
     using Producer<States>::produce...;
-    using Producer<States>::make_updater...;
   };
 
 } // namespace otto::itc

@@ -8,6 +8,10 @@ namespace otto::stubs {
     struct [[otto::reflect]] Nested {
       float f1 = 0;
       float f2 = 0;
+      struct [[otto::reflect]] Level2 {
+        bool b1 = false;
+        bool b2 = false;
+      } level2;
     } nested;
     std::string str1;
     int i3 = 0;

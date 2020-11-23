@@ -103,23 +103,16 @@ TEST_CASE (doctest::test_suite("itc") * "Basic state passing") {
   struct C1 : Consumer<S> {
     using Consumer<S>::Consumer;
 
-    void check_i(int i)
-    {
-      REQUIRE(state().i == i);
-    }
-
     void on_state_change(itc::Diff<S> diff) noexcept override
     {
-      old_i = state().i;
       new_state_called++;
     }
 
     int new_state_called = 0;
-    int old_i = 0;
   } c1 = {ch, ex};
 
   SUBCASE ("Access default state in Consumer") {
-    c1.check_i(0);
+    REQUIRE(c1.state().i == 0);
   }
 
   struct P1 : Producer<S> {
@@ -127,20 +120,18 @@ TEST_CASE (doctest::test_suite("itc") * "Basic state passing") {
     {
       auto updater = make_updater();
       updater.i() = i;
-      produce(updater);
+      produce(std::move(updater));
       REQUIRE(state().i == i);
     }
   } p1 = {ch};
 
   SUBCASE ("Publish new state from producer") {
     p1.test_produce(1);
-    c1.check_i(1);
+    REQUIRE(c1.state().i == 1);
     REQUIRE(c1.new_state_called == 1);
-    REQUIRE(c1.old_i == 0);
     p1.test_produce(2);
-    c1.check_i(2);
+    REQUIRE(c1.state().i == 2);
     REQUIRE(c1.new_state_called == 2);
-    REQUIRE(c1.old_i == 1);
   }
 }
 
@@ -188,12 +179,12 @@ TEST_CASE (doctest::test_suite("itc") * "prod/cons/chan of multiple states") {
       REQUIRE(state<S2>().i2 == i);
     }
 
-    void on_state_change(const S1& s) noexcept override
+    void on_state_change(Diff<S1> s) noexcept override
     {
       new_state1_called++;
     }
 
-    void on_state_change(const S2& s) noexcept override
+    void on_state_change(Diff<S2> s) noexcept override
     {
       new_state2_called++;
     }
@@ -210,11 +201,15 @@ TEST_CASE (doctest::test_suite("itc") * "prod/cons/chan of multiple states") {
   struct P1 : Producer<S1, S2> {
     void test_produce1(int i)
     {
-      produce(set(&S1::i1, i));
+      auto updater = make_updater<S1>();
+      updater.i1() = i;
+      produce(updater);
     }
     void test_produce2(int i)
     {
-      produce(replace(S2{.i2 = i}));
+      auto updater = make_updater<S2>();
+      updater.i2() = i;
+      produce(updater);
     }
   } p1 = {ch};
 
@@ -233,27 +228,6 @@ TEST_CASE (doctest::test_suite("itc") * "prod/cons/chan of multiple states") {
   }
 }
 
-TEST_CASE ("Sample engine") {
-  struct State {
-    float frequency = 40.f;
-    float resonance = 0.5;
-
-    bool operator==(const State&) const = default;
-  };
-
-  struct FilterLogic : Producer<State> {
-    void handle_encoder(int steps)
-    {
-      produce(replace(State{.frequency = 0.f, .resonance = 0.4}));
-    };
-  };
-
-
-  struct FilterAudio : Consumer<State> {};
-
-  struct FilterScreen : Consumer<State> {};
-}
-
 static_assert(reflect::info(reflect::structure<stubs::State1>().nested).index == 2);
 static_assert(reflect::info(reflect::structure<stubs::State1>().nested.f1).index == 0);
 
@@ -261,3 +235,6 @@ static_assert(reflect::flat_idx(reflect::structure<stubs::State1>().i1) == 0);
 static_assert(reflect::flat_idx(reflect::structure<stubs::State1>().i2) == 1);
 static_assert(reflect::flat_idx(reflect::structure<stubs::State1>().nested) == 2);
 static_assert(reflect::flat_idx(reflect::structure<stubs::State1>().nested.f1) == 3);
+static_assert(reflect::flat_idx(reflect::structure<stubs::State1>().nested.f2) == 4);
+static_assert(reflect::flat_idx(reflect::structure<stubs::State1>().nested.level2) == 5);
+static_assert(reflect::flat_idx(reflect::structure<stubs::State1>().nested.level2.b1) == 6);

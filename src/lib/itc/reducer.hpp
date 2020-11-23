@@ -40,8 +40,8 @@ namespace otto::itc {
       virtual void reduce(Event, Updater<State> updater) noexcept = 0;
       void handle(Event e) noexcept final
       {
-        auto& producer = static_cast<Derived*>(this)->producer_;
-        Updater<State> updater = {producer};
+        auto& producer = *static_cast<Derived*>(this)->producer_;
+        Updater<State> updater = {producer.state()};
         reduce(e, updater);
         producer.produce(updater.bitset());
       }
@@ -53,12 +53,22 @@ namespace otto::itc {
     using detail::ReducerImpl<Reducer, State, Events>::reduce...;
     using detail::ReducerImpl<Reducer, State, Events>::handle...;
 
-    Reducer(Producer<State>& p) noexcept : producer_(p) {}
+    Reducer() noexcept = default;
+    Reducer(Producer<State>& p) noexcept : producer_(&p) {}
 
   private:
+    template<AState S, AnEvent... Es>
+    friend void set_producer(Reducer<S, Es...>& r, Producer<S>& p);
+
     template<typename Derived, AState, AnEvent>
     friend struct detail::ReducerImpl;
-    Producer<State>& producer_;
+    Producer<State>* producer_ = nullptr;
   };
+
+  template<AState State, AnEvent... Events>
+  void set_producer(Reducer<State, Events...>& r, Producer<State>& p)
+  {
+    r.producer_ = &p;
+  }
 
 } // namespace otto::itc

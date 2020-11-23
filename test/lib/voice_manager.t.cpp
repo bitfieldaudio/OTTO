@@ -7,6 +7,7 @@
 #include "lib/voice_manager.hpp"
 
 using namespace otto;
+using namespace otto::voices;
 
 TEST_CASE ("Voices") {
   struct Voice : VoiceBase<Voice> {
@@ -17,6 +18,7 @@ TEST_CASE ("Voices") {
   itc::ImmediateExecutor ex;
   itc::Channel<VoicesState> chan;
   itc::Producer<VoicesState> prod = chan;
+  auto upd = prod.make_updater();
 
   Voices<Voice, 6> voices = {chan, ex, 42};
 
@@ -64,7 +66,8 @@ TEST_CASE ("Voices") {
     voices.handle(midi::NoteOn{2});
     voices.handle(midi::NoteOn{3});
 
-    prod.produce(itc::set(&VoicesState::play_mode, PlayMode::mono));
+    upd.play_mode() = PlayMode::mono;
+    prod.produce(upd);
 
     REQUIRE(std::ranges::distance(triggered_voices()) == 0);
   }
@@ -132,8 +135,8 @@ TEST_CASE ("Voices") {
     }
 
     SUBCASE ("Poly mode rand") {
-      prod.produce(itc::set(&VoicesState::rand, 0.5));
-
+      upd.rand() = 0.5;
+      prod.produce(upd);
 
       std::set<float> vals;
       for (std::uint8_t i = 0; i < 5; i++) {
@@ -163,8 +166,9 @@ TEST_CASE ("Voices") {
   }
 
   SUBCASE ("Interval Mode") {
-    prod.produce(itc::set(&VoicesState::play_mode, PlayMode::interval));
-    prod.produce(itc::set(&VoicesState::interval, 1));
+    upd.play_mode() = PlayMode::interval;
+    upd.interval() = 1;
+    prod.produce(upd);
 
     SUBCASE ("Interval mode triggers two voices for a single note") {
       voices.handle(midi::NoteOn{50});
@@ -206,7 +210,8 @@ TEST_CASE ("Voices") {
     SUBCASE ("Changing interval still allows removal of all notes") {
       voices.handle(midi::NoteOn{50});
 
-      prod.produce(itc::set(&VoicesState::interval, 2));
+      upd.interval() = 2;
+      prod.produce(upd);
       check_notes({50, 51});
 
       voices.handle(midi::NoteOn{60});
@@ -218,7 +223,8 @@ TEST_CASE ("Voices") {
 
 
   SUBCASE ("Mono mode") {
-    prod.produce(itc::set(&VoicesState::play_mode, PlayMode::mono));
+    upd.play_mode() = PlayMode::mono;
+    prod.produce(upd);
 
     SUBCASE ("Can switch to mono mode") {
       REQUIRE(voices.play_mode() == PlayMode::mono);
@@ -253,7 +259,8 @@ TEST_CASE ("Voices") {
     }
 
     SUBCASE ("AUX mode: Sub = 0.5") {
-      prod.produce(itc::set(&VoicesState::sub, 0.5f));
+      upd.sub() = 0.5f;
+      prod.produce(upd);
 
       voices.handle(midi::NoteOn{50});
       check_notes({38, 38, 50});
@@ -261,7 +268,8 @@ TEST_CASE ("Voices") {
   }
 
   SUBCASE ("Unison Mode") {
-    prod.produce(itc::set(&VoicesState::play_mode, PlayMode::unison));
+    upd.play_mode() = PlayMode::unison;
+    prod.produce(upd);
 
     auto used_voices = VoiceAllocator<PlayMode::unison, Voice, 6>::num_voices_used;
 
@@ -317,7 +325,8 @@ TEST_CASE ("Voices") {
     }
 
     SUBCASE ("Voices keep same order (voice return) for non-zero detune") {
-      prod.produce(itc::set(&VoicesState::detune, 0.1f));
+      upd.detune() = 0.1f;
+      prod.produce(upd);
 
       voices.handle(midi::NoteOn{50});
       voices.handle(midi::NoteOn{60});
@@ -330,13 +339,15 @@ TEST_CASE ("Voices") {
     }
   }
   SUBCASE ("Portamento") {
-    prod.produce(itc::set(&VoicesState::play_mode, PlayMode::mono));
+    upd.play_mode() = PlayMode::mono;
+    prod.produce(upd);
 
     gam::sampleRate(100);
     float target_freq = midi::note_freq(62);
 
     SUBCASE ("Portamento = 0") {
-      prod.produce(itc::set(&VoicesState::portamento, 0.f));
+      upd.portamento() = 0.f;
+      prod.produce(upd);
 
       voices.handle(midi::NoteOn{50});
       auto& v = triggered_voices().front();
@@ -350,7 +361,8 @@ TEST_CASE ("Voices") {
     SUBCASE ("Portamento = 1") {
       int expected_n = 100;
 
-      prod.produce(itc::set(&VoicesState::portamento, 1.f));
+      upd.portamento() = 1.f;
+      prod.produce(upd);
 
       voices.handle(midi::NoteOn{50});
       voices.handle(midi::NoteOn{62});

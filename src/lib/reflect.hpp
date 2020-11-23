@@ -40,7 +40,7 @@ namespace otto::reflect {
   /// Should contain fields:
   ///  - `typename struct_t`: The struct the member belongs to
   ///  - `typename value_type`: The type of the member
-  ///  - `std::size_t index`: Index into the struct
+  ///  - `std::size_t index()`: Index into the struct
   ///  - `util::string_ref name`: Member name as a string
   /// Should also expose a specialization of `reflect::get<Info>(Struct&)`
   /// This can be done by declaring the following:
@@ -78,6 +78,26 @@ namespace otto::reflect {
 
   template<typename Struct>
   struct StructInfo;
+
+  namespace detail {
+    template<typename T>
+    struct StructInfoOrEmpty {
+      using members = meta::list<>;
+    };
+
+    template<typename T>
+    // clang-format off
+    requires requires {
+      typename StructInfo<T>::members;
+    }
+    // clang-format on
+    struct StructInfoOrEmpty<T> {
+      using members = typename StructInfo<T>::members;
+    };
+  } // namespace detail
+
+  template<typename T>
+  using members_t = typename detail::StructInfoOrEmpty<T>::members;
 
   // STRUCTURE
 
@@ -149,9 +169,6 @@ namespace otto::reflect {
     return Info();
   }
 
-  template<typename T>
-  using members_t = std::conditional_t<WithStructure<T>, typename StructInfo<T>::members, meta::list<>>;
-
   template<WithStructure T>
   constexpr std::size_t size()
   {
@@ -171,14 +188,20 @@ namespace otto::reflect {
       return 1;
     }
   }
+
   template<AMemberInfo Info, AMemberInfo... Parents>
   constexpr std::size_t flat_idx()
   {
-    return ((flat_size<typename Parents::value_type>() + 1) + ... + 0) + []<AMemberInfo... Ts>(meta::list<Ts...>)
-    {
-      return (flat_size<typename Ts::value_type>() + ... + 0);
+    if constexpr (sizeof...(Parents) == 0) {
+      return []<AMemberInfo... Ts>(meta::list<Ts...>)
+      {
+        return (flat_size<typename Ts::value_type>() + ... + 0);
+      }
+      (meta::take_t<Info::index, typename StructInfo<typename Info::struct_t>::members>());
     }
-    (meta::take_t<Info::index, typename StructInfo<typename Info::struct_t>::members>());
+    // Add 1 for each parent. this means the flat_idx of a member is not
+    // the same as flat_idx of the first member of that member
+    return flat_idx<Info>() + ((1 + flat_idx<Parents>()) + ... + 0);
   }
 
   template<AMemberInfo Info, StructureTraits T, AMemberInfo... Parents>
@@ -188,7 +211,8 @@ namespace otto::reflect {
   }
 
   template<AMemberInfo Info, AMemberInfo P1, AMemberInfo... Parents>
-  constexpr decltype(auto) get(util::decays_to<typename meta::head_t<meta::list<Parents..., Info>>::struct_t> auto&& s)
+  constexpr decltype(auto) get(
+    util::decays_to<typename meta::head_t<meta::list<P1, Parents..., Info>>::struct_t> auto&& s)
   {
     return get<Info, Parents...>(get<P1>(FWD(s)));
   }
@@ -243,19 +267,19 @@ namespace otto::reflect {
   template<typename T, std::size_t N, StructureTraits Traits, AMemberInfo... Parents>
   struct structure<std::array<T, N>, Traits, Parents...> {
     using Tuple = typename detail::array_struct_tuple<std::make_index_sequence<N>, T, N, Traits, Parents...>::type;
-    [[no_unique_address]] Tuple members;
-
-    template<std::size_t I>
-    requires(I < N) constexpr auto get()
-    {
-      return std::get<I>(members);
-    }
 
     constexpr structure(auto&&... args) : members(detail::init_all<Tuple>(FWD(args)...)) {}
     constexpr structure(const structure&) = default;
     constexpr structure(structure&&) = default;
     constexpr structure& operator=(const structure&) = default;
     constexpr structure& operator=(structure&&) = default;
+
+  private:
+    template<std::size_t I, typename T2, std::size_t N2, StructureTraits Traits2, AMemberInfo... Parents2>
+    friend auto std::get(structure<std::array<T2, N2>, Traits2, Parents2...>& obj);
+    template<std::size_t I, typename T2, std::size_t N2, StructureTraits Traits2, AMemberInfo... Parents2>
+    friend auto std::get(const structure<std::array<T2, N2>, Traits2, Parents2...>& obj);
+    [[no_unique_address]] Tuple members;
   };
 
   template<typename T, std::size_t N>
@@ -264,3 +288,25 @@ namespace otto::reflect {
   };
 
 } // namespace otto::reflect
+
+namespace std {
+  template<std::size_t I,
+           typename T,
+           std::size_t N,
+           otto::reflect::StructureTraits Traits,
+           otto::reflect::AMemberInfo... Parents>
+  auto get(otto::reflect::structure<std::array<T, N>, Traits, Parents...>& obj)
+  {
+    return get<I>(obj.members);
+  }
+
+  template<std::size_t I,
+           typename T,
+           std::size_t N,
+           otto::reflect::StructureTraits Traits,
+           otto::reflect::AMemberInfo... Parents>
+  auto get(const otto::reflect::structure<std::array<T, N>, Traits, Parents...>& obj)
+  {
+    return get<I>(obj.members);
+  }
+} // namespace std

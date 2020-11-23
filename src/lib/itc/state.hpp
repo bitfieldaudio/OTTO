@@ -58,7 +58,7 @@ namespace otto::itc {
 
     Diff(BitSet b = {}) : reflect::structure<State, detail::StateDiffTraits>(bitset_), bitset_(b) {}
 
-    BitSet bitset()
+    BitSet& bitset()
     {
       return bitset_;
     }
@@ -87,17 +87,12 @@ namespace otto::itc {
           return reflect::get<Info, Parents...>(updater_.state());
         }
 
-        const typename Info::value_type& operator*() const
+        const typename Info::value_type& get() const
         {
           return reflect::get<Info, Parents...>(updater_.state());
         }
 
-        const typename Info::value_type* operator->() const
-        {
-          return &reflect::get<Info, Parents...>(updater_.state());
-        }
-
-        typename Info::value_type& operator()() const
+        typename Info::value_type& operator()()
         {
           return update();
         }
@@ -114,7 +109,7 @@ namespace otto::itc {
 
     Updater(State& s, BitSet b = {}) : reflect::structure<State, detail::UpdaterTraits>(*this), state_(s), bitset_(b) {}
 
-    BitSet bitset()
+    BitSet& bitset()
     {
       return bitset_;
     }
@@ -160,7 +155,7 @@ namespace otto::itc {
     [&]<typename... Ms>(meta::list<Ms...>)
     {
       if constexpr (sizeof...(Ms) > 0) {
-        for_each_changed_impl<State, Ms...>(s, changed, f);
+        detail::for_each_changed_impl<State, Ms...>(s, changed, f);
       }
     }
     (reflect::members_t<State>());

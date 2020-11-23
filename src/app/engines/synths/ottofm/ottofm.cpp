@@ -32,43 +32,39 @@ namespace otto::engines::ottofm {
       // TODO
       bool shift = false;
 
-      switch (e.encoder) {
-        case Encoder::blue: {
-          updater.algorithm_idx() += e.steps;
-          return;
-        } break;
-        case Encoder::green: {
-          if (!shift) {
-            updater.operators.get<3>().ratio_idx() += e.steps;
-            return;
-          } else {
-            updater.operators.get<3>().detune() += e.steps * 0.01;
-            return;
-          }
-        } break;
-        case Encoder::yellow: {
-          if (!shift) {
-            updater.operators.get<3>().level() += e.steps * 0.01;
-            return;
-          } else {
-            produce([steps = e.steps](State& s) {
-              for (auto& op : s.operators) op.level += steps * 0.01;
-            });
-            return;
-          }
-        } break;
-        case Encoder::red: {
-          if (!shift) {
-            updater.operators.get<3>().feedback() += e.steps * 0.01;
-            return;
-          } else {
-            produce([steps = e.steps](State& s) {
-              for (auto& op : s.operators) op.feedback += steps * 0.01;
-            });
-            return;
-          }
-        } break;
-      }
+      auto f = [&]<int Idx>(meta::c<Idx>, int cur) {
+        if (cur != Idx) return;
+        switch (e.encoder) {
+          case Encoder::blue: {
+            updater.algorithm_idx() += e.steps;
+          } break;
+          case Encoder::green: {
+            if (!shift) {
+              std::get<Idx>(updater.operators).ratio_idx() += e.steps;
+            } else {
+              std::get<Idx>(updater.operators).detune() += e.steps * 0.01;
+            }
+          } break;
+          case Encoder::yellow: {
+            if (!shift) {
+              std::get<Idx>(updater.operators).level() += e.steps * 0.01;
+            } else {
+              for (auto& op : updater.operators()) op.level += e.steps * 0.01;
+            }
+          } break;
+          case Encoder::red: {
+            if (!shift) {
+              std::get<Idx>(updater.operators).feedback() += e.steps * 0.01;
+            } else {
+              for (auto& op : updater.operators()) op.feedback += e.steps * 0.01;
+            }
+          } break;
+        }
+      };
+      f(meta::c<0>(), updater.cur_op_idx.get());
+      f(meta::c<1>(), updater.cur_op_idx.get());
+      f(meta::c<2>(), updater.cur_op_idx.get());
+      f(meta::c<3>(), updater.cur_op_idx.get());
     }
   };
 
