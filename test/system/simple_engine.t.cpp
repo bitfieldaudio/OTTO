@@ -1,8 +1,11 @@
-#include "lib/engine.hpp"
-#include "lib/itc/reducer.hpp"
 #include "testing.t.hpp"
 
+#include "lib/engine.hpp"
 #include "lib/itc/itc.hpp"
+#include "lib/itc/reducer.hpp"
+#include "lib/util/with_limits.hpp"
+
+#include "lib/graphics.hpp"
 
 #include <Gamma/Oscillator.h>
 
@@ -13,18 +16,13 @@
 #include "app/services/logic_thread.hpp"
 #include "app/services/runtime.hpp"
 
-#include "system/simple_engine.gen.hpp"
-
 using namespace otto;
 
 namespace otto::engines {
-  struct IDrawable {
-    virtual void draw(SkCanvas& ctx) noexcept = 0;
-  };
-
-  struct IScreen : IDrawable {};
-
   namespace simple {
+    struct State {
+      util::StaticallyBounded<float, 11, 880> freq = 340;
+    };
 
     struct Logic final : itc::Producer<State> {
       Logic(itc::Channel<State>& c) : itc::Producer<State>(c) {}
@@ -53,7 +51,7 @@ namespace otto::engines {
       gam::Sine<> osc;
     };
 
-    struct Screen final : itc::Consumer<State>, core::ServiceAccessor<services::Graphics>, otto::engines::IScreen {
+    struct Screen final : itc::Consumer<State>, core::ServiceAccessor<services::Graphics>, IScreen {
       Screen(itc::Channel<State>& c) : itc::Consumer<State>(c, service<services::Graphics>().executor()) {}
       void draw(SkCanvas& ctx) noexcept override
       {

@@ -1,5 +1,6 @@
 set(CMAKE_CXX_STANDARD 20)
 
+file(GLOB_RECURSE headers "${OTTO_SOURCE_DIR}/src/*.hpp")
 file(GLOB_RECURSE sources "${OTTO_SOURCE_DIR}/src/*.cpp")
 
 find_package (Threads)
@@ -39,11 +40,6 @@ target_link_libraries(otto_src PUBLIC function2)
 target_link_libraries(otto_src PUBLIC toml11)
 target_link_libraries(otto_src PUBLIC otto_boost)
 target_link_libraries(otto_src PUBLIC yamc)
-
-file(GLOB_RECURSE headers RELATIVE "${OTTO_SOURCE_DIR}/src" "${OTTO_SOURCE_DIR}/src/*.hpp")
-
-list(GET sources 0 A_SOURCE_FILE)
-ocpppp_generate(otto_src "${OTTO_SOURCE_DIR}/src" "${A_SOURCE_FILE}" "${headers}")
 
 #include("${OTTO_SOURCE_DIR}/cmake/doctest_force_link_static_lib_in_target.cmake")
 #doctest_force_link_static_lib_in_target(otto_exec otto)

@@ -9,7 +9,7 @@
 #include "lib/util/variant_w_base.hpp"
 #include "lib/util/with_limits.hpp"
 
-#include "lib/voices/voice_state.gen.hpp"
+#include "lib/voices/voice_state.hpp"
 
 namespace otto::voices {
 

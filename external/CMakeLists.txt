@@ -181,15 +181,6 @@ else()
   target_link_libraries(otto_boost INTERFACE Boost::boost)
 endif()
 
-# OCPPPP
-if (NOT OTTO_USE_SYSTEM_OCPPPP)
-  CPMAddPackage(
-    NAME ocpppp
-    GITHUB_REPOSITORY otto-project/ocpppp
-    GIT_TAG cc06bc3eb2d09d462e1b880fe4a55fa5b1eec6af
-  )
-endif()
-
 # SKIA
 
 find_package(PkgConfig) 

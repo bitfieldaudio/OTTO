@@ -127,7 +127,7 @@ TEST_CASE (doctest::may_fail(true) * "ExecutorLock") {
 
     int i = 0;
     for (auto& [e, t] : data.threads) {
-      t = std::thread([&, &e = e, i] {
+      t = std::thread([&, &e = e] {
         auto lock = lockable.acquire();
         threads_ready++;
         while (data.run) {

@@ -11,7 +11,3 @@ set_target_properties(otto_test PROPERTIES OUTPUT_NAME test)
 otto_add_definitions(otto_test)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OTTO_CXX_FLAGS}")
-
-file(GLOB_RECURSE headers RELATIVE "${OTTO_SOURCE_DIR}/test" "${OTTO_SOURCE_DIR}/test/*.hpp")
-list(GET sources 0 A_SOURCE_FILE)
-ocpppp_generate(otto_test "${OTTO_SOURCE_DIR}/test" "${A_SOURCE_FILE}" "${headers}")

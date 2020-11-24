@@ -18,7 +18,6 @@ otto_option(ENABLE_LTO "Enable link time optimization on release builds. Only wo
 otto_option(USE_SYSTEM_OCPPPP "OCPPPP Provided by system. Mainly used for yocto" OFF)
 
 include(cmake/CPM.cmake)
-include(cmake/ocpppp.cmake)
 set(CPM_USE_LOCAL_PACKAGES OFF)
 set(CPM_LOCAL_PACKAGES_ONLY OFF)
 
@@ -92,7 +91,6 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
 -Wno-vla \
 -Wno-sign-compare \
 -Wno-error=pedantic \
--Wno-attributes \
 ")
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   set(OTTO_CXX_FLAGS "-Wall -Wno-long-long -Wpedantic \
@@ -106,7 +104,6 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 -Wno-gnu-zero-variadic-macro-arguments \
 -Wno-gnu-anonymous-struct \
 -Wno-nested-anon-types \
--Wno-unknown-attributes \
 ")
 endif()
 

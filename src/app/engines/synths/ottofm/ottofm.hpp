@@ -10,14 +10,16 @@ namespace otto::engines::ottofm {
 
   // Envelopes
   // step_sizes 0.1
-  struct [[otto::reflect]] ADSRState {
+  struct ADSRState {
     util::StaticallyBounded<float, 0, 1> attack = 0.2;
     util::StaticallyBounded<float, 0, 1> decay = 0.2;
     util::StaticallyBounded<float, 0, 1> sustain = 0.7;
     util::StaticallyBounded<float, 0, 1> release = 0.2;
+
+    DECL_VISIT(attack, decay, sustain, release);
   };
 
-  struct [[otto::reflect]] OperatorState {
+  struct OperatorState {
     ADSRState envelope;
     util::StaticallyBounded<float, 0, 1> feedback = 0;
     util::StaticallyBounded<float, 0, 1> level = 1;
@@ -26,17 +28,23 @@ namespace otto::engines::ottofm {
     util::StaticallyBounded<int, 0, 19> ratio_idx = 0;
 
     float current_level = 0;
+
+    DECL_VISIT(envelope, feedback, level, detune, ratio_idx);
   };
 
-  struct [[otto::reflect]] State {
+  struct State {
     util::StaticallyBounded<int, 0, 10, true> algorithm_idx = 0;
     util::StaticallyBounded<float, 0, 1> fm_amount = 1;
     std::array<OperatorState, 4> operators;
     util::StaticallyBounded<int, 0, 4> cur_op_idx = 0;
+
+    DECL_VISIT(algorithm_idx, fm_amount, operators, cur_op_idx);
 
     OperatorState& current_op()
     {
       return operators[cur_op_idx];
     }
   };
+
+  static_assert(std::is_trivially_copyable_v<State>);
 } // namespace otto::engines::ottofm

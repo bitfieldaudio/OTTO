@@ -15,7 +15,7 @@ namespace otto::voices {
   template<AVoice Voice, std::size_t N>
   struct Voices;
 
-  struct [[otto::reflect]] VoicesState {
+  struct VoicesState {
     PlayMode play_mode = PlayMode::poly;
     bool legato = false;
     bool retrig = false;
