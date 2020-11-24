@@ -18,7 +18,6 @@ TEST_CASE ("Voices") {
   itc::ImmediateExecutor ex;
   itc::Channel<VoicesState> chan;
   itc::Producer<VoicesState> prod = chan;
-  auto upd = prod.make_updater();
 
   Voices<Voice, 6> voices = {chan, ex, 42};
 
@@ -66,8 +65,8 @@ TEST_CASE ("Voices") {
     voices.handle(midi::NoteOn{2});
     voices.handle(midi::NoteOn{3});
 
-    upd.play_mode() = PlayMode::mono;
-    prod.produce(upd);
+    prod.state().play_mode = PlayMode::mono;
+    prod.commit();
 
     REQUIRE(std::ranges::distance(triggered_voices()) == 0);
   }
@@ -135,8 +134,8 @@ TEST_CASE ("Voices") {
     }
 
     SUBCASE ("Poly mode rand") {
-      upd.rand() = 0.5;
-      prod.produce(upd);
+      prod.state().rand = 0.5;
+      prod.commit();
 
       std::set<float> vals;
       for (std::uint8_t i = 0; i < 5; i++) {
@@ -166,9 +165,9 @@ TEST_CASE ("Voices") {
   }
 
   SUBCASE ("Interval Mode") {
-    upd.play_mode() = PlayMode::interval;
-    upd.interval() = 1;
-    prod.produce(upd);
+    prod.state().play_mode = PlayMode::interval;
+    prod.state().interval = 1;
+    prod.commit();
 
     SUBCASE ("Interval mode triggers two voices for a single note") {
       voices.handle(midi::NoteOn{50});
@@ -210,8 +209,8 @@ TEST_CASE ("Voices") {
     SUBCASE ("Changing interval still allows removal of all notes") {
       voices.handle(midi::NoteOn{50});
 
-      upd.interval() = 2;
-      prod.produce(upd);
+      prod.state().interval = 2;
+      prod.commit();
       check_notes({50, 51});
 
       voices.handle(midi::NoteOn{60});
@@ -223,8 +222,8 @@ TEST_CASE ("Voices") {
 
 
   SUBCASE ("Mono mode") {
-    upd.play_mode() = PlayMode::mono;
-    prod.produce(upd);
+    prod.state().play_mode = PlayMode::mono;
+    prod.commit();
 
     SUBCASE ("Can switch to mono mode") {
       REQUIRE(voices.play_mode() == PlayMode::mono);
@@ -259,8 +258,8 @@ TEST_CASE ("Voices") {
     }
 
     SUBCASE ("AUX mode: Sub = 0.5") {
-      upd.sub() = 0.5f;
-      prod.produce(upd);
+      prod.state().sub = 0.5f;
+      prod.commit();
 
       voices.handle(midi::NoteOn{50});
       check_notes({38, 38, 50});
@@ -268,8 +267,8 @@ TEST_CASE ("Voices") {
   }
 
   SUBCASE ("Unison Mode") {
-    upd.play_mode() = PlayMode::unison;
-    prod.produce(upd);
+    prod.state().play_mode = PlayMode::unison;
+    prod.commit();
 
     auto used_voices = VoiceAllocator<PlayMode::unison, Voice, 6>::num_voices_used;
 
@@ -325,8 +324,8 @@ TEST_CASE ("Voices") {
     }
 
     SUBCASE ("Voices keep same order (voice return) for non-zero detune") {
-      upd.detune() = 0.1f;
-      prod.produce(upd);
+      prod.state().detune = 0.1f;
+      prod.commit();
 
       voices.handle(midi::NoteOn{50});
       voices.handle(midi::NoteOn{60});
@@ -339,15 +338,15 @@ TEST_CASE ("Voices") {
     }
   }
   SUBCASE ("Portamento") {
-    upd.play_mode() = PlayMode::mono;
-    prod.produce(upd);
+    prod.state().play_mode = PlayMode::mono;
+    prod.commit();
 
     gam::sampleRate(100);
     float target_freq = midi::note_freq(62);
 
     SUBCASE ("Portamento = 0") {
-      upd.portamento() = 0.f;
-      prod.produce(upd);
+      prod.state().portamento = 0.f;
+      prod.commit();
 
       voices.handle(midi::NoteOn{50});
       auto& v = triggered_voices().front();
@@ -361,8 +360,8 @@ TEST_CASE ("Voices") {
     SUBCASE ("Portamento = 1") {
       int expected_n = 100;
 
-      upd.portamento() = 1.f;
-      prod.produce(upd);
+      prod.state().portamento = 1.f;
+      prod.commit();
 
       voices.handle(midi::NoteOn{50});
       voices.handle(midi::NoteOn{62});

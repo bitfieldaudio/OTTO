@@ -77,6 +77,12 @@ namespace otto::dsp {
       set(v, mCrv);
     }
 
+    /// Get the length in domain units
+    T period() const
+    {
+      return mLen;
+    }
+
     void reset()
     {
       mCurve.reset();

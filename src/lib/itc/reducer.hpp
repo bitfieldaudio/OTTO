@@ -37,17 +37,22 @@ namespace otto::itc {
   namespace detail {
     template<typename Derived, AState State, AnEvent Event>
     struct ReducerImpl : virtual IEventHandler<Event> {
-      virtual void reduce(Event, Updater<State> updater) noexcept = 0;
+      virtual void reduce(Event, State&) noexcept = 0;
       void handle(Event e) noexcept final
       {
         auto& producer = *static_cast<Derived*>(this)->producer_;
-        Updater<State> updater = {producer.state()};
-        reduce(e, updater);
-        producer.produce(updater.bitset());
+        reduce(e, producer.state());
+        producer.commit();
       }
     };
   } // namespace detail
 
+  /// An event handler linked to a producer.
+  ///
+  /// Instead of overriding `handle(Event)`, you override `reduce(Event, State&)`, and
+  /// modify the state in there.
+  ///
+  /// The state will automatically be committed after each `reduce` call
   template<AState State, AnEvent... Events>
   struct Reducer : detail::ReducerImpl<Reducer<State, Events...>, State, Events>... {
     using detail::ReducerImpl<Reducer, State, Events>::reduce...;

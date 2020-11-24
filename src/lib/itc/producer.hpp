@@ -25,37 +25,10 @@ namespace otto::itc {
       return channels_;
     }
 
-    /// Produce one or more actions, and send them on the channel to be applied on all
-    /// consumers.
-    ///
-    /// When producing multiple actions, they will be aggregated into one, and applied atomically.
-    void produce(BitSet<State> changes)
+    /// Commit the current `state()`, notifying consumers
+    void commit()
     {
-      for_each_changed(state(), changes, [this](auto member) {
-        auto f = [val = reflect::get(member, state())](State& s) {
-          reflect::get(decltype(member)(), s) = std::move(val);
-        };
-        for (auto* chan : channels_) chan->internal_produce(f);
-      });
-      for (auto* chan : channels_) chan->internal_notify(changes);
-    }
-
-    void produce(reflect::AMember auto&&... members)
-    {
-      BitSet<State> bitset;
-      (bitset.set(reflect::flat_idx(members)), ...);
-      produce(bitset);
-    }
-
-    void produce(Updater<State>&& u)
-    {
-      produce(u.bitset());
-    }
-
-    void produce(Updater<State>& u)
-    {
-      produce(u.bitset());
-      u.bitset().reset();
+      for (auto* chan : channels_) chan->internal_commit(state());
     }
 
     State& state() noexcept
@@ -63,14 +36,37 @@ namespace otto::itc {
       return state_;
     }
 
-    State& state() const noexcept
+    const State& state() const noexcept
     {
       return state_;
     }
 
-    Updater<State> make_updater() noexcept
+    // FOR UNIFORMITY WITH Producer<State...>
+
+    /// Access the stored state of the given type
+    template<std::same_as<State> S>
+    S& state() noexcept
     {
-      return {state()};
+      return state();
+    }
+
+    /// Access the stored state of the given type
+    template<std::same_as<State> S>
+    const S& state() const noexcept
+    {
+      return state();
+    }
+
+    /// Commit the current states of the given types, notifying all consumers
+    template<std::same_as<State> S>
+    void commit() noexcept
+    {
+      commit();
+    }
+
+    void commit_all() noexcept
+    {
+      commit();
     }
 
   private:
@@ -98,25 +94,31 @@ namespace otto::itc {
     Producer(Ch& channel) : Producer<States>(channel)...
     {}
 
+    /// Access the stored state of the given type
     template<util::one_of<States...> S>
     S& state() noexcept
     {
       return Producer<S>::state();
     }
 
+    /// Access the stored state of the given type
     template<util::one_of<States...> S>
     const S& state() const noexcept
     {
       return Producer<S>::state();
     }
 
-    template<util::one_of<States...> S>
-    auto make_updater() noexcept
+    /// Commit the current states of the given types, notifying all consumers
+    template<util::one_of<States...>... S>
+    void commit() noexcept
     {
-      return Producer<S>::make_updater();
+      (Producer<S>::commit(), ...);
     }
 
-    using Producer<States>::produce...;
+    void commit_all() noexcept
+    {
+      commit<States...>();
+    }
   };
 
 } // namespace otto::itc

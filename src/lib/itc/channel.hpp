@@ -1,5 +1,9 @@
 #pragma once
 
+#include <vector>
+
+#include "lib/util/concepts.hpp"
+
 #include "state.hpp"
 
 namespace otto::itc {
@@ -56,15 +60,9 @@ namespace otto::itc {
       consumers_.push_back(c);
     }
 
-    /// Only called from {@ref Producer::produce}
-    void internal_produce(util::callable<void(State&)> auto& f)
+    void internal_commit(const State& state)
     {
-      for (auto* cons : consumers_) cons->internal_produce(f);
-    }
-
-    void internal_notify(const BitSet<State>& changes)
-    {
-      for (auto* cons : consumers_) cons->internal_notify(changes);
+      for (auto* cons : consumers_) cons->internal_commit(state);
     }
 
     std::vector<Consumer<State>*> consumers_;

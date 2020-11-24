@@ -19,7 +19,9 @@ namespace otto::voices {
     VoiceAllocatorBase(Voices<Voice, N>&) noexcept;
     ~VoiceAllocatorBase() noexcept;
 
-    virtual void on_state_change(itc::Diff<VoicesState>) noexcept {}
+    virtual PlayMode play_mode() const noexcept = 0;
+
+    virtual void on_state_change(const VoicesState&) noexcept {}
     virtual void handle(const midi::NoteOn&) noexcept = 0;
     /// Midi off is common to all
     void handle(const midi::NoteOff&) noexcept;
@@ -141,6 +143,11 @@ namespace otto::voices {
     VoiceAllocator(Voices<Voice, N>& vm_in);
     void handle(const midi::NoteOn&) noexcept final;
 
+    PlayMode play_mode() const noexcept final
+    {
+      return PlayMode::poly;
+    }
+
   private:
     std::uint8_t rand_idx_ = 0;
 
@@ -155,6 +162,11 @@ namespace otto::voices {
   struct VoiceAllocator<PlayMode::interval, Voice, N> final : VoiceAllocatorBase<Voice, N> {
     VoiceAllocator(Voices<Voice, N>& vm_in);
     void handle(const midi::NoteOn&) noexcept final;
+
+    PlayMode play_mode() const noexcept final
+    {
+      return PlayMode::interval;
+    }
   };
 
   template<AVoice Voice, int N>
@@ -164,7 +176,11 @@ namespace otto::voices {
 
     VoiceAllocator(Voices<Voice, N>& vm_in);
     void handle(const midi::NoteOn&) noexcept final;
-    void on_state_change(itc::Diff<VoicesState>) noexcept final;
+    void on_state_change(const VoicesState&) noexcept final;
+    PlayMode play_mode() const noexcept final
+    {
+      return PlayMode::mono;
+    }
   };
 
   template<AVoice Voice, int N>
@@ -175,6 +191,10 @@ namespace otto::voices {
 
     void handle(const midi::NoteOn&) noexcept final;
     void set_detune(float detune) noexcept;
+    PlayMode play_mode() const noexcept final
+    {
+      return PlayMode::unison;
+    }
 
   private:
     util::local_vector<float, 7> detune_values;
@@ -220,10 +240,10 @@ namespace otto::voices {
       std::ranges::transform(voices_, std::back_inserter(free_voices_), [](Voice& v) { return &v; });
     }
 
-    void on_state_change(itc::Diff<VoicesState> diff) noexcept override
+    void on_state_change(const VoicesState& state) noexcept override
     {
-      if (diff.play_mode.has_changed()) {
-        switch (state().play_mode) {
+      if (state.play_mode != voice_alloc->play_mode()) {
+        switch (state.play_mode) {
           case PlayMode::poly: voice_alloc.template emplace<VoiceAllocator<PlayMode::poly, Voice, N>>(*this); break;
           case PlayMode::mono: voice_alloc.template emplace<VoiceAllocator<PlayMode::mono, Voice, N>>(*this); break;
           case PlayMode::unison: voice_alloc.template emplace<VoiceAllocator<PlayMode::unison, Voice, N>>(*this); break;
@@ -237,13 +257,13 @@ namespace otto::voices {
         free_voices_.clear();
         std::ranges::transform(voices_, std::back_inserter(free_voices_), util::addressof);
       }
-      if (diff.play_mode.has_changed()) {
+      if (state.portamento != voices_[0].glide_.period()) {
         for (auto& v : voices_) {
-          v.glide_.period(state().portamento);
+          v.glide_.period(state.portamento);
           v.glide_ = v.glide_.getEnd();
         }
       }
-      voice_alloc->on_state_change(diff);
+      voice_alloc->on_state_change(state);
     }
 
     using midi::MidiHandler::handle;
@@ -479,7 +499,7 @@ namespace otto::voices {
   }
 
   template<AVoice Voice, int N>
-  void VoiceAllocator<PlayMode::mono, Voice, N>::on_state_change(itc::Diff<VoicesState> diff) noexcept
+  void VoiceAllocator<PlayMode::mono, Voice, N>::on_state_change(const VoicesState& diff) noexcept
   {
     // The second and third voice are sub voices on mono mode. This sets their volume.
     for (int i = 1; i < 3; i++) {

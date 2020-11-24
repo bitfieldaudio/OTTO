@@ -1,5 +1,8 @@
 #pragma once
 
+#include "lib/util/concepts.hpp"
+#include "lib/util/spin_lock.hpp"
+
 #include "channel.hpp"
 #include "executor.hpp"
 #include "state.hpp"
@@ -30,33 +33,44 @@ namespace otto::itc {
       return state_;
     }
 
+    // FOR UNIFORMITY WITH Consumer<State...>
+
+    /// Access the newest state available.
+    template<std::same_as<State> S>
+    const S& state() const noexcept
+    {
+      return state();
+    }
+
   protected:
     /// Hook called immediately after the state is updated.
     ///
-    /// Check if individual state variable have been changed using `diff`
+    /// The parameter is the same as `this->state()`
     ///
     /// Override in subclass if needed
-    virtual void on_state_change(Diff<State> diff) noexcept {}
+    virtual void on_state_change(const State&) noexcept {}
 
   private:
     friend Channel<State>;
 
-    /// Called from {@ref Channel::internal_produce}
-    void internal_produce(AnAction<State> auto& func)
+    /// Called from {@ref Channel::internal_commit}
+    void internal_commit(const State& state)
     {
-      executor_.execute([this, func] { std::move(func)(tmp_state_); });
-    }
-
-    /// Called from {@ref Channel::internal_notify}
-    void internal_notify(const BitSet<State>& changes)
-    {
-      executor_.execute([this, changes] {
+      {
+        std::scoped_lock l(lock_);
+        tmp_state_ = state;
+      }
+      executor_.execute([this] {
         // Apply changes
-        state_ = tmp_state_;
-        on_state_change(Diff<State>(changes));
+        {
+          std::scoped_lock l(lock_);
+          state_ = tmp_state_;
+        }
+        on_state_change(state_);
       });
     }
 
+    util::spin_lock lock_;
     State state_;
     IExecutor& executor_;
     Channel<State>* channel_;

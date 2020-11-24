@@ -16,55 +16,47 @@ namespace otto::engines::ottofm {
   };
 
   struct Handler final : InputReducer<State> {
-    void reduce(KeyPress e, itc::Updater<State> updater) noexcept final
+    void reduce(KeyPress e, State& state) noexcept final
     {
       switch (e.key) {
-        case Key::blue_enc_click: updater.cur_op_idx() = 3; break;
-        case Key::green_enc_click: updater.cur_op_idx() = 2; break;
-        case Key::yellow_enc_click: updater.cur_op_idx() = 1; break;
-        case Key::red_enc_click: updater.cur_op_idx() = 0; break;
+        case Key::blue_enc_click: state.cur_op_idx = 3; break;
+        case Key::green_enc_click: state.cur_op_idx = 2; break;
+        case Key::yellow_enc_click: state.cur_op_idx = 1; break;
+        case Key::red_enc_click: state.cur_op_idx = 0; break;
         default: break;
       }
     }
 
-    void reduce(EncoderEvent e, itc::Updater<State> updater) noexcept final
+    void reduce(EncoderEvent e, State& state) noexcept final
     {
       // TODO
       bool shift = false;
-
-      auto f = [&]<int Idx>(meta::c<Idx>, int cur) {
-        if (cur != Idx) return;
-        switch (e.encoder) {
-          case Encoder::blue: {
-            updater.algorithm_idx() += e.steps;
-          } break;
-          case Encoder::green: {
-            if (!shift) {
-              std::get<Idx>(updater.operators).ratio_idx() += e.steps;
-            } else {
-              std::get<Idx>(updater.operators).detune() += e.steps * 0.01;
-            }
-          } break;
-          case Encoder::yellow: {
-            if (!shift) {
-              std::get<Idx>(updater.operators).level() += e.steps * 0.01;
-            } else {
-              for (auto& op : updater.operators()) op.level += e.steps * 0.01;
-            }
-          } break;
-          case Encoder::red: {
-            if (!shift) {
-              std::get<Idx>(updater.operators).feedback() += e.steps * 0.01;
-            } else {
-              for (auto& op : updater.operators()) op.feedback += e.steps * 0.01;
-            }
-          } break;
-        }
-      };
-      f(meta::c<0>(), updater.cur_op_idx.get());
-      f(meta::c<1>(), updater.cur_op_idx.get());
-      f(meta::c<2>(), updater.cur_op_idx.get());
-      f(meta::c<3>(), updater.cur_op_idx.get());
+      switch (e.encoder) {
+        case Encoder::blue: {
+          state.algorithm_idx += e.steps;
+        } break;
+        case Encoder::green: {
+          if (!shift) {
+            state.operators[state.cur_op_idx].ratio_idx += e.steps;
+          } else {
+            state.operators[state.cur_op_idx].detune += e.steps * 0.01;
+          }
+        } break;
+        case Encoder::yellow: {
+          if (!shift) {
+            state.operators[state.cur_op_idx].level += e.steps * 0.01;
+          } else {
+            for (auto& op : state.operators) op.level += e.steps * 0.01;
+          }
+        } break;
+        case Encoder::red: {
+          if (!shift) {
+            state.operators[state.cur_op_idx].feedback += e.steps * 0.01;
+          } else {
+            for (auto& op : state.operators) op.feedback += e.steps * 0.01;
+          }
+        } break;
+      }
     }
   };
 

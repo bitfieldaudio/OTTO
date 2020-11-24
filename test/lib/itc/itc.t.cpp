@@ -2,17 +2,16 @@
 #include <bitset>
 #include "testing.t.hpp"
 
-#include "stubs/state.gen.hpp"
-
-using namespace otto;
 using namespace otto::itc;
-
-static_assert(reflect::AMemberInfo<reflect::MemberInfo<&stubs::State1::i1>>);
 
 // Tests
 TEST_CASE (doctest::test_suite("itc") * "Basic Channel/Consumer/Producer linking and lifetime") {
+  struct State {
+    int i = 0;
+    bool operator==(const State&) const = default;
+  };
+
   ImmediateExecutor ex;
-  using State = stubs::State2;
 
   SUBCASE ("Constructing consumer with channel registers it") {
     Channel<State> ch;
@@ -97,13 +96,16 @@ TEST_CASE (doctest::test_suite("itc") * "Basic Channel/Consumer/Producer linking
 
 TEST_CASE (doctest::test_suite("itc") * "Basic state passing") {
   ImmediateExecutor ex;
-  using S = stubs::State2;
+  struct S {
+    int i = 0;
+    bool operator==(const S&) const = default;
+  };
   Channel<S> ch;
   Producer<S> p = {ch};
   struct C1 : Consumer<S> {
     using Consumer<S>::Consumer;
 
-    void on_state_change(itc::Diff<S> diff) noexcept override
+    void on_state_change(const S&) noexcept override
     {
       new_state_called++;
     }
@@ -116,27 +118,38 @@ TEST_CASE (doctest::test_suite("itc") * "Basic state passing") {
   }
 
   struct P1 : Producer<S> {
-    void test_produce(int i)
-    {
-      auto updater = make_updater();
-      updater.i() = i;
-      produce(std::move(updater));
-      REQUIRE(state().i == i);
-    }
   } p1 = {ch};
 
   SUBCASE ("Publish new state from producer") {
-    p1.test_produce(1);
+    p1.state().i = 1;
+    REQUIRE(p1.state().i == 1);
+    REQUIRE(c1.state().i == 0);
+    p1.commit();
     REQUIRE(c1.state().i == 1);
     REQUIRE(c1.new_state_called == 1);
-    p1.test_produce(2);
+    p1.state().i = 2;
+    p1.commit();
     REQUIRE(c1.state().i == 2);
     REQUIRE(c1.new_state_called == 2);
   }
 }
 
 TEST_CASE (doctest::test_suite("itc") * "prod/cons/chan of multiple states") {
-  using namespace stubs::simple_states;
+  struct S1 {
+    int i1 = 1;
+    bool operator==(const S1&) const = default;
+  };
+
+  struct S2 {
+    int i2 = 2;
+    bool operator==(const S2&) const = default;
+  };
+
+  struct S3 {
+    int i3 = 3;
+    bool operator==(const S3&) const = default;
+  };
+
   using Ch12 = Channel<S1, S2>;
   using C12 = Consumer<S1, S2>;
   using P12 = Producer<S1, S2>;
@@ -179,12 +192,12 @@ TEST_CASE (doctest::test_suite("itc") * "prod/cons/chan of multiple states") {
       REQUIRE(state<S2>().i2 == i);
     }
 
-    void on_state_change(Diff<S1> s) noexcept override
+    void on_state_change(const S1& s) noexcept override
     {
       new_state1_called++;
     }
 
-    void on_state_change(Diff<S2> s) noexcept override
+    void on_state_change(const S2& s) noexcept override
     {
       new_state2_called++;
     }
@@ -201,40 +214,27 @@ TEST_CASE (doctest::test_suite("itc") * "prod/cons/chan of multiple states") {
   struct P1 : Producer<S1, S2> {
     void test_produce1(int i)
     {
-      auto updater = make_updater<S1>();
-      updater.i1() = i;
-      produce(updater);
+      state<S1>().i1 = i;
+      commit<S1>();
     }
     void test_produce2(int i)
     {
-      auto updater = make_updater<S2>();
-      updater.i2() = i;
-      produce(updater);
+      state<S2>().i2 = i;
+      commit<S2>();
     }
   } p1 = {ch};
 
   SUBCASE ("Publish new state from producer") {
     p1.test_produce1(10);
-    c1.check_i1(10);
+    REQUIRE(c1.state<S1>().i1 == 10);
     REQUIRE(c1.new_state1_called == 1);
-    c1.check_i2(2);
+    REQUIRE(c1.state<S2>().i2 == 2);
     REQUIRE(c1.new_state2_called == 0);
 
     p1.test_produce2(20);
-    c1.check_i1(10);
+    REQUIRE(c1.state<S1>().i1 == 10);
     REQUIRE(c1.new_state1_called == 1);
-    c1.check_i2(20);
+    REQUIRE(c1.state<S2>().i2 == 20);
     REQUIRE(c1.new_state2_called == 1);
   }
 }
-
-static_assert(reflect::info(reflect::structure<stubs::State1>().nested).index == 2);
-static_assert(reflect::info(reflect::structure<stubs::State1>().nested.f1).index == 0);
-
-static_assert(reflect::flat_idx(reflect::structure<stubs::State1>().i1) == 0);
-static_assert(reflect::flat_idx(reflect::structure<stubs::State1>().i2) == 1);
-static_assert(reflect::flat_idx(reflect::structure<stubs::State1>().nested) == 2);
-static_assert(reflect::flat_idx(reflect::structure<stubs::State1>().nested.f1) == 3);
-static_assert(reflect::flat_idx(reflect::structure<stubs::State1>().nested.f2) == 4);
-static_assert(reflect::flat_idx(reflect::structure<stubs::State1>().nested.level2) == 5);
-static_assert(reflect::flat_idx(reflect::structure<stubs::State1>().nested.level2.b1) == 6);

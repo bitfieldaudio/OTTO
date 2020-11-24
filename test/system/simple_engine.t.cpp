@@ -31,16 +31,16 @@ namespace otto::engines {
     };
 
     struct Handler final : InputReducer<State> {
-      void reduce(EncoderEvent e, itc::Updater<State> updater) noexcept final
+      void reduce(EncoderEvent e, State& state) noexcept final
       {
-        updater.freq() += e.steps;
+        state.freq += e.steps;
       }
     };
 
     struct Audio final : itc::Consumer<State>, core::ServiceAccessor<services::Audio> {
       Audio(itc::Channel<State>& c) : itc::Consumer<State>(c, service<services::Audio>().executor()) {}
 
-      void on_state_change(itc::Diff<State> d) noexcept override
+      void on_state_change(const State& d) noexcept override
       {
         osc.freq(state().freq);
       }

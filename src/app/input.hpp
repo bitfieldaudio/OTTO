@@ -107,9 +107,9 @@ namespace otto {
   template<itc::AState State>
   struct InputReducer : itc::Reducer<State, KeyPress, KeyRelease, EncoderEvent>, IInputHandler {
     using itc::Reducer<State, KeyPress, KeyRelease, EncoderEvent>::Reducer;
-    void reduce(KeyPress e, itc::Updater<State> updater) noexcept override {}
-    void reduce(KeyRelease e, itc::Updater<State> updater) noexcept override {}
-    void reduce(EncoderEvent e, itc::Updater<State> updater) noexcept override {}
+    void reduce(KeyPress e, State& state) noexcept override {}
+    void reduce(KeyRelease e, State& state) noexcept override {}
+    void reduce(EncoderEvent e, State& state) noexcept override {}
   };
 
   inline std::ostream& operator<<(std::ostream& os, const KeyPress& k)
