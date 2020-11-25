@@ -30,7 +30,6 @@ target_link_libraries(otto_src PUBLIC fmt)
 target_link_libraries(otto_src PUBLIC gamma)
 target_link_libraries(otto_src PUBLIC choreograph)
 target_link_libraries(otto_src PUBLIC nlohmann_json)
-target_link_libraries(otto_src PUBLIC doctest)
 target_link_libraries(otto_src PUBLIC loguru)
 target_link_libraries(otto_src PUBLIC nanobench)
 target_link_libraries(otto_src PUBLIC magic_enum)
@@ -41,8 +40,6 @@ target_link_libraries(otto_src PUBLIC toml11)
 target_link_libraries(otto_src PUBLIC otto_boost)
 target_link_libraries(otto_src PUBLIC yamc)
 
-#include("${OTTO_SOURCE_DIR}/cmake/doctest_force_link_static_lib_in_target.cmake")
-#doctest_force_link_static_lib_in_target(otto_exec otto)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OTTO_CXX_FLAGS}")
 
 # Docs  

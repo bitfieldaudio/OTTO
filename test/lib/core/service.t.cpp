@@ -21,7 +21,7 @@ TEST_CASE ("ServiceProvider / ServiceAccessor") {
   static_assert(AServiceImpl<TSImpl>);
   static_assert(!AService<TSImpl>);
 
-  SUBCASE ("set/unset active service manually") {
+  SECTION ("set/unset active service manually") {
     TSImpl tsi;
     REQUIRE(core::unsafe_get_active_service<TestService>() == nullptr);
     set_active_service(tsi);
@@ -32,7 +32,7 @@ TEST_CASE ("ServiceProvider / ServiceAccessor") {
     REQUIRE(core::unsafe_get_active_service<TestService>() == nullptr);
   }
 
-  SUBCASE ("Auto register/unregister service using ServiceHandle") {
+  SECTION ("Auto register/unregister service using ServiceHandle") {
     {
       auto prov = make_handle<TSImpl>().start();
       REQUIRE(core::unsafe_get_active_service<TestService>() == &prov.service());
@@ -47,13 +47,13 @@ TEST_CASE ("ServiceProvider / ServiceAccessor") {
     }
   };
 
-  SUBCASE ("Access registered service through ServiceAccessor") {
+  SECTION ("Access registered service through ServiceAccessor") {
     auto serv = make_handle<TSImpl>().start();
     TSAccessor a;
     a.test_4();
   }
 
-  SUBCASE ("name") {
+  SECTION ("name") {
     TSImpl tsi;
     REQUIRE(tsi.name() == "TestService");
     REQUIRE(service_name<TestService>() == "TestService");

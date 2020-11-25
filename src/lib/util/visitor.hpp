@@ -31,7 +31,7 @@ namespace otto::util {
 #define OTTO_VISIT_DECLTYPE_(IGNORED, Expr) decltype(Expr)
 #define OTTO_VISIT_CALL_VISITOR_(Expr) visitor(#Expr, Expr);
 
-/// Defines a `visit` function which takes a visitor and calls it recusively on the arguments
+/// Defines a `visit` function which takes a visitor and calls it on each of the members
 ///
 /// Usual usecase:
 /// ```cpp

@@ -74,7 +74,7 @@ TEST_CASE ("UIManager") {
     services::start_app(LogicThread::make(), ConfigManager::make(), Controller::make([&port] { return &port; }),
                         Audio::make(std::make_unique<DummyAudioDriver>), UIManager::make());
   app.service<Audio>().set_midi_handler(&midi_handler);
-  SUBCASE ("Seq keys -> midi events") {
+  SECTION ("Seq keys -> midi events") {
     port.handle(KeyPress{Key::seq0});
     port.handle(KeyPress{Key::seq1});
     port.handle(KeyPress{Key::channel0});

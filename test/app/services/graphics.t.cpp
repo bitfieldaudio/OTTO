@@ -9,9 +9,9 @@
 using namespace otto;
 using namespace otto::services;
 
-TEST_CASE (doctest::skip() * "Graphics test") {
+TEST_CASE ("Graphics test", "[.interactive]") {
   auto app = start_app(ConfigManager::make(), Graphics::make());
-  SUBCASE ("Simple graphics and text for 2 second") {
+  SECTION ("Simple graphics and text for 2 second") {
     app.service<Graphics>().show([&](SkCanvas& ctx) {
       SkPaint paint;
       paint.setColor(SK_ColorBLACK);
@@ -31,7 +31,7 @@ TEST_CASE (doctest::skip() * "Graphics test") {
 
 TEST_CASE ("Graphics service tests (no graphics)") {
   auto app = start_app(ConfigManager::make(), Graphics::make());
-  SUBCASE ("Graphics executor") {
+  SECTION ("Graphics executor") {
     itc::IExecutor& executor = app.service<Graphics>().executor();
     int count = 0;
     executor.execute([&] { count++; });

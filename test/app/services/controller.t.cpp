@@ -43,7 +43,7 @@ TEST_CASE ("Controller::read_input_data") {
   Handler handler;
   com.handler = &handler;
 
-  SUBCASE ("Read keypresses") {
+  SECTION ("Read keypresses") {
     Packet p = {Command::key_events};
     auto presses = std::span(p.data.data(), 8);
     auto releases = std::span(p.data.data() + 8, 8);
@@ -53,7 +53,7 @@ TEST_CASE ("Controller::read_input_data") {
     com.handle_packet(p);
     REQUIRE(handler.events == Events{KeyPress{Key::seq0}, KeyRelease{Key::seq5}, KeyPress{Key::unassigned_f}});
   }
-  SUBCASE ("Read encoderevents") {
+  SECTION ("Read encoderevents") {
     Packet p = {Command::encoder_events, {10, 2, 251, 0}};
     com.handle_packet(p);
     REQUIRE(handler.events == Events{EncoderEvent{Encoder::blue, 10}, EncoderEvent{Encoder::green, 2},

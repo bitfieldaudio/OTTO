@@ -15,7 +15,7 @@ struct TestConfig final : Config<TestConfig> {
 };
 
 TEST_CASE ("ConfigManager") {
-  SUBCASE ("Registry") {
+  SECTION ("Registry") {
     auto app = services::start_app(core::make_handle<otto::services::ConfigManager>());
     core::ServiceAccessor<services::ConfigManager> confman;
     TestConfig tc1 = confman->make_conf<TestConfig>();
@@ -23,7 +23,7 @@ TEST_CASE ("ConfigManager") {
   }
   TestConfig tc1;
 
-  SUBCASE ("Serialization") {
+  SECTION ("Serialization") {
     REQUIRE(tc1.get_name() == "TestConfig");
     otto::toml::value res;
     tc1.to_toml(res);
@@ -33,7 +33,7 @@ TEST_CASE ("ConfigManager") {
                    });
   }
 
-  SUBCASE ("Deserialization") {
+  SECTION ("Deserialization") {
     tc1.from_toml(otto::toml::value{
       {"option1", 42},
       {"option2", "new value"},
@@ -55,7 +55,7 @@ TEST_CASE ("ConfigManager") {
       option1 = 100
     )"_toml;
 
-  SUBCASE ("Service constructor") {
+  SECTION ("Service constructor") {
     auto app = services::start_app(core::make_handle<services::ConfigManager>(config_data));
     core::ServiceAccessor<services::ConfigManager> confman;
     TestConfig tc1 = confman->make_conf<TestConfig>();
@@ -64,12 +64,12 @@ TEST_CASE ("ConfigManager") {
     REQUIRE(tc1.option2 == "test");
   }
 
-  SUBCASE ("ConfHandle") {
-    SUBCASE ("With no service") {
+  SECTION ("ConfHandle") {
+    SECTION ("With no service") {
       TestConfig::Handle tc1 = TestConfig{.option1 = 42, .option2 = "yay"};
       REQUIRE(tc1->option1 == 42);
     }
-    SUBCASE ("With service") {
+    SECTION ("With service") {
       auto app = services::start_app(core::make_handle<services::ConfigManager>(config_data));
       core::ServiceAccessor<services::ConfigManager> confman;
       TestConfig::Handle tc1;

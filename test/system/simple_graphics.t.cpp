@@ -555,7 +555,7 @@ struct WaveShapeGraphic : otto::graphics::Widget<WaveShapeGraphic> {
   }
 };
 
-TEST_CASE (test::interactive() * "Non-trivial graphics test") {
+TEST_CASE ("Non-trivial graphics test", "[.interactive]") {
   namespace ch = choreograph;
   ch::Timeline timeline;
   ch::Output<float> expansion = 1.0f;
@@ -571,7 +571,7 @@ TEST_CASE (test::interactive() * "Non-trivial graphics test") {
 
 
   auto app = start_app(ConfigManager::make(), Graphics::make());
-  SUBCASE ("FM stub") {
+  SECTION ("FM stub") {
     WaveShapeGraphic ws(0.0f, 1.0f, true);
     app.service<Graphics>().show([&](SkCanvas& ctx) {
       Operators ops(3, 2, {0.f, 0.f, 0.5f, 0.0f});

@@ -61,11 +61,11 @@ namespace otto::core::voices {
       return cached;
     };
 
-    SUBCASE ("Voice receives actions sent to voice manager") {
+    SECTION ("Voice receives actions sent to voice manager") {
       itc::call_receiver(vmgr, test_action::data(1));
     }
 
-    SUBCASE ("Simple voice loop") {
+    SECTION ("Simple voice loop") {
       int n = 0;
       for (Voice& voice : vmgr.voices()) {
         n++;
@@ -74,7 +74,7 @@ namespace otto::core::voices {
     }
 
 
-    SUBCASE ("triggered_voices()") {
+    SECTION ("triggered_voices()") {
       REQUIRE(util::count(triggered_voices()) == 0);
       vmgr.handle_midi(midi::NoteOnEvent{1});
       vmgr.handle_midi(midi::NoteOnEvent{2});
@@ -89,7 +89,7 @@ namespace otto::core::voices {
       REQUIRE(util::count(triggered_voices()) == 3);
     }
 
-    SUBCASE ("When switching voice mode, all voices should be released") {
+    SECTION ("When switching voice mode, all voices should be released") {
       vmgr.handle_midi(midi::NoteOnEvent{1});
       vmgr.handle_midi(midi::NoteOnEvent{2});
       vmgr.handle_midi(midi::NoteOnEvent{3});
@@ -100,35 +100,35 @@ namespace otto::core::voices {
       REQUIRE(util::count(triggered_voices()) == 0);
     }
 
-    SUBCASE ("Mono mode") {
+    SECTION ("Mono mode") {
       voices_props.play_mode = +PlayMode::mono;
       queue.pop_call_all();
 
-      SUBCASE ("Can switch to mono mode") {
+      SECTION ("Can switch to mono mode") {
         REQUIRE(vmgr.play_mode() == +PlayMode::mono);
       }
 
-      SUBCASE ("triggers one voice for a single note") {
+      SECTION ("triggers one voice for a single note") {
         vmgr.handle_midi(midi::NoteOnEvent{50});
         REQUIRE(util::count(triggered_voices()) == 1);
         REQUIRE(triggered_voices().front().midi_note() == 50);
         REQUIRE(triggered_voices().front().frequency() == test::approx(midi::note_freq(50)));
       }
 
-      SUBCASE ("steals a voice for each new note") {
+      SECTION ("steals a voice for each new note") {
         vmgr.handle_midi(midi::NoteOnEvent{50});
         vmgr.handle_midi(midi::NoteOnEvent{60});
         REQUIRE(test::sort(triggered_voices() | transform(MEMBER_CALLER(midi_note))) == std::vector{60});
       }
 
-      SUBCASE ("Snaps back to playing old note when a note is released") {
+      SECTION ("Snaps back to playing old note when a note is released") {
         vmgr.handle_midi(midi::NoteOnEvent{50});
         vmgr.handle_midi(midi::NoteOnEvent{60});
         vmgr.handle_midi(midi::NoteOffEvent{60});
         REQUIRE(test::sort(triggered_voices() | transform(MEMBER_CALLER(midi_note))) == std::vector{50});
       }
 
-      SUBCASE ("Snaps back to playing CORRECT old note when a note is released") {
+      SECTION ("Snaps back to playing CORRECT old note when a note is released") {
         vmgr.handle_midi(midi::NoteOnEvent{50});
         vmgr.handle_midi(midi::NoteOnEvent{60});
         vmgr.handle_midi(midi::NoteOnEvent{70});
@@ -138,7 +138,7 @@ namespace otto::core::voices {
 
 
 
-      SUBCASE ("AUX mode: Sub = 0.5") {
+      SECTION ("AUX mode: Sub = 0.5") {
         voices_props.sub = 0.5f;
         queue.pop_call_all();
 
@@ -150,27 +150,27 @@ namespace otto::core::voices {
       }
     }
 
-    SUBCASE ("Poly Mode") {
+    SECTION ("Poly Mode") {
       // voices_props.play_mode = +PlayMode::poly;
       // queue.pop_call_all();
-      SUBCASE ("Poly mode is the initial setting") {
+      SECTION ("Poly mode is the initial setting") {
         REQUIRE(vmgr.play_mode() == +PlayMode::poly);
       }
 
-      SUBCASE ("Poly mode triggers one voice for a single note") {
+      SECTION ("Poly mode triggers one voice for a single note") {
         vmgr.handle_midi(midi::NoteOnEvent{50});
         REQUIRE(util::count(triggered_voices()) == 1);
         REQUIRE(triggered_voices().front().midi_note() == 50);
         REQUIRE(triggered_voices().front().frequency() == test::approx(midi::note_freq(50)));
       }
 
-      SUBCASE ("Poly mode triggers one voice per note") {
+      SECTION ("Poly mode triggers one voice per note") {
         vmgr.handle_midi(midi::NoteOnEvent{50});
         vmgr.handle_midi(midi::NoteOnEvent{60});
         REQUIRE(test::sort(triggered_voices() | transform(MEMBER_CALLER(midi_note))) == std::vector{50, 60});
       }
 
-      SUBCASE ("Poly mode discards the oldest note when voice count is exceeded and snaps back when released") {
+      SECTION ("Poly mode discards the oldest note when voice count is exceeded and snaps back when released") {
         vmgr.handle_midi(midi::NoteOnEvent{1});
         vmgr.handle_midi(midi::NoteOnEvent{2});
         vmgr.handle_midi(midi::NoteOnEvent{3});
@@ -183,7 +183,7 @@ namespace otto::core::voices {
         REQUIRE(test::sort(triggered_voices() | transform(MEMBER_CALLER(midi_note))) == std::vector{1, 3, 4, 5, 6, 7});
       }
 
-      SUBCASE ("Poly mode reuses last used voice") {
+      SECTION ("Poly mode reuses last used voice") {
         vmgr.handle_midi(midi::NoteOnEvent{1});
         Voice* triggered_voice = &triggered_voices().front();
         vmgr.handle_midi(midi::NoteOnEvent{2});
@@ -194,7 +194,7 @@ namespace otto::core::voices {
         REQUIRE(triggered_voice == new_voice);
       }
 
-      SUBCASE ("Poly mode cycles voices") {
+      SECTION ("Poly mode cycles voices") {
         std::set<Voice*> used_voices;
 
         for (int i : iota(0, (int) vmgr.voices().size())) {
@@ -206,7 +206,7 @@ namespace otto::core::voices {
         REQUIRE(used_voices.size() == vmgr.voices().size());
       }
 
-      SUBCASE ("Poly mode rand") {
+      SECTION ("Poly mode rand") {
         voices_props.rand = 0.5;
         queue.pop_call_all();
 
@@ -224,7 +224,7 @@ namespace otto::core::voices {
         REQUIRE(vals.size() == 5);
       }
 
-      SUBCASE ("Keys held over the maximum limit are ignored") {
+      SECTION ("Keys held over the maximum limit are ignored") {
         for (int i = 1; i <= 12 * vmgr.voice_count_v + 1; i++) {
           vmgr.handle_midi(midi::NoteOnEvent{i});
         }
@@ -238,33 +238,33 @@ namespace otto::core::voices {
       }
     }
 
-    SUBCASE ("Unison Mode") {
+    SECTION ("Unison Mode") {
       voices_props.play_mode = +PlayMode::unison;
       queue.pop_call_all();
 
-      SUBCASE ("Can switch to unison mode") {
+      SECTION ("Can switch to unison mode") {
         REQUIRE(vmgr.play_mode() == +PlayMode::unison);
       }
 
-      SUBCASE ("Uses 5 voices (for 6 total voices)") {
+      SECTION ("Uses 5 voices (for 6 total voices)") {
         REQUIRE(VMgr::UnisonAllocator::num_voices_used == 5);
       }
 
-      SUBCASE ("Unison triggers highest possible odd number of voices per note") {
+      SECTION ("Unison triggers highest possible odd number of voices per note") {
         vmgr.handle_midi(midi::NoteOnEvent{1});
         REQUIRE(util::count(triggered_voices()) == VMgr::UnisonAllocator::num_voices_used);
         vmgr.handle_midi(midi::NoteOffEvent{1});
         REQUIRE(util::count(triggered_voices()) == 0);
       }
 
-      SUBCASE ("steals voices for each new note") {
+      SECTION ("steals voices for each new note") {
         vmgr.handle_midi(midi::NoteOnEvent{50});
         vmgr.handle_midi(midi::NoteOnEvent{60});
         auto expected_midi_notes = std::vector<int>(VMgr::UnisonAllocator::num_voices_used, 60);
         REQUIRE(test::sort(triggered_voices() | transform(MEMBER_CALLER(midi_note))) == expected_midi_notes);
       }
 
-      SUBCASE ("Snaps back to playing old notes when a note is released") {
+      SECTION ("Snaps back to playing old notes when a note is released") {
         vmgr.handle_midi(midi::NoteOnEvent{50});
         vmgr.handle_midi(midi::NoteOnEvent{60});
         vmgr.handle_midi(midi::NoteOffEvent{60});
@@ -272,7 +272,7 @@ namespace otto::core::voices {
         REQUIRE(test::sort(triggered_voices() | transform(MEMBER_CALLER(midi_note))) == expected_midi_notes);
       }
 
-      SUBCASE ("Voices keep same order (voice steal)") {
+      SECTION ("Voices keep same order (voice steal)") {
         vmgr.handle_midi(midi::NoteOnEvent{50});
         auto ordered_voices_expected = test::sort(triggered_voice_ptrs(), [](Voice* v) { return v->frequency(); });
         vmgr.handle_midi(midi::NoteOnEvent{60});
@@ -280,7 +280,7 @@ namespace otto::core::voices {
         REQUIRE(ordered_voices_expected == ordered_voices_actual);
       }
 
-      SUBCASE ("Voices keep same order (voice return)") {
+      SECTION ("Voices keep same order (voice return)") {
         vmgr.handle_midi(midi::NoteOnEvent{50});
         vmgr.handle_midi(midi::NoteOnEvent{60});
         auto ordered_voices_expected = test::sort(triggered_voice_ptrs(), [](Voice* v) { return v->frequency(); });
@@ -289,7 +289,7 @@ namespace otto::core::voices {
         REQUIRE(ordered_voices_expected == ordered_voices_actual);
       }
 
-      SUBCASE ("Voices keep same order (voice return) for non-zero detune") {
+      SECTION ("Voices keep same order (voice return) for non-zero detune") {
         voices_props.detune = 0.1;
         queue.pop_call_all();
 
@@ -302,25 +302,25 @@ namespace otto::core::voices {
       }
     }
 
-    SUBCASE ("Interval Mode") {
+    SECTION ("Interval Mode") {
       voices_props.play_mode = +PlayMode::interval;
       voices_props.interval = 1;
       queue.pop_call_all();
 
 
-      SUBCASE ("Interval mode triggers two voices for a single note") {
+      SECTION ("Interval mode triggers two voices for a single note") {
         vmgr.handle_midi(midi::NoteOnEvent{50});
         REQUIRE(util::count(triggered_voices()) == 2);
         REQUIRE(test::sort(triggered_voices() | transform(MEMBER_CALLER(midi_note))) == std::vector{50, 51});
       }
 
-      SUBCASE ("Interval mode triggers two voices per note") {
+      SECTION ("Interval mode triggers two voices per note") {
         vmgr.handle_midi(midi::NoteOnEvent{50});
         vmgr.handle_midi(midi::NoteOnEvent{60});
         REQUIRE(test::sort(triggered_voices() | transform(MEMBER_CALLER(midi_note))) == std::vector{50, 51, 60, 61});
       }
 
-      SUBCASE ("Note steal works like in poly") {
+      SECTION ("Note steal works like in poly") {
         vmgr.handle_midi(midi::NoteOnEvent{50});
         vmgr.handle_midi(midi::NoteOnEvent{60});
         vmgr.handle_midi(midi::NoteOnEvent{70});
@@ -334,20 +334,20 @@ namespace otto::core::voices {
                 std::vector{50, 51, 60, 61, 80, 81});
       }
 
-      SUBCASE ("Playing base and interval keys yields four voices") {
+      SECTION ("Playing base and interval keys yields four voices") {
         vmgr.handle_midi(midi::NoteOnEvent{50});
         vmgr.handle_midi(midi::NoteOnEvent{51});
         REQUIRE(test::sort(triggered_voices() | transform(MEMBER_CALLER(midi_note))) == std::vector{50, 51, 51, 52});
       }
 
-      SUBCASE ("Playing base and interval keys and releasing one yields two voices") {
+      SECTION ("Playing base and interval keys and releasing one yields two voices") {
         vmgr.handle_midi(midi::NoteOnEvent{50});
         vmgr.handle_midi(midi::NoteOnEvent{51});
         vmgr.handle_midi(midi::NoteOffEvent{50});
         REQUIRE(test::sort(triggered_voices() | transform(MEMBER_CALLER(midi_note))) == std::vector{51, 52});
       }
 
-      SUBCASE ("Changing interval still allows removal of all notes") {
+      SECTION ("Changing interval still allows removal of all notes") {
         vmgr.handle_midi(midi::NoteOnEvent{50});
 
         voices_props.interval = 2;
@@ -361,7 +361,7 @@ namespace otto::core::voices {
       }
     }
 
-    SUBCASE ("Portamento") {
+    SECTION ("Portamento") {
       voices_props.play_mode = +PlayMode::mono;
       queue.pop_call_all();
 
@@ -370,7 +370,7 @@ namespace otto::core::voices {
       gam::sampleRate(100);
       float target_freq = midi::note_freq(62);
 
-      SUBCASE ("Portamento = 0") {
+      SECTION ("Portamento = 0") {
         voices_props.portamento = 0.f;
         queue.pop_call_all();
 
@@ -383,7 +383,7 @@ namespace otto::core::voices {
         REQUIRE(v.frequency() == test::approx(target_freq).margin(0.01));
       }
 
-      SUBCASE ("Portamento = 1") {
+      SECTION ("Portamento = 1") {
         int expected_n = 100;
 
         voices_props.portamento = 1.f;
@@ -414,7 +414,7 @@ namespace otto::core::voices {
     /// engaged for glide (jump the portamento step)
     /// and normal legato (on_note_on and on_note_off is not called).
 
-    SUBCASE ("Voice receives all envelope and voice settings actions") {
+    SECTION ("Voice receives all envelope and voice settings actions") {
       struct Voice : VoiceBase<Voice> {
         float attack = 0;
         void action(attack_tag::action, float attack) noexcept
@@ -506,11 +506,11 @@ namespace otto::core::voices {
       for (auto& v : vmgr.voices()) REQUIRE(v.portamento == 0.5);
     }
 
-    SUBCASE ("call operators and process calls") {
+    SECTION ("call operators and process calls") {
       auto app = services::test::make_dummy_application();
 
       using namespace core::audio;
-      SUBCASE ("when voice has an operator(), voice and vmgr gets process() and operator()") {
+      SECTION ("when voice has an operator(), voice and vmgr gets process() and operator()") {
         struct SVoice : voices::VoiceBase<SVoice> {
           float operator()() noexcept
           {
@@ -534,7 +534,7 @@ namespace otto::core::voices {
         REQUIRE(nano::all_of(res2.audio, util::does_equal(4 * vmgr.normal_volume)));
       }
 
-      SUBCASE ("when voice has a process(), vmgr only has process()") {
+      SECTION ("when voice has a process(), vmgr only has process()") {
         struct SVoice : voices::VoiceBase<SVoice> {
           ProcessData<1> process(ProcessData<0> data) noexcept
           {

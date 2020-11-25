@@ -9,7 +9,7 @@ using namespace otto::itc;
 using namespace std::literals;
 
 TEST_CASE ("QueueExecutor") {
-  SUBCASE ("queued functions are executed on run_queued_functions") {
+  SECTION ("queued functions are executed on run_queued_functions") {
     int i = 0;
     QueueExecutor e;
     e.execute([&] { i++; });
@@ -20,7 +20,7 @@ TEST_CASE ("QueueExecutor") {
     REQUIRE(i == 1);
   }
 
-  SUBCASE ("Multithreading") {
+  SECTION ("Multithreading") {
     QueueExecutor e;
     /// The loop condition for the application
     std::atomic_bool run = true;
@@ -81,7 +81,7 @@ TEST_CASE ("QueueExecutor") {
   }
 }
 
-TEST_CASE (doctest::may_fail(true) * "ExecutorLock") {
+TEST_CASE ("ExecutorLock") {
   int iteration = 0;
   for (; iteration < 1000; iteration++) {
     // LOGI("Iteration {}", iteration);

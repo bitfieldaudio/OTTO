@@ -14,7 +14,7 @@
 using namespace otto;
 using namespace otto::services;
 
-TEST_CASE (test::interactive() * "EncoderGUI") {
+TEST_CASE ("EncoderGUI", "[.interactive]") {
   auto app = start_app(ConfigManager::make_default(), LogicThread::make(), Controller::make(), Graphics::make());
 
   struct Handler final : InputHandler {

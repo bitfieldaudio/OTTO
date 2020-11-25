@@ -1,7 +1,5 @@
 #include "executor.hpp"
 
-#include "testing.t.hpp"
-
 #include "lib/logging.hpp"
 
 // Disable debug logging in this file

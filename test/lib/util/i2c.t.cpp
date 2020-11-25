@@ -17,7 +17,7 @@ struct hex {
   }
 };
 
-TEST_CASE ("i2ccli" * doctest::skip()) {
+TEST_CASE ("i2ccli", "[.interactive]") {
   util::I2C i2c_obj;
   while (std::cin.good()) {
     std::vector<std::uint8_t> buffer;

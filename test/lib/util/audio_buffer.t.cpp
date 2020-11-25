@@ -10,7 +10,7 @@ namespace rngs = std::ranges;
 TEST_CASE ("audio_buffer") {
   std::int8_t refc = 0;
   std::vector<float> data = {0, 0.1, 0.2, 0.3, 0.4, 0.5};
-  SUBCASE ("scoped reference counting") {
+  SECTION ("scoped reference counting") {
     {
       util::audio_buffer ab = util::audio_buffer(std::span(data), &refc);
       REQUIRE(refc == 1);
@@ -19,7 +19,7 @@ TEST_CASE ("audio_buffer") {
     REQUIRE(refc == 0);
   }
 
-  SUBCASE ("Disable refcount with nullptr") {
+  SECTION ("Disable refcount with nullptr") {
     // No REQUIRE, the test is that we dont get a segfault
     util::audio_buffer ab = util::audio_buffer(data, nullptr);
   }
@@ -30,13 +30,13 @@ TEST_CASE ("AudioBufferPool") {
 
   auto idx = [&abp](util::audio_buffer& ab) { return (ab.data() - abp.data().data()) / 64; };
 
-  SUBCASE ("allocate single") {
+  SECTION ("allocate single") {
     auto buf = abp.allocate();
     REQUIRE(buf.size() == 64);
     REQUIRE(idx(buf) == 0);
   };
 
-  SUBCASE ("allocate multiple") {
+  SECTION ("allocate multiple") {
     tl::optional b1 = abp.allocate();
     tl::optional b2 = abp.allocate();
     REQUIRE(b2->size() == 64);
@@ -47,7 +47,7 @@ TEST_CASE ("AudioBufferPool") {
     REQUIRE(idx(b3) == 0);
   };
 
-  SUBCASE ("allocate larger buffer") {
+  SECTION ("allocate larger buffer") {
     tl::optional b1 = abp.allocate(1);
     tl::optional b2 = abp.allocate(2);
     tl::optional b3 = abp.allocate(1);
@@ -56,7 +56,7 @@ TEST_CASE ("AudioBufferPool") {
     REQUIRE(idx(*b3) == 3);
   };
 
-  SUBCASE ("allocate larger buffer in between smaller ones") {
+  SECTION ("allocate larger buffer in between smaller ones") {
     tl::optional b0 = abp.allocate();
     tl::optional b1 = abp.allocate();
     tl::optional b2 = abp.allocate();

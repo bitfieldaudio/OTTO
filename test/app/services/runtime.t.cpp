@@ -8,7 +8,7 @@ using namespace otto::services;
 using Stage = Runtime::Stage;
 
 TEST_CASE ("Runtime service") {
-  SUBCASE ("Manual start/stop") {
+  SECTION ("Manual start/stop") {
     Runtime rt;
     REQUIRE(rt.stage() == Stage::initializing);
     REQUIRE(rt.should_run());
@@ -61,8 +61,8 @@ TEST_CASE ("Runtime service") {
     }
   };
 
-  SUBCASE ("start_app") {
-    SUBCASE ("Scoped") {
+  SECTION ("start_app") {
+    SECTION ("Scoped") {
       {
         auto app = start_app(core::make_handle<SI1>(), //
                              core::make_handle<SI2>(), //
@@ -80,7 +80,7 @@ TEST_CASE ("Runtime service") {
       REQUIRE(construction_order == std::vector{1, 2, 3, 3, 2, 1});
     }
 
-    SUBCASE (".stop") {
+    SECTION (".stop") {
       auto app = start_app(core::make_handle<SI1>(), //
                            core::make_handle<SI2>(), //
                            core::make_handle<SI3>());

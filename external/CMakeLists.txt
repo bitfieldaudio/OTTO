@@ -90,9 +90,9 @@ if (loguru_ADDED)
 endif()
 
 CPMAddPackage(
-  NAME doctest
-  GITHUB_REPOSITORY onqtam/doctest
-  GIT_TAG 2.4.0
+  NAME catch2
+  GITHUB_REPOSITORY catchorg/Catch2
+  VERSION 3.0.0-preview3
 )
 
 CPMAddPackage(

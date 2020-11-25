@@ -5,7 +5,7 @@
 using namespace otto::itc;
 
 // Tests
-TEST_CASE (doctest::test_suite("itc") * "Basic Channel/Consumer/Producer linking and lifetime") {
+TEST_CASE ("Basic Channel/Consumer/Producer linking and lifetime", "[itc]") {
   struct State {
     int i = 0;
     bool operator==(const State&) const = default;
@@ -13,7 +13,7 @@ TEST_CASE (doctest::test_suite("itc") * "Basic Channel/Consumer/Producer linking
 
   ImmediateExecutor ex;
 
-  SUBCASE ("Constructing consumer with channel registers it") {
+  SECTION ("Constructing consumer with channel registers it") {
     Channel<State> ch;
     Consumer<State> c1 = {ch, ex};
 
@@ -26,13 +26,13 @@ TEST_CASE (doctest::test_suite("itc") * "Basic Channel/Consumer/Producer linking
     REQUIRE(ch.consumers()[1] == &c2);
   }
 
-  SUBCASE ("Constructing a producer with a channel registers it") {
+  SECTION ("Constructing a producer with a channel registers it") {
     Channel<State> ch1;
     Producer<State> p = {ch1};
 
     REQUIRE(p.channels().size() == 1);
     REQUIRE(p.channels()[0] == &ch1);
-    SUBCASE ("A producer can be registered to more channels with ch.set_producer") {
+    SECTION ("A producer can be registered to more channels with ch.set_producer") {
       Channel<State> ch2;
       ch2.set_producer(p);
       REQUIRE(p.channels().size() == 2);
@@ -40,13 +40,13 @@ TEST_CASE (doctest::test_suite("itc") * "Basic Channel/Consumer/Producer linking
     }
   }
 
-  SUBCASE ("Channel has a reference to its producer") {
+  SECTION ("Channel has a reference to its producer") {
     Channel<State> ch;
     REQUIRE(ch.producer() == nullptr);
     Producer<State> p = {ch};
     REQUIRE(ch.producer() == &p);
 
-    SUBCASE ("Also when registered with set_producer") {
+    SECTION ("Also when registered with set_producer") {
       Channel<State> ch2;
       ch2.set_producer(p);
       REQUIRE(ch2.producer() == &p);
@@ -54,37 +54,37 @@ TEST_CASE (doctest::test_suite("itc") * "Basic Channel/Consumer/Producer linking
     }
   }
 
-  SUBCASE ("Consumer has a reference to its channel") {
+  SECTION ("Consumer has a reference to its channel") {
     Channel<State> ch;
     Consumer<State> c = {ch, ex};
     REQUIRE(c.channel() == &ch);
   }
 
-  SUBCASE ("Bidirectional lifetime management") {
-    SUBCASE ("Producer / Channel") {
-      SUBCASE ("Producer destroyed before channel") {
+  SECTION ("Bidirectional lifetime management") {
+    SECTION ("Producer / Channel") {
+      SECTION ("Producer destroyed before channel") {
         Channel<State> ch;
         {
           Producer<State> p = {ch};
         }
         REQUIRE(ch.producer() == nullptr);
       }
-      SUBCASE ("Channel destroyed before producer") {
+      SECTION ("Channel destroyed before producer") {
         auto ch = std::make_unique<Channel<State>>();
         Producer<State> p = {*ch};
         ch.reset();
         REQUIRE(p.channels().empty());
       }
     }
-    SUBCASE ("Consumer / Channel") {
-      SUBCASE ("Consumer destroyed before channel") {
+    SECTION ("Consumer / Channel") {
+      SECTION ("Consumer destroyed before channel") {
         Channel<State> ch;
         {
           Consumer<State> p = {ch, ex};
         }
         REQUIRE(ch.consumers().empty());
       }
-      SUBCASE ("Channel destroyed before consumer") {
+      SECTION ("Channel destroyed before consumer") {
         auto ch = std::make_unique<Channel<State>>();
         Consumer<State> c = {*ch, ex};
         ch.reset();
@@ -94,7 +94,7 @@ TEST_CASE (doctest::test_suite("itc") * "Basic Channel/Consumer/Producer linking
   }
 }
 
-TEST_CASE (doctest::test_suite("itc") * "Basic state passing") {
+TEST_CASE ("Basic state passing", "[itc]") {
   ImmediateExecutor ex;
   struct S {
     int i = 0;
@@ -113,14 +113,14 @@ TEST_CASE (doctest::test_suite("itc") * "Basic state passing") {
     int new_state_called = 0;
   } c1 = {ch, ex};
 
-  SUBCASE ("Access default state in Consumer") {
+  SECTION ("Access default state in Consumer") {
     REQUIRE(c1.state().i == 0);
   }
 
   struct P1 : Producer<S> {
   } p1 = {ch};
 
-  SUBCASE ("Publish new state from producer") {
+  SECTION ("Publish new state from producer") {
     p1.state().i = 1;
     REQUIRE(p1.state().i == 1);
     REQUIRE(c1.state().i == 0);
@@ -134,7 +134,7 @@ TEST_CASE (doctest::test_suite("itc") * "Basic state passing") {
   }
 }
 
-TEST_CASE (doctest::test_suite("itc") * "prod/cons/chan of multiple states") {
+TEST_CASE ("prod/cons/chan of multiple states", "[itc]") {
   struct S1 {
     int i1 = 1;
     bool operator==(const S1&) const = default;
@@ -206,7 +206,7 @@ TEST_CASE (doctest::test_suite("itc") * "prod/cons/chan of multiple states") {
     int new_state2_called = 0;
   } c1 = {ch, ex};
 
-  SUBCASE ("Access default state in Consumer") {
+  SECTION ("Access default state in Consumer") {
     c1.check_i1(1);
     c1.check_i2(2);
   }
@@ -224,7 +224,7 @@ TEST_CASE (doctest::test_suite("itc") * "prod/cons/chan of multiple states") {
     }
   } p1 = {ch};
 
-  SUBCASE ("Publish new state from producer") {
+  SECTION ("Publish new state from producer") {
     p1.test_produce1(10);
     REQUIRE(c1.state<S1>().i1 == 10);
     REQUIRE(c1.new_state1_called == 1);

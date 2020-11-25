@@ -21,7 +21,7 @@ TEST_CASE ("Voices") {
 
   Voices<Voice, 6> voices = {chan, ex, 42};
 
-  SUBCASE ("Construction") {
+  SECTION ("Construction") {
     REQUIRE(stdr::distance(voices) == 6);
     for (Voice& v : voices) {
       REQUIRE(v.i == 42);
@@ -43,7 +43,7 @@ TEST_CASE ("Voices") {
     REQUIRE(std::ranges::is_permutation(triggered_voices(), il, std::ranges::equal_to(), &Voice::midi_note));
   };
 
-  SUBCASE ("triggering voices") {
+  SECTION ("triggering voices") {
     REQUIRE(stdr::distance(triggered_voices()) == 0);
     voices.handle(midi::NoteOn{1});
     REQUIRE(stdr::distance(triggered_voices()) == 1);
@@ -60,7 +60,7 @@ TEST_CASE ("Voices") {
     REQUIRE(std::ranges::distance(triggered_voices()) == 3);
   }
 
-  SUBCASE ("When switching voice mode, all voices should be released") {
+  SECTION ("When switching voice mode, all voices should be released") {
     voices.handle(midi::NoteOn{1});
     voices.handle(midi::NoteOn{2});
     voices.handle(midi::NoteOn{3});
@@ -71,28 +71,28 @@ TEST_CASE ("Voices") {
     REQUIRE(std::ranges::distance(triggered_voices()) == 0);
   }
 
-  SUBCASE ("Poly Mode") {
+  SECTION ("Poly Mode") {
     // voices_props.play_mode = +PlayMode::poly;
     // queue.pop_call_all();
-    SUBCASE ("Poly mode is the initial setting") {
+    SECTION ("Poly mode is the initial setting") {
       REQUIRE(voices.play_mode() == PlayMode::poly);
     }
 
-    SUBCASE ("Poly mode triggers one voice for a single note") {
+    SECTION ("Poly mode triggers one voice for a single note") {
       voices.handle(midi::NoteOn{50});
       REQUIRE(std::ranges::distance(triggered_voices()) == 1);
       REQUIRE(triggered_voices().front().midi_note() == 50);
       REQUIRE(triggered_voices().front().frequency() == test::approx(midi::note_freq(50)));
     }
 
-    SUBCASE ("Poly mode triggers one voice per note") {
+    SECTION ("Poly mode triggers one voice per note") {
       voices.handle(midi::NoteOn{50});
       voices.handle(midi::NoteOn{60});
       REQUIRE(std::ranges::is_permutation(triggered_voices(), std::vector{50, 60}, std::ranges::equal_to(),
                                           &Voice::midi_note));
     }
 
-    SUBCASE ("Poly mode discards the oldest note when voice count is exceeded and snaps back when released") {
+    SECTION ("Poly mode discards the oldest note when voice count is exceeded and snaps back when released") {
       voices.handle(midi::NoteOn{1});
       voices.handle(midi::NoteOn{2});
       voices.handle(midi::NoteOn{3});
@@ -109,7 +109,7 @@ TEST_CASE ("Voices") {
                                           &Voice::midi_note));
     }
 
-    SUBCASE ("Poly mode reuses last used voice") {
+    SECTION ("Poly mode reuses last used voice") {
       voices.handle(midi::NoteOn{1});
       Voice* triggered_voice = &triggered_voices().front();
       voices.handle(midi::NoteOn{2});
@@ -121,7 +121,7 @@ TEST_CASE ("Voices") {
       REQUIRE(triggered_voice == new_voice);
     }
 
-    SUBCASE ("Poly mode cycles voices") {
+    SECTION ("Poly mode cycles voices") {
       std::set<Voice*> used_voices;
 
       for (std::uint8_t i = 0; i < voices.size(); i++) {
@@ -133,7 +133,7 @@ TEST_CASE ("Voices") {
       REQUIRE(used_voices.size() == voices.size());
     }
 
-    SUBCASE ("Poly mode rand") {
+    SECTION ("Poly mode rand") {
       prod.state().rand = 0.5;
       prod.commit();
 
@@ -150,7 +150,7 @@ TEST_CASE ("Voices") {
       REQUIRE(vals.size() == 5);
     }
 
-    SUBCASE ("Keys held over the maximum limit are ignored") {
+    SECTION ("Keys held over the maximum limit are ignored") {
       for (std::uint8_t i = 1; i <= 12 * voices.voice_count_v + 1; i++) {
         voices.handle(midi::NoteOn{i});
       }
@@ -164,24 +164,24 @@ TEST_CASE ("Voices") {
     }
   }
 
-  SUBCASE ("Interval Mode") {
+  SECTION ("Interval Mode") {
     prod.state().play_mode = PlayMode::interval;
     prod.state().interval = 1;
     prod.commit();
 
-    SUBCASE ("Interval mode triggers two voices for a single note") {
+    SECTION ("Interval mode triggers two voices for a single note") {
       voices.handle(midi::NoteOn{50});
       REQUIRE(std::ranges::distance(triggered_voices()) == 2);
       check_notes({50, 51});
     }
 
-    SUBCASE ("Interval mode triggers two voices per note") {
+    SECTION ("Interval mode triggers two voices per note") {
       voices.handle(midi::NoteOn{50});
       voices.handle(midi::NoteOn{60});
       check_notes({50, 51, 60, 61});
     }
 
-    SUBCASE ("Note steal works like in poly") {
+    SECTION ("Note steal works like in poly") {
       voices.handle(midi::NoteOn{50});
       voices.handle(midi::NoteOn{60});
       voices.handle(midi::NoteOn{70});
@@ -193,20 +193,20 @@ TEST_CASE ("Voices") {
       check_notes({50, 51, 60, 61, 80, 81});
     }
 
-    SUBCASE ("Playing base and interval keys yields four voices") {
+    SECTION ("Playing base and interval keys yields four voices") {
       voices.handle(midi::NoteOn{50});
       voices.handle(midi::NoteOn{51});
       check_notes({50, 51, 51, 52});
     }
 
-    SUBCASE ("Playing base and interval keys and releasing one yields two voices") {
+    SECTION ("Playing base and interval keys and releasing one yields two voices") {
       voices.handle(midi::NoteOn{50});
       voices.handle(midi::NoteOn{51});
       voices.handle(midi::NoteOff{50});
       check_notes({51, 52});
     }
 
-    SUBCASE ("Changing interval still allows removal of all notes") {
+    SECTION ("Changing interval still allows removal of all notes") {
       voices.handle(midi::NoteOn{50});
 
       prod.state().interval = 2;
@@ -221,35 +221,35 @@ TEST_CASE ("Voices") {
   }
 
 
-  SUBCASE ("Mono mode") {
+  SECTION ("Mono mode") {
     prod.state().play_mode = PlayMode::mono;
     prod.commit();
 
-    SUBCASE ("Can switch to mono mode") {
+    SECTION ("Can switch to mono mode") {
       REQUIRE(voices.play_mode() == PlayMode::mono);
     }
 
-    SUBCASE ("triggers one voice for a single note") {
+    SECTION ("triggers one voice for a single note") {
       voices.handle(midi::NoteOn{50});
       REQUIRE(std::ranges::distance(triggered_voices()) == 1);
       REQUIRE(triggered_voices().front().midi_note() == 50);
       REQUIRE(triggered_voices().front().frequency() == test::approx(midi::note_freq(50)));
     }
 
-    SUBCASE ("steals a voice for each new note") {
+    SECTION ("steals a voice for each new note") {
       voices.handle(midi::NoteOn{50});
       voices.handle(midi::NoteOn{60});
       check_notes({60});
     }
 
-    SUBCASE ("Snaps back to playing old note when a note is released") {
+    SECTION ("Snaps back to playing old note when a note is released") {
       voices.handle(midi::NoteOn{50});
       voices.handle(midi::NoteOn{60});
       voices.handle(midi::NoteOff{60});
       check_notes({50});
     }
 
-    SUBCASE ("Snaps back to playing CORRECT old note when a note is released") {
+    SECTION ("Snaps back to playing CORRECT old note when a note is released") {
       voices.handle(midi::NoteOn{50});
       voices.handle(midi::NoteOn{60});
       voices.handle(midi::NoteOn{70});
@@ -257,7 +257,7 @@ TEST_CASE ("Voices") {
       check_notes({60});
     }
 
-    SUBCASE ("AUX mode: Sub = 0.5") {
+    SECTION ("AUX mode: Sub = 0.5") {
       prod.state().sub = 0.5f;
       prod.commit();
 
@@ -266,35 +266,35 @@ TEST_CASE ("Voices") {
     }
   }
 
-  SUBCASE ("Unison Mode") {
+  SECTION ("Unison Mode") {
     prod.state().play_mode = PlayMode::unison;
     prod.commit();
 
     auto used_voices = VoiceAllocator<PlayMode::unison, Voice, 6>::num_voices_used;
 
-    SUBCASE ("Can switch to unison mode") {
+    SECTION ("Can switch to unison mode") {
       REQUIRE(voices.play_mode() == PlayMode::unison);
     }
 
-    SUBCASE ("Uses 5 voices (for 6 total voices)") {
+    SECTION ("Uses 5 voices (for 6 total voices)") {
       REQUIRE(VoiceAllocator<PlayMode::unison, Voice, 6>::num_voices_used == 5);
     }
 
-    SUBCASE ("Unison triggers highest possible odd number of voices per note") {
+    SECTION ("Unison triggers highest possible odd number of voices per note") {
       voices.handle(midi::NoteOn{1});
       REQUIRE(std::ranges::distance(triggered_voices()) == used_voices);
       voices.handle(midi::NoteOff{1});
       REQUIRE(std::ranges::distance(triggered_voices()) == 0);
     }
 
-    SUBCASE ("steals voices for each new note") {
+    SECTION ("steals voices for each new note") {
       voices.handle(midi::NoteOn{50});
       voices.handle(midi::NoteOn{60});
       auto expected_midi_notes = std::vector<int>(used_voices, 60);
       check_notes({60, 60, 60, 60, 60});
     }
 
-    SUBCASE ("Snaps back to playing old notes when a note is released") {
+    SECTION ("Snaps back to playing old notes when a note is released") {
       voices.handle(midi::NoteOn{50});
       voices.handle(midi::NoteOn{60});
       voices.handle(midi::NoteOff{60});
@@ -302,7 +302,7 @@ TEST_CASE ("Voices") {
       check_notes({50, 50, 50, 50, 50});
     }
 
-    SUBCASE ("Voices keep same order (voice steal)") {
+    SECTION ("Voices keep same order (voice steal)") {
       voices.handle(midi::NoteOn{50});
       auto ordered_voices_expected = triggered_voice_ptrs();
       std::ranges::sort(ordered_voices_expected, {}, &Voice::frequency);
@@ -312,7 +312,7 @@ TEST_CASE ("Voices") {
       REQUIRE(ordered_voices_expected == ordered_voices_actual);
     }
 
-    SUBCASE ("Voices keep same order (voice return)") {
+    SECTION ("Voices keep same order (voice return)") {
       voices.handle(midi::NoteOn{50});
       voices.handle(midi::NoteOn{60});
       auto ordered_voices_expected = triggered_voice_ptrs();
@@ -323,7 +323,7 @@ TEST_CASE ("Voices") {
       REQUIRE(ordered_voices_expected == ordered_voices_actual);
     }
 
-    SUBCASE ("Voices keep same order (voice return) for non-zero detune") {
+    SECTION ("Voices keep same order (voice return) for non-zero detune") {
       prod.state().detune = 0.1f;
       prod.commit();
 
@@ -337,14 +337,14 @@ TEST_CASE ("Voices") {
       REQUIRE(ordered_voices_expected == ordered_voices_actual);
     }
   }
-  SUBCASE ("Portamento") {
+  SECTION ("Portamento") {
     prod.state().play_mode = PlayMode::mono;
     prod.commit();
 
     gam::sampleRate(100);
     float target_freq = midi::note_freq(62);
 
-    SUBCASE ("Portamento = 0") {
+    SECTION ("Portamento = 0") {
       prod.state().portamento = 0.f;
       prod.commit();
 
@@ -357,7 +357,7 @@ TEST_CASE ("Voices") {
       REQUIRE(v.frequency() == test::approx(target_freq).margin(0.01));
     }
 
-    SUBCASE ("Portamento = 1") {
+    SECTION ("Portamento = 1") {
       int expected_n = 100;
 
       prod.state().portamento = 1.f;
@@ -389,7 +389,7 @@ TEST_CASE ("Voices") {
     /// engaged for glide (jump the portamento step)
     /// and normal legato (on_note_on and on_note_off is not called).
 
-    SUBCASE("Voice receives all envelope and voice settings actions")
+    SECTION("Voice receives all envelope and voice settings actions")
     {
       struct Voice : VoiceBase<Voice> {
         float attack = 0;
@@ -482,12 +482,12 @@ TEST_CASE ("Voices") {
       for (auto& v : voices.voices()) REQUIRE(v.portamento == 0.5);
     }
 
-    SUBCASE("call operators and process calls")
+    SECTION("call operators and process calls")
     {
       auto app = services::test::make_dummy_application();
 
       using namespace core::audio;
-      SUBCASE("when voice has an operator(), voice and voices gets process() and operator()")
+      SECTION("when voice has an operator(), voice and voices gets process() and operator()")
       {
         struct SVoice : voices::VoiceBase<SVoice> {
           float operator()() noexcept
@@ -512,7 +512,7 @@ TEST_CASE ("Voices") {
         REQUIRE(std::ranges::all_of(res2.audio, util::does_equal(4 * voices.normal_volume)));
       }
 
-      SUBCASE("when voice has a process(), voices only has process()")
+      SECTION("when voice has a process(), voices only has process()")
       {
         struct SVoice : voices::VoiceBase<SVoice> {
           ProcessData<1> process(ProcessData<0> data) noexcept

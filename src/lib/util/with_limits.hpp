@@ -3,8 +3,6 @@
 #include "lib/util/concepts.hpp"
 #include "math.hpp"
 
-#include "testing.t.hpp"
-
 namespace otto::util {
 
   /// A numeric type with static limits

@@ -4,9 +4,19 @@
 #include <filesystem>
 #include <iostream>
 
+#include <catch2/catch_session.hpp>
+#include <catch2/internal/catch_compiler_capabilities.hpp>
+#include <catch2/internal/catch_leak_detector.hpp>
+#include <catch2/internal/catch_platform.hpp>
+
 #include "lib/logging.hpp"
 
-// namespace fs = std::filesystem;
+namespace Catch {
+  CATCH_INTERNAL_START_WARNINGS_SUPPRESSION
+  CATCH_INTERNAL_SUPPRESS_GLOBALS_WARNINGS
+  LeakDetector leakDetector;
+  CATCH_INTERNAL_STOP_WARNINGS_SUPPRESSION
+} // namespace Catch
 
 int main(int argc, char* argv[])
 {
@@ -15,13 +25,9 @@ int main(int argc, char* argv[])
   // fs::create_directories(test::dir);
   logging::init();
 
-  doctest::Context context;
-
-  context.applyCommandLine(argc, argv);
-
-  int result = context.run();
+  auto result = Catch::Session().run(argc, argv);
 
   // fs::remove_all(test::dir);
 
-  return (result < 0xff ? result : 0xff);
+  return result;
 }

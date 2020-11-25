@@ -74,7 +74,7 @@ namespace otto::engines {
 
 }; // namespace otto::engines
 
-TEST_CASE (test::interactive() * "simple_engine") {
+TEST_CASE ("simple_engine", "[.interactive]") {
   using namespace services;
   auto app = start_app(core::make_handle<ConfigManager>(), //
                        LogicThread::make(),                //
