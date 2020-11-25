@@ -1,5 +1,8 @@
 #pragma once
 
+// include before catch, because loguru undefines INFO
+#include "lib/logging.hpp"
+
 #define CATCH_CONFIG_ENABLE_ALL_STRINGMAKERS
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>

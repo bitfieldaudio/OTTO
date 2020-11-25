@@ -16,10 +16,17 @@ Checks: >-
   -readability-function-cognitive-complexity,
   -readability-static-accessed-through-instance,
   -readability-uppercase-literal-suffix,
+  -readability-named-parameter,
   -misc-non-private-member-variables-in-classes,
+  -cppcoreguidelines-pro-bounds-constant-array-index,
+  -misc-unused-parameters,
 CheckOptions:
   - key: readability-braces-around-statements.ShortStatementLines
     value: 1
+  - key: cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor
+    value: true
+  - key: cppcoreguidelines-special-member-functions.AllowMissingMoveFunctionsWhenCopyIsDeleted
+    value: true
 WarningsAsErrors:  ''
 HeaderFilterRegex: ''
 FormatStyle:     none

@@ -9,6 +9,7 @@
 #include "lib/util/variant_w_base.hpp"
 #include "lib/util/with_limits.hpp"
 
+#include "app/services/audio.hpp"
 #include "lib/voices/voice_state.hpp"
 
 namespace otto::voices {
@@ -17,9 +18,9 @@ namespace otto::voices {
   struct VoiceAllocatorBase {
     // Voice volumes are set in individual constructors
     VoiceAllocatorBase(Voices<Voice, N>&) noexcept;
-    ~VoiceAllocatorBase() noexcept;
+    ~VoiceAllocatorBase() noexcept = default;
 
-    virtual PlayMode play_mode() const noexcept = 0;
+    [[nodiscard]] virtual PlayMode play_mode() const noexcept = 0;
 
     virtual void on_state_change(const VoicesState&) noexcept {}
     virtual void handle(const midi::NoteOn&) noexcept = 0;
@@ -38,28 +39,27 @@ namespace otto::voices {
 
   template<typename Voice>
   struct VoiceBase : midi::MidiHandler {
-    VoiceBase()
+    VoiceBase() : glide_(frequency())
     {
-      glide_ = frequency();
       glide_.finish();
     }
 
-    bool is_triggered() const noexcept
+    [[nodiscard]] bool is_triggered() const noexcept
     {
       return triggered_;
     }
 
-    std::uint8_t midi_note() const noexcept
+    [[nodiscard]] std::uint8_t midi_note() const noexcept
     {
       return midi_note_;
     }
 
-    float frequency() const noexcept
+    [[nodiscard]] float frequency() const noexcept
     {
       return frequency_;
     }
 
-    float volume() const noexcept
+    [[nodiscard]] float volume() const noexcept
     {
       return volume_;
     }
@@ -140,10 +140,10 @@ namespace otto::voices {
       0.f,    0.09f,   -0.06f, 0.05f, -0.03f, -0.08f, 0.01f, -0.09f,
     };
 
-    VoiceAllocator(Voices<Voice, N>& vm_in);
+    VoiceAllocator(Voices<Voice, N>& owner);
     void handle(const midi::NoteOn&) noexcept final;
 
-    PlayMode play_mode() const noexcept final
+    [[nodiscard]] PlayMode play_mode() const noexcept final
     {
       return PlayMode::poly;
     }
@@ -160,10 +160,10 @@ namespace otto::voices {
 
   template<AVoice Voice, int N>
   struct VoiceAllocator<PlayMode::interval, Voice, N> final : VoiceAllocatorBase<Voice, N> {
-    VoiceAllocator(Voices<Voice, N>& vm_in);
+    VoiceAllocator(Voices<Voice, N>& voices);
     void handle(const midi::NoteOn&) noexcept final;
 
-    PlayMode play_mode() const noexcept final
+    [[nodiscard]] PlayMode play_mode() const noexcept final
     {
       return PlayMode::interval;
     }
@@ -177,7 +177,7 @@ namespace otto::voices {
     VoiceAllocator(Voices<Voice, N>& vm_in);
     void handle(const midi::NoteOn&) noexcept final;
     void on_state_change(const VoicesState&) noexcept final;
-    PlayMode play_mode() const noexcept final
+    [[nodiscard]] PlayMode play_mode() const noexcept final
     {
       return PlayMode::mono;
     }
@@ -191,7 +191,7 @@ namespace otto::voices {
 
     void handle(const midi::NoteOn&) noexcept final;
     void set_detune(float detune) noexcept;
-    PlayMode play_mode() const noexcept final
+    [[nodiscard]] PlayMode play_mode() const noexcept final
     {
       return PlayMode::unison;
     }
@@ -218,7 +218,7 @@ namespace otto::voices {
     /// When using a sustain pedal, this will be set to false on note off
     bool should_release = false;
 
-    bool has_voice() const noexcept
+    [[nodiscard]] bool has_voice() const noexcept
     {
       return voice != nullptr;
     }
@@ -230,15 +230,21 @@ namespace otto::voices {
     /// Voice range is approximately -1 to 1. This ensures the synth range is
     /// approximately the same.
     static constexpr float normal_volume = 1.f / float(voice_count_v);
+
     template<typename... Args>
     requires std::is_constructible_v<Voice, Args...> //
-    Voices(itc::ChannelGroup& c, itc::IExecutor& e, Args&&... args) : itc::Consumer<VoicesState>(c, e)
+    Voices(itc::ChannelGroup& c, itc::IExecutor& ex, Args&&... args) : Consumer(c, ex)
     {
       for (std::size_t i = 0; i < N; i++) {
         voices_.emplace_back(args...);
       }
       std::ranges::transform(voices_, std::back_inserter(free_voices_), [](Voice& v) { return &v; });
     }
+
+    template<typename... Args>
+    requires std::is_constructible_v<Voice, Args...> //
+    Voices(itc::ChannelGroup& c, Args&&... args) : Voices(c, audio->executor(), FWD(args)...)
+    {}
 
     void on_state_change(const VoicesState& state) noexcept override
     {
@@ -314,7 +320,7 @@ namespace otto::voices {
       return voices_[i];
     }
 
-    PlayMode play_mode() const noexcept
+    [[nodiscard]] PlayMode play_mode() const noexcept
     {
       return state().play_mode;
     }
@@ -325,6 +331,8 @@ namespace otto::voices {
     friend struct VoiceAllocatorBase;
     template<PlayMode PM, AVoice V, int M>
     friend struct VoiceAllocator;
+
+    [[no_unique_address]] core::ServiceAccessor<services::Audio> audio;
 
     /// The actual voices
     util::local_vector<Voice, N> voices_;
@@ -350,10 +358,6 @@ namespace otto::voices {
   // INTERFACE //
   template<AVoice Voice, int N>
   VoiceAllocatorBase<Voice, N>::VoiceAllocatorBase(Voices<Voice, N>& owner) noexcept : voices(owner)
-  {}
-
-  template<AVoice Voice, int N>
-  VoiceAllocatorBase<Voice, N>::~VoiceAllocatorBase() noexcept
   {}
 
   template<AVoice Voice, int N>
@@ -389,20 +393,18 @@ namespace otto::voices {
       auto& v = **fvit;
       voices.free_voices_.erase(fvit);
       return v;
-    } else {
-      // Steal oldest playing note
-      auto found = std::ranges::find_if(voices.note_stack_, [](NoteStackEntry<Voice>& nse) { return nse.has_voice(); });
-      if (found != voices.note_stack_.end()) {
-        // DLOGI("Stealing voice {} from key {}", (found->voice - voices.voices_.data()), found->note);
-        Voice& v = *found->voice;
-        v.release();
-        found->voice = nullptr;
-        return v;
-      } else {
-        // DLOGI("No voice found. Using voice 0");
-        return voices.voices_[0];
-      }
     }
+    // Steal oldest playing note
+    auto found = std::ranges::find_if(voices.note_stack_, [](NoteStackEntry<Voice>& nse) { return nse.has_voice(); });
+    if (found != voices.note_stack_.end()) {
+      // DLOGI("Stealing voice {} from key {}", (found->voice - voices.voices_.data()), found->note);
+      Voice& v = *found->voice;
+      v.release();
+      found->voice = nullptr;
+      return v;
+    }
+    // DLOGI("No voice found. Using voice 0");
+    return voices.voices_[0];
   }
 
   template<AVoice Voice, int N>
@@ -516,7 +518,7 @@ namespace otto::voices {
     /// If there is already a note playing that we must steal
     if (voices.note_stack_.size() > 0) {
       for (int i = 0; i < num_voices_used; ++i) {
-        int sv = i > 0; // Are we dispatching a subvoice?
+        int sv = static_cast<int>(i > 0); // Are we dispatching a subvoice?
         // Find the correct voice to steal
         // Every iteration in the loop, a new entry is added to the notestack.
         auto& note = *(voices.note_stack_.end() - num_voices_used);
@@ -531,7 +533,7 @@ namespace otto::voices {
       }
     } else {
       for (int i = 0; i < num_voices_used; ++i) {
-        int sv = i > 0; // Are we dispatching a subvoice?
+        int sv = static_cast<int>(i > 0); // Are we dispatching a subvoice?
         auto fvit = voices.free_voices_.begin() + i;
         auto& v = **fvit;
         auto res = voices.note_stack_.push_back(
@@ -560,8 +562,8 @@ namespace otto::voices {
     detune_values.clear();
     detune_values.push_back(1);
     for (int i = 1; i < 3; i++) {
-      detune_values.push_back(1 + detune * 0.015f * i);
-      detune_values.push_back(1.f / (1.f + detune * 0.015f * (float) i));
+      detune_values.push_back(1 + detune * 0.015f * static_cast<float>(i));
+      detune_values.push_back(1.f / (1.f + detune * 0.015f * static_cast<float>(i)));
     }
     for (auto&& [v, d] : util::zip(voices.voices(), detune_values)) v.glide_ = midi::note_freq(v.midi_note_) * d;
   }

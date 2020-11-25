@@ -1,7 +1,8 @@
 #pragma once
 
+#include <bit>
 #include <initializer_list>
-#include <new>
+#include <memory>
 #include <span>
 #include <tl/expected.hpp>
 
@@ -25,7 +26,7 @@ namespace otto::util {
 
     using exception = util::as_exception<error>;
 
-    constexpr local_vector() : _data(), _size(0) {}
+    constexpr local_vector() : _data() {}
 
     constexpr local_vector(std::initializer_list<value_type> il)
     {
@@ -40,6 +41,11 @@ namespace otto::util {
       clear();
     }
 
+    constexpr local_vector(const local_vector&) = default;
+    constexpr local_vector& operator=(const local_vector&) = default;
+    constexpr local_vector(local_vector&&) noexcept = default;
+    constexpr local_vector& operator=(local_vector&&) noexcept = default;
+
     // Queries
 
     static constexpr std::size_t capacity() noexcept
@@ -47,17 +53,17 @@ namespace otto::util {
       return Capacity;
     }
 
-    constexpr std::size_t size() const noexcept
+    [[nodiscard]] constexpr std::size_t size() const noexcept
     {
       return _size;
     }
 
-    constexpr bool empty() const noexcept
+    [[nodiscard]] constexpr bool empty() const noexcept
     {
       return size() == 0;
     }
 
-    constexpr bool full() const noexcept
+    [[nodiscard]] constexpr bool full() const noexcept
     {
       return size() == capacity();
     }
@@ -138,6 +144,7 @@ namespace otto::util {
     {
       // Launder is a pointer optimization barrier. It's necessary to make the
       // reinterpret_cast legal in this case
+      // NOLINTNEXTLINE
       return std::launder(reinterpret_cast<value_type*>(&_data));
     }
 
@@ -145,6 +152,7 @@ namespace otto::util {
     {
       // Launder is a pointer optimization barrier. It's necessary to make the
       // reinterpret_cast legal in this case
+      // NOLINTNEXTLINE
       return std::launder(reinterpret_cast<const value_type*>(&_data));
     }
 
@@ -164,7 +172,7 @@ namespace otto::util {
     constexpr tl::expected<value_type*, error> emplace_back(Args&&... args) noexcept
     {
       if (full()) return tl::unexpected(error::full);
-      new (data() + _size) T(std::forward<Args>(args)...);
+      std::construct_at<T>(data() + _size, std::forward<Args>(args)...);
       _size++;
       return &back();
     }
@@ -173,7 +181,7 @@ namespace otto::util {
     constexpr tl::expected<iterator, error> insert_before(iterator iter, const value_type& value) noexcept
     {
       return push_back(value).map([&](auto&&) {
-        // Move the element back until its placed at the correct location
+        // Move the element back until ts placed at the correct location
         for (auto i = end() - 1; i != iter; --i) {
           std::swap(*(i), *(i - 1));
         }
@@ -268,17 +276,17 @@ namespace otto::util {
       return super::capacity();
     }
 
-    constexpr std::size_t size() const noexcept
+    [[nodiscard]] constexpr std::size_t size() const noexcept
     {
       return super::size();
     }
 
-    constexpr bool empty() const noexcept
+    [[nodiscard]] constexpr bool empty() const noexcept
     {
       return super::empty();
     }
 
-    constexpr bool full() const noexcept
+    [[nodiscard]] constexpr bool full() const noexcept
     {
       return super::full();
     }

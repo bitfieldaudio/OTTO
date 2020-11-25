@@ -113,27 +113,6 @@ struct ADSR : otto::graphics::Widget<ADSR> {
 
 ////////////////
 
-/// For defining frequency ratios
-struct Fraction {
-  int numerator;
-  int denominator;
-
-  constexpr Fraction(int n = 1, int d = 1) : numerator(n), denominator(d) {}
-
-  operator float() const
-  {
-    return float(numerator) / float(denominator);
-  }
-
-  std::string to_string() const
-  {
-    if (numerator == 0)
-      return fmt::format("0");
-    else
-      return fmt::format("{}/{}", numerator, denominator);
-  }
-};
-
 /// Used for graphics. Defined here for the Algorithm definitions below.
 enum struct Drawside {
   left,
@@ -164,6 +143,26 @@ struct Algorithm {
 
 constexpr std::array<SkColor, 4> operator_colours = {Colours::Red, Colours::Yellow, Colours::Green, Colours::Blue};
 
+/// For defining frequency ratios
+struct Fraction {
+  int numerator;
+  int denominator;
+
+  constexpr Fraction(int n = 1, int d = 1) noexcept : numerator(n), denominator(d) {}
+
+  operator float() const
+  {
+    return float(numerator) / float(denominator);
+  }
+
+  [[nodiscard]] std::string to_string() const
+  {
+    if (numerator == 0) {
+      return fmt::format("0");
+    }
+    return fmt::format("{}/{}", numerator, denominator);
+  }
+};
 const std::array<Fraction, 20> fractions = {{
   {1, 1}, {1, 64}, {1, 32}, {3, 32}, {1, 8}, {5, 16}, {1, 2}, {5, 8},  {2, 1}, {3, 2},
   {3, 4}, {1, 4},  {5, 32}, {1, 16}, {5, 8}, {4, 1},  {7, 4}, {7, 16}, {7, 2}, {0, 1},

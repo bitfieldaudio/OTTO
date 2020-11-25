@@ -24,8 +24,8 @@ namespace otto::services {
 
     virtual void set_callback(Callback&&) = 0;
     virtual void start() = 0;
-    virtual std::size_t buffer_size() const = 0;
-    virtual std::size_t sample_rate() const = 0;
+    [[nodiscard]] virtual std::size_t buffer_size() const = 0;
+    [[nodiscard]] virtual std::size_t sample_rate() const = 0;
 
     static std::unique_ptr<AudioDriver> make_default();
   };
@@ -33,8 +33,7 @@ namespace otto::services {
   struct Audio final : core::Service<Audio>, itc::ExecutorProvider {
     using CallbackData = AudioDriver::CallbackData;
     using Callback = AudioDriver::Callback;
-    /// A {@ref itc::Consumer} with the executor hardcoded to `Audio::executor()`
-    template<itc::AState State>
+    template<itc::AState... States>
     struct Consumer;
 
     Audio(util::any_ptr<AudioDriver>::factory&& d = AudioDriver::make_default);
@@ -60,9 +59,13 @@ namespace otto::services {
   };
 
 
-  template<itc::AState State>
-  struct Audio::Consumer : itc::Consumer<State> {
-    Consumer(itc::Channel<State>& c) : itc::Consumer<State>(c, audio->executor()) {}
+  /// A {@ref itc::Consumer} with the executor hardcoded to `Audio::executor()`
+  template<itc::AState... States>
+  struct Audio::Consumer : itc::Consumer<States...> {
+    Consumer(itc::ChannelGroup& c) : itc::Consumer<States>(c, audio->executor())... {}
+
+    using itc::Consumer<States>::state...;
+    using itc::Consumer<States>::channel...;
 
   private:
     [[no_unique_address]] core::ServiceAccessor<Audio> audio;

@@ -18,6 +18,9 @@ namespace otto::itc {
 
     Consumer(ChannelGroup& channels, IExecutor& executor) : Consumer(channels.get<State>(), executor) {}
 
+    Consumer(const Consumer&) = delete;
+    Consumer& operator=(const Consumer&) = delete;
+
     virtual ~Consumer() noexcept
     {
       if (channel_) std::erase(channel_->consumers_, this);
@@ -50,7 +53,7 @@ namespace otto::itc {
     /// The parameter is the same as `this->state()`
     ///
     /// Override in subclass if needed
-    virtual void on_state_change(const State&) noexcept {}
+    virtual void on_state_change(const State& state) noexcept {}
 
   private:
     friend Channel<State>;
