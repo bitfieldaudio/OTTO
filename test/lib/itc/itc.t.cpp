@@ -150,33 +150,8 @@ TEST_CASE ("prod/cons/chan of multiple states", "[itc]") {
     bool operator==(const S3&) const = default;
   };
 
-  using Ch12 = Channel<S1, S2>;
-  using C12 = Consumer<S1, S2>;
-  using P12 = Producer<S1, S2>;
-
-  static_assert(std::is_base_of_v<Channel<S1>, Ch12>);
-  static_assert(std::is_base_of_v<Channel<S2>, Ch12>);
-  static_assert(std::is_base_of_v<Consumer<S1>, C12>);
-  static_assert(std::is_base_of_v<Consumer<S2>, C12>);
-  static_assert(std::is_base_of_v<Producer<S1>, P12>);
-  static_assert(std::is_base_of_v<Producer<S2>, P12>);
-
-  //  using Ch123 = Channel<S1, meta::list<S2, S3>>;
-  //  using C123 = Consumer<S1, meta::list<S2, S3>>;
-  //  using P123 = Producer<S1, meta::list<S2, S3>>;
-  //
-  //  static_assert(std::is_base_of_v<Channel<S1>, Ch123>);
-  //  static_assert(std::is_base_of_v<Channel<S2>, Ch123>);
-  //  static_assert(std::is_base_of_v<Channel<S3>, Ch123>);
-  //  static_assert(std::is_base_of_v<Consumer<S1>, C123>);
-  //  static_assert(std::is_base_of_v<Consumer<S2>, C123>);
-  //  static_assert(std::is_base_of_v<Consumer<S3>, C123>);
-  //  static_assert(std::is_base_of_v<Producer<S1>, P123>);
-  //  static_assert(std::is_base_of_v<Producer<S2>, P123>);
-  //  static_assert(std::is_base_of_v<Producer<S3>, P123>);
-
   ImmediateExecutor ex;
-  Ch12 ch;
+  ChannelGroup channels;
 
   struct C1 : Consumer<S1, S2> {
     // Inherit the constructor
@@ -204,7 +179,7 @@ TEST_CASE ("prod/cons/chan of multiple states", "[itc]") {
 
     int new_state1_called = 0;
     int new_state2_called = 0;
-  } c1 = {ch, ex};
+  } c1 = {channels, ex};
 
   SECTION ("Access default state in Consumer") {
     c1.check_i1(1);
@@ -222,7 +197,7 @@ TEST_CASE ("prod/cons/chan of multiple states", "[itc]") {
       state<S2>().i2 = i;
       commit<S2>();
     }
-  } p1 = {ch};
+  } p1 = {channels};
 
   SECTION ("Publish new state from producer") {
     p1.test_produce1(10);

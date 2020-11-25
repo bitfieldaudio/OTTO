@@ -16,6 +16,8 @@ namespace otto::itc {
       ch.internal_add_consumer(this);
     }
 
+    Consumer(ChannelGroup& channels, IExecutor& executor) : Consumer(channels.get<State>(), executor) {}
+
     virtual ~Consumer() noexcept
     {
       if (channel_) std::erase(channel_->consumers_, this);
@@ -79,9 +81,7 @@ namespace otto::itc {
 
   template<AState... States>
   struct Consumer : Consumer<States>... {
-    template<AChannelFor<States...> Ch>
-    Consumer(Ch& channel, IExecutor& ex) : Consumer<States>(channel, ex)...
-    {}
+    Consumer(ChannelGroup& channels, IExecutor& ex) : Consumer<States>(channels, ex)... {}
 
     template<util::one_of<States...> S>
     const S& state() const noexcept

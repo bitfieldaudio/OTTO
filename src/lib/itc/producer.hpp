@@ -12,6 +12,8 @@ namespace otto::itc {
       ch.set_producer(this);
     }
 
+    Producer(ChannelGroup& channels) : Producer(channels.get<State>()) {}
+
     ~Producer() noexcept
     {
       for (auto* ch : channels_) {
@@ -90,9 +92,7 @@ namespace otto::itc {
 
   template<AState... States>
   struct Producer : Producer<States>... {
-    template<AChannelFor<States...> Ch>
-    Producer(Ch& channel) : Producer<States>(channel)...
-    {}
+    Producer(ChannelGroup& channels) : Producer<States>(channels)... {}
 
     /// Access the stored state of the given type
     template<util::one_of<States...> S>

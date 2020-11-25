@@ -12,7 +12,7 @@ using namespace otto;
 namespace otto::engines::ottofm {
 
   struct Logic final : itc::Producer<State> {
-    Logic(itc::Channel<State>& c) : itc::Producer<State>(c) {}
+    using Producer::Producer;
   };
 
   struct Handler final : InputReducer<State> {

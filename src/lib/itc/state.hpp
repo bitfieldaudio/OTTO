@@ -11,7 +11,7 @@ namespace otto::itc {
   // Forward Declarations
 
   /// A Channel through which a single Producer can send state to multiple consumers
-  template<AState... States>
+  template<AState State>
   struct Channel;
 
   /// Sends state to multiple Consumers through a Channel

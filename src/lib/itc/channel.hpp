@@ -1,5 +1,8 @@
 #pragma once
 
+#include <boost/container/flat_map.hpp>
+#include <memory>
+#include <typeindex>
 #include <vector>
 
 #include "lib/util/concepts.hpp"
@@ -8,12 +11,12 @@
 
 namespace otto::itc {
 
-  /// Any type convertible to all of Channel<States>&...
-  template<typename T, typename... States>
-  concept AChannelFor = (AState<States> && ...) && (std::is_convertible_v<T&, Channel<States>&> && ...);
+  struct ChannelBase {
+    virtual ~ChannelBase() = default;
+  };
 
   template<AState State>
-  struct Channel<State> {
+  struct Channel : ChannelBase {
     Channel() noexcept {}
     Channel(const Channel&) = delete;
     ~Channel() noexcept
@@ -69,7 +72,35 @@ namespace otto::itc {
     Producer<State>* producer_ = nullptr;
   };
 
-  template<AState... States>
-  struct Channel : Channel<States>... {};
+  /// A (nested) group of channels, where channels for any state type can be created and accessed
+  struct ChannelGroup {
+    /// Creates or finds the channel of the given type
+    template<AState State>
+    Channel<State>& get()
+    {
+      auto found = channels_.find(typeid(State));
+      if (found == channels_.end()) {
+        auto [iter, inserted] = channels_.emplace(typeid(State), std::make_unique<Channel<State>>());
+        found = iter;
+      }
+      // Should this be a dynamic cast?
+      return static_cast<Channel<State>&>(*found->second);
+    }
+
+    /// Access or create a nested channel group by name
+    ChannelGroup& operator[](std::string_view sv)
+    {
+      auto found = nested_.find(sv);
+      if (found == nested_.end()) {
+        auto [iter, inserted] = nested_.emplace(sv, std::make_unique<ChannelGroup>());
+        found = iter;
+      }
+      return *found->second;
+    }
+
+  private:
+    boost::container::flat_map<std::string, std::unique_ptr<ChannelGroup>> nested_;
+    boost::container::flat_map<std::type_index, std::unique_ptr<ChannelBase>> channels_;
+  };
 
 } // namespace otto::itc

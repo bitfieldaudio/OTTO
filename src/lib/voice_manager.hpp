@@ -232,7 +232,7 @@ namespace otto::voices {
     static constexpr float normal_volume = 1.f / float(voice_count_v);
     template<typename... Args>
     requires std::is_constructible_v<Voice, Args...> //
-    Voices(itc::Channel<VoicesState>& c, itc::IExecutor& e, Args&&... args) : itc::Consumer<VoicesState>(c, e)
+    Voices(itc::ChannelGroup& c, itc::IExecutor& e, Args&&... args) : itc::Consumer<VoicesState>(c, e)
     {
       for (std::size_t i = 0; i < N; i++) {
         voices_.emplace_back(args...);
