@@ -1,0 +1,26 @@
+---
+Checks: >-
+  *,
+  -fuchsia-*,
+  -google-*,
+  -zircon-*,
+  -abseil-*,
+  -altera-*,
+  -android-*,
+  -modernize-use-trailing-return-type,
+  -llvm*,
+  -hicpp-*,
+  -readability-uppercase-literal-suffix,
+  -readability-magic-numbers,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -readability-function-cognitive-complexity,
+  -readability-static-accessed-through-instance,
+  -readability-uppercase-literal-suffix,
+  -misc-non-private-member-variables-in-classes,
+CheckOptions:
+  - key: readability-braces-around-statements.ShortStatementLines
+    value: 1
+WarningsAsErrors:  ''
+HeaderFilterRegex: ''
+FormatStyle:     none
+# vim: filetype=yaml

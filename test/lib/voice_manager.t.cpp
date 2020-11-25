@@ -11,12 +11,14 @@ using namespace otto::voices;
 
 TEST_CASE ("Voices") {
   struct Voice : VoiceBase<Voice> {
-    Voice(int i) : i(i) {}
+    Voice(int i) // NOLINT
+      : i(i)
+    {}
     int i = 0;
   };
 
   itc::ImmediateExecutor ex;
-  itc::Channel<VoicesState> chan;
+  itc::ChannelGroup chan;
   itc::Producer<VoicesState> prod = chan;
 
   Voices<Voice, 6> voices = {chan, ex, 42};
@@ -124,7 +126,7 @@ TEST_CASE ("Voices") {
     SECTION ("Poly mode cycles voices") {
       std::set<Voice*> used_voices;
 
-      for (std::uint8_t i = 0; i < voices.size(); i++) {
+      for (std::uint8_t i = 0; i < std::uint8_t(voices.size()); i++) {
         voices.handle(midi::NoteOn{i});
         used_voices.insert(
           &*std::ranges::find_if(voices, [i = i](Voice& v) { return v.is_triggered() && v.midi_note() == (int) i; }));
@@ -151,7 +153,7 @@ TEST_CASE ("Voices") {
     }
 
     SECTION ("Keys held over the maximum limit are ignored") {
-      for (std::uint8_t i = 1; i <= 12 * voices.voice_count_v + 1; i++) {
+      for (std::uint8_t i = 1; i <= std::uint8_t(12 * voices.voice_count_v) + 1; i++) {
         voices.handle(midi::NoteOn{i});
       }
       // TODO: REQUIRE_THAT(test::sort(triggered_voices() | transform(MEMBER_CALLER(midi_note))),

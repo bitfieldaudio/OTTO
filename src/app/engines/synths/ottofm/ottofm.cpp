@@ -37,21 +37,21 @@ namespace otto::engines::ottofm {
         } break;
         case Encoder::green: {
           if (!shift) {
-            state.operators[state.cur_op_idx].ratio_idx += e.steps;
+            state.current_op().ratio_idx += e.steps;
           } else {
-            state.operators[state.cur_op_idx].detune += e.steps * 0.01;
+            state.current_op().detune += e.steps * 0.01;
           }
         } break;
         case Encoder::yellow: {
           if (!shift) {
-            state.operators[state.cur_op_idx].level += e.steps * 0.01;
+            state.current_op().level += e.steps * 0.01;
           } else {
             for (auto& op : state.operators) op.level += e.steps * 0.01;
           }
         } break;
         case Encoder::red: {
           if (!shift) {
-            state.operators[state.cur_op_idx].feedback += e.steps * 0.01;
+            state.current_op().feedback += e.steps * 0.01;
           } else {
             for (auto& op : state.operators) op.feedback += e.steps * 0.01;
           }

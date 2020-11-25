@@ -78,7 +78,7 @@ namespace otto::itc {
     template<AState State>
     Channel<State>& get()
     {
-      auto found = channels_.find(typeid(State));
+      auto found = channels_.find(std::type_index(typeid(State)));
       if (found == channels_.end()) {
         auto [iter, inserted] = channels_.emplace(typeid(State), std::make_unique<Channel<State>>());
         found = iter;
@@ -90,7 +90,9 @@ namespace otto::itc {
     /// Access or create a nested channel group by name
     ChannelGroup& operator[](std::string_view sv)
     {
-      auto found = nested_.find(sv);
+      // Apparently transparent keys don't work in gcc for string_view/string
+      // TODO: Look into that ^
+      auto found = nested_.find(std::string(sv));
       if (found == nested_.end()) {
         auto [iter, inserted] = nested_.emplace(sv, std::make_unique<ChannelGroup>());
         found = iter;

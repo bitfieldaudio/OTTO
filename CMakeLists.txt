@@ -85,7 +85,7 @@ endif()
 
 # Enable warnings for local code
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
-  set(OTTO_CXX_FLAGS "-Wall -Wno-long-long -Wpedantic \
+  set(OTTO_CXX_FLAGS "-Wall -Wno-long-long \
 -Wno-c++14-compat -Wno-psabi \
 -Wno-unknown-pragmas \
 -Wno-vla \
@@ -93,7 +93,7 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
 -Wno-error=pedantic \
 ")
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  set(OTTO_CXX_FLAGS "-Wall -Wno-long-long -Wpedantic \
+  set(OTTO_CXX_FLAGS "-Wall -Wno-long-long \
 -Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wno-c++17-compat -Wc++20-compat \
 -Wno-shadow-field-in-constructor \
 -Wno-documentation-unknown-command \
