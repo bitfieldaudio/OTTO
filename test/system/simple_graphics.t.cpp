@@ -450,15 +450,9 @@ struct DetuneGraphic : otto::graphics::Widget<DetuneGraphic> {
     SkRect rect = SkRect();
     SkFont font = SkFont(nullptr, 20);
     SkScalar wid = font.measureText("3", 1, SkTextEncoding(), &rect, &paint);
-<<<<<<< HEAD
-    ctx.drawTextBlob(val.get(), 0, rect.height(), paint);
-    paint.setColor(SkColorSetRGB(22 * expansion, 184 * expansion, 254 * expansion));
-    // paint.setColor(mix(Colours::Black, paint.getColor(), expansion));
-=======
     ctx.drawTextBlob(val.get(), 0, rect.height() + expansion * (0.6f * 0.5f * bounding_box.height() - rect.height() / 2.f), paint);
     paint.setColor(SkColorSetRGB(22*expansion, 184*expansion, 254*expansion));
     //paint.setColor(mix(Colours::Black, paint.getColor(), expansion));
->>>>>>> FM graphics
     ctx.drawTextBlob(dtune.get(), 0, bounding_box.height(), paint);
   }
 };
@@ -541,20 +535,10 @@ struct WaveShapeGraphic : otto::graphics::Widget<WaveShapeGraphic> {
     }
   }
 
-<<<<<<< HEAD
-  void do_draw(SkCanvas& ctx)
-  {
-    // Anchor is MiddleLeft
-    otto::graphics::Point diff =
-      bounding_box.get_diff(otto::graphics::Anchors::TopLeft, otto::graphics::Anchors::MiddleLeft);
-    ctx.save();
-    ctx.translate(diff[0], diff[1]);
-=======
   void do_draw(SkCanvas& ctx) {
     //otto::graphics::Point diff = bounding_box.get_diff(otto::graphics::Anchors::TopLeft, otto::graphics::Anchors::MiddleLeft);
     //ctx.save();
     //ctx.translate(diff[0], diff[1]);
->>>>>>> FM graphics
 
     float step = bounding_box.width() / sinewave.size();
     float scale = 0.5f * (bounding_box.height() * 0.5f * (1 - expansion) + bounding_box.height() * 0.6f * expansion);
@@ -565,13 +549,8 @@ struct WaveShapeGraphic : otto::graphics::Widget<WaveShapeGraphic> {
     path.moveTo(0, scale);
     float x = 0;
     int i = 0;
-<<<<<<< HEAD
-    for (auto& s : sinewave) {
-      path.lineTo(x, scale * (s + l_value * left_harmonics[i] + r_value * right_harmonics[i]));
-=======
     for (auto& s : sinewave){
       path.lineTo(x,  scale * (1+ s + l_value * left_harmonics[i] + r_value * right_harmonics[i]));
->>>>>>> FM graphics
       x += step;
       i++;
     }
@@ -592,9 +571,6 @@ struct WaveShapeGraphic : otto::graphics::Widget<WaveShapeGraphic> {
   }
 };
 
-<<<<<<< HEAD
-TEST_CASE ("Non-trivial graphics test", "[.interactive]") {
-=======
 // For converting number to letter
 char alphabet[] = "ABCDEFGHIJKLMNOPQRSTYVWXYZ";
 char* nth_letter(const int n)
@@ -605,7 +581,6 @@ char* nth_letter(const int n)
 
 
 TEST_CASE ("Non-trivial graphics test") {
->>>>>>> FM graphics
   namespace ch = choreograph;
   ch::Timeline timeline;
   ch::Output<float> expansion = 1.0f;
@@ -621,9 +596,6 @@ TEST_CASE ("Non-trivial graphics test") {
 
 
   auto app = start_app(ConfigManager::make(), Graphics::make());
-<<<<<<< HEAD
-  SECTION ("FM stub") {
-=======
   SUBCASE ("FM stub") {
 
     Operators ops(3, 2, {0.f, 0.f, 0.5f, 0.0f});
@@ -637,31 +609,17 @@ TEST_CASE ("Non-trivial graphics test") {
     LevelGraphic lev(0.1, 1.0f, true);
     lev.bounding_box.resize({40, 40});
 
->>>>>>> FM graphics
     WaveShapeGraphic ws(0.0f, 1.0f, true);
     ws.bounding_box.resize({40, 40});
 
     app.service<Graphics>().show([&](SkCanvas& ctx) {
-<<<<<<< HEAD
-      Operators ops(3, 2, {0.f, 0.f, 0.5f, 0.0f});
-      ops.bounding_box.move_to({10, 30});
-      ops.bounding_box.resize({50, 180});
-      ops.draw(ctx);
-      // draw_envelopes(ctx);
-=======
      
       ops.bounding_box.move_to({10, 30});
       ops.bounding_box.resize({50, 180});
       ops.draw(ctx);
->>>>>>> FM graphics
 
       constexpr float y_pad = 30.f;
 
-<<<<<<< HEAD
-
-
-      timeline.step(1.0 / 60.0);
-=======
       int alg_idx = 3;
 
       // Draw algorithm text
@@ -728,7 +686,6 @@ TEST_CASE ("Non-trivial graphics test") {
       //draw_envelopes(ctx);
      
       timeline.step( 1.0 / 60.0 );
->>>>>>> FM graphics
     });
     std::this_thread::sleep_for(std::chrono::seconds(20));
     app.stop();
