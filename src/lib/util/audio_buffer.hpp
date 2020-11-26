@@ -21,23 +21,24 @@ namespace otto::util {
     explicit audio_buffer(std::span<float> d, std::int8_t* ref_count) noexcept;
 
     audio_buffer(const audio_buffer& rhs) noexcept = delete;
-    audio_buffer(audio_buffer&& rhs) noexcept;
-
-    ~audio_buffer() noexcept;
-
     /// Copy assignment. NOTE: Deep, i.e., Modifies the values in the buffer
     audio_buffer& operator=(const audio_buffer& rhs);
 
-    iterator begin() noexcept;
-    iterator end() noexcept;
+    audio_buffer(audio_buffer&& rhs) noexcept;
+    audio_buffer& operator=(audio_buffer&& rhs) noexcept;
 
-    const_iterator begin() const noexcept;
-    const_iterator end() const noexcept;
+    ~audio_buffer() noexcept;
 
-    float* data() noexcept;
-    float* data() const noexcept;
+    [[nodiscard]] iterator begin() noexcept;
+    [[nodiscard]] iterator end() noexcept;
 
-    std::size_t size() const noexcept;
+    [[nodiscard]] const_iterator begin() const noexcept;
+    [[nodiscard]] const_iterator end() const noexcept;
+
+    [[nodiscard]] float* data() noexcept;
+    [[nodiscard]] float* data() const noexcept;
+
+    [[nodiscard]] std::size_t size() const noexcept;
 
     /// Fill buffer with zeros
     audio_buffer& clear() noexcept;
@@ -82,30 +83,30 @@ namespace otto::util {
       return std::move(*this);
     }
 
-    auto zipped() noexcept
+    [[nodiscard]] auto zipped() noexcept
     {
       return util::zip(left, right);
     }
 
-    auto zipped() const noexcept
+    [[nodiscard]] auto zipped() const noexcept
     {
       return util::zip(left, right);
     }
 
-    auto begin() noexcept
+    [[nodiscard]] auto begin() noexcept
     {
       return zipped().begin();
     }
-    auto begin() const noexcept
+    [[nodiscard]] auto begin() const noexcept
     {
       return zipped().begin();
     }
 
-    auto end() noexcept
+    [[nodiscard]] auto end() noexcept
     {
       return zipped().end();
     }
-    auto end() const noexcept
+    [[nodiscard]] auto end() const noexcept
     {
       return zipped().end();
     }
@@ -116,13 +117,13 @@ namespace otto::util {
     explicit AudioBufferPool(std::size_t max_buf_count, std::size_t bufsize);
 
     /// Allocate an audio buffer
-    audio_buffer allocate(const std::size_t multiplier = 1) noexcept;
-    stereo_audio_buffer allocate_stereo(const std::size_t multiplier = 1) noexcept
+    [[nodiscard]] audio_buffer allocate(std::size_t multiplier = 1) noexcept;
+    [[nodiscard]] stereo_audio_buffer allocate_stereo(const std::size_t multiplier = 1) noexcept
     {
       return {allocate(multiplier), allocate(multiplier)};
     }
 
-    std::span<const float> data() const noexcept;
+    [[nodiscard]] std::span<const float> data() const noexcept;
 
   private:
     std::size_t bufsize_;

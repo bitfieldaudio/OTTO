@@ -12,7 +12,7 @@ namespace otto::itc {
 
   /// A Channel through which a single Producer can send state to multiple consumers
   template<AState State>
-  struct Channel;
+  struct TypedChannel;
 
   /// Sends state to multiple Consumers through a Channel
   template<AState... States>

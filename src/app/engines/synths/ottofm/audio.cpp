@@ -102,7 +102,7 @@ namespace otto::engines::ottofm {
     Voice(const State& state) : state_(state) {}
     // These voices only have process calls.
     // This saves us from checking the current algorithm every sample.
-    void process(util::audio_buffer& output) noexcept;
+    float operator()() noexcept;
 
     void on_note_on(float) noexcept;
     void on_note_off() noexcept;
@@ -113,6 +113,11 @@ namespace otto::engines::ottofm {
     /// Sets operator frequencies. Call after next() to use updated voice frequency
     void set_frequencies() noexcept;
 
+    // TODO: maybe add some magic here? (i.e: should Voice also be a consumer of state?)
+    // The answer is probably yes, once each consumer doesn't need its own separate copies
+    // of state, and various other optimizations have been done to make many consumers of
+    // the same state on the same thread cheaper.
+    /// Must be called manually, no magic here!
     void on_state_change() noexcept
     {
       int i = 0;
@@ -134,14 +139,18 @@ namespace otto::engines::ottofm {
   struct Audio : services::Audio::Consumer<State>, itc::Producer<AudioState> {
     Audio(itc::ChannelGroup& ch) : Consumer(ch), Producer(ch), voice_mgr_(ch, Consumer::state()) {}
 
-    // Only a process call, since this sums the process calls of the voices.
     void process(util::audio_buffer& output) noexcept;
+
+    void on_state_change(const State&) noexcept override
+    {
+      for (auto& v : voice_mgr_) v.on_state_change();
+    }
 
     friend struct Voice;
 
     int algN_ = 0;
     int cur_op_ = 0;
 
-    voices::Voices<Voice, 6> voice_mgr_;
+    voices::VoiceManager<Voice, 6> voice_mgr_;
   };
 } // namespace otto::engines::ottofm

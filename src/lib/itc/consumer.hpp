@@ -11,7 +11,7 @@ namespace otto::itc {
   // Declarations
   template<AState State>
   struct Consumer<State> {
-    Consumer(Channel<State>& ch, IExecutor& executor) : executor_(executor), channel_(&ch)
+    Consumer(TypedChannel<State>& ch, IExecutor& executor) : executor_(executor), channel_(&ch)
     {
       ch.internal_add_consumer(this);
     }
@@ -27,7 +27,7 @@ namespace otto::itc {
     }
 
     /// The channel this consumer is registered on
-    Channel<State>* channel() const noexcept
+    TypedChannel<State>* channel() const noexcept
     {
       return channel_;
     }
@@ -56,9 +56,9 @@ namespace otto::itc {
     virtual void on_state_change(const State& state) noexcept {}
 
   private:
-    friend Channel<State>;
+    friend TypedChannel<State>;
 
-    /// Called from {@ref Channel::internal_commit}
+    /// Called from {@ref TypedChannel::internal_commit}
     void internal_commit(const State& state)
     {
       {
@@ -78,7 +78,7 @@ namespace otto::itc {
     util::spin_lock lock_;
     State state_;
     IExecutor& executor_;
-    Channel<State>* channel_;
+    TypedChannel<State>* channel_;
     State tmp_state_;
   };
 

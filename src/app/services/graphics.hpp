@@ -46,7 +46,8 @@ namespace otto::services {
 
   template<itc::AState State>
   struct Graphics::Consumer : itc::Consumer<State> {
-    Consumer(itc::Channel<State>& c) : itc::Consumer<State>(c, graphics->executor()) {}
+    Consumer(itc::TypedChannel<State>& c) : itc::Consumer<State>(c, graphics->executor()) {}
+    Consumer(itc::ChannelGroup& c) : itc::Consumer<State>(c, graphics->executor()) {}
 
   private:
     core::ServiceAccessor<Graphics> graphics;

@@ -19,6 +19,7 @@ Checks: >-
   -readability-named-parameter,
   -misc-non-private-member-variables-in-classes,
   -cppcoreguidelines-pro-bounds-constant-array-index,
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
   -misc-unused-parameters,
 CheckOptions:
   - key: readability-braces-around-statements.ShortStatementLines
@@ -30,4 +31,5 @@ CheckOptions:
 WarningsAsErrors:  ''
 HeaderFilterRegex: ''
 FormatStyle:     none
+
 # vim: filetype=yaml

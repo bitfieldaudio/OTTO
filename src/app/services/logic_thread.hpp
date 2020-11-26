@@ -23,7 +23,8 @@ namespace otto::services {
 
   template<itc::AState State>
   struct LogicThread::Consumer : itc::Consumer<State> {
-    Consumer(itc::Channel<State>& c) : itc::Consumer<State>(c, logic->executor()) {}
+    Consumer(itc::TypedChannel<State>& c) : itc::Consumer<State>(c, logic->executor()) {}
+    Consumer(itc::ChannelGroup& c) : itc::Consumer<State>(c, logic->executor()) {}
 
   private:
     core::ServiceAccessor<LogicThread> logic;

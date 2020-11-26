@@ -13,7 +13,7 @@ namespace otto::voices {
   concept AVoice = std::is_base_of_v<VoiceBase<T>, T>;
 
   template<AVoice Voice, std::size_t N>
-  struct Voices;
+  struct VoiceManager;
 
   struct VoicesState {
     PlayMode play_mode = PlayMode::poly;

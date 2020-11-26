@@ -4,7 +4,7 @@
 
 namespace otto::services {
 
-  Audio::Audio(util::any_ptr<AudioDriver>::factory&& d) : driver_(d())
+  Audio::Audio(util::any_ptr<drivers::IAudioDriver>::factory&& d) : driver_(d())
   {
     driver_->set_callback(std::bind_front(&Audio::loop_func, this));
     abp_ = util::AudioBufferPool{16, driver_->buffer_size()};
@@ -19,7 +19,7 @@ namespace otto::services {
 
   void Audio::enqueue_midi(midi::MidiEvent e) noexcept
   {
-    midi_queue_.enqueue(std::move(e));
+    midi_queue_.enqueue(e);
   }
 
   util::AudioBufferPool& Audio::buffer_pool() noexcept

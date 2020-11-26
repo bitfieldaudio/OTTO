@@ -25,7 +25,7 @@ namespace otto::engines {
     };
 
     struct Logic final : itc::Producer<State> {
-      Logic(itc::Channel<State>& c) : itc::Producer<State>(c) {}
+      Logic(itc::TypedChannel<State>& c) : itc::Producer<State>(c) {}
     };
 
     struct Handler final : InputReducer<State> {
@@ -36,7 +36,7 @@ namespace otto::engines {
     };
 
     struct Audio final : itc::Consumer<State>, core::ServiceAccessor<services::Audio> {
-      Audio(itc::Channel<State>& c) : itc::Consumer<State>(c, service<services::Audio>().executor()) {}
+      Audio(itc::TypedChannel<State>& c) : itc::Consumer<State>(c, service<services::Audio>().executor()) {}
 
       void on_state_change(const State& d) noexcept override
       {
@@ -52,7 +52,7 @@ namespace otto::engines {
     };
 
     struct Screen final : itc::Consumer<State>, core::ServiceAccessor<services::Graphics>, IScreen {
-      Screen(itc::Channel<State>& c) : itc::Consumer<State>(c, service<services::Graphics>().executor()) {}
+      Screen(itc::TypedChannel<State>& c) : itc::Consumer<State>(c, service<services::Graphics>().executor()) {}
       void draw(SkCanvas& ctx) noexcept override
       {
         SkPaint paint;
@@ -83,7 +83,7 @@ TEST_CASE ("simple_engine", "[.interactive]") {
                        Graphics::make()                    //
   );
 
-  itc::Channel<otto::engines::Simple::State> chan;
+  itc::TypedChannel<otto::engines::Simple::State> chan;
   engines::Simple::Logic l(chan);
   engines::Simple::Audio a(chan);
   engines::Simple::Screen s(chan);

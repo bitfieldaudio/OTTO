@@ -5,7 +5,7 @@
 using namespace otto::itc;
 
 // Tests
-TEST_CASE ("Basic Channel/Consumer/Producer linking and lifetime", "[itc]") {
+TEST_CASE ("Basic TypedChannel/Consumer/Producer linking and lifetime", "[itc]") {
   struct State {
     int i = 0;
     bool operator==(const State&) const = default;
@@ -14,7 +14,7 @@ TEST_CASE ("Basic Channel/Consumer/Producer linking and lifetime", "[itc]") {
   ImmediateExecutor ex;
 
   SECTION ("Constructing consumer with channel registers it") {
-    Channel<State> ch;
+    TypedChannel<State> ch;
     Consumer<State> c1 = {ch, ex};
 
     REQUIRE(ch.consumers().size() == 1);
@@ -27,27 +27,27 @@ TEST_CASE ("Basic Channel/Consumer/Producer linking and lifetime", "[itc]") {
   }
 
   SECTION ("Constructing a producer with a channel registers it") {
-    Channel<State> ch1;
+    TypedChannel<State> ch1;
     Producer<State> p = {ch1};
 
     REQUIRE(p.channels().size() == 1);
     REQUIRE(p.channels()[0] == &ch1);
     SECTION ("A producer can be registered to more channels with ch.set_producer") {
-      Channel<State> ch2;
+      TypedChannel<State> ch2;
       ch2.set_producer(p);
       REQUIRE(p.channels().size() == 2);
       REQUIRE(p.channels()[1] == &ch2);
     }
   }
 
-  SECTION ("Channel has a reference to its producer") {
-    Channel<State> ch;
+  SECTION ("TypedChannel has a reference to its producer") {
+    TypedChannel<State> ch;
     REQUIRE(ch.producer() == nullptr);
     Producer<State> p = {ch};
     REQUIRE(ch.producer() == &p);
 
     SECTION ("Also when registered with set_producer") {
-      Channel<State> ch2;
+      TypedChannel<State> ch2;
       ch2.set_producer(p);
       REQUIRE(ch2.producer() == &p);
       REQUIRE(ch.producer() == &p);
@@ -55,37 +55,37 @@ TEST_CASE ("Basic Channel/Consumer/Producer linking and lifetime", "[itc]") {
   }
 
   SECTION ("Consumer has a reference to its channel") {
-    Channel<State> ch;
+    TypedChannel<State> ch;
     Consumer<State> c = {ch, ex};
     REQUIRE(c.channel() == &ch);
   }
 
   SECTION ("Bidirectional lifetime management") {
-    SECTION ("Producer / Channel") {
+    SECTION ("Producer / TypedChannel") {
       SECTION ("Producer destroyed before channel") {
-        Channel<State> ch;
+        TypedChannel<State> ch;
         {
           Producer<State> p = {ch};
         }
         REQUIRE(ch.producer() == nullptr);
       }
-      SECTION ("Channel destroyed before producer") {
-        auto ch = std::make_unique<Channel<State>>();
+      SECTION ("TypedChannel destroyed before producer") {
+        auto ch = std::make_unique<TypedChannel<State>>();
         Producer<State> p = {*ch};
         ch.reset();
         REQUIRE(p.channels().empty());
       }
     }
-    SECTION ("Consumer / Channel") {
+    SECTION ("Consumer / TypedChannel") {
       SECTION ("Consumer destroyed before channel") {
-        Channel<State> ch;
+        TypedChannel<State> ch;
         {
           Consumer<State> p = {ch, ex};
         }
         REQUIRE(ch.consumers().empty());
       }
-      SECTION ("Channel destroyed before consumer") {
-        auto ch = std::make_unique<Channel<State>>();
+      SECTION ("TypedChannel destroyed before consumer") {
+        auto ch = std::make_unique<TypedChannel<State>>();
         Consumer<State> c = {*ch, ex};
         ch.reset();
         REQUIRE(c.channel() == nullptr);
@@ -100,7 +100,7 @@ TEST_CASE ("Basic state passing", "[itc]") {
     int i = 0;
     bool operator==(const S&) const = default;
   };
-  Channel<S> ch;
+  TypedChannel<S> ch;
   Producer<S> p = {ch};
   struct C1 : Consumer<S> {
     using Consumer<S>::Consumer;

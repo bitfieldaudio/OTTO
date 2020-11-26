@@ -11,32 +11,17 @@
 
 #include "lib/core/service.hpp"
 
+#include "app/drivers/audio_driver.hpp"
+
 namespace otto::services {
 
-  struct AudioDriver {
-    struct CallbackData {
-      const util::stereo_audio_buffer& input;
-      util::stereo_audio_buffer& output;
-    };
-    using Callback = fu2::unique_function<void(CallbackData in)>;
-
-    virtual ~AudioDriver() = default;
-
-    virtual void set_callback(Callback&&) = 0;
-    virtual void start() = 0;
-    [[nodiscard]] virtual std::size_t buffer_size() const = 0;
-    [[nodiscard]] virtual std::size_t sample_rate() const = 0;
-
-    static std::unique_ptr<AudioDriver> make_default();
-  };
-
   struct Audio final : core::Service<Audio>, itc::ExecutorProvider {
-    using CallbackData = AudioDriver::CallbackData;
-    using Callback = AudioDriver::Callback;
+    using CallbackData = drivers::IAudioDriver::CallbackData;
+    using Callback = drivers::IAudioDriver::Callback;
     template<itc::AState... States>
     struct Consumer;
 
-    Audio(util::any_ptr<AudioDriver>::factory&& d = AudioDriver::make_default);
+    Audio(util::any_ptr<drivers::IAudioDriver>::factory&& d = drivers::IAudioDriver::make_default);
 
     void set_process_callback(Callback&& cb) noexcept;
     util::AudioBufferPool& buffer_pool() noexcept;
@@ -50,7 +35,7 @@ namespace otto::services {
 
     [[no_unique_address]] core::ServiceAccessor<Runtime> runtime;
 
-    util::any_ptr<AudioDriver> driver_;
+    util::any_ptr<drivers::IAudioDriver> driver_;
     Callback callback_ = nullptr;
     moodycamel::ConcurrentQueue<midi::MidiEvent> midi_queue_;
     util::any_ptr<midi::IMidiHandler> midi_handler_;

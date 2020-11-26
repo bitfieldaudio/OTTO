@@ -4,16 +4,19 @@
 #include <set>
 #include "lib/util/ranges.hpp"
 
+#include "app/services/config.hpp"
 #include "lib/voice_manager.hpp"
+#include "stubs/audio.hpp"
 
 using namespace otto;
 using namespace otto::voices;
 
-TEST_CASE ("Voices") {
+TEST_CASE ("VoiceManager") {
+  auto app =
+    start_app(services::ConfigManager::make(), services::Audio::make(std::make_unique<stubs::StubAudioDriver>));
+
   struct Voice : VoiceBase<Voice> {
-    Voice(int i) // NOLINT
-      : i(i)
-    {}
+    Voice(int i) : i(i) {}
     int i = 0;
   };
 
@@ -21,7 +24,7 @@ TEST_CASE ("Voices") {
   itc::ChannelGroup chan;
   itc::Producer<VoicesState> prod = chan;
 
-  Voices<Voice, 6> voices = {chan, ex, 42};
+  VoiceManager<Voice, 6> voices = {chan, ex, 42};
 
   SECTION ("Construction") {
     REQUIRE(stdr::distance(voices) == 6);
@@ -384,157 +387,61 @@ TEST_CASE ("Voices") {
       // At the end, the target frequency is reached
       REQUIRE(v.frequency() == test::approx(target_freq).margin(0.01));
     }
-#if false
-    }
+  }
 
-    /// TODO: Make test for expected behaviour then legato is
-    /// engaged for glide (jump the portamento step)
-    /// and normal legato (on_note_on and on_note_off is not called).
+  // TODO: Make test for expected behaviour when legato is
+  // engaged for glide (jump the portamento step)
+  // and normal legato (on_note_on and on_note_off is not called).
 
-    SECTION("Voice receives all envelope and voice settings actions")
-    {
-      struct Voice : VoiceBase<Voice> {
-        float attack = 0;
-        void action(attack_tag::action, float attack) noexcept
+  SECTION ("call operators and process calls") {
+    SECTION ("when voice has an operator(), voice and voices gets process() and operator()") {
+      struct SVoice : voices::VoiceBase<SVoice> {
+        float operator()() noexcept
         {
-          this->attack = attack;
-        }
-        float decay = 0;
-        void action(decay_tag::action, float decay) noexcept
-        {
-          this->decay = decay;
-        }
-        float sustain = 0;
-        void action(sustain_tag::action, float sustain) noexcept
-        {
-          this->sustain = sustain;
-        }
-        float release_ = 0;
-        void action(release_tag::action, float release) noexcept
-        {
-          this->release_ = release;
-        }
-        PlayMode play_mode = PlayMode::poly;
-        void action(play_mode_tag::action, PlayMode play_mode) noexcept
-        {
-          this->play_mode = play_mode;
-        }
-        bool legato = false;
-        void action(legato_tag::action, bool legato) noexcept
-        {
-          this->legato = legato;
-        }
-        bool retrig = false;
-        void action(retrig_tag::action, bool retrig) noexcept
-        {
-          this->retrig = retrig;
-        }
-        float rand = 0;
-        void action(rand_tag::action, float rand) noexcept
-        {
-          this->rand = rand;
-        }
-        float sub = 0;
-        void action(sub_tag::action, float sub) noexcept
-        {
-          this->sub = sub;
-        }
-        float detune = 0;
-        void action(detune_tag::action, float detune) noexcept
-        {
-          this->detune = detune;
-        }
-        int interval = 0;
-        void action(interval_tag::action, int interval) noexcept
-        {
-          this->interval = interval;
-        }
-        float portamento = 0;
-        void action(portamento_tag::action, float portamento) noexcept
-        {
-          this->portamento = portamento;
+          return 1.f;
         }
       };
 
-      VoiceManager<Voice, 6> voices;
+      itc::ChannelGroup chan;
+      VoiceManager<SVoice, 4> vmgr(chan);
 
-      call_receiver(voices, attack_tag::action::data(1.f));
-      for (auto& v : voices.voices()) REQUIRE(v.attack == 1.f);
-      call_receiver(voices, decay_tag::action::data(1.f));
-      for (auto& v : voices.voices()) REQUIRE(v.decay == 1.f);
-      call_receiver(voices, sustain_tag::action::data(1.f));
-      for (auto& v : voices.voices()) REQUIRE(v.sustain == 1.f);
-      call_receiver(voices, release_tag::action::data(1.f));
-      for (auto& v : voices.voices()) REQUIRE(v.release_ == 1.f);
-      call_receiver(voices, play_mode_tag::action::data(PlayMode::mono));
-      for (auto& v : voices.voices()) REQUIRE(v.play_mode == +PlayMode::mono);
-      call_receiver(voices, legato_tag::action::data(true));
-      for (auto& v : voices.voices()) REQUIRE(v.legato == true);
-      call_receiver(voices, retrig_tag::action::data(true));
-      for (auto& v : voices.voices()) REQUIRE(v.retrig == true);
-      call_receiver(voices, rand_tag::action::data(0.5));
-      for (auto& v : voices.voices()) REQUIRE(v.rand == 0.5);
-      call_receiver(voices, sub_tag::action::data(0.5));
-      for (auto& v : voices.voices()) REQUIRE(v.sub == 0.5);
-      call_receiver(voices, detune_tag::action::data(0.5));
-      for (auto& v : voices.voices()) REQUIRE(v.detune == 0.5);
-      call_receiver(voices, interval_tag::action::data(5));
-      for (auto& v : voices.voices()) REQUIRE(v.interval == 5);
-      call_receiver(voices, portamento_tag::action::data(0.5));
-      for (auto& v : voices.voices()) REQUIRE(v.portamento == 0.5);
+      REQUIRE(vmgr[0]() == 1.f);
+      REQUIRE(vmgr() == test::approx(4.f * vmgr.normal_volume));
+      // Note that voice_manager() applies volume in the example above
+      // while voice() does not.
+
+      std::array<float, 64> data = {};
+      util::audio_buffer buf(data, nullptr);
+
+      // When running the default voice.process(), volume is applied. This carries over to
+      // voice_manager.process()
+      vmgr.process(buf);
+      REQUIRE(stdr::all_of(buf, util::does_equal(4 * vmgr.normal_volume)));
     }
 
-    SECTION("call operators and process calls")
-    {
-      auto app = services::test::make_dummy_application();
+    SECTION ("Extra args to VoiceManager::{process,operator()} are forwarded to Voice::operator()") {
+      struct Voice : voices::VoiceBase<Voice> {
+        float operator()(int i, int& a, int& b)
+        {
+          REQUIRE(i == 10);
+          REQUIRE(&a == &b);
+          return float(i);
+        }
+      };
+      itc::ChannelGroup chan;
+      VoiceManager<Voice, 4> vmgr(chan);
+      int a = 0;
+      REQUIRE(vmgr(10, a, a) == Catch::Approx(4 * 10.f * vmgr.normal_volume));
 
-      using namespace core::audio;
-      SECTION("when voice has an operator(), voice and voices gets process() and operator()")
-      {
-        struct SVoice : voices::VoiceBase<SVoice> {
-          float operator()() noexcept
-          {
-            return 1.f;
-          }
-        };
+      std::array<float, 64> data = {};
+      util::audio_buffer buf(data, nullptr);
 
-        VoiceManager<SVoice, 4> voices;
-
-        REQUIRE(voices.voices()[0]() == 1.f);
-        REQUIRE(voices() == test::approx(4.f * voices.normal_volume));
-        // Note that voice_manager() applies volume in the example above
-        // while voice() does not.
-
-        AudioBufferHandle bh = services::AudioManager::current().buffer_pool().allocate_clear();
-        // When running the default voice.process(), volume is applied. This carries over to
-        // voice_manager.process()
-        auto res = voices.voices()[0].process(ProcessData<0>{{}, {}, {}});
-        REQUIRE(std::ranges::all_of(res.audio, util::does_equal(1 * voices.normal_volume)));
-        auto res2 = voices.process(ProcessData<0>{{}, {}, {}});
-        REQUIRE(std::ranges::all_of(res2.audio, util::does_equal(4 * voices.normal_volume)));
-      }
-
-      SECTION("when voice has a process(), voices only has process()")
-      {
-        struct SVoice : voices::VoiceBase<SVoice> {
-          ProcessData<1> process(ProcessData<0> data) noexcept
-          {
-            auto buf = services::AudioManager::current().buffer_pool().allocate();
-            std::ranges::fill(buf, 1);
-            return data.with(buf);
-          }
-        };
-
-        VoiceManager<SVoice, 4> voices;
-
-        // We have written our own voice.process() so volume is not applied.
-        auto res = voices.voices()[0].process(ProcessData<0>{{}, {}, {}});
-        REQUIRE(std::ranges::all_of(res.audio, util::does_equal(1)));
-
-        auto res2 = voices.process(ProcessData<0>{{}, {}, {}});
-        REQUIRE(std::ranges::all_of(res2.audio, util::does_equal(4)));
-      }
+      // When running the default voice.process(), volume is applied. This carries over to
+      // voice_manager.process()
+      vmgr.process(buf, 10, a, a);
+      REQUIRE(stdr::all_of(buf, util::does_equal(Catch::Approx(4 * 10 * vmgr.normal_volume))));
     }
-#endif
+
+    SECTION ("Voice::calc_next is called before each Voice::operator()") {}
   }
 } // namespace otto::core::voices

@@ -5,7 +5,7 @@ namespace otto::util {
 
   audio_buffer::audio_buffer(std::span<float> d, std::int8_t* ref_count) noexcept : data_(d), ref_count_(ref_count)
   {
-    if (ref_count_) (*ref_count_)++;
+    if (ref_count_ != nullptr) (*ref_count_)++;
   }
 
   audio_buffer::audio_buffer(audio_buffer&& rhs) noexcept : data_(rhs.data_), ref_count_(rhs.ref_count_)
@@ -15,7 +15,7 @@ namespace otto::util {
 
   audio_buffer::~audio_buffer() noexcept
   {
-    if (ref_count_) (*ref_count_)--;
+    if (ref_count_ != nullptr) (*ref_count_)--;
   }
 
   audio_buffer::iterator audio_buffer::end() noexcept
@@ -71,7 +71,16 @@ namespace otto::util {
 
   audio_buffer& audio_buffer::operator=(const audio_buffer& rhs)
   {
+    if (this == &rhs) return *this;
     std::copy(rhs.begin(), rhs.end(), begin());
+    return *this;
+  }
+
+  audio_buffer& audio_buffer::operator=(audio_buffer&& rhs) noexcept
+  {
+    data_ = rhs.data_;
+    ref_count_ = rhs.ref_count_;
+    rhs.ref_count_ = nullptr;
     return *this;
   }
 
@@ -89,8 +98,8 @@ namespace otto::util {
     int idx = 0;
     int n_found = 0;
     int actual_rc = 0;
-    for (const int rc : ref_counts_) {
-      if (rc >= 0) actual_rc = rc;
+    for (const std::int8_t rc : ref_counts_) {
+      if (rc >= 0) actual_rc = static_cast<int>(rc); // NOLINT
       if (actual_rc == 0) {
         n_found++;
         if (n_found == multiplier) break;
@@ -110,7 +119,7 @@ namespace otto::util {
       ref_counts_[first_idx + i] = -1;
     }
     // Clear remaining -1s when using a space that was previously used for a larger buffer
-    for (int i = first_idx + multiplier; i < ref_counts_.size(); i++) {
+    for (std::size_t i = first_idx + multiplier; i < ref_counts_.size(); i++) {
       if (ref_counts_[i] >= 0) break;
       ref_counts_[i] = 0;
     }

@@ -7,12 +7,16 @@ namespace otto::itc {
 
   template<AState State>
   struct Producer<State> {
-    Producer(Channel<State>& ch)
+    Producer(TypedChannel<State>& ch)
     {
       ch.set_producer(this);
     }
 
     Producer(ChannelGroup& channels) : Producer(channels.get<State>()) {}
+
+    // Non-copyable
+    Producer(const Producer&) = delete;
+    Producer& operator=(const Producer&) = delete;
 
     ~Producer() noexcept
     {
@@ -22,7 +26,7 @@ namespace otto::itc {
     }
 
     /// The channels this producer is currently linked to
-    const std::vector<Channel<State>*>& channels() const noexcept
+    const std::vector<TypedChannel<State>*>& channels() const noexcept
     {
       return channels_;
     }
@@ -72,21 +76,21 @@ namespace otto::itc {
     }
 
   private:
-    friend Channel<State>;
+    friend TypedChannel<State>;
 
-    /// Called only from set_producer in Channel
-    void internal_add_channel(Channel<State>& ch)
+    /// Called only from set_producer in TypedChannel
+    void internal_add_channel(TypedChannel<State>& ch)
     {
       channels_.push_back(ch);
     }
 
     /// Called only from Channel destructor
-    void internal_remove_channel(Channel<State>& ch)
+    void internal_remove_channel(TypedChannel<State>& ch)
     {
       std::erase(channels_, &ch);
     }
 
-    std::vector<Channel<State>*> channels_;
+    std::vector<TypedChannel<State>*> channels_;
     State state_;
   };
 

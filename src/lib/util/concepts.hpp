@@ -20,13 +20,11 @@ namespace otto::util {
 
     template<typename F, typename Ret, typename... Args>
     struct is_callable_impl<F, Ret(Args...)> {
-      static constexpr bool value = requires(F f, Args... args)
-      {
-        {
-          std::invoke(f, args...)
-        }
-        ->std::same_as<Ret>;
+      // clang-format off
+      static constexpr bool value = requires(F f, Args... args) {
+        { std::invoke(f, args...) } ->std::same_as<Ret>;
       };
+      // clang-format on
     };
 
     template<typename Shape>

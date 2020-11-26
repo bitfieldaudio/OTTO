@@ -3,27 +3,27 @@
 
 #include <RtAudio.h>
 
-namespace otto::services {
+namespace otto::drivers {
 
   struct RtAudioConfig : Config<RtAudioConfig> {
     static constexpr util::string_ref name = "RtAudio";
-    std::string input_device = "";
-    std::string output_device = "";
+    std::string input_device;
+    std::string output_device;
     unsigned buffer_size = 256;
     unsigned sample_rate = 44100;
 
     DECL_VISIT(input_device, output_device, buffer_size, sample_rate)
   };
 
-  struct RtAudioDriver final : AudioDriver {
+  struct RtAudioDriver final : IAudioDriver {
     RtAudioDriver();
 
     void start() override;
     void init_audio();
 
     void set_callback(Callback&& cb) override;
-    std::size_t buffer_size() const noexcept override;
-    std::size_t sample_rate() const noexcept override;
+    [[nodiscard]] std::size_t buffer_size() const noexcept override;
+    [[nodiscard]] std::size_t sample_rate() const noexcept override;
 
   private:
     int rtaudio_cb(float* out, float* in, int nframes, double time, RtAudioStreamStatus status) noexcept;
@@ -40,7 +40,7 @@ namespace otto::services {
     RtAudio::StreamParameters o_params;
   };
 
-  std::unique_ptr<AudioDriver> AudioDriver::make_default()
+  std::unique_ptr<IAudioDriver> IAudioDriver::make_default()
   {
     return std::make_unique<RtAudioDriver>();
   }
@@ -158,4 +158,4 @@ namespace otto::services {
     return res;
   }
 
-} // namespace otto::services
+} // namespace otto::drivers

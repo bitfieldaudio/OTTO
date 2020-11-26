@@ -9,7 +9,7 @@
 using namespace otto;
 using namespace services;
 
-struct DummyAudioDriver final : AudioDriver {
+struct DummyAudioDriver final : drivers::IAudioDriver {
   DummyAudioDriver()
   {
     buffers_.resize(buffer_size() * 4);
@@ -37,11 +37,11 @@ struct DummyAudioDriver final : AudioDriver {
       }
     });
   }
-  std::size_t buffer_size() const override
+  [[nodiscard]] std::size_t buffer_size() const override
   {
     return 64;
   }
-  std::size_t sample_rate() const override
+  [[nodiscard]] std::size_t sample_rate() const override
   {
     return 44100;
   }

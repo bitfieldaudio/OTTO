@@ -11,15 +11,21 @@
 
 namespace otto::itc {
 
-  struct ChannelBase {
-    virtual ~ChannelBase() = default;
-  };
+  namespace detail {
+    struct ChannelBase {
+      virtual ~ChannelBase() = default;
+    };
+  } // namespace detail
 
   template<AState State>
-  struct Channel : ChannelBase {
-    Channel() noexcept {}
-    Channel(const Channel&) = delete;
-    ~Channel() noexcept
+  struct TypedChannel : detail::ChannelBase {
+    TypedChannel() noexcept = default;
+
+    // Non-copyable
+    TypedChannel(const TypedChannel&) = delete;
+    TypedChannel& operator=(const TypedChannel&) = delete;
+
+    ~TypedChannel() noexcept override
     {
       for (auto* c : consumers_) {
         c->channel_ = nullptr;
@@ -52,7 +58,6 @@ namespace otto::itc {
       set_producer(&p);
     }
 
-  protected:
   private:
     friend Producer<State>;
     friend Consumer<State>;
@@ -76,15 +81,15 @@ namespace otto::itc {
   struct ChannelGroup {
     /// Creates or finds the channel of the given type
     template<AState State>
-    Channel<State>& get()
+    TypedChannel<State>& get()
     {
       auto found = channels_.find(std::type_index(typeid(State)));
       if (found == channels_.end()) {
-        auto [iter, inserted] = channels_.emplace(typeid(State), std::make_unique<Channel<State>>());
+        auto [iter, inserted] = channels_.emplace(typeid(State), std::make_unique<TypedChannel<State>>());
         found = iter;
       }
-      // Should this be a dynamic cast?
-      return static_cast<Channel<State>&>(*found->second);
+      // Should this be a dynamic cast? probably not, since we know the type is right
+      return static_cast<TypedChannel<State>&>(*found->second);
     }
 
     /// Access or create a nested channel group by name
@@ -102,7 +107,7 @@ namespace otto::itc {
 
   private:
     boost::container::flat_map<std::string, std::unique_ptr<ChannelGroup>> nested_;
-    boost::container::flat_map<std::type_index, std::unique_ptr<ChannelBase>> channels_;
+    boost::container::flat_map<std::type_index, std::unique_ptr<detail::ChannelBase>> channels_;
   };
 
 } // namespace otto::itc
