@@ -17,6 +17,9 @@ namespace otto::services {
 
   bool Graphics::loop_function(SkCanvas& ctx)
   {
+    auto now = chrono::clock::now();
+    timeline_.step(std::chrono::duration<choreograph::Time>((now - last_frame_)).count());
+    last_frame_ = now;
     if (draw_func_) draw_func_(ctx);
     executor().run_queued_functions();
     return runtime->should_run();
@@ -26,5 +29,10 @@ namespace otto::services {
   {
     // TODO: Propper exit syncing with ExecutorLock
     executor().run_queued_functions();
+  }
+
+  choreograph::Timeline& Graphics::timeline() noexcept
+  {
+    return timeline_;
   }
 } // namespace otto::services

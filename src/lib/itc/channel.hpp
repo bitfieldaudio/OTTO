@@ -79,6 +79,12 @@ namespace otto::itc {
 
   /// A (nested) group of channels, where channels for any state type can be created and accessed
   struct ChannelGroup {
+    ChannelGroup() = default;
+    ~ChannelGroup() = default;
+
+    ChannelGroup(ChannelGroup&) = delete;
+    ChannelGroup& operator=(ChannelGroup&) = delete;
+
     /// Creates or finds the channel of the given type
     template<AState State>
     TypedChannel<State>& get()

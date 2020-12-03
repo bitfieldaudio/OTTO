@@ -60,6 +60,7 @@ namespace otto::itc {
 
     Reducer() noexcept = default;
     Reducer(Producer<State>& p) noexcept : producer_(&p) {}
+    Reducer(itc::ChannelGroup& chan) noexcept : producer_(chan.get<State>().producer()) {}
 
   private:
     template<AState S, AnEvent... Es>

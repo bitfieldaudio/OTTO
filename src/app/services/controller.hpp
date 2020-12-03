@@ -38,7 +38,10 @@ namespace otto::services {
     explicit Controller(util::any_ptr<drivers::MCUPort>::factory&& make_com = drivers::MCUPort::make_default,
                         Config::Handle conf = {});
 
-    ~Controller() noexcept
+    Controller(const Controller&) = delete;
+    Controller& operator=(const Controller&) = delete;
+
+    ~Controller() noexcept override
     {
       com_.port_->stop();
     }

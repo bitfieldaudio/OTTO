@@ -394,7 +394,7 @@ TEST_CASE ("VoiceManager") {
   // and normal legato (on_note_on and on_note_off is not called).
 
   SECTION ("call operators and process calls") {
-    SECTION ("when voice has an operator(), voice and voices gets process() and operator()") {
+    SECTION ("VoiceManager::operator()") {
       struct SVoice : voices::VoiceBase<SVoice> {
         float operator()() noexcept
         {
@@ -409,17 +409,9 @@ TEST_CASE ("VoiceManager") {
       REQUIRE(vmgr() == test::approx(4.f * vmgr.normal_volume));
       // Note that voice_manager() applies volume in the example above
       // while voice() does not.
-
-      std::array<float, 64> data = {};
-      util::audio_buffer buf(data, nullptr);
-
-      // When running the default voice.process(), volume is applied. This carries over to
-      // voice_manager.process()
-      vmgr.process(buf);
-      REQUIRE(stdr::all_of(buf, util::does_equal(4 * vmgr.normal_volume)));
     }
 
-    SECTION ("Extra args to VoiceManager::{process,operator()} are forwarded to Voice::operator()") {
+    SECTION ("Extra args to VoiceManager::operator() are forwarded to Voice::operator()") {
       struct Voice : voices::VoiceBase<Voice> {
         float operator()(int i, int& a, int& b)
         {
@@ -432,14 +424,6 @@ TEST_CASE ("VoiceManager") {
       VoiceManager<Voice, 4> vmgr(chan);
       int a = 0;
       REQUIRE(vmgr(10, a, a) == Catch::Approx(4 * 10.f * vmgr.normal_volume));
-
-      std::array<float, 64> data = {};
-      util::audio_buffer buf(data, nullptr);
-
-      // When running the default voice.process(), volume is applied. This carries over to
-      // voice_manager.process()
-      vmgr.process(buf, 10, a, a);
-      REQUIRE(stdr::all_of(buf, util::does_equal(Catch::Approx(4 * 10 * vmgr.normal_volume))));
     }
 
     SECTION ("Voice::calc_next is called before each Voice::operator()") {}

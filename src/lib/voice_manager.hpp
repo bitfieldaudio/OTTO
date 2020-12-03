@@ -321,6 +321,11 @@ namespace otto::voices {
       return voices_[i];
     }
 
+    Voice& last_triggered_voice() noexcept
+    {
+      return *last_triggered_voice_;
+    }
+
     [[nodiscard]] PlayMode play_mode() const noexcept
     {
       return state().play_mode;
@@ -333,15 +338,6 @@ namespace otto::voices {
         res += v(args...) * normal_volume;
       }
       return res;
-    }
-
-    void process(util::audio_buffer& output, auto&&... args) noexcept
-      requires util::callable<Voice, float(decltype(args)...)>
-    {
-      output.clear();
-      for (auto& f : output) {
-        f += (*this)(args...);
-      }
     }
 
   private:
@@ -366,6 +362,8 @@ namespace otto::voices {
                          VoiceAllocator<PlayMode::unison, Voice, N>,
                          VoiceAllocator<PlayMode::interval, Voice, N>>
       voice_alloc = {std::in_place_index_t<0>(), *this};
+
+    Voice* last_triggered_voice_ = &voices_[0];
   };
 
 } // namespace otto::voices
@@ -410,6 +408,7 @@ namespace otto::voices {
       }
       auto& v = **fvit;
       vmgr.free_voices_.erase(fvit);
+      vmgr.last_triggered_voice_ = &v;
       return v;
     }
     // Steal oldest playing note
@@ -419,9 +418,11 @@ namespace otto::voices {
       Voice& v = *found->voice;
       v.release();
       found->voice = nullptr;
+      vmgr.last_triggered_voice_ = &v;
       return v;
     }
     // DLOGI("No voice found. Using voice 0");
+    vmgr.last_triggered_voice_ = &vmgr.voices_[0];
     return vmgr.voices_[0];
   }
 

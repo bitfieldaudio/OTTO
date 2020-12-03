@@ -99,9 +99,8 @@ namespace otto::engines::ottofm {
   };
 
   struct Voice : voices::VoiceBase<Voice> {
-    Voice(const State& state) : state_(state) {}
-    // These voices only have process calls.
-    // This saves us from checking the current algorithm every sample.
+    Voice(const State& state) noexcept;
+
     float operator()() noexcept;
 
     void on_note_on(float) noexcept;
@@ -126,7 +125,6 @@ namespace otto::engines::ottofm {
       }
     }
 
-  private:
     const State& state_;
     std::array<FMOperator, 4> operators = {
       state_.operators[0],
@@ -136,10 +134,27 @@ namespace otto::engines::ottofm {
     };
   };
 
-  struct Audio : services::Audio::Consumer<State>, itc::Producer<AudioState> {
+  struct Audio final : services::Audio::Consumer<State>,
+                       itc::Producer<AudioState>,
+                       ISynthAudio,
+                       core::ServiceAccessor<services::Audio> {
     Audio(itc::ChannelGroup& ch) : Consumer(ch), Producer(ch), voice_mgr_(ch, Consumer::state()) {}
 
-    void process(util::audio_buffer& output) noexcept;
+    midi::IMidiHandler& midi_handler() noexcept override
+    {
+      return voice_mgr_;
+    }
+
+    util::audio_buffer process() noexcept override
+    {
+      auto buf = service<services::Audio>().buffer_pool().allocate();
+      stdr::generate(buf, std::ref(voice_mgr_));
+      for (auto&& [op, act] : util::zip(voice_mgr_.last_triggered_voice().operators, Producer::state().activity)) {
+        act = op.get_activity_level();
+      }
+      Producer::commit();
+      return buf;
+    }
 
     void on_state_change(const State&) noexcept override
     {
@@ -153,4 +168,64 @@ namespace otto::engines::ottofm {
 
     voices::VoiceManager<Voice, 6> voice_mgr_;
   };
+
+  std::unique_ptr<ISynthAudio> make_audio(itc::ChannelGroup& chan)
+  {
+    return std::make_unique<Audio>(chan);
+  }
+
+  // VOICE //
+  Voice::Voice(const State& s) noexcept : state_(s)
+  {
+    for (auto& op : operators) {
+      op.finish();
+    }
+  }
+
+  void Voice::on_note_on(float freq_target) noexcept
+  {
+    reset_envelopes();
+  }
+
+  void Voice::on_note_off() noexcept
+  {
+    release_envelopes();
+  }
+
+  void Voice::reset_envelopes() noexcept
+  {
+    for (auto& op : operators) op.reset();
+  }
+
+  void Voice::release_envelopes() noexcept
+  {
+    for (auto& op : operators) op.release();
+  }
+
+  void Voice::set_frequencies() noexcept
+  {
+    for (auto& op : operators) op.freq(frequency());
+  }
+
+  float Voice::operator()() noexcept
+  {
+    set_frequencies();
+    auto& [op0, op1, op2, op3] = operators;
+    float aux = 0;
+    switch (state_.algorithm_idx) {
+      case 0: return op0(op1(op2(op3(0))));
+      case 1: return op0(op1(op2(0) + op3(0)));
+      case 2: return op0(op1(op2(0)) + op3(0));
+      case 3: aux = op3(0); return op0(op1(aux) + op2(aux));
+      case 4: aux = op2(op3(0)); return (op0(aux) + op1(aux));
+      case 5: return (op0(0) + op1(op2(op3(0))));
+      case 6: return op0(op1(0) + op2(0) + op3(0));
+      case 7: return (op0(op1(0)) + op2(op3(0)));
+      case 8: aux = op3(0); return (op0(aux) + op1(aux) + op2(aux));
+      case 9: return (op0(0) + op1(0) + op2(op3(0)));
+      case 10: return (op0(0) + op1(0) + op2(0) + op3(0));
+      default: return 0.f;
+    }
+  }
+
 } // namespace otto::engines::ottofm

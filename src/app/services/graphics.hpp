@@ -1,5 +1,7 @@
 #pragma once
 
+#include <choreograph/Choreograph.h>
+
 #include "lib/util/any_ptr.hpp"
 
 #include "app/drivers/graphics_driver.hpp"
@@ -22,13 +24,15 @@ namespace otto::services {
     /// Open a window/display drawing the given draw function
     void show(DrawFunc f);
 
+    choreograph::Timeline& timeline() noexcept;
+
   private:
     /// The function to run in the main loop on the graphics thread.
     /// Draws the frame, executes the required functions, and returns
     /// whether to continue drawing frames.
     ///
     /// When this function returns false, it must not be called again.
-    bool loop_function(SkCanvas& ctx);
+    bool loop_function(skia::Canvas& ctx);
 
     /// Make sure the queue is empty
     ///
@@ -38,10 +42,11 @@ namespace otto::services {
     /// to add their own service accessors
     [[no_unique_address]] core::ServiceAccessor<Runtime> runtime;
 
-  protected:
     util::any_ptr<IGraphicsDriver> driver_;
     DrawFunc draw_func_ = nullptr;
     std::jthread thread_;
+    choreograph::Timeline timeline_;
+    chrono::time_point last_frame_ = chrono::clock::now();
   };
 
   template<itc::AState State>
@@ -49,8 +54,7 @@ namespace otto::services {
     Consumer(itc::TypedChannel<State>& c) : itc::Consumer<State>(c, graphics->executor()) {}
     Consumer(itc::ChannelGroup& c) : itc::Consumer<State>(c, graphics->executor()) {}
 
-  private:
-    core::ServiceAccessor<Graphics> graphics;
+    [[no_unique_address]] core::ServiceAccessor<Graphics> graphics;
   };
 
 

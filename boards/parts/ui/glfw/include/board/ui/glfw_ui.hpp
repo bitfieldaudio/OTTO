@@ -1,12 +1,12 @@
 #pragma once
 
-#include <SkCanvas.h>
 
 #include "board/ui/keys.hpp"
 
 #include <GLFW/glfw3.h>
 #include <thread>
 
+#include "lib/skia/skia.hpp"
 #include "lib/util/concepts.hpp"
 
 struct GLFWwindow;
@@ -49,7 +49,7 @@ namespace otto::glfw {
     ~SkiaWindow() noexcept;
 
     /// Show graphics until the window is closed or the draw function returns false
-    void show(util::callable<bool(SkCanvas&)> auto&& f)
+    void show(util::callable<bool(skia::Canvas&)> auto&& f)
     {
       glfwSetTime(0);
       double t, spent;
@@ -68,16 +68,16 @@ namespace otto::glfw {
     }
 
     /// Show graphics until the window is closed
-    void show(util::callable<void(SkCanvas&)> auto&& f)
+    void show(util::callable<void(skia::Canvas&)> auto&& f)
     {
-      show([f = FWD(f)](SkCanvas& ctx) -> bool {
+      show([f = FWD(f)](skia::Canvas& ctx) -> bool {
         std::invoke(f, ctx);
         return true;
       });
     }
 
   protected:
-    SkCanvas& canvas();
+    skia::Canvas& canvas();
 
     void begin_frame();
     void end_frame();
@@ -85,7 +85,7 @@ namespace otto::glfw {
   private:
     sk_sp<GrContext> context_;
     sk_sp<SkSurface> surface_;
-    SkCanvas* canvas_;
+    skia::Canvas* canvas_;
   };
 
 } // namespace otto::glfw
