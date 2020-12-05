@@ -35,8 +35,8 @@ namespace otto::engines {
       }
     };
 
-    struct Audio final : itc::Consumer<State>, core::ServiceAccessor<services::Audio> {
-      Audio(itc::TypedChannel<State>& c) : itc::Consumer<State>(c, service<services::Audio>().executor()) {}
+    struct Audio final : itc::Consumer<State>, core::ServiceAccessor<services::Audio>, AudioDomain {
+      Audio(itc::TypedChannel<State>& c) : Consumer(c) {}
 
       void on_state_change(const State& d) noexcept override
       {
@@ -51,8 +51,8 @@ namespace otto::engines {
       gam::Sine<> osc;
     };
 
-    struct Screen final : itc::Consumer<State>, core::ServiceAccessor<services::Graphics>, IScreen {
-      Screen(itc::TypedChannel<State>& c) : itc::Consumer<State>(c, service<services::Graphics>().executor()) {}
+    struct Screen final : itc::Consumer<State>, core::ServiceAccessor<services::Graphics>, IScreen, GraphicsDomain {
+      Screen(itc::TypedChannel<State>& c) : Consumer(c) {}
       void draw(SkCanvas& ctx) noexcept override
       {
         SkPaint paint;

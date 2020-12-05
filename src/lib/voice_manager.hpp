@@ -2,6 +2,7 @@
 
 #include <array>
 
+#include "app/services/audio.hpp"
 #include "lib/dsp/SegExpBypass.hpp"
 #include "lib/midi.hpp"
 #include "lib/util/local_vector.hpp"
@@ -9,7 +10,6 @@
 #include "lib/util/variant_w_base.hpp"
 #include "lib/util/with_limits.hpp"
 
-#include "app/services/audio.hpp"
 #include "lib/voices/voice_state.hpp"
 
 namespace otto::voices {
@@ -226,7 +226,7 @@ namespace otto::voices {
   };
 
   template<AVoice Voice, std::size_t N>
-  struct VoiceManager : midi::MidiHandler, itc::Consumer<VoicesState> {
+  struct VoiceManager : midi::MidiHandler, itc::Consumer<VoicesState>, AudioDomain {
     static constexpr std::size_t voice_count_v = N;
     /// Voice range is approximately -1 to 1. This ensures the synth range is
     /// approximately the same.
@@ -234,18 +234,13 @@ namespace otto::voices {
 
     template<typename... Args>
     requires std::is_constructible_v<Voice, Args...> //
-    VoiceManager(itc::ChannelGroup& c, itc::IExecutor& ex, Args&&... args) : Consumer(c, ex)
+    VoiceManager(itc::ChannelGroup& c, Args&&... args) : Consumer(c)
     {
       for (std::size_t i = 0; i < N; i++) {
         voices_.emplace_back(args...);
       }
       std::ranges::transform(voices_, std::back_inserter(free_voices_), [](Voice& v) { return &v; });
     }
-
-    template<typename... Args>
-    requires std::is_constructible_v<Voice, Args...> //
-    VoiceManager(itc::ChannelGroup& c, Args&&... args) : VoiceManager(c, audio->executor(), FWD(args)...)
-    {}
 
     void on_state_change(const VoicesState& state) noexcept override
     {
@@ -345,8 +340,6 @@ namespace otto::voices {
     friend struct VoiceAllocatorBase;
     template<PlayMode PM, AVoice V, int M>
     friend struct VoiceAllocator;
-
-    [[no_unique_address]] core::ServiceAccessor<services::Audio> audio;
 
     /// The actual voices
     util::local_vector<Voice, N> voices_;

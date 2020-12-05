@@ -14,12 +14,13 @@
 #include "app/drivers/audio_driver.hpp"
 
 namespace otto::services {
+  namespace detail {
+    struct audio_domain_tag;
+  }
 
-  struct Audio final : core::Service<Audio>, itc::ExecutorProvider {
+  struct Audio final : core::Service<Audio>, itc::ExecutorProvider<detail::audio_domain_tag> {
     using CallbackData = drivers::IAudioDriver::CallbackData;
     using Callback = drivers::IAudioDriver::Callback;
-    template<itc::AState... States>
-    struct Consumer;
 
     Audio(util::any_ptr<drivers::IAudioDriver>::factory&& d = drivers::IAudioDriver::make_default);
 
@@ -42,18 +43,10 @@ namespace otto::services {
     tl::optional<util::AudioBufferPool> abp_ = tl::nullopt;
     std::atomic<unsigned> buffer_count_ = 0;
   };
-
-
-  /// A {@ref itc::Consumer} with the executor hardcoded to `Audio::executor()`
-  template<itc::AState... States>
-  struct Audio::Consumer : itc::Consumer<States...> {
-    Consumer(itc::ChannelGroup& c) : itc::Consumer<States>(c, audio->executor())... {}
-
-    using itc::Consumer<States>::state...;
-    using itc::Consumer<States>::channel...;
-
-  private:
-    [[no_unique_address]] core::ServiceAccessor<Audio> audio;
-  };
-
 } // namespace otto::services
+
+namespace otto {
+
+  struct AudioDomain : itc::StaticDomain<services::detail::audio_domain_tag> {};
+
+} // namespace otto

@@ -13,7 +13,7 @@ namespace otto::graphics {
     void draw(skia::Canvas& ctx) noexcept final
     {
       ctx.save();
-      skia::translate(ctx, bounding_box.get_point(anchors::top_left));
+      skia::translate(ctx, bounding_box.point(anchors::top_left));
       static_cast<Derived*>(this)->do_draw(ctx);
       ctx.restore();
     }

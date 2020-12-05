@@ -15,6 +15,16 @@ namespace otto::anchors {
   constexpr SkVector bottom_right = {1.f, 1.f};
 } // namespace otto::anchors
 
+inline SkVector interpolate(SkVector a, SkVector b, float ratio)
+{
+  return b * ratio + a * (1.f - ratio);
+}
+
+inline float interpolate(float a, float b, float ratio)
+{
+  return b * ratio + a * (1.f - ratio);
+}
+
 namespace otto::skia {
 
   using Anchor = SkVector;
@@ -34,31 +44,36 @@ namespace otto::skia {
       s_ = p;
     }
 
-    SkPoint get_point(Anchor a)
+    [[nodiscard]] SkPoint point(Anchor a) const noexcept
     {
       return {top_left_.x() + s_.x() * a.x(), top_left_.y() + s_.y() * a.y()};
     }
 
-    SkPoint get_diff(Anchor start, Anchor end)
+    [[nodiscard]] SkPoint diff(Anchor start, Anchor end) const noexcept
     {
       return {(end.x() - start.x()) * s_.x(), (end.y() - start.y()) * s_.y()};
     }
 
-    float width()
+    [[nodiscard]] float width() const noexcept
     {
       return s_.x();
     }
-    float height()
+    [[nodiscard]] float height() const noexcept
     {
       return s_.y();
     }
-    float x(Anchor a = anchors::top_left)
+    [[nodiscard]] float x(Anchor a = anchors::top_left) const noexcept
     {
       return top_left_.x() + s_.x() * a.x();
     }
-    float y(Anchor a = anchors::top_left)
+    [[nodiscard]] float y(Anchor a = anchors::top_left) const noexcept
     {
       return top_left_.y() + s_.y() * a.y();
+    }
+
+    operator SkRect() const noexcept
+    {
+      return SkRect::MakeXYWH(x(), y(), width(), height());
     }
 
   private:

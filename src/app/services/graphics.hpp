@@ -14,13 +14,13 @@
 
 namespace otto::services {
 
-  struct Graphics : core::Service<Graphics>, itc::ExecutorProvider {
+  namespace detail {
+    struct graphics_domain_tag;
+  }
+
+  struct Graphics : core::Service<Graphics>, itc::ExecutorProvider<detail::graphics_domain_tag> {
     using IGraphicsDriver = drivers::IGraphicsDriver;
     Graphics(util::any_ptr<IGraphicsDriver>::factory&& driver = IGraphicsDriver::make_default);
-
-    /// An @ref itc::Consumer with the graphics executor hardcoded
-    template<itc::AState State>
-    struct Consumer;
     /// Open a window/display drawing the given draw function
     void show(DrawFunc f);
 
@@ -44,18 +44,15 @@ namespace otto::services {
 
     util::any_ptr<IGraphicsDriver> driver_;
     DrawFunc draw_func_ = nullptr;
-    std::jthread thread_;
     choreograph::Timeline timeline_;
     chrono::time_point last_frame_ = chrono::clock::now();
+    std::jthread thread_;
   };
-
-  template<itc::AState State>
-  struct Graphics::Consumer : itc::Consumer<State> {
-    Consumer(itc::TypedChannel<State>& c) : itc::Consumer<State>(c, graphics->executor()) {}
-    Consumer(itc::ChannelGroup& c) : itc::Consumer<State>(c, graphics->executor()) {}
-
-    [[no_unique_address]] core::ServiceAccessor<Graphics> graphics;
-  };
-
 
 } // namespace otto::services
+
+namespace otto {
+
+  struct GraphicsDomain : itc::StaticDomain<services::detail::graphics_domain_tag> {};
+
+} // namespace otto

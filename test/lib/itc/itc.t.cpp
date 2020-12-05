@@ -4,6 +4,9 @@
 
 using namespace otto::itc;
 
+template<AState... States>
+using ImmCons = WithDomain<StaticDomain<>, Consumer<States...>>;
+
 // Tests
 TEST_CASE ("Basic TypedChannel/Consumer/Producer linking and lifetime", "[itc]") {
   struct State {
@@ -12,15 +15,16 @@ TEST_CASE ("Basic TypedChannel/Consumer/Producer linking and lifetime", "[itc]")
   };
 
   ImmediateExecutor ex;
+  StaticDomain<>::set_static_executor(ex);
 
   SECTION ("Constructing consumer with channel registers it") {
     TypedChannel<State> ch;
-    Consumer<State> c1 = {ch, ex};
+    ImmCons<State> c1 = {ch};
 
     REQUIRE(ch.consumers().size() == 1);
     REQUIRE(ch.consumers()[0] == &c1);
 
-    Consumer<State> c2 = {ch, ex};
+    ImmCons<State> c2 = {ch};
 
     REQUIRE(ch.consumers().size() == 2);
     REQUIRE(ch.consumers()[1] == &c2);
@@ -56,7 +60,7 @@ TEST_CASE ("Basic TypedChannel/Consumer/Producer linking and lifetime", "[itc]")
 
   SECTION ("Consumer has a reference to its channel") {
     TypedChannel<State> ch;
-    Consumer<State> c = {ch, ex};
+    ImmCons<State> c = {ch};
     REQUIRE(c.channel() == &ch);
   }
 
@@ -80,13 +84,13 @@ TEST_CASE ("Basic TypedChannel/Consumer/Producer linking and lifetime", "[itc]")
       SECTION ("Consumer destroyed before channel") {
         TypedChannel<State> ch;
         {
-          Consumer<State> p = {ch, ex};
+          ImmCons<State> p = {ch};
         }
         REQUIRE(ch.consumers().empty());
       }
       SECTION ("TypedChannel destroyed before consumer") {
         auto ch = std::make_unique<TypedChannel<State>>();
-        Consumer<State> c = {*ch, ex};
+        ImmCons<State> c = {*ch};
         ch.reset();
         REQUIRE(c.channel() == nullptr);
       }
@@ -96,13 +100,13 @@ TEST_CASE ("Basic TypedChannel/Consumer/Producer linking and lifetime", "[itc]")
 
 TEST_CASE ("Basic state passing", "[itc]") {
   ImmediateExecutor ex;
+  StaticDomain<>::set_static_executor(ex);
   struct S {
     int i = 0;
-    bool operator==(const S&) const = default;
   };
   TypedChannel<S> ch;
   Producer<S> p = {ch};
-  struct C1 : Consumer<S> {
+  struct C1 : Consumer<S>, StaticDomain<> {
     using Consumer<S>::Consumer;
 
     void on_state_change(const S&) noexcept override
@@ -111,7 +115,7 @@ TEST_CASE ("Basic state passing", "[itc]") {
     }
 
     int new_state_called = 0;
-  } c1 = {ch, ex};
+  } c1 = {ch};
 
   SECTION ("Access default state in Consumer") {
     REQUIRE(c1.state().i == 0);
@@ -151,9 +155,10 @@ TEST_CASE ("prod/cons/chan of multiple states", "[itc]") {
   };
 
   ImmediateExecutor ex;
+  StaticDomain<>::set_static_executor(ex);
   ChannelGroup channels;
 
-  struct C1 : Consumer<S1, S2> {
+  struct C1 : Consumer<S1, S2>, StaticDomain<> {
     // Inherit the constructor
     using Consumer<S1, S2>::Consumer;
 
@@ -179,7 +184,7 @@ TEST_CASE ("prod/cons/chan of multiple states", "[itc]") {
 
     int new_state1_called = 0;
     int new_state2_called = 0;
-  } c1 = {channels, ex};
+  } c1 = {channels};
 
   SECTION ("Access default state in Consumer") {
     c1.check_i1(1);

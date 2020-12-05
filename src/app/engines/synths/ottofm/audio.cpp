@@ -134,7 +134,8 @@ namespace otto::engines::ottofm {
     };
   };
 
-  struct Audio final : services::Audio::Consumer<State>,
+  struct Audio final : AudioDomain,
+                       itc::Consumer<State>,
                        itc::Producer<AudioState>,
                        ISynthAudio,
                        core::ServiceAccessor<services::Audio> {

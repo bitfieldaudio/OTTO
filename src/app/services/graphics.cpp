@@ -2,13 +2,14 @@
 
 namespace otto::services {
 
-  Graphics::Graphics(util::any_ptr<IGraphicsDriver>::factory&& make_driver)
-    : driver_(make_driver()), thread_([this] {
-        driver_->run(std::bind_front(&Graphics::loop_function, this));
-        runtime->request_stop();
-        exit_thread();
-      })
-  {}
+  Graphics::Graphics(util::any_ptr<IGraphicsDriver>::factory&& make_driver) : driver_(make_driver())
+  {
+    thread_ = std::jthread([this] {
+      driver_->run(std::bind_front(&Graphics::loop_function, this));
+      runtime->request_stop();
+      exit_thread();
+    });
+  }
 
   void Graphics::show(DrawFunc f)
   {

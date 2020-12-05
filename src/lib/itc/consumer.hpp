@@ -4,19 +4,20 @@
 #include "lib/util/spin_lock.hpp"
 
 #include "channel.hpp"
+#include "domain.hpp"
 #include "executor.hpp"
 #include "state.hpp"
 
 namespace otto::itc {
   // Declarations
   template<AState State>
-  struct Consumer<State> {
-    Consumer(TypedChannel<State>& ch, IExecutor& executor) : executor_(executor), channel_(&ch)
+  struct Consumer<State> : private virtual IDomain {
+    Consumer(TypedChannel<State>& ch) : channel_(&ch)
     {
       ch.internal_add_consumer(this);
     }
 
-    Consumer(ChannelGroup& channels, IExecutor& executor) : Consumer(channels.get<State>(), executor) {}
+    Consumer(ChannelGroup& channels) : Consumer(channels.get<State>()) {}
 
     Consumer(const Consumer&) = delete;
     Consumer& operator=(const Consumer&) = delete;
@@ -65,7 +66,7 @@ namespace otto::itc {
         std::scoped_lock l(lock_);
         tmp_state_ = state;
       }
-      executor_.execute([this] {
+      executor().execute([this] {
         // Apply changes
         {
           std::scoped_lock l(lock_);
@@ -77,14 +78,13 @@ namespace otto::itc {
 
     util::spin_lock lock_;
     State state_;
-    IExecutor& executor_;
     TypedChannel<State>* channel_;
     State tmp_state_;
   };
 
   template<AState... States>
   struct Consumer : Consumer<States>... {
-    Consumer(ChannelGroup& channels, IExecutor& ex) : Consumer<States>(channels, ex)... {}
+    Consumer(ChannelGroup& channels) : Consumer<States>(channels)... {}
 
     template<util::one_of<States...> S>
     const S& state() const noexcept

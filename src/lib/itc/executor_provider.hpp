@@ -3,12 +3,29 @@
 #include <yamc_semaphore.hpp>
 
 #include "lib/chrono.hpp"
+#include "lib/itc/domain.hpp"
 #include "lib/itc/executor.hpp"
 
 namespace otto::itc {
 
+  template<typename DomainTag>
   struct ExecutorProvider {
-    virtual ~ExecutorProvider() = default;
+    using Domain = StaticDomain<DomainTag>;
+    ExecutorProvider()
+    {
+      if (Domain::get_static_executor() == nullptr) {
+        Domain::set_static_executor(executor());
+      }
+    }
+    virtual ~ExecutorProvider() noexcept
+    {
+      if (Domain::get_static_executor() == &executor()) {
+        Domain::set_static_executor(nullptr);
+      }
+    }
+
+    ExecutorProvider(const ExecutorProvider&) = delete;
+    ExecutorProvider& operator=(const ExecutorProvider&) = delete;
 
     QueueExecutor& executor() noexcept
     {
@@ -19,10 +36,9 @@ namespace otto::itc {
     /// have been executed.
     void sync() noexcept
     {
-      auto sem = std::make_unique<yamc::binary_semaphore>(0);
-      auto* s = sem.get();
-      executor_.execute([sem = std::move(sem)] { sem->release(); });
-      s->acquire();
+      auto sem = yamc::binary_semaphore(0);
+      executor_.execute([&sem] { sem.release(); });
+      sem.acquire();
     }
 
     /// Block thread until all functions enqueued by this thread up to this point

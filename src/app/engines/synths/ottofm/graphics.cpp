@@ -143,7 +143,7 @@ namespace otto::engines::ottofm {
     }
   };
 
-  struct Screen final : services::Graphics::Consumer<State>, IScreen {
+  struct Screen final : itc::Consumer<State>, IScreen, GraphicsDomain {
     using Consumer::Consumer;
 
     Operators ops;
@@ -151,9 +151,9 @@ namespace otto::engines::ottofm {
       {{0, state()}, {1, state()}, {2, state()}, {3, state()}},
     };
 
-    sk_sp<SkTextBlob> alg_text = skia::TextBlob::MakeFromString("ALGORITHM", SkFont(nullptr, 26));
-    sk_sp<SkTextBlob> alg_letter = skia::TextBlob::MakeFromString(alphabet[state().algorithm_idx], SkFont(nullptr, 26));
-    SkRect rect = skia::measureText(SkFont(nullptr, 26), "A");
+    sk_sp<SkTextBlob> alg_text = skia::TextBlob::MakeFromString("ALGORITHM", fonts::regular(26));
+    sk_sp<SkTextBlob> alg_letter = skia::TextBlob::MakeFromString(alphabet[state().algorithm_idx], fonts::regular(26));
+    SkRect rect = skia::measureText(fonts::regular(26), "A");
 
     Screen(itc::ChannelGroup& c) : Consumer(c)
     {
@@ -164,6 +164,7 @@ namespace otto::engines::ottofm {
     {
       ops.algorithm_idx = s.algorithm_idx;
       ops.cur_op = s.cur_op_idx;
+      alg_letter = skia::TextBlob::MakeFromString(alphabet[state().algorithm_idx], fonts::regular(26));
       for (auto& op : op_lines) op.on_state_change(s);
     }
 
@@ -175,15 +176,8 @@ namespace otto::engines::ottofm {
 
       // Draw algorithm text
 
-      skia::Paint paint;
-      paint.setStyle(SkPaint::kStrokeAndFill_Style);
-      paint.setStrokeWidth(1.f);
-
-      paint.setColor(colors::red.dim(0.5));
-      ctx.drawTextBlob(alg_text.get(), 80, y_pad + rect.height(), paint);
-      // paint.setColor(mix(Colours::Black, paint.getColor(), expansion));
-      paint.setColor(colors::red);
-      ctx.drawTextBlob(alg_letter.get(), 300 - rect.width(), y_pad + rect.height(), paint);
+      ctx.drawTextBlob(alg_text.get(), 80, y_pad + rect.height(), paints::fill(colors::red.dim(0.5)));
+      ctx.drawTextBlob(alg_letter.get(), 300 - rect.width(), y_pad + rect.height(), paints::fill(colors::red));
 
       float y_spacing = (skia::height - 2 * y_pad - 3 * 20 - 40 - rect.height()) / 4;
       float y = y_pad + rect.height() + y_spacing;

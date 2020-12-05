@@ -17,9 +17,6 @@ namespace otto::engines::ottofm {
     const float sh = height * s;
     const float rw = max_width * r;
 
-    skia::Paint paint;
-    paint.setStyle(skia::Paint::kStrokeAndFill_Style);
-
     const float arc_size = 0.9;
 
     SkPath p;
@@ -27,8 +24,7 @@ namespace otto::engines::ottofm {
     p.quadTo(aw * arc_size, height * arc_size, aw, 0); // curve
     p.lineTo(aw, height);
     p.close();
-    paint.setColor(colors::blue);
-    ctx.drawPath(p, paint);
+    ctx.drawPath(p, paints::fill(colors::blue));
 
     p.reset();
 
@@ -37,8 +33,7 @@ namespace otto::engines::ottofm {
     p.quadTo(aw + spacing + dw * (1 - arc_size), (height - sh) * arc_size, aw + spacing + dw, height - sh); // curve
     p.lineTo(aw + spacing + dw, height);
     p.close();
-    paint.setColor(colors::green);
-    ctx.drawPath(p, paint);
+    ctx.drawPath(p, paints::fill(colors::green));
 
     p.reset();
 
@@ -47,8 +42,7 @@ namespace otto::engines::ottofm {
     p.lineTo(width - spacing - rw, height);
     p.lineTo(aw + spacing + dw + spacing, height);
     p.close();
-    paint.setColor(colors::yellow);
-    ctx.drawPath(p, paint);
+    ctx.drawPath(p, paints::fill(colors::yellow));
 
     p.reset();
 
@@ -56,14 +50,12 @@ namespace otto::engines::ottofm {
     p.lineTo(width - rw, height - sh);
     p.quadTo(width - rw * arc_size, height - sh * (1 - arc_size), width, height);
     p.close();
-    paint.setColor(colors::red);
-    ctx.drawPath(p, paint);
+    ctx.drawPath(p, paints::fill(colors::red));
   }
 
   void Operators::do_draw(skia::Canvas& ctx)
   {
     // Anchor is TopLeft
-    skia::Paint paint;
     const float width = bounding_box.width();
     const float height = bounding_box.height();
     const float operator_size = width / 2.f;
@@ -100,44 +92,34 @@ namespace otto::engines::ottofm {
         path.lineTo(x_middle, y_end);
         path.lineTo(x_middle, y_end);
       }
-      paint.setColor(colors::white);
-      ctx.drawPath(path, paint);
+      ctx.drawPath(path, paints::stroke(colors::white, 6.f));
     }
 
     // draw operators
-    skia::Paint fillPaint;
-    skia::Paint strokePaint;
-    fillPaint.setStyle(skia::Paint::kFill_Style);
-    fillPaint.setColor(colors::white);
     for (int i = 0; i < 4; i++) {
       float level = activity_levels[i];
       // Choose colour
-      strokePaint.setColor(operator_colours[i].mix(colors::white, 0.5f * static_cast<float>(i == cur_op)));
+      const auto color = operator_colours[i].mix(colors::white, 0.5f * static_cast<float>(i == cur_op));
 
       if (algorithms[algorithm_idx].modulator_flags[i]) { // draw modulator
         SkRect rect = SkRect::MakeXYWH(x_middle - operator_radius * square_scale, static_cast<float>(3 - i) * space,
                                        operator_size * square_scale, operator_size * square_scale);
-        if (i == cur_op) ctx.drawRect(rect, fillPaint);
-        ctx.drawRect(rect, strokePaint);
+        if (i == cur_op) ctx.drawRect(rect, paints::fill(colors::white));
+        ctx.drawRect(rect, paints::stroke(color, 4.f));
         // Draw activity level
-        fillPaint.setColor(operator_colours[i].mix(colors::white, 0.5f * static_cast<float>(i == cur_op)));
         rect.inset(operator_radius * square_scale * (1 - level), operator_radius * square_scale * (1 - level));
-        ctx.drawRect(rect, fillPaint);
+        ctx.drawRect(rect, paints::fill(color));
 
       } else { // draw carrier
         float y_pos = operator_radius + static_cast<float>(3 - i) * space;
-        if (i == cur_op) ctx.drawCircle(x_middle, y_pos, operator_radius, fillPaint);
-        ctx.drawCircle(x_middle, y_pos, operator_radius, strokePaint);
+        if (i == cur_op) ctx.drawCircle(x_middle, y_pos, operator_radius, paints::fill(colors::white));
+        ctx.drawCircle(x_middle, y_pos, operator_radius, paints::stroke(color, 4.f));
         // Draw activity level
-        fillPaint.setColor(operator_colours[i].mix(colors::white, 0.5f * static_cast<float>(i == cur_op)));
-        ctx.drawCircle(x_middle, y_pos, operator_radius * level, fillPaint);
+        ctx.drawCircle(x_middle, y_pos, operator_radius * level, paints::fill(color));
       }
     }
 
     // draw arrowheads
-    strokePaint.setStrokeWidth(4.f);
-    strokePaint.setColor(colors::white);
-    strokePaint.setStyle(skia::Paint::kStrokeAndFill_Style);
     float side_length = 5;
     SkPath path;
     for (auto&& line : algorithms[algorithm_idx].operator_lines) {
@@ -160,82 +142,64 @@ namespace otto::engines::ottofm {
         path.lineTo(x_middle - side_length, y - side_length);
         path.close();
       }
-      ctx.drawPath(path, strokePaint);
+      ctx.drawPath(path, paints::stroke_and_fill(colors::white, 4.f));
     }
   }
 
   void FractionGraphic::do_draw(skia::Canvas& ctx)
   {
-    skia::Paint paint;
-    if (active) {
-      paint.setColor(colors::blue);
-    } else {
-      paint.setColor(colors::grey50);
-    }
+    bounding_box.resize({40, 20 + expansion * 20});
+    const auto color = active ? colors::blue : colors::grey50;
 
     const float width = bounding_box.width();
-    const float height = bounding_box.height();
+
+    // Bottom Text
+    auto ratio_bounds = skia::place_text(ctx, "RATIO", fonts::regular(12), color.fade(1 - expansion),
+                                         bounding_box.point(anchors::bottom_center),
+                                         interpolate(anchors::top_center, anchors::bottom_center, expansion));
 
     // Text
-    paint.setStrokeWidth(2.f);
-    paint.setStyle(skia::Paint::kStrokeAndFill_Style);
-    sk_sp<SkTextBlob> n = SkTextBlob::MakeFromString(std::to_string(numerator).c_str(), SkFont(nullptr, 20));
-    sk_sp<SkTextBlob> d = SkTextBlob::MakeFromString(std::to_string(denominator).c_str(), SkFont(nullptr, 20));
-    // SkRect db = d.bounds();
-    // paint.setTextAlign(SK_TextAlign::Left);
-    SkRect rect = SkRect();
-    SkFont font = SkFont(nullptr, 20);
-    SkScalar wid = font.measureText("3", 1, SkTextEncoding(), &rect, &paint);
-    ctx.drawTextBlob(n.get(), 0, rect.height(), paint);
-    // float denominator_y = std::max(height, rect.height());
-    float denominator_y = 0.6f * height * expansion + rect.height() * (1 - expansion);
-    wid = font.measureText("2", 1, SkTextEncoding(), &rect, &paint);
-    ctx.drawTextBlob(d.get(), width - rect.width(), denominator_y, paint);
+    skia::place_text(ctx, std::to_string(numerator), fonts::regular(20), paints::fill(color), {0, 0},
+                     anchors::top_left);
+    auto font = fonts::regular(denominator >= 10 ? 16 : 20);
+    float denominator_y = ratio_bounds.y(anchors::top_left) - 6.f;
+    skia::place_text(ctx, std::to_string(denominator), font, color, {width, denominator_y}, anchors::bottom_right);
 
     //  Line
     SkPath path;
     // It's hard to align text. Use this to adjust manually
-    constexpr float fudge_factor = 0.5f;
-    path.moveTo(width * 0.25f + width * 0.25f * (1 - expansion) + fudge_factor, denominator_y);
-    path.lineTo(0.5f * width * (1 + 0.5f * expansion) + fudge_factor, 0);
-    paint.setStrokeWidth(3.f);
-    ctx.drawPath(path, paint);
+    constexpr float pad = 10.f;
+    path.moveTo(interpolate(width * 0.5f, width - pad, expansion), 0);
+    path.lineTo(interpolate(width * 0.5f, pad, expansion), denominator_y);
+    ctx.drawPath(path, paints::stroke(color, 3.f));
 
-    // Bottom Text
-    paint.setStrokeWidth(1.f);
-    sk_sp<SkTextBlob> ratio_text = SkTextBlob::MakeFromString("RATIO", SkFont(nullptr, 12));
-    paint.setColor(SkColorSetRGB(22 * expansion, 184 * expansion, 254 * expansion));
     // paint.setColor(mix(colors::black, paint.getColor(), expansion));
-    ctx.drawTextBlob(ratio_text.get(), 0, bounding_box.height(), paint);
   }
 
   void DetuneGraphic::do_draw(skia::Canvas& ctx)
   {
     skia::Paint paint;
     if (active) {
-      paint.setColor(colors::blue);
+      paint = paints::fill(colors::blue);
     } else {
-      paint.setColor(colors::grey50);
+      paint = paints::fill(colors::grey50);
     }
-    paint.setStrokeWidth(1.f);
-    paint.setStyle(skia::Paint::kStrokeAndFill_Style);
 
     sk_sp<SkTextBlob> val;
     if (value == 0) {
-      val = SkTextBlob::MakeFromString("±.0", SkFont(nullptr, 20));
+      val = SkTextBlob::MakeFromString("±.0", fonts::regular(20));
     } else if (value > 0) {
-      val = SkTextBlob::MakeFromString(fmt::format("+.{:1.0}", value * 10).c_str(), SkFont(nullptr, 20));
+      val = SkTextBlob::MakeFromString(fmt::format("+.{}", (int) std::abs(value * 10)).c_str(), fonts::regular(20));
     } else {
-      val = SkTextBlob::MakeFromString(fmt::format("-.{:1.0}", value * 10).c_str(), SkFont(nullptr, 20));
+      val = SkTextBlob::MakeFromString(fmt::format("-.{}", (int) std::abs(value * 10)).c_str(), fonts::regular(20));
     }
-    sk_sp<SkTextBlob> dtune = SkTextBlob::MakeFromString("DTUNE", SkFont(nullptr, 12));
+    sk_sp<SkTextBlob> dtune = SkTextBlob::MakeFromString("DTUNE", fonts::regular(12));
     SkRect rect = SkRect();
-    SkFont font = SkFont(nullptr, 20);
-    // SkScalar wid = font.measureText("3", 1, SkTextEncoding(), &rect, &paint);
+    auto font = fonts::regular(20);
+    font.measureText("3", 1, SkTextEncoding(), &rect, &paint);
     ctx.drawTextBlob(val.get(), 0,
                      rect.height() + expansion * (0.6f * 0.5f * bounding_box.height() - rect.height() / 2.f), paint);
-    paint.setColor(SkColorSetRGB(22 * expansion, 184 * expansion, 254 * expansion));
-    // paint.setColor(mix(colors::black, paint.getColor(), expansion));
+    paint.setColor(skia::Color(paint.getColor()).fade(1.f - expansion));
     ctx.drawTextBlob(dtune.get(), 0, bounding_box.height(), paint);
   }
 
@@ -243,44 +207,35 @@ namespace otto::engines::ottofm {
   {
     float rotation_scale = 270.f * expansion + 180.f * (1 - expansion);
     // Anchor is center
-    skia::Point diff = bounding_box.get_diff(anchors::top_left, anchors::center);
-    ctx.save();
+    skia::Point diff = bounding_box.diff(anchors::top_left, anchors::center);
     skia::translate(ctx, diff);
 
     const float radius = bounding_box.width() / 2.f;
     const float radius_line1 = radius * 0.9f;
     // const float radius_line2 = radius * 0.6f;
-    skia::Paint paint;
-    if (active) {
-      paint.setColor(colors::green);
-    } else {
-      paint.setColor(colors::grey50);
-    }
-    // Level indicator
-    ctx.save();
-    ctx.rotate((value - 0.5f) * rotation_scale);
-    SkPath path;
-    path.moveTo(0, 0);
-    path.lineTo(0, -radius);
-    ctx.drawPath(path, paint);
-    ctx.restore();
+    auto color = active ? colors::green : colors::grey50;
 
-    // Line1
-    paint.setStrokeWidth(3.f);
-    SkRect rect = SkRect::MakeXYWH(-radius_line1, -radius_line1, 2.f * radius_line1, 2.f * radius_line1);
-    path.reset();
+    // Arc
+    skia::Rect rect = SkRect::MakeXYWH(-radius_line1, -radius_line1, 2.f * radius_line1, 2.f * radius_line1);
+    skia::Path path;
     path.arcTo(rect, -90.f - 0.5f * rotation_scale, rotation_scale, false);
-    ctx.drawPath(path, paint);
+    ctx.drawPath(path, paints::stroke(color.fade(0.7), 4.f));
+
+    // Level indicator
+    ctx.drawCircle({0, 0}, 3.f, paints::fill(color));
+    {
+      ctx.save();
+      ctx.rotate((value - 0.5f) * rotation_scale);
+      skia::Path path;
+      path.moveTo(0, 0);
+      path.lineTo(0, -radius);
+      ctx.drawPath(path, paints::stroke(color, 3));
+      ctx.restore();
+    }
 
     // Text
-    paint.setStrokeWidth(1.f);
-    paint.setColor(SkColorSetRGB(22 * expansion, 254 * expansion, 101 * expansion));
-    sk_sp<SkTextBlob> val = SkTextBlob::MakeFromString("LVL", SkFont(nullptr, 12));
-    SkFont font = SkFont(nullptr, 12);
-    // SkScalar wid = font.measureText("LVL", 1, SkTextEncoding(), &rect, &paint);
-    ctx.drawTextBlob(val.get(), -rect.width() - 2, radius, paint);
-
-    ctx.restore();
+    skia::place_text(ctx, "LVL", fonts::regular(12), colors::green.fade(1 - expansion), {0, radius},
+                     anchors::bottom_center);
   }
 
   // WaveShapeGraphic
@@ -325,22 +280,12 @@ namespace otto::engines::ottofm {
       x += step;
       i++;
     }
-    skia::Paint paint;
-    paint.setStrokeWidth(3.f);
-    if (active) {
-      paint.setColor(colors::yellow);
-    } else {
-      paint.setColor(colors::grey50);
-    }
-    ctx.drawPath(path, paint);
+    auto color = active ? colors::yellow : colors::grey50;
+    ctx.drawPath(path, paints::stroke(color, 3.f));
 
     // Bottom Text
-    paint.setStrokeWidth(1.f);
-    sk_sp<SkTextBlob> shape_text = SkTextBlob::MakeFromString("SHAPE", SkFont(nullptr, 12));
-    paint.setColor(skia::Color::bytes(254, 245, 22) * expansion);
+    sk_sp<SkTextBlob> shape_text = SkTextBlob::MakeFromString("SHAPE", fonts::regular(12));
     // paint.setColor(mix(colors::black, paint.getColor(), expansion));
-    ctx.drawTextBlob(shape_text.get(), 0, bounding_box.height(), paint);
-
-    ctx.restore();
+    ctx.drawTextBlob(shape_text.get(), 0, bounding_box.height(), paints::fill(colors::yellow.fade(1 - expansion)));
   }
 } // namespace otto::engines::ottofm

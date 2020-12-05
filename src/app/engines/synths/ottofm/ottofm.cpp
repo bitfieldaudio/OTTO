@@ -17,7 +17,7 @@ namespace otto::engines::ottofm {
   {
     return {
       .logic = std::make_unique<Logic>(chan),
-      .audio = make_audio(chan),
+      //.audio = make_audio(chan),
       .main_screen = make_main_screen(chan),
       .mod_screen = make_mod_screen(chan),
     };

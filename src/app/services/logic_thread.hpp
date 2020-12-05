@@ -8,11 +8,11 @@
 
 namespace otto::services {
 
-  struct LogicThread : core::Service<LogicThread>, itc::ExecutorProvider {
-    /// An {@ref itc::Consumer} with the executor hardcoded to `LogicThread::executor()`
-    template<itc::AState State>
-    struct Consumer;
+  namespace detail {
+    struct logic_domain_tag;
+  }
 
+  struct LogicThread : core::Service<LogicThread>, itc::ExecutorProvider<detail::logic_domain_tag> {
     LogicThread();
 
   private:
@@ -20,13 +20,8 @@ namespace otto::services {
     std::jthread thread_;
   };
 
-
-  template<itc::AState State>
-  struct LogicThread::Consumer : itc::Consumer<State> {
-    Consumer(itc::TypedChannel<State>& c) : itc::Consumer<State>(c, logic->executor()) {}
-    Consumer(itc::ChannelGroup& c) : itc::Consumer<State>(c, logic->executor()) {}
-
-  private:
-    core::ServiceAccessor<LogicThread> logic;
-  };
 } // namespace otto::services
+
+namespace otto {
+  struct LogicDomain : itc::StaticDomain<services::detail::logic_domain_tag> {};
+} // namespace otto
