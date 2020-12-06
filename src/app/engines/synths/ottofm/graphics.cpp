@@ -63,9 +63,9 @@ namespace otto::engines::ottofm {
         } break;
         case Encoder::yellow: {
           if (!state.shift) {
-            state.current_op().feedback += e.steps * 0.01;
+            state.current_op().shape += e.steps * 0.01;
           } else {
-            for (auto& op : state.operators) op.feedback += e.steps * 0.01;
+            for (auto& op : state.operators) op.shape += e.steps * 0.01;
           }
         } break;
         case Encoder::red: {
@@ -95,10 +95,6 @@ namespace otto::engines::ottofm {
 
     OpLine(int i, const State& s) : index(i), state(s)
     {
-      fract.bounding_box.resize({40, 40});
-      detune.bounding_box.resize({40, 40});
-      lev.bounding_box.resize({40, 40});
-      ws.bounding_box.resize({40, 40});
       fract.bounding_box.move_to({0, 0});
       detune.bounding_box.move_to({60, 0});
       lev.bounding_box.move_to({120, 0});
@@ -122,7 +118,7 @@ namespace otto::engines::ottofm {
 
       detune.value = op.detune;
       lev.value = op.level;
-      ws.value = op.feedback;
+      ws.value = op.shape;
     }
 
     void do_draw(skia::Canvas& ctx)
@@ -152,7 +148,7 @@ namespace otto::engines::ottofm {
     };
 
     sk_sp<SkTextBlob> alg_text = skia::TextBlob::MakeFromString("ALGORITHM", fonts::regular(26));
-    sk_sp<SkTextBlob> alg_letter = skia::TextBlob::MakeFromString(alphabet[state().algorithm_idx], fonts::regular(26));
+    sk_sp<SkTextBlob> alg_letter = skia::TextBlob::MakeFromString(alphabet[state().algorithm_idx], fonts::black(26));
     SkRect rect = skia::measureText(fonts::regular(26), "A");
 
     Screen(itc::ChannelGroup& c) : Consumer(c)
@@ -164,7 +160,7 @@ namespace otto::engines::ottofm {
     {
       ops.algorithm_idx = s.algorithm_idx;
       ops.cur_op = s.cur_op_idx;
-      alg_letter = skia::TextBlob::MakeFromString(alphabet[state().algorithm_idx], fonts::regular(26));
+      alg_letter = skia::TextBlob::MakeFromString(alphabet[state().algorithm_idx], fonts::black(26));
       for (auto& op : op_lines) op.on_state_change(s);
     }
 
@@ -176,7 +172,7 @@ namespace otto::engines::ottofm {
 
       // Draw algorithm text
 
-      ctx.drawTextBlob(alg_text.get(), 80, y_pad + rect.height(), paints::fill(colors::red.dim(0.5)));
+      ctx.drawTextBlob(alg_text.get(), 80, y_pad + rect.height(), paints::fill(colors::red));
       ctx.drawTextBlob(alg_letter.get(), 300 - rect.width(), y_pad + rect.height(), paints::fill(colors::red));
 
       float y_spacing = (skia::height - 2 * y_pad - 3 * 20 - 40 - rect.height()) / 4;

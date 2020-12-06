@@ -146,96 +146,105 @@ namespace otto::engines::ottofm {
     }
   }
 
+  namespace {
+    skia::Box get_content_box(float expansion)
+    {
+      auto bounds = skia::Box().resized({40, 20 + expansion * 20});
+      return interpolate(bounds, bounds.resized({bounds.width(), bounds.height() - 14}), expansion);
+    }
+    skia::Box draw_label(skia::Canvas& ctx,
+                         std::string_view label,
+                         skia::Color color,
+                         float expansion,
+                         skia::Vector offset = {0, 0})
+    {
+      auto bounds = get_content_box(expansion);
+      auto point = bounds.point(anchors::bottom_center) + skia::Point{0, 2};
+      return skia::place_text(ctx, label, fonts::regular(12), color.fade(1 - expansion), point, anchors::top_center);
+    }
+  } // namespace
+
   void FractionGraphic::do_draw(skia::Canvas& ctx)
   {
     bounding_box.resize({40, 20 + expansion * 20});
+    auto content_box = get_content_box(expansion);
     const auto color = active ? colors::blue : colors::grey50;
 
     const float width = bounding_box.width();
-
-    // Bottom Text
-    auto ratio_bounds = skia::place_text(ctx, "RATIO", fonts::regular(12), color.fade(1 - expansion),
-                                         bounding_box.point(anchors::bottom_center),
-                                         interpolate(anchors::top_center, anchors::bottom_center, expansion));
+    draw_label(ctx, "RATIO", color, expansion);
 
     // Text
-    skia::place_text(ctx, std::to_string(numerator), fonts::regular(20), paints::fill(color), {0, 0},
-                     anchors::top_left);
+    auto num_box = skia::place_text(ctx, std::to_string(numerator), fonts::regular(20), paints::fill(color),
+                                    content_box, interpolate(anchors::middle_left, anchors::top_left, expansion));
     auto font = fonts::regular(denominator >= 10 ? 16 : 20);
-    float denominator_y = ratio_bounds.y(anchors::top_left) - 6.f;
-    skia::place_text(ctx, std::to_string(denominator), font, color, {width, denominator_y}, anchors::bottom_right);
+    float denominator_y = content_box.height();
+    auto den_box = skia::place_text(ctx, std::to_string(denominator), font, color, content_box,
+                                    interpolate(anchors::middle_right, anchors::bottom_right, expansion));
 
     //  Line
     SkPath path;
     // It's hard to align text. Use this to adjust manually
     constexpr float pad = 10.f;
-    path.moveTo(interpolate(width * 0.5f, width - pad, expansion), 0);
-    path.lineTo(interpolate(width * 0.5f, pad, expansion), denominator_y);
+    auto middle = interpolate(num_box.width(), den_box.x(), 0.5);
+    path.moveTo(interpolate(middle, width - pad, expansion), 0);
+    path.lineTo(interpolate(middle, pad, expansion), denominator_y);
     ctx.drawPath(path, paints::stroke(color, 3.f));
-
-    // paint.setColor(mix(colors::black, paint.getColor(), expansion));
   }
 
   void DetuneGraphic::do_draw(skia::Canvas& ctx)
   {
-    skia::Paint paint;
-    if (active) {
-      paint = paints::fill(colors::blue);
+    bounding_box.resize({40, 20 + expansion * 20});
+    auto color = active ? colors::blue : colors::grey50;
+
+    std::string prefix;
+    int int_val = static_cast<int>(std::round(value * 0.99f * 100.f));
+    if (int_val == 0) {
+      prefix = "±";
+    } else if (int_val > 0) {
+      prefix = "+";
     } else {
-      paint = paints::fill(colors::grey50);
+      prefix = "-";
     }
 
-    sk_sp<SkTextBlob> val;
-    if (value == 0) {
-      val = SkTextBlob::MakeFromString("±.0", fonts::regular(20));
-    } else if (value > 0) {
-      val = SkTextBlob::MakeFromString(fmt::format("+.{}", (int) std::abs(value * 10)).c_str(), fonts::regular(20));
-    } else {
-      val = SkTextBlob::MakeFromString(fmt::format("-.{}", (int) std::abs(value * 10)).c_str(), fonts::regular(20));
-    }
-    sk_sp<SkTextBlob> dtune = SkTextBlob::MakeFromString("DTUNE", fonts::regular(12));
-    SkRect rect = SkRect();
-    auto font = fonts::regular(20);
-    font.measureText("3", 1, SkTextEncoding(), &rect, &paint);
-    ctx.drawTextBlob(val.get(), 0,
-                     rect.height() + expansion * (0.6f * 0.5f * bounding_box.height() - rect.height() / 2.f), paint);
-    paint.setColor(skia::Color(paint.getColor()).fade(1.f - expansion));
-    ctx.drawTextBlob(dtune.get(), 0, bounding_box.height(), paint);
+    const auto content_box = get_content_box(expansion);
+
+    draw_label(ctx, "DTUNE", color, expansion);
+    const auto font = fonts::regular(20);
+    const auto alloc = skia::measureText(font, "+.00").aligned(content_box, anchors::center);
+    const auto pref_width = skia::measureText(font, "+").width();
+    skia::place_text(ctx, prefix, font, color, alloc.resized({pref_width, alloc.height()}), anchors::center);
+    skia::place_text(ctx, fmt::format(".{:02}", std::abs(int_val)), font, color, alloc.moved_by({pref_width, 0}),
+                     anchors::middle_left);
   }
 
   void LevelGraphic::do_draw(skia::Canvas& ctx)
   {
-    float rotation_scale = 270.f * expansion + 180.f * (1 - expansion);
-    // Anchor is center
-    skia::Point diff = bounding_box.diff(anchors::top_left, anchors::center);
-    skia::translate(ctx, diff);
+    bounding_box.resize({40, 20 + expansion * 20});
+    float rotation_scale = interpolate(180.f, 260.f, expansion);
+    skia::Point center = bounding_box.point(interpolate(anchors::bottom_center, anchors::center, expansion));
 
     const float radius = bounding_box.width() / 2.f;
     const float radius_line1 = radius * 0.9f;
     // const float radius_line2 = radius * 0.6f;
-    auto color = active ? colors::green : colors::grey50;
+    const auto color = active ? colors::green : colors::grey50;
 
     // Arc
-    skia::Rect rect = SkRect::MakeXYWH(-radius_line1, -radius_line1, 2.f * radius_line1, 2.f * radius_line1);
+    const auto box = skia::Box().resized({radius_line1 * 2, radius_line1 * 2}).moved_to(center, anchors::center);
     skia::Path path;
-    path.arcTo(rect, -90.f - 0.5f * rotation_scale, rotation_scale, false);
+    path.arcTo(box, -90.f - 0.5f * rotation_scale, rotation_scale, false);
     ctx.drawPath(path, paints::stroke(color.fade(0.7), 4.f));
 
     // Level indicator
-    ctx.drawCircle({0, 0}, 3.f, paints::fill(color));
-    {
-      ctx.save();
-      ctx.rotate((value - 0.5f) * rotation_scale);
+    ctx.drawCircle(center, 3.f, paints::fill(color));
+    skia::saved(ctx, [&] {
+      skia::rotate(ctx, (value - 0.5f) * rotation_scale, center);
       skia::Path path;
-      path.moveTo(0, 0);
-      path.lineTo(0, -radius);
+      path.moveTo(center);
+      path.lineTo(center - skia::Vector{0, radius});
       ctx.drawPath(path, paints::stroke(color, 3));
-      ctx.restore();
-    }
+    });
 
-    // Text
-    skia::place_text(ctx, "LVL", fonts::regular(12), colors::green.fade(1 - expansion), {0, radius},
-                     anchors::bottom_center);
+    draw_label(ctx, "LVL", color, expansion);
   }
 
   // WaveShapeGraphic
@@ -263,20 +272,22 @@ namespace otto::engines::ottofm {
 
   void WaveShapeGraphic::do_draw(skia::Canvas& ctx)
   {
+    bounding_box.resize({40, 20 + expansion * 20});
+    const auto content_box = get_content_box(expansion);
     // skia::Point diff = bounding_box.get_diff(anchors::top_left,
     // anchors::middle_left); ctx.save(); ctx.translate(diff[0], diff[1]);
 
-    float step = bounding_box.width() / sinewave.size();
-    float scale = 0.5f * (bounding_box.height() * 0.5f * (1 - expansion) + bounding_box.height() * 0.6f * expansion);
+    float step = content_box.width() / sinewave.size();
     l_value = std::max(0.f, (0.5f - value) * 2.f);
     r_value = std::max(0.f, (value - 0.5f) * 2.f);
-
+    float scale = 0.5f * content_box.height();
     SkPath path;
     path.moveTo(0, scale);
     float x = 0;
     int i = 0;
     for (auto& s : sinewave) {
-      path.lineTo(x, scale * (1 + s + l_value * left_harmonics[i] + r_value * right_harmonics[i]));
+      path.lineTo(x, scale * (1 + (s + l_value * left_harmonics[i] + r_value * right_harmonics[i]) /
+                                    std::max(1 + l_value, 1 + r_value)));
       x += step;
       i++;
     }
@@ -284,8 +295,6 @@ namespace otto::engines::ottofm {
     ctx.drawPath(path, paints::stroke(color, 3.f));
 
     // Bottom Text
-    sk_sp<SkTextBlob> shape_text = SkTextBlob::MakeFromString("SHAPE", fonts::regular(12));
-    // paint.setColor(mix(colors::black, paint.getColor(), expansion));
-    ctx.drawTextBlob(shape_text.get(), 0, bounding_box.height(), paints::fill(colors::yellow.fade(1 - expansion)));
+    draw_label(ctx, "SHAPE", color, expansion);
   }
 } // namespace otto::engines::ottofm

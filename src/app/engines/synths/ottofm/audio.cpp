@@ -26,7 +26,7 @@ namespace otto::engines::ottofm {
       if (modulator_) {
         return env_() * sine(phaseMod) * state.level;
       }
-      previous_value_ = sine(phaseMod + state.feedback * previous_value_) * state.level;
+      previous_value_ = sine(phaseMod + state.shape * previous_value_) * state.level;
       return previous_value_;
     }
 

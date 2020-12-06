@@ -36,15 +36,53 @@ namespace otto::skia {
     void move_to(SkPoint p, Anchor a = anchors::top_left)
     {
       top_left_.set(p.x() - s_.x() * a.x(), p.y() - s_.y() * a.y());
-    };
-
-    void resize(SkVector p, Anchor a = anchors::top_left)
-    {
-      top_left_.set((p.x() - s_.x()) * a.x(), (p.y() - s_.y()) * a.y());
-      s_ = p;
     }
 
-    [[nodiscard]] SkPoint point(Anchor a) const noexcept
+    void move_by(SkVector v)
+    {
+      top_left_ += v;
+    }
+
+    void resize(SkVector s, Anchor a = anchors::top_left)
+    {
+      top_left_ -= {(s.x() - s_.x()) * a.x(), (s.y() - s_.y()) * a.y()};
+      s_ = s;
+    }
+
+    void align(Box b, Anchor a = anchors::top_left)
+    {
+      move_to(b.point(a), a);
+    }
+
+    [[nodiscard]] Box moved_to(SkPoint p, Anchor a = anchors::top_left) const noexcept
+    {
+      Box res = *this;
+      res.move_to(p, a);
+      return res;
+    }
+
+    [[nodiscard]] Box moved_by(SkVector v) const noexcept
+    {
+      Box res = *this;
+      res.move_by(v);
+      return res;
+    }
+
+    [[nodiscard]] Box resized(SkVector s, Anchor a = anchors::top_left) const noexcept
+    {
+      Box res = *this;
+      res.resize(s, a);
+      return res;
+    }
+
+    [[nodiscard]] Box aligned(Box b, Anchor a = anchors::top_left) const noexcept
+    {
+      Box res = *this;
+      res.align(b, a);
+      return res;
+    }
+
+    [[nodiscard]] SkPoint point(Anchor a = anchors::top_left) const noexcept
     {
       return {top_left_.x() + s_.x() * a.x(), top_left_.y() + s_.y() * a.y()};
     }
@@ -52,6 +90,11 @@ namespace otto::skia {
     [[nodiscard]] SkPoint diff(Anchor start, Anchor end) const noexcept
     {
       return {(end.x() - start.x()) * s_.x(), (end.y() - start.y()) * s_.y()};
+    }
+
+    [[nodiscard]] SkPoint size() const noexcept
+    {
+      return s_;
     }
 
     [[nodiscard]] float width() const noexcept
@@ -80,4 +123,9 @@ namespace otto::skia {
     SkPoint top_left_;
     SkVector s_;
   };
+
+  inline Box interpolate(Box a, Box b, float ratio)
+  {
+    return {interpolate(a.point(), b.point(), ratio), interpolate(a.size(), b.size(), ratio)};
+  }
 } // namespace otto::skia

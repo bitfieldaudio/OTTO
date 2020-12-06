@@ -71,11 +71,24 @@ namespace otto::skia {
     ctx.translate(p.x(), p.y());
   }
 
-  inline Rect measureText(const Font& font, std::string_view str, const Paint& p = {})
+  inline void rotate(Canvas& ctx, float deg, Point p)
+  {
+    ctx.rotate(deg, p.x(), p.y());
+  }
+
+  inline void saved(Canvas& ctx, util::callable<void()> auto&& f)
+  {
+    ctx.save();
+    std::invoke(FWD(f));
+    ctx.restore();
+  }
+
+  inline Box measureText(const Font& font, std::string_view str, const Paint& p = {})
   {
     Rect rect;
     font.measureText(str.data(), str.size(), SkTextEncoding::kUTF8, &rect, &p);
-    return rect;
+    Box box = rect;
+    return box;
   }
 
   inline Box place_text(SkCanvas& ctx,
@@ -86,9 +99,10 @@ namespace otto::skia {
                         skia::Anchor anchor = anchors::top_left)
   {
     Box box = measureText(font, text, paint);
+    Point offset = box.point();
     box.move_to(p, anchor);
     sk_sp<SkTextBlob> val = SkTextBlob::MakeFromText(text.data(), text.size(), font);
-    ctx.drawTextBlob(val.get(), box.x(), box.y() + box.height(), paint);
+    ctx.drawTextBlob(val, box.x() - offset.x(), box.y() - offset.y(), paint);
     return box;
   }
 
@@ -104,6 +118,26 @@ namespace otto::skia {
     paint.setStyle(SkPaint::kFill_Style);
     paint.setColor(color);
     return place_text(ctx, text, font, paint, p, anchor);
+  }
+
+  inline Box place_text(SkCanvas& ctx,
+                        std::string_view text,
+                        const Font& font,
+                        const Paint& paint,
+                        Box box,
+                        skia::Anchor anchor = anchors::top_left)
+  {
+    return place_text(ctx, text, font, paint, box.point(anchor), anchor);
+  }
+
+  inline Box place_text(SkCanvas& ctx,
+                        std::string_view text,
+                        const Font& font,
+                        Color color,
+                        Box box,
+                        skia::Anchor anchor = anchors::top_left)
+  {
+    return place_text(ctx, text, font, color, box.point(anchor), anchor);
   }
 
 } // namespace otto::skia
