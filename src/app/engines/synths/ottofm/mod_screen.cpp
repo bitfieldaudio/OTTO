@@ -92,7 +92,7 @@ namespace otto::engines::ottofm {
       graphic.s = env.sustain;
       graphic.r = env.release;
       bool active = s.cur_op_idx == index;
-      graphic.active = active;
+      graphic.active = active || s.shift;
       size = active ? 1.f : 0.f;
     }
   };

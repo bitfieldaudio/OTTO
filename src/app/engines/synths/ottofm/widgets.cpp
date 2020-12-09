@@ -95,14 +95,15 @@ namespace otto::engines::ottofm {
 
     // draw operators
     for (int i = 0; i < 4; i++) {
-      float level = activity_levels[i];
+      float level = activity_levels[3 - i];
+      bool active = i == 3 - cur_op;
       // Choose colour
-      const auto color = operator_colours[i].mix(colors::white, 0.5f * static_cast<float>(i == cur_op));
+      const auto color = operator_colours[i].mix(colors::white, 0.5f * static_cast<float>(active));
 
       if (algorithms[algorithm_idx].modulator_flags[i]) { // draw modulator
         SkRect rect = SkRect::MakeXYWH(x_middle - operator_radius * square_scale, static_cast<float>(3 - i) * space,
                                        operator_size * square_scale, operator_size * square_scale);
-        if (i == cur_op) ctx.drawRect(rect, paints::fill(colors::white));
+        if (active) ctx.drawRect(rect, paints::fill(colors::white));
         ctx.drawRect(rect, paints::stroke(color, 4.f));
         // Draw activity level
         rect.inset(operator_radius * square_scale * (1 - level), operator_radius * square_scale * (1 - level));
@@ -110,7 +111,7 @@ namespace otto::engines::ottofm {
 
       } else { // draw carrier
         float y_pos = operator_radius + static_cast<float>(3 - i) * space;
-        if (i == cur_op) ctx.drawCircle(x_middle, y_pos, operator_radius, paints::fill(colors::white));
+        if (active) ctx.drawCircle(x_middle, y_pos, operator_radius, paints::fill(colors::white));
         ctx.drawCircle(x_middle, y_pos, operator_radius, paints::stroke(color, 4.f));
         // Draw activity level
         ctx.drawCircle(x_middle, y_pos, operator_radius * level, paints::fill(color));
@@ -285,7 +286,7 @@ namespace otto::engines::ottofm {
     int i = 0;
     for (auto& s : sinewave) {
       path.lineTo(x, scale * (1 + (s + l_value * left_harmonics[i] + r_value * right_harmonics[i]) /
-                                    std::max(1 + l_value, 1 + r_value)));
+                                    (1 + r_value)));
       x += step;
       i++;
     }

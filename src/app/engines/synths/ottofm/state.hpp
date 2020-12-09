@@ -95,7 +95,7 @@ namespace otto::engines::ottofm {
 
   struct Algorithm {
     std::array<bool, 4> modulator_flags = {false, false, false, false};
-    util::local_vector<Operatorline, 3> operator_lines;
+    util::local_vector<Operatorline, 4> operator_lines;
 
     Algorithm(std::initializer_list<int> modulator_idx = {}, std::initializer_list<Operatorline> op_lines = {}) noexcept
       : operator_lines(op_lines)

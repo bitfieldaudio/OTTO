@@ -35,8 +35,8 @@ TEST_CASE ("ottofm", "[.interactive][engine]") {
   //  const auto res = eng.audio->process();
   //  std::ranges::copy(util::zip(res, res), data.output.begin());
   //});
-  app.service<Graphics>().show([&](SkCanvas& ctx) { eng.mod_screen.screen->draw(ctx); });
-  app.service<Controller>().set_input_handler(*eng.mod_screen.handler);
+  app.service<Graphics>().show([&](SkCanvas& ctx) { eng.main_screen.screen->draw(ctx); });
+  app.service<Controller>().set_input_handler(*eng.main_screen.handler);
 
   app.wait_for_stop();
 }
