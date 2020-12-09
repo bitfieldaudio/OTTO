@@ -20,13 +20,11 @@ namespace otto::engines::ottofm {
 
   struct OperatorState {
     ADSRState envelope;
-    util::StaticallyBounded<float, 0, 1> shape = 0;
+    util::StaticallyBounded<float, 0, 1> shape = 0.5;
     util::StaticallyBounded<float, 0, 1> level = 1;
     // Oscillator
     util::StaticallyBounded<float, -1, 1> detune = 0;
     util::StaticallyBounded<int, 0, 19> ratio_idx = 0;
-
-    float current_level = 0;
 
     DECL_VISIT(envelope, shape, level, detune, ratio_idx);
   };
@@ -36,6 +34,7 @@ namespace otto::engines::ottofm {
     util::StaticallyBounded<float, 0, 1> fm_amount = 1;
     std::array<OperatorState, 4> operators;
     util::StaticallyBounded<int, 0, 4> cur_op_idx = 0;
+
     bool shift = false;
 
     DECL_VISIT(algorithm_idx, fm_amount, operators, cur_op_idx);

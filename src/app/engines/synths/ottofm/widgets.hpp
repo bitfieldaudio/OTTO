@@ -1,5 +1,6 @@
 #pragma once
 
+#include "app/engines/synths/ottofm/state.hpp"
 #include "ottofm.hpp"
 
 #include "lib/skia/anim.hpp"
@@ -13,6 +14,7 @@ namespace otto::engines::ottofm {
     float d = 0;
     float s = 0;
     float r = 0;
+    bool active = false;
     void do_draw(skia::Canvas& ctx);
   };
 

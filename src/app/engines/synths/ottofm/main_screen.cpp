@@ -20,16 +20,16 @@
 
 namespace otto::engines::ottofm {
 
-  struct Handler final : InputReducer<State> {
+  struct MainHandler final : InputReducer<State> {
     using InputReducer::InputReducer;
 
     void reduce(KeyPress e, State& state) noexcept final
     {
       switch (e.key) {
-        case Key::blue_enc_click: state.cur_op_idx = 0; break;
-        case Key::green_enc_click: state.cur_op_idx = 1; break;
-        case Key::yellow_enc_click: state.cur_op_idx = 2; break;
-        case Key::red_enc_click: state.cur_op_idx = 3; break;
+        case Key::blue_enc_click: state.cur_op_idx = 3; break;
+        case Key::green_enc_click: state.cur_op_idx = 2; break;
+        case Key::yellow_enc_click: state.cur_op_idx = 1; break;
+        case Key::red_enc_click: state.cur_op_idx = 0; break;
         case Key::shift: state.shift = true; break;
         default: break;
       }
@@ -139,7 +139,7 @@ namespace otto::engines::ottofm {
     }
   };
 
-  struct Screen final : itc::Consumer<State>, IScreen, GraphicsDomain {
+  struct MainScreen final : itc::Consumer<State>, IScreen, GraphicsDomain {
     using Consumer::Consumer;
 
     Operators ops;
@@ -151,7 +151,7 @@ namespace otto::engines::ottofm {
     sk_sp<SkTextBlob> alg_letter = skia::TextBlob::MakeFromString(alphabet[state().algorithm_idx], fonts::black(26));
     SkRect rect = skia::measureText(fonts::regular(26), "A");
 
-    Screen(itc::ChannelGroup& c) : Consumer(c)
+    MainScreen(itc::ChannelGroup& c) : Consumer(c)
     {
       ops.bounding_box = {{10, 30}, {50, 180}};
     }
@@ -189,8 +189,8 @@ namespace otto::engines::ottofm {
   ScreenWithHandler make_main_screen(itc::ChannelGroup& chan)
   {
     return {
-      .screen = std::make_unique<Screen>(chan),
-      .handler = std::make_unique<Handler>(chan),
+      .screen = std::make_unique<MainScreen>(chan),
+      .handler = std::make_unique<MainHandler>(chan),
     };
   }
 

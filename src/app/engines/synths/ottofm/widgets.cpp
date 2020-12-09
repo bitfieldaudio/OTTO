@@ -17,14 +17,14 @@ namespace otto::engines::ottofm {
     const float sh = height * s;
     const float rw = max_width * r;
 
-    const float arc_size = 0.9;
+    const float arc_size = 0.7;
 
     SkPath p;
     p.moveTo(0, height);
     p.quadTo(aw * arc_size, height * arc_size, aw, 0); // curve
     p.lineTo(aw, height);
     p.close();
-    ctx.drawPath(p, paints::fill(colors::blue));
+    ctx.drawPath(p, paints::stroke_and_fill(colors::blue.mix(colors::grey50, static_cast<float>(!active) * 0.7f)));
 
     p.reset();
 
@@ -33,7 +33,7 @@ namespace otto::engines::ottofm {
     p.quadTo(aw + spacing + dw * (1 - arc_size), (height - sh) * arc_size, aw + spacing + dw, height - sh); // curve
     p.lineTo(aw + spacing + dw, height);
     p.close();
-    ctx.drawPath(p, paints::fill(colors::green));
+    ctx.drawPath(p, paints::stroke_and_fill(colors::green.mix(colors::grey50, static_cast<float>(!active) * 0.8f)));
 
     p.reset();
 
@@ -42,7 +42,7 @@ namespace otto::engines::ottofm {
     p.lineTo(width - spacing - rw, height);
     p.lineTo(aw + spacing + dw + spacing, height);
     p.close();
-    ctx.drawPath(p, paints::fill(colors::yellow));
+    ctx.drawPath(p, paints::stroke_and_fill(colors::yellow.mix(colors::grey50, static_cast<float>(!active) * 0.8f)));
 
     p.reset();
 
@@ -50,7 +50,7 @@ namespace otto::engines::ottofm {
     p.lineTo(width - rw, height - sh);
     p.quadTo(width - rw * arc_size, height - sh * (1 - arc_size), width, height);
     p.close();
-    ctx.drawPath(p, paints::fill(colors::red));
+    ctx.drawPath(p, paints::stroke_and_fill(colors::red.mix(colors::grey50, static_cast<float>(!active) * 0.8f)));
   }
 
   void Operators::do_draw(skia::Canvas& ctx)
@@ -86,10 +86,8 @@ namespace otto::engines::ottofm {
         path.lineTo(x_right, y_end);
       } else {
         float y_start = operator_size + (3 - line.start) * space;
-        float y_end = operator_size + (3 - line.end) * space;
+        float y_end = (3 - line.end) * space;
         path.moveTo(x_middle, y_start);
-        path.lineTo(x_middle, y_end);
-        path.lineTo(x_middle, y_end);
         path.lineTo(x_middle, y_end);
       }
       ctx.drawPath(path, paints::stroke(colors::white, 6.f));

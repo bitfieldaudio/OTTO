@@ -19,14 +19,11 @@ namespace otto::engines::ottofm {
       }
     };
 
-    FMOperator(const OperatorState& state, bool modulator = false) : state(state), modulator_(modulator) {}
+    FMOperator(const OperatorState& state) : state(state) {}
 
     float operator()(float phaseMod = 0) noexcept
     {
-      if (modulator_) {
-        return env_() * sine(phaseMod) * state.level;
-      }
-      previous_value_ = sine(phaseMod + state.shape * previous_value_) * state.level;
+      previous_value_ = sine(phaseMod + feedback_ * previous_value_) * env_() * state.level;
       return previous_value_;
     }
 
@@ -36,19 +33,10 @@ namespace otto::engines::ottofm {
       sine.freq(frq * freq_ratio_ + detune_amount_);
     }
 
-    /// Get current level
-    [[nodiscard]] float level() const noexcept
-    {
-      return env_.value() * state.level;
-    }
-
     /// For graphics
-    /// If it is a carrier it output a constant value and sould be multiplied by the voice envelope
-    /// TODO: Refactor so just operator envelopes are used, so we don't need voice envelope.
     [[nodiscard]] float get_activity_level() const noexcept
     {
-      if (modulator_) return level();
-      return state.level;
+      return env_.value() * state.level;;
     }
 
     /// Reset envelope
@@ -69,12 +57,6 @@ namespace otto::engines::ottofm {
       env_.finish();
     }
 
-    /// Set modulator flag
-    void modulator(bool m) noexcept
-    {
-      modulator_ = m;
-    }
-
     void on_state_change() noexcept
     {
       env_.attack(3 * state.envelope.attack);
@@ -83,6 +65,9 @@ namespace otto::engines::ottofm {
       env_.sustain(state.envelope.sustain);
 
       freq_ratio_ = fractions[state.ratio_idx];
+      // 10 Hz? Should we find something more appropriate?
+      detune_amount_ = 20 * state.detune;
+      feedback_ = (state.shape - 0.5f) * 2.f;
     }
 
   private:
@@ -90,11 +75,9 @@ namespace otto::engines::ottofm {
     FMSine sine;
     gam::ADSR<> env_;
 
-    bool modulator_ = false; /// If it is a modulator, use the envelope.
-
     float freq_ratio_ = 1;
     float detune_amount_ = 0;
-
+    float feedback_ = 0;
     float previous_value_ = 0;
   };
 
@@ -117,11 +100,10 @@ namespace otto::engines::ottofm {
     // of state, and various other optimizations have been done to make many consumers of
     // the same state on the same thread cheaper.
     /// Must be called manually, no magic here!
-    void on_state_change() noexcept
+    void on_state_change(const State&) noexcept
     {
-      int i = 0;
       for (auto& op : operators) {
-        op.modulator(algorithms[state_.algorithm_idx].modulator_flags[i]);
+        op.on_state_change();
       }
     }
 
@@ -157,15 +139,12 @@ namespace otto::engines::ottofm {
       return buf;
     }
 
-    void on_state_change(const State&) noexcept override
+    void on_state_change(const State& s) noexcept override
     {
-      for (auto& v : voice_mgr_) v.on_state_change();
+      for (auto& v : voice_mgr_) v.on_state_change(s);
     }
 
     friend struct Voice;
-
-    int algN_ = 0;
-    int cur_op_ = 0;
 
     voices::VoiceManager<Voice, 6> voice_mgr_;
   };

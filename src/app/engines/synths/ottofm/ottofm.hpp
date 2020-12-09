@@ -30,10 +30,7 @@ namespace otto::engines::ottofm {
   };
 
   ScreenWithHandler make_main_screen(itc::ChannelGroup&);
-  inline ScreenWithHandler make_mod_screen(itc::ChannelGroup&)
-  {
-    return {};
-  }
+  ScreenWithHandler make_mod_screen(itc::ChannelGroup&);
   std::unique_ptr<ISynthAudio> make_audio(itc::ChannelGroup&);
 
   SynthEngineInstance make(itc::ChannelGroup&);
