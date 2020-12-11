@@ -143,6 +143,11 @@ namespace otto::skia {
 } // namespace otto::skia
 
 namespace otto::colors {
+  // Test palette (Figma)
+  // constexpr const auto blue = skia::Color::bytes(40, 144, 219);
+  // constexpr const auto green = skia::Color::bytes(23, 165, 37);
+  // constexpr const auto yellow = skia::Color::bytes(242, 207, 23);
+  // constexpr const auto red = skia::Color::bytes(228, 48, 36);
   constexpr const auto blue = skia::Color::bytes(22, 184, 254);
   constexpr const auto green = skia::Color::bytes(22, 254, 101);
   constexpr const auto yellow = skia::Color::bytes(254, 245, 22);

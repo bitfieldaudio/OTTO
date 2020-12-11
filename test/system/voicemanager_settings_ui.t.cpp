@@ -2,6 +2,7 @@
 
 #include "app/services/config.hpp"
 #include "app/services/graphics.hpp"
+#include "lib/skia/skia.hpp"
 #include "lib/widget.hpp"
 
 #include <SkFont.h>
@@ -83,47 +84,25 @@ struct VoiceModes : otto::graphics::Widget<VoiceModes> {
       // Background squares
       if (active) {
         skia::RRect left_rect = skia::RRect::MakeRectXY(skia::Rect::MakeXYWH(0, y, width, line_size), 10.f, 10.f);
-        skia::Paint p;
-        p.setStyle(skia::Paint::kFill_Style);
-        p.setColor(colors::blue);
-        ctx.drawRRect(left_rect, p);
-        p.setStrokeWidth(1.f);
-        p.setStyle(skia::Paint::kStroke_Style);
-        p.setColor(colors::black);
-        ctx.drawRRect(left_rect, p);
+        ctx.drawRRect(left_rect, paints::fill(colors::blue));
+        ctx.drawRRect(left_rect, paints::stroke(colors::black, 1.f));
 
         skia::RRect right_rect =
           skia::RRect::MakeRectXY(skia::Rect::MakeXYWH(division_x, y, width - division_x, line_size), 10.f, 10.f);
-        p.setStyle(skia::Paint::kFill_Style);
-        p.setColor(colors::green);
-        ctx.drawRRect(right_rect, p);
-        p.setStrokeWidth(3.f);
-        p.setStyle(skia::Paint::kStroke_Style);
-        p.setColor(colors::black);
-        ctx.drawRRect(right_rect, p);
+        ctx.drawRRect(right_rect, paints::fill(colors::green.dim(0.3f)));
+        ctx.drawRRect(right_rect, paints::stroke(colors::black, 4.f));
       }
 
-      skia::Paint p;
-      p.setStyle(skia::Paint::kFill_Style);
-      p.setStrokeWidth(0.f);
-      if (active) {
-        p.setColor(colors::white);
-      } else {
-        p.setColor(colors::grey50);
-      }
-      skia::place_text(ctx, playmode_string(playmodes[i]), fonts::regular(24), p, {mode_text_x, y + line_size * 0.5},
+      skia::place_text(ctx, playmode_string(playmodes[i]), fonts::medium(24), paints::fill(active ? colors::white : colors::grey50), {mode_text_x, y + line_size * 0.5},
                        anchors::middle_left);
-      skia::place_text(ctx, aux_setting(playmodes[i]), fonts::regular(24), p, {aux_text_x, y + line_size * 0.5},
+      skia::place_text(ctx, aux_setting(playmodes[i]), fonts::medium(24), paints::fill(active ? colors::white : colors::grey50), {aux_text_x, y + line_size * 0.5},
                        anchors::middle_left);
-      skia::place_text(ctx, aux_value_string(playmodes[i]), fonts::regular(24), p, {aux_value_x, y + line_size * 0.5},
+      skia::place_text(ctx, aux_value_string(playmodes[i]), fonts::medium(24), paints::fill(active ? colors::white : colors::grey50), {aux_value_x, y + line_size * 0.5},
                        anchors::middle_right);
     };
 
     // Top text
-    skia::Paint p;
-    p.setStyle(skia::Paint::kFill_Style);
-    p.setStrokeWidth(0.f);
-    p.setColor(colors::white);
+    skia::Paint p = paints::fill(colors::white);
     skia::place_text(ctx, "MODE", fonts::regular(18.f), p, {mode_text_x, 0}, anchors::top_left);
     skia::place_text(ctx, "SETTING", fonts::regular(18.f), p, {aux_text_x, 0}, anchors::top_left);
     skia::place_text(ctx, "VALUE", fonts::regular(18.f), p, {aux_value_x, 0}, anchors::top_right);
@@ -145,31 +124,20 @@ struct Portamento : otto::graphics::Widget<Portamento> {
     float width = bounding_box.width();
     // Yellow Main Box (Fill)
     skia::RRect main_box = skia::RRect::MakeRectXY(skia::Rect::MakeXYWH(0, 0, width, height), 10.f, 10.f);
-    skia::Paint yp;
-    yp.setStyle(skia::Paint::kFill_Style);
-    yp.setColor(colors::yellow);
-    ctx.drawRRect(main_box, yp);
-
+    ctx.drawRRect(main_box, paints::fill(colors::yellow));
     // Black covering box
     skia::Rect cover_box = skia::Rect::MakeXYWH(width * value, 0, width * (1 - value), height);
-    skia::Paint bp;
-    bp.setStyle(skia::Paint::kFill_Style);
-    bp.setColor(colors::black);
-    ctx.drawRect(cover_box, bp);
+    ctx.drawRect(cover_box, paints::fill(colors::black));
     // Yellow Main Box (Stroke)
-    yp.setStrokeWidth(3.f);
-    yp.setStyle(skia::Paint::kStroke_Style);
-    ctx.drawRRect(main_box, yp);
+    ctx.drawRRect(main_box, paints::stroke(colors::yellow, 3.f));
 
     // Text
-    skia::Paint p;
-    p.setStyle(skia::Paint::kFill_Style);
-    p.setColor(colors::black);
-    skia::place_text(ctx, "PORTAMENTO TIME", fonts::regular(18), p, {width / 2.f, height / 2.f}, anchors::center);
+    skia::Paint p = paints::fill(colors::black);
+    skia::place_text(ctx, "PORTAMENTO TIME", fonts::medium(18), p, {width / 2.f, height / 2.f}, anchors::center);
     ctx.save();
     ctx.clipRect(cover_box);
     p.setColor(colors::white);
-    skia::place_text(ctx, "PORTAMENTO TIME", fonts::regular(18), p, {width / 2.f, height / 2.f}, anchors::center);
+    skia::place_text(ctx, "PORTAMENTO TIME", fonts::medium(18), p, {width / 2.f, height / 2.f}, anchors::center);
     ctx.restore();
   }
 };
@@ -183,11 +151,10 @@ struct LegatoGraphic : otto::graphics::Widget<LegatoGraphic> {
     float height = bounding_box.height();
     float width = bounding_box.width();
 
+    skia::Paint p = paints::fill(colors::white);
     // Text
-    skia::Paint p;
-    p.setStyle(skia::Paint::kFill_Style);
-    p.setColor(colors::white);
     skia::place_text(ctx, "LEGATO", fonts::regular(18), p, {0, 0}, anchors::top_left);
+
 
     auto set_color = [&](int i) {
       if (i == value) {
@@ -197,19 +164,18 @@ struct LegatoGraphic : otto::graphics::Widget<LegatoGraphic> {
       }
     };
     set_color(0);
-    skia::place_text(ctx, "OFF", fonts::regular(24), p, {0, height}, anchors::bottom_left);
+    skia::place_text(ctx, "OFF", fonts::medium(24), p, {0, height}, anchors::bottom_left);
     set_color(1);
-    skia::place_text(ctx, "ENV.", fonts::regular(24), p, {width * 0.2, height}, anchors::bottom_left);
+    skia::place_text(ctx, "ENV.", fonts::medium(24), p, {width * 0.2, height}, anchors::bottom_left);
     set_color(2);
-    skia::place_text(ctx, "RETRIG", fonts::regular(24), p, {width * 0.44, height}, anchors::bottom_left);
+    skia::place_text(ctx, "RETRIG", fonts::medium(24), p, {width * 0.44, height}, anchors::bottom_left);
     set_color(3);
-    skia::place_text(ctx, "BOTH", fonts::regular(24), p, {width, height}, anchors::bottom_right);
+    skia::place_text(ctx, "BOTH", fonts::medium(24), p, {width, height}, anchors::bottom_right);
   }
 };
 
 
-
-TEST_CASE ("Voicemanager Settings graphics", "[.interactive]") {
+TEST_CASE ("voicemanager-graphics", "[.interactive]") {
   using namespace otto::graphics;
   namespace ch = choreograph;
   ch::Timeline timeline;
@@ -254,8 +220,8 @@ TEST_CASE ("Voicemanager Settings graphics", "[.interactive]") {
       port.draw(ctx);
 
       LegatoGraphic leg(2);
-      leg.bounding_box.move_to({10, 190});
-      leg.bounding_box.resize({300, 40});
+      leg.bounding_box.move_to({10, 193});
+      leg.bounding_box.resize({300, 37});
       leg.draw(ctx);
 
 
