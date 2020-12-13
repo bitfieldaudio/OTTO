@@ -11,6 +11,7 @@
 
 #include "app/application.hpp"
 #include "app/engines/synths/ottofm/ottofm.hpp"
+#include "app/engines/midi-fx/arp/arp.hpp"
 #include "app/layers/navigator.hpp"
 #include "app/layers/piano_key_layer.hpp"
 #include "app/services/audio.hpp"
@@ -46,12 +47,24 @@ int main(int argc, char* argv[])
   auto voices_logic = voices::make_voices_logic(chan);
   auto voices_screen = voices::make_voices_screen(chan);
 
+<<<<<<< HEAD
+=======
+  //auto midifx_eng = engines::arp::factory.make_all(chan);
+
+  app.service<Audio>().set_midi_handler(&eng.audio->midi_handler());
+  app.service<Audio>().set_process_callback([&](Audio::CallbackData data) {
+    const auto res = eng.audio->process();
+    stdr::copy(util::zip(res, res), data.output.begin());
+  });
+
+>>>>>>> WIP: Implementing midifx stub
   LayerStack layers;
   auto piano = layers.make_layer<PianoKeyLayer>(audio.midi());
   auto nav_km = layers.make_layer<NavKeyMap>(confman);
   nav_km.bind_nav_key(Key::synth, eng.main_screen);
   nav_km.bind_nav_key(Key::envelope, eng.mod_screen);
   nav_km.bind_nav_key(Key::voices, voices_screen);
+  //nav_km.bind_nav_key(Key::arp, midifx_eng.screen);
   stateman.add("Navigation", std::ref(nav_km));
 
   RtMidiDriver rt_midi_driver(audio.midi());
