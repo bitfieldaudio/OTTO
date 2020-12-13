@@ -2,6 +2,7 @@
 
 #include "app/services/audio.hpp"
 #include "app/services/controller.hpp"
+#include "app/services/graphics.hpp"
 #include "lib/core/service.hpp"
 #include "lib/graphics.hpp"
 
@@ -10,17 +11,21 @@
 
 namespace otto::services {
 
-  struct UIManager : core::Service<UIManager>, InputHandler, core::ServiceAccessor<Audio, Controller> {
-    UIManager()
-    {
-      service<Controller>().set_input_handler(*this);
-    }
-    IInputHandler& input_handler() noexcept;
-    IDrawable& drawable() noexcept;
+  struct UIManager : core::Service<UIManager>, core::ServiceAccessor<Audio, Controller, Graphics> {
+  private:
+    struct Handler;
+    struct Drawable;
 
-    void handle(KeyPress e) noexcept override;
-    void handle(KeyRelease) noexcept override;
-    void handle(EncoderEvent) noexcept override {}
+  public:
+    UIManager();
+    ~UIManager();
+    UIManager(const UIManager&) = delete;
+    UIManager& operator=(const UIManager&) = delete;
+
+  private:
+    std::unique_ptr<Handler> input_handler_;
+    std::unique_ptr<Drawable> drawable_;
+    std::vector<util::any_ptr<InputHandler>> global_handlers_;
   };
 
 } // namespace otto::services

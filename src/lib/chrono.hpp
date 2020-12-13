@@ -1,5 +1,7 @@
 #pragma once
 
+#include <fmt/chrono.h>
+
 #include <chrono>
 
 namespace otto::chrono {

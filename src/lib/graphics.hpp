@@ -17,7 +17,29 @@ namespace otto {
   struct IScreen : IDrawable {};
 
   struct ScreenWithHandler {
-    util::any_ptr<IScreen> screen;
-    util::any_ptr<IInputHandler> handler;
+    std::unique_ptr<IScreen> screen;
+    std::unique_ptr<IInputHandler> handler;
+    bool operator==(const ScreenWithHandler&) const = default;
+  };
+
+  struct ScreenWithHandlerPtr {
+    ScreenWithHandlerPtr() = default;
+    ScreenWithHandlerPtr(std::nullptr_t) {}
+    ScreenWithHandlerPtr(IScreen* s, IInputHandler* h) : screen(s), handler(h) {}
+    ScreenWithHandlerPtr(const ScreenWithHandler& swh) : screen(swh.screen.get()), handler(swh.handler.get()) {}
+    ScreenWithHandlerPtr(ScreenWithHandler&& swh) = delete;
+
+    bool operator==(const ScreenWithHandlerPtr&) const = default;
+    bool operator==(const ScreenWithHandler& rhs) const
+    {
+      return rhs.screen.get() == screen && rhs.handler.get() == handler;
+    }
+    bool operator==(std::nullptr_t) const
+    {
+      return screen == nullptr || handler == nullptr;
+    }
+
+    IScreen* screen = nullptr;
+    IInputHandler* handler = nullptr;
   };
 } // namespace otto

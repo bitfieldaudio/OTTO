@@ -13,14 +13,9 @@ namespace otto::engines::ottofm {
     using Producer::Producer;
   };
 
-  SynthEngineInstance make(itc::ChannelGroup& chan)
+  std::unique_ptr<ILogic> make_logic(itc::ChannelGroup& c)
   {
-    return {
-      .logic = std::make_unique<Logic>(chan),
-      //.audio = make_audio(chan),
-      .main_screen = make_main_screen(chan),
-      .mod_screen = make_mod_screen(chan),
-    };
+    return std::make_unique<Logic>(c);
   }
 
 } // namespace otto::engines::ottofm

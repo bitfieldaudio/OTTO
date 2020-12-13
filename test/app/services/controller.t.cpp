@@ -18,7 +18,7 @@ using namespace otto;
 using drivers::Command;
 using drivers::Packet;
 
-using Events = std::vector<IInputHandler::variant>;
+using Events = std::vector<std::variant<UntimedKeyPress, UntimedKeyRelease, UntimedEncoderEvent>>;
 
 struct Handler final : InputHandler {
   void handle(KeyPress e) noexcept override
@@ -51,13 +51,14 @@ TEST_CASE ("Controller::read_input_data") {
     util::set_bit(presses, util::enum_integer(Key::unassigned_f), true);
     util::set_bit(releases, util::enum_integer(Key::seq5), true);
     com.handle_packet(p);
-    REQUIRE(handler.events == Events{KeyPress{Key::seq0}, KeyRelease{Key::seq5}, KeyPress{Key::unassigned_f}});
+    REQUIRE(handler.events ==
+            Events{UntimedKeyPress{Key::seq0}, UntimedKeyRelease{Key::seq5}, UntimedKeyPress{Key::unassigned_f}});
   }
   SECTION ("Read encoderevents") {
     Packet p = {Command::encoder_events, {10, 2, 251, 0}};
     com.handle_packet(p);
-    REQUIRE(handler.events == Events{EncoderEvent{Encoder::blue, 10}, EncoderEvent{Encoder::green, 2},
-                                     EncoderEvent{Encoder::yellow, -5}});
+    REQUIRE(handler.events == Events{UntimedEncoderEvent{Encoder::blue, 10}, UntimedEncoderEvent{Encoder::green, 2},
+                                     UntimedEncoderEvent{Encoder::yellow, -5}});
   }
 }
 
@@ -74,6 +75,6 @@ TEST_CASE ("Controller thread") {
   port.data.push({Command::encoder_events, {10, 2, 251, 0}});
   std::this_thread::sleep_for(50ms);
   logic_thread->executor().run_queued_functions();
-  REQUIRE(handler.events ==
-          Events{EncoderEvent{Encoder::blue, 10}, EncoderEvent{Encoder::green, 2}, EncoderEvent{Encoder::yellow, -5}});
+  REQUIRE(handler.events == Events{UntimedEncoderEvent{Encoder::blue, 10}, UntimedEncoderEvent{Encoder::green, 2},
+                                   UntimedEncoderEvent{Encoder::yellow, -5}});
 }

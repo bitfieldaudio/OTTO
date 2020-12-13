@@ -1,5 +1,5 @@
-#include "app/services/graphics.hpp"
 #include "app/input.hpp"
+#include "app/services/graphics.hpp"
 #include "app/services/ui_manager.hpp"
 #include "lib/itc/itc.hpp"
 #include "lib/util/with_limits.hpp"
@@ -26,6 +26,7 @@ namespace otto::engines::ottofm {
     void reduce(KeyPress e, State& state) noexcept final
     {
       switch (e.key) {
+        // Operators are counted from the bottom
         case Key::blue_enc_click: state.cur_op_idx = 3; break;
         case Key::green_enc_click: state.cur_op_idx = 2; break;
         case Key::yellow_enc_click: state.cur_op_idx = 1; break;
@@ -144,7 +145,8 @@ namespace otto::engines::ottofm {
 
     Operators ops;
     std::array<OpLine, 4> op_lines = {
-      {{0, state()}, {1, state()}, {2, state()}, {3, state()}},
+      // Ops are counted from the bottom
+      {{3, state()}, {2, state()}, {1, state()}, {0, state()}},
     };
 
     sk_sp<SkTextBlob> alg_text = skia::TextBlob::MakeFromString("ALGORITHM", fonts::regular(26));

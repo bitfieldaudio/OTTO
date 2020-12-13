@@ -18,9 +18,9 @@ namespace otto::core {
   struct IService {
     IService() = default;
     IService(const IService&) = delete;
-    IService(IService&&) = delete;
+    IService& operator=(const IService&) = delete;
     virtual ~IService() = default;
-    virtual std::string_view name() const noexcept = 0;
+    [[nodiscard]] virtual std::string_view name() const noexcept = 0;
   };
 
   /// CRTP Base class for services. All services should extend this class.
@@ -42,7 +42,7 @@ namespace otto::core {
     using ServiceType = Derived;
     static constexpr util::string_ref service_name = util::name_of<Derived>;
 
-    std::string_view name() const noexcept override
+    [[nodiscard]] std::string_view name() const noexcept override
     {
       return service_name;
     }
@@ -77,7 +77,7 @@ namespace otto::core {
 
   namespace detail {
     template<AService S>
-    S* active_service_ = nullptr;
+    S* active_service_ = nullptr; // NOLINT
   }
 
   template<AService S>
@@ -122,7 +122,11 @@ namespace otto::core {
 
     ServiceHandle(Constructor c) noexcept : constructor_(std::move(c)) {}
 
-    ServiceHandle(ServiceHandle&&) = default;
+    ServiceHandle(ServiceHandle&) = delete;
+    ServiceHandle& operator=(ServiceHandle&) = delete;
+
+    ServiceHandle(ServiceHandle&&) noexcept = default;
+    ServiceHandle& operator=(ServiceHandle&&) noexcept = default;
 
     ~ServiceHandle() noexcept
     {
@@ -158,7 +162,7 @@ namespace otto::core {
       service_ = nullptr;
     }
 
-    bool started() const noexcept
+    [[nodiscard]] bool started() const noexcept
     {
       return service_ != nullptr;
     }
@@ -270,7 +274,7 @@ namespace otto::core {
       return service_unsafe<Services...>();
     }
 
-    bool is_active() const noexcept requires(sizeof...(Services) == 1)
+    [[nodiscard]] bool is_active() const noexcept requires(sizeof...(Services) == 1)
     {
       return (operator->()) != nullptr;
     }

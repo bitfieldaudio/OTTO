@@ -1,6 +1,6 @@
-#include "app/services/graphics.hpp"
 #include "app/engines/synths/ottofm/state.hpp"
 #include "app/input.hpp"
+#include "app/services/graphics.hpp"
 #include "app/services/ui_manager.hpp"
 #include "lib/itc/itc.hpp"
 #include "lib/util/with_limits.hpp"
@@ -85,7 +85,8 @@ namespace otto::engines::ottofm {
     int index;
     ADSR graphic;
     skia::Anim<float> size = {0, 0.25};
-    void on_state_change(const State& s) {
+    void on_state_change(const State& s)
+    {
       const auto& env = s.operators[index].envelope;
       graphic.a = env.attack;
       graphic.d = env.decay;
@@ -101,13 +102,15 @@ namespace otto::engines::ottofm {
     using Consumer::Consumer;
 
     Operators ops;
-    std::array<ADSRGraphic, 4> envelopes = {0, 1, 2, 3};
-    
+    // Operators are numbered from the bottom up
+    std::array<ADSRGraphic, 4> envelopes = {3, 2, 1, 0};
+
     float env_size = 0;
 
     ModScreen(itc::ChannelGroup& c) : Consumer(c)
     {
       ops.bounding_box = {{10, 30}, {50, 180}};
+      for (auto& env : envelopes) env.on_state_change(state());
     }
 
     void on_state_change(const State& s) noexcept override
@@ -127,8 +130,7 @@ namespace otto::engines::ottofm {
       constexpr int y_pad = 33;
       constexpr int x_start = 70;
       constexpr int x_size = 220;
-      // TODO: Can this be made constexpr?
-      float step = (ctx.imageInfo().height() - 2 * y_pad - active_y - not_active_y * 3) / 3.f;
+      float step = (skia::height - 2 * y_pad - active_y - not_active_y * 3) / 3.f;
 
       float upper_y = y_pad;
       for (auto& env : envelopes) {

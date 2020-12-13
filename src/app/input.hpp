@@ -5,6 +5,7 @@
 #include <compare>
 #include <cstdint>
 
+#include "lib/chrono.hpp"
 #include "lib/itc/reducer.hpp"
 #include "lib/util/enum.hpp"
 
@@ -71,18 +72,6 @@ namespace otto {
     unassigned_f = 58,
   };
 
-  struct KeyEvent {
-    Key key = {};
-    auto operator<=>(const KeyEvent&) const = default;
-  };
-
-  struct KeyPress : KeyEvent {
-    auto operator<=>(const KeyPress&) const = default;
-  };
-  struct KeyRelease : KeyEvent {
-    auto operator<=>(const KeyRelease&) const = default;
-  };
-
   enum struct Encoder : std::uint8_t {
     blue,
     green,
@@ -90,12 +79,45 @@ namespace otto {
     red,
   };
 
-  struct EncoderEvent {
-    Encoder encoder = {};
-    int steps = 0;
-    auto operator<=>(const EncoderEvent&) const = default;
+  template<typename Event>
+  struct TimedEvent : Event {
+    chrono::time_point timestamp = chrono::clock::now();
+    auto operator<=>(const TimedEvent&) const = default;
+    bool operator==(const TimedEvent& e) const = default;
+    auto operator<=>(const Event& e) const
+    {
+      return e <=> static_cast<const Event&>(*this);
+    }
+    bool operator==(const Event& e) const
+    {
+      return e == static_cast<const Event&>(*this);
+    }
   };
 
+  struct UntimedKeyEvent {
+    Key key = {};
+    auto operator<=>(const UntimedKeyEvent&) const = default;
+  };
+
+  struct UntimedKeyPress : UntimedKeyEvent {
+    auto operator<=>(const UntimedKeyPress&) const = default;
+  };
+
+  struct UntimedKeyRelease : UntimedKeyEvent {
+    auto operator<=>(const UntimedKeyRelease&) const = default;
+  };
+
+  struct UntimedEncoderEvent {
+    Encoder encoder = {};
+    int steps = 0;
+    auto operator<=>(const UntimedEncoderEvent&) const = default;
+  };
+
+
+  using KeyEvent = TimedEvent<UntimedKeyEvent>;
+  using KeyPress = TimedEvent<UntimedKeyPress>;
+  using KeyRelease = TimedEvent<UntimedKeyRelease>;
+  using EncoderEvent = TimedEvent<UntimedEncoderEvent>;
   using IInputHandler = IEventHandler<KeyPress, KeyRelease, EncoderEvent>;
 
   struct InputHandler : IInputHandler {
@@ -112,19 +134,25 @@ namespace otto {
     void reduce(EncoderEvent e, State& state) noexcept override {}
   };
 
-  inline std::ostream& operator<<(std::ostream& os, const KeyPress& k)
+  inline std::ostream& operator<<(std::ostream& os, const UntimedKeyPress& e)
   {
-    return os << fmt::format("{{{}}}", util::enum_name(k.key));
+    return os << fmt::format("{{{}}}", util::enum_name(e.key));
   }
 
-  inline std::ostream& operator<<(std::ostream& os, const KeyRelease& k)
+  inline std::ostream& operator<<(std::ostream& os, const UntimedKeyRelease& e)
   {
-    return os << fmt::format("{{{}}}", util::enum_name(k.key));
+    return os << fmt::format("{{{}}}", util::enum_name(e.key));
   }
 
-  inline std::ostream& operator<<(std::ostream& os, const EncoderEvent& e)
+  inline std::ostream& operator<<(std::ostream& os, const UntimedEncoderEvent& e)
   {
     return os << fmt::format("{{{}, {}}}", util::enum_name(e.encoder), e.steps);
+  }
+
+  template<typename Event>
+  inline std::ostream& operator<<(std::ostream& os, const TimedEvent<Event>& e)
+  {
+    return os << fmt::format("{{{} @ {}}}", static_cast<const Event&>(e), e.timestamp.time_since_epoch());
   }
 
 } // namespace otto

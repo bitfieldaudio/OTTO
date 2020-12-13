@@ -22,6 +22,8 @@ namespace otto::util {
     any_ptr(unique_ptr&& up) noexcept : pointer_(up.get()), variant_(std::move(up)) {}
     any_ptr(shared_ptr sp) noexcept : pointer_(sp.get()), variant_(std::move(sp)) {}
 
+    ~any_ptr() noexcept = default;
+
     template<std::derived_from<T> U>
     any_ptr(std::unique_ptr<U>&& up) noexcept : any_ptr(static_cast<unique_ptr>(std::move(up)))
     {}
@@ -30,10 +32,10 @@ namespace otto::util {
     {}
 
     any_ptr(const any_ptr&) = delete;
-    any_ptr(any_ptr&&) = default;
+    any_ptr(any_ptr&&) noexcept = default;
 
     any_ptr& operator=(const any_ptr&) = delete;
-    any_ptr& operator=(any_ptr&&) = default;
+    any_ptr& operator=(any_ptr&&) noexcept = default;
 
     pointer get() const noexcept
     {
@@ -56,7 +58,7 @@ namespace otto::util {
     }
 
     bool operator==(const any_ptr&) const noexcept = default;
-    bool operator==(const pointer p) const noexcept
+    bool operator==(pointer p) const noexcept
     {
       return get() == p;
     }
@@ -70,7 +72,7 @@ namespace otto::util {
     }
 
     std::strong_ordering operator<=>(const any_ptr&) const noexcept = default;
-    std::strong_ordering operator<=>(const pointer p) const noexcept
+    std::strong_ordering operator<=>(pointer p) const noexcept
     {
       return get() <=> p;
     }

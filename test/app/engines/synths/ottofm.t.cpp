@@ -15,26 +15,47 @@
 #include "app/services/graphics.hpp"
 #include "app/services/logic_thread.hpp"
 #include "app/services/runtime.hpp"
+#include "app/services/ui_manager.hpp"
 
 using namespace otto;
 
 TEST_CASE ("ottofm", "[.interactive][engine]") {
   using namespace services;
-  auto app = start_app(core::make_handle<ConfigManager>(), //
-                       LogicThread::make(),                //
-                       Controller::make(),                 //
-                       // Audio::make(),                      //
-                       Graphics::make() //
+  auto app = start_app(ConfigManager::make_default(), //
+                       LogicThread::make(),           //
+                       Controller::make(),            //
+                       Graphics::make());
+
+  itc::ChannelGroup chan;
+  auto eng = engines::ottofm::factory.make_without_audio(chan);
+
+  // app.service<Audio>().set_midi_handler(&eng.audio->midi_handler());
+  // app.service<Audio>().set_process_callback([&](Audio::CallbackData data) {
+  //   const auto res = eng.audio->process();
+  //   std::ranges::copy(util::zip(res, res), data.output.begin());
+  // });
+  app.service<Graphics>().show([&](SkCanvas& ctx) { eng.main_screen.screen->draw(ctx); });
+  app.service<Controller>().set_input_handler(*eng.main_screen.handler);
+
+  app.wait_for_stop();
+}
+
+TEST_CASE ("ottofm-env", "[.interactive][engine]") {
+  using namespace services;
+  auto app = start_app(ConfigManager::make_default(), //
+                       LogicThread::make(),           //
+                       Controller::make(),            //
+                       Graphics::make()               //
   );
 
   itc::ChannelGroup chan;
-  auto eng = engines::ottofm::make(chan);
+  auto eng = engines::ottofm::factory.make_without_audio(chan);
 
   // app.service<Audio>().set_midi_handler(&eng.audio->midi_handler());
   // app.service<Audio>().set_process_callback([&](Audio::CallbackData data) {
   //  const auto res = eng.audio->process();
   //  std::ranges::copy(util::zip(res, res), data.output.begin());
-  //});
+  // });
   app.service<Graphics>().show([&](SkCanvas& ctx) { eng.mod_screen.screen->draw(ctx); });
   app.service<Controller>().set_input_handler(*eng.mod_screen.handler);
 

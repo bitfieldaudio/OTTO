@@ -23,7 +23,7 @@ namespace otto::engines::ottofm {
   struct Operators : graphics::Widget<Operators> {
     int algorithm_idx = 0, cur_op = 0;
     std::array<float, 4> activity_levels = {};
-    std::array<skia::Color, 4> operator_colours = {colors::blue, colors::green, colors::yellow, colors::red};
+    std::array<skia::Color, 4> operator_colours = {colors::red, colors::yellow, colors::green, colors::blue};
 
     void do_draw(skia::Canvas& ctx);
   };

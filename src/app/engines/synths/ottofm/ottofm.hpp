@@ -29,9 +29,53 @@ namespace otto::engines::ottofm {
     ScreenWithHandler mod_screen;
   };
 
+  struct SynthEngineFactory {
+    fu2::unique_function<std::unique_ptr<ILogic>(itc::ChannelGroup&) const> make_logic;
+    fu2::unique_function<std::unique_ptr<ISynthAudio>(itc::ChannelGroup&) const> make_audio;
+    fu2::unique_function<ScreenWithHandler(itc::ChannelGroup&) const> make_mod_screen;
+    fu2::unique_function<ScreenWithHandler(itc::ChannelGroup&) const> make_main_screen;
+
+    SynthEngineInstance make_all(itc::ChannelGroup& chan) const
+    {
+      return {
+        .logic = make_logic(chan),
+        .audio = make_audio(chan),
+        .main_screen = make_main_screen(chan),
+        .mod_screen = make_mod_screen(chan),
+      };
+    }
+
+    SynthEngineInstance make_without_audio(itc::ChannelGroup& chan) const
+    {
+      return {
+        .logic = make_logic(chan),
+        .audio = nullptr,
+        .main_screen = make_main_screen(chan),
+        .mod_screen = make_mod_screen(chan),
+      };
+    }
+
+    SynthEngineInstance make_without_screens(itc::ChannelGroup& chan) const
+    {
+      return {
+        .logic = make_logic(chan),
+        .audio = make_audio(chan),
+        .main_screen = nullptr,
+        .mod_screen = nullptr,
+      };
+    }
+  };
+
+  std::unique_ptr<ILogic> make_logic(itc::ChannelGroup&);
   ScreenWithHandler make_main_screen(itc::ChannelGroup&);
   ScreenWithHandler make_mod_screen(itc::ChannelGroup&);
   std::unique_ptr<ISynthAudio> make_audio(itc::ChannelGroup&);
 
-  SynthEngineInstance make(itc::ChannelGroup&);
+  // NOLINTNEXTLINE
+  inline const SynthEngineFactory factory = {
+    .make_logic = make_logic,
+    .make_audio = make_audio,
+    .make_mod_screen = make_mod_screen,
+    .make_main_screen = make_main_screen,
+  };
 } // namespace otto::engines::ottofm

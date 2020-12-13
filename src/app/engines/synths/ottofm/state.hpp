@@ -20,7 +20,7 @@ namespace otto::engines::ottofm {
 
   struct OperatorState {
     ADSRState envelope;
-    util::StaticallyBounded<float, 0, 1> shape = 0.5;
+    util::StaticallyBounded<float, 0, 1> shape = 0.5f;
     util::StaticallyBounded<float, 0, 1> level = 1;
     // Oscillator
     util::StaticallyBounded<float, -1, 1> detune = 0;

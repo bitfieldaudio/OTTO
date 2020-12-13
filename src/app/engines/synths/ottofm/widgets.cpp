@@ -24,7 +24,7 @@ namespace otto::engines::ottofm {
     p.quadTo(aw * arc_size, height * arc_size, aw, 0); // curve
     p.lineTo(aw, height);
     p.close();
-    ctx.drawPath(p, paints::stroke_and_fill(colors::blue.mix(colors::grey50, static_cast<float>(!active) * 0.7f)));
+    ctx.drawPath(p, paints::stroke_and_fill(colors::blue.mix(colors::black, static_cast<float>(!active) * 0.7f)));
 
     p.reset();
 
@@ -33,7 +33,7 @@ namespace otto::engines::ottofm {
     p.quadTo(aw + spacing + dw * (1 - arc_size), (height - sh) * arc_size, aw + spacing + dw, height - sh); // curve
     p.lineTo(aw + spacing + dw, height);
     p.close();
-    ctx.drawPath(p, paints::stroke_and_fill(colors::green.mix(colors::grey50, static_cast<float>(!active) * 0.8f)));
+    ctx.drawPath(p, paints::stroke_and_fill(colors::green.mix(colors::black, static_cast<float>(!active) * 0.8f)));
 
     p.reset();
 
@@ -42,7 +42,7 @@ namespace otto::engines::ottofm {
     p.lineTo(width - spacing - rw, height);
     p.lineTo(aw + spacing + dw + spacing, height);
     p.close();
-    ctx.drawPath(p, paints::stroke_and_fill(colors::yellow.mix(colors::grey50, static_cast<float>(!active) * 0.8f)));
+    ctx.drawPath(p, paints::stroke_and_fill(colors::yellow.mix(colors::black, static_cast<float>(!active) * 0.8f)));
 
     p.reset();
 
@@ -50,7 +50,7 @@ namespace otto::engines::ottofm {
     p.lineTo(width - rw, height - sh);
     p.quadTo(width - rw * arc_size, height - sh * (1 - arc_size), width, height);
     p.close();
-    ctx.drawPath(p, paints::stroke_and_fill(colors::red.mix(colors::grey50, static_cast<float>(!active) * 0.8f)));
+    ctx.drawPath(p, paints::stroke_and_fill(colors::red.mix(colors::black, static_cast<float>(!active) * 0.8f)));
   }
 
   void Operators::do_draw(skia::Canvas& ctx)
@@ -101,7 +101,7 @@ namespace otto::engines::ottofm {
       const auto color = operator_colours[i].mix(colors::white, 0.5f * static_cast<float>(active));
 
       if (algorithms[algorithm_idx].modulator_flags[i]) { // draw modulator
-        SkRect rect = SkRect::MakeXYWH(x_middle - operator_radius * square_scale, static_cast<float>(3 - i) * space,
+        SkRect rect = SkRect::MakeXYWH(x_middle - operator_radius * square_scale, static_cast<float>(i) * space,
                                        operator_size * square_scale, operator_size * square_scale);
         if (active) ctx.drawRect(rect, paints::fill(colors::white));
         ctx.drawRect(rect, paints::stroke(color, 4.f));
@@ -110,7 +110,7 @@ namespace otto::engines::ottofm {
         ctx.drawRect(rect, paints::fill(color));
 
       } else { // draw carrier
-        float y_pos = operator_radius + static_cast<float>(3 - i) * space;
+        float y_pos = operator_radius + static_cast<float>(i) * space;
         if (active) ctx.drawCircle(x_middle, y_pos, operator_radius, paints::fill(colors::white));
         ctx.drawCircle(x_middle, y_pos, operator_radius, paints::stroke(color, 4.f));
         // Draw activity level
@@ -285,8 +285,7 @@ namespace otto::engines::ottofm {
     float x = 0;
     int i = 0;
     for (auto& s : sinewave) {
-      path.lineTo(x, scale * (1 + (s + l_value * left_harmonics[i] + r_value * right_harmonics[i]) /
-                                    (1 + r_value)));
+      path.lineTo(x, scale * (1 + (s + l_value * left_harmonics[i] + r_value * right_harmonics[i]) / (1 + r_value)));
       x += step;
       i++;
     }
