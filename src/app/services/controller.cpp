@@ -5,7 +5,7 @@ namespace otto::services {
   using namespace drivers;
 
   struct ExecutorWrapper : InputHandler {
-    ExecutorWrapper(itc::IExecutor& executor, util::any_ptr<IInputHandler>&& delegate)
+    ExecutorWrapper(itc::IExecutor& executor, util::smart_ptr<IInputHandler>&& delegate)
       : executor_(executor), delegate_(std::move(delegate))
     {}
 
@@ -24,10 +24,10 @@ namespace otto::services {
 
   private:
     itc::IExecutor& executor_;
-    util::any_ptr<IInputHandler> delegate_;
+    util::smart_ptr<IInputHandler> delegate_;
   };
 
-  Controller::Controller(util::any_ptr<MCUPort>::factory&& make_port, Config::Handle conf)
+  Controller::Controller(util::smart_ptr<MCUPort>::factory&& make_port, Config::Handle conf)
     : conf_(std::move(conf)), com_(make_port()), thread_([this](std::stop_token stop_token) {
         while (runtime->should_run() && !stop_token.stop_requested()) {
           {
@@ -58,7 +58,7 @@ namespace otto::services {
     queue_.push_back({Command::led_set, {util::enum_integer(led.key), c.r, c.g, c.b}});
   }
 
-  MCUCommunicator::MCUCommunicator(util::any_ptr<MCUPort>&& com) : port_(std::move(com)) {}
+  MCUCommunicator::MCUCommunicator(util::smart_ptr<MCUPort>&& com) : port_(std::move(com)) {}
 
   void MCUCommunicator::handle_packet(Packet p)
   {

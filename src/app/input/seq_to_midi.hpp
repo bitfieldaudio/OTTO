@@ -5,7 +5,7 @@
 #include "app/services/audio.hpp"
 #include "lib/core/service.hpp"
 #include "lib/util/any_ptr.hpp"
-#include "lib/util/visitor.hpp"
+#include "lib/util/smart_ptr.hpp"
 
 namespace otto {
   /// Key handler that sends midi events for the keyboard keys
@@ -15,13 +15,13 @@ namespace otto {
       DECL_VISIT(octave);
     };
 
-    KeyboardKeysHandler(util::any_ptr<State> state = std::make_unique<State>()) : state_(std::move(state)) {}
+    KeyboardKeysHandler(util::smart_ptr<State> state = std::make_unique<State>()) : state_(std::move(state)) {}
 
     void handle(KeyPress e) noexcept override;
 
     void handle(KeyRelease e) noexcept override;
 
   private:
-    util::any_ptr<State> state_;
+    util::smart_ptr<State> state_;
   };
 } // namespace otto

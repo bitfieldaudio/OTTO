@@ -49,7 +49,7 @@ namespace otto {
   /// TODO: Consider splitting momentary detection out into its own component
   /// if it becomes useful in other places
   struct NavKeyMap : IInputHandler {
-    NavKeyMap(util::any_ptr<Navigator> n, chrono::duration timeout = 500ms);
+    NavKeyMap(util::smart_ptr<Navigator> n, chrono::duration timeout = 500ms);
 
     Navigator& nav();
 
@@ -60,7 +60,7 @@ namespace otto {
     void handle(EncoderEvent e) noexcept override;
 
   private:
-    util::any_ptr<Navigator> nav_;
+    util::smart_ptr<Navigator> nav_;
     chrono::time_point last_nav_time_;
     util::enum_map<Key, ScreenWithHandlerPtr> binds_;
     chrono::duration momentary_timeout_ = 500ms;

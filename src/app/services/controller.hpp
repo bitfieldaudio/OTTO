@@ -2,7 +2,7 @@
 
 #include "app/services/logic_thread.hpp"
 #include "lib/core/service.hpp"
-#include "lib/util/any_ptr.hpp"
+#include "lib/util/smart_ptr.hpp"
 
 #include "app/drivers/mcu_port.hpp"
 #include "app/input.hpp"
@@ -15,18 +15,18 @@ namespace otto::services {
   /// Does the bulk of the work of {@ref Controller}, but is separated out
   /// to allow usage/testing of the individual methods
   struct MCUCommunicator {
-    MCUCommunicator(util::any_ptr<drivers::MCUPort>&& port);
+    MCUCommunicator(util::smart_ptr<drivers::MCUPort>&& port);
 
     /// Handle received packet, and send events.
     ///
     /// @throws util::exception if the data is invalid.
     void handle_packet(drivers::Packet p);
 
-    util::any_ptr<IInputHandler> handler = nullptr;
+    util::smart_ptr<IInputHandler> handler = nullptr;
 
   private:
     friend struct Controller;
-    util::any_ptr<drivers::MCUPort> port_;
+    util::smart_ptr<drivers::MCUPort> port_;
   };
 
   struct Controller : core::Service<Controller> {
@@ -35,7 +35,7 @@ namespace otto::services {
       DECL_VISIT(wait_time);
     };
 
-    explicit Controller(util::any_ptr<drivers::MCUPort>::factory&& make_com = drivers::MCUPort::make_default,
+    explicit Controller(util::smart_ptr<drivers::MCUPort>::factory&& make_com = drivers::MCUPort::make_default,
                         Config::Handle conf = {});
 
     Controller(const Controller&) = delete;

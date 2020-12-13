@@ -2,7 +2,7 @@
 
 #include <choreograph/Choreograph.h>
 
-#include "lib/util/any_ptr.hpp"
+#include "lib/util/smart_ptr.hpp"
 
 #include "app/drivers/graphics_driver.hpp"
 #include "lib/core/service.hpp"
@@ -20,7 +20,7 @@ namespace otto::services {
 
   struct Graphics : core::Service<Graphics>, itc::ExecutorProvider<detail::graphics_domain_tag> {
     using IGraphicsDriver = drivers::IGraphicsDriver;
-    Graphics(util::any_ptr<IGraphicsDriver>::factory&& driver = IGraphicsDriver::make_default);
+    Graphics(util::smart_ptr<IGraphicsDriver>::factory&& driver = IGraphicsDriver::make_default);
     /// Open a window/display drawing the given draw function
     void show(DrawFunc f);
 
@@ -42,7 +42,7 @@ namespace otto::services {
     /// to add their own service accessors
     [[no_unique_address]] core::ServiceAccessor<Runtime> runtime;
 
-    util::any_ptr<IGraphicsDriver> driver_;
+    util::smart_ptr<IGraphicsDriver> driver_;
     DrawFunc draw_func_ = nullptr;
     choreograph::Timeline timeline_;
     chrono::time_point last_frame_ = chrono::clock::now();

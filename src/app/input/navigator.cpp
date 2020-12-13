@@ -51,7 +51,7 @@ namespace otto {
 
   // NAV KEYMAP
 
-  NavKeyMap::NavKeyMap(util::any_ptr<Navigator> n, chrono::duration timeout)
+  NavKeyMap::NavKeyMap(util::smart_ptr<Navigator> n, chrono::duration timeout)
     : nav_(std::move(n)), momentary_timeout_(timeout)
   {}
 

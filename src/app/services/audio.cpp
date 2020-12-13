@@ -4,7 +4,7 @@
 
 namespace otto::services {
 
-  Audio::Audio(util::any_ptr<drivers::IAudioDriver>::factory&& d) : driver_(d())
+  Audio::Audio(util::smart_ptr<drivers::IAudioDriver>::factory&& d) : driver_(d())
   {
     driver_->set_callback(std::bind_front(&Audio::loop_func, this));
     abp_ = util::AudioBufferPool{16, driver_->buffer_size()};
@@ -12,7 +12,7 @@ namespace otto::services {
     runtime->on_enter_stage(Runtime::Stage::running, [&d = *driver_] { d.start(); });
   }
 
-  void Audio::set_midi_handler(util::any_ptr<midi::IMidiHandler> h) noexcept
+  void Audio::set_midi_handler(util::smart_ptr<midi::IMidiHandler> h) noexcept
   {
     midi_handler_ = std::move(h);
   }

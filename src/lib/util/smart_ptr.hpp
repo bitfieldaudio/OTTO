@@ -11,31 +11,31 @@ namespace otto::util {
   /// Used whenever you just want a pointer to some (polymorphic) object, and don't care
   /// if its owning and how.
   template<typename T>
-  struct any_ptr {
+  struct smart_ptr {
     using pointer = T*;
     using unique_ptr = std::unique_ptr<T>;
     using shared_ptr = std::shared_ptr<T>;
-    using factory = fu2::unique_function<any_ptr<T>()>;
+    using factory = fu2::unique_function<smart_ptr<T>()>;
 
-    any_ptr() : variant_(static_cast<pointer>(nullptr)) {}
-    any_ptr(pointer p) noexcept : pointer_(p), variant_(p) {}
-    any_ptr(unique_ptr&& up) noexcept : pointer_(up.get()), variant_(std::move(up)) {}
-    any_ptr(shared_ptr sp) noexcept : pointer_(sp.get()), variant_(std::move(sp)) {}
+    smart_ptr() : variant_(static_cast<pointer>(nullptr)) {}
+    smart_ptr(pointer p) noexcept : pointer_(p), variant_(p) {}
+    smart_ptr(unique_ptr&& up) noexcept : pointer_(up.get()), variant_(std::move(up)) {}
+    smart_ptr(shared_ptr sp) noexcept : pointer_(sp.get()), variant_(std::move(sp)) {}
 
-    ~any_ptr() noexcept = default;
+    ~smart_ptr() noexcept = default;
 
     template<std::derived_from<T> U>
-    any_ptr(std::unique_ptr<U>&& up) noexcept : any_ptr(static_cast<unique_ptr>(std::move(up)))
+    smart_ptr(std::unique_ptr<U>&& up) noexcept : smart_ptr(static_cast<unique_ptr>(std::move(up)))
     {}
     template<std::derived_from<T> U>
-    any_ptr(std::shared_ptr<U> sp) noexcept : any_ptr(static_cast<shared_ptr>(std::move(sp)))
+    smart_ptr(std::shared_ptr<U> sp) noexcept : smart_ptr(static_cast<shared_ptr>(std::move(sp)))
     {}
 
-    any_ptr(const any_ptr&) = delete;
-    any_ptr(any_ptr&&) noexcept = default;
+    smart_ptr(const smart_ptr&) = delete;
+    smart_ptr(smart_ptr&&) noexcept = default;
 
-    any_ptr& operator=(const any_ptr&) = delete;
-    any_ptr& operator=(any_ptr&&) noexcept = default;
+    smart_ptr& operator=(const smart_ptr&) = delete;
+    smart_ptr& operator=(smart_ptr&&) noexcept = default;
 
     pointer get() const noexcept
     {
@@ -57,7 +57,7 @@ namespace otto::util {
       return get() != nullptr;
     }
 
-    bool operator==(const any_ptr&) const noexcept = default;
+    bool operator==(const smart_ptr&) const noexcept = default;
     bool operator==(pointer p) const noexcept
     {
       return get() == p;
@@ -71,7 +71,7 @@ namespace otto::util {
       return get() == p;
     }
 
-    std::strong_ordering operator<=>(const any_ptr&) const noexcept = default;
+    std::strong_ordering operator<=>(const smart_ptr&) const noexcept = default;
     std::strong_ordering operator<=>(pointer p) const noexcept
     {
       return get() <=> p;

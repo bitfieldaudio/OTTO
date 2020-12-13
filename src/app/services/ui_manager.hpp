@@ -25,7 +25,7 @@ namespace otto::services {
   private:
     std::unique_ptr<Handler> input_handler_;
     std::unique_ptr<Drawable> drawable_;
-    std::vector<util::any_ptr<InputHandler>> global_handlers_;
+    std::vector<util::smart_ptr<InputHandler>> global_handlers_;
   };
 
 } // namespace otto::services
