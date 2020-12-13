@@ -11,7 +11,7 @@
 
 namespace otto::services {
 
-  struct UIManager : core::Service<UIManager>, core::ServiceAccessor<Audio, Controller, Graphics> {
+  struct UIManager : core::Service<UIManager>, core::ServiceAccessor<Controller, Graphics> {
   private:
     struct Handler;
     struct Drawable;

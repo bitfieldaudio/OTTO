@@ -93,4 +93,9 @@ namespace otto {
   {
     nav().handle(e);
   }
+
+  ScreenWithHandlerPtr NavKeyMap::sceen()
+  {
+    return {&nav(), this};
+  }
 } // namespace otto

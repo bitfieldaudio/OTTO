@@ -35,10 +35,7 @@ namespace otto {
   ///
   /// Lets you bind navigation keys, and handles momentary navigation
   ///
-  /// A momentary press is either
-  ///  - if you release the nav key within a timeout of pressing it
-  ///  - You press other keys while the navigation key is pressed
-  ///  - You turn encoders while the navigation key is pressd
+  /// A momentary press is when you hold the key _longer_ than the given timeout
   ///
   /// In case of a momentary press, the navigator will return to the previous
   /// screen on release
@@ -59,10 +56,13 @@ namespace otto {
     void handle(KeyRelease e) noexcept override;
     void handle(EncoderEvent e) noexcept override;
 
+    /// Get as a screen/handler pair
+    ScreenWithHandlerPtr sceen();
+
   private:
     util::smart_ptr<Navigator> nav_;
     chrono::time_point last_nav_time_;
     util::enum_map<Key, ScreenWithHandlerPtr> binds_;
-    chrono::duration momentary_timeout_ = 500ms;
+    chrono::duration momentary_timeout_;
   };
 } // namespace otto

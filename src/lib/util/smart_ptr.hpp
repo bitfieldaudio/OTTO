@@ -4,6 +4,8 @@
 #include <memory>
 #include <variant>
 
+#include "concepts.hpp"
+
 namespace otto::util {
 
   /// A smart² pointer, which is either a raw pointer, a `std::unique_ptr` or a `std::shared_ptr`.
@@ -36,6 +38,16 @@ namespace otto::util {
 
     smart_ptr& operator=(const smart_ptr&) = delete;
     smart_ptr& operator=(smart_ptr&&) noexcept = default;
+
+    template<util::base_of<T> U>
+    operator smart_ptr<U>() && noexcept
+    {
+      return std::visit(
+        fu2::overload([](pointer ptr) { return smart_ptr<U>(static_cast<U*>(ptr)); },
+                      [](unique_ptr&& ptr) { return smart_ptr<U>(static_cast<std::unique_ptr<U>>(std::move(ptr))); },
+                      [](shared_ptr&& ptr) { return smart_ptr<U>(static_cast<std::shared_ptr<U>>(std::move(ptr))); }),
+        std::move(variant_));
+    }
 
     pointer get() const noexcept
     {

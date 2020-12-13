@@ -49,6 +49,9 @@ namespace otto::util {
   template<typename T, typename U>
   concept decays_to = std::same_as<std::decay_t<T>, U>;
 
+  template<typename T, typename U>
+  concept base_of = std::derived_from<U, T>;
+
   template<typename T>
   concept AnEnum = std::is_enum_v<T>;
 
