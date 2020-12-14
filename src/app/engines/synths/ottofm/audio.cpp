@@ -36,7 +36,8 @@ namespace otto::engines::ottofm {
     /// For graphics
     [[nodiscard]] float get_activity_level() const noexcept
     {
-      return env_.value() * state.level;;
+      return env_.value() * state.level;
+      ;
     }
 
     /// Reset envelope
@@ -86,7 +87,7 @@ namespace otto::engines::ottofm {
 
     float operator()() noexcept;
 
-    void on_note_on(float) noexcept;
+    void on_note_on() noexcept;
     void on_note_off() noexcept;
 
     void reset_envelopes() noexcept;
@@ -162,7 +163,7 @@ namespace otto::engines::ottofm {
     }
   }
 
-  void Voice::on_note_on(float freq_target) noexcept
+  void Voice::on_note_on() noexcept
   {
     reset_envelopes();
   }
@@ -191,20 +192,46 @@ namespace otto::engines::ottofm {
   {
     set_frequencies();
     auto& [op0, op1, op2, op3] = operators;
-    float aux = 0;
     switch (state_.algorithm_idx) {
-      case 0: return op0(op1(op2(op3(0))));
-      case 1: return op0(op1(op2(0) + op3(0)));
-      case 2: return op0(op1(op2(0)) + op3(0));
-      case 3: aux = op3(0); return op0(op1(aux) + op2(aux));
-      case 4: aux = op2(op3(0)); return (op0(aux) + op1(aux));
-      case 5: return (op0(0) + op1(op2(op3(0))));
-      case 6: return op0(op1(0) + op2(0) + op3(0));
-      case 7: return (op0(op1(0)) + op2(op3(0)));
-      case 8: aux = op3(0); return (op0(aux) + op1(aux) + op2(aux));
-      case 9: return (op0(0) + op1(0) + op2(op3(0)));
-      case 10: return (op0(0) + op1(0) + op2(0) + op3(0));
-      default: return 0.f;
+      case 0: {
+        return op0(op1(op2(op3(0))));
+      }
+      case 1: {
+        return op0(op1(op2(0) + op3(0)));
+      }
+      case 2: {
+        return op0(op1(op2(0)) + op3(0));
+      }
+      case 3: {
+        float aux = op3(0);
+        return op0(op1(aux) + op2(aux));
+      }
+      case 4: {
+        float aux = op2(op3(0));
+        return (op0(aux) + op1(aux));
+      }
+      case 5: {
+        return (op0(0) + op1(op2(op3(0))));
+      }
+      case 6: {
+        return op0(op1(0) + op2(0) + op3(0));
+      }
+      case 7: {
+        return (op0(op1(0)) + op2(op3(0)));
+      }
+      case 8: {
+        float aux = op3(0);
+        return (op0(aux) + op1(aux) + op2(aux));
+      }
+      case 9: {
+        return (op0(0) + op1(0) + op2(op3(0)));
+      }
+      case 10: {
+        return (op0(0) + op1(0) + op2(0) + op3(0));
+      }
+      default: {
+        return 0.f;
+      }
     }
   }
 

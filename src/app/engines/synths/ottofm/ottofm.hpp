@@ -60,8 +60,8 @@ namespace otto::engines::ottofm {
       return {
         .logic = make_logic(chan),
         .audio = make_audio(chan),
-        .main_screen = nullptr,
-        .mod_screen = nullptr,
+        .main_screen = {nullptr, nullptr},
+        .mod_screen = {nullptr, nullptr},
       };
     }
   };

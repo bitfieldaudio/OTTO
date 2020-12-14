@@ -1,5 +1,7 @@
-#include "app/services/controller.hpp"
+#include <utility>
+
 #include "app/services/config.hpp"
+#include "app/services/controller.hpp"
 
 #include "lib/util/i2c.hpp"
 
@@ -12,7 +14,7 @@ namespace otto::drivers {
       DECL_VISIT(address, device_path)
     };
 
-    I2CMCUPort(Config::Handle c = {}) : conf(c), i2c(conf->address)
+    I2CMCUPort(Config::Handle c = {}) : conf(std::move(c)), i2c(conf->address)
     {
       auto ec = i2c.open(conf->device_path);
       if (ec) throw std::system_error(ec);
@@ -21,7 +23,7 @@ namespace otto::drivers {
     void write(const Packet& p) override
     {
       std::this_thread::sleep_until(next_allowed_time);
-      next_allowed_time = chrono::clock::now() + chrono::milliseconds(5);
+      next_allowed_time = chrono::clock::now() + 2ms;
       // LOGI("Sending packet: {} {:02X}", util::enum_name(p.cmd), fmt::join(p.data, " "));
       auto ec = i2c.write(p.to_array());
       if (ec.value() == EREMOTEIO) {
@@ -34,8 +36,8 @@ namespace otto::drivers {
     Packet read() override
     {
       std::this_thread::sleep_until(next_allowed_time);
-      next_allowed_time = chrono::clock::now() + chrono::milliseconds(5);
-      std::array<std::uint8_t, 17> data;
+      next_allowed_time = chrono::clock::now() + 2ms;
+      std::array<std::uint8_t, 17> data = {};
       auto ec = i2c.read_into(data);
       // LOGI("Read: {:02X}", fmt::join(data, " "));
       if (ec.value() == EREMOTEIO) {

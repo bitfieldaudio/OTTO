@@ -20,7 +20,7 @@ TEST_CASE ("audio_sine", "[.interactive]") {
   auto app = start_app(ConfigManager::make_default(), Audio::make());
   gam::Sine<> osc = {440};
   app.service<Audio>().set_process_callback([&](Audio::CallbackData data) {
-    std::ranges::generate(data.output.left, osc);
+    std::ranges::generate(data.output.left, std::ref(osc));
     std::ranges::copy(data.output.left, data.output.right.begin());
   });
   app.wait_for_stop(10s);

@@ -95,13 +95,13 @@ namespace otto::engines::ottofm {
 
     // draw operators
     for (int i = 0; i < 4; i++) {
-      float level = activity_levels[3 - i];
-      bool active = i == 3 - cur_op;
+      float level = activity_levels[i];
+      bool active = i == cur_op;
       // Choose colour
       const auto color = operator_colours[i].mix(colors::white, 0.5f * static_cast<float>(active));
 
       if (algorithms[algorithm_idx].modulator_flags[i]) { // draw modulator
-        SkRect rect = SkRect::MakeXYWH(x_middle - operator_radius * square_scale, static_cast<float>(i) * space,
+        SkRect rect = SkRect::MakeXYWH(x_middle - operator_radius * square_scale, static_cast<float>(3 - i) * space,
                                        operator_size * square_scale, operator_size * square_scale);
         if (active) ctx.drawRect(rect, paints::fill(colors::white));
         ctx.drawRect(rect, paints::stroke(color, 4.f));
@@ -110,7 +110,7 @@ namespace otto::engines::ottofm {
         ctx.drawRect(rect, paints::fill(color));
 
       } else { // draw carrier
-        float y_pos = operator_radius + static_cast<float>(i) * space;
+        float y_pos = operator_radius + static_cast<float>(3 - i) * space;
         if (active) ctx.drawCircle(x_middle, y_pos, operator_radius, paints::fill(colors::white));
         ctx.drawCircle(x_middle, y_pos, operator_radius, paints::stroke(color, 4.f));
         // Draw activity level

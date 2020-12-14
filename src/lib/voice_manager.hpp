@@ -65,6 +65,9 @@ namespace otto::voices {
       return volume_;
     }
 
+    void on_note_on() noexcept {}
+    void on_note_off() noexcept {}
+
     /// Calculate the next glide points, envelope etc..
     ///
     /// @note Must be called before calling operator(). VoiceManager::operator() and ::process do this.
@@ -101,14 +104,14 @@ namespace otto::voices {
         glide_ = frequency_;
       }
       velocity_ = velocity;
-      // TODO: if (!legato) derived().on_note_on();
+      if (!legato) static_cast<Voice*>(this)->on_note_on();
     }
 
     void release() noexcept
     {
       if (is_triggered()) {
         triggered_ = false;
-        // TODO: derived().on_note_off();
+        static_cast<Voice*>(this)->on_note_off();
       }
     }
 
