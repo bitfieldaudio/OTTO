@@ -1,4 +1,5 @@
 #include "log_slider.hpp"
+
 #include <cmath>
 namespace otto::util::dsp {
   /**

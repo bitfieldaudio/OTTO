@@ -1,10 +1,10 @@
 #pragma once
 
 #include <type_traits>
-#include "lib/util/string_ref.hpp"
-#include "lib/util/utility.hpp"
 
 #include "lib/util/macros.hpp"
+#include "lib/util/string_ref.hpp"
+#include "lib/util/utility.hpp"
 
 namespace otto::util {
 

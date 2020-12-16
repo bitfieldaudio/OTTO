@@ -1,5 +1,6 @@
-#include <Gamma/Domain.h>
 #include <functional>
+
+#include <Gamma/Domain.h>
 
 template<class Td = gam::DomainObserver>
 class DelayedLambda : public Td {

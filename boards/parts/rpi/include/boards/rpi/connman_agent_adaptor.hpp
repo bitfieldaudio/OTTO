@@ -3,8 +3,9 @@
  */
 #ifndef __dbusxx__connman_agent_adaptor_hpp__ADAPTOR_MARSHALL_H
 #define __dbusxx__connman_agent_adaptor_hpp__ADAPTOR_MARSHALL_H
-#include <dbus-c++/dbus.h>
 #include <cassert>
+
+#include <dbus-c++/dbus.h>
 
 namespace net {
   namespace connman {

@@ -4,11 +4,12 @@
 
 #include "lib/util/smart_ptr.hpp"
 
-#include "app/drivers/graphics_driver.hpp"
 #include "lib/core/service.hpp"
 #include "lib/itc/executor.hpp"
 #include "lib/itc/executor_provider.hpp"
 #include "lib/itc/itc.hpp"
+
+#include "app/drivers/graphics_driver.hpp"
 
 #include "runtime.hpp"
 

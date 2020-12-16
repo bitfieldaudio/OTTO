@@ -1,7 +1,8 @@
 #include "app/services/audio.hpp"
-#include "app/services/config.hpp"
 
 #include <RtAudio.h>
+
+#include "app/services/config.hpp"
 
 namespace otto::drivers {
 

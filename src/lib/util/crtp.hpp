@@ -6,7 +6,7 @@ namespace otto::util {
   ///
   /// Exposes a {@ref derived()} function to the CRTP class only, not to
   /// types deriving from the CRTP type.
-  /// 
+  ///
   /// Usage:
   /// ```cpp
   /// template<typename Derived, typename SecondT>

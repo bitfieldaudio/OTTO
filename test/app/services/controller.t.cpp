@@ -1,15 +1,15 @@
 #include "testing.t.hpp"
 
+#include "app/services/controller.hpp"
+
 #include <queue>
 
+#include "lib/util/with_limits.hpp"
+
 #include "app/services/config.hpp"
-#include "app/services/controller.hpp"
 #include "app/services/graphics.hpp"
 #include "app/services/logic_thread.hpp"
-
 #include "app/services/runtime.hpp"
-
-#include "lib/util/with_limits.hpp"
 
 #include "stubs/controller.hpp"
 #include "stubs/logic_thread.hpp"

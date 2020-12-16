@@ -1,13 +1,15 @@
 #pragma once
 
-#include <fmt/format.h>
 #include <bitset>
 #include <compare>
 #include <cstdint>
 
+#include <fmt/format.h>
+
+#include "lib/util/enum.hpp"
+
 #include "lib/chrono.hpp"
 #include "lib/itc/reducer.hpp"
-#include "lib/util/enum.hpp"
 
 namespace otto {
 

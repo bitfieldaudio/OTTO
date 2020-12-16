@@ -2,8 +2,9 @@
 
 #include <variant>
 
-#include "lib/meta.hpp"
 #include "lib/util/concepts.hpp"
+
+#include "lib/meta.hpp"
 
 namespace otto::util {
 

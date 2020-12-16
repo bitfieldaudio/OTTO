@@ -1,5 +1,7 @@
-#include <thread>
 #include "testing.t.hpp"
+
+#include <thread>
+
 #include "util/crtp.hpp"
 #include "util/flat_map.hpp"
 #include "util/ptr_vec.hpp"
@@ -8,6 +10,7 @@
 
 #define DBUS_HAS_RECURSIVE_MUTEX 1
 #include <dbus-c++/dbus.h>
+
 #include "boards/rpi/connman_agent_adaptor.hpp"
 #include "boards/rpi/connman_dbus_proxy.hpp"
 

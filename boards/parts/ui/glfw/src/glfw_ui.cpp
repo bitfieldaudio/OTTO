@@ -1,26 +1,25 @@
 #include "board/ui/glfw_ui.hpp"
 
+#include <chrono>
+#include <iostream>
+#include <thread>
+
 #include <GrBackendSurface.h>
 #include <GrContext.h>
 #include <SkCanvas.h>
 #include <SkColorSpace.h>
 #include <SkFont.h>
 #include <SkSurface.h>
+#include <blockingconcurrentqueue.h>
 #include <gl/GrGLAssembleInterface.h>
 #include <gl/GrGLInterface.h>
 
-#include <chrono>
-#include <iostream>
-#include <thread>
-
-#include <blockingconcurrentqueue.h>
-
-#include "app/services/logic_thread.hpp"
 #include "lib/util/exception.hpp"
 #include "lib/util/thread.hpp"
 
 #include "app/services/controller.hpp"
 #include "app/services/graphics.hpp"
+#include "app/services/logic_thread.hpp"
 
 namespace otto::glfw {
   using namespace std::literals;

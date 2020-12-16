@@ -1,11 +1,12 @@
 #pragma once
 
-#include "app/input.hpp"
-
-#include "app/services/audio.hpp"
-#include "lib/core/service.hpp"
 #include "lib/util/smart_ptr.hpp"
 #include "lib/util/visitor.hpp"
+
+#include "lib/core/service.hpp"
+
+#include "app/input.hpp"
+#include "app/services/audio.hpp"
 
 namespace otto {
   /// Key handler that sends midi events for the keyboard keys

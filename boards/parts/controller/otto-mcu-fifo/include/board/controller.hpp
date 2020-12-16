@@ -2,11 +2,10 @@
 
 #include <gsl/span>
 
-#include "util/locked.hpp"
-#include "util/thread.hpp"
-
 #include "services/controller.hpp"
 #include "util/fifo.hpp"
+#include "util/locked.hpp"
+#include "util/thread.hpp"
 
 namespace otto::services {
 

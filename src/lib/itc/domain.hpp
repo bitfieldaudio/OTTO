@@ -1,7 +1,8 @@
 #pragma once
 
-#include "executor.hpp"
 #include "lib/logging.hpp"
+
+#include "executor.hpp"
 
 namespace otto::itc {
   /// Provide access to an executor. Inherit from this virtually

@@ -7,9 +7,10 @@
 #include <SkTextBlob.h>
 #include <SkTypeface.h>
 
+#include "lib/logging.hpp"
+
 #include "anchor.hpp"
 #include "color.hpp"
-#include "lib/logging.hpp"
 #include "point.hpp"
 
 /// Thin wrappers on top of skia classes for saner defaults & adding a few useful functions

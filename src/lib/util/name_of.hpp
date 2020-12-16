@@ -59,7 +59,7 @@ namespace otto::util {
   } // namespace detail
 
   /// Compile time fully qualified name of a type.
-  /// 
+  ///
   /// Guarantees that `qualified_name_of<T> == qualified_name_of<U>` is equivalent
   /// to `T == U`, which also applies to `qualified_name_of.c_str()`. Hence, comparing
   /// the `const char*` is enough to determine equality of the types.
@@ -69,7 +69,7 @@ namespace otto::util {
   /// Compile time name of a type with qualifiers removed.
   ///
   /// Also removes qualifiers of nested template parameters
-  /// 
+  ///
   /// Does not guarantee that `name_of<T> == name_of<U>` is equivalent to `T == U`,
   /// but comparing the pointers `name_of.c_str()` does. Hence, comparing
   /// the `const char*` is determines equality of the types.

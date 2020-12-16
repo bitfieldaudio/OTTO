@@ -2,10 +2,11 @@
 
 #include <thread>
 
-#include "app/drivers/graphics_driver.hpp"
-#include "app/services/runtime.hpp"
 #include "lib/chrono.hpp"
 #include "lib/core/service.hpp"
+
+#include "app/drivers/graphics_driver.hpp"
+#include "app/services/runtime.hpp"
 
 namespace otto::stubs {
 

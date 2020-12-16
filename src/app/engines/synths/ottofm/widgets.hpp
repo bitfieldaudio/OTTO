@@ -1,11 +1,12 @@
 #pragma once
 
-#include "app/engines/synths/ottofm/state.hpp"
-#include "ottofm.hpp"
-
 #include "lib/skia/anim.hpp"
 #include "lib/skia/skia.hpp"
 #include "lib/widget.hpp"
+
+#include "app/engines/synths/ottofm/state.hpp"
+
+#include "ottofm.hpp"
 
 namespace otto::engines::ottofm {
 

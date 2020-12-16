@@ -1,7 +1,8 @@
 #include "board/ui/keys.hpp"
 
-#include "app/services/controller.hpp"
 #include "lib/itc/executor.hpp"
+
+#include "app/services/controller.hpp"
 
 namespace otto::drivers {
 

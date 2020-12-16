@@ -1,9 +1,10 @@
-#include <utility>
-
-#include "app/services/config.hpp"
 #include "app/services/controller.hpp"
 
+#include <utility>
+
 #include "lib/util/i2c.hpp"
+
+#include "app/services/config.hpp"
 
 namespace otto::drivers {
 

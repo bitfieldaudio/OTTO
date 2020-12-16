@@ -1,10 +1,11 @@
 #include "testing.t.hpp"
 
-#include "app/services/config.hpp"
 #include "app/services/graphics.hpp"
 
 #include <SkFont.h>
 #include <SkTypeface.h>
+
+#include "app/services/config.hpp"
 
 using namespace otto;
 using namespace otto::services;

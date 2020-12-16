@@ -3,13 +3,14 @@
 #include <memory_resource>
 #include <unordered_map>
 
-#include "app/services/runtime.hpp"
-#include "lib/toml.hpp"
 #include "lib/util/crtp.hpp"
 #include "lib/util/string_ref.hpp"
 #include "lib/util/visitor.hpp"
 
 #include "lib/core/service.hpp"
+#include "lib/toml.hpp"
+
+#include "app/services/runtime.hpp"
 
 namespace otto {
   template<typename Conf>

@@ -1,4 +1,5 @@
 #include "audio_buffer.hpp"
+
 #include "lib/logging.hpp"
 
 namespace otto::util {

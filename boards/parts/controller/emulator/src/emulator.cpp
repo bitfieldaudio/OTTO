@@ -4835,7 +4835,7 @@ namespace otto::board {
 
   void Emulator::handle_click(Point p, ClickAction a)
   {
-    auto btn_rect = [&] (float x, float y, float w, float h, Key k) {
+    auto btn_rect = [&](float x, float y, float w, float h, Key k) {
       if (p.x > x && p.x < x + w && p.y > y && p.y < y + h) {
         if (a == ClickAction::down) {
           keypress(k);
@@ -4899,8 +4899,9 @@ namespace otto::board {
     btn_rect(209.665530, 101.947120, 88.151146, 83.738075, Key::green_click);
   }
 
-  void Emulator::handle_scroll(Point p, float offset) {
-    auto enc_rect = [&] (float x, float y, float w, float h, Encoder e) {
+  void Emulator::handle_scroll(Point p, float offset)
+  {
+    auto enc_rect = [&](float x, float y, float w, float h, Encoder e) {
       if (p.x > x && p.x < x + w && p.y > y && p.y < y + h) {
         encoder({e, (int) offset});
       }
@@ -4915,4 +4916,3 @@ namespace otto::board {
 } // namespace otto::board
 
 // kak: other_file=../include/board/emulator.hpp
-

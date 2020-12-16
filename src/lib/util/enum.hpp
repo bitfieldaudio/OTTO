@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+
 #include <magic_enum.hpp>
 #include <nlohmann/json.hpp>
 #include <tl/optional.hpp>

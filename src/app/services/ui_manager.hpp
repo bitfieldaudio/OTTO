@@ -1,13 +1,13 @@
 #pragma once
 
+#include "lib/core/service.hpp"
+#include "lib/graphics.hpp"
+#include "lib/midi.hpp"
+
+#include "app/input.hpp"
 #include "app/services/audio.hpp"
 #include "app/services/controller.hpp"
 #include "app/services/graphics.hpp"
-#include "lib/core/service.hpp"
-#include "lib/graphics.hpp"
-
-#include "app/input.hpp"
-#include "lib/midi.hpp"
 
 namespace otto::services {
 

@@ -3,8 +3,9 @@
 #include <algorithm>
 #include <array>
 
-#include "lib/meta.hpp"
 #include "lib/util/string_ref.hpp"
+
+#include "lib/meta.hpp"
 
 namespace otto::util::cxpr {
 

@@ -1,11 +1,12 @@
 #pragma once
 
-#include <concurrentqueue.h>
 #include <condition_variable>
-#include <function2/function2.hpp>
 #include <functional>
 #include <mutex>
 #include <vector>
+
+#include <concurrentqueue.h>
+#include <function2/function2.hpp>
 
 #include "lib/util/utility.hpp"
 

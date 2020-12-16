@@ -1,9 +1,10 @@
 #pragma once
 
-#include "lib/graphics.hpp"
 #include "lib/util/local_vector.hpp"
 #include "lib/util/visitor.hpp"
 #include "lib/util/with_limits.hpp"
+
+#include "lib/graphics.hpp"
 
 namespace otto::engines::ottofm {
 

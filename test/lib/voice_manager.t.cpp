@@ -1,11 +1,14 @@
 #include "testing.t.hpp"
 
+#include "lib/voice_manager.hpp"
+
 #include <algorithm>
 #include <set>
+
 #include "lib/util/ranges.hpp"
 
 #include "app/services/config.hpp"
-#include "lib/voice_manager.hpp"
+
 #include "stubs/audio.hpp"
 
 using namespace otto;

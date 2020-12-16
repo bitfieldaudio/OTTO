@@ -1,5 +1,3 @@
-#include <fcntl.h>
-#include <sys/mman.h>
 #include <chrono>
 #include <cmath>
 #include <cstdio>
@@ -13,12 +11,15 @@
 #include <SkColorSpace.h>
 #include <SkFont.h>
 #include <SkSurface.h>
+#include <fcntl.h>
 #include <gl/GrGLAssembleInterface.h>
 #include <gl/GrGLInterface.h>
+#include <sys/mman.h>
+
+#include "lib/util/concepts.hpp"
 
 #include "app/services/config.hpp"
 #include "app/services/graphics.hpp"
-#include "lib/util/concepts.hpp"
 
 #include "./egl_deps.hpp"
 

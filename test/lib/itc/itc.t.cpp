@@ -1,6 +1,8 @@
-#include "lib/itc/itc.hpp"
-#include <bitset>
 #include "testing.t.hpp"
+
+#include "lib/itc/itc.hpp"
+
+#include <bitset>
 
 using namespace otto::itc;
 

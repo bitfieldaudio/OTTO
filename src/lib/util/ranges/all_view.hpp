@@ -1,8 +1,9 @@
 #pragma once
 
+#include <ranges>
+
 #include <boost/stl_interfaces/iterator_interface.hpp>
 #include <boost/stl_interfaces/view_interface.hpp>
-#include <ranges>
 
 #include "lib/util/concepts.hpp"
 #include "lib/util/utility.hpp"

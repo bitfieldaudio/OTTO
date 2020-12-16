@@ -3,8 +3,9 @@
  */
 #ifndef __dbusxx__connman_dbus_proxy_hpp__PROXY_MARSHALL_H
 #define __dbusxx__connman_dbus_proxy_hpp__PROXY_MARSHALL_H
-#include <dbus-c++/dbus.h>
 #include <cassert>
+
+#include <dbus-c++/dbus.h>
 
 namespace net {
   namespace connman {

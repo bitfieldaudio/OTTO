@@ -1,5 +1,6 @@
-#include "lib/core/service.hpp"
 #include "testing.t.hpp"
+
+#include "lib/core/service.hpp"
 
 using namespace otto;
 using namespace otto::core;

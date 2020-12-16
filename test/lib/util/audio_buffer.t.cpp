@@ -1,7 +1,8 @@
-#include <tl/optional.hpp>
 #include "testing.t.hpp"
 
 #include "lib/util/audio_buffer.hpp"
+
+#include <tl/optional.hpp>
 
 using namespace otto;
 

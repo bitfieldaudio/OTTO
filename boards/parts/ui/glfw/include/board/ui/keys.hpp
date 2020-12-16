@@ -152,9 +152,8 @@ namespace otto::glfw {
     std::underlying_type_t<Modifier> data = 0;
 
     constexpr Modifiers(std::initializer_list<Modifier> mods = {}) noexcept
-      : data{util::accumulate(mods, 0, [](auto m1, Modifier m2) {
-          return util::underlying(m1) | util::underlying(m2);
-        })}
+      : data{
+          util::accumulate(mods, 0, [](auto m1, Modifier m2) { return util::underlying(m1) | util::underlying(m2); })}
     {}
 
     constexpr Modifiers(Modifier data) noexcept : data(util::underlying(data)) {}
@@ -203,6 +202,6 @@ namespace otto::glfw {
     right = GLFW_MOUSE_BUTTON_RIGHT
   };
 
-} // namespace otto::board::ui
+} // namespace otto::glfw
 
 // kak: other_file=../../../src/keys.cpp

@@ -1,11 +1,10 @@
 #include "board/controller.hpp"
 
+#include "services/log_manager.hpp"
+#include "services/ui_manager.hpp"
 #include "util/algorithm.hpp"
 #include "util/exception.hpp"
 #include "util/utility.hpp"
-
-#include "services/log_manager.hpp"
-#include "services/ui_manager.hpp"
 
 namespace otto::services {
   using TMFC = McuFifoController;
@@ -110,18 +109,17 @@ namespace otto::services {
   TMFC::McuFifoController()
     : read_thread([this](auto should_run) noexcept {
         while (should_run()) {
-          fifo0.read_line()
-            .map([&](auto&& bytes) { handle_message(bytes); })
-            .map_error([&](auto&& error) {
-              if (error.data() != util::FIFO::ErrorCode::empty_buffer) {
-                LOGE("Error reading fifo data {}", error.what());
-              }
-            });
+          fifo0.read_line().map([&](auto&& bytes) { handle_message(bytes); }).map_error([&](auto&& error) {
+            if (error.data() != util::FIFO::ErrorCode::empty_buffer) {
+              LOGE("Error reading fifo data {}", error.what());
+            }
+          });
         }
       })
   {}
 
-  std::unique_ptr<Controller> TMFC::make_or_dummy() {
+  std::unique_ptr<Controller> TMFC::make_or_dummy()
+  {
     try {
       return std::make_unique<TMFC>();
     } catch (std::exception& e) {
@@ -136,8 +134,7 @@ namespace otto::services {
     color.r = std::max(black, color.r);
     color.g = std::max(black, color.g);
     color.b = std::max(black, color.b);
-    std::array<std::uint8_t, 6> msg = {0xEC, led.key._to_integral(), color.r, color.g, color.b,
-                                       '\n'};
+    std::array<std::uint8_t, 6> msg = {0xEC, led.key._to_integral(), color.r, color.g, color.b, '\n'};
     queue_message(msg);
   }
   void TMFC::flush_leds()

@@ -1,13 +1,13 @@
 #include "testing.t.hpp"
 
-#include "lib/engine.hpp"
-#include "lib/itc/itc.hpp"
-#include "lib/itc/reducer.hpp"
+#include <Gamma/Oscillator.h>
+
 #include "lib/util/with_limits.hpp"
 
+#include "lib/engine.hpp"
 #include "lib/graphics.hpp"
-
-#include <Gamma/Oscillator.h>
+#include "lib/itc/itc.hpp"
+#include "lib/itc/reducer.hpp"
 
 #include "app/services/audio.hpp"
 #include "app/services/config.hpp"

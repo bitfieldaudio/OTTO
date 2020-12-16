@@ -1,14 +1,14 @@
 #pragma once
 
 
+#include <cfloat> /* DBL_MAX, FLT_MAX */
+
 #include <Gamma/Domain.h>
 #include <Gamma/Envelope.h>
 #include <Gamma/Strategy.h>
 #include <Gamma/gen.h>
 #include <Gamma/ipl.h>
 #include <Gamma/scl.h>
-
-#include <cfloat> /* DBL_MAX, FLT_MAX */
 
 namespace otto::dsp {
 

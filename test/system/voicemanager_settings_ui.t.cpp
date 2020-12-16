@@ -1,20 +1,20 @@
 #include "testing.t.hpp"
 
-#include "app/services/config.hpp"
-#include "app/services/graphics.hpp"
-#include "lib/skia/skia.hpp"
-#include "lib/widget.hpp"
+#include <string>
 
 #include <SkFont.h>
 #include <SkPath.h>
 #include <SkRRect.h>
 #include <SkTextBlob.h>
 #include <SkTypeface.h>
-
-#include <fmt/format.h>
-#include <string>
-
 #include <choreograph/Choreograph.h>
+#include <fmt/format.h>
+
+#include "lib/skia/skia.hpp"
+#include "lib/widget.hpp"
+
+#include "app/services/config.hpp"
+#include "app/services/graphics.hpp"
 
 
 using namespace otto;
@@ -93,11 +93,14 @@ struct VoiceModes : otto::graphics::Widget<VoiceModes> {
         ctx.drawRRect(right_rect, paints::stroke(colors::black, 4.f));
       }
 
-      skia::place_text(ctx, playmode_string(playmodes[i]), fonts::medium(24), paints::fill(active ? colors::white : colors::grey50), {mode_text_x, y + line_size * 0.5},
+      skia::place_text(ctx, playmode_string(playmodes[i]), fonts::medium(24),
+                       paints::fill(active ? colors::white : colors::grey50), {mode_text_x, y + line_size * 0.5},
                        anchors::middle_left);
-      skia::place_text(ctx, aux_setting(playmodes[i]), fonts::medium(24), paints::fill(active ? colors::white : colors::grey50), {aux_text_x, y + line_size * 0.5},
+      skia::place_text(ctx, aux_setting(playmodes[i]), fonts::medium(24),
+                       paints::fill(active ? colors::white : colors::grey50), {aux_text_x, y + line_size * 0.5},
                        anchors::middle_left);
-      skia::place_text(ctx, aux_value_string(playmodes[i]), fonts::medium(24), paints::fill(active ? colors::white : colors::grey50), {aux_value_x, y + line_size * 0.5},
+      skia::place_text(ctx, aux_value_string(playmodes[i]), fonts::medium(24),
+                       paints::fill(active ? colors::white : colors::grey50), {aux_value_x, y + line_size * 0.5},
                        anchors::middle_right);
     };
 

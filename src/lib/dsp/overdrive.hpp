@@ -1,6 +1,7 @@
 #pragma once
 
 #include <math.h>
+
 #include "lib/util/math.hpp"
 
 namespace otto::dsp {

@@ -36,6 +36,7 @@ TEST_CASE ("Registry") {
 
   std::unique_ptr<Base> b = std::ranges::find(BaseRegistry::get(), "T1", &BaseRegistry::Entry::metadata)->constructor();
   REQUIRE(b->get_int() == 1);
-  std::unique_ptr<Base> b3 = std::ranges::find(BaseRegistry::get(), "T3", &BaseRegistry::Entry::metadata)->constructor();
+  std::unique_ptr<Base> b3 =
+    std::ranges::find(BaseRegistry::get(), "T3", &BaseRegistry::Entry::metadata)->constructor();
   REQUIRE(b3->get_int() == 3);
 }

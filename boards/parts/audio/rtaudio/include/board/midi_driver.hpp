@@ -1,11 +1,14 @@
 #pragma once
 
 #include <RtMidi.h>
-#include "app/services/audio.hpp"
+
+#include "lib/util/algorithm.hpp"
+
 #include "lib/core/service.hpp"
 #include "lib/logging.hpp"
 #include "lib/midi.hpp"
-#include "lib/util/algorithm.hpp"
+
+#include "app/services/audio.hpp"
 
 namespace otto {
 

@@ -7,8 +7,9 @@
 #include <fmt/format.h>
 #include <fmt/ostream.h>
 
-#include "lib/itc/reducer.hpp"
 #include "lib/util/exception.hpp"
+
+#include "lib/itc/reducer.hpp"
 
 namespace otto::midi {
 

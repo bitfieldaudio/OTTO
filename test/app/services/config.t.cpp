@@ -1,7 +1,8 @@
-#include "app/services/runtime.hpp"
 #include "testing.t.hpp"
 
 #include "app/services/config.hpp"
+
+#include "app/services/runtime.hpp"
 
 using namespace otto;
 

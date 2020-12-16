@@ -1,9 +1,10 @@
 #pragma once
 
-#include <boost/container/flat_map.hpp>
 #include <memory>
 #include <typeindex>
 #include <vector>
+
+#include <boost/container/flat_map.hpp>
 
 #include "lib/util/concepts.hpp"
 

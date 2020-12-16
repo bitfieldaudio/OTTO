@@ -1,22 +1,21 @@
-#include "app/engines/synths/ottofm/state.hpp"
-#include "app/input.hpp"
-#include "app/services/graphics.hpp"
-#include "app/services/ui_manager.hpp"
-#include "lib/itc/itc.hpp"
-#include "lib/util/with_limits.hpp"
-
-#include "ottofm.hpp"
-
-#include "app/services/config.hpp"
-#include "app/services/graphics.hpp"
-#include "lib/skia/skia.hpp"
-#include "lib/widget.hpp"
-
-#include <fmt/format.h>
 #include <string>
 
 #include <choreograph/Choreograph.h>
+#include <fmt/format.h>
 
+#include "lib/util/with_limits.hpp"
+
+#include "lib/itc/itc.hpp"
+#include "lib/skia/skia.hpp"
+#include "lib/widget.hpp"
+
+#include "app/engines/synths/ottofm/state.hpp"
+#include "app/input.hpp"
+#include "app/services/config.hpp"
+#include "app/services/graphics.hpp"
+#include "app/services/ui_manager.hpp"
+
+#include "ottofm.hpp"
 #include "widgets.hpp"
 
 namespace otto::engines::ottofm {

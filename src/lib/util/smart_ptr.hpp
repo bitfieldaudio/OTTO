@@ -1,8 +1,9 @@
 #pragma once
 
-#include <function2/function2.hpp>
 #include <memory>
 #include <variant>
+
+#include <function2/function2.hpp>
 
 #include "concepts.hpp"
 

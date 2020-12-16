@@ -1,15 +1,17 @@
-#include "app/input/navigator.hpp"
 #include "testing.t.hpp"
 
 #include "app/engines/synths/ottofm/ottofm.hpp"
 
-#include "lib/engine.hpp"
-#include "lib/itc/itc.hpp"
-#include "lib/itc/reducer.hpp"
 #include "lib/util/with_limits.hpp"
 
+#include "lib/engine.hpp"
 #include "lib/graphics.hpp"
+#include "lib/itc/itc.hpp"
+#include "lib/itc/reducer.hpp"
 
+#include "app/input/distributor.hpp"
+#include "app/input/navigator.hpp"
+#include "app/input/seq_to_midi.hpp"
 #include "app/services/audio.hpp"
 #include "app/services/config.hpp"
 #include "app/services/controller.hpp"
@@ -17,9 +19,6 @@
 #include "app/services/logic_thread.hpp"
 #include "app/services/runtime.hpp"
 #include "app/services/ui_manager.hpp"
-
-#include "app/input/distributor.hpp"
-#include "app/input/seq_to_midi.hpp"
 
 using namespace otto;
 

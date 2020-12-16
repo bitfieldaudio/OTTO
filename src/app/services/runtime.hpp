@@ -2,9 +2,11 @@
 
 #include <condition_variable>
 #include <mutex>
+
+#include "lib/util/utility.hpp"
+
 #include "lib/chrono.hpp"
 #include "lib/core/service.hpp"
-#include "lib/util/utility.hpp"
 
 namespace otto::services {
 

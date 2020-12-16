@@ -1,9 +1,10 @@
-#include "app/services/config.hpp"
 #include "testing.t.hpp"
+
+#include "app/services/audio.hpp"
 
 #include <Gamma/Oscillator.h>
 
-#include "app/services/audio.hpp"
+#include "app/services/config.hpp"
 #include "app/services/runtime.hpp"
 
 using namespace otto;

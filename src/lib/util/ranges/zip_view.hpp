@@ -1,13 +1,13 @@
 #pragma once
 
-#include <boost/stl_interfaces/iterator_interface.hpp>
-#include <boost/stl_interfaces/view_interface.hpp>
 #include <ranges>
 
-#include "lib/util/concepts.hpp"
-#include "lib/util/utility.hpp"
+#include <boost/stl_interfaces/iterator_interface.hpp>
+#include <boost/stl_interfaces/view_interface.hpp>
 
+#include "lib/util/concepts.hpp"
 #include "lib/util/ranges/all_view.hpp"
+#include "lib/util/utility.hpp"
 
 namespace otto::util {
 

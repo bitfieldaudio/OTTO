@@ -2,15 +2,16 @@
 
 #include <array>
 
-#include "app/services/audio.hpp"
-#include "lib/dsp/SegExpBypass.hpp"
-#include "lib/midi.hpp"
 #include "lib/util/local_vector.hpp"
 #include "lib/util/ranges.hpp"
 #include "lib/util/variant_w_base.hpp"
 #include "lib/util/with_limits.hpp"
 
+#include "lib/dsp/SegExpBypass.hpp"
+#include "lib/midi.hpp"
 #include "lib/voices/voice_state.hpp"
+
+#include "app/services/audio.hpp"
 
 namespace otto::voices {
 

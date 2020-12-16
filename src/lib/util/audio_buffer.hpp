@@ -4,8 +4,9 @@
 #include <ranges>
 #include <span>
 
-#include "concepts.hpp"
 #include "lib/util/ranges.hpp"
+
+#include "concepts.hpp"
 
 namespace otto::util {
 

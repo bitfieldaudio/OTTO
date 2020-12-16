@@ -1,7 +1,8 @@
 #pragma once
 
-#include <math.h>
 #include <algorithm>
+
+#include <math.h>
 
 #include "lib/logging.hpp"
 

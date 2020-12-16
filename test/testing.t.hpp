@@ -4,20 +4,21 @@
 #include "lib/logging.hpp"
 
 #define CATCH_CONFIG_ENABLE_ALL_STRINGMAKERS
-#include <catch2/catch_approx.hpp>
-#include <catch2/catch_test_macros.hpp>
-
 #include <chrono>
 #include <filesystem>
 #include <fstream>
 #include <sstream>
 #include <unordered_map>
 
-#include "fmt/core.h"
+#include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
+
 #include "lib/util/algorithm.hpp"
 #include "lib/util/name_of.hpp"
 #include "lib/util/type_traits.hpp"
 #include "lib/util/utility.hpp"
+
+#include "fmt/core.h"
 #include "magic_enum.hpp"
 
 namespace fs = std::filesystem;

@@ -3,16 +3,13 @@
 #include <gsl/span>
 #include <tl/optional.hpp>
 
-#include "util/locked.hpp"
-#include "util/thread.hpp"
-
-#include "services/controller.hpp"
-#include "util/serial.hpp"
-
 #include "RtMidi.h"
-
 #include "board/hardware_map.hpp"
 #include "board/mcu_controller.hpp"
+#include "services/controller.hpp"
+#include "util/locked.hpp"
+#include "util/serial.hpp"
+#include "util/thread.hpp"
 
 namespace otto::services {
 

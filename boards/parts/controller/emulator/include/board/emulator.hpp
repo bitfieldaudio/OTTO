@@ -1,18 +1,13 @@
 #pragma once
 
-#include "util/enum.hpp"
-
 #include "core/ui/canvas.hpp"
-
 #include "services/controller.hpp"
+#include "util/enum.hpp"
 
 namespace otto::board {
 
   struct Emulator : core::ui::vg::Drawable, services::Controller {
-
-    enum struct ClickAction {
-      down, up
-    };
+    enum struct ClickAction { down, up };
 
     void draw(core::ui::vg::Canvas& ctx) override;
 
@@ -26,7 +21,6 @@ namespace otto::board {
     constexpr static core::ui::vg::Size size = {1115, 352};
 
   private:
-
     template<typename LEDFunc, typename BTNFunc>
     void draw_btn(core::ui::vg::Canvas& ctx, core::input::Key key, LEDFunc&& lf, BTNFunc&& bf);
 
@@ -43,7 +37,7 @@ namespace otto::board {
     util::enum_map<core::input::Key, services::LEDColor> _led_colors = {};
   };
 
-}
+} // namespace otto::board
 
 
 // kak: other_file=../../src/emulator.cpp

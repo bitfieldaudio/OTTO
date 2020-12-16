@@ -1,11 +1,11 @@
 #pragma once
 #if false
 
-#include <Gamma/Envelope.h>
-
 #include <deque>
 #include <type_traits>
 #include <vector>
+
+#include <Gamma/Envelope.h>
 
 #include "core/audio/processor.hpp"
 #include "core/props/props.hpp"

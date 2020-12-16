@@ -1,9 +1,10 @@
-#include "lib/itc/executor.hpp"
 #include "testing.t.hpp"
 
-#include "lib/logging.hpp"
+#include "lib/itc/executor.hpp"
 
 #include <thread>
+
+#include "lib/logging.hpp"
 
 using namespace otto::itc;
 using namespace std::literals;

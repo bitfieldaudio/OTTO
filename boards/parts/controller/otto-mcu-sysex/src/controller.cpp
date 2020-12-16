@@ -1,14 +1,12 @@
 #include "board/controller.hpp"
 
-#include "util/algorithm.hpp"
-#include "util/exception.hpp"
-#include "util/utility.hpp"
-
+#include "board/emulator.hpp"
 #include "services/audio_manager.hpp"
 #include "services/log_manager.hpp"
 #include "services/ui_manager.hpp"
-
-#include "board/emulator.hpp"
+#include "util/algorithm.hpp"
+#include "util/exception.hpp"
+#include "util/utility.hpp"
 
 namespace otto::services {
   using MSC = MCUSysexController;
@@ -69,9 +67,9 @@ namespace otto::services {
     midi_in.ignoreTypes(false, true, true);
     // I have no idea on which thread this callback is called, but apparently getMesssage
     // doesn't work with sysex messages.
-    midi_in.setCallback([] (double deltatime, std::vector<std::uint8_t>* message, void* self) {
-      static_cast<MSC*>(self)->parse_midi_response(*message);
-    }, this);
+    midi_in.setCallback([](double deltatime, std::vector<std::uint8_t>* message,
+                           void* self) { static_cast<MSC*>(self)->parse_midi_response(*message); },
+                        this);
 
     auto noutports = midi_out.getPortCount();
     LOGI("Midi output ports: ");
@@ -109,8 +107,8 @@ namespace otto::services {
           }
           first++;
         }
-        //midi_in.getMessage(&wb);
-        //parse_midi_response(wb);
+        // midi_in.getMessage(&wb);
+        // parse_midi_response(wb);
         midi_thread.sleep_for(sleep_time);
       }
     };

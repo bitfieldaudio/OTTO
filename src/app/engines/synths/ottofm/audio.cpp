@@ -1,10 +1,11 @@
-#include "ottofm.hpp"
+#include "app/services/audio.hpp"
 
 #include <Gamma/Envelope.h>
 #include <Gamma/Oscillator.h>
 
-#include "app/services/audio.hpp"
 #include "lib/voice_manager.hpp"
+
+#include "ottofm.hpp"
 
 namespace otto::engines::ottofm {
   /// Custom version of the 'Sine' in Gamma. We need to call it with a phase offset

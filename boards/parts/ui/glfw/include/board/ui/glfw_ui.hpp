@@ -1,13 +1,15 @@
 #pragma once
 
 
-#include "board/ui/keys.hpp"
-
-#include <GLFW/glfw3.h>
 #include <thread>
 
-#include "lib/skia/skia.hpp"
+#include <GLFW/glfw3.h>
+
 #include "lib/util/concepts.hpp"
+
+#include "lib/skia/skia.hpp"
+
+#include "board/ui/keys.hpp"
 
 struct GLFWwindow;
 namespace otto::glfw {
