@@ -16,6 +16,22 @@ struct TestObj {
   DECL_VISIT(i, nested);
 };
 
+struct CustomSer {
+  int i = 0;
+  std::string str = "hello";
+  void serialize_into(otoml::value& toml) const
+  {
+    toml = i;
+  }
+
+  void deserialize_from(const otoml::value& toml)
+  {
+    i = toml.as_integer();
+  }
+
+  DECL_VISIT(str);
+};
+
 TEST_CASE ("serialization") {
   static_assert(otoml::ATomlSerializable<int>);
   static_assert(otoml::ATomlSerializable<std::string>);
@@ -33,7 +49,6 @@ TEST_CASE ("serialization") {
     SECTION ("serialize") {
       TestObj obj;
       auto toml = util::serialize(obj);
-      std::cout << toml;
       REQUIRE(toml.as_table() == otoml::table{
                                    {"i", 1},
                                    {
@@ -67,5 +82,13 @@ j = 20
       util::serialize_into(toml, obj);
       REQUIRE(toml.as_table()["nested"]["j"].comments().size() == 1);
     }
+  }
+
+  SECTION ("direct member functions") {
+    static_assert(util::ASerializable<CustomSer>);
+    CustomSer obj = {10};
+    REQUIRE(util::serialize(obj).as_integer() == otoml::integer(10));
+    util::deserialize_from(otoml::integer(100), obj);
+    REQUIRE(obj.i == 100);
   }
 }

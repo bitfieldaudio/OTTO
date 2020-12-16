@@ -26,8 +26,8 @@ TEST_CASE ("ConfigManager") {
 
   using namespace otto::toml::literals;
   otto::toml::value config_data = R"(
-      [TestConfig]
-      option1 = 100
+[TestConfig]
+option1 = 100
     )"_toml;
 
   SECTION ("Service constructor") {

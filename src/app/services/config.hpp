@@ -33,7 +33,7 @@ namespace otto {
   };
 
   template<typename T>
-  concept AConfig = std::is_base_of_v<Config<T>, T>;
+  concept AConfig = std::is_base_of_v<Config<T>, T>&& util::ASerializable<T>;
 
   namespace services {
 
@@ -70,7 +70,7 @@ namespace otto {
       static constexpr const char* key_of() noexcept;
 
       [[no_unique_address]] core::ServiceAccessor<Runtime> runtime;
-      toml::value config_data_;
+      toml::value config_data_ = toml::table();
     };
   } // namespace services
 
@@ -135,7 +135,10 @@ namespace otto::services {
     Conf res;
     auto& data = config_data_[res.get_name().c_str()];
     try {
-      util::deserialize_into(data, res);
+      if (data.type() != toml::value_t::empty) util::deserialize_from(data, res);
+    } catch (const std::out_of_range& e) {
+      // DLOGI("Error in config {}, using default: ", res.get_name());
+      // DLOGI("{}", e.what());
     } catch (const std::exception& e) {
       LOGW("Error in config {}, using default: ", res.get_name());
       LOGW("{}", e.what());
