@@ -30,6 +30,9 @@ CheckOptions:
     value: true
   - key: modernize-use-override.IgnoreDestructors
     value: 1
+  - key: performance-unnecessary-value-param.AllowedTypes
+    # Semicolon separated list
+    value: ".*string_ref"
 WarningsAsErrors:  ''
 HeaderFilterRegex: ''
 FormatStyle:     none

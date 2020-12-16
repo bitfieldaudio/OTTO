@@ -35,9 +35,9 @@ namespace otto::util {
     {}
 
     smart_ptr(const smart_ptr&) = delete;
-    smart_ptr(smart_ptr&&) noexcept = default;
-
     smart_ptr& operator=(const smart_ptr&) = delete;
+
+    smart_ptr(smart_ptr&&) noexcept = default;
     smart_ptr& operator=(smart_ptr&&) noexcept = default;
 
     template<util::base_of<T> U>

@@ -63,6 +63,16 @@ namespace otto {
     unassigned_f = util::enum_integer(Key::unassigned_f),
   };
 
+  inline tl::optional<Led> led_from(Key k)
+  {
+    return util::enum_cast<Led>(util::enum_integer(k));
+  }
+
+  inline tl::optional<Key> key_from(Led l)
+  {
+    return util::enum_cast<Key>(util::enum_integer(l));
+  }
+
   struct LEDColor {
     uint8_t r = 0, g = 0, b = 0;
 

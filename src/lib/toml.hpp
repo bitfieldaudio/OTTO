@@ -92,6 +92,13 @@ namespace otto::toml {
   {
     return literals::operator""_toml(str.c_str(), str.size());
   }
+
+  template<typename T>
+  concept ATomlSerializable = requires(toml::value toml, T& t)
+  {
+    toml::get<T>(toml);
+    toml = t;
+  };
 } // namespace otto::toml
 
 namespace toml {
@@ -103,4 +110,14 @@ namespace toml {
       return ::toml::string(v.c_str());
     }
   };
+
+  template<>
+  struct from<std::filesystem::path> {
+    template<typename C, template<typename...> class M, template<typename...> class A>
+    static std::filesystem::path from_toml(const basic_value<C, M, A>& v)
+    {
+      return {static_cast<std::string>(v.as_string())};
+    }
+  };
+
 } // namespace toml

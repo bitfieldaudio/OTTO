@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <bitset>
 
 #include <magic_enum.hpp>
 #include <nlohmann/json.hpp>
@@ -140,5 +141,69 @@ namespace otto::util {
       return util::zip(enum_values<Enum>(), _data);
     }
     std::array<T, enum_count<Enum>()> _data = {};
+  };
+
+  template<AnEnum Enum>
+  struct enum_bitset {
+    constexpr enum_bitset() = default;
+    constexpr enum_bitset(std::initializer_list<std::pair<Enum, bool>> init)
+    {
+      for (auto&& [k, v] : init) {
+        (*this)[k] = v;
+      }
+    }
+
+    static constexpr std::size_t size() noexcept
+    {
+      return enum_count<Enum>();
+    }
+
+    constexpr auto operator[](Enum e) noexcept
+    {
+      return _data[enum_index(e).value()];
+    }
+
+    constexpr bool operator[](Enum e) const noexcept
+    {
+      return _data[enum_index(e).value()];
+    }
+
+    constexpr auto at(Enum e)
+    {
+      return _data.at(enum_index(e).value());
+    }
+
+    constexpr bool at(Enum e) const
+    {
+      return _data.at(enum_index(e).value());
+    }
+
+    constexpr void flip(Enum e)
+    {
+      _data.flip(enum_index(e).value());
+    }
+
+    constexpr void set(Enum e, bool v = true)
+    {
+      _data.set(enum_index(e).value(), v);
+    }
+
+    constexpr void reset(Enum e)
+    {
+      _data.set(enum_index(e).value(), false);
+    }
+
+    constexpr void set()
+    {
+      _data.set();
+    }
+
+    constexpr void reset()
+    {
+      _data.reset();
+    }
+
+  private:
+    std::bitset<enum_count<Enum>()> _data = {};
   };
 } // namespace otto::util

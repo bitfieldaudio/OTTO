@@ -4,6 +4,7 @@
 #include <unordered_map>
 
 #include "lib/util/crtp.hpp"
+#include "lib/util/serialization.hpp"
 #include "lib/util/string_ref.hpp"
 #include "lib/util/visitor.hpp"
 
@@ -25,36 +26,9 @@ namespace otto {
     /// Can be overridden in `Derived` by defining a similar constant.
     static constexpr util::string_ref name = util::qualified_name_of<Derived>;
 
-    util::string_ref get_name() const noexcept
+    [[nodiscard]] util::string_ref get_name() const noexcept
     {
       return Derived::name;
-    }
-
-    void to_toml(toml::value& val) const
-    {
-      static_assert(util::AVisitable<Derived>, "Config types must be visitable. Add DECL_VISIT(members...)");
-      static_cast<const Derived&>(*this).visit([&](util::string_ref name, const auto& v) { //
-        val[name.c_str()] = v;
-      });
-    }
-
-    void from_toml(const toml::value& val)
-    {
-      static_assert(util::AVisitable<Derived>, "Config types must be visitable. Add DECL_VISIT(members...)");
-      static_cast<Derived&>(*this).visit([&](util::string_ref name, auto& v) { //
-        try {
-          v = toml::find<std::remove_reference_t<decltype(v)>>(val, name.c_str());
-        } catch (std::out_of_range& e) {
-          LOGI("Using default value for option {}.{}", get_name(), name);
-        }
-      });
-    }
-
-    toml::value into_toml() const
-    {
-      toml::value v;
-      static_cast<Derived&>(*this).to_toml(v);
-      return v;
     }
   };
 
@@ -89,7 +63,7 @@ namespace otto {
         return make();
       }
 
-      toml::value into_toml() const;
+      [[nodiscard]] toml::value into_toml() const;
 
     private:
       template<AConfig Conf>
@@ -161,16 +135,16 @@ namespace otto::services {
     Conf res;
     auto& data = config_data_[res.get_name().c_str()];
     try {
-      res.from_toml(data);
+      util::deserialize_into(data, res);
     } catch (const std::exception& e) {
       LOGW("Error in config {}, using default: ", res.get_name());
       LOGW("{}", e.what());
     }
     try {
-      res.to_toml(data);
+      util::serialize_into(data, res);
     } catch (const std::exception& e) {
-      data = toml::value();
-      res.to_toml(data);
+      LOGW("Error serializing config, overwriting");
+      data = util::serialize(res);
     }
     return res;
   }

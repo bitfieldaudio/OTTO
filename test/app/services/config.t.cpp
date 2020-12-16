@@ -19,36 +19,10 @@ TEST_CASE ("ConfigManager") {
   SECTION ("Registry") {
     auto app = services::start_app(core::make_handle<otto::services::ConfigManager>());
     core::ServiceAccessor<services::ConfigManager> confman;
-    TestConfig tc1 = confman->make_conf<TestConfig>();
+    auto tc1 = confman->make_conf<TestConfig>();
     REQUIRE(tc1.option1 == 4);
   }
   TestConfig tc1;
-
-  SECTION ("Serialization") {
-    REQUIRE(tc1.get_name() == "TestConfig");
-    otto::toml::value res;
-    tc1.to_toml(res);
-    REQUIRE(res == otto::toml::value{
-                     {"option1", 4},
-                     {"option2", "test"},
-                   });
-  }
-
-  SECTION ("Deserialization") {
-    tc1.from_toml(otto::toml::value{
-      {"option1", 42},
-      {"option2", "new value"},
-    });
-    REQUIRE(tc1.option1 == 42);
-    REQUIRE(tc1.option2 == "new value");
-
-    auto tc2 = otto::toml::get<TestConfig>(otto::toml::value{
-      {"option1", 9},
-      {"option2", "yo"},
-    });
-    REQUIRE(tc2.option1 == 9);
-    REQUIRE(tc2.option2 == "yo");
-  }
 
   using namespace otto::toml::literals;
   otto::toml::value config_data = R"(
@@ -59,7 +33,7 @@ TEST_CASE ("ConfigManager") {
   SECTION ("Service constructor") {
     auto app = services::start_app(core::make_handle<services::ConfigManager>(config_data));
     core::ServiceAccessor<services::ConfigManager> confman;
-    TestConfig tc1 = confman->make_conf<TestConfig>();
+    auto tc1 = confman->make_conf<TestConfig>();
 
     REQUIRE(tc1.option1 == 100);
     REQUIRE(tc1.option2 == "test");
