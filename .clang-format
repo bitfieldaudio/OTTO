@@ -1,4 +1,4 @@
-﻿# -*- mode: yaml; -*-
+﻿# vim: filetype=yaml
 ---
 BasedOnStyle: Chromium
 AccessModifierOffset: -2
@@ -45,6 +45,21 @@ FixNamespaceComments: true
 IndentCaseLabels: true
 IndentWidth: 2
 IndentWrappedFunctionNames: false
+IncludeBlocks: Regroup
+IncludeCategories:
+  - Regex: '"testing.t.hpp"'
+    Priority: -1
+  - Regex: '<[[:alnum:]_]+>'
+    Priority: 1
+  - Regex: '<.*>'
+    Priority: 3
+  - Regex: '"lib/util/.*"'
+    Priority: 10
+  - Regex: '"lib/.*"'
+    Priority: 12
+  - Regex: '"app/.*"'
+    Priority: 13
+IncludeIsMainRegex: ""
 KeepEmptyLinesAtTheStartOfBlocks: false
 Language: Cpp
 MaxEmptyLinesToKeep: 3

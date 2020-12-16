@@ -4,11 +4,11 @@
 
 #include <function2/function2.hpp>
 
-#include "lib/meta.hpp"
 #include "lib/util/concepts.hpp"
 #include "lib/util/name_of.hpp"
 
 #include "lib/logging.hpp"
+#include "lib/meta.hpp"
 
 namespace otto::core {
 

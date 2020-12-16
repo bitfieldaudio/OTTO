@@ -1,13 +1,14 @@
 #pragma once
 
-#include "app/services/logic_thread.hpp"
-#include "lib/core/service.hpp"
 #include "lib/util/smart_ptr.hpp"
+
+#include "lib/core/service.hpp"
 
 #include "app/drivers/mcu_port.hpp"
 #include "app/input.hpp"
 #include "app/leds.hpp"
 #include "app/services/config.hpp"
+#include "app/services/logic_thread.hpp"
 
 namespace otto::services {
   /// Communicates with the mcu, parsing data etc.
@@ -31,11 +32,11 @@ namespace otto::services {
 
   struct Controller : core::Service<Controller> {
     struct Config : otto::Config<Config> {
-      chrono::duration wait_time = 20ms;
+      chrono::duration wait_time = 1ms;
       DECL_VISIT(wait_time);
     };
 
-    explicit Controller(util::smart_ptr<drivers::MCUPort>::factory&& make_com = drivers::MCUPort::make_default,
+    explicit Controller(util::smart_ptr<drivers::MCUPort>::factory&& make_port = drivers::MCUPort::make_default,
                         Config::Handle conf = {});
 
     Controller(const Controller&) = delete;
@@ -47,7 +48,7 @@ namespace otto::services {
     }
 
     void set_input_handler(IInputHandler& h);
-    void set_led_color(LED led, LEDColor c);
+    void send_led_color(Led led, LEDColor c);
 
   private:
     [[no_unique_address]] core::ServiceAccessor<services::Runtime> runtime;

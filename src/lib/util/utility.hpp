@@ -216,11 +216,11 @@ namespace otto::util {
   struct tag_t {};
 
   template<typename T>
-  auto tag = tag_t<T>();
+  constexpr auto tag = tag_t<T>();
 
   inline void set_bit(std::uint8_t& byte, std::size_t idx, bool val)
   {
-    byte ^= (-(!!val) ^ byte) & (1ul << idx);
+    byte ^= ((val ? -1 : 0) ^ byte) & (1ul << idx);
   }
 
   inline void set_bit(std::span<std::uint8_t> array, std::size_t idx, bool val)
@@ -241,6 +241,6 @@ namespace otto::util {
   // Lambdas matching overload sets
 
   /// std::addressof wrapped in a lambda so it can be passed to algorithms
-  constexpr auto addressof = CALLABLE(std::addressof);
+  constexpr auto addressof = LAMBDAFY(std::addressof);
 
 } // namespace otto::util

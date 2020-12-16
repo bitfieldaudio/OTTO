@@ -5,7 +5,7 @@
 #include <cmath>
 #include <valarray>
 
-namespace otto::util::math {
+namespace otto::math {
 
   template<typename T>
   constexpr inline bool between(T el, T min, T max)
@@ -74,7 +74,7 @@ namespace otto::util::math {
     return ax / bx;
   }
 
-  inline float fastatan( const float x)
+  inline float fastatan(const float x)
   {
     const float a1 = (M_PI / 4.f) * x;
     const float a2 = 0.273f * x * (1.f - std::abs(x));
@@ -88,7 +88,12 @@ namespace otto::util::math {
 
   inline float trianglewrap(const float x, const float center, const float width, const float total_width)
   {
-    float wrapped_dist = std::min( std::abs(center - x), total_width - std::abs(center - x));
+    float wrapped_dist = std::min(std::abs(center - x), total_width - std::abs(center - x));
     return std::max(0.f, 1.f - wrapped_dist / width);
   }
-}// namespace otto::util::math
+
+  inline float interpolate(float a, float b, float ratio)
+  {
+    return b * ratio + a * (1.f - ratio);
+  }
+} // namespace otto::math

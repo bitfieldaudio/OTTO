@@ -3,7 +3,6 @@
 #include <toml.hpp>
 
 #include "lib/util/string_ref.hpp"
-
 #include "lib/util/visitor.hpp"
 
 namespace otto::toml {
@@ -16,7 +15,7 @@ namespace otto::toml {
   struct TomlSerializable {
     virtual void to_toml(toml::value&) const = 0;
     virtual void from_toml(const toml::value&) = 0;
-    toml::value into_toml() const
+    [[nodiscard]] toml::value into_toml() const
     {
       toml::value res;
       to_toml(res);
@@ -28,8 +27,8 @@ namespace otto::toml {
     inline value operator"" _toml(const char* str, std::size_t len)
     {
       ::toml::detail::location<std::vector<char>> loc(
-        /* filename = */ std::string("TOML literal encoded in a C++ code"),
-        /* contents = */ std::vector<char>(str, str + len));
+        /* name = */ std::string("TOML literal encoded in a C++ code"),
+        /* cont = */ std::vector<char>(str, str + len));
 
       // if there are some comments or empty lines, skip them.
       using skip_line = ::toml::detail::repeat<

@@ -1,8 +1,9 @@
 #pragma once
 #include <functional>
-#include "app/services/graphics.hpp"
 
 #include "lib/skia/skia.hpp"
+
+#include "app/services/graphics.hpp"
 
 namespace otto::graphics {
 

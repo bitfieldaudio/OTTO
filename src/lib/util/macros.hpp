@@ -29,7 +29,7 @@
 #define FWD(X) std::forward<decltype(X)>(X)
 
 /// Used to wrap entire overload sets into a single callable lambda
-#define CALLABLE(...) [](auto&&... args) -> decltype(auto) { return (__VA_ARGS__)(FWD(args)...); }
+#define LAMBDAFY(...) [](auto&&... args) -> decltype(auto) { return (__VA_ARGS__)(FWD(args)...); }
 /// Used to wrap entire overload sets of member functions into a single callable lambda
 #define MEMBER_CALLER(...) [](auto&& obj, auto&&... args) -> decltype(auto) { return obj.__VA_ARGS__(FWD(args)...); }
 /// Make a lambda that captures `this` and calls the given member function with whatever is supplied

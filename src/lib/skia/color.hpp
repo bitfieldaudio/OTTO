@@ -9,6 +9,7 @@ namespace otto::skia {
   /// SkColor is just an alias to `uint32_t`, so this wrapper allows a bit
   /// more flexibility.
   struct Color {
+    constexpr Color() : Color(bytes(0, 0, 0)) {}
     explicit constexpr Color(SkColor sk) : sk_color_(sk) {}
 
     constexpr operator SkColor() const noexcept

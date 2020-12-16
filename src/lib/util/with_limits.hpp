@@ -1,6 +1,8 @@
 #pragma once
 #include <algorithm>
+
 #include "lib/util/concepts.hpp"
+
 #include "math.hpp"
 
 namespace otto::util {
@@ -17,11 +19,10 @@ namespace otto::util {
     // You must initialize with default value
     StaticallyBounded() = delete;
     StaticallyBounded(T init_val)
-    {
-      value_ = std::clamp(static_cast<T>(init_val), static_cast<T>(min), static_cast<T>(max));
-    }
+      : value_(std::clamp(static_cast<T>(init_val), static_cast<T>(min), static_cast<T>(max)))
+    {}
 
-    void operator=(const T in)
+    StaticallyBounded& operator=(const T in)
     {
       if constexpr (wrap) {
         T min_ = static_cast<T>(min);
@@ -29,13 +30,14 @@ namespace otto::util {
         if (in < min_ || in > max_) {
           T length = static_cast<T>(max) - static_cast<T>(min);
           if constexpr (std::is_integral_v<T>) length += 1;
-          value_ = min_ + util::math::modulo(in - min_, length);
+          value_ = min_ + math::modulo(in - min_, length);
         } else {
           value_ = in;
         }
       } else {
         value_ = std::clamp(in, static_cast<T>(min), static_cast<T>(max));
       }
+      return *this;
     }
 
     StaticallyBounded& operator+=(const T in)
@@ -58,27 +60,27 @@ namespace otto::util {
       operator=(this->value_ / in);
       return *this;
     }
-    StaticallyBounded operator++()
+    StaticallyBounded& operator++()
+    {
+      operator=(this->value_ + static_cast<T>(1));
+      return *this;
+    }
+    StaticallyBounded operator++(int)
     {
       auto tmp = *this;
       operator=(this->value_ + static_cast<T>(1));
       return tmp;
     }
-    StaticallyBounded& operator++(int)
+    StaticallyBounded& operator--()
     {
-      operator=(this->value_ + static_cast<T>(1));
+      operator=(this->value_ - static_cast<T>(1));
       return *this;
     }
-    StaticallyBounded operator--()
+    StaticallyBounded operator--(int)
     {
       auto tmp = *this;
       operator=(this->value_ - static_cast<T>(1));
       return tmp;
-    }
-    StaticallyBounded& operator--(int)
-    {
-      operator=(this->value_ - static_cast<T>(1));
-      return *this;
     }
     // If needed, binary operators can be added
 
@@ -87,7 +89,7 @@ namespace otto::util {
       return value_;
     }
 
-    float normalize() const noexcept
+    [[nodiscard]] float normalize() const noexcept
     {
       return static_cast<float>(value_ - min) / static_cast<float>(max - min);
     }
@@ -118,11 +120,9 @@ namespace otto::util {
     // You must initialize with default value and limits
     DynamicallyBounded() = delete;
     // For construction, max is changed if min is largest.
-    DynamicallyBounded(T init_val, T min, T max) : min_(min), max_(max)
-    {
-      max_ = std::max(min_, max_);
-      value_ = std::clamp(init_val, min, max);
-    }
+    DynamicallyBounded(T init_val, T min, T max)
+      : value_(std::clamp(init_val, min, max)), min_(min), max_(std::max(min, max))
+    {}
 
     // Getters and setters for limits
     // New limits can be determined run-time.
@@ -143,24 +143,25 @@ namespace otto::util {
       if (min_ <= new_max) max_ = new_max;
     }
 
-    float normalize() const noexcept
+    [[nodiscard]] float normalize() const noexcept
     {
       return static_cast<float>(value_ - min_) / static_cast<float>(max_ - min_);
     }
 
-    void operator=(const T in)
+    DynamicallyBounded& operator=(const T in)
     {
       if constexpr (wrap) {
         if (in < min_ || in > max_) {
           T length = static_cast<T>(max()) - static_cast<T>(min());
           if constexpr (std::is_integral_v<T>) length += 1;
-          value_ = min_ + util::math::modulo(in - min_, length);
+          value_ = min_ + math::modulo(in - min_, length);
         } else {
           value_ = in;
         }
       } else {
         value_ = std::clamp(in, min_, max_);
       }
+      return *this;
     }
     void operator+=(const T in)
     {

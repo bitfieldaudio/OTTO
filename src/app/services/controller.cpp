@@ -28,14 +28,16 @@ namespace otto::services {
   };
 
   Controller::Controller(util::smart_ptr<MCUPort>::factory&& make_port, Config::Handle conf)
-    : conf_(std::move(conf)), com_(make_port()), thread_([this](std::stop_token stop_token) {
+    : conf_(conf), com_(make_port()), thread_([this](const std::stop_token& stop_token) {
+        std::vector<Packet> second_buf;
         while (runtime->should_run() && !stop_token.stop_requested()) {
+          second_buf.clear();
           {
             std::unique_lock l(queue_mutex_);
-            for (const auto& data : queue_) {
-              com_.port_->write(data);
-            }
-            queue_.clear();
+            std::swap(queue_, second_buf);
+          }
+          for (const auto& data : second_buf) {
+            com_.port_->write(data);
           }
           Packet p;
           do {
@@ -52,13 +54,13 @@ namespace otto::services {
     com_.handler = std::make_unique<ExecutorWrapper>(logic_thread->executor(), &h);
   }
 
-  void Controller::set_led_color(LED led, LEDColor c)
+  void Controller::send_led_color(Led led, LEDColor c)
   {
     std::unique_lock l(queue_mutex_);
-    queue_.push_back({Command::led_set, {util::enum_integer(led.key), c.r, c.g, c.b}});
+    queue_.push_back({Command::led_set, {util::enum_integer(led), c.r, c.g, c.b}});
   }
 
-  MCUCommunicator::MCUCommunicator(util::smart_ptr<MCUPort>&& com) : port_(std::move(com)) {}
+  MCUCommunicator::MCUCommunicator(util::smart_ptr<MCUPort>&& port) : port_(std::move(port)) {}
 
   void MCUCommunicator::handle_packet(Packet p)
   {
