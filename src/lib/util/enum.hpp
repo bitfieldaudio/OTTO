@@ -87,123 +87,232 @@ namespace otto::util {
 
     constexpr value_type& front() noexcept
     {
-      return _data.front();
+      return data_.front();
     }
 
     constexpr const value_type& front() const noexcept
     {
-      return _data.front();
+      return data_.front();
     }
 
     constexpr value_type& back() noexcept
     {
-      return _data.back();
+      return data_.back();
     }
 
     constexpr const value_type& back() const noexcept
     {
-      return _data.back();
+      return data_.back();
     }
 
     constexpr value_type& operator[](Enum e) noexcept
     {
-      return _data[enum_index(e).value()];
+      return data_[enum_index(e).value()];
     }
 
     constexpr const value_type& operator[](Enum e) const noexcept
     {
-      return _data[enum_index(e).value()];
+      return data_[enum_index(e).value()];
     }
 
     constexpr value_type& at(Enum e)
     {
-      return _data.at(enum_index(e).value());
+      return data_.at(enum_index(e).value());
     }
 
     constexpr const value_type& at(Enum e) const
     {
-      return _data.at(enum_index(e).value());
+      return data_.at(enum_index(e).value());
     }
 
     constexpr value_type* data() noexcept
     {
-      return _data.data();
+      return data_.data();
     }
 
     constexpr const value_type* data() const noexcept
     {
-      return _data.data();
+      return data_.data();
     }
 
   private:
     auto view()
     {
-      return util::zip(enum_values<Enum>(), _data);
+      return util::zip(enum_values<Enum>(), data_);
     }
-    std::array<T, enum_count<Enum>()> _data = {};
+    std::array<T, enum_count<Enum>()> data_ = {};
   };
 
   template<AnEnum Enum>
   struct enum_bitset {
-    constexpr enum_bitset() = default;
-    constexpr enum_bitset(std::initializer_list<std::pair<Enum, bool>> init)
+    enum_bitset() noexcept = default;
+    enum_bitset(const std::bitset<enum_count<Enum>()>& bs) noexcept : data_(bs) {}
+    enum_bitset(std::initializer_list<Enum> init) noexcept
     {
-      for (auto&& [k, v] : init) {
-        (*this)[k] = v;
+      for (Enum e : init) {
+        set(e);
       }
     }
 
-    static constexpr std::size_t size() noexcept
+    static std::size_t size() noexcept
     {
       return enum_count<Enum>();
     }
 
-    constexpr auto operator[](Enum e) noexcept
+    auto operator[](Enum e) noexcept
     {
-      return _data[enum_index(e).value()];
+      return data_[enum_index(e).value()];
     }
 
-    constexpr bool operator[](Enum e) const noexcept
+    bool operator[](Enum e) const noexcept
     {
-      return _data[enum_index(e).value()];
+      return data_[enum_index(e).value()];
     }
 
-    constexpr auto at(Enum e)
+    auto at(Enum e) noexcept
     {
-      return _data.at(enum_index(e).value());
+      return data_.at(enum_index(e).value());
     }
 
-    constexpr bool at(Enum e) const
+    bool at(Enum e) const noexcept
     {
-      return _data.at(enum_index(e).value());
+      return data_.at(enum_index(e).value());
     }
 
-    constexpr void flip(Enum e)
+    void flip(Enum e) noexcept
     {
-      _data.flip(enum_index(e).value());
+      data_.flip(enum_index(e).value());
     }
 
-    constexpr void set(Enum e, bool v = true)
+    void set(Enum e, bool v = true) noexcept
     {
-      _data.set(enum_index(e).value(), v);
+      data_.set(enum_index(e).value(), v);
     }
 
-    constexpr void reset(Enum e)
+    void reset(Enum e) noexcept
     {
-      _data.set(enum_index(e).value(), false);
+      data_.set(enum_index(e).value(), false);
     }
 
-    constexpr void set()
+    void set() noexcept
     {
-      _data.set();
+      data_.set();
     }
 
-    constexpr void reset()
+    void reset() noexcept
     {
-      _data.reset();
+      data_.reset();
     }
+
+    bool test(Enum e) const noexcept
+    {
+      return data_.test(enum_index(e).value());
+    }
+
+    [[nodiscard]] bool all() const noexcept
+    {
+      return data_.all();
+    }
+
+    [[nodiscard]] bool any() const noexcept
+    {
+      return data_.any();
+    }
+
+    [[nodiscard]] bool none() const noexcept
+    {
+      return data_.none();
+    }
+
+    [[nodiscard]] std::size_t count() const noexcept
+    {
+      return data_.count();
+    }
+
+    enum_bitset& operator+=(Enum e) noexcept
+    {
+      set(e);
+      return *this;
+    }
+
+    enum_bitset& operator-=(Enum e) noexcept
+    {
+      reset(e);
+      return *this;
+    }
+
+    enum_bitset& operator&=(const enum_bitset& rhs) noexcept
+    {
+      data_ &= rhs.data_;
+      return *this;
+    }
+
+    enum_bitset& operator|=(const enum_bitset& rhs) noexcept
+    {
+      data_ |= rhs.data_;
+      return *this;
+    }
+
+    enum_bitset& operator^=(const enum_bitset& rhs) noexcept
+    {
+      data_ ^= rhs.data_;
+      return *this;
+    }
+
+    enum_bitset operator~() const noexcept
+    {
+      return ~data_;
+    }
+
+    friend enum_bitset operator+(const enum_bitset& lhs, Enum e) noexcept
+    {
+      auto res = lhs;
+      res += e;
+      return res;
+    }
+
+    friend enum_bitset operator-(const enum_bitset& lhs, Enum e) noexcept
+    {
+      auto res = lhs;
+      res -= e;
+      return res;
+    }
+
+    friend enum_bitset operator&(const enum_bitset& lhs, const enum_bitset& rhs) noexcept
+    {
+      auto res = lhs;
+      res &= rhs;
+      return res;
+    }
+
+    friend enum_bitset operator|(const enum_bitset& lhs, const enum_bitset& rhs) noexcept
+    {
+      auto res = lhs;
+      res |= rhs;
+      return res;
+    }
+
+    friend enum_bitset operator^(const enum_bitset& lhs, const enum_bitset& rhs) noexcept
+    {
+      auto res = lhs;
+      res ^= rhs;
+      return res;
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const enum_bitset& bs) noexcept
+    {
+      return os << bs.data_;
+    }
+
+    friend std::istream& operator>>(std::istream& is, enum_bitset& bs) noexcept
+    {
+      return is >> bs.data_;
+    }
+
+    auto operator<=>(const enum_bitset&) const noexcept = default;
+    bool operator==(const enum_bitset&) const noexcept = default;
 
   private:
-    std::bitset<enum_count<Enum>()> _data = {};
+    std::bitset<enum_count<Enum>()> data_ = {};
   };
 } // namespace otto::util

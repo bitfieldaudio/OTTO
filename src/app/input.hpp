@@ -74,12 +74,42 @@ namespace otto {
     unassigned_f = 58,
   };
 
+  namespace key_groups {
+    inline const util::enum_bitset seq = {Key::seq0,  Key::seq1,  Key::seq2,  Key::seq3, Key::seq4,  Key::seq5,
+                                          Key::seq6,  Key::seq7,  Key::seq8,  Key::seq9, Key::seq10, Key::seq11,
+                                          Key::seq12, Key::seq13, Key::seq14, Key::seq15};
+    inline const util::enum_bitset channel = {Key::channel0, Key::channel1, Key::channel2, Key::channel3,
+                                              Key::channel4, Key::channel5, Key::channel6, Key::channel7,
+                                              Key::channel8, Key::channel9};
+    inline const util::enum_bitset piano = seq | channel;
+    inline const util::enum_bitset enc_clicks = {Key::blue_enc_click, Key::green_enc_click, Key::yellow_enc_click,
+                                                 Key::red_enc_click};
+
+    inline const util::enum_bitset func = {
+      Key::shift,        Key::sends,        Key::plus,         Key::routing,     Key::minus,        Key::fx1,
+      Key::fx2,          Key::master,       Key::play,         Key::record,      Key::arp,          Key::slots,
+      Key::twist1,       Key::twist2,       Key::looper,       Key::external,    Key::sampler,      Key::envelope,
+      Key::voices,       Key::settings,     Key::sequencer,    Key::synth,       Key::unassigned_a, Key::unassigned_b,
+      Key::unassigned_c, Key::unassigned_d, Key::unassigned_e, Key::unassigned_f};
+  } // namespace key_groups
+
   enum struct Encoder : std::uint8_t {
     blue,
     green,
     yellow,
     red,
   };
+
+  inline Key click_for(Encoder e)
+  {
+    switch (e) {
+      case Encoder::blue: return Key::blue_enc_click;
+      case Encoder::green: return Key::green_enc_click;
+      case Encoder::yellow: return Key::yellow_enc_click;
+      case Encoder::red: return Key::red_enc_click;
+    }
+    OTTO_UNREACHABLE();
+  }
 
   template<typename Event>
   struct TimedEvent : Event {

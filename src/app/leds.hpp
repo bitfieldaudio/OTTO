@@ -1,6 +1,9 @@
 #pragma once
 
+#include "lib/util/func_interface.hpp"
 #include "lib/util/visitor.hpp"
+
+#include "lib/toml.hpp"
 
 #include "app/input.hpp"
 
@@ -63,6 +66,23 @@ namespace otto {
     unassigned_f = util::enum_integer(Key::unassigned_f),
   };
 
+  namespace led_groups {
+    inline const util::enum_bitset seq = {Led::seq0,  Led::seq1,  Led::seq2,  Led::seq3, Led::seq4,  Led::seq5,
+                                          Led::seq6,  Led::seq7,  Led::seq8,  Led::seq9, Led::seq10, Led::seq11,
+                                          Led::seq12, Led::seq13, Led::seq14, Led::seq15};
+    inline const util::enum_bitset channel = {Led::channel0, Led::channel1, Led::channel2, Led::channel3,
+                                              Led::channel4, Led::channel5, Led::channel6, Led::channel7,
+                                              Led::channel8, Led::channel9};
+    inline const util::enum_bitset piano = seq | channel;
+
+    inline const util::enum_bitset func = {
+      Led::shift,        Led::sends,        Led::plus,         Led::routing,     Led::minus,        Led::fx1,
+      Led::fx2,          Led::master,       Led::play,         Led::record,      Led::arp,          Led::slots,
+      Led::twist1,       Led::twist2,       Led::looper,       Led::external,    Led::sampler,      Led::envelope,
+      Led::voices,       Led::settings,     Led::sequencer,    Led::synth,       Led::unassigned_a, Led::unassigned_b,
+      Led::unassigned_c, Led::unassigned_d, Led::unassigned_e, Led::unassigned_f};
+  } // namespace led_groups
+
   inline tl::optional<Led> led_from(Key k)
   {
     return util::enum_cast<Led>(util::enum_integer(k));
@@ -76,7 +96,39 @@ namespace otto {
   struct LEDColor {
     uint8_t r = 0, g = 0, b = 0;
 
-    DECL_VISIT(r, g, b);
-    auto operator<=>(const LEDColor&) const = default;
+    void serialize_into(toml::value& toml) const;
+    void deserialize_from(const toml::value& toml);
+
+    constexpr auto operator<=>(const LEDColor&) const = default;
+
+    friend std::ostream& operator<<(std::ostream& os, LEDColor lc);
+  };
+
+  using LEDColorSet = util::enum_map<Led, LEDColor>;
+
+  namespace led_colors {
+    constexpr LEDColor black = {0, 0, 0};
+    constexpr LEDColor red = {0xFF, 0x00, 0x00};
+    constexpr LEDColor green = {0x00, 0xFF, 0x00};
+    constexpr LEDColor blue = {0x00, 0x00, 0xFF};
+    constexpr LEDColor yellow = {0x80, 0x80, 0x00};
+    constexpr LEDColor white = {0xFF, 0xFF, 0xFF};
+  } // namespace led_colors
+
+  /// The interface of an object that controls LED colors.
+  ///
+  /// Basically the `IDrawable` of LEDs.
+  ///
+  /// Should be used on the graphics thread.
+  struct ILedController {
+    virtual void leds(LEDColorSet& leds) noexcept = 0;
+    using Func = util::FuncInterface<&ILedController::leds>;
+  };
+
+  /// An `ILedController` with an empty `leds` function
+  ///
+  /// Can be used as a base class, to later override `leds`
+  struct LedController : ILedController {
+    void leds(LEDColorSet& leds) noexcept override {}
   };
 } // namespace otto
