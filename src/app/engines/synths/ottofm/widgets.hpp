@@ -16,6 +16,7 @@ namespace otto::engines::ottofm {
     float s = 0;
     float r = 0;
     bool active = false;
+    float expanded = 0;
     void do_draw(skia::Canvas& ctx);
   };
 

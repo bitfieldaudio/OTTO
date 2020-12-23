@@ -9,6 +9,8 @@
 #include "lib/skia/skia.hpp"
 #include "lib/widget.hpp"
 
+#include "lib/util/eventdivider.hpp"
+
 #include "app/input.hpp"
 #include "app/services/config.hpp"
 #include "app/services/graphics.hpp"
@@ -69,10 +71,13 @@ namespace otto::engines::ottofm {
           }
         } break;
         case Encoder::red: {
-          state.algorithm_idx += e.steps;
+          state.algorithm_idx += divider(e);
         } break;
       }
     }
+
+  private:
+    otto::util::EventDivider<4, 2000> divider; 
   };
 
   // For converting number to letter
@@ -90,8 +95,8 @@ namespace otto::engines::ottofm {
     WaveShapeGraphic ws;
 
     skia::Anim<float> expansion = {0, 0.25};
-    skia::Anim<int> denom = {0, 0.1};
-    skia::Anim<int> numer = {0, 0.1};
+    int denom = 0;
+    int numer = 0;
 
     OpLine(int i, const State& s) : index(i), state(s)
     {

@@ -17,11 +17,12 @@ namespace otto::engines::ottofm {
     const float sh = height * s;
     const float rw = max_width * r;
 
-    const float arc_size = 0.7;
+    const float arc_size = 0.2 * expanded + 0.5;
+    const float attack_arc_size = 0.5 - 0.5 * expanded;
 
     SkPath p;
     p.moveTo(0, height);
-    p.quadTo(aw * arc_size, height * arc_size, aw, 0); // curve
+    p.quadTo(aw * attack_arc_size, height * arc_size, aw, 0); // curve
     p.lineTo(aw, height);
     p.close();
     ctx.drawPath(p, paints::stroke_and_fill(colors::blue.mix(colors::black, static_cast<float>(!active) * 0.7f)));

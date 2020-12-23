@@ -124,10 +124,10 @@ namespace otto::engines::ottofm {
       ops.draw(ctx);
 
       // Draw params for envelopes
-      constexpr int active_y = 60;
-      constexpr int not_active_y = 0;
+      constexpr int active_y = 50;
+      constexpr int not_active_y = 15;
       constexpr int y_pad = 33;
-      constexpr int x_start = 70;
+      constexpr int x_start = 80;
       constexpr int x_size = 220;
       float step = (skia::height - 2 * y_pad - active_y - not_active_y * 3) / 3.f;
 
@@ -136,7 +136,8 @@ namespace otto::engines::ottofm {
         auto& graphic = env.graphic;
         env_size = active_y * env.size + not_active_y * (1 - env.size);
         graphic.bounding_box.move_to({x_start, upper_y});
-        graphic.bounding_box.resize({x_size, env.size * active_y});
+        graphic.bounding_box.resize({x_size, env_size});
+        graphic.expanded = env.size;
         graphic.draw(ctx);
         upper_y += env_size + step;
       }
