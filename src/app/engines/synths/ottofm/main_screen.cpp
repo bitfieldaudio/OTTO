@@ -50,28 +50,28 @@ namespace otto::engines::ottofm {
       // TODO
       switch (e.encoder) {
         case Encoder::blue: {
+          state.algorithm_idx += divider(e);
+        } break;
+        case Encoder::green: {
           if (!state.shift) {
             state.current_op().ratio_idx += e.steps;
           } else {
             state.current_op().detune += e.steps * 0.01;
           }
         } break;
-        case Encoder::green: {
+        case Encoder::yellow: {
           if (!state.shift) {
             state.current_op().level += e.steps * 0.01;
           } else {
             for (auto& op : state.operators) op.level += e.steps * 0.01;
           }
         } break;
-        case Encoder::yellow: {
+        case Encoder::red: {
           if (!state.shift) {
             state.current_op().shape += e.steps * 0.01;
           } else {
             for (auto& op : state.operators) op.shape += e.steps * 0.01;
           }
-        } break;
-        case Encoder::red: {
-          state.algorithm_idx += divider(e);
         } break;
       }
     }
@@ -178,8 +178,8 @@ namespace otto::engines::ottofm {
 
       // Draw algorithm text
 
-      ctx.drawTextBlob(alg_text.get(), 80, y_pad + rect.height(), paints::fill(colors::red));
-      ctx.drawTextBlob(alg_letter.get(), 300 - rect.width(), y_pad + rect.height(), paints::fill(colors::red));
+      ctx.drawTextBlob(alg_text.get(), 80, y_pad + rect.height(), paints::fill(colors::blue));
+      ctx.drawTextBlob(alg_letter.get(), 300 - rect.width(), y_pad + rect.height(), paints::fill(colors::blue));
 
       float y_spacing = (skia::height - 2 * y_pad - 3 * 20 - 40 - rect.height()) / 4;
       float y = y_pad + rect.height() + y_spacing;

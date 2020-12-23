@@ -168,7 +168,7 @@ namespace otto::engines::ottofm {
   {
     bounding_box.resize({40, 20 + expansion * 20});
     auto content_box = get_content_box(expansion);
-    const auto color = active ? colors::blue : colors::grey50;
+    const auto color = active ? colors::green : colors::grey50;
 
     const float width = bounding_box.width();
     draw_label(ctx, "RATIO", color, expansion);
@@ -194,7 +194,7 @@ namespace otto::engines::ottofm {
   void DetuneGraphic::do_draw(skia::Canvas& ctx)
   {
     bounding_box.resize({40, 20 + expansion * 20});
-    auto color = active ? colors::blue : colors::grey50;
+    auto color = active ? colors::green : colors::grey50;
 
     std::string prefix;
     int int_val = static_cast<int>(std::round(value * 0.99f * 100.f));
@@ -226,7 +226,7 @@ namespace otto::engines::ottofm {
     const float radius = bounding_box.width() / 2.f;
     const float radius_line1 = radius * 0.9f;
     // const float radius_line2 = radius * 0.6f;
-    const auto color = active ? colors::green : colors::grey50;
+    const auto color = active ? colors::yellow : colors::grey50;
 
     // Arc
     const auto box = skia::Box().resized({radius_line1 * 2, radius_line1 * 2}).moved_to(center, anchors::center);
@@ -290,7 +290,7 @@ namespace otto::engines::ottofm {
       x += step;
       i++;
     }
-    auto color = active ? colors::yellow : colors::grey50;
+    auto color = active ? colors::red : colors::grey50;
     ctx.drawPath(path, paints::stroke(color, 3.f));
 
     // Bottom Text
