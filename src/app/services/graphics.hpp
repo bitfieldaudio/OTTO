@@ -56,4 +56,17 @@ namespace otto {
 
   struct GraphicsDomain : itc::StaticDomain<services::detail::graphics_domain_tag> {};
 
+  /// Base class for screens.
+  ///
+  /// - Extends GraphicsDomain
+  /// - Overrides LED functions to not handle any LEDs (these can obviously be overridden
+  ///   in the derived class)
+  struct ScreenBase : IScreen, GraphicsDomain {
+    [[nodiscard]] LedSet led_mask() const noexcept override
+    {
+      return {};
+    }
+    void leds(LEDColorSet& colors) noexcept override {}
+  };
+
 } // namespace otto

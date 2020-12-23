@@ -238,6 +238,23 @@ namespace otto::util {
     return get_bit(array[idx / 8], idx % 8);
   }
 
+  template<typename T>
+  struct narrowing {
+    T value;
+    template<typename Res>
+    constexpr operator Res() const noexcept
+    {
+      static_cast<Res>(value);
+    }
+  };
+
+  template<typename T>
+  narrowing<T> narrow(T value)
+  {
+    return narrowing<T>{value};
+  }
+
+
   // Lambdas matching overload sets
 
   /// std::addressof wrapped in a lambda so it can be passed to algorithms

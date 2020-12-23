@@ -10,18 +10,18 @@ namespace otto::services {
 
   struct LedManager : core::ServiceAccessor<services::Controller> {
     struct Config : otto::Config<Config> {
-      LEDColor off_color = {0x02, 0x02, 0x02};
       float brightness = 0.5f;
-      DECL_VISIT(off_color, brightness);
+      LEDColor min_color = {0x08, 0x08, 0x08};
+      DECL_VISIT(brightness, min_color);
     };
 
     LedManager();
-
-    void set(Led led, skia::Color color);
+    void process(ILedController& controller);
+    void set(Led led, LEDColor color, bool force = false);
 
   private:
     void send(Led led, LEDColor);
     Config::Handle config_;
-    util::enum_map<Led, skia::Color> colors_;
+    LEDColorSet colors_;
   };
 } // namespace otto::services

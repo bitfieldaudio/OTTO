@@ -29,7 +29,7 @@ namespace otto {
           auto& self = *static_cast<RtMidiDriver*>(userdata);
           try {
             auto e = midi::from_bytes(*message);
-            self.audio->enqueue_midi(e);
+            self.audio->midi().send_event(e);
           } catch (std::exception& e) {
             LOGE("{}", e.what());
           }

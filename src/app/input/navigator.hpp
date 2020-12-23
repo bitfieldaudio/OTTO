@@ -4,6 +4,7 @@
 #include "lib/graphics.hpp"
 
 #include "app/input.hpp"
+#include "app/services/config.hpp"
 
 namespace otto {
   /// Handles a navigation "stack", which in fact only allows you to
@@ -13,7 +14,7 @@ namespace otto {
   ///
   /// Can itself be used as a screen/handler pair, delegating to the selected
   /// screen.
-  struct Navigator : IScreen, IInputHandler {
+  struct Navigator final : IScreen, IInputLayer {
     void navigate_to(ScreenWithHandlerPtr screen);
     /// Navigate back, returning false if no previous screen was available
     bool navigate_back();
@@ -22,9 +23,13 @@ namespace otto {
     void handle(KeyRelease e) noexcept override;
     void handle(EncoderEvent e) noexcept override;
     void draw(skia::Canvas& ctx) noexcept override;
+    void leds(LEDColorSet& output) noexcept override;
 
     /// Access the currently selected screen/handler pair
     ScreenWithHandlerPtr current_screen() noexcept;
+
+    [[nodiscard]] KeySet key_mask() const noexcept override;
+    [[nodiscard]] LedSet led_mask() const noexcept override;
 
   private:
     ScreenWithHandlerPtr current_screen_ = nullptr;
@@ -45,10 +50,19 @@ namespace otto {
   ///
   /// TODO: Consider splitting momentary detection out into its own component
   /// if it becomes useful in other places
-  struct NavKeyMap : IInputHandler {
-    NavKeyMap(util::smart_ptr<Navigator> n, chrono::duration timeout = 500ms);
+  struct NavKeyMap final : IInputLayer, IScreen {
+    struct Conf : Config<Conf> {
+      static constexpr auto name = "Navigation Keys";
+      chrono::duration peek_timeout = 500ms;
+      LEDColor deselected_color = {0x08, 0x08, 0x08};
+      LEDColor selected_color = {0x80, 0x80, 0x80};
+      DECL_VISIT(peek_timeout, deselected_color, selected_color);
+    };
+
+    NavKeyMap(util::smart_ptr<Navigator> n = std::make_unique<Navigator>(), Conf::Handle conf = {});
 
     Navigator& nav();
+    const Navigator& nav() const;
 
     void bind_nav_key(Key key, ScreenWithHandlerPtr scrn);
 
@@ -57,12 +71,19 @@ namespace otto {
     void handle(EncoderEvent e) noexcept override;
 
     /// Get as a screen/handler pair
-    ScreenWithHandlerPtr sceen();
+    ScreenWithHandlerPtr screen();
+
+    void draw(skia::Canvas& ctx) noexcept override;
+
+    void leds(LEDColorSet& output) noexcept override;
+
+    [[nodiscard]] KeySet key_mask() const noexcept override;
+    [[nodiscard]] LedSet led_mask() const noexcept override;
 
   private:
+    Conf::Handle conf;
     util::smart_ptr<Navigator> nav_;
     chrono::time_point last_nav_time_;
-    util::enum_map<Key, ScreenWithHandlerPtr> binds_;
-    chrono::duration momentary_timeout_;
+    std::unordered_map<Key, ScreenWithHandlerPtr> binds_;
   };
 } // namespace otto

@@ -20,8 +20,13 @@
 
 namespace otto::engines::ottofm {
 
-  struct ModHandler final : InputReducer<State> {
+  struct ModHandler final : InputReducer<State>, IInputLayer {
     using InputReducer::InputReducer;
+
+    [[nodiscard]] util::enum_bitset<Key> key_mask() const noexcept override
+    {
+      return key_groups::enc_clicks + Key::shift;
+    }
 
     void reduce(KeyPress e, State& state) noexcept final
     {
@@ -107,7 +112,7 @@ namespace otto::engines::ottofm {
     }
   };
 
-  struct ModScreen final : itc::Consumer<State>, IScreen, GraphicsDomain {
+  struct ModScreen final : itc::Consumer<State>, ScreenBase {
     using Consumer::Consumer;
 
     Operators ops;
@@ -130,12 +135,14 @@ namespace otto::engines::ottofm {
       switch (envelopes[3 - ops.cur_op].will_change(s)) {
         case 1:
           last_changed_parameter = std::string("ATTACK");
-          value_str = fmt::format("{:4.0f}ms", 1000 * envelope_stage_duration(s.operators[s.cur_op_idx].envelope.attack));
+          value_str =
+            fmt::format("{:4.0f}ms", 1000 * envelope_stage_duration(s.operators[s.cur_op_idx].envelope.attack));
           popup_brightness = 1.0f;
           break;
         case 2:
           last_changed_parameter = std::string("DECAY");
-          value_str = fmt::format("{:4.0f}ms", 1000 * envelope_stage_duration(s.operators[s.cur_op_idx].envelope.decay));
+          value_str =
+            fmt::format("{:4.0f}ms", 1000 * envelope_stage_duration(s.operators[s.cur_op_idx].envelope.decay));
           popup_brightness = 1.0f;
           break;
         case 3:
@@ -145,7 +152,8 @@ namespace otto::engines::ottofm {
           break;
         case 4:
           last_changed_parameter = std::string("RELEASE");
-          value_str = fmt::format("{:4.0f}ms", 1000 * envelope_stage_duration(s.operators[s.cur_op_idx].envelope.release));
+          value_str =
+            fmt::format("{:4.0f}ms", 1000 * envelope_stage_duration(s.operators[s.cur_op_idx].envelope.release));
           popup_brightness = 1.0f;
           break;
         default: break;
@@ -176,8 +184,10 @@ namespace otto::engines::ottofm {
         // If knobs are being turned, show the pop-up
         if (env.active) {
           constexpr float padding = 6;
-          skia::place_text(ctx, last_changed_parameter, fonts::regular(14), colors::white.brighten(popup_brightness), {x_start, upper_y + env_size + padding}, anchors::top_left);
-          skia::place_text(ctx, value_str, fonts::regular(14), colors::white.brighten(popup_brightness), {x_start + x_size, upper_y + env_size + padding}, anchors::top_right);
+          skia::place_text(ctx, last_changed_parameter, fonts::regular(14), colors::white.brighten(popup_brightness),
+                           {x_start, upper_y + env_size + padding}, anchors::top_left);
+          skia::place_text(ctx, value_str, fonts::regular(14), colors::white.brighten(popup_brightness),
+                           {x_start + x_size, upper_y + env_size + padding}, anchors::top_right);
         }
 
         upper_y += env_size + step;
@@ -193,7 +203,7 @@ namespace otto::engines::ottofm {
   {
     return {
       .screen = std::make_unique<ModScreen>(chan),
-      .handler = std::make_unique<ModHandler>(chan),
+      .input = std::make_unique<ModHandler>(chan),
     };
   }
 

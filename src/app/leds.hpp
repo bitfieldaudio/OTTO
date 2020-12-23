@@ -66,16 +66,17 @@ namespace otto {
     unassigned_f = util::enum_integer(Key::unassigned_f),
   };
 
-  namespace led_groups {
-    inline const util::enum_bitset seq = {Led::seq0,  Led::seq1,  Led::seq2,  Led::seq3, Led::seq4,  Led::seq5,
-                                          Led::seq6,  Led::seq7,  Led::seq8,  Led::seq9, Led::seq10, Led::seq11,
-                                          Led::seq12, Led::seq13, Led::seq14, Led::seq15};
-    inline const util::enum_bitset channel = {Led::channel0, Led::channel1, Led::channel2, Led::channel3,
-                                              Led::channel4, Led::channel5, Led::channel6, Led::channel7,
-                                              Led::channel8, Led::channel9};
-    inline const util::enum_bitset piano = seq | channel;
+  using LedSet = util::enum_bitset<Led>;
 
-    inline const util::enum_bitset func = {
+  namespace led_groups {
+    inline const LedSet seq = {Led::seq0,  Led::seq1,  Led::seq2,  Led::seq3, Led::seq4,  Led::seq5,
+                               Led::seq6,  Led::seq7,  Led::seq8,  Led::seq9, Led::seq10, Led::seq11,
+                               Led::seq12, Led::seq13, Led::seq14, Led::seq15};
+    inline const LedSet channel = {Led::channel0, Led::channel1, Led::channel2, Led::channel3, Led::channel4,
+                                   Led::channel5, Led::channel6, Led::channel7, Led::channel8, Led::channel9};
+    inline const LedSet piano = seq | channel;
+
+    inline const LedSet func = {
       Led::shift,        Led::sends,        Led::plus,         Led::routing,     Led::minus,        Led::fx1,
       Led::fx2,          Led::master,       Led::play,         Led::record,      Led::arp,          Led::slots,
       Led::twist1,       Led::twist2,       Led::looper,       Led::external,    Led::sampler,      Led::envelope,
@@ -113,6 +114,8 @@ namespace otto {
     constexpr LEDColor blue = {0x00, 0x00, 0xFF};
     constexpr LEDColor yellow = {0x80, 0x80, 0x00};
     constexpr LEDColor white = {0xFF, 0xFF, 0xFF};
+
+    constexpr LEDColor inactive = {0x02, 0x02, 0x02};
   } // namespace led_colors
 
   /// The interface of an object that controls LED colors.

@@ -3,13 +3,12 @@
 #include <choreograph/Choreograph.h>
 #include <fmt/format.h>
 
+#include "lib/util/eventdivider.hpp"
 #include "lib/util/with_limits.hpp"
 
 #include "lib/itc/itc.hpp"
 #include "lib/skia/skia.hpp"
 #include "lib/widget.hpp"
-
-#include "lib/util/eventdivider.hpp"
 
 #include "app/input.hpp"
 #include "app/services/config.hpp"
@@ -21,8 +20,13 @@
 
 namespace otto::engines::ottofm {
 
-  struct MainHandler final : InputReducer<State> {
+  struct MainHandler final : InputReducer<State>, IInputLayer {
     using InputReducer::InputReducer;
+
+    [[nodiscard]] util::enum_bitset<Key> key_mask() const noexcept override
+    {
+      return key_groups::enc_clicks + Key::shift;
+    }
 
     void reduce(KeyPress e, State& state) noexcept final
     {
@@ -77,7 +81,7 @@ namespace otto::engines::ottofm {
     }
 
   private:
-    otto::util::EventDivider<4, 2000> divider; 
+    otto::util::EventDivider<4, 2000> divider;
   };
 
   // For converting number to letter
@@ -144,7 +148,7 @@ namespace otto::engines::ottofm {
     }
   };
 
-  struct MainScreen final : itc::Consumer<State>, IScreen, GraphicsDomain {
+  struct MainScreen final : itc::Consumer<State>, ScreenBase {
     using Consumer::Consumer;
 
     Operators ops;
@@ -196,7 +200,7 @@ namespace otto::engines::ottofm {
   {
     return {
       .screen = std::make_unique<MainScreen>(chan),
-      .handler = std::make_unique<MainHandler>(chan),
+      .input = std::make_unique<MainHandler>(chan),
     };
   }
 

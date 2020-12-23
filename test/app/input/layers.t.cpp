@@ -4,52 +4,89 @@
 
 using namespace otto;
 
-using Events = std::vector<std::variant<UntimedKeyPress, UntimedKeyRelease, UntimedEncoderEvent>>;
+namespace {
+  using Events = std::vector<std::variant<UntimedKeyPress, UntimedKeyRelease, UntimedEncoderEvent>>;
 
-struct StubInputLayer final : ConstInputLayer {
-  StubInputLayer(util::enum_bitset<Key> keys) : ConstInputLayer(keys) {}
+  struct StubInputLayer final : ConstInputLayer {
+    StubInputLayer(util::enum_bitset<Key> keys) : ConstInputLayer(keys) {}
 
-  void handle(KeyPress e) noexcept override
-  {
-    events.push_back(e);
-  }
-  void handle(KeyRelease e) noexcept override
-  {
-    events.push_back(e);
-  }
-  void handle(EncoderEvent e) noexcept override
-  {
-    events.push_back(e);
-  }
+    void handle(KeyPress e) noexcept override
+    {
+      events.push_back(e);
+    }
+    void handle(KeyRelease e) noexcept override
+    {
+      events.push_back(e);
+    }
+    void handle(EncoderEvent e) noexcept override
+    {
+      events.push_back(e);
+    }
 
-  Events events;
-};
+    Events events;
+  };
+} // namespace
 
 TEST_CASE ("InputLayer") {
-  InputLayerStack stack;
-  StubInputLayer l1 = {{Key::channel0, Key::channel1, Key::channel2}};
-  stack.add_layer(l1);
-  CAPTURE(&l1);
-  REQUIRE(stack.layer_for(Key::arp) == nullptr);
-  REQUIRE(stack.layer_for(Key::channel0) == &l1);
-  REQUIRE(stack.layer_for(Key::channel1) == &l1);
-  REQUIRE(stack.layer_for(Key::channel2) == &l1);
+  LayerStack stack;
 
-  StubInputLayer l2 = {{Key::seq0, Key::seq1}};
-  stack.add_layer(l2);
-  CAPTURE(&l2);
+  SECTION ("Basics") {
+    StubInputLayer l1 = {{Key::channel0, Key::channel1, Key::channel2}};
+    stack.add_layer(l1);
+    CAPTURE(&l1);
+    REQUIRE(stack.layer_for(Key::arp) == nullptr);
+    REQUIRE(stack.layer_for(Key::channel0) == &l1);
+    REQUIRE(stack.layer_for(Key::channel1) == &l1);
+    REQUIRE(stack.layer_for(Key::channel2) == &l1);
 
-  REQUIRE(stack.layer_for(Key::seq0) == &l2);
-  REQUIRE(stack.layer_for(Key::seq1) == &l2);
-  REQUIRE(stack.layer_for(Key::channel0) == &l1);
+    StubInputLayer l2 = {{Key::seq0, Key::seq1}};
+    stack.add_layer(l2);
+    CAPTURE(&l2);
 
-  StubInputLayer l3 = {{Key::seq0}};
-  stack.add_layer(l3);
-  CAPTURE(&l3);
+    REQUIRE(stack.layer_for(Key::seq0) == &l2);
+    REQUIRE(stack.layer_for(Key::seq1) == &l2);
+    REQUIRE(stack.layer_for(Key::channel0) == &l1);
 
-  REQUIRE(stack.layer_for(Key::seq0) == &l3);
-  REQUIRE(stack.layer_for(Key::seq1) == &l2);
-  REQUIRE(stack.layer_for(Key::channel0) == &l1);
+    StubInputLayer l3 = {{Key::seq0}};
+    stack.add_layer(l3);
+    CAPTURE(&l3);
+
+    REQUIRE(stack.layer_for(Key::seq0) == &l3);
+    REQUIRE(stack.layer_for(Key::seq1) == &l2);
+    REQUIRE(stack.layer_for(Key::channel0) == &l1);
+  }
+
+  SECTION ("Encoder events are masked by their corresponding click") {
+    StubInputLayer l1 = {{Key::red_enc_click}};
+    stack.add_layer(l1);
+
+    StubInputLayer l2 = {{Key::red_enc_click}};
+    stack.add_layer(l2);
+
+    StubInputLayer l3 = {{Key::blue_enc_click}};
+    stack.add_layer(l3);
+
+    SECTION ("1") {
+      stack.handle(EncoderEvent{Encoder::red});
+      REQUIRE(l1.events.empty());
+      REQUIRE(l2.events.size() == 1);
+      REQUIRE(l3.events.empty());
+    }
+
+    SECTION ("2") {
+      stack.handle(EncoderEvent{Encoder::blue});
+      REQUIRE(l1.events.empty());
+      REQUIRE(l2.events.empty());
+      REQUIRE(l3.events.size() == 1);
+    }
+
+    SECTION ("3") {
+      stack.handle(EncoderEvent{Encoder::green});
+      REQUIRE(l1.events.empty());
+      REQUIRE(l2.events.empty());
+      REQUIRE(l3.events.empty());
+    }
+  }
 }
 
 struct StubLEDLayer final : ConstLEDLayer {
@@ -66,7 +103,7 @@ struct StubLEDLayer final : ConstLEDLayer {
 };
 
 TEST_CASE ("LEDLayer") {
-  InputLayerStack stack;
+  LayerStack stack;
 
   StubLEDLayer red = {led_colors::red, led_groups::seq};
   stack.add_layer(red);

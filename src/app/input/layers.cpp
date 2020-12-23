@@ -2,90 +2,93 @@
 
 namespace otto {
 
-  bool InputLayerStack::remove_layer(ILEDLayer& layer)
+  LedSet ILEDLayer::process_leds_masked(LEDColorSet& colors)
+  {
+    LEDColorSet tmp;
+    leds(tmp);
+    auto mask = led_mask();
+    for (Led l : util::enum_values<Led>()) {
+      if (mask[l]) colors[l] = tmp[l];
+    }
+    return mask;
+  }
+
+  bool LayerStack::remove_layer(ILEDLayer& layer)
   {
     return std::erase(led_layers_, &layer) > 0;
   }
 
-  bool InputLayerStack::remove_layer(IInputLayer& layer)
+  bool LayerStack::remove_layer(IInputLayer& layer)
   {
     return std::erase(input_layers_, &layer) > 0;
   }
 
-  void InputLayerStack::add_layer(ILEDLayer& layer)
+  void LayerStack::add_layer(ILEDLayer& layer)
   {
     led_layers_.emplace_back(&layer);
   }
 
-  void InputLayerStack::add_layer(IInputLayer& layer)
+  void LayerStack::add_layer(IInputLayer& layer)
   {
     input_layers_.emplace_back(&layer);
   }
 
-  ILEDLayer* InputLayerStack::layer_for(Led led) noexcept
+  ILEDLayer* LayerStack::layer_for(Led led) noexcept
   {
     for (auto& l : util::reverse(led_layers_)) {
-      if (l->covered_leds()[led]) return l;
+      if (l->led_mask()[led]) return l;
     }
     return nullptr;
   }
 
-  IInputLayer* InputLayerStack::layer_for(Key k) noexcept
+  IInputLayer* LayerStack::layer_for(Key k) noexcept
   {
     for (auto& l : util::reverse(input_layers_)) {
-      if (l->covered_keys()[k]) return l;
+      if (l->key_mask()[k]) return l;
     }
     return nullptr;
   }
 
-  util::enum_bitset<Led> InputLayerStack::covered_leds() const noexcept
+  LedSet LayerStack::led_mask() const noexcept
   {
-    util::enum_bitset<Led> res;
+    LedSet res;
     for (const auto& l : led_layers_) {
-      res |= l->covered_leds();
+      res |= l->led_mask();
     }
     return res;
   }
 
-  util::enum_bitset<Key> InputLayerStack::covered_keys() const noexcept
+  KeySet LayerStack::key_mask() const noexcept
   {
-    util::enum_bitset<Key> res;
+    KeySet res;
     for (const auto& l : input_layers_) {
-      res |= l->covered_keys();
+      res |= l->key_mask();
     }
     return res;
   }
 
-  static void masked_copy(const LEDColorSet& src, LEDColorSet& dst, const util::enum_bitset<Led>& mask)
+  void LayerStack::leds(LEDColorSet& colors) noexcept
   {
-    for (Led l : util::enum_values<Led>()) {
-      if (mask[l]) dst[l] = src[l];
-    }
-  }
-
-  void InputLayerStack::leds(LEDColorSet& colors) noexcept
-  {
-    LEDColorSet tmp;
+    // TODO: Work in reverse, stop when alle LEDs have been written?
+    // May not be worth it, we probably won't have a lot of layers
     for (auto& l : led_layers_) {
-      l->leds(tmp);
-      masked_copy(tmp, colors, l->covered_leds());
+      l->process_leds_masked(colors);
     }
   }
 
-  void InputLayerStack::handle(KeyRelease e) noexcept
+  void LayerStack::handle(KeyRelease e) noexcept
   {
     if (auto* l = layer_for(e.key)) l->handle(e);
   }
 
-  void InputLayerStack::handle(KeyPress e) noexcept
+  void LayerStack::handle(KeyPress e) noexcept
   {
     if (auto* l = layer_for(e.key)) l->handle(e);
   }
 
-  void InputLayerStack::handle(EncoderEvent e) noexcept
+  void LayerStack::handle(EncoderEvent e) noexcept
   {
-    for (auto& l : util::reverse(input_layers_)) {
-      l->handle(e);
-    }
+    if (auto* l = layer_for(click_for(e.encoder))) l->handle(e);
   }
+
 } // namespace otto

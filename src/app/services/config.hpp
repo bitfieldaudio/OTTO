@@ -42,7 +42,18 @@ namespace otto {
       /// Initialize the configurations from a toml object
       ConfigManager(toml::value config_data);
       /// Initialize the configurations from a toml file
-      ConfigManager(std::filesystem::path config_path);
+      ConfigManager(const std::filesystem::path& config_path);
+
+      ~ConfigManager();
+
+      void write_to_file()
+      {
+        LOGI("Writing config to {}", file_path.c_str());
+        std::ofstream file;
+        file.open(file_path);
+        file << into_toml();
+        file.close();
+      }
 
       /// Construct a config type, and initialize it from the config data
       ///
@@ -69,6 +80,7 @@ namespace otto {
       template<AConfig Conf>
       static constexpr const char* key_of() noexcept;
 
+      std::filesystem::path file_path = "";
       [[no_unique_address]] core::ServiceAccessor<Runtime> runtime;
       toml::value config_data_ = toml::table();
     };
@@ -79,9 +91,8 @@ namespace otto {
   struct ConfHandle<Conf> {
     ConfHandle() noexcept
       : ConfHandle([&] {
-          OTTO_ASSERT(confman.is_active(), "{} constructed with no ConfigManager active",
-                      util::qualified_name_of<Conf>);
-          return confman->make_conf<Conf>();
+          if (confman.is_active()) return confman->make_conf<Conf>();
+          return Conf{};
         }())
     {}
     ConfHandle(Conf c) noexcept : conf(std::move(c)) {}
@@ -110,18 +121,18 @@ namespace otto::services {
 
   inline ConfigManager::ConfigManager(toml::value config_data) : config_data_(std::move(config_data)) {}
 
-  inline ConfigManager::ConfigManager(std::filesystem::path config_path)
+  inline ConfigManager::ConfigManager(const std::filesystem::path& config_path)
   try : ConfigManager(toml::parse<toml::preserve_comments>(config_path)) {
-    runtime->on_enter_stage(Runtime::Stage::running, [path = std::move(config_path), this] {
-      LOGI("Writing config to {}", path.c_str());
-      std::ofstream file;
-      file.open(path);
-      file << into_toml();
-      file.close();
-    });
+    file_path = config_path;
   } catch (std::runtime_error& e) {
     LOGE("Error reading config file:");
     LOGE("{}", e.what());
+  }
+
+
+  inline ConfigManager::~ConfigManager()
+  {
+    write_to_file();
   }
 
   inline toml::value ConfigManager::into_toml() const
@@ -137,8 +148,8 @@ namespace otto::services {
     try {
       if (data.type() != toml::value_t::empty) util::deserialize_from(data, res);
     } catch (const std::out_of_range& e) {
-      // DLOGI("Error in config {}, using default: ", res.get_name());
-      // DLOGI("{}", e.what());
+      LOGI("Error in config {}, using default: ", res.get_name());
+      LOGI("{}", e.what());
     } catch (const std::exception& e) {
       LOGW("Error in config {}, using default: ", res.get_name());
       LOGW("{}", e.what());

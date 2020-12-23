@@ -28,7 +28,11 @@ namespace otto::engines {
       Logic(itc::TypedChannel<State>& c) : itc::Producer<State>(c) {}
     };
 
-    struct Handler final : InputReducer<State> {
+    struct Handler final : InputReducer<State>, IInputLayer {
+      [[nodiscard]] KeySet key_mask() const noexcept override
+      {
+        return key_groups::enc_clicks;
+      }
       void reduce(EncoderEvent e, State& state) noexcept final
       {
         state.freq += e.steps;
@@ -51,7 +55,7 @@ namespace otto::engines {
       gam::Sine<> osc;
     };
 
-    struct Screen final : itc::Consumer<State>, core::ServiceAccessor<services::Graphics>, IScreen, GraphicsDomain {
+    struct Screen final : itc::Consumer<State>, core::ServiceAccessor<services::Graphics>, ScreenBase {
       Screen(itc::TypedChannel<State>& c) : Consumer(c) {}
       void draw(SkCanvas& ctx) noexcept override
       {

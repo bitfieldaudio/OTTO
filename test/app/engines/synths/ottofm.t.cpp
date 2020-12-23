@@ -38,7 +38,7 @@ TEST_CASE ("ottofm", "[.interactive][engine]") {
   //   std::ranges::copy(util::zip(res, res), data.output.begin());
   // });
   app.service<Graphics>().show([&](SkCanvas& ctx) { eng.main_screen.screen->draw(ctx); });
-  app.service<Controller>().set_input_handler(*eng.main_screen.handler);
+  app.service<Controller>().set_input_handler(*eng.main_screen.input);
 
   app.wait_for_stop();
 }
@@ -60,7 +60,7 @@ TEST_CASE ("ottofm-env", "[.interactive][engine]") {
   //  std::ranges::copy(util::zip(res, res), data.output.begin());
   // });
   app.service<Graphics>().show([&](SkCanvas& ctx) { eng.mod_screen.screen->draw(ctx); });
-  app.service<Controller>().set_input_handler(*eng.mod_screen.handler);
+  app.service<Controller>().set_input_handler(*eng.mod_screen.input);
 
   app.wait_for_stop();
 }
@@ -83,14 +83,14 @@ TEST_CASE ("ottofm-all", "[.interactive][engine]") {
     std::ranges::copy(util::zip(res, res), data.output.begin());
   });
 
-  EventDistributor handlers;
-  handlers.add_handler(std::make_unique<KeyboardKeysHandler>());
-  auto& nav_km = handlers.add_handler(std::make_unique<NavKeyMap>(std::make_unique<Navigator>()));
+  LayerStack layers;
+  auto piano = layers.make_layer<PianoKeyLayer>(app.service<Audio>().midi());
+  auto nav_km = layers.make_layer<NavKeyMap>();
   nav_km.bind_nav_key(Key::synth, eng.main_screen);
   nav_km.bind_nav_key(Key::envelope, eng.mod_screen);
 
   app.service<Graphics>().show(nav_km.nav());
-  app.service<Controller>().set_input_handler(handlers);
+  app.service<Controller>().set_input_handler(layers);
 
   app.wait_for_stop();
 }
@@ -112,14 +112,14 @@ TEST_CASE ("ottofm-no-audio", "[.interactive][engine]") {
   //  std::ranges::copy(util::zip(res, res), data.output.begin());
   //});
 
-  EventDistributor handlers;
-  // handlers.add_handler(std::make_unique<KeyboardKeysHandler>());
-  auto& nav_km = handlers.add_handler(std::make_unique<NavKeyMap>(std::make_unique<Navigator>()));
+  LayerStack layers;
+  // auto piano = layers.make_layer<PianoKeyLayer>(app.service<Audio>().midi());
+  auto nav_km = layers.make_layer<NavKeyMap>();
   nav_km.bind_nav_key(Key::synth, eng.main_screen);
   nav_km.bind_nav_key(Key::envelope, eng.mod_screen);
 
   app.service<Graphics>().show(nav_km.nav());
-  app.service<Controller>().set_input_handler(handlers);
+  app.service<Controller>().set_input_handler(layers);
 
   app.wait_for_stop();
 }

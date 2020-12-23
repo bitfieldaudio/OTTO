@@ -2,26 +2,42 @@
 
 #include "lib/util/smart_ptr.hpp"
 #include "lib/util/visitor.hpp"
+#include "lib/util/with_limits.hpp"
 
 #include "lib/core/service.hpp"
 
+#include "app/drivers/midi_driver.hpp"
 #include "app/input.hpp"
-#include "app/services/audio.hpp"
+#include "app/input/layers.hpp"
 
 namespace otto {
   /// Key handler that sends midi events for the keyboard keys
-  struct KeyboardKeysHandler : InputHandler, core::ServiceAccessor<services::Audio> {
+  struct PianoKeyLayer final : IInputLayer, ILEDLayer {
     struct State {
-      int octave = 0;
+      util::StaticallyBounded<int, -4, 4> octave = 0;
       DECL_VISIT(octave);
     };
 
-    KeyboardKeysHandler(util::smart_ptr<State> state = std::make_unique<State>()) : state_(std::move(state)) {}
+    PianoKeyLayer(drivers::MidiController& midi) : midi_(midi) {}
 
+    [[nodiscard]] KeySet key_mask() const noexcept override
+    {
+      return key_groups::piano + Key::plus + Key::minus;
+    }
+
+    [[nodiscard]] LedSet led_mask() const noexcept override
+    {
+      return led_groups::piano + Led::plus + Led::minus;
+    }
+
+    void leds(LEDColorSet& output) noexcept override;
+
+    void handle(EncoderEvent) noexcept override {}
     void handle(KeyPress e) noexcept override;
     void handle(KeyRelease e) noexcept override;
 
   private:
-    util::smart_ptr<State> state_;
+    drivers::MidiController& midi_;
+    State state_;
   };
 } // namespace otto

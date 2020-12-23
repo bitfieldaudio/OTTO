@@ -147,11 +147,14 @@ namespace otto::util {
   struct enum_bitset {
     enum_bitset() noexcept = default;
     enum_bitset(const std::bitset<enum_count<Enum>()>& bs) noexcept : data_(bs) {}
+    // NOLINTNEXTLINE
+    enum_bitset(util::range_of<Enum> auto&& init) noexcept
+    {
+      for (Enum e : init) set(e);
+    }
     enum_bitset(std::initializer_list<Enum> init) noexcept
     {
-      for (Enum e : init) {
-        set(e);
-      }
+      for (Enum e : init) set(e);
     }
 
     static std::size_t size() noexcept

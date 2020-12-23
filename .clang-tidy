@@ -18,6 +18,7 @@ Checks: >-
   -readability-uppercase-literal-suffix,
   -readability-named-parameter,
   -misc-non-private-member-variables-in-classes,
+  -cppcoreguidelines-non-private-member-variables-in-classes,
   -cppcoreguidelines-pro-bounds-constant-array-index,
   -cppcoreguidelines-pro-bounds-pointer-arithmetic,
   -misc-unused-parameters,

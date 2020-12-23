@@ -12,6 +12,7 @@
 #include "lib/midi.hpp"
 
 #include "app/drivers/audio_driver.hpp"
+#include "app/drivers/midi_driver.hpp"
 #include "app/services/runtime.hpp"
 
 namespace otto::services {
@@ -27,7 +28,7 @@ namespace otto::services {
 
     void set_process_callback(Callback&& cb) noexcept;
     util::AudioBufferPool& buffer_pool() noexcept;
-    void enqueue_midi(midi::MidiEvent e) noexcept;
+    drivers::MidiController& midi() noexcept;
     void set_midi_handler(util::smart_ptr<midi::IMidiHandler> h) noexcept;
     unsigned buffer_count() noexcept;
     void wait_for_n_buffers(int n) noexcept;
@@ -39,8 +40,7 @@ namespace otto::services {
 
     util::smart_ptr<drivers::IAudioDriver> driver_;
     Callback callback_ = nullptr;
-    moodycamel::ConcurrentQueue<midi::MidiEvent> midi_queue_;
-    util::smart_ptr<midi::IMidiHandler> midi_handler_;
+    drivers::MidiDriver midi_;
     tl::optional<util::AudioBufferPool> abp_ = tl::nullopt;
     std::atomic<unsigned> buffer_count_ = 0;
   };

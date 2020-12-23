@@ -276,7 +276,7 @@ namespace otto::core {
 
     [[nodiscard]] bool is_active() const noexcept requires(sizeof...(Services) == 1)
     {
-      return (operator->()) != nullptr;
+      return service_unsafe<Services...>() != nullptr;
     }
   };
 } // namespace otto::core

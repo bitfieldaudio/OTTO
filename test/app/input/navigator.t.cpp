@@ -2,16 +2,25 @@
 
 #include "app/input/navigator.hpp"
 
+#include "app/services/graphics.hpp"
+
 using namespace otto;
 
-struct Screen : IScreen {
-  void draw(skia::Canvas& ctx) noexcept override {}
-};
+namespace {
+
+  struct Screen : ScreenBase {
+    void draw(skia::Canvas& ctx) noexcept override {}
+  };
+
+  struct StubInputLayer : ConstInputLayer, InputHandler {
+    using ConstInputLayer::ConstInputLayer;
+  };
+} // namespace
 
 TEST_CASE ("navigator") {
-  ScreenWithHandler a = {std::make_unique<Screen>(), std::make_unique<InputHandler>()};
-  ScreenWithHandler b = {std::make_unique<Screen>(), std::make_unique<InputHandler>()};
-  ScreenWithHandler c = {std::make_unique<Screen>(), std::make_unique<InputHandler>()};
+  ScreenWithHandler a = {std::make_unique<Screen>(), std::make_unique<StubInputLayer>(KeySet{})};
+  ScreenWithHandler b = {std::make_unique<Screen>(), std::make_unique<StubInputLayer>(KeySet{})};
+  ScreenWithHandler c = {std::make_unique<Screen>(), std::make_unique<StubInputLayer>(KeySet{})};
 
   Navigator nav;
 
@@ -34,12 +43,12 @@ TEST_CASE ("navigator") {
 }
 
 TEST_CASE ("NavKeyMap") {
-  ScreenWithHandler arp = {std::make_unique<Screen>(), std::make_unique<InputHandler>()};
-  ScreenWithHandler synth = {std::make_unique<Screen>(), std::make_unique<InputHandler>()};
-  ScreenWithHandler c = {std::make_unique<Screen>(), std::make_unique<InputHandler>()};
+  ScreenWithHandler arp = {std::make_unique<Screen>(), std::make_unique<StubInputLayer>(KeySet{})};
+  ScreenWithHandler synth = {std::make_unique<Screen>(), std::make_unique<StubInputLayer>(KeySet{})};
+  ScreenWithHandler c = {std::make_unique<Screen>(), std::make_unique<StubInputLayer>(KeySet{})};
 
   Navigator nav;
-  NavKeyMap nkm = {&nav, 100ms};
+  NavKeyMap nkm = {&nav, NavKeyMap::Conf{.peek_timeout = 100ms}};
 
   nkm.bind_nav_key(Key::arp, arp);
   nkm.bind_nav_key(Key::synth, synth);
@@ -66,6 +75,16 @@ TEST_CASE ("NavKeyMap") {
     REQUIRE(nav.current_screen() == arp);
     nkm.handle(KeyRelease{Key::arp, time + 101ms});
     REQUIRE(nav.current_screen() == synth);
+  }
+
+  SECTION ("LED Mask") {
+    auto mask = nkm.led_mask();
+    REQUIRE(mask == LedSet({Led::arp, Led::synth}));
+  }
+
+  SECTION ("Key Mask") {
+    auto mask = nkm.key_mask();
+    REQUIRE(mask == KeySet({Key::arp, Key::synth}));
   }
 
   /*
