@@ -45,7 +45,6 @@ namespace otto::engines::ottofm {
 
     void reduce(EncoderEvent e, State& state) noexcept final
     {
-      // TODO
       switch (e.encoder) {
         case Encoder::blue: {
           if (!state.shift) {
@@ -82,6 +81,7 @@ namespace otto::engines::ottofm {
   struct ADSRGraphic {
     ADSRGraphic(int idx) : index(idx) {}
     int index;
+    bool active = false;
     ADSR graphic;
     skia::Anim<float> size = {0, 0.25};
     void on_state_change(const State& s)
@@ -91,9 +91,19 @@ namespace otto::engines::ottofm {
       graphic.d = env.decay;
       graphic.s = env.sustain;
       graphic.r = env.release;
-      bool active = s.cur_op_idx == index;
+      active = s.cur_op_idx == index;
       graphic.active = active || s.shift;
       size = active ? 1.f : 0.f;
+    }
+
+    int will_change(const State& s)
+    {
+      const auto& env = s.operators[index].envelope;
+      if (graphic.a != env.attack) return 1;
+      if (graphic.d != env.decay) return 2;
+      if (graphic.s != env.sustain) return 3;
+      if (graphic.r != env.release) return 4;
+      return 0;
     }
   };
 
@@ -116,6 +126,30 @@ namespace otto::engines::ottofm {
     {
       ops.algorithm_idx = s.algorithm_idx;
       ops.cur_op = s.cur_op_idx;
+      // Before overwriting the envelope state, we check if the active envelope has any changes to show with the pop-up
+      switch (envelopes[3 - ops.cur_op].will_change(s)) {
+        case 1:
+          last_changed_parameter = std::string("ATTACK");
+          value_str = fmt::format("{:4.0f}ms", 1000 * envelope_stage_duration(s.operators[s.cur_op_idx].envelope.attack));
+          popup_brightness = 1.0f;
+          break;
+        case 2:
+          last_changed_parameter = std::string("DECAY");
+          value_str = fmt::format("{:4.0f}ms", 1000 * envelope_stage_duration(s.operators[s.cur_op_idx].envelope.decay));
+          popup_brightness = 1.0f;
+          break;
+        case 3:
+          last_changed_parameter = std::string("SUSTAIN");
+          value_str = fmt::format("{:.2}", s.operators[s.cur_op_idx].envelope.sustain);
+          popup_brightness = 1.0f;
+          break;
+        case 4:
+          last_changed_parameter = std::string("RELEASE");
+          value_str = fmt::format("{:4.0f}ms", 1000 * envelope_stage_duration(s.operators[s.cur_op_idx].envelope.release));
+          popup_brightness = 1.0f;
+          break;
+        default: break;
+      }
       for (auto& env : envelopes) env.on_state_change(s);
     }
 
@@ -139,9 +173,20 @@ namespace otto::engines::ottofm {
         graphic.bounding_box.resize({x_size, env_size});
         graphic.expanded = env.size;
         graphic.draw(ctx);
+        // If knobs are being turned, show the pop-up
+        if (env.active) {
+          constexpr float padding = 6;
+          skia::place_text(ctx, last_changed_parameter, fonts::regular(14), colors::white.brighten(popup_brightness), {x_start, upper_y + env_size + padding}, anchors::top_left);
+          skia::place_text(ctx, value_str, fonts::regular(14), colors::white.brighten(popup_brightness), {x_start + x_size, upper_y + env_size + padding}, anchors::top_right);
+        }
+
         upper_y += env_size + step;
       }
     }
+
+    skia::ReturnTo<float> popup_brightness = {0, 0.5, 0.15};
+    std::string last_changed_parameter;
+    std::string value_str;
   };
 
   ScreenWithHandler make_mod_screen(itc::ChannelGroup& chan)

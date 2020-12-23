@@ -61,9 +61,9 @@ namespace otto::engines::ottofm {
 
     void on_state_change() noexcept
     {
-      env_.attack(3 * state.envelope.attack);
-      env_.decay(3 * state.envelope.decay);
-      env_.release(3 * state.envelope.release);
+      env_.attack(envelope_stage_duration(state.envelope.attack));
+      env_.decay(envelope_stage_duration(state.envelope.decay));
+      env_.release(envelope_stage_duration(state.envelope.release));
       env_.sustain(state.envelope.sustain);
 
       freq_ratio_ = fractions[state.ratio_idx];

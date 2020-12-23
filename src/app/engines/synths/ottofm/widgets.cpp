@@ -4,7 +4,7 @@ namespace otto::engines::ottofm {
 
   void ADSR::do_draw(skia::Canvas& ctx)
   {
-    // If your are using a different anchor/origin than TopLeft for the coordinate system, translate here
+    // If you are using a different anchor/origin than TopLeft for the coordinate system, translate here
     // graphics::Point diff = bounding_box.get_diff(anchors::top_left,
     // anchors::top_left); ctx.translate(diff[0], diff[1]);
 

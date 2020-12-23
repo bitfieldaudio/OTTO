@@ -79,4 +79,10 @@ namespace otto::engines::ottofm {
     .make_mod_screen = make_mod_screen,
     .make_main_screen = make_main_screen,
   };
+
+  // Functions shared between graphics and audio
+  // Duration of an envelope stage in seconds from underlying state member
+  inline float envelope_stage_duration(const float d) {
+    return 5 * d * d + 0.005;
+  }
 } // namespace otto::engines::ottofm
