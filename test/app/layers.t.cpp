@@ -1,6 +1,6 @@
 #include "testing.t.hpp"
 
-#include "app/input/layers.hpp"
+#include "app/layers.hpp"
 
 using namespace otto;
 

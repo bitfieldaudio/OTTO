@@ -9,9 +9,8 @@
 #include "lib/itc/itc.hpp"
 #include "lib/itc/reducer.hpp"
 
-#include "app/input/distributor.hpp"
-#include "app/input/navigator.hpp"
-#include "app/input/seq_to_midi.hpp"
+#include "app/layers/navigator.hpp"
+#include "app/layers/piano_key_layer.hpp"
 #include "app/services/audio.hpp"
 #include "app/services/config.hpp"
 #include "app/services/controller.hpp"
@@ -108,9 +107,9 @@ TEST_CASE ("ottofm-no-audio", "[.interactive][engine]") {
 
   // app.service<Audio>().set_midi_handler(&eng.audio->midi_handler());
   // app.service<Audio>().set_process_callback([&](Audio::CallbackData data) {
-  //  const auto res = eng.audio->process();
-  //  std::ranges::copy(util::zip(res, res), data.output.begin());
-  //});
+  //   const auto res = eng.audio->process();
+  //   std::ranges::copy(util::zip(res, res), data.output.begin());
+  // });
 
   LayerStack layers;
   // auto piano = layers.make_layer<PianoKeyLayer>(app.service<Audio>().midi());

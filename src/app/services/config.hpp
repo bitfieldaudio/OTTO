@@ -46,14 +46,7 @@ namespace otto {
 
       ~ConfigManager();
 
-      void write_to_file()
-      {
-        LOGI("Writing config to {}", file_path.c_str());
-        std::ofstream file;
-        file.open(file_path);
-        file << into_toml();
-        file.close();
-      }
+      void write_to_file();
 
       /// Construct a config type, and initialize it from the config data
       ///
@@ -129,10 +122,19 @@ namespace otto::services {
     LOGE("{}", e.what());
   }
 
+  inline void ConfigManager::write_to_file()
+  {
+    if (file_path.empty()) return;
+    LOGI("Writing config to {}", file_path.c_str());
+    std::ofstream file;
+    file.open(file_path);
+    file << into_toml();
+    file.close();
+  }
 
   inline ConfigManager::~ConfigManager()
   {
-    write_to_file();
+    if (!file_path.empty()) write_to_file();
   }
 
   inline toml::value ConfigManager::into_toml() const

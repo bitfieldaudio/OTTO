@@ -8,9 +8,8 @@
 #include "lib/itc/reducer.hpp"
 
 #include "app/engines/synths/ottofm/ottofm.hpp"
-#include "app/input/distributor.hpp"
-#include "app/input/navigator.hpp"
-#include "app/input/seq_to_midi.hpp"
+#include "app/layers/navigator.hpp"
+#include "app/layers/piano_key_layer.hpp"
 #include "app/services/audio.hpp"
 #include "app/services/config.hpp"
 #include "app/services/controller.hpp"

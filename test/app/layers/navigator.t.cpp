@@ -1,6 +1,6 @@
 #include "testing.t.hpp"
 
-#include "app/input/navigator.hpp"
+#include "app/layers/navigator.hpp"
 
 #include "app/services/graphics.hpp"
 

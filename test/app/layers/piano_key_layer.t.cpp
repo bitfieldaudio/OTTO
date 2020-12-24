@@ -1,6 +1,6 @@
 #include "testing.t.hpp"
 
-#include "app/input/seq_to_midi.hpp"
+#include "app/layers/piano_key_layer.hpp"
 
 #include "app/services/audio.hpp"
 #include "app/services/config.hpp"

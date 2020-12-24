@@ -6,7 +6,7 @@
 #include "lib/skia/skia.hpp"
 
 #include "app/input.hpp"
-#include "app/input/layers.hpp"
+#include "app/layers.hpp"
 
 namespace otto {
   struct IDrawable {

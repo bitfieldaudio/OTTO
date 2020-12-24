@@ -1,4 +1,4 @@
-#include "seq_to_midi.hpp"
+#include "piano_key_layer.hpp"
 
 namespace otto {
   constexpr std::array<Key, 26> piano_keys{{
