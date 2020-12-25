@@ -6,6 +6,7 @@
 
 #include "lib/util/with_limits.hpp"
 
+#include "app/application.hpp"
 #include "app/services/config.hpp"
 #include "app/services/graphics.hpp"
 #include "app/services/logic_thread.hpp"
@@ -65,9 +66,8 @@ TEST_CASE ("Controller::read_input_data") {
 TEST_CASE ("Controller thread") {
   otto::test::StubMCUPort port;
   Handler handler;
-  auto app =
-    services::start_app(services::LogicThread::make(), //
-                        services::ConfigManager::make(), services::Controller::make([&port] { return &port; }));
+  auto app = start_app(services::LogicThread::make(), //
+                       services::ConfigManager::make(), services::Controller::make([&port] { return &port; }));
   core::ServiceAccessor<services::Controller> ctrl;
   core::ServiceAccessor<services::LogicThread> logic_thread;
   ctrl->set_input_handler(handler);

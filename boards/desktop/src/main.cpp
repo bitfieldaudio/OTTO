@@ -1,5 +1,6 @@
 #include <csignal>
 
+#include "lib/util/unix_signals.hpp"
 #include "lib/util/with_limits.hpp"
 
 #include "lib/engine.hpp"
@@ -7,6 +8,7 @@
 #include "lib/itc/itc.hpp"
 #include "lib/itc/reducer.hpp"
 
+#include "app/application.hpp"
 #include "app/engines/synths/ottofm/ottofm.hpp"
 #include "app/layers/navigator.hpp"
 #include "app/layers/piano_key_layer.hpp"
@@ -36,13 +38,6 @@ int main(int argc, char* argv[])
   itc::ChannelGroup chan;
   auto eng = engines::ottofm::factory.make_all(chan);
 
-  std::signal(SIGINT, [](int sig) {
-    core::ServiceAccessor<Runtime> runtime;
-    LOGI("Got SIGINT, stopping...");
-    runtime->request_stop();
-    std::signal(SIGINT, SIG_DFL);
-  });
-
   app.service<Audio>().set_midi_handler(&eng.audio->midi_handler());
   app.service<Audio>().set_process_callback([&](Audio::CallbackData data) {
     const auto res = eng.audio->process();
@@ -65,7 +60,6 @@ int main(int argc, char* argv[])
   app.service<Controller>().set_input_handler(layers);
 
   app.wait_for_stop();
-  app.service<ConfigManager>().write_to_file();
   LOGI("Shutting down");
   return 0;
 }

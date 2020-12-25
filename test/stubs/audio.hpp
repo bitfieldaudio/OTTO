@@ -9,12 +9,13 @@
 #include "app/services/runtime.hpp"
 
 namespace otto::stubs {
-  struct NoProcessAudioDriver : drivers::IAudioDriver {
+  struct NoProcessAudioDriver final : drivers::IAudioDriver {
     void set_callback(Callback&& cb) override
     {
       callback = std::move(cb);
     }
     void start() override {}
+    void stop() override {}
     [[nodiscard]] std::size_t buffer_size() const override
     {
       return 64;
@@ -38,7 +39,7 @@ namespace otto::stubs {
     }
     void start() override
     {
-      thread_ = std::jthread([this] {
+      thread_ = std::jthread([this](std::stop_token stopper) {
         auto input_buf = util::stereo_audio_buffer(
           util::audio_buffer(std::span(buffers_.data() + 0 * buffer_size(), buffer_size()), nullptr),
           util::audio_buffer(std::span(buffers_.data() + 1 * buffer_size(), buffer_size()), nullptr));
@@ -49,11 +50,16 @@ namespace otto::stubs {
           .input = input_buf,
           .output = output_buf,
         };
-        while (runtime->should_run()) {
+        while (runtime->should_run() && !stopper.stop_requested()) {
           callback_(cbd);
           std::this_thread::sleep_for(chrono::nanoseconds((1ns / 1s) * buffer_size() / sample_rate()));
         }
       });
+    }
+    void stop() override
+    {
+      thread_.request_stop();
+      thread_.join();
     }
     [[nodiscard]] std::size_t buffer_size() const override
     {

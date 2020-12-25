@@ -2,6 +2,7 @@
 
 #include "app/services/config.hpp"
 
+#include "app/application.hpp"
 #include "app/services/runtime.hpp"
 
 using namespace otto;
@@ -17,7 +18,7 @@ struct TestConfig final : Config<TestConfig> {
 
 TEST_CASE ("ConfigManager") {
   SECTION ("Registry") {
-    auto app = services::start_app(core::make_handle<otto::services::ConfigManager>());
+    auto app = start_app(core::make_handle<otto::services::ConfigManager>());
     core::ServiceAccessor<services::ConfigManager> confman;
     auto tc1 = confman->make_conf<TestConfig>();
     REQUIRE(tc1.option1 == 4);
@@ -31,7 +32,7 @@ option1 = 100
     )"_toml;
 
   SECTION ("Service constructor") {
-    auto app = services::start_app(core::make_handle<services::ConfigManager>(config_data));
+    auto app = start_app(core::make_handle<services::ConfigManager>(config_data));
     core::ServiceAccessor<services::ConfigManager> confman;
     auto tc1 = confman->make_conf<TestConfig>();
 
@@ -45,7 +46,7 @@ option1 = 100
       REQUIRE(tc1->option1 == 42);
     }
     SECTION ("With service") {
-      auto app = services::start_app(core::make_handle<services::ConfigManager>(config_data));
+      auto app = start_app(core::make_handle<services::ConfigManager>(config_data));
       core::ServiceAccessor<services::ConfigManager> confman;
       TestConfig::Handle tc1;
       REQUIRE(tc1->option1 == 100);

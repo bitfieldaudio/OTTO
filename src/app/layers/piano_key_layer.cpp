@@ -21,7 +21,7 @@ namespace otto {
       auto base = [&]() constexpr
       {
         int idx = static_cast<int>(stdr::find(piano_keys, k) - piano_keys.begin());
-        if (idx > 26) return -1000;
+        if (idx > 25) return -1000;
         return 47 + idx;
       }
       ();
@@ -30,7 +30,7 @@ namespace otto {
 
     constexpr std::pair<Key, int> key_and_octave_of(int note, int octave) noexcept
     {
-      return {piano_keys[(note - (47 + octave * 12)) % 27], 0};
+      return {piano_keys[(note - (47 + octave * 12)) % 26], 0};
     }
 
   } // namespace

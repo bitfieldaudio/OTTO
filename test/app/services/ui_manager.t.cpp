@@ -2,6 +2,7 @@
 
 #include "app/services/ui_manager.hpp"
 
+#include "app/application.hpp"
 #include "app/services/audio.hpp"
 #include "app/services/config.hpp"
 #include "app/services/controller.hpp"
@@ -17,10 +18,10 @@ using Events = std::vector<midi::IMidiHandler::variant>;
 
 TEST_CASE ("UIManager") {
   drivers::LocalMCUPort port;
-  auto app = services::start_app(LogicThread::make(),                                              //
-                                 ConfigManager::make(),                                            //
-                                 Controller::make([&port] { return &port; }),                      //
-                                 Audio::make(std::make_unique<stubs::DummyAudioDriver>),           //
-                                 Graphics::make(std::make_unique<stubs::NoProcessGraphicsDriver>), //
-                                 UIManager::make());
+  auto app = start_app(LogicThread::make(),                                              //
+                       ConfigManager::make(),                                            //
+                       Controller::make([&port] { return &port; }),                      //
+                       Audio::make(std::make_unique<stubs::DummyAudioDriver>),           //
+                       Graphics::make(std::make_unique<stubs::NoProcessGraphicsDriver>), //
+                       UIManager::make());
 }

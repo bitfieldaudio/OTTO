@@ -2,6 +2,8 @@
 
 #include "app/services/runtime.hpp"
 
+#include "app/application.hpp"
+
 using namespace otto;
 using namespace otto::services;
 

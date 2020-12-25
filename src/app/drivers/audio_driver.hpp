@@ -16,6 +16,7 @@ namespace otto::drivers {
 
     virtual void set_callback(Callback&&) = 0;
     virtual void start() = 0;
+    virtual void stop() = 0;
     [[nodiscard]] virtual std::size_t buffer_size() const = 0;
     [[nodiscard]] virtual std::size_t sample_rate() const = 0;
 

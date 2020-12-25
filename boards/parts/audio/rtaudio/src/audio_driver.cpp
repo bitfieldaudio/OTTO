@@ -20,6 +20,7 @@ namespace otto::drivers {
     RtAudioDriver();
 
     void start() override;
+    void stop() override;
     void init_audio();
 
     void set_callback(Callback&& cb) override;
@@ -82,6 +83,11 @@ namespace otto::drivers {
   void RtAudioDriver::start()
   {
     adac.startStream();
+  }
+
+  void RtAudioDriver::stop()
+  {
+    adac.stopStream();
   }
 
   void RtAudioDriver::init_audio()

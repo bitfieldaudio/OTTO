@@ -80,7 +80,14 @@ TEST_CASE ("KeyboardKeysHandler") {
                                      midi::NoteOn{.note = 72, .velocity = 0x40, .channel = 0},
                                      midi::NoteOff{.note = 47, .velocity = 0x00, .channel = 0},
                                    });
+  }
 
-    // TODO: Octaves & press, change octave, release
+  // TODO: Octaves & press, change octave, release
+  SECTION ("Octaves") {
+    piano.handle(KeyPress{Key::plus});
+    piano.handle(KeyRelease{Key::plus});
+    piano.handle(KeyPress{Key::seq0});
+    midi_driver.process_events();
+    REQUIRE(midi_handler.events == Events{midi::NoteOn{.note = 47 + 12, .velocity = 0x40, .channel = 0}});
   }
 }

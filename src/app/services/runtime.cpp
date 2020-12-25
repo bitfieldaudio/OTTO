@@ -17,6 +17,7 @@ namespace otto::services {
 
   void Runtime::set_stage(Stage s) noexcept
   {
+    std::unique_lock lock(mutex_);
     stage_.store(static_cast<std::underlying_type_t<Stage>>(s));
     std::erase_if(hooks_, [s](auto& f) { return f(s); });
     cond_.notify_all();

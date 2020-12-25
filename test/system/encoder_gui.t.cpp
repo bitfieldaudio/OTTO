@@ -4,6 +4,7 @@
 
 #include "lib/util/with_limits.hpp"
 
+#include "app/application.hpp"
 #include "app/services/config.hpp"
 #include "app/services/controller.hpp"
 #include "app/services/graphics.hpp"

@@ -7,6 +7,7 @@
 
 #include "lib/util/ranges.hpp"
 
+#include "app/application.hpp"
 #include "app/services/config.hpp"
 
 #include "stubs/audio.hpp"

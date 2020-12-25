@@ -244,7 +244,7 @@ namespace otto::util {
     template<typename Res>
     constexpr operator Res() const noexcept
     {
-      static_cast<Res>(value);
+      return static_cast<Res>(value);
     }
   };
 

@@ -4,6 +4,7 @@
 
 #include <Gamma/Oscillator.h>
 
+#include "app/application.hpp"
 #include "app/services/config.hpp"
 #include "app/services/runtime.hpp"
 

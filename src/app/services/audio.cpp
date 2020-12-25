@@ -8,8 +8,12 @@ namespace otto::services {
   {
     driver_->set_callback(std::bind_front(&Audio::loop_func, this));
     abp_ = util::AudioBufferPool{16, driver_->buffer_size()};
-    gam::sampleRate(driver_->sample_rate());
+    gam::sampleRate(util::narrow(driver_->sample_rate()));
     runtime->on_enter_stage(Runtime::Stage::running, [&d = *driver_] { d.start(); });
+    runtime->on_enter_stage(Runtime::Stage::stopping, [this] {
+      callback_ = nullptr;
+      driver_->stop();
+    });
   }
 
   void Audio::set_midi_handler(util::smart_ptr<midi::IMidiHandler> h) noexcept

@@ -5,6 +5,7 @@
 #include <SkFont.h>
 #include <SkTypeface.h>
 
+#include "app/application.hpp"
 #include "app/services/config.hpp"
 
 using namespace otto;

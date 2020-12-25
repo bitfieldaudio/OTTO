@@ -9,6 +9,7 @@
 #include "lib/itc/itc.hpp"
 #include "lib/itc/reducer.hpp"
 
+#include "app/application.hpp"
 #include "app/layers/navigator.hpp"
 #include "app/layers/piano_key_layer.hpp"
 #include "app/services/audio.hpp"
@@ -16,7 +17,6 @@
 #include "app/services/controller.hpp"
 #include "app/services/graphics.hpp"
 #include "app/services/logic_thread.hpp"
-#include "app/services/runtime.hpp"
 #include "app/services/ui_manager.hpp"
 
 using namespace otto;

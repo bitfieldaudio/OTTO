@@ -9,6 +9,7 @@
 #include "lib/itc/itc.hpp"
 #include "lib/itc/reducer.hpp"
 
+#include "app/application.hpp"
 #include "app/services/audio.hpp"
 #include "app/services/config.hpp"
 #include "app/services/controller.hpp"

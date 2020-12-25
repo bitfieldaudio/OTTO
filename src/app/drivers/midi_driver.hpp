@@ -39,10 +39,10 @@ namespace otto::drivers {
       return *this;
     }
 
-    void process_events()
+    void process_events(int max = -1)
     {
       midi::MidiEvent evt;
-      for (int i = 0; i < 5; i++) {
+      for (unsigned i = 0; max < 0 || i < max; i++) {
         if (!midi_queue_.try_dequeue(evt)) break;
         std::visit(util::overloaded([&](midi::NoteOn& e) { key_states_[e.note] = true; },
                                     [&](midi::NoteOff& e) { key_states_[e.note] = false; }, //
