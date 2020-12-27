@@ -59,7 +59,7 @@ namespace otto::stubs {
     void stop() override
     {
       thread_.request_stop();
-      thread_.join();
+      if (thread_.joinable()) thread_.join();
     }
     [[nodiscard]] std::size_t buffer_size() const override
     {
