@@ -38,6 +38,7 @@ namespace otto {
 
   private:
     drivers::MidiController& midi_;
+    std::array<std::uint8_t, 26> key_notes_ = {};
     State state_;
   };
 } // namespace otto

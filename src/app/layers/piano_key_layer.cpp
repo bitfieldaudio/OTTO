@@ -16,16 +16,21 @@ namespace otto {
   }};
 
   namespace {
-    constexpr int note_of(Key k, int octave = 0) noexcept
+    constexpr tl::optional<int> index_of(Key k)
     {
-      auto base = [&]() constexpr
-      {
-        int idx = static_cast<int>(stdr::find(piano_keys, k) - piano_keys.begin());
-        if (idx > 25) return -1000;
-        return 47 + idx;
-      }
-      ();
-      return base + octave * 12;
+      const auto* found = stdr::find(piano_keys, k);
+      if (found == piano_keys.end()) return tl::nullopt;
+      return found - piano_keys.begin();
+    }
+
+    constexpr tl::optional<int> note_of(Key k, int octave = 0) noexcept
+    {
+      return index_of(k)                                  //
+        .map([&](int i) { return 47 + i + octave * 12; }) //
+        .and_then([](int i) -> tl::optional<int> {
+          if (i < 128 && i > 0) return i;
+          return tl::nullopt;
+        });
     }
 
     constexpr std::pair<Key, int> key_and_octave_of(int note, int octave) noexcept
@@ -41,14 +46,15 @@ namespace otto {
       state_.octave++;
     } else if (e.key == Key::minus) {
       state_.octave--;
-    } else if (int note = note_of(e.key, state_.octave); note > 0 && note < 128) {
-      midi_.send_event(midi::NoteOn{.note = note, .velocity = 0x40, .channel = 0});
+    } else if (auto note = note_of(e.key, state_.octave)) {
+      key_notes_[index_of(e.key).value()] = *note;
+      midi_.send_event(midi::NoteOn{.note = *note, .velocity = 0x40, .channel = 0});
     }
   }
   void PianoKeyLayer::handle(KeyRelease e) noexcept
   {
-    if (int note = note_of(e.key, state_.octave); note > 0 && note < 128) {
-      midi_.send_event(midi::NoteOff{.note = note, .velocity = 0x00, .channel = 0});
+    if (auto idx = index_of(e.key)) {
+      midi_.send_event(midi::NoteOff{.note = key_notes_[*idx], .velocity = 0x00, .channel = 0});
     }
   }
   void PianoKeyLayer::leds(LEDColorSet& output) noexcept

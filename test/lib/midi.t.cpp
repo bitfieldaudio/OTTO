@@ -14,7 +14,7 @@ auto from_bytes(auto... bytes)
   return std::get<E>(evt);
 }
 
-auto approx = [](float f) { return test::approx(f).margin(0.01); };
+const auto approx = [](float f) { return test::approx(f).margin(0.01); };
 
 TEST_CASE ("midi::from_bytes") {
   SECTION ("NoteOff") {

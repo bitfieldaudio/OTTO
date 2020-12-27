@@ -17,7 +17,7 @@ using namespace services;
 
 using Events = std::vector<midi::IMidiHandler::variant>;
 
-TEST_CASE ("KeyboardKeysHandler") {
+TEST_CASE ("PianoKeyLayer") {
   stubs::StubMidiHandler midi_handler;
   drivers::MidiDriver midi_driver;
   PianoKeyLayer piano = {midi_driver.controller()};
@@ -89,5 +89,17 @@ TEST_CASE ("KeyboardKeysHandler") {
     piano.handle(KeyPress{Key::seq0});
     midi_driver.process_events();
     REQUIRE(midi_handler.events == Events{midi::NoteOn{.note = 47 + 12, .velocity = 0x40, .channel = 0}});
+  }
+
+  SECTION ("Release after switching octaves") {
+    piano.handle(KeyPress{Key::seq0});
+    piano.handle(KeyPress{Key::plus});
+    piano.handle(KeyRelease{Key::plus});
+    midi_driver.process_events();
+    REQUIRE(midi_handler.events == Events{midi::NoteOn{.note = 47, .velocity = 0x40, .channel = 0}});
+    piano.handle(KeyRelease{Key::seq0});
+    midi_driver.process_events();
+    REQUIRE(midi_handler.events == Events{midi::NoteOn{.note = 47, .velocity = 0x40, .channel = 0},
+                                          midi::NoteOff{.note = 47, .velocity = 0x00, .channel = 0}});
   }
 }

@@ -3,10 +3,13 @@
 #include <csignal>
 #include <utility>
 
+#include "lib/logging.hpp"
+
 namespace otto::util {
 
   SignalWaiter::SignalWaiter(std::initializer_list<int> signals, std::function<void(int)> handler)
   {
+    OTTO_ASSERT(signals.size() > 0);
     // block signals in this thread and subsequently
     // spawned threads
     sigset_t sigset;
@@ -28,11 +31,11 @@ namespace otto::util {
   SignalWaiter::~SignalWaiter()
   {
     should_run_handler = false;
-    std::raise(shutdown_signal);
+    pthread_kill(thread_.native_handle(), shutdown_signal);
     pthread_sigmask(SIG_SETMASK, &prev_sigmask, nullptr);
   }
 
-  SignalWaiter wait_for_signal(std::initializer_list<int> signals, std::function<void(int)> handler) noexcept
+  SignalWaiter handle_signals(std::initializer_list<int> signals, std::function<void(int)> handler) noexcept
   {
     return {signals, std::move(handler)};
   }

@@ -14,11 +14,11 @@ namespace otto {
   template<core::AService... Ss>
   struct Application {
     Application(std::tuple<core::ServiceHandle<Ss>...> t) noexcept //
-      : signal_waiter_(util::wait_for_signal({SIGINT},
-                                             [this](int sig) {
-                                               LOGI("Got SIGINT, stopping...");
-                                               service<services::Runtime>().request_stop();
-                                             })),
+      : signal_waiter_(util::handle_signals({SIGINT},
+                                            [this](int sig) {
+                                              LOGI("Got SIGINT, stopping...");
+                                              service<services::Runtime>().request_stop();
+                                            })),
         services_(std::move(t))
     {}
 

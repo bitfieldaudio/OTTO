@@ -5,7 +5,7 @@
 #include <thread>
 
 namespace otto::util {
-  struct SignalWaiter {
+  struct [[nodiscard]] SignalWaiter {
     SignalWaiter(std::initializer_list<int> signals, std::function<void(int)> handler);
     SignalWaiter(const SignalWaiter&) = delete;
     SignalWaiter& operator=(const SignalWaiter&) = delete;
@@ -14,7 +14,7 @@ namespace otto::util {
     ~SignalWaiter();
 
   private:
-    sigset_t prev_sigmask;
+    sigset_t prev_sigmask = {};
     int shutdown_signal = 0;
     std::atomic<bool> should_run_handler = true;
     std::jthread thread_;
@@ -27,5 +27,6 @@ namespace otto::util {
   ///
   /// NOTE: This must be called before launching any other threads, otherwise
   /// those threads will receive the signal as normal.
-  SignalWaiter wait_for_signal(std::initializer_list<int> signals, std::function<void(int)> handler) noexcept;
+  [[nodiscard]] SignalWaiter handle_signals(std::initializer_list<int> signals,
+                                            std::function<void(int)> handler) noexcept;
 } // namespace otto::util
