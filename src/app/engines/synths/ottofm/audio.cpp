@@ -38,7 +38,12 @@ namespace otto::engines::ottofm {
     [[nodiscard]] float get_activity_level() const noexcept
     {
       return env_.value() * state.level;
-      ;
+    }
+    [[nodiscard]] int get_envelope_stage() const noexcept
+    {
+      if (env_.done()) return 4;
+      if (env_.sustained()) return 3;
+      return env_.stage();
     }
 
     /// Reset envelope
@@ -136,6 +141,9 @@ namespace otto::engines::ottofm {
       stdr::generate(buf, std::ref(voice_mgr_));
       for (auto&& [op, act] : util::zip(voice_mgr_.last_triggered_voice().operators, Producer::state().activity)) {
         act = op.get_activity_level();
+      }
+      for (auto&& [op, st] : util::zip(voice_mgr_.last_triggered_voice().operators, Producer::state().stage)) {
+        st = op.get_envelope_stage();
       }
       Producer::commit();
       return buf;

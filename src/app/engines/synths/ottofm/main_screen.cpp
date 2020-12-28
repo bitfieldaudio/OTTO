@@ -148,17 +148,21 @@ namespace otto::engines::ottofm {
     }
   };
 
-  struct MainScreen final : itc::Consumer<State>, ScreenBase {
+  struct MainScreen final : itc::Consumer<State, AudioState>, ScreenBase {
     using Consumer::Consumer;
 
-    Operators ops;
+    Operators ops{Consumer<AudioState>::state().activity};
     std::array<OpLine, 4> op_lines = {
       // Ops are counted from the bottom
-      {{3, state()}, {2, state()}, {1, state()}, {0, state()}},
+      {{3, Consumer<State>::state()},
+       {2, Consumer<State>::state()},
+       {1, Consumer<State>::state()},
+       {0, Consumer<State>::state()}},
     };
 
     sk_sp<SkTextBlob> alg_text = skia::TextBlob::MakeFromString("ALGORITHM", fonts::regular(26));
-    sk_sp<SkTextBlob> alg_letter = skia::TextBlob::MakeFromString(alphabet[state().algorithm_idx], fonts::black(26));
+    sk_sp<SkTextBlob> alg_letter =
+      skia::TextBlob::MakeFromString(alphabet[Consumer<State>::state().algorithm_idx], fonts::black(26));
     SkRect rect = skia::measureText(fonts::regular(26), "A");
 
     MainScreen(itc::ChannelGroup& c) : Consumer(c)
@@ -170,7 +174,7 @@ namespace otto::engines::ottofm {
     {
       ops.algorithm_idx = s.algorithm_idx;
       ops.cur_op = s.cur_op_idx;
-      alg_letter = skia::TextBlob::MakeFromString(alphabet[state().algorithm_idx], fonts::black(26));
+      alg_letter = skia::TextBlob::MakeFromString(alphabet[Consumer<State>::state().algorithm_idx], fonts::black(26));
       for (auto& op : op_lines) op.on_state_change(s);
     }
 

@@ -25,7 +25,8 @@ namespace otto::engines::ottofm {
     p.quadTo(aw * attack_arc_size, height * arc_size, aw, 0); // curve
     p.lineTo(aw, height);
     p.close();
-    ctx.drawPath(p, paints::stroke_and_fill(colors::blue.mix(colors::black, static_cast<float>(!active) * 0.7f)));
+    ctx.drawPath(p, paints::stroke_and_fill(colors::blue.mix(colors::black, static_cast<float>(!active) * 0.7f)
+                                              .mix(colors::white, static_cast<float>(active_segment == 0) * 0.5f)));
 
     p.reset();
 
@@ -34,7 +35,8 @@ namespace otto::engines::ottofm {
     p.quadTo(aw + spacing + dw * (1 - arc_size), (height - sh) * arc_size, aw + spacing + dw, height - sh); // curve
     p.lineTo(aw + spacing + dw, height);
     p.close();
-    ctx.drawPath(p, paints::stroke_and_fill(colors::green.mix(colors::black, static_cast<float>(!active) * 0.8f)));
+    ctx.drawPath(p, paints::stroke_and_fill(colors::green.mix(colors::black, static_cast<float>(!active) * 0.8f)
+                                              .mix(colors::white, static_cast<float>(active_segment == 1) * 0.5f)));
 
     p.reset();
 
@@ -43,7 +45,8 @@ namespace otto::engines::ottofm {
     p.lineTo(width - spacing - rw, height);
     p.lineTo(aw + spacing + dw + spacing, height);
     p.close();
-    ctx.drawPath(p, paints::stroke_and_fill(colors::yellow.mix(colors::black, static_cast<float>(!active) * 0.8f)));
+    ctx.drawPath(p, paints::stroke_and_fill(colors::yellow.mix(colors::black, static_cast<float>(!active) * 0.8f)
+                                              .mix(colors::white, static_cast<float>(active_segment == 3) * 0.5f)));
 
     p.reset();
 
@@ -51,7 +54,8 @@ namespace otto::engines::ottofm {
     p.lineTo(width - rw, height - sh);
     p.quadTo(width - rw * arc_size, height - sh * (1 - arc_size), width, height);
     p.close();
-    ctx.drawPath(p, paints::stroke_and_fill(colors::red.mix(colors::black, static_cast<float>(!active) * 0.8f)));
+    ctx.drawPath(p, paints::stroke_and_fill(colors::red.mix(colors::black, static_cast<float>(!active) * 0.8f)
+                                              .mix(colors::white, static_cast<float>(active_segment == 2) * 0.5f)));
   }
 
   void Operators::do_draw(skia::Canvas& ctx)
@@ -174,9 +178,10 @@ namespace otto::engines::ottofm {
     draw_label(ctx, "RATIO", color, expansion);
 
     // Text
-    auto num_box = skia::place_text(ctx, std::to_string(numerator), fonts::regular(20), paints::fill(color),
-                                    content_box, interpolate(anchors::middle_left, anchors::top_left, expansion));
-    auto font = fonts::regular(denominator >= 10 ? 16 : 20);
+    auto font = fonts::regular(numerator >= 10 ? 16 : 20);
+    auto num_box = skia::place_text(ctx, std::to_string(numerator), font, paints::fill(color), content_box,
+                                    interpolate(anchors::middle_left, anchors::top_left, expansion));
+    font = fonts::regular(denominator >= 10 ? 16 : 20);
     float denominator_y = content_box.height();
     auto den_box = skia::place_text(ctx, std::to_string(denominator), font, color, content_box,
                                     interpolate(anchors::middle_right, anchors::bottom_right, expansion));

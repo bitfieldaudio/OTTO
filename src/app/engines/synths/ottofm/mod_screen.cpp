@@ -112,10 +112,10 @@ namespace otto::engines::ottofm {
     }
   };
 
-  struct ModScreen final : itc::Consumer<State>, ScreenBase {
+  struct ModScreen final : itc::Consumer<State, AudioState>, ScreenBase {
     using Consumer::Consumer;
 
-    Operators ops;
+    Operators ops{Consumer<AudioState>::state().activity};
     // Operators are numbered from the bottom up
     std::array<ADSRGraphic, 4> envelopes = {3, 2, 1, 0};
 
@@ -124,7 +124,7 @@ namespace otto::engines::ottofm {
     ModScreen(itc::ChannelGroup& c) : Consumer(c)
     {
       ops.bounding_box = {{10, 30}, {50, 180}};
-      for (auto& env : envelopes) env.on_state_change(state());
+      for (auto& env : envelopes) env.on_state_change(Consumer<State>::state());
     }
 
     void on_state_change(const State& s) noexcept override
@@ -180,6 +180,7 @@ namespace otto::engines::ottofm {
         graphic.bounding_box.move_to({x_start, upper_y});
         graphic.bounding_box.resize({x_size, env_size});
         graphic.expanded = env.size;
+        graphic.active_segment = Consumer<AudioState>::state().stage[env.index];
         graphic.draw(ctx);
         // If knobs are being turned, show the pop-up
         if (env.active) {

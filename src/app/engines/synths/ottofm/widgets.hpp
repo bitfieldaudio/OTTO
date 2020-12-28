@@ -17,15 +17,18 @@ namespace otto::engines::ottofm {
     float r = 0;
     bool active = false;
     float expanded = 0;
+    int active_segment = 0;
     void do_draw(skia::Canvas& ctx);
   };
 
   void draw_envelopes(skia::Canvas& ctx);
 
   struct Operators : graphics::Widget<Operators> {
+    Operators(const std::array<float, 4>& a) : activity_levels(a) {}
     int algorithm_idx = 0, cur_op = 0;
-    std::array<float, 4> activity_levels = {};
     std::array<skia::Color, 4> operator_colours = {colors::red, colors::yellow, colors::green, colors::blue};
+
+    const std::array<float, 4>& activity_levels;
 
     void do_draw(skia::Canvas& ctx);
   };

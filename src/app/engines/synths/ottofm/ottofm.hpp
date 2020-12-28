@@ -82,7 +82,8 @@ namespace otto::engines::ottofm {
 
   // Functions shared between graphics and audio
   // Duration of an envelope stage in seconds from underlying state member
-  inline float envelope_stage_duration(const float d) {
-    return 5 * d * d + 0.005;
+  inline float envelope_stage_duration(const float d)
+  {
+    return 5 * d * d + 0.001;
   }
 } // namespace otto::engines::ottofm

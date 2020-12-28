@@ -25,7 +25,7 @@ namespace otto::engines::ottofm {
     util::StaticallyBounded<float, 0, 1> level = 1;
     // Oscillator
     util::StaticallyBounded<float, -1, 1> detune = 0;
-    util::StaticallyBounded<int, 0, 19> ratio_idx = 0;
+    util::StaticallyBounded<int, 0, 30> ratio_idx = 13;
 
     DECL_VISIT(envelope, shape, level, detune, ratio_idx);
   };
@@ -49,6 +49,7 @@ namespace otto::engines::ottofm {
   /// The state returned from the audio
   struct AudioState {
     std::array<float, 4> activity = {0, 0, 0, 0};
+    std::array<int, 4> stage = {0, 0, 0, 0};
   };
 
   /// For defining frequency ratios
@@ -71,11 +72,10 @@ namespace otto::engines::ottofm {
       return fmt::format("{}/{}", numerator, denominator);
     }
   };
-  constexpr std::array<Fraction, 20> fractions = {{
-    {1, 1}, {1, 64}, {1, 32}, {3, 32}, {1, 8}, {5, 16}, {1, 2}, {5, 8},  {2, 1}, {3, 2},
-    {3, 4}, {1, 4},  {5, 32}, {1, 16}, {5, 8}, {4, 1},  {7, 4}, {7, 16}, {7, 2}, {0, 1},
-  }};
-
+  constexpr std::array<Fraction, 31> fractions = {
+    {{0, 1},  {1, 64}, {1, 32}, {1, 16},  {3, 32}, {1, 8},  {5, 32}, {1, 4},  {5, 16}, {7, 16}, {1, 2},
+     {5, 8},  {3, 4},  {1, 1},  {17, 12}, {3, 2},  {13, 8}, {7, 4},  {2, 1},  {5, 2},  {19, 7}, {3, 1},
+     {22, 7}, {7, 2},  {4, 1},  {5, 1},   {6, 1},  {7, 1},  {8, 1},  {16, 1}, {32, 1}}};
   static_assert(std::is_trivially_copyable_v<State>);
 
 
