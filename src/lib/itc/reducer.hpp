@@ -40,9 +40,10 @@ namespace otto::itc {
       virtual void reduce(Event, State&) noexcept = 0;
       void handle(Event e) noexcept final
       {
-        auto& producer = *static_cast<Derived*>(this)->producer_;
-        reduce(e, producer.state());
-        producer.commit();
+        auto* producer = static_cast<Derived*>(this)->producer_;
+        OTTO_ASSERT(producer != nullptr, "Reducer used with no producer set!");
+        reduce(e, producer->state());
+        producer->commit();
       }
     };
   } // namespace detail

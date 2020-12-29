@@ -80,6 +80,8 @@ namespace otto::services {
           handler->handle(EncoderEvent{e, static_cast<std::int8_t>(p.data[util::enum_integer(e)])});
         }
       } break;
+      case Command::shutdown: {
+      } break;
       default: break;
     }
   }

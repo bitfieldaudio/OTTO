@@ -318,4 +318,27 @@ namespace otto::util {
   private:
     std::bitset<enum_count<Enum>()> data_ = {};
   };
+
+
+  template<util::AnEnum Enum>
+  struct SelectableEnum {
+    SelectableEnum(Enum e) : index_(util::enum_index(e)) {}
+
+    operator Enum()
+    {
+      return util::enum_value<Enum>(index_);
+    }
+
+    SelectableEnum& operator++()
+    {
+      index_++;
+      if (index_ >= util::enum_count<Enum>()) {
+        // wrap or clamp
+      }
+      return *this;
+    }
+
+  private:
+    std::size_t index_;
+  };
 } // namespace otto::util

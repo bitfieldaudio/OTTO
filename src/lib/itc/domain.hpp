@@ -8,28 +8,8 @@ namespace otto::itc {
   /// Provide access to an executor. Inherit from this virtually
   struct IDomain {
     IDomain() noexcept = default;
-
-    ~IDomain() noexcept = default;
-
-    /// Override this function in the actual domain. Never called.
-    ///
-    /// Only used to detect whenever a class forgets to use an actual domain
-    /// implementation.
-    virtual void this_function_should_be_overridden_in_domain() = 0;
-
-    IExecutor& executor()
-    {
-      OTTO_ASSERT(executor_ != nullptr, "Executor in domain not initialized");
-      return *executor_;
-    }
-
-    void set_executor(IExecutor& e)
-    {
-      executor_ = &e;
-    }
-
-  private:
-    IExecutor* executor_ = nullptr;
+    virtual ~IDomain() noexcept = default;
+    virtual IExecutor& executor() = 0;
   };
 
   namespace detail {
@@ -59,11 +39,8 @@ namespace otto::itc {
 
   /// Domain which uses a static variable for the executor
   template<typename Tag = void>
-  struct StaticDomain : private virtual IDomain {
-    StaticDomain()
-    {
-      set_executor(*detail::static_executor_ptr<Tag>);
-    }
+  struct StaticDomain : virtual IDomain {
+    StaticDomain() = default;
     virtual ~StaticDomain() = default;
 
     static void set_static_executor(IExecutor& e)
@@ -81,7 +58,9 @@ namespace otto::itc {
       return detail::static_executor_ptr<Tag>;
     }
 
-  private:
-    void this_function_should_be_overridden_in_domain() final{};
+    IExecutor& executor() override
+    {
+      return *get_static_executor();
+    }
   };
 } // namespace otto::itc

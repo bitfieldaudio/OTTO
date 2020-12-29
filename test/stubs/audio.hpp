@@ -39,7 +39,7 @@ namespace otto::stubs {
     }
     void start() override
     {
-      thread_ = std::jthread([this](std::stop_token stopper) {
+      thread_ = std::jthread([this](const std::stop_token& stopper) {
         auto input_buf = util::stereo_audio_buffer(
           util::audio_buffer(std::span(buffers_.data() + 0 * buffer_size(), buffer_size()), nullptr),
           util::audio_buffer(std::span(buffers_.data() + 1 * buffer_size(), buffer_size()), nullptr));

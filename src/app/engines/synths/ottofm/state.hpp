@@ -31,7 +31,7 @@ namespace otto::engines::ottofm {
   };
 
   struct State {
-    util::StaticallyBounded<int, 0, 10, true> algorithm_idx = 0;
+    util::StaticallyBounded<int, 0, 10, util::bounds_policies::wrap> algorithm_idx = 0;
     util::StaticallyBounded<float, 0, 1> fm_amount = 1;
     std::array<OperatorState, 4> operators;
     util::StaticallyBounded<int, 0, 4> cur_op_idx = 0;

@@ -44,4 +44,9 @@ namespace otto::services {
     std::mutex mutex_;
     std::condition_variable cond_;
   };
+
+  struct RuntimeObserver {
+  protected:
+    static Runtime& runtime();
+  };
 } // namespace otto::services
