@@ -48,6 +48,12 @@ namespace otto::voices {
           state.portamento += e.steps * 0.01;
         } break;
         case Encoder::red: {
+          if (e.steps > 0 && state.legato) {
+            state.retrig = !state.retrig;
+          } else if (e.steps < 0 && !state.legato) {
+            state.retrig = !state.retrig;
+          }
+          state.legato = !state.legato;
         } break;
       }
     }
@@ -101,10 +107,10 @@ namespace otto::voices {
 
       auto aux_value = [&](PlayMode pm) -> std::string {
         switch (pm) {
-          case PlayMode::poly: return fmt::format("{}", rand);
-          case PlayMode::mono: return fmt::format("{}", sub);
-          case PlayMode::unison: return fmt::format("{}", detune);
-          case PlayMode::duo: return fmt::format("{}", interval);
+          case PlayMode::poly: return fmt::format("{:.2f}", rand);
+          case PlayMode::mono: return fmt::format("{:.2f}", sub);
+          case PlayMode::unison: return fmt::format("{:.2f}", detune);
+          case PlayMode::duo: return fmt::format("{:+d}", interval);
         };
         return "";
       };
@@ -193,11 +199,11 @@ namespace otto::voices {
         }
       };
       set_color(0);
-      skia::place_text(ctx, "OFF", fonts::medium(24), p, {0, height}, anchors::bottom_left);
+      skia::place_text(ctx, "OFF", fonts::medium(24), p, {0.f, height}, anchors::bottom_left);
       set_color(1);
-      skia::place_text(ctx, "ENV.", fonts::medium(24), p, {width * 0.2, height}, anchors::bottom_left);
+      skia::place_text(ctx, "ENV.", fonts::medium(24), p, {width * 0.25f, height}, anchors::bottom_left);
       set_color(2);
-      skia::place_text(ctx, "RETRIG", fonts::medium(24), p, {width * 0.44, height}, anchors::bottom_left);
+      skia::place_text(ctx, "PORT.", fonts::medium(24), p, {width * 0.51f, height}, anchors::bottom_left);
       set_color(3);
       skia::place_text(ctx, "BOTH", fonts::medium(24), p, {width, height}, anchors::bottom_right);
     }
@@ -230,7 +236,7 @@ namespace otto::voices {
 
       port.value = s.portamento;
 
-      // leg.value = static_cast<int>(s.legato) + static_cast<int>(s.retrig);
+      leg.value = static_cast<int>(s.legato) + 2 * static_cast<int>(s.retrig);
     }
 
     void draw(skia::Canvas& ctx) noexcept override

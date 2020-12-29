@@ -75,7 +75,7 @@ namespace otto::voices {
     /// @note Must be called before calling operator(). VoiceManager::operator() and ::process do this.
     void calc_next() noexcept
     {
-      frequency_ = glide_() /* TODO: * pitch_bend_ */;
+      frequency_ = glide_(); /* TODO: * pitch_bend_ */
     }
 
   private:
@@ -262,11 +262,10 @@ namespace otto::voices {
         free_voices_.clear();
         std::ranges::transform(voices_, std::back_inserter(free_voices_), util::addressof);
       }
-      if (state.portamento != voices_[0].glide_.period()) {
-        for (auto& v : voices_) {
-          v.glide_.period(state.portamento);
-          v.glide_ = v.glide_.getEnd();
-        }
+      // Portamento
+      for (auto& v : voices_) {
+        v.glide_.period(state.portamento * state.portamento * 4 + 0.001);
+        v.glide_ = v.glide_.getEnd();
       }
       voice_alloc->on_state_change(state);
     }
@@ -333,6 +332,7 @@ namespace otto::voices {
     {
       float res = 0;
       for (Voice& v : voices_) {
+        v.calc_next();
         res += v(args...) * normal_volume;
       }
       return res;
@@ -527,7 +527,7 @@ namespace otto::voices {
   {
     // The second and third voice are sub voices on mono mode. This sets their volume.
     for (int i = 1; i < 3; i++) {
-      this->vmgr[i].volume(this->vmgr.normal_volume * this->vmgr.state().sub / (float) i);
+      this->vmgr[i].volume(this->vmgr.normal_volume * diff.sub / (float) i);
     }
   }
 
