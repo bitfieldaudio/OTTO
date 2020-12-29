@@ -124,9 +124,9 @@ TEST_CASE ("DynamicallyBounded") {
 }
 
 TEST_CASE ("Wrapping") {
-  util::StaticallyBounded<int, -2, 5, true> a = -1;
-  util::StaticallyBounded<float, -2, 5, true> b = 3;
-  util::DynamicallyBounded<float, true> c = {1, -2, 5};
+  util::StaticallyBounded<int, -2, 5, util::bounds_policies::wrap> a = -1;
+  util::StaticallyBounded<float, -2, 5, util::bounds_policies::wrap> b = 3;
+  util::DynamicallyBounded<float, util::bounds_policies::wrap> c = {1, -2, 5};
 
   SECTION ("Upwards") {
     SECTION ("Static Int") {

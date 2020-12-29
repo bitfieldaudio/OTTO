@@ -39,6 +39,7 @@ int main(int argc, char* argv[])
   itc::ChannelGroup chan;
   auto eng = engines::ottofm::factory.make_all(chan);
 
+  auto voices_logic = voices::make_voices_logic(chan);
   auto voices_screen = voices::make_voices_screen(chan);
 
   app.service<Audio>().set_midi_handler(&eng.audio->midi_handler());

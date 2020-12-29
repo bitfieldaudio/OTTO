@@ -31,15 +31,17 @@ namespace otto::voices {
     {
       switch (e.encoder) {
         case Encoder::blue: {
-          state.play_mode =
-            magic_enum::enum_value<PlayMode>(magic_enum::enum_index<PlayMode>(state.play_mode).value() + e.steps);
+          if (e.steps > 0)
+            state.play_mode++;
+          else
+            state.play_mode--;
         } break;
         case Encoder::green: {
           switch (state.play_mode) {
             case PlayMode::poly: state.rand += e.steps * 0.01; break;
             case PlayMode::mono: state.sub += e.steps * 0.01; break;
             case PlayMode::unison: state.detune += e.steps * 0.01; break;
-            case PlayMode::duo: state.interval += e.steps * 0.01; break;
+            case PlayMode::duo: state.interval += e.steps; break;
           }
         } break;
         case Encoder::yellow: {
@@ -61,6 +63,8 @@ namespace otto::voices {
     };
     return "";
   }
+
+
 
   static std::string playmode_string(PlayMode pm) noexcept
   {
@@ -95,6 +99,15 @@ namespace otto::voices {
       float subject_height = 15.f;
       float line_size = (height - subject_height) / 4;
 
+      auto aux_value = [&](PlayMode pm) -> std::string {
+        switch (pm) {
+          case PlayMode::poly: return fmt::format("{}", rand);
+          case PlayMode::mono: return fmt::format("{}", sub);
+          case PlayMode::unison: return fmt::format("{}", detune);
+          case PlayMode::duo: return fmt::format("{}", interval);
+        };
+        return "";
+      };
       auto draw_line = [&](skia::Canvas& ctx, bool active, float y, int i) {
         // Background squares
         if (active) {
@@ -114,7 +127,7 @@ namespace otto::voices {
                          anchors::middle_left);
         skia::place_text(ctx, aux_setting(pm), fonts::medium(24), paints::fill(active ? colors::white : colors::grey50),
                          {aux_text_x, y + line_size * 0.5}, anchors::middle_left);
-        skia::place_text(ctx, "0.3", fonts::medium(24), paints::fill(active ? colors::white : colors::grey50),
+        skia::place_text(ctx, aux_value(pm), fonts::medium(24), paints::fill(active ? colors::white : colors::grey50),
                          {aux_value_x, y + line_size * 0.5}, anchors::middle_right);
       };
 
@@ -124,9 +137,8 @@ namespace otto::voices {
       skia::place_text(ctx, "SETTING", fonts::regular(18.f), p, {aux_text_x, 0}, anchors::top_left);
       skia::place_text(ctx, "VALUE", fonts::regular(18.f), p, {aux_value_x, 0}, anchors::top_right);
       // Modes
-      int active_mode = 2;
       for (int i = 0; i < 4; i++) {
-        draw_line(ctx, i == active_mode, subject_height + float(i) * line_size, i);
+        draw_line(ctx, i == active_line, subject_height + float(i) * line_size, i);
       }
     }
   };
@@ -210,7 +222,11 @@ namespace otto::voices {
 
     void on_state_change(const VoicesState& s) noexcept override
     {
-      // vms.active_line = magic_enum::enum_index<PlayMode>(s.play_mode).value();
+      vms.active_line = s.play_mode.index();
+      vms.rand = s.rand;
+      vms.sub = s.sub;
+      vms.detune = s.detune;
+      vms.interval = s.interval;
 
       port.value = s.portamento;
 

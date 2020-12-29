@@ -326,7 +326,7 @@ namespace otto::voices {
 
     [[nodiscard]] PlayMode play_mode() const noexcept
     {
-      return state().play_mode;
+      return PlayMode(state().play_mode);
     }
 
     float operator()(auto&&... args) noexcept requires util::callable<Voice, float(decltype(args)...)>
@@ -362,6 +362,11 @@ namespace otto::voices {
     Voice* last_triggered_voice_ = &voices_[0];
   };
 
+  struct ILogic {
+    virtual ~ILogic() = default;
+  };
+
+  std::unique_ptr<ILogic> make_voices_logic(itc::ChannelGroup&);
   ScreenWithHandler make_voices_screen(itc::ChannelGroup&);
 
 } // namespace otto::voices

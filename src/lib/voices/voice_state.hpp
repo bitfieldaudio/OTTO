@@ -17,7 +17,7 @@ namespace otto::voices {
   struct VoiceManager;
 
   struct VoicesState {
-    PlayMode play_mode = PlayMode::poly;
+    util::SelectableEnum<PlayMode, util::bounds_policies::clamp> play_mode = {PlayMode::poly};
     bool legato = false;
     bool retrig = false;
     float pitch_bend = 1;

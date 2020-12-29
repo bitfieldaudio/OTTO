@@ -1,7 +1,9 @@
 #pragma once
 #include <algorithm>
+#include <cstddef>
 
 #include "lib/util/concepts.hpp"
+#include "lib/util/enum.hpp"
 
 #include "math.hpp"
 
@@ -218,5 +220,80 @@ namespace otto::util {
   {
     return static_cast<T>(lhs) != static_cast<T>(rhs) || lhs.min() != rhs.min() || lhs.max() != rhs.max();
   }
+
+  /// An incrementable, wrappable enum
+  template<util::AnEnum Enum, ABoundsPolicy BP>
+  struct SelectableEnum {
+    SelectableEnum(Enum e) : index_(util::enum_index(e).value()) {}
+
+    operator Enum() const
+    {
+      return util::enum_value<Enum>(index_);
+    }
+
+    SelectableEnum& operator++()
+    {
+      index_++;
+      if (index_ >= util::enum_count<Enum>()) {
+        index_ = BP::check_bounds(index_, static_cast<std::size_t>(0), util::enum_count<Enum>() - 1);
+      }
+      return *this;
+    }
+
+    SelectableEnum operator++(int)
+    {
+      auto tmp = *this;
+      index_++;
+      if (index_ >= util::enum_count<Enum>()) {
+        index_ = BP::check_bounds(index_, static_cast<std::size_t>(0), util::enum_count<Enum>() - 1);
+      }
+      return tmp;
+    }
+
+    SelectableEnum& operator--()
+    {
+      if (index_ == 0) {
+        index_ = BP::check_bounds(-1, 0, static_cast<int>(util::enum_count<Enum>() - 1));
+      } else {
+        index_--;
+      }
+      return *this;
+    }
+
+    SelectableEnum operator--(int)
+    {
+      auto tmp = *this;
+      if (index_ == 0) {
+        index_ = BP::check_bounds(-1, 0, static_cast<int>(util::enum_count<Enum>() - 1));
+      } else {
+        index_--;
+      }
+      return tmp;
+    }
+
+    SelectableEnum& operator=(const Enum in)
+    {
+      index_ = util::enum_index(in).value();
+      return *this;
+    }
+
+    bool operator==(const Enum in)
+    {
+      return in == util::enum_value<Enum>(index_);
+    }
+
+    bool operator!=(const Enum in)
+    {
+      return !(operator==(in));
+    }
+
+    const std::size_t index() const
+    {
+      return index_;
+    }
+
+  private:
+    std::size_t index_;
+  };
 
 } // namespace otto::util
