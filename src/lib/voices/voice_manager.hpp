@@ -8,6 +8,7 @@
 #include "lib/util/with_limits.hpp"
 
 #include "lib/dsp/SegExpBypass.hpp"
+#include "lib/graphics.hpp"
 #include "lib/midi.hpp"
 #include "lib/voices/voice_state.hpp"
 
@@ -164,13 +165,13 @@ namespace otto::voices {
   };
 
   template<AVoice Voice, int N>
-  struct VoiceAllocator<PlayMode::interval, Voice, N> final : VoiceAllocatorBase<Voice, N> {
+  struct VoiceAllocator<PlayMode::duo, Voice, N> final : VoiceAllocatorBase<Voice, N> {
     VoiceAllocator(VoiceManager<Voice, N>& vmgr);
     void handle(const midi::NoteOn&) noexcept final;
 
     [[nodiscard]] PlayMode play_mode() const noexcept final
     {
-      return PlayMode::interval;
+      return PlayMode::duo;
     }
   };
 
@@ -253,9 +254,7 @@ namespace otto::voices {
           case PlayMode::poly: voice_alloc.template emplace<VoiceAllocator<PlayMode::poly, Voice, N>>(*this); break;
           case PlayMode::mono: voice_alloc.template emplace<VoiceAllocator<PlayMode::mono, Voice, N>>(*this); break;
           case PlayMode::unison: voice_alloc.template emplace<VoiceAllocator<PlayMode::unison, Voice, N>>(*this); break;
-          case PlayMode::interval:
-            voice_alloc.template emplace<VoiceAllocator<PlayMode::interval, Voice, N>>(*this);
-            break;
+          case PlayMode::duo: voice_alloc.template emplace<VoiceAllocator<PlayMode::duo, Voice, N>>(*this); break;
           default: break;
         }
         std::ranges::for_each(voices_, &Voice::release);
@@ -357,11 +356,13 @@ namespace otto::voices {
                          VoiceAllocator<PlayMode::poly, Voice, N>,
                          VoiceAllocator<PlayMode::mono, Voice, N>,
                          VoiceAllocator<PlayMode::unison, Voice, N>,
-                         VoiceAllocator<PlayMode::interval, Voice, N>>
+                         VoiceAllocator<PlayMode::duo, Voice, N>>
       voice_alloc = {std::in_place_index_t<0>(), *this};
 
     Voice* last_triggered_voice_ = &voices_[0];
   };
+
+  ScreenWithHandler make_voices_screen(itc::ChannelGroup&);
 
 } // namespace otto::voices
 
@@ -453,7 +454,7 @@ namespace otto::voices {
   }
 
   // PLAYMODE ALLOCATORS //
-  // POLY and INTERVAL are dynamically allocated (polyphonic),
+  // POLY and DUO are dynamically allocated (polyphonic),
   // while MONO and UNISON are statically allocated (monophonic)
 
   // POLY //
@@ -477,9 +478,9 @@ namespace otto::voices {
     if (res) voice.trigger(note, next_rand(), evt.velocity, false, false);
   }
 
-  // INTERVAL //
+  // DUO //
   template<AVoice Voice, int N>
-  VoiceAllocator<PlayMode::interval, Voice, N>::VoiceAllocator(VoiceManager<Voice, N>& vmgr)
+  VoiceAllocator<PlayMode::duo, Voice, N>::VoiceAllocator(VoiceManager<Voice, N>& vmgr)
     : VoiceAllocatorBase<Voice, N>(vmgr)
   {
     for (auto& voice : this->vmgr) {
@@ -488,7 +489,7 @@ namespace otto::voices {
   }
 
   template<AVoice Voice, int N>
-  void VoiceAllocator<PlayMode::interval, Voice, N>::handle(const midi::NoteOn& evt) noexcept
+  void VoiceAllocator<PlayMode::duo, Voice, N>::handle(const midi::NoteOn& evt) noexcept
   {
     auto& vmgr = this->vmgr;
     auto note = evt.note;

@@ -1,6 +1,6 @@
 #include "testing.t.hpp"
 
-#include "lib/voice_manager.hpp"
+#include "lib/voices/voice_manager.hpp"
 
 #include <algorithm>
 #include <set>
@@ -175,18 +175,18 @@ TEST_CASE ("VoiceManager", "[!mayfail]") {
     }
   }
 
-  SECTION ("Interval Mode") {
-    prod.state().play_mode = PlayMode::interval;
+  SECTION ("Duo Mode") {
+    prod.state().play_mode = PlayMode::duo;
     prod.state().interval = 1;
     prod.commit();
 
-    SECTION ("Interval mode triggers two voices for a single note") {
+    SECTION ("Duo mode triggers two voices for a single note") {
       voices.handle(midi::NoteOn{50});
       REQUIRE(std::ranges::distance(triggered_voices()) == 2);
       check_notes({50, 51});
     }
 
-    SECTION ("Interval mode triggers two voices per note") {
+    SECTION ("Duo mode triggers two voices per note") {
       voices.handle(midi::NoteOn{50});
       voices.handle(midi::NoteOn{60});
       check_notes({50, 51, 60, 61});

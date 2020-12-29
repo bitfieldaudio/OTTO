@@ -3,7 +3,7 @@
 #include <Gamma/Envelope.h>
 #include <Gamma/Oscillator.h>
 
-#include "lib/voice_manager.hpp"
+#include "lib/voices/voice_manager.hpp"
 
 #include "ottofm.hpp"
 

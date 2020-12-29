@@ -7,6 +7,7 @@
 #include "lib/graphics.hpp"
 #include "lib/itc/itc.hpp"
 #include "lib/itc/reducer.hpp"
+#include "lib/voices/voice_manager.hpp"
 
 #include "app/application.hpp"
 #include "app/engines/synths/ottofm/ottofm.hpp"
@@ -38,6 +39,8 @@ int main(int argc, char* argv[])
   itc::ChannelGroup chan;
   auto eng = engines::ottofm::factory.make_all(chan);
 
+  auto voices_screen = voices::make_voices_screen(chan);
+
   app.service<Audio>().set_midi_handler(&eng.audio->midi_handler());
   app.service<Audio>().set_process_callback([&](Audio::CallbackData data) {
     const auto res = eng.audio->process();
@@ -49,6 +52,7 @@ int main(int argc, char* argv[])
   auto nav_km = layers.make_layer<NavKeyMap>();
   nav_km.bind_nav_key(Key::synth, eng.main_screen);
   nav_km.bind_nav_key(Key::envelope, eng.mod_screen);
+  nav_km.bind_nav_key(Key::voices, voices_screen);
 
   RtMidiDriver rt_midi_driver;
 
