@@ -287,7 +287,7 @@ namespace otto::util {
       return !(operator==(in));
     }
 
-    const std::size_t index() const
+    [[nodiscard]] std::size_t index() const
     {
       return index_;
     }
