@@ -133,7 +133,7 @@ namespace otto::voices {
     /// Typical value is vm.normal_volume, which is 1/number_of_voices
     float volume_ = 1.f;
 
-    dsp::SegExpBypass<> glide_{1.f};
+    dsp::SegExpBypass<> glide_{1.f, -2.f};
   };
 
   // Voice allocators - Corresponds to different playmodes //
@@ -196,6 +196,7 @@ namespace otto::voices {
     VoiceAllocator(VoiceManager<Voice, N>& vm_in);
 
     void handle(const midi::NoteOn&) noexcept final;
+    void on_state_change(const VoicesState&) noexcept final;
     void set_detune(float detune) noexcept;
     [[nodiscard]] PlayMode play_mode() const noexcept final
     {
@@ -333,7 +334,7 @@ namespace otto::voices {
       float res = 0;
       for (Voice& v : voices_) {
         v.calc_next();
-        res += v(args...) * normal_volume;
+        res += v(args...) * v.volume();
       }
       return res;
     }
@@ -465,11 +466,12 @@ namespace otto::voices {
   // POLY //
   template<AVoice Voice, int N>
   VoiceAllocator<PlayMode::poly, Voice, N>::VoiceAllocator(VoiceManager<Voice, N>& owner)
-    : VoiceAllocatorBase<Voice, N>(owner){
-        // TODO: for (auto& voice : this->vmgr) {
-        // TODO:   voice.volume(this->vmgr.normal_volume);
-        // TODO: }
-      };
+    : VoiceAllocatorBase<Voice, N>(owner)
+  {
+    for (auto& voice : this->vmgr) {
+      voice.volume(this->vmgr.normal_volume);
+    }
+  };
 
   template<AVoice Voice, int N>
   void VoiceAllocator<PlayMode::poly, Voice, N>::handle(const midi::NoteOn& evt) noexcept
@@ -526,7 +528,7 @@ namespace otto::voices {
   void VoiceAllocator<PlayMode::mono, Voice, N>::on_state_change(const VoicesState& diff) noexcept
   {
     // The second and third voice are sub voices on mono mode. This sets their volume.
-    for (int i = 1; i < 3; i++) {
+    for (int i = 1; i < N; i++) {
       this->vmgr[i].volume(this->vmgr.normal_volume * diff.sub / (float) i);
     }
   }
@@ -550,7 +552,7 @@ namespace otto::voices {
         if (!vmgr.state().legato) v.release();
         note.voice = nullptr;
         auto res = vmgr.note_stack_.push_back(
-          {.key = key, .note = key - 12 * i, .detune = 1, .velocity = evt.velocity, .voice = &v});
+          {.key = key, .note = key - 12 * sv, .detune = 1, .velocity = evt.velocity, .voice = &v});
         if (res) v.trigger(key - 12 * sv, 1, evt.velocity, vmgr.state().legato, false);
       }
     } else {
@@ -575,6 +577,13 @@ namespace otto::voices {
       auto& voice = this->vmgr.voices_[i];
       voice.volume(this->vmgr.normal_volume / (float) num_voices_used);
     }
+    set_detune(0.f);
+  }
+
+  template<AVoice Voice, int N>
+  void VoiceAllocator<PlayMode::unison, Voice, N>::on_state_change(const VoicesState& diff) noexcept
+  {
+    set_detune(diff.detune);
   }
 
   template<AVoice Voice, int N>
@@ -587,7 +596,7 @@ namespace otto::voices {
       detune_values.push_back(1 + detune * 0.015f * static_cast<float>(i));
       detune_values.push_back(1.f / (1.f + detune * 0.015f * static_cast<float>(i)));
     }
-    for (auto&& [v, d] : util::zip(vmgr.voices(), detune_values)) v.glide_ = midi::note_freq(v.midi_note_) * d;
+    for (auto&& [v, d] : util::zip(vmgr.voices_, detune_values)) v.glide_ = midi::note_freq(v.midi_note_) * d;
   }
 
   template<AVoice Voice, int N>
