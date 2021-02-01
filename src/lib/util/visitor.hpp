@@ -2,6 +2,7 @@
 
 #include <type_traits>
 
+#include "lib/util/concepts.hpp"
 #include "lib/util/macros.hpp"
 #include "lib/util/string_ref.hpp"
 #include "lib/util/utility.hpp"
@@ -26,6 +27,31 @@ namespace otto::util {
   {
     t.visit(detail::test_visitor);
   };
+
+  void visit(AVisitable auto&& v, auto&& visitor)
+  {
+    FWD(v).visit(FWD(visitor));
+  }
+
+  namespace detail {
+    template<typename Func>
+    struct VisitableWrapper {
+      Func func;
+      void visit(auto&& visitor)
+      {
+        func(visitor);
+      }
+      void visit(auto&& visitor) const
+      {
+        func(visitor);
+      }
+    };
+  } // namespace detail
+
+  AVisitable auto visitable(util::callable<void(decltype(detail::test_visitor))> auto&& func)
+  {
+    return detail::VisitableWrapper<decltype(func)>{FWD(func)};
+  }
 } // namespace otto::util
 
 #define OTTO_VISIT_DECLTYPE_(IGNORED, Expr) decltype(Expr)

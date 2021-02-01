@@ -4,6 +4,9 @@
 
 #include <bitset>
 
+#include "stubs/state.hpp"
+
+using namespace otto;
 using namespace otto::itc;
 
 template<AState... States>
@@ -218,5 +221,46 @@ TEST_CASE ("prod/cons/chan of multiple states", "[itc]") {
     REQUIRE(c1.new_state1_called == 1);
     REQUIRE(c1.state<S2>().i2 == 20);
     REQUIRE(c1.new_state2_called == 1);
+  }
+}
+
+struct State1 {
+  int i1 = 0;
+  DECL_VISIT(i1);
+};
+
+struct State2 {
+  int i2 = 0;
+};
+
+TEST_CASE ("Channel serialization") {
+  ImmediateExecutor ex;
+  StaticDomain<>::set_static_executor(ex);
+
+  SECTION ("Basic serializable state") {
+    ChannelGroup ch;
+    Producer<State1> p1{ch};
+    ImmCons<State1> c1{ch};
+
+    const auto s = util::serialize(ch);
+    p1.state().i1 = 10;
+    p1.commit();
+    REQUIRE(c1.state().i1 == 10);
+    util::deserialize_from(s, ch);
+    REQUIRE(c1.state().i1 == 0);
+  }
+
+  SECTION ("Unserializable state") {
+    ChannelGroup ch;
+    Producer<State2> p1{ch};
+    ImmCons<State2> c1{ch};
+
+    const auto s = util::serialize(ch);
+    REQUIRE(s.is_table());
+    p1.state().i2 = 10;
+    p1.commit();
+    REQUIRE(c1.state().i1 == 10);
+    util::deserialize_from(s, ch);
+    REQUIRE(c1.state().i1 == 0);
   }
 }

@@ -26,7 +26,14 @@ namespace fs = std::filesystem;
 using namespace Catch::literals;
 
 namespace otto::test {
-  inline fs::path dir = fs::current_path() / "testdir";
+  inline const fs::path dir = fs::temp_directory_path() / "otto-tests";
+
+  inline fs::path temp_file(std::string_view name)
+  {
+    auto path = dir / name;
+    fs::remove_all(path);
+    return path;
+  }
 
   inline void truncateFile(const fs::path& p)
   {

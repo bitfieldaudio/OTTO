@@ -14,15 +14,15 @@
 namespace Catch {
   CATCH_INTERNAL_START_WARNINGS_SUPPRESSION
   CATCH_INTERNAL_SUPPRESS_GLOBALS_WARNINGS
-  LeakDetector leakDetector;
+  LeakDetector leakDetector; // NOLINT
   CATCH_INTERNAL_STOP_WARNINGS_SUPPRESSION
 } // namespace Catch
 
 int main(int argc, char* argv[])
 {
   using namespace otto;
-  // fs::remove_all(test::dir);
-  // fs::create_directories(test::dir);
+  fs::remove_all(test::dir);
+  fs::create_directories(test::dir);
   logging::init();
 
   auto result = Catch::Session().run(argc, argv);

@@ -1,19 +1,20 @@
 #pragma once
 
 #include <memory>
-#include <typeindex>
 #include <vector>
 
 #include <boost/container/flat_map.hpp>
 
 #include "lib/util/concepts.hpp"
+#include "lib/util/name_of.hpp"
+#include "lib/util/serialization.hpp"
 
 #include "state.hpp"
 
 namespace otto::itc {
 
   namespace detail {
-    struct ChannelBase {
+    struct ChannelBase : util::ISerializable {
       virtual ~ChannelBase() = default;
     };
   } // namespace detail
@@ -59,6 +60,25 @@ namespace otto::itc {
       set_producer(&p);
     }
 
+    void serialize_into(toml::value& toml) const final
+    {
+      if constexpr (util::ASerializable<State>) {
+        // TODO Access a copy of the state in another way
+        if (producer_ == nullptr) return;
+        util::serialize_into(toml, producer_->state());
+      }
+    }
+
+    void deserialize_from(const toml::value& toml) final
+    {
+      if constexpr (util::ASerializable<State>) {
+        // TODO Access a copy of the state in another way
+        if (producer_ == nullptr) return;
+        util::deserialize_from(toml, producer_->state());
+        producer_->commit();
+      }
+    }
+
   private:
     friend Producer<State>;
     friend Consumer<State>;
@@ -79,7 +99,7 @@ namespace otto::itc {
   };
 
   /// A (nested) group of channels, where channels for any state type can be created and accessed
-  struct ChannelGroup {
+  struct ChannelGroup : util::ISerializable {
     ChannelGroup() = default;
     ~ChannelGroup() = default;
 
@@ -90,9 +110,10 @@ namespace otto::itc {
     template<AState State>
     TypedChannel<State>& get()
     {
-      auto found = channels_.find(std::type_index(typeid(State)));
+      auto found = channels_.find(util::qualified_name_of<State>);
       if (found == channels_.end()) {
-        auto [iter, inserted] = channels_.emplace(typeid(State), std::make_unique<TypedChannel<State>>());
+        auto [iter, inserted] =
+          channels_.emplace(util::qualified_name_of<State>, std::make_unique<TypedChannel<State>>());
         found = iter;
       }
       // Should this be a dynamic cast? probably not, since we know the type is right
@@ -112,9 +133,32 @@ namespace otto::itc {
       return *found->second;
     }
 
+    void serialize_into(toml::value& toml) const final
+    {
+      using namespace std::literals;
+      toml::ensure_table(toml);
+      for (const auto& [k, v] : nested_) {
+        util::serialize_into(toml[k], *v);
+      }
+      for (const auto& [k, v] : channels_) {
+        util::serialize_into(toml["type:"s + k.c_str()], *v);
+      }
+    }
+
+    void deserialize_from(const toml::value& toml) final
+    {
+      using namespace std::literals;
+      for (const auto& [k, v] : nested_) {
+        util::deserialize_from(toml::find(toml, k), *v);
+      }
+      for (const auto& [k, v] : channels_) {
+        util::deserialize_from(toml::find(toml, "type:"s + k.c_str()), *v);
+      }
+    }
+
   private:
     boost::container::flat_map<std::string, std::unique_ptr<ChannelGroup>> nested_;
-    boost::container::flat_map<std::type_index, std::unique_ptr<detail::ChannelBase>> channels_;
+    boost::container::flat_map<util::string_ref, std::unique_ptr<detail::ChannelBase>> channels_;
   };
 
 } // namespace otto::itc

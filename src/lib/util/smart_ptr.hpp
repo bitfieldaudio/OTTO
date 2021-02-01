@@ -81,6 +81,11 @@ namespace otto::util {
       return get() != nullptr;
     }
 
+    operator pointer() const noexcept
+    {
+      return get();
+    }
+
     bool operator==(const smart_ptr&) const noexcept = default;
     bool operator==(pointer p) const noexcept
     {

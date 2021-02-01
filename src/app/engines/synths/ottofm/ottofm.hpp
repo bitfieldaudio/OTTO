@@ -84,6 +84,6 @@ namespace otto::engines::ottofm {
   // Duration of an envelope stage in seconds from underlying state member
   inline float envelope_stage_duration(const float d)
   {
-    return 5 * d * d + 0.001;
+    return 5 * d * d + 0.001f;
   }
 } // namespace otto::engines::ottofm

@@ -28,6 +28,8 @@ namespace otto::voices {
     util::StaticallyBounded<int, -12, 12> interval = 0;
     util::StaticallyBounded<float, 0, 1> sub = 0;
     util::StaticallyBounded<float, 0, 1> detune = 0;
+
+    DECL_VISIT(play_mode, legato, retrig, pitch_bend, sustain, portamento, rand, interval, sub, detune);
   };
 
 } // namespace otto::voices

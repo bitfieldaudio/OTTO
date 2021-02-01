@@ -20,6 +20,7 @@
 #include "app/services/led_manager.hpp"
 #include "app/services/logic_thread.hpp"
 #include "app/services/runtime.hpp"
+#include "app/services/state.hpp"
 #include "app/services/ui_manager.hpp"
 
 #include "board/midi_driver.hpp"
@@ -35,9 +36,11 @@ int main(int argc, char* argv[])
                        Audio::make(),                 //
                        Graphics::make()               //
   );
+  StateManager stateman("data/state.toml");
 
   itc::ChannelGroup chan;
   auto eng = engines::ottofm::factory.make_all(chan);
+  stateman.add("EngineChannel", chan);
 
   auto voices_logic = voices::make_voices_logic(chan);
   auto voices_screen = voices::make_voices_screen(chan);
@@ -64,7 +67,9 @@ int main(int argc, char* argv[])
   });
   app.service<Controller>().set_input_handler(layers);
 
+  stateman.read_from_file();
   app.wait_for_stop();
   LOGI("Shutting down");
+  stateman.write_to_file();
   return 0;
 }

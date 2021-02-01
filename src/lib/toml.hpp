@@ -99,6 +99,35 @@ namespace otto::toml {
     toml::get<T>(toml);
     toml = t;
   };
+
+  inline auto parse(const std::string& fpath)
+  {
+    return ::toml::parse<toml::preserve_comments>(fpath);
+  }
+
+  /// Make sure theres a table at v
+  ///
+  /// If v is empty, it will be replaced with a table.
+  /// if v has another type, `toml::type_error` is thrown
+  inline void ensure_table(value& v)
+  {
+    if (v.type() == value_t::empty) v = table();
+    if (v.type() != value_t::table) {
+      throw type_error("Expected table", v.location());
+    }
+  }
+
+  /// Make sure theres an array at v
+  ///
+  /// If v is empty, it will be replaced with an array.
+  /// if v has another type, `toml::type_error` is thrown
+  inline void ensure_array(value& v)
+  {
+    if (v.type() == value_t::empty) v = array();
+    if (v.type() != value_t::array) {
+      throw type_error("Expected table", v.location());
+    }
+  }
 } // namespace otto::toml
 
 namespace toml {
