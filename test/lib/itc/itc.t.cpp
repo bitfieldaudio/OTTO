@@ -256,11 +256,11 @@ TEST_CASE ("Channel serialization") {
     ImmCons<State2> c1{ch};
 
     const auto s = util::serialize(ch);
-    REQUIRE(s.is_table());
+    REQUIRE(s.is_object());
     p1.state().i2 = 10;
     p1.commit();
-    REQUIRE(c1.state().i1 == 10);
+    REQUIRE(c1.state().i2 == 10);
     util::deserialize_from(s, ch);
-    REQUIRE(c1.state().i1 == 0);
+    REQUIRE(c1.state().i2 == 10);
   }
 }

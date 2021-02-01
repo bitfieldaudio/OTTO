@@ -63,7 +63,7 @@ endif()
 CPMAddPackage(
   NAME nlohmann_json
   GITHUB_REPOSITORY nlohmann/json
-  VERSION 3.8.0
+  VERSION 3.9.1
   DOWNLOAD_ONLY YES
   GIT_SHALLOW ON
 )
@@ -130,18 +130,6 @@ CPMAddPackage(
   GITHUB_REPOSITORY Naios/function2
   GIT_TAG 4.1.0
 )
-
-CPMAddPackage(
-  NAME toml11
-  GITHUB_REPOSITORY ToruNiina/toml11
-  VERSION 3.5.0
-  DOWNLOAD_ONLY YES
-)
-
-if (toml11_ADDED) 
-  add_library(toml11 INTERFACE)
-  target_include_directories(toml11 SYSTEM INTERFACE "${toml11_SOURCE_DIR}")
-endif()
 
 CPMAddPackage(
   NAME yamc

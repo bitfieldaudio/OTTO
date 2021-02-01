@@ -36,7 +36,7 @@ target_link_libraries(otto_src PUBLIC magic_enum)
 target_link_libraries(otto_src PUBLIC concurrentqueue)
 target_link_libraries(otto_src PUBLIC skia)
 target_link_libraries(otto_src PUBLIC function2)
-target_link_libraries(otto_src PUBLIC toml11)
+#target_link_libraries(otto_src PUBLIC toml11)
 target_link_libraries(otto_src PUBLIC otto_boost)
 target_link_libraries(otto_src PUBLIC yamc)
 

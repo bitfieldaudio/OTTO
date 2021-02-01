@@ -25,11 +25,7 @@ TEST_CASE ("ConfigManager") {
   }
   TestConfig tc1;
 
-  using namespace otto::toml::literals;
-  otto::toml::value config_data = R"(
-[TestConfig]
-option1 = 100
-    )"_toml;
+  json::value config_data = {{"TestConfig", {{"option1", 100}}}};
 
   SECTION ("Service constructor") {
     auto app = start_app(core::make_handle<services::ConfigManager>(config_data));
@@ -52,9 +48,9 @@ option1 = 100
       REQUIRE(tc1->option1 == 100);
       REQUIRE(tc1->option2 == "test");
 
-      auto data = confman->into_toml();
+      auto data = confman->into_json();
       std::cout << data;
-      REQUIRE(otto::toml::find<std::string>(otto::toml::find(data, "TestConfig"), "option2") == "test");
+      REQUIRE(data["TestConfig"]["option2"] == "test");
     }
   }
 }

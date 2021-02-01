@@ -1,5 +1,6 @@
 #pragma once
 
+#include <filesystem>
 #include <memory_resource>
 #include <unordered_map>
 
@@ -9,7 +10,7 @@
 #include "lib/util/visitor.hpp"
 
 #include "lib/core/service.hpp"
-#include "lib/toml.hpp"
+#include "lib/json.hpp"
 
 #include "app/services/runtime.hpp"
 
@@ -39,9 +40,9 @@ namespace otto {
 
     struct ConfigManager : core::Service<ConfigManager> {
       ConfigManager() = default;
-      /// Initialize the configurations from a toml object
-      ConfigManager(toml::value config_data);
-      /// Initialize the configurations from a toml file
+      /// Initialize the configurations from a json object
+      ConfigManager(json::value config_data);
+      /// Initialize the configurations from a json file
       ConfigManager(const std::filesystem::path& config_path);
 
       ~ConfigManager();
@@ -50,16 +51,16 @@ namespace otto {
 
       /// Construct a config type, and initialize it from the config data
       ///
-      /// Also adds the constructed data back to the stored toml
+      /// Also adds the constructed data back to the stored json
       template<AConfig Conf>
       Conf make_conf() noexcept;
 
-      /// Attempts to read the default config file `./ottoconf.toml`.
+      /// Attempts to read the default config file `./ottoconf.json`.
       ///
       /// If this file is not found, simply runs the default constructor
       static core::ServiceHandle<ConfigManager> make_default()
       {
-        std::filesystem::path config_path = "./ottoconf.toml";
+        std::filesystem::path config_path = "./ottoconf.json";
         if (std::filesystem::is_regular_file(config_path)) {
           return make(config_path);
         }
@@ -67,7 +68,7 @@ namespace otto {
         return make();
       }
 
-      [[nodiscard]] toml::value into_toml() const;
+      [[nodiscard]] json::value into_json() const;
 
     private:
       template<AConfig Conf>
@@ -75,7 +76,7 @@ namespace otto {
 
       std::filesystem::path file_path = "";
       [[no_unique_address]] core::ServiceAccessor<Runtime> runtime;
-      toml::value config_data_ = toml::table();
+      json::value config_data_ = json::object();
     };
   } // namespace services
 
@@ -107,15 +108,13 @@ namespace otto {
 
 } // namespace otto
 
-namespace toml {}
-
 // Implementations:
 namespace otto::services {
 
-  inline ConfigManager::ConfigManager(toml::value config_data) : config_data_(std::move(config_data)) {}
+  inline ConfigManager::ConfigManager(json::value config_data) : config_data_(std::move(config_data)) {}
 
   inline ConfigManager::ConfigManager(const std::filesystem::path& config_path)
-  try : ConfigManager(toml::parse(config_path)) {
+  try : ConfigManager(json::parse_file(config_path)) {
     file_path = config_path;
   } catch (std::runtime_error& e) {
     LOGE("Error reading config file:");
@@ -126,10 +125,7 @@ namespace otto::services {
   {
     if (file_path.empty()) return;
     LOGI("Writing config to {}", file_path.c_str());
-    std::ofstream file;
-    file.open(file_path);
-    file << into_toml();
-    file.close();
+    json::write_to_file(into_json(), file_path);
   }
 
   inline ConfigManager::~ConfigManager()
@@ -137,7 +133,7 @@ namespace otto::services {
     if (!file_path.empty()) write_to_file();
   }
 
-  inline toml::value ConfigManager::into_toml() const
+  inline json::value ConfigManager::into_json() const
   {
     return config_data_;
   }
@@ -148,7 +144,7 @@ namespace otto::services {
     Conf res;
     auto& data = config_data_[res.get_name().c_str()];
     try {
-      if (data.type() != toml::value_t::empty) util::deserialize_from(data, res);
+      util::deserialize_from(data, res);
     } catch (const std::out_of_range& e) {
       LOGI("Error in config {}, using default: ", res.get_name());
       LOGI("{}", e.what());

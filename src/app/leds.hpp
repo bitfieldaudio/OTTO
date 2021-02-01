@@ -3,7 +3,7 @@
 #include "lib/util/func_interface.hpp"
 #include "lib/util/visitor.hpp"
 
-#include "lib/toml.hpp"
+#include "lib/json.hpp"
 
 #include "app/input.hpp"
 
@@ -97,8 +97,8 @@ namespace otto {
   struct LEDColor {
     uint8_t r = 0, g = 0, b = 0;
 
-    void serialize_into(toml::value& toml) const;
-    void deserialize_from(const toml::value& toml);
+    void serialize_into(json::value& json) const;
+    void deserialize_from(const json::value& json);
 
     constexpr auto operator<=>(const LEDColor&) const = default;
 

@@ -5,7 +5,9 @@
 #include "lib/util/enum.hpp"
 #include "lib/util/visitor.hpp"
 
-#include "lib/toml.hpp"
+#include "lib/chrono.hpp"
+#include "lib/json.hpp"
+#include "lib/logging.hpp"
 
 #include "fmt/core.h"
 
@@ -15,51 +17,57 @@ namespace otto::util {
   ///
   /// Specialize this, and implement the following two functions
   /// ```cpp
-  /// static void serialize_into(toml::value& toml, const T& value);
-  /// static void deserialize_from(const toml::value& toml, T& value);
+  /// static void serialize_into(json::value& json, const T& value);
+  /// static void deserialize_from(const json::value& json, T& value);
   /// ```
   template<typename T, unsigned order = 5>
   struct serialize_impl;
 
   template<typename T>
-  concept ASerializable = requires(toml::value toml, T& t)
+  concept ASerializable = requires(json::value json, T& t)
   {
-    serialize_impl<std::decay_t<T>>::serialize_into(toml, t);
-    serialize_impl<std::decay_t<T>>::deserialize_from(toml, t);
+    serialize_impl<std::decay_t<T>>::serialize_into(json, t);
+    serialize_impl<std::decay_t<T>>::deserialize_from(json, t);
   };
 
-  void serialize_into(toml::value& toml, const ASerializable auto& obj)
+  void serialize_into(json::value& json, const ASerializable auto& obj)
   {
-    serialize_impl<std::decay_t<decltype(obj)>>::serialize_into(toml, obj);
-    // The toml serializer cannot handle an empty value, so turn it into an empty table
-    if (toml.type() == toml::value_t::empty) toml = toml::table();
+    serialize_impl<std::decay_t<decltype(obj)>>::serialize_into(json, obj);
   }
 
-  void deserialize_from(const toml::value& toml, ASerializable auto& obj)
+  void deserialize_from(const json::value& json, ASerializable auto& obj)
   {
-    serialize_impl<std::decay_t<decltype(obj)>>::deserialize_from(toml, obj);
+    serialize_impl<std::decay_t<decltype(obj)>>::deserialize_from(json, obj);
   }
 
-  toml::value serialize(const ASerializable auto& obj)
+  /// Checks if the member exists, and then calls `deserialize_from(json[key], obj)`
+  ///
+  /// Otherwise, does nothing
+  void deserialize_from_member(const json::value& json, const std::string& key, ASerializable auto& obj)
   {
-    toml::value res;
+    if (json.contains(key)) util::deserialize_from(json[key], obj);
+  }
+
+  json::value serialize(const ASerializable auto& obj)
+  {
+    json::value res;
     serialize_into(res, obj);
     return res;
   }
 
   template<ASerializable T>
   requires(std::is_default_constructible_v<T>) //
-    T deserialize(const toml::value& toml)
+    T deserialize(const json::value& json)
   {
     T res = {};
-    deserialize_from(toml, res);
+    deserialize_from(json, res);
     return res;
   }
 
   struct ISerializable {
     virtual ~ISerializable() = default;
-    virtual void serialize_into(toml::value& toml) const = 0;
-    virtual void deserialize_from(const toml::value& toml) = 0;
+    virtual void serialize_into(json::value& json) const = 0;
+    virtual void deserialize_from(const json::value& json) = 0;
   };
 
   struct DynSerializable {
@@ -68,9 +76,9 @@ namespace otto::util {
     template<ASerializable T>
     DynSerializable(T& t)
       : ptr_(&t),
-        serialize_into_([](toml::value& toml, void* ptr) { util::serialize_into(toml, *static_cast<const T*>(ptr)); }),
+        serialize_into_([](json::value& json, void* ptr) { util::serialize_into(json, *static_cast<const T*>(ptr)); }),
         deserialize_from_(
-          [](const toml::value& toml, void* ptr) { util::deserialize_from(toml, *static_cast<T*>(ptr)); })
+          [](const json::value& json, void* ptr) { util::deserialize_from(json, *static_cast<T*>(ptr)); })
     {}
 
     template<ASerializable T>
@@ -81,9 +89,9 @@ namespace otto::util {
         destroy_([](void* ptr) {
           delete static_cast<T*>(ptr); // NOLINT
         }),
-        serialize_into_([](toml::value& toml, void* ptr) { util::serialize_into(toml, *static_cast<const T*>(ptr)); }),
+        serialize_into_([](json::value& json, void* ptr) { util::serialize_into(json, *static_cast<const T*>(ptr)); }),
         deserialize_from_(
-          [](const toml::value& toml, void* ptr) { util::deserialize_from(toml, *static_cast<T*>(ptr)); })
+          [](const json::value& json, void* ptr) { util::deserialize_from(json, *static_cast<T*>(ptr)); })
     {}
 
     ~DynSerializable() noexcept
@@ -112,22 +120,22 @@ namespace otto::util {
       return *this;
     }
 
-    void serialize_into(toml::value& toml) const
+    void serialize_into(json::value& json) const
     {
       if (ptr_ == nullptr) return;
-      serialize_into_(toml, ptr_);
+      serialize_into_(json, ptr_);
     }
-    void deserialize_from(const toml::value& toml)
+    void deserialize_from(const json::value& json)
     {
       if (ptr_ == nullptr) return;
-      deserialize_from_(toml, ptr_);
+      deserialize_from_(json, ptr_);
     }
 
   private:
     void* ptr_ = nullptr;
     util::function_ptr<void(void*)> destroy_ = nullptr;
-    util::function_ptr<void(toml::value&, void*)> serialize_into_ = nullptr;
-    util::function_ptr<void(const toml::value&, void*)> deserialize_from_ = nullptr;
+    util::function_ptr<void(json::value&, void*)> serialize_into_ = nullptr;
+    util::function_ptr<void(const json::value&, void*)> deserialize_from_ = nullptr;
   };
 
   // Specializations
@@ -138,33 +146,32 @@ namespace otto::util {
   template<typename T>
   struct serialize_impl<T, 0> {};
 
-  // Using toml11
-  template<toml::ATomlSerializable T>
+  // Using json11
+  template<json::AJsonSerializable T>
   struct serialize_impl<T, 0> {
-    static void serialize_into(toml::value& toml, const T& value)
+    static void serialize_into(json::value& json, const T& value)
     {
-      toml = value;
+      json = value;
     }
-    static void deserialize_from(const toml::value& toml, T& value)
+    static void deserialize_from(const json::value& json, T& value)
     {
-      value = toml::get<T>(toml);
+      value = json.get<T>();
     }
   };
 
   template<ASerializable T, typename A>
   struct serialize_impl<std::vector<T, A>, 1> {
-    static void serialize_into(toml::value& toml, const std::vector<T, A>& r)
+    static void serialize_into(json::value& json, const std::vector<T, A>& r)
     {
-      toml::ensure_array(toml);
       for (int i = 0; i < r.size(); i++) {
-        if (i == toml.as_array().size()) toml.as_array().emplace_back();
-        util::serialize_into(toml.as_array()[i], r[i]);
+        if (i == json.size()) json.emplace_back(nullptr);
+        util::serialize_into(json[i], r[i]);
       }
     }
-    static void deserialize_from(const toml::value& toml, std::vector<T, A>& r)
+    static void deserialize_from(const json::value& json, std::vector<T, A>& r)
     {
       r.clear();
-      for (const auto& v : toml.as_array()) {
+      for (const auto& v : json) {
         r.emplace_back(util::deserialize<T>(v));
       }
     }
@@ -172,41 +179,38 @@ namespace otto::util {
 
   template<ASerializable T, std::size_t N>
   struct serialize_impl<std::array<T, N>, 1> {
-    static void serialize_into(toml::value& toml, const std::array<T, N>& r)
+    static void serialize_into(json::value& json, const std::array<T, N>& r)
     {
-      toml::ensure_array(toml);
-      toml.as_array().resize(N);
-      for (auto&& [src, dst] : util::zip(r, toml.as_array())) {
+      json.get_ref<json::array&>().resize(N);
+      for (auto&& [src, dst] : util::zip(r, json)) {
         util::serialize_into(dst, src);
       }
     }
-    static void deserialize_from(const toml::value& toml, std::array<T, N>& r)
+    static void deserialize_from(const json::value& json, std::array<T, N>& r)
     {
-      if (toml.as_array().size() != N) {
-        throw std::invalid_argument(toml::format_error(
-          fmt::format("Expected array of size {}, got {}.\n", N, toml.as_array().size()), toml, "here"));
+      if (json.size() != N) {
+        throw std::invalid_argument(fmt::format("Expected array of size {}, got {}"));
       }
-      for (auto&& [input, toml] : util::zip(r, toml.as_array())) {
-        util::deserialize_from(toml, input);
+      for (auto&& [input, json] : util::zip(r, json)) {
+        util::deserialize_from(json, input);
       }
     }
   };
 
   template<AVisitable T>
   struct serialize_impl<T, 2> {
-    static void serialize_into(toml::value& toml, const T& value)
+    static void serialize_into(json::value& json, const T& value)
     {
-      toml::ensure_table(toml);
-      util::visit(value, [&](util::string_ref name, const auto& member) {
-        util::serialize_into(toml.as_table()[name.c_str()], member);
-      });
+      util::visit(value,
+                  [&](util::string_ref name, const auto& member) { util::serialize_into(json[name.c_str()], member); });
     }
-    static void deserialize_from(const toml::value& toml, T& value)
+    static void deserialize_from(const json::value& json, T& value)
     {
       util::visit(value, [&](util::string_ref name, auto& member) {
         try {
-          util::deserialize_from(toml::find(toml, name.c_str()), member);
+          util::deserialize_from_member(json, name.c_str(), member);
         } catch (std::out_of_range& e) {
+          // DLOGI("Nonexistent key {} when deserializing", name);
         }
       });
     }
@@ -214,36 +218,48 @@ namespace otto::util {
 
   // With member functions
   template<typename T>
-  requires requires(const toml::value& ctoml, toml::value& toml, T& obj, const T& cobj)
+  requires requires(const json::value& cjson, json::value& json, T& obj, const T& cobj)
   {
-    cobj.serialize_into(toml);
-    obj.deserialize_from(ctoml);
+    cobj.serialize_into(json);
+    obj.deserialize_from(cjson);
   } //
   struct serialize_impl<T, 3> {
-    static void serialize_into(toml::value& toml, const T& value)
+    static void serialize_into(json::value& json, const T& value)
     {
-      value.serialize_into(toml);
+      value.serialize_into(json);
     }
-    static void deserialize_from(const toml::value& toml, T& value)
+    static void deserialize_from(const json::value& json, T& value)
     {
-      value.deserialize_from(toml);
+      value.deserialize_from(json);
     }
   };
 
   template<AnEnum E>
   struct serialize_impl<E, 3> {
-    static void serialize_into(toml::value& toml, const E& value)
+    static void serialize_into(json::value& json, const E& value)
     {
-      toml = util::enum_name(value);
+      json = util::enum_name(value);
     }
-    static void deserialize_from(const toml::value& toml, E& value)
+    static void deserialize_from(const json::value& json, E& value)
     {
-      auto opt = util::enum_cast<E>(std::string_view(toml.as_string()));
+      auto opt = util::enum_cast<E>(json);
       if (!opt) {
-        throw std::invalid_argument(fmt::format("Invalid name when deserializing enum: {}", toml.as_string()));
+        throw std::invalid_argument(fmt::format("Invalid name when deserializing enum: {}", json));
       }
       value = *opt;
     }
   };
 
+  // TODO: better represenatation of durations in serialization?
+  template<>
+  struct serialize_impl<chrono::duration, 3> {
+    static void serialize_into(json::value& json, const chrono::duration& value)
+    {
+      json = value.count();
+    }
+    static void deserialize_from(const json::value& json, chrono::duration& value)
+    {
+      chrono::duration(json.get<std::size_t>());
+    }
+  };
 } // namespace otto::util

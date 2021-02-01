@@ -3,7 +3,6 @@
 #include "lib/util/serialization.hpp"
 
 using namespace otto;
-namespace otoml = otto::toml;
 
 struct TestObj {
   int i = 1;
@@ -19,76 +18,63 @@ struct TestObj {
 struct CustomSer {
   int i = 0;
   std::string str = "hello";
-  void serialize_into(otoml::value& toml) const
+  void serialize_into(json::value& json) const
   {
-    toml = i;
+    json = i;
   }
 
-  void deserialize_from(const otoml::value& toml)
+  void deserialize_from(const json::value& json)
   {
-    i = toml.as_integer();
+    i = json.get<int>();
   }
 
   DECL_VISIT(str);
 };
 
 TEST_CASE ("serialization") {
-  static_assert(otoml::ATomlSerializable<int>);
-  static_assert(otoml::ATomlSerializable<std::string>);
-  static_assert(otoml::ATomlSerializable<std::string_view>);
+  static_assert(json::AJsonSerializable<int>);
+  static_assert(json::AJsonSerializable<std::string>);
+  static_assert(json::AJsonSerializable<std::string_view>);
 
   static_assert(util::ASerializable<int>);
   static_assert(util::ASerializable<std::string>);
   static_assert(util::ASerializable<std::string_view>);
 
-  REQUIRE(util::serialize(5) == otoml::value(otoml::integer(5)));
-  REQUIRE(util::deserialize<int>(otoml::integer(5)) == 5);
+  REQUIRE(util::serialize(5) == json::value(5));
+  REQUIRE(util::deserialize<int>(json::value(5)) == 5);
 
   SECTION ("Visitables") {
     static_assert(util::ASerializable<TestObj>);
     SECTION ("serialize") {
       TestObj obj;
-      auto toml = util::serialize(obj);
-      REQUIRE(toml.as_table() == otoml::table{
-                                   {"i", 1},
-                                   {
-                                     "nested",
-                                     otoml::table{{"j", 2}},
-                                   },
-                                 });
+      auto json = util::serialize(obj);
+      REQUIRE(json == json::object{
+                        {"i", 1},
+                        {"nested",
+                         {
+                           {"j", 2},
+                         }},
+                      });
     }
     SECTION ("deserialize") {
-      auto toml = otoml::table{
+      auto json = json::object{
         {"i", 10},
         {
           "nested",
-          otoml::table{{"j", 20}},
+          json::object{{"j", 20}},
         },
       };
-      auto obj = util::deserialize<TestObj>(toml);
+      auto obj = util::deserialize<TestObj>(json);
       REQUIRE(obj.i == 10);
       REQUIRE(obj.nested.j == 20);
     }
 
-    SECTION ("serialize preserving comments") {
-      auto toml = otoml::from_str(R"(
-i = 10
-[nested]
-# comment
-j = 20
-)");
-      REQUIRE(toml.as_table()["nested"]["j"].comments().size() == 1);
-      TestObj obj;
-      util::serialize_into(toml, obj);
-      REQUIRE(toml.as_table()["nested"]["j"].comments().size() == 1);
+    SECTION ("direct member functions") {
+      static_assert(util::ASerializable<CustomSer>);
+      CustomSer obj = {10};
+      REQUIRE(util::serialize(obj) == json::value(10));
+      util::deserialize_from(json::value(100), obj);
+      REQUIRE(obj.i == 100);
     }
-  }
-
-  SECTION ("direct member functions") {
-    static_assert(util::ASerializable<CustomSer>);
-    CustomSer obj = {10};
-    REQUIRE(util::serialize(obj).as_integer() == otoml::integer(10));
-    util::deserialize_from(otoml::integer(100), obj);
-    REQUIRE(obj.i == 100);
   }
 }

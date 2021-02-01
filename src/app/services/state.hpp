@@ -31,11 +31,8 @@ namespace otto::services {
 
     void write_to_file()
     {
-      util::serialize_into(toml_, *this);
-      std::ofstream file;
-      file.open(file_path_);
-      file << toml_;
-      file.close();
+      util::serialize_into(json_, *this);
+      json::write_to_file(json_, file_path_);
     }
 
     void read_from_file()
@@ -44,8 +41,8 @@ namespace otto::services {
         LOGW("State file {} not found", file_path_);
         return;
       }
-      toml_ = toml::parse(file_path_);
-      util::deserialize_from(toml_, *this);
+      json_ = json::parse_file(file_path_);
+      util::deserialize_from(json_, *this);
     }
 
     void visit(util::AVisitorOf<util::DynSerializable> auto&& visitor)
@@ -59,7 +56,7 @@ namespace otto::services {
 
   private:
     boost::container::flat_map<std::string, util::DynSerializable> serializers_;
-    toml::value toml_;
+    json::value json_;
     std::filesystem::path file_path_;
   };
 

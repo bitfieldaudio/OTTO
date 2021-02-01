@@ -9,7 +9,7 @@ using namespace otto;
 TEST_CASE ("StateManager") {
   int i1 = 1;
   int i2 = 2;
-  auto path = test::temp_file("statemanager.toml");
+  auto path = test::temp_file("statemanager.json");
   services::StateManager stateman{path};
   stateman.add("Test", util::visitable([&](auto&& visit) {
                  visit("i1", i1);
@@ -25,24 +25,23 @@ TEST_CASE ("StateManager") {
   }
 
   SECTION ("Ignore missing keys") {
-    using namespace otto::toml::literals;
-    const auto input = R"(
-[Test]
-i1 = 10
-    )"_toml;
+    const auto input = json::object{
+      {"Test",
+       {
+         {"i1", 10},
+       }},
+    };
     util::deserialize_from(input, stateman);
     REQUIRE(i1 == 10);
   }
 
   SECTION ("Preserve unused options") {
     std::ofstream fs;
-    fs.open(path);
-    fs << otto::toml::value{{"unknown", 1234}};
-    fs.close();
+    json::write_to_file(json::object{{"unknown", 1234}}, path);
     stateman.read_from_file();
     stateman.write_to_file();
-    auto val = otto::toml::parse(path);
-    REQUIRE(val["unknown"] == otto::toml::value(1234));
-    REQUIRE(val["Test"]["i1"] == otto::toml::value(1));
+    auto val = json::parse_file(path);
+    REQUIRE(val["unknown"] == json::value(1234));
+    REQUIRE(val["Test"]["i1"] == json::value(1));
   }
 }

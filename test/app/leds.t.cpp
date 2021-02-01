@@ -8,10 +8,10 @@ using namespace otto;
 
 TEST_CASE ("LEDColor") {
   SECTION ("Serialization") {
-    REQUIRE(util::serialize(LEDColor{0, 0, 0}).as_string() == "#000000");
-    REQUIRE(util::serialize(LEDColor{0, 0, 1}).as_string() == "#000001");
-    REQUIRE(util::serialize(LEDColor{0xFF, 0x89, 0x12}).as_string() == "#FF8912");
-    REQUIRE(util::serialize(LEDColor{0xFF, 0xFF, 0xFF}).as_string() == "#FFFFFF");
+    REQUIRE(util::serialize(LEDColor{0, 0, 0}) == "#000000");
+    REQUIRE(util::serialize(LEDColor{0, 0, 1}) == "#000001");
+    REQUIRE(util::serialize(LEDColor{0xFF, 0x89, 0x12}) == "#FF8912");
+    REQUIRE(util::serialize(LEDColor{0xFF, 0xFF, 0xFF}) == "#FFFFFF");
   }
   SECTION ("Deserialization") {
     REQUIRE(util::deserialize<LEDColor>("#000000") == LEDColor{0, 0, 0});

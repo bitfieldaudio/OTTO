@@ -60,21 +60,21 @@ namespace otto::itc {
       set_producer(&p);
     }
 
-    void serialize_into(toml::value& toml) const final
+    void serialize_into(json::value& json) const final
     {
       if constexpr (util::ASerializable<State>) {
         // TODO Access a copy of the state in another way
         if (producer_ == nullptr) return;
-        util::serialize_into(toml, producer_->state());
+        util::serialize_into(json, producer_->state());
       }
     }
 
-    void deserialize_from(const toml::value& toml) final
+    void deserialize_from(const json::value& json) final
     {
       if constexpr (util::ASerializable<State>) {
         // TODO Access a copy of the state in another way
         if (producer_ == nullptr) return;
-        util::deserialize_from(toml, producer_->state());
+        util::deserialize_from(json, producer_->state());
         producer_->commit();
       }
     }
@@ -133,26 +133,25 @@ namespace otto::itc {
       return *found->second;
     }
 
-    void serialize_into(toml::value& toml) const final
+    void serialize_into(json::value& json) const final
     {
       using namespace std::literals;
-      toml::ensure_table(toml);
       for (const auto& [k, v] : nested_) {
-        util::serialize_into(toml[k], *v);
+        util::serialize_into(json[k], *v);
       }
       for (const auto& [k, v] : channels_) {
-        util::serialize_into(toml["type:"s + k.c_str()], *v);
+        util::serialize_into(json["type:"s + k.c_str()], *v);
       }
     }
 
-    void deserialize_from(const toml::value& toml) final
+    void deserialize_from(const json::value& json) final
     {
       using namespace std::literals;
       for (const auto& [k, v] : nested_) {
-        util::deserialize_from(toml::find(toml, k), *v);
+        util::deserialize_from_member(json, k, *v);
       }
       for (const auto& [k, v] : channels_) {
-        util::deserialize_from(toml::find(toml, "type:"s + k.c_str()), *v);
+        util::deserialize_from_member(json, "type:"s + k.c_str(), *v);
       }
     }
 

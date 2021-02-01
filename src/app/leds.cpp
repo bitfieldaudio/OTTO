@@ -11,14 +11,14 @@ namespace otto {
     return os << fmt::format("#{:02X}{:02X}{:02X}", lc.r, lc.g, lc.b);
   }
 
-  void LEDColor::serialize_into(toml::value& toml) const
+  void LEDColor::serialize_into(json::value& json) const
   {
-    toml = fmt::format("#{:02X}{:02X}{:02X}", r, g, b);
+    json = fmt::format("#{:02X}{:02X}{:02X}", r, g, b);
   }
 
-  void LEDColor::deserialize_from(const toml::value& toml)
+  void LEDColor::deserialize_from(const json::value& json)
   {
-    auto str = std::string(toml.as_string());
+    auto str = std::string(json);
     if (str.size() != 7) {
       throw util::exception("Expected string of length 7 when deserializing LEDColor. Got string '{}'", str);
     }

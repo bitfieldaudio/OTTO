@@ -36,7 +36,7 @@ int main(int argc, char* argv[])
                        Audio::make(),                 //
                        Graphics::make()               //
   );
-  StateManager stateman("data/state.toml");
+  StateManager stateman("data/state.json");
 
   itc::ChannelGroup chan;
   auto eng = engines::ottofm::factory.make_all(chan);

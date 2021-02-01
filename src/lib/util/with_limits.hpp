@@ -114,11 +114,11 @@ namespace otto::util {
       return static_cast<float>(value_ - min) / static_cast<float>(max - min);
     }
 
-    void serialize_into(toml::value& val) const
+    void serialize_into(json::value& val) const
     {
       util::serialize_into(val, value_);
     }
-    void deserialize_from(const toml::value& val)
+    void deserialize_from(const json::value& val)
     {
       util::deserialize_from(val, value_);
     }
@@ -212,19 +212,18 @@ namespace otto::util {
       return value_;
     }
 
-    void serialize_into(toml::value& val) const
+    void serialize_into(json::value& val) const
     {
-      toml::ensure_table(val);
       util::serialize_into(val["value"], value_);
       util::serialize_into(val["min"], min_);
       util::serialize_into(val["max"], max_);
     }
 
-    void deserialize_from(const toml::value& val)
+    void deserialize_from(const json::value& val)
     {
-      util::deserialize_from(toml::find(val, "value"), value_);
-      util::deserialize_from(toml::find(val, "min"), min_);
-      util::deserialize_from(toml::find(val, "max"), max_);
+      util::deserialize_from(val["value"], value_);
+      util::deserialize_from(val["min"], min_);
+      util::deserialize_from(val["max"], max_);
     }
 
   private:
@@ -317,12 +316,12 @@ namespace otto::util {
       return index_;
     }
 
-    void serialize_into(toml::value& val) const
+    void serialize_into(json::value& val) const
     {
       util::serialize_into(val, operator Enum());
     }
 
-    void deserialize_from(const toml::value& val)
+    void deserialize_from(const json::value& val)
     {
       Enum e = operator Enum();
       util::deserialize_from(val, e);
