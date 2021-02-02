@@ -87,6 +87,14 @@ TEST_CASE ("NavKeyMap") {
     REQUIRE(mask == KeySet({Key::arp, Key::synth}));
   }
 
+  SECTION ("serialization") {
+    nav.navigate_to(synth);
+    auto json = util::serialize(nkm);
+    nav.navigate_to(arp);
+    util::deserialize_from(json, nkm);
+    REQUIRE(nav.current_screen() == synth);
+  }
+
   /*
    * Can be implemented if deemed necessary, it probably depends on the timeout
   SECTION ("Momentary navigation when receiving other presses while pressed") {

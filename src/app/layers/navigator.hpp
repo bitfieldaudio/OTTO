@@ -50,7 +50,7 @@ namespace otto {
   ///
   /// TODO: Consider splitting momentary detection out into its own component
   /// if it becomes useful in other places
-  struct NavKeyMap final : IInputLayer, IScreen {
+  struct NavKeyMap final : IInputLayer, IScreen, util::ISerializable {
     struct Conf : Config<Conf> {
       static constexpr auto name = "Navigation Keys";
       chrono::duration peek_timeout = 500ms;
@@ -79,6 +79,23 @@ namespace otto {
 
     [[nodiscard]] KeySet key_mask() const noexcept override;
     [[nodiscard]] LedSet led_mask() const noexcept override;
+
+    void serialize_into(json::value& json) const override
+    {
+      // TODO: Do this better
+      auto cur = nav_->current_screen();
+      for (auto&& [k, v] : binds_) {
+        if (v == cur) return util::serialize_into(json, k);
+      }
+    }
+
+    void deserialize_from(const json::value& json) override
+    {
+      auto key = util::deserialize<Key>(json);
+      auto found = binds_.find(key);
+      if (found == binds_.end()) return;
+      nav().navigate_to(found->second);
+    }
 
   private:
     Conf::Handle conf;

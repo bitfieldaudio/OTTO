@@ -2,4 +2,8 @@
 
 #include "app/input.hpp"
 
-namespace otto {} // namespace otto
+namespace otto {
+  struct ILogic {
+    virtual ~ILogic() = default;
+  };
+} // namespace otto

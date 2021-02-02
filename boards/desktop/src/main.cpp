@@ -57,6 +57,7 @@ int main(int argc, char* argv[])
   nav_km.bind_nav_key(Key::synth, eng.main_screen);
   nav_km.bind_nav_key(Key::envelope, eng.mod_screen);
   nav_km.bind_nav_key(Key::voices, voices_screen);
+  stateman.add("Navigation", nav_km);
 
   RtMidiDriver rt_midi_driver;
 

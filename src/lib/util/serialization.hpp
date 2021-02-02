@@ -20,6 +20,12 @@ namespace otto::util {
   /// static void serialize_into(json::value& json, const T& value);
   /// static void deserialize_from(const json::value& json, T& value);
   /// ```
+  /// There is a specialization for having these as member functions as well,
+  /// so you can do the following:
+  /// ```cpp
+  /// void serialize_into(json::value& json) const;
+  /// void deserialize_from(const json::value& json);
+  /// ```
   template<typename T, unsigned order = 5>
   struct serialize_impl;
 

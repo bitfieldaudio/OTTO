@@ -5,6 +5,7 @@
 #include "lib/util/with_limits.hpp"
 
 #include "lib/audio.hpp"
+#include "lib/engine.hpp"
 #include "lib/graphics.hpp"
 #include "lib/midi.hpp"
 
@@ -15,9 +16,6 @@
 using namespace otto;
 
 namespace otto::engines::ottofm {
-  struct ILogic {
-    virtual ~ILogic() = default;
-  };
 
   struct ISynthAudio : IAudioProcessor<util::audio_buffer()> {
     virtual midi::IMidiHandler& midi_handler() noexcept = 0;

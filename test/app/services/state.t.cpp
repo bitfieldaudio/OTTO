@@ -35,13 +35,23 @@ TEST_CASE ("StateManager") {
     REQUIRE(i1 == 10);
   }
 
-  SECTION ("Preserve unused options") {
+  // SECTION ("Preserve unused options") {
+  //   std::ofstream fs;
+  //   json::write_to_file(json::object{{"unknown", 1234}}, path);
+  //   stateman.read_from_file();
+  //   stateman.write_to_file();
+  //   auto val = json::parse_file(path);
+  //   REQUIRE(val["unknown"] == json::value(1234));
+  //   REQUIRE(val["Test"]["i1"] == json::value(1));
+  // }
+
+  SECTION ("Do not preserve unused options") {
     std::ofstream fs;
     json::write_to_file(json::object{{"unknown", 1234}}, path);
     stateman.read_from_file();
     stateman.write_to_file();
     auto val = json::parse_file(path);
-    REQUIRE(val["unknown"] == json::value(1234));
+    REQUIRE(val.contains("unknown") == false);
     REQUIRE(val["Test"]["i1"] == json::value(1));
   }
 }

@@ -8,6 +8,7 @@
 #include "lib/util/with_limits.hpp"
 
 #include "lib/dsp/SegExpBypass.hpp"
+#include "lib/engine.hpp"
 #include "lib/graphics.hpp"
 #include "lib/midi.hpp"
 #include "lib/voices/voice_state.hpp"
@@ -361,10 +362,6 @@ namespace otto::voices {
       voice_alloc = {std::in_place_index_t<0>(), *this};
 
     Voice* last_triggered_voice_ = &voices_[0];
-  };
-
-  struct ILogic {
-    virtual ~ILogic() = default;
   };
 
   std::unique_ptr<ILogic> make_voices_logic(itc::ChannelGroup&);

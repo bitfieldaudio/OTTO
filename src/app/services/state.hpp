@@ -31,8 +31,7 @@ namespace otto::services {
 
     void write_to_file()
     {
-      util::serialize_into(json_, *this);
-      json::write_to_file(json_, file_path_);
+      json::write_to_file(util::serialize(*this), file_path_);
     }
 
     void read_from_file()
@@ -41,8 +40,7 @@ namespace otto::services {
         LOGW("State file {} not found", file_path_);
         return;
       }
-      json_ = json::parse_file(file_path_);
-      util::deserialize_from(json_, *this);
+      util::deserialize_from(json::parse_file(file_path_), *this);
     }
 
     void visit(util::AVisitorOf<util::DynSerializable> auto&& visitor)
@@ -56,7 +54,6 @@ namespace otto::services {
 
   private:
     boost::container::flat_map<std::string, util::DynSerializable> serializers_;
-    json::value json_;
     std::filesystem::path file_path_;
   };
 

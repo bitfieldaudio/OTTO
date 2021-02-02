@@ -6,12 +6,8 @@ namespace otto::json {
 
   value parse_file(const std::filesystem::path& path)
   {
-    std::ifstream f;
-    std::string s;
-    f.open(path);
-    f >> s;
-    f.close();
-    return value::parse(s, nullptr, true, true);
+    std::ifstream f(path);
+    return value::parse(f, nullptr, true, true);
   }
 
   void write_to_file(const value& v, const std::filesystem::path& path)
