@@ -49,7 +49,7 @@ namespace otto::engines::ottofm {
   /// The state returned from the audio
   struct AudioState {
     std::array<float, 4> activity = {0, 0, 0, 0};
-    std::array<int, 4> stage = {0, 0, 0, 0};
+    std::array<float, 4> stage = {0, 0, 0, 0};
   };
 
   /// For defining frequency ratios

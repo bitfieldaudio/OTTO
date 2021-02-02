@@ -17,16 +17,22 @@ namespace otto::engines::ottofm {
     const float sh = height * s;
     const float rw = max_width * r;
 
-    const float arc_size = 0.2 * expanded + 0.5;
-    const float attack_arc_size = 0.5 - 0.5 * expanded;
+    const float arc_size = 0.2f * expanded + 0.5f;
+    const float attack_arc_size = 0.5f - 0.5f * expanded;
+
+    const float a_active = std::clamp(1 - active_segment, 0.f, 1.f);
+    const float d_active = active_segment < 1 ? 0 : std::clamp(1 - (active_segment - 1), 0.f, 1.f);
+    const float s_active = active_segment < 2 ? 0 : std::clamp(1 - (active_segment - 2), 0.f, 1.f);
+    const float r_active = active_segment < 3 ? 0 : std::clamp(1 - (active_segment - 3), 0.f, 1.f);
 
     SkPath p;
     p.moveTo(0, height);
     p.quadTo(aw * attack_arc_size, height * arc_size, aw, 0); // curve
     p.lineTo(aw, height);
     p.close();
-    ctx.drawPath(p, paints::stroke_and_fill(colors::blue.mix(colors::black, static_cast<float>(!active) * 0.7f)
-                                              .mix(colors::white, static_cast<float>(active_segment == 0) * 0.5f)));
+    ctx.drawPath(
+      p, paints::stroke_and_fill(
+           colors::blue.mix(colors::black, static_cast<float>(!active) * 0.7f).mix(colors::white, a_active * 0.5f)));
 
     p.reset();
 
@@ -35,8 +41,9 @@ namespace otto::engines::ottofm {
     p.quadTo(aw + spacing + dw * (1 - arc_size), (height - sh) * arc_size, aw + spacing + dw, height - sh); // curve
     p.lineTo(aw + spacing + dw, height);
     p.close();
-    ctx.drawPath(p, paints::stroke_and_fill(colors::green.mix(colors::black, static_cast<float>(!active) * 0.8f)
-                                              .mix(colors::white, static_cast<float>(active_segment == 1) * 0.5f)));
+    ctx.drawPath(
+      p, paints::stroke_and_fill(
+           colors::green.mix(colors::black, static_cast<float>(!active) * 0.8f).mix(colors::white, d_active * 0.5f)));
 
     p.reset();
 
@@ -45,8 +52,9 @@ namespace otto::engines::ottofm {
     p.lineTo(width - spacing - rw, height);
     p.lineTo(aw + spacing + dw + spacing, height);
     p.close();
-    ctx.drawPath(p, paints::stroke_and_fill(colors::yellow.mix(colors::black, static_cast<float>(!active) * 0.8f)
-                                              .mix(colors::white, static_cast<float>(active_segment == 3) * 0.5f)));
+    ctx.drawPath(
+      p, paints::stroke_and_fill(
+           colors::yellow.mix(colors::black, static_cast<float>(!active) * 0.8f).mix(colors::white, s_active * 0.5f)));
 
     p.reset();
 
@@ -54,8 +62,9 @@ namespace otto::engines::ottofm {
     p.lineTo(width - rw, height - sh);
     p.quadTo(width - rw * arc_size, height - sh * (1 - arc_size), width, height);
     p.close();
-    ctx.drawPath(p, paints::stroke_and_fill(colors::red.mix(colors::black, static_cast<float>(!active) * 0.8f)
-                                              .mix(colors::white, static_cast<float>(active_segment == 2) * 0.5f)));
+    ctx.drawPath(
+      p, paints::stroke_and_fill(
+           colors::red.mix(colors::black, static_cast<float>(!active) * 0.8f).mix(colors::white, r_active * 0.5f)));
   }
 
   void Operators::do_draw(skia::Canvas& ctx)

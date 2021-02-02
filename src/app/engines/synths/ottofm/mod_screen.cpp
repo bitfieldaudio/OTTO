@@ -161,6 +161,8 @@ namespace otto::engines::ottofm {
       for (auto& env : envelopes) env.on_state_change(s);
     }
 
+    void on_state_change(const AudioState&) noexcept override{};
+
     void draw(skia::Canvas& ctx) noexcept override
     {
       ops.draw(ctx);
@@ -180,7 +182,7 @@ namespace otto::engines::ottofm {
         graphic.bounding_box.move_to({x_start, upper_y});
         graphic.bounding_box.resize({x_size, env_size});
         graphic.expanded = env.size;
-        graphic.active_segment = Consumer<AudioState>::state().stage[env.index];
+        graphic.active_segment = state<AudioState>().stage[env.index];
         graphic.draw(ctx);
         // If knobs are being turned, show the pop-up
         if (env.active) {

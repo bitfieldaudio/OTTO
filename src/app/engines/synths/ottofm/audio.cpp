@@ -39,11 +39,13 @@ namespace otto::engines::ottofm {
     {
       return env_.value() * state.level;
     }
-    [[nodiscard]] int get_envelope_stage() const noexcept
+    [[nodiscard]] float get_envelope_stage() const noexcept
     {
       if (env_.done()) return 4;
-      if (env_.sustained()) return 3;
-      return env_.stage();
+      if (env_.sustained()) return 2;
+      auto stage = env_.stage();
+      float base = stage == 2 ? 3.f : float(stage);
+      return base + float(env_.position()) / float(env_.lengths()[stage] * env_.spu());
     }
 
     /// Reset envelope
