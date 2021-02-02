@@ -7,9 +7,10 @@
 namespace otto::json {
 
   using value = nlohmann::json;
-  using array = nlohmann::json::array_t;
-  using object = nlohmann::json::object_t;
-  using string = nlohmann::json::string_t;
+  using array = value::array_t;
+  using object = value::object_t;
+  using string = value::string_t;
+  using type = value::value_t;
 
   const value null = nullptr;
 

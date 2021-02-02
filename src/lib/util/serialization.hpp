@@ -140,13 +140,15 @@ namespace otto::util {
 
   // Specializations
 
+  // Default implementation: use the next one in the chain
   template<typename T, unsigned Order>
   struct serialize_impl : serialize_impl<T, Order - 1> {};
 
+  // No implementation at level 0
   template<typename T>
   struct serialize_impl<T, 0> {};
 
-  // Using json11
+  // Fallback to json library
   template<json::AJsonSerializable T>
   struct serialize_impl<T, 0> {
     static void serialize_into(json::value& json, const T& value)
@@ -160,11 +162,13 @@ namespace otto::util {
   };
 
   template<ASerializable T, typename A>
-  struct serialize_impl<std::vector<T, A>, 1> {
+  requires std::is_default_constructible_v<T> //
+    struct serialize_impl<std::vector<T, A>, 1> {
     static void serialize_into(json::value& json, const std::vector<T, A>& r)
     {
+      if (json == nullptr) json = json::array();
+      json.get_ref<json::array&>().resize(r.size());
       for (int i = 0; i < r.size(); i++) {
-        if (i == json.size()) json.emplace_back(nullptr);
         util::serialize_into(json[i], r[i]);
       }
     }
@@ -181,6 +185,7 @@ namespace otto::util {
   struct serialize_impl<std::array<T, N>, 1> {
     static void serialize_into(json::value& json, const std::array<T, N>& r)
     {
+      if (json == nullptr) json = json::array();
       json.get_ref<json::array&>().resize(N);
       for (auto&& [src, dst] : util::zip(r, json)) {
         util::serialize_into(dst, src);
@@ -188,8 +193,12 @@ namespace otto::util {
     }
     static void deserialize_from(const json::value& json, std::array<T, N>& r)
     {
+      json.is_discarded();
+      if (json.type() != json::type::array) {
+        throw std::invalid_argument(fmt::format("Expected array, got {}", json.type_name()));
+      }
       if (json.size() != N) {
-        throw std::invalid_argument(fmt::format("Expected array of size {}, got {}"));
+        throw std::invalid_argument(fmt::format("Expected array of size {}, got {}", N, json.size()));
       }
       for (auto&& [input, json] : util::zip(r, json)) {
         util::deserialize_from(json, input);
@@ -242,7 +251,7 @@ namespace otto::util {
     }
     static void deserialize_from(const json::value& json, E& value)
     {
-      auto opt = util::enum_cast<E>(json);
+      auto opt = util::enum_cast<E>(json.get<std::string_view>());
       if (!opt) {
         throw std::invalid_argument(fmt::format("Invalid name when deserializing enum: {}", json));
       }
@@ -259,7 +268,7 @@ namespace otto::util {
     }
     static void deserialize_from(const json::value& json, chrono::duration& value)
     {
-      chrono::duration(json.get<std::size_t>());
+      value = chrono::duration(json.get<std::size_t>());
     }
   };
 } // namespace otto::util

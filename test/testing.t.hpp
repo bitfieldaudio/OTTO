@@ -12,6 +12,7 @@
 
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_all.hpp>
 
 #include "lib/util/algorithm.hpp"
 #include "lib/util/name_of.hpp"
@@ -26,14 +27,7 @@ namespace fs = std::filesystem;
 using namespace Catch::literals;
 
 namespace otto::test {
-  inline const fs::path dir = fs::temp_directory_path() / "otto-tests";
-
-  inline fs::path temp_file(std::string_view name)
-  {
-    auto path = dir / name;
-    fs::remove_all(path);
-    return path;
-  }
+  fs::path temp_file(std::string_view name);
 
   inline void truncateFile(const fs::path& p)
   {

@@ -18,11 +18,30 @@ namespace Catch {
   CATCH_INTERNAL_STOP_WARNINGS_SUPPRESSION
 } // namespace Catch
 
+namespace {
+  fs::path dir; // NOLINT
+}
+
+namespace otto::test {
+  fs::path temp_file(std::string_view name)
+  {
+    auto path = dir / name;
+    fs::remove_all(path);
+    return path;
+  }
+} // namespace otto::test
+
+
 int main(int argc, char* argv[])
 {
   using namespace otto;
-  fs::remove_all(test::dir);
-  fs::create_directories(test::dir);
+  try {
+    dir = fs::temp_directory_path() / "otto-tests";
+  } catch (std::filesystem::filesystem_error& e) {
+    dir = "/tmp/otto-tests";
+  }
+  fs::remove_all(dir);
+  fs::create_directories(dir);
   logging::init();
 
   auto result = Catch::Session().run(argc, argv);
