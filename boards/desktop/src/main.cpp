@@ -61,7 +61,7 @@ int main(int argc, char* argv[])
 
   RtMidiDriver rt_midi_driver;
 
-  LedManager ledman;
+  LedManager ledman(app.service<Controller>().port());
   app.service<Graphics>().show([&](skia::Canvas& ctx) {
     ledman.process(layers);
     nav_km.nav().draw(ctx);

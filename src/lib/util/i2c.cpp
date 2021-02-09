@@ -10,6 +10,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "lib/util/utility.hpp"
+
 #include "lib/logging.hpp"
 
 namespace otto::util {
@@ -40,7 +42,7 @@ namespace otto::util {
     }
 
     // Make sure the driver supports plain I2C I/O:
-    int rc = ioctl(i2c_fd, I2C_FUNCS, &i2c_funcs);
+    int rc = ::ioctl(i2c_fd, I2C_FUNCS, &i2c_funcs);
     OTTO_ASSERT(i2c_funcs & I2C_FUNC_I2C);
     if (rc) return std::error_code{errno, std::generic_category()};
     return {};
@@ -59,14 +61,14 @@ namespace otto::util {
     ::i2c_msg iomsg = {
       .addr = address,
       .flags = 0,
-      .len = static_cast<std::uint16_t>(message.size()),
+      .len = util::narrow(message.size()),
       .buf = buffer.data(),
     };
     ::i2c_rdwr_ioctl_data msgset = {
       .msgs = &iomsg,
       .nmsgs = 1,
     };
-    auto res = ioctl(i2c_fd, I2C_RDWR, &msgset);
+    auto res = ::ioctl(i2c_fd, I2C_RDWR, &msgset);
     if (res < 0) return std::error_code{errno, std::generic_category()};
     return {};
   }
@@ -76,7 +78,7 @@ namespace otto::util {
     ::i2c_msg iomsg = {
       .addr = address,
       .flags = I2C_M_RD,
-      .len = static_cast<std::uint16_t>(buffer.size()),
+      .len = util::narrow(buffer.size()),
       .buf = buffer.data(),
     };
     ::i2c_rdwr_ioctl_data msgset = {
@@ -84,7 +86,7 @@ namespace otto::util {
       .nmsgs = 1,
     };
 
-    auto res = ioctl(i2c_fd, I2C_RDWR, &msgset);
+    auto res = ::ioctl(i2c_fd, I2C_RDWR, &msgset);
     if (res < 0) return std::error_code{errno, std::generic_category()};
     return {};
   }

@@ -30,8 +30,8 @@ namespace otto::skia {
   using Anchor = SkVector;
 
   struct Box {
-    Box(SkRect r) : top_left_{r.x(), r.y()}, s_{r.width(), r.height()} {}
-    Box(SkPoint p = {0, 0}, SkVector s = {0, 0}) : top_left_(p), s_(s){};
+    Box(SkRect r) noexcept : top_left_{r.x(), r.y()}, s_{r.width(), r.height()} {}
+    Box(SkPoint p = {0, 0}, SkVector s = {0, 0}) noexcept : top_left_(p), s_(s){};
 
     void move_to(SkPoint p, Anchor a = anchors::top_left)
     {

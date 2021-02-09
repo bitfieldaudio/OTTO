@@ -15,7 +15,6 @@ otto_option(USE_LIBCXX "Link towards libc++ instead of libstdc++. This is the de
 otto_option(ENABLE_ASAN "Enable the adress sanitizer on development builds" OFF)
 otto_option(ENABLE_UBSAN "Enable the undefined behaviour sanitizer on development builds" OFF)
 otto_option(ENABLE_LTO "Enable link time optimization on release builds. Only works on clang" OFF)
-otto_option(USE_SYSTEM_OCPPPP "OCPPPP Provided by system. Mainly used for yocto" OFF)
 
 include(cmake/CPM.cmake)
 set(CPM_USE_LOCAL_PACKAGES OFF)

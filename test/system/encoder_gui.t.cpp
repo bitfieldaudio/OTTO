@@ -21,12 +21,12 @@ TEST_CASE ("EncoderGUI", "[.interactive]") {
     void handle(KeyPress e) noexcept override
     {
       LOGI("Keypress {}", util::enum_name(e.key));
-      led_from(e.key).map([&](auto k) { controller->send_led_color(k, {0xFF, 0xFF, 0xFF}); });
+      // led_from(e.key).map([&](auto k) { controller->send_led_color(k, {0xFF, 0xFF, 0xFF}); });
     }
     void handle(KeyRelease e) noexcept override
     {
       LOGI("Keyrelease {}", util::enum_name(e.key));
-      led_from(e.key).map([&](auto k) { controller->send_led_color(k, {0x00, 0x00, 0x00}); });
+      // led_from(e.key).map([&](auto k) { controller->send_led_color(k, {0x00, 0x00, 0x00}); });
     }
     void handle(EncoderEvent e) noexcept override
     {

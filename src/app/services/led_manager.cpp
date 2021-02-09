@@ -1,40 +1,44 @@
 #include "led_manager.hpp"
 
 namespace otto::services {
+  using drivers::Command;
+  using drivers::Packet;
 
   void LedManager::process(ILedController& controller)
   {
     LEDColorSet res;
-    controller.leds(res);
+    util::enum_bitset<Led> changed;
     for (auto&& [l, col] : res) {
-      set(l, col, false);
+      changed[l] = col != colors[l];
+    }
+    colors = res;
+    send_colors(changed);
+  }
+
+  void LedManager::send_colors(const util::enum_bitset<Led>& do_update)
+  {
+    // Pack up to 4 LEDs in each packet
+    // TODO: Consider packing this even further by reducing color resolution
+    // to 6 bits per color.
+    int i = 0;
+    Packet pack = {Command::leds_buffer};
+    pack.data.fill(255);
+    for (auto&& [l, col] : colors) {
+      if (!do_update[l]) continue;
+      if (i == 4) {
+        send_(pack);
+        pack.data.fill(255);
+        i = 0;
+      }
+      pack.data[i * 4 + 0] = util::enum_integer(l);
+      pack.data[i * 4 + 1] = col.r;
+      pack.data[i * 4 + 2] = col.g;
+      pack.data[i * 4 + 3] = col.b;
+      i++;
+    }
+    if (i != 0) {
+      pack.cmd = Command::leds_commit;
+      send_(pack);
     }
   }
-
-  void LedManager::set(Led led, LEDColor color, bool force)
-  {
-    auto& ref = colors_[led];
-    if (!force && ref == color) return;
-    ref = color;
-    auto b = config_->brightness;
-    auto min = config_->min_color;
-    LEDColor adjcol = {
-      std::clamp(static_cast<std::uint8_t>(static_cast<float>(color.r) * b), min.r, std::uint8_t(0xFF)),
-      std::clamp(static_cast<std::uint8_t>(static_cast<float>(color.g) * b), min.g, std::uint8_t(0xFF)),
-      std::clamp(static_cast<std::uint8_t>(static_cast<float>(color.b) * b), min.b, std::uint8_t(0xFF)),
-    };
-    send(led, adjcol);
-  }
-
-  void LedManager::send(Led led, LEDColor color)
-  {
-    service<services::Controller>().send_led_color(led, color);
-  }
-
-  LedManager::LedManager()
-  {
-    for (auto l : util::enum_values<Led>()) {
-      set(l, config_->min_color, true);
-    }
-  };
 } // namespace otto::services

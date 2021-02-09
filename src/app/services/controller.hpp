@@ -15,7 +15,7 @@ namespace otto::services {
   ///
   /// Does the bulk of the work of {@ref Controller}, but is separated out
   /// to allow usage/testing of the individual methods
-  struct MCUCommunicator {
+  struct MCUCommunicator : RuntimeObserver {
     MCUCommunicator(util::smart_ptr<drivers::MCUPort>&& port);
 
     /// Handle received packet, and send events.
@@ -48,7 +48,11 @@ namespace otto::services {
     }
 
     void set_input_handler(IInputHandler& h);
-    void send_led_color(Led led, LEDColor c);
+
+    drivers::MCUPort& port() noexcept
+    {
+      return *com_.port_;
+    }
 
   private:
     [[no_unique_address]] core::ServiceAccessor<services::Runtime> runtime;

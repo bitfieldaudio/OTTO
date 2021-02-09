@@ -12,8 +12,8 @@
 namespace otto::drivers {
   enum struct Command : std::uint8_t {
     none = 0,
-    led_set = 1,
-    leds_clear = 2,
+    leds_buffer = 1,
+    leds_commit = 2,
     key_events = 3,
     encoder_events = 4,
     shutdown = 5,
@@ -30,6 +30,8 @@ namespace otto::drivers {
       std::ranges::copy(data, res.begin() + 1);
       return res;
     }
+
+    bool operator==(const Packet&) const noexcept = default;
   };
 
   struct MCUPort {

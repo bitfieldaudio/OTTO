@@ -7,6 +7,7 @@
 #include "lib/graphics.hpp"
 #include "lib/itc/itc.hpp"
 #include "lib/itc/reducer.hpp"
+#include "lib/voices/voice_manager.hpp"
 
 #include "app/application.hpp"
 #include "app/engines/synths/ottofm/ottofm.hpp"
@@ -19,6 +20,7 @@
 #include "app/services/led_manager.hpp"
 #include "app/services/logic_thread.hpp"
 #include "app/services/runtime.hpp"
+#include "app/services/state.hpp"
 #include "app/services/ui_manager.hpp"
 
 #include "board/midi_driver.hpp"
@@ -34,9 +36,14 @@ int main(int argc, char* argv[])
                        Audio::make(),                 //
                        Graphics::make()               //
   );
+  StateManager stateman("data/state.json");
 
   itc::ChannelGroup chan;
   auto eng = engines::ottofm::factory.make_all(chan);
+  stateman.add("EngineChannel", chan);
+
+  auto voices_logic = voices::make_voices_logic(chan);
+  auto voices_screen = voices::make_voices_screen(chan);
 
   app.service<Audio>().set_midi_handler(&eng.audio->midi_handler());
   app.service<Audio>().set_process_callback([&](Audio::CallbackData data) {
@@ -49,17 +56,21 @@ int main(int argc, char* argv[])
   auto nav_km = layers.make_layer<NavKeyMap>();
   nav_km.bind_nav_key(Key::synth, eng.main_screen);
   nav_km.bind_nav_key(Key::envelope, eng.mod_screen);
+  nav_km.bind_nav_key(Key::voices, voices_screen);
+  stateman.add("Navigation", nav_km);
 
   RtMidiDriver rt_midi_driver;
 
-  LedManager ledman;
+  LedManager ledman(app.service<Controller>().port());
   app.service<Graphics>().show([&](skia::Canvas& ctx) {
     ledman.process(layers);
     nav_km.nav().draw(ctx);
   });
   app.service<Controller>().set_input_handler(layers);
 
+  stateman.read_from_file();
   app.wait_for_stop();
   LOGI("Shutting down");
+  stateman.write_to_file();
   return 0;
 }

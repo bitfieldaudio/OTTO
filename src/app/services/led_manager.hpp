@@ -8,20 +8,18 @@
 
 namespace otto::services {
 
-  struct LedManager : core::ServiceAccessor<services::Controller> {
-    struct Config : otto::Config<Config> {
-      float brightness = 0.5f;
-      LEDColor min_color = {0x08, 0x08, 0x08};
-      DECL_VISIT(brightness, min_color);
-    };
+  struct LedManager {
+    using Sender = util::FuncInterface<&drivers::MCUPort::write>;
 
-    LedManager();
+    LedManager(Sender sender) : send_(std::move(sender)) {}
+
     void process(ILedController& controller);
-    void set(Led led, LEDColor color, bool force = false);
+
+    void send_colors(const util::enum_bitset<Led>& do_update = util::enum_bitset<Led>::make_with_all(true));
+
+    LEDColorSet colors;
 
   private:
-    void send(Led led, LEDColor);
-    Config::Handle config_;
-    LEDColorSet colors_;
+    Sender send_ = nullptr;
   };
 } // namespace otto::services

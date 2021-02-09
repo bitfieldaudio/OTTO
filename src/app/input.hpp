@@ -47,7 +47,7 @@ namespace otto {
     shift = 31,
     sends = 32,
     plus = 33,
-    routing = 34,
+    mixer = 34,
     minus = 35,
     fx1 = 36,
     fx2 = 37,
@@ -87,7 +87,7 @@ namespace otto {
                                       Key::red_enc_click};
 
     inline const KeySet func = {
-      Key::shift,        Key::sends,        Key::plus,         Key::routing,     Key::minus,        Key::fx1,
+      Key::shift,        Key::sends,        Key::plus,         Key::mixer,       Key::minus,        Key::fx1,
       Key::fx2,          Key::master,       Key::play,         Key::record,      Key::arp,          Key::slots,
       Key::twist1,       Key::twist2,       Key::looper,       Key::external,    Key::sampler,      Key::envelope,
       Key::voices,       Key::settings,     Key::sequencer,    Key::synth,       Key::unassigned_a, Key::unassigned_b,

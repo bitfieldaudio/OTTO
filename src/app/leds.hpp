@@ -39,7 +39,7 @@ namespace otto {
     shift = util::enum_integer(Key::shift),
     sends = util::enum_integer(Key::sends),
     plus = util::enum_integer(Key::plus),
-    routing = util::enum_integer(Key::routing),
+    mixer = util::enum_integer(Key::mixer),
     minus = util::enum_integer(Key::minus),
     fx1 = util::enum_integer(Key::fx1),
     fx2 = util::enum_integer(Key::fx2),
@@ -77,7 +77,7 @@ namespace otto {
     inline const LedSet piano = seq | channel;
 
     inline const LedSet func = {
-      Led::shift,        Led::sends,        Led::plus,         Led::routing,     Led::minus,        Led::fx1,
+      Led::shift,        Led::sends,        Led::plus,         Led::mixer,       Led::minus,        Led::fx1,
       Led::fx2,          Led::master,       Led::play,         Led::record,      Led::arp,          Led::slots,
       Led::twist1,       Led::twist2,       Led::looper,       Led::external,    Led::sampler,      Led::envelope,
       Led::voices,       Led::settings,     Led::sequencer,    Led::synth,       Led::unassigned_a, Led::unassigned_b,

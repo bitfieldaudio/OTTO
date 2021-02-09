@@ -54,12 +54,6 @@ namespace otto::services {
     com_.handler = std::make_unique<ExecutorWrapper>(logic_thread->executor(), &h);
   }
 
-  void Controller::send_led_color(Led led, LEDColor c)
-  {
-    std::unique_lock l(queue_mutex_);
-    queue_.push_back({Command::led_set, {util::enum_integer(led), c.r, c.g, c.b}});
-  }
-
   MCUCommunicator::MCUCommunicator(util::smart_ptr<MCUPort>&& port) : port_(std::move(port)) {}
 
   void MCUCommunicator::handle_packet(Packet p)
@@ -81,6 +75,7 @@ namespace otto::services {
         }
       } break;
       case Command::shutdown: {
+        runtime().request_stop();
       } break;
       default: break;
     }

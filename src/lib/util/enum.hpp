@@ -135,6 +135,11 @@ namespace otto::util {
       return data_.data();
     }
 
+    constexpr void fill(value_type v)
+    {
+      data_.fill(v);
+    }
+
   private:
     auto view()
     {
@@ -155,6 +160,17 @@ namespace otto::util {
     enum_bitset(std::initializer_list<Enum> init) noexcept
     {
       for (Enum e : init) set(e);
+    }
+
+    static enum_bitset make_with_all(bool v = true) noexcept
+    {
+      enum_bitset res;
+      if (v) {
+        res.set();
+      } else {
+        res.reset();
+      }
+      return res;
     }
 
     static std::size_t size() noexcept

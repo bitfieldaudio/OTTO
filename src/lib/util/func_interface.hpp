@@ -42,6 +42,7 @@ namespace otto::util {
     {}
     FuncInterface(Interface& i) : func_(std::bind_front(MemFunc, &i)) {}
     FuncInterface(Interface* i) : func_(std::bind_front(MemFunc, i)) {}
+    // NOLINTNEXTLINE
     FuncInterface(util::callable<Ret(Args...)> auto&& f) : func_(FWD(f)) {}
 
     Ret operator()(Args... a)

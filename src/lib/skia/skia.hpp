@@ -1,5 +1,7 @@
 #pragma once
 
+#include <filesystem>
+
 #include <SkCanvas.h>
 #include <SkFont.h>
 #include <SkPath.h>
@@ -66,6 +68,8 @@ namespace otto::skia {
 
   constexpr float width = 320;
   constexpr float height = 240;
+
+  inline const Box screen_box = {{0, 0}, {320, 240}};
 
   inline void translate(Canvas& ctx, Point p)
   {
@@ -191,52 +195,56 @@ namespace otto::paints {
 } // namespace otto::paints
 
 namespace otto::fonts {
+  namespace details {
+    inline sk_sp<SkTypeface> load_typeface(const std::filesystem::path& path)
+    {
+      auto tf = SkTypeface::MakeFromFile(path.c_str());
+      if (tf == nullptr) {
+        LOGF("Could not load font from file '{}'", path);
+      }
+      return tf;
+    }
+
+  }; // namespace details
+
   inline skia::Font black_italic(float size)
   {
-    static auto typeface = SkTypeface::MakeFromFile("./data/fonts/Roboto-BlackItalic.ttf");
-    OTTO_ASSERT(typeface != nullptr);
+    static auto typeface = details::load_typeface("./data/fonts/Roboto-BlackItalic.ttf");
     return skia::Font(typeface, size);
   }
   inline skia::Font black(float size)
   {
-    static auto typeface = SkTypeface::MakeFromFile("./data/fonts/Roboto-Black.ttf");
-    OTTO_ASSERT(typeface != nullptr);
+    static auto typeface = details::load_typeface("./data/fonts/Roboto-Black.ttf");
     return skia::Font(typeface, size);
   }
   inline skia::Font light_italic(float size)
   {
-    static auto typeface = SkTypeface::MakeFromFile("./data/fonts/Roboto-LightItalic.ttf");
-    OTTO_ASSERT(typeface != nullptr);
+    static auto typeface = details::load_typeface("./data/fonts/Roboto-LightItalic.ttf");
     return skia::Font(typeface, size);
   }
   inline skia::Font light(float size)
   {
-    static auto typeface = SkTypeface::MakeFromFile("./data/fonts/Roboto-Light.ttf");
-    OTTO_ASSERT(typeface != nullptr);
+    static auto typeface = details::load_typeface("./data/fonts/Roboto-Light.ttf");
     return skia::Font(typeface, size);
   }
   inline skia::Font medium_italic(float size)
   {
-    static auto typeface = SkTypeface::MakeFromFile("./data/fonts/Roboto-MediumItalic.ttf");
-    OTTO_ASSERT(typeface != nullptr);
+    static auto typeface = details::load_typeface("./data/fonts/Roboto-MediumItalic.ttf");
     return skia::Font(typeface, size);
   }
   inline skia::Font medium(float size)
   {
-    static auto typeface = SkTypeface::MakeFromFile("./data/fonts/Roboto-Medium.ttf");
-    OTTO_ASSERT(typeface != nullptr);
+    static auto typeface = details::load_typeface("./data/fonts/Roboto-Medium.ttf");
     return skia::Font(typeface, size);
   }
   inline skia::Font regular_italic(float size)
   {
-    static auto typeface = SkTypeface::MakeFromFile("./data/fonts/Roboto-Italic.ttf");
-    OTTO_ASSERT(typeface != nullptr);
+    static auto typeface = details::load_typeface("./data/fonts/Roboto-Italic.ttf");
     return skia::Font(typeface, size);
   }
   inline skia::Font regular(float size)
   {
-    static auto typeface = SkTypeface::MakeFromFile("./data/fonts/Roboto-Regular.ttf");
-    OTTO_ASSERT(typeface != nullptr);
+    static auto typeface = details::load_typeface("./data/fonts/Roboto-Regular.ttf");
     return skia::Font(typeface, size);
   }
 } // namespace otto::fonts

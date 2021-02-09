@@ -47,6 +47,10 @@ namespace otto::services {
 
   struct RuntimeObserver {
   protected:
-    static Runtime& runtime();
+    [[no_unique_address]] core::ServiceAccessor<Runtime> runtime_;
+    [[nodiscard]] Runtime& runtime() const noexcept
+    {
+      return runtime_.service<Runtime>();
+    }
   };
 } // namespace otto::services
