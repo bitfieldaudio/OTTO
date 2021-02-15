@@ -15,18 +15,22 @@ using namespace otto;
 using namespace otto::services;
 
 TEST_CASE ("EncoderGUI", "[.interactive]") {
-  auto app = start_app(ConfigManager::make_default(), LogicThread::make(), Controller::make(), Graphics::make());
+  RuntimeController rt;
+  auto confman = ConfigManager::make_default();
+  LogicThread logic_thread;
+  Controller controller(rt, confman);
+  Graphics graphics(rt);
 
   struct Handler final : InputHandler {
     void handle(KeyPress e) noexcept override
     {
       LOGI("Keypress {}", util::enum_name(e.key));
-      // led_from(e.key).map([&](auto k) { controller->send_led_color(k, {0xFF, 0xFF, 0xFF}); });
+      // TODO: led_from(e.key).map([&](auto k) { controller->send_led_color(k, {0xFF, 0xFF, 0xFF}); });
     }
     void handle(KeyRelease e) noexcept override
     {
       LOGI("Keyrelease {}", util::enum_name(e.key));
-      // led_from(e.key).map([&](auto k) { controller->send_led_color(k, {0x00, 0x00, 0x00}); });
+      // TODO: led_from(e.key).map([&](auto k) { controller->send_led_color(k, {0x00, 0x00, 0x00}); });
     }
     void handle(EncoderEvent e) noexcept override
     {
@@ -41,19 +45,18 @@ TEST_CASE ("EncoderGUI", "[.interactive]") {
       }();
       n += e.steps;
     }
-    [[no_unique_address]] core::ServiceAccessor<Controller> controller;
     SkColor color = SK_ColorWHITE;
     util::StaticallyBounded<int, 0, 160> n = 80;
   } handler;
 
-  app.service<Controller>().set_input_handler(handler);
-  app.service<Graphics>().show([&](SkCanvas& ctx) {
+  controller.set_input_handler(handler);
+  graphics.show([&](SkCanvas& ctx) {
     SkPaint paint;
     paint.setAntiAlias(true);
     paint.setStyle(SkPaint::kFill_Style);
     paint.setColor(handler.color);
     ctx.drawCircle({160, 120}, handler.n, paint);
-    if (handler.n == 0) app.service<Runtime>().request_stop();
+    if (handler.n == 0) rt.request_stop();
   });
-  app.wait_for_stop();
+  rt.wait_for_stop();
 }

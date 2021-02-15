@@ -181,7 +181,7 @@ else()
   CPMAddPackage(
     NAME skia
     GIT_REPOSITORY https://skia.googlesource.com/skia.git
-    GIT_TAG c8ae494401bc38b5d0d9c99c962d207f4668ad63
+    GIT_TAG 1ae440a3cb3c48d769d8d5fe7c95fbba818feed2
     DOWNLOAD_ONLY YES
   )
 
@@ -211,8 +211,6 @@ else()
   skia_enable_skparagraph=true \
   skia_enable_skrive=false \
   skia_enable_skshaper=false \
-  skia_enable_sksl_interpreter=false \
-  skia_enable_skvm_jit=false \
   skia_enable_spirv_validation=false \
   skia_enable_tools=false \
   skia_enable_vulkan_debug_layers=false \
@@ -258,5 +256,10 @@ else()
     target_include_directories(skia PUBLIC SYSTEM "${skia_SOURCE_DIR}/")
     target_include_directories(skia PUBLIC SYSTEM "${skia_SOURCE_DIR}/include/core")
     target_include_directories(skia PUBLIC SYSTEM "${skia_SOURCE_DIR}/include/gpu")
+    # Make definitions public
+    # TODO: Maybe filter some of these out?
+    get_target_property(SKIA_COMP_DEFS skia COMPILE_DEFINITIONS)
+    list(REMOVE_ITEM SKIA_COMP_DEFS "SKIA_IMPLEMENTATION=1")
+    set_target_properties(skia PROPERTIES INTERFACE_COMPILE_DEFINITIONS "${SKIA_COMP_DEFS}")
   endif()
 endif()

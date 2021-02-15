@@ -2,6 +2,8 @@
 
 #include "app/services/state.hpp"
 
+#include "app/application.hpp"
+
 #include "stubs/state.hpp"
 
 using namespace otto;
@@ -54,4 +56,35 @@ TEST_CASE ("StateManager") {
     REQUIRE(val.contains("unknown") == false);
     REQUIRE(val["Test"]["i1"] == json::value(1));
   }
+}
+struct StubSer {
+  ~StubSer()
+  {
+    ++destructed;
+  }
+  int i = 1;
+  int j = 2;
+  DECL_VISIT(i, j);
+
+  inline static int destructed = 0;
+};
+
+TEST_CASE ("StateManager destruction 2") {
+  using namespace services;
+  {
+    RuntimeController rt;
+    StubSer st;
+
+    auto path = test::temp_file("statemanager.json");
+    {
+      StateManager stateman(path);
+      stateman.add("Test", std::ref(st));
+
+      stateman.read_from_file();
+      rt.wait_for_stop(1s);
+      stateman.write_to_file();
+    }
+    REQUIRE(StubSer::destructed == 0);
+  }
+  REQUIRE(StubSer::destructed == 1);
 }

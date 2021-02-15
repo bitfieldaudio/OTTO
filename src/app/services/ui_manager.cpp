@@ -23,8 +23,8 @@ namespace otto::services {
   UIManager::UIManager()
     : input_handler_(std::make_unique<Handler>(*this)), drawable_(std::make_unique<Drawable>(*this))
   {
-    service<Controller>().set_input_handler(*input_handler_);
-    service<Graphics>().show(*drawable_);
+    // service<Controller>().set_input_handler(*input_handler_);
+    // service<Graphics>().show(*drawable_);
   }
 
   UIManager::~UIManager() = default;

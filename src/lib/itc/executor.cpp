@@ -1,5 +1,7 @@
 #include "executor.hpp"
 
+#include <yamc_semaphore.hpp>
+
 #include "lib/logging.hpp"
 
 // Disable debug logging in this file
@@ -8,6 +10,13 @@
 #define DLOGI(...)
 
 namespace otto::itc {
+
+  void IExecutor::sync() noexcept
+  {
+    auto sem = yamc::binary_semaphore(0);
+    execute([&sem] { sem.release(); });
+    sem.acquire();
+  }
 
   // QueueExecutor
 
@@ -118,5 +127,4 @@ namespace otto::itc {
       cond_.notify_all();
     }
   }
-
 } // namespace otto::itc

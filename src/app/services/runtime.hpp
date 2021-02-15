@@ -3,54 +3,46 @@
 #include <condition_variable>
 #include <mutex>
 
+#include "lib/util/type_traits.hpp"
 #include "lib/util/unix_signals.hpp"
 #include "lib/util/utility.hpp"
 
 #include "lib/chrono.hpp"
-#include "lib/core/service.hpp"
+#include "lib/logging.hpp"
 
 namespace otto::services {
 
+  /// Access the runtime of the application
+  struct Runtime {};
+
   /// Manages the runtime of the application
-  struct Runtime : core::Service<Runtime> {
+  struct RuntimeController : Runtime {
+    RuntimeController() noexcept //
+      : signal_waiter_(util::handle_signals({SIGINT}, [this](int sig) {
+          LOGI("Got SIGINT, stopping...");
+          request_stop();
+        }))
+    {}
+
+    ~RuntimeController() noexcept
+    {
+      request_stop();
+    }
+
     enum struct ExitCode { normal };
-    enum struct Stage {
-      initializing,
-      running,
-      stopping,
-    };
-
-    [[nodiscard]] Stage stage() const noexcept;
-
-    /// The loop variable of all main loops
-    ///
-    /// When this turns to false, all threads should stop
-    [[nodiscard]] bool should_run() const noexcept;
-
     void request_stop(ExitCode = ExitCode::normal) noexcept;
 
-    [[nodiscard]] bool wait_for_stage(Stage s, chrono::duration timeout = chrono::duration::zero()) noexcept;
-    void on_stage_change(std::function<bool(Stage s)> f) noexcept;
+    /// Wait for application to be stopped, with an optional timeout
+    ///
+    /// After the timeout, request_stop() will be called.
+    void wait_for_stop(chrono::duration timeout = chrono::duration::zero()) noexcept;
 
-    void set_stage(Stage s) noexcept;
-
-    void on_enter_stage(Stage s, std::function<void()> f) noexcept;
-
-    [[nodiscard]] bool wait_for_stage(Stage s) noexcept;
+    [[nodiscard]] bool stop_requested() const noexcept;
 
   private:
-    std::vector<std::function<bool(Stage)>> hooks_;
-    std::atomic<std::underlying_type_t<Stage>> stage_ = util::underlying(Stage::initializing);
+    std::atomic<bool> should_run_ = true;
+    util::SignalWaiter signal_waiter_;
     std::mutex mutex_;
     std::condition_variable cond_;
-  };
-
-  struct RuntimeObserver {
-  protected:
-    [[no_unique_address]] core::ServiceAccessor<Runtime> runtime_;
-    [[nodiscard]] Runtime& runtime() const noexcept
-    {
-      return runtime_.service<Runtime>();
-    }
   };
 } // namespace otto::services

@@ -4,33 +4,30 @@ namespace otto::services {
 
   using namespace drivers;
 
-  struct ExecutorWrapper : InputHandler {
-    ExecutorWrapper(itc::IExecutor& executor, util::smart_ptr<IInputHandler>&& delegate)
-      : executor_(executor), delegate_(std::move(delegate))
-    {}
+  struct ExecutorWrapper : InputHandler, LogicDomain {
+    ExecutorWrapper(util::smart_ptr<IInputHandler>&& delegate) : delegate_(std::move(delegate)) {}
 
     void handle(KeyPress e) noexcept override
     {
-      executor_.execute([h = delegate_.get(), e] { h->handle(e); });
+      executor().execute([h = delegate_.get(), e] { h->handle(e); });
     }
     void handle(KeyRelease e) noexcept override
     {
-      executor_.execute([h = delegate_.get(), e] { h->handle(e); });
+      executor().execute([h = delegate_.get(), e] { h->handle(e); });
     }
     void handle(EncoderEvent e) noexcept override
     {
-      executor_.execute([h = delegate_.get(), e] { h->handle(e); });
+      executor().execute([h = delegate_.get(), e] { h->handle(e); });
     }
 
   private:
-    itc::IExecutor& executor_;
     util::smart_ptr<IInputHandler> delegate_;
   };
 
-  Controller::Controller(util::smart_ptr<MCUPort>::factory&& make_port, Config::Handle conf)
-    : conf_(conf), com_(make_port()), thread_([this](const std::stop_token& stop_token) {
+  Controller::Controller(RuntimeController& rt, Config conf, util::smart_ptr<drivers::MCUPort>&& port)
+    : conf_(conf), com_(rt, std::move(port)), thread_([this, &rt](const std::stop_token& stop_token) {
         std::vector<Packet> second_buf;
-        while (runtime->should_run() && !stop_token.stop_requested()) {
+        while (!stop_token.stop_requested()) {
           second_buf.clear();
           {
             std::unique_lock l(queue_mutex_);
@@ -44,17 +41,19 @@ namespace otto::services {
             p = com_.port_->read();
             com_.handle_packet(p);
           } while (p.cmd != Command::none);
-          std::this_thread::sleep_for(conf_->wait_time);
+          std::this_thread::sleep_for(conf_.wait_time);
         }
       })
   {}
 
   void Controller::set_input_handler(IInputHandler& h)
   {
-    com_.handler = std::make_unique<ExecutorWrapper>(logic_thread->executor(), &h);
+    com_.handler = std::make_unique<ExecutorWrapper>(&h);
   }
 
-  MCUCommunicator::MCUCommunicator(util::smart_ptr<MCUPort>&& port) : port_(std::move(port)) {}
+  MCUCommunicator::MCUCommunicator(RuntimeController& rt, util::smart_ptr<MCUPort>&& port)
+    : rt_(rt), port_(std::move(port))
+  {}
 
   void MCUCommunicator::handle_packet(Packet p)
   {
@@ -75,7 +74,7 @@ namespace otto::services {
         }
       } break;
       case Command::shutdown: {
-        runtime().request_stop();
+        rt_.request_stop();
       } break;
       default: break;
     }

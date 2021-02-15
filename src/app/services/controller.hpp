@@ -2,8 +2,6 @@
 
 #include "lib/util/smart_ptr.hpp"
 
-#include "lib/core/service.hpp"
-
 #include "app/drivers/mcu_port.hpp"
 #include "app/input.hpp"
 #include "app/leds.hpp"
@@ -15,8 +13,8 @@ namespace otto::services {
   ///
   /// Does the bulk of the work of {@ref Controller}, but is separated out
   /// to allow usage/testing of the individual methods
-  struct MCUCommunicator : RuntimeObserver {
-    MCUCommunicator(util::smart_ptr<drivers::MCUPort>&& port);
+  struct MCUCommunicator {
+    MCUCommunicator(RuntimeController& rt, util::smart_ptr<drivers::MCUPort>&& port);
 
     /// Handle received packet, and send events.
     ///
@@ -27,22 +25,24 @@ namespace otto::services {
 
   private:
     friend struct Controller;
+    RuntimeController& rt_;
     util::smart_ptr<drivers::MCUPort> port_;
   };
 
-  struct Controller : core::Service<Controller> {
+  struct Controller {
     struct Config : otto::Config<Config> {
       chrono::duration wait_time = 1ms;
       DECL_VISIT(wait_time);
     };
 
-    explicit Controller(util::smart_ptr<drivers::MCUPort>::factory&& make_port = drivers::MCUPort::make_default,
-                        Config::Handle conf = {});
+    explicit Controller(RuntimeController& rt,
+                        Config conf,
+                        util::smart_ptr<drivers::MCUPort>&& port = drivers::MCUPort::make_default());
 
     Controller(const Controller&) = delete;
     Controller& operator=(const Controller&) = delete;
 
-    ~Controller() noexcept override
+    ~Controller() noexcept
     {
       com_.port_->stop();
     }
@@ -55,10 +55,7 @@ namespace otto::services {
     }
 
   private:
-    [[no_unique_address]] core::ServiceAccessor<services::Runtime> runtime;
-    [[no_unique_address]] core::ServiceAccessor<services::LogicThread> logic_thread;
-
-    Config::Handle conf_;
+    Config conf_;
     MCUCommunicator com_;
 
     std::mutex queue_mutex_;

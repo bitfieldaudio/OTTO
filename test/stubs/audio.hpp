@@ -3,7 +3,6 @@
 #include <thread>
 
 #include "lib/chrono.hpp"
-#include "lib/core/service.hpp"
 
 #include "app/drivers/audio_driver.hpp"
 #include "app/services/runtime.hpp"
@@ -50,7 +49,7 @@ namespace otto::stubs {
           .input = input_buf,
           .output = output_buf,
         };
-        while (runtime->should_run() && !stopper.stop_requested()) {
+        while (!stopper.stop_requested()) {
           callback_(cbd);
           std::this_thread::sleep_for(chrono::nanoseconds((1ns / 1s) * buffer_size() / sample_rate()));
         }
@@ -72,7 +71,6 @@ namespace otto::stubs {
 
   private:
     std::vector<float> buffers_;
-    [[no_unique_address]] core::ServiceAccessor<services::Runtime> runtime;
     Callback callback_;
     std::jthread thread_;
   };

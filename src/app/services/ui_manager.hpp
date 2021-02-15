@@ -1,6 +1,5 @@
 #pragma once
 
-#include "lib/core/service.hpp"
 #include "lib/graphics.hpp"
 #include "lib/midi.hpp"
 
@@ -11,7 +10,7 @@
 
 namespace otto::services {
 
-  struct UIManager : core::Service<UIManager>, core::ServiceAccessor<Controller, Graphics> {
+  struct UIManager {
   private:
     struct Handler;
     struct Drawable;

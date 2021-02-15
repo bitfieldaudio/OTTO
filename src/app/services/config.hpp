@@ -9,19 +9,12 @@
 #include "lib/util/string_ref.hpp"
 #include "lib/util/visitor.hpp"
 
-#include "lib/core/service.hpp"
 #include "lib/json.hpp"
 
-#include "app/services/runtime.hpp"
-
 namespace otto {
-  template<typename Conf>
-  struct ConfHandle;
-
   /// CRTP Base class for Config objects.
   template<typename Derived>
   struct Config {
-    using Handle = ConfHandle<Derived>;
     /// The name as it will be shown in the config file
     ///
     /// Can be overridden in `Derived` by defining a similar constant.
@@ -38,7 +31,7 @@ namespace otto {
 
   namespace services {
 
-    struct ConfigManager : core::Service<ConfigManager> {
+    struct ConfigManager {
       ConfigManager() = default;
       /// Initialize the configurations from a json object
       ConfigManager(json::value config_data);
@@ -55,17 +48,23 @@ namespace otto {
       template<AConfig Conf>
       Conf make_conf() noexcept;
 
+      template<AConfig Conf>
+      operator Conf() noexcept
+      {
+        return make_conf<Conf>();
+      }
+
       /// Attempts to read the default config file `./ottoconf.json`.
       ///
       /// If this file is not found, simply runs the default constructor
-      static core::ServiceHandle<ConfigManager> make_default()
+      static ConfigManager make_default()
       {
         std::filesystem::path config_path = "./ottoconf.json";
         if (std::filesystem::is_regular_file(config_path)) {
-          return make(config_path);
+          return ConfigManager(config_path);
         }
         LOGI("Config file {} not found", config_path.c_str());
-        return make();
+        return ConfigManager();
       }
 
       [[nodiscard]] json::value into_json() const;
@@ -75,36 +74,9 @@ namespace otto {
       static constexpr const char* key_of() noexcept;
 
       std::filesystem::path file_path = "";
-      [[no_unique_address]] core::ServiceAccessor<Runtime> runtime;
       json::value config_data_ = json::object();
     };
   } // namespace services
-
-
-  template<AConfig Conf>
-  struct ConfHandle<Conf> {
-    ConfHandle() noexcept
-      : ConfHandle([&] {
-          if (confman.is_active()) return confman->make_conf<Conf>();
-          return Conf{};
-        }())
-    {}
-    ConfHandle(Conf c) noexcept : conf(std::move(c)) {}
-
-    const Conf* operator->() const noexcept
-    {
-      return &conf;
-    }
-
-    const Conf& operator*() const noexcept
-    {
-      return conf;
-    }
-
-  private:
-    [[no_unique_address]] core::UnsafeServiceAccessor<services::ConfigManager> confman;
-    Conf conf;
-  };
 
 } // namespace otto
 

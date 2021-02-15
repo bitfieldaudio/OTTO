@@ -17,7 +17,7 @@ namespace otto::drivers {
   };
 
   struct RtAudioDriver final : IAudioDriver {
-    RtAudioDriver();
+    RtAudioDriver(const RtAudioConfig& conf);
 
     void start() override;
     void stop() override;
@@ -33,9 +33,9 @@ namespace otto::drivers {
     std::vector<RtAudio::Api> get_apis();
 
     Callback callback = nullptr;
-    ConfHandle<RtAudioConfig> conf;
-    unsigned buffer_size_ = conf->buffer_size;
-    unsigned sample_rate_ = conf->sample_rate;
+    RtAudioConfig conf;
+    unsigned buffer_size_ = conf.buffer_size;
+    unsigned sample_rate_ = conf.sample_rate;
     RtAudio adac;
     std::vector<float> buffers;
     RtAudio::StreamParameters i_params;
@@ -44,10 +44,11 @@ namespace otto::drivers {
 
   std::unique_ptr<IAudioDriver> IAudioDriver::make_default()
   {
-    return std::make_unique<RtAudioDriver>();
+    // TODO: Pass in config manager or something
+    return std::make_unique<RtAudioDriver>(RtAudioConfig{});
   }
 
-  RtAudioDriver::RtAudioDriver()
+  RtAudioDriver::RtAudioDriver(const RtAudioConfig& conf) : conf(conf)
   {
     i_params.nChannels = 2;
     i_params.deviceId = adac.getDefaultInputDevice();
@@ -55,10 +56,10 @@ namespace otto::drivers {
     o_params.deviceId = adac.getDefaultOutputDevice();
     for (int i = 0; i < adac.getDeviceCount(); i++) {
       const auto& device = adac.getDeviceInfo(i);
-      if (device.name == conf->input_device) {
+      if (device.name == conf.input_device) {
         i_params.deviceId = i;
       }
-      if (device.name == conf->output_device) {
+      if (device.name == conf.output_device) {
         o_params.deviceId = i;
       }
     }
@@ -96,7 +97,7 @@ namespace otto::drivers {
     opts.flags = RTAUDIO_SCHEDULE_REALTIME;
     opts.numberOfBuffers = 1;
     opts.streamName = "OTTO";
-    unsigned samplerate = conf->sample_rate;
+    unsigned samplerate = conf.sample_rate;
     adac.openStream(
       &o_params, &i_params, RTAUDIO_FLOAT32, samplerate, &buffer_size_,
       [](void* out, void* in, unsigned nframes, double time, RtAudioStreamStatus status, void* self_) {
@@ -109,7 +110,7 @@ namespace otto::drivers {
 
   int RtAudioDriver::rtaudio_cb(float* out, float* in, int nframes, double time, RtAudioStreamStatus status) noexcept
   {
-    if (status) LOGE("Audio Over/undrerun!");
+    if (status != 0) LOGE("Audio Over/undrerun!");
     auto input_buf = util::stereo_audio_buffer(
       util::audio_buffer(std::span(buffers.data() + 0 * buffer_size_, buffer_size_), nullptr),
       util::audio_buffer(std::span(buffers.data() + 1 * buffer_size_, buffer_size_), nullptr));

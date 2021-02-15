@@ -20,8 +20,9 @@ TEST_CASE ("VoiceManager", "[!mayfail]") {
   itc::ImmediateExecutor ex;
   AudioDomain::set_static_executor(ex);
 
-  auto app =
-    start_app(services::ConfigManager::make(), services::Audio::make(std::make_unique<stubs::NoProcessAudioDriver>));
+  services::RuntimeController rt;
+
+  services::Audio audioman(std::make_unique<stubs::NoProcessAudioDriver>());
 
   struct Voice : VoiceBase<Voice> {
     Voice(int i) : i(i) {}
@@ -428,7 +429,7 @@ TEST_CASE ("VoiceManager", "[!mayfail]") {
       };
       itc::ChannelGroup chan;
       VoiceManager<Voice, 4> vmgr(chan);
-      int a = 0;
+      // int a = 0;
       // REQUIRE(vmgr(10, a, a) == Catch::Approx(4 * 10.f * vmgr.normal_volume));
     }
 

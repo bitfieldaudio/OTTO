@@ -4,27 +4,17 @@
 
 namespace otto::services {
 
-  Audio::Audio(util::smart_ptr<drivers::IAudioDriver>::factory&& d) : driver_(d())
+  Audio::Audio(util::smart_ptr<drivers::IAudioDriver>&& d) : driver_(std::move(d))
   {
     driver_->set_callback(std::bind_front(&Audio::loop_func, this));
-    abp_ = util::AudioBufferPool{16, driver_->buffer_size()};
+    AudioDomain::buffer_pool_ = util::AudioBufferPool{16, driver_->buffer_size()};
     gam::sampleRate(util::narrow(driver_->sample_rate()));
-    runtime->on_enter_stage(Runtime::Stage::running, [&d = *driver_] { d.start(); });
-    runtime->on_enter_stage(Runtime::Stage::stopping, [this] {
-      callback_ = nullptr;
-      driver_->stop();
-    });
+    driver_->start();
   }
 
   void Audio::set_midi_handler(util::smart_ptr<midi::IMidiHandler> h) noexcept
   {
     midi_.set_handler(std::move(h));
-  }
-
-  util::AudioBufferPool& Audio::buffer_pool() noexcept
-  {
-    OTTO_ASSERT(abp_.has_value());
-    return *abp_;
   }
 
   void Audio::set_process_callback(Callback&& cb) noexcept

@@ -51,7 +51,7 @@ namespace otto {
 
   // NAV KEYMAP
 
-  NavKeyMap::NavKeyMap(util::smart_ptr<Navigator> n, Conf::Handle conf) : conf(conf), nav_(std::move(n)) {}
+  NavKeyMap::NavKeyMap(Conf conf, util::smart_ptr<Navigator> n) : conf(conf), nav_(std::move(n)) {}
 
   Navigator& NavKeyMap::nav()
   {
@@ -79,7 +79,7 @@ namespace otto {
     auto bind = binds_[e.key];
     if (bind != nullptr) {
       // NOLINTNEXTLINE
-      if (bind == nav().current_screen() && (e.timestamp - last_nav_time_) > conf->peek_timeout) {
+      if (bind == nav().current_screen() && (e.timestamp - last_nav_time_) > conf.peek_timeout) {
         nav().navigate_back();
       }
     } else {
@@ -134,9 +134,9 @@ namespace otto {
     for (auto&& [k, scrn] : binds_) {
       if (auto led = led_from(k)) {
         if (scrn == current) {
-          output[*led] = conf->selected_color;
+          output[*led] = conf.selected_color;
         } else {
-          output[*led] = conf->deselected_color;
+          output[*led] = conf.deselected_color;
         }
       }
     }

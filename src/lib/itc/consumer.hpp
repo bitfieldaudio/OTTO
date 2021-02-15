@@ -25,6 +25,12 @@ namespace otto::itc {
     virtual ~Consumer() noexcept
     {
       if (channel_) std::erase(channel_->consumers_, this);
+      // Wait for queued functions to be executed
+      // virtual functions dont exist at this point anymore,
+      // so we have to do this weird caching of the executor
+      // If it's still nullptr, internal_commit was never called
+      // so no need to sync
+      if (exec_ != nullptr) exec_->sync();
     }
 
     /// The channel this consumer is registered on
@@ -66,7 +72,8 @@ namespace otto::itc {
         std::scoped_lock l(lock_);
         tmp_state_ = state;
       }
-      executor().execute([this] {
+      exec_ = &executor();
+      exec_->execute([this] {
         // Apply changes
         {
           std::scoped_lock l(lock_);
@@ -76,6 +83,7 @@ namespace otto::itc {
       });
     }
 
+    IExecutor* exec_ = nullptr;
     util::spin_lock lock_;
     State state_;
     TypedChannel<State>* channel_;

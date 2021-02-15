@@ -4,6 +4,8 @@
 #include <tuple>
 #include <utility>
 
+#include <tl/optional.hpp>
+
 #include "lib/util/macros.hpp"
 #include "lib/util/string_ref.hpp"
 
@@ -254,6 +256,12 @@ namespace otto::util {
     return narrowing<T>{value};
   }
 
+  template<typename T>
+  tl::optional<T&> opt_ref(tl::optional<T>& opt)
+  {
+    if (opt) return tl::optional<T&>(*opt);
+    return tl::nullopt;
+  }
 
   // Lambdas matching overload sets
 

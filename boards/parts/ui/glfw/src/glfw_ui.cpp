@@ -5,7 +5,6 @@
 #include <thread>
 
 #include <GrBackendSurface.h>
-#include <GrContext.h>
 #include <SkCanvas.h>
 #include <SkColorSpace.h>
 #include <SkFont.h>
@@ -173,7 +172,7 @@ namespace otto::glfw {
   {
     make_current();
     auto interface = GrGLMakeNativeInterface_glfw();
-    context_ = GrContext::MakeGL(interface);
+    context_ = GrDirectContext::MakeGL(interface);
     GrGLFramebufferInfo fbInfo;
     fbInfo.fFBOID = 0;
     fbInfo.fFormat = GL_RGBA8;
@@ -217,7 +216,7 @@ namespace otto::drivers {
 
   void handle_keyevent(glfw::Action action, glfw::Modifiers mods, glfw::Key key, IInputHandler& handler);
 
-  struct GlfwGraphicsDriver final : IGraphicsDriver, core::UnsafeServiceAccessor<LogicThread, Controller> {
+  struct GlfwGraphicsDriver final : IGraphicsDriver {
     void run(std::function<bool(SkCanvas&)> f) override
     {
       otto::glfw::SkiaWindow win = {320, 240, "OTTO"};

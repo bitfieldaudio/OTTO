@@ -79,12 +79,13 @@ TEST_CASE ("master-graphics", "[.interactive]") {
   timeline.apply(&value, looped);
 
 
-  auto app = start_app(ConfigManager::make(), Graphics::make());
+  RuntimeController rt;
+  Graphics graphics(rt);
   SECTION ("Master Screen") {
     Master master;
 
 
-    app.service<Graphics>().show([&](skia::Canvas& ctx) {
+    graphics.show([&](skia::Canvas& ctx) {
       master.value = value;
       master.bounding_box.resize({100, 120});
       master.bounding_box.move_to({110, 60});
@@ -92,7 +93,6 @@ TEST_CASE ("master-graphics", "[.interactive]") {
 
       timeline.step(1.0 / 60.0);
     });
-    // std::this_thread::sleep_for(std::chrono::seconds(20));
-    app.wait_for_stop();
+    rt.wait_for_stop(10s);
   }
 }

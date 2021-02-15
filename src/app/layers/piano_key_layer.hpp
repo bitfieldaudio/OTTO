@@ -4,8 +4,6 @@
 #include "lib/util/visitor.hpp"
 #include "lib/util/with_limits.hpp"
 
-#include "lib/core/service.hpp"
-
 #include "app/drivers/midi_driver.hpp"
 #include "app/input.hpp"
 #include "app/layers.hpp"

@@ -23,10 +23,11 @@ using namespace otto;
 
 TEST_CASE ("ottofm", "[.interactive][engine]") {
   using namespace services;
-  auto app = start_app(ConfigManager::make_default(), //
-                       LogicThread::make(),           //
-                       Controller::make(),            //
-                       Graphics::make());
+  RuntimeController rt;
+  auto confman = ConfigManager::make_default();
+  LogicThread logic_thread;
+  Controller controller(rt, confman);
+  Graphics graphics(rt);
 
   itc::ChannelGroup chan;
   auto eng = engines::ottofm::factory.make_without_audio(chan);
@@ -36,19 +37,18 @@ TEST_CASE ("ottofm", "[.interactive][engine]") {
   //   const auto res = eng.audio->process();
   //   std::ranges::copy(util::zip(res, res), data.output.begin());
   // });
-  app.service<Graphics>().show([&](SkCanvas& ctx) { eng.main_screen.screen->draw(ctx); });
-  app.service<Controller>().set_input_handler(*eng.main_screen.input);
-
-  app.wait_for_stop();
+  graphics.show([&](SkCanvas& ctx) { eng.main_screen.screen->draw(ctx); });
+  controller.set_input_handler(*eng.main_screen.input);
+  rt.wait_for_stop();
 }
 
 TEST_CASE ("ottofm-env", "[.interactive][engine]") {
   using namespace services;
-  auto app = start_app(ConfigManager::make_default(), //
-                       LogicThread::make(),           //
-                       Controller::make(),            //
-                       Graphics::make()               //
-  );
+  RuntimeController rt;
+  auto confman = ConfigManager::make_default();
+  LogicThread logic_thread;
+  Controller controller(rt, confman);
+  Graphics graphics(rt);
 
   itc::ChannelGroup chan;
   auto eng = engines::ottofm::factory.make_without_audio(chan);
@@ -58,49 +58,49 @@ TEST_CASE ("ottofm-env", "[.interactive][engine]") {
   //  const auto res = eng.audio->process();
   //  std::ranges::copy(util::zip(res, res), data.output.begin());
   // });
-  app.service<Graphics>().show([&](SkCanvas& ctx) { eng.mod_screen.screen->draw(ctx); });
-  app.service<Controller>().set_input_handler(*eng.mod_screen.input);
+  graphics.show([&](SkCanvas& ctx) { eng.mod_screen.screen->draw(ctx); });
+  controller.set_input_handler(*eng.mod_screen.input);
 
-  app.wait_for_stop();
+  rt.wait_for_stop();
 }
 
 TEST_CASE ("ottofm-all", "[.interactive][engine]") {
   using namespace services;
-  auto app = start_app(ConfigManager::make_default(), //
-                       LogicThread::make(),           //
-                       Controller::make(),            //
-                       Audio::make(),                 //
-                       Graphics::make()               //
-  );
+  RuntimeController rt;
+  auto confman = ConfigManager::make_default();
+  LogicThread logic_thread;
+  Controller controller(rt, confman);
+  Graphics graphics(rt);
 
+  Audio audio;
   itc::ChannelGroup chan;
   auto eng = engines::ottofm::factory.make_all(chan);
 
-  app.service<Audio>().set_midi_handler(&eng.audio->midi_handler());
-  app.service<Audio>().set_process_callback([&](Audio::CallbackData data) {
+  audio.set_midi_handler(&eng.audio->midi_handler());
+  audio.set_process_callback([&](Audio::CallbackData data) {
     const auto res = eng.audio->process();
     std::ranges::copy(util::zip(res, res), data.output.begin());
   });
 
   LayerStack layers;
-  auto piano = layers.make_layer<PianoKeyLayer>(app.service<Audio>().midi());
-  auto nav_km = layers.make_layer<NavKeyMap>();
+  auto piano = layers.make_layer<PianoKeyLayer>(audio.midi());
+  auto nav_km = layers.make_layer<NavKeyMap>(confman);
   nav_km.bind_nav_key(Key::synth, eng.main_screen);
   nav_km.bind_nav_key(Key::envelope, eng.mod_screen);
 
-  app.service<Graphics>().show(nav_km.nav());
-  app.service<Controller>().set_input_handler(layers);
+  graphics.show(nav_km.nav());
+  controller.set_input_handler(layers);
 
-  app.wait_for_stop();
+  rt.wait_for_stop();
 }
 
 TEST_CASE ("ottofm-no-audio", "[.interactive][engine]") {
   using namespace services;
-  auto app = start_app(ConfigManager::make_default(), //
-                       LogicThread::make(),           //
-                       Controller::make(),            //
-                       Graphics::make()               //
-  );
+  RuntimeController rt;
+  auto confman = ConfigManager::make_default();
+  LogicThread logic_thread;
+  Controller controller(rt, confman);
+  Graphics graphics(rt);
 
   itc::ChannelGroup chan;
   auto eng = engines::ottofm::factory.make_without_audio(chan);
@@ -113,12 +113,12 @@ TEST_CASE ("ottofm-no-audio", "[.interactive][engine]") {
 
   LayerStack layers;
   // auto piano = layers.make_layer<PianoKeyLayer>(app.service<Audio>().midi());
-  auto nav_km = layers.make_layer<NavKeyMap>();
+  auto nav_km = layers.make_layer<NavKeyMap>(confman);
   nav_km.bind_nav_key(Key::synth, eng.main_screen);
   nav_km.bind_nav_key(Key::envelope, eng.mod_screen);
 
-  app.service<Graphics>().show(nav_km.nav());
-  app.service<Controller>().set_input_handler(layers);
+  graphics.show(nav_km.nav());
+  controller.set_input_handler(layers);
 
-  app.wait_for_stop();
+  rt.wait_for_stop();
 }

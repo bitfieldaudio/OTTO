@@ -2,58 +2,28 @@
 
 namespace otto::services {
 
-  using Stage = Runtime::Stage;
-
-  Stage Runtime::stage() const noexcept
+  bool RuntimeController::stop_requested() const noexcept
   {
-    return static_cast<Stage>(stage_.load());
+    return !should_run_;
   }
 
-  bool Runtime::should_run() const noexcept
+  void RuntimeController::wait_for_stop(chrono::duration timeout) noexcept
   {
-    auto s = stage();
-    return s == Stage::running || s == Stage::initializing;
-  }
-
-  void Runtime::set_stage(Stage s) noexcept
-  {
-    std::unique_lock lock(mutex_);
-    stage_.store(static_cast<std::underlying_type_t<Stage>>(s));
-    std::erase_if(hooks_, [s](auto& f) { return f(s); });
-    cond_.notify_all();
-  }
-
-  void Runtime::request_stop(ExitCode) noexcept
-  {
-    set_stage(Stage::stopping);
-  }
-
-  bool Runtime::wait_for_stage(Stage s, chrono::duration timeout) noexcept
-  {
-    std::unique_lock lock(mutex_);
-    if (timeout == chrono::duration::zero()) {
-      cond_.wait(lock, [&] { return stage_ >= util::underlying(s); });
-    } else {
-      cond_.wait_for(lock, timeout, [&] { return stage_ >= util::underlying(s); });
+    {
+      std::unique_lock lock(mutex_);
+      if (timeout == chrono::duration::zero()) {
+        cond_.wait(lock, [&] { return !should_run_; });
+      } else {
+        cond_.wait_for(lock, timeout, [&] { return !should_run_; });
+      }
     }
-    return stage_ == util::underlying(s);
+    request_stop();
   }
 
-  void Runtime::on_stage_change(std::function<bool(Stage s)> f) noexcept
+  void RuntimeController::request_stop(ExitCode) noexcept
   {
-    hooks_.emplace_back(std::move(f));
-  }
-
-  bool Runtime::wait_for_stage(Stage s) noexcept
-  {
-    return wait_for_stage(s, chrono::duration::zero());
-  }
-
-  void Runtime::on_enter_stage(Stage s, std::function<void()> f) noexcept
-  {
-    on_stage_change([s, f = std::move(f)](Stage new_s) {
-      if (new_s == s) f();
-      return new_s == s;
-    });
+    std::unique_lock lock(mutex_);
+    should_run_ = false;
+    cond_.notify_all();
   }
 } // namespace otto::services

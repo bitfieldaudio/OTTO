@@ -30,46 +30,47 @@ using namespace otto;
 int main(int argc, char* argv[])
 {
   using namespace services;
-  auto app = start_app(ConfigManager::make_default(), //
-                       LogicThread::make(),           //
-                       Controller::make(),            //
-                       Audio::make(),                 //
-                       Graphics::make()               //
-  );
+  RuntimeController rt;
+  auto confman = ConfigManager::make_default();
+  LogicThread logic_thread;
+  Controller controller(rt, confman);
+  Graphics graphics(rt);
+
+  Audio audio;
   StateManager stateman("data/state.json");
 
   itc::ChannelGroup chan;
   auto eng = engines::ottofm::factory.make_all(chan);
-  stateman.add("EngineChannel", chan);
+  stateman.add("EngineChannel", std::ref(chan));
 
   auto voices_logic = voices::make_voices_logic(chan);
   auto voices_screen = voices::make_voices_screen(chan);
 
-  app.service<Audio>().set_midi_handler(&eng.audio->midi_handler());
-  app.service<Audio>().set_process_callback([&](Audio::CallbackData data) {
+  audio.set_midi_handler(&eng.audio->midi_handler());
+  audio.set_process_callback([&](Audio::CallbackData data) {
     const auto res = eng.audio->process();
     stdr::copy(util::zip(res, res), data.output.begin());
   });
 
   LayerStack layers;
-  auto piano = layers.make_layer<PianoKeyLayer>(app.service<Audio>().midi());
-  auto nav_km = layers.make_layer<NavKeyMap>();
+  auto piano = layers.make_layer<PianoKeyLayer>(audio.midi());
+  auto nav_km = layers.make_layer<NavKeyMap>(confman);
   nav_km.bind_nav_key(Key::synth, eng.main_screen);
   nav_km.bind_nav_key(Key::envelope, eng.mod_screen);
   nav_km.bind_nav_key(Key::voices, voices_screen);
-  stateman.add("Navigation", nav_km);
+  stateman.add("Navigation", std::ref(nav_km));
 
-  RtMidiDriver rt_midi_driver;
+  RtMidiDriver rt_midi_driver(audio.midi());
 
-  LedManager ledman(app.service<Controller>().port());
-  app.service<Graphics>().show([&](skia::Canvas& ctx) {
+  LedManager ledman(controller.port());
+  graphics.show([&](skia::Canvas& ctx) {
     ledman.process(layers);
     nav_km.nav().draw(ctx);
   });
-  app.service<Controller>().set_input_handler(layers);
+  controller.set_input_handler(layers);
 
   stateman.read_from_file();
-  app.wait_for_stop();
+  rt.wait_for_stop();
   LOGI("Shutting down");
   stateman.write_to_file();
   return 0;

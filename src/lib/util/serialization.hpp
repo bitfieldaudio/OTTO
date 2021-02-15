@@ -43,6 +43,7 @@ namespace otto::util {
 
   void deserialize_from(const json::value& json, ASerializable auto& obj)
   {
+    if (json.is_null()) return;
     serialize_impl<std::decay_t<decltype(obj)>>::deserialize_from(json, obj);
   }
 
@@ -80,8 +81,8 @@ namespace otto::util {
     DynSerializable() = default;
 
     template<ASerializable T>
-    DynSerializable(T& t)
-      : ptr_(&t),
+    DynSerializable(std::reference_wrapper<T> t)
+      : ptr_(&t.get()),
         serialize_into_([](json::value& json, void* ptr) { util::serialize_into(json, *static_cast<const T*>(ptr)); }),
         deserialize_from_(
           [](const json::value& json, void* ptr) { util::deserialize_from(json, *static_cast<T*>(ptr)); })
@@ -274,7 +275,7 @@ namespace otto::util {
     }
     static void deserialize_from(const json::value& json, chrono::duration& value)
     {
-      value = chrono::duration(json.get<std::size_t>());
+      value = chrono::duration(json.get<std::int64_t>());
     }
   };
 } // namespace otto::util

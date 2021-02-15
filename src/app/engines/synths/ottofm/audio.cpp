@@ -125,11 +125,7 @@ namespace otto::engines::ottofm {
     };
   };
 
-  struct Audio final : AudioDomain,
-                       itc::Consumer<State>,
-                       itc::Producer<AudioState>,
-                       ISynthAudio,
-                       core::ServiceAccessor<services::Audio> {
+  struct Audio final : AudioDomain, itc::Consumer<State>, itc::Producer<AudioState>, ISynthAudio {
     Audio(itc::ChannelGroup& ch) : Consumer(ch), Producer(ch), voice_mgr_(ch, Consumer::state()) {}
 
     midi::IMidiHandler& midi_handler() noexcept override
@@ -139,7 +135,7 @@ namespace otto::engines::ottofm {
 
     util::audio_buffer process() noexcept override
     {
-      auto buf = service<services::Audio>().buffer_pool().allocate();
+      auto buf = buffer_pool().allocate();
       stdr::generate(buf, std::ref(voice_mgr_));
       for (auto&& [op, act] : util::zip(voice_mgr_.last_triggered_voice().operators, Producer::state().activity)) {
         act = op.get_activity_level();

@@ -55,6 +55,7 @@ macro(otto_include_board BOARD)
 
     string(REPLACE "/" "_" BOARD_DEFINITION_NAME "${BOARD}")
     string(REPLACE "-" "_" BOARD_DEFINITION_NAME "${BOARD_DEFINITION_NAME}")
+    string(REPLACE "." "_" BOARD_DEFINITION_NAME "${BOARD_DEFINITION_NAME}")
     string(TOUPPER "${BOARD_DEFINITION_NAME}" BOARD_DEFINITION_NAME)
     target_compile_definitions(otto_src PUBLIC "OTTO_BOARD_${BOARD_DEFINITION_NAME}")
     target_include_directories(otto_src PUBLIC ${BOARD_DIR}/include)

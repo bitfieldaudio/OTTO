@@ -4,7 +4,6 @@
 
 #include "lib/util/algorithm.hpp"
 
-#include "lib/core/service.hpp"
 #include "lib/logging.hpp"
 #include "lib/midi.hpp"
 
@@ -13,7 +12,7 @@
 namespace otto {
 
   struct RtMidiDriver {
-    RtMidiDriver()
+    RtMidiDriver(drivers::MidiController& midi) : midi_(midi)
     {
       for (auto i = 0U; i < midi_in_.getPortCount(); i++) {
         auto port = midi_in_.getPortName(i);
@@ -29,7 +28,7 @@ namespace otto {
           auto& self = *static_cast<RtMidiDriver*>(userdata);
           try {
             auto e = midi::from_bytes(*message);
-            self.audio->midi().send_event(e);
+            self.midi_.send_event(e);
           } catch (std::exception& e) {
             LOGE("{}", e.what());
           }
@@ -43,7 +42,7 @@ namespace otto {
     }
 
   private:
-    [[no_unique_address]] core::ServiceAccessor<services::Audio> audio;
+    drivers::MidiController& midi_;
     RtMidiIn midi_in_ = {RtMidi::Api::UNSPECIFIED, "OTTO"};
   };
 } // namespace otto

@@ -194,7 +194,8 @@ TEST_CASE ("voicemanager-graphics", "[.interactive]") {
   timeline.apply(&expansion, looped);
 
 
-  auto app = start_app(ConfigManager::make(), Graphics::make());
+  RuntimeController rt;
+  Graphics graphics(rt);
   SECTION ("Voicemanager") {
     PlayMode play_mode = PlayMode::poly;
     std::string play_mode_str = playmode_string(play_mode);
@@ -203,7 +204,7 @@ TEST_CASE ("voicemanager-graphics", "[.interactive]") {
 
 
 
-    app.service<Graphics>().show([&](skia::Canvas& ctx) {
+    graphics.show([&](skia::Canvas& ctx) {
       constexpr float x_pad = 30;
       constexpr float y_pad = 50;
       constexpr float y_shift = -12;
@@ -267,7 +268,7 @@ TEST_CASE ("voicemanager-graphics", "[.interactive]") {
 
       // Rectangle
       ctx.beginPath();
-      ctx.strokeStyle(Colours::Yellow);
+     // std::this_thread::sleep_for(std::chrono::seconds(220s      ctx.strokeStyle(Colours::Yellow);
       ctx.roundedRect({x_pad, y_pad + space + y_shift}, {width - 2 * x_pad, space}, 10);
       ctx.stroke();
 
@@ -305,7 +306,6 @@ TEST_CASE ("voicemanager-graphics", "[.interactive]") {
 
       timeline.step(1.0 / 60.0);
     });
-    // std::this_thread::sleep_for(std::chrono::seconds(20));
-    app.wait_for_stop();
+    rt.wait_for_stop(20s);
   }
 }

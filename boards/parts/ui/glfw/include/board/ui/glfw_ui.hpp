@@ -4,6 +4,7 @@
 #include <thread>
 
 #include <GLFW/glfw3.h>
+#include <GrDirectContext.h>
 
 #include "lib/util/concepts.hpp"
 
@@ -54,7 +55,8 @@ namespace otto::glfw {
     void show(util::callable<bool(skia::Canvas&)> auto&& f)
     {
       glfwSetTime(0);
-      double t, spent;
+      double t = 0;
+      double spent = 0;
 
       bool run = true;
       while (run && !should_close()) {
@@ -85,7 +87,7 @@ namespace otto::glfw {
     void end_frame();
 
   private:
-    sk_sp<GrContext> context_;
+    sk_sp<GrDirectContext> context_;
     sk_sp<SkSurface> surface_;
     skia::Canvas* canvas_;
   };

@@ -48,7 +48,7 @@ TEST_CASE ("NavKeyMap") {
   ScreenWithHandler c = {std::make_unique<Screen>(), std::make_unique<StubInputLayer>(KeySet{})};
 
   Navigator nav;
-  NavKeyMap nkm = {&nav, NavKeyMap::Conf{.peek_timeout = 100ms}};
+  NavKeyMap nkm = {NavKeyMap::Conf{.peek_timeout = 100ms}, &nav};
 
   nkm.bind_nav_key(Key::arp, arp);
   nkm.bind_nav_key(Key::synth, synth);

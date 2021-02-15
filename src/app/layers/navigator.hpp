@@ -59,7 +59,7 @@ namespace otto {
       DECL_VISIT(peek_timeout, deselected_color, selected_color);
     };
 
-    NavKeyMap(util::smart_ptr<Navigator> n = std::make_unique<Navigator>(), Conf::Handle conf = {});
+    NavKeyMap(Conf conf, util::smart_ptr<Navigator> n = std::make_unique<Navigator>());
 
     Navigator& nav();
     const Navigator& nav() const;
@@ -98,7 +98,7 @@ namespace otto {
     }
 
   private:
-    Conf::Handle conf;
+    Conf conf;
     util::smart_ptr<Navigator> nav_;
     chrono::time_point last_nav_time_;
     std::unordered_map<Key, ScreenWithHandlerPtr> binds_;

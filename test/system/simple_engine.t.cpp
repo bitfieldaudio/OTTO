@@ -40,23 +40,23 @@ namespace otto::engines {
       }
     };
 
-    struct Audio final : itc::Consumer<State>, core::ServiceAccessor<services::Audio>, AudioDomain {
+    struct Audio final : itc::Consumer<State>, AudioDomain {
       Audio(itc::TypedChannel<State>& c) : Consumer(c) {}
 
       void on_state_change(const State& d) noexcept override
       {
         osc.freq(state().freq);
       }
-      util::audio_buffer process() noexcept
+      [[nodiscard]] util::audio_buffer process() const noexcept
       {
-        auto buf = service<services::Audio>().buffer_pool().allocate();
+        auto buf = buffer_pool().allocate();
         std::ranges::generate(buf, osc);
         return buf;
       }
       gam::Sine<> osc;
     };
 
-    struct Screen final : itc::Consumer<State>, core::ServiceAccessor<services::Graphics>, ScreenBase {
+    struct Screen final : itc::Consumer<State>, ScreenBase {
       Screen(itc::TypedChannel<State>& c) : Consumer(c) {}
       void draw(SkCanvas& ctx) noexcept override
       {
@@ -81,13 +81,14 @@ namespace otto::engines {
 
 TEST_CASE ("simple_engine", "[.interactive]") {
   using namespace services;
-  auto app = start_app(core::make_handle<ConfigManager>(), //
-                       LogicThread::make(),                //
-                       Controller::make(),                 //
-                       Audio::make(),                      //
-                       Graphics::make()                    //
-  );
 
+  RuntimeController rt;
+  auto confman = ConfigManager::make_default();
+  LogicThread logic_thread;
+  Controller controller(rt, confman);
+  Graphics graphics(rt);
+
+  Audio audio;
   itc::TypedChannel<otto::engines::Simple::State> chan;
   engines::Simple::Logic l(chan);
   engines::Simple::Audio a(chan);
@@ -95,12 +96,12 @@ TEST_CASE ("simple_engine", "[.interactive]") {
   engines::Simple::Handler h;
   itc::set_producer(h, l);
 
-  app.service<Audio>().set_process_callback([&](Audio::CallbackData data) {
+  audio.set_process_callback([&](Audio::CallbackData data) {
     const auto res = a.process();
     std::ranges::copy(util::zip(res, res), data.output.begin());
   });
-  app.service<Graphics>().show([&](SkCanvas& ctx) { s.draw(ctx); });
-  app.service<Controller>().set_input_handler(h);
+  graphics.show([&](SkCanvas& ctx) { s.draw(ctx); });
+  controller.set_input_handler(h);
 
-  app.wait_for_stop();
+  rt.wait_for_stop();
 }

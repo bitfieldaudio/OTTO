@@ -39,8 +39,9 @@ struct Handler final : InputHandler {
 };
 
 TEST_CASE ("Controller::read_input_data") {
+  services::RuntimeController rt;
   test::StubMCUPort port;
-  services::MCUCommunicator com = {&port};
+  services::MCUCommunicator com = {rt, &port};
   Handler handler;
   com.handler = &handler;
 
@@ -66,15 +67,14 @@ TEST_CASE ("Controller::read_input_data") {
 TEST_CASE ("Controller thread") {
   otto::test::StubMCUPort port;
   Handler handler;
-  auto app = start_app(services::LogicThread::make(), //
-                       services::ConfigManager::make(), services::Controller::make([&port] { return &port; }));
-  core::ServiceAccessor<services::Controller> ctrl;
-  core::ServiceAccessor<services::LogicThread> logic_thread;
-  ctrl->set_input_handler(handler);
+  services::RuntimeController rt;
+  services::LogicThread logic_thread;
+  services::Controller ctrl(rt, {}, &port);
+  ctrl.set_input_handler(handler);
 
   port.data.push({Command::encoder_events, {10, 2, 251, 0}});
   std::this_thread::sleep_for(50ms);
-  logic_thread->executor().run_queued_functions();
+  logic_thread.executor().run_queued_functions();
   REQUIRE(handler.events == Events{UntimedEncoderEvent{Encoder::blue, 10}, UntimedEncoderEvent{Encoder::green, 2},
                                    UntimedEncoderEvent{Encoder::yellow, -5}});
 }

@@ -120,7 +120,7 @@ namespace otto::detail {
 
 #ifdef NDEBUG
 #define OTTO_ASSERT(Expr, ...) ((void) 0)
-#define OTTO_UNREACHABLE(...) ((void) 0)
+#define OTTO_UNREACHABLE(...) (__builtin_unreachable())
 #else
 #define OTTO_ASSERT(Expr, ...) ::otto::detail::handle_assert(__FILE__, __LINE__, #Expr, Expr __VA_OPT__(, ) __VA_ARGS__)
 #define OTTO_UNREACHABLE(...)                                                                                          \

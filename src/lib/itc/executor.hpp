@@ -24,6 +24,9 @@ namespace otto::itc {
     /// - Functions will be executed exactly once
     /// - Functions will be executed in order
     virtual void execute(Function) = 0;
+
+    /// Wait for all functions queued before this one to be executed
+    void sync() noexcept;
   };
 
   /// An executor that immediately calls the function

@@ -40,6 +40,7 @@ namespace otto::itc {
   /// Domain which uses a static variable for the executor
   template<typename Tag = void>
   struct StaticDomain : virtual IDomain {
+    using domain_tag_t = Tag;
     StaticDomain() = default;
     virtual ~StaticDomain() = default;
 

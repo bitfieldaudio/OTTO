@@ -5,12 +5,16 @@
 #include <string>
 #include <thread>
 
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+#include <GLES2/gl2.h>
 #include <GrBackendSurface.h>
-#include <GrContext.h>
+#include <GrDirectContext.h>
 #include <SkCanvas.h>
 #include <SkColorSpace.h>
 #include <SkFont.h>
 #include <SkSurface.h>
+#include <bcm_host.h>
 #include <fcntl.h>
 #include <gl/GrGLAssembleInterface.h>
 #include <gl/GrGLInterface.h>
@@ -20,8 +24,6 @@
 
 #include "app/services/config.hpp"
 #include "app/services/graphics.hpp"
-
-#include "./egl_deps.hpp"
 
 #define GR_GL_RGB8 0x8051
 #define GR_GL_RGBA8 0x8058
@@ -155,7 +157,7 @@ namespace otto::board::ui {
     glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
     sk_sp<const GrGLInterface> interface(GrGLCreateNativeInterface());
-    sk_sp<GrContext> grContext(GrContext::MakeGL(interface));
+    sk_sp<GrDirectContext> grContext(GrDirectContext::MakeGL(interface));
     GrGLFramebufferInfo fbInfo;
     fbInfo.fFBOID = 0;
     fbInfo.fFormat = 0x8051;

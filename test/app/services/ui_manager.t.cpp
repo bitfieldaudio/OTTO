@@ -13,15 +13,3 @@
 
 using namespace otto;
 using namespace services;
-
-using Events = std::vector<midi::IMidiHandler::variant>;
-
-TEST_CASE ("UIManager") {
-  drivers::LocalMCUPort port;
-  auto app = start_app(LogicThread::make(),                                              //
-                       ConfigManager::make(),                                            //
-                       Controller::make([&port] { return &port; }),                      //
-                       Audio::make(std::make_unique<stubs::DummyAudioDriver>),           //
-                       Graphics::make(std::make_unique<stubs::NoProcessGraphicsDriver>), //
-                       UIManager::make());
-}
