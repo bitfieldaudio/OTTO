@@ -2,6 +2,7 @@
 
 #include <choreograph/Choreograph.h>
 
+#include "lib/util/at_exit.hpp"
 #include "lib/util/smart_ptr.hpp"
 
 #include "lib/itc/executor.hpp"
@@ -19,18 +20,13 @@ namespace otto::services {
     using IGraphicsDriver = drivers::IGraphicsDriver;
     Graphics(RuntimeController& runtime, util::smart_ptr<IGraphicsDriver>&& driver = IGraphicsDriver::make_default());
     /// Open a window/display drawing the given draw function
-    void show(DrawFunc f);
+    util::at_exit show(DrawFunc f);
 
   private:
     /// The function to run in the main loop on the graphics thread.
     /// Draws the frame, executes the required functions, and returns
     /// whether to continue drawing frames.
     void loop_function(skia::Canvas& ctx);
-
-    /// Make sure the queue is empty
-    ///
-    /// Must be run at the end of the thread
-    void exit_thread();
 
     GraphicsDomain domain_;
     util::smart_ptr<IGraphicsDriver> driver_;

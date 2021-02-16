@@ -85,7 +85,7 @@ TEST_CASE ("master-graphics", "[.interactive]") {
     Master master;
 
 
-    graphics.show([&](skia::Canvas& ctx) {
+    auto stop = graphics.show([&](skia::Canvas& ctx) {
       master.value = value;
       master.bounding_box.resize({100, 120});
       master.bounding_box.move_to({110, 60});

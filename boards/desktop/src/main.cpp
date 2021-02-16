@@ -46,12 +46,6 @@ int main(int argc, char* argv[])
   auto voices_logic = voices::make_voices_logic(chan);
   auto voices_screen = voices::make_voices_screen(chan);
 
-  audio.set_midi_handler(&eng.audio->midi_handler());
-  audio.set_process_callback([&](Audio::CallbackData data) {
-    const auto res = eng.audio->process();
-    stdr::copy(util::zip(res, res), data.output.begin());
-  });
-
   LayerStack layers;
   auto piano = layers.make_layer<PianoKeyLayer>(audio.midi());
   auto nav_km = layers.make_layer<NavKeyMap>(confman);
@@ -63,11 +57,17 @@ int main(int argc, char* argv[])
   RtMidiDriver rt_midi_driver(audio.midi());
 
   LedManager ledman(controller.port());
-  graphics.show([&](skia::Canvas& ctx) {
+
+  auto stop_midi = audio.set_midi_handler(&eng.audio->midi_handler());
+  auto stop_audio = audio.set_process_callback([&](Audio::CallbackData data) {
+    const auto res = eng.audio->process();
+    stdr::copy(util::zip(res, res), data.output.begin());
+  });
+  auto stop_input = controller.set_input_handler(layers);
+  auto stop_graphics = graphics.show([&](skia::Canvas& ctx) {
     ledman.process(layers);
     nav_km.nav().draw(ctx);
   });
-  controller.set_input_handler(layers);
 
   stateman.read_from_file();
   rt.wait_for_stop();

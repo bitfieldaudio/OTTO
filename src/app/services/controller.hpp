@@ -1,5 +1,6 @@
 #pragma once
 
+#include "lib/util/at_exit.hpp"
 #include "lib/util/smart_ptr.hpp"
 
 #include "app/drivers/mcu_port.hpp"
@@ -29,15 +30,16 @@ namespace otto::services {
     util::smart_ptr<drivers::MCUPort> port_;
   };
 
-  struct Controller {
+  struct Controller : LogicDomain {
     struct Config : otto::Config<Config> {
       chrono::duration wait_time = 1ms;
       DECL_VISIT(wait_time);
     };
 
-    explicit Controller(RuntimeController& rt,
-                        Config conf,
-                        util::smart_ptr<drivers::MCUPort>&& port = drivers::MCUPort::make_default());
+    explicit Controller(RuntimeController& rt, ConfigManager& confman, util::smart_ptr<drivers::MCUPort>&& port);
+    explicit Controller(RuntimeController& rt, ConfigManager& confman)
+      : Controller(rt, confman, drivers::MCUPort::make_default(confman))
+    {}
 
     Controller(const Controller&) = delete;
     Controller& operator=(const Controller&) = delete;
@@ -47,7 +49,7 @@ namespace otto::services {
       com_.port_->stop();
     }
 
-    void set_input_handler(IInputHandler& h);
+    util::at_exit set_input_handler(IInputHandler& h);
 
     drivers::MCUPort& port() noexcept
     {

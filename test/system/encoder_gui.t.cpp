@@ -49,8 +49,8 @@ TEST_CASE ("EncoderGUI", "[.interactive]") {
     util::StaticallyBounded<int, 0, 160> n = 80;
   } handler;
 
-  controller.set_input_handler(handler);
-  graphics.show([&](SkCanvas& ctx) {
+  auto stop_controller = controller.set_input_handler(handler);
+  auto stop_graphics = graphics.show([&](SkCanvas& ctx) {
     SkPaint paint;
     paint.setAntiAlias(true);
     paint.setStyle(SkPaint::kFill_Style);

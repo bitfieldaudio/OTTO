@@ -69,8 +69,9 @@ TEST_CASE ("Controller thread") {
   Handler handler;
   services::RuntimeController rt;
   services::LogicThread logic_thread;
-  services::Controller ctrl(rt, {}, &port);
-  ctrl.set_input_handler(handler);
+  services::ConfigManager confman;
+  services::Controller ctrl(rt, confman, &port);
+  auto stop = ctrl.set_input_handler(handler);
 
   port.data.push({Command::encoder_events, {10, 2, 251, 0}});
   std::this_thread::sleep_for(50ms);

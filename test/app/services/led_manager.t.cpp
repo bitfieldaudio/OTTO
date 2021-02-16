@@ -38,7 +38,8 @@ TEST_CASE ("LedManager") {
 }
 
 TEST_CASE ("led perf", "[.interactive]") {
-  std::unique_ptr mcu = MCUPort::make_default();
+  ConfigManager cm;
+  std::unique_ptr mcu = MCUPort::make_default(cm);
   LedManager ledman = LedManager::Sender(mcu.get());
   ledman.colors.fill({0x40, 0x00, 0x00});
   ledman.send_colors();
@@ -50,7 +51,8 @@ TEST_CASE ("led perf", "[.interactive]") {
 }
 
 TEST_CASE ("flash_leds", "[.interactive]") {
-  std::unique_ptr mcu = MCUPort::make_default();
+  ConfigManager cm;
+  std::unique_ptr mcu = MCUPort::make_default(cm);
   LedManager ledman = LedManager::Sender(mcu.get());
   for (int i = 0; i < 100; i++) {
     ledman.colors.fill({0x20, 0x20, 0x20});

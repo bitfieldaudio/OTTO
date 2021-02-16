@@ -90,6 +90,7 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
 -Wno-vla \
 -Wno-sign-compare \
 -Wno-error=pedantic \
+-Werror=unused-result \
 ")
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   set(OTTO_CXX_FLAGS "-Wall -Wno-long-long \
@@ -103,6 +104,7 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 -Wno-gnu-zero-variadic-macro-arguments \
 -Wno-gnu-anonymous-struct \
 -Wno-nested-anon-types \
+-Werror=unused-result \
 ")
 endif()
 

@@ -24,8 +24,8 @@ namespace otto::services {
     util::smart_ptr<IInputHandler> delegate_;
   };
 
-  Controller::Controller(RuntimeController& rt, Config conf, util::smart_ptr<drivers::MCUPort>&& port)
-    : conf_(conf), com_(rt, std::move(port)), thread_([this, &rt](const std::stop_token& stop_token) {
+  Controller::Controller(RuntimeController& rt, ConfigManager& confman, util::smart_ptr<drivers::MCUPort>&& port)
+    : conf_(confman), com_(rt, std::move(port)), thread_([this](const std::stop_token& stop_token) {
         std::vector<Packet> second_buf;
         while (!stop_token.stop_requested()) {
           second_buf.clear();
@@ -46,9 +46,14 @@ namespace otto::services {
       })
   {}
 
-  void Controller::set_input_handler(IInputHandler& h)
+  util::at_exit Controller::set_input_handler(IInputHandler& h)
   {
-    com_.handler = std::make_unique<ExecutorWrapper>(&h);
+    executor().execute([this, &h] { com_.handler = std::make_unique<ExecutorWrapper>(&h); });
+    executor().sync();
+    return util::at_exit([this] {
+      executor().execute([this] { com_.handler = nullptr; });
+      executor().sync();
+    });
   }
 
   MCUCommunicator::MCUCommunicator(RuntimeController& rt, util::smart_ptr<MCUPort>&& port)

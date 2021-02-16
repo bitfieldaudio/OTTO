@@ -96,12 +96,12 @@ TEST_CASE ("simple_engine", "[.interactive]") {
   engines::Simple::Handler h;
   itc::set_producer(h, l);
 
-  audio.set_process_callback([&](Audio::CallbackData data) {
+  auto stop_audio = audio.set_process_callback([&](Audio::CallbackData data) {
     const auto res = a.process();
     std::ranges::copy(util::zip(res, res), data.output.begin());
   });
-  graphics.show([&](SkCanvas& ctx) { s.draw(ctx); });
-  controller.set_input_handler(h);
+  auto stop_graphics = graphics.show([&](SkCanvas& ctx) { s.draw(ctx); });
+  auto stop_controller = controller.set_input_handler(h);
 
   rt.wait_for_stop();
 }

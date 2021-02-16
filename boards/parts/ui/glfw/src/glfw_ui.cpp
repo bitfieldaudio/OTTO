@@ -249,7 +249,7 @@ namespace otto::drivers {
 
   GlfwMCUPort* GlfwMCUPort::instance = nullptr;
 
-  std::unique_ptr<MCUPort> MCUPort::make_default()
+  std::unique_ptr<MCUPort> MCUPort::make_default(ConfigManager& confman)
   {
     return std::make_unique<GlfwMCUPort>();
   }

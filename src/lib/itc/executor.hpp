@@ -84,47 +84,4 @@ namespace otto::itc {
     std::mutex mutex_;
   };
 
-  /// Synchronize the exit of multiple threads running `QueueExecutor`s
-  ///
-  /// This facilitates multiple threads which mutually enqueue functions onto
-  /// eachother to shut down correctly.
-  struct ExecutorLockable {
-    struct Lock {
-      Lock(ExecutorLockable* l) noexcept;
-      ~Lock() noexcept
-      {
-        if (lockable_) release();
-      }
-
-      Lock(const Lock&) = delete;
-      Lock(Lock&&) = delete;
-      Lock& operator=(const Lock&) = delete;
-      Lock& operator=(Lock&&) = delete;
-
-      /// Run the functions that remain in the queue until all queues are done.
-      void exit_synchronized(QueueExecutor& e) noexcept;
-
-    private:
-      void release() noexcept;
-      bool attempt_sync_exit(QueueExecutor& e) noexcept;
-
-      int idx = -1;
-      ExecutorLockable* lockable_ = nullptr;
-      bool is_done_ = false;
-      friend ExecutorLockable;
-    };
-
-    /// Acquire a scoped lock
-    Lock acquire();
-
-  private:
-    /// Notify the next lock in the list
-    void notify_next();
-
-    std::mutex mutex_;
-    std::condition_variable cond_;
-    Lock* next_up_ = nullptr;
-    std::vector<Lock*> locks_;
-  };
-
 } // namespace otto::itc

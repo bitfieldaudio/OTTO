@@ -37,8 +37,8 @@ TEST_CASE ("ottofm", "[.interactive][engine]") {
   //   const auto res = eng.audio->process();
   //   std::ranges::copy(util::zip(res, res), data.output.begin());
   // });
-  graphics.show([&](SkCanvas& ctx) { eng.main_screen.screen->draw(ctx); });
-  controller.set_input_handler(*eng.main_screen.input);
+  auto stop_graphics = graphics.show([&](SkCanvas& ctx) { eng.main_screen.screen->draw(ctx); });
+  auto stop_controller = controller.set_input_handler(*eng.main_screen.input);
   rt.wait_for_stop();
 }
 
@@ -58,8 +58,8 @@ TEST_CASE ("ottofm-env", "[.interactive][engine]") {
   //  const auto res = eng.audio->process();
   //  std::ranges::copy(util::zip(res, res), data.output.begin());
   // });
-  graphics.show([&](SkCanvas& ctx) { eng.mod_screen.screen->draw(ctx); });
-  controller.set_input_handler(*eng.mod_screen.input);
+  auto stop_graphics = graphics.show([&](SkCanvas& ctx) { eng.mod_screen.screen->draw(ctx); });
+  auto stop_controller = controller.set_input_handler(*eng.mod_screen.input);
 
   rt.wait_for_stop();
 }
@@ -76,20 +76,20 @@ TEST_CASE ("ottofm-all", "[.interactive][engine]") {
   itc::ChannelGroup chan;
   auto eng = engines::ottofm::factory.make_all(chan);
 
-  audio.set_midi_handler(&eng.audio->midi_handler());
-  audio.set_process_callback([&](Audio::CallbackData data) {
-    const auto res = eng.audio->process();
-    std::ranges::copy(util::zip(res, res), data.output.begin());
-  });
-
   LayerStack layers;
   auto piano = layers.make_layer<PianoKeyLayer>(audio.midi());
   auto nav_km = layers.make_layer<NavKeyMap>(confman);
   nav_km.bind_nav_key(Key::synth, eng.main_screen);
   nav_km.bind_nav_key(Key::envelope, eng.mod_screen);
 
-  graphics.show(nav_km.nav());
-  controller.set_input_handler(layers);
+  auto stop_midi = audio.set_midi_handler(&eng.audio->midi_handler());
+  auto stop_audio = audio.set_process_callback([&](Audio::CallbackData data) {
+    const auto res = eng.audio->process();
+    std::ranges::copy(util::zip(res, res), data.output.begin());
+  });
+
+  auto stop_graphics = graphics.show(nav_km.nav());
+  auto stop_controller = controller.set_input_handler(layers);
 
   rt.wait_for_stop();
 }
@@ -117,8 +117,8 @@ TEST_CASE ("ottofm-no-audio", "[.interactive][engine]") {
   nav_km.bind_nav_key(Key::synth, eng.main_screen);
   nav_km.bind_nav_key(Key::envelope, eng.mod_screen);
 
-  graphics.show(nav_km.nav());
-  controller.set_input_handler(layers);
+  auto stop_graphics = graphics.show(nav_km.nav());
+  auto stop_controller = controller.set_input_handler(layers);
 
   rt.wait_for_stop();
 }

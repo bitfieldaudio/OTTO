@@ -16,7 +16,7 @@ TEST_CASE ("audio_loopback", "[.interactive]") {
   RuntimeController rt;
   ConfigManager confman;
   Audio audio;
-  audio.set_process_callback([](Audio::CallbackData data) { data.output = data.input; });
+  auto stop = audio.set_process_callback([](Audio::CallbackData data) { data.output = data.input; });
   rt.wait_for_stop(10s);
 }
 
@@ -25,7 +25,7 @@ TEST_CASE ("audio_sine", "[.interactive]") {
   ConfigManager confman;
   Audio audio;
   gam::Sine<> osc = {440};
-  audio.set_process_callback([&](Audio::CallbackData data) {
+  auto stop = audio.set_process_callback([&](Audio::CallbackData data) {
     std::ranges::generate(data.output.left, std::ref(osc));
     std::ranges::copy(data.output.left, data.output.right.begin());
   });
@@ -41,14 +41,16 @@ TEST_CASE ("midi queue") {
     int note = 0;
   } handler;
 
-  RuntimeController rt;
-  ConfigManager confman;
-  Audio audio;
-  audio.set_midi_handler(&handler);
-  audio.midi().send_event(midi::NoteOn{5});
-  audio.set_process_callback([&](Audio::CallbackData) {
-    if (handler.note != 0) rt.request_stop();
-  });
-  rt.wait_for_stop(1s);
+  {
+    RuntimeController rt;
+    ConfigManager confman;
+    Audio audio;
+    auto stop_midi = audio.set_midi_handler(&handler);
+    audio.midi().send_event(midi::NoteOn{5});
+    auto stop_process = audio.set_process_callback([&](Audio::CallbackData) {
+      if (handler.note != 0) rt.request_stop();
+    });
+    rt.wait_for_stop(1s);
+  }
   REQUIRE(handler.note == 5);
 }

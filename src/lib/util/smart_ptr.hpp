@@ -28,22 +28,18 @@ namespace otto::util {
   struct smart_ptr {
     using pointer = T*;
     using unique_ptr = std::unique_ptr<T>;
-    // using shared_ptr = std::shared_ptr<T>;
     using factory = fu2::unique_function<smart_ptr<T>()>;
 
     smart_ptr() : variant_(static_cast<pointer>(nullptr)) {}
-    smart_ptr(pointer p) noexcept : pointer_(p), variant_(p) {}
-    smart_ptr(unique_ptr&& up) noexcept : pointer_(up.get()), variant_(std::move(up)) {}
-    // smart_ptr(shared_ptr sp) noexcept : pointer_(sp.get()), variant_(std::move(sp)) {}
+    smart_ptr(pointer p) noexcept : variant_(p) {}
+    smart_ptr(std::nullptr_t) noexcept : variant_(static_cast<pointer>(nullptr)) {}
+    smart_ptr(unique_ptr&& up) noexcept : variant_(std::move(up)) {}
 
     ~smart_ptr() noexcept = default;
 
     template<std::derived_from<T> U>
     smart_ptr(std::unique_ptr<U>&& up) noexcept : smart_ptr(static_cast<unique_ptr>(std::move(up)))
     {}
-    // template<std::derived_from<T> U>
-    // smart_ptr(std::shared_ptr<U> sp) noexcept : smart_ptr(static_cast<shared_ptr>(std::move(sp)))
-    // {}
 
     smart_ptr(const smart_ptr&) = delete;
     smart_ptr& operator=(const smart_ptr&) = delete;
@@ -56,14 +52,19 @@ namespace otto::util {
     {
       return std::visit(
         fu2::overload([](pointer ptr) { return smart_ptr<U>(static_cast<U*>(ptr)); },
-                      //[](shared_ptr&& ptr) { return smart_ptr<U>(static_cast<std::shared_ptr<U>>(std::move(ptr))); },
                       [](unique_ptr&& ptr) { return smart_ptr<U>(static_cast<std::unique_ptr<U>>(std::move(ptr))); }),
         std::move(variant_));
     }
 
     pointer get() const noexcept
     {
-      return pointer_;
+      if (std::holds_alternative<pointer>(variant_)) {
+        return std::get<pointer>(variant_);
+      }
+      if (std::holds_alternative<unique_ptr>(variant_)) {
+        return std::get<unique_ptr>(variant_).get();
+      }
+      __builtin_unreachable();
     }
 
     T& operator*() const noexcept
@@ -95,10 +96,6 @@ namespace otto::util {
     {
       return get() == p;
     }
-    // bool operator==(const shared_ptr& p) const noexcept
-    //{
-    //  return get() == p;
-    //}
 
     std::strong_ordering operator<=>(const smart_ptr&) const noexcept = default;
     std::strong_ordering operator<=>(pointer p) const noexcept
@@ -110,14 +107,8 @@ namespace otto::util {
     {
       return get() <=> p;
     }
-    // std::strong_ordering operator<=>(const shared_ptr& p) const noexcept
-    //{
-    //  return get() <=> p;
-    //}
 
   private:
-    /// Cached, so we dont have to switch on the variant type for each access
-    pointer pointer_;
     std::variant<pointer, unique_ptr> variant_;
   };
 } // namespace otto::util

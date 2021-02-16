@@ -204,7 +204,7 @@ TEST_CASE ("voicemanager-graphics", "[.interactive]") {
 
 
 
-    graphics.show([&](skia::Canvas& ctx) {
+    auto stop = graphics.show([&](skia::Canvas& ctx) {
       constexpr float x_pad = 30;
       constexpr float y_pad = 50;
       constexpr float y_shift = -12;

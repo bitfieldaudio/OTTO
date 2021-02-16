@@ -5,6 +5,7 @@
 #include <unordered_map>
 
 #include "lib/util/crtp.hpp"
+#include "lib/util/name_of.hpp"
 #include "lib/util/serialization.hpp"
 #include "lib/util/string_ref.hpp"
 #include "lib/util/visitor.hpp"

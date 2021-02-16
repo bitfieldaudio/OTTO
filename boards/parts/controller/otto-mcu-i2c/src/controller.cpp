@@ -15,9 +15,9 @@ namespace otto::drivers {
       DECL_VISIT(address, device_path)
     };
 
-    I2CMCUPort(Config::Handle c = {}) : conf(std::move(c)), i2c(conf->address)
+    I2CMCUPort(Config c) : conf(std::move(c)), i2c(conf.address)
     {
-      auto ec = i2c.open(conf->device_path);
+      auto ec = i2c.open(conf.device_path);
       if (ec) throw std::system_error(ec);
     }
 
@@ -68,13 +68,13 @@ namespace otto::drivers {
       // TODO: Unimplemented - is it needed?
     }
 
-    Config::Handle conf;
+    Config conf;
     util::I2C i2c;
   };
 
-  std::unique_ptr<MCUPort> MCUPort::make_default()
+  std::unique_ptr<MCUPort> MCUPort::make_default(services::ConfigManager& confman)
   {
-    return std::make_unique<I2CMCUPort>();
+    return std::make_unique<I2CMCUPort>(confman);
   }
 } // namespace otto::drivers
 

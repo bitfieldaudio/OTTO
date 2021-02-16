@@ -53,11 +53,11 @@ TEST_CASE ("StateManager destruction", "[.interactive][system]") {
     stateman.add("Navigation", std::ref(nav_km));
 
     LedManager ledman(controller.port());
-    graphics.show([&](skia::Canvas& ctx) {
+    auto stop_graphics = graphics.show([&](skia::Canvas& ctx) {
       ledman.process(layers);
       nav_km.nav().draw(ctx);
     });
-    controller.set_input_handler(layers);
+    auto stop_controller = controller.set_input_handler(layers);
 
     stateman.read_from_file();
     rt.wait_for_stop();

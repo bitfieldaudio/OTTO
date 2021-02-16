@@ -12,14 +12,24 @@ namespace otto::services {
     driver_->start();
   }
 
-  void Audio::set_midi_handler(util::smart_ptr<midi::IMidiHandler> h) noexcept
+  util::at_exit Audio::set_midi_handler(util::smart_ptr<midi::IMidiHandler> h) noexcept
   {
-    midi_.set_handler(std::move(h));
+    executor().execute([this, h = std::move(h)]() mutable { midi_.set_handler(std::move(h)); });
+    executor().sync();
+    return util::at_exit([this] {
+      executor().execute([this] { midi_.set_handler(nullptr); });
+      executor().sync();
+    });
   }
 
-  void Audio::set_process_callback(Callback&& cb) noexcept
+  util::at_exit Audio::set_process_callback(Callback&& cb) noexcept
   {
-    callback_ = std::move(cb);
+    executor().execute([this, cb = std::move(cb)]() mutable { callback_ = std::move(cb); });
+    executor().sync();
+    return util::at_exit([this] {
+      executor().execute([this] { callback_ = nullptr; });
+      executor().sync();
+    });
   }
 
   void Audio::loop_func(CallbackData data) noexcept

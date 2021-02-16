@@ -10,13 +10,21 @@ namespace otto::services {
         return !st.stop_requested();
       });
       runtime.request_stop();
-      exit_thread();
+      // Run until destructor
+      while (!st.stop_requested()) {
+        executor().run_queued_functions();
+      }
     });
   }
 
-  void Graphics::show(DrawFunc f)
+  util::at_exit Graphics::show(DrawFunc f)
   {
-    draw_func_ = std::move(f);
+    executor().execute([this, f = std::move(f)]() mutable { draw_func_ = std::move(f); });
+    executor().sync();
+    return util::at_exit([this] {
+      executor().execute([this] { draw_func_ = nullptr; });
+      executor().sync();
+    });
   }
 
   void Graphics::loop_function(SkCanvas& ctx)
@@ -25,12 +33,6 @@ namespace otto::services {
     domain_.timeline().step(std::chrono::duration<choreograph::Time>((now - last_frame_)).count());
     last_frame_ = now;
     if (draw_func_) draw_func_(ctx);
-    executor().run_queued_functions();
-  }
-
-  void Graphics::exit_thread()
-  {
-    // TODO: Propper exit syncing with ExecutorLock
     executor().run_queued_functions();
   }
 } // namespace otto::services

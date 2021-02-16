@@ -207,17 +207,17 @@ using namespace otto::board::ui;
 namespace otto::drivers {
 
   struct EGLGraphicsDriver final : IGraphicsDriver {
+    EGLUIConfig conf;
+
     void run(std::function<bool(SkCanvas&)> f) override
     {
-      show_ui(*conf, f);
+      show_ui(conf, f);
     }
-
-  private:
-    ConfHandle<EGLUIConfig> conf;
   };
 
   std::unique_ptr<IGraphicsDriver> IGraphicsDriver::make_default()
   {
+    // TODO: Pass in config
     return std::make_unique<EGLGraphicsDriver>();
   }
 

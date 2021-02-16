@@ -8,6 +8,7 @@
 #include <blockingconcurrentqueue.h>
 
 #include "app/input.hpp"
+#include "app/services/config.hpp"
 
 namespace otto::drivers {
   enum struct Command : std::uint8_t {
@@ -45,7 +46,7 @@ namespace otto::drivers {
     /// Signal stop to kill a blocking call to read
     virtual void stop() = 0;
 
-    static std::unique_ptr<MCUPort> make_default();
+    static std::unique_ptr<MCUPort> make_default(services::ConfigManager&);
   };
 
   struct LocalMCUPort : MCUPort, IInputHandler {

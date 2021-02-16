@@ -7,11 +7,12 @@
 namespace otto::util {
   struct [[nodiscard]] SignalWaiter {
     SignalWaiter(std::initializer_list<int> signals, std::function<void(int)> handler);
+    ~SignalWaiter();
+
     SignalWaiter(const SignalWaiter&) = delete;
     SignalWaiter& operator=(const SignalWaiter&) = delete;
     SignalWaiter(SignalWaiter&&) noexcept = delete;
     SignalWaiter& operator=(SignalWaiter&&) noexcept = delete;
-    ~SignalWaiter();
 
   private:
     sigset_t prev_sigmask = {};

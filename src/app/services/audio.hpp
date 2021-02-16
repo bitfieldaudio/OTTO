@@ -2,6 +2,7 @@
 
 #include <tl/optional.hpp>
 
+#include "lib/util/at_exit.hpp"
 #include "lib/util/audio_buffer.hpp"
 #include "lib/util/smart_ptr.hpp"
 
@@ -23,9 +24,9 @@ namespace otto::services {
 
     Audio(util::smart_ptr<drivers::IAudioDriver>&& d = drivers::IAudioDriver::make_default());
 
-    void set_process_callback(Callback&& cb) noexcept;
+    util::at_exit set_process_callback(Callback&& cb) noexcept;
+    util::at_exit set_midi_handler(util::smart_ptr<midi::IMidiHandler> h) noexcept;
     drivers::MidiController& midi() noexcept;
-    void set_midi_handler(util::smart_ptr<midi::IMidiHandler> h) noexcept;
     unsigned buffer_count() noexcept;
     void wait_for_n_buffers(int n) noexcept;
 
