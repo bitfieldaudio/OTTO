@@ -51,17 +51,16 @@ namespace otto::services {
 
     util::at_exit set_input_handler(IInputHandler& h);
 
-    drivers::MCUPort& port() noexcept
+    auto port_writer() noexcept
     {
-      return *com_.port_;
+      return [this](const drivers::Packet& p) { queue_.enqueue(p); };
     }
 
   private:
     Config conf_;
     MCUCommunicator com_;
 
-    std::mutex queue_mutex_;
-    std::vector<drivers::Packet> queue_;
+    moodycamel::ConcurrentQueue<drivers::Packet> queue_;
     std::jthread thread_;
   };
 

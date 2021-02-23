@@ -4,6 +4,7 @@
 #include <mutex>
 
 #include "lib/util/type_traits.hpp"
+#include "lib/util/unix_signals.hpp"
 #include "lib/util/utility.hpp"
 
 #include "lib/chrono.hpp"
@@ -57,5 +58,6 @@ namespace otto::services {
     std::mutex mutex_;
     std::condition_variable cond_;
     //    std::vector<RuntimeLock*> locks_;
+    util::SignalWaiter sig_wait_;
   };
 } // namespace otto::services

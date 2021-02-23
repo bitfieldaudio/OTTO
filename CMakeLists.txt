@@ -21,8 +21,8 @@ set(CPM_USE_LOCAL_PACKAGES OFF)
 set(CPM_LOCAL_PACKAGES_ONLY OFF)
 
 if (OTTO_ENABLE_ASAN) 
-  set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
-  set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
+  set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address -fno-sanitize=vptr")
+  set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address -fno-sanitize=vptr")
 endif()
 
 if (OTTO_ENABLE_UBSAN)
@@ -92,6 +92,7 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
 -Wno-error=pedantic \
 -Werror=unused-result \
 ")
+# Don't remove unused-result, use [[maybe_unused]] to circumvent necessary
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   set(OTTO_CXX_FLAGS "-Wall -Wno-long-long \
 -Wno-c++11-compat -Wno-c++98-compat -Wno-c++14-compat -Wno-c++17-compat -Wc++20-compat \
@@ -106,6 +107,7 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 -Wno-nested-anon-types \
 -Werror=unused-result \
 ")
+# Don't remove unused-result, use [[maybe_unused]] to circumvent when necessary
 endif()
 
 add_subdirectory(src)

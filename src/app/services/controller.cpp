@@ -26,14 +26,9 @@ namespace otto::services {
 
   Controller::Controller(RuntimeController& rt, ConfigManager& confman, util::smart_ptr<drivers::MCUPort>&& port)
     : conf_(confman), com_(rt, std::move(port)), thread_([this](const std::stop_token& stop_token) {
-        std::vector<Packet> second_buf;
         while (!stop_token.stop_requested()) {
-          second_buf.clear();
-          {
-            std::unique_lock l(queue_mutex_);
-            std::swap(queue_, second_buf);
-          }
-          for (const auto& data : second_buf) {
+          Packet data;
+          while (queue_.try_dequeue(data)) {
             com_.port_->write(data);
           }
           Packet p;

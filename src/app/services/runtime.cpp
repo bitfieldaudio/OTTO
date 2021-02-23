@@ -4,7 +4,12 @@
 
 namespace otto::services {
 
-  RuntimeController::RuntimeController() noexcept = default;
+  RuntimeController::RuntimeController() noexcept
+    : sig_wait_({SIGINT}, [this](int sig) {
+        LOGI("Got SIGINT, stopping...");
+        request_stop();
+      })
+  {}
 
   RuntimeController::~RuntimeController() noexcept
   {
@@ -19,10 +24,6 @@ namespace otto::services {
   void RuntimeController::wait_for_stop(chrono::duration timeout) noexcept
   {
     {
-      auto waiter = util::handle_signals({SIGINT}, [this](int sig) {
-        LOGI("Got SIGINT, stopping...");
-        request_stop();
-      });
       std::unique_lock lock(mutex_);
       if (timeout == chrono::duration::zero()) {
         cond_.wait(lock, [&] { return !should_run_; });

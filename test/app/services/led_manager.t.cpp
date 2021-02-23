@@ -25,16 +25,34 @@ namespace Catch {
 TEST_CASE ("LedManager") {
   std::vector<Packet> packets;
   LedManager ledman([&](Packet p) { packets.push_back(p); });
-  ledman.colors.fill(led_colors::black);
-  ledman.send_colors({Led::channel0, Led::channel1, Led::channel2, Led::channel3, Led::channel4, Led::channel5});
-  REQUIRE(packets.size() == 2);
-  REQUIRE(packets[0] ==
-          Packet{Command::leds_buffer,
-                 {util::enum_integer(Led::channel0), 0, 0, 0, util::enum_integer(Led::channel1), 0, 0, 0,
-                  util::enum_integer(Led::channel2), 0, 0, 0, util::enum_integer(Led::channel3), 0, 0, 0}});
-  REQUIRE(packets[1] == Packet{Command::leds_commit,
-                               {util::enum_integer(Led::channel4), 0, 0, 0, util::enum_integer(Led::channel5), 0, 0, 0,
-                                255, 255, 255, 255, 255, 255, 255, 255}});
+  SECTION ("send_colors") {
+    ledman.colors.fill(led_colors::black);
+    ledman.send_colors({Led::channel0, Led::channel1, Led::channel2, Led::channel3, Led::channel4, Led::channel5});
+    REQUIRE(packets.size() == 2);
+    REQUIRE(packets[0] ==
+            Packet{Command::leds_buffer,
+                   {util::enum_integer(Led::channel0), 0, 0, 0, util::enum_integer(Led::channel1), 0, 0, 0,
+                    util::enum_integer(Led::channel2), 0, 0, 0, util::enum_integer(Led::channel3), 0, 0, 0}});
+    REQUIRE(packets[1] == Packet{Command::leds_commit,
+                                 {util::enum_integer(Led::channel4), 0, 0, 0, //
+                                  util::enum_integer(Led::channel5), 0, 0, 0, //
+                                  255, 255, 255, 255, 255, 255, 255, 255}});
+  }
+
+  SECTION ("process") {
+    struct LC : ILedController {
+      void leds(LEDColorSet& colors) noexcept final
+      {
+        colors[Led::channel0] = led_colors::white;
+      }
+    } lc;
+    ledman.colors.fill(led_colors::black);
+    ledman.process(lc);
+    REQUIRE(packets.size() == 1);
+    REQUIRE(packets[0] == Packet{Command::leds_commit,
+                                 {util::enum_integer(Led::channel0), 255, 255, 255, //
+                                  255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255}});
+  }
 }
 
 TEST_CASE ("led perf", "[.interactive]") {

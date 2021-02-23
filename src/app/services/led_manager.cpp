@@ -7,6 +7,7 @@ namespace otto::services {
   void LedManager::process(ILedController& controller)
   {
     LEDColorSet res;
+    controller.leds(res);
     util::enum_bitset<Led> changed;
     for (auto&& [l, col] : res) {
       changed[l] = col != colors[l];

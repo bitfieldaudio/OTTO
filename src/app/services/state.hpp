@@ -40,7 +40,16 @@ namespace otto::services {
         LOGW("State file {} not found", file_path_);
         return;
       }
-      util::deserialize_from(json::parse_file(file_path_), *this);
+      try {
+        util::deserialize_from(json::parse_file(file_path_), *this);
+      } catch (json::value::parse_error& e) {
+        LOGE("State file parse error!");
+        LOGE("{}", e.what());
+        auto corrupt = file_path_;
+        corrupt += ".corrupt";
+        std::filesystem::rename(file_path_, corrupt);
+        LOGE("State file has been backed up as {}", corrupt);
+      }
     }
 
     void visit(util::AVisitorOf<util::DynSerializable> auto&& visitor)

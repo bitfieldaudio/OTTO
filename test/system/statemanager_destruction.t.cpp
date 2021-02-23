@@ -52,7 +52,7 @@ TEST_CASE ("StateManager destruction", "[.interactive][system]") {
     // stateman.add("EngineChannel", std::ref(chan));
     stateman.add("Navigation", std::ref(nav_km));
 
-    LedManager ledman(controller.port());
+    LedManager ledman(controller.port_writer());
     auto stop_graphics = graphics.show([&](skia::Canvas& ctx) {
       ledman.process(layers);
       nav_km.nav().draw(ctx);

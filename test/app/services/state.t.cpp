@@ -13,10 +13,11 @@ TEST_CASE ("StateManager") {
   int i2 = 2;
   auto path = test::temp_file("statemanager.json");
   services::StateManager stateman{path};
-  stateman.add("Test", util::visitable([&](auto&& visit) {
-                 visit("i1", i1);
-                 visit("i2", i2);
-               }));
+  auto v = util::visitable([&](auto&& visit) {
+    visit("i1", i1);
+    visit("i2", i2);
+  });
+  stateman.add("Test", std::ref(v));
   SECTION ("Basic") {
     stateman.write_to_file();
     i1 = 20;
@@ -57,6 +58,7 @@ TEST_CASE ("StateManager") {
     REQUIRE(val["Test"]["i1"] == json::value(1));
   }
 }
+
 struct StubSer {
   ~StubSer()
   {

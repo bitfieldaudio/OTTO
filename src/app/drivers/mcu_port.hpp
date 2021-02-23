@@ -18,6 +18,7 @@ namespace otto::drivers {
     key_events = 3,
     encoder_events = 4,
     shutdown = 5,
+    heartbeat = 6,
   };
 
   struct Packet {

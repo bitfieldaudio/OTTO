@@ -48,9 +48,9 @@ namespace otto::util {
     };
   } // namespace detail
 
-  AVisitable auto visitable(util::callable<void(decltype(detail::test_visitor))> auto&& func)
+  [[nodiscard]] AVisitable auto visitable(util::callable<void(decltype(detail::test_visitor))> auto&& func)
   {
-    return detail::VisitableWrapper<decltype(func)>{FWD(func)};
+    return detail::VisitableWrapper<std::remove_reference_t<decltype(func)>>{FWD(func)};
   }
 } // namespace otto::util
 

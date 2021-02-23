@@ -186,7 +186,7 @@ else()
   )
 
   if (skia_ADDED)
-    set(skia_LIB_LOCATION "${skia_SOURCE_DIR}/out/Static/libskia.a")
+    #set(skia_LIB_LOCATION "${skia_BINARY_DIR}/out/Static/libskia.a")
     set(skia_ARGS "\
   is_debug=true \
   paragraph_gms_enabled=false \
@@ -236,21 +236,34 @@ else()
   skia_use_x11=false \
   skia_use_xps=false \
   skia_use_zlib=false \
-  extra_cflags=[\"-Wno-unknown-warning-option\",\"-Wno-uninitialized\"]
+  extra_cflags=[\"-Wno-unknown-warning-option\",\"-Wno-uninitialized\"] \
+  extra_cflags_cc=[\"-frtti\"] \
+  extra_ldflags=[] \
 ")
+    if (OTTO_ENABLE_ASAN)
+      # This makes sure rtti is not disabled for skia
+      #string(APPEND skia_ARGS " sanitize=\"ASAN\" ")
+    endif()
 
     message("Downloading skia third party dependencies (might take a while)...")
     execute_process(
       COMMAND python tools/git-sync-deps
       WORKING_DIRECTORY "${skia_SOURCE_DIR}"  
     )
+    # Add this, but it requires cmake 3.19
+    # COMMAND_ERROR_IS_FATAL ANY
+    message("Generating skia gn project...")
+    execute_process(
+      COMMAND bin/gn gen "${skia_BINARY_DIR}/out/config" --ide=json --args=${skia_ARGS}
+      WORKING_DIRECTORY "${skia_SOURCE_DIR}"  
+    )
     message("Generating skia cmake project...")
     execute_process(
-      COMMAND bin/gn gen out/config --ide=json --json-ide-script=../../gn/gn_to_cmake.py --args=${skia_ARGS}
+      COMMAND python "${skia_SOURCE_DIR}/gn/gn_to_cmake.py" "${skia_BINARY_DIR}/out/config/project.json"
       WORKING_DIRECTORY "${skia_SOURCE_DIR}"  
     )
     set(CMAKE_CXX_STANDARD 17)
-    add_subdirectory("${skia_SOURCE_DIR}/out/config" "${skia_BINARY_DIR}" EXCLUDE_FROM_ALL)
+    add_subdirectory("${skia_BINARY_DIR}/out/config" "${skia_BINARY_DIR}/build" EXCLUDE_FROM_ALL)
     # Remove the include directories to make sure they are added as system includes
     set_target_properties(skia PROPERTIES INCLUDE_DIRECTORIES "")
     target_include_directories(skia PUBLIC SYSTEM "${skia_SOURCE_DIR}/")

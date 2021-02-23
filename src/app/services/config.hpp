@@ -89,6 +89,13 @@ namespace otto::services {
   inline ConfigManager::ConfigManager(const std::filesystem::path& config_path)
   try : ConfigManager(json::parse_file(config_path)) {
     file_path = config_path;
+  } catch (json::value::parse_error& e) {
+    LOGE("Config file parse error!");
+    LOGE("{}", e.what());
+    auto new_path = config_path;
+    new_path += ".corrupt";
+    std::filesystem::rename(config_path, new_path);
+    LOGE("Config file has been backed up as {}", new_path);
   } catch (std::runtime_error& e) {
     LOGE("Error reading config file:");
     LOGE("{}", e.what());

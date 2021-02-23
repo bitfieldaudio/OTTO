@@ -56,7 +56,7 @@ int main(int argc, char* argv[])
 
   RtMidiDriver rt_midi_driver(audio.midi());
 
-  LedManager ledman(controller.port());
+  LedManager ledman(controller.port_writer());
 
   auto stop_midi = audio.set_midi_handler(&eng.audio->midi_handler());
   auto stop_audio = audio.set_process_callback([&](Audio::CallbackData data) {

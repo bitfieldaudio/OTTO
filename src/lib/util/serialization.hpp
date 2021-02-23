@@ -82,67 +82,44 @@ namespace otto::util {
 
     template<ASerializable T>
     DynSerializable(std::reference_wrapper<T> t)
-      : ptr_(&t.get()),
-        serialize_into_([](json::value& json, void* ptr) { util::serialize_into(json, *static_cast<const T*>(ptr)); }),
-        deserialize_from_(
-          [](const json::value& json, void* ptr) { util::deserialize_from(json, *static_cast<T*>(ptr)); })
+      : data_(t),
+        serialize_into_([](json::value& json, const std::any& data) {
+          util::serialize_into(json, std::any_cast<std::reference_wrapper<T>>(data).get());
+        }),
+        deserialize_from_([](const json::value& json, std::any& data) {
+          util::deserialize_from(json, std::any_cast<std::reference_wrapper<T>>(data).get());
+        })
     {}
 
     template<ASerializable T>
     DynSerializable(T&& t) // NOLINT
       requires(std::is_rvalue_reference_v<decltype(t)> && !util::decays_to<T, DynSerializable> &&
                std::is_nothrow_move_constructible_v<T>)
-      : ptr_(new T(std::move(t))), // NOLINT
-        destroy_([](void* ptr) {
-          delete static_cast<T*>(ptr); // NOLINT
-        }),
-        serialize_into_([](json::value& json, void* ptr) { util::serialize_into(json, *static_cast<const T*>(ptr)); }),
+      : data_(std::move(t)), // NOLINT
+        serialize_into_(
+          [](json::value& json, const std::any& data) { util::serialize_into(json, std::any_cast<const T&>(data)); }),
         deserialize_from_(
-          [](const json::value& json, void* ptr) { util::deserialize_from(json, *static_cast<T*>(ptr)); })
+          [](const json::value& json, std::any& data) { util::deserialize_from(json, std::any_cast<T&>(data)); })
     {}
-
-    ~DynSerializable() noexcept
-    {
-      if (destroy_ != nullptr) destroy_(ptr_);
-    }
 
     DynSerializable(const DynSerializable&) = delete;
     DynSerializable& operator=(const DynSerializable&) = delete;
-    DynSerializable(DynSerializable&& rhs) noexcept
-      : ptr_(rhs.ptr_),
-        destroy_(rhs.destroy_),
-        serialize_into_(rhs.serialize_into_),
-        deserialize_from_(rhs.deserialize_from_)
-    {
-      rhs.destroy_ = nullptr;
-    }
-
-    DynSerializable& operator=(DynSerializable&& rhs) noexcept
-    {
-      ptr_ = rhs.ptr_;
-      destroy_ = rhs.destroy_;
-      serialize_into_ = rhs.serialize_into_;
-      deserialize_from_ = rhs.deserialize_from_;
-      rhs.destroy_ = nullptr;
-      return *this;
-    }
+    DynSerializable(DynSerializable&& rhs) noexcept = default;
+    DynSerializable& operator=(DynSerializable&& rhs) noexcept = default;
 
     void serialize_into(json::value& json) const
     {
-      if (ptr_ == nullptr) return;
-      serialize_into_(json, ptr_);
+      if (serialize_into_ != nullptr) serialize_into_(json, data_);
     }
     void deserialize_from(const json::value& json)
     {
-      if (ptr_ == nullptr) return;
-      deserialize_from_(json, ptr_);
+      if (deserialize_from_ != nullptr) deserialize_from_(json, data_);
     }
 
   private:
-    void* ptr_ = nullptr;
-    util::function_ptr<void(void*)> destroy_ = nullptr;
-    util::function_ptr<void(json::value&, void*)> serialize_into_ = nullptr;
-    util::function_ptr<void(const json::value&, void*)> deserialize_from_ = nullptr;
+    std::any data_;
+    util::function_ptr<void(json::value&, const std::any&)> serialize_into_ = nullptr;
+    util::function_ptr<void(const json::value&, std::any&)> deserialize_from_ = nullptr;
   };
 
   // Specializations
