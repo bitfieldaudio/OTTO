@@ -129,12 +129,12 @@ namespace otto::voices {
 
         auto pm = magic_enum::enum_value<PlayMode>(i);
         skia::place_text(ctx, playmode_string(pm), fonts::medium(24),
-                         paints::fill(active ? colors::white : colors::grey50), {mode_text_x, y + line_size * 0.5},
+                         paints::fill(active ? colors::white : colors::grey50), {mode_text_x, y + line_size * 0.5f},
                          anchors::middle_left);
         skia::place_text(ctx, aux_setting(pm), fonts::medium(24), paints::fill(active ? colors::white : colors::grey50),
-                         {aux_text_x, y + line_size * 0.5}, anchors::middle_left);
+                         {aux_text_x, y + line_size * 0.5f}, anchors::middle_left);
         skia::place_text(ctx, aux_value(pm), fonts::medium(24), paints::fill(active ? colors::white : colors::grey50),
-                         {aux_value_x, y + line_size * 0.5}, anchors::middle_right);
+                         {aux_value_x, y + line_size * 0.5f}, anchors::middle_right);
       };
 
       // Top text

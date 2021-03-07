@@ -1,11 +1,10 @@
 #include "app/services/audio.hpp"
+
 #include "arp.hpp"
 
 namespace otto::engines::arp {
-  struct Audio final : AudioDomain,
-                       itc::Consumer<State>,
-                       IMidiFXAudio,
-                       core::ServiceAccessor<services::Audio> {
+  using namespace otto;
+  struct Audio final : AudioDomain, itc::Consumer<State>, IMidiFXAudio {
     Audio(itc::ChannelGroup& ch) : Consumer(ch) {}
 
     midi::IMidiHandler& midi_handler() noexcept override
@@ -15,9 +14,7 @@ namespace otto::engines::arp {
 
     // A process function should return what?
 
-    void on_state_change(const State& s) noexcept override
-    {
-    }
+    void on_state_change(const State& s) noexcept override {}
 
   private:
     midi::MidiHandler midi_handler_;
@@ -28,5 +25,4 @@ namespace otto::engines::arp {
     return std::make_unique<Audio>(chan);
   }
 
-}
-  
+} // namespace otto::engines::arp

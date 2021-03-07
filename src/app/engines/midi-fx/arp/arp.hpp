@@ -1,8 +1,11 @@
+#pragma once
+
 #include "lib/util/local_vector.hpp"
 #include "lib/util/visitor.hpp"
 #include "lib/util/with_limits.hpp"
 
 #include "lib/audio.hpp"
+#include "lib/engine.hpp"
 #include "lib/graphics.hpp"
 #include "lib/midi.hpp"
 

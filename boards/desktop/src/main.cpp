@@ -47,31 +47,18 @@ int main(int argc, char* argv[])
   auto voices_logic = voices::make_voices_logic(chan);
   auto voices_screen = voices::make_voices_screen(chan);
 
-<<<<<<< Updated upstream
-=======
   auto midifx_eng = engines::arp::factory.make_all(chan);
 
-  app.service<Audio>().set_midi_handler(&eng.audio->midi_handler());
-  app.service<Audio>().set_process_callback([&](Audio::CallbackData data) {
-    const auto res = eng.audio->process();
-    std::copy(util::zip(res, res), data.output.begin());
-  });
-
->>>>>>> Stashed changes
   LayerStack layers;
   auto piano = layers.make_layer<PianoKeyLayer>(audio.midi());
   auto nav_km = layers.make_layer<NavKeyMap>(confman);
   nav_km.bind_nav_key(Key::synth, eng.main_screen);
   nav_km.bind_nav_key(Key::envelope, eng.mod_screen);
   nav_km.bind_nav_key(Key::voices, voices_screen);
-<<<<<<< Updated upstream
-  // nav_km.bind_nav_key(Key::arp, midifx_eng.screen);
+  nav_km.bind_nav_key(Key::arp, midifx_eng.screen);
   stateman.add("Navigation", std::ref(nav_km));
 
   RtMidiDriver rt_midi_driver(audio.midi());
-=======
-  nav_km.bind_nav_key(Key::arp, midifx_eng.screen);
->>>>>>> Stashed changes
 
   LedManager ledman(controller.port_writer());
 
