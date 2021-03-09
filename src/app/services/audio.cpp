@@ -8,7 +8,7 @@ namespace otto::services {
   {
     driver_->set_callback(std::bind_front(&Audio::loop_func, this));
     AudioDomain::buffer_pool_ = util::AudioBufferPool{16, driver_->buffer_size()};
-    gam::sampleRate(util::narrow(driver_->sample_rate()));
+    gam::sampleRate(util::narrow<double>(driver_->sample_rate()));
     driver_->start();
   }
 

@@ -2,7 +2,6 @@
 
 #include "app/services/config.hpp"
 
-#include "app/application.hpp"
 #include "app/services/runtime.hpp"
 
 using namespace otto;

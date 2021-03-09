@@ -23,7 +23,7 @@ endif()
 CPMAddPackage(
   NAME fmt
   GITHUB_REPOSITORY fmtlib/fmt
-  GIT_TAG 7.0.3
+  GIT_TAG 7.1.3
 )
 
 # We're on version v0.3.0-123-gff67c1a which is not officially tagged in Github

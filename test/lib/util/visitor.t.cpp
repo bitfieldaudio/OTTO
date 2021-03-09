@@ -25,6 +25,7 @@ struct S2 {
 struct V2 {
   void operator()(util::string_ref name, const auto& i)
   {
+    // This test can be a bit annoying with floats since it depends on the default format
     str += fmt::format("{}{}", name, i);
   }
   void operator()(util::string_ref name, S1& s)
@@ -53,6 +54,6 @@ TEST_CASE ("Visitor") {
   SECTION ("DECL_VISIT") {
     S2 s2;
     s2.visit(v2);
-    REQUIRE(v2.str == "i20s1{i0f1.0shello}");
+    REQUIRE(v2.str == "i20s1{i0f1shello}");
   }
 }

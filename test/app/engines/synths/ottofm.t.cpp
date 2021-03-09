@@ -9,7 +9,6 @@
 #include "lib/itc/itc.hpp"
 #include "lib/itc/reducer.hpp"
 
-#include "app/application.hpp"
 #include "app/layers/navigator.hpp"
 #include "app/layers/piano_key_layer.hpp"
 #include "app/services/audio.hpp"

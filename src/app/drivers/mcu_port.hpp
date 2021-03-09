@@ -28,7 +28,7 @@ namespace otto::drivers {
     [[nodiscard]] std::array<std::uint8_t, 17> to_array() const
     {
       std::array<std::uint8_t, 17> res = {};
-      res[0] = util::narrow(cmd);
+      res[0] = util::enum_integer(cmd);
       std::ranges::copy(data, res.begin() + 1);
       return res;
     }

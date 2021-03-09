@@ -12,11 +12,11 @@ struct FloatConvertible {
 };
 
 TEST_CASE ("StaticallyBounded") {
-  util::StaticallyBounded<float, -2, 3> a = -3; // Will clamp to -2
-  util::StaticallyBounded<float, -2, 3> b = 1;
-  util::StaticallyBounded<int, 0, 3> c = 2;
-  util::StaticallyBounded<float, -2, 4> d = 1;
-  // util::StaticallyBounded<float, -2, 4> e = 0.5;
+  util::Bounded<float, util::bounds<-2, 3>> a = -3; // Will clamp to -2
+  util::Bounded<float, util::bounds<-2, 3>> b = 1;
+  util::Bounded<int, util::bounds<0, 3>> c = 2;
+  util::Bounded<float, util::bounds<-2, 4>> d = 1;
+  // util::Bounded<float, util::bounds<-2, 4>> e = 0.5;
 
   SECTION ("Initialization") {
     REQUIRE(a == -2.f);

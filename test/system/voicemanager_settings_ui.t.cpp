@@ -13,7 +13,6 @@
 #include "lib/skia/skia.hpp"
 #include "lib/widget.hpp"
 
-#include "app/application.hpp"
 #include "app/services/config.hpp"
 #include "app/services/graphics.hpp"
 

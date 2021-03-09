@@ -2,7 +2,7 @@
 
 #include "app/services/state.hpp"
 
-#include "app/application.hpp"
+#include "app/services/runtime.hpp"
 
 #include "stubs/state.hpp"
 

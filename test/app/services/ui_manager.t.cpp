@@ -2,7 +2,6 @@
 
 #include "app/services/ui_manager.hpp"
 
-#include "app/application.hpp"
 #include "app/services/audio.hpp"
 #include "app/services/config.hpp"
 #include "app/services/controller.hpp"

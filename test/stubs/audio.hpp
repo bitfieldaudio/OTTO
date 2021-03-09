@@ -8,6 +8,16 @@
 #include "app/services/runtime.hpp"
 
 namespace otto::stubs {
+  struct DummyAudioMixer final : drivers::IAudioMixer {
+    void set_volume(float) override{
+
+    };
+    [[nodiscard]] float get_volume() const override
+    {
+      return 1.f;
+    };
+  };
+
   struct NoProcessAudioDriver final : drivers::IAudioDriver {
     void set_callback(Callback&& cb) override
     {
@@ -24,7 +34,13 @@ namespace otto::stubs {
       return 44100;
     }
 
+    DummyAudioMixer& mixer() override
+    {
+      return mixer_;
+    }
+
     Callback callback;
+    DummyAudioMixer mixer_;
   };
 
   struct DummyAudioDriver final : drivers::IAudioDriver {
@@ -69,10 +85,16 @@ namespace otto::stubs {
       return 44100;
     }
 
+    DummyAudioMixer& mixer() override
+    {
+      return mixer_;
+    }
+
   private:
     std::vector<float> buffers_;
     Callback callback_;
     std::jthread thread_;
+    DummyAudioMixer mixer_;
   };
 
 } // namespace otto::stubs

@@ -2,12 +2,14 @@
 
 #include <RtAudio.h>
 
+#include "lib/util/dynamic.hpp"
+
 #include "app/services/config.hpp"
 
 namespace otto::drivers {
 
   struct RtAudioConfig : Config<RtAudioConfig> {
-    static constexpr util::string_ref name = "RtAudio";
+    static constexpr util::string_ref name = "AudioDriver";
     std::string input_device;
     std::string output_device;
     unsigned buffer_size = 256;
@@ -27,6 +29,11 @@ namespace otto::drivers {
     [[nodiscard]] std::size_t buffer_size() const noexcept override;
     [[nodiscard]] std::size_t sample_rate() const noexcept override;
 
+    IAudioMixer& mixer() noexcept override
+    {
+      return *mixer_;
+    }
+
   private:
     int rtaudio_cb(float* out, float* in, int nframes, double time, RtAudioStreamStatus status) noexcept;
 
@@ -40,12 +47,36 @@ namespace otto::drivers {
     std::vector<float> buffers;
     RtAudio::StreamParameters i_params;
     RtAudio::StreamParameters o_params;
+    std::unique_ptr<IAudioMixer> mixer_;
+    float software_volume_ = 1.f;
+    friend struct RtAudioSoftwareMixer;
   };
 
   std::unique_ptr<IAudioDriver> IAudioDriver::make_default()
   {
     // TODO: Pass in config manager or something
     return std::make_unique<RtAudioDriver>(RtAudioConfig{});
+  }
+
+  struct RtAudioSoftwareMixer final : IAudioMixer {
+    RtAudioSoftwareMixer(RtAudioDriver& d) : driver_(d) {}
+
+    void set_volume(float v) override
+    {
+      driver_.software_volume_ = v;
+    }
+    [[nodiscard]] float get_volume() const override
+    {
+      return driver_.software_volume_;
+    }
+
+  private:
+    RtAudioDriver& driver_;
+  };
+
+  std::unique_ptr<IAudioMixer> IAudioMixer::make_software(IAudioDriver& driver)
+  {
+    return std::make_unique<RtAudioSoftwareMixer>(dynamic_cast<RtAudioDriver&>(driver));
   }
 
   RtAudioDriver::RtAudioDriver(const RtAudioConfig& conf) : conf(conf)
@@ -79,6 +110,13 @@ namespace otto::drivers {
     i_params.nChannels = idev.inputChannels;
 
     init_audio();
+    try {
+      mixer_ = IAudioMixer::make_default(*this);
+    } catch (std::exception& e) {
+      LOGE("Error constructing default audio mixer: {}", e.what());
+      LOGW("Continuing with software mixer");
+      mixer_ = IAudioMixer::make_software(*this);
+    }
   }
 
   void RtAudioDriver::start()
@@ -101,7 +139,8 @@ namespace otto::drivers {
     adac.openStream(
       &o_params, &i_params, RTAUDIO_FLOAT32, samplerate, &buffer_size_,
       [](void* out, void* in, unsigned nframes, double time, RtAudioStreamStatus status, void* self_) {
-        return static_cast<RtAudioDriver*>(self_)->rtaudio_cb((float*) out, (float*) in, nframes, time, status);
+        return static_cast<RtAudioDriver*>(self_)->rtaudio_cb(static_cast<float*>(out), static_cast<float*>(in),
+                                                              static_cast<int>(nframes), time, status);
       },
       this, &opts);
     buffers.resize(buffer_size_ * 4);

@@ -2,7 +2,6 @@
 
 #include "app/services/led_manager.hpp"
 
-#include "app/application.hpp"
 #include "app/services/controller.hpp"
 #include "app/services/graphics.hpp"
 

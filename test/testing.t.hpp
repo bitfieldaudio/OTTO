@@ -20,6 +20,7 @@
 #include "lib/util/utility.hpp"
 
 #include "fmt/core.h"
+#include "fmt/ostream.h"
 #include "magic_enum.hpp"
 
 namespace fs = std::filesystem;

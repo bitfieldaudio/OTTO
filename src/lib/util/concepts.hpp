@@ -52,6 +52,12 @@ namespace otto::util {
   template<typename T, typename U>
   concept base_of = std::derived_from<U, T>;
 
+  template<typename T, typename U>
+  concept three_way_comparable_with = requires(T t, U u)
+  {
+    t <=> u;
+  };
+
   template<typename T>
   concept AnEnum = std::is_enum_v<T>;
 

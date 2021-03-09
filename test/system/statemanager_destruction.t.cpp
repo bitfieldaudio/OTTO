@@ -11,7 +11,6 @@
 #include "lib/itc/reducer.hpp"
 #include "lib/voices/voice_manager.hpp"
 
-#include "app/application.hpp"
 #include "app/engines/synths/ottofm/ottofm.hpp"
 #include "app/layers/navigator.hpp"
 #include "app/layers/piano_key_layer.hpp"

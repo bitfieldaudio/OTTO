@@ -5,8 +5,9 @@
 
 namespace otto::util {
 
-  template<typename Interface, std::size_t SBOsize = 24>
-  requires(SBOsize >= sizeof(std::unique_ptr<Interface>)) struct Component {
+  template<typename Interface, std::size_t SBOsize = std::min(std::size_t(24), sizeof(Interface))>
+  requires(SBOsize >= sizeof(std::unique_ptr<Interface>)) //
+    struct Component {
     using deleter = std::default_delete<Interface>;
     constexpr static std::size_t small_buffer_size = SBOsize;
     enum struct StorageKind : std::uint8_t { pointer, small_buffer, unique_ptr };
