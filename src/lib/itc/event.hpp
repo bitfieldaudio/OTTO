@@ -11,7 +11,7 @@ namespace otto::itc {
   concept AnEvent = std::copyable<T>;
 
   template<AnEvent Event>
-  struct TypedChannel;
+  struct TypedChannelLeaf;
   template<AnEvent... Events>
   struct Sender;
   template<AnEvent... Events>

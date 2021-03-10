@@ -32,7 +32,7 @@ namespace otto {
     Audio audio;
     StateManager stateman("data/state.json");
 
-    itc::ChannelGroup chan;
+    itc::Channel chan;
     auto eng = engines::ottofm::factory.make_all(chan);
     stateman.add("EngineChannel", std::ref(chan));
 

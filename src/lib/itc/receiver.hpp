@@ -6,20 +6,18 @@
 namespace otto::itc {
 
   template<AnEvent Event>
-  struct Receiver<Event> : private virtual IDomain {
-    Receiver(TypedChannel<Event>& ch) : channel_(&ch)
+  struct Receiver<Event> : private virtual IDomain, detail::ReceiverBase {
+    Receiver(Channel& ch) : channel_(&ch)
     {
-      ch.internal_add_receiver(this);
+      ch.register_receiver(this);
     }
-
-    Receiver(ChannelGroup& channels) : Receiver(channels.get<Event>()) {}
 
     Receiver(const Receiver&) = delete;
     Receiver& operator=(const Receiver&) = delete;
 
     virtual ~Receiver() noexcept
     {
-      if (channel_) std::erase(channel_->receivers_, this);
+      channel_->unregister_receiver(this);
       // Wait for queued functions to be executed
       // virtual functions dont exist at this point anymore,
       // so we have to do this weird caching of the executor
@@ -29,29 +27,36 @@ namespace otto::itc {
     }
 
     /// The channel this receiver is registered on
-    TypedChannel<Event>* channel() const noexcept
+    [[nodiscard]] Channel& channel() const noexcept
     {
-      return channel_;
+      return *channel_;
+    }
+
+    Sender<Event>* sender() const noexcept
+    {
+      return sender_;
     }
 
     virtual void handle(Event) noexcept {}
 
   private:
-    template<AnEvent>
-    friend struct TypedChannel;
+    friend Sender<Event>;
+    friend struct linker;
 
+    /// Called by `send` in `Sender`
     void internal_send(const Event& event) noexcept
     {
       if (exec_ == nullptr) exec_ = &executor();
       exec_->execute([this, event] { handle(std::move(event)); });
     }
 
-    TypedChannel<Event>* channel_;
+    Channel* channel_;
+    Sender<Event>* sender_ = nullptr;
     IExecutor* exec_ = nullptr;
   };
 
   template<AnEvent... Events>
   struct Receiver : Receiver<Events>... {
-    Receiver(ChannelGroup& ch) : Receiver<Events>(ch)... {}
+    Receiver(Channel& ch) : Receiver<Events>(ch)... {}
   };
 } // namespace otto::itc

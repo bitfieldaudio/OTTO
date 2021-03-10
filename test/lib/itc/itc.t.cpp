@@ -16,90 +16,120 @@ template<AState... States>
 using ImmCons = WithDomain<StaticDomain<>, Consumer<States...>>;
 
 // Tests
-TEST_CASE ("Basic TypedChannel/Receiver/Sender linking and lifetime", "[itc]") {
+TEST_CASE ("Basic Channel/Receiver/Sender linking and lifetime", "[itc]") {
   struct Event {};
 
   ImmediateExecutor ex;
   StaticDomain<>::set_static_executor(ex);
 
-  SECTION ("Constructing receiver with channel registers it") {
-    TypedChannel<Event> ch;
-    ImmRec<Event> r1 = {ch};
-
-    REQUIRE(ch.receivers().size() == 1);
-    REQUIRE(ch.receivers()[0] == &r1);
-
-    ImmRec<Event> c2 = {ch};
-
-    REQUIRE(ch.receivers().size() == 2);
-    REQUIRE(ch.receivers()[1] == &c2);
-  }
-
-  SECTION ("Constructing a sender with a channel registers it") {
-    TypedChannel<Event> ch1;
-    Sender<Event> p = {ch1};
-
-    REQUIRE(p.channels().size() == 1);
-    REQUIRE(p.channels()[0] == &ch1);
-    SECTION ("A sender can be registered to more channels with ch.set_sender") {
-      TypedChannel<Event> ch2;
-      ch2.set_sender(p);
-      REQUIRE(p.channels().size() == 2);
-      REQUIRE(p.channels()[1] == &ch2);
-    }
-  }
-
-  SECTION ("TypedChannel has a reference to its sender") {
-    TypedChannel<Event> ch;
-    REQUIRE(ch.sender() == nullptr);
-    Sender<Event> p = {ch};
-    REQUIRE(ch.sender() == &p);
-
-    SECTION ("Also when registered with set_sender") {
-      TypedChannel<Event> ch2;
-      ch2.set_sender(p);
-      REQUIRE(ch2.sender() == &p);
-      REQUIRE(ch.sender() == &p);
-    }
+  SECTION ("Receiver has a reference to its sender") {
+    Channel ch;
+    Sender<Event> s{ch};
+    ImmRec<Event> r1(ch);
+    REQUIRE(r1.sender() == &s);
   }
 
   SECTION ("Receiver has a reference to its channel") {
-    TypedChannel<Event> ch;
+    Channel ch;
     ImmRec<Event> c = {ch};
-    REQUIRE(c.channel() == &ch);
+    REQUIRE(&c.channel() == &ch);
+  }
+
+  SECTION ("Sender has a list of receivers") {
+    Channel ch;
+    Sender<Event> s1{ch};
+    ImmRec<Event> r1{ch};
+    ImmRec<Event> r2{ch};
+    ImmRec<Event> r3{ch};
+    REQUIRE_THAT(s1.receivers(), Catch::Matchers::Equals(std::vector<Receiver<Event>*>{&r1, &r2, &r3}));
   }
 
   SECTION ("Bidirectional lifetime management") {
-    SECTION ("Sender / TypedChannel") {
-      SECTION ("Sender destroyed before channel") {
-        TypedChannel<Event> ch;
+    SECTION ("Sender / Receiver") {
+      SECTION ("Sender destroyed before receiver") {
+        Channel ch;
+        ImmRec<Event> r1(ch);
         {
-          Sender<Event> p = {ch};
+          Sender<Event> s = {ch};
         }
-        REQUIRE(ch.sender() == nullptr);
+        REQUIRE(r1.sender() == nullptr);
       }
-      SECTION ("TypedChannel destroyed before sender") {
-        auto ch = std::make_unique<TypedChannel<Event>>();
-        Sender<Event> p = {*ch};
-        ch.reset();
-        REQUIRE(p.channels().empty());
+      SECTION ("Receiver destroyed before sender") {
+        Channel ch;
+        Sender<Event> s{ch};
+        {
+          ImmRec<Event> r{ch};
+        }
+        REQUIRE(s.receivers().empty());
       }
     }
-    SECTION ("Receiver / TypedChannel") {
-      SECTION ("Receiver destroyed before channel") {
-        TypedChannel<Event> ch;
-        {
-          ImmRec<Event> p = {ch};
-        }
-        REQUIRE(ch.receivers().empty());
-      }
-      SECTION ("TypedChannel destroyed before receiver") {
-        auto ch = std::make_unique<TypedChannel<Event>>();
-        ImmRec<Event> c = {*ch};
-        ch.reset();
-        REQUIRE(c.channel() == nullptr);
-      }
+  }
+}
+TEST_CASE ("itc Events", "[itc]") {
+  ImmediateExecutor ex;
+  StaticDomain<>::set_static_executor(ex);
+
+  struct TestEvent1 {
+    int param1 = 0;
+  };
+  Channel ch;
+  Sender<TestEvent1> sender = {ch};
+
+  struct R1 : Receiver<TestEvent1>, StaticDomain<> {
+    using Receiver::Receiver;
+
+    void handle(TestEvent1 event) noexcept override
+    {
+      counter += event.param1;
     }
+
+    int counter = 0;
+  } r1 = {ch};
+
+  SECTION ("Send events ") {
+    sender.send({1});
+    REQUIRE(r1.counter == 1);
+    sender.send({2});
+    REQUIRE(r1.counter == 3);
+  }
+}
+
+TEST_CASE ("Channel walking", "[itc]") {
+  ImmediateExecutor ex;
+  StaticDomain<>::set_static_executor(ex);
+
+  struct TestEvent1 {
+    int param1 = 0;
+  };
+
+  using S1 = Sender<TestEvent1>;
+
+  struct R1 : Receiver<TestEvent1>, StaticDomain<> {
+    using Receiver::Receiver;
+
+    void handle(TestEvent1 event) noexcept override
+    {
+      counter += event.param1;
+    }
+
+    int counter = 0;
+  };
+
+  Channel ch;
+  Channel& sub = ch["1"]["1"];
+
+  SECTION ("Register receiver first") {
+    R1 r1 = {sub};
+    S1 s1 = {ch};
+    s1.send({1});
+    REQUIRE(r1.counter == 1);
+  }
+
+  SECTION ("Register sender first") {
+    S1 s1 = {ch};
+    R1 r1 = {sub};
+    s1.send({1});
+    REQUIRE(r1.counter == 1);
   }
 }
 
@@ -109,7 +139,7 @@ TEST_CASE ("Basic state passing", "[itc]") {
   struct S {
     int i = 0;
   };
-  TypedChannel<state_change_event<S>> ch;
+  Channel ch;
   Producer<S> p = {ch};
   struct C1 : Consumer<S>, StaticDomain<> {
     using Consumer<S>::Consumer;
@@ -126,18 +156,15 @@ TEST_CASE ("Basic state passing", "[itc]") {
     REQUIRE(c1.state().i == 0);
   }
 
-  struct P1 : Producer<S> {
-  } p1 = {ch};
-
   SECTION ("Publish new state from producer") {
-    p1.state().i = 1;
-    REQUIRE(p1.state().i == 1);
+    p.state().i = 1;
+    REQUIRE(p.state().i == 1);
     REQUIRE(c1.state().i == 0);
-    p1.commit();
+    p.commit();
     REQUIRE(c1.state().i == 1);
     REQUIRE(c1.new_state_called == 1);
-    p1.state().i = 2;
-    p1.commit();
+    p.state().i = 2;
+    p.commit();
     REQUIRE(c1.state().i == 2);
     REQUIRE(c1.new_state_called == 2);
   }
@@ -161,7 +188,7 @@ TEST_CASE ("prod/cons/chan of multiple states", "[itc]") {
 
   ImmediateExecutor ex;
   StaticDomain<>::set_static_executor(ex);
-  ChannelGroup channels;
+  Channel channel;
 
   struct C1 : Consumer<S1, S2>, StaticDomain<> {
     // Inherit the constructor
@@ -189,7 +216,7 @@ TEST_CASE ("prod/cons/chan of multiple states", "[itc]") {
 
     int new_state1_called = 0;
     int new_state2_called = 0;
-  } c1 = {channels};
+  } c1 = {channel};
 
   SECTION ("Access default state in Consumer") {
     c1.check_i1(1);
@@ -197,6 +224,7 @@ TEST_CASE ("prod/cons/chan of multiple states", "[itc]") {
   }
 
   struct P1 : Producer<S1, S2> {
+    using Producer::Producer;
     void test_produce1(int i)
     {
       state<S1>().i1 = i;
@@ -207,7 +235,7 @@ TEST_CASE ("prod/cons/chan of multiple states", "[itc]") {
       state<S2>().i2 = i;
       commit<S2>();
     }
-  } p1 = {channels};
+  } p1{channel};
 
   SECTION ("Publish new state from producer") {
     p1.test_produce1(10);
@@ -238,7 +266,7 @@ TEST_CASE ("Channel serialization") {
   StaticDomain<>::set_static_executor(ex);
 
   SECTION ("Basic serializable state") {
-    ChannelGroup ch;
+    Channel ch;
     Producer<State1> p1{ch};
     ImmCons<State1> c1{ch};
 
@@ -251,7 +279,7 @@ TEST_CASE ("Channel serialization") {
   }
 
   SECTION ("Unserializable state") {
-    ChannelGroup ch;
+    Channel ch;
     Producer<State2> p1{ch};
     ImmCons<State2> c1{ch};
 
@@ -262,34 +290,5 @@ TEST_CASE ("Channel serialization") {
     REQUIRE(c1.state().i2 == 10);
     util::deserialize_from(s, ch);
     REQUIRE(c1.state().i2 == 10);
-  }
-}
-
-TEST_CASE ("itc Events", "[itc]") {
-  ImmediateExecutor ex;
-  StaticDomain<>::set_static_executor(ex);
-
-  struct TestEvent1 {
-    int param1 = 0;
-  };
-  TypedChannel<TestEvent1> ch;
-  Sender<TestEvent1> sender = {ch};
-
-  struct R1 : Receiver<TestEvent1>, StaticDomain<> {
-    using Receiver::Receiver;
-
-    void handle(TestEvent1 event) noexcept override
-    {
-      counter += event.param1;
-    }
-
-    int counter = 0;
-  } r1 = {ch};
-
-  SECTION ("Send events ") {
-    sender.send({1});
-    REQUIRE(r1.counter == 1);
-    sender.send({2});
-    REQUIRE(r1.counter == 3);
   }
 }

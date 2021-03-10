@@ -11,8 +11,8 @@ namespace otto::itc {
   template<AState State>
   struct Consumer<State> : Receiver<state_change_event<State>> {
     using Event = state_change_event<State>;
-    Consumer(TypedChannel<Event>& ch) : Receiver<Event>(ch) {}
-    Consumer(ChannelGroup& channels) : Receiver<Event>(channels) {}
+    Consumer(TypedChannelLeaf<Event>& ch) : Receiver<Event>(ch) {}
+    Consumer(Channel& channels) : Receiver<Event>(channels) {}
 
     /// Access the newest state available.
     const State& state() const noexcept
@@ -38,7 +38,7 @@ namespace otto::itc {
     virtual void on_state_change(const State& state) noexcept {}
 
   private:
-    /// Called from {@ref TypedChannel::internal_commit}
+    /// Called from {@ref TypedChannelLeaf::internal_commit}
     void handle(Event e) noexcept override
     {
       // {
@@ -65,7 +65,7 @@ namespace otto::itc {
 
   template<AState... States>
   struct Consumer : Consumer<States>... {
-    Consumer(ChannelGroup& channels) : Consumer<States>(channels)... {}
+    Consumer(Channel& channels) : Consumer<States>(channels)... {}
 
     template<util::one_of<States...> S>
     const S& state() const noexcept

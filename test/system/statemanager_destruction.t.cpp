@@ -35,7 +35,7 @@ TEST_CASE ("StateManager destruction", "[.interactive][system]") {
   Controller controller(rt, confman);
   Graphics graphics(rt);
 
-  itc::ChannelGroup chan;
+  itc::Channel chan;
   auto eng = engines::ottofm::factory.make_without_audio(chan);
 
   auto voices_logic = voices::make_voices_logic(chan);

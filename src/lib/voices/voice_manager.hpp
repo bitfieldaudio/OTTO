@@ -241,7 +241,7 @@ namespace otto::voices {
 
     template<typename... Args>
     requires std::is_constructible_v<Voice, Args...> //
-    VoiceManager(itc::ChannelGroup& c, Args&&... args) : Consumer(c)
+    VoiceManager(itc::Channel& c, Args&&... args) : Consumer(c)
     {
       for (std::size_t i = 0; i < N; i++) {
         voices_.emplace_back(args...);
@@ -364,8 +364,8 @@ namespace otto::voices {
     Voice* last_triggered_voice_ = &voices_[0];
   };
 
-  std::unique_ptr<ILogic> make_voices_logic(itc::ChannelGroup&);
-  ScreenWithHandler make_voices_screen(itc::ChannelGroup&);
+  std::unique_ptr<ILogic> make_voices_logic(itc::Channel&);
+  ScreenWithHandler make_voices_screen(itc::Channel&);
 
 } // namespace otto::voices
 

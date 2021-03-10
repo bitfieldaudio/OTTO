@@ -28,7 +28,7 @@ TEST_CASE ("ottofm", "[.interactive][engine]") {
   Controller controller(rt, confman);
   Graphics graphics(rt);
 
-  itc::ChannelGroup chan;
+  itc::Channel chan;
   auto eng = engines::ottofm::factory.make_without_audio(chan);
 
   // app.service<Audio>().set_midi_handler(&eng.audio->midi_handler());
@@ -49,7 +49,7 @@ TEST_CASE ("ottofm-env", "[.interactive][engine]") {
   Controller controller(rt, confman);
   Graphics graphics(rt);
 
-  itc::ChannelGroup chan;
+  itc::Channel chan;
   auto eng = engines::ottofm::factory.make_without_audio(chan);
 
   // app.service<Audio>().set_midi_handler(&eng.audio->midi_handler());
@@ -72,7 +72,7 @@ TEST_CASE ("ottofm-all", "[.interactive][engine]") {
   Graphics graphics(rt);
 
   Audio audio;
-  itc::ChannelGroup chan;
+  itc::Channel chan;
   auto eng = engines::ottofm::factory.make_all(chan);
 
   LayerStack layers;
@@ -101,7 +101,7 @@ TEST_CASE ("ottofm-no-audio", "[.interactive][engine]") {
   Controller controller(rt, confman);
   Graphics graphics(rt);
 
-  itc::ChannelGroup chan;
+  itc::Channel chan;
   auto eng = engines::ottofm::factory.make_without_audio(chan);
 
   // app.service<Audio>().set_midi_handler(&eng.audio->midi_handler());

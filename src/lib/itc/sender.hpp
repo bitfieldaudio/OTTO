@@ -6,13 +6,11 @@
 namespace otto::itc {
 
   template<AnEvent Event>
-  struct Sender<Event> {
-    Sender(TypedChannel<Event>& ch)
+  struct Sender<Event> : detail::SenderBase {
+    Sender(Channel& channel) : channel_(&channel)
     {
-      ch.set_sender(this);
+      channel.register_sender(this);
     }
-
-    Sender(ChannelGroup& channels) : Sender(channels.get<Event>()) {}
 
     // Non-copyable
     Sender(const Sender&) = delete;
@@ -20,44 +18,34 @@ namespace otto::itc {
 
     ~Sender() noexcept
     {
-      for (TypedChannel<Event>* ch : channels_) {
-        ch->set_sender(nullptr);
-      }
+      channel_->unregister_sender(this);
     }
 
-    /// The channels this producer is currently linked to
-    const std::vector<TypedChannel<Event>*>& channels() const noexcept
+    /// The receivers this producer is currently linked to
+    const std::vector<Receiver<Event>*>& receivers() const noexcept
     {
-      return channels_;
+      return receivers_;
     }
 
     /// Send an event to all linked consumers
     void send(Event event) noexcept
     {
-      for (TypedChannel<Event>* ch : channels_) ch->internal_send(std::move(event));
+      for (Receiver<Event>* r : receivers_) r->internal_send(std::move(event));
     }
+
+    void serialize_into(json::value&) const override {}
+    void deserialize_from(const json::value&) override {}
 
   private:
-    friend TypedChannel<Event>;
+    friend linker;
 
-    /// Called only from set_producer in TypedChannel
-    void internal_add_channel(TypedChannel<Event>& ch)
-    {
-      channels_.push_back(ch);
-    }
-
-    /// Called only from Channel destructor
-    void internal_remove_channel(TypedChannel<Event>& ch)
-    {
-      std::erase(channels_, &ch);
-    }
-
-    std::vector<TypedChannel<Event>*> channels_;
+    Channel* channel_;
+    std::vector<Receiver<Event>*> receivers_;
   };
 
   template<AnEvent... Events>
   struct Sender : Sender<Events>... {
-    Sender(ChannelGroup& ch) : Sender<Events>(ch)... {}
+    Sender(Channel& ch) : Sender<Events>(ch)... {}
 
     /// Send an event to all linked consumers
     template<util::one_of<Events...> Event>

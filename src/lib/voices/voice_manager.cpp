@@ -12,7 +12,7 @@ namespace otto::voices {
     using Producer::Producer;
   };
 
-  std::unique_ptr<ILogic> make_voices_logic(itc::ChannelGroup& c)
+  std::unique_ptr<ILogic> make_voices_logic(itc::Channel& c)
   {
     return std::make_unique<Logic>(c);
   }

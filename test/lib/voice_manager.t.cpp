@@ -27,7 +27,7 @@ TEST_CASE ("VoiceManager", "[!mayfail]") {
     Voice(int i) : i(i) {}
     int i = 0;
   };
-  itc::ChannelGroup chan;
+  itc::Channel chan;
   itc::Producer<VoicesState> prod = chan;
 
   VoiceManager<Voice, 6> voices = {chan, 42};
@@ -408,7 +408,7 @@ TEST_CASE ("VoiceManager", "[!mayfail]") {
         }
       };
 
-      itc::ChannelGroup chan;
+      itc::Channel chan;
       VoiceManager<SVoice, 4> vmgr(chan);
 
       REQUIRE(vmgr[0]() == 1.f);
@@ -426,7 +426,7 @@ TEST_CASE ("VoiceManager", "[!mayfail]") {
           return float(i);
         }
       };
-      itc::ChannelGroup chan;
+      itc::Channel chan;
       VoiceManager<Voice, 4> vmgr(chan);
       // int a = 0;
       // REQUIRE(vmgr(10, a, a) == Catch::Approx(4 * 10.f * vmgr.normal_volume));

@@ -29,12 +29,12 @@ namespace otto::engines::ottofm {
   };
 
   struct SynthEngineFactory {
-    fu2::unique_function<std::unique_ptr<ILogic>(itc::ChannelGroup&) const> make_logic;
-    fu2::unique_function<std::unique_ptr<ISynthAudio>(itc::ChannelGroup&) const> make_audio;
-    fu2::unique_function<ScreenWithHandler(itc::ChannelGroup&) const> make_mod_screen;
-    fu2::unique_function<ScreenWithHandler(itc::ChannelGroup&) const> make_main_screen;
+    fu2::unique_function<std::unique_ptr<ILogic>(itc::Channel&) const> make_logic;
+    fu2::unique_function<std::unique_ptr<ISynthAudio>(itc::Channel&) const> make_audio;
+    fu2::unique_function<ScreenWithHandler(itc::Channel&) const> make_mod_screen;
+    fu2::unique_function<ScreenWithHandler(itc::Channel&) const> make_main_screen;
 
-    SynthEngineInstance make_all(itc::ChannelGroup& chan) const
+    SynthEngineInstance make_all(itc::Channel& chan) const
     {
       return {
         .logic = make_logic(chan),
@@ -44,7 +44,7 @@ namespace otto::engines::ottofm {
       };
     }
 
-    SynthEngineInstance make_without_audio(itc::ChannelGroup& chan) const
+    SynthEngineInstance make_without_audio(itc::Channel& chan) const
     {
       return {
         .logic = make_logic(chan),
@@ -54,7 +54,7 @@ namespace otto::engines::ottofm {
       };
     }
 
-    SynthEngineInstance make_without_screens(itc::ChannelGroup& chan) const
+    SynthEngineInstance make_without_screens(itc::Channel& chan) const
     {
       return {
         .logic = make_logic(chan),
@@ -65,10 +65,10 @@ namespace otto::engines::ottofm {
     }
   };
 
-  std::unique_ptr<ILogic> make_logic(itc::ChannelGroup&);
-  ScreenWithHandler make_main_screen(itc::ChannelGroup&);
-  ScreenWithHandler make_mod_screen(itc::ChannelGroup&);
-  std::unique_ptr<ISynthAudio> make_audio(itc::ChannelGroup&);
+  std::unique_ptr<ILogic> make_logic(itc::Channel&);
+  ScreenWithHandler make_main_screen(itc::Channel&);
+  ScreenWithHandler make_mod_screen(itc::Channel&);
+  std::unique_ptr<ISynthAudio> make_audio(itc::Channel&);
 
   // NOLINTNEXTLINE
   inline const SynthEngineFactory factory = {

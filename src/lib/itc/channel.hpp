@@ -1,139 +1,68 @@
 #pragma once
 
 #include <memory>
+#include <unordered_map>
 #include <vector>
 
-#include <boost/container/flat_map.hpp>
-
 #include "lib/util/concepts.hpp"
+#include "lib/util/exception.hpp"
 #include "lib/util/name_of.hpp"
+#include "lib/util/ranges.hpp"
 #include "lib/util/serialization.hpp"
 
 #include "event.hpp"
-#include "state.hpp"
 
 namespace otto::itc {
 
   namespace detail {
-    struct TypedChannelBase : util::ISerializable {
-      virtual ~TypedChannelBase() = default;
+    struct SenderBase : util::ISerializable {
+      virtual ~SenderBase() = default;
+    };
+    struct ReceiverBase {
+      virtual ~ReceiverBase() = default;
     };
   } // namespace detail
 
-  template<AnEvent Event>
-  struct TypedChannel : detail::TypedChannelBase {
-    TypedChannel() noexcept = default;
-
-    // Non-copyable
-    TypedChannel(const TypedChannel&) = delete;
-    TypedChannel& operator=(const TypedChannel&) = delete;
-
-    ~TypedChannel() noexcept override
+  /// Helper struct to make friendship for link helper functions easier
+  struct linker {
+    template<AnEvent E>
+    static void link(Sender<E>& s, Receiver<E>& r)
     {
-      for (auto* r : receivers_) {
-        r->channel_ = nullptr;
+      if (r.sender_ != nullptr) {
+        unlink(*r.sender_, r);
       }
-      if (sender_) sender_->internal_remove_channel(*this);
+      s.receivers_.emplace_back(&r);
+      r.sender_ = &s;
     }
 
-    const std::vector<Receiver<Event>*>& receivers() const noexcept
+    template<AnEvent E>
+    static void unlink(Sender<E>& s, Receiver<E>& r)
     {
-      return receivers_;
+      std::erase(s.receivers_, &r);
+      r.sender_ = nullptr;
     }
-
-    Sender<Event>* sender() const noexcept
-    {
-      return sender_;
-    }
-
-    /// Set the sender for this channel
-    ///
-    /// Can be `nullptr` to clear the current sender
-    void set_sender(Sender<Event>* p) noexcept
-    {
-      sender_ = p;
-      if (p) p->channels_.emplace_back(this);
-    }
-
-    /// Set the sender for this channel
-    void set_sender(Sender<Event>& p) noexcept
-    {
-      set_sender(&p);
-    }
-
-    void serialize_into(json::value& json) const final
-    {
-      if constexpr (AStateEvent<Event>) {
-        if constexpr (util::ASerializable<typename Event::State>) {
-          // TODO Access a copy of the state in another way
-          if (sender_ == nullptr) return;
-          util::serialize_into(json, static_cast<Producer<typename Event::State>*>(sender_)->state());
-        }
-      }
-    }
-
-    void deserialize_from(const json::value& json) final
-    {
-      if constexpr (AStateEvent<Event>) {
-        if constexpr (util::ASerializable<typename Event::State>) {
-          // TODO Access a copy of the state in another way
-          if (sender_ == nullptr) return;
-          auto* p = static_cast<Producer<typename Event::State>*>(sender_);
-          util::deserialize_from(json, p->state());
-          p->commit();
-        }
-      }
-    }
-
-  private:
-    friend Sender<Event>;
-    friend Receiver<Event>;
-
-    /// Only called from Receiver constructor
-    void internal_add_receiver(Receiver<Event>* c)
-    {
-      receivers_.push_back(c);
-    }
-
-    void internal_send(const Event& state)
-    {
-      for (auto* receiver : receivers_) receiver->internal_send(state);
-    }
-
-    std::vector<Receiver<Event>*> receivers_;
-    Sender<Event>* sender_ = nullptr;
   };
 
-  /// A (nested) group of channels, where channels for any state type can be created and accessed
-  struct ChannelGroup : util::ISerializable {
-    ChannelGroup() = default;
-    ~ChannelGroup() = default;
+  /// A channel tree where senders and receivers for any event type can be created and accessed
+  struct Channel : util::ISerializable {
+    Channel() = default;
+    ~Channel() = default;
 
-    ChannelGroup(ChannelGroup&) = delete;
-    ChannelGroup& operator=(ChannelGroup&) = delete;
+    Channel(Channel&&) = default;
+    Channel& operator=(Channel&&) = default;
 
-    /// Creates or finds the channel of the given type
-    template<AnEvent Event>
-    TypedChannel<Event>& get()
-    {
-      auto found = channels_.find(util::qualified_name_of<Event>);
-      if (found == channels_.end()) {
-        auto [iter, inserted] =
-          channels_.emplace(util::qualified_name_of<Event>, std::make_unique<TypedChannel<Event>>());
-        found = iter;
-      }
-      // Should this be a dynamic cast? probably not, since we know the type is right
-      return static_cast<TypedChannel<Event>&>(*found->second);
-    }
+    Channel(const Channel&) = delete;
+    Channel& operator=(const Channel&) = delete;
 
     /// Access or create a nested channel group by name
-    ChannelGroup& operator[](std::string_view sv)
+    Channel& operator[](std::string_view sv)
     {
       // Apparently transparent keys don't work in gcc for string_view/string
       // TODO: Look into that ^
-      auto found = nested_.find(std::string(sv));
-      if (found == nested_.end()) {
-        auto [iter, inserted] = nested_.emplace(sv, std::make_unique<ChannelGroup>());
+      auto found = children_.find(std::string(sv));
+      if (found == children_.end()) {
+        auto [iter, inserted] = children_.emplace(sv, std::make_unique<Channel>());
+        iter->second->parent_ = this;
         found = iter;
       }
       return *found->second;
@@ -142,10 +71,10 @@ namespace otto::itc {
     void serialize_into(json::value& json) const final
     {
       using namespace std::literals;
-      for (const auto& [k, v] : nested_) {
+      for (const auto& [k, v] : children_) {
         util::serialize_into(json[k], *v);
       }
-      for (const auto& [k, v] : channels_) {
+      for (const auto& [k, v] : senders_) {
         util::serialize_into(json["type:"s + k.c_str()], *v);
       }
     }
@@ -153,17 +82,93 @@ namespace otto::itc {
     void deserialize_from(const json::value& json) final
     {
       using namespace std::literals;
-      for (const auto& [k, v] : nested_) {
+      for (auto& [k, v] : children_) {
         util::deserialize_from_member(json, k, *v);
       }
-      for (const auto& [k, v] : channels_) {
+      for (const auto& [k, v] : senders_) {
         util::deserialize_from_member(json, "type:"s + k.c_str(), *v);
       }
     }
 
+    template<AnEvent E>
+    Sender<E>* find_sender()
+    {
+      auto found = senders_.find(key_of<E>());
+      if (found != senders_.end()) {
+        return static_cast<Sender<E>*>(found->second);
+      }
+      if (parent_ != nullptr) {
+        return parent_->find_sender<E>();
+      }
+      return nullptr;
+    }
+
   private:
-    boost::container::flat_map<std::string, std::unique_ptr<ChannelGroup>> nested_;
-    boost::container::flat_map<util::string_ref, std::unique_ptr<detail::TypedChannelBase>> channels_;
+    template<AnEvent...>
+    friend struct Sender;
+    template<AnEvent...>
+    friend struct Receiver;
+
+    template<AnEvent E>
+    static constexpr util::string_ref key_of() noexcept
+    {
+      return util::qualified_name_of<E>;
+    }
+
+    /// Called from Sender constructor
+    template<AnEvent E>
+    void register_sender(Sender<E>* sender)
+    {
+      auto [iter, inserted] = senders_.emplace(key_of<E>(), sender);
+      if (!inserted) {
+        throw util::exception("Existing sender found for event {}", key_of<E>());
+      }
+      register_sender_recurse(sender);
+    }
+    template<AnEvent E>
+    void register_sender_recurse(Sender<E>* sender)
+    {
+      for (auto [k, r] : util::equal_range(receivers_, key_of<E>())) {
+        linker::link(*sender, *static_cast<Receiver<E>*>(r));
+      }
+      for (auto&& [k, child] : children_) {
+        child->register_sender_recurse(sender);
+      }
+    }
+
+    template<AnEvent E>
+    void unregister_sender(Sender<E>* sender)
+    {
+      auto found = std::ranges::find(senders_, sender, [](auto& pair) { return pair.second; });
+      senders_.erase(found);
+      for (Receiver<E>* r : sender->receivers()) {
+        linker::unlink(*sender, *r);
+      }
+    }
+
+    template<AnEvent E>
+    void register_receiver(Receiver<E>* receiver)
+    {
+      receivers_.emplace(key_of<E>(), receiver);
+      auto* s = find_sender<E>();
+      if (s) linker::link(*s, *receiver);
+    }
+
+    template<AnEvent E>
+    void unregister_receiver(Receiver<E>* receiver)
+    {
+      auto receivers = util::equal_range(receivers_, key_of<E>());
+      auto found = std::ranges::find(receivers, receiver, [](auto& pair) { return pair.second; });
+      receivers_.erase(found);
+      if (receiver->sender()) {
+        linker::unlink(*receiver->sender(), *receiver);
+      }
+    }
+
+    Channel* parent_ = nullptr;
+    std::unordered_map<std::string, std::unique_ptr<Channel>> children_;
+    std::unordered_map<util::string_ref, detail::SenderBase*> senders_;
+    std::unordered_multimap<util::string_ref, detail::ReceiverBase*> receivers_;
   };
 
 } // namespace otto::itc

@@ -15,4 +15,10 @@ namespace otto::util {
     auto filt = filter(all(transf), [](auto&& opt) { return opt.has_value(); });
     return transform(all(filt), [](auto&& opt) -> decltype(auto) { return FWD(opt).value(); });
   }
+
+  auto equal_range(auto& map, auto&& key)
+  {
+    auto [b, e] = map.equal_range(FWD(key));
+    return subrange(b, e);
+  }
 } // namespace otto::util

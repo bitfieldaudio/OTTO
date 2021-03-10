@@ -165,7 +165,7 @@ namespace otto::engines::ottofm {
       skia::TextBlob::MakeFromString(alphabet[Consumer<State>::state().algorithm_idx], fonts::black(26));
     SkRect rect = skia::measureText(fonts::regular(26), "A");
 
-    MainScreen(itc::ChannelGroup& c) : Consumer(c)
+    MainScreen(itc::Channel& c) : Consumer(c)
     {
       ops.bounding_box = {{10, 30}, {50, 180}};
     }
@@ -200,7 +200,7 @@ namespace otto::engines::ottofm {
     }
   };
 
-  ScreenWithHandler make_main_screen(itc::ChannelGroup& chan)
+  ScreenWithHandler make_main_screen(itc::Channel& chan)
   {
     return {
       .screen = std::make_unique<MainScreen>(chan),
