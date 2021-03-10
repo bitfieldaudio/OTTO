@@ -9,18 +9,19 @@
 #include "lib/util/name_of.hpp"
 #include "lib/util/serialization.hpp"
 
+#include "event.hpp"
 #include "state.hpp"
 
 namespace otto::itc {
 
   namespace detail {
-    struct ChannelBase : util::ISerializable {
-      virtual ~ChannelBase() = default;
+    struct TypedChannelBase : util::ISerializable {
+      virtual ~TypedChannelBase() = default;
     };
   } // namespace detail
 
-  template<AState State>
-  struct TypedChannel : detail::ChannelBase {
+  template<AnEvent Event>
+  struct TypedChannel : detail::TypedChannelBase {
     TypedChannel() noexcept = default;
 
     // Non-copyable
@@ -29,73 +30,78 @@ namespace otto::itc {
 
     ~TypedChannel() noexcept override
     {
-      for (auto* c : consumers_) {
-        c->channel_ = nullptr;
+      for (auto* r : receivers_) {
+        r->channel_ = nullptr;
       }
-      if (producer_) producer_->internal_remove_channel(*this);
+      if (sender_) sender_->internal_remove_channel(*this);
     }
 
-    const std::vector<Consumer<State>*>& consumers() const noexcept
+    const std::vector<Receiver<Event>*>& receivers() const noexcept
     {
-      return consumers_;
+      return receivers_;
     }
 
-    Producer<State>* producer() const noexcept
+    Sender<Event>* sender() const noexcept
     {
-      return producer_;
+      return sender_;
     }
 
-    /// Set the producer for this channel
+    /// Set the sender for this channel
     ///
-    /// Can be `nullptr` to clear the current producer
-    void set_producer(Producer<State>* p) noexcept
+    /// Can be `nullptr` to clear the current sender
+    void set_sender(Sender<Event>* p) noexcept
     {
-      producer_ = p;
+      sender_ = p;
       if (p) p->channels_.emplace_back(this);
     }
 
-    /// Set the producer for this channel
-    void set_producer(Producer<State>& p) noexcept
+    /// Set the sender for this channel
+    void set_sender(Sender<Event>& p) noexcept
     {
-      set_producer(&p);
+      set_sender(&p);
     }
 
     void serialize_into(json::value& json) const final
     {
-      if constexpr (util::ASerializable<State>) {
-        // TODO Access a copy of the state in another way
-        if (producer_ == nullptr) return;
-        util::serialize_into(json, producer_->state());
+      if constexpr (AStateEvent<Event>) {
+        if constexpr (util::ASerializable<typename Event::State>) {
+          // TODO Access a copy of the state in another way
+          if (sender_ == nullptr) return;
+          util::serialize_into(json, static_cast<Producer<typename Event::State>*>(sender_)->state());
+        }
       }
     }
 
     void deserialize_from(const json::value& json) final
     {
-      if constexpr (util::ASerializable<State>) {
-        // TODO Access a copy of the state in another way
-        if (producer_ == nullptr) return;
-        util::deserialize_from(json, producer_->state());
-        producer_->commit();
+      if constexpr (AStateEvent<Event>) {
+        if constexpr (util::ASerializable<typename Event::State>) {
+          // TODO Access a copy of the state in another way
+          if (sender_ == nullptr) return;
+          auto* p = static_cast<Producer<typename Event::State>*>(sender_);
+          util::deserialize_from(json, p->state());
+          p->commit();
+        }
       }
     }
 
   private:
-    friend Producer<State>;
-    friend Consumer<State>;
+    friend Sender<Event>;
+    friend Receiver<Event>;
 
-    /// Only called from Consumer constructor
-    void internal_add_consumer(Consumer<State>* c)
+    /// Only called from Receiver constructor
+    void internal_add_receiver(Receiver<Event>* c)
     {
-      consumers_.push_back(c);
+      receivers_.push_back(c);
     }
 
-    void internal_commit(const State& state)
+    void internal_send(const Event& state)
     {
-      for (auto* cons : consumers_) cons->internal_commit(state);
+      for (auto* receiver : receivers_) receiver->internal_send(state);
     }
 
-    std::vector<Consumer<State>*> consumers_;
-    Producer<State>* producer_ = nullptr;
+    std::vector<Receiver<Event>*> receivers_;
+    Sender<Event>* sender_ = nullptr;
   };
 
   /// A (nested) group of channels, where channels for any state type can be created and accessed
@@ -107,17 +113,17 @@ namespace otto::itc {
     ChannelGroup& operator=(ChannelGroup&) = delete;
 
     /// Creates or finds the channel of the given type
-    template<AState State>
-    TypedChannel<State>& get()
+    template<AnEvent Event>
+    TypedChannel<Event>& get()
     {
-      auto found = channels_.find(util::qualified_name_of<State>);
+      auto found = channels_.find(util::qualified_name_of<Event>);
       if (found == channels_.end()) {
         auto [iter, inserted] =
-          channels_.emplace(util::qualified_name_of<State>, std::make_unique<TypedChannel<State>>());
+          channels_.emplace(util::qualified_name_of<Event>, std::make_unique<TypedChannel<Event>>());
         found = iter;
       }
       // Should this be a dynamic cast? probably not, since we know the type is right
-      return static_cast<TypedChannel<State>&>(*found->second);
+      return static_cast<TypedChannel<Event>&>(*found->second);
     }
 
     /// Access or create a nested channel group by name
@@ -157,7 +163,7 @@ namespace otto::itc {
 
   private:
     boost::container::flat_map<std::string, std::unique_ptr<ChannelGroup>> nested_;
-    boost::container::flat_map<util::string_ref, std::unique_ptr<detail::ChannelBase>> channels_;
+    boost::container::flat_map<util::string_ref, std::unique_ptr<detail::TypedChannelBase>> channels_;
   };
 
 } // namespace otto::itc

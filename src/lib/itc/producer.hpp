@@ -1,40 +1,21 @@
 #pragma once
 
-#include "channel.hpp"
+#include "sender.hpp"
 #include "state.hpp"
 
 namespace otto::itc {
 
   template<AState State>
-  struct Producer<State> {
-    Producer(TypedChannel<State>& ch)
-    {
-      ch.set_producer(this);
-    }
-
-    Producer(ChannelGroup& channels) : Producer(channels.get<State>()) {}
-
-    // Non-copyable
-    Producer(const Producer&) = delete;
-    Producer& operator=(const Producer&) = delete;
-
-    ~Producer() noexcept
-    {
-      for (auto* ch : channels_) {
-        ch->set_producer(nullptr);
-      }
-    }
-
-    /// The channels this producer is currently linked to
-    const std::vector<TypedChannel<State>*>& channels() const noexcept
-    {
-      return channels_;
-    }
+  struct Producer<State> : Sender<state_change_event<State>> {
+    using Event = state_change_event<State>;
+    Producer(TypedChannel<Event>& ch) : Sender<Event>(ch) {}
+    Producer(ChannelGroup& channels) : Sender<Event>(channels) {}
 
     /// Commit the current `state()`, notifying consumers
     void commit()
     {
-      for (auto* chan : channels_) chan->internal_commit(state());
+      // TODO: Do not send state along as event
+      Sender<Event>::send(Event{state()});
     }
 
     State& state() noexcept
@@ -76,21 +57,6 @@ namespace otto::itc {
     }
 
   private:
-    friend TypedChannel<State>;
-
-    /// Called only from set_producer in TypedChannel
-    void internal_add_channel(TypedChannel<State>& ch)
-    {
-      channels_.push_back(ch);
-    }
-
-    /// Called only from Channel destructor
-    void internal_remove_channel(TypedChannel<State>& ch)
-    {
-      std::erase(channels_, &ch);
-    }
-
-    std::vector<TypedChannel<State>*> channels_;
     State state_;
   };
 

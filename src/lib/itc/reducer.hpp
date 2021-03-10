@@ -46,6 +46,13 @@ namespace otto::itc {
         producer->commit();
       }
     };
+
+
+    template<AState State>
+    Producer<State>* get_producer(itc::ChannelGroup& ch)
+    {
+      return static_cast<Producer<State>*>(ch.get<state_change_event<State>>().sender());
+    }
   } // namespace detail
 
   /// An event handler linked to a producer.
@@ -61,7 +68,7 @@ namespace otto::itc {
 
     Reducer() noexcept = default;
     Reducer(Producer<State>& p) noexcept : producer_(&p) {}
-    Reducer(itc::ChannelGroup& chan) noexcept : producer_(chan.get<State>().producer()) {}
+    Reducer(itc::ChannelGroup& chan) noexcept : producer_(detail::get_producer<State>(chan)) {}
 
   private:
     template<AState S, AnEvent... Es>

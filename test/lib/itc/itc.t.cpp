@@ -9,93 +9,93 @@
 using namespace otto;
 using namespace otto::itc;
 
+template<AnEvent... Events>
+using ImmRec = WithDomain<StaticDomain<>, Receiver<Events...>>;
+
 template<AState... States>
 using ImmCons = WithDomain<StaticDomain<>, Consumer<States...>>;
 
 // Tests
-TEST_CASE ("Basic TypedChannel/Consumer/Producer linking and lifetime", "[itc]") {
-  struct State {
-    int i = 0;
-    bool operator==(const State&) const = default;
-  };
+TEST_CASE ("Basic TypedChannel/Receiver/Sender linking and lifetime", "[itc]") {
+  struct Event {};
 
   ImmediateExecutor ex;
   StaticDomain<>::set_static_executor(ex);
 
-  SECTION ("Constructing consumer with channel registers it") {
-    TypedChannel<State> ch;
-    ImmCons<State> c1 = {ch};
+  SECTION ("Constructing receiver with channel registers it") {
+    TypedChannel<Event> ch;
+    ImmRec<Event> r1 = {ch};
 
-    REQUIRE(ch.consumers().size() == 1);
-    REQUIRE(ch.consumers()[0] == &c1);
+    REQUIRE(ch.receivers().size() == 1);
+    REQUIRE(ch.receivers()[0] == &r1);
 
-    ImmCons<State> c2 = {ch};
+    ImmRec<Event> c2 = {ch};
 
-    REQUIRE(ch.consumers().size() == 2);
-    REQUIRE(ch.consumers()[1] == &c2);
+    REQUIRE(ch.receivers().size() == 2);
+    REQUIRE(ch.receivers()[1] == &c2);
   }
 
-  SECTION ("Constructing a producer with a channel registers it") {
-    TypedChannel<State> ch1;
-    Producer<State> p = {ch1};
+  SECTION ("Constructing a sender with a channel registers it") {
+    TypedChannel<Event> ch1;
+    Sender<Event> p = {ch1};
 
     REQUIRE(p.channels().size() == 1);
     REQUIRE(p.channels()[0] == &ch1);
-    SECTION ("A producer can be registered to more channels with ch.set_producer") {
-      TypedChannel<State> ch2;
-      ch2.set_producer(p);
+    SECTION ("A sender can be registered to more channels with ch.set_sender") {
+      TypedChannel<Event> ch2;
+      ch2.set_sender(p);
       REQUIRE(p.channels().size() == 2);
       REQUIRE(p.channels()[1] == &ch2);
     }
   }
 
-  SECTION ("TypedChannel has a reference to its producer") {
-    TypedChannel<State> ch;
-    REQUIRE(ch.producer() == nullptr);
-    Producer<State> p = {ch};
-    REQUIRE(ch.producer() == &p);
+  SECTION ("TypedChannel has a reference to its sender") {
+    TypedChannel<Event> ch;
+    REQUIRE(ch.sender() == nullptr);
+    Sender<Event> p = {ch};
+    REQUIRE(ch.sender() == &p);
 
-    SECTION ("Also when registered with set_producer") {
-      TypedChannel<State> ch2;
-      ch2.set_producer(p);
-      REQUIRE(ch2.producer() == &p);
-      REQUIRE(ch.producer() == &p);
+    SECTION ("Also when registered with set_sender") {
+      TypedChannel<Event> ch2;
+      ch2.set_sender(p);
+      REQUIRE(ch2.sender() == &p);
+      REQUIRE(ch.sender() == &p);
     }
   }
 
-  SECTION ("Consumer has a reference to its channel") {
-    TypedChannel<State> ch;
-    ImmCons<State> c = {ch};
+  SECTION ("Receiver has a reference to its channel") {
+    TypedChannel<Event> ch;
+    ImmRec<Event> c = {ch};
     REQUIRE(c.channel() == &ch);
   }
 
   SECTION ("Bidirectional lifetime management") {
-    SECTION ("Producer / TypedChannel") {
-      SECTION ("Producer destroyed before channel") {
-        TypedChannel<State> ch;
+    SECTION ("Sender / TypedChannel") {
+      SECTION ("Sender destroyed before channel") {
+        TypedChannel<Event> ch;
         {
-          Producer<State> p = {ch};
+          Sender<Event> p = {ch};
         }
-        REQUIRE(ch.producer() == nullptr);
+        REQUIRE(ch.sender() == nullptr);
       }
-      SECTION ("TypedChannel destroyed before producer") {
-        auto ch = std::make_unique<TypedChannel<State>>();
-        Producer<State> p = {*ch};
+      SECTION ("TypedChannel destroyed before sender") {
+        auto ch = std::make_unique<TypedChannel<Event>>();
+        Sender<Event> p = {*ch};
         ch.reset();
         REQUIRE(p.channels().empty());
       }
     }
-    SECTION ("Consumer / TypedChannel") {
-      SECTION ("Consumer destroyed before channel") {
-        TypedChannel<State> ch;
+    SECTION ("Receiver / TypedChannel") {
+      SECTION ("Receiver destroyed before channel") {
+        TypedChannel<Event> ch;
         {
-          ImmCons<State> p = {ch};
+          ImmRec<Event> p = {ch};
         }
-        REQUIRE(ch.consumers().empty());
+        REQUIRE(ch.receivers().empty());
       }
-      SECTION ("TypedChannel destroyed before consumer") {
-        auto ch = std::make_unique<TypedChannel<State>>();
-        ImmCons<State> c = {*ch};
+      SECTION ("TypedChannel destroyed before receiver") {
+        auto ch = std::make_unique<TypedChannel<Event>>();
+        ImmRec<Event> c = {*ch};
         ch.reset();
         REQUIRE(c.channel() == nullptr);
       }
@@ -109,7 +109,7 @@ TEST_CASE ("Basic state passing", "[itc]") {
   struct S {
     int i = 0;
   };
-  TypedChannel<S> ch;
+  TypedChannel<state_change_event<S>> ch;
   Producer<S> p = {ch};
   struct C1 : Consumer<S>, StaticDomain<> {
     using Consumer<S>::Consumer;
@@ -262,5 +262,34 @@ TEST_CASE ("Channel serialization") {
     REQUIRE(c1.state().i2 == 10);
     util::deserialize_from(s, ch);
     REQUIRE(c1.state().i2 == 10);
+  }
+}
+
+TEST_CASE ("itc Events", "[itc]") {
+  ImmediateExecutor ex;
+  StaticDomain<>::set_static_executor(ex);
+
+  struct TestEvent1 {
+    int param1 = 0;
+  };
+  TypedChannel<TestEvent1> ch;
+  Sender<TestEvent1> sender = {ch};
+
+  struct R1 : Receiver<TestEvent1>, StaticDomain<> {
+    using Receiver::Receiver;
+
+    void handle(TestEvent1 event) noexcept override
+    {
+      counter += event.param1;
+    }
+
+    int counter = 0;
+  } r1 = {ch};
+
+  SECTION ("Send events ") {
+    sender.send({1});
+    REQUIRE(r1.counter == 1);
+    sender.send({2});
+    REQUIRE(r1.counter == 3);
   }
 }

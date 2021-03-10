@@ -2,7 +2,10 @@
 
 #include "channel.hpp"
 #include "consumer.hpp"
+#include "event.hpp"
 #include "producer.hpp"
+#include "receiver.hpp"
+#include "sender.hpp"
 #include "state.hpp"
 
 /// A State-based inter-thread communication library.
