@@ -1,6 +1,7 @@
 #pragma once
 
 #include "lib/util/local_vector.hpp"
+#include "lib/util/random.hpp"
 #include "lib/util/visitor.hpp"
 #include "lib/util/with_limits.hpp"
 
@@ -62,6 +63,86 @@ namespace otto::engines::arp {
       };
     }
   };
+
+  struct NoteTPair {
+    std::uint8_t note;
+    /// The "time" value
+    ///
+    /// Used by the `manual` playmode to play in insertion order even when releasing in-between notes
+    std::int8_t t;
+
+    static NoteTPair initial;
+
+    constexpr bool operator<(const NoteTPair& rhs) const noexcept
+    {
+      return t < rhs.t;
+    }
+
+    constexpr bool operator==(const NoteTPair& rhs) const noexcept
+    {
+      return t == rhs.t && note == rhs.note;
+    }
+  };
+  inline NoteTPair NoteTPair::initial = {128, -1};
+  /// The current step
+  /// Placed here to use in both graphics and audio
+  using NoteVector = util::local_set<std::uint8_t, 24>;
+  /// The input notes
+  /// This is always sorted by t
+  /// On insertion, insert with `t = note_array.back().t + 1`
+  using NoteArray = util::local_vector<NoteTPair, 128>;
+
+  struct ArpeggiatorState {
+    NoteTPair current = NoteTPair::initial;
+    enum struct Direction : std::uint8_t { first, second } direction = Direction::first;
+    /// Some octave modes modify the notes input to the playmode.
+    /// This is the cache of those. It should be invalidated (set to nullopt)
+    /// whenever the notes or the octave mode changes.
+    tl::optional<NoteArray> cached_notes = tl::nullopt;
+
+    /// random number generator used for the Random playmode
+    util::fastrand_in_range rng{1234};
+
+    /// Counter. Used to detect wraps for graphics
+    int count = 0;
+
+    void invalidate_om_cache()
+    {
+      cached_notes = tl::nullopt;
+    }
+
+    void reset() noexcept
+    {
+      *this = ArpeggiatorState();
+    }
+  };
+  /// Playmode functions
+  using PlayModeFunc = util::function_ptr<NoteVector(ArpeggiatorState&, const NoteArray&)>;
+  using OctaveModeFunc = util::function_ptr<NoteVector(ArpeggiatorState&, const NoteArray&, PlayModeFunc)>;
+  namespace play_modes {
+    NoteVector up(ArpeggiatorState& state, const NoteArray& notes);
+    NoteVector down(ArpeggiatorState& state, const NoteArray& notes);
+    NoteVector chord(ArpeggiatorState& state, const NoteArray& notes);
+    NoteVector manual(ArpeggiatorState& state, const NoteArray& notes);
+    NoteVector random(ArpeggiatorState& state, const NoteArray& notes);
+    NoteVector updown(ArpeggiatorState& state, const NoteArray& notes);
+    NoteVector downup(ArpeggiatorState& state, const NoteArray& notes);
+    NoteVector updowninc(ArpeggiatorState& state, const NoteArray& notes);
+    NoteVector downupinc(ArpeggiatorState& state, const NoteArray& notes);
+
+    PlayModeFunc func(PlayMode);
+  } // namespace play_modes
+
+  namespace octave_modes {
+    NoteVector standard(ArpeggiatorState& state, const NoteArray& input, PlayModeFunc);
+    NoteVector octaveupunison(ArpeggiatorState& state, const NoteArray& input, PlayModeFunc);
+    NoteVector fifthunison(ArpeggiatorState& state, const NoteArray& input, PlayModeFunc);
+    NoteVector octaveup(ArpeggiatorState& state, const NoteArray& input, PlayModeFunc);
+    NoteVector doubleoctaveup(ArpeggiatorState& state, const NoteArray& input, PlayModeFunc);
+    NoteVector octavedownup(ArpeggiatorState& state, const NoteArray& input, PlayModeFunc);
+
+    OctaveModeFunc func(OctaveMode);
+  } // namespace octave_modes
 
   std::unique_ptr<ILogic> make_logic(itc::ChannelGroup&);
   ScreenWithHandler make_screen(itc::ChannelGroup&);

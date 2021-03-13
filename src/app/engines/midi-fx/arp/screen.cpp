@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <string>
 
 #include <choreograph/Choreograph.h>
@@ -103,7 +104,84 @@ namespace otto::engines::arp {
     NoteLength note_length_widget;
     skia::KeyValueFade<float> red_fade = {fade_in_time, hold_time, fade_back_time};
 
-    Screen(itc::ChannelGroup& c) : Consumer(c) {}
+    using Dots = util::local_vector<NoteVector, 24>;
+    using DotCoords = util::local_vector<std::pair<skia::Point, bool>, 48>;
+
+    PlayModeFunc playmode_func_ = play_modes::up;
+    OctaveModeFunc octavemode_func_ = octave_modes::standard;
+    ArpeggiatorState dummy_state;
+    NoteArray notes;
+    Dots dots;
+    DotCoords dots_coords;
+
+
+    void update_dots(PlayModeFunc playmode_func_,
+                     OctaveModeFunc octavemode_func_,
+                     ArpeggiatorState state,
+                     NoteArray notes,
+                     DotCoords& dots_coords) noexcept
+    {
+      // Calculate notes
+      //
+      dots.clear();
+      state.reset();
+      do {
+        dots.push_back(octavemode_func_(state, notes, playmode_func_));
+      } while (state.count != 0);
+      if (dots.size() > 1) dots.pop_back();
+      state.reset();
+
+      // Graphics options
+      float y_bot = 175;
+      float y_size = 110;
+      float x_step_width = 30;
+
+      // Calculate dots from notes
+      //
+      int num_steps = dots.size();
+      int min = 88;
+      int max = 0;
+      // Find minimum and maximum key values
+      for (auto& s : dots) {
+        auto current_min = s[0];
+        min = min > current_min ? current_min : min;
+        auto current_max = s.back();
+        max = max < current_max ? current_max : max;
+      }
+      // Calculate new dot values
+      dots_coords.clear();
+      // Possibly, there are too many steps and we must rescale in the x-direction
+      if (num_steps > 10) x_step_width = x_step_width * 10 / num_steps;
+
+      for (int i = 0; i < num_steps; i++) {
+        for (auto& note : dots[i]) {
+          skia::Point p;
+          p.fX = skia::width / 2.f + (2 * i + 1 - num_steps) * x_step_width / 2.f;
+          if (min != max)
+            p.fY = y_bot - ((float) note - (float) min) / ((float) max - (float) min) * y_size;
+          else
+            p.fY = y_bot - y_size / 2;
+
+          // Check if original
+          constexpr std::array<int, 3> orig_notes = {40, 44, 47};
+          bool is_original = std::ranges::find(orig_notes, note) != orig_notes.end();
+          dots_coords.push_back({p, is_original});
+        }
+      }
+    }
+
+    void draw_dots(skia::Canvas& ctx, DotCoords& coords)
+    {
+      for (auto& p : coords) ctx.drawCircle(p.first, 5, paints::fill(p.second ? colors::white : colors::green));
+    }
+
+    Screen(itc::ChannelGroup& c) : Consumer(c)
+    {
+      // Insert notes to visualize
+      notes.push_back({44, 0});
+      notes.push_back({40, 1});
+      notes.push_back({47, 2});
+    }
 
     void on_state_change(const State& s) noexcept override
     {
@@ -111,11 +189,13 @@ namespace otto::engines::arp {
       if (old_playmode != s.playmode) {
         blue_fade.trigger();
         old_playmode = s.playmode;
+        playmode_func_ = play_modes::func(s.playmode);
       }
       // Octavemode
       if (old_octavemode != s.octavemode) {
         green_fade.trigger();
         old_octavemode = s.octavemode;
+        octavemode_func_ = octave_modes::func(s.octavemode);
       }
       // Subdivision
       if (old_subdivision != s.subdivision) {
@@ -129,6 +209,7 @@ namespace otto::engines::arp {
         note_length_widget.length_ = s.note_length;
         old_note_length = s.note_length;
       }
+      update_dots(playmode_func_, octavemode_func_, dummy_state, notes, dots_coords);
     }
 
     void draw(skia::Canvas& ctx) noexcept override
@@ -168,6 +249,8 @@ namespace otto::engines::arp {
       subdivision_widget.bounding_box.move_to({320 - 50 - x_pad, 240 - box_height - y_pad});
       subdivision_widget.bounding_box.resize({box_width, box_height});
       subdivision_widget.draw(ctx);
+
+      draw_dots(ctx, dots_coords);
     }
   };
 

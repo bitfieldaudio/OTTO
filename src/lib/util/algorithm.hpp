@@ -158,7 +158,7 @@ namespace otto::util {
       return first;
     }
 
-    /// `for_each` with access to an index value. Function called as `f(*it, i)`
+    /// `for_each` with access to an index value. Function called as `f(i, *it)`
     ///
     /// For each item in range `[first, last)`, invoke `f` with args
     /// `i, *iter` where `iter` is the current iterator, and `i` is
@@ -183,7 +183,7 @@ namespace otto::util {
     template<typename Rng, typename F>
     constexpr std::size_t indexed_for_each(Rng&& rng, F&& f)
     {
-      return indexed_for(std::begin(rng), std::end(rng), std::forward<F>(f));
+      return indexed_for_each(std::begin(rng), std::end(rng), std::forward<F>(f));
     }
 
 
