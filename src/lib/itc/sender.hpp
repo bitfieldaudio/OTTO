@@ -2,45 +2,25 @@
 
 #include "channel.hpp"
 #include "event.hpp"
+#include "provider.hpp"
 
 namespace otto::itc {
 
   template<AnEvent Event>
-  struct Sender<Event> : detail::SenderBase {
-    Sender(Channel& channel) : channel_(&channel)
-    {
-      channel.register_sender(this);
-    }
-
-    // Non-copyable
-    Sender(const Sender&) = delete;
-    Sender& operator=(const Sender&) = delete;
-
-    ~Sender() noexcept
-    {
-      channel_->unregister_sender(this);
-    }
+  struct Sender<Event> : Provider<event_service<Event>> {
+    using Provider<event_service<Event>>::Provider;
 
     /// The receivers this producer is currently linked to
     const std::vector<Receiver<Event>*>& receivers() const noexcept
     {
-      return receivers_;
+      return Provider<event_service<Event>>::accessors();
     }
 
     /// Send an event to all linked consumers
     void send(Event event) noexcept
     {
-      for (Receiver<Event>* r : receivers_) r->internal_send(std::move(event));
+      for (Receiver<Event>* r : receivers()) r->internal_send(std::move(event));
     }
-
-    void serialize_into(json::value&) const override {}
-    void deserialize_from(const json::value&) override {}
-
-  private:
-    friend linker;
-
-    Channel* channel_;
-    std::vector<Receiver<Event>*> receivers_;
   };
 
   template<AnEvent... Events>

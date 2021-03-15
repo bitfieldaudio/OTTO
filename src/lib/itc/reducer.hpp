@@ -51,7 +51,7 @@ namespace otto::itc {
     template<AState State>
     Producer<State>* get_producer(itc::Channel& ch)
     {
-      return static_cast<Producer<State>*>(ch.find_sender<state_change_event<State>>());
+      return static_cast<Producer<State>*>(ch.find_provider<event_service<state_change_event<State>>>());
     }
   } // namespace detail
 

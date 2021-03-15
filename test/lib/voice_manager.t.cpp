@@ -173,6 +173,10 @@ TEST_CASE ("VoiceManager", "[!mayfail]") {
       }
       REQUIRE(std::ranges::distance(triggered_voices()) == 0);
     }
+
+    SECTION ("Voice::volume() is VoiceManager::normal_volume") {
+      REQUIRE(voices[0].volume() == voices.normal_volume);
+    }
   }
 
   SECTION ("Duo Mode") {

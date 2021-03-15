@@ -6,9 +6,8 @@
 namespace otto::itc {
 
   template<AState State>
-  struct Producer<State> : Sender<state_change_event<State>> {
+  struct Producer<State> : Sender<state_change_event<State>>, util::ISerializable {
     using Event = state_change_event<State>;
-    Producer(TypedChannelLeaf<Event>& ch) : Sender<Event>(ch) {}
     Producer(Channel& channels) : Sender<Event>(channels) {}
 
     /// Commit the current `state()`, notifying consumers
