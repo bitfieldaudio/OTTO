@@ -205,7 +205,8 @@ namespace otto::voices {
     }
 
   private:
-    util::local_vector<float, 7> detune_values;
+    util::local_vector<float, 7> detune_values = {1, 1, 1, 1, 1, 1, 1};
+    util::local_vector<float, 7> detune_values_max;
   };
 
   template<AVoice Voice>
@@ -488,7 +489,7 @@ namespace otto::voices {
     : VoiceAllocatorBase<Voice, N>(vmgr)
   {
     for (auto& voice : this->vmgr) {
-      voice.volume(this->vmgr.normal_volume / 2.f);
+      voice.volume(this->vmgr.normal_volume);
     }
   }
 
@@ -570,9 +571,17 @@ namespace otto::voices {
   VoiceAllocator<PlayMode::unison, Voice, N>::VoiceAllocator(VoiceManager<Voice, N>& vm_in)
     : VoiceAllocatorBase<Voice, N>(vm_in)
   {
+    const float detune_strength = 0.15f;
+    detune_values_max.clear();
+    detune_values_max.push_back(1);
+    for (int i = 1; i < 3; i++) {
+      detune_values_max.push_back(1 + detune_strength * static_cast<float>(i));
+      detune_values_max.push_back(1.f / (1.f + detune_strength * static_cast<float>(i)));
+    }
+
     for (int i = 0; i < N; ++i) {
       auto& voice = this->vmgr.voices_[i];
-      voice.volume(this->vmgr.normal_volume / (float) num_voices_used);
+      voice.volume(this->vmgr.normal_volume);
     }
     set_detune(0.f);
   }
@@ -587,12 +596,7 @@ namespace otto::voices {
   void VoiceAllocator<PlayMode::unison, Voice, N>::set_detune(float detune) noexcept
   {
     auto& vmgr = this->vmgr;
-    detune_values.clear();
-    detune_values.push_back(1);
-    for (int i = 1; i < 3; i++) {
-      detune_values.push_back(1 + detune * 0.015f * static_cast<float>(i));
-      detune_values.push_back(1.f / (1.f + detune * 0.015f * static_cast<float>(i)));
-    }
+    for (auto&& [d, m] : util::zip(detune_values, detune_values_max)) d = 1 * (1 - detune) + detune * m;
     for (auto&& [v, d] : util::zip(vmgr.voices_, detune_values)) v.glide_ = midi::note_freq(v.midi_note_) * d;
   }
 
