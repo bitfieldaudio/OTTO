@@ -9,84 +9,84 @@
 using namespace otto;
 using namespace otto::itc;
 
-template<AnEvent... Events>
-using ImmRec = WithDomain<StaticDomain<>, Receiver<Events...>>;
+template<AnAction... Actions>
+using ImmRec = WithDomain<StaticDomain<>, Receiver<Actions...>>;
 
 template<AState... States>
 using ImmCons = WithDomain<StaticDomain<>, Consumer<States...>>;
 
 // Tests
 TEST_CASE ("Basic Context/Receiver/Sender linking and lifetime", "[itc]") {
-  struct Event {};
+  struct Action {};
 
   ImmediateExecutor ex;
   StaticDomain<>::set_static_executor(ex);
 
   SECTION ("Receiver has a reference to its sender") {
     Context ctx;
-    Sender<Event> s{ctx};
-    ImmRec<Event> r1(ctx);
+    Sender<Action> s{ctx};
+    ImmRec<Action> r1(ctx);
     REQUIRE(r1.sender() == &s);
   }
 
   SECTION ("Receiver has a reference to its context") {
     Context ctx;
-    ImmRec<Event> c = {ctx};
+    ImmRec<Action> c = {ctx};
     REQUIRE(&c.context() == &ctx);
   }
 
   SECTION ("Sender has a list of receivers") {
     Context ctx;
-    Sender<Event> s1{ctx};
-    ImmRec<Event> r1{ctx};
-    ImmRec<Event> r2{ctx};
-    ImmRec<Event> r3{ctx};
-    REQUIRE_THAT(s1.receivers(), Catch::Matchers::Equals(std::vector<Receiver<Event>*>{&r1, &r2, &r3}));
+    Sender<Action> s1{ctx};
+    ImmRec<Action> r1{ctx};
+    ImmRec<Action> r2{ctx};
+    ImmRec<Action> r3{ctx};
+    REQUIRE_THAT(s1.receivers(), Catch::Matchers::Equals(std::vector<Receiver<Action>*>{&r1, &r2, &r3}));
   }
 
   SECTION ("Bidirectional lifetime management") {
     SECTION ("Sender / Receiver") {
       SECTION ("Sender destroyed before receiver") {
         Context ctx;
-        ImmRec<Event> r1(ctx);
+        ImmRec<Action> r1(ctx);
         {
-          Sender<Event> s = {ctx};
+          Sender<Action> s = {ctx};
         }
         REQUIRE(r1.sender() == nullptr);
       }
       SECTION ("Receiver destroyed before sender") {
         Context ctx;
-        Sender<Event> s{ctx};
+        Sender<Action> s{ctx};
         {
-          ImmRec<Event> r{ctx};
+          ImmRec<Action> r{ctx};
         }
         REQUIRE(s.receivers().empty());
       }
     }
   }
 }
-TEST_CASE ("itc Events", "[itc]") {
+TEST_CASE ("itc Actions", "[itc]") {
   ImmediateExecutor ex;
   StaticDomain<>::set_static_executor(ex);
 
-  struct TestEvent1 {
+  struct TestAction1 {
     int param1 = 0;
   };
   Context ctx;
-  Sender<TestEvent1> sender = {ctx};
+  Sender<TestAction1> sender = {ctx};
 
-  struct R1 : Receiver<TestEvent1>, StaticDomain<> {
+  struct R1 : Receiver<TestAction1>, StaticDomain<> {
     using Receiver::Receiver;
 
-    void receive(TestEvent1 event) noexcept override
+    void receive(TestAction1 action) noexcept override
     {
-      counter += event.param1;
+      counter += action.param1;
     }
 
     int counter = 0;
   } r1 = {ctx};
 
-  SECTION ("Send events ") {
+  SECTION ("Send actions ") {
     sender.send({1});
     REQUIRE(r1.counter == 1);
     sender.send({2});
@@ -98,18 +98,18 @@ TEST_CASE ("Context walking", "[itc]") {
   ImmediateExecutor ex;
   StaticDomain<>::set_static_executor(ex);
 
-  struct TestEvent1 {
+  struct TestAction1 {
     int param1 = 0;
   };
 
-  using S1 = Sender<TestEvent1>;
+  using S1 = Sender<TestAction1>;
 
-  struct R1 : Receiver<TestEvent1>, StaticDomain<> {
+  struct R1 : Receiver<TestAction1>, StaticDomain<> {
     using Receiver::Receiver;
 
-    void receive(TestEvent1 event) noexcept override
+    void receive(TestAction1 action) noexcept override
     {
-      counter += event.param1;
+      counter += action.param1;
     }
 
     int counter = 0;

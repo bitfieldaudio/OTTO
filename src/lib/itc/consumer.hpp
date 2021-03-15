@@ -9,9 +9,9 @@
 namespace otto::itc {
   // Declarations
   template<AState State>
-  struct Consumer<State> : Receiver<state_change_event<State>> {
-    using Event = state_change_event<State>;
-    Consumer(Channel& channels) : Receiver<Event>(channels) {}
+  struct Consumer<State> : Receiver<state_change_action<State>> {
+    using Action = state_change_action<State>;
+    Consumer(Channel& channels) : Receiver<Action>(channels) {}
 
     /// Access the newest state available.
     const State& state() const noexcept
@@ -38,7 +38,7 @@ namespace otto::itc {
 
   private:
     /// Called from {@ref TypedChannelLeaf::internal_commit}
-    void receive(Event e) noexcept override
+    void receive(Action e) noexcept override
     {
       // {
       //   std::scoped_lock l(lock_);

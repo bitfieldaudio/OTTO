@@ -1,37 +1,37 @@
 #pragma once
 
+#include "action.hpp"
 #include "channel.hpp"
-#include "event.hpp"
 #include "provider.hpp"
 
 namespace otto::itc {
 
-  template<AnEvent Event>
-  struct Sender<Event> : Provider<event_service<Event>> {
-    using Provider<event_service<Event>>::Provider;
+  template<AnAction Action>
+  struct Sender<Action> : Provider<action_service<Action>> {
+    using Provider<action_service<Action>>::Provider;
 
     /// The receivers this producer is currently linked to
-    const std::vector<Receiver<Event>*>& receivers() const noexcept
+    const std::vector<Receiver<Action>*>& receivers() const noexcept
     {
-      return Provider<event_service<Event>>::accessors();
+      return Provider<action_service<Action>>::accessors();
     }
 
-    /// Send an event to all linked consumers
-    void send(Event event) noexcept
+    /// Send an action to all linked consumers
+    void send(Action action) noexcept
     {
-      for (Receiver<Event>* r : receivers()) r->internal_send(std::move(event));
+      for (Receiver<Action>* r : receivers()) r->internal_send(std::move(action));
     }
   };
 
-  template<AnEvent... Events>
-  struct Sender : Sender<Events>... {
-    Sender(Channel& ch) : Sender<Events>(ch)... {}
+  template<AnAction... Actions>
+  struct Sender : Sender<Actions>... {
+    Sender(Channel& ch) : Sender<Actions>(ch)... {}
 
-    /// Send an event to all linked consumers
-    template<util::one_of<Events...> Event>
-    void send(Event event) noexcept
+    /// Send an action to all linked consumers
+    template<util::one_of<Actions...> Action>
+    void send(Action action) noexcept
     {
-      Sender<Event>::send(std::move(event));
+      Sender<Action>::send(std::move(action));
     }
   };
 

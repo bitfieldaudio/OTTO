@@ -1,14 +1,14 @@
 #pragma once
 
 #include "accessor.hpp"
+#include "action.hpp"
 #include "channel.hpp"
-#include "event.hpp"
 
 namespace otto::itc {
 
-  template<AnEvent Event>
-  struct Receiver<Event> : private virtual IDomain, Accessor<event_service<Event>> {
-    Receiver(Channel& ch) : Accessor<event_service<Event>>(ch) {}
+  template<AnAction Action>
+  struct Receiver<Action> : private virtual IDomain, Accessor<action_service<Action>> {
+    Receiver(Channel& ch) : Accessor<action_service<Action>>(ch) {}
 
     Receiver(const Receiver&) = delete;
     Receiver& operator=(const Receiver&) = delete;
@@ -24,28 +24,28 @@ namespace otto::itc {
       if (exec_ != nullptr) exec_->sync();
     }
 
-    Sender<Event>* sender() const noexcept
+    Sender<Action>* sender() const noexcept
     {
       return this->provider();
     }
 
-    virtual void receive(Event) noexcept {}
+    virtual void receive(Action) noexcept {}
 
   private:
-    friend Sender<Event>;
+    friend Sender<Action>;
 
     /// Called by `send` in `Sender`
-    void internal_send(const Event& event) noexcept
+    void internal_send(const Action& action) noexcept
     {
       if (exec_ == nullptr) exec_ = &executor();
-      exec_->execute([this, event] { receive(std::move(event)); });
+      exec_->execute([this, action] { receive(std::move(action)); });
     }
 
     IExecutor* exec_ = nullptr;
   };
 
-  template<AnEvent... Events>
-  struct Receiver : Receiver<Events>... {
-    Receiver(Channel& ch) : Receiver<Events>(ch)... {}
+  template<AnAction... Actions>
+  struct Receiver : Receiver<Actions>... {
+    Receiver(Channel& ch) : Receiver<Actions>(ch)... {}
   };
 } // namespace otto::itc

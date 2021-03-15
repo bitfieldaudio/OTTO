@@ -2,6 +2,8 @@
 
 #include <concepts>
 
+#include "lib/itc/action.hpp"
+
 namespace otto::itc {
 
   /// The concept that state types need to fulfill.
@@ -19,13 +21,16 @@ namespace otto::itc {
   struct Consumer;
 
   template<AState State_>
-  struct state_change_event {
+  struct state_change_action {
     using State = State_;
     // TODO: Obviously dont copy the entire state
     State state;
   };
 
   template<typename T>
-  concept AStateEvent = std::is_same_v<T, state_change_event<typename T::State>>;
+  concept AStateEvent = std::is_same_v<T, state_change_action<typename T::State>>;
+
+  template<AState State>
+  using state_service = action_service<state_change_action<State>>;
 
 } // namespace otto::itc

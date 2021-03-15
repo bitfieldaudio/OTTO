@@ -6,15 +6,15 @@
 namespace otto::itc {
 
   template<AState State>
-  struct Producer<State> : Sender<state_change_event<State>>, util::ISerializable {
-    using Event = state_change_event<State>;
-    Producer(Channel& channels) : Sender<Event>(channels) {}
+  struct Producer<State> : Sender<state_change_action<State>>, util::ISerializable {
+    using Action = state_change_action<State>;
+    Producer(Channel& channels) : Sender<Action>(channels) {}
 
     /// Commit the current `state()`, notifying consumers
     void commit()
     {
-      // TODO: Do not send state along as event
-      Sender<Event>::send(Event{state()});
+      // TODO: Do not send state along as action
+      Sender<Action>::send(Action{state()});
     }
 
     State& state() noexcept
