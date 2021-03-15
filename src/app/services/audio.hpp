@@ -30,6 +30,11 @@ namespace otto::services {
     unsigned buffer_count() noexcept;
     void wait_for_n_buffers(int n) noexcept;
 
+    drivers::IAudioDriver& driver() noexcept
+    {
+      return *driver_;
+    }
+
   private:
     void loop_func(CallbackData data) noexcept;
 

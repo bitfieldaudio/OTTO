@@ -2,6 +2,7 @@
 
 #include "lib/voices/voice_manager.hpp"
 
+#include "app/engines/master/master.hpp"
 #include "app/engines/synths/ottofm/ottofm.hpp"
 #include "app/layers/navigator.hpp"
 #include "app/layers/piano_key_layer.hpp"
@@ -32,20 +33,23 @@ namespace otto {
     Audio audio;
     StateManager stateman("data/state.json");
 
-    itc::Channel chan;
-    auto eng = engines::ottofm::factory.make_all(chan);
-    stateman.add("EngineChannel", std::ref(chan));
-
-    auto voices_logic = voices::make_voices_logic(chan);
-    auto voices_screen = voices::make_voices_screen(chan);
-
     LayerStack layers;
     auto piano = layers.make_layer<PianoKeyLayer>(audio.midi());
     auto nav_km = layers.make_layer<NavKeyMap>(confman);
+    stateman.add("Navigation", std::ref(nav_km));
+
+    itc::Context ctx;
+    auto eng = engines::ottofm::factory.make_all(ctx);
     nav_km.bind_nav_key(Key::synth, eng.main_screen);
     nav_km.bind_nav_key(Key::envelope, eng.mod_screen);
+    stateman.add("Engine", std::ref(ctx));
+
+    auto voices_logic = voices::make_voices_logic(ctx);
+    auto voices_screen = voices::make_voices_screen(ctx);
     nav_km.bind_nav_key(Key::voices, voices_screen);
-    stateman.add("Navigation", std::ref(nav_km));
+
+    auto master = engines::master::Master::make(ctx, audio.driver().mixer());
+    nav_km.bind_nav_key(Key::master, master.screen);
 
     RtMidiDriver rt_midi_driver(audio.midi());
 

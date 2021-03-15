@@ -9,6 +9,7 @@
 #include "lib/util/enum.hpp"
 
 #include "lib/chrono.hpp"
+#include "lib/itc/eventsender.hpp"
 #include "lib/itc/reducer.hpp"
 
 namespace otto {
@@ -166,6 +167,8 @@ namespace otto {
     void reduce(KeyRelease e, State& state) noexcept override {}
     void reduce(EncoderEvent e, State& state) noexcept override {}
   };
+
+  using InputEventSender = itc::EventSender<KeyPress, KeyRelease, EncoderEvent>;
 
   inline std::ostream& operator<<(std::ostream& os, const UntimedKeyPress& e)
   {

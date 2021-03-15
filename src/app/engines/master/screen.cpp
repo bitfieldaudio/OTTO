@@ -4,7 +4,9 @@
 
 #include "app/drivers/audio_driver.hpp"
 
-namespace otto::engines {
+#include "master.hpp"
+
+namespace otto::engines::master {
 
   struct VolumeWidget : graphics::Widget<VolumeWidget> {
     float value = 0.5;
@@ -47,21 +49,25 @@ namespace otto::engines {
     }
   };
 
-  struct MasterState {
-    util::Bounded<float, util::bounds<0, 1>> volume = 0;
-  };
-
   struct MasterScreen : ScreenBase, itc::Consumer<MasterState> {
-    struct Handler : InputHandler {
-      Handler(drivers::IAudioMixer& m) : mixer_(m) {}
+    struct Handler : InputReducer<MasterState>, IInputLayer {
+      Handler(itc::Channel& chan, drivers::IAudioMixer& m) : InputReducer(chan), mixer_(m) {}
 
-      void handle(EncoderEvent e) noexcept override
+      [[nodiscard]] KeySet key_mask() const noexcept override
+      {
+        return key_groups::enc_clicks;
+      }
+
+      void reduce(EncoderEvent e, MasterState& state) noexcept override
       {
         mixer_.set_volume(mixer_.get_volume() + util::narrow(e.steps) * 0.01f);
+        state.volume = mixer_.get_volume();
       }
 
       drivers::IAudioMixer& mixer_;
     };
+
+    using Consumer::Consumer;
 
     void draw(skia::Canvas& ctx) noexcept override
     {
@@ -72,4 +78,20 @@ namespace otto::engines {
     }
   };
 
-} // namespace otto::engines
+  struct Logic : ILogic, itc::Producer<MasterState> {
+    using Producer::Producer;
+  };
+
+  Master Master::make(itc::Context& ctx, drivers::IAudioMixer& mixer)
+  {
+    return {
+      .logic = std::make_unique<Logic>(ctx),
+      .screen =
+        {
+          std::make_unique<MasterScreen>(ctx),
+          std::make_unique<MasterScreen::Handler>(ctx, mixer),
+        },
+    };
+  }
+
+} // namespace otto::engines::master
