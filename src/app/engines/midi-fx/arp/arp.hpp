@@ -21,8 +21,21 @@ namespace otto::engines::arp {
     virtual ~ILogic() = default;
   };
 
-  struct IMidiFXAudio {
-    virtual midi::IMidiHandler& midi_handler() noexcept = 0;
+  struct IMidiFXAudio : midi::MidiHandler {
+    midi::IMidiHandler& target()
+    {
+      if (target_ == nullptr) return empty_target_;
+      return *target_;
+    }
+    void set_target(midi::IMidiHandler* target)
+    {
+      target_ = target;
+    }
+    virtual void process() noexcept = 0;
+
+  private:
+    midi::IMidiHandler* target_;
+    midi::MidiHandler empty_target_ = {};
   };
 
   struct MidiFXEngineInstance {

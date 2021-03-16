@@ -48,6 +48,7 @@ int main(int argc, char* argv[])
   auto voices_screen = voices::make_voices_screen(chan);
 
   auto midifx_eng = engines::arp::factory.make_all(chan);
+  midifx_eng.audio->set_target(&eng.audio->midi_handler());
 
   LayerStack layers;
   auto piano = layers.make_layer<PianoKeyLayer>(audio.midi());
@@ -62,8 +63,10 @@ int main(int argc, char* argv[])
 
   LedManager ledman(controller.port_writer());
 
-  auto stop_midi = audio.set_midi_handler(&eng.audio->midi_handler());
+  auto stop_midi = audio.set_midi_handler(&*midifx_eng.audio);
+  // auto stop_midi = audio.set_midi_handler(&eng.audio->midi_handler());
   auto stop_audio = audio.set_process_callback([&](Audio::CallbackData data) {
+    midifx_eng.audio->process();
     const auto res = eng.audio->process();
     stdr::copy(util::zip(res, res), data.output.begin());
   });
