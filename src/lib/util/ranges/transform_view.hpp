@@ -63,7 +63,7 @@ namespace otto::util {
         return iter_ - rhs.iter_;
       }
 
-      constexpr auto operator+=(std::size_t n) const //
+      constexpr auto operator+=(std::size_t n) //
         requires std::ranges::random_access_range<Range>
       {
         return iter_ += n;

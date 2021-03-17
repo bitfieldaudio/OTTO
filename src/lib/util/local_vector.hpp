@@ -7,6 +7,7 @@
 
 #include <tl/expected.hpp>
 
+#include "lib/util/concepts.hpp"
 #include "lib/util/exception.hpp"
 
 namespace otto::util {
@@ -29,9 +30,10 @@ namespace otto::util {
 
     constexpr local_vector() : _data() {}
 
-    constexpr local_vector(std::initializer_list<value_type> il)
+    constexpr local_vector(util::range_of<value_type> auto&& range) // NOLINT
+      requires(!util::decays_to<local_vector, decltype(range)>)
     {
-      for (const T& v : il) {
+      for (const T& v : FWD(range)) {
         push_back(v);
       }
     }
