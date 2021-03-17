@@ -31,16 +31,17 @@ namespace otto::voices {
     {
       switch (e.encoder) {
         case Encoder::blue: {
-          if (e.steps > 0)
+          if (e.steps > 0) {
             state.play_mode++;
-          else
+          } else {
             state.play_mode--;
+          }
         } break;
         case Encoder::green: {
           switch (state.play_mode) {
-            case PlayMode::poly: state.rand += e.steps * 0.01; break;
-            case PlayMode::mono: state.sub += e.steps * 0.01; break;
-            case PlayMode::unison: state.detune += e.steps * 0.01; break;
+            case PlayMode::poly: state.rand += e.steps * 0.01f; break;
+            case PlayMode::mono: state.sub += e.steps * 0.01f; break;
+            case PlayMode::unison: state.detune += e.steps * 0.01f; break;
             case PlayMode::duo: state.interval += e.steps; break;
           }
         } break;
@@ -129,12 +130,12 @@ namespace otto::voices {
 
         auto pm = magic_enum::enum_value<PlayMode>(i);
         skia::place_text(ctx, playmode_string(pm), fonts::medium(24),
-                         paints::fill(active ? colors::white : colors::grey50), {mode_text_x, y + line_size * 0.5},
+                         paints::fill(active ? colors::white : colors::grey50), {mode_text_x, y + line_size * 0.5f},
                          anchors::middle_left);
         skia::place_text(ctx, aux_setting(pm), fonts::medium(24), paints::fill(active ? colors::white : colors::grey50),
-                         {aux_text_x, y + line_size * 0.5}, anchors::middle_left);
+                         {aux_text_x, y + line_size * 0.5f}, anchors::middle_left);
         skia::place_text(ctx, aux_value(pm), fonts::medium(24), paints::fill(active ? colors::white : colors::grey50),
-                         {aux_value_x, y + line_size * 0.5}, anchors::middle_right);
+                         {aux_value_x, y + line_size * 0.5f}, anchors::middle_right);
       };
 
       // Top text

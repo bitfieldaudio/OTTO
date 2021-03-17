@@ -420,3 +420,23 @@ namespace otto::util {
     }
   };
 } // namespace otto::util
+
+namespace std { // NOLINT
+  template<typename T, std::size_t Capacity, typename U>
+  constexpr std::size_t erase(otto::util::local_vector<T, Capacity>& c, const U& value)
+  {
+    auto it = std::remove(c.begin(), c.end(), value);
+    auto r = std::distance(it, c.end());
+    c.erase(it, c.end());
+    return r;
+  }
+
+  template<typename T, std::size_t Capacity, typename Pred>
+  constexpr std::size_t erase_if(otto::util::local_vector<T, Capacity>& c, Pred pred)
+  {
+    auto it = std::remove_if(c.begin(), c.end(), pred);
+    auto r = std::distance(it, c.end());
+    c.erase(it, c.end());
+    return r;
+  }
+} // namespace std
