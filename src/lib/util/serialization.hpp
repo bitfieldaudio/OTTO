@@ -245,7 +245,7 @@ namespace otto::util {
 
   // TODO: better represenatation of durations in serialization?
   template<>
-  struct serialize_impl<chrono::duration, 3> {
+  struct serialize_impl<chrono::duration, 5> {
     static void serialize_into(json::value& json, const chrono::duration& value)
     {
       json = value.count();

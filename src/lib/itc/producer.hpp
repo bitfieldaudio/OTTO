@@ -65,6 +65,7 @@ namespace otto::itc {
     {
       if constexpr (util::ASerializable<State>) {
         util::deserialize_from(json, state_);
+        commit();
       }
     }
 
