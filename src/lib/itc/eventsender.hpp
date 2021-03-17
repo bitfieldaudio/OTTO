@@ -19,7 +19,7 @@ namespace otto::itc {
 
   template<AnEvent... Events>
   struct EventSender : EventSender<Events>... {
-    using EventSender<Events>::EventSender...;
+    EventSender(Channel& ch) : EventSender<Events>(ch)... {}
     using EventSender<Events>::handle...;
   };
 } // namespace otto::itc

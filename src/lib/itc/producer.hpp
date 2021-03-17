@@ -15,6 +15,7 @@ namespace otto::itc {
     {
       // TODO: Do not send state along as action
       Sender<Action>::send(Action{state()});
+      on_state_change(state());
     }
 
     State& state() noexcept
@@ -68,6 +69,8 @@ namespace otto::itc {
         commit();
       }
     }
+
+    virtual void on_state_change(const State&) {}
 
   private:
     State state_;

@@ -51,7 +51,7 @@ namespace otto::engines::master {
 
   struct MasterScreen : ScreenBase, itc::Consumer<MasterState> {
     struct Handler : InputReducer<MasterState>, IInputLayer {
-      Handler(itc::Channel& chan, drivers::IAudioMixer& m) : InputReducer(chan), mixer_(m) {}
+      using InputReducer::InputReducer;
 
       [[nodiscard]] KeySet key_mask() const noexcept override
       {
@@ -60,11 +60,8 @@ namespace otto::engines::master {
 
       void reduce(EncoderEvent e, MasterState& state) noexcept override
       {
-        mixer_.set_volume(mixer_.get_volume() + util::narrow(e.steps) * 0.01f);
-        state.volume = mixer_.get_volume();
+        state.volume += util::narrow(e.steps) * 0.01f;
       }
-
-      drivers::IAudioMixer& mixer_;
     };
 
     using Consumer::Consumer;
@@ -79,17 +76,24 @@ namespace otto::engines::master {
   };
 
   struct Logic : ILogic, itc::Producer<MasterState> {
-    using Producer::Producer;
+    Logic(itc::Context& ctx, drivers::IAudioMixer& mixer) : Producer(ctx), mixer_(mixer) {}
+
+    void on_state_change(const MasterState& state) override
+    {
+      mixer_.set_volume(state.volume);
+    }
+
+    drivers::IAudioMixer& mixer_;
   };
 
   Master Master::make(itc::Context& ctx, drivers::IAudioMixer& mixer)
   {
     return {
-      .logic = std::make_unique<Logic>(ctx),
+      .logic = std::make_unique<Logic>(ctx, mixer),
       .screen =
         {
           std::make_unique<MasterScreen>(ctx),
-          std::make_unique<MasterScreen::Handler>(ctx, mixer),
+          std::make_unique<MasterScreen::Handler>(ctx),
         },
     };
   }

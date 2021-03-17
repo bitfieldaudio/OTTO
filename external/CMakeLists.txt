@@ -20,11 +20,10 @@ if (APPLE)
 endif()
 
 # Download External Dependencies via CPM
-CPMAddPackage(
-  NAME fmt
-  GITHUB_REPOSITORY fmtlib/fmt
-  GIT_TAG 7.1.3
-)
+CPMAddPackage("gh:fmtlib/fmt#7.1.3")
+CPMAddPackage("gh:catchorg/Catch2@3.0.0-preview3")
+CPMAddPackage("gh:Neargye/magic_enum@0.7.2")
+CPMAddPackage("gh:Naios/function2#4.1.0")
 
 # We're on version v0.3.0-123-gff67c1a which is not officially tagged in Github
 # so we're going to use the SHA directly.
@@ -90,12 +89,6 @@ if (loguru_ADDED)
 endif()
 
 CPMAddPackage(
-  NAME catch2
-  GITHUB_REPOSITORY catchorg/Catch2
-  VERSION 3.0.0-preview3
-)
-
-CPMAddPackage(
   NAME nanobench
   VERSION 4.0.0
   GITHUB_REPOSITORY martinus/nanobench
@@ -107,11 +100,6 @@ if (nanobench_ADDED)
   target_include_directories(nanobench SYSTEM INTERFACE "${nanobench_SOURCE_DIR}/src/include")
 endif()
 
-CPMAddPackage(
-  NAME magic_enum
-  GITHUB_REPOSITORY Neargye/magic_enum
-  VERSION 0.6.6
-)
 
 CPMAddPackage(
   NAME concurrentqueue
@@ -124,12 +112,6 @@ if (concurrentqueue_ADDED)
   add_library(concurrentqueue INTERFACE)
   target_include_directories(concurrentqueue SYSTEM INTERFACE "${concurrentqueue_SOURCE_DIR}")
 endif()
-
-CPMAddPackage(
-  NAME function2
-  GITHUB_REPOSITORY Naios/function2
-  GIT_TAG 4.1.0
-)
 
 CPMAddPackage(
   NAME yamc

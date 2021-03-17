@@ -27,7 +27,7 @@ struct AlsaSndRpiProto {
   /// Presumably a high pass filter can be toggled for the line/mic input
   alsa::ElemProp<alsa::PlaybackSwitchAll> adc_high_pass_filter = mixer.find_elem("ADC High Pass Filter");
   /// Switches between `Line In` and `Mic` for the input (so what do the `line` and `mic` switches do?)
-  alsa::ElemProp<alsa::EnumControlAll> input_mux = mixer.find_elem("Input Mux");
+  alsa::ElemProp<alsa::EnumControl> input_mux = mixer.find_elem("Input Mux");
   /// I don't know what it does, but it needs to be on to get output
   alsa::ElemProp<alsa::PlaybackSwitchAll> output_mixer_hifi = mixer.find_elem("Output Mixer HiFi");
   /// Maybe toggles line in monitoring?
