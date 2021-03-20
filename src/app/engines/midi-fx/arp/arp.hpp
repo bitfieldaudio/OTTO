@@ -153,6 +153,7 @@ namespace otto::engines::arp {
     NoteVector octaveup(ArpeggiatorState& state, const NoteArray& input, PlayModeFunc);
     NoteVector doubleoctaveup(ArpeggiatorState& state, const NoteArray& input, PlayModeFunc);
     NoteVector octavedownup(ArpeggiatorState& state, const NoteArray& input, PlayModeFunc);
+    NoteVector multiply(ArpeggiatorState& state, const NoteArray& input, PlayModeFunc);
 
     OctaveModeFunc func(OctaveMode);
   } // namespace octave_modes

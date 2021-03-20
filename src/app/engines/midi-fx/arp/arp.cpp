@@ -53,6 +53,7 @@ namespace otto::engines::arp {
 
     NoteVector manual(ArpeggiatorState& state, const NoteArray& notes)
     {
+      if (notes.size() == 0) return NoteVector{};
       state.count++;
       auto res = std::upper_bound(notes.begin(), notes.end(), state.current);
       if (res == notes.end()) {
@@ -101,6 +102,7 @@ namespace otto::engines::arp {
       state.count++;
       if (state.count > 8) state.count = 0;
       unsigned int n = notes.size();
+      if (n == 0) return NoteVector{};
       auto next = state.rng(n);
       return NoteVector{notes[next].note};
     }
@@ -273,6 +275,20 @@ namespace otto::engines::arp {
       return play_mode(state, *state.cached_notes);
     }
 
+    NoteVector multiply(ArpeggiatorState& state, const NoteArray& input, PlayModeFunc play_mode)
+    {
+      if (!state.cached_notes) {
+        state.cached_notes = input;
+        state.cached_notes->clear();
+        util::indexed_for_each(input, [&](std::size_t i, const NoteTPair& pair) {
+          state.cached_notes->push_back({static_cast<std::uint8_t>(pair.note), static_cast<std::int8_t>(pair.t + i)});
+          state.cached_notes->push_back(
+            {static_cast<std::uint8_t>(pair.note), static_cast<std::int8_t>(pair.t + i + 1)});
+        });
+      }
+      return play_mode(state, *state.cached_notes);
+    }
+
     OctaveModeFunc func(OctaveMode om)
     {
       switch (om) {
@@ -282,6 +298,7 @@ namespace otto::engines::arp {
         case OctaveMode::octaveup: return octaveup; break;
         case OctaveMode::doubleoctaveup: return doubleoctaveup; break;
         case OctaveMode::octavedownup: return octavedownup; break;
+        case OctaveMode::multiply: return multiply; break;
       }
     }
   } // namespace octave_modes

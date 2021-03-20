@@ -6,7 +6,7 @@
 namespace otto::engines::arp {
 
   enum struct PlayMode { up, down, updown, downup, updowninc, downupinc, manual, chord, random };
-  enum struct OctaveMode { standard, octaveup, doubleoctaveup, octaveupunison, fifthunison, octavedownup };
+  enum struct OctaveMode { standard, octaveup, doubleoctaveup, octaveupunison, fifthunison, octavedownup, multiply };
 
   struct State {
     util::SelectableEnum<PlayMode, util::bounds_policies::wrap> playmode = {PlayMode::up};

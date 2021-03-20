@@ -40,7 +40,7 @@ namespace otto::engines::arp {
       arp_state.invalidate_om_cache();
     };
 
-    void process() noexcept
+    void process() noexcept override
     {
       auto at_beat = [](std::size_t cnt) { return cnt % 25 == 0; };
       auto at_note_off = [](std::size_t cnt) { return cnt % 25 == 5; };

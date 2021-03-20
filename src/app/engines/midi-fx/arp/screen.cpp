@@ -45,6 +45,7 @@ namespace otto::engines::arp {
       case OctaveMode::octaveupunison: return "+1 UNISON";
       case OctaveMode::fifthunison: return "FIFTH";
       case OctaveMode::octavedownup: return "-1 & +1";
+      case OctaveMode::multiply: return "TWICE";
     };
   }
 
