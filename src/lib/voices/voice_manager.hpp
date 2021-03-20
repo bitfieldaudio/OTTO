@@ -206,7 +206,7 @@ namespace otto::voices {
     }
 
   private:
-    util::local_vector<float, 7> detune_values = {1, 1, 1, 1, 1, 1, 1};
+    util::local_vector<float, 7> detune_values;
     util::local_vector<float, 7> detune_values_max;
   };
 
@@ -265,9 +265,11 @@ namespace otto::voices {
         std::ranges::transform(voices_, std::back_inserter(free_voices_), util::addressof);
       }
       // Portamento
-      for (auto& v : voices_) {
-        v.glide_.period(state.portamento * state.portamento * 4 + 0.001);
-        v.glide_ = v.glide_.getEnd();
+      if (state.portamento != old_portamento) {
+        for (auto& v : voices_) {
+          v.glide_.period(state.portamento * state.portamento * 4 + 0.001);
+        }
+        old_portamento = state.portamento;
       }
       voice_alloc->on_state_change(state);
     }
@@ -362,6 +364,7 @@ namespace otto::voices {
       voice_alloc = {std::in_place_index_t<0>(), *this};
 
     Voice* last_triggered_voice_ = &voices_[0];
+    float old_portamento = 0;
   };
 
   std::unique_ptr<ILogic> make_voices_logic(itc::Channel&);
@@ -577,7 +580,9 @@ namespace otto::voices {
       detune_values_max.push_back(1 + detune_strength * static_cast<float>(i));
       detune_values_max.push_back(1.f / (1.f + detune_strength * static_cast<float>(i)));
     }
-
+    for (int i = 0; i < 7; i++) {
+      detune_values.push_back(1);
+    }
     for (int i = 0; i < N; ++i) {
       auto& voice = this->vmgr.voices_[i];
       voice.volume(this->vmgr.normal_volume);

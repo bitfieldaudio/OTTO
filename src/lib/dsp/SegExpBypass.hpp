@@ -93,7 +93,7 @@ namespace otto::dsp {
     {
       mLen = len;
       mCrv = crv;
-      mCurve.set(len * Td::spu(), crv);
+      mCurve.set(len * Td::spu(), crv, mCurve.value());
     }
 
     void onDomainChange(double r)
