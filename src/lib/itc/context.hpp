@@ -35,7 +35,7 @@ namespace otto::itc {
   };
 
   /// A context tree where providers and accessors of any service can be created and accessed
-  struct Context : util::ISerializable {
+  struct Context {
     Context() = default;
     ~Context() = default;
 
@@ -63,18 +63,46 @@ namespace otto::itc {
     template<AService S>
     provider_t<S>* find_provider()
     {
-      auto found = providers_.find(key_of<S>());
-      if (found != providers_.end()) {
-        return static_cast<provider_t<S>*>(found->second);
-      }
+      auto res = provider_of<S>();
+      if (res != nullptr) return res;
       if (parent_ != nullptr) {
         return parent_->find_provider<S>();
       }
       return nullptr;
     }
 
-    void serialize_into(json::value&) const override {}
-    void deserialize_from(const json::value&) override {}
+    const Context* parent() const noexcept
+    {
+      return parent_;
+    }
+    const auto& children() const noexcept
+    {
+      return children_;
+    }
+    const auto& providers() const noexcept
+    {
+      return providers_;
+    }
+    const auto& accessors() const noexcept
+    {
+      return accessors_;
+    }
+
+    template<AService S>
+    provider_t<S>* provider_of() const noexcept
+    {
+      auto found = providers_.find(key_of<S>());
+      if (found != providers_.end()) {
+        return static_cast<provider_t<S>*>(found->second);
+      }
+      return nullptr;
+    }
+
+    template<AService S>
+    auto accessors_of() const noexcept
+    {
+      return util::equal_range(accessors_, key_of<S>());
+    }
 
   private:
     template<AService...>
@@ -145,3 +173,34 @@ namespace otto::itc {
   };
 
 } // namespace otto::itc
+
+namespace otto::util {
+
+  template<>
+  struct serialize_impl<itc::Context> {
+    static void serialize_into(json::value& json, const itc::Context& ctx)
+    {
+      for (auto&& [key, prov] : ctx.providers()) {
+        if (const auto* ser = dynamic_cast<util::ISerializable*>(prov)) {
+          util::serialize_into(json[key.c_str()], *ser);
+        }
+      }
+      for (auto&& [k, v] : ctx.children()) {
+        util::serialize_into(json[k.c_str()], *v);
+      }
+    }
+
+    static void deserialize_from(const json::value& json, itc::Context& ctx)
+    {
+      for (auto&& [key, prov] : ctx.providers()) {
+        if (auto* ser = dynamic_cast<util::ISerializable*>(prov)) {
+          util::deserialize_from_member(json, key.c_str(), *ser);
+        }
+      }
+      for (auto&& [k, v] : ctx.children()) {
+        util::deserialize_from_member(json, k, *v);
+      }
+    }
+  };
+
+} // namespace otto::util

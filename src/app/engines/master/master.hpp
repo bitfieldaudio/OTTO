@@ -12,6 +12,7 @@ namespace otto::engines::master {
 
   struct MasterState {
     util::Bounded<float, util::bounds<0, 1>> volume = 0;
+    DECL_VISIT(volume);
   };
 
   struct Master {

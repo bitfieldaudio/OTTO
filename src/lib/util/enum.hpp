@@ -53,7 +53,7 @@ namespace otto::util {
     using const_iterator = typename std::array<T, enum_count<Enum>()>::const_iterator;
 
     constexpr enum_map() = default;
-    constexpr enum_map(std::initializer_list<std::pair<Enum, T>> init)
+    constexpr enum_map(std::initializer_list<std::pair<Enum, T>> init) noexcept(std::is_nothrow_assignable_v<T, T>)
     {
       for (auto&& [k, v] : init) {
         (*this)[k] = v;

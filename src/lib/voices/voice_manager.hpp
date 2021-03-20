@@ -2,6 +2,7 @@
 
 #include <array>
 
+#include "lib/util/algorithm.hpp"
 #include "lib/util/local_vector.hpp"
 #include "lib/util/ranges.hpp"
 #include "lib/util/variant_w_base.hpp"
@@ -242,13 +243,11 @@ namespace otto::voices {
 
     template<typename... Args>
     requires std::is_constructible_v<Voice, Args...> //
-    VoiceManager(itc::Channel& c, Args&&... args) : Consumer(c)
-    {
-      for (std::size_t i = 0; i < N; i++) {
-        voices_.emplace_back(args...);
-      }
-      std::ranges::transform(voices_, std::back_inserter(free_voices_), [](Voice& v) { return &v; });
-    }
+    VoiceManager(itc::Channel& c, Args&&... args)
+      : Consumer(c),
+        voices_(util::make_array<Voice, N>(FWD(args)...)),
+        free_voices_(util::transform(voices_, util::addressof))
+    {}
 
     void on_state_change(const VoicesState& state) noexcept override
     {
@@ -348,7 +347,7 @@ namespace otto::voices {
     friend struct VoiceAllocator;
 
     /// The actual voices
-    util::local_vector<Voice, N> voices_;
+    std::array<Voice, N> voices_;
     /// Contains the currently untriggered voices
     util::local_vector<Voice*, size()> free_voices_;
     /// Contains informatins about the currently held keys/playing voices.
