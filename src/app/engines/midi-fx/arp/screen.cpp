@@ -61,27 +61,25 @@ namespace otto::engines::arp {
     {
       switch (e.encoder) {
         case Encoder::blue: {
-          if (e.steps > 0) {
-            state.playmode++;
-          } else {
-            state.playmode--;
-          }
+          state.playmode += pm_divider(e);
         } break;
         case Encoder::green: {
-          if (e.steps > 0) {
-            state.octavemode++;
-          } else {
-            state.octavemode--;
-          }
+          state.octavemode += om_divider(e);
         } break;
         case Encoder::yellow: {
-          state.subdivision += e.steps;
+          // state.subdivision += sd_divider(e);
+          state.bpm += e.steps;
         } break;
         case Encoder::red: {
           state.note_length += e.steps * 0.01;
         } break;
       }
     }
+
+  private:
+    otto::util::EventDivider<4> pm_divider;
+    otto::util::EventDivider<4> om_divider;
+    otto::util::EventDivider<4> sd_divider;
   };
 
   struct Screen final : itc::Consumer<State>, ScreenBase {
@@ -97,8 +95,9 @@ namespace otto::engines::arp {
     OctaveMode old_octavemode = OctaveMode::standard;
     skia::KeyValueFade<float> green_fade = {fade_in_time, hold_time, fade_back_time};
 
-    int old_subdivision = 1;
-    Subdivision subdivision_widget;
+    // int old_subdivision = 1;
+    // Subdivision subdivision_widget;
+    int old_bpm = 480;
     skia::KeyValueFade<float> yellow_fade = {fade_in_time, hold_time, fade_back_time};
 
     float old_note_length = 0.3;
@@ -130,10 +129,14 @@ namespace otto::engines::arp {
         visual_dots.octavemode_func_ = octave_modes::func(s.octavemode);
       }
       // Subdivision
-      if (old_subdivision != s.subdivision) {
+      // if (old_subdivision != s.subdivision) {
+      //   yellow_fade.trigger();
+      //   subdivision_widget.num_dots_ = s.subdivision;
+      //   old_subdivision = s.subdivision;
+      // }
+      if (old_bpm != s.bpm) {
         yellow_fade.trigger();
-        subdivision_widget.num_dots_ = s.subdivision;
-        old_subdivision = s.subdivision;
+        old_bpm = s.bpm;
       }
       // Note length
       if (old_note_length != s.note_length) {
@@ -177,10 +180,13 @@ namespace otto::engines::arp {
       skia::Point yellow_position = {320 - x_pad, 240 - y_pad};
       skia::place_text(ctx, "SPEED", font, colors::yellow.fade(yellow_fade.key()), yellow_position,
                        anchors::bottom_right);
-      subdivision_widget.fade_ = yellow_fade.value();
-      subdivision_widget.bounding_box.move_to({320 - 50 - x_pad, 240 - box_height - y_pad});
-      subdivision_widget.bounding_box.resize({box_width, box_height});
-      subdivision_widget.draw(ctx);
+      // subdivision_widget.fade_ = yellow_fade.value();
+      // subdivision_widget.bounding_box.move_to({320 - 50 - x_pad, 240 - box_height - y_pad});
+      // subdivision_widget.bounding_box.resize({box_width, box_height});
+      // subdivision_widget.draw(ctx);
+      skia::place_text(ctx, fmt::format("{:1}", state().bpm), font, colors::yellow.fade(yellow_fade.value()),
+                       yellow_position, anchors::bottom_right);
+
 
       visual_dots.draw(ctx);
     }

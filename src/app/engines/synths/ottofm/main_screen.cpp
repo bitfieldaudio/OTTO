@@ -81,7 +81,7 @@ namespace otto::engines::ottofm {
     }
 
   private:
-    otto::util::EventDivider<4, 2000> divider;
+    otto::util::EventDivider<4> divider;
   };
 
   // For converting number to letter

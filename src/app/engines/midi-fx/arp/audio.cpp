@@ -15,6 +15,7 @@ namespace otto::engines::arp {
     OctaveModeFunc octavemode_func_ = octave_modes::standard;
     // Only temporary
     std::size_t buffer_count = 0;
+    int buffers_per_beat = 25;
 
     // Helper functions
     static void insert_note(NoteArray& notes, std::uint8_t note)
@@ -42,8 +43,10 @@ namespace otto::engines::arp {
 
     void process() noexcept override
     {
-      auto at_beat = [](std::size_t cnt) { return cnt % 25 == 0; };
-      auto at_note_off = [](std::size_t cnt) { return cnt % 25 == 5; };
+      auto at_beat = [&](std::size_t cnt) { return cnt % buffers_per_beat == 0; };
+      auto at_note_off = [&](std::size_t cnt) {
+        return cnt % buffers_per_beat == static_cast<int>(state().note_length * (buffers_per_beat - 2)) + 1;
+      };
 
       // Both should check "if(running && ...)"
       if (at_note_off(buffer_count)) {
@@ -66,7 +69,15 @@ namespace otto::engines::arp {
     void on_state_change(const State& s) noexcept override
     {
       playmode_func_ = play_modes::func(s.playmode);
-      octavemode_func_ = octave_modes::func(s.octavemode);
+      if (octavemode_func_ != octave_modes::func(s.octavemode)) {
+        octavemode_func_ = octave_modes::func(s.octavemode);
+        arp_state.invalidate_om_cache();
+      }
+
+      constexpr float samples_per_buffer = 256;
+      constexpr int samples_per_minute = 44100 * 60;
+      constexpr float buffers_per_minute = samples_per_minute / samples_per_buffer;
+      buffers_per_beat = buffers_per_minute / state().bpm;
     }
   };
 

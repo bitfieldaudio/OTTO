@@ -31,18 +31,14 @@ namespace otto::voices {
     {
       switch (e.encoder) {
         case Encoder::blue: {
-          if (e.steps > 0) {
-            state.play_mode++;
-          } else {
-            state.play_mode--;
-          }
+          state.play_mode += pm_divider(e);
         } break;
         case Encoder::green: {
           switch (state.play_mode) {
             case PlayMode::poly: state.rand += e.steps * 0.01f; break;
             case PlayMode::mono: state.sub += e.steps * 0.01f; break;
             case PlayMode::unison: state.detune += e.steps * 0.01f; break;
-            case PlayMode::duo: state.interval += e.steps; break;
+            case PlayMode::duo: state.interval += interval_divider(e); break;
           }
         } break;
         case Encoder::yellow: {
@@ -58,6 +54,10 @@ namespace otto::voices {
         } break;
       }
     }
+
+  private:
+    otto::util::EventDivider<4> pm_divider;
+    otto::util::EventDivider<4> interval_divider;
   };
 
   static std::string aux_setting(PlayMode pm) noexcept

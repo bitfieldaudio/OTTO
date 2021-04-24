@@ -279,6 +279,12 @@ namespace otto::util {
       return tmp;
     }
 
+    SelectableEnum& operator+=(const int inc)
+    {
+      index_ = BP::check_bounds(index_ + inc, static_cast<std::size_t>(0), util::enum_count<Enum>() - 1);
+      return *this;
+    }
+
     SelectableEnum& operator=(const Enum in)
     {
       index_ = util::enum_index(in).value();

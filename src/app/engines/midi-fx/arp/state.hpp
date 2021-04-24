@@ -13,6 +13,8 @@ namespace otto::engines::arp {
     util::SelectableEnum<OctaveMode, util::bounds_policies::wrap> octavemode = {OctaveMode::standard};
     util::StaticallyBounded<float, 0, 1> note_length = 0.2f;
     util::StaticallyBounded<int, 1, 5, util::bounds_policies::wrap> subdivision = 1;
+    // This is only until we have a proper clock. Once we have that, we revert to subdivision
+    util::StaticallyBounded<int, 20, 800> bpm = 480;
 
     DECL_VISIT(playmode, octavemode, note_length, subdivision);
   };

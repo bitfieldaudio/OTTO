@@ -107,17 +107,25 @@ namespace otto::engines::arp {
       return NoteVector{notes[next].note};
     }
 
+    // The updown and downup patterns need a bit of custom logic for the case where only one note is playing
+    auto reset = [](ArpeggiatorState& state, const NoteArray& notes) {
+      state.count = 0;
+      return find_next_note_up(notes, NoteTPair::initial);
+    };
+
     NoteVector updown(ArpeggiatorState& state, const NoteArray& notes)
     {
       state.count++;
       tl::optional<NoteTPair> next;
       if (state.direction == ArpeggiatorState::Direction::first) {
         next = find_next_note_up(notes, state.current).or_else([&] {
+          if (notes.size() == 1) return reset(state, notes);
           state.direction = ArpeggiatorState::Direction::second;
           return find_next_note_down(notes, state.current);
         });
       } else if (state.direction == ArpeggiatorState::Direction::second) {
         next = find_next_note_down(notes, state.current).or_else([&] {
+          if (notes.size() == 1) return reset(state, notes);
           state.direction = ArpeggiatorState::Direction::first;
           state.count = 0;
           return find_next_note_up(notes, state.current);
@@ -133,11 +141,13 @@ namespace otto::engines::arp {
       tl::optional<NoteTPair> next;
       if (state.direction == ArpeggiatorState::Direction::first) {
         next = find_next_note_down(notes, state.current).or_else([&] {
+          if (notes.size() == 1) return reset(state, notes);
           state.direction = ArpeggiatorState::Direction::second;
           return find_next_note_up(notes, state.current);
         });
       } else if (state.direction == ArpeggiatorState::Direction::second) {
         next = find_next_note_up(notes, state.current).or_else([&] {
+          if (notes.size() == 1) return reset(state, notes);
           state.direction = ArpeggiatorState::Direction::first;
           state.count = 0;
           return find_next_note_down(notes, state.current);
@@ -252,6 +262,8 @@ namespace otto::engines::arp {
         util::indexed_for_each(input, [&](std::size_t i, const NoteTPair& pair) {
           state.cached_notes->push_back(
             {static_cast<std::uint8_t>(pair.note + 12), static_cast<std::int8_t>(max_t + 1 + i)});
+        });
+        util::indexed_for_each(input, [&](std::size_t i, const NoteTPair& pair) {
           state.cached_notes->push_back(
             {static_cast<std::uint8_t>(pair.note + 24), static_cast<std::int8_t>(2 * max_t + 1 + i)});
         });

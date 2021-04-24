@@ -8,12 +8,32 @@
 namespace otto::util {
   /// Utility object for dividing down a stream of events
   /// N: number of steps to divide by
-  /// duration: timeout in milliseconds
-  template<int N, int timeout_ms>
+  template<int N>
   struct EventDivider {
-    EventDivider() : last_time(std::chrono::system_clock::now()) {}
+    EventDivider() = default;
 
-    int operator()(EncoderEvent e)
+    int operator()(int& i)
+    {
+      count += i;
+      auto res = static_cast<int>(count >= N) - static_cast<int>(count <= -N);
+      count %= N;
+      return res;
+    }
+    int operator()(EncoderEvent& e)
+    {
+      return operator()(e.steps);
+    }
+
+  private:
+    int count = 0;
+  };
+
+  // Event divider with a timeout to reset
+  template<int N, int timeout_ms>
+  struct EventDividerWithTimeout {
+    EventDividerWithTimeout() : last_time(std::chrono::system_clock::now()) {}
+
+    int operator()(EncoderEvent& e)
     {
       auto steps = e.steps;
       auto now = e.timestamp;
