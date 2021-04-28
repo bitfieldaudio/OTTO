@@ -122,7 +122,7 @@ namespace otto::drivers {
       case Key::n4: send_key(OKey::voices); break;
       case Key::n5: send_key(OKey::fx1); break;
       case Key::n6: send_key(OKey::fx2); break;
-      case Key::n8: send_key(OKey::sequencer); break;
+      case Key::n8: send_key(OKey::slots); break;
       case Key::p: send_key(OKey::play); break;
       case Key::m: send_key(OKey::master); break;
 

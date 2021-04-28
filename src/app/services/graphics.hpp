@@ -53,4 +53,16 @@ namespace otto {
     void leds(LEDColorSet& colors) noexcept override {}
   };
 
+  /// Base class for overlays.
+  ///
+  /// Extends IOverlay instead, which overrides is_overlay()
+  struct OverlayBase : IOverlay, GraphicsDomain {
+    [[nodiscard]] LedSet led_mask() const noexcept override
+    {
+      return {};
+    }
+    void leds(LEDColorSet& colors) noexcept override {}
+  };
+
+
 } // namespace otto

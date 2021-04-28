@@ -3,6 +3,7 @@
 #include "lib/voices/voice_manager.hpp"
 
 #include "app/engines/master/master.hpp"
+#include "app/engines/slots/slots.hpp"
 #include "app/engines/synths/ottofm/ottofm.hpp"
 #include "app/layers/navigator.hpp"
 #include "app/layers/piano_key_layer.hpp"
@@ -50,6 +51,10 @@ namespace otto {
 
     auto master = engines::master::Master::make(ctx, audio.driver().mixer());
     nav_km.bind_nav_key(Key::master, master.screen);
+
+    // Sound slots
+    auto sound_slots = engines::slots::SoundSlots::make(ctx);
+    nav_km.bind_nav_key(Key::slots, sound_slots.overlay_screen);
 
     RtMidiDriver rt_midi_driver(audio.midi());
 
