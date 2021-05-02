@@ -4,6 +4,7 @@
 
 #include <SkCanvas.h>
 #include <SkFont.h>
+#include <SkGradientShader.h>
 #include <SkPath.h>
 #include <SkRRect.h>
 #include <SkTextBlob.h>
@@ -37,6 +38,7 @@ namespace otto::skia {
   using FontArguments = SkFontArguments;
   using FontStyle = SkFontStyle;
   using GlyphID = SkGlyphID;
+  using GradientShader = SkGradientShader;
   using IDChangeListener = SkIDChangeListener;
   using IRect = SkIRect;
   using ImageFilter = SkImageFilter;
@@ -159,6 +161,7 @@ namespace otto::colors {
   constexpr const auto red = skia::Color::bytes(254, 22, 22);
   constexpr const auto white = skia::Color::bytes(255, 255, 255);
   constexpr const auto grey50 = skia::Color::bytes(128, 128, 128);
+  constexpr const auto grey70 = skia::Color::bytes(46, 46, 46);
   constexpr const auto black = skia::Color::bytes(0, 0, 0);
 } // namespace otto::colors
 

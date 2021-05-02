@@ -8,9 +8,15 @@
 
 namespace otto::engines::slots {
 
+  struct SlotState {
+    util::StaticallyBounded<float, 0, 1, util::bounds_policies::wrap> selected_color_f = 0.5f;
+    DECL_VISIT(selected_color_f);
+  };
+
   struct SoundSlotsState {
     util::Bounded<int, util::bounds<0, 9>> active_slot = 0;
-    DECL_VISIT(active_slot);
+    std::array<SlotState, 10> slot_states;
+    DECL_VISIT(active_slot, slot_states);
   };
 
   struct SoundSlots {

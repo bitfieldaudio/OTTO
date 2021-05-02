@@ -250,6 +250,7 @@ else()
     set_target_properties(skia PROPERTIES INCLUDE_DIRECTORIES "")
     target_include_directories(skia PUBLIC SYSTEM "${skia_SOURCE_DIR}/")
     target_include_directories(skia PUBLIC SYSTEM "${skia_SOURCE_DIR}/include/core")
+    target_include_directories(skia PUBLIC SYSTEM "${skia_SOURCE_DIR}/include/effects")
     target_include_directories(skia PUBLIC SYSTEM "${skia_SOURCE_DIR}/include/gpu")
     # Make definitions public
     # TODO: Maybe filter some of these out?

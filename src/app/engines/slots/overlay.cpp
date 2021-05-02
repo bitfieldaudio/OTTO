@@ -6,50 +6,135 @@
 
 namespace otto::engines::slots {
 
+  constexpr int num_colors = 6;
+  constexpr SkColor wheel_colors[num_colors + 1] = {SK_ColorRED,  SK_ColorYELLOW,  SK_ColorGREEN, SK_ColorCYAN,
+                                                    SK_ColorBLUE, SK_ColorMAGENTA, SK_ColorRED};
+  skia::Color f_to_color(float color_f)
+  {
+    std::size_t base_color_idx = std::floor(color_f * (num_colors + 1));
+    auto base_color = skia::Color(wheel_colors[base_color_idx]);
+    auto blend_color = skia::Color(wheel_colors[(base_color_idx + 1) % (num_colors + 1)]);
+    float aux;
+    return base_color.mix(blend_color, std::modf(color_f * (num_colors + 1), &aux));
+  }
+
   struct SlotsWidget : graphics::Widget<SlotsWidget> {
     int selected = 0;
+    float selected_color_f = 0.f; // [0,1]
+    skia::Color selected_color = skia::Color(SK_ColorRED);
+
     void do_draw(skia::Canvas& ctx)
     {
       float width = bounding_box.width();
+      float height = bounding_box.height();
       skia::Point center = {width / 2.f, width / 2.f};
       // Background
-      ctx.drawRect(SkRect(bounding_box), paints::fill(colors::grey50));
-      // Text
-      skia::place_text(ctx, "SOUND SLOTS", fonts::black(26), paints::fill(colors::white),
-                       bounding_box.point(anchors::bottom_center), anchors::bottom_center);
+      ctx.drawRRect(skia::RRect::MakeRectXY(bounding_box, 8, 8), paints::fill(colors::grey70));
+
+      constexpr float outer_radius = 20;
+      constexpr float middle_radius = 12;
+      constexpr float inner_radius = 10;
+      constexpr SkScalar text_offset = outer_radius + 6;
+      // Blue Copy/Paste
+      skia::Point copy_location = {width * 0.25f, height * 0.382};
+      ctx.drawCircle(copy_location, middle_radius, paints::fill(colors::blue.fade(0.5f)));
+      ctx.drawCircle(copy_location, inner_radius, paints::fill(colors::blue));
+      skia::place_text(ctx, "COPY/PASTE", fonts::medium(14), paints::fill(colors::white),
+                       {copy_location.x(), copy_location.y() + text_offset}, anchors::top_center);
+
+
+      // Color wheel
+      skia::Point color_wheel_location = {width * 0.75f, height * 0.382};
+      skia::Paint paint;
+      paint.setAntiAlias(true);
+      paint.setShader(skia::GradientShader::MakeSweep(color_wheel_location.x(), color_wheel_location.y(), wheel_colors,
+                                                      nullptr, num_colors + 1));
+      ctx.drawCircle(color_wheel_location, outer_radius, paint);
+      // Black border
+      ctx.drawCircle(color_wheel_location, middle_radius, paints::fill(colors::black));
+      // Colored center
+      selected_color = f_to_color(selected_color_f);
+      ctx.drawCircle(color_wheel_location, inner_radius, paints::fill(selected_color));
+      skia::place_text(ctx, "COLOR", fonts::medium(14), paints::fill(colors::white),
+                       {color_wheel_location.x(), color_wheel_location.y() + text_offset}, anchors::top_center);
     }
   };
 
   struct SoundSlotsScreen : OverlayBase, itc::Consumer<SoundSlotsState> {
+    using Consumer::Consumer;
     struct Handler : InputReducer<SoundSlotsState>, IInputLayer {
       using InputReducer::InputReducer;
 
       [[nodiscard]] KeySet key_mask() const noexcept override
       {
-        return key_groups::enc_clicks;
+        return key_groups::enc_clicks | key_groups::channel;
+      }
+
+      void reduce(KeyPress e, SoundSlotsState& state) noexcept final
+      {
+        switch (e.key) {
+          case Key::channel0: state.active_slot = 0; break;
+          case Key::channel1: state.active_slot = 1; break;
+          case Key::channel2: state.active_slot = 2; break;
+          case Key::channel3: state.active_slot = 3; break;
+          case Key::channel4: state.active_slot = 4; break;
+          case Key::channel5: state.active_slot = 5; break;
+          case Key::channel6: state.active_slot = 6; break;
+          case Key::channel7: state.active_slot = 7; break;
+          case Key::channel8: state.active_slot = 8; break;
+          case Key::channel9: state.active_slot = 9; break;
+          case Key::blue_enc_click: break; // TODO: Copy/paste
+          default: break;
+        }
       }
 
       void reduce(EncoderEvent e, SoundSlotsState& state) noexcept override
       {
-        state.active_slot += e.steps;
+        switch (e.encoder) {
+          case Encoder::green: [[fallthrough]];
+          case Encoder::yellow: [[fallthrough]];
+          case Encoder::red: {
+            state.slot_states[state.active_slot].selected_color_f += e.steps * 0.01f;
+            break;
+          }
+          default: break;
+        }
       }
     };
 
-    using Consumer::Consumer;
+    [[nodiscard]] LedSet led_mask() const noexcept override
+    {
+      return led_groups::channel;
+    }
+    void leds(LEDColorSet& led_color) noexcept override
+    {
+      for (auto&& [channel, slot_state] : util::zip(led_groups::channel, state().slot_states))
+        led_color[channel] = LEDColor::from_skia(slot_states.selected_color_f);
+    }
 
-    SlotsWidget widget;
+    SoundSlotsScreen()
+    {
+      // Init Screen
+      widget.bounding_box = {skia::Box({50, 80}, {220, 80})};
+      widget.selected = state().active_slot;
+      widget.selected_color_f = state().slot_states[state().active_slot].selected_color_f;
+      // Init LEDs
+    }
+
     void draw(skia::Canvas& ctx) noexcept override
     {
       // Background
       skia::Rect bg_rect = skia::Rect::MakeXYWH(0, 0, otto::skia::width, otto::skia::height);
-
       ctx.drawRect(bg_rect, paints::fill(colors::black.fade(0.5f)));
 
       // Content
-      widget.bounding_box = {skia::Box({50, 40}, {220, 160})};
       widget.selected = state().active_slot;
+      widget.selected_color_f = state().slot_states[state().active_slot].selected_color_f;
       widget.draw(ctx);
     }
+
+  private:
+    SlotsWidget widget;
   };
 
   struct Logic : ILogic, itc::Producer<SoundSlotsState> {
