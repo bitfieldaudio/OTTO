@@ -53,8 +53,11 @@ namespace otto {
     nav_km.bind_nav_key(Key::master, master.screen);
 
     // Sound slots
-    auto sound_slots = engines::slots::SoundSlots::make(ctx);
+    itc::Context soundslots_ctx;
+    auto sound_slots = engines::slots::SoundSlots::make(soundslots_ctx);
+    sound_slots.logic->set_managed(std::ref(ctx));
     nav_km.bind_nav_key(Key::slots, sound_slots.overlay_screen);
+    stateman.add("Sound Slots", std::ref(soundslots_ctx));
 
     RtMidiDriver rt_midi_driver(audio.midi());
 

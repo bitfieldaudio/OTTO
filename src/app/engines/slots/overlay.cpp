@@ -1,3 +1,4 @@
+#include "lib/util/change_checker.hpp"
 #include "lib/util/with_limits.hpp"
 
 #include "lib/widget.hpp"
@@ -61,11 +62,6 @@ namespace otto::engines::slots {
     }
   };
 
-  std::uint8_t channel_number_for(Key k)
-  {
-    return static_cast<std::uint8_t>(k) - static_cast<std::uint8_t>(Key::channel0);
-  }
-
   struct SoundSlotsScreen : OverlayBase, itc::Consumer<SoundSlotsState> {
     using Consumer::Consumer;
     struct Handler : InputReducer<SoundSlotsState>, IInputLayer {
@@ -80,8 +76,8 @@ namespace otto::engines::slots {
       {
         if (e.key == Key::blue_enc_click) {
           // TODO: Copy/paste
-        } else if (key_groups::channel.test(e.key)) {
-          state.active_idx = channel_number_for(e.key);
+        } else if (auto chan = channel_number_for(e.key)) {
+          state.active_idx = *chan;
         }
       }
 
@@ -91,7 +87,7 @@ namespace otto::engines::slots {
           case Encoder::green: [[fallthrough]];
           case Encoder::yellow: [[fallthrough]];
           case Encoder::red: {
-            state.slot_states[state.active_idx].selected_color_f += e.steps * 0.01f;
+            state.slot_states[state.active_idx].selected_color_f += e.steps * 0.01f; // Internal
             break;
           }
           default: break;
@@ -107,8 +103,9 @@ namespace otto::engines::slots {
     {
       for (auto& led : util::enum_values<Led>()) {
         if (led_groups::channel.test(led)) {
-          led_color[led] = LEDColor::from_skia(
-            f_to_color(state().slot_states[channel_number_for(key_from(led).value())].selected_color_f));
+          auto key = *key_from(led); // This is certain to contain a value
+          led_color[led] =
+            LEDColor::from_skia(f_to_color(state().slot_states[*channel_number_for(key)].selected_color_f));
         }
       }
     }
@@ -135,10 +132,6 @@ namespace otto::engines::slots {
 
   private:
     SlotsWidget widget;
-  };
-
-  struct Logic : ILogic, itc::Producer<SoundSlotsState> {
-    Logic(itc::Context& ctx) : Producer(ctx) {}
   };
 
   SoundSlots SoundSlots::make(itc::Context& ctx)
