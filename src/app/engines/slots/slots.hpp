@@ -14,9 +14,9 @@ namespace otto::engines::slots {
   };
 
   struct SoundSlotsState {
-    util::Bounded<int, util::bounds<0, 9>> active_slot = 0;
+    util::StaticallyBounded<int, 0, 9> active_idx = 0;
     std::array<SlotState, 10> slot_states;
-    DECL_VISIT(active_slot, slot_states);
+    DECL_VISIT(active_idx, slot_states);
   };
 
   struct SoundSlots {

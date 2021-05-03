@@ -101,7 +101,7 @@ namespace otto {
     void serialize_into(json::value& json) const;
     void deserialize_from(const json::value& json);
 
-    LEDColor from_skia(skia::Color color)
+    static LEDColor from_skia(skia::Color color)
     {
       return {.r = color.red(), .g = color.green(), .b = color.blue()};
     }

@@ -2,6 +2,8 @@
 
 #include "lib/widget.hpp"
 
+#include "app/input.hpp"
+
 #include "slots.hpp"
 
 namespace otto::engines::slots {
@@ -19,7 +21,6 @@ namespace otto::engines::slots {
   }
 
   struct SlotsWidget : graphics::Widget<SlotsWidget> {
-    int selected = 0;
     float selected_color_f = 0.f; // [0,1]
     skia::Color selected_color = skia::Color(SK_ColorRED);
 
@@ -60,6 +61,11 @@ namespace otto::engines::slots {
     }
   };
 
+  std::uint8_t channel_number_for(Key k)
+  {
+    return static_cast<std::uint8_t>(k) - static_cast<std::uint8_t>(Key::channel0);
+  }
+
   struct SoundSlotsScreen : OverlayBase, itc::Consumer<SoundSlotsState> {
     using Consumer::Consumer;
     struct Handler : InputReducer<SoundSlotsState>, IInputLayer {
@@ -72,19 +78,10 @@ namespace otto::engines::slots {
 
       void reduce(KeyPress e, SoundSlotsState& state) noexcept final
       {
-        switch (e.key) {
-          case Key::channel0: state.active_slot = 0; break;
-          case Key::channel1: state.active_slot = 1; break;
-          case Key::channel2: state.active_slot = 2; break;
-          case Key::channel3: state.active_slot = 3; break;
-          case Key::channel4: state.active_slot = 4; break;
-          case Key::channel5: state.active_slot = 5; break;
-          case Key::channel6: state.active_slot = 6; break;
-          case Key::channel7: state.active_slot = 7; break;
-          case Key::channel8: state.active_slot = 8; break;
-          case Key::channel9: state.active_slot = 9; break;
-          case Key::blue_enc_click: break; // TODO: Copy/paste
-          default: break;
+        if (e.key == Key::blue_enc_click) {
+          // TODO: Copy/paste
+        } else if (key_groups::channel.test(e.key)) {
+          state.active_idx = channel_number_for(e.key);
         }
       }
 
@@ -94,7 +91,7 @@ namespace otto::engines::slots {
           case Encoder::green: [[fallthrough]];
           case Encoder::yellow: [[fallthrough]];
           case Encoder::red: {
-            state.slot_states[state.active_slot].selected_color_f += e.steps * 0.01f;
+            state.slot_states[state.active_idx].selected_color_f += e.steps * 0.01f;
             break;
           }
           default: break;
@@ -108,16 +105,20 @@ namespace otto::engines::slots {
     }
     void leds(LEDColorSet& led_color) noexcept override
     {
-      for (auto&& [channel, slot_state] : util::zip(led_groups::channel, state().slot_states))
-        led_color[channel] = LEDColor::from_skia(slot_states.selected_color_f);
+      for (auto& led : util::enum_values<Led>()) {
+        if (led_groups::channel.test(led)) {
+          led_color[led] = LEDColor::from_skia(
+            f_to_color(state().slot_states[channel_number_for(key_from(led).value())].selected_color_f));
+        }
+      }
     }
 
-    SoundSlotsScreen()
+
+    SoundSlotsScreen(itc::Channel& c) : Consumer(c)
     {
       // Init Screen
       widget.bounding_box = {skia::Box({50, 80}, {220, 80})};
-      widget.selected = state().active_slot;
-      widget.selected_color_f = state().slot_states[state().active_slot].selected_color_f;
+      widget.selected_color_f = state().slot_states[state().active_idx].selected_color_f;
       // Init LEDs
     }
 
@@ -128,8 +129,7 @@ namespace otto::engines::slots {
       ctx.drawRect(bg_rect, paints::fill(colors::black.fade(0.5f)));
 
       // Content
-      widget.selected = state().active_slot;
-      widget.selected_color_f = state().slot_states[state().active_slot].selected_color_f;
+      widget.selected_color_f = state().slot_states[state().active_idx].selected_color_f;
       widget.draw(ctx);
     }
 
