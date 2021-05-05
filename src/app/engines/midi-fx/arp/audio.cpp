@@ -31,18 +31,31 @@ namespace otto::engines::arp {
     // Note On
     void handle(const midi::NoteOn ev) noexcept override
     {
+      // TODO: Move this to the dispatcher!
+      if (!state().active) {
+        target().handle(ev);
+        return;
+      }
       insert_note(notes_, ev.note);
       arp_state.invalidate_om_cache();
     }
     /// Note Off
     void handle(const midi::NoteOff ev) noexcept override
     {
+      // TODO: Move this to the dispatcher!
+      if (!state().active) {
+        target().handle(ev);
+        return;
+      }
       erase_note(notes_, ev.note);
       arp_state.invalidate_om_cache();
     };
 
     void process() noexcept override
     {
+      // TODO: Should be a part of the EngineDispatcher
+      if (!state().active) return;
+
       auto at_beat = [&](std::size_t cnt) { return cnt % buffers_per_beat == 0; };
       auto at_note_off = [&](std::size_t cnt) {
         return cnt % buffers_per_beat == static_cast<int>(state().note_length * (buffers_per_beat - 2)) + 1;

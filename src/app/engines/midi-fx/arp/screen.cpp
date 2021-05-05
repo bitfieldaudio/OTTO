@@ -57,6 +57,18 @@ namespace otto::engines::arp {
       return key_groups::enc_clicks + Key::shift;
     }
 
+    // TODO: Move this to the dispatcher!
+    void reduce(KeyPress e, State& state) noexcept final
+    {
+      switch (e.key) {
+        case Key::blue_enc_click: [[fallthrough]];
+        case Key::green_enc_click: [[fallthrough]];
+        case Key::yellow_enc_click: [[fallthrough]];
+        case Key::red_enc_click: state.active = !state.active; break;
+        default: break;
+      }
+    }
+
     void reduce(EncoderEvent e, State& state) noexcept final
     {
       switch (e.encoder) {
@@ -149,6 +161,14 @@ namespace otto::engines::arp {
 
     void draw(skia::Canvas& ctx) noexcept override
     {
+      // TODO: Move this to an enginedispatcher!
+      if (!state().active) {
+        const auto font = fonts::black(50);
+        skia::place_text(ctx, "OFF", font, colors::red, {320 / 2, 240 / 2}, anchors::center);
+        return;
+      }
+
+
       constexpr float x_pad = 10;
       constexpr float y_pad = 10;
       const auto font = fonts::regular(20);

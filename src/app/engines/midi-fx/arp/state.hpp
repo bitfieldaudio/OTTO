@@ -15,8 +15,10 @@ namespace otto::engines::arp {
     util::StaticallyBounded<int, 1, 5, util::bounds_policies::wrap> subdivision = 1;
     // This is only until we have a proper clock. Once we have that, we revert to subdivision
     util::StaticallyBounded<int, 20, 800> bpm = 480;
+    // This is only untl we have a proper enginedispatcher
+    bool active = true;
 
-    DECL_VISIT(playmode, octavemode, note_length, subdivision);
+    DECL_VISIT(playmode, octavemode, note_length, subdivision, bpm, active);
   };
 
 } // namespace otto::engines::arp
