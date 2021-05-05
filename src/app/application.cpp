@@ -62,9 +62,6 @@ namespace otto {
     auto master = engines::master::Master::make(ctx["master"], audio.driver().mixer());
     nav_km.bind_nav_key(Key::master, master.screen);
 
-<<<<<<< HEAD
-    // Drivers
-=======
     // Sound slots
     itc::Context soundslots_ctx;
     auto sound_slots = engines::slots::SoundSlots::make(soundslots_ctx);
@@ -72,7 +69,7 @@ namespace otto {
     nav_km.bind_nav_key(Key::slots, sound_slots.overlay_screen);
     stateman.add("Sound Slots", std::ref(soundslots_ctx));
 
->>>>>>> develop
+    // Drivers
     RtMidiDriver rt_midi_driver(audio.midi());
     LedManager ledman(controller.port_writer());
 
