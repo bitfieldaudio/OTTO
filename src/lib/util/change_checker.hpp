@@ -15,9 +15,9 @@ namespace otto::util {
       return res;
     }
 
-    tl::optional<T&> old_val()
+    const tl::optional<T>& old_val() const
     {
-      return opt_ref(old_val_);
+      return old_val_;
     }
 
   private:

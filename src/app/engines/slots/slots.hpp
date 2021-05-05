@@ -30,22 +30,9 @@ namespace otto::engines::slots {
   struct Logic : ILogic, itc::Producer<SoundSlotsState, SlotState> {
     Logic(itc::Context& ctx) : Producer(ctx) {}
 
-    void on_state_change(const SoundSlotsState& state) override
-    {
-      int old_idx;
-      if (idx.old_val()) old_idx = *idx.old_val();
-      if (idx.check_changed(state.active_idx)) {
-        // Serialize current
-        _ctx.serialize_into(data_.json_objects[old_idx]);
-        // Deserialize new
-        _ctx.deserialize_from(data_.json_objects[state.active_idx]);
-      }
-    }
-
-    void set_managed(util::DynSerializable&& ctx)
-    {
-      _ctx = std::move(ctx);
-    }
+    void on_state_change(const SoundSlotsState& state) override;
+    void on_state_change(const SlotState& state) override {}
+    void set_managed(util::DynSerializable&& ctx);
 
   private:
     util::DynSerializable _ctx;
