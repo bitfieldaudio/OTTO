@@ -4,6 +4,7 @@
 #include "lib/util/visitor.hpp"
 
 #include "lib/json.hpp"
+#include "lib/skia/color.hpp"
 
 #include "app/input.hpp"
 
@@ -99,6 +100,11 @@ namespace otto {
 
     void serialize_into(json::value& json) const;
     void deserialize_from(const json::value& json);
+
+    static LEDColor from_skia(skia::Color color)
+    {
+      return {.r = color.red(), .g = color.green(), .b = color.blue()};
+    }
 
     constexpr auto operator<=>(const LEDColor&) const = default;
 

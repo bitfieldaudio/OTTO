@@ -19,6 +19,7 @@ namespace otto {
   void Navigator::draw(skia::Canvas& ctx) noexcept
   {
     if (const auto swh = current_screen_; swh != nullptr) {
+      if (current_screen_.screen->is_overlay() && prev_screen_ != nullptr) prev_screen_.screen->draw(ctx);
       swh.screen->draw(ctx);
     }
   }
@@ -68,7 +69,11 @@ namespace otto {
     auto bind = binds_[e.key];
     if (bind != nullptr) {
       last_nav_time_ = e.timestamp;
-      nav().navigate_to(bind);
+      if (bind == nav().current_screen() && bind.screen->is_overlay()) {
+        nav().navigate_back();
+      } else {
+        nav().navigate_to(bind);
+      }
     } else {
       nav().handle(e);
     }

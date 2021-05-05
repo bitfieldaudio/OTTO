@@ -16,7 +16,19 @@ namespace otto {
 
   using DrawFunc = util::FuncInterface<&IDrawable::draw>;
 
-  struct IScreen : IDrawable, ILEDLayer {};
+  struct IScreen : IDrawable, ILEDLayer {
+    [[nodiscard]] virtual bool is_overlay() const
+    {
+      return false;
+    }
+  };
+
+  struct IOverlay : IScreen {
+    [[nodiscard]] bool is_overlay() const override
+    {
+      return true;
+    }
+  };
 
   /// Pair of unique_ptrs to a screen and an input layer.
   ///

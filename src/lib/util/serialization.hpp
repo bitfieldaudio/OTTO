@@ -71,13 +71,20 @@ namespace otto::util {
     return res;
   }
 
+  /// Base class with pure virtual serialize/deserialize functions
   struct ISerializable {
     virtual ~ISerializable() = default;
     virtual void serialize_into(json::value& json) const = 0;
     virtual void deserialize_from(const json::value& json) = 0;
   };
 
-  struct DynSerializable {
+  /// An owning or non-owning reference to any serializable object
+  ///
+  /// Used to type-erase serializable objects, whether or not they derive from
+  /// `ISerializable`
+  /// Can either be constructed from an rvalue reference, i.e. by moving an object into it,
+  /// or from a `std::reference_wrapper`, as created by calling `std::ref`
+  struct DynSerializable final {
     DynSerializable() = default;
 
     template<ASerializable T>

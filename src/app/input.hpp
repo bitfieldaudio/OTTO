@@ -113,6 +113,12 @@ namespace otto {
     OTTO_UNREACHABLE();
   }
 
+  inline tl::optional<std::uint8_t> channel_number_for(Key k)
+  {
+    if (key_groups::channel.test(k)) return {static_cast<std::uint8_t>(k) - static_cast<std::uint8_t>(Key::channel0)};
+    return tl::nullopt;
+  }
+
   template<typename Event>
   struct TimedEvent : Event {
     chrono::time_point timestamp = chrono::clock::now();

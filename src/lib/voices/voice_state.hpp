@@ -22,7 +22,7 @@ namespace otto::voices {
     bool retrig = false;
     float pitch_bend = 1;
     bool sustain = false;
-    util::StaticallyBounded<float, 0, 1> portamento = 0.1f;
+    util::StaticallyBounded<float, 0, 1> portamento = 0.0f;
 
     util::StaticallyBounded<float, 0, 1> rand = 0;
     util::StaticallyBounded<int, -12, 12> interval = 0;

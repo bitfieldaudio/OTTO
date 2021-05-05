@@ -4,6 +4,7 @@
 
 #include "app/engines/master/master.hpp"
 #include "app/engines/midi-fx/arp/arp.hpp"
+#include "app/engines/slots/slots.hpp"
 #include "app/engines/synths/ottofm/ottofm.hpp"
 #include "app/layers/navigator.hpp"
 #include "app/layers/piano_key_layer.hpp"
@@ -61,7 +62,17 @@ namespace otto {
     auto master = engines::master::Master::make(ctx["master"], audio.driver().mixer());
     nav_km.bind_nav_key(Key::master, master.screen);
 
+<<<<<<< HEAD
     // Drivers
+=======
+    // Sound slots
+    itc::Context soundslots_ctx;
+    auto sound_slots = engines::slots::SoundSlots::make(soundslots_ctx);
+    sound_slots.logic->set_managed(std::ref(ctx));
+    nav_km.bind_nav_key(Key::slots, sound_slots.overlay_screen);
+    stateman.add("Sound Slots", std::ref(soundslots_ctx));
+
+>>>>>>> develop
     RtMidiDriver rt_midi_driver(audio.midi());
     LedManager ledman(controller.port_writer());
 
