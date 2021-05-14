@@ -22,7 +22,7 @@ namespace otto::dsp {
     /// \param[in] crv		Curvature of segment
     /// \param[in] start	Start value
     /// \param[in] end		End value
-    SegExpBypass(T len, T crv = -3, T start = 1, T end = 0) : mLen(len), mCrv(crv), mStart(start), mEnd(end)
+    SegExpBypass(T len = 0.001, T crv = -2, T start = 1, T end = 1) : mLen(len), mCrv(crv), mStart(start), mEnd(end)
     {
       onDomainChange(1);
     }

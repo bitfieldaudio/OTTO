@@ -44,7 +44,7 @@ namespace otto::voices {
   /// CRTP Base class for voices
   template<typename Voice>
   struct VoiceBase : midi::MidiHandler {
-    VoiceBase() : glide_(frequency())
+    VoiceBase()
     {
       glide_.finish();
     }
@@ -130,12 +130,12 @@ namespace otto::voices {
     float velocity_ = 1.f;
     float level = 1.f;
     float aftertouch_ = 0.f;
-    std::int8_t midi_note_ = 0;
+    std::int8_t midi_note_ = 1;
     bool triggered_ = false;
     /// Typical value is vm.normal_volume, which is 1/number_of_voices
     float volume_ = 1.f;
 
-    dsp::SegExpBypass<> glide_{1.f, -2.f};
+    dsp::SegExpBypass<> glide_;
   };
 
   // Voice allocators - Corresponds to different playmodes //

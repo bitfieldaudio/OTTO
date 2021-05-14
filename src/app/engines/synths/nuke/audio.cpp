@@ -28,9 +28,19 @@ namespace otto::engines::nuke {
     // of state, and various other optimizations have been done to make many consumers of
     // the same state on the same thread cheaper.
     /// Must be called manually, no magic here!
-    void on_state_change(const State&) noexcept {}
+    void on_state_change(const State& s) noexcept
+    {
+      env_.attack(envelope_stage_duration(s.envparam0));
+      env_.decay(envelope_stage_duration(s.envparam1));
+      env_.sustain(s.envparam2);
+      env_.release(envelope_stage_duration(s.envparam3));
+    }
 
     const State& state_;
+
+  private:
+    gam::Saw<> osc1{600};
+    gam::ADSR<> env_;
   };
 
   struct Audio final : AudioDomain, itc::Consumer<State>, ISynthAudio {
@@ -44,6 +54,7 @@ namespace otto::engines::nuke {
     util::audio_buffer process() noexcept override
     {
       auto buf = buffer_pool().allocate();
+      stdr::generate(buf, std::ref(voice_mgr_));
       return buf;
     }
 
@@ -63,7 +74,10 @@ namespace otto::engines::nuke {
   }
 
   // VOICE //
-  Voice::Voice(const State& s) noexcept : state_(s) {}
+  Voice::Voice(const State& s) noexcept : state_(s)
+  {
+    env_.finish();
+  }
 
   void Voice::on_note_on() noexcept
   {
@@ -75,15 +89,26 @@ namespace otto::engines::nuke {
     release_envelopes();
   }
 
-  void Voice::reset_envelopes() noexcept {}
+  void Voice::reset_envelopes() noexcept
+  {
+    env_.resetSoft();
+  }
 
-  void Voice::release_envelopes() noexcept {}
+  void Voice::release_envelopes() noexcept
+  {
+    env_.release();
+  }
 
-  void Voice::set_frequencies() noexcept {}
+  void Voice::set_frequencies() noexcept
+  {
+    float a = frequency();
+    osc1.freq(a);
+  }
 
   float Voice::operator()() noexcept
   {
     set_frequencies();
+    return osc1() * env_();
   }
 
 } // namespace otto::engines::nuke
