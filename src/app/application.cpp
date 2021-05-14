@@ -5,7 +5,7 @@
 #include "app/engines/master/master.hpp"
 #include "app/engines/midi-fx/arp/arp.hpp"
 #include "app/engines/slots/slots.hpp"
-#include "app/engines/synths/ottofm/ottofm.hpp"
+#include "app/engines/synths/nuke/nuke.hpp"
 #include "app/layers/navigator.hpp"
 #include "app/layers/piano_key_layer.hpp"
 #include "app/services/audio.hpp"
@@ -46,7 +46,7 @@ namespace otto {
     stateman.add("Context", std::ref(ctx));
 
     // OTTOFM
-    auto eng = engines::ottofm::factory.make_all(ctx["synth"]);
+    auto eng = engines::nuke::factory.make_all(ctx["synth"]);
     auto voices_logic = voices::make_voices_logic(ctx["synth"]);
     auto voices_screen = voices::make_voices_screen(ctx["synth"]);
     nav_km.bind_nav_key(Key::synth, eng.main_screen);
