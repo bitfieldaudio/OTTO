@@ -3,11 +3,14 @@
 #include <Gamma/Envelope.h>
 #include <Gamma/Oscillator.h>
 
+#include "lib/dsp/moog_components.hpp"
 #include "lib/voices/voice_manager.hpp"
 
 #include "nuke.hpp"
 
 namespace otto::engines::nuke {
+
+
 
   struct Voice : voices::VoiceBase<Voice> {
     Voice(const State& state) noexcept;
@@ -30,17 +33,33 @@ namespace otto::engines::nuke {
     /// Must be called manually, no magic here!
     void on_state_change(const State& s) noexcept
     {
+      cutoff = 100 + 15000 * s.param0 * s.param0;
+      filter_.setCutoff(cutoff);
+      filter_.setResonance(s.param1);
+
+      filter_mod_amount = s.param2;
+
       env_.attack(envelope_stage_duration(s.envparam0));
       env_.decay(envelope_stage_duration(s.envparam1));
-      env_.sustain(s.envparam2);
-      env_.release(envelope_stage_duration(s.envparam3));
+      // env_.sustain(s.envparam2);
+      // env_.release(envelope_stage_duration(s.envparam3));
+
+      env_filter_.attack(envelope_stage_duration(s.envparam2));
+      env_filter_.decay(envelope_stage_duration(s.envparam3));
+      moog = (s.param3 > 0.5);
     }
 
     const State& state_;
 
   private:
-    gam::Saw<> osc1{600};
+    bool moog = true;
+    float cutoff = 10000;
+    float filter_mod_amount = 0;
+    dsp::MoogSaw<> osc1;
+    gam::Saw<> osc2;
     gam::ADSR<> env_;
+    dsp::MoogLadder<> filter_;
+    gam::AD<> env_filter_{0.01, 0.1, 1, 0};
   };
 
   struct Audio final : AudioDomain, itc::Consumer<State>, ISynthAudio {
@@ -92,23 +111,27 @@ namespace otto::engines::nuke {
   void Voice::reset_envelopes() noexcept
   {
     env_.resetSoft();
+    env_filter_.resetSoft();
   }
 
   void Voice::release_envelopes() noexcept
   {
     env_.release();
+    env_filter_.release();
   }
 
   void Voice::set_frequencies() noexcept
   {
-    float a = frequency();
-    osc1.freq(a);
+    osc1.freq(frequency());
+    osc2.freq(frequency());
   }
 
   float Voice::operator()() noexcept
   {
     set_frequencies();
-    return osc1() * env_();
+    filter_.setCutoff(cutoff * (1 - filter_mod_amount * (1 - env_filter_())) + 100);
+    if (moog) return filter_(osc1() * env_());
+    return filter_(osc2() * env_());
   }
 
 } // namespace otto::engines::nuke
