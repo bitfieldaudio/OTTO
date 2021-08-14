@@ -2,11 +2,11 @@
 
 #include <concepts>
 
-#include "lib/itc/action.hpp"
-
 namespace otto::itc {
 
   /// The concept that state types need to fulfill.
+  ///
+  /// Semiregular means copyable and default constructible
   template<typename T>
   concept AState = std::semiregular<T>;
 
@@ -20,17 +20,9 @@ namespace otto::itc {
   template<AState... States>
   struct Consumer;
 
-  template<AState State_>
-  struct state_change_action {
-    using State = State_;
-    // TODO: Obviously dont copy the entire state
-    State state;
-  };
-
-  template<typename T>
-  concept AStateEvent = std::is_same_v<T, state_change_action<typename T::State>>;
-
   template<AState State>
-  using state_service = action_service<state_change_action<State>>;
-
+  struct state_service {
+    using provider_t = Producer<State>;
+    using accessor_t = Consumer<State>;
+  };
 } // namespace otto::itc

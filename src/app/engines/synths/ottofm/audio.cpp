@@ -126,7 +126,7 @@ namespace otto::engines::ottofm {
   };
 
   struct Audio final : AudioDomain, itc::Consumer<State>, itc::Producer<AudioState>, ISynthAudio {
-    Audio(itc::Channel& ch) : Consumer(ch), Producer(ch), voice_mgr_(ch, Consumer::state()) {}
+    Audio(itc::Context& ch) : Consumer(ch), Producer(ch), voice_mgr_(ch, Consumer::state()) {}
 
     midi::IMidiHandler& midi_handler() noexcept override
     {
@@ -157,9 +157,9 @@ namespace otto::engines::ottofm {
     voices::VoiceManager<Voice, 6> voice_mgr_;
   };
 
-  std::unique_ptr<ISynthAudio> make_audio(itc::Channel& chan)
+  std::unique_ptr<ISynthAudio> make_audio(itc::Context& ctx)
   {
-    return std::make_unique<Audio>(chan);
+    return std::make_unique<Audio>(ctx);
   }
 
   // VOICE //

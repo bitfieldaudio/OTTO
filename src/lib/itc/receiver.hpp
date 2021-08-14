@@ -2,13 +2,12 @@
 
 #include "accessor.hpp"
 #include "action.hpp"
-#include "channel.hpp"
 
 namespace otto::itc {
 
   template<AnAction Action>
   struct Receiver<Action> : private virtual IDomain, Accessor<action_service<Action>> {
-    Receiver(Channel& ch) : Accessor<action_service<Action>>(ch) {}
+    Receiver(Context& ch) : Accessor<action_service<Action>>(ch) {}
 
     Receiver(const Receiver&) = delete;
     Receiver& operator=(const Receiver&) = delete;
@@ -46,6 +45,6 @@ namespace otto::itc {
 
   template<AnAction... Actions>
   struct Receiver : Receiver<Actions>... {
-    Receiver(Channel& ch) : Receiver<Actions>(ch)... {}
+    Receiver(Context& ch) : Receiver<Actions>(ch)... {}
   };
 } // namespace otto::itc

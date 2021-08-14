@@ -121,7 +121,7 @@ namespace otto::engines::ottofm {
 
     float env_size = 0;
 
-    ModScreen(itc::Channel& c) : Consumer(c)
+    ModScreen(itc::Context& c) : Consumer(c)
     {
       ops.bounding_box = {{10, 30}, {50, 180}};
       for (auto& env : envelopes) env.on_state_change(Consumer<State>::state());
@@ -202,11 +202,11 @@ namespace otto::engines::ottofm {
     std::string value_str;
   };
 
-  ScreenWithHandler make_mod_screen(itc::Channel& chan)
+  ScreenWithHandler make_mod_screen(itc::Context& ctx)
   {
     return {
-      .screen = std::make_unique<ModScreen>(chan),
-      .input = std::make_unique<ModHandler>(chan),
+      .screen = std::make_unique<ModScreen>(ctx),
+      .input = std::make_unique<ModHandler>(ctx),
     };
   }
 

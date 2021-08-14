@@ -243,7 +243,7 @@ namespace otto::voices {
 
     template<typename... Args>
     requires std::is_constructible_v<Voice, Args...> //
-    VoiceManager(itc::Channel& c, Args&&... args)
+    VoiceManager(itc::Context& c, Args&&... args)
       : Consumer(c),
         voices_(util::make_array<Voice, N>(FWD(args)...)),
         free_voices_(util::transform(voices_, util::addressof))
@@ -342,9 +342,8 @@ namespace otto::voices {
       return res;
     }
 
-  private:
-    template<AVoice V, int M>
-    friend struct VoiceAllocatorBase;
+  private : template<AVoice V, int M>
+            friend struct VoiceAllocatorBase;
     template<PlayMode PM, AVoice V, int M>
     friend struct VoiceAllocator;
 
@@ -367,8 +366,8 @@ namespace otto::voices {
     float old_portamento = 0;
   };
 
-  std::unique_ptr<ILogic> make_voices_logic(itc::Channel&);
-  ScreenWithHandler make_voices_screen(itc::Channel&);
+  std::unique_ptr<ILogic> make_voices_logic(itc::Context&);
+  ScreenWithHandler make_voices_screen(itc::Context&);
 
 } // namespace otto::voices
 

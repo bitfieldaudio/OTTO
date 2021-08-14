@@ -217,7 +217,7 @@ namespace otto::voices {
     Portamento port{0.3};
     LegatoGraphic leg{2};
 
-    VoicesScreen(itc::Channel& c) : Consumer(c)
+    VoicesScreen(itc::Context& c) : Consumer(c)
     {
       vms.bounding_box.move_to({10, 10});
       vms.bounding_box.resize({300, 130});
@@ -248,11 +248,11 @@ namespace otto::voices {
     }
   };
 
-  ScreenWithHandler make_voices_screen(itc::Channel& chan)
+  ScreenWithHandler make_voices_screen(itc::Context& ctx)
   {
     return {
-      .screen = std::make_unique<VoicesScreen>(chan),
-      .input = std::make_unique<Handler>(chan),
+      .screen = std::make_unique<VoicesScreen>(ctx),
+      .input = std::make_unique<Handler>(ctx),
     };
   }
 

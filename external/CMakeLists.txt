@@ -163,7 +163,7 @@ else()
   CPMAddPackage(
     NAME skia
     GIT_REPOSITORY https://skia.googlesource.com/skia.git
-    GIT_TAG 1ae440a3cb3c48d769d8d5fe7c95fbba818feed2
+    GIT_TAG 832c817bc8a9567aa379181e71e7c602d2480de8
     DOWNLOAD_ONLY YES
   )
 
@@ -175,7 +175,6 @@ else()
   paragraph_tests_enabled=false \
   skia_enable_android_utils=false \
   skia_enable_api_available_macro=true \
-  skia_enable_ccpr=true \
   skia_enable_direct3d_debug_layer=false \
   skia_enable_discrete_gpu=true \
   skia_enable_fontmgr_FontConfigInterface=true \
@@ -186,7 +185,6 @@ else()
   skia_enable_fontmgr_fontconfig=true \
   skia_enable_gpu=true \
   skia_enable_gpu_debug_layers=true \
-  skia_enable_nvpr=false \
   skia_enable_particles=false \
   skia_enable_pdf=false \
   skia_enable_skottie=false \
@@ -219,7 +217,7 @@ else()
   skia_use_xps=false \
   skia_use_zlib=false \
   extra_cflags=[\"-Wno-unknown-warning-option\",\"-Wno-uninitialized\"] \
-  extra_cflags_cc=[\"-frtti\"] \
+  extra_cflags_cc=[\"-frtti\",\"-Wno-invalid-offsetof\"] \
   extra_ldflags=[] \
 ")
     if (OTTO_ENABLE_ASAN)
@@ -232,12 +230,11 @@ else()
       COMMAND python tools/git-sync-deps
       WORKING_DIRECTORY "${skia_SOURCE_DIR}"  
     )
-    # Add this, but it requires cmake 3.19
-    # COMMAND_ERROR_IS_FATAL ANY
     message("Generating skia gn project...")
     execute_process(
       COMMAND bin/gn gen "${skia_BINARY_DIR}/out/config" --ide=json --args=${skia_ARGS}
       WORKING_DIRECTORY "${skia_SOURCE_DIR}"  
+      COMMAND_ERROR_IS_FATAL ANY
     )
     message("Generating skia cmake project...")
     execute_process(

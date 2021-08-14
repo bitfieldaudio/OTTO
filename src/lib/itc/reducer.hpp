@@ -49,7 +49,7 @@ namespace otto::itc {
 
 
     template<AState State>
-    Producer<State>* get_producer(itc::Channel& ch)
+    Producer<State>* get_producer(itc::Context& ch)
     {
       return static_cast<Producer<State>*>(ch.find_provider<state_service<State>>());
     }
@@ -68,7 +68,7 @@ namespace otto::itc {
 
     Reducer() noexcept = default;
     Reducer(Producer<State>& p) noexcept : producer_(&p) {}
-    Reducer(itc::Channel& chan) noexcept : producer_(detail::get_producer<State>(chan)) {}
+    Reducer(itc::Context& ctx) noexcept : producer_(detail::get_producer<State>(ctx)) {}
 
   private:
     template<AState S, AnEvent... Es>

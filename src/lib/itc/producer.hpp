@@ -1,20 +1,20 @@
 #pragma once
 
-#include "sender.hpp"
+#include "provider.hpp"
 #include "state.hpp"
 
 namespace otto::itc {
 
   template<AState State>
-  struct Producer<State> : Sender<state_change_action<State>>, util::ISerializable {
-    using Action = state_change_action<State>;
-    Producer(Channel& channels) : Sender<Action>(channels) {}
+  struct Producer<State> : Provider<state_service<State>>, util::ISerializable {
+    Producer(Context& ctx) : Provider<state_service<State>>(ctx) {}
 
     /// Commit the current `state()`, notifying consumers
     void commit()
     {
-      // TODO: Do not send state along as action
-      Sender<Action>::send(Action{state()});
+      for (Consumer<State>* c : Provider<state_service<State>>::accessors()) {
+        c->internal_commit(state());
+      }
       on_state_change(state());
     }
 
@@ -78,7 +78,7 @@ namespace otto::itc {
 
   template<AState... States>
   struct Producer : Producer<States>... {
-    Producer(Channel& channels) : Producer<States>(channels)... {}
+    Producer(Context& ctx) : Producer<States>(ctx)... {}
 
     /// Access the stored state of the given type
     template<util::one_of<States...> S>

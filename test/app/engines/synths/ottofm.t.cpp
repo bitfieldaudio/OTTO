@@ -28,8 +28,8 @@ TEST_CASE ("ottofm", "[.interactive][engine]") {
   Controller controller(rt, confman);
   Graphics graphics(rt);
 
-  itc::Channel chan;
-  auto eng = engines::ottofm::factory.make_without_audio(chan);
+  itc::Context ctx;
+  auto eng = engines::ottofm::factory.make_without_audio(ctx);
 
   // app.service<Audio>().set_midi_handler(&eng.audio->midi_handler());
   // app.service<Audio>().set_process_callback([&](Audio::CallbackData data) {
@@ -49,8 +49,8 @@ TEST_CASE ("ottofm-env", "[.interactive][engine]") {
   Controller controller(rt, confman);
   Graphics graphics(rt);
 
-  itc::Channel chan;
-  auto eng = engines::ottofm::factory.make_without_audio(chan);
+  itc::Context ctx;
+  auto eng = engines::ottofm::factory.make_without_audio(ctx);
 
   // app.service<Audio>().set_midi_handler(&eng.audio->midi_handler());
   // app.service<Audio>().set_process_callback([&](Audio::CallbackData data) {
@@ -72,8 +72,8 @@ TEST_CASE ("ottofm-all", "[.interactive][engine]") {
   Graphics graphics(rt);
 
   Audio audio;
-  itc::Channel chan;
-  auto eng = engines::ottofm::factory.make_all(chan);
+  itc::Context ctx;
+  auto eng = engines::ottofm::factory.make_all(ctx);
 
   LayerStack layers;
   auto piano = layers.make_layer<PianoKeyLayer>(audio.midi());
@@ -101,8 +101,8 @@ TEST_CASE ("ottofm-no-audio", "[.interactive][engine]") {
   Controller controller(rt, confman);
   Graphics graphics(rt);
 
-  itc::Channel chan;
-  auto eng = engines::ottofm::factory.make_without_audio(chan);
+  itc::Context ctx;
+  auto eng = engines::ottofm::factory.make_without_audio(ctx);
 
   // app.service<Audio>().set_midi_handler(&eng.audio->midi_handler());
   // app.service<Audio>().set_process_callback([&](Audio::CallbackData data) {

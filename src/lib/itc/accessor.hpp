@@ -7,9 +7,9 @@ namespace otto::itc {
 
   template<AService Service>
   struct Accessor<Service> : detail::AccessorBase {
-    Accessor(Context& ch) : context_(&ch)
+    Accessor(Context& ctx) : context_(&ctx)
     {
-      ch.register_accessor(this);
+      ctx.register_accessor(this);
     }
 
     Accessor(const Accessor&) = delete;
@@ -28,7 +28,7 @@ namespace otto::itc {
 
     provider_t<Service>* provider() const noexcept
     {
-      return provider_;
+      return static_cast<provider_t<Service>*>(provider_);
     }
 
   protected:
@@ -45,7 +45,7 @@ namespace otto::itc {
     friend struct linker;
 
     Context* context_;
-    provider_t<Service>* provider_ = nullptr;
+    Provider<Service>* provider_ = nullptr;
   };
 
   template<AService... Services>

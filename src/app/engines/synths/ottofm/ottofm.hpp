@@ -29,46 +29,46 @@ namespace otto::engines::ottofm {
   };
 
   struct SynthEngineFactory {
-    fu2::unique_function<std::unique_ptr<ILogic>(itc::Channel&) const> make_logic;
-    fu2::unique_function<std::unique_ptr<ISynthAudio>(itc::Channel&) const> make_audio;
-    fu2::unique_function<ScreenWithHandler(itc::Channel&) const> make_mod_screen;
-    fu2::unique_function<ScreenWithHandler(itc::Channel&) const> make_main_screen;
+    fu2::unique_function<std::unique_ptr<ILogic>(itc::Context&) const> make_logic;
+    fu2::unique_function<std::unique_ptr<ISynthAudio>(itc::Context&) const> make_audio;
+    fu2::unique_function<ScreenWithHandler(itc::Context&) const> make_mod_screen;
+    fu2::unique_function<ScreenWithHandler(itc::Context&) const> make_main_screen;
 
-    SynthEngineInstance make_all(itc::Channel& chan) const
+    SynthEngineInstance make_all(itc::Context& ctx) const
     {
       return {
-        .logic = make_logic(chan),
-        .audio = make_audio(chan),
-        .main_screen = make_main_screen(chan),
-        .mod_screen = make_mod_screen(chan),
+        .logic = make_logic(ctx),
+        .audio = make_audio(ctx),
+        .main_screen = make_main_screen(ctx),
+        .mod_screen = make_mod_screen(ctx),
       };
     }
 
-    SynthEngineInstance make_without_audio(itc::Channel& chan) const
+    SynthEngineInstance make_without_audio(itc::Context& ctx) const
     {
       return {
-        .logic = make_logic(chan),
+        .logic = make_logic(ctx),
         .audio = nullptr,
-        .main_screen = make_main_screen(chan),
-        .mod_screen = make_mod_screen(chan),
+        .main_screen = make_main_screen(ctx),
+        .mod_screen = make_mod_screen(ctx),
       };
     }
 
-    SynthEngineInstance make_without_screens(itc::Channel& chan) const
+    SynthEngineInstance make_without_screens(itc::Context& ctx) const
     {
       return {
-        .logic = make_logic(chan),
-        .audio = make_audio(chan),
+        .logic = make_logic(ctx),
+        .audio = make_audio(ctx),
         .main_screen = {nullptr, nullptr},
         .mod_screen = {nullptr, nullptr},
       };
     }
   };
 
-  std::unique_ptr<ILogic> make_logic(itc::Channel&);
-  ScreenWithHandler make_main_screen(itc::Channel&);
-  ScreenWithHandler make_mod_screen(itc::Channel&);
-  std::unique_ptr<ISynthAudio> make_audio(itc::Channel&);
+  std::unique_ptr<ILogic> make_logic(itc::Context&);
+  ScreenWithHandler make_main_screen(itc::Context&);
+  ScreenWithHandler make_mod_screen(itc::Context&);
+  std::unique_ptr<ISynthAudio> make_audio(itc::Context&);
 
   // NOLINTNEXTLINE
   inline const SynthEngineFactory factory = {

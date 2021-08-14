@@ -34,7 +34,6 @@ namespace otto::skia {
   using Data = SkData;
   using Deque = SkDeque;
   using DeserialProcs = SkDeserialProcs;
-  using FilterQuality = SkFilterQuality;
   using FontArguments = SkFontArguments;
   using FontStyle = SkFontStyle;
   using GlyphID = SkGlyphID;

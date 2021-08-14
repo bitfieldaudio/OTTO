@@ -22,8 +22,11 @@ namespace otto::itc {
       if (a.provider_ != nullptr) {
         unlink(*a.provider_, a);
       }
+      // Since this is called from the Accessor constructor, it is called
+      // before `accessor_t` is constructed. Thus, this cast is detected by
+      // UBsan, and may be undefined behavior?
       p.accessors_.emplace_back(static_cast<accessor_t<S>*>(&a));
-      a.provider_ = static_cast<provider_t<S>*>(&p);
+      a.provider_ = &p;
     }
 
     template<AService S>

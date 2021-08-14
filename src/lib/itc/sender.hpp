@@ -1,7 +1,7 @@
 #pragma once
 
 #include "action.hpp"
-#include "channel.hpp"
+#include "context.hpp"
 #include "provider.hpp"
 
 namespace otto::itc {
@@ -25,7 +25,7 @@ namespace otto::itc {
 
   template<AnAction... Actions>
   struct Sender : Sender<Actions>... {
-    Sender(Channel& ch) : Sender<Actions>(ch)... {}
+    Sender(Context& ch) : Sender<Actions>(ch)... {}
 
     /// Send an action to all linked consumers
     template<util::one_of<Actions...> Action>

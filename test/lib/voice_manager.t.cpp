@@ -27,10 +27,10 @@ TEST_CASE ("VoiceManager", "[!mayfail]") {
     Voice(int i) : i(i) {}
     int i = 0;
   };
-  itc::Channel chan;
-  itc::Producer<VoicesState> prod = chan;
+  itc::Context ctx;
+  itc::Producer<VoicesState> prod = ctx;
 
-  VoiceManager<Voice, 6> voices = {chan, 42};
+  VoiceManager<Voice, 6> voices = {ctx, 42};
 
   SECTION ("Construction") {
     REQUIRE(stdr::distance(voices) == 6);
@@ -412,8 +412,8 @@ TEST_CASE ("VoiceManager", "[!mayfail]") {
         }
       };
 
-      itc::Channel chan;
-      VoiceManager<SVoice, 4> vmgr(chan);
+      itc::Context ctx;
+      VoiceManager<SVoice, 4> vmgr(ctx);
 
       REQUIRE(vmgr[0]() == 1.f);
       // REQUIRE(vmgr() == test::approx(4.f * vmgr.normal_volume));
@@ -430,8 +430,8 @@ TEST_CASE ("VoiceManager", "[!mayfail]") {
           return float(i);
         }
       };
-      itc::Channel chan;
-      VoiceManager<Voice, 4> vmgr(chan);
+      itc::Context ctx;
+      VoiceManager<Voice, 4> vmgr(ctx);
       // int a = 0;
       // REQUIRE(vmgr(10, a, a) == Catch::Approx(4 * 10.f * vmgr.normal_volume));
     }

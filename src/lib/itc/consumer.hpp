@@ -9,10 +9,22 @@
 namespace otto::itc {
   // Declarations
   template<AState State>
-  struct Consumer<State> : Receiver<state_change_action<State>> {
-    using Action = state_change_action<State>;
-    Consumer(Channel& channels) : Receiver<Action>(channels) {}
+  struct Consumer<State> : private virtual IDomain, Accessor<state_service<State>> {
+    Consumer(Context& ctx) : Accessor<state_service<State>>(ctx) {}
 
+    Consumer(const Consumer&) = delete;
+    Consumer& operator=(const Consumer&) = delete;
+
+    virtual ~Consumer() noexcept
+    {
+      this->unregister();
+      // Wait for queued functions to be executed
+      // virtual functions dont exist at this point anymore,
+      // so we have to do this weird caching of the executor
+      // If it's still nullptr, internal_send was never called
+      // so no need to sync
+      if (exec_ != nullptr) exec_->sync();
+    }
     /// Access the newest state available.
     const State& state() const noexcept
     {
@@ -37,34 +49,37 @@ namespace otto::itc {
     virtual void on_state_change(const State& state) noexcept {}
 
   private:
+    friend Producer<State>;
+
     /// Called from {@ref TypedChannelLeaf::internal_commit}
-    void receive(Action e) noexcept override
+    void internal_commit(const State& state) noexcept
     {
-      // {
-      //   std::scoped_lock l(lock_);
-      //   tmp_state_ = e.state;
-      // }
-      // executor()->execute([this] {
-      //   // Apply changes
-      //   {
-      //     std::scoped_lock l(lock_);
-      //     state_ = tmp_state_;
-      //   }
-      //   on_state_change(state_);
-      // });
-      // TODO: Proper implementation
-      state_ = std::move(e.state);
-      on_state_change(state_);
+      if (exec_ == nullptr) {
+        exec_ = &executor();
+      }
+      {
+        std::scoped_lock l(lock_);
+        tmp_state_ = state;
+      }
+      exec_->execute([this] {
+        // Apply changes
+        {
+          std::scoped_lock l(lock_);
+          state_ = std::move(tmp_state_);
+        }
+        on_state_change(state_);
+      });
     }
 
-    // util::spin_lock lock_;
+    util::spin_lock lock_;
     State state_;
-    // State tmp_state_;
+    State tmp_state_;
+    IExecutor* exec_ = nullptr;
   };
 
   template<AState... States>
   struct Consumer : Consumer<States>... {
-    Consumer(Channel& channels) : Consumer<States>(channels)... {}
+    Consumer(Context& ctx) : Consumer<States>(ctx)... {}
 
     template<util::one_of<States...> S>
     const S& state() const noexcept

@@ -35,11 +35,11 @@ TEST_CASE ("StateManager destruction", "[.interactive][system]") {
   Controller controller(rt, confman);
   Graphics graphics(rt);
 
-  itc::Channel chan;
-  auto eng = engines::ottofm::factory.make_without_audio(chan);
+  itc::Context ctx;
+  auto eng = engines::ottofm::factory.make_without_audio(ctx);
 
-  auto voices_logic = voices::make_voices_logic(chan);
-  auto voices_screen = voices::make_voices_screen(chan);
+  auto voices_logic = voices::make_voices_logic(ctx);
+  auto voices_screen = voices::make_voices_screen(ctx);
 
   LayerStack layers;
   auto nav_km = layers.make_layer<NavKeyMap>(confman);
@@ -48,7 +48,7 @@ TEST_CASE ("StateManager destruction", "[.interactive][system]") {
   nav_km.bind_nav_key(Key::voices, voices_screen);
   {
     StateManager stateman("data/state.json");
-    // stateman.add("EngineChannel", std::ref(chan));
+    // stateman.add("EngineChannel", std::ref(ctx));
     stateman.add("Navigation", std::ref(nav_km));
 
     LedManager ledman(controller.port_writer());

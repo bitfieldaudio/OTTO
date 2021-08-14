@@ -13,7 +13,7 @@ namespace otto::engines::ottofm {
     using Producer::Producer;
   };
 
-  std::unique_ptr<ILogic> make_logic(itc::Channel& c)
+  std::unique_ptr<ILogic> make_logic(itc::Context& c)
   {
     return std::make_unique<Logic>(c);
   }

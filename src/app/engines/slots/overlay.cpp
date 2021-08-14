@@ -111,7 +111,7 @@ namespace otto::engines::slots {
     }
 
 
-    SoundSlotsScreen(itc::Channel& c) : Consumer(c)
+    SoundSlotsScreen(itc::Context& c) : Consumer(c)
     {
       // Init Screen
       widget.bounding_box = {skia::Box({50, 80}, {220, 80})};
