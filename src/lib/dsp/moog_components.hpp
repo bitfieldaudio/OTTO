@@ -1,3 +1,5 @@
+#pragma once
+
 #include <cmath>
 #include <numbers>
 
@@ -5,6 +7,7 @@
 #include <Gamma/scl.h>
 
 #include "lib/dsp/fmoperator.hpp"
+#include "lib/dsp/triangle_wave.hpp"
 
 namespace otto::dsp {
   // Based on an implementation by Aaron Krajeski (Public Domain)
@@ -120,6 +123,85 @@ namespace otto::dsp {
     float P = 0.5;
   };
 
+  struct MoogSawOffset2 {
+    /// Generate next sample
+    float operator()() noexcept
+    {
+      return (std::numbers::pi - 2 * std::numbers::pi * P) * (1 + tri_()) * 0.5;
+    };
+
+    void freq(float frq)
+    {
+      P = 0.9924f - 0.00002151f * frq;
+      tri_.freq(frq);
+      tri_.setDutyCycle(P);
+    }
+
+  private:
+    dsp::TrianglePW<> tri_;
+    float P = 0.5;
+  };
+
+  template<class Tv = gam::real, class Tp = gam::real>
+  struct MoogSawEQ {
+    MoogSawEQ(Tp frq = 440)
+    {
+      freq(frq);
+    }
+
+    void freq(Tp frq)
+    {
+      Tv frq2 = frq * frq;
+      g = 0.54 + 4.473e-5;
+      a = 0.6398 - 2.417e-4 * frq + 1.335e-8 * frq2;
+      b = 0.3894 - 3.102e-4 * frq + 2.217e-8 * frq2;
+    }
+
+    Tv operator()(Tv in)
+    {
+      inPrev = in;
+      return outPrev = g * (in - b * inPrev) + a * outPrev;
+    }
+
+  private:
+    Tv g, a, b = 0;
+    Tv inPrev = 0;
+    Tv outPrev = 0;
+  };
+
+  template<class Tv = float, class Tp = float, class Td = gam::DomainObserver>
+  struct MoogSaw : public Td {
+    MoogSaw(Tp frq = Tp(440))
+    {
+      onDomainChange(1);
+      freq(frq);
+    }
+    void onDomainChange(double r)
+    {
+      // setCutoff(mFreq);
+    }
+
+    void freq(Tp frq)
+    {
+      saw.freq(frq);
+      filter.freq(frq);
+    }
+    Tv phase()
+    {
+      return saw.phase();
+    }
+
+    Tv operator()()
+    {
+      return filter(saw());
+    }
+
+  private:
+    gam::Saw<> saw;
+    MoogSawEQ<> filter;
+  };
+
+  /*
   template<class Tv = float, class Tp = float, class Td = gam::DomainObserver>
   struct MoogSaw : public Td {
     MoogSaw(Tp frq = Tp(440))
@@ -144,7 +226,8 @@ namespace otto::dsp {
 
   private:
     FMSine carrier;
-    MoogSawOffset mod_saw;
+    MoogSawOffset2 mod_saw;
     float P;
   };
+  */
 } // namespace otto::dsp

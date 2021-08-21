@@ -53,7 +53,7 @@ namespace otto::engines::nuke {
     {
       // TODO
       switch (e.encoder) {
-        case Encoder::blue: state.param0 += e.steps * 0.01; break;
+        case Encoder::blue: state.param0 += e.steps * 0.002; break;
         case Encoder::green: state.param1 += e.steps * 0.01; break;
         case Encoder::yellow: state.param2 += e.steps * 0.01; break;
         case Encoder::red: state.param3 += e.steps * 0.01; break;
