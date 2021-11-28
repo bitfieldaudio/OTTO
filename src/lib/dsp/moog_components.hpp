@@ -201,33 +201,146 @@ namespace otto::dsp {
     MoogSawEQ<> filter;
   };
 
-  /*
+  // TODO: implement the rest
+  enum struct LfoType {
+    // static, // (doesn't reset) mod: shape, ---
+    rising,  // mod: attack, speedmod
+    falling, // mod: decays, speedmod
+    // random, // (doesn't reset) mod: randomness (random-walk-range), interpolation
+  };
+
+
   template<class Tv = float, class Tp = float, class Td = gam::DomainObserver>
-  struct MoogSaw : public Td {
-    MoogSaw(Tp frq = Tp(440))
+  struct MyLFO : public Td {
+    MyLFO(Tp frq = 1, LfoType t = LfoType::falling)
     {
-      onDomainChange(1);
       freq(frq);
-    }
-    void onDomainChange(double r)
-    {
-      // setCutoff(mFreq);
+      setType(t, 3.f);
+      reset();
     }
 
-    void freq(Tp frq)
+    void freq(Tp frq) noexcept
     {
-      carrier.freq(frq);
-      mod_saw.freq(frq);
+      speed = frq;
     }
-    Tv operator()()
+
+    void setType(LfoType t, Tp ramp_time)
     {
-      return carrier(mod_saw());
+      switch (t) {
+        case LfoType::rising: curve.set(ramp_time, 0.f, 0.f, 1.f); break;
+        case LfoType::falling: curve.set(ramp_time, 0.f, 1.f, 0.f); break;
+      }
+    }
+
+    void set(Tp frq, LfoType t, Tp mod1, Tp mod2)
+    {
+      freq(frq);
+      setType(t, mod1);
+    }
+
+    void reset()
+    {
+      curve.reset();
+    }
+
+    Tv next()
+    {
+      float c = curve();
+      float current_speed = speed * (1 - mod2 * (1 - c));
+      lfo.freq(speed);
+      val = lfo.cos();
+      // lfo.freq(current_speed);
+      // val = lfo.cos() * c;
+      return val;
+    }
+
+    Tv value()
+    {
+      return val;
     }
 
   private:
-    FMSine carrier;
-    MoogSawOffset2 mod_saw;
-    float P;
+    Tv val = 0.f;
+    Tv speed = 1.f;
+    Tv mod2 = 0.f;
+    gam::LFO<> lfo;
+    gam::Curve<> curve = {1.f, 0.f, 1.f, 0.f}; // straight line curve
   };
-  */
+
+
+  /// ADS (Attack, Decay, Sustain) envelope
+
+  /// This is a two-segment envelope that starts at -Sustain, rises
+  /// to 1-Sustain and then falls back to 0
+  /// The attack is the rise length, the decay is the length until
+  /// hitting the sustain level, zero.
+  /// This envelope is useful for Minimoog-style envelope generators for
+  /// modulating a parameter around a central value. In this case, add 1
+  /// and scale by some amount before applying
+  ///
+  /// \tparam Tv	value (sample) type
+  /// \tparam Tp	parameter type
+  /// \tparam Td	domain observer type
+  /// \ingroup Envelope
+  template<class Tv = gam::real, class Tp = gam::real, class Td = gam::DomainObserver>
+  class ADS : public gam::Env<2, Tv, Tp, Td> {
+  public:
+    /// \param[in] att	Attack length
+    /// \param[in] dec	Decay length
+    /// \param[in] sus	Sustain level (skew between attack and decay levels)
+    /// \param[in] crv	Curvature of all segments
+    ADS(Tp att = Tp(0.01), Tp dec = Tp(0.1), Tv sus = Tv(0.5), Tp crv = Tp(0))
+    {
+      this->sustainPoint(2);
+      this->levels(-sus, 1 - sus, 0);
+      attack(att).decay(dec);
+      this->curve(crv);
+    }
+
+    /// Set attack length
+    ADS& attack(Tp len)
+    {
+      return setLen(0, len);
+    }
+
+    /// Set decay length
+    ADS& decay(Tp len)
+    {
+      return setLen(1, len);
+    }
+
+    /// Set sustain level
+    ADS& sustain(Tv val)
+    {
+      this->levels()[0] = -val;
+      this->levels()[1] = 1 - val;
+      this->levels()[2] = 0;
+      return *this;
+    }
+
+    /// Get attack length
+    Tp attack() const
+    {
+      return this->lengths()[0];
+    }
+
+    /// Get decay length
+    Tp decay() const
+    {
+      return this->lengths()[1];
+    }
+
+    /// Get sustain level
+    Tv sustain() const
+    {
+      return -this->levels()[0];
+    }
+
+  protected:
+    ADS& setLen(int i, Tp v)
+    {
+      this->lengths()[i] = v;
+      return *this;
+    }
+  };
 } // namespace otto::dsp

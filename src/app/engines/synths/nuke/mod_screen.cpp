@@ -97,16 +97,17 @@ namespace otto::engines::nuke {
   struct ModScreen final : itc::Consumer<State>, ScreenBase {
     using Consumer::Consumer;
 
-    FourParams params0{"Volume Envelope"};
-    FourParams params1{"Filter Envelope"};
-    FourParams params2{"LFO"};
-    FourParams params3{"Volume Envelope"};
+    FourParams params0{"Volume Envelope", {"Attack", "Decay", "Sustain", "Release"}};
+    FourParams params1{"Filter Envelope", {"Attack", "Decay", "Sustain", "Amount"}};
+    FourParams params2{"LFO", {"Speed", "Type", "Attack", "Decay"}};
+    FourParams params3{"Targets", {"Pitch", "Volume", "Filter", "Ring Mod"}};
 
     ModScreen(itc::Channel& c) : Consumer(c)
     {
       params0.bounding_box = {{10, 30}, {270, 160}};
       params1.bounding_box = {{10, 30}, {270, 160}};
       params2.bounding_box = {{10, 30}, {270, 160}};
+      params3.bounding_box = {{10, 30}, {270, 160}};
     }
 
     void on_state_change(const State& s) noexcept override
@@ -115,6 +116,7 @@ namespace otto::engines::nuke {
       params0.set({s.envparam0_0, s.envparam0_1, s.envparam0_2, s.envparam0_3});
       params1.set({s.envparam1_0, s.envparam1_1, s.envparam1_2, s.envparam1_3});
       params2.set({s.envparam2_0, s.envparam2_1, s.envparam2_2, s.envparam2_3});
+      params3.set({s.envparam3_0, s.envparam3_1, s.envparam3_2, s.envparam3_3});
     }
 
     void draw(skia::Canvas& ctx) noexcept override
@@ -123,6 +125,7 @@ namespace otto::engines::nuke {
         case 0: params0.draw(ctx); break;
         case 1: params1.draw(ctx); break;
         case 2: params2.draw(ctx); break;
+        case 3: params3.draw(ctx); break;
         default: break;
       }
     }

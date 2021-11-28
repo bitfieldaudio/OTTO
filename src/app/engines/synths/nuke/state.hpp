@@ -8,7 +8,7 @@ namespace otto::engines::nuke {
 
   struct State {
     util::StaticallyBounded<float, 0, 1> param0 = 0;
-    util::StaticallyBounded<float, -1, 1> param1 = 0;
+    util::StaticallyBounded<float, 0, 1> param1 = 0;
     util::StaticallyBounded<float, 0, 1> param2 = 0;
     util::StaticallyBounded<float, 0, 1> param3 = 0;
 

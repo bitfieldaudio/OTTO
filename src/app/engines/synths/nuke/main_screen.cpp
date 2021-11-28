@@ -67,7 +67,7 @@ namespace otto::engines::nuke {
   struct MainScreen final : itc::Consumer<State>, ScreenBase {
     using Consumer::Consumer;
 
-    FourParams params{"Synth"};
+    FourParams params{"Synth", {"Osc2", "Ring Mod", "Cutoff", "Resonance"}};
 
     MainScreen(itc::Channel& c) : Consumer(c)
     {
