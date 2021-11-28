@@ -105,32 +105,33 @@ namespace otto::util {
   template<typename T>
   concept ATupleRef = is_tuple<std::remove_cvref_t<T>>::value;
 
-  namespace details {
+  namespace details
+  {
     template<ATupleRef T, typename F, std::size_t... Is>
-    void tuple_for_each_impl(T&& t, F&& f, std::integer_sequence<std::size_t, Is...> is)
+    void tuple_for_each_impl(T && t, F && f, std::integer_sequence<std::size_t, Is...> is)
     {
       (f(std::get<Is>(t)), ...);
     }
     template<ATupleRef T, typename F, std::size_t... Is>
-    void tuple_reverse_for_each_impl(T&& t, F&& f, std::integer_sequence<std::size_t, Is...> is)
+    void tuple_reverse_for_each_impl(T && t, F && f, std::integer_sequence<std::size_t, Is...> is)
     {
       (f(std::get<std::tuple_size<std::decay_t<T>>() - 1 - Is>(t)), ...);
     }
 
     template<ATupleRef T, typename F, std::size_t... Is>
-    void tuple_for_each_i_impl(T&& t, F&& f, std::integer_sequence<std::size_t, Is...> is)
+    void tuple_for_each_i_impl(T && t, F && f, std::integer_sequence<std::size_t, Is...> is)
     {
       (f(Is, std::get<Is>(t)), ...);
     }
 
     template<ATupleRef T, typename F, std::size_t... Is>
-    auto tuple_transform_impl(T&& t, F&& f, std::integer_sequence<std::size_t, Is...> is)
+    auto tuple_transform_impl(T && t, F && f, std::integer_sequence<std::size_t, Is...> is)
     {
       return std::forward_as_tuple(f(std::get<Is>(t))...);
     }
 
     template<ATupleRef T1, ATupleRef T2, std::size_t... Is>
-    auto tuple_zip_impl(T1&& t1, T2&& t2, std::integer_sequence<std::size_t, Is...> is)
+    auto tuple_zip_impl(T1 && t1, T2 && t2, std::integer_sequence<std::size_t, Is...> is)
     {
       return std::tuple(
         std::pair<std::tuple_element_t<Is, std::remove_cvref_t<T1>>, std::tuple_element_t<Is, std::remove_cvref_t<T2>>>(
@@ -138,7 +139,7 @@ namespace otto::util {
     }
 
     template<typename F, std::size_t... Is>
-    decltype(auto) apply_idxs_impl(F&& f, std::integer_sequence<std::size_t, Is...> is)
+    decltype(auto) apply_idxs_impl(F && f, std::integer_sequence<std::size_t, Is...> is)
     {
       return FWD(f)(Is...);
     }
@@ -306,5 +307,12 @@ namespace otto::util {
 
   /// std::addressof wrapped in a lambda so it can be passed to algorithms
   constexpr auto addressof = LAMBDAFY(std::addressof);
+
+  inline std::error_code get_clear_errno() noexcept
+  {
+    auto e = errno;
+    errno = 0;
+    return {e, std::system_category()};
+  }
 
 } // namespace otto::util

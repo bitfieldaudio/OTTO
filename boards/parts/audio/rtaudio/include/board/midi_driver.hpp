@@ -14,6 +14,7 @@ namespace otto {
   struct RtMidiDriver {
     RtMidiDriver(drivers::MidiController& midi) : midi_(midi)
     {
+      midi_in_.openVirtualPort("OTTO in");
       for (auto i = 0U; i < midi_in_.getPortCount(); i++) {
         auto port = midi_in_.getPortName(i);
         LOGI("Found midi port {}", port);

@@ -231,10 +231,11 @@ else()
       WORKING_DIRECTORY "${skia_SOURCE_DIR}"  
     )
     message("Generating skia gn project...")
+    # Add this when we can require cmake 3.19
+    # COMMAND_ERROR_IS_FATAL ANY
     execute_process(
       COMMAND bin/gn gen "${skia_BINARY_DIR}/out/config" --ide=json --args=${skia_ARGS}
       WORKING_DIRECTORY "${skia_SOURCE_DIR}"  
-      COMMAND_ERROR_IS_FATAL ANY
     )
     message("Generating skia cmake project...")
     execute_process(
