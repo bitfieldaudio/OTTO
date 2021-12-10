@@ -1,12 +1,12 @@
 #pragma once
 
-#include "action.hpp"
-#include "consumer.hpp"
-#include "context.hpp"
-#include "producer.hpp"
-#include "receiver.hpp"
-#include "sender.hpp"
-#include "state.hpp"
+#include "actions/action.hpp"
+#include "actions/receiver.hpp"
+#include "actions/sender.hpp"
+#include "services/context.hpp"
+#include "state/consumer.hpp"
+#include "state/producer.hpp"
+#include "state/state.hpp"
 
 /// A State-based inter-thread communication library.
 ///

@@ -6,7 +6,7 @@
 
 #include "lib/engine.hpp"
 #include "lib/graphics.hpp"
-#include "lib/itc/producer.hpp"
+#include "lib/itc/state/producer.hpp"
 
 namespace otto::engines::slots {
 
