@@ -30,6 +30,28 @@ namespace otto {
     virtual void handle(Event) noexcept = 0;
   };
 
+
+  /// CRTP Base class for event handler proxies
+  /// ```cpp
+  /// struct SomeProxy : EventHandlerProxy<KeyPress, KeyRelease>, IEventHandler {
+  ///   IEventHandler<KeyPress, KeyRelease>& proxy_target() {
+  ///     return /* the actual event handler */;
+  ///   }
+  /// };
+  /// ```
+  template<typename Derived, typename... Events>
+  struct EventHandlerProxy : EventHandlerProxy<Events>... {
+    using EventHandlerProxy<Events>::handle...;
+  };
+
+  template<typename Derived, typename Event>
+  struct EventHandlerProxy<Derived, Event> : virtual IEventHandler<Event> {
+    void handle(Event e) noexcept final
+    {
+      static_cast<Derived*>(this)->proxy_target().handle(e);
+    }
+  };
+
 } // namespace otto
 
 namespace otto::itc {
