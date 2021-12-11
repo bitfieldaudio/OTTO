@@ -102,7 +102,7 @@ namespace otto::engines::nuke {
     FourParams params2{"LFO", {"Speed", "Type", "Attack", "Decay"}};
     FourParams params3{"Targets", {"Pitch", "Volume", "Filter", "Ring Mod"}};
 
-    ModScreen(itc::Channel& c) : Consumer(c)
+    ModScreen(itc::Context& c) : Consumer(c)
     {
       params0.bounding_box = {{10, 30}, {270, 160}};
       params1.bounding_box = {{10, 30}, {270, 160}};
@@ -134,7 +134,7 @@ namespace otto::engines::nuke {
     int active_idx = 0;
   };
 
-  ScreenWithHandler make_mod_screen(itc::Channel& chan)
+  ScreenWithHandler make_mod_screen(itc::Context& chan)
   {
     return {
       .screen = std::make_unique<ModScreen>(chan),

@@ -69,7 +69,7 @@ namespace otto::engines::nuke {
 
     FourParams params{"Synth", {"Osc2", "Ring Mod", "Cutoff", "Resonance"}};
 
-    MainScreen(itc::Channel& c) : Consumer(c)
+    MainScreen(itc::Context& c) : Consumer(c)
     {
       params.bounding_box = {{10, 30}, {270, 160}};
     }
@@ -85,7 +85,7 @@ namespace otto::engines::nuke {
     }
   };
 
-  ScreenWithHandler make_main_screen(itc::Channel& chan)
+  ScreenWithHandler make_main_screen(itc::Context& chan)
   {
     return {
       .screen = std::make_unique<MainScreen>(chan),

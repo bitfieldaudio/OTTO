@@ -1,11 +1,13 @@
 #include "application.hpp"
 
+#include "lib/engines/synthdispatcher/synthdispatcher.hpp"
 #include "lib/voices/voice_manager.hpp"
 
 #include "app/engines/master/master.hpp"
 #include "app/engines/midi-fx/arp/arp.hpp"
 #include "app/engines/slots/slots.hpp"
 #include "app/engines/synths/nuke/nuke.hpp"
+#include "app/engines/synths/ottofm/ottofm.hpp"
 #include "app/layers/navigator.hpp"
 #include "app/layers/piano_key_layer.hpp"
 #include "app/services/audio.hpp"
@@ -45,17 +47,19 @@ namespace otto {
     itc::Context ctx;
     stateman.add("Context", std::ref(ctx));
 
-    // OTTOFM
-    auto eng = engines::nuke::factory.make_all(ctx["synth"]);
-    auto voices_logic = voices::make_voices_logic(ctx["synth"]);
-    auto voices_screen = voices::make_voices_screen(ctx["synth"]);
-    nav_km.bind_nav_key(Key::synth, eng.main_screen);
-    nav_km.bind_nav_key(Key::envelope, eng.mod_screen);
-    nav_km.bind_nav_key(Key::voices, voices_screen);
+    // Synth Dispatcher
+    auto synth = otto::make_synthdispatcher(ctx["synth"]);
+    synth.logic->register_engine(std::move(engines::nuke::factory));
+    synth.logic->register_engine(std::move(engines::ottofm::factory));
+
+    nav_km.bind_nav_key(Key::synth, synth.main_screen);
+    nav_km.bind_nav_key(Key::envelope, synth.mod_screen);
+    nav_km.bind_nav_key(Key::voices, synth.voices_screen);
+
 
     // ARP
     auto midifx_eng = engines::arp::factory.make_all(ctx["midifx"]);
-    midifx_eng.audio->set_target(&eng.audio->midi_handler());
+    midifx_eng.audio->set_target(&synth.audio->midi_handler());
     nav_km.bind_nav_key(Key::arp, midifx_eng.screen);
 
     // Master
@@ -77,10 +81,13 @@ namespace otto {
     auto stop_midi = audio.set_midi_handler(&*midifx_eng.audio);
     auto stop_audio = audio.set_process_callback([&](Audio::CallbackData data) {
       midifx_eng.audio->process();
-      const auto res = eng.audio->process();
+      const auto res = synth.audio->process();
       stdr::copy(util::zip(res, res), data.output.begin());
     });
     auto stop_input = controller.set_input_handler(layers);
+
+    synth.logic->toggle_engine();
+
     auto stop_graphics = graphics.show([&](skia::Canvas& ctx) {
       ledman.process(layers);
       nav_km.nav().draw(ctx);
@@ -89,6 +96,7 @@ namespace otto {
     stateman.read_from_file();
 
     // Run
+    LOGI("About to wait!");
     rt.wait_for_stop();
     LOGI("Shutting down");
 

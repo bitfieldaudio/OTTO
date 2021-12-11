@@ -64,7 +64,10 @@ namespace otto {
     Navigator& nav();
     const Navigator& nav() const;
 
-    void bind_nav_key(Key key, ScreenWithHandlerPtr scrn);
+    std::unordered_map<Key, ScreenWithHandlerPtr>& current_binds();
+    const std::unordered_map<Key, ScreenWithHandlerPtr>& current_binds() const;
+
+    void bind_nav_key(Key key, ScreenWithHandlerPtr scrn, bool shift_held = false);
 
     void handle(KeyPress e) noexcept override;
     void handle(KeyRelease e) noexcept override;
@@ -101,6 +104,8 @@ namespace otto {
     Conf conf;
     util::smart_ptr<Navigator> nav_;
     chrono::time_point last_nav_time_;
+    bool shift_held = false;
     std::unordered_map<Key, ScreenWithHandlerPtr> binds_;
+    std::unordered_map<Key, ScreenWithHandlerPtr> shift_binds_;
   };
 } // namespace otto

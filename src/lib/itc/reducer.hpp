@@ -40,8 +40,8 @@ namespace otto {
   /// };
   /// ```
   template<typename Derived, typename... Events>
-  struct EventHandlerProxy : EventHandlerProxy<Events>... {
-    using EventHandlerProxy<Events>::handle...;
+  struct EventHandlerProxy : EventHandlerProxy<Derived, Events>... {
+    using EventHandlerProxy<Derived, Events>::handle...;
   };
 
   template<typename Derived, typename Event>

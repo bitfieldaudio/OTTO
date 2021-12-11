@@ -1,5 +1,7 @@
 #include "navigator.hpp"
 
+#include "lib/logging.hpp"
+
 namespace otto {
 
   void Navigator::navigate_to(ScreenWithHandlerPtr screen)
@@ -59,14 +61,36 @@ namespace otto {
     return *nav_;
   }
 
-  void NavKeyMap::bind_nav_key(Key key, ScreenWithHandlerPtr scrn)
+  std::unordered_map<Key, ScreenWithHandlerPtr>& NavKeyMap::current_binds()
   {
-    binds_[key] = scrn;
+    if (shift_held) {
+      return shift_binds_;
+    } else {
+      return binds_;
+    }
+  }
+
+  const std::unordered_map<Key, ScreenWithHandlerPtr>& NavKeyMap::current_binds() const
+  {
+    if (shift_held) {
+      return shift_binds_;
+    } else {
+      return binds_;
+    }
+  }
+
+  void NavKeyMap::bind_nav_key(Key key, ScreenWithHandlerPtr scrn, bool shift_held)
+  {
+    if (shift_held) {
+      shift_binds_[key] = scrn;
+    } else {
+      binds_[key] = scrn;
+    }
   }
 
   void NavKeyMap::handle(KeyPress e) noexcept
   {
-    auto bind = binds_[e.key];
+    auto bind = current_binds()[e.key];
     if (bind != nullptr) {
       last_nav_time_ = e.timestamp;
       if (bind == nav().current_screen() && bind.screen->is_overlay()) {
@@ -75,19 +99,21 @@ namespace otto {
         nav().navigate_to(bind);
       }
     } else {
+      if (e.key == Key::shift) shift_held = true;
       nav().handle(e);
     }
   }
 
   void NavKeyMap::handle(KeyRelease e) noexcept
   {
-    auto bind = binds_[e.key];
+    auto bind = current_binds()[e.key];
     if (bind != nullptr) {
       // NOLINTNEXTLINE
       if (bind == nav().current_screen() && (e.timestamp - last_nav_time_) > conf.peek_timeout) {
         nav().navigate_back();
       }
     } else {
+      if (e.key == Key::shift) shift_held = false;
       nav().handle(e);
     }
   }
@@ -119,13 +145,13 @@ namespace otto {
 
   KeySet NavKeyMap::key_mask() const noexcept
   {
-    return nav_->key_mask() | KeySet(util::transform(binds_, LAMBDAFY(std::get<0>)));
+    return nav_->key_mask() | KeySet(util::transform(current_binds(), LAMBDAFY(std::get<0>))) | KeySet({Key::shift});
   }
 
   LedSet NavKeyMap::led_mask() const noexcept
   {
     auto res = nav_->led_mask();
-    for (auto&& [k, v] : binds_) {
+    for (auto&& [k, v] : current_binds()) {
       if (auto l = led_from(k)) {
         res += *l;
       }
@@ -136,7 +162,7 @@ namespace otto {
   void NavKeyMap::leds(LEDColorSet& output) noexcept
   {
     auto current = nav_->current_screen();
-    for (auto&& [k, scrn] : binds_) {
+    for (auto&& [k, scrn] : current_binds()) {
       if (auto led = led_from(k)) {
         if (scrn == current) {
           output[*led] = conf.selected_color;

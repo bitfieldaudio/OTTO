@@ -289,12 +289,12 @@ namespace otto::dsp {
     /// \param[in] dec	Decay length
     /// \param[in] sus	Sustain level (skew between attack and decay levels)
     /// \param[in] crv	Curvature of all segments
-    ADS(Tp att = Tp(0.01), Tp dec = Tp(0.1), Tv sus = Tv(0.5), Tp crv = Tp(0))
+    ADS(Tp att = Tp(0.01), Tp dec = Tp(0.1), Tv sus = Tv(0.5), Tp crv = Tp(1))
     {
       this->sustainPoint(2);
       this->levels(-sus, 1 - sus, 0);
       attack(att).decay(dec);
-      this->curve(crv);
+      this->curves(crv, -crv);
     }
 
     /// Set attack length
