@@ -44,7 +44,7 @@ _msg "Deploying..."
 scp $sshargs $builddir/bin/$binary root@$ip:/home/root/otto/bin/$binary
 _msg "Remounting rootfs readonly"
 ssh $sshargs root@$ip mount -o remount,ro /dev/root /
-_msg "Starting OTTO core"
-ssh $sshargs root@$ip /etc/init.d/otto-core.sh start
+# _msg "Starting OTTO core"
+# ssh $sshargs root@$ip sh -c "cd /data; /home/root/otto/bin/$binary"
 _msg "Done!"
 

@@ -4,6 +4,7 @@
 #include <spdlog/pattern_formatter.h>
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
+#include <unistd.h>
 
 #include "lib/util/exception.hpp"
 
@@ -33,7 +34,12 @@ namespace otto::log {
   {
     auto formatter = std::make_unique<spdlog::pattern_formatter>();
     formatter->add_flag<thread_name_formatter>('*');
-    formatter->set_pattern("[%H:%M:%S.%e] [%^%l%$] [%*] [%s:%#] %v");
+    // Only use colors if stdout is a tty
+    if (::isatty(1) == 1) {
+      formatter->set_pattern("\e[90m[%H:%M:%S.%e] [\e[0m%^%l%$\e[90m] [%*] [%s:%#]\e[0m %v");
+    } else {
+      formatter->set_pattern("[%H:%M:%S.%e] [%l] [%*] [%s:%#] %v");
+    }
     return formatter;
   }
 

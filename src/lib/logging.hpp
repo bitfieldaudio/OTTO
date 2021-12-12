@@ -30,13 +30,6 @@ namespace otto::log {
 #define LOGE(...) SPDLOG_ERROR(__VA_ARGS__)
 #define LOGC(...) SPDLOG_CRITICAL(__VA_ARGS__)
 
-#define LOGLT(...) SPDLOG_LOGGER_TRACE(__VA_ARGS__)
-#define LOGLD(...) SPDLOG_LOGGER_DEBUG(__VA_ARGS__)
-#define LOGLI(...) SPDLOG_LOGGER_INFO(__VA_ARGS__)
-#define LOGLW(...) SPDLOG_LOGGER_WARN(__VA_ARGS__)
-#define LOGLE(...) SPDLOG_LOGGER_ERROR(__VA_ARGS__)
-#define LOGLC(...) SPDLOG_LOGGER_CRITICAL(__VA_ARGS__)
-
 namespace otto::detail {
   template<typename... Args>
   inline void handle_assert(const char* file, int line_number, const char* expression, bool assertion) noexcept

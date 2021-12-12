@@ -39,7 +39,7 @@ namespace otto::drivers {
       // Connects the active socket referred to be sfd to the listening socket
       // whose address is specified by addr.
       if (::connect(fd, reinterpret_cast<struct ::sockaddr*>(&addr), sizeof(struct ::sockaddr_un)) == -1) {
-        std::cout << "connect" << std::endl;
+        LOGC("Could not connect to otto-mcu-communicator socket at {}", path);
       }
       return {};
     }
@@ -88,7 +88,7 @@ namespace otto::drivers {
 
     void write(const Packet& p) override
     {
-      LOGI("Sending packet: {} {:02X}", util::enum_name(p.cmd), fmt::join(p.data, " "));
+      LOGT("Sending packet: {} {:02X}", util::enum_name(p.cmd), fmt::join(p.data, " "));
       std::error_code ec = conn.write(p.to_array());
       if (ec) throw std::system_error(ec);
     }
@@ -103,6 +103,7 @@ namespace otto::drivers {
       if (data[0] == 0) return {};
       Packet res = {static_cast<Command>(data[0])};
       std::copy(data.begin() + 1, data.end(), res.data.begin());
+      LOGT("Got packet: {} {:02X}", util::enum_name(res.cmd), fmt::join(res.data, " "));
       return res;
     }
 
