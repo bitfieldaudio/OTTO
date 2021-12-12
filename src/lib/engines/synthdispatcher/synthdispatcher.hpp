@@ -86,7 +86,6 @@ namespace otto {
       _factories.push_back(std::move(factory));
       if (_factories.size() == 1) {
         activate_engine(0);
-        update_state();
       }
     }
 
@@ -97,21 +96,32 @@ namespace otto {
 
     void toggle_engine()
     {
-      wipe_state();
-      sync();
-      _active = SynthEngineInstance();
-      activate_engine((_active_idx + 1) % _factories.size());
-      update_state();
-      commit();
+      auto current_idx = state().active_engine;
+      std::size_t new_idx = (current_idx + 1) % _factories.size();
+      deactivate_engine();
+      activate_engine(new_idx);
     }
 
   private:
+    void deactivate_engine()
+    {
+      wipe_state();
+      commit();
+      AudioDomain::get_static_executor()->sync();
+      GraphicsDomain::get_static_executor()->sync();
+      // Destructs the engine
+      _active = SynthEngineInstance();
+    }
     void activate_engine(std::size_t idx)
     {
+      // Constructs the engine
       if (idx < _factories.size()) {
-        _active_idx = idx;
         _active = _factories[idx].make_all(_ctx);
       }
+      update_state(idx);
+      commit();
+      AudioDomain::get_static_executor()->sync();
+      GraphicsDomain::get_static_executor()->sync();
     }
 
     void wipe_state()
@@ -122,8 +132,10 @@ namespace otto {
       state().voices_screen = {nullptr, nullptr};
     }
 
-    void update_state()
+    void update_state(std::size_t idx)
     {
+      state().active_engine = idx;
+      state().name = _factories[idx].metadata().name;
       state().audio = _active.audio.get();
       state().main_screen = ScreenWithHandlerPtr(_active.main_screen);
       state().mod_screen = ScreenWithHandlerPtr(_active.mod_screen);
@@ -135,12 +147,45 @@ namespace otto {
     // TODO: Refactor this?
     // To make sure these don't come out of sync, we only allow activation through the index.
     SynthEngineInstance _active = {};
-    std::size_t _active_idx;
   };
 
   inline std::unique_ptr<SynthDispatcherLogic> make_synthdispatcher_logic(itc::Context& c)
   {
     return std::make_unique<SynthDispatcherLogic>(c);
+  }
+
+  // Handler //
+
+  struct DispatcherSelectorHandler final : InputHandler, IInputLayer {
+    [[nodiscard]] util::enum_bitset<Key> key_mask() const noexcept override
+    {
+      return key_groups::enc_clicks + Key::shift;
+    }
+
+    DispatcherSelectorHandler(SynthDispatcherLogic& logic) : dispatcher_logic_(logic) {}
+
+    void handle(EncoderEvent e) noexcept final
+    {
+      // TODO
+      switch (e.encoder) {
+        case Encoder::blue: {
+          if (divider(e) != 0) dispatcher_logic_.toggle_engine();
+        } break;
+        default: break;
+      }
+    }
+
+  private:
+    SynthDispatcherLogic& dispatcher_logic_;
+    otto::util::EventDivider<6> divider;
+  };
+
+  inline ScreenWithHandler make_synthdispatcher_selector_screen(itc::Context& c, SynthDispatcherLogic& l)
+  {
+    return {
+      .screen = std::make_unique<DispatcherSelectorScreen>(c),
+      .input = std::make_unique<DispatcherSelectorHandler>(l),
+    };
   }
 
   struct SynthDispatcher {
@@ -149,17 +194,19 @@ namespace otto {
     ScreenWithHandler main_screen;
     ScreenWithHandler mod_screen;
     ScreenWithHandler voices_screen;
+    ScreenWithHandler selector_screen;
   };
 
   inline SynthDispatcher make_synthdispatcher(itc::Context& c)
   {
-    return {
-      .logic = make_synthdispatcher_logic(c),
-      .audio = make_synthdispatcher_audio(c),
-      .main_screen = make_synthdispatcher_main_screen(c),
-      .mod_screen = make_synthdispatcher_mod_screen(c),
-      .voices_screen = make_synthdispatcher_voices_screen(c),
-    };
+    auto logic = make_synthdispatcher_logic(c);
+    auto& ref = *logic;
+    return {.logic = std::move(logic),
+            .audio = make_synthdispatcher_audio(c),
+            .main_screen = make_synthdispatcher_main_screen(c),
+            .mod_screen = make_synthdispatcher_mod_screen(c),
+            .voices_screen = make_synthdispatcher_voices_screen(c),
+            .selector_screen = make_synthdispatcher_selector_screen(c, ref)};
   }
 
 

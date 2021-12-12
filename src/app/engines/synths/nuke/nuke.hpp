@@ -26,7 +26,7 @@ namespace otto::engines::nuke {
 
   // NOLINTNEXTLINE
   inline SynthEngineFactory factory = {
-    ._metadata = {.name = "Analogue"},
+    ._metadata = {.name = "ANALOGUE"},
     .make_logic = make_logic,
     .make_audio = make_audio,
     .make_mod_screen = make_mod_screen,

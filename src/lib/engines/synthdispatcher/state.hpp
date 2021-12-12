@@ -8,6 +8,8 @@
 namespace otto {
 
   struct SynthDispatcherState {
+    int active_engine = 0;
+    std::string name;
     ISynthAudio* audio;
     ScreenWithHandlerPtr main_screen;
     ScreenWithHandlerPtr mod_screen;
