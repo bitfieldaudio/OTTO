@@ -111,6 +111,7 @@ namespace otto {
     // synth.logic->toggle_engine();
 
     auto stop_graphics = graphics.show([&](skia::Canvas& ctx) {
+      [[maybe_unused]] static int call_once = (log::set_thread_name("ui"), 0);
       ledman.process(layers);
       nav_km.nav().draw(ctx);
     });

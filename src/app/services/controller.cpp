@@ -26,6 +26,7 @@ namespace otto::services {
 
   Controller::Controller(RuntimeController& rt, ConfigManager& confman, util::smart_ptr<drivers::MCUPort>&& port)
     : conf_(confman), com_(rt, std::move(port)), thread_([this](const std::stop_token& stop_token) {
+        log::set_thread_name("controller");
         while (!stop_token.stop_requested()) {
           Packet data;
           while (queue_.try_dequeue(data)) {

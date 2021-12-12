@@ -1,6 +1,7 @@
 #include "logging.hpp"
 
 #include <spdlog/async.h>
+#include <spdlog/pattern_formatter.h>
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 
@@ -10,10 +11,38 @@ namespace otto::log {
 
   using namespace std::literals;
 
+  static std::unordered_map<std::size_t, std::string> thread_names;
+
+  struct thread_name_formatter : spdlog::custom_flag_formatter {
+    void format(const spdlog::details::log_msg& msg, const std::tm&, spdlog::memory_buf_t& dest) override
+    {
+      auto& name = thread_names[msg.thread_id];
+      if (name.empty()) {
+        name = std::to_string(msg.thread_id);
+      }
+      dest.append(name.data(), name.data() + name.size());
+    }
+
+    std::unique_ptr<custom_flag_formatter> clone() const override
+    {
+      return spdlog::details::make_unique<thread_name_formatter>();
+    }
+  };
+
+  static auto make_formatter()
+  {
+    auto formatter = std::make_unique<spdlog::pattern_formatter>();
+    formatter->add_flag<thread_name_formatter>('*');
+    formatter->set_pattern("[%H:%M:%S.%e] [%^%l%$] [%*] [%s:%#] %v");
+    return formatter;
+  }
+
+
   void init(const char* logFilePath)
   {
+    set_thread_name("main");
     auto async_logger = spdlog::create_async<spdlog::sinks::stdout_color_sink_mt>("otto-core");
-    async_logger->sinks()[0]->set_pattern("[%H:%M:%S.%e] %^[%l]%$ [thread %t] [%s:%#] %v");
+    async_logger->sinks()[0]->set_formatter(make_formatter());
 
     if (logFilePath != nullptr) {
       auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(logFilePath, true);
@@ -29,5 +58,6 @@ namespace otto::log {
   void set_thread_name(const std::string& name)
   {
     pthread_setname_np(pthread_self(), name.c_str());
+    thread_names.insert_or_assign(spdlog::details::os::thread_id(), name);
   }
 } // namespace otto::log

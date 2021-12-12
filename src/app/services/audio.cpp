@@ -34,6 +34,7 @@ namespace otto::services {
 
   void Audio::loop_func(CallbackData data) noexcept
   {
+    [[maybe_unused]] static int call_once = (log::set_thread_name("audio"), 0);
     midi_.process_events();
     if (callback_) {
       callback_(data);
