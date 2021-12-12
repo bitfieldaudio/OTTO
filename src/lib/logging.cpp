@@ -1,35 +1,26 @@
 #include "logging.hpp"
 
+#include <spdlog/async.h>
+#include <spdlog/sinks/basic_file_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+
 #include "lib/util/exception.hpp"
 
 namespace otto::logging {
 
   using namespace std::literals;
 
-  void init(int argc, char* argv[], bool enable_console, const char* logFilePath)
+  void init(const char* logFilePath)
   {
-    // std::string def_path = Application::current().data_dir / "log.txt";
-    if (logFilePath == nullptr) {
-      // logFilePath = def_path.c_str();
+    auto async_logger = spdlog::create_async<spdlog::sinks::stdout_color_sink_mt>("async_logger");
+
+    if (logFilePath != nullptr) {
+      auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(logFilePath, true);
+      async_logger->sinks().push_back(file_sink);
     }
 
-    if (!enable_console) {
-      loguru::g_stderr_verbosity = loguru::Verbosity_OFF;
-    }
-
-    char exc[] = "otto";
-    char* eptr[] = {exc, nullptr};
-    if (argc == 0) {
-      argc = 1;
-      argv = eptr;
-    }
-
-    loguru::init(argc, argv);
-    if (logFilePath) loguru::add_file(logFilePath, loguru::Append, loguru::Verbosity_MAX);
-
-    loguru::set_fatal_handler([](const loguru::Message& message) {
-      if (message.prefix != "Signal: "sv) throw util::exception(std::string(message.prefix) + message.message);
-    });
+    spdlog::set_default_logger(async_logger);
+    spdlog::set_error_handler([](const std::string& message) { throw util::exception("{}", message); });
 
     LOGI("Logging initialized");
   }
@@ -37,6 +28,5 @@ namespace otto::logging {
   void set_thread_name(const std::string& name)
   {
     pthread_setname_np(pthread_self(), name.c_str());
-    loguru::set_thread_name(name.c_str());
   }
 } // namespace otto::logging

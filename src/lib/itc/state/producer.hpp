@@ -1,5 +1,9 @@
 #pragma once
 
+#include "lib/util/local_vector.hpp"
+
+#include "lib/itc/domain.hpp"
+
 #include "../services/provider.hpp"
 #include "state.hpp"
 
@@ -67,6 +71,18 @@ namespace otto::itc {
       if constexpr (util::ASerializable<State>) {
         util::deserialize_from(json, state_);
         commit();
+      }
+    }
+
+    /// Calls Executor::sync for the executor of each consumer
+    void sync()
+    {
+      util::local_set<IExecutor*, 8> executors;
+      for (Consumer<State>* c : Provider<state_service<State>>::accessors()) {
+        executors.insert(c->exec_);
+      }
+      for (auto* e : executors) {
+        e->sync();
       }
     }
 

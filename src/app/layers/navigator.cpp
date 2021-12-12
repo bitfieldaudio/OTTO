@@ -65,18 +65,16 @@ namespace otto {
   {
     if (shift_held) {
       return shift_binds_;
-    } else {
-      return binds_;
     }
+    return binds_;
   }
 
   const std::unordered_map<Key, ScreenWithHandlerPtr>& NavKeyMap::current_binds() const
   {
     if (shift_held) {
       return shift_binds_;
-    } else {
-      return binds_;
     }
+    return binds_;
   }
 
   void NavKeyMap::bind_nav_key(Key key, ScreenWithHandlerPtr scrn, bool shift_held)

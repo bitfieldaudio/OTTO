@@ -20,10 +20,11 @@ if (APPLE)
 endif()
 
 # Download External Dependencies via CPM
-CPMAddPackage("gh:fmtlib/fmt#7.1.3")
+CPMAddPackage("gh:fmtlib/fmt#8.0.1")
 CPMAddPackage("gh:catchorg/Catch2@3.0.0-preview3")
 CPMAddPackage("gh:Neargye/magic_enum@0.7.2")
 CPMAddPackage("gh:Naios/function2#4.1.0")
+CPMAddPackage("gh:gabime/spdlog@1.9.2") 
 
 # We're on version v0.3.0-123-gff67c1a which is not officially tagged in Github
 # so we're going to use the SHA directly.
@@ -70,22 +71,6 @@ CPMAddPackage(
 if (nlohmann_json_ADDED)
   add_library(nlohmann_json INTERFACE)
   target_include_directories(nlohmann_json SYSTEM INTERFACE "${nlohmann_json_SOURCE_DIR}/include")
-endif()
-
-CPMAddPackage(
-  NAME loguru
-  GITHUB_REPOSITORY emilk/loguru 
-  VERSION 2.1.0
-  DOWNLOAD_ONLY YES
-  GIT_SHALLOW ON
-) 
-
-if (loguru_ADDED)
-  add_library(loguru "${loguru_SOURCE_DIR}/loguru.cpp")
-    target_compile_definitions(loguru PUBLIC "-DLOGURU_USE_FMTLIB=1")
-  target_link_libraries(loguru PUBLIC fmt)
-  #target_link_libraries(loguru PUBLIC execinfo)
-  target_include_directories(loguru SYSTEM PUBLIC "${loguru_SOURCE_DIR}")
 endif()
 
 CPMAddPackage(

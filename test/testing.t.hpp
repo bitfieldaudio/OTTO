@@ -120,7 +120,7 @@ namespace Catch {
       using namespace std::literals;
       std::string_view name = magic_enum::enum_name(value);
       if (name.data() != nullptr) return std::string(name);
-      return fmt::format("{{index: {}}", magic_enum::enum_integer(value));
+      return fmt::format("{{index: {}}}", magic_enum::enum_integer(value));
     }
   };
 

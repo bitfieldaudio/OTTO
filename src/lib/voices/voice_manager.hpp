@@ -332,7 +332,7 @@ namespace otto::voices {
       return PlayMode(state().play_mode);
     }
 
-    float operator()(auto&&... args) noexcept requires util::callable<Voice, float(decltype(args)...)>
+    float operator()(auto&&... args) noexcept // requires util::callable<Voice, float(decltype(args)...)>
     {
       float res = 0;
       for (Voice& v : voices_) {
@@ -342,8 +342,9 @@ namespace otto::voices {
       return res;
     }
 
-  private : template<AVoice V, int M>
-            friend struct VoiceAllocatorBase;
+  private:
+    template<AVoice V, int M>
+    friend struct VoiceAllocatorBase;
     template<PlayMode PM, AVoice V, int M>
     friend struct VoiceAllocator;
 

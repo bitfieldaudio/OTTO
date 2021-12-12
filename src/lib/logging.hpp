@@ -5,116 +5,66 @@
 
 #include <fmt/format.h>
 #include <fmt/ostream.h>
-
-#define LOGURU_USE_FMTLIB 1
-#include <loguru.hpp>
+#include <spdlog/spdlog.h>
 
 #include "lib/util/concepts.hpp"
 #include "lib/util/macros.hpp"
 
 namespace otto::logging {
-  void init(int argc = 0, char** argv = nullptr, bool enable_console = true, const char* logFilePath = nullptr);
+  void init(const char* logFilePath = nullptr);
 
   /// Set how the current thread appears in the log
   void set_thread_name(const std::string& name);
 } // namespace otto::logging
 
 /// Shorthand to the loguru macro LOG_F(INFO, ...)
-#define LOGI(...) VLOG_F(loguru::Verbosity_INFO, __VA_ARGS__)
+#define LOGI(...) spdlog::info(__VA_ARGS__)
 
 /// Shorthand to the loguru macro LOG_F(WARNING, ...)
-#define LOGW(...) VLOG_F(loguru::Verbosity_WARNING, __VA_ARGS__)
+#define LOGW(...) spdlog::warn(__VA_ARGS__)
 
 /// Shorthand to the loguru macro LOG_F(ERROR, ...)
-#define LOGE(...) VLOG_F(loguru::Verbosity_ERROR, __VA_ARGS__)
+#define LOGE(...) spdlog::error(__VA_ARGS__)
 
 /// Shorthand to the loguru macro LOG_F(FATAL, ...)
-#define LOGF(...) VLOG_F(loguru::Verbosity_FATAL, __VA_ARGS__)
+#define LOGF(...) spdlog::critical(__VA_ARGS__)
 
 /// Shorthand to the loguru macro DLOG_F(INFO, ...)
-#define DLOGI(...) DVLOG_F(loguru::Verbosity_INFO, __VA_ARGS__)
-
-/// Shorthand to the loguru macro DLOG_F(WARNING, ...)
-#define DLOGW(...) DVLOG_F(loguru::Verbosity_WARNING, __VA_ARGS__)
-
-/// Shorthand to the loguru macro DLOG_F(ERROR, ...)
-#define DLOGE(...) DVLOG_F(loguru::Verbosity_ERROR, __VA_ARGS__)
-
-/// Shorthand to the loguru macro DLOG_F(FATAL, ...)
-#define DLOGF(...) DVLOG_F(loguru::Verbosity_FATAL, __VA_ARGS__)
-
-/// Shorthand to the loguru macro LOG_IF_F(INFO, ...)
-#define LOGI_IF(...) VLOG_IF_F(loguru::Verbosity_INFO, __VA_ARGS__)
-
-/// Shorthand to the loguru macro LOG_IF_F(WARNING, ...)
-#define LOGW_IF(...) VLOG_IF_F(loguru::Verbosity_WARNING, __VA_ARGS__)
-
-/// Shorthand to the loguru macro LOG_IF_F(ERROR, ...)
-#define LOGE_IF(...) VLOG_IF_F(loguru::Verbosity_ERROR, __VA_ARGS__)
-
-/// Shorthand to the loguru macro LOG_IF_F(FATAL, ...)
-#define LOGF_IF(...) VLOG_IF_F(loguru::Verbosity_FATAL, __VA_ARGS__)
-
-/// Shorthand to the loguru macro DLOG_IF_F(INFO, ...)
-#define DLOGI_IF(...) DVLOG_IF_F(loguru::Verbosity_INFO, __VA_ARGS__)
-
-/// Shorthand to the loguru macro DLOG_IF_F(WARNING, ...)
-#define DLOGW_IF(...) DVLOG_IF_F(loguru::Verbosity_WARNING, __VA_ARGS__)
-
-/// Shorthand to the loguru macro DLOG_IF_F(ERROR, ...)
-#define DLOGE_IF(...) DVLOG_IF_F(loguru::Verbosity_ERROR, __VA_ARGS__)
-
-/// Shorthand to the loguru macro DLOG_IF_F(FATAL, ...)
-#define DLOGF_IF(...) DVLOG_IF_F(loguru::Verbosity_FATAL, __VA_ARGS__)
-
-/// Shorthand to the loguru macro LOG_SCOPE_F(INFO, ...)
-#define LOGI_SCOPE(...) VLOG_SCOPE_F(loguru::Verbosity_INFO, __VA_ARGS__)
-
-/// Shorthand to the loguru macro LOG_SCOPE_F(WARNING, ...)
-#define LOGW_SCOPE(...) VLOG_SCOPE_F(loguru::Verbosity_WARNING, __VA_ARGS__)
-
-/// Shorthand to the loguru macro LOG_SCOPE_F(ERROR, ...)
-#define LOGE_SCOPE(...) VLOG_SCOPE_F(loguru::Verbosity_ERROR, __VA_ARGS__)
-
-/// Shorthand to the loguru macro LOG_SCOPE_F(FATAL, ...)
-#define LOGF_SCOPE(...) VLOG_SCOPE_F(loguru::Verbosity_FATAL, __VA_ARGS__)
-
-/// Shorthand to the loguru macro DLOG_SCOPE_F(INFO, ...)
-#define DLOGI_SCOPE(...) DVLOG_SCOPE_F(loguru::Verbosity_INFO, __VA_ARGS__)
-
-/// Shorthand to the loguru macro DLOG_SCOPE_F(WARNING, ...)
-#define DLOGW_SCOPE(...) DVLOG_SCOPE_F(loguru::Verbosity_WARNING, __VA_ARGS__)
-
-/// Shorthand to the loguru macro DLOG_SCOPE_F(ERROR, ...)
-#define DLOGE_SCOPE(...) DVLOG_SCOPE_F(loguru::Verbosity_ERROR, __VA_ARGS__)
-
-/// Shorthand to the loguru macro DLOG_SCOPE_F(FATAL, ...)
-#define DLOGF_SCOPE(...) DVLOG_SCOPE_F(loguru::Verbosity_FATAL, __VA_ARGS__)
+#define DLOGI(...) spdlog::debug(__VA_ARGS__)
 
 namespace otto::detail {
+  template<typename... Args>
+  inline void handle_assert(const char* file, int line_number, const char* expression, bool assertion) noexcept
+  {
+    if (assertion) return;
+    LOGF("Assertion failed at {}:{}: {}", file, line_number, expression);
+  }
+
   template<typename... Args>
   inline void handle_assert(const char* file,
                             int line_number,
                             const char* expression,
                             bool assertion,
+                            fmt::format_string<Args...> fs,
                             Args&&... args) noexcept
   {
     if (assertion) return;
-    if constexpr (sizeof...(args) > 0) {
-      LOGF("Assertion failed at {}:{}: {} {}", file, line_number, expression, fmt::format(FWD(args)...));
-    } else {
-      LOGF("Assertion failed at {}:{}: {}", file, line_number, expression);
-    }
+    LOGF("Assertion failed at {}:{}: {} {}", file, line_number, expression, fmt::format(fs, FWD(args)...));
   }
 
   template<typename... Args>
-  inline void handle_unreachable(const char* file, int line_number, Args&&... args) noexcept
+  inline void handle_unreachable(const char* file, int line_number) noexcept
   {
-    if constexpr (sizeof...(args) > 0) {
-      LOGF("Unreachable code reached at {}:{}: {}", file, line_number, fmt::format(FWD(args)...));
-    } else {
-      LOGF("Unreachable code reached at {}:{}", file, line_number);
-    }
+    LOGF("Unreachable code reached at {}:{}", file, line_number);
+  }
+
+  template<typename... Args>
+  inline void handle_unreachable(const char* file,
+                                 int line_number,
+                                 fmt::format_string<Args...> fs,
+                                 Args&&... args) noexcept
+  {
+    LOGF("Unreachable code reached at {}:{}: {}", file, line_number, fmt::format(fs, FWD(args)...));
   }
 } // namespace otto::detail
 

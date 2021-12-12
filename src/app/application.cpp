@@ -86,7 +86,7 @@ namespace otto {
     });
     auto stop_input = controller.set_input_handler(layers);
 
-    synth.logic->toggle_engine();
+    // synth.logic->toggle_engine();
 
     auto stop_graphics = graphics.show([&](skia::Canvas& ctx) {
       ledman.process(layers);

@@ -68,4 +68,36 @@ namespace otto {
     IScreen* screen = nullptr;
     IInputLayer* input = nullptr;
   };
+
+  template<std::derived_from<IScreen> Screen, typename... Args>
+  requires(std::is_constructible_v<Screen, itc::Context&, Args...>) ScreenWithHandler
+    make_with_internal_handler(itc::Context& ctx, Args&&... args)
+  {
+    struct Handler final : IInputLayer, itc::Sender<KeyPress, KeyRelease, EncoderEvent> {
+      using Sender::Sender;
+
+      void handle(KeyPress e) noexcept override
+      {
+        this->send(e);
+      }
+      void handle(KeyRelease e) noexcept override
+      {
+        this->send(e);
+      }
+      void handle(EncoderEvent e) noexcept override
+      {
+        this->send(e);
+      }
+      [[nodiscard]] KeySet key_mask() const noexcept override
+      {
+        return KeySet::make_with_all();
+      }
+    };
+
+    return {
+      std::make_unique<Screen>(ctx, std::forward<Args>(args)...),
+      std::make_unique<Handler>(ctx),
+    };
+  }
+
 } // namespace otto

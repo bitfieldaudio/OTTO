@@ -16,7 +16,8 @@ namespace otto::util {
     ///
     /// \effects Constructs with message `fmt::format(message, args...)`
     template<typename... Args>
-    exception(std::string message, Args&&... args) : message{fmt::format(message, std::forward<Args>(args)...)}
+    exception(fmt::format_string<Args...> message, Args&&... args)
+      : message{fmt::format(message, std::forward<Args>(args)...)}
     {}
 
     const char* what() const noexcept override
@@ -60,7 +61,7 @@ namespace otto::util {
     using data_type = Data;
 
     template<typename DataRef, typename... Args>
-    as_exception(DataRef&& dr, const std::string& m, Args&&... args)
+    as_exception(DataRef&& dr, fmt::format_string<Args...> m, Args&&... args)
       : exception(m, std::forward<Args>(args)...), _data(std::forward<DataRef>(dr))
     {
       using namespace std::literals;

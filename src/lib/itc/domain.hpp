@@ -5,11 +5,18 @@
 #include "executor.hpp"
 
 namespace otto::itc {
+  using DomainId = std::uintptr_t;
+
   /// Provide access to an executor. Inherit from this virtually
   struct IDomain {
     IDomain() noexcept = default;
     virtual ~IDomain() noexcept = default;
     virtual IExecutor& executor() = 0;
+
+    DomainId domain_id()
+    {
+      return reinterpret_cast<DomainId>(&executor());
+    }
   };
 
   namespace detail {
