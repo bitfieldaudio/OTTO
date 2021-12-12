@@ -11,11 +11,12 @@ namespace otto::itc {
   template<typename DomainTag>
   struct ExecutorProvider {
     using Domain = StaticDomain<DomainTag>;
-    ExecutorProvider()
+    ExecutorProvider(util::string_ref domain_name)
     {
       if (Domain::get_static_executor() == nullptr) {
         Domain::set_static_executor(executor());
       }
+      Domain::set_domain_name(domain_name.c_str());
     }
     virtual ~ExecutorProvider() noexcept
     {

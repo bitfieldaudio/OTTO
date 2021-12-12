@@ -1,22 +1,32 @@
 #pragma once
 
+#include "lib/util/name_of.hpp"
+
 #include "lib/logging.hpp"
 
 #include "executor.hpp"
 
 namespace otto::itc {
-  using DomainId = std::uintptr_t;
+  struct DomainId {
+    DomainId(const char* name) : data(name) {}
+    auto operator<=>(const DomainId&) const noexcept = default;
+    bool operator==(const DomainId&) const noexcept = default;
+
+    friend std::ostream& operator<<(std::ostream& str, const DomainId& self)
+    {
+      return str << self.data;
+    }
+
+  private:
+    const char* data;
+  };
 
   /// Provide access to an executor. Inherit from this virtually
   struct IDomain {
     IDomain() noexcept = default;
     virtual ~IDomain() noexcept = default;
     virtual IExecutor& executor() = 0;
-
-    DomainId domain_id()
-    {
-      return reinterpret_cast<DomainId>(&executor());
-    }
+    virtual DomainId domain_id() = 0;
   };
 
   namespace detail {
@@ -42,7 +52,10 @@ namespace otto::itc {
     // we get a propper single definition.
     template<typename Tag = void>
     IExecutor* static_executor_ptr = nullptr; // NOLINT
-  }                                           // namespace detail
+
+    template<typename Tag = void>
+    const char* static_name_ptr = util::name_of<Tag>.c_str(); // NOLINT
+  }                                                           // namespace detail
 
   /// Domain which uses a static variable for the executor
   template<typename Tag = void>
@@ -61,6 +74,11 @@ namespace otto::itc {
       detail::static_executor_ptr<Tag> = e;
     }
 
+    static void set_domain_name(const char* n)
+    {
+      detail::static_name_ptr<Tag> = n;
+    }
+
     static IExecutor* get_static_executor()
     {
       return detail::static_executor_ptr<Tag>;
@@ -69,6 +87,11 @@ namespace otto::itc {
     IExecutor& executor() override
     {
       return *get_static_executor();
+    }
+
+    DomainId domain_id() override
+    {
+      return DomainId{detail::static_name_ptr<Tag>};
     }
   };
 } // namespace otto::itc

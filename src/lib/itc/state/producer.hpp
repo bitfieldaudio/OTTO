@@ -60,12 +60,12 @@ namespace otto::itc {
       commit();
     }
 
-    /// Calls Executor::sync for the executor of each consumer
+    /// Wait until last call to commit() has been applied at all consumers
     void sync()
     {
       util::local_set<IExecutor*, 8> executors;
       for (Consumer<State>* c : Provider<state_service<State>>::accessors()) {
-        executors.insert(c->exec_);
+        if (c->exec_ != nullptr) executors.insert(c->exec_);
       }
       for (auto* e : executors) {
         e->sync();

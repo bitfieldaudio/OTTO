@@ -2,9 +2,11 @@
 
 namespace otto::services {
 
-  Graphics::Graphics(RuntimeController& runtime, util::smart_ptr<IGraphicsDriver>&& driver) : driver_(std::move(driver))
+  Graphics::Graphics(RuntimeController& runtime, util::smart_ptr<IGraphicsDriver>&& driver)
+    : ExecutorProvider("graphics"), driver_(std::move(driver))
   {
     thread_ = std::jthread([this, &runtime](const std::stop_token& st) {
+      log::set_thread_name("graphics");
       driver_->run([this, &st](SkCanvas& ctx) {
         loop_function(ctx);
         return !st.stop_requested();

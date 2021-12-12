@@ -4,7 +4,7 @@
 
 namespace otto::services {
 
-  Audio::Audio(util::smart_ptr<drivers::IAudioDriver>&& d) : driver_(std::move(d))
+  Audio::Audio(util::smart_ptr<drivers::IAudioDriver>&& d) : ExecutorProvider("audio"), driver_(std::move(d))
   {
     driver_->set_callback(std::bind_front(&Audio::loop_func, this));
     AudioDomain::buffer_pool_ = util::AudioBufferPool{16, driver_->buffer_size()};
