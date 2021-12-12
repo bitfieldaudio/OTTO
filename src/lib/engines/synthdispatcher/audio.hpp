@@ -26,10 +26,17 @@ namespace otto {
     using Consumer::Consumer;
     using EventHandlerProxy::handle;
 
-    midi::IMidiHandler& proxy_target() const
+    midi::IMidiHandler& proxy_target()
     {
-      return state().audio->midi_handler();
+      if (auto audio = state().audio; audio != nullptr) {
+        return audio->midi_handler();
+      } else {
+        return empty_target_;
+      }
     }
+
+  private:
+    midi::MidiHandler empty_target_ = {};
   };
 
   struct SynthDispatcherAudio : AudioDomain, itc::Consumer<SynthDispatcherState>, ISynthAudio {
@@ -52,7 +59,6 @@ namespace otto {
     }
 
   private:
-    midi::MidiHandler empty_target_ = {};
     ProxyMidiHandler midi_handler_;
   };
 

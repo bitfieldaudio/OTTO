@@ -56,6 +56,8 @@ namespace otto {
     nav_km.bind_nav_key(Key::envelope, synth.mod_screen);
     nav_km.bind_nav_key(Key::voices, synth.voices_screen);
 
+    nav_km.bind_nav_key(Key::synth, synth.selector_screen, true);
+
 
     // ARP
     auto midifx_eng = engines::arp::factory.make_all(ctx["midifx"]);
@@ -86,7 +88,7 @@ namespace otto {
     });
     auto stop_input = controller.set_input_handler(layers);
 
-    synth.logic->toggle_engine();
+    // synth.logic->toggle_engine();
 
     auto stop_graphics = graphics.show([&](skia::Canvas& ctx) {
       ledman.process(layers);
@@ -96,7 +98,6 @@ namespace otto {
     stateman.read_from_file();
 
     // Run
-    LOGI("About to wait!");
     rt.wait_for_stop();
     LOGI("Shutting down");
 

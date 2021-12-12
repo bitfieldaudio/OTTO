@@ -28,7 +28,7 @@ namespace otto::engines::ottofm {
 
   // NOLINTNEXTLINE
   inline SynthEngineFactory factory = {
-    ._metadata = {.name = "OTTO.FM"},
+    ._metadata = {.name = "FM"},
     .make_logic = make_logic,
     .make_audio = make_audio,
     .make_mod_screen = make_mod_screen,

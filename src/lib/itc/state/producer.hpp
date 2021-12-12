@@ -1,5 +1,7 @@
 #pragma once
 
+#include "lib/util/local_vector.hpp"
+
 #include "../services/provider.hpp"
 #include "state.hpp"
 
@@ -56,6 +58,18 @@ namespace otto::itc {
       commit();
     }
 
+    /// Calls Executor::sync for the executor of each consumer
+    void sync()
+    {
+      util::local_set<IExecutor*, 8> executors;
+      for (Consumer<State>* c : Provider<state_service<State>>::accessors()) {
+        executors.insert(c->exec_);
+      }
+      for (auto* e : executors) {
+        e->sync();
+      }
+    }
+
     void serialize_into(json::value& json) const override
     {
       if constexpr (util::ASerializable<State>) {
@@ -104,6 +118,13 @@ namespace otto::itc {
     void commit_all() noexcept
     {
       commit<States...>();
+    }
+
+    /// Sync specific state
+    template<util::one_of<States...>... S>
+    void sync()
+    {
+      (Producer<S>::sync(), ...);
     }
   };
 

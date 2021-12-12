@@ -3,15 +3,37 @@
 #include <functional>
 #include <memory>
 
+#include "lib/util/eventdivider.hpp"
+
 #include "lib/engine.hpp"
 #include "lib/engines/synthdispatcher/state.hpp"
 #include "lib/graphics.hpp"
 #include "lib/itc/itc.hpp"
+#include "lib/skia/skia.hpp"
+#include "lib/widget.hpp"
 
+#include "app/input.hpp"
 #include "app/services/graphics.hpp"
 #include "app/services/logic_thread.hpp"
 
 namespace otto {
+
+  // SELECTOR SCREEN //
+
+  struct DispatcherSelectorScreen final : itc::Consumer<SynthDispatcherState>, ScreenBase {
+    using Consumer::Consumer;
+
+    DispatcherSelectorScreen(itc::Context& c) : Consumer(c) {}
+
+    void draw(skia::Canvas& ctx) noexcept
+    {
+      // Super simple graphics
+      skia::place_text(ctx, state().name.c_str(), fonts::regular(32), paints::fill(colors::blue), {320 / 2, 240 / 2},
+                       anchors::center);
+    }
+  };
+
+  // PROXIES //
 
   struct DispatcherMainScreen final : itc::Consumer<SynthDispatcherState>, ScreenBase {
     using Consumer::Consumer;
