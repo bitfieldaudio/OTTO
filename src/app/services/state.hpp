@@ -43,12 +43,12 @@ namespace otto::services {
       try {
         util::deserialize_from(json::parse_file(file_path_), *this);
       } catch (json::value::parse_error& e) {
-        LOGE("State file parse error!");
-        LOGE("{}", e.what());
+        LOGW("State file parse error!");
+        LOGW("{}", e.what());
         auto corrupt = file_path_;
         corrupt += ".corrupt";
         std::filesystem::rename(file_path_, corrupt);
-        LOGE("State file has been backed up as {}", corrupt);
+        LOGW("State file has been backed up as {}", corrupt);
       }
     }
 

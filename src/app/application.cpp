@@ -1,5 +1,7 @@
 #include "application.hpp"
 
+#include <argparse/argparse.hpp>
+
 #include "lib/engines/synthdispatcher/synthdispatcher.hpp"
 #include "lib/voices/voice_manager.hpp"
 
@@ -28,6 +30,24 @@ namespace otto {
   // NOLINTNEXTLINE
   int main(int argc, char* argv[])
   {
+    argparse::ArgumentParser args("otto-core");
+
+    args
+      .add_argument("-l", "--log-level") //
+      .help("Set log level. Options: trace, debug, info, warning, error, critical, off")
+      .default_value(std::string("info"));
+
+    try {
+      args.parse_args(argc, argv);
+    } catch (std::runtime_error& e) {
+      std::cerr << e.what() << std::endl;
+      std::cerr << args;
+      return 1;
+    }
+
+    log::init();
+    log::set_level(log::level::from_str(args.get<std::string>("--log-level")));
+
     // Services
     RuntimeController rt;
     auto confman = ConfigManager::make_default();
@@ -98,6 +118,7 @@ namespace otto {
     stateman.read_from_file();
 
     // Run
+    LOGI("Init done!");
     rt.wait_for_stop();
     LOGI("Shutting down");
 

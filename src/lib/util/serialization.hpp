@@ -154,7 +154,7 @@ namespace otto::util {
 
   template<ASerializable T, typename A>
   requires std::is_default_constructible_v<T> //
-    struct serialize_impl<std::vector<T, A>, 1> {
+  struct serialize_impl<std::vector<T, A>, 1> {
     static void serialize_into(json::value& json, const std::vector<T, A>& r)
     {
       if (json == nullptr) json = json::array();
@@ -210,7 +210,7 @@ namespace otto::util {
         try {
           util::deserialize_from_member(json, name.c_str(), member);
         } catch (std::out_of_range& e) {
-          // DLOGI("Nonexistent key {} when deserializing", name);
+          // LOGD("Nonexistent key {} when deserializing", name);
         }
       });
     }

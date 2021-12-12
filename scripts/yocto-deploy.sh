@@ -18,6 +18,24 @@ _msg() {
   tput sgr0
 }
 
+_err() {
+  tput setaf 1
+  tput bold
+  echo -n "==> "
+  tput sgr0
+  tput bold
+  echo "$@"
+  tput sgr0
+  return 1
+}
+
+_fail() {
+  _err "$@"
+  exit 1
+}
+
+_msg Compiling OTTO core through yocto
+bitbake -c do_compile otto-core  || _fail "Failed to compile, will not deploy"
 _msg "Remounting rootfs read/write"
 ssh $sshargs root@$ip mount -o remount,rw /dev/root /
 _msg "Stopping OTTO core"

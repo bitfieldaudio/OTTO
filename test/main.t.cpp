@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
   }
   fs::remove_all(dir);
   fs::create_directories(dir);
-  logging::init();
+  log::init();
 
   auto result = Catch::Session().run(argc, argv);
 

@@ -31,7 +31,7 @@ namespace otto {
             auto e = midi::from_bytes(*message);
             self.midi_.send_event(e);
           } catch (std::exception& e) {
-            LOGE("{}", e.what());
+            LOGW("{}", e.what());
           }
         },
         this);

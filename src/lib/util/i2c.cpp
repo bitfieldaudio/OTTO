@@ -36,7 +36,7 @@ namespace otto::util {
 
     i2c_fd = ::open(path.c_str(), O_RDWR);
     if (i2c_fd < 0) {
-      LOGE("Check that the i2c-dev & i2c-bcm2708 kernel modules "
+      LOGW("Check that the i2c-dev & i2c-bcm2708 kernel modules "
            "are loaded.");
       return std::error_code{errno, std::generic_category()};
     }

@@ -4,11 +4,6 @@
 
 #include "lib/logging.hpp"
 
-// Disable debug logging in this file
-// Can be reenabled for development
-#undef DLOGI
-#define DLOGI(...)
-
 namespace otto::itc {
 
   void IExecutor::sync() noexcept

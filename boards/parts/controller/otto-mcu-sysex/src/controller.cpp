@@ -119,7 +119,7 @@ namespace otto::services {
     try {
       return std::make_unique<MSC>(in_port, out_port);
     } catch (const std::exception& e) {
-      LOGE("Couldn't set up sysex controller. Continuing with dummy. ERR: {}", e.what());
+      LOGW("Couldn't set up sysex controller. Continuing with dummy. ERR: {}", e.what());
       return Controller::make_dummy();
     }
   }
@@ -129,7 +129,7 @@ namespace otto::services {
     try {
       return std::make_unique<MSC>(in_port, out_port);
     } catch (const std::exception& e) {
-      LOGE("Couldn't set up sysex controller. Continuing with dummy. ERR: {}", e.what());
+      LOGW("Couldn't set up sysex controller. Continuing with dummy. ERR: {}", e.what());
       return std::make_unique<board::Emulator>();
     }
   }

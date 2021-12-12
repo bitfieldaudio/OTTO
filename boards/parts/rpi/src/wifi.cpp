@@ -486,7 +486,7 @@ namespace otto::board::wifi {
     auto wifi = nano::find_if(technologies, [](auto&& t) { return t.Type == "wifi"; });
 
     if (wifi == technologies.end()) {
-      LOGE("No wifi technology found");
+      LOGW("No wifi technology found");
       return;
     }
     if (!wifi->Powered) wifi->Powered = true;

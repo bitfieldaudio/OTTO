@@ -27,7 +27,7 @@ namespace otto::dsp {
     ///
     Tv operator()(Tv itg = 0.7)
     {
-      // DLOGI("mPrev_tri: {}", mPrev_tri);
+      // LOGD("mPrev_tri: {}", mPrev_tri);
       return mPrev_tri = gam::Impulse<Tv, Td>::square(itg) + itg * mPrev_tri;
     }
 
@@ -71,7 +71,7 @@ namespace otto::dsp {
       // Integrate for square
       mPrevRect = imp_up() - imp_down() + itg * mPrevRect;
       // Integrate for triangle
-      // DLOGI("{}", mPrevRect);
+      // LOGD("{}", mPrevRect);
       mPrevTri = mGain * (mPrevRect + C6) + itg * mPrevTri;
 
       return mPrevTri;

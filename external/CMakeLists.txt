@@ -25,6 +25,7 @@ CPMAddPackage("gh:catchorg/Catch2@3.0.0-preview3")
 CPMAddPackage("gh:Neargye/magic_enum@0.7.2")
 CPMAddPackage("gh:Naios/function2#4.1.0")
 CPMAddPackage("gh:gabime/spdlog@1.9.2") 
+CPMAddPackage("gh:p-ranav/argparse@2.2") 
 
 # We're on version v0.3.0-123-gff67c1a which is not officially tagged in Github
 # so we're going to use the SHA directly.

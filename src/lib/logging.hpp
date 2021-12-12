@@ -5,39 +5,44 @@
 
 #include <fmt/format.h>
 #include <fmt/ostream.h>
+
+#ifndef SPDLOG_ACTIVE_LEVEL
+#define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
+#endif
 #include <spdlog/spdlog.h>
 
 #include "lib/util/concepts.hpp"
 #include "lib/util/macros.hpp"
 
-namespace otto::logging {
+namespace otto::log {
   void init(const char* logFilePath = nullptr);
 
   /// Set how the current thread appears in the log
   void set_thread_name(const std::string& name);
-} // namespace otto::logging
 
-/// Shorthand to the loguru macro LOG_F(INFO, ...)
-#define LOGI(...) spdlog::info(__VA_ARGS__)
+  using namespace spdlog;
+} // namespace otto::log
 
-/// Shorthand to the loguru macro LOG_F(WARNING, ...)
-#define LOGW(...) spdlog::warn(__VA_ARGS__)
+#define LOGT(...) SPDLOG_TRACE(__VA_ARGS__)
+#define LOGD(...) SPDLOG_DEBUG(__VA_ARGS__)
+#define LOGI(...) SPDLOG_INFO(__VA_ARGS__)
+#define LOGW(...) SPDLOG_WARN(__VA_ARGS__)
+#define LOGE(...) SPDLOG_ERROR(__VA_ARGS__)
+#define LOGC(...) SPDLOG_CRITICAL(__VA_ARGS__)
 
-/// Shorthand to the loguru macro LOG_F(ERROR, ...)
-#define LOGE(...) spdlog::error(__VA_ARGS__)
-
-/// Shorthand to the loguru macro LOG_F(FATAL, ...)
-#define LOGF(...) spdlog::critical(__VA_ARGS__)
-
-/// Shorthand to the loguru macro DLOG_F(INFO, ...)
-#define DLOGI(...) spdlog::debug(__VA_ARGS__)
+#define LOGLT(...) SPDLOG_LOGGER_TRACE(__VA_ARGS__)
+#define LOGLD(...) SPDLOG_LOGGER_DEBUG(__VA_ARGS__)
+#define LOGLI(...) SPDLOG_LOGGER_INFO(__VA_ARGS__)
+#define LOGLW(...) SPDLOG_LOGGER_WARN(__VA_ARGS__)
+#define LOGLE(...) SPDLOG_LOGGER_ERROR(__VA_ARGS__)
+#define LOGLC(...) SPDLOG_LOGGER_CRITICAL(__VA_ARGS__)
 
 namespace otto::detail {
   template<typename... Args>
   inline void handle_assert(const char* file, int line_number, const char* expression, bool assertion) noexcept
   {
     if (assertion) return;
-    LOGF("Assertion failed at {}:{}: {}", file, line_number, expression);
+    LOGE("Assertion failed at {}:{}: {}", file, line_number, expression);
   }
 
   template<typename... Args>
@@ -49,13 +54,13 @@ namespace otto::detail {
                             Args&&... args) noexcept
   {
     if (assertion) return;
-    LOGF("Assertion failed at {}:{}: {} {}", file, line_number, expression, fmt::format(fs, FWD(args)...));
+    LOGE("Assertion failed at {}:{}: {} {}", file, line_number, expression, fmt::format(fs, FWD(args)...));
   }
 
   template<typename... Args>
   inline void handle_unreachable(const char* file, int line_number) noexcept
   {
-    LOGF("Unreachable code reached at {}:{}", file, line_number);
+    LOGE("Unreachable code reached at {}:{}", file, line_number);
   }
 
   template<typename... Args>
@@ -64,7 +69,7 @@ namespace otto::detail {
                                  fmt::format_string<Args...> fs,
                                  Args&&... args) noexcept
   {
-    LOGF("Unreachable code reached at {}:{}: {}", file, line_number, fmt::format(fs, FWD(args)...));
+    LOGE("Unreachable code reached at {}:{}: {}", file, line_number, fmt::format(fs, FWD(args)...));
   }
 } // namespace otto::detail
 

@@ -113,7 +113,7 @@ namespace otto::drivers {
     try {
       mixer_ = IAudioMixer::make_default(*this);
     } catch (std::exception& e) {
-      LOGE("Error constructing default audio mixer: {}", e.what());
+      LOGW("Error constructing default audio mixer: {}", e.what());
       LOGW("Continuing with software mixer");
       mixer_ = IAudioMixer::make_software(*this);
     }
@@ -149,7 +149,7 @@ namespace otto::drivers {
 
   int RtAudioDriver::rtaudio_cb(float* out, float* in, int nframes, double time, RtAudioStreamStatus status) noexcept
   {
-    if (status != 0) LOGE("Audio Over/undrerun!");
+    if (status != 0) LOGW("Audio Over/undrerun!");
     auto input_buf = util::stereo_audio_buffer(
       util::audio_buffer(std::span(buffers.data() + 0 * buffer_size_, buffer_size_), nullptr),
       util::audio_buffer(std::span(buffers.data() + 1 * buffer_size_, buffer_size_), nullptr));

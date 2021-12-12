@@ -6,13 +6,14 @@
 
 #include "lib/util/exception.hpp"
 
-namespace otto::logging {
+namespace otto::log {
 
   using namespace std::literals;
 
   void init(const char* logFilePath)
   {
-    auto async_logger = spdlog::create_async<spdlog::sinks::stdout_color_sink_mt>("async_logger");
+    auto async_logger = spdlog::create_async<spdlog::sinks::stdout_color_sink_mt>("otto-core");
+    async_logger->sinks()[0]->set_pattern("[%H:%M:%S.%e] %^[%l]%$ [thread %t] [%s:%#] %v");
 
     if (logFilePath != nullptr) {
       auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(logFilePath, true);
@@ -29,4 +30,4 @@ namespace otto::logging {
   {
     pthread_setname_np(pthread_self(), name.c_str());
   }
-} // namespace otto::logging
+} // namespace otto::log

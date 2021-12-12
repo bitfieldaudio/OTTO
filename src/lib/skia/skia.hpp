@@ -202,7 +202,7 @@ namespace otto::fonts {
     {
       auto tf = SkTypeface::MakeFromFile(path.c_str());
       if (tf == nullptr) {
-        LOGF("Could not load font from file '{}'", path);
+        LOGE("Could not load font from file '{}'", path);
       }
       return tf;
     }

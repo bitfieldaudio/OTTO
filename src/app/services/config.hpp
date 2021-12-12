@@ -28,9 +28,10 @@ namespace otto {
   };
 
   template<typename T>
-  concept AConfig = std::is_base_of_v<Config<T>, T>&& util::ASerializable<T>;
+  concept AConfig = std::is_base_of_v<Config<T>, T> && util::ASerializable<T>;
 
-  namespace services {
+  namespace services
+  {
 
     struct ConfigManager {
       ConfigManager() = default;
@@ -90,15 +91,15 @@ namespace otto::services {
   try : ConfigManager(json::parse_file(config_path)) {
     file_path = config_path;
   } catch (json::value::parse_error& e) {
-    LOGE("Config file parse error!");
-    LOGE("{}", e.what());
+    LOGW("Config file parse error!");
+    LOGW("{}", e.what());
     auto new_path = config_path;
     new_path += ".corrupt";
     std::filesystem::rename(config_path, new_path);
-    LOGE("Config file has been backed up as {}", new_path);
+    LOGW("Config file has been backed up as {}", new_path);
   } catch (std::runtime_error& e) {
-    LOGE("Error reading config file:");
-    LOGE("{}", e.what());
+    LOGW("Error reading config file:");
+    LOGW("{}", e.what());
   }
 
   inline void ConfigManager::write_to_file()

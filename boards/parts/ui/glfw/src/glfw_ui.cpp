@@ -29,7 +29,7 @@ namespace otto::glfw {
     SkASSERT(glfwGetCurrentContext());
     if (name == "eglQueryString"sv) {
       return nullptr;
-      return (GrGLFuncPtr)(static_cast<GrEGLQueryStringFn*>([](void* dpy, int name) -> const char* { return ""; }));
+      return (GrGLFuncPtr) (static_cast<GrEGLQueryStringFn*>([](void* dpy, int name) -> const char* { return ""; }));
     }
     return glfwGetProcAddress(name);
   }
@@ -46,7 +46,7 @@ namespace otto::glfw {
   Window::Window(int width, int height, const std::string& name)
   {
     if (!glfwInit()) {
-      LOGF("Failed to init GLFW.");
+      LOGE("Failed to init GLFW.");
     }
 
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
