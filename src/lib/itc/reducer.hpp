@@ -64,8 +64,7 @@ namespace otto::itc {
       {
         auto* producer = static_cast<Derived*>(this)->producer_;
         OTTO_ASSERT(producer != nullptr, "Reducer used with no producer set!");
-        reduce(e, producer->state());
-        producer->commit();
+        producer->commit([&](State& state) { reduce(e, state); });
       }
     };
 

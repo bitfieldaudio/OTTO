@@ -171,8 +171,9 @@ namespace otto::util {
       return emplace_back(std::move(e));
     }
 
-    template<typename... Args, typename Enable = std::enable_if_t<std::is_constructible_v<value_type, Args...>>>
-    constexpr tl::expected<value_type*, error> emplace_back(Args&&... args) noexcept
+    template<typename... Args>
+    requires(std::is_constructible_v<value_type, Args...>) //
+      constexpr tl::expected<value_type*, error> emplace_back(Args&&... args) noexcept
     {
       if (full()) return tl::unexpected(error::full);
       std::construct_at<T>(data() + _size, std::forward<Args>(args)...);

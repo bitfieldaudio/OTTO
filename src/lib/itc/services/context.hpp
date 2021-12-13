@@ -24,8 +24,10 @@ namespace otto::itc {
       }
       // Since this is called from the Accessor constructor, it is called
       // before `accessor_t` is constructed. Thus, this cast is detected by
-      // UBsan, and may be undefined behavior?
-      p.accessors_.emplace_back(static_cast<accessor_t<S>*>(&a));
+      // UBsan, and can technically result in an ilegal access, if the
+      // Accessor is accessed by the provider before it is fully constructed.
+      // Hence, this is a reinterpret_cast instead of a static_cast.
+      p.accessors_.emplace_back(reinterpret_cast<accessor_t<S>*>(&a));
       a.provider_ = &p;
     }
 

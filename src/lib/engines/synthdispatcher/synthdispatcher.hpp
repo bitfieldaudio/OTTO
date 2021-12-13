@@ -106,7 +106,6 @@ namespace otto {
     void deactivate_engine()
     {
       wipe_state();
-      commit();
       AudioDomain::get_static_executor()->sync();
       GraphicsDomain::get_static_executor()->sync();
       // Destructs the engine
@@ -119,27 +118,30 @@ namespace otto {
         _active = _factories[idx].make_all(_ctx);
       }
       update_state(idx);
-      commit();
       AudioDomain::get_static_executor()->sync();
       GraphicsDomain::get_static_executor()->sync();
     }
 
     void wipe_state()
     {
-      state().audio = nullptr;
-      state().main_screen = {nullptr, nullptr};
-      state().mod_screen = {nullptr, nullptr};
-      state().voices_screen = {nullptr, nullptr};
+      commit([&](auto& state) {
+        state.audio = nullptr;
+        state.main_screen = {nullptr, nullptr};
+        state.mod_screen = {nullptr, nullptr};
+        state.voices_screen = {nullptr, nullptr};
+      });
     }
 
     void update_state(std::size_t idx)
     {
-      state().active_engine = idx;
-      state().name = _factories[idx].metadata().name;
-      state().audio = _active.audio.get();
-      state().main_screen = ScreenWithHandlerPtr(_active.main_screen);
-      state().mod_screen = ScreenWithHandlerPtr(_active.mod_screen);
-      state().voices_screen = ScreenWithHandlerPtr(_active.voices_screen);
+      commit([&](auto& state) {
+        state.active_engine = idx;
+        state.name = _factories[idx].metadata().name;
+        state.audio = _active.audio.get();
+        state.main_screen = ScreenWithHandlerPtr(_active.main_screen);
+        state.mod_screen = ScreenWithHandlerPtr(_active.mod_screen);
+        state.voices_screen = ScreenWithHandlerPtr(_active.voices_screen);
+      });
     }
 
     itc::Context& _ctx;

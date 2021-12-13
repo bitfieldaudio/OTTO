@@ -137,13 +137,14 @@ namespace otto::engines::ottofm {
     {
       auto buf = buffer_pool().allocate();
       stdr::generate(buf, std::ref(voice_mgr_));
-      for (auto&& [op, act] : util::zip(voice_mgr_.last_triggered_voice().operators, Producer::state().activity)) {
-        act = op.get_activity_level();
-      }
-      for (auto&& [op, st] : util::zip(voice_mgr_.last_triggered_voice().operators, Producer::state().stage)) {
-        st = op.get_envelope_stage();
-      }
-      Producer::commit();
+      Producer::commit([&](auto& state) {
+        for (auto&& [op, act] : util::zip(voice_mgr_.last_triggered_voice().operators, state.activity)) {
+          act = op.get_activity_level();
+        }
+        for (auto&& [op, st] : util::zip(voice_mgr_.last_triggered_voice().operators, state.stage)) {
+          st = op.get_envelope_stage();
+        }
+      });
       return buf;
     }
 

@@ -157,14 +157,14 @@ TEST_CASE ("Basic state passing", "[itc]") {
   }
 
   SECTION ("Publish new state from producer") {
-    p.state().i = 1;
-    REQUIRE(p.state().i == 1);
-    REQUIRE(c1.state().i == 0);
-    p.commit();
+    p.commit([&](auto& state) {
+      state.i = 1;
+      REQUIRE(p.state().i == 1);
+      REQUIRE(c1.state().i == 0);
+    });
     REQUIRE(c1.state().i == 1);
     REQUIRE(c1.new_state_called == 1);
-    p.state().i = 2;
-    p.commit();
+    p.commit([&](auto& state) { state.i = 2; });
     REQUIRE(c1.state().i == 2);
     REQUIRE(c1.new_state_called == 2);
   }
@@ -227,13 +227,11 @@ TEST_CASE ("prod/cons/chan of multiple states", "[itc]") {
     using Producer::Producer;
     void test_produce1(int i)
     {
-      state<S1>().i1 = i;
-      commit<S1>();
+      commit<S1>([&](auto& state) { state.i1 = i; });
     }
     void test_produce2(int i)
     {
-      state<S2>().i2 = i;
-      commit<S2>();
+      commit<S2>([&](auto& state) { state.i2 = i; });
     }
   } p1{context};
 
@@ -271,8 +269,7 @@ TEST_CASE ("Context serialization", "[!mayfail]") {
     ImmCons<State1> c1{ctx};
 
     const auto s = util::serialize(ctx);
-    p1.state().i1 = 10;
-    p1.commit();
+    p1.commit([&](auto& state) { state.i1 = 10; });
     REQUIRE(c1.state().i1 == 10);
     util::deserialize_from(s, ctx);
     REQUIRE(c1.state().i1 == 0);
@@ -285,8 +282,7 @@ TEST_CASE ("Context serialization", "[!mayfail]") {
 
     const auto s = util::serialize(ctx);
     REQUIRE(s.is_object());
-    p1.state().i2 = 10;
-    p1.commit();
+    p1.commit([&](auto& state) { state.i2 = 10; });
     REQUIRE(c1.state().i2 == 10);
     util::deserialize_from(s, ctx);
     REQUIRE(c1.state().i2 == 10);

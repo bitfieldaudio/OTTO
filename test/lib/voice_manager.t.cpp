@@ -76,8 +76,7 @@ TEST_CASE ("VoiceManager", "[!mayfail]") {
     voices.handle(midi::NoteOn{2});
     voices.handle(midi::NoteOn{3});
 
-    prod.state().play_mode = PlayMode::mono;
-    prod.commit();
+    prod.commit([](auto& state) { state.play_mode = PlayMode::mono; });
 
     REQUIRE(std::ranges::distance(triggered_voices()) == 0);
   }
@@ -145,8 +144,7 @@ TEST_CASE ("VoiceManager", "[!mayfail]") {
     }
 
     SECTION ("Poly mode rand") {
-      prod.state().rand = 0.5;
-      prod.commit();
+      prod.commit([](auto& state) { state.rand = 0.5; });
 
       std::set<float> vals;
       for (std::uint8_t i = 0; i < 5; i++) {
@@ -180,9 +178,10 @@ TEST_CASE ("VoiceManager", "[!mayfail]") {
   }
 
   SECTION ("Duo Mode") {
-    prod.state().play_mode = PlayMode::duo;
-    prod.state().interval = 1;
-    prod.commit();
+    prod.commit([](auto& state) {
+      state.play_mode = PlayMode::duo;
+      state.interval = 1;
+    });
 
     SECTION ("Duo mode triggers two voices for a single note") {
       voices.handle(midi::NoteOn{50});
@@ -224,8 +223,7 @@ TEST_CASE ("VoiceManager", "[!mayfail]") {
     SECTION ("Changing interval still allows removal of all notes") {
       voices.handle(midi::NoteOn{50});
 
-      prod.state().interval = 2;
-      prod.commit();
+      prod.commit([](auto& state) { state.interval = 2; });
       check_notes({50, 51});
 
       voices.handle(midi::NoteOn{60});
@@ -237,8 +235,7 @@ TEST_CASE ("VoiceManager", "[!mayfail]") {
 
 
   SECTION ("Mono mode") {
-    prod.state().play_mode = PlayMode::mono;
-    prod.commit();
+    prod.commit([](auto& state) { state.play_mode = PlayMode::mono; });
 
     SECTION ("Can switch to mono mode") {
       REQUIRE(voices.play_mode() == PlayMode::mono);
@@ -273,8 +270,7 @@ TEST_CASE ("VoiceManager", "[!mayfail]") {
     }
 
     SECTION ("AUX mode: Sub = 0.5") {
-      prod.state().sub = 0.5f;
-      prod.commit();
+      prod.commit([](auto& state) { state.sub = 0.5f; });
 
       voices.handle(midi::NoteOn{50});
       check_notes({38, 38, 50});
@@ -282,8 +278,7 @@ TEST_CASE ("VoiceManager", "[!mayfail]") {
   }
 
   SECTION ("Unison Mode") {
-    prod.state().play_mode = PlayMode::unison;
-    prod.commit();
+    prod.commit([](auto& state) { state.play_mode = PlayMode::unison; });
 
     auto used_voices = VoiceAllocator<PlayMode::unison, Voice, 6>::num_voices_used;
 
@@ -339,8 +334,7 @@ TEST_CASE ("VoiceManager", "[!mayfail]") {
     }
 
     SECTION ("Voices keep same order (voice return) for non-zero detune") {
-      prod.state().detune = 0.1f;
-      prod.commit();
+      prod.commit([](auto& state) { state.detune = 0.1f; });
 
       voices.handle(midi::NoteOn{50});
       voices.handle(midi::NoteOn{60});
@@ -353,15 +347,13 @@ TEST_CASE ("VoiceManager", "[!mayfail]") {
     }
   }
   SECTION ("Portamento") {
-    prod.state().play_mode = PlayMode::mono;
-    prod.commit();
+    prod.commit([](auto& state) { state.play_mode = PlayMode::mono; });
 
     gam::sampleRate(100);
     float target_freq = midi::note_freq(62);
 
     SECTION ("Portamento = 0") {
-      prod.state().portamento = 0.f;
-      prod.commit();
+      prod.commit([](auto& state) { state.portamento = 0.f; });
 
       voices.handle(midi::NoteOn{50});
       auto& v = triggered_voices().front();
@@ -375,8 +367,7 @@ TEST_CASE ("VoiceManager", "[!mayfail]") {
     SECTION ("Portamento = 1") {
       int expected_n = 100;
 
-      prod.state().portamento = 1.f;
-      prod.commit();
+      prod.commit([](auto& state) { state.portamento = 1.f; });
 
       voices.handle(midi::NoteOn{50});
       voices.handle(midi::NoteOn{62});

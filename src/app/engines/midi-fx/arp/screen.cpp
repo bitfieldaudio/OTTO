@@ -35,6 +35,7 @@ namespace otto::engines::arp {
       case PlayMode::chord: return "CHORD";
       case PlayMode::random: return "RANDOM";
     };
+    OTTO_UNREACHABLE();
   }
   util::string_ref display(OctaveMode om) noexcept
   {
@@ -47,6 +48,7 @@ namespace otto::engines::arp {
       case OctaveMode::octavedownup: return "-1 & +1";
       case OctaveMode::multiply: return "TWICE";
     };
+    OTTO_UNREACHABLE();
   }
 
   struct Handler final : InputReducer<State>, IInputLayer {
