@@ -35,7 +35,7 @@ namespace otto {
 
     constexpr std::pair<Key, int> key_and_octave_of(int note, int octave) noexcept
     {
-      return {piano_keys[(note - (47 + octave * 12)) % 26], 0};
+      return {piano_keys[math::modulo(note - (47 + octave * 12), 26)], 0};
     }
 
   } // namespace
@@ -48,7 +48,7 @@ namespace otto {
       state_.octave--;
     } else if (auto note = note_of(e.key, state_.octave)) {
       key_notes_[index_of(e.key).value()] = *note;
-      midi_.send_event(midi::NoteOn{.note = *note, .velocity = 0x40, .channel = 0});
+      midi_.send_event(midi::NoteOn{.note = static_cast<uint8_t>(*note), .velocity = 0x40, .channel = 0});
     }
   }
   void PianoKeyLayer::handle(KeyRelease e) noexcept

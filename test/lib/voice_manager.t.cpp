@@ -19,6 +19,9 @@ TEST_CASE ("VoiceManager", "[!mayfail]") {
   itc::ImmediateExecutor ex;
   AudioDomain::set_static_executor(ex);
 
+  itc::ImmediateExecutor ex2;
+  LogicDomain::set_static_executor(ex2);
+
   services::RuntimeController rt;
 
   services::Audio audioman(std::make_unique<stubs::NoProcessAudioDriver>());
@@ -28,7 +31,7 @@ TEST_CASE ("VoiceManager", "[!mayfail]") {
     int i = 0;
   };
   itc::Context ctx;
-  itc::Producer<VoicesState> prod = ctx;
+  itc::WithDomain<LogicDomain, itc::Producer<VoicesState>> prod = ctx;
 
   VoiceManager<Voice, 6> voices = {ctx, 42};
 

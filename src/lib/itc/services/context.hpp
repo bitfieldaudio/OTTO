@@ -34,7 +34,7 @@ namespace otto::itc {
     template<AService S>
     static void unlink(Provider<S>& p, Accessor<S>& a)
     {
-      std::erase(p.accessors_, static_cast<accessor_t<S>*>(&a));
+      std::erase_if(p.accessors_, [&](auto* ptr) { return ptr == &a; });
       a.provider_ = nullptr;
     }
   };

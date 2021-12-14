@@ -64,7 +64,7 @@ namespace otto::engines::slots {
 
   struct SoundSlotsScreen : OverlayBase, itc::Consumer<SoundSlotsState> {
     using Consumer::Consumer;
-    struct Handler : InputReducer<SoundSlotsState>, IInputLayer {
+    struct Handler : LogicDomain, InputReducer<SoundSlotsState>, IInputLayer {
       using InputReducer::InputReducer;
 
       [[nodiscard]] KeySet key_mask() const noexcept override

@@ -11,7 +11,7 @@
 
 namespace otto::engines::arp {
 
-  struct Logic final : ILogic, itc::Producer<State> {
+  struct Logic final : ILogic, LogicDomain, itc::Producer<State> {
     using Producer::Producer;
   };
 
@@ -210,6 +210,7 @@ namespace otto::engines::arp {
         case PlayMode::chord: return chord; break;
         case PlayMode::random: return random; break;
       }
+      OTTO_UNREACHABLE();
     }
   } // namespace play_modes
 

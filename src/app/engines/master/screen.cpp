@@ -2,6 +2,7 @@
 
 #include "lib/widget.hpp"
 
+#include "app/domains/logic.hpp"
 #include "app/drivers/audio_driver.hpp"
 
 #include "master.hpp"
@@ -50,7 +51,7 @@ namespace otto::engines::master {
   };
 
   struct MasterScreen : ScreenBase, itc::Consumer<MasterState> {
-    struct Handler : InputReducer<MasterState>, IInputLayer {
+    struct Handler : LogicDomain, InputReducer<MasterState>, IInputLayer {
       using InputReducer::InputReducer;
 
       [[nodiscard]] KeySet key_mask() const noexcept override
@@ -75,10 +76,10 @@ namespace otto::engines::master {
     }
   };
 
-  struct Logic : ILogic, itc::Producer<MasterState> {
+  struct Logic final : ILogic, itc::Producer<MasterState> {
     Logic(itc::Context& ctx, drivers::IAudioMixer& mixer) : Producer(ctx), mixer_(mixer) {}
 
-    void on_state_change(const MasterState& state) override
+    void on_state_change(const MasterState& state) noexcept override
     {
       mixer_.set_volume(state.volume);
     }

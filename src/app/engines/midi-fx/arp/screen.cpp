@@ -51,7 +51,7 @@ namespace otto::engines::arp {
     OTTO_UNREACHABLE();
   }
 
-  struct Handler final : InputReducer<State>, IInputLayer {
+  struct Handler final : LogicDomain, InputReducer<State>, IInputLayer {
     using InputReducer::InputReducer;
 
     [[nodiscard]] util::enum_bitset<Key> key_mask() const noexcept override

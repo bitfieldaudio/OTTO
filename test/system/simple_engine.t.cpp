@@ -24,11 +24,12 @@ namespace otto::engines {
       util::StaticallyBounded<float, 11, 880> freq = 340;
     };
 
-    struct Logic final : itc::Producer<State> {
+    struct Logic final : ILogic, itc::Producer<State> {
       Logic(itc::Context& c) : itc::Producer<State>(c) {}
     };
 
-    struct Handler final : InputReducer<State>, IInputLayer {
+    struct Handler final : LogicDomain, InputReducer<State>, IInputLayer {
+      using InputReducer::InputReducer;
       [[nodiscard]] KeySet key_mask() const noexcept override
       {
         return key_groups::enc_clicks;
@@ -92,8 +93,7 @@ TEST_CASE ("simple_engine", "[.interactive]") {
   engines::Simple::Logic l(ctx);
   engines::Simple::Audio a(ctx);
   engines::Simple::Screen s(ctx);
-  engines::Simple::Handler h;
-  itc::set_producer(h, l);
+  engines::Simple::Handler h(ctx);
 
   auto stop_audio = audio.set_process_callback([&](Audio::CallbackData data) {
     const auto res = a.process();

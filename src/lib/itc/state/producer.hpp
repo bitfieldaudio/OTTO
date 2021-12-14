@@ -5,18 +5,30 @@
 #include "lib/itc/domain.hpp"
 #include "lib/itc/services/provider.hpp"
 
-#include "state.hpp"
+#include "consumer.hpp"
 
 namespace otto::itc {
 
   template<AState State>
-  struct Producer<State> : Provider<state_service<State>>, util::ISerializable {
-    Producer(Context& ctx) : Provider<state_service<State>>(ctx) {}
+  struct Producer<State> : StateAccessor<State> {
+    Producer(Context& ctx) : StateAccessor<State>(ctx) {}
 
-    const State& state() const noexcept
+    /// Modify the state, and commit the changes
+    decltype(auto) commit(std::invocable<State&> auto&& f) noexcept
     {
-      return state_;
+      StateAccessor<State>::ensure_state();
+      // When f returns void, we cannot save it in a variable, since void
+      if constexpr (std::is_void_v<std::invoke_result_t<decltype(f), State&>>) {
+        std::invoke(f, *StateAccessor<State>::state_);
+        this->provider()->commit();
+      } else {
+        decltype(auto) res = std::invoke(f, *StateAccessor<State>::state_);
+        this->provider()->commit();
+        return FWD(res);
+      }
     }
+
+    using StateAccessor<State>::state;
 
     // FOR UNIFORMITY WITH Producer<State...>
 
@@ -31,46 +43,8 @@ namespace otto::itc {
     template<std::same_as<State> S>
     decltype(auto) commit(std::invocable<State&> auto&& f) noexcept
     {
-      return commit(FWD(f));
+      commit(FWD(f));
     }
-
-    /// Modify the state, and commit the changes
-    decltype(auto) commit(std::invocable<State&> auto&& f) noexcept
-    {
-      // When f returns void, we cannot save it in a variable
-      if constexpr (std::is_void_v<std::invoke_result_t<decltype(f), State&>>) {
-        std::invoke(f, state_);
-        for (Consumer<State>* c : Provider<state_service<State>>::accessors()) {
-          c->internal_commit(state());
-        }
-        on_state_change(state());
-      } else {
-        decltype(auto) res = std::invoke(f, state_);
-        for (Consumer<State>* c : Provider<state_service<State>>::accessors()) {
-          c->internal_commit(state());
-        }
-        on_state_change(state());
-        return FWD(res);
-      }
-    }
-
-    void serialize_into(json::value& json) const override
-    {
-      if constexpr (util::ASerializable<State>) {
-        util::serialize_into(json, state());
-      }
-    }
-    void deserialize_from(const json::value& json) override
-    {
-      if constexpr (util::ASerializable<State>) {
-        commit([&](auto& state) { util::deserialize_from(json, state); });
-      }
-    }
-
-    virtual void on_state_change(const State&) {}
-
-  private:
-    State state_;
   };
 
   template<AState... States>

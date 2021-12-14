@@ -2,7 +2,7 @@
 
 namespace otto::engines::slots {
 
-  void Logic::on_state_change(const SoundSlotsState& state)
+  void Logic::on_state_change(const SoundSlotsState& state) noexcept
   {
     tl::optional old = idx.old_val();
     if (idx.check_changed(state.active_idx)) {

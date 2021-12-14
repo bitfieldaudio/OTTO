@@ -8,6 +8,8 @@
 #include "lib/graphics.hpp"
 #include "lib/itc/state/producer.hpp"
 
+#include "app/domains/logic.hpp"
+
 namespace otto::engines::slots {
 
   struct SlotState {
@@ -30,8 +32,8 @@ namespace otto::engines::slots {
   struct Logic : ILogic, itc::Producer<SoundSlotsState, SlotState> {
     Logic(itc::Context& ctx) : Producer(ctx) {}
 
-    void on_state_change(const SoundSlotsState& state) override;
-    void on_state_change(const SlotState& state) override {}
+    void on_state_change(const SoundSlotsState& state) noexcept override;
+    void on_state_change(const SlotState& state) noexcept override {}
     void set_managed(util::DynSerializable&& ctx);
 
   private:

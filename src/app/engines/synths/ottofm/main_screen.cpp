@@ -20,7 +20,7 @@
 
 namespace otto::engines::ottofm {
 
-  struct MainHandler final : InputReducer<State>, IInputLayer {
+  struct MainHandler final : LogicDomain, InputReducer<State>, IInputLayer {
     using InputReducer::InputReducer;
 
     [[nodiscard]] util::enum_bitset<Key> key_mask() const noexcept override

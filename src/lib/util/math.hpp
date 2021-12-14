@@ -34,7 +34,7 @@ namespace otto::math {
   }
 
   /// Real modulo for negative `a` too
-  inline int modulo(int i, int n)
+  constexpr inline int modulo(int i, int n)
   {
     return (i % n + n) % n;
   }

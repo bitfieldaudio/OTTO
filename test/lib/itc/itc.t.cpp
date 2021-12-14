@@ -136,12 +136,14 @@ TEST_CASE ("Context walking", "[itc]") {
 TEST_CASE ("Basic state passing", "[itc]") {
   ImmediateExecutor ex;
   StaticDomain<>::set_static_executor(ex);
+  ImmediateExecutor ex2;
+  StaticDomain<struct tag2>::set_static_executor(ex2);
   struct S {
     int i = 0;
   };
   Context ctx;
-  Producer<S> p = {ctx};
-  struct C1 : Consumer<S>, StaticDomain<> {
+  WithDomain<StaticDomain<>, Producer<S>> p = {ctx};
+  struct C1 : Consumer<S>, StaticDomain<tag2> {
     using Consumer<S>::Consumer;
 
     void on_state_change(const S&) noexcept override
@@ -151,6 +153,10 @@ TEST_CASE ("Basic state passing", "[itc]") {
 
     int new_state_called = 0;
   } c1 = {ctx};
+
+  SECTION ("Different state pointers on different domains") {
+    REQUIRE(&p.state() != &c1.state());
+  }
 
   SECTION ("Access default state in Consumer") {
     REQUIRE(c1.state().i == 0);
@@ -223,7 +229,7 @@ TEST_CASE ("prod/cons/chan of multiple states", "[itc]") {
     c1.check_i2(2);
   }
 
-  struct P1 : Producer<S1, S2> {
+  struct P1 : StaticDomain<>, Producer<S1, S2> {
     using Producer::Producer;
     void test_produce1(int i)
     {
@@ -265,7 +271,7 @@ TEST_CASE ("Context serialization", "[!mayfail]") {
 
   SECTION ("Basic serializable state") {
     Context ctx;
-    Producer<State1> p1{ctx};
+    WithDomain<StaticDomain<>, Producer<State1>> p1{ctx};
     ImmCons<State1> c1{ctx};
 
     const auto s = util::serialize(ctx);
@@ -277,7 +283,7 @@ TEST_CASE ("Context serialization", "[!mayfail]") {
 
   SECTION ("Unserializable state") {
     Context ctx;
-    Producer<State2> p1{ctx};
+    WithDomain<StaticDomain<>, Producer<State2>> p1{ctx};
     ImmCons<State2> c1{ctx};
 
     const auto s = util::serialize(ctx);

@@ -19,7 +19,7 @@
 
 namespace otto::voices {
 
-  struct Handler final : InputReducer<VoicesState>, IInputLayer {
+  struct Handler final : LogicDomain, InputReducer<VoicesState>, IInputLayer {
     using InputReducer::InputReducer;
 
     [[nodiscard]] util::enum_bitset<Key> key_mask() const noexcept override
