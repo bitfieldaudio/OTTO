@@ -52,7 +52,7 @@ namespace otto::itc {
       if (producer_entry_.executor == nullptr) {
         producer_entry_.executor = &producer.executor();
       } else {
-        OTTO_ASSERT(&producer.executor() == producer_entry_->executor);
+        OTTO_ASSERT(&producer.executor() == producer_entry_.executor);
       }
       producer.state_ = &producer_entry_.state;
     }
@@ -102,7 +102,7 @@ namespace otto::itc {
     struct Entry {
       Entry(IExecutor* e) : executor(e) {}
       IExecutor* executor;
-      util::spin_lock lock = {};
+      std::mutex lock = {};
       State state = {};
       State tmp_state = {};
     };
