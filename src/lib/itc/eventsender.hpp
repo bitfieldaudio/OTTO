@@ -9,7 +9,7 @@ namespace otto::itc {
   struct EventSender;
 
   template<AnEvent Event>
-  struct EventSender<Event> : private Sender<Event>, IEventHandler<Event> {
+  struct EventSender<Event> : private Sender<Event>, virtual IEventHandler<Event> {
     using Sender<Event>::Sender;
     void handle(Event e) override
     {

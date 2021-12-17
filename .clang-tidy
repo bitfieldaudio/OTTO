@@ -17,10 +17,12 @@ Checks: >-
   -readability-static-accessed-through-instance,
   -readability-uppercase-literal-suffix,
   -readability-named-parameter,
+  -readability-identifier-length,
   -misc-non-private-member-variables-in-classes,
   -cppcoreguidelines-non-private-member-variables-in-classes,
   -cppcoreguidelines-pro-bounds-constant-array-index,
   -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+  -cppcoreguidelines-owning-memory,
   -misc-unused-parameters,
 CheckOptions:
   - key: readability-braces-around-statements.ShortStatementLines

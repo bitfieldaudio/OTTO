@@ -118,6 +118,7 @@ namespace otto::itc {
           LOGC("Tried to add state copy with full vector. Are there more than {} domains?", max_domains);
           std::terminate();
         }
+        (*x)->state = producer_entry_.state;
       }
       return *found;
     }
@@ -133,7 +134,7 @@ namespace otto::itc {
   struct StateAccessor : virtual IDomain, Accessor<state_service<State>> {
     StateAccessor(Context& ctx) : Accessor<state_service<State>>(ensure_provider(ctx)) {}
 
-    virtual ~StateAccessor() noexcept override
+    ~StateAccessor() noexcept override
     {
       auto* prov = this->provider();
       if (prov) {

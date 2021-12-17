@@ -7,6 +7,11 @@
 
 namespace otto {
 
+  /// Commands sent from graphics to logic
+  enum struct SynthDispatcherCommand {
+    toggle_engine,
+  };
+
   struct SynthDispatcherState {
     int active_engine = 0;
     std::string name;

@@ -7,6 +7,7 @@
 
 #include "lib/engine.hpp"
 #include "lib/engines/synthdispatcher/state.hpp"
+#include "lib/engines/synthdispatcher/synthdispatcher.hpp"
 #include "lib/graphics.hpp"
 #include "lib/itc/itc.hpp"
 #include "lib/skia/skia.hpp"
@@ -20,10 +21,13 @@ namespace otto {
 
   // SELECTOR SCREEN //
 
-  struct DispatcherSelectorScreen final : itc::Consumer<SynthDispatcherState>, ScreenBase {
+  struct DispatcherSelectorScreen final : itc::Consumer<SynthDispatcherState>,
+                                          ScreenBase,
+                                          itc::Receiver<EncoderEvent>,
+                                          itc::Sender<SynthDispatcherCommand> {
     using Consumer::Consumer;
 
-    DispatcherSelectorScreen(itc::Context& c) : Consumer(c) {}
+    DispatcherSelectorScreen(itc::Context& c) : Consumer(c), Receiver(c), Sender(c) {}
 
     void draw(skia::Canvas& ctx) noexcept
     {
@@ -31,6 +35,18 @@ namespace otto {
       skia::place_text(ctx, state().name.c_str(), fonts::regular(32), paints::fill(colors::blue), {320 / 2, 240 / 2},
                        anchors::center);
     }
+
+    void receive(EncoderEvent e) noexcept override
+    {
+      // TODO
+      switch (e.encoder) {
+        case Encoder::blue: {
+          if (divider(e) != 0) send(SynthDispatcherCommand::toggle_engine);
+        } break;
+        default: break;
+      }
+    }
+    otto::util::EventDivider<6> divider;
   };
 
   // PROXIES //

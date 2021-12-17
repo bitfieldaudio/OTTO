@@ -74,11 +74,10 @@ namespace otto {
     }
   };
 
-
-  struct SynthDispatcherLogic : ILogic, itc::Producer<SynthDispatcherState> {
+  struct SynthDispatcherLogic : ILogic, itc::Producer<SynthDispatcherState>, itc::Receiver<SynthDispatcherCommand> {
     using Producer::Producer;
 
-    SynthDispatcherLogic(itc::Context& ctx) : Producer(ctx), _ctx(ctx) {}
+    SynthDispatcherLogic(itc::Context& ctx) : Producer(ctx), Receiver(ctx) {}
 
     void register_engine(SynthEngineFactory&& factory)
     {
@@ -102,6 +101,13 @@ namespace otto {
       activate_engine(new_idx);
     }
 
+    void receive(SynthDispatcherCommand cmd) noexcept override
+    {
+      if (cmd == SynthDispatcherCommand::toggle_engine) {
+        toggle_engine();
+      }
+    }
+
   private:
     void deactivate_engine()
     {
@@ -111,11 +117,12 @@ namespace otto {
       // Destructs the engine
       _active = SynthEngineInstance();
     }
+
     void activate_engine(std::size_t idx)
     {
       // Constructs the engine
       if (idx < _factories.size()) {
-        _active = _factories[idx].make_all(_ctx);
+        _active = _factories[idx].make_all(Producer::context());
       }
       update_state(idx);
       AudioDomain::get_static_executor()->sync();
@@ -144,7 +151,6 @@ namespace otto {
       });
     }
 
-    itc::Context& _ctx;
     std::vector<SynthEngineFactory> _factories;
     // TODO: Refactor this?
     // To make sure these don't come out of sync, we only allow activation through the index.
@@ -158,36 +164,9 @@ namespace otto {
 
   // Handler //
 
-  struct DispatcherSelectorHandler final : InputHandler, IInputLayer {
-    [[nodiscard]] util::enum_bitset<Key> key_mask() const noexcept override
-    {
-      return key_groups::enc_clicks + Key::shift;
-    }
-
-    DispatcherSelectorHandler(SynthDispatcherLogic& logic) : dispatcher_logic_(logic) {}
-
-    void handle(EncoderEvent e) noexcept final
-    {
-      // TODO
-      switch (e.encoder) {
-        case Encoder::blue: {
-          if (divider(e) != 0) dispatcher_logic_.toggle_engine();
-        } break;
-        default: break;
-      }
-    }
-
-  private:
-    SynthDispatcherLogic& dispatcher_logic_;
-    otto::util::EventDivider<6> divider;
-  };
-
-  inline ScreenWithHandler make_synthdispatcher_selector_screen(itc::Context& c, SynthDispatcherLogic& l)
+  inline ScreenWithHandler make_synthdispatcher_selector_screen(itc::Context& c)
   {
-    return {
-      .screen = std::make_unique<DispatcherSelectorScreen>(c),
-      .input = std::make_unique<DispatcherSelectorHandler>(l),
-    };
+    return make_with_internal_handler<DispatcherSelectorScreen>(c);
   }
 
   struct SynthDispatcher {
@@ -201,14 +180,12 @@ namespace otto {
 
   inline SynthDispatcher make_synthdispatcher(itc::Context& c)
   {
-    auto logic = make_synthdispatcher_logic(c);
-    auto& ref = *logic;
-    return {.logic = std::move(logic),
+    return {.logic = make_synthdispatcher_logic(c),
             .audio = make_synthdispatcher_audio(c),
             .main_screen = make_synthdispatcher_main_screen(c),
             .mod_screen = make_synthdispatcher_mod_screen(c),
             .voices_screen = make_synthdispatcher_voices_screen(c),
-            .selector_screen = make_synthdispatcher_selector_screen(c, ref)};
+            .selector_screen = make_synthdispatcher_selector_screen(c)};
   }
 
 

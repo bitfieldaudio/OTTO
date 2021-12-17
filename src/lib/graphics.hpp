@@ -69,6 +69,8 @@ namespace otto {
     IInputLayer* input = nullptr;
   };
 
+  /// Make a screen with an input handler that sends the events as actions
+  /// This can be used to handle events internally on the graphics thread.
   template<std::derived_from<IScreen> Screen, typename... Args>
   requires(std::is_constructible_v<Screen, itc::Context&, Args...>) ScreenWithHandler
     make_with_internal_handler(itc::Context& ctx, Args&&... args)
