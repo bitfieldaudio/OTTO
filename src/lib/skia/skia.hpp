@@ -2,10 +2,15 @@
 
 #include <filesystem>
 
+#include <SkBitmap.h>
 #include <SkCanvas.h>
 #include <SkFont.h>
 #include <SkGradientShader.h>
+#include <SkImage.h>
+#include <SkImageInfo.h>
 #include <SkPath.h>
+#include <SkPixelRef.h>
+#include <SkPixmap.h>
 #include <SkRRect.h>
 #include <SkTextBlob.h>
 #include <SkTypeface.h>
@@ -26,6 +31,9 @@ namespace otto::skia {
   using Alpha = SkAlpha;
   using AutoCanvasRestore = SkAutoCanvasRestore;
   using AutoPathBoundsUpdate = SkAutoPathBoundsUpdate;
+  using Bitmap = SkBitmap;
+  using PixelRef = SkPixelRef;
+  using Pixmap = SkPixmap;
   using ClipOp = SkClipOp;
   using Color4f = SkColor4f;
   using ColorChannel = SkColorChannel;
@@ -40,6 +48,8 @@ namespace otto::skia {
   using GradientShader = SkGradientShader;
   using IDChangeListener = SkIDChangeListener;
   using IRect = SkIRect;
+  using Image = SkImage;
+  using ImageInfo = SkImageInfo;
   using ImageFilter = SkImageFilter;
   using MaskFilter = SkMaskFilter;
   using Once = SkOnce;

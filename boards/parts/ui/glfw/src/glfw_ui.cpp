@@ -219,7 +219,7 @@ namespace otto::drivers {
   struct GlfwGraphicsDriver final : IGraphicsDriver {
     void run(std::function<bool(SkCanvas&)> f) override
     {
-      otto::glfw::SkiaWindow win = {320, 240, "OTTO"};
+      otto::glfw::SkiaWindow win = {1113, 387, "OTTO"};
       win.key_callback = [this](glfw::Action a, glfw::Modifiers m, glfw::Key k) { key_callback(a, m, k); };
       win.show(std::move(f));
     }

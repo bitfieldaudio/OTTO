@@ -55,7 +55,7 @@ if (gamma_ADDED)
   execute_process(COMMAND ln -sf "${gamma_SOURCE_DIR}/Gamma" "${CMAKE_CURRENT_BINARY_DIR}/include/Gamma")
   file(GLOB_RECURSE gamma_src "${gamma_SOURCE_DIR}/src/*.cpp")
   list(REMOVE_ITEM gamma_src 
-    "${gamma_SOURCE_DIR}/src/SoundFile.cpp"
+    #"${gamma_SOURCE_DIR}/src/SoundFile.cpp"
     "${gamma_SOURCE_DIR}/src/AudioIO.cpp")
   add_library(gamma ${gamma_src})
   target_include_directories(gamma SYSTEM PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/include")
@@ -110,6 +110,11 @@ if (yamc_ADDED)
   add_library(yamc INTERFACE)
   target_include_directories(yamc SYSTEM INTERFACE "${yamc_SOURCE_DIR}/include")
 endif()
+
+
+# TODO: Only use this if compiling for desktop
+
+CPMAddPackage("gh:sammycage/lunasvg@2.3.0")
 
 # BOOST
 

@@ -22,6 +22,7 @@
 #include "app/services/state.hpp"
 #include "app/services/ui_manager.hpp"
 
+#include "board/emulator.hpp"
 #include "board/midi_driver.hpp"
 
 namespace otto {
@@ -110,9 +111,13 @@ namespace otto {
 
     // synth.logic->toggle_engine();
 
+    // Make emulator
+    board::Emulator emu;
+
     auto stop_graphics = graphics.show([&](skia::Canvas& ctx) {
       ledman.process(layers);
-      nav_km.nav().draw(ctx);
+      emu.draw(ctx);
+      // nav_km.nav().draw(ctx);
     });
 
     stateman.read_from_file();

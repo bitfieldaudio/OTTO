@@ -1,40 +1,41 @@
 #pragma once
 
-#include "core/ui/canvas.hpp"
-#include "services/controller.hpp"
-#include "util/enum.hpp"
+#include <lunasvg.h>
+
+#include "lib/util/enum.hpp"
+
+#include "lib/graphics.hpp"
+#include "lib/skia/point.hpp"
+#include "lib/skia/skia.hpp"
 
 namespace otto::board {
 
-  struct Emulator : core::ui::vg::Drawable, services::Controller {
+  struct Emulator : IDrawable {
     enum struct ClickAction { down, up };
 
-    void draw(core::ui::vg::Canvas& ctx) override;
+    Emulator();
 
-    void set_color(services::LED, services::LEDColor) override;
-    void flush_leds() override;
-    void clear_leds() override;
+    void draw(skia::Canvas& ctx) noexcept override
+    {
+      draw_bg(ctx);
+      draw_leds(ctx);
+      draw_frontpanel(ctx);
+    };
 
-    void handle_click(core::ui::vg::Point p, ClickAction);
-    void handle_scroll(core::ui::vg::Point p, float offset);
-
-    constexpr static core::ui::vg::Size size = {1115, 352};
+    constexpr static skia::Vector size = {1113, 387};
 
   private:
-    template<typename LEDFunc, typename BTNFunc>
-    void draw_btn(core::ui::vg::Canvas& ctx, core::input::Key key, LEDFunc&& lf, BTNFunc&& bf);
+    void draw_bg(skia::Canvas& ctx);
+    void draw_leds(skia::Canvas& ctx);
+    void draw_frontpanel(skia::Canvas& ctx);
 
-    template<typename BTNFunc, typename LEDFunc>
-    void draw_s_btn(core::ui::vg::Canvas& ctx, core::input::Key key, BTNFunc&& bf, LEDFunc&& lf);
+    lunasvg::Bitmap svg_bitmap;
+    skia::PixelRef pixref{0, 0, svg_bitmap.data(), 1};
+    sk_sp<skia::PixelRef> pixrefptr;
+    skia::Bitmap skia_bitmap;
 
-    template<typename BTNFunc, typename LEDFunc>
-    void draw_c_btn(core::ui::vg::Canvas& ctx, core::input::Key key, BTNFunc&& bf, LEDFunc&& lf);
-
-    void draw_func_btns(core::ui::vg::Canvas& ctx);
-    void draw_sc_btns(core::ui::vg::Canvas& ctx);
-    void draw_encoders(core::ui::vg::Canvas& ctx);
-
-    util::enum_map<core::input::Key, services::LEDColor> _led_colors = {};
+    skia::ImageInfo image_info;
+    skia::Pixmap pixmap;
   };
 
 } // namespace otto::board
