@@ -34,3 +34,5 @@ test/core/voices/todo.md
 .clangd/
 .cache
 ottoconf.toml
+
+cpm-package-lock.cmake

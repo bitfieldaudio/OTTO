@@ -97,6 +97,7 @@ namespace otto {
     inline const KeySet commands = {Key::shift, Key::plus, Key::minus, Key::play, Key::record, Key::sigma, Key::omega};
 
     inline const KeySet func = pages | screens | commands;
+
   } // namespace key_groups
 
   enum struct Encoder : std::uint8_t {

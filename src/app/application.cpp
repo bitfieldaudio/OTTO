@@ -109,8 +109,6 @@ namespace otto {
     });
     auto stop_input = controller.set_input_handler(layers);
 
-    // synth.logic->toggle_engine();
-
     // Make emulator
     board::Emulator emu;
 

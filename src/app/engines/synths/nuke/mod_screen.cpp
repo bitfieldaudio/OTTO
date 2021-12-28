@@ -25,7 +25,7 @@ namespace otto::engines::nuke {
 
     [[nodiscard]] util::enum_bitset<Key> key_mask() const noexcept override
     {
-      return key_groups::enc_clicks | key_groups::pages + Key::shift;
+      return (key_groups::enc_clicks | key_groups::pages) + Key::shift;
     }
 
     void reduce(KeyPress e, State& state) noexcept final

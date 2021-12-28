@@ -166,7 +166,7 @@ namespace otto {
 
   inline ScreenWithHandler make_synthdispatcher_selector_screen(itc::Context& c)
   {
-    return make_with_internal_handler<DispatcherSelectorScreen>(c);
+    return make_with_internal_handler<DispatcherSelectorScreen>(c, key_groups::enc_clicks | key_groups::func);
   }
 
   struct SynthDispatcher {

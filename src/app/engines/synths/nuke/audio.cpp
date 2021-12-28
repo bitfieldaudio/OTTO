@@ -231,7 +231,8 @@ namespace otto::engines::nuke {
 
     float after_filter = filter_(0.5 * (osc_1 + 0.6 * osc_2 + ring_mod));
 
-    return after_filter * env_() * (1 + lfo_val * lfo_to_volume) * 0.25f;
+    // return after_filter * env_() * (1 + lfo_val * lfo_to_volume) * 0.25f;
+    return 0.f;
   }
 
 } // namespace otto::engines::nuke
