@@ -25,13 +25,12 @@ namespace otto::engines::nuke {
 
     [[nodiscard]] util::enum_bitset<Key> key_mask() const noexcept override
     {
-      return key_groups::pages + Key::shift;
+      return key_groups::enc_clicks | key_groups::pages + Key::shift;
     }
 
     void reduce(KeyPress e, State& state) noexcept final
     {
       switch (e.key) {
-        // Operators are counted from the bottom
         case Key::page_a: state.active_idx = 0; break;
         case Key::page_b: state.active_idx = 1; break;
         case Key::page_c: state.active_idx = 2; break;

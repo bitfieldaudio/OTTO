@@ -70,8 +70,8 @@ namespace otto {
 
     // Synth Dispatcher
     auto synth = otto::make_synthdispatcher(ctx["synth"]);
-    synth.logic->register_engine(std::move(engines::nuke::factory));
     synth.logic->register_engine(std::move(engines::ottofm::factory));
+    synth.logic->register_engine(std::move(engines::nuke::factory));
 
     nav_km.bind_nav_key(Key::synth, synth.main_screen);
     nav_km.bind_nav_key(Key::envelope, synth.mod_screen);
