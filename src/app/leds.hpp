@@ -59,12 +59,12 @@ namespace otto {
     settings = util::enum_integer(Key::settings),
     sequencer = util::enum_integer(Key::sequencer),
     synth = util::enum_integer(Key::synth),
-    unassigned_a = util::enum_integer(Key::unassigned_a),
-    unassigned_b = util::enum_integer(Key::unassigned_b),
-    unassigned_c = util::enum_integer(Key::unassigned_c),
-    unassigned_d = util::enum_integer(Key::unassigned_d),
-    unassigned_e = util::enum_integer(Key::unassigned_e),
-    unassigned_f = util::enum_integer(Key::unassigned_f),
+    page_a = util::enum_integer(Key::page_a),
+    page_b = util::enum_integer(Key::page_b),
+    page_c = util::enum_integer(Key::page_c),
+    page_d = util::enum_integer(Key::page_d),
+    sigma = util::enum_integer(Key::sigma),
+    omega = util::enum_integer(Key::omega),
   };
 
   using LedSet = util::enum_bitset<Led>;
@@ -77,12 +77,16 @@ namespace otto {
                                    Led::channel5, Led::channel6, Led::channel7, Led::channel8, Led::channel9};
     inline const LedSet piano = seq | channel;
 
-    inline const LedSet func = {
-      Led::shift,        Led::sends,        Led::plus,         Led::mixer,       Led::minus,        Led::fx1,
-      Led::fx2,          Led::master,       Led::play,         Led::record,      Led::arp,          Led::slots,
-      Led::twist1,       Led::twist2,       Led::looper,       Led::external,    Led::sampler,      Led::envelope,
-      Led::voices,       Led::settings,     Led::sequencer,    Led::synth,       Led::unassigned_a, Led::unassigned_b,
-      Led::unassigned_c, Led::unassigned_d, Led::unassigned_e, Led::unassigned_f};
+    inline const LedSet pages = {Led::page_a, Led::page_b, Led::page_c, Led::page_d};
+
+    inline const LedSet screens = {Led::sends,     Led::mixer,   Led::fx1,      Led::fx2,    Led::master,
+                                   Led::arp,       Led::slots,   Led::twist1,   Led::twist2, Led::looper,
+                                   Led::external,  Led::sampler, Led::envelope, Led::voices, Led::settings,
+                                   Led::sequencer, Led::synth};
+
+    inline const LedSet commands = {Led::shift, Led::plus, Led::minus, Led::play, Led::record, Led::sigma, Led::omega};
+
+    inline const LedSet func = pages | screens | commands;
   } // namespace led_groups
 
   inline tl::optional<Led> led_from(Key k)

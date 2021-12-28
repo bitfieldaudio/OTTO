@@ -67,12 +67,12 @@ namespace otto {
     settings = 50,
     sequencer = 51,
     synth = 52,
-    unassigned_a = 53,
-    unassigned_b = 54,
-    unassigned_c = 55,
-    unassigned_d = 56,
-    unassigned_e = 57,
-    unassigned_f = 58,
+    page_a = 53,
+    page_b = 54,
+    page_c = 55,
+    page_d = 56,
+    sigma = 57,
+    omega = 58,
   };
 
   using KeySet = util::enum_bitset<Key>;
@@ -87,12 +87,16 @@ namespace otto {
     inline const KeySet enc_clicks = {Key::blue_enc_click, Key::green_enc_click, Key::yellow_enc_click,
                                       Key::red_enc_click};
 
-    inline const KeySet func = {
-      Key::shift,        Key::sends,        Key::plus,         Key::mixer,       Key::minus,        Key::fx1,
-      Key::fx2,          Key::master,       Key::play,         Key::record,      Key::arp,          Key::slots,
-      Key::twist1,       Key::twist2,       Key::looper,       Key::external,    Key::sampler,      Key::envelope,
-      Key::voices,       Key::settings,     Key::sequencer,    Key::synth,       Key::unassigned_a, Key::unassigned_b,
-      Key::unassigned_c, Key::unassigned_d, Key::unassigned_e, Key::unassigned_f};
+    inline const KeySet pages = {Key::page_a, Key::page_b, Key::page_c, Key::page_d};
+
+    inline const KeySet screens = {Key::sends,     Key::mixer,   Key::fx1,      Key::fx2,    Key::master,
+                                   Key::arp,       Key::slots,   Key::twist1,   Key::twist2, Key::looper,
+                                   Key::external,  Key::sampler, Key::envelope, Key::voices, Key::settings,
+                                   Key::sequencer, Key::synth};
+
+    inline const KeySet commands = {Key::shift, Key::plus, Key::minus, Key::play, Key::record, Key::sigma, Key::omega};
+
+    inline const KeySet func = pages | screens | commands;
   } // namespace key_groups
 
   enum struct Encoder : std::uint8_t {

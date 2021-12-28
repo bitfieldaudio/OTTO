@@ -24,7 +24,37 @@ namespace otto::board {
 
   void Emulator::draw_leds(skia::Canvas& ctx)
   {
-    ctx.drawCircle({765, 190}, 30, otto::paints::fill(colors::blue));
+    // Func Group 1
+    skia::Point origin = {1116, 65};
+    float side_length = 66;
+    for (auto x = 0; x < 5; x++) {
+      for (auto y = 0; y < 4; y++) {
+        ctx.drawCircle({origin.x() + x * side_length, origin.y() + y * side_length}, 20,
+                       otto::paints::fill(colors::blue));
+      }
+    }
+    // Func Group 2
+    origin = {1480, 65};
+    for (auto x = 0; x < 2; x++) {
+      for (auto y = 0; y < 4; y++) {
+        ctx.drawCircle({origin.x() + x * side_length, origin.y() + y * side_length}, 20,
+                       otto::paints::fill(colors::blue));
+      }
+    }
+    // Channel
+    origin = {190, 344};
+    side_length = 99;
+    std::array<int, 10> the_black_keys = {0, 1, 3, 4, 5, 7, 8, 10, 11, 12};
+    for (auto x : the_black_keys) {
+      ctx.drawRect(skia::Rect::MakeXYWH(origin.x() + x * side_length, origin.y(), 50, 15),
+                   otto::paints::fill(colors::blue));
+    }
+    // Seq
+    origin = {43, 428};
+    for (auto x = 0; x < 16; x++) {
+      ctx.drawRect(skia::Rect::MakeXYWH(origin.x() + x * side_length, origin.y(), 50, 15),
+                   otto::paints::fill(colors::blue));
+    }
   }
 
   void Emulator::draw_frontpanel(skia::Canvas& ctx)

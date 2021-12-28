@@ -25,16 +25,16 @@ namespace otto::engines::ottofm {
 
     [[nodiscard]] util::enum_bitset<Key> key_mask() const noexcept override
     {
-      return key_groups::enc_clicks + Key::shift;
+      return key_groups::pages + Key::shift;
     }
 
     void reduce(KeyPress e, State& state) noexcept final
     {
       switch (e.key) {
-        case Key::blue_enc_click: state.cur_op_idx = 3; break;
-        case Key::green_enc_click: state.cur_op_idx = 2; break;
-        case Key::yellow_enc_click: state.cur_op_idx = 1; break;
-        case Key::red_enc_click: state.cur_op_idx = 0; break;
+        case Key::page_a: state.cur_op_idx = 3; break;
+        case Key::page_b: state.cur_op_idx = 2; break;
+        case Key::page_c: state.cur_op_idx = 1; break;
+        case Key::page_d: state.cur_op_idx = 0; break;
         case Key::shift: state.shift = true; break;
         default: break;
       }

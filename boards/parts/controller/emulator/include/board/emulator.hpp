@@ -22,7 +22,7 @@ namespace otto::board {
       draw_frontpanel(ctx);
     };
 
-    constexpr static skia::Vector size = {1113, 387};
+    constexpr static skia::Vector size = {1617, 561};
 
   private:
     void draw_bg(skia::Canvas& ctx);

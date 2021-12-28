@@ -126,6 +126,11 @@ namespace otto::drivers {
       case Key::p: send_key(OKey::play); break;
       case Key::m: send_key(OKey::master); break;
 
+      case Key::z: send_key(OKey::page_a); break;
+      case Key::x: send_key(OKey::page_b); break;
+      case Key::c: send_key(OKey::page_c); break;
+      case Key::v: send_key(OKey::page_d); break;
+
       case Key::up: send_key(OKey::plus); break;
       case Key::down: send_key(OKey::minus); break;
 

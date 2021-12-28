@@ -117,7 +117,10 @@ namespace otto {
     auto stop_graphics = graphics.show([&](skia::Canvas& ctx) {
       ledman.process(layers);
       emu.draw(ctx);
-      // nav_km.nav().draw(ctx);
+      ctx.save();
+      skia::translate(ctx, {703, 53});
+      nav_km.nav().draw(ctx);
+      ctx.restore();
     });
 
     stateman.read_from_file();

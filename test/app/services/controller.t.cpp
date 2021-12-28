@@ -49,11 +49,11 @@ TEST_CASE ("Controller::read_input_data") {
     auto presses = std::span(p.data.data(), 8);
     auto releases = std::span(p.data.data() + 8, 8);
     util::set_bit(presses, util::enum_integer(Key::seq0), true);
-    util::set_bit(presses, util::enum_integer(Key::unassigned_f), true);
+    util::set_bit(presses, util::enum_integer(Key::omega), true);
     util::set_bit(releases, util::enum_integer(Key::seq5), true);
     com.handle_packet(p);
     REQUIRE(handler.events ==
-            Events{UntimedKeyPress{Key::seq0}, UntimedKeyRelease{Key::seq5}, UntimedKeyPress{Key::unassigned_f}});
+            Events{UntimedKeyPress{Key::seq0}, UntimedKeyRelease{Key::seq5}, UntimedKeyPress{Key::omega}});
   }
   SECTION ("Read encoderevents") {
     Packet p = {Command::encoder_events, {10, 2, 251, 0}};
