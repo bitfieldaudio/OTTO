@@ -10,19 +10,6 @@
 
 namespace otto::engines::ottofm {
 
-  struct ADSR : graphics::Widget<ADSR> {
-    float a = 0;
-    float d = 0;
-    float s = 0;
-    float r = 0;
-    bool active = false;
-    float expanded = 0;
-    float active_segment = 0;
-    void do_draw(skia::Canvas& ctx);
-  };
-
-  void draw_envelopes(skia::Canvas& ctx);
-
   struct Operators : graphics::Widget<Operators> {
     Operators(const std::array<float, 4>& a) : activity_levels(a) {}
     int algorithm_idx = 0, cur_op = 0;

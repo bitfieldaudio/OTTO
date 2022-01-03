@@ -53,10 +53,10 @@ namespace otto::engines::nuke {
     {
       // TODO
       switch (e.encoder) {
-        case Encoder::blue: state.param0 += e.steps * 0.002; break;
-        case Encoder::green: state.param1 += e.steps * 0.01; break;
-        case Encoder::yellow: state.param2 += e.steps * 0.01; break;
-        case Encoder::red: state.param3 += e.steps * 0.01; break;
+        case Encoder::blue: state.osc2_pitch += e.steps * 0.002; break;
+        case Encoder::green: state.ringmod += e.steps * 0.01; break;
+        case Encoder::yellow: state.cutoff += e.steps * 0.01; break;
+        case Encoder::red: state.resonance += e.steps * 0.01; break;
       }
     }
 
@@ -76,7 +76,7 @@ namespace otto::engines::nuke {
 
     void on_state_change(const State& s) noexcept override
     {
-      params.set({s.param0, s.param1, s.param2, s.param3});
+      params.set({s.osc2_pitch, s.ringmod, s.cutoff, s.resonance});
     }
 
     void draw(skia::Canvas& ctx) noexcept override

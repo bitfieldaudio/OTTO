@@ -63,44 +63,43 @@ namespace otto::engines::nuke {
     {
       // Synth
       // Osc 2
-      osc2_freq_ratio = std::pow(2, neighborhoods(s.param0, -3, 3));
+      osc2_freq_ratio = std::pow(2, neighborhoods(s.osc2_pitch, -3, 3));
       // osc1.setDutyCycle(0.1 + s.param0 * 0.8);
 
       // Ring mod
-      ring_mod_amount = s.param1;
+      ring_mod_amount = s.ringmod;
 
       // Filter
-      cutoff = s.param2;
-      // filter_.setCutoff(cutoff);
-      filter_.setResonance(0.1 + 0.6 * s.param3);
+      cutoff = s.cutoff;
+      filter_.setResonance(0.1 + 0.6 * s.resonance);
 
       // Volume envelope
-      env_.attack(envelope_stage_duration(s.envparam0_0));
-      env_.decay(envelope_stage_duration(s.envparam0_1));
-      env_.sustain(s.envparam0_2);
-      env_.release(envelope_stage_duration(s.envparam0_3));
+      env_.attack(envelope_stage_duration(s.attack));
+      env_.decay(envelope_stage_duration(s.decay));
+      env_.sustain(s.sustain);
+      env_.release(envelope_stage_duration(s.release));
 
       // Filter envelope
-      env_filter_.attack(envelope_stage_duration(s.envparam1_0));
-      env_filter_.decay(4 * envelope_stage_duration(s.envparam1_1));
-      env_filter_.sustain(s.envparam1_2);
-      env_filter_amount = s.envparam1_3;
+      env_filter_.attack(envelope_stage_duration(s.filter_attack));
+      env_filter_.decay(4 * envelope_stage_duration(s.filter_decay));
+      env_filter_.sustain(s.filter_sustain);
+      env_filter_amount = s.filter_amount;
 
       // LFO
-      lfo_envelope_.attack(envelope_stage_duration(s.envparam2_2));
-      lfo_envelope_.decay(4 * envelope_stage_duration(s.envparam2_3));
+      lfo_envelope_.attack(envelope_stage_duration(s.lfo_attack));
+      lfo_envelope_.decay(4 * envelope_stage_duration(s.lfo_decay));
       // Decay can be disabled at the max setting
-      if (s.envparam2_3 > 0.99) {
+      if (s.lfo_decay > 0.99) {
         lfo_envelope_.sustainPoint(1);
       } else {
         lfo_envelope_.sustainDisable();
       }
 
       // LFO targets
-      lfo_to_pitch = s.envparam3_0;
-      lfo_to_volume = s.envparam3_1;
-      lfo_to_filter = s.envparam3_2;
-      lfo_to_ringmod = s.envparam3_3;
+      lfo_to_pitch = s.lfo_pitch_amount;
+      lfo_to_volume = s.lfo_volume_amount;
+      lfo_to_filter = s.lfo_filter_amount;
+      lfo_to_ringmod = s.lfo_ringmod_amount;
     }
 
     const State& state_;
@@ -150,8 +149,8 @@ namespace otto::engines::nuke {
     void on_state_change(const State& s) noexcept override
     {
       // LFO
-      lfo.freq(s.envparam2_0 * s.envparam2_0 * 15 + 0.1);
-      lfo_shape = static_cast<LfoShapes>(static_cast<int>(s.envparam2_1));
+      lfo.freq(s.lfo_speed * s.lfo_speed * 15 + 0.1);
+      lfo_shape = static_cast<LfoShapes>(static_cast<int>(s.lfo_type));
 
       // Voices
       for (auto& v : voice_mgr_) v.on_state_change(s);

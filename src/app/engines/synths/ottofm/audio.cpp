@@ -216,26 +216,26 @@ namespace otto::engines::ottofm {
       }
       case 4: {
         float aux = op2(op3(0));
-        return (op0(aux) + op1(aux));
+        return (op0(aux) + op1(aux)) * 0.5f;
       }
       case 5: {
-        return (op0(0) + op1(op2(op3(0))));
+        return (op0(0) + op1(op2(op3(0)))) * 0.5f;
       }
       case 6: {
         return op0(op1(0) + op2(0) + op3(0));
       }
       case 7: {
-        return (op0(op1(0)) + op2(op3(0)));
+        return (op0(op1(0)) + op2(op3(0))) * 0.5f;
       }
       case 8: {
         float aux = op3(0);
-        return (op0(aux) + op1(aux) + op2(aux));
+        return (op0(aux) + op1(aux) + op2(aux)) * 0.33f;
       }
       case 9: {
-        return (op0(0) + op1(0) + op2(op3(0)));
+        return (op0(0) + op1(0) + op2(op3(0))) * 0.33f;
       }
       case 10: {
-        return (op0(0) + op1(0) + op2(0) + op3(0));
+        return (op0(0) + op1(0) + op2(0) + op3(0)) * 0.25f;
       }
       default: {
         return 0.f;

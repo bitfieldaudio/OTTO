@@ -54,37 +54,37 @@ namespace otto::engines::nuke {
       switch (state.active_idx) {
         case 0: {
           switch (e.encoder) {
-            case Encoder::blue: state.envparam0_0 += e.steps * 0.01; break;
-            case Encoder::green: state.envparam0_1 += e.steps * 0.01; break;
-            case Encoder::yellow: state.envparam0_2 += e.steps * 0.01; break;
-            case Encoder::red: state.envparam0_3 += e.steps * 0.01; break;
+            case Encoder::blue: state.attack += e.steps * 0.01; break;
+            case Encoder::green: state.decay += e.steps * 0.01; break;
+            case Encoder::yellow: state.sustain += e.steps * 0.01; break;
+            case Encoder::red: state.release += e.steps * 0.01; break;
           }
           break;
         }
         case 1: {
           switch (e.encoder) {
-            case Encoder::blue: state.envparam1_0 += e.steps * 0.01; break;
-            case Encoder::green: state.envparam1_1 += e.steps * 0.01; break;
-            case Encoder::yellow: state.envparam1_2 += e.steps * 0.01; break;
-            case Encoder::red: state.envparam1_3 += e.steps * 0.01; break;
+            case Encoder::blue: state.filter_attack += e.steps * 0.01; break;
+            case Encoder::green: state.filter_decay += e.steps * 0.01; break;
+            case Encoder::yellow: state.filter_sustain += e.steps * 0.01; break;
+            case Encoder::red: state.filter_amount += e.steps * 0.01; break;
           }
           break;
         }
         case 2: {
           switch (e.encoder) {
-            case Encoder::blue: state.envparam2_0 += e.steps * 0.01; break;
-            case Encoder::green: state.envparam2_1 += e.steps; break;
-            case Encoder::yellow: state.envparam2_2 += e.steps * 0.01; break;
-            case Encoder::red: state.envparam2_3 += e.steps * 0.01; break;
+            case Encoder::blue: state.lfo_speed += e.steps * 0.01; break;
+            case Encoder::green: state.lfo_type += e.steps; break;
+            case Encoder::yellow: state.lfo_attack += e.steps * 0.01; break;
+            case Encoder::red: state.lfo_decay += e.steps * 0.01; break;
           }
           break;
         }
         case 3: {
           switch (e.encoder) {
-            case Encoder::blue: state.envparam3_0 += e.steps * 0.01; break;
-            case Encoder::green: state.envparam3_1 += e.steps * 0.01; break;
-            case Encoder::yellow: state.envparam3_2 += e.steps * 0.01; break;
-            case Encoder::red: state.envparam3_3 += e.steps * 0.01; break;
+            case Encoder::blue: state.lfo_pitch_amount += e.steps * 0.01; break;
+            case Encoder::green: state.lfo_volume_amount += e.steps * 0.01; break;
+            case Encoder::yellow: state.lfo_filter_amount += e.steps * 0.01; break;
+            case Encoder::red: state.lfo_ringmod_amount += e.steps * 0.01; break;
           }
           break;
         }
@@ -93,40 +93,81 @@ namespace otto::engines::nuke {
     }
   };
 
+
   struct ModScreen final : itc::Consumer<State>, ScreenBase {
     using Consumer::Consumer;
 
-    FourParams params0{"Volume Envelope", {"Attack", "Decay", "Sustain", "Release"}};
-    FourParams params1{"Filter Envelope", {"Attack", "Decay", "Sustain", "Amount"}};
-    FourParams params2{"LFO", {"Speed", "Type", "Attack", "Decay"}};
-    FourParams params3{"Targets", {"Pitch", "Volume", "Filter", "Ring Mod"}};
+    ADSRGraphic volume_widget{0};
+    ADSGraphic filter_widget{1};
+    LFOGraphic lfo_widget{2};
+
+    float widget_size = 0;
+
+    // FourParams params0{"Volume Envelope", {"Attack", "Decay", "Sustain", "Release"}};
+    // FourParams params1{"Filter Envelope", {"Attack", "Decay", "Sustain", "Amount"}};
+    // FourParams params2{"LFO", {"Speed", "Type", "Attack", "Decay"}};
+    // FourParams params3{"Targets", {"Pitch", "Volume", "Filter", "Ring Mod"}};
 
     ModScreen(itc::Context& c) : Consumer(c)
     {
-      params0.bounding_box = {{10, 30}, {270, 160}};
-      params1.bounding_box = {{10, 30}, {270, 160}};
-      params2.bounding_box = {{10, 30}, {270, 160}};
-      params3.bounding_box = {{10, 30}, {270, 160}};
+      volume_widget.on_state_change(Consumer<State>::state());
+      filter_widget.on_state_change(Consumer<State>::state());
+      lfo_widget.on_state_change(Consumer<State>::state());
+      // params0.bounding_box = {{10, 30}, {270, 160}};
+      // params1.bounding_box = {{10, 30}, {270, 160}};
+      // params2.bounding_box = {{10, 30}, {270, 160}};
+      // params3.bounding_box = {{10, 30}, {270, 160}};
     }
 
     void on_state_change(const State& s) noexcept override
     {
       active_idx = s.active_idx;
-      params0.set({s.envparam0_0, s.envparam0_1, s.envparam0_2, s.envparam0_3});
-      params1.set({s.envparam1_0, s.envparam1_1, s.envparam1_2, s.envparam1_3});
-      params2.set({s.envparam2_0, s.envparam2_1, s.envparam2_2, s.envparam2_3});
-      params3.set({s.envparam3_0, s.envparam3_1, s.envparam3_2, s.envparam3_3});
+      volume_widget.on_state_change(s);
+      filter_widget.on_state_change(s);
+      lfo_widget.on_state_change(s);
+      // params0.set({s.envparam0_0, s.envparam0_1, s.envparam0_2, s.envparam0_3});
+      // params1.set({s.envparam1_0, s.envparam1_1, s.envparam1_2, s.envparam1_3});
+      // params2.set({s.envparam2_0, s.envparam2_1, s.envparam2_2, s.envparam2_3});
+      // params3.set({s.envparam3_0, s.envparam3_1, s.envparam3_2, s.envparam3_3});
+    }
+
+    void draw_mod_widget(skia::Canvas& ctx, auto& graphic, skia::Point pos, skia::Vector size, float expansion) noexcept
+    {
+      graphic.bounding_box.move_to({pos.x(), pos.y()});
+      graphic.bounding_box.resize({size.x(), size.y()});
+      graphic.expanded = expansion;
+      graphic.draw(ctx);
     }
 
     void draw(skia::Canvas& ctx) noexcept override
     {
-      switch (active_idx) {
-        case 0: params0.draw(ctx); break;
-        case 1: params1.draw(ctx); break;
-        case 2: params2.draw(ctx); break;
-        case 3: params3.draw(ctx); break;
-        default: break;
-      }
+      // Draw params for widgets
+      constexpr int active_y = 50;
+      constexpr int not_active_y = 15;
+      constexpr int y_pad = 33;
+      constexpr int x_start = 80;
+      constexpr int x_size = 220;
+      float step = (skia::height - 2 * y_pad - active_y - not_active_y * 3) / 3.f;
+
+      float upper_y = y_pad;
+
+      // Volume
+      auto& volume_graphic = volume_widget.graphic;
+      widget_size = active_y * volume_widget.size + not_active_y * (1 - volume_widget.size);
+      draw_mod_widget(ctx, volume_graphic, {x_start, upper_y}, {x_size, widget_size}, volume_widget.size);
+      upper_y += widget_size + step;
+
+      // Filter
+      auto& filter_graphic = filter_widget.graphic;
+      widget_size = active_y * filter_widget.size + not_active_y * (1 - filter_widget.size);
+      draw_mod_widget(ctx, filter_graphic, {x_start, upper_y}, {x_size, widget_size}, filter_widget.size);
+      upper_y += widget_size + step;
+
+      // LFO
+      auto& lfo_graphic = lfo_widget.graphic;
+      widget_size = active_y * lfo_widget.size + not_active_y * (1 - lfo_widget.size);
+      draw_mod_widget(ctx, lfo_graphic, {x_start, upper_y}, {x_size, widget_size}, lfo_widget.size);
+      upper_y += widget_size + step;
     }
 
   private:

@@ -7,50 +7,55 @@ namespace otto::engines::nuke {
 
 
   struct State {
-    util::StaticallyBounded<float, 0, 1> param0 = 0;
-    util::StaticallyBounded<float, 0, 1> param1 = 0;
-    util::StaticallyBounded<float, 0, 1> param2 = 0;
-    util::StaticallyBounded<float, 0, 1> param3 = 0;
+    util::StaticallyBounded<float, 0, 1> osc2_pitch = 0.5f;
+    util::StaticallyBounded<float, 0, 1> ringmod = 0.1f;
+    util::StaticallyBounded<float, 0, 1> cutoff = 0.7f;
+    util::StaticallyBounded<float, 0, 1> resonance = 0.2f;
 
     // Volume envelope
-    util::StaticallyBounded<float, 0, 1> envparam0_0 = 0;
-    util::StaticallyBounded<float, 0, 1> envparam0_1 = 0;
-    util::StaticallyBounded<float, 0, 1> envparam0_2 = 0;
-    util::StaticallyBounded<float, 0, 1> envparam0_3 = 0;
+    util::StaticallyBounded<float, 0, 1> attack = 0.f;
+    util::StaticallyBounded<float, 0, 1> decay = 0.f;
+    util::StaticallyBounded<float, 0, 1> sustain = 1.f;
+    util::StaticallyBounded<float, 0, 1> release = 0.1f;
     // Filter envelope
-    util::StaticallyBounded<float, 0, 1> envparam1_0 = 0;
-    util::StaticallyBounded<float, 0, 1> envparam1_1 = 0;
-    util::StaticallyBounded<float, 0, 1> envparam1_2 = 0;
-    util::StaticallyBounded<float, 0, 1> envparam1_3 = 0;
+    util::StaticallyBounded<float, 0, 1> filter_attack = 0.1f;
+    util::StaticallyBounded<float, 0, 1> filter_decay = 0.1f;
+    util::StaticallyBounded<float, 0, 1> filter_sustain = 0.5f;
+    util::StaticallyBounded<float, 0, 1> filter_amount = 0.f;
     // LFO
-    util::StaticallyBounded<float, 0, 1> envparam2_0 = 0;
-    util::StaticallyBounded<int, 0, 9> envparam2_1 = 0;
-    util::StaticallyBounded<float, 0, 1> envparam2_2 = 0;
-    util::StaticallyBounded<float, 0, 1> envparam2_3 = 0;
-    //
-    util::StaticallyBounded<float, 0, 1> envparam3_0 = 0;
-    util::StaticallyBounded<float, 0, 1> envparam3_1 = 0;
-    util::StaticallyBounded<float, 0, 1> envparam3_2 = 0;
-    util::StaticallyBounded<float, 0, 1> envparam3_3 = 0;
+    util::StaticallyBounded<float, 0, 1> lfo_speed = 0.2f;
+    util::StaticallyBounded<int, 0, 7> lfo_type = 0;
+    util::StaticallyBounded<float, 0, 1> lfo_attack = 0.f;
+    util::StaticallyBounded<float, 0, 1> lfo_decay = 1.f;
+    // LFO Targets
+    util::StaticallyBounded<float, -1, 1> lfo_pitch_amount = 0.0f;
+    util::StaticallyBounded<float, 0, 1> lfo_volume_amount = 0.f;
+    util::StaticallyBounded<float, 0, 1> lfo_filter_amount = 0.f;
+    util::StaticallyBounded<float, 0, 1> lfo_ringmod_amount = 0.f;
 
     int active_idx = 0;
     bool shift = false;
 
-    DECL_VISIT(param0,
-               param1,
-               param2,
-               param3,
-               envparam0_0,
-               envparam0_1,
-               envparam0_2,
-               envparam0_3,
-               envparam1_0,
-               envparam1_1,
-               envparam1_2,
-               envparam1_3,
-               envparam2_0,
-               envparam2_1,
-               active_idx);
+    // DECL_VISIT(osc2_pitch,
+    //            ringmod,
+    //            cutoff,
+    //            resonance,
+    //            attack,
+    //            decay,
+    //            sustain,
+    //            release,
+    //            filter_attack,
+    //            filter_decay,
+    //            filter_sustain,
+    //            filter_amount,
+    //            lfo_speed,
+    //            lfo_type,
+    //            lfo_attack,
+    //            lfo_decay,
+    //            lfo_pitch_amount,
+    //            lfo_volume_amount,
+    //            lfo_filter_amount,
+    //            lfo_ringmod_amount);
   };
 
 } // namespace otto::engines::nuke

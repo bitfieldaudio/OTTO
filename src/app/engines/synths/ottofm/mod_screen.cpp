@@ -5,6 +5,7 @@
 
 #include "lib/util/with_limits.hpp"
 
+#include "lib/graphics/adsr.hpp"
 #include "lib/itc/itc.hpp"
 #include "lib/skia/skia.hpp"
 #include "lib/widget.hpp"
@@ -87,8 +88,9 @@ namespace otto::engines::ottofm {
     ADSRGraphic(int idx) : index(idx) {}
     int index;
     bool active = false;
-    ADSR graphic;
+    graphics::ADSR graphic;
     skia::Anim<float> size = {0, 0.25};
+
     void on_state_change(const State& s)
     {
       const auto& env = s.operators[index].envelope;
@@ -185,6 +187,7 @@ namespace otto::engines::ottofm {
         graphic.active_segment = state<AudioState>().stage[env.index];
         graphic.draw(ctx);
         // If knobs are being turned, show the pop-up
+        // TODO: This is not working. Find out why
         if (env.active) {
           constexpr float padding = 6;
           skia::place_text(ctx, last_changed_parameter, fonts::regular(14), colors::white.brighten(popup_brightness),
