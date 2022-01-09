@@ -38,7 +38,7 @@ namespace otto::engines::slots {
       constexpr float inner_radius = 10;
       constexpr SkScalar text_offset = outer_radius + 6;
       // Blue Copy/Paste
-      skia::Point copy_location = {width * 0.25f, height * 0.382};
+      skia::Point copy_location = {width * 0.25f, static_cast<SkScalar>(height * 0.382)};
       ctx.drawCircle(copy_location, middle_radius, paints::fill(colors::blue.fade(0.5f)));
       ctx.drawCircle(copy_location, inner_radius, paints::fill(colors::blue));
       skia::place_text(ctx, "COPY/PASTE", fonts::medium(14), paints::fill(colors::white),
@@ -46,7 +46,7 @@ namespace otto::engines::slots {
 
 
       // Color wheel
-      skia::Point color_wheel_location = {width * 0.75f, height * 0.382};
+      skia::Point color_wheel_location = {width * 0.75f, static_cast<SkScalar>(height * 0.382)};
       skia::Paint paint;
       paint.setAntiAlias(true);
       paint.setShader(skia::GradientShader::MakeSweep(color_wheel_location.x(), color_wheel_location.y(), wheel_colors,
@@ -64,30 +64,33 @@ namespace otto::engines::slots {
 
   struct SoundSlotsScreen : OverlayBase, itc::Consumer<SoundSlotsState> {
     using Consumer::Consumer;
-    struct Handler : LogicDomain, InputReducer<SoundSlotsState>, IInputLayer {
-      using InputReducer::InputReducer;
+    struct Handler final : LogicDomain, itc::Producer<SoundSlotsState>, IInputLayer, InputHandler {
+      using Producer::Producer;
+      ;
 
       [[nodiscard]] KeySet key_mask() const noexcept override
       {
         return key_groups::enc_clicks | key_groups::channel;
       }
 
-      void reduce(KeyPress e, SoundSlotsState& state) noexcept final
+      void handle(KeyPress e) noexcept final
       {
         if (e.key == Key::blue_enc_click) {
           // TODO: Copy/paste
         } else if (auto chan = channel_number_for(e.key)) {
-          state.active_idx = *chan;
+          commit([&](auto& state) { state.active_idx = *chan; });
         }
       }
 
-      void reduce(EncoderEvent e, SoundSlotsState& state) noexcept override
+      void handle(EncoderEvent e) noexcept override
       {
         switch (e.encoder) {
           case Encoder::green: [[fallthrough]];
           case Encoder::yellow: [[fallthrough]];
           case Encoder::red: {
-            state.slot_states[state.active_idx].selected_color_f += e.steps * 0.01f; // Internal
+            commit([&](auto& state) {
+              state.slot_states[state.active_idx].selected_color_f += float(e.steps) * 0.01f; // Internal
+            });
             break;
           }
           default: break;
@@ -109,7 +112,6 @@ namespace otto::engines::slots {
         }
       }
     }
-
 
     SoundSlotsScreen(itc::Context& c) : Consumer(c)
     {

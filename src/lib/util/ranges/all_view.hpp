@@ -16,7 +16,7 @@ namespace otto::util {
   /// This is needed because libstdc++ views are broken on clang until clang implements
   /// lazy concept evaluation: https://reviews.llvm.org/D60939
   template<typename Iterator, typename Sentinel>
-  struct subrange : boost::stl_interfaces::view_interface<subrange<Iterator, Sentinel>>, std::ranges::view_base {
+  struct subrange : boost::stl_interfaces::v1::view_interface<subrange<Iterator, Sentinel>>, std::ranges::view_base {
     subrange() = default;
     template<typename Range>
     constexpr subrange(Range&& r) : first_(std::begin(r)), last_(std::end(r))

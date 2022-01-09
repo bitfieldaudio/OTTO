@@ -7,10 +7,15 @@ namespace otto::services {
   {
     thread_ = std::jthread([this, &runtime](const std::stop_token& st) {
       log::set_thread_name("graphics");
-      driver_->run([this, &st](SkCanvas& ctx) {
-        loop_function(ctx);
-        return !st.stop_requested();
-      });
+      while (draw_func_ == nullptr && !st.stop_requested()) {
+        executor().run_queued_functions();
+      }
+      if (!st.stop_requested()) {
+        driver_->run([this, &st](SkCanvas& ctx) {
+          loop_function(ctx);
+          return !st.stop_requested();
+        });
+      }
       runtime.request_stop();
       // Run until destructor
       while (!st.stop_requested()) {
@@ -36,5 +41,10 @@ namespace otto::services {
     last_frame_ = now;
     if (draw_func_) draw_func_(ctx);
     executor().run_queued_functions();
+  }
+
+  Graphics::IGraphicsDriver& Graphics::driver() noexcept
+  {
+    return *driver_;
   }
 } // namespace otto::services

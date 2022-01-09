@@ -29,7 +29,7 @@ namespace otto::glfw {
     SkASSERT(glfwGetCurrentContext());
     if (name == "eglQueryString"sv) {
       return nullptr;
-      return (GrGLFuncPtr)(static_cast<GrEGLQueryStringFn*>([](void* dpy, int name) -> const char* { return ""; }));
+      return (GrGLFuncPtr) (static_cast<GrEGLQueryStringFn*>([](void* dpy, int name) -> const char* { return ""; }));
     }
     return glfwGetProcAddress(name);
   }
@@ -167,16 +167,19 @@ namespace otto::glfw {
     return {x, y};
   }
 
+  constexpr int max_scale_factor = 8;
 
-  SkiaWindow::SkiaWindow(int width, int height, const std::string& name) : Window(width, height, name)
+  SkiaWindow::SkiaWindow(int width, int height, const std::string& name)
+    : Window(width, height, name), init_size_{static_cast<SkScalar>(width), static_cast<SkScalar>(height)}
   {
+    set_window_size_limits(width, height, width * max_scale_factor, height * max_scale_factor);
     make_current();
     auto interface = GrGLMakeNativeInterface_glfw();
     context_ = GrDirectContext::MakeGL(interface);
     GrGLFramebufferInfo fbInfo;
     fbInfo.fFBOID = 0;
     fbInfo.fFormat = GL_RGBA8;
-    GrBackendRenderTarget backendRenderTarget(width, height,
+    GrBackendRenderTarget backendRenderTarget(width * max_scale_factor, height * max_scale_factor,
                                               0, // sample count
                                               0, // stencil bits
                                               fbInfo);
@@ -200,11 +203,21 @@ namespace otto::glfw {
   void SkiaWindow::begin_frame()
   {
     make_current();
+    canvas_->save();
     canvas_->clear(SK_ColorBLACK);
+    auto [wx, wy] = window_size();
+    auto [rx, ry] = init_size_;
+    auto scale_x = float(wx) / rx;
+    auto scale_y = float(wy) / ry;
+    auto scale = std::min(std::min(scale_x, scale_y), float(max_scale_factor));
+    canvas().translate(0, ry * max_scale_factor);
+    canvas().scale(scale, scale);
+    canvas().translate(0, -ry);
   }
 
   void SkiaWindow::end_frame()
   {
+    canvas_->restore();
     context_->flush();
     swap_buffers();
   }
@@ -217,15 +230,24 @@ namespace otto::drivers {
   void handle_keyevent(glfw::Action action, glfw::Modifiers mods, glfw::Key key, IInputHandler& handler);
 
   struct GlfwGraphicsDriver final : IGraphicsDriver {
+    void request_size(skia::Vector size) override
+    {
+      requested_size_ = size;
+    };
+
     void run(std::function<bool(SkCanvas&)> f) override
     {
-      otto::glfw::SkiaWindow win = {1617, 561, "OTTO"};
+      otto::glfw::SkiaWindow win = {static_cast<int>(requested_size_.x()), static_cast<int>(requested_size_.y()),
+                                    "OTTO"};
+      win.set_window_aspect_ration(requested_size_.x(), requested_size_.y());
       win.key_callback = [this](glfw::Action a, glfw::Modifiers m, glfw::Key k) { key_callback(a, m, k); };
       win.show(std::move(f));
     }
 
   private:
     void key_callback(glfw::Action a, glfw::Modifiers m, glfw::Key k) noexcept;
+
+    skia::Vector requested_size_ = skia::screen_size;
   };
 
   std::unique_ptr<IGraphicsDriver> IGraphicsDriver::make_default()

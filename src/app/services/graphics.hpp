@@ -22,6 +22,8 @@ namespace otto::services {
     /// Open a window/display drawing the given draw function
     util::at_exit show(DrawFunc f);
 
+    IGraphicsDriver& driver() noexcept;
+
   private:
     /// The function to run in the main loop on the graphics thread.
     /// Draws the frame, executes the required functions, and returns

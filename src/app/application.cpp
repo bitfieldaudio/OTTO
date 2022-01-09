@@ -3,6 +3,7 @@
 #include <argparse/argparse.hpp>
 
 #include "lib/engines/synthdispatcher/synthdispatcher.hpp"
+#include "lib/globals.hpp"
 #include "lib/voices/voice_manager.hpp"
 
 #include "app/engines/master/master.hpp"
@@ -22,8 +23,11 @@
 #include "app/services/state.hpp"
 #include "app/services/ui_manager.hpp"
 
-#include "board/emulator.hpp"
 #include "board/midi_driver.hpp"
+
+#ifdef OTTO_BOARD_PARTS_CONTROLLER_EMULATOR
+#include "board/emulator.hpp"
+#endif
 
 namespace otto {
   using namespace services;
@@ -38,6 +42,22 @@ namespace otto {
       .help("Set log level. Options: trace, debug, info, warning, error, critical, off")
       .default_value(std::string("info"));
 
+    args
+      .add_argument("-d", "--data-dir") //
+      .help("Set the data directory")
+      .default_value(std::filesystem::path("./data"));
+
+    args
+      .add_argument("-r", "--resources-dir") //
+      .help("Set the location of resource files")
+      .default_value(std::filesystem::path("./resources"));
+
+    args
+      .add_argument("-e", "--emulator") //
+      .help("Show emulator")
+      .default_value(false)
+      .implicit_value(true);
+
     try {
       args.parse_args(argc, argv);
     } catch (std::runtime_error& e) {
@@ -49,6 +69,13 @@ namespace otto {
     log::init();
     log::set_level(log::level::from_str(args.get<std::string>("--log-level")));
 
+    auto data_dir = args.get<std::filesystem::path>("--data-dir");
+    auto resources_dir = args.get<std::filesystem::path>("--resources-dir");
+    globals::init::data_dir(data_dir);
+    globals::init::resource_dir(resources_dir);
+
+    auto show_emulator = args.get<bool>("--emulator");
+
     // Services
     RuntimeController rt;
     auto confman = ConfigManager::make_default();
@@ -56,7 +83,7 @@ namespace otto {
     Controller controller(rt, confman);
     Graphics graphics(rt);
     Audio audio;
-    StateManager stateman("data/state.json");
+    StateManager stateman(data_dir / "state.json");
 
     // Key/LED Layers
     LayerStack layers;
@@ -110,16 +137,29 @@ namespace otto {
     auto stop_input = controller.set_input_handler(layers);
 
     // Make emulator
-    board::Emulator emu;
-
-    auto stop_graphics = graphics.show([&](skia::Canvas& ctx) {
-      ledman.process(layers);
-      emu.draw(ctx);
-      ctx.save();
-      skia::translate(ctx, {703, 53});
-      nav_km.nav().draw(ctx);
-      ctx.restore();
-    });
+    auto stop_graphics = [&] {
+      if (show_emulator) {
+#ifdef OTTO_BOARD_PARTS_CONTROLLER_EMULATOR
+        graphics.driver().request_size(board::Emulator::size);
+        return graphics.show([&, emu = std::make_unique<board::Emulator>(ledman)](skia::Canvas& ctx) mutable {
+          ledman.process(layers);
+          emu->draw(ctx);
+          skia::saved(ctx, [&] {
+            skia::translate(ctx, {703, 53});
+            nav_km.nav().draw(ctx);
+          });
+        });
+#else
+        LOGE("Compiled without emulator support")
+#endif
+      }
+      return graphics.show([&](skia::Canvas& ctx) {
+        ledman.process(layers);
+        ctx.save();
+        nav_km.nav().draw(ctx);
+        ctx.restore();
+      });
+    }();
 
     stateman.read_from_file();
 

@@ -26,23 +26,7 @@ CPMAddPackage("gh:Neargye/magic_enum@0.7.2")
 CPMAddPackage("gh:Naios/function2#4.1.0")
 CPMAddPackage("gh:gabime/spdlog@1.9.2") 
 CPMAddPackage("gh:p-ranav/argparse@2.2") 
-
-# We're on version v0.3.0-123-gff67c1a which is not officially tagged in Github
-# so we're going to use the SHA directly.
-CPMAddPackage(
-  NAME Choreograph
-  GITHUB_REPOSITORY topisani/Choreograph
-  GIT_TAG ff67c1a
-  DOWNLOAD_ONLY YES
-)
-if (Choreograph_ADDED)
-  file(GLOB_RECURSE choreograph_sources ${Choreograph_SOURCE_DIR}/src/**.cpp)
-  add_library(choreograph ${choreograph_sources})
-  target_include_directories(choreograph
-    SYSTEM PUBLIC
-      $<BUILD_INTERFACE:${Choreograph_SOURCE_DIR}/src>
-  )
-endif()
+CPMAddPackage("gh:topisani/choreograph@0.5.0")
 
 CPMAddPackage(
   NAME gamma
@@ -111,10 +95,6 @@ if (yamc_ADDED)
   target_include_directories(yamc SYSTEM INTERFACE "${yamc_SOURCE_DIR}/include")
 endif()
 
-
-# TODO: Only use this if compiling for desktop
-
-CPMAddPackage("gh:sammycage/lunasvg@2.3.0")
 
 # BOOST
 
@@ -206,7 +186,7 @@ else()
   skia_use_system_freetype2=true \
   skia_use_x11=false \
   skia_use_xps=false \
-  skia_use_zlib=false \
+  skia_use_zlib=true \
   extra_cflags=[\"-Wno-unknown-warning-option\",\"-Wno-uninitialized\"] \
   extra_cflags_cc=[\"-frtti\",\"-Wno-invalid-offsetof\"] \
   extra_ldflags=[] \

@@ -11,7 +11,7 @@
 namespace otto::util {
 
   template<std::ranges::view Range, util::callable<bool(std::ranges::range_reference_t<Range>)> Callable>
-  struct filter_view : boost::stl_interfaces::view_interface<filter_view<Range, Callable>>, std::ranges::view_base {
+  struct filter_view : boost::stl_interfaces::v1::view_interface<filter_view<Range, Callable>>, std::ranges::view_base {
     using BaseIter = std::ranges::iterator_t<Range>;
     struct sentinel_t {};
     struct iterator_t : boost::stl_interfaces::iterator_interface<iterator_t,

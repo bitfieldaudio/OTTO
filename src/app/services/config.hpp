@@ -63,10 +63,10 @@ namespace otto {
       {
         std::filesystem::path config_path = "./ottoconf.json";
         if (std::filesystem::is_regular_file(config_path)) {
-          return ConfigManager(config_path);
+          return {config_path};
         }
         LOGI("Config file {} not found", config_path.c_str());
-        return ConfigManager();
+        return {};
       }
 
       [[nodiscard]] json::value into_json() const;

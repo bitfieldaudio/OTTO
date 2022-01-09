@@ -90,6 +90,7 @@ namespace otto::glfw {
     sk_sp<GrDirectContext> context_;
     sk_sp<SkSurface> surface_;
     skia::Canvas* canvas_;
+    skia::Vector init_size_;
   };
 
 } // namespace otto::glfw

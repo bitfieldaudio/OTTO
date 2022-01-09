@@ -130,7 +130,7 @@ namespace otto::util {
   /// Iterator for zip_view
   template<std::input_iterator... Iters>
   requires(sizeof...(Iters) > 0) //
-    struct zip_iterator : boost::stl_interfaces::proxy_iterator_interface<
+    struct zip_iterator : boost::stl_interfaces::v1::proxy_iterator_interface<
                             zip_iterator<Iters...>,
                             std::common_type_t<typename std::iterator_traits<Iters>::iterator_category...>,
                             std::tuple<std::iter_value_t<Iters>...>,
@@ -185,7 +185,7 @@ namespace otto::util {
   static_assert(std::indirectly_writable<zip_iterator<int*>, std::tuple<int>>);
 
   template<std::ranges::view... Ranges>
-  struct zip_view : boost::stl_interfaces::view_interface<zip_view<Ranges...>>, std::ranges::view_base {
+  struct zip_view : boost::stl_interfaces::v1::view_interface<zip_view<Ranges...>>, std::ranges::view_base {
     using base_type = std::tuple<Ranges...>;
 
     constexpr zip_view() = default;

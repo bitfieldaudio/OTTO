@@ -15,6 +15,7 @@
 #include <SkTextBlob.h>
 #include <SkTypeface.h>
 
+#include "lib/globals.hpp"
 #include "lib/logging.hpp"
 
 #include "anchor.hpp"
@@ -80,7 +81,8 @@ namespace otto::skia {
   constexpr float width = 320;
   constexpr float height = 240;
 
-  inline const Box screen_box = {{0, 0}, {320, 240}};
+  inline const Vector screen_size = {320, 240};
+  inline const Box screen_box = {{0, 0}, screen_size};
 
   inline void translate(Canvas& ctx, Point p)
   {
@@ -107,7 +109,7 @@ namespace otto::skia {
     return box;
   }
 
-  inline Box place_text(SkCanvas& ctx,
+  inline Box place_text(Canvas& ctx,
                         std::string_view text,
                         const Font& font,
                         const Paint& paint,
@@ -122,7 +124,7 @@ namespace otto::skia {
     return box;
   }
 
-  inline Box place_text(SkCanvas& ctx,
+  inline Box place_text(Canvas& ctx,
                         std::string_view text,
                         const Font& font,
                         Color color,
@@ -136,7 +138,7 @@ namespace otto::skia {
     return place_text(ctx, text, font, paint, p, anchor);
   }
 
-  inline Box place_text(SkCanvas& ctx,
+  inline Box place_text(Canvas& ctx,
                         std::string_view text,
                         const Font& font,
                         const Paint& paint,
@@ -146,7 +148,7 @@ namespace otto::skia {
     return place_text(ctx, text, font, paint, box.point(anchor), anchor);
   }
 
-  inline Box place_text(SkCanvas& ctx,
+  inline Box place_text(Canvas& ctx,
                         std::string_view text,
                         const Font& font,
                         Color color,
@@ -191,9 +193,9 @@ namespace otto::paints {
   {
     skia::Paint res;
     res.setAntiAlias(true);
-    res.setStyle(SkPaint::kFill_Style);
-    res.setStrokeCap(SkPaint::kRound_Cap);
-    res.setStrokeJoin(SkPaint::kRound_Join);
+    res.setStyle(skia::Paint::kFill_Style);
+    res.setStrokeCap(skia::Paint::kRound_Cap);
+    res.setStrokeJoin(skia::Paint::kRound_Join);
     res.setColor(color);
     return res;
   }
@@ -201,7 +203,7 @@ namespace otto::paints {
   inline skia::Paint stroke_and_fill(skia::Color color = colors::white, float stroke_width = 6.f)
   {
     auto res = stroke(color, stroke_width);
-    res.setStyle(SkPaint::kStrokeAndFill_Style);
+    res.setStyle(skia::Paint::kStrokeAndFill_Style);
     return res;
   }
 } // namespace otto::paints
@@ -221,42 +223,42 @@ namespace otto::fonts {
 
   inline skia::Font black_italic(float size)
   {
-    static auto typeface = details::load_typeface("./data/fonts/Roboto-BlackItalic.ttf");
-    return skia::Font(typeface, size);
+    static auto typeface = details::load_typeface(globals::resource_dir() / "fonts/Roboto-BlackItalic.ttf");
+    return {typeface, size};
   }
   inline skia::Font black(float size)
   {
-    static auto typeface = details::load_typeface("./data/fonts/Roboto-Black.ttf");
-    return skia::Font(typeface, size);
+    static auto typeface = details::load_typeface(globals::resource_dir() / "fonts/Roboto-Black.ttf");
+    return {typeface, size};
   }
   inline skia::Font light_italic(float size)
   {
-    static auto typeface = details::load_typeface("./data/fonts/Roboto-LightItalic.ttf");
-    return skia::Font(typeface, size);
+    static auto typeface = details::load_typeface(globals::resource_dir() / "fonts/Roboto-LightItalic.ttf");
+    return {typeface, size};
   }
   inline skia::Font light(float size)
   {
-    static auto typeface = details::load_typeface("./data/fonts/Roboto-Light.ttf");
-    return skia::Font(typeface, size);
+    static auto typeface = details::load_typeface(globals::resource_dir() / "fonts/Roboto-Light.ttf");
+    return {typeface, size};
   }
   inline skia::Font medium_italic(float size)
   {
-    static auto typeface = details::load_typeface("./data/fonts/Roboto-MediumItalic.ttf");
-    return skia::Font(typeface, size);
+    static auto typeface = details::load_typeface(globals::resource_dir() / "fonts/Roboto-MediumItalic.ttf");
+    return {typeface, size};
   }
   inline skia::Font medium(float size)
   {
-    static auto typeface = details::load_typeface("./data/fonts/Roboto-Medium.ttf");
-    return skia::Font(typeface, size);
+    static auto typeface = details::load_typeface(globals::resource_dir() / "fonts/Roboto-Medium.ttf");
+    return {typeface, size};
   }
   inline skia::Font regular_italic(float size)
   {
-    static auto typeface = details::load_typeface("./data/fonts/Roboto-Italic.ttf");
-    return skia::Font(typeface, size);
+    static auto typeface = details::load_typeface(globals::resource_dir() / "fonts/Roboto-Italic.ttf");
+    return {typeface, size};
   }
   inline skia::Font regular(float size)
   {
-    static auto typeface = details::load_typeface("./data/fonts/Roboto-Regular.ttf");
-    return skia::Font(typeface, size);
+    static auto typeface = details::load_typeface(globals::resource_dir() / "fonts/Roboto-Regular.ttf");
+    return {typeface, size};
   }
 } // namespace otto::fonts

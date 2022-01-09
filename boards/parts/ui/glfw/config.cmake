@@ -15,3 +15,7 @@ CPMFindPackage(
     "GLFW_BULID_DOCS OFF"
 )
 target_link_libraries(otto_src PUBLIC glfw)
+
+
+CPMAddPackage("gh:sammycage/lunasvg@2.3.0")
+target_link_libraries(otto_src PUBLIC lunasvg)

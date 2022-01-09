@@ -124,6 +124,18 @@ namespace otto {
     return tl::nullopt;
   }
 
+  inline tl::optional<Key> channel_key(int n)
+  {
+    if (n < 10) return Key(static_cast<std::uint8_t>(Key::channel0) + static_cast<std::uint8_t>(n));
+    return tl::nullopt;
+  }
+
+  inline tl::optional<Key> seq_key(int n)
+  {
+    if (n < 16) return Key(static_cast<std::uint8_t>(Key::seq0) + static_cast<std::uint8_t>(n));
+    return tl::nullopt;
+  }
+
   template<typename Event>
   struct TimedEvent : Event {
     chrono::time_point timestamp = chrono::clock::now();

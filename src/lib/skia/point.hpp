@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SkPoint.h>
+#include <SkSize.h>
 
 namespace otto::skia {
   using Point = SkPoint;

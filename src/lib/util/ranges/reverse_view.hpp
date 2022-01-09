@@ -8,7 +8,7 @@ namespace otto::util {
 
   template<std::ranges::view Range>
   requires std::ranges::bidirectional_range<Range> //
-    struct reverse_view : public boost::stl_interfaces::view_interface<reverse_view<Range>>, std::ranges::view_base {
+  struct reverse_view : public boost::stl_interfaces::v1::view_interface<reverse_view<Range>>, std::ranges::view_base {
     reverse_view() = default;
     reverse_view(Range base) : base_(std::move(base)) {}
 
@@ -49,8 +49,7 @@ namespace otto::util {
       return std::ranges::size(base_);
     }
 
-  private:
-    Range base_;
+  private : Range base_;
   };
 
   template<std::ranges::range Range>
