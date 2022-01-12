@@ -10,19 +10,23 @@
 
 #include "app/services/led_manager.hpp"
 
+#include "board/ui/glfw_ui.hpp"
+
 namespace otto::board {
 
-  struct Emulator : IDrawable {
+  struct Emulator : drivers::IGraphicsDriver {
     enum struct ClickAction { down, up };
 
-    Emulator(services::LedManager& led_manager);
+    Emulator();
 
-    void draw(skia::Canvas& ctx) noexcept override
+    void draw(skia::Canvas& ctx) noexcept
     {
       draw_bg(ctx);
       draw_leds(ctx);
       draw_frontpanel(ctx);
     };
+
+    void run(std::function<bool(skia::Canvas&)>) override;
 
     constexpr static skia::Vector size = {1617, 561};
 
@@ -39,7 +43,8 @@ namespace otto::board {
 
     skia::ImageInfo image_info;
     sk_sp<skia::Image> image;
-    services::LedManager& led_manager;
+
+    drivers::GlfwGraphicsDriver glfw_;
   };
 
 } // namespace otto::board

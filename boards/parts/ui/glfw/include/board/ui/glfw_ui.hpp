@@ -10,6 +10,9 @@
 
 #include "lib/skia/skia.hpp"
 
+#include "app/services/controller.hpp"
+#include "app/services/graphics.hpp"
+
 #include "board/ui/keys.hpp"
 
 struct GLFWwindow;
@@ -94,3 +97,28 @@ namespace otto::glfw {
   };
 
 } // namespace otto::glfw
+
+namespace otto::drivers {
+  struct GlfwGraphicsDriver : IGraphicsDriver {
+    static GlfwGraphicsDriver* instance;
+    GlfwGraphicsDriver();
+    ~GlfwGraphicsDriver() override;
+
+    void request_size(skia::Vector size);
+
+    void run(std::function<bool(SkCanvas&)> f) override;
+
+  private:
+    void key_callback(glfw::Action a, glfw::Modifiers m, glfw::Key k) noexcept;
+
+    skia::Vector requested_size_ = skia::screen_size;
+  };
+
+  struct GlfwMCUPort final : LocalMCUPort {
+    static GlfwMCUPort* instance;
+    GlfwMCUPort();
+    ~GlfwMCUPort() override;
+    GlfwMCUPort(const GlfwMCUPort&) = delete;
+    GlfwMCUPort(GlfwMCUPort&&) = delete;
+  };
+} // namespace otto::drivers

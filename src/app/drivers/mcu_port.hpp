@@ -8,6 +8,7 @@
 #include <blockingconcurrentqueue.h>
 
 #include "app/input.hpp"
+#include "app/leds.hpp"
 #include "app/services/config.hpp"
 
 namespace otto::drivers {
@@ -51,8 +52,27 @@ namespace otto::drivers {
   };
 
   struct LocalMCUPort : MCUPort, IInputHandler {
-    // UNIMPLEMENTED
-    void write(const Packet& p) override{};
+    void write(const Packet& p) override
+    {
+      if (p.cmd == Command::leds_buffer || p.cmd == Command::leds_commit) {
+        for (int i = 0; i < 4; i++) {
+          auto l = p.data[i * 4 + 0];
+          auto r = p.data[i * 4 + 1];
+          auto g = p.data[i * 4 + 2];
+          auto b = p.data[i * 4 + 3];
+
+          auto optled = util::enum_cast<Led>(l);
+          if (!optled) break;
+          auto led = *optled;
+
+          uncommitted_led_colors[led] = {r, g, b};
+        }
+
+        if (p.cmd == Command::leds_commit) {
+          led_colors = uncommitted_led_colors;
+        }
+      }
+    };
 
     /// Block until the next packet is ready
     Packet read() override
@@ -95,6 +115,10 @@ namespace otto::drivers {
     }
 
     moodycamel::BlockingConcurrentQueue<Packet> packets;
+    LEDColorSet led_colors;
+
+  private:
+    LEDColorSet uncommitted_led_colors;
   };
 
 

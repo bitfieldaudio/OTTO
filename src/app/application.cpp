@@ -52,11 +52,13 @@ namespace otto {
       .help("Set the location of resource files")
       .default_value(std::filesystem::path("./resources"));
 
+#ifdef OTTO_BOARD_PARTS_CONTROLLER_EMULATOR
     args
       .add_argument("-e", "--emulator") //
       .help("Show emulator")
       .default_value(false)
       .implicit_value(true);
+#endif
 
     try {
       args.parse_args(argc, argv);
@@ -74,14 +76,22 @@ namespace otto {
     globals::init::data_dir(data_dir);
     globals::init::resource_dir(resources_dir);
 
-    auto show_emulator = args.get<bool>("--emulator");
+    std::unique_ptr<drivers::IGraphicsDriver> graphics_driver;
+#ifdef OTTO_BOARD_PARTS_CONTROLLER_EMULATOR
+    if (args.get<bool>("--emulator")) {
+      graphics_driver = std::make_unique<board::Emulator>();
+    } else
+#endif
+    {
+      graphics_driver = drivers::IGraphicsDriver::make_default();
+    }
 
     // Services
     RuntimeController rt;
     auto confman = ConfigManager::make_default();
     LogicThread logic_thread;
     Controller controller(rt, confman);
-    Graphics graphics(rt);
+    Graphics graphics(rt, std::move(graphics_driver));
     Audio audio;
     StateManager stateman(data_dir / "state.json");
 
@@ -137,29 +147,12 @@ namespace otto {
     auto stop_input = controller.set_input_handler(layers);
 
     // Make emulator
-    auto stop_graphics = [&] {
-      if (show_emulator) {
-#ifdef OTTO_BOARD_PARTS_CONTROLLER_EMULATOR
-        graphics.driver().request_size(board::Emulator::size);
-        return graphics.show([&, emu = std::make_unique<board::Emulator>(ledman)](skia::Canvas& ctx) mutable {
-          ledman.process(layers);
-          emu->draw(ctx);
-          skia::saved(ctx, [&] {
-            skia::translate(ctx, {703, 53});
-            nav_km.nav().draw(ctx);
-          });
-        });
-#else
-        LOGE("Compiled without emulator support")
-#endif
-      }
-      return graphics.show([&](skia::Canvas& ctx) {
-        ledman.process(layers);
-        ctx.save();
-        nav_km.nav().draw(ctx);
-        ctx.restore();
-      });
-    }();
+    auto stop_graphics = graphics.show([&](skia::Canvas& ctx) {
+      ledman.process(layers);
+      ctx.save();
+      nav_km.nav().draw(ctx);
+      ctx.restore();
+    });
 
     stateman.read_from_file();
 

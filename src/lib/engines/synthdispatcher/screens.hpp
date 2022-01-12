@@ -32,8 +32,8 @@ namespace otto {
     void draw(skia::Canvas& ctx) noexcept
     {
       // Super simple graphics
-      skia::place_text(ctx, state().name.c_str(), fonts::regular(32), paints::fill(colors::blue), {320 / 2, 240 / 2},
-                       anchors::center);
+      skia::place_text(ctx, state().name.c_str(), fonts::regular(32), paints::fill(colors::blue),
+                       {320 / 2.f, 240 / 2.f}, anchors::center);
     }
 
     void receive(EncoderEvent e) noexcept override

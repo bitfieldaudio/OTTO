@@ -18,7 +18,7 @@ namespace otto::util {
   using iterator_adaptor = boost::stl_interfaces::iterator_interface<Derived, Category, ValueType, Reference>;
 
   template<std::ranges::view Range, std::invocable<std::ranges::range_reference_t<Range>> Callable>
-  struct transform_view : boost::stl_interfaces::view_interface<transform_view<Range, Callable>>,
+  struct transform_view : boost::stl_interfaces::v1::view_interface<transform_view<Range, Callable>>,
                           std::ranges::view_base {
     using BaseIter = std::ranges::iterator_t<Range>;
     struct sentinel_t {};
@@ -69,8 +69,7 @@ namespace otto::util {
         return iter_ += n;
       }
 
-    private:
-      transform_view* parent_ = nullptr;
+    private : transform_view* parent_ = nullptr;
       BaseIter iter_;
     };
 
@@ -107,8 +106,7 @@ namespace otto::util {
       return base_.size();
     }
 
-  private:
-    Range base_;
+  private : Range base_;
     std::optional<Callable> callable_;
   };
 

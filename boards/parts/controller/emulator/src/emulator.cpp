@@ -2,12 +2,14 @@
 
 #include <SkImageInfo.h>
 
+#include "board/ui/glfw_ui.hpp"
+
 namespace otto::board {
 
   /// Render emulator SVG at higher scale
   constexpr float scale_factor = 1;
 
-  Emulator::Emulator(services::LedManager& led_manager) : led_manager(led_manager)
+  Emulator::Emulator()
   {
     auto path = globals::resource_dir() / "emulator_front.svg";
     auto document = lunasvg::Document::loadFromFile(path);
@@ -82,9 +84,29 @@ namespace otto::board {
 
   skia::Color Emulator::get_led_color(Led led)
   {
-    auto lc = led_manager.colors[led];
+    auto* port = drivers::GlfwMCUPort::instance;
+    if (port == nullptr) return colors::blue;
+
+    auto lc = port->led_colors[led];
     return skia::Color::bytes(lc.r, lc.g, lc.b);
   }
+
+  void Emulator::run(std::function<bool(skia::Canvas&)> f)
+  {
+    glfw_.request_size(size);
+    glfw_.run([this, f = std::move(f)](skia::Canvas& ctx) {
+      draw_bg(ctx);
+      draw_leds(ctx);
+      draw_frontpanel(ctx);
+      bool res = false;
+      skia::saved(ctx, [&] {
+        skia::translate(ctx, {703, 53});
+        res = f(ctx);
+      });
+      return res;
+    });
+  }
+
 } // namespace otto::board
 
 // kak: other_file=../include/board/emulator.hpp

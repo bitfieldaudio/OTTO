@@ -229,51 +229,25 @@ namespace otto::drivers {
 
   void handle_keyevent(glfw::Action action, glfw::Modifiers mods, glfw::Key key, IInputHandler& handler);
 
-  struct GlfwGraphicsDriver final : IGraphicsDriver {
-    void request_size(skia::Vector size) override
-    {
-      requested_size_ = size;
-    };
-
-    void run(std::function<bool(SkCanvas&)> f) override
-    {
-      otto::glfw::SkiaWindow win = {static_cast<int>(requested_size_.x()), static_cast<int>(requested_size_.y()),
-                                    "OTTO"};
-      win.set_window_aspect_ration(requested_size_.x(), requested_size_.y());
-      win.key_callback = [this](glfw::Action a, glfw::Modifiers m, glfw::Key k) { key_callback(a, m, k); };
-      win.show(std::move(f));
-    }
-
-  private:
-    void key_callback(glfw::Action a, glfw::Modifiers m, glfw::Key k) noexcept;
-
-    skia::Vector requested_size_ = skia::screen_size;
-  };
-
   std::unique_ptr<IGraphicsDriver> IGraphicsDriver::make_default()
   {
     return std::make_unique<GlfwGraphicsDriver>();
   }
 
-  struct GlfwMCUPort final : LocalMCUPort {
-    static GlfwMCUPort* instance;
-    GlfwMCUPort()
-    {
-      instance = this;
-    }
-    ~GlfwMCUPort()
-    {
-      instance = nullptr;
-    }
-    GlfwMCUPort(const GlfwMCUPort&) = delete;
-    GlfwMCUPort(GlfwMCUPort&&) = delete;
-  };
-
-  GlfwMCUPort* GlfwMCUPort::instance = nullptr;
-
   std::unique_ptr<MCUPort> MCUPort::make_default(ConfigManager& confman)
   {
     return std::make_unique<GlfwMCUPort>();
+  }
+
+  GlfwGraphicsDriver* GlfwGraphicsDriver::instance = nullptr;
+
+  GlfwGraphicsDriver::GlfwGraphicsDriver()
+  {
+    instance = this;
+  }
+  GlfwGraphicsDriver::~GlfwGraphicsDriver()
+  {
+    instance = nullptr;
   }
 
   void GlfwGraphicsDriver::key_callback(glfw::Action a, glfw::Modifiers m, glfw::Key k) noexcept
@@ -284,4 +258,27 @@ namespace otto::drivers {
     }
   }
 
+  void GlfwGraphicsDriver::request_size(skia::Vector size)
+  {
+    requested_size_ = size;
+  };
+
+  void GlfwGraphicsDriver::run(std::function<bool(SkCanvas&)> f)
+  {
+    otto::glfw::SkiaWindow win = {static_cast<int>(requested_size_.x()), static_cast<int>(requested_size_.y()), "OTTO"};
+    win.set_window_aspect_ration(requested_size_.x(), requested_size_.y());
+    win.key_callback = BIND_THIS(key_callback);
+    win.show(std::move(f));
+  }
+
+  GlfwMCUPort* GlfwMCUPort::instance = nullptr;
+
+  GlfwMCUPort::GlfwMCUPort()
+  {
+    instance = this;
+  }
+  GlfwMCUPort::~GlfwMCUPort()
+  {
+    instance = nullptr;
+  }
 } // namespace otto::drivers
