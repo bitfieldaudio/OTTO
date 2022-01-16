@@ -93,7 +93,7 @@ namespace otto::drivers {
       if (ec) throw std::system_error(ec);
     }
 
-    Packet read() override
+    tl::optional<Packet> read() override
     {
       std::array<std::uint8_t, 17> data = {};
 

@@ -11,7 +11,7 @@ namespace otto::test {
       OTTO_UNREACHABLE();
     }
 
-    drivers::Packet read() override
+    tl::optional<drivers::Packet> read() override
     {
       if (data.empty()) return {};
       auto res = data.front();

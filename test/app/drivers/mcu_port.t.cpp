@@ -38,10 +38,10 @@ TEST_CASE ("MCUEventLog", "[.interactive]") {
   auto thread = std::jthread([&](const std::stop_token& t) {
     while (!t.stop_requested()) {
       auto packet = port->read();
-      if (packet.cmd == drivers::Command::heartbeat) {
-        LOGI("HEARTBEAT: {}", parse_hearbeat(packet));
+      if (packet && packet->cmd == drivers::Command::heartbeat) {
+        LOGI("HEARTBEAT: {}", parse_hearbeat(*packet));
       } else {
-        mcu.handle_packet(packet);
+        mcu.handle_packet(*packet);
       }
     }
   });
@@ -58,14 +58,14 @@ TEST_CASE ("MCUClockDrift", "[.interactive]") {
     chrono::duration mcu_start;
     while (!t.stop_requested()) {
       auto packet = port->read();
-      if (packet.cmd == drivers::Command::heartbeat) {
+      if (packet && packet->cmd == drivers::Command::heartbeat) {
         if (is_first) {
           local_start = chrono::clock::now();
-          mcu_start = parse_hearbeat(packet);
+          mcu_start = parse_hearbeat(*packet);
           is_first = false;
         }
         auto local_time = chrono::clock::now() - local_start;
-        auto mcu_time = parse_hearbeat(packet) - mcu_start;
+        auto mcu_time = parse_hearbeat(*packet) - mcu_start;
         auto diff = chrono::duration_cast<chrono::microseconds>(mcu_time - local_time);
 
         LOGI("MCU time: {:10}, Diff: {:10}, M/L: {:.4f}", chrono::duration_cast<chrono::microseconds>(mcu_time), diff,
