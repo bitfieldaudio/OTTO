@@ -36,6 +36,9 @@ namespace otto::board {
     void draw_frontpanel(skia::Canvas& ctx);
     skia::Color get_led_color(Led);
 
+    void handle_click(glfw::Button, glfw::Action, glfw::Modifiers);
+    void handle_scroll(double x, double y);
+
     lunasvg::Bitmap svg_bitmap;
     skia::PixelRef pixref{0, 0, svg_bitmap.data(), 1};
     sk_sp<skia::PixelRef> pixrefptr;

@@ -42,8 +42,8 @@ namespace otto::drivers {
 
     virtual void write(const Packet& p) = 0;
 
-    /// Block until the next packet is ready
-    virtual Packet read() = 0;
+    /// Return a packet if it is ready
+    virtual tl::optional<Packet> read() = 0;
 
     /// Signal stop to kill a blocking call to read
     virtual void stop() = 0;
@@ -74,12 +74,14 @@ namespace otto::drivers {
       }
     };
 
-    /// Block until the next packet is ready
-    Packet read() override
+    /// Return a packet if it is ready
+    tl::optional<Packet> read() override
     {
       Packet res;
-      packets.wait_dequeue(res);
-      return res;
+      if (packets.try_dequeue(res)) {
+        return res;
+      }
+      return tl::nullopt;
     }
 
     void stop() override

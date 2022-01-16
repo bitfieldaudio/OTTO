@@ -145,6 +145,10 @@ namespace otto::util {
     {
       return util::zip(enum_values<Enum>(), data_);
     }
+    auto view() const
+    {
+      return util::zip(enum_values<Enum>(), data_);
+    }
     std::array<T, enum_count<Enum>()> data_ = {};
   };
 

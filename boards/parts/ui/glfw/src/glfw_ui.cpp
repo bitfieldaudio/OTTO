@@ -71,7 +71,7 @@ namespace otto::glfw {
     });
 
     glfwSetScrollCallback(_glfw_win, [](GLFWwindow* window, double x, double y) {
-      if (auto* win = get_for(window); win && win->mouse_button_callback) {
+      if (auto* win = get_for(window); win && win->scroll_callback) {
         win->scroll_callback(x, y);
       }
     });
@@ -221,6 +221,19 @@ namespace otto::glfw {
     context_->flush();
     swap_buffers();
   }
+  SkPoint SkiaWindow::skia_cursor_pos()
+  {
+    auto [px, py] = cursor_pos();
+    auto [wx, wy] = window_size();
+    auto [rx, ry] = init_size_;
+    auto scale_x = float(wx) / rx;
+    auto scale_y = float(wy) / ry;
+    auto scale = std::min(std::min(scale_x, scale_y), float(max_scale_factor));
+    px /= scale;
+    py /= scale;
+    py -= float(wy) / scale - ry;
+    return SkPoint{px, py};
+  }
 } // namespace otto::glfw
 
 namespace otto::drivers {
@@ -265,10 +278,12 @@ namespace otto::drivers {
 
   void GlfwGraphicsDriver::run(std::function<bool(SkCanvas&)> f)
   {
-    otto::glfw::SkiaWindow win = {static_cast<int>(requested_size_.x()), static_cast<int>(requested_size_.y()), "OTTO"};
-    win.set_window_aspect_ration(requested_size_.x(), requested_size_.y());
-    win.key_callback = BIND_THIS(key_callback);
-    win.show(std::move(f));
+    if (!window) {
+      window = glfw::SkiaWindow{static_cast<int>(requested_size_.x()), static_cast<int>(requested_size_.y()), "OTTO"};
+      window->set_window_aspect_ration(requested_size_.x(), requested_size_.y());
+    }
+    window->key_callback = BIND_THIS(key_callback);
+    window->show(std::move(f));
   }
 
   GlfwMCUPort* GlfwMCUPort::instance = nullptr;

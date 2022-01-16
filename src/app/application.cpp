@@ -146,7 +146,6 @@ namespace otto {
     });
     auto stop_input = controller.set_input_handler(layers);
 
-    // Make emulator
     auto stop_graphics = graphics.show([&](skia::Canvas& ctx) {
       ledman.process(layers);
       ctx.save();

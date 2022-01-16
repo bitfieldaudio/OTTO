@@ -83,6 +83,9 @@ namespace otto::glfw {
       });
     }
 
+    /// The cursor possition adjusted for scaling of the skia canvas
+    SkPoint skia_cursor_pos();
+
   protected:
     skia::Canvas& canvas();
 
@@ -107,6 +110,8 @@ namespace otto::drivers {
     void request_size(skia::Vector size);
 
     void run(std::function<bool(SkCanvas&)> f) override;
+
+    tl::optional<glfw::SkiaWindow> window;
 
   private:
     void key_callback(glfw::Action a, glfw::Modifiers m, glfw::Key k) noexcept;

@@ -32,11 +32,11 @@ namespace otto::services {
           while (queue_.try_dequeue(data)) {
             com_.port_->write(data);
           }
-          Packet p;
-          do {
-            p = com_.port_->read();
-            com_.handle_packet(p);
-          } while (p.cmd != Command::none);
+          while (true) {
+            auto p = com_.port_->read();
+            if (!p || p->cmd == Command::none) break;
+            com_.handle_packet(*p);
+          }
           std::this_thread::sleep_for(conf_.wait_time);
         }
       })
@@ -71,7 +71,7 @@ namespace otto::services {
       case Command::encoder_events: {
         for (auto e : util::enum_values<Encoder>()) {
           if (p.data[util::enum_integer(e)] == 0) continue;
-          handler->handle(EncoderEvent{e, static_cast<std::int8_t>(p.data[util::enum_integer(e)])});
+          handler->handle(EncoderEvent{{e, static_cast<std::int8_t>(p.data[util::enum_integer(e)])}});
         }
       } break;
       case Command::shutdown: {

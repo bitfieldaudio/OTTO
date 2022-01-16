@@ -114,6 +114,12 @@ namespace otto::skia {
       return top_left_.y() + s_.y() * a.y();
     }
 
+    [[nodiscard]] bool contains(SkPoint p) const noexcept
+    {
+      auto p2 = p - top_left_;
+      return p2.x() >= 0 && p2.x() <= s_.x() && p2.y() >= 0 && p2.y() <= s_.y();
+    }
+
     operator SkRect() const noexcept
     {
       return SkRect::MakeXYWH(x(), y(), width(), height());
