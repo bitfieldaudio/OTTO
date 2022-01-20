@@ -3,6 +3,8 @@
 #include <cmath>
 #include <numbers>
 
+#include <Gamma/Oscillator.h>
+
 #include "lib/graphics/ads.hpp"
 #include "lib/graphics/adsr.hpp"
 #include "lib/skia/anim.hpp"
@@ -32,22 +34,39 @@ namespace otto::engines::nuke {
     void do_draw(skia::Canvas& ctx);
   };
 
-  template<typename Rng>
-  void fill_wave(Rng& rng, const int num_samples, const int num_periods)
+
+  inline float lfo_take_graphics(gam::LFO<gam::phsInc::Loop, gam::Domain1>& lfo, LfoShapes& shape)
   {
-    float angle_inc = 2 * std::numbers::pi * num_periods / num_samples;
-    float angle = -angle_inc;
-    auto get_next_sine = [&]() {
-      angle += angle_inc;
-      return sin(angle);
-    };
-    std::generate(rng.begin(), rng.end(), get_next_sine);
+    switch (shape) {
+      case LfoShapes::constant: return 1.f; break;
+      case LfoShapes::up: return lfo.up(); break;
+      case LfoShapes::down: return lfo.down(); break;
+      case LfoShapes::tri: return lfo.tri(); break;
+      case LfoShapes::sqr: return lfo.sqr(); break;
+      case LfoShapes::sine: return lfo.sineP9(); break;
+      case LfoShapes::C2: return lfo.C2(); break;
+      case LfoShapes::S5: return lfo.S5(); break;
+      default: return 0.f;
+    }
+  }
+
+  template<typename Rng>
+  void fill_wave(Rng& rng, LfoShapes shape, const int num_samples, const int num_periods)
+  {
+    // Create LFO object
+    gam::LFO<gam::phsInc::Loop, gam::Domain1> lfo;
+    float frequency = static_cast<float>(num_periods) / num_samples;
+    lfo.freq(frequency);
+
+    auto get_next = [&]() { return lfo_take_graphics(lfo, shape); };
+    std::generate(rng.begin(), rng.end(), get_next);
   }
 
   struct NukeLFO : graphics::Widget<NukeLFO> {
     float attack = 0.2;
     float decay = 0.2;
     float speed = 1;
+    int lfo_type = 0;
     bool active = false;
     float expanded = 0;
     float active_segment = 0;
@@ -59,7 +78,12 @@ namespace otto::engines::nuke {
 
     NukeLFO()
     {
-      fill_wave(wave_samples, wave_samples.size(), wave_periods);
+      fill_wave(wave_samples, LfoShapes::sine, wave_samples.size(), wave_periods);
+    }
+
+    void update_wave()
+    {
+      fill_wave(wave_samples, static_cast<LfoShapes>(static_cast<int>(lfo_type)), wave_samples.size(), wave_periods);
     }
 
     void do_draw(skia::Canvas& ctx)
@@ -82,18 +106,18 @@ namespace otto::engines::nuke {
       // Draw rects
       skia::Rect rect = skia::Rect::MakeXYWH(0, 0, aw + min_width, bounding_box.height());
       skia::RRect rrect = skia::RRect::MakeRectXY(rect, 4, 4);
-      skia::Paint paint = paints::stroke(colors::yellow.mix(colors::black, static_cast<float>(!active) * 0.8f));
+      skia::Paint paint = paints::stroke(colors::yellow.mix(colors::black, static_cast<float>(!active) * 0.8f), 4.f);
       ctx.drawRRect(rrect, paint);
 
       rect = skia::Rect::MakeXYWH(aw + spacing - min_width2, 0, width - 2 * spacing - aw - dw + min_width,
                                   bounding_box.height());
       rrect = skia::RRect::MakeRectXY(rect, 4, 4);
-      paint = paints::stroke(colors::blue.mix(colors::black, static_cast<float>(!active) * 0.8f));
+      paint = paints::stroke(colors::blue.mix(colors::black, static_cast<float>(!active) * 0.8f), 4.f);
       ctx.drawRRect(rrect, paint);
 
       rect = skia::Rect::MakeXYWH(width - dw - min_width, 0, dw + min_width, bounding_box.height());
       rrect = skia::RRect::MakeRectXY(rect, 4, 4);
-      paint = paints::stroke(colors::red.mix(colors::black, static_cast<float>(!active) * 0.8f));
+      paint = paints::stroke(colors::red.mix(colors::black, static_cast<float>(!active) * 0.8f), 4.f);
       ctx.drawRRect(rrect, paint);
 
       // Wave
@@ -102,12 +126,12 @@ namespace otto::engines::nuke {
       const float y_mid = height / 2;
       const float wave_y_scale = height / 3.5f;
       skia::Path path;
-      path.moveTo(offset, y_mid);
+      path.moveTo(offset, y_mid - wave_samples[0] * wave_y_scale);
       for (auto i = 0; i < wave_resolution; i++) {
         path.lineTo(i * x_distance + offset, y_mid - wave_samples[static_cast<int>(i * wave_step)] * wave_y_scale);
       }
-      ctx.drawPath(path, paints::stroke(colors::black, 15.f));
-      ctx.drawPath(path, paints::stroke(colors::green.mix(colors::black, static_cast<float>(!active) * 0.8f), 6.f));
+      ctx.drawPath(path, paints::stroke(colors::black, 10.f));
+      ctx.drawPath(path, paints::stroke(colors::green.mix(colors::black, static_cast<float>(!active) * 0.8f), 4.f));
     }
   };
 
@@ -123,6 +147,11 @@ namespace otto::engines::nuke {
       graphic.wave_step = s.lfo_speed * 5;
       graphic.attack = s.lfo_attack;
       graphic.decay = s.lfo_decay;
+      // Only change type if necessary
+      if (graphic.lfo_type != s.lfo_type) {
+        graphic.lfo_type = s.lfo_type;
+        graphic.update_wave();
+      }
       active = s.active_idx == index;
       graphic.active = active;
       size = active ? 1.f : 0.f;
@@ -184,5 +213,60 @@ namespace otto::engines::nuke {
       return 0;
     }
   };
+
+  struct Level : graphics::Widget<Level> {
+    Level(std::string t, skia::Color c) : title_(t), color_(c) {}
+
+    float value = 0;
+    float expansion = 0;
+    bool active = false;
+
+    void do_draw(skia::Canvas& ctx);
+
+  private:
+    std::string title_;
+    skia::Color color_;
+  };
+
+  struct Targets : graphics::Widget<Targets> {
+    int index;
+    std::array<Level, 4> levels = {
+      {{"PITCH", colors::blue}, {"VOLUME", colors::green}, {"FILTER", colors::yellow}, {"OSC 2", colors::red}}};
+    skia::Anim<float> expansion = {0, 0.25};
+
+    float expanded = 0;
+
+    Targets(int i) : index(i)
+    {
+      for (int i = 0; i < levels.size(); i++) {
+        auto& l = levels[i];
+        l.bounding_box.move_to({i * 77, 0});
+        l.bounding_box.resize({40, 40});
+      }
+      bounding_box.resize({240, 40});
+    }
+
+    void on_state_change(const State& s)
+    {
+      levels[0].value = s.lfo_pitch_amount;
+      levels[1].value = s.lfo_volume_amount;
+      levels[2].value = s.lfo_filter_amount;
+      levels[3].value = s.lfo_osc2_pitch_amount;
+      bool active = s.active_idx == index;
+      expansion = active ? 1.f : 0.f;
+      for (auto& l : levels) l.active = active;
+    }
+
+    void do_draw(skia::Canvas& ctx)
+    {
+      bounding_box.resize({240, 20 + 20 * expansion});
+      for (auto& l : levels) {
+        l.expansion = expansion;
+        l.draw(ctx);
+      }
+    }
+  };
+
+
 
 } // namespace otto::engines::nuke

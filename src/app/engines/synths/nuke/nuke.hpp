@@ -18,6 +18,8 @@ using namespace otto;
 
 namespace otto::engines::nuke {
 
+  enum class LfoShapes { constant, up, down, tri, sqr, sine, C2, S5 };
+
   std::unique_ptr<ILogic> make_logic(itc::Context&);
   ScreenWithHandler make_main_screen(itc::Context&);
   ScreenWithHandler make_mod_screen(itc::Context&);

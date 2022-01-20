@@ -11,22 +11,7 @@
 
 namespace otto::engines::nuke {
 
-  // Divides a float [0, 1] into steps, but with a smooth connection
-  // |--0--|-|--1--|-...-|--num_steps--|
-  float neighborhoods(float in, int min, int max)
-  {
-    float num_steps = max - min;
-
-    float scaled = min + 0.9 * in * (num_steps + 1) - 0.49f; // [min - 0.49 , max + 0.49] (top point is approximate)
-    // Decomposing this way yields negative and positive fractional parts
-    float integral = std::round(scaled);
-    float fractional = scaled - integral;
-    fractional *= 2;
-    float adjusted_fractional = fractional * fractional * fractional; // Must be an odd power to preserve sign
-    return integral + adjusted_fractional / 2.f;
-  }
-
-  enum class LfoShapes { constant, up, down, tri, sqr, sine, C2, S5 };
+  enum class Modulation { None, Ringmod, Sync };
 
   float lfo_take(gam::LFO<>& lfo, LfoShapes& shape)
   {
@@ -43,7 +28,20 @@ namespace otto::engines::nuke {
     }
   }
 
+  // Divides a float [0, 1] into steps, but with a smooth connection
+  // |--0--|-|--1--|-...-|--num_steps--|
+  float neighborhoods(float in, int min, int max)
+  {
+    float num_steps = max - min;
 
+    float scaled = min + 0.9 * in * (num_steps + 1) - 0.49f; // [min - 0.49 , max + 0.49] (top point is approximate)
+    // Decomposing this way yields negative and positive fractional parts
+    float integral = std::round(scaled);
+    float fractional = scaled - integral;
+    fractional *= 2;
+    float adjusted_fractional = fractional * fractional * fractional; // Must be an odd power to preserve sign
+    return integral + adjusted_fractional / 2.f;
+  }
 
   struct Voice : voices::VoiceBase<Voice> {
     Voice(const State& state, float& lfo) noexcept;
@@ -56,7 +54,7 @@ namespace otto::engines::nuke {
     void reset_envelopes() noexcept;
     void release_envelopes() noexcept;
 
-    void set_pitch_freq(const float) noexcept;
+    void set_pitch_freqs(const float, const float) noexcept;
     void set_filter_freq(const float) noexcept;
 
     void on_state_change(const State& s) noexcept
@@ -64,10 +62,9 @@ namespace otto::engines::nuke {
       // Synth
       // Osc 2
       osc2_freq_ratio = std::pow(2, neighborhoods(s.osc2_pitch, -3, 3));
-      // osc1.setDutyCycle(0.1 + s.param0 * 0.8);
 
       // Ring mod
-      ring_mod_amount = s.ringmod;
+      modulation = static_cast<Modulation>(static_cast<int>(s.modulation));
 
       // Filter
       cutoff = s.cutoff;
@@ -99,7 +96,7 @@ namespace otto::engines::nuke {
       lfo_to_pitch = s.lfo_pitch_amount;
       lfo_to_volume = s.lfo_volume_amount;
       lfo_to_filter = s.lfo_filter_amount;
-      lfo_to_ringmod = s.lfo_ringmod_amount;
+      lfo_to_osc2_pitch = s.lfo_osc2_pitch_amount;
     }
 
     const State& state_;
@@ -110,13 +107,14 @@ namespace otto::engines::nuke {
     float env_filter_amount = 0;
     dsp::ADS<> env_filter_{0.01, 0.5, 0.5, 4.f};
     float osc2_freq_ratio = 1;
-    float ring_mod_amount = 0;
+    Modulation modulation = Modulation::None;
     float duty_cycle = 0.5;
     dsp::MoogSaw<> osc1{440};
-    gam::DWO<> osc2;
+    dsp::MoogSaw<> osc2{440};
     gam::ADSR<> env_;
     dsp::MoogLadder<> filter_;
 
+    float prev_phase = 0.f;
 
     float& lfo_val_common;
     LfoShapes lfo_shape = LfoShapes::sine;
@@ -125,7 +123,7 @@ namespace otto::engines::nuke {
     float lfo_to_pitch = 0;
     float lfo_to_volume = 0;
     float lfo_to_filter = 0;
-    float lfo_to_ringmod = 0;
+    float lfo_to_osc2_pitch = 0;
   };
 
   struct Audio final : AudioDomain, itc::Consumer<State>, ISynthAudio {
@@ -200,11 +198,11 @@ namespace otto::engines::nuke {
     lfo_envelope_.release();
   }
 
-  void Voice::set_pitch_freq(const float lfo) noexcept
+  void Voice::set_pitch_freqs(const float lfo, const float osc2_pitch) noexcept
   {
     float freq = frequency() * powf(2, lfo);
     osc1.freq(freq);
-    osc2.freq(freq * osc2_freq_ratio);
+    osc2.freq(freq * osc2_freq_ratio * (1 + osc2_pitch));
   }
 
   void Voice::set_filter_freq(const float lfo) noexcept
@@ -220,18 +218,53 @@ namespace otto::engines::nuke {
   {
     // LFO
     float lfo_val = lfo_val_common * lfo_envelope_();
-    set_pitch_freq(lfo_val * lfo_to_pitch);
+    set_pitch_freqs(lfo_val * lfo_to_pitch, lfo_val * lfo_to_osc2_pitch);
     set_filter_freq(lfo_val * lfo_to_filter);
 
-    // Oscillators
-    float osc_1 = osc1();
-    float osc_2 = osc2.tri();
-    float ring_mod = osc_1 * osc_2 * ring_mod_amount;
+    float before_filter = 0;
+    switch (modulation) {
+      break;
+      case Modulation::None: {
+        float osc_1 = osc1();
+        float osc_2 = osc2();
+        before_filter = 0.5 * (osc_1 + 0.6 * osc_2);
+      } break;
+      case Modulation::Ringmod: {
+        float osc_1 = osc1();
+        float osc_2 = osc2();
+        before_filter = (osc_1 * osc_2);
+      } break;
+      case Modulation::Sync: {
+        // Compute C
+        float T_master = osc1.spu() / osc1.freq(); // [samples/period]
+        float T_slave = osc2.spu() / osc2.freq();  // [samples/period]
+        float C = (T_master / T_slave - floorf(T_master / T_slave)) / T_slave;
+        // tau = T_slave
+        // Phase for the delayed Saw. We use osc2, so we don't change the phase of osc1
+        float old_phase = osc1.phase();
+        float osc_1 = osc1();
+        float new_phase = osc1.phase();
+        float delayed_phase = gam::scl::wrap(old_phase - T_slave / T_master);
+        osc1.phase(delayed_phase);
+        float delayed_saw = osc1();
+        osc1.phase(new_phase);
+        before_filter = osc_1 * C + delayed_saw;
 
-    float after_filter = filter_(0.5 * (osc_1 + 0.6 * osc_2 + ring_mod));
+        // float osc_1 = osc1();
+        // bool osc1_has_reset = prev_phase > osc1.phase();
+        // prev_phase = osc1.phase();
 
-    // return after_filter * env_() * (1 + lfo_val * lfo_to_volume) * 0.25f;
-    return 0.f;
+        // if (osc1_has_reset) osc2.phase(0);
+        // float osc_2 = osc2();
+        // before_filter = osc_2;
+      } break;
+      default: break;
+    }
+
+    float after_filter = filter_(before_filter);
+
+    return after_filter * env_() * (1 + lfo_val * lfo_to_volume) * 0.25f;
+    // return 0.f;
   }
 
 } // namespace otto::engines::nuke

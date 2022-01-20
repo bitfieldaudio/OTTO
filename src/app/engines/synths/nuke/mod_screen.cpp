@@ -84,7 +84,7 @@ namespace otto::engines::nuke {
             case Encoder::blue: state.lfo_pitch_amount += e.steps * 0.01; break;
             case Encoder::green: state.lfo_volume_amount += e.steps * 0.01; break;
             case Encoder::yellow: state.lfo_filter_amount += e.steps * 0.01; break;
-            case Encoder::red: state.lfo_ringmod_amount += e.steps * 0.01; break;
+            case Encoder::red: state.lfo_osc2_pitch_amount += e.steps * 0.01; break;
           }
           break;
         }
@@ -100,6 +100,7 @@ namespace otto::engines::nuke {
     ADSRGraphic volume_widget{0};
     ADSGraphic filter_widget{1};
     LFOGraphic lfo_widget{2};
+    Targets targets_widget{3};
 
     float widget_size = 0;
 
@@ -113,6 +114,7 @@ namespace otto::engines::nuke {
       volume_widget.on_state_change(Consumer<State>::state());
       filter_widget.on_state_change(Consumer<State>::state());
       lfo_widget.on_state_change(Consumer<State>::state());
+      targets_widget.on_state_change(Consumer<State>::state());
       // params0.bounding_box = {{10, 30}, {270, 160}};
       // params1.bounding_box = {{10, 30}, {270, 160}};
       // params2.bounding_box = {{10, 30}, {270, 160}};
@@ -125,6 +127,7 @@ namespace otto::engines::nuke {
       volume_widget.on_state_change(s);
       filter_widget.on_state_change(s);
       lfo_widget.on_state_change(s);
+      targets_widget.on_state_change(s);
       // params0.set({s.envparam0_0, s.envparam0_1, s.envparam0_2, s.envparam0_3});
       // params1.set({s.envparam1_0, s.envparam1_1, s.envparam1_2, s.envparam1_3});
       // params2.set({s.envparam2_0, s.envparam2_1, s.envparam2_2, s.envparam2_3});
@@ -145,8 +148,8 @@ namespace otto::engines::nuke {
       constexpr int active_y = 50;
       constexpr int not_active_y = 15;
       constexpr int y_pad = 33;
-      constexpr int x_start = 80;
-      constexpr int x_size = 220;
+      constexpr int x_start = 20;
+      constexpr int x_size = 280;
       float step = (skia::height - 2 * y_pad - active_y - not_active_y * 3) / 3.f;
 
       float upper_y = y_pad;
@@ -168,6 +171,10 @@ namespace otto::engines::nuke {
       widget_size = active_y * lfo_widget.size + not_active_y * (1 - lfo_widget.size);
       draw_mod_widget(ctx, lfo_graphic, {x_start, upper_y}, {x_size, widget_size}, lfo_widget.size);
       upper_y += widget_size + step;
+
+      // Targets
+      widget_size = active_y * targets_widget.expansion + not_active_y * (1 - targets_widget.expansion);
+      draw_mod_widget(ctx, targets_widget, {x_start, upper_y}, {x_size, widget_size}, targets_widget.expansion);
     }
 
   private:

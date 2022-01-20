@@ -181,14 +181,27 @@ namespace otto::dsp {
       // setCutoff(mFreq);
     }
 
+    Tp freq()
+    {
+      return saw.freq();
+    }
     void freq(Tp frq)
     {
       saw.freq(frq);
       filter.freq(frq);
     }
+
     Tv phase()
     {
       return saw.phase();
+    }
+    void phase(Tv ph)
+    {
+      saw.phase(ph);
+    }
+    Tv nextPhase()
+    {
+      return saw.nextPhase();
     }
 
     Tv operator()()

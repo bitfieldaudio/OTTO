@@ -8,7 +8,7 @@ namespace otto::engines::nuke {
 
   struct State {
     util::StaticallyBounded<float, 0, 1> osc2_pitch = 0.5f;
-    util::StaticallyBounded<float, 0, 1> ringmod = 0.1f;
+    util::StaticallyBounded<int, 0, 2> modulation = 0;
     util::StaticallyBounded<float, 0, 1> cutoff = 0.7f;
     util::StaticallyBounded<float, 0, 1> resonance = 0.2f;
 
@@ -31,7 +31,7 @@ namespace otto::engines::nuke {
     util::StaticallyBounded<float, -1, 1> lfo_pitch_amount = 0.0f;
     util::StaticallyBounded<float, 0, 1> lfo_volume_amount = 0.f;
     util::StaticallyBounded<float, 0, 1> lfo_filter_amount = 0.f;
-    util::StaticallyBounded<float, 0, 1> lfo_ringmod_amount = 0.f;
+    util::StaticallyBounded<float, 0, 1> lfo_osc2_pitch_amount = 0.f;
 
     int active_idx = 0;
     bool shift = false;
