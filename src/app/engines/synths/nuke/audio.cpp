@@ -1,9 +1,11 @@
 #include "app/services/audio.hpp"
 
+#include <Gamma/Delay.h>
 #include <Gamma/Envelope.h>
 #include <Gamma/Oscillator.h>
 
 #include "lib/dsp/moog_components.hpp"
+#include "lib/dsp/polyblep.hpp"
 #include "lib/dsp/triangle_wave.hpp"
 #include "lib/voices/voice_manager.hpp"
 
@@ -11,7 +13,7 @@
 
 namespace otto::engines::nuke {
 
-  enum class Modulation { None, Ringmod, Sync };
+  enum class Mode { None, Ringmod, Sync, AM };
 
   float lfo_take(gam::LFO<>& lfo, LfoShapes& shape)
   {
@@ -55,16 +57,26 @@ namespace otto::engines::nuke {
     void release_envelopes() noexcept;
 
     void set_pitch_freqs(const float, const float) noexcept;
+    void set_pitch_freqs_sync(const float, const float) noexcept;
     void set_filter_freq(const float) noexcept;
 
     void on_state_change(const State& s) noexcept
     {
-      // Synth
-      // Osc 2
-      osc2_freq_ratio = std::pow(2, neighborhoods(s.osc2_pitch, -3, 3));
+      // Mode
+      mode = static_cast<Mode>(static_cast<int>(s.mode));
 
-      // Ring mod
-      modulation = static_cast<Modulation>(static_cast<int>(s.modulation));
+      // Osc 2 frequency
+      switch (mode) {
+        case Mode::None:
+          [[fallthrough]] case Mode::Ringmod : osc2_freq_ratio = std::pow(2, neighborhoods(s.osc2_pitch, -3, 3));
+          break;
+        case Mode::Sync: osc2_freq_ratio = 1.f + s.osc2_pitch * 2.f; break;     // [1, 3]
+        case Mode::AM: osc2_fixed_freq = powf(2.f, 10.f * s.osc2_pitch); break; // Frequency is fixed [2, 1024] Hz
+      }
+
+      // Mix
+      osc1_mix = 1.f - s.osc_mix;
+      osc2_mix = s.osc_mix;
 
       // Filter
       cutoff = s.cutoff;
@@ -107,10 +119,25 @@ namespace otto::engines::nuke {
     float env_filter_amount = 0;
     dsp::ADS<> env_filter_{0.01, 0.5, 0.5, 4.f};
     float osc2_freq_ratio = 1;
-    Modulation modulation = Modulation::None;
-    float duty_cycle = 0.5;
+    float osc2_fixed_freq = 2.f;
+    Mode mode = Mode::None;
+
+    // Oscillators
     dsp::MoogSaw<> osc1{440};
     dsp::MoogSaw<> osc2{440};
+    dsp::PolyBLEPSaw<> sync_osc{440};
+    gam::Sine<> osc2_sine{440};
+    float osc1_mix = 0.5f;
+    float osc2_mix = 0.5f;
+
+    // For Sync
+    // Following this paper:
+    // https://www.dafx12.york.ac.uk/papers/dafx12_submission_37.pdf
+    // Delay line length is the period of the slave oscillator.
+    // This period is at most the length of the master oscillator,
+    // so a reasonable maximum is 1/20 Hz = 0.05 seconds.
+    gam::Delay<> delay_line{0.05f, 0.f};
+
     gam::ADSR<> env_;
     dsp::MoogLadder<> filter_;
 
@@ -205,6 +232,14 @@ namespace otto::engines::nuke {
     osc2.freq(freq * osc2_freq_ratio * (1 + osc2_pitch));
   }
 
+  void Voice::set_pitch_freqs_sync(const float lfo, const float osc2_pitch) noexcept
+  {
+    float freq = frequency() * powf(2, lfo);
+    osc1.freq(freq);
+    sync_osc.sync_freq(freq);
+    sync_osc.freq(freq * osc2_freq_ratio * (1 + osc2_pitch));
+  }
+
   void Voice::set_filter_freq(const float lfo) noexcept
   {
     float filter_center_freq = frequency() * cutoff * cutoff * 10;
@@ -218,51 +253,38 @@ namespace otto::engines::nuke {
   {
     // LFO
     float lfo_val = lfo_val_common * lfo_envelope_();
-    set_pitch_freqs(lfo_val * lfo_to_pitch, lfo_val * lfo_to_osc2_pitch);
     set_filter_freq(lfo_val * lfo_to_filter);
 
     float before_filter = 0;
-    switch (modulation) {
-      break;
-      case Modulation::None: {
+    switch (mode) {
+      case Mode::None: {
+        set_pitch_freqs(lfo_val * lfo_to_pitch, lfo_val * lfo_to_osc2_pitch);
+        // Increment oscillators
         float osc_1 = osc1();
         float osc_2 = osc2();
-        before_filter = 0.5 * (osc_1 + 0.6 * osc_2);
+        before_filter = 0.5 * (osc1_mix * osc_1 + osc2_mix * osc_2);
       } break;
-      case Modulation::Ringmod: {
+      case Mode::Ringmod: {
+        set_pitch_freqs(lfo_val * lfo_to_pitch, lfo_val * lfo_to_osc2_pitch);
+        // Increment oscillators
         float osc_1 = osc1();
         float osc_2 = osc2();
-        before_filter = (osc_1 * osc_2);
+        before_filter = osc1_mix * osc_1 + osc2_mix * osc_1 * osc_2;
       } break;
-      case Modulation::Sync: {
-        // Compute C
-        float T_master = osc1.spu() / osc1.freq(); // [samples/period]
-        float T_slave = osc2.spu() / osc2.freq();  // [samples/period]
-        float C = (T_master / T_slave - floorf(T_master / T_slave)) / T_slave;
-        // tau = T_slave
-        // Phase for the delayed Saw. We use osc2, so we don't change the phase of osc1
-        float old_phase = osc1.phase();
+      case Mode::Sync: {
+        set_pitch_freqs_sync(lfo_val * lfo_to_pitch, lfo_val * lfo_to_osc2_pitch);
         float osc_1 = osc1();
-        float new_phase = osc1.phase();
-        float delayed_phase = gam::scl::wrap(old_phase - T_slave / T_master);
-        osc1.phase(delayed_phase);
-        float delayed_saw = osc1();
-        osc1.phase(new_phase);
-        before_filter = osc_1 * C + delayed_saw;
-
-        // float osc_1 = osc1();
-        // bool osc1_has_reset = prev_phase > osc1.phase();
-        // prev_phase = osc1.phase();
-
-        // if (osc1_has_reset) osc2.phase(0);
-        // float osc_2 = osc2();
-        // before_filter = osc_2;
+        float osc_2 = sync_osc();
+        before_filter = osc1_mix * osc_1 + osc2_mix * osc_2;
+      } break;
+      case Mode::AM: {
+        before_filter = 0;
       } break;
       default: break;
     }
 
     float after_filter = filter_(before_filter);
-
+    // float after_filter = before_filter;
     return after_filter * env_() * (1 + lfo_val * lfo_to_volume) * 0.25f;
     // return 0.f;
   }

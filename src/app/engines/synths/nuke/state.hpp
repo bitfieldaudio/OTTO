@@ -8,7 +8,8 @@ namespace otto::engines::nuke {
 
   struct State {
     util::StaticallyBounded<float, 0, 1> osc2_pitch = 0.5f;
-    util::StaticallyBounded<int, 0, 2> modulation = 0;
+    util::StaticallyBounded<float, 0, 1> osc_mix = 0.5;
+    util::StaticallyBounded<int, 0, 3> mode = 0;
     util::StaticallyBounded<float, 0, 1> cutoff = 0.7f;
     util::StaticallyBounded<float, 0, 1> resonance = 0.2f;
 

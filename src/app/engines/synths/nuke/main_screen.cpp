@@ -33,10 +33,10 @@ namespace otto::engines::nuke {
     {
       switch (e.key) {
         // Operators are counted from the bottom
-        case Key::page_a: break;
-        case Key::page_b: break;
-        case Key::page_c: break;
-        case Key::page_d: break;
+        case Key::page_a: state.mode = 0; break;
+        case Key::page_b: state.mode = 1; break;
+        case Key::page_c: state.mode = 2; break;
+        case Key::page_d: state.mode = 3; break;
         case Key::shift: state.shift = true; break;
         default: break;
       }
@@ -55,7 +55,7 @@ namespace otto::engines::nuke {
       // TODO
       switch (e.encoder) {
         case Encoder::blue: state.osc2_pitch += e.steps * 0.002; break;
-        case Encoder::green: state.modulation += e.steps; break;
+        case Encoder::green: state.osc_mix += e.steps * 0.01; break;
         case Encoder::yellow: state.cutoff += e.steps * 0.01; break;
         case Encoder::red: state.resonance += e.steps * 0.01; break;
       }
@@ -68,7 +68,7 @@ namespace otto::engines::nuke {
   struct MainScreen final : itc::Consumer<State>, ScreenBase {
     using Consumer::Consumer;
 
-    FourParams params{"Synth", {"Osc2", "Modulation", "Cutoff", "Resonance"}};
+    FourParams params{"Synth", {"Osc2", "Mix", "Cutoff", "Resonance"}};
 
     MainScreen(itc::Context& c) : Consumer(c)
     {
@@ -77,7 +77,7 @@ namespace otto::engines::nuke {
 
     void on_state_change(const State& s) noexcept override
     {
-      params.set({s.osc2_pitch, s.modulation, s.cutoff, s.resonance});
+      params.set({s.osc2_pitch, s.osc_mix, s.cutoff, s.resonance});
     }
 
     void draw(skia::Canvas& ctx) noexcept override
