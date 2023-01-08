@@ -69,10 +69,16 @@ namespace otto {
 
   void LayerStack::leds(LEDColorSet& colors) noexcept
   {
-    // TODO: Work in reverse, stop when alle LEDs have been written?
-    // May not be worth it, we probably won't have a lot of layers
-    for (auto& l : led_layers_) {
-      l->process_leds_masked(colors);
+    LedSet done = {};
+    for (auto* l : util::reverse(led_layers_)) {
+      LEDColorSet tmp = colors;
+      auto mask = l->led_mask();
+      l->leds(tmp);
+      for (auto l : util::enum_values<Led>()) {
+        if (mask[l]) colors[l] = tmp[l];
+      }
+      done |= mask;
+      if (done.all()) break;
     }
   }
 

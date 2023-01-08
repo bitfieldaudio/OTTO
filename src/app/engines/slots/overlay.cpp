@@ -104,7 +104,7 @@ namespace otto::engines::slots {
     }
     void leds(LEDColorSet& led_color) noexcept override
     {
-      for (auto& led : util::enum_values<Led>()) {
+      for (const auto& led : util::enum_values<Led>()) {
         if (led_groups::channel.test(led)) {
           auto key = *key_from(led); // This is certain to contain a value
           led_color[led] =

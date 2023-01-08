@@ -88,8 +88,9 @@ namespace otto {
 
   void NavKeyMap::handle(KeyPress e) noexcept
   {
-    auto bind = current_binds()[e.key];
-    if (bind != nullptr) {
+    auto found = current_binds().find(e.key);
+    if (found != current_binds().end() && found->second != nullptr) {
+      auto bind = found->second;
       last_nav_time_ = e.timestamp;
       if (bind == nav().current_screen() && bind.screen->is_overlay()) {
         nav().navigate_back();
@@ -104,8 +105,9 @@ namespace otto {
 
   void NavKeyMap::handle(KeyRelease e) noexcept
   {
-    auto bind = current_binds()[e.key];
-    if (bind != nullptr) {
+    auto found = current_binds().find(e.key);
+    if (found != current_binds().end() && found->second != nullptr) {
+      auto bind = found->second;
       // NOLINTNEXTLINE
       if (bind == nav().current_screen() && (e.timestamp - last_nav_time_) > conf.peek_timeout) {
         nav().navigate_back();
