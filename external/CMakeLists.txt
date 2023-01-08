@@ -21,11 +21,11 @@ endif()
 
 # Download External Dependencies via CPM
 CPMAddPackage("gh:fmtlib/fmt#8.0.1")
-CPMAddPackage("gh:catchorg/Catch2@3.0.0-preview3")
+CPMAddPackage("gh:catchorg/Catch2@3.2.1")
 CPMAddPackage("gh:Neargye/magic_enum@0.7.2")
 CPMAddPackage("gh:Naios/function2#4.1.0")
 CPMAddPackage("gh:gabime/spdlog@1.9.2") 
-CPMAddPackage("gh:p-ranav/argparse@2.2") 
+CPMAddPackage("gh:p-ranav/argparse@2.9") 
 CPMAddPackage("gh:topisani/choreograph@0.5.0")
 
 CPMAddPackage(
@@ -36,7 +36,7 @@ CPMAddPackage(
 )
 if (gamma_ADDED)
   execute_process(COMMAND mkdir -p "${CMAKE_CURRENT_BINARY_DIR}/include")
-  execute_process(COMMAND ln -sf "${gamma_SOURCE_DIR}/Gamma" "${CMAKE_CURRENT_BINARY_DIR}/include/Gamma")
+  execute_process(COMMAND ln -sf "${gamma_SOURCE_DIR}/Gamma" "${CMAKE_CURRENT_BINARY_DIR}/include/")
   file(GLOB_RECURSE gamma_src "${gamma_SOURCE_DIR}/src/*.cpp")
   list(REMOVE_ITEM gamma_src 
     #"${gamma_SOURCE_DIR}/src/SoundFile.cpp"
@@ -108,17 +108,8 @@ add_library(otto_boost INTERFACE)
 if(Boost_FOUND)
   target_link_libraries(otto_boost INTERFACE Boost::headers)
 else()
-  # boost-cmake is not updated, so manually set the url to a newer version
-  # Also use a fork which has an updated list of sources
-  CPMAddPackage(
-    NAME boost-cmake
-    GITHUB_REPOSITORY Element-0/boost-cmake
-    GIT_TAG 7199b5408646f8067a00f7d9e83afffb19dde3e8
-    OPTIONS
-      "BOOST_URL https://boostorg.jfrog.io/artifactory/main/release/1.74.0/source/boost_1_74_0.tar.bz2"
-      "BOOST_URL_SHA256 83bfc1507731a0906e387fc28b7ef5417d591429e51e788417fe9ff025e116b1"
-      "BOOST_DISABLE_TESTS ON"
-  )
+  # using unofficial fork as boost's lacking good CMake support
+  CPMAddPackage("gh:ClausKlein/boost-cmake@1.79.2")
   target_link_libraries(otto_boost INTERFACE Boost::boost)
 endif()
 

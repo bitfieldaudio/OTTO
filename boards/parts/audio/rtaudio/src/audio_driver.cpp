@@ -85,12 +85,17 @@ namespace otto::drivers {
     i_params.deviceId = adac.getDefaultInputDevice();
     o_params.nChannels = 2;
     o_params.deviceId = adac.getDefaultOutputDevice();
+    bool found_output = false;
     for (int i = 0; i < adac.getDeviceCount(); i++) {
       const auto& device = adac.getDeviceInfo(i);
       if (device.name == conf.input_device) {
         i_params.deviceId = i;
       }
       if (device.name == conf.output_device) {
+        o_params.deviceId = i;
+        found_output = true;
+      }
+      if (!found_output && o_params.deviceId == 0 && device.outputChannels == 2) {
         o_params.deviceId = i;
       }
     }

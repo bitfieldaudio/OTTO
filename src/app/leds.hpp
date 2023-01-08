@@ -134,6 +134,7 @@ namespace otto {
   ///
   /// Should be used on the graphics thread.
   struct ILedController {
+    virtual ~ILedController() = default;
     virtual void leds(LEDColorSet& leds) noexcept = 0;
     using Func = util::FuncInterface<&ILedController::leds>;
   };
