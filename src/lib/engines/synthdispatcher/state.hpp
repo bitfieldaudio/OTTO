@@ -7,10 +7,19 @@
 
 namespace otto {
 
-  /// Commands sent from graphics to logic
-  enum struct SynthDispatcherCommand {
-    toggle_engine,
+  struct EngineMetaData {
+    std::string name;
   };
+
+  namespace synth_dispatcher_cmd {
+    struct SelectEngine {
+      int index = 0;
+    };
+    using Type = std::variant<SelectEngine>;
+  } // namespace synth_dispatcher_cmd
+
+  /// Commands sent from graphics to logic
+  using SynthDispatcherCommand = synth_dispatcher_cmd::Type;
 
   struct SynthDispatcherState {
     int active_engine = 0;
@@ -19,6 +28,7 @@ namespace otto {
     ScreenWithHandlerPtr main_screen;
     ScreenWithHandlerPtr mod_screen;
     ScreenWithHandlerPtr voices_screen;
+    std::vector<EngineMetaData> all_engines;
   };
 
 } // namespace otto

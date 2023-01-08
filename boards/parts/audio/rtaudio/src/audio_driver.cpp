@@ -13,7 +13,7 @@ namespace otto::drivers {
     std::string input_device;
     std::string output_device;
     unsigned buffer_size = 256;
-    unsigned sample_rate = 44100;
+    unsigned sample_rate = 48000;
 
     DECL_VISIT(input_device, output_device, buffer_size, sample_rate)
   };

@@ -40,6 +40,18 @@ namespace otto::skia {
     {
       return output_.value();
     }
+    
+    T target() const noexcept
+    {
+      return output_.endValue();
+    }
+    
+    /// Start new animation if not already animating to the given target value
+    void set_target(T target) noexcept {
+      if (target != this->target()) {
+        *this = target;
+      }
+    }
 
   private:
     choreograph::Output<T> output_;

@@ -8,7 +8,7 @@
 namespace otto::math {
 
   template<typename T>
-  constexpr inline bool between(T el, T min, T max)
+  constexpr inline bool is_in_range(T el, T min, T max)
   {
     return (el <= max && el >= min);
   }

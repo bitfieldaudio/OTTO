@@ -10,6 +10,7 @@
 #include "lib/engines/synthdispatcher/synthdispatcher.hpp"
 #include "lib/graphics.hpp"
 #include "lib/itc/itc.hpp"
+#include "lib/skia/anim.hpp"
 #include "lib/skia/skia.hpp"
 #include "lib/widget.hpp"
 
@@ -29,24 +30,33 @@ namespace otto {
 
     DispatcherSelectorScreen(itc::Context& c) : Consumer(c), Receiver(c), Sender(c) {}
 
-    void draw(skia::Canvas& ctx) noexcept
+    void draw(skia::Canvas& ctx) noexcept override
     {
-      // Super simple graphics
-      skia::place_text(ctx, state().name.c_str(), fonts::regular(32), paints::fill(colors::blue),
-                       {320 / 2.f, 240 / 2.f}, anchors::center);
+      auto state = this->state();
+      auto active_idx = state.active_engine;
+      anim_active.set_target(float(active_idx));
+      for (int i = 0; i < state.all_engines.size(); i++) {
+        auto& metadata = state.all_engines[i];
+        auto color = colors::blue.mix(colors::grey50, std::clamp(std::abs(float(i) - anim_active), 0.f, 1.f));
+        auto y = 240 / 2.f + (float(i) - anim_active) * 40.f;
+        // Super simple graphics
+        skia::place_text(ctx, metadata.name, fonts::regular(32), paints::fill(color), {320 / 2.f, y}, anchors::center);
+      }
     }
 
     void receive(EncoderEvent e) noexcept override
     {
-      // TODO
       switch (e.encoder) {
         case Encoder::blue: {
-          if (divider(e) != 0) send(SynthDispatcherCommand::toggle_engine);
+          int diff = divider(e);
+          int index = state().active_engine + diff;
+          if (diff != 0) send(synth_dispatcher_cmd::SelectEngine{index});
         } break;
         default: break;
       }
     }
-    otto::util::EventDivider<6> divider;
+    util::EventDivider<6> divider;
+    skia::Anim<float> anim_active = {0, 0.25f};
   };
 
   // PROXIES //
@@ -56,7 +66,7 @@ namespace otto {
 
     DispatcherMainScreen(itc::Context& c) : Consumer(c) {}
 
-    void draw(skia::Canvas& ctx) noexcept
+    void draw(skia::Canvas& ctx) noexcept override
     {
       if (auto scr = state().main_screen; scr != nullptr) scr.screen->draw(ctx);
     }
@@ -67,7 +77,7 @@ namespace otto {
 
     DispatcherModScreen(itc::Context& c) : Consumer(c) {}
 
-    void draw(skia::Canvas& ctx) noexcept
+    void draw(skia::Canvas& ctx) noexcept override
     {
       if (auto scr = state().mod_screen; scr != nullptr) scr.screen->draw(ctx);
     }
@@ -78,7 +88,7 @@ namespace otto {
 
     DispatcherVoicesScreen(itc::Context& c) : Consumer(c) {}
 
-    void draw(skia::Canvas& ctx) noexcept
+    void draw(skia::Canvas& ctx) noexcept override
     {
       if (auto scr = state().voices_screen; scr != nullptr) scr.screen->draw(ctx);
     }

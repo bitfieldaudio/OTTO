@@ -86,7 +86,7 @@ namespace otto::engines::ottofm {
 
   // For converting number to letter
   constexpr std::array<const char*, 27> alphabet = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
-                                                    "N", "O", "P", "Q", "R", "S", "T", "Y", "V", "W", "X", "Y", "Z"};
+                                                    "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"};
 
 
   struct OpLine : graphics::Widget<OpLine> {

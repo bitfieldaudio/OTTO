@@ -3,6 +3,8 @@
 #include <functional>
 #include <memory>
 
+#include "lib/util/math.hpp"
+
 #include "lib/audio.hpp"
 #include "lib/engine.hpp"
 #include "lib/engines/synthdispatcher/audio.hpp"
@@ -13,10 +15,6 @@
 #include "lib/midi.hpp"
 
 namespace otto {
-
-  struct EngineMetaData {
-    const std::string name;
-  };
 
   struct SynthEngineInstance {
     std::unique_ptr<ILogic> logic;
@@ -83,6 +81,12 @@ namespace otto {
     {
       // First engine is set as default
       _factories.push_back(std::move(factory));
+      commit([&](SynthDispatcherState& state) {
+        state.all_engines.clear();
+        for (const auto& f : _factories) {
+          state.all_engines.push_back(f._metadata);
+        }
+      });
       if (_factories.size() == 1) {
         activate_engine(0);
       }
@@ -93,19 +97,18 @@ namespace otto {
       return _active;
     }
 
-    void toggle_engine()
+    void select_engine(int index)
     {
-      auto current_idx = state().active_engine;
-      std::size_t new_idx = (current_idx + 1) % _factories.size();
       deactivate_engine();
-      activate_engine(new_idx);
+      activate_engine(index);
     }
 
     void receive(SynthDispatcherCommand cmd) noexcept override
     {
-      if (cmd == SynthDispatcherCommand::toggle_engine) {
-        toggle_engine();
-      }
+      using namespace synth_dispatcher_cmd;
+      util::match(cmd, //
+                  [&](SelectEngine e) { select_engine(std::clamp(e.index, 0, (int) _factories.size() - 1)); });
+      ;
     }
 
   private:
