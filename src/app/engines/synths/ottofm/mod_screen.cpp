@@ -199,6 +199,24 @@ namespace otto::engines::ottofm {
         upper_y += env_size + step;
       }
     }
+    
+
+    [[nodiscard]] LedSet led_mask() const noexcept override
+    {
+      return led_groups::pages;
+    }
+
+    void leds(LEDColorSet& colors) noexcept override
+    {
+      colors[Led::page_a] =
+        LEDColor::from_skia(ops.operator_colours[0].dim((1.f - envelopes[0].size) * 0.5f));
+      colors[Led::page_b] =
+        LEDColor::from_skia(ops.operator_colours[1].dim((1.f - envelopes[1].size) * 0.5f));
+      colors[Led::page_c] =
+        LEDColor::from_skia(ops.operator_colours[2].dim((1.f - envelopes[2].size) * 0.5f));
+      colors[Led::page_d] =
+        LEDColor::from_skia(ops.operator_colours[3].dim((1.f - envelopes[3].size) * 0.5f));
+    }
 
     skia::ReturnTo<float> popup_brightness = {0, 0.5, 0.15};
     std::string last_changed_parameter;
@@ -212,5 +230,6 @@ namespace otto::engines::ottofm {
       .input = std::make_unique<ModHandler>(ctx),
     };
   }
+  
 
 } // namespace otto::engines::ottofm

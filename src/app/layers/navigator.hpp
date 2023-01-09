@@ -55,7 +55,7 @@ namespace otto {
       static constexpr auto name = "Navigation Keys";
       chrono::duration peek_timeout = 500ms;
       LEDColor deselected_color = {0x08, 0x08, 0x08};
-      LEDColor selected_color = {0x80, 0x80, 0x80};
+      LEDColor selected_color = {0xFF, 0xFF, 0xFF};
       DECL_VISIT(peek_timeout, deselected_color, selected_color);
     };
 

@@ -70,6 +70,16 @@ namespace otto {
     {
       if (auto scr = state().main_screen; scr != nullptr) scr.screen->draw(ctx);
     }
+    
+    [[nodiscard]] LedSet led_mask() const noexcept override
+    {
+      if (auto scr = state().main_screen; scr != nullptr) return scr.screen->led_mask();
+      return {};
+    }
+    
+    void leds(LEDColorSet& colors) noexcept override {
+      if (auto scr = state().main_screen; scr != nullptr) scr.screen->leds(colors);
+    }
   };
 
   struct DispatcherModScreen final : itc::Consumer<SynthDispatcherState>, ScreenBase {
@@ -81,6 +91,16 @@ namespace otto {
     {
       if (auto scr = state().mod_screen; scr != nullptr) scr.screen->draw(ctx);
     }
+    
+    [[nodiscard]] LedSet led_mask() const noexcept override
+    {
+      if (auto scr = state().mod_screen; scr != nullptr) return scr.screen->led_mask();
+      return {};
+    }
+    
+    void leds(LEDColorSet& colors) noexcept override {
+      if (auto scr = state().mod_screen; scr != nullptr) scr.screen->leds(colors);
+    }
   };
 
   struct DispatcherVoicesScreen final : itc::Consumer<SynthDispatcherState>, ScreenBase {
@@ -91,6 +111,16 @@ namespace otto {
     void draw(skia::Canvas& ctx) noexcept override
     {
       if (auto scr = state().voices_screen; scr != nullptr) scr.screen->draw(ctx);
+    }
+    
+    [[nodiscard]] LedSet led_mask() const noexcept override
+    {
+      if (auto scr = state().voices_screen; scr != nullptr) return scr.screen->led_mask();
+      return {};
+    }
+    
+    void leds(LEDColorSet& colors) noexcept override {
+      if (auto scr = state().voices_screen; scr != nullptr) scr.screen->leds(colors);
     }
   };
 

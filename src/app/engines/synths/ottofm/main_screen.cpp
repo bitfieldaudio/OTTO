@@ -198,6 +198,23 @@ namespace otto::engines::ottofm {
         y += line.bounding_box.height() + y_spacing;
       }
     }
+
+    [[nodiscard]] LedSet led_mask() const noexcept override
+    {
+      return led_groups::pages;
+    }
+
+    void leds(LEDColorSet& colors) noexcept override
+    {
+      colors[Led::page_a] =
+        LEDColor::from_skia(ops.operator_colours[0].dim((1.f - op_lines[0].expansion) * 0.7f));
+      colors[Led::page_b] =
+        LEDColor::from_skia(ops.operator_colours[1].dim((1.f - op_lines[1].expansion) * 0.7f));
+      colors[Led::page_c] =
+        LEDColor::from_skia(ops.operator_colours[2].dim((1.f - op_lines[2].expansion) * 0.7f));
+      colors[Led::page_d] =
+        LEDColor::from_skia(ops.operator_colours[3].dim((1.f - op_lines[3].expansion) * 0.7f));
+    }
   };
 
   ScreenWithHandler make_main_screen(itc::Context& ctx)

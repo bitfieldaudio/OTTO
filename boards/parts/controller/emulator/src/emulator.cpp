@@ -109,7 +109,9 @@ namespace otto::board {
     if (port == nullptr) return colors::blue;
 
     auto lc = port->led_colors[led];
-    return skia::Color::bytes(lc.r, lc.g, lc.b);
+    auto skc = skia::Color::bytes(lc.r, lc.g, lc.b);
+    skc = skia::Color::floats(0.2, 0.2, 0.2) + skc.dim(0.2f);
+    return skc;
   }
 
   void Emulator::run(std::function<bool(skia::Canvas&)> f)
