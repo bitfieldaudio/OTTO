@@ -20,6 +20,7 @@ namespace otto::engines::slots {
   struct SoundSlotsState {
     util::StaticallyBounded<int, 0, 9> active_idx = 0;
     std::array<SlotState, 10> slot_states;
+    std::optional<int> clipboard;
     DECL_VISIT(active_idx, slot_states);
   };
 
@@ -28,8 +29,19 @@ namespace otto::engines::slots {
     std::array<json::value, 10> json_objects;
   };
 
-  struct Logic : ILogic, itc::Producer<SoundSlotsState>, itc::Persistant {
-    Logic(itc::Context& ctx) : Producer(ctx), itc::Persistant(ctx, "slots"), persistance_provider(ctx["slots"]) {}
+  namespace action {
+    struct CopySlot {
+      int source = 0;
+      int destination = 0;
+    };
+
+    using Type = std::variant<CopySlot>;
+  } // namespace action
+
+  struct Logic : ILogic, itc::Producer<SoundSlotsState>, itc::Receiver<action::Type>, itc::Persistant {
+    Logic(itc::Context& ctx)
+      : Producer(ctx), Receiver(ctx), itc::Persistant(ctx, "slots"), persistance_provider(ctx["slots"])
+    {}
 
     void on_state_change(const SoundSlotsState& state) noexcept override;
 
@@ -50,6 +62,18 @@ namespace otto::engines::slots {
       auto slots = json::get_or_null(json, "slots");
       util::deserialize_from(slots, data_.json_objects);
       util::deserialize_from(json::get_or_null(json, state().active_idx), persistance_provider);
+      on_state_change(state());
+    }
+
+    void receive(action::Type action) noexcept override
+    {
+      util::match(action, [&](action::CopySlot a) {
+        data_.json_objects[a.destination] = data_.json_objects[a.source];
+        if (a.destination == state().active_idx) {
+          util::deserialize_from(data_.json_objects[a.destination], persistance_provider);
+          on_state_change(state());
+        }
+      });
     }
 
   private:

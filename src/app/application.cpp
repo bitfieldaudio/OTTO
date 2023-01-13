@@ -126,16 +126,15 @@ namespace otto {
     LayerStack layers;
     auto piano = layers.make_layer<PianoKeyLayer>(audio.midi());
     auto nav_km = layers.make_layer<NavKeyMap>(confman);
-    stateman.add("Navigation", std::ref(nav_km));
+    stateman.add("navigation", std::ref(nav_km));
 
     // Context
     itc::Context ctx;
     itc::PersistanceProvider persistance(ctx);
-    stateman.add("Context", std::ref(persistance));
+    stateman.add("context", std::ref(persistance));
     
     // Sound slots
-    auto& soundslots_ctx = ctx["slots"];
-    auto sound_slots = engines::slots::SoundSlots::make(soundslots_ctx);
+    auto sound_slots = engines::slots::SoundSlots::make(ctx);
     nav_km.bind_nav_key(Key::slots, sound_slots.overlay_screen);
 
     // Synth Dispatcher
@@ -149,9 +148,8 @@ namespace otto {
 
     nav_km.bind_nav_key(Key::synth, synth.selector_screen, true);
 
-
     // ARP
-    auto midifx_eng = engines::arp::factory.make_all(ctx["midifx"]);
+    auto midifx_eng = engines::arp::factory.make_all(sound_slots.logic->managed_ctx());
     midifx_eng.audio->set_target(&synth.audio->midi_handler());
     nav_km.bind_nav_key(Key::arp, midifx_eng.screen);
 

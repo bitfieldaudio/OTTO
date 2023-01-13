@@ -25,6 +25,7 @@ namespace otto::engines::slots {
     int selected_index = 0;
     float selected_color_f = 0.f; // [0,1]
     skia::Color selected_color = skia::Color(SK_ColorRED);
+    std::optional<int> clipboard;
 
     void do_draw(skia::Canvas& ctx)
     {
@@ -49,8 +50,14 @@ namespace otto::engines::slots {
       skia::Point copy_location = {width * 0.25f, btn_center};
       ctx.drawCircle(copy_location, middle_radius, paints::fill(colors::blue.fade(0.5f)));
       ctx.drawCircle(copy_location, inner_radius, paints::fill(colors::blue));
-      skia::place_text(ctx, "CPY/PSTE", fonts::medium(14), paints::fill(colors::white),
-                       {copy_location.x(), copy_location.y() + text_offset}, anchors::top_center);
+
+      if (clipboard) {
+        skia::place_text(ctx, "PASTE", fonts::medium(14), paints::fill(colors::white),
+                         {copy_location.x(), copy_location.y() + text_offset}, anchors::top_center);
+      } else {
+        skia::place_text(ctx, "COPY", fonts::medium(14), paints::fill(colors::white),
+                         {copy_location.x(), copy_location.y() + text_offset}, anchors::top_center);
+      }
 
 
       // Color wheel
@@ -72,9 +79,12 @@ namespace otto::engines::slots {
 
   struct SoundSlotsScreen : OverlayBase, itc::Consumer<SoundSlotsState> {
     using Consumer::Consumer;
-    struct Handler final : LogicDomain, itc::Producer<SoundSlotsState>, IInputLayer, InputHandler {
-      using Producer::Producer;
-      ;
+    struct Handler final : LogicDomain,
+                           itc::Producer<SoundSlotsState>,
+                           itc::Sender<action::Type>,
+                           IInputLayer,
+                           InputHandler {
+      Handler(itc::Context& ctx) : Producer(ctx), Sender(ctx) {}
 
       [[nodiscard]] KeySet key_mask() const noexcept override
       {
@@ -84,7 +94,12 @@ namespace otto::engines::slots {
       void handle(KeyPress e) noexcept final
       {
         if (e.key == Key::blue_enc_click) {
-          // TODO: Copy/paste
+          if (state().clipboard) {
+            send(action::CopySlot{.source = *state().clipboard, .destination = state().active_idx});
+            commit([&](SoundSlotsState& state) { state.clipboard = std::nullopt; });
+          } else {
+            commit([&](SoundSlotsState& state) { state.clipboard = state.active_idx; });
+          }
         } else if (auto chan = channel_number_for(e.key)) {
           commit([&](auto& state) { state.active_idx = *chan; });
         }
@@ -110,7 +125,7 @@ namespace otto::engines::slots {
     {
       return led_groups::channel;
     }
-    
+
     void leds(LEDColorSet& led_color) noexcept override
     {
       for (const auto& led : util::enum_values<Led>()) {
@@ -140,6 +155,7 @@ namespace otto::engines::slots {
       // Content
       widget.selected_color_f = state().slot_states[state().active_idx].selected_color_f;
       widget.selected_index = state().active_idx;
+      widget.clipboard = state().clipboard;
       widget.draw(ctx);
     }
 
