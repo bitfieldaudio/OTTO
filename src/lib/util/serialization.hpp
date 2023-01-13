@@ -43,7 +43,6 @@ namespace otto::util {
 
   void deserialize_from(const json::value& json, ASerializable auto& obj)
   {
-    if (json.is_null()) return;
     serialize_impl<std::decay_t<decltype(obj)>>::deserialize_from(json, obj);
   }
 

@@ -313,6 +313,7 @@ namespace otto::engines::arp {
         case OctaveMode::octavedownup: return octavedownup; break;
         case OctaveMode::multiply: return multiply; break;
       }
+      OTTO_UNREACHABLE();
     }
   } // namespace octave_modes
 

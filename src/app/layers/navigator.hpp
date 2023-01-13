@@ -27,6 +27,8 @@ namespace otto {
 
     /// Access the currently selected screen/handler pair
     ScreenWithHandlerPtr current_screen() noexcept;
+    /// Access the previously selected screen/handler pair
+    ScreenWithHandlerPtr prev_screen() noexcept;
 
     [[nodiscard]] KeySet key_mask() const noexcept override;
     [[nodiscard]] LedSet led_mask() const noexcept override;
@@ -52,7 +54,7 @@ namespace otto {
   /// if it becomes useful in other places
   struct NavKeyMap final : IInputLayer, IScreen, util::ISerializable {
     struct Conf : Config<Conf> {
-      static constexpr auto name = "Navigation Keys";
+      static constexpr auto name = "NavKeyMap";
       chrono::duration peek_timeout = 500ms;
       LEDColor deselected_color = {0x08, 0x08, 0x08};
       LEDColor selected_color = {0xFF, 0xFF, 0xFF};
@@ -83,22 +85,9 @@ namespace otto {
     [[nodiscard]] KeySet key_mask() const noexcept override;
     [[nodiscard]] LedSet led_mask() const noexcept override;
 
-    void serialize_into(json::value& json) const override
-    {
-      // TODO: Do this better
-      auto cur = nav_->current_screen();
-      for (auto&& [k, v] : binds_) {
-        if (v == cur) return util::serialize_into(json, k);
-      }
-    }
+    void serialize_into(json::value& json) const override;
 
-    void deserialize_from(const json::value& json) override
-    {
-      auto key = util::deserialize<Key>(json);
-      auto found = binds_.find(key);
-      if (found == binds_.end()) return;
-      nav().navigate_to(found->second);
-    }
+    void deserialize_from(const json::value& json) override;
 
   private:
     Conf conf;

@@ -15,7 +15,7 @@ using namespace std::literals;
 TEST_CASE ("audio_loopback", "[.interactive]") {
   RuntimeController rt;
   ConfigManager confman;
-  Audio audio;
+  Audio audio(drivers::IAudioDriver::make_default(confman));
   auto stop = audio.set_process_callback([](Audio::CallbackData data) { data.output = data.input; });
   rt.wait_for_stop(10s);
 }
@@ -23,7 +23,7 @@ TEST_CASE ("audio_loopback", "[.interactive]") {
 TEST_CASE ("audio_sine", "[.interactive]") {
   RuntimeController rt;
   ConfigManager confman;
-  Audio audio;
+  Audio audio(drivers::IAudioDriver::make_default(confman));
   gam::Sine<> osc = {440};
   auto stop = audio.set_process_callback([&](Audio::CallbackData data) {
     std::ranges::generate(data.output.left, std::ref(osc));
@@ -44,7 +44,7 @@ TEST_CASE ("midi queue") {
   {
     RuntimeController rt;
     ConfigManager confman;
-    Audio audio;
+    Audio audio(drivers::IAudioDriver::make_default(confman));
     auto stop_midi = audio.set_midi_handler(&handler);
     audio.midi().send_event(midi::NoteOn{5});
     auto stop_process = audio.set_process_callback([&](Audio::CallbackData) {

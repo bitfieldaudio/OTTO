@@ -52,6 +52,11 @@ namespace otto {
     return current_screen_;
   }
 
+  ScreenWithHandlerPtr Navigator::prev_screen() noexcept
+  {
+    return prev_screen_;
+  }
+
   // NAV KEYMAP
 
   NavKeyMap::NavKeyMap(Conf conf, util::smart_ptr<Navigator> n) : conf(conf), nav_(std::move(n)) {}
@@ -177,5 +182,33 @@ namespace otto {
   void NavKeyMap::draw(skia::Canvas& ctx) noexcept
   {
     return nav_->draw(ctx);
+  }
+  
+  void NavKeyMap::deserialize_from(const json::value& json)
+  {
+    if (json["previous"].is_string()) {
+      auto prev = util::deserialize<Key>(json["previous"]);
+      auto found = binds_.find(prev);
+      if (found == binds_.end()) return;
+      nav().navigate_to(found->second);
+    }
+    
+    if (json["current"].is_string()) {
+      auto cur = util::deserialize<Key>(json["current"]);
+      auto found = binds_.find(cur);
+      if (found == binds_.end()) return;
+      nav().navigate_to(found->second);
+    }
+  }
+  
+  void NavKeyMap::serialize_into(json::value& json) const
+  {
+    auto cur = nav_->current_screen();
+    auto prev = nav_->prev_screen();
+    json = json::object();
+    for (auto&& [k, v] : binds_) {
+      if (v == cur) util::serialize_into(json["current"], k);
+      if (v == prev) util::serialize_into(json["previous"], k);
+    }
   }
 } // namespace otto

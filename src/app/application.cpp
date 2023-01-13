@@ -130,10 +130,16 @@ namespace otto {
 
     // Context
     itc::Context ctx;
-    stateman.add("Context", std::ref(ctx));
+    itc::PersistanceProvider persistance(ctx);
+    stateman.add("Context", std::ref(persistance));
+    
+    // Sound slots
+    auto& soundslots_ctx = ctx["slots"];
+    auto sound_slots = engines::slots::SoundSlots::make(soundslots_ctx);
+    nav_km.bind_nav_key(Key::slots, sound_slots.overlay_screen);
 
     // Synth Dispatcher
-    auto synth = otto::make_synthdispatcher(ctx["synth"]);
+    auto synth = otto::make_synthdispatcher(sound_slots.logic->managed_ctx());
     synth.logic->register_engine(std::move(engines::ottofm::factory));
     synth.logic->register_engine(std::move(engines::nuke::factory));
 
@@ -152,13 +158,6 @@ namespace otto {
     // Master
     auto master = engines::master::Master::make(ctx["master"], audio.driver().mixer());
     nav_km.bind_nav_key(Key::master, master.screen);
-
-    // Sound slots
-    itc::Context soundslots_ctx;
-    auto sound_slots = engines::slots::SoundSlots::make(soundslots_ctx);
-    sound_slots.logic->set_managed(std::ref(ctx));
-    nav_km.bind_nav_key(Key::slots, sound_slots.overlay_screen);
-    stateman.add("Sound Slots", std::ref(soundslots_ctx));
 
     // Drivers
     RtMidiDriver rt_midi_driver(audio.midi());

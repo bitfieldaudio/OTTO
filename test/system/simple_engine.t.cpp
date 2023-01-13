@@ -88,7 +88,7 @@ TEST_CASE ("simple_engine", "[.interactive]") {
   Controller controller(rt, confman);
   Graphics graphics(rt);
 
-  Audio audio;
+  Audio audio(confman);
   itc::Context ctx;
   engines::Simple::Logic l(ctx);
   engines::Simple::Audio a(ctx);

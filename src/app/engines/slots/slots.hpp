@@ -26,18 +26,34 @@ namespace otto::engines::slots {
   // Put in a separate struct because it is not needed for the screen and contains a lot of data.
   struct SlotData {
     std::array<json::value, 10> json_objects;
-    DECL_VISIT(json_objects);
   };
 
-  struct Logic : ILogic, itc::Producer<SoundSlotsState, SlotState> {
-    Logic(itc::Context& ctx) : Producer(ctx) {}
+  struct Logic : ILogic, itc::Producer<SoundSlotsState>, itc::Persistant {
+    Logic(itc::Context& ctx) : Producer(ctx), itc::Persistant(ctx, "slots"), persistance_provider(ctx["slots"]) {}
 
     void on_state_change(const SoundSlotsState& state) noexcept override;
-    void on_state_change(const SlotState& state) noexcept override {}
-    void set_managed(util::DynSerializable&& ctx);
+
+    /// Any objects registered on this context will be serialized and deserialized when switching slots
+    itc::Context& managed_ctx()
+    {
+      return persistance_provider.context();
+    }
+
+    void serialize_into(json::value& json) const override
+    {
+      util::serialize_into(json["slots"], data_.json_objects);
+      json["slots"][state().active_idx] = util::serialize(persistance_provider);
+    }
+
+    void deserialize_from(const json::value& json) override
+    {
+      auto slots = json::get_or_null(json, "slots");
+      util::deserialize_from(slots, data_.json_objects);
+      util::deserialize_from(json::get_or_null(json, state().active_idx), persistance_provider);
+    }
 
   private:
-    util::DynSerializable _ctx;
+    itc::PersistanceProvider persistance_provider;
     SlotData data_;
     util::change_checker<int> idx;
   };

@@ -50,6 +50,6 @@ namespace otto::itc {
 
   template<AService... Services>
   struct Accessor : Accessor<Services>... {
-    Accessor(Context& ch) : Accessor<Services>(ch)... {}
+    Accessor(Context& ctx) : Accessor<Services>(ctx)... {}
   };
 } // namespace otto::itc

@@ -71,7 +71,7 @@ TEST_CASE ("ottofm-all", "[.interactive][engine]") {
   Controller controller(rt, confman);
   Graphics graphics(rt);
 
-  Audio audio;
+  Audio audio(confman);
   itc::Context ctx;
   auto eng = engines::ottofm::factory.make_all(ctx);
 

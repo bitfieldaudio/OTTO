@@ -2,12 +2,12 @@
 
 #include <concepts>
 
-#include "lib/util/local_vector.hpp"
+#include "lib/util/crtp.hpp"
 #include "lib/util/serialization.hpp"
-#include "lib/util/spin_lock.hpp"
 
 #include "lib/itc/domain.hpp"
 #include "lib/itc/executor.hpp"
+#include "lib/itc/persistance/persistance.hpp"
 #include "lib/itc/services/context.hpp"
 #include "lib/itc/services/service.hpp"
 
@@ -43,9 +43,35 @@ namespace otto::itc {
   /// The global maximum number of domains
   constexpr std::size_t max_domains = 4;
 
+  namespace details {
+    template<typename Derived, AState State>
+    struct CondPersistent {
+      CondPersistent(Context&) noexcept {}
+    };
+
+    template<typename Derived, AState State>
+    requires(util::ASerializable<State>) struct CondPersistent<Derived, State>
+      : util::crtp<Derived, CondPersistent<Derived, State>>, Persistant {
+      CondPersistent(Context& ctx) noexcept : Persistant(ctx, util::qualified_name_of<State>) {}
+
+      void serialize_into(json::value& json) const override
+      {
+        util::serialize_into(json, this->derived().producer_entry_.state);
+      }
+
+      void deserialize_from(const json::value& json) override
+      {
+        util::deserialize_from(json, this->derived().producer_entry_.state);
+        this->derived().commit();
+      }
+    };
+  } // namespace details
+
   template<AState State>
-  struct StateProvider final : Provider<state_service<State>>, util::ISerializable {
-    using Provider<state_service<State>>::Provider;
+  struct StateProvider final : Provider<state_service<State>>, details::CondPersistent<StateProvider<State>, State> {
+    StateProvider(Context& context)
+      : Provider<state_service<State>>(context), details::CondPersistent<StateProvider<State>, State>(context)
+    {}
 
     void register_producer(Producer<State>& producer)
     {
@@ -84,20 +110,6 @@ namespace otto::itc {
       }
     }
 
-    void serialize_into(json::value& json) const override
-    {
-      if constexpr (util::ASerializable<State>) {
-        util::serialize_into(json, producer_entry_.state);
-      }
-    }
-    void deserialize_from(const json::value& json) override
-    {
-      if constexpr (util::ASerializable<State>) {
-        util::deserialize_from(json, producer_entry_.state);
-        commit();
-      }
-    }
-
   private:
     struct Entry {
       Entry(IExecutor* e) : executor(e) {}
@@ -124,6 +136,7 @@ namespace otto::itc {
     }
 
     friend StateAccessor<State>;
+    friend details::CondPersistent<StateProvider<State>, State>;
     std::atomic_int ref_count = 0;
 
     util::local_vector<Entry, max_domains> state_copies_;

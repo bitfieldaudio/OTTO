@@ -3,6 +3,7 @@
 #include <filesystem>
 
 #include <nlohmann/json.hpp>
+#include <tl/optional.hpp>
 
 namespace otto::json {
 
@@ -24,4 +25,24 @@ namespace otto::json {
 
   value parse_file(const std::filesystem::path& path);
   void write_to_file(const value& v, const std::filesystem::path& path);
+
+  /// Get a json value by key, or, if it does not exist or the object is null, return null
+  inline const value& get_or_null(const value& json, std::string_view key)
+  {
+    static const value null = value();
+
+    if (json.is_null()) return null;
+    if (json.count(key) == 0) return null;
+    return json[key];
+  }
+
+  /// Get a json value by key, or, if it does not exist or the object is null, return null
+  inline const value& get_or_null(const value& json, std::size_t key)
+  {
+    static const value null = value();
+
+    if (json.is_null()) return null;
+    if (json.size() >= key) return null;
+    return json[key];
+  }
 } // namespace otto::json

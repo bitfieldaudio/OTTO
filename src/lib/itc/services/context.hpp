@@ -8,8 +8,6 @@
 #include "lib/util/exception.hpp"
 #include "lib/util/name_of.hpp"
 #include "lib/util/ranges.hpp"
-#include "lib/util/serialization.hpp"
-
 #include "service.hpp"
 
 namespace otto::itc {
@@ -50,7 +48,7 @@ namespace otto::itc {
     Context(const Context&) = delete;
     Context& operator=(const Context&) = delete;
 
-    /// Access or create a nested channel group by name
+    /// Access or create a nested context by name
     Context& operator[](std::string_view sv)
     {
       // Apparently transparent keys don't work in gcc for string_view/string
@@ -109,6 +107,12 @@ namespace otto::itc {
       return util::equal_range(accessors_, key_of<S>());
     }
 
+    template<AService S>
+    auto accessors_of() noexcept
+    {
+      return util::equal_range(accessors_, key_of<S>());
+    }
+
   private:
     template<AService...>
     friend struct Provider;
@@ -127,10 +131,11 @@ namespace otto::itc {
     {
       auto [iter, inserted] = providers_.emplace(key_of<S>(), provider);
       if (!inserted) {
-        throw util::exception("Existing provider found for event {}", key_of<S>());
+        throw util::exception("Existing provider found for service {}", key_of<S>());
       }
       register_provider_recurse(provider);
     }
+
     template<AService S>
     void register_provider_recurse(Provider<S>* provider)
     {
@@ -178,34 +183,3 @@ namespace otto::itc {
   };
 
 } // namespace otto::itc
-
-namespace otto::util {
-
-  template<>
-  struct serialize_impl<itc::Context> {
-    static void serialize_into(json::value& json, const itc::Context& ctx)
-    {
-      for (auto&& [key, prov] : ctx.providers()) {
-        if (const auto* ser = dynamic_cast<util::ISerializable*>(prov)) {
-          util::serialize_into(json[key.c_str()], *ser);
-        }
-      }
-      for (auto&& [k, v] : ctx.children()) {
-        util::serialize_into(json[k.c_str()], *v);
-      }
-    }
-
-    static void deserialize_from(const json::value& json, itc::Context& ctx)
-    {
-      for (auto&& [key, prov] : ctx.providers()) {
-        if (auto* ser = dynamic_cast<util::ISerializable*>(prov)) {
-          util::deserialize_from_member(json, key.c_str(), *ser);
-        }
-      }
-      for (auto&& [k, v] : ctx.children()) {
-        util::deserialize_from_member(json, k, *v);
-      }
-    }
-  };
-
-} // namespace otto::util

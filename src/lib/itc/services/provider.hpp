@@ -21,6 +21,12 @@ namespace otto::itc {
       context_->unregister_provider(this);
     }
 
+    /// The context this accessor is registered on
+    [[nodiscard]] Context& context() const noexcept
+    {
+      return *context_;
+    }
+
     /// The accessors this provider is currently linked to
     const std::vector<accessor_t<Service>*>& accessors() const noexcept
     {

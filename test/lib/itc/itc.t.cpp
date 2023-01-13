@@ -264,33 +264,3 @@ struct State1 {
 struct State2 {
   int i2 = 0;
 };
-
-TEST_CASE ("Context serialization", "[!mayfail]") {
-  ImmediateExecutor ex;
-  StaticDomain<>::set_static_executor(ex);
-
-  SECTION ("Basic serializable state") {
-    Context ctx;
-    WithDomain<StaticDomain<>, Producer<State1>> p1{ctx};
-    ImmCons<State1> c1{ctx};
-
-    const auto s = util::serialize(ctx);
-    p1.commit([&](auto& state) { state.i1 = 10; });
-    REQUIRE(c1.state().i1 == 10);
-    util::deserialize_from(s, ctx);
-    REQUIRE(c1.state().i1 == 0);
-  }
-
-  SECTION ("Unserializable state") {
-    Context ctx;
-    WithDomain<StaticDomain<>, Producer<State2>> p1{ctx};
-    ImmCons<State2> c1{ctx};
-
-    const auto s = util::serialize(ctx);
-    REQUIRE(s.is_object());
-    p1.commit([&](auto& state) { state.i2 = 10; });
-    REQUIRE(c1.state().i2 == 10);
-    util::deserialize_from(s, ctx);
-    REQUIRE(c1.state().i2 == 10);
-  }
-}

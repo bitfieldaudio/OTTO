@@ -3,6 +3,7 @@
 #include <functional>
 #include <memory>
 
+#include "lib/util/change_checker.hpp"
 #include "lib/util/math.hpp"
 
 #include "lib/audio.hpp"
@@ -72,10 +73,15 @@ namespace otto {
     }
   };
 
-  struct SynthDispatcherLogic : ILogic, itc::Producer<SynthDispatcherState>, itc::Receiver<SynthDispatcherCommand> {
+  struct SynthDispatcherLogic : ILogic,
+                                itc::Producer<SynthDispatcherState>,
+                                itc::Receiver<SynthDispatcherCommand>,
+                                itc::Persistant {
     using Producer::Producer;
 
-    SynthDispatcherLogic(itc::Context& ctx) : Producer(ctx), Receiver(ctx) {}
+    SynthDispatcherLogic(itc::Context& ctx)
+      : Producer(ctx), Receiver(ctx), Persistant(ctx, "synth_dispatcher"), persistance_provider(ctx["engine"])
+    {}
 
     void register_engine(SynthEngineFactory&& factory)
     {
@@ -108,7 +114,37 @@ namespace otto {
       using namespace synth_dispatcher_cmd;
       util::match(cmd, //
                   [&](SelectEngine e) { select_engine(std::clamp(e.index, 0, (int) _factories.size() - 1)); });
-      ;
+    }
+
+    void on_state_change(const SynthDispatcherState& state) noexcept override
+    {
+      if (_factories.empty() && active_index.check_changed(state.active_engine)) {
+        select_engine(state.active_engine);
+      }
+    }
+
+    void serialize_into(json::value& json) const override
+    {
+      if (!_factories.empty()) {
+        json["active_engine"] = _factories[state().active_engine]._metadata.name;
+        util::serialize_into(json["state"], persistance_provider);
+      }
+    }
+
+    void deserialize_from(const json::value& json) override
+    {
+      deactivate_engine();
+      if (auto active = json::get_or_null(json, "active_engine"); !active.is_null()) {
+        int idx = std::ranges::find_if(_factories, [&](SynthEngineFactory& x) { return x._metadata.name == active; }) -
+                  _factories.begin();
+        if (idx == _factories.size()) {
+          idx = 0;
+        }
+        select_engine(idx);
+        util::deserialize_from(json::get_or_null(json, "state"), persistance_provider);
+      } else if (!_factories.empty()) {
+        select_engine(0);
+      }
     }
 
   private:
@@ -123,13 +159,24 @@ namespace otto {
 
     void activate_engine(std::size_t idx)
     {
+      LOGT("Activating engine {}", idx);
       // Constructs the engine
       if (idx < _factories.size()) {
-        _active = _factories[idx].make_all(Producer::context());
+        _active = _factories[idx].make_all(engine_ctx());
       }
       update_state(idx);
       AudioDomain::get_static_executor()->sync();
       GraphicsDomain::get_static_executor()->sync();
+    }
+
+    [[nodiscard]] itc::Context& engine_ctx()
+    {
+      return Producer::context()["engine"];
+    }
+
+    [[nodiscard]] const itc::Context& engine_ctx() const
+    {
+      return Producer::context()["engine"];
     }
 
     void wipe_state()
@@ -154,9 +201,9 @@ namespace otto {
       });
     }
 
+    itc::PersistanceProvider persistance_provider;
     std::vector<SynthEngineFactory> _factories;
-    // TODO: Refactor this?
-    // To make sure these don't come out of sync, we only allow activation through the index.
+    util::change_checker<int> active_index;
     SynthEngineInstance _active = {};
   };
 
