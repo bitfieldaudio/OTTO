@@ -30,8 +30,7 @@ namespace otto {
   template<typename T>
   concept AConfig = std::is_base_of_v<Config<T>, T> && util::ASerializable<T>;
 
-  namespace services
-  {
+  namespace services {
 
     struct ConfigManager {
       ConfigManager() = default;
@@ -71,6 +70,10 @@ namespace otto {
 
       [[nodiscard]] json::value into_json() const;
 
+      /// Set an option by json pointer, i.e. a path separated by `/`
+      /// Only applies options for services constructed _after_ this function is called.
+      void set_option(const json::pointer& pointer, json::value value);
+
     private:
       template<AConfig Conf>
       static constexpr const char* key_of() noexcept;
@@ -85,40 +88,6 @@ namespace otto {
 // Implementations:
 namespace otto::services {
 
-  inline ConfigManager::ConfigManager(json::value config_data) : config_data_(std::move(config_data)) {}
-
-  inline ConfigManager::ConfigManager(const std::filesystem::path& config_path)
-  try : ConfigManager(json::parse_file(config_path)) {
-    file_path = config_path;
-  } catch (json::value::parse_error& e) {
-    LOGW("Config file parse error!");
-    LOGW("{}", e.what());
-    auto new_path = config_path;
-    new_path += ".corrupt";
-    std::filesystem::rename(config_path, new_path);
-    LOGW("Config file has been backed up as {}", new_path);
-  } catch (std::runtime_error& e) {
-    LOGW("Error reading config file:");
-    LOGW("{}", e.what());
-  }
-
-  inline void ConfigManager::write_to_file()
-  {
-    if (file_path.empty()) return;
-    LOGI("Writing config to {}", file_path.c_str());
-    json::write_to_file(into_json(), file_path);
-  }
-
-  inline ConfigManager::~ConfigManager()
-  {
-    if (!file_path.empty()) write_to_file();
-  }
-
-  inline json::value ConfigManager::into_json() const
-  {
-    return config_data_;
-  }
-
   template<AConfig Conf>
   Conf ConfigManager::make_conf() noexcept
   {
@@ -130,8 +99,8 @@ namespace otto::services {
       LOGI("Error in config {}, using default: ", res.get_name());
       LOGI("{}", e.what());
     } catch (const std::exception& e) {
-      LOGW("Error in config {}, using default: ", res.get_name());
-      LOGW("{}", e.what());
+      LOGE("Error in config {}, using default: ", res.get_name());
+      LOGE("{}", e.what());
     }
     try {
       util::serialize_into(data, res);

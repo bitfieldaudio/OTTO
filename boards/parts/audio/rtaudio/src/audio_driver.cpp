@@ -13,7 +13,7 @@ namespace otto::drivers {
     std::string input_device;
     std::string output_device;
     unsigned buffer_size = 256;
-    unsigned sample_rate = 48000;
+    unsigned sample_rate = 41000;
 
     DECL_VISIT(input_device, output_device, buffer_size, sample_rate)
   };
@@ -52,10 +52,9 @@ namespace otto::drivers {
     friend struct RtAudioSoftwareMixer;
   };
 
-  std::unique_ptr<IAudioDriver> IAudioDriver::make_default()
+  std::unique_ptr<IAudioDriver> IAudioDriver::make_default(services::ConfigManager& confman)
   {
-    // TODO: Pass in config manager or something
-    return std::make_unique<RtAudioDriver>(RtAudioConfig{});
+    return std::make_unique<RtAudioDriver>(confman.make_conf<RtAudioConfig>());
   }
 
   struct RtAudioSoftwareMixer final : IAudioMixer {

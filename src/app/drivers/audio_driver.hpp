@@ -4,6 +4,8 @@
 
 #include "lib/util/audio_buffer.hpp"
 
+#include "app/services/config.hpp"
+
 namespace otto::drivers {
   struct IAudioDriver;
   struct IAudioMixer {
@@ -32,6 +34,6 @@ namespace otto::drivers {
     [[nodiscard]] virtual std::size_t sample_rate() const = 0;
     virtual IAudioMixer& mixer() = 0;
 
-    static std::unique_ptr<IAudioDriver> make_default();
+    static std::unique_ptr<IAudioDriver> make_default(services::ConfigManager&);
   };
 } // namespace otto::drivers

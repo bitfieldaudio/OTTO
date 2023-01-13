@@ -22,7 +22,7 @@ namespace otto::services {
     using CallbackData = drivers::IAudioDriver::CallbackData;
     using Callback = drivers::IAudioDriver::Callback;
 
-    Audio(util::smart_ptr<drivers::IAudioDriver>&& d = drivers::IAudioDriver::make_default());
+    Audio(util::smart_ptr<drivers::IAudioDriver>&& d);
 
     util::at_exit set_process_callback(Callback&& cb) noexcept;
     util::at_exit set_midi_handler(util::smart_ptr<midi::IMidiHandler> h) noexcept;

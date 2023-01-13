@@ -60,6 +60,23 @@ namespace otto {
       .implicit_value(true);
 #endif
 
+    args
+      .add_argument("-o", "--option") //
+      .default_value<std::vector<std::string>>({}) 
+      .append()
+      .help("Set a config option. format: /option/path=json_value");
+
+    args
+      .add_argument("-c", "--config") //
+      .help("Config file path");
+
+    args
+      .add_argument("--write-config") //
+      .help("Write config file on exit. This will include options set in the file when read, default options, and "
+            "options passed on the command line")
+      .default_value(false)
+      .implicit_value(true);
+
     try {
       args.parse_args(argc, argv);
     } catch (std::runtime_error& e) {
@@ -88,11 +105,21 @@ namespace otto {
 
     // Services
     RuntimeController rt;
-    auto confman = ConfigManager::make_default();
+    auto confman = [&] {
+      if (auto conf = args.present("--config")) {
+        return ConfigManager(std::filesystem::path(*conf));
+      }
+      return ConfigManager::make_default();
+    }();
+    for (const auto& opt : args.get<std::vector<std::string>>("--option")) {
+      auto [path, val] = util::split_string(opt, '=');
+      confman.set_option(json::pointer(std::string(path)), json::value::parse(val));
+    }
+
     LogicThread logic_thread;
     Controller controller(rt, confman);
     Graphics graphics(rt, std::move(graphics_driver));
-    Audio audio;
+    Audio audio(drivers::IAudioDriver::make_default(confman));
     StateManager stateman(data_dir / "state.json");
 
     // Key/LED Layers
@@ -161,6 +188,11 @@ namespace otto {
     LOGI("Shutting down");
 
     stateman.write_to_file();
+
+
+    if (args.get<bool>("--write-config")) {
+      confman.write_to_file();
+    }
     return 0;
   }
 

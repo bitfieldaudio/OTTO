@@ -39,6 +39,12 @@ namespace otto::util {
       return result;
     }
 
+    inline std::pair<std::string_view, std::string_view> split_string(std::string_view str, char ch)
+    {
+      auto pos = str.find_first_of(ch);
+      return {str.substr(0, pos), str.substr(pos + 1)};
+    }
+
     /// Find/Replace
     inline void string_replace(std::string& str, const std::string& oldStr, const std::string& newStr)
     {
@@ -93,7 +99,7 @@ namespace otto::util {
     /// Construct a `std::array<T, N>` where all elements are constructed with the same `args...`
     template<typename T, std::size_t N, typename... Args>
     requires std::is_constructible_v<T, Args...> //
-      constexpr auto make_array(Args&&... args)
+    constexpr auto make_array(Args&&... args)
     {
       auto impl = [&]<std::size_t... Ns>(std::index_sequence<Ns...>) constexpr
       {

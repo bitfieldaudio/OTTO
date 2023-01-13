@@ -14,7 +14,7 @@ namespace otto::json {
   {
     std::ofstream file;
     file.open(path);
-    file << v;
+    file << v.dump(4) << std::endl;
     file.close();
   }
 

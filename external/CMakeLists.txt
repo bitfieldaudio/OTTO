@@ -27,6 +27,7 @@ CPMAddPackage("gh:Naios/function2#4.1.0")
 CPMAddPackage("gh:gabime/spdlog@1.9.2") 
 CPMAddPackage("gh:p-ranav/argparse@2.9") 
 CPMAddPackage("gh:topisani/choreograph@0.5.0")
+CPMAddPackage("gh:nlohmann/json@3.11.2")
 
 CPMAddPackage(
   NAME gamma
@@ -43,19 +44,6 @@ if (gamma_ADDED)
     "${gamma_SOURCE_DIR}/src/AudioIO.cpp")
   add_library(gamma ${gamma_src})
   target_include_directories(gamma SYSTEM PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/include")
-endif()
-
-CPMAddPackage(
-  NAME nlohmann_json
-  GITHUB_REPOSITORY nlohmann/json
-  VERSION 3.9.1
-  DOWNLOAD_ONLY YES
-  GIT_SHALLOW ON
-)
-
-if (nlohmann_json_ADDED)
-  add_library(nlohmann_json INTERFACE)
-  target_include_directories(nlohmann_json SYSTEM INTERFACE "${nlohmann_json_SOURCE_DIR}/include")
 endif()
 
 CPMAddPackage(

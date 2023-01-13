@@ -11,6 +11,7 @@ namespace otto::json {
   using object = value::object_t;
   using string = value::string_t;
   using type = value::value_t;
+  using pointer = value::json_pointer;
 
   const value null = nullptr;
 
