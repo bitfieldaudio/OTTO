@@ -183,24 +183,24 @@ namespace otto {
   {
     return nav_->draw(ctx);
   }
-  
+
   void NavKeyMap::deserialize_from(const json::value& json)
   {
-    if (json["previous"].is_string()) {
-      auto prev = util::deserialize<Key>(json["previous"]);
+    if (auto obj = json::get_or_null(json, "previous"); obj.is_string()) {
+      auto prev = util::deserialize<Key>(obj);
       auto found = binds_.find(prev);
       if (found == binds_.end()) return;
       nav().navigate_to(found->second);
     }
-    
-    if (json["current"].is_string()) {
-      auto cur = util::deserialize<Key>(json["current"]);
+
+    if (auto obj = json::get_or_null(json, "current"); obj.is_string()) {
+      auto cur = util::deserialize<Key>(obj);
       auto found = binds_.find(cur);
       if (found == binds_.end()) return;
       nav().navigate_to(found->second);
     }
   }
-  
+
   void NavKeyMap::serialize_into(json::value& json) const
   {
     auto cur = nav_->current_screen();

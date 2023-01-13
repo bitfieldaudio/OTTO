@@ -89,7 +89,7 @@ namespace otto::engines::ottofm {
     int index;
     bool active = false;
     graphics::ADSR graphic;
-    skia::Anim<float> size = {0, 0.25};
+    skia::Anim<float> size = {0, 0.15};
 
     void on_state_change(const State& s)
     {
@@ -117,7 +117,7 @@ namespace otto::engines::ottofm {
   struct ModScreen final : itc::Consumer<State, AudioState>, ScreenBase {
     using Consumer::Consumer;
 
-    Operators ops{Consumer<AudioState>::state().activity};
+    Operators ops{state<AudioState>().activity};
     // Operators are numbered from the bottom up
     std::array<ADSRGraphic, 4> envelopes = {3, 2, 1, 0};
 
@@ -199,7 +199,7 @@ namespace otto::engines::ottofm {
         upper_y += env_size + step;
       }
     }
-    
+
 
     [[nodiscard]] LedSet led_mask() const noexcept override
     {
@@ -208,14 +208,10 @@ namespace otto::engines::ottofm {
 
     void leds(LEDColorSet& colors) noexcept override
     {
-      colors[Led::page_a] =
-        LEDColor::from_skia(ops.operator_colours[0].dim((1.f - envelopes[0].size) * 0.5f));
-      colors[Led::page_b] =
-        LEDColor::from_skia(ops.operator_colours[1].dim((1.f - envelopes[1].size) * 0.5f));
-      colors[Led::page_c] =
-        LEDColor::from_skia(ops.operator_colours[2].dim((1.f - envelopes[2].size) * 0.5f));
-      colors[Led::page_d] =
-        LEDColor::from_skia(ops.operator_colours[3].dim((1.f - envelopes[3].size) * 0.5f));
+      colors[Led::page_a] = LEDColor::from_skia(ops.operator_colours[0].dim((1.f - envelopes[0].size) * 0.5f));
+      colors[Led::page_b] = LEDColor::from_skia(ops.operator_colours[1].dim((1.f - envelopes[1].size) * 0.5f));
+      colors[Led::page_c] = LEDColor::from_skia(ops.operator_colours[2].dim((1.f - envelopes[2].size) * 0.5f));
+      colors[Led::page_d] = LEDColor::from_skia(ops.operator_colours[3].dim((1.f - envelopes[3].size) * 0.5f));
     }
 
     skia::ReturnTo<float> popup_brightness = {0, 0.5, 0.15};
@@ -230,6 +226,6 @@ namespace otto::engines::ottofm {
       .input = std::make_unique<ModHandler>(ctx),
     };
   }
-  
+
 
 } // namespace otto::engines::ottofm

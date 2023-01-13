@@ -51,7 +51,6 @@ namespace otto::engines::ottofm {
 
     void reduce(EncoderEvent e, State& state) noexcept final
     {
-      // TODO
       switch (e.encoder) {
         case Encoder::blue: {
           state.algorithm_idx += divider(e);
@@ -60,14 +59,14 @@ namespace otto::engines::ottofm {
           if (!state.shift) {
             state.current_op().ratio_idx += e.steps;
           } else {
-            state.current_op().detune += e.steps * 0.01;
+            state.current_op().detune += e.steps * 0.01f;
           }
         } break;
         case Encoder::yellow: {
           if (!state.shift) {
-            state.current_op().level += e.steps * 0.01;
+            state.current_op().level += e.steps * 0.01f;
           } else {
-            for (auto& op : state.operators) op.level += e.steps * 0.01;
+            for (auto& op : state.operators) op.level += e.steps * 0.01f;
           }
         } break;
         case Encoder::red: {
@@ -98,7 +97,7 @@ namespace otto::engines::ottofm {
     LevelGraphic lev;
     WaveShapeGraphic ws;
 
-    skia::Anim<float> expansion = {0, 0.25};
+    skia::Anim<float> expansion = {0, 0.15};
     int denom = 0;
     int numer = 0;
 
@@ -154,10 +153,10 @@ namespace otto::engines::ottofm {
     Operators ops{Consumer<AudioState>::state().activity};
     std::array<OpLine, 4> op_lines = {
       // Ops are counted from the bottom
-      {{3, Consumer<State>::state()},
-       {2, Consumer<State>::state()},
-       {1, Consumer<State>::state()},
-       {0, Consumer<State>::state()}},
+      {{3, state<State>()},
+       {2, state<State>()},
+       {1, state<State>()},
+       {0, state<State>()}},
     };
 
     sk_sp<SkTextBlob> alg_text = skia::TextBlob::MakeFromString("ALGORITHM", fonts::regular(26));
@@ -170,6 +169,8 @@ namespace otto::engines::ottofm {
       ops.bounding_box = {{10, 30}, {50, 180}};
     }
 
+    void on_state_change(const AudioState& s) noexcept override {}
+    
     void on_state_change(const State& s) noexcept override
     {
       ops.algorithm_idx = s.algorithm_idx;
@@ -206,14 +207,10 @@ namespace otto::engines::ottofm {
 
     void leds(LEDColorSet& colors) noexcept override
     {
-      colors[Led::page_a] =
-        LEDColor::from_skia(ops.operator_colours[0].dim((1.f - op_lines[0].expansion) * 0.7f));
-      colors[Led::page_b] =
-        LEDColor::from_skia(ops.operator_colours[1].dim((1.f - op_lines[1].expansion) * 0.7f));
-      colors[Led::page_c] =
-        LEDColor::from_skia(ops.operator_colours[2].dim((1.f - op_lines[2].expansion) * 0.7f));
-      colors[Led::page_d] =
-        LEDColor::from_skia(ops.operator_colours[3].dim((1.f - op_lines[3].expansion) * 0.7f));
+      colors[Led::page_a] = LEDColor::from_skia(ops.operator_colours[0].dim((1.f - op_lines[0].expansion) * 0.7f));
+      colors[Led::page_b] = LEDColor::from_skia(ops.operator_colours[1].dim((1.f - op_lines[1].expansion) * 0.7f));
+      colors[Led::page_c] = LEDColor::from_skia(ops.operator_colours[2].dim((1.f - op_lines[2].expansion) * 0.7f));
+      colors[Led::page_d] = LEDColor::from_skia(ops.operator_colours[3].dim((1.f - op_lines[3].expansion) * 0.7f));
     }
   };
 
