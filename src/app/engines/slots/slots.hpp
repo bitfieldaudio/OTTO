@@ -1,5 +1,6 @@
 #pragma once
 
+#include "lib/util/algorithm.hpp"
 #include "lib/util/change_checker.hpp"
 #include "lib/util/serialization.hpp"
 #include "lib/util/with_limits.hpp"
@@ -19,7 +20,8 @@ namespace otto::engines::slots {
 
   struct SoundSlotsState {
     util::StaticallyBounded<int, 0, 9> active_idx = 0;
-    std::array<SlotState, 10> slot_states;
+    std::array<SlotState, 10> slot_states =
+      util::generate_array<10>([](int i) { return SlotState{.selected_color_f = float(i) / 10.f}; });
     std::optional<int> clipboard;
     DECL_VISIT(active_idx, slot_states);
   };
