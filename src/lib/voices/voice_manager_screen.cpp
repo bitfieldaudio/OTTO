@@ -45,6 +45,8 @@ namespace otto::voices {
           state.portamento += e.steps * 0.01;
         } break;
         case Encoder::red: {
+          if (e.steps < 0 && !state.legato && !state.retrig) break;
+          if (e.steps > 0 && state.legato && state.retrig) break;
           if (e.steps > 0 && state.legato) {
             state.retrig = !state.retrig;
           } else if (e.steps < 0 && !state.legato) {

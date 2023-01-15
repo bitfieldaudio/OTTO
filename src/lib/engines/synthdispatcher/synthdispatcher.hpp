@@ -140,10 +140,10 @@ namespace otto {
         if (idx == _factories.size()) {
           idx = 0;
         }
-        select_engine(idx);
+        activate_engine(idx);
         util::deserialize_from(json::get_or_null(json, "state"), persistance_provider);
       } else if (!_factories.empty()) {
-        select_engine(0);
+        activate_engine(0);
       }
     }
 
@@ -157,6 +157,7 @@ namespace otto {
       _active = SynthEngineInstance();
     }
 
+    /// Make sure `deactivate_engine` has been called first
     void activate_engine(std::size_t idx)
     {
       LOGT("Activating engine {}", idx);

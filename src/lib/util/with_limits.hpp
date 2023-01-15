@@ -253,7 +253,7 @@ namespace otto::util {
       auto tmp = *this;
       index_++;
       if (index_ >= util::enum_count<Enum>()) {
-        index_ = BP::check_bounds(index_, static_cast<std::size_t>(0), util::enum_count<Enum>() - 1);
+        index_ = BP::check_bounds(index_, 0, int(util::enum_count<Enum>() - 1));
       }
       return tmp;
     }
@@ -281,7 +281,7 @@ namespace otto::util {
 
     SelectableEnum& operator+=(const int inc)
     {
-      index_ = BP::check_bounds(index_ + inc, static_cast<std::size_t>(0), util::enum_count<Enum>() - 1);
+      index_ = BP::check_bounds(index_ + inc, int(0), int(util::enum_count<Enum>() - 1));
       return *this;
     }
 
@@ -319,7 +319,7 @@ namespace otto::util {
     }
 
   private:
-    std::size_t index_;
+    int index_;
   };
 
 } // namespace otto::util

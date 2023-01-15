@@ -153,10 +153,7 @@ namespace otto::engines::ottofm {
     Operators ops{Consumer<AudioState>::state().activity};
     std::array<OpLine, 4> op_lines = {
       // Ops are counted from the bottom
-      {{3, state<State>()},
-       {2, state<State>()},
-       {1, state<State>()},
-       {0, state<State>()}},
+      {{3, state<State>()}, {2, state<State>()}, {1, state<State>()}, {0, state<State>()}},
     };
 
     sk_sp<SkTextBlob> alg_text = skia::TextBlob::MakeFromString("ALGORITHM", fonts::regular(26));
@@ -170,7 +167,7 @@ namespace otto::engines::ottofm {
     }
 
     void on_state_change(const AudioState& s) noexcept override {}
-    
+
     void on_state_change(const State& s) noexcept override
     {
       ops.algorithm_idx = s.algorithm_idx;
