@@ -31,6 +31,10 @@ namespace otto::util {
     {
       return &value;
     }
+    
+    void unlock() && {
+      lock.unlock();
+    }
 
   private:
     T& value;

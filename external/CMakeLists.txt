@@ -28,6 +28,7 @@ CPMAddPackage("gh:gabime/spdlog@1.9.2")
 CPMAddPackage("gh:p-ranav/argparse@2.9") 
 CPMAddPackage("gh:topisani/choreograph@0.5.0")
 CPMAddPackage("gh:nlohmann/json@3.11.2")
+CPMAddPackage("gh:GerHobbelt/linenoise#9509586af67aaa60faf0a87066761ab741b98f61")
 
 CPMAddPackage(
   NAME gamma

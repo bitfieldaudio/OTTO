@@ -39,6 +39,7 @@ target_link_libraries(otto_src PUBLIC function2)
 target_link_libraries(otto_src PUBLIC argparse)
 target_link_libraries(otto_src PUBLIC otto_boost)
 target_link_libraries(otto_src PUBLIC yamc)
+target_link_libraries(otto_src PUBLIC Linenoise)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OTTO_CXX_FLAGS}")
 

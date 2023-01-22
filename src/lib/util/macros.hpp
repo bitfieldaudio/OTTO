@@ -186,8 +186,8 @@
 
 #define FOR_EACH_LAST(action, args, ...)                                                                               \
   GET_MACRO_32(__VA_ARGS__, FEL_32, FEL_31, FEL_30, FEL_29, FEL_28, FEL_27, FEL_26, FEL_25, FEL_24, FEL_23, FEL_22, FEL_21, FEL_20, \
-               FEL_19, FEL_18, FEL_17, FEL_16, FEL_15, FEL_14, FEL_13, FEL_12, FEL_11, FEL_10, FEL_9, FEL_8, FEL_7, FEL_6, FEL_5,     \
-               FEL_4, FEL_3, FEL_2, FEL_1, NONE)                                                                           \
+               FEL_19, FEL_18, FEL_17, FEL_16, FEL_15, FEL_14, FEL_13, FEL_12, FEL_11, FEL_10, FEL_09, FEL_08, FEL_07, FEL_06, FEL_05,     \
+               FEL_04, FEL_03, FEL_02, FEL_01, NONE)                                                                           \
   (action, args, __VA_ARGS__)
 
 // a FOREACH macro that puts the sequence element last in a macro call with
@@ -227,8 +227,8 @@
 
 #define FOR_EACH_LAST_SEP(action, args, ...)                                                                           \
   GET_MACRO_32(__VA_ARGS__, FELS_32, FELS_31, FELS_30, FELS_29, FELS_28, FELS_27, FELS_26, FELS_25, FELS_24, FELS_23, FELS_22, FELS_21, FELS_20, \
-               FELS_19, FELS_18, FELS_17, FELS_16, FELS_15, FELS_14, FELS_13, FELS_12, FELS_11, FELS_10, FELS_9, FELS_8, FELS_7, FELS_6, FELS_5,     \
-               FELS_4, FELS_3, FELS_2, FELS_1, NONE)                                                                           \
+               FELS_19, FELS_18, FELS_17, FELS_16, FELS_15, FELS_14, FELS_13, FELS_12, FELS_11, FELS_10, FELS_09, FELS_08, FELS_07, FELS_06, FELS_05,     \
+               FELS_04, FELS_03, FELS_02, FELS_01, NONE)                                                                           \
   (action, args, __VA_ARGS__)
 
 // a FOREACH macro that puts the sequence element last in a macro call with
