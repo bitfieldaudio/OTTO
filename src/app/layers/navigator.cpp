@@ -2,6 +2,8 @@
 
 #include "lib/logging.hpp"
 
+#include "app/domains/graphics.hpp"
+
 namespace otto {
 
   void Navigator::navigate_to(ScreenWithHandlerPtr screen)
@@ -93,39 +95,43 @@ namespace otto {
 
   void NavKeyMap::handle(KeyPress e) noexcept
   {
-    auto found = current_binds().find(e.key);
-    if (found != current_binds().end() && found->second != nullptr) {
-      auto bind = found->second;
-      last_nav_time_ = e.timestamp;
-      if (bind == nav().current_screen() && bind.screen->is_overlay()) {
-        nav().navigate_back();
+    GraphicsDomain::static_executor().execute([this, e] {
+      auto found = current_binds().find(e.key);
+      if (found != current_binds().end() && found->second != nullptr) {
+        auto bind = found->second;
+        last_nav_time_ = e.timestamp;
+        if (bind == nav().current_screen() && bind.screen->is_overlay()) {
+          nav().navigate_back();
+        } else {
+          nav().navigate_to(bind);
+        }
       } else {
-        nav().navigate_to(bind);
+        if (e.key == Key::shift) shift_held = true;
+        nav().handle(e);
       }
-    } else {
-      if (e.key == Key::shift) shift_held = true;
-      nav().handle(e);
-    }
+    });
   }
 
   void NavKeyMap::handle(KeyRelease e) noexcept
   {
-    auto found = current_binds().find(e.key);
-    if (found != current_binds().end() && found->second != nullptr) {
-      auto bind = found->second;
-      // NOLINTNEXTLINE
-      if (bind == nav().current_screen() && (e.timestamp - last_nav_time_) > conf.peek_timeout) {
-        nav().navigate_back();
+    GraphicsDomain::static_executor().execute([this, e] {
+      auto found = current_binds().find(e.key);
+      if (found != current_binds().end() && found->second != nullptr) {
+        auto bind = found->second;
+        // NOLINTNEXTLINE
+        if (bind == nav().current_screen() && (e.timestamp - last_nav_time_) > conf.peek_timeout) {
+          nav().navigate_back();
+        }
+      } else {
+        if (e.key == Key::shift) shift_held = false;
+        nav().handle(e);
       }
-    } else {
-      if (e.key == Key::shift) shift_held = false;
-      nav().handle(e);
-    }
+    });
   }
 
   void NavKeyMap::handle(EncoderEvent e) noexcept
   {
-    nav().handle(e);
+    GraphicsDomain::static_executor().execute([this, e] { nav().handle(e); });
   }
 
   ScreenWithHandlerPtr NavKeyMap::screen()
@@ -190,14 +196,15 @@ namespace otto {
       auto prev = util::deserialize<Key>(obj);
       auto found = binds_.find(prev);
       if (found == binds_.end()) return;
-      nav().navigate_to(found->second);
+
+      GraphicsDomain::static_executor().execute([=] { nav().navigate_to(found->second); });
     }
 
     if (auto obj = json::get_or_null(json, "current"); obj.is_string()) {
       auto cur = util::deserialize<Key>(obj);
       auto found = binds_.find(cur);
       if (found == binds_.end()) return;
-      nav().navigate_to(found->second);
+      GraphicsDomain::static_executor().execute([=] { nav().navigate_to(found->second); });
     }
   }
 

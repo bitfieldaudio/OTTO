@@ -126,7 +126,9 @@ namespace otto::engines::ottofm {
     ModScreen(itc::Context& c) : Consumer(c)
     {
       ops.bounding_box = {{10, 30}, {50, 180}};
-      for (auto& env : envelopes) env.on_state_change(Consumer<State>::state());
+      executor().execute([this] {
+        for (auto& env : envelopes) env.on_state_change(Consumer<State>::state());
+      });
     }
 
     void on_state_change(const State& s) noexcept override

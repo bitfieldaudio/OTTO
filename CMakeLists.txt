@@ -15,6 +15,7 @@ otto_option(BUILD_TESTS "Build tests" ON)
 otto_option(USE_LIBCXX "Link towards libc++ instead of libstdc++. This is the default on OSX" ${APPLE})
 otto_option(ENABLE_ASAN "Enable the adress sanitizer on development builds" OFF)
 otto_option(ENABLE_UBSAN "Enable the undefined behaviour sanitizer on development builds" OFF)
+otto_option(ENABLE_TSAN "Enable the thread sanitizer on development builds" OFF)
 otto_option(ENABLE_LTO "Enable link time optimization on release builds. Only works on clang" OFF)
 
 include(cmake/CPM.cmake)
@@ -29,6 +30,11 @@ endif()
 if (OTTO_ENABLE_UBSAN)
   set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=undefined")
   set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fsanitize=undefined")
+endif()
+
+if (OTTO_ENABLE_TSAN)
+  set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=thread")
+  set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fsanitize=thread")
 endif()
 
 if (DEFINED CMAKE_CXX_FLAGS_DEBUG_INIT AND  

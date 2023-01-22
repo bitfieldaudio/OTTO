@@ -69,7 +69,7 @@ namespace otto::graphics {
       // Amount
       skia::place_text(ctx, "AMT", fonts::black(20), paints::fill(colors::red.fade(1 - expanded)),
                        bounding_box.point(anchors::top_right), anchors::top_right);
-      skia::place_text(ctx, fmt::format("{:.2}", x), fonts::black(26),
+      skia::place_text(ctx, fmt::format("{}", int(x * 100)), fonts::black(26),
                        paints::fill(colors::red.mix(colors::black, static_cast<float>(!active) * 0.8f)),
                        bounding_box.point(anchors::bottom_right), anchors::bottom_right);
     }

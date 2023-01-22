@@ -84,6 +84,16 @@ namespace otto::itc {
       return detail::static_executor_ptr<Tag>;
     }
 
+    static IExecutor& static_executor()
+    {
+      auto* exec = get_static_executor();
+      if (exec == nullptr) {
+        LOGE("Trying to get executor that is not available {}", detail::static_name_ptr<Tag>);
+        std::terminate();
+      }
+      return *exec;
+    }
+
     IExecutor& executor() override
     {
       return *get_static_executor();

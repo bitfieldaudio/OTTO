@@ -23,6 +23,44 @@ namespace otto {
     ScreenWithHandler main_screen;
     ScreenWithHandler mod_screen;
     ScreenWithHandler voices_screen;
+
+    SynthEngineInstance() = default;
+
+    SynthEngineInstance(const SynthEngineInstance&) = delete;
+    SynthEngineInstance(SynthEngineInstance&&) = default;
+    SynthEngineInstance& operator=(const SynthEngineInstance&) = delete;
+    SynthEngineInstance& operator=(SynthEngineInstance&& rhs) noexcept
+    {
+      reset();
+      logic = std::move(rhs.logic);
+      audio = std::move(rhs.audio);
+      main_screen = std::move(rhs.main_screen);
+      mod_screen = std::move(rhs.mod_screen);
+      voices_screen = std::move(rhs.voices_screen);
+      return *this;
+    };
+
+    ~SynthEngineInstance() noexcept
+    {
+      reset();
+    }
+
+    void reset() noexcept
+    {
+      if (audio != nullptr) {
+        AudioDomain::static_executor().execute([audio = std::move(audio)] {});
+        AudioDomain::static_executor().sync();
+      }
+      if (main_screen.screen != nullptr && mod_screen.screen != nullptr && voices_screen.screen != nullptr) {
+        // Pass ownership to graphics thread. These will be destructed when the function has been called, i.e. on the
+        // graphics thread
+        GraphicsDomain::static_executor().execute([main_screen = std::move(this->main_screen.screen),
+                                                   mod_screen = std::move(this->mod_screen.screen),
+                                                   voices_screen = std::move(this->voices_screen.screen)] {});
+        GraphicsDomain::static_executor().sync();
+      }
+      logic.reset();
+    }
   };
 
 
@@ -39,37 +77,37 @@ namespace otto {
       return _metadata;
     }
 
-    SynthEngineInstance make_all(itc::Context& chan) const
+    SynthEngineInstance make_all(itc::Context& ctx) const
     {
-      return {
-        .logic = make_logic(chan),
-        .audio = make_audio(chan),
-        .main_screen = make_main_screen(chan),
-        .mod_screen = make_mod_screen(chan),
-        .voices_screen = make_voices_screen(chan),
-      };
+      SynthEngineInstance res;
+      res.logic = make_logic(ctx);
+      res.audio = AudioDomain::static_executor().block_on(make_audio, ctx);
+      res.main_screen = GraphicsDomain::static_executor().block_on(make_main_screen, ctx);
+      res.mod_screen = GraphicsDomain::static_executor().block_on(make_mod_screen, ctx);
+      res.voices_screen = GraphicsDomain::static_executor().block_on(make_voices_screen, ctx);
+      return res;
     }
 
-    SynthEngineInstance make_without_audio(itc::Context& chan) const
+    SynthEngineInstance make_without_audio(itc::Context& ctx) const
     {
-      return {
-        .logic = make_logic(chan),
-        .audio = nullptr,
-        .main_screen = make_main_screen(chan),
-        .mod_screen = make_mod_screen(chan),
-        .voices_screen = make_voices_screen(chan),
-      };
+      SynthEngineInstance res;
+      res.logic = make_logic(ctx);
+      res.audio = nullptr;
+      res.main_screen = GraphicsDomain::static_executor().block_on(make_main_screen, ctx);
+      res.mod_screen = GraphicsDomain::static_executor().block_on(make_mod_screen, ctx);
+      res.voices_screen = GraphicsDomain::static_executor().block_on(make_voices_screen, ctx);
+      return res;
     }
 
-    SynthEngineInstance make_without_screens(itc::Context& chan) const
+    SynthEngineInstance make_without_screens(itc::Context& ctx) const
     {
-      return {
-        .logic = make_logic(chan),
-        .audio = make_audio(chan),
-        .main_screen = {nullptr, nullptr},
-        .mod_screen = {nullptr, nullptr},
-        .voices_screen = {nullptr, nullptr},
-      };
+      SynthEngineInstance res;
+      res.logic = make_logic(ctx);
+      res.audio = AudioDomain::static_executor().block_on(make_audio, ctx);
+      res.main_screen = {nullptr, nullptr};
+      res.mod_screen = {nullptr, nullptr};
+      res.voices_screen = {nullptr, nullptr};
+      return res;
     }
   };
 
@@ -151,8 +189,8 @@ namespace otto {
     void deactivate_engine()
     {
       wipe_state();
-      AudioDomain::get_static_executor()->sync();
-      GraphicsDomain::get_static_executor()->sync();
+      AudioDomain::static_executor().sync();
+      GraphicsDomain::static_executor().sync();
       // Destructs the engine
       _active = SynthEngineInstance();
     }
@@ -166,8 +204,8 @@ namespace otto {
         _active = _factories[idx].make_all(engine_ctx());
       }
       update_state(idx);
-      AudioDomain::get_static_executor()->sync();
-      GraphicsDomain::get_static_executor()->sync();
+      AudioDomain::static_executor().sync();
+      GraphicsDomain::static_executor().sync();
     }
 
     [[nodiscard]] itc::Context& engine_ctx()

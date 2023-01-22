@@ -108,7 +108,7 @@ namespace otto::board {
     auto* port = drivers::GlfwMCUPort::instance;
     if (port == nullptr) return colors::blue;
 
-    auto lc = port->led_colors[led];
+    auto lc = (*port->led_colors.lock())[led];
     auto skc = skia::Color::bytes(lc.r, lc.g, lc.b);
     skc = skia::Color::floats(0.2, 0.2, 0.2) + skc.dim(0.2f);
     return skc;

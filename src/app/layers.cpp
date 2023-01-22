@@ -75,7 +75,7 @@ namespace otto {
       auto mask = l->led_mask();
       l->leds(tmp);
       for (auto l : util::enum_values<Led>()) {
-        if (mask[l]) colors[l] = tmp[l];
+        if (mask[l] && !done[l]) colors[l] = tmp[l];
       }
       done |= mask;
       if (done.all()) break;

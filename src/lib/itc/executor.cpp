@@ -5,7 +5,6 @@
 #include "lib/logging.hpp"
 
 namespace otto::itc {
-
   void IExecutor::sync() noexcept
   {
     auto sem = yamc::binary_semaphore(0);

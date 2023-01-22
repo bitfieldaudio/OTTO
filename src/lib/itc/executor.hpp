@@ -27,6 +27,16 @@ namespace otto::itc {
 
     /// Wait for all functions queued before this one to be executed
     void sync() noexcept;
+
+    /// Execute a function, and wait for its result
+    template<typename F, typename... Args>
+    std::invoke_result_t<F, Args...> block_on(F&& f, Args&&... args)
+    {
+      tl::optional<std::invoke_result_t<F, Args...>> res;
+      this->execute([&] { res = f(std::forward<Args>(args)...); });
+      this->sync();
+      return std::move(res.value());
+    }
   };
 
   /// An executor that immediately calls the function

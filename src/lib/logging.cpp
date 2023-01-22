@@ -7,19 +7,24 @@
 #include <unistd.h>
 
 #include "lib/util/exception.hpp"
+#include "lib/util/mutex.hpp"
 
 namespace otto::log {
 
   using namespace std::literals;
 
-  static std::unordered_map<std::size_t, std::string> thread_names;
+  static util::shared_mutex<std::unordered_map<std::size_t, std::string>> thread_names;
 
   struct thread_name_formatter : spdlog::custom_flag_formatter {
     void format(const spdlog::details::log_msg& msg, const std::tm&, spdlog::memory_buf_t& dest) override
     {
-      auto& name = thread_names[msg.thread_id];
-      if (name.empty()) {
+      auto name = std::string();
+      auto names = thread_names.lock_shared();
+      auto found = names->find(msg.thread_id);
+      if (found == names->end()) {
         name = std::to_string(msg.thread_id);
+      } else {
+        name = found->second;
       }
       dest.append(name.data(), name.data() + name.size());
     }
@@ -64,6 +69,7 @@ namespace otto::log {
   void set_thread_name(const std::string& name)
   {
     pthread_setname_np(pthread_self(), name.c_str());
-    thread_names.insert_or_assign(spdlog::details::os::thread_id(), name);
+    auto names = thread_names.lock();
+    names->insert_or_assign(spdlog::details::os::thread_id(), name);
   }
 } // namespace otto::log

@@ -56,12 +56,16 @@ namespace otto::itc {
 
       void serialize_into(json::value& json) const override
       {
-        util::serialize_into(json, this->derived().producer_entry_.state);
+        const auto& e = this->derived().producer_entry_;
+        // TODO: Should be locked. cannot because of const. Should we const cast, or what are the options?
+        util::serialize_into(json, e.state);
       }
 
       void deserialize_from(const json::value& json) override
       {
-        util::deserialize_from(json, this->derived().producer_entry_.state);
+        auto& e = this->derived().producer_entry_;
+        auto l = std::scoped_lock(e.lock);
+        util::deserialize_from(json, e.state);
         this->derived().commit();
       }
     };
@@ -97,7 +101,7 @@ namespace otto::itc {
         }
       }
       for (Entry& e : state_copies_) {
-        e.executor->execute([&e] {
+        e.executor.load()->execute([&e] {
           {
             auto l = std::scoped_lock(e.lock);
             e.state = std::move(e.tmp_state);
@@ -113,7 +117,7 @@ namespace otto::itc {
   private:
     struct Entry {
       Entry(IExecutor* e) : executor(e) {}
-      IExecutor* executor;
+      std::atomic<IExecutor*> executor;
       std::mutex lock = {};
       State state = {};
       State tmp_state = {};

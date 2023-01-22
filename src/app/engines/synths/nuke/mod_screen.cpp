@@ -152,7 +152,13 @@ namespace otto::engines::nuke {
       constexpr int x_size = 280;
       float step = (skia::height - 2 * y_pad - active_y - not_active_y * 3) / 3.f;
 
-      float upper_y = y_pad;
+      float upper_y = 12.f + y_pad;
+
+      skia::place_text(ctx, "VOLUME ENVELOPE", fonts::regular(22), colors::grey50.fade(1.f - volume_widget.size), {x_start, 14.f});
+      skia::place_text(ctx, "FILTER ENVELOPE", fonts::regular(22), colors::grey50.fade(1.f - filter_widget.size), {x_start, 14.f});
+      skia::place_text(ctx, "LFO", fonts::regular(22), colors::grey50.fade(1.f - lfo_widget.size), {x_start, 14.f});
+      skia::place_text(ctx, "LFO TARGETS", fonts::regular(22), colors::grey50.fade(1.f - targets_widget.expansion),
+                       {x_start, 14.f});
 
       // Volume
       auto& volume_graphic = volume_widget.graphic;
@@ -175,6 +181,19 @@ namespace otto::engines::nuke {
       // Targets
       widget_size = active_y * targets_widget.expansion + not_active_y * (1 - targets_widget.expansion);
       draw_mod_widget(ctx, targets_widget, {x_start, upper_y}, {x_size, widget_size}, targets_widget.expansion);
+    }
+
+    [[nodiscard]] LedSet led_mask() const noexcept override
+    {
+      return led_groups::pages;
+    }
+
+    void leds(LEDColorSet& leds) noexcept override
+    {
+      leds[Led::page_a] = LEDColor::from_skia(colors::white.dim(1.f - 0.5f * volume_widget.size));
+      leds[Led::page_b] = LEDColor::from_skia(colors::white.dim(1.f - 0.5f * filter_widget.size));
+      leds[Led::page_c] = LEDColor::from_skia(colors::white.dim(1.f - 0.5f * lfo_widget.size));
+      leds[Led::page_d] = LEDColor::from_skia(colors::white.dim(1.f - 0.5f * targets_widget.expansion));
     }
 
   private:

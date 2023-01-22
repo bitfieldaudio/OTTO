@@ -7,6 +7,8 @@
 
 #include <blockingconcurrentqueue.h>
 
+#include "lib/util/mutex.hpp"
+
 #include "app/input.hpp"
 #include "app/leds.hpp"
 #include "app/services/config.hpp"
@@ -69,7 +71,7 @@ namespace otto::drivers {
         }
 
         if (p.cmd == Command::leds_commit) {
-          led_colors = uncommitted_led_colors;
+          *led_colors.lock() = uncommitted_led_colors;
         }
       }
     };
@@ -117,7 +119,7 @@ namespace otto::drivers {
     }
 
     moodycamel::BlockingConcurrentQueue<Packet> packets;
-    LEDColorSet led_colors;
+    util::mutex<LEDColorSet> led_colors;
 
   private:
     LEDColorSet uncommitted_led_colors;
