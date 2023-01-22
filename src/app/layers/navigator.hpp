@@ -56,7 +56,7 @@ namespace otto {
     struct Conf : Config<Conf> {
       static constexpr auto name = "NavKeyMap";
       chrono::duration peek_timeout = 500ms;
-      LEDColor deselected_color = {0x08, 0x08, 0x08};
+      LEDColor deselected_color = {0x20, 0x20, 0x20};
       LEDColor selected_color = {0xFF, 0xFF, 0xFF};
       DECL_VISIT(peek_timeout, deselected_color, selected_color);
     };

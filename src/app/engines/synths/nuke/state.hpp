@@ -37,26 +37,28 @@ namespace otto::engines::nuke {
     int active_idx = 0;
     bool shift = false;
 
-    // DECL_VISIT(osc2_pitch,
-    //            ringmod,
-    //            cutoff,
-    //            resonance,
-    //            attack,
-    //            decay,
-    //            sustain,
-    //            release,
-    //            filter_attack,
-    //            filter_decay,
-    //            filter_sustain,
-    //            filter_amount,
-    //            lfo_speed,
-    //            lfo_type,
-    //            lfo_attack,
-    //            lfo_decay,
-    //            lfo_pitch_amount,
-    //            lfo_volume_amount,
-    //            lfo_filter_amount,
-    //            lfo_ringmod_amount);
+    DECL_VISIT(osc2_pitch,
+               osc_mix,
+               mode,
+               cutoff,
+               resonance,
+               attack,
+               decay,
+               sustain,
+               release,
+               filter_attack,
+               filter_decay,
+               filter_sustain,
+               filter_amount,
+               lfo_speed,
+               lfo_type,
+               lfo_attack,
+               lfo_decay,
+               lfo_pitch_amount,
+               lfo_volume_amount,
+               lfo_filter_amount,
+               lfo_osc2_pitch_amount,
+               active_idx);
   };
 
 } // namespace otto::engines::nuke

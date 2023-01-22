@@ -133,7 +133,7 @@ namespace otto::engines::slots {
           auto key = *key_from(led); // This is certain to contain a value
           auto channel_idx = *channel_number_for(key);
           led_color[led] = LEDColor::from_skia(f_to_color(state().slot_states[channel_idx].selected_color_f)
-                                                 .dim(channel_idx == state().active_idx ? 0 : 0.5));
+                                                 .dim(channel_idx == state().active_idx ? 0 : 0.75));
         }
       }
     }

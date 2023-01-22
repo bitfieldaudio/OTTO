@@ -29,7 +29,7 @@
 #define FWD(X) std::forward<decltype(X)>(X)
 
 /// Used to wrap entire overload sets into a single callable lambda
-#define LAMBDAFY(...) [](auto&&... args) -> decltype(auto) { return (__VA_ARGS__)(FWD(args)...); }
+#define LAMBDAFY(...) [](auto&&... args) -> decltype(auto) { return (__VA_ARGS__) (FWD(args)...); }
 /// Used to wrap entire overload sets of member functions into a single callable lambda
 #define MEMBER_CALLER(...) [](auto&& obj, auto&&... args) -> decltype(auto) { return obj.__VA_ARGS__(FWD(args)...); }
 /// Make a lambda that captures `this` and calls the given member function with whatever is supplied
@@ -51,10 +51,56 @@
 #define GET_MACRO_13(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, NAME, ...) NAME
 #define GET_MACRO_14(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, NAME, ...) NAME
 #define GET_MACRO_15(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, NAME, ...) NAME
+#define GET_MACRO_16(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, NAME, ...) NAME
+#define GET_MACRO_17(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, NAME, ...) NAME
+#define GET_MACRO_18(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, NAME, ...) NAME
+#define GET_MACRO_19(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, NAME, ...)  \
+  NAME
+#define GET_MACRO_20(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, NAME,  \
+                     ...)                                                                                              \
+  NAME
+#define GET_MACRO_21(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21,   \
+                     NAME, ...)                                                                                        \
+  NAME
+#define GET_MACRO_22(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21,   \
+                     _22, NAME, ...)                                                                                   \
+  NAME
+#define GET_MACRO_23(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21,   \
+                     _22, _23, NAME, ...)                                                                              \
+  NAME
+#define GET_MACRO_24(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21,   \
+                     _22, _23, _24, NAME, ...)                                                                         \
+  NAME
+#define GET_MACRO_25(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21,   \
+                     _22, _23, _24, _25, NAME, ...)                                                                    \
+  NAME
+#define GET_MACRO_26(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21,   \
+                     _22, _23, _24, _25, _26, NAME, ...)                                                               \
+  NAME
+#define GET_MACRO_27(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21,   \
+                     _22, _23, _24, _25, _26, _27, NAME, ...)                                                          \
+  NAME
+#define GET_MACRO_28(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21,   \
+                     _22, _23, _24, _25, _26, _27, _28, NAME, ...)                                                     \
+  NAME
+#define GET_MACRO_29(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21,   \
+                     _22, _23, _24, _25, _26, _27, _28, _29, NAME, ...)                                                \
+  NAME
+#define GET_MACRO_30(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21,   \
+                     _22, _23, _24, _25, _26, _27, _28, _29, _30, NAME, ...)                                           \
+  NAME
+#define GET_MACRO_31(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21,   \
+                     _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, NAME, ...)                                      \
+  NAME
+#define GET_MACRO_32(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21,   \
+                     _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, NAME, ...)                                 \
+  NAME
 
 #define SWITCH_FOR_VARARGS_1(NO_VARARGS, VARARGS, ...)                                                                 \
-  GET_MACRO_15(__VA_ARGS__, VARARGS, VARARGS, VARARGS, VARARGS, VARARGS, VARARGS, VARARGS, VARARGS, VARARGS, VARARGS,  \
-               VARARGS, VARARGS, VARARGS, VARARGS, NO_VARARGS, NONE)                                                   \
+  GET_MACRO_32(__VA_ARGS__, VARARGS, VARARGS, VARARGS, VARARGS, VARARGS, VARARGS, VARARGS, VARARGS, VARARGS, VARARGS,  \
+               VARARGS, VARARGS, VARARGS, VARARGS, , VARARGS, VARARGS, VARARGS, VARARGS, VARARGS, VARARGS, VARARGS,    \
+               VARARGS, VARARGS, VARARGS, VARARGS, VARARGS, VARARGS, VARARGS, VARARGS, VARARGS, VARARGS, NO_VARARGS,   \
+               NONE)                                                                                                   \
   (__VA_ARGS__)
 
 // a FOREACH macro
@@ -73,10 +119,28 @@
 #define FE_13(WHAT, X, ...) WHAT(X) FE_12(WHAT, __VA_ARGS__)
 #define FE_14(WHAT, X, ...) WHAT(X) FE_13(WHAT, __VA_ARGS__)
 #define FE_15(WHAT, X, ...) WHAT(X) FE_14(WHAT, __VA_ARGS__)
+#define FE_16(WHAT, X, ...) WHAT(X) FE_15(WHAT, __VA_ARGS__)
+#define FE_17(WHAT, X, ...) WHAT(X) FE_16(WHAT, __VA_ARGS__)
+#define FE_18(WHAT, X, ...) WHAT(X) FE_17(WHAT, __VA_ARGS__)
+#define FE_19(WHAT, X, ...) WHAT(X) FE_18(WHAT, __VA_ARGS__)
+#define FE_20(WHAT, X, ...) WHAT(X) FE_19(WHAT, __VA_ARGS__)
+#define FE_21(WHAT, X, ...) WHAT(X) FE_20(WHAT, __VA_ARGS__)
+#define FE_22(WHAT, X, ...) WHAT(X) FE_21(WHAT, __VA_ARGS__)
+#define FE_23(WHAT, X, ...) WHAT(X) FE_22(WHAT, __VA_ARGS__)
+#define FE_24(WHAT, X, ...) WHAT(X) FE_23(WHAT, __VA_ARGS__)
+#define FE_25(WHAT, X, ...) WHAT(X) FE_24(WHAT, __VA_ARGS__)
+#define FE_26(WHAT, X, ...) WHAT(X) FE_25(WHAT, __VA_ARGS__)
+#define FE_27(WHAT, X, ...) WHAT(X) FE_26(WHAT, __VA_ARGS__)
+#define FE_28(WHAT, X, ...) WHAT(X) FE_27(WHAT, __VA_ARGS__)
+#define FE_29(WHAT, X, ...) WHAT(X) FE_28(WHAT, __VA_ARGS__)
+#define FE_30(WHAT, X, ...) WHAT(X) FE_29(WHAT, __VA_ARGS__)
+#define FE_31(WHAT, X, ...) WHAT(X) FE_30(WHAT, __VA_ARGS__)
+#define FE_32(WHAT, X, ...) WHAT(X) FE_31(WHAT, __VA_ARGS__)
 
 #define FOR_EACH(action, ...)                                                                                          \
-  GET_MACRO_15(__VA_ARGS__, FE_15, FE_14, FE_13, FE_12, FE_11, FE_10, FE_9, FE_8, FE_7, FE_6, FE_5, FE_4, FE_3, FE_2,  \
-               FE_1, NONE)                                                                                             \
+  GET_MACRO_32(__VA_ARGS__, FE_32, FE_31, FE_30, FE_29, FE_28, FE_27, FE_26, FE_25, FE_24, FE_23, FE_22, FE_21, FE_20, \
+               FE_19, FE_18, FE_17, FE_16, FE_15, FE_14, FE_13, FE_12, FE_11, FE_10, FE_9, FE_8, FE_7, FE_6, FE_5,     \
+               FE_4, FE_3, FE_2, FE_1, NONE)                                                                           \
   (action, __VA_ARGS__)
 
 #define EMPTY(...)
@@ -102,10 +166,28 @@
 #define FEL_13(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X) FEL_12(WHAT, ARGS, __VA_ARGS__)
 #define FEL_14(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X) FEL_13(WHAT, ARGS, __VA_ARGS__)
 #define FEL_15(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X) FEL_14(WHAT, ARGS, __VA_ARGS__)
+#define FEL_16(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X) FEL_15(WHAT, ARGS, __VA_ARGS__)
+#define FEL_17(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X) FEL_16(WHAT, ARGS, __VA_ARGS__)
+#define FEL_18(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X) FEL_17(WHAT, ARGS, __VA_ARGS__)
+#define FEL_19(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X) FEL_18(WHAT, ARGS, __VA_ARGS__)
+#define FEL_20(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X) FEL_19(WHAT, ARGS, __VA_ARGS__)
+#define FEL_21(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X) FEL_20(WHAT, ARGS, __VA_ARGS__)
+#define FEL_22(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X) FEL_21(WHAT, ARGS, __VA_ARGS__)
+#define FEL_23(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X) FEL_22(WHAT, ARGS, __VA_ARGS__)
+#define FEL_24(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X) FEL_23(WHAT, ARGS, __VA_ARGS__)
+#define FEL_25(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X) FEL_24(WHAT, ARGS, __VA_ARGS__)
+#define FEL_26(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X) FEL_25(WHAT, ARGS, __VA_ARGS__)
+#define FEL_27(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X) FEL_26(WHAT, ARGS, __VA_ARGS__)
+#define FEL_28(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X) FEL_27(WHAT, ARGS, __VA_ARGS__)
+#define FEL_29(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X) FEL_28(WHAT, ARGS, __VA_ARGS__)
+#define FEL_30(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X) FEL_29(WHAT, ARGS, __VA_ARGS__)
+#define FEL_31(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X) FEL_30(WHAT, ARGS, __VA_ARGS__)
+#define FEL_32(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X) FEL_31(WHAT, ARGS, __VA_ARGS__)
 
 #define FOR_EACH_LAST(action, args, ...)                                                                               \
-  GET_MACRO_15(__VA_ARGS__, FEL_15, FEL_14, FEL_13, FEL_12, FEL_11, FEL_10, FEL_09, FEL_08, FEL_07, FEL_06, FEL_05,    \
-               FEL_04, FEL_03, FEL_02, FEL_01, NONE)                                                                   \
+  GET_MACRO_32(__VA_ARGS__, FEL_32, FEL_31, FEL_30, FEL_29, FEL_28, FEL_27, FEL_26, FEL_25, FEL_24, FEL_23, FEL_22, FEL_21, FEL_20, \
+               FEL_19, FEL_18, FEL_17, FEL_16, FEL_15, FEL_14, FEL_13, FEL_12, FEL_11, FEL_10, FEL_9, FEL_8, FEL_7, FEL_6, FEL_5,     \
+               FEL_4, FEL_3, FEL_2, FEL_1, NONE)                                                                           \
   (action, args, __VA_ARGS__)
 
 // a FOREACH macro that puts the sequence element last in a macro call with
@@ -125,10 +207,28 @@
 #define FELS_13(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X), FELS_12(WHAT, ARGS, __VA_ARGS__)
 #define FELS_14(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X), FELS_13(WHAT, ARGS, __VA_ARGS__)
 #define FELS_15(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X), FELS_14(WHAT, ARGS, __VA_ARGS__)
+#define FELS_16(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X), FELS_15(WHAT, ARGS, __VA_ARGS__)
+#define FELS_17(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X), FELS_16(WHAT, ARGS, __VA_ARGS__)
+#define FELS_18(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X), FELS_17(WHAT, ARGS, __VA_ARGS__)
+#define FELS_19(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X), FELS_18(WHAT, ARGS, __VA_ARGS__)
+#define FELS_20(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X), FELS_19(WHAT, ARGS, __VA_ARGS__)
+#define FELS_21(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X), FELS_20(WHAT, ARGS, __VA_ARGS__)
+#define FELS_22(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X), FELS_21(WHAT, ARGS, __VA_ARGS__)
+#define FELS_23(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X), FELS_22(WHAT, ARGS, __VA_ARGS__)
+#define FELS_24(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X), FELS_23(WHAT, ARGS, __VA_ARGS__)
+#define FELS_25(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X), FELS_24(WHAT, ARGS, __VA_ARGS__)
+#define FELS_26(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X), FELS_25(WHAT, ARGS, __VA_ARGS__)
+#define FELS_27(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X), FELS_26(WHAT, ARGS, __VA_ARGS__)
+#define FELS_28(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X), FELS_27(WHAT, ARGS, __VA_ARGS__)
+#define FELS_29(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X), FELS_28(WHAT, ARGS, __VA_ARGS__)
+#define FELS_30(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X), FELS_29(WHAT, ARGS, __VA_ARGS__)
+#define FELS_31(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X), FELS_30(WHAT, ARGS, __VA_ARGS__)
+#define FELS_32(WHAT, ARGS, X, ...) WHAT(EXPAND ARGS, X), FELS_31(WHAT, ARGS, __VA_ARGS__)
 
 #define FOR_EACH_LAST_SEP(action, args, ...)                                                                           \
-  GET_MACRO_15(__VA_ARGS__, FELS_15, FELS_14, FELS_13, FELS_12, FELS_11, FELS_10, FELS_09, FELS_08, FELS_07, FELS_06,  \
-               FELS_05, FELS_04, FELS_03, FELS_02, FELS_01, NONE)                                                      \
+  GET_MACRO_32(__VA_ARGS__, FELS_32, FELS_31, FELS_30, FELS_29, FELS_28, FELS_27, FELS_26, FELS_25, FELS_24, FELS_23, FELS_22, FELS_21, FELS_20, \
+               FELS_19, FELS_18, FELS_17, FELS_16, FELS_15, FELS_14, FELS_13, FELS_12, FELS_11, FELS_10, FELS_9, FELS_8, FELS_7, FELS_6, FELS_5,     \
+               FELS_4, FELS_3, FELS_2, FELS_1, NONE)                                                                           \
   (action, args, __VA_ARGS__)
 
 // a FOREACH macro that puts the sequence element last in a macro call with
