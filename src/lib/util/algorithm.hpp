@@ -42,7 +42,8 @@ namespace otto::util {
     inline std::pair<std::string_view, std::string_view> split_string(std::string_view str, char ch)
     {
       auto pos = str.find_first_of(ch);
-      return {str.substr(0, pos), str.substr(pos + 1)};
+      if (pos == std::string_view::npos) return {str, {}};
+      return {str.substr(0, pos), str.substr(std::min(pos + 1, str.size()))};
     }
 
     /// Find/Replace

@@ -16,6 +16,7 @@
 #include "app/services/audio.hpp"
 #include "app/services/config.hpp"
 #include "app/services/controller.hpp"
+#include "app/services/dev_console.hpp"
 #include "app/services/graphics.hpp"
 #include "app/services/led_manager.hpp"
 #include "app/services/logic_thread.hpp"
@@ -61,8 +62,14 @@ namespace otto {
 #endif
 
     args
+      .add_argument("--dev-console") //
+      .help("Start with dev console")
+      .default_value(false)
+      .implicit_value(true);
+
+    args
       .add_argument("-o", "--option") //
-      .default_value<std::vector<std::string>>({}) 
+      .default_value<std::vector<std::string>>({})
       .append()
       .help("Set a config option. format: /option/path=json_value");
 
@@ -121,6 +128,10 @@ namespace otto {
     Graphics graphics(rt, std::move(graphics_driver));
     Audio audio(drivers::IAudioDriver::make_default(confman));
     StateManager stateman(data_dir / "state.json");
+    tl::optional<DevConsole> dev_console;
+    if (args.get<bool>("--dev-console")) {
+      dev_console.emplace(rt);
+    }
 
     // Key/LED Layers
     LayerStack layers;
@@ -132,7 +143,7 @@ namespace otto {
     itc::Context ctx;
     itc::PersistanceProvider persistance(ctx);
     stateman.add("context", std::ref(persistance));
-    
+
     // Sound slots
     auto sound_slots = engines::slots::SoundSlots::make(ctx);
     nav_km.bind_nav_key(Key::slots, sound_slots.overlay_screen);

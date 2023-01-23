@@ -4,6 +4,7 @@
 #include <fmt/format.h>
 
 #include "lib/util/eventdivider.hpp"
+#include "lib/util/tweaks.hpp"
 #include "lib/util/with_limits.hpp"
 
 #include "lib/itc/itc.hpp"
@@ -82,6 +83,7 @@ namespace otto::engines::nuke {
 
     void draw(skia::Canvas& ctx) noexcept override
     {
+      params.bounding_box = {{util::tweak("nuke_pad", 10.f), 30}, {270, 160}};
       params.draw(ctx);
     }
   };

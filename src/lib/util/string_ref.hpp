@@ -100,19 +100,19 @@ namespace otto::util {
       return std::string_view(*this).compare(std::string_view(x));
     }
 
-    constexpr bool starts_with(string_ref x) const
+    constexpr bool starts_with(std::string_view x) const
     {
-      return length_ >= x.length_ && substr(0, x.size()) == std::string_view(x);
+      return length_ >= x.length() && substr(0, x.size()) == x;
     }
 
-    constexpr bool ends_with(string_ref x) const
+    constexpr bool ends_with(std::string_view x) const
     {
-      return length_ >= x.length_ && substr(length_ - x.size(), x.size()) == std::string_view(x);
+      return length_ >= x.length() && substr(length_ - x.size(), x.size()) == x;
     }
 
-    constexpr size_t find(string_ref s) const
+    constexpr size_t find(std::string_view s) const
     {
-      return std::string_view(*this).find(std::string_view(s));
+      return std::string_view(*this).find(s);
     }
 
     constexpr size_t find(char c) const
