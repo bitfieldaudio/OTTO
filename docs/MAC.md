@@ -30,19 +30,34 @@ FM synth opens by default. Hold **Option (⌥)** and tap piano keys:
 | ⌥ + `3 4 6 7 8 0` / `S D G H J` | Channel / black keys |
 | `↑` / `↓` | Octave ± |
 
+## What you can click
+
+The LCD is **not** a touchscreen. Interact like the hardware:
+
+| Target | Action |
+|--------|--------|
+| Front-panel buttons | Click — only some navigate (see below) |
+| Hardware encoders | Click = push; scroll = turn |
+| **LCD screen** | Scroll = turn encoder (column → blue/green/yellow/red); click = push that encoder |
+
+### Nav buttons that do something today
+
+`arp` · `synth` · `envelope` · `voices` · `slots` · `master`  
+(`shift`+`synth` = engine selector)
+
+Other panel labels (sequencer, sampler, fx, …) are present on the art but **not wired** in this desktop build yet.
+
 ## Keyboard (no Option)
 
 | Keys | Action |
 |------|--------|
 | `Q/A` `W/S` `E/D` `R/F` | Blue / green / yellow / red encoders (±) |
-| `Ctrl` + those | Encoder click |
+| `Ctrl` or `⌘` + those | Encoder click |
 | `1`–`6` | Arp, synth, envelope, voices, fx1, fx2 |
 | `7` `8` `P` `M` | Sends, slots, play, master |
 | `Z X C V` | Pages A–D |
 | `Shift` | Shift |
 | `⌘Q` / `⌘W` | Quit (clean shutdown) |
-
-Click the on-screen emulator panel (keys, encoders) with the mouse; scroll over encoders to turn them.
 
 ## Audio
 

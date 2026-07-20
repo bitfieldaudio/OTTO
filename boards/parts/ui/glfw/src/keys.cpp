@@ -63,53 +63,54 @@ namespace otto::drivers {
       }
     }
 
-    bool ctrl = mods & Modifier::ctrl;
+    // Ctrl or Cmd (macOS) = encoder click
+    bool click_mod = bool(mods & Modifier::ctrl) || bool(mods & Modifier::super);
     switch (key) {
         // Encoders
       case Key::q:
-        if (ctrl)
+        if (click_mod)
           send_key(OKey::blue_enc_click);
         else
           send_encoder(Encoder::blue, 1);
         break;
       case Key::a:
-        if (ctrl)
+        if (click_mod)
           send_key(OKey::blue_enc_click);
         else
           send_encoder(Encoder::blue, -1);
         break;
       case Key::w:
-        if (ctrl)
+        if (click_mod)
           send_key(OKey::green_enc_click);
         else
           send_encoder(Encoder::green, 1);
         break;
       case Key::s:
-        if (ctrl)
+        if (click_mod)
           send_key(OKey::green_enc_click);
         else
           send_encoder(Encoder::green, -1);
         break;
       case Key::e:
-        if (ctrl)
+        if (click_mod)
           send_key(OKey::yellow_enc_click);
         else
           send_encoder(Encoder::yellow, 1);
         break;
       case Key::d:
-        if (ctrl)
+        if (click_mod)
           send_key(OKey::yellow_enc_click);
         else
           send_encoder(Encoder::yellow, -1);
         break;
       case Key::r:
-        if (ctrl)
+        if (click_mod)
           send_key(OKey::red_enc_click);
         else
           send_encoder(Encoder::red, 1);
         break;
       case Key::f:
-        if (ctrl)
+        if (click_mod)
           send_key(OKey::red_enc_click);
         else
           send_encoder(Encoder::red, -1);

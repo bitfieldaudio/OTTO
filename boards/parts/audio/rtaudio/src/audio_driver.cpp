@@ -89,31 +89,44 @@ namespace otto::drivers {
     bool found_input = conf.input_device.empty();
     bool found_output = conf.output_device.empty();
 
-    // When nothing is configured, prefer a healthy duplex device (BlackHole /
-    // interfaces) over separate mic/speakers. Skip flaky virtual devices that
-    // advertise duplex but can hang CoreAudio on start (Background Music, etc.).
+    // When nothing is configured, prefer built-in speakers for immediate sound.
+    // Fall back to a healthy duplex device (BlackHole / interfaces) for routing.
+    // Skip flaky virtual devices that can hang CoreAudio (Background Music, etc.).
     if (conf.input_device.empty() && conf.output_device.empty()) {
-      int best_score = 0;
-      int best_index = -1;
+      int speakers_index = -1;
+      int best_duplex_score = 0;
+      int best_duplex_index = -1;
       for (int i = 0; i < adac.getDeviceCount(); i++) {
         const auto& device = adac.getDeviceInfo(i);
-        if (device.duplexChannels < 2 || device.outputChannels < 2 || device.inputChannels < 2) continue;
         const auto& n = device.name;
-        int score = 50;
-        if (n.find("BlackHole") != std::string::npos) score = 100;
-        else if (n.find("Background Music") != std::string::npos) continue;
-        else if (n.find("Zoom") != std::string::npos) continue;
-        else if (n.find("Teams") != std::string::npos) continue;
-        else if (n.find("UI Sounds") != std::string::npos) continue;
-        if (score > best_score) {
-          best_score = score;
-          best_index = i;
+        if (n.find("Background Music") != std::string::npos) continue;
+        if (n.find("Zoom") != std::string::npos) continue;
+        if (n.find("Teams") != std::string::npos) continue;
+        if (n.find("UI Sounds") != std::string::npos) continue;
+
+        if (speakers_index < 0 && device.outputChannels >= 2 && device.inputChannels == 0 &&
+            n.find("Speakers") != std::string::npos) {
+          speakers_index = i;
+        }
+
+        if (device.duplexChannels >= 2 && device.outputChannels >= 2 && device.inputChannels >= 2) {
+          int score = 50;
+          if (n.find("BlackHole") != std::string::npos) score = 80;
+          if (score > best_duplex_score) {
+            best_duplex_score = score;
+            best_duplex_index = i;
+          }
         }
       }
-      if (best_index >= 0) {
-        i_params.deviceId = best_index;
-        o_params.deviceId = best_index;
-        LOGI("Auto-selected duplex device '{}'", adac.getDeviceInfo(best_index).name);
+      if (speakers_index >= 0) {
+        o_params.deviceId = speakers_index;
+        i_params.deviceId = speakers_index;
+        i_params.nChannels = 0;
+        LOGI("Auto-selected output '{}'", adac.getDeviceInfo(speakers_index).name);
+      } else if (best_duplex_index >= 0) {
+        i_params.deviceId = best_duplex_index;
+        o_params.deviceId = best_duplex_index;
+        LOGI("Auto-selected duplex device '{}'", adac.getDeviceInfo(best_duplex_index).name);
       }
     }
 

@@ -77,7 +77,10 @@ namespace otto::engines::master {
   };
 
   struct Logic final : ILogic, itc::Producer<MasterState> {
-    Logic(itc::Context& ctx, drivers::IAudioMixer& mixer) : Producer(ctx), mixer_(mixer) {}
+    Logic(itc::Context& ctx, drivers::IAudioMixer& mixer) : Producer(ctx), mixer_(mixer)
+    {
+      this->commit([&](MasterState& s) { mixer_.set_volume(s.volume); });
+    }
 
     void on_state_change(const MasterState& state) noexcept override
     {

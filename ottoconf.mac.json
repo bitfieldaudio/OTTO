@@ -1,11 +1,19 @@
 {
-  "AudioDriver": {
-    "input_device": "Existential Audio Inc.: BlackHole 16ch",
-    "output_device": "Existential Audio Inc.: BlackHole 16ch",
-    "sample_rate": 48000,
-    "buffer_size": 256
-  },
-  "MidiDriver": {
-    "input_port": "none"
-  }
+    "AudioDriver": {
+        "buffer_size": 256,
+        "input_device": "Existential Audio Inc.: BlackHole 16ch",
+        "output_device": "Existential Audio Inc.: BlackHole 16ch",
+        "sample_rate": 48000
+    },
+    "MidiDriver": {
+        "input_port": "none"
+    },
+    "NavKeyMap": {
+        "deselected_color": "#202020",
+        "peek_timeout": 500000,
+        "selected_color": "#FFFFFF"
+    },
+    "otto::services::Controller::Config": {
+        "wait_time": 1000
+    }
 }

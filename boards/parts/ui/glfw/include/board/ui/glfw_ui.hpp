@@ -91,12 +91,15 @@ namespace otto::glfw {
 
     void begin_frame();
     void end_frame();
+    void recreate_surface_if_needed();
 
   private:
     sk_sp<GrDirectContext> context_;
     sk_sp<SkSurface> surface_;
-    skia::Canvas* canvas_;
+    skia::Canvas* canvas_ = nullptr;
     skia::Vector init_size_;
+    int fb_width_ = 0;
+    int fb_height_ = 0;
   };
 
 } // namespace otto::glfw

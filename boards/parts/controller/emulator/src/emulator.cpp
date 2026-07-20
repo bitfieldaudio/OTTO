@@ -1,6 +1,10 @@
 #include "board/emulator.hpp"
 
+#include <algorithm>
+
 #include <SkImageInfo.h>
+
+#include "app/input.hpp"
 
 #include "board/ui/glfw_ui.hpp"
 
@@ -114,6 +118,40 @@ namespace otto::board {
     return skc;
   }
 
+  // LCD inset where engine screens are drawn (see translate in run()).
+  const skia::Box screen_area{{703, 53}, {320, 240}};
+
+  static Encoder encoder_for_screen_x(float x)
+  {
+    const float t = std::clamp((x - screen_area.x()) / screen_area.width(), 0.f, 0.999f);
+    switch (int(t * 4.f)) {
+      case 0: return Encoder::blue;
+      case 1: return Encoder::green;
+      case 2: return Encoder::yellow;
+      default: return Encoder::red;
+    }
+  }
+
+  static tl::optional<Key> key_at(skia::Point p)
+  {
+    for (auto&& [k, box] : key_areas) {
+      if (box.width() > 0 && box.height() > 0 && box.contains(p)) return k;
+    }
+    return tl::nullopt;
+  }
+
+  static tl::optional<Encoder> encoder_at(skia::Point p)
+  {
+    if (auto key = key_at(p)) {
+      if (*key == Key::blue_enc_click) return Encoder::blue;
+      if (*key == Key::green_enc_click) return Encoder::green;
+      if (*key == Key::yellow_enc_click) return Encoder::yellow;
+      if (*key == Key::red_enc_click) return Encoder::red;
+    }
+    if (screen_area.contains(p)) return encoder_for_screen_x(p.x());
+    return tl::nullopt;
+  }
+
   void Emulator::run(std::function<bool(skia::Canvas&)> f)
   {
     glfw_.request_size(size);
@@ -133,45 +171,37 @@ namespace otto::board {
       return res;
     });
   }
-  static tl::optional<Key> key_at(skia::Point p)
-  {
-    for (auto&& [k, box] : key_areas) {
-      if (box.contains(p)) return k;
-    }
-    return tl::nullopt;
-  }
 
   void Emulator::handle_click(glfw::Button b, glfw::Action a, glfw::Modifiers m)
   {
-    auto key = key_at(glfw_.window->skia_cursor_pos());
-    if (key && (drivers::GlfwMCUPort::instance != nullptr)) {
-      if (a == glfw::Action::press) {
-        drivers::GlfwMCUPort::instance->handle(KeyPress{{*key}});
-      }
-      if (a == glfw::Action::release) {
-        drivers::GlfwMCUPort::instance->handle(KeyRelease{{*key}});
-      }
+    if (b != glfw::Button::left) return;
+    auto* port = drivers::GlfwMCUPort::instance;
+    if (port == nullptr) return;
+
+    const auto pos = glfw_.window->skia_cursor_pos();
+    if (auto key = key_at(pos)) {
+      if (a == glfw::Action::press) port->handle(KeyPress{{*key}});
+      if (a == glfw::Action::release) port->handle(KeyRelease{{*key}});
+      return;
+    }
+
+    // Screen itself has no touch UI — map click to the encoder for that column
+    // (click = push encoder, which many screens use to confirm/toggle).
+    if (screen_area.contains(pos)) {
+      const Key click = click_for(encoder_for_screen_x(pos.x()));
+      if (a == glfw::Action::press) port->handle(KeyPress{{click}});
+      if (a == glfw::Action::release) port->handle(KeyRelease{{click}});
     }
   }
 
   void Emulator::handle_scroll(double x, double y)
   {
-    auto key = key_at(glfw_.window->skia_cursor_pos());
-    int clicks = y;
-    if (key && (drivers::GlfwMCUPort::instance != nullptr)) {
-      Encoder enc;
-      if (key == Key::blue_enc_click) {
-        enc = Encoder::blue;
-      } else if (key == Key::green_enc_click) {
-        enc = Encoder::green;
-      } else if (key == Key::yellow_enc_click) {
-        enc = Encoder::yellow;
-      } else if (key == Key::red_enc_click) {
-        enc = Encoder::red;
-      } else {
-        return;
-      }
-      drivers::GlfwMCUPort::instance->handle(EncoderEvent{{enc, clicks}});
+    auto* port = drivers::GlfwMCUPort::instance;
+    if (port == nullptr) return;
+    const int clicks = static_cast<int>(y);
+    if (clicks == 0) return;
+    if (auto enc = encoder_at(glfw_.window->skia_cursor_pos())) {
+      port->handle(EncoderEvent{{*enc, clicks}});
     }
   }
 

@@ -1,5 +1,7 @@
 #include "application.hpp"
 
+#include <memory>
+
 #include <argparse/argparse.hpp>
 
 #include "lib/engines/synthdispatcher/synthdispatcher.hpp"
@@ -9,6 +11,7 @@
 #include "app/engines/master/master.hpp"
 #include "app/engines/midi-fx/arp/arp.hpp"
 #include "app/engines/slots/slots.hpp"
+#include "app/engines/stubs/stubs.hpp"
 #include "app/engines/synths/nuke/nuke.hpp"
 #include "app/engines/synths/ottofm/ottofm.hpp"
 #include "app/layers/navigator.hpp"
@@ -171,6 +174,17 @@ namespace otto {
     // Master
     auto master = engines::master::Master::make(ctx["master"], audio.driver().mixer());
     nav_km.bind_nav_key(Key::master, master.screen);
+
+    // Placeholder screens for panel keys without engines in this tree
+    engines::stubs::bind_missing_nav_keys(nav_km);
+
+    // Transport: play/record toggle globally (layer after nav so it wins those keys);
+    // sigma opens the status screen.
+    auto transport_model = std::make_shared<engines::stubs::TransportModel>();
+    engines::stubs::TransportLayer transport_layer{transport_model};
+    layers.add_layer(transport_layer);
+    static auto transport_screen = engines::stubs::make_transport_screen(transport_model);
+    nav_km.bind_nav_key(Key::sigma, transport_screen);
 
     // Drivers
     RtMidiDriver rt_midi_driver(audio.midi(), confman.make_conf<MidiDriverConfig>());

@@ -256,14 +256,18 @@ else()
     endif()
 
     find_program(OTTO_PYTHON NAMES python3 python REQUIRED)
-    message("Downloading skia third party dependencies (might take a while)...")
-    execute_process(
-      COMMAND ${OTTO_PYTHON} tools/git-sync-deps
-      WORKING_DIRECTORY "${skia_SOURCE_DIR}"
-      RESULT_VARIABLE skia_sync_result
-    )
-    if (NOT skia_sync_result EQUAL 0)
-      message(FATAL_ERROR "skia tools/git-sync-deps failed")
+    if (EXISTS "${skia_SOURCE_DIR}/third_party/externals/zlib")
+      message("Skia third party deps already present; skipping git-sync-deps")
+    else()
+      message("Downloading skia third party dependencies (might take a while)...")
+      execute_process(
+        COMMAND ${OTTO_PYTHON} tools/git-sync-deps
+        WORKING_DIRECTORY "${skia_SOURCE_DIR}"
+        RESULT_VARIABLE skia_sync_result
+      )
+      if (NOT skia_sync_result EQUAL 0)
+        message(FATAL_ERROR "skia tools/git-sync-deps failed")
+      endif()
     endif()
     if (APPLE)
       # Make find_xcode_sysroot.py Python-3 safe if gn still invokes it.

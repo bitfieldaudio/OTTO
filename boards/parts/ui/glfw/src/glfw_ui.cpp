@@ -188,6 +188,30 @@ namespace otto::glfw {
 
   constexpr int max_scale_factor = 8;
 
+  void SkiaWindow::recreate_surface_if_needed()
+  {
+    auto [fbx, fby] = framebuffer_size();
+    if (fbx <= 0 || fby <= 0) return;
+    if (surface_ && fbx == fb_width_ && fby == fb_height_) return;
+
+    fb_width_ = fbx;
+    fb_height_ = fby;
+    GrGLFramebufferInfo fbInfo;
+    fbInfo.fFBOID = 0;
+    fbInfo.fFormat = GL_RGBA8;
+    // Match the real Cocoa framebuffer exactly. The old oversized RT + Y-translate
+    // hack breaks on Retina as soon as the backing store size changes (e.g. on click/focus).
+    GrBackendRenderTarget backendRenderTarget(fbx, fby, 0, 0, fbInfo);
+    surface_ = SkSurface::MakeFromBackendRenderTarget(context_.get(), backendRenderTarget, kBottomLeft_GrSurfaceOrigin,
+                                                      kN32_SkColorType, nullptr, nullptr);
+    if (!surface_) {
+      SkDebugf("SkSurface::MakeFromBackendRenderTarget returned null\n");
+      canvas_ = nullptr;
+      return;
+    }
+    canvas_ = surface_->getCanvas();
+  }
+
   SkiaWindow::SkiaWindow(int width, int height, const std::string& name)
     : Window(width, height, name), init_size_{static_cast<SkScalar>(width), static_cast<SkScalar>(height)}
   {
@@ -195,21 +219,7 @@ namespace otto::glfw {
     make_current();
     auto interface = GrGLMakeNativeInterface_glfw();
     context_ = GrDirectContext::MakeGL(interface);
-    GrGLFramebufferInfo fbInfo;
-    fbInfo.fFBOID = 0;
-    fbInfo.fFormat = GL_RGBA8;
-    GrBackendRenderTarget backendRenderTarget(width * max_scale_factor, height * max_scale_factor,
-                                              0, // sample count
-                                              0, // stencil bits
-                                              fbInfo);
-
-    surface_ = SkSurface::MakeFromBackendRenderTarget(context_.get(), backendRenderTarget, kBottomLeft_GrSurfaceOrigin,
-                                                      kN32_SkColorType, nullptr, nullptr);
-    if (!surface_) {
-      SkDebugf("SkSurface::MakeRenderTarget returned null\n");
-      return;
-    }
-    canvas_ = surface_->getCanvas();
+    recreate_surface_if_needed();
   }
 
   SkiaWindow::~SkiaWindow() noexcept {}
@@ -222,26 +232,19 @@ namespace otto::glfw {
   void SkiaWindow::begin_frame()
   {
     make_current();
-    auto [fbx, fby] = framebuffer_size();
-    glViewport(0, 0, fbx, fby);
+    recreate_surface_if_needed();
+    if (canvas_ == nullptr) return;
+    glViewport(0, 0, fb_width_, fb_height_);
     canvas_->save();
     canvas_->clear(SK_ColorBLACK);
-    auto [wx, wy] = window_size();
-    auto [rx, ry] = init_size_;
-    float content_x = 1.f;
-    float content_y = 1.f;
-    glfwGetWindowContentScale(unwrap(), &content_x, &content_y);
-    auto scale_x = float(wx) / rx;
-    auto scale_y = float(wy) / ry;
-    auto scale = std::min(std::min(scale_x, scale_y), float(max_scale_factor));
-    // Logical UI scale, then multiply by Retina content scale into the backing store.
-    canvas().resetMatrix();
-    canvas().scale(content_x, content_y);
-    canvas().scale(scale, scale);
+    // Logical UI coords → pixels. Surface size == framebuffer, so no Y-hack needed.
+    canvas_->resetMatrix();
+    canvas_->scale(float(fb_width_) / init_size_.x(), float(fb_height_) / init_size_.y());
   }
 
   void SkiaWindow::end_frame()
   {
+    if (canvas_ == nullptr) return;
     canvas_->restore();
     context_->flush();
     swap_buffers();
@@ -250,12 +253,8 @@ namespace otto::glfw {
   {
     auto [px, py] = cursor_pos();
     auto [wx, wy] = window_size();
-    auto [rx, ry] = init_size_;
-    auto scale_x = float(wx) / rx;
-    auto scale_y = float(wy) / ry;
-    auto scale = std::min(std::min(scale_x, scale_y), float(max_scale_factor));
-    px /= scale;
-    py /= scale;
+    if (wx > 0) px *= init_size_.x() / float(wx);
+    if (wy > 0) py *= init_size_.y() / float(wy);
     return SkPoint{px, py};
   }
 } // namespace otto::glfw
