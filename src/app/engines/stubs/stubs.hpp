@@ -140,6 +140,7 @@ namespace otto::engines::stubs {
     };
     held.reserve(std::size(items));
     for (const auto& it : items) {
+      if (nav.current_binds().contains(it.key)) continue;
       held.push_back(make_placeholder(it.title, it.subtitle));
       nav.bind_nav_key(it.key, held.back());
     }

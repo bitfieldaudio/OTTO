@@ -25,6 +25,12 @@ namespace otto::engines::ottofm {
     return std::make_unique<Logic>(c);
   }
 
+  void apply_state(ILogic& logic, const State& state)
+  {
+    auto& l = dynamic_cast<Logic&>(logic);
+    l.commit([&](State& s) { s = state; });
+  }
+
   ScreenWithHandler make_voices_screen(itc::Context& c)
   {
     return voices::make_voices_screen(c);

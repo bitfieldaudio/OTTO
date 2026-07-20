@@ -24,6 +24,9 @@ namespace otto::engines::ottofm {
   ScreenWithHandler make_voices_screen(itc::Context&);
   std::unique_ptr<ISynthAudio> make_audio(itc::Context&);
 
+  /// Apply a full FM state (e.g. adapted legacy preset) onto an active ottofm logic.
+  void apply_state(ILogic& logic, const State& state);
+
 
 
   // NOLINTNEXTLINE

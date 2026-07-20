@@ -19,6 +19,8 @@ just bundle-mac
 open dist/OTTO.app
 ```
 
+Only one instance may run (`/tmp/otto-desktop.lock`). Quit with ⌘Q or Ctrl-C.
+
 ## First sound
 
 FM synth opens by default. Master volume defaults to **75%**. Hold **Option (⌥)** and tap piano keys:
@@ -36,22 +38,29 @@ The LCD is **not** a touchscreen. Interact like the hardware:
 
 | Target | Action |
 |--------|--------|
-| Front-panel buttons | Click to navigate (every labeled key opens a screen) |
+| Front-panel buttons | Click to navigate |
 | Hardware encoders | Click = push; scroll = turn |
 | **LCD screen** | Scroll = turn encoder (column → blue/green/yellow/red); click = push that encoder |
 
-### Real engines
+### Engines
 
-`arp` · `synth` · `envelope` · `voices` · `slots` · `master`  
-(`shift`+`synth` = FM / analogue selector)
+| Key | Screen |
+|-----|--------|
+| `synth` / `envelope` / `voices` | FM or Nuke (shift+synth to select) |
+| `arp` | Arpeggiator |
+| `slots` | Sound slots |
+| `master` | Master volume |
+| `sequencer` | 16-step seq (Play starts it) |
+| `fx1` | Stereo delay |
+| `fx2` | Soft clip / saturate |
+| `mixer` | Post-FX level |
+| `settings` | Load legacy `data/presets/OTTO.FM/*.json` |
 
-### Placeholders (open, show “coming soon”)
-
-`sequencer` · `sampler` · `looper` · `mixer` · `fx1` · `fx2` · `sends` · `external` · `settings` · `omega` · `twist1/2`
+Still placeholders: `sampler` · `looper` · `sends` · `external` · `omega` · `twist1/2`
 
 ### Transport
 
-- **Play** / **Record** keys toggle LEDs (no sequencer yet)
+- **Play** / **Record** toggle LEDs; Play also drives the step sequencer
 - **Sigma** opens the transport status screen
 
 ## Keyboard (no Option)
@@ -64,7 +73,7 @@ The LCD is **not** a touchscreen. Interact like the hardware:
 | `7` `8` `P` `M` | Sends, slots, play, master |
 | `Z X C V` | Pages A–D (context: synth ops/modes) |
 | `Shift` | Shift |
-| `⌘Q` / `⌘W` | Quit (clean shutdown) |
+| `⌘Q` / `⌘W` / Ctrl-C | Quit (clean shutdown) |
 
 ## Audio
 

@@ -1,13 +1,16 @@
 #include "application.hpp"
 
+#include <fcntl.h>
 #include <memory>
+#include <sys/file.h>
+#include <unistd.h>
 
 #include <argparse/argparse.hpp>
-
 #include "lib/engines/synthdispatcher/synthdispatcher.hpp"
 #include "lib/globals.hpp"
 #include "lib/voices/voice_manager.hpp"
 
+#include "app/engines/desktop/desktop_kit.hpp"
 #include "app/engines/master/master.hpp"
 #include "app/engines/midi-fx/arp/arp.hpp"
 #include "app/engines/slots/slots.hpp"
@@ -98,6 +101,19 @@ namespace otto {
     log::init();
     log::set_level(log::level::from_str(args.get<std::string>("--log-level")));
 
+#if defined(__APPLE__)
+    // Single-instance guard — leftover otto processes previously crashed CoreAudio.
+    static int instance_lock_fd = -1;
+    instance_lock_fd = ::open("/tmp/otto-desktop.lock", O_CREAT | O_RDWR, 0644);
+    if (instance_lock_fd >= 0) {
+      if (::flock(instance_lock_fd, LOCK_EX | LOCK_NB) != 0) {
+        LOGE("Another OTTO instance is already running (lock /tmp/otto-desktop.lock).");
+        LOGE("Quit it or: pkill -f 'bin/otto'");
+        return 1;
+      }
+    }
+#endif
+
     auto data_dir = args.get<std::filesystem::path>("--data-dir");
     auto resources_dir = args.get<std::filesystem::path>("--resources-dir");
     globals::init::data_dir(data_dir);
@@ -175,9 +191,6 @@ namespace otto {
     auto master = engines::master::Master::make(ctx["master"], audio.driver().mixer());
     nav_km.bind_nav_key(Key::master, master.screen);
 
-    // Placeholder screens for panel keys without engines in this tree
-    engines::stubs::bind_missing_nav_keys(nav_km);
-
     // Transport: play/record toggle globally (layer after nav so it wins those keys);
     // sigma opens the status screen.
     auto transport_model = std::make_shared<engines::stubs::TransportModel>();
@@ -186,48 +199,93 @@ namespace otto {
     static auto transport_screen = engines::stubs::make_transport_screen(transport_model);
     nav_km.bind_nav_key(Key::sigma, transport_screen);
 
+    // Desktop kit: sequencer, delay, saturator, mixer, presets
+    auto delay_fx = std::make_shared<engines::desktop::DelayFx>();
+    auto sat_fx = std::make_shared<engines::desktop::SaturatorFx>();
+    auto mix_gain = std::make_shared<engines::desktop::MixerGain>();
+    auto step_seq = std::make_shared<engines::desktop::StepSequencer>();
+    step_seq->transport = transport_model;
+    step_seq->target = midifx_eng.audio.get();
+    delay_fx->set_sample_rate(static_cast<unsigned>(audio.driver().sample_rate()));
+    step_seq->set_timing(static_cast<unsigned>(audio.driver().sample_rate()),
+                         static_cast<unsigned>(audio.driver().buffer_size()));
+
+    static auto seq_screen = engines::desktop::make_seq_screen(step_seq);
+    static auto delay_screen = engines::desktop::make_delay_screen(delay_fx);
+    static auto sat_screen = engines::desktop::make_saturator_screen(sat_fx);
+    static auto mixer_screen = engines::desktop::make_mixer_screen(mix_gain);
+    static auto preset_screen = engines::desktop::make_preset_screen(
+      engines::desktop::list_fm_presets(data_dir), [&](const std::filesystem::path& path) {
+        // FM is registered first → index 0
+        synth.logic->select_engine(0);
+        auto state = engines::desktop::load_ottofm_preset_file(path);
+        if (synth.logic->current().logic) {
+          engines::ottofm::apply_state(*synth.logic->current().logic, state);
+        }
+      });
+
+    nav_km.bind_nav_key(Key::sequencer, seq_screen);
+    nav_km.bind_nav_key(Key::fx1, delay_screen);
+    nav_km.bind_nav_key(Key::fx2, sat_screen);
+    nav_km.bind_nav_key(Key::mixer, mixer_screen);
+    nav_km.bind_nav_key(Key::settings, preset_screen);
+
+    // Remaining placeholders (skips keys already bound above)
+    engines::stubs::bind_missing_nav_keys(nav_km);
+
     // Drivers
     RtMidiDriver rt_midi_driver(audio.midi(), confman.make_conf<MidiDriverConfig>());
     LedManager ledman(controller.port_writer());
 
-    // Start services
-    auto stop_midi = audio.set_midi_handler(&*midifx_eng.audio);
-    auto stop_audio = audio.set_process_callback([&](Audio::CallbackData data) {
-      midifx_eng.audio->process();
-      const auto res = synth.audio->process();
-      stdr::copy(util::zip(res, res), data.output.begin());
-    });
-    auto stop_input = controller.set_input_handler(layers);
+    // Scope: stop audio/midi/input/graphics before engine teardown / state write.
+    {
+      auto stop_midi = audio.set_midi_handler(&*midifx_eng.audio);
+      auto stop_audio = audio.set_process_callback([&](Audio::CallbackData data) {
+        midifx_eng.audio->process();
+        const auto res = synth.audio->process();
+        stdr::copy(util::zip(res, res), data.output.begin());
+        delay_fx->set_sample_rate(static_cast<unsigned>(audio.driver().sample_rate()));
+        delay_fx->process(data.output);
+        sat_fx->process(data.output);
+        mix_gain->process(data.output);
+        // Sequencer after synth: MIDI inject before process() races voices.
+        step_seq->set_timing(static_cast<unsigned>(audio.driver().sample_rate()),
+                             static_cast<unsigned>(audio.driver().buffer_size()));
+        step_seq->process();
+      });
+      auto stop_input = controller.set_input_handler(layers);
 
-    auto stop_graphics = graphics.show([&](skia::Canvas& ctx) {
-      ledman.process(layers);
-      ctx.save();
-      nav_km.nav().draw(ctx);
-      ctx.restore();
-    });
+      auto stop_graphics = graphics.show([&](skia::Canvas& ctx) {
+        ledman.process(layers);
+        ctx.save();
+        nav_km.nav().draw(ctx);
+        ctx.restore();
+      });
 
-    stateman.read_from_file();
+      stateman.read_from_file();
 
-    // Playable default: land on the synth screen if nothing was restored.
-    if (nav_km.nav().current_screen().screen == nullptr) {
-      nav_km.nav().navigate_to(synth.main_screen);
-    }
-    LOGI("Tip: Hold Option (⌥) and tap Z–M / Q–P to play notes. ⌘Q to quit.");
+      // Playable default: land on the synth screen if nothing was restored.
+      if (nav_km.nav().current_screen().screen == nullptr) {
+        nav_km.nav().navigate_to(synth.main_screen);
+      }
+      LOGI("Tip: Hold Option (⌥) and tap Z–M / Q–P to play notes. ⌘Q to quit.");
 
-    // Seed ottoconf.json so audio/midi choices are remembered even if quit is forced.
-    if (confman.has_file_path()) {
-      confman.write_to_file();
-    }
+      // Seed ottoconf.json so audio/midi choices are remembered even if quit is forced.
+      if (confman.has_file_path()) {
+        confman.write_to_file();
+      }
 
-    // Run
-    LOGI("Init done!");
+      // Run
+      LOGI("Init done!");
 #if defined(__APPLE__)
-    // GLFW/AppKit require window creation and event polling on the main thread.
-    graphics.run_until_stop();
+      // GLFW/AppKit require window creation and event polling on the main thread.
+      // (Polling every frame; no glfwPostEmptyEvent — calling it from GCD was racy.)
+      graphics.run_until_stop();
 #else
-    rt.wait_for_stop();
+      rt.wait_for_stop();
 #endif
-    LOGI("Shutting down");
+      LOGI("Shutting down");
+    }
 
     stateman.write_to_file();
 

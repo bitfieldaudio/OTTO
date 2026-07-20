@@ -2,18 +2,82 @@
 
 #include "lib/util/unix_signals.hpp"
 
+#if defined(__APPLE__)
+#include <dispatch/dispatch.h>
+#include <csignal>
+#endif
+
 namespace otto::services {
 
+#if defined(__APPLE__)
+  namespace {
+    RuntimeController* g_rt = nullptr;
+    dispatch_source_t g_sigint_src = nullptr;
+    dispatch_source_t g_sigterm_src = nullptr;
+
+    void on_dispatch_signal(void* ctx)
+    {
+      const int signo = static_cast<int>(reinterpret_cast<intptr_t>(ctx));
+      if (g_rt == nullptr) return;
+      LOGI("Got signal {}, stopping...", signo);
+      g_rt->request_stop();
+      g_rt->wake();
+    }
+
+    void install_dispatch_signal(int signo, dispatch_source_t& slot)
+    {
+      ::signal(signo, SIG_IGN);
+      slot = dispatch_source_create(DISPATCH_SOURCE_TYPE_SIGNAL, static_cast<uintptr_t>(signo), 0,
+                                    dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0));
+      dispatch_set_context(slot, reinterpret_cast<void*>(static_cast<intptr_t>(signo)));
+      dispatch_source_set_event_handler_f(slot, &on_dispatch_signal);
+      dispatch_resume(slot);
+    }
+  } // namespace
+#endif
+
   RuntimeController::RuntimeController() noexcept
-    : sig_wait_({SIGINT}, [this](int sig) {
-        LOGI("Got SIGINT, stopping...");
+#if !defined(__APPLE__)
+    : sig_wait_({SIGINT, SIGTERM}, [this](int sig) {
+        LOGI("Got signal {}, stopping...", sig);
         request_stop();
+        if (wake_cb_) wake_cb_();
       })
-  {}
+#endif
+  {
+#if defined(__APPLE__)
+    g_rt = this;
+    // sigwait-based SignalWaiter is unreliable on macOS once CoreAudio/MIDI
+    // threads reset the process signal mask. GCD signal sources are not.
+    install_dispatch_signal(SIGINT, g_sigint_src);
+    install_dispatch_signal(SIGTERM, g_sigterm_src);
+#endif
+  }
 
   RuntimeController::~RuntimeController() noexcept
   {
+#if defined(__APPLE__)
+    if (g_sigint_src) {
+      dispatch_source_cancel(g_sigint_src);
+      g_sigint_src = nullptr;
+    }
+    if (g_sigterm_src) {
+      dispatch_source_cancel(g_sigterm_src);
+      g_sigterm_src = nullptr;
+    }
+    if (g_rt == this) g_rt = nullptr;
+#endif
     request_stop();
+  }
+
+  void RuntimeController::set_wake_callback(std::function<void()> cb) noexcept
+  {
+    wake_cb_ = std::move(cb);
+  }
+
+  void RuntimeController::wake() noexcept
+  {
+    if (wake_cb_) wake_cb_();
   }
 
   bool RuntimeController::stop_requested() const noexcept

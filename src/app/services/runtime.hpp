@@ -1,6 +1,7 @@
 #pragma once
 
 #include <condition_variable>
+#include <functional>
 #include <mutex>
 
 #include "lib/util/type_traits.hpp"
@@ -16,29 +17,16 @@ namespace otto::services {
   struct RuntimeController;
   enum struct ExitCode { normal };
 
-  //  struct RuntimeLock {
-  //    bool should_run() noexcept;
-  //    void sync_exit(ExitCode = ExitCode::normal) noexcept;
-  //
-  //  private:
-  //    friend RuntimeController;
-  //    RuntimeLock(RuntimeController& rc, itc::QueueExecutor& ex) noexcept;
-  //    ~RuntimeLock() noexcept;
-  //
-  //    std::mutex mutex_;
-  //    RuntimeController& rc_;
-  //    itc::QueueExecutor& ex_;
-  //    bool is_leader_;
-  //    std::atomic<bool> has_tried_running_ = false;
-  //    bool did_run_ = true;
-  //  };
-
   /// Manages the runtime of the application
   struct RuntimeController {
     RuntimeController() noexcept;
     ~RuntimeController() noexcept;
 
     void request_stop(ExitCode = ExitCode::normal) noexcept;
+
+    /// Optional wake hook (e.g. glfwPostEmptyEvent) called after SIGINT/SIGTERM.
+    void set_wake_callback(std::function<void()> cb) noexcept;
+    void wake() noexcept;
 
     /// Wait for application to be stopped, with an optional timeout
     ///
@@ -47,17 +35,13 @@ namespace otto::services {
     [[nodiscard]] bool stop_requested() const noexcept;
     [[nodiscard]] bool should_run() const noexcept;
 
-    //    RuntimeLock acquire(itc::QueueExecutor& ex) {
-    //      return {*this, ex};
-    //    }
-
   private:
-    //    friend RuntimeLock;
     std::atomic<bool> should_run_ = true;
-    //    std::atomic<bool> exit_is_done_ = false;
     std::mutex mutex_;
     std::condition_variable cond_;
-    //    std::vector<RuntimeLock*> locks_;
+#if !defined(__APPLE__)
     util::SignalWaiter sig_wait_;
+#endif
+    std::function<void()> wake_cb_;
   };
 } // namespace otto::services
