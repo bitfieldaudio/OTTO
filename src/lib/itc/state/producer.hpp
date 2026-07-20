@@ -2,6 +2,8 @@
 
 #include "lib/util/local_vector.hpp"
 
+#include "lib/logging.hpp"
+
 #include "lib/itc/domain.hpp"
 #include "lib/itc/services/provider.hpp"
 
@@ -17,13 +19,18 @@ namespace otto::itc {
     decltype(auto) commit(std::invocable<State&> auto&& f) noexcept
     {
       StateAccessor<State>::ensure_state();
+      auto* prov = this->provider();
+      if (prov == nullptr || StateAccessor<State>::state_ == nullptr) {
+        LOGE("Producer::commit skipped — no provider for state");
+        return;
+      }
       // When f returns void, we cannot save it in a variable, since void
       if constexpr (std::is_void_v<std::invoke_result_t<decltype(f), State&>>) {
         std::invoke(f, *StateAccessor<State>::state_);
-        this->provider()->commit();
+        prov->commit();
       } else {
         decltype(auto) res = std::invoke(f, *StateAccessor<State>::state_);
-        this->provider()->commit();
+        prov->commit();
         return FWD(res);
       }
     }

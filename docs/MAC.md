@@ -7,7 +7,7 @@ Desktop build of [bitfieldaudio/OTTO](https://github.com/bitfieldaudio/OTTO) wit
 ```bash
 export PATH="$PWD/.tools:$PATH"   # python shim for Skia
 just setup
-just run-mac
+just run-mac                    # speakers by default when unconfigured
 # or:
 just run-mac -c ottoconf.mac.json   # BlackHole duplex
 ```
@@ -21,7 +21,7 @@ open dist/OTTO.app
 
 ## First sound
 
-FM synth opens by default. Hold **Option (⌥)** and tap piano keys:
+FM synth opens by default. Master volume defaults to **75%**. Hold **Option (⌥)** and tap piano keys:
 
 | Keys | Role |
 |------|------|
@@ -36,16 +36,23 @@ The LCD is **not** a touchscreen. Interact like the hardware:
 
 | Target | Action |
 |--------|--------|
-| Front-panel buttons | Click — only some navigate (see below) |
+| Front-panel buttons | Click to navigate (every labeled key opens a screen) |
 | Hardware encoders | Click = push; scroll = turn |
 | **LCD screen** | Scroll = turn encoder (column → blue/green/yellow/red); click = push that encoder |
 
-### Nav buttons that do something today
+### Real engines
 
 `arp` · `synth` · `envelope` · `voices` · `slots` · `master`  
-(`shift`+`synth` = engine selector)
+(`shift`+`synth` = FM / analogue selector)
 
-Other panel labels (sequencer, sampler, fx, …) are present on the art but **not wired** in this desktop build yet.
+### Placeholders (open, show “coming soon”)
+
+`sequencer` · `sampler` · `looper` · `mixer` · `fx1` · `fx2` · `sends` · `external` · `settings` · `omega` · `twist1/2`
+
+### Transport
+
+- **Play** / **Record** keys toggle LEDs (no sequencer yet)
+- **Sigma** opens the transport status screen
 
 ## Keyboard (no Option)
 
@@ -55,15 +62,15 @@ Other panel labels (sequencer, sampler, fx, …) are present on the art but **no
 | `Ctrl` or `⌘` + those | Encoder click |
 | `1`–`6` | Arp, synth, envelope, voices, fx1, fx2 |
 | `7` `8` `P` `M` | Sends, slots, play, master |
-| `Z X C V` | Pages A–D |
+| `Z X C V` | Pages A–D (context: synth ops/modes) |
 | `Shift` | Shift |
 | `⌘Q` / `⌘W` | Quit (clean shutdown) |
 
 ## Audio
 
 - Default sample rate: **48000**
-- If no devices are configured, OTTO prefers a **duplex** device (e.g. BlackHole)
-- Built-in mic + speakers are opened **output-only** (CoreAudio cannot duplex them)
+- Unconfigured: prefers **Speakers** (output-only); else a duplex device (BlackHole)
+- Skips Background Music / Zoom / Teams (they hang CoreAudio)
 - Settings persist to `./ottoconf.json` on quit
 
 Example (`ottoconf.mac.json`):

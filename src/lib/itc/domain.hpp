@@ -89,14 +89,17 @@ namespace otto::itc {
       auto* exec = get_static_executor();
       if (exec == nullptr) {
         LOGE("Trying to get executor that is not available {}", detail::static_name_ptr<Tag>);
-        std::terminate();
+        // Fall back to a process-lifetime no-op executor so audio commits during
+        // graphics startup/shutdown do not SIGSEGV. Queued work is dropped.
+        static QueueExecutor fallback;
+        return fallback;
       }
       return *exec;
     }
 
     IExecutor& executor() override
     {
-      return *get_static_executor();
+      return static_executor();
     }
 
     DomainId domain_id() override

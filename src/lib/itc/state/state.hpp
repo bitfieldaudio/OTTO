@@ -101,15 +101,18 @@ namespace otto::itc {
         }
       }
       for (Entry& e : state_copies_) {
-        e.executor.load()->execute([&e] {
-          {
-            auto l = std::scoped_lock(e.lock);
-            e.state = std::move(e.tmp_state);
-          }
-        });
+        if (auto* ex = e.executor.load()) {
+          ex->execute([&e] {
+            {
+              auto l = std::scoped_lock(e.lock);
+              e.state = std::move(e.tmp_state);
+            }
+          });
+        }
       }
 
       for (StateAccessor<State>* acc : Provider<state_service<State>>::accessors()) {
+        if (acc == nullptr) continue;
         acc->executor().execute([acc] { acc->on_state_change(acc->state()); });
       }
     }
@@ -128,15 +131,14 @@ namespace otto::itc {
       if (exec == producer_entry_.executor) return producer_entry_;
       auto found =
         std::find_if(state_copies_.begin(), state_copies_.end(), [exec](Entry& e) { return e.executor == exec; });
-      if (found == state_copies_.end()) {
-        auto x = state_copies_.emplace_back(exec);
-        if (!x) {
-          LOGC("Tried to add state copy with full vector. Are there more than {} domains?", max_domains);
-          std::terminate();
-        }
-        (*x)->state = producer_entry_.state;
+      if (found != state_copies_.end()) return *found;
+      auto x = state_copies_.emplace_back(exec);
+      if (!x) {
+        LOGC("Tried to add state copy with full vector. Are there more than {} domains?", max_domains);
+        std::terminate();
       }
-      return *found;
+      (*x)->state = producer_entry_.state;
+      return **x;
     }
 
     friend StateAccessor<State>;
@@ -153,14 +155,11 @@ namespace otto::itc {
 
     ~StateAccessor() noexcept override
     {
-      auto* prov = this->provider();
-      if (prov) {
-        prov->ref_count--;
-        if (prov->ref_count <= 0) {
-          LOGD("Destructing provider for state {}", util::qualified_name_of<State>);
-          delete prov;
-        }
-      }
+      // Intentionally do not delete the StateProvider here. The previous
+      // ref_count-based delete raced with the audio thread (Producer::commit
+      // after screens were destroyed left provider_ null → SIGSEGV). Providers
+      // remain registered on the Context for process lifetime.
+      (void) this->provider();
     };
     StateAccessor(const StateAccessor&) = delete;
     StateAccessor& operator=(const StateAccessor&) = delete;

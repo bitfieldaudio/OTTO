@@ -66,6 +66,9 @@ namespace otto::services {
       pump_.join();
     }
     log::set_thread_name("graphics");
+    // Drain anything queued while the pump was shutting down before the
+    // GLFW loop starts serving the graphics executor.
+    executor().run_queued_functions();
     if (runtime_->should_run()) {
       driver_->run([this](SkCanvas& ctx) {
         loop_function(ctx);
