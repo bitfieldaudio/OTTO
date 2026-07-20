@@ -245,9 +245,12 @@ namespace otto::voices {
     requires std::is_constructible_v<Voice, Args...> //
     VoiceManager(itc::Context& c, Args&&... args)
       : Consumer(c),
-        voices_(util::make_array<Voice, N>(FWD(args)...)),
-        free_voices_(util::transform(voices_, util::addressof))
-    {}
+        voices_(util::make_array<Voice, N>(FWD(args)...))
+    {
+      for (auto& v : voices_) {
+        free_voices_.push_back(&v);
+      }
+    }
 
     void on_state_change(const VoicesState& state) noexcept override
     {

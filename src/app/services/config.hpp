@@ -42,6 +42,13 @@ namespace otto {
 
       void write_to_file();
 
+      /// If no config path is set yet, use this path for future writes.
+      void ensure_file_path(std::filesystem::path path = "./ottoconf.json");
+      [[nodiscard]] bool has_file_path() const noexcept
+      {
+        return !file_path.empty();
+      }
+
       /// Construct a config type, and initialize it from the config data
       ///
       /// Also adds the constructed data back to the stored json

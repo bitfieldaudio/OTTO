@@ -28,6 +28,11 @@ namespace otto::services {
     json::write_to_file(into_json(), file_path);
   }
 
+  void ConfigManager::ensure_file_path(std::filesystem::path path)
+  {
+    if (file_path.empty()) file_path = std::move(path);
+  }
+
   ConfigManager::~ConfigManager() = default;
 
   json::value ConfigManager::into_json() const

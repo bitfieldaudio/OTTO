@@ -36,3 +36,6 @@ test/core/voices/todo.md
 ottoconf.toml
 
 cpm-package-lock.cmake
+dist/
+.tools/
+ottoconf.json

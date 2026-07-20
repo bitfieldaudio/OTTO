@@ -3,6 +3,12 @@ set(CMAKE_CXX_STANDARD 20)
 file(GLOB_RECURSE headers "${OTTO_SOURCE_DIR}/src/*.hpp")
 file(GLOB_RECURSE sources "${OTTO_SOURCE_DIR}/src/*.cpp")
 
+# ALSA mixer helpers and Linux I2C are RPi-only; desktop Mac builds must skip them.
+if (APPLE)
+  list(FILTER sources EXCLUDE REGEX ".*/alsamixer\\.cpp$")
+  list(FILTER sources EXCLUDE REGEX ".*/i2c\\.cpp$")
+endif()
+
 find_package (Threads)
 # Library
 add_library(otto_src OBJECT ${sources})
@@ -22,7 +28,19 @@ otto_add_definitions(otto_src)
 otto_add_definitions(otto_exec)
 
 if (NOT OTTO_USE_LIBCXX)
-  target_link_libraries(otto_src PUBLIC atomic)
+  if (APPLE)
+    # Homebrew GCC ships libatomic; system clang/libc++ does not need -latomic.
+    find_library(OTTO_LIBATOMIC atomic HINTS
+      /opt/homebrew/opt/gcc/lib/gcc/current
+      /opt/homebrew/opt/gcc/lib/gcc/15
+      /usr/local/opt/gcc/lib/gcc/current
+    )
+    if (OTTO_LIBATOMIC)
+      target_link_libraries(otto_src PUBLIC ${OTTO_LIBATOMIC})
+    endif()
+  else()
+    target_link_libraries(otto_src PUBLIC atomic)
+  endif()
 endif()
 
 target_link_libraries(otto_src PUBLIC external)

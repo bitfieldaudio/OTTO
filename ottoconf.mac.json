@@ -1,0 +1,11 @@
+{
+  "AudioDriver": {
+    "input_device": "Existential Audio Inc.: BlackHole 16ch",
+    "output_device": "Existential Audio Inc.: BlackHole 16ch",
+    "sample_rate": 48000,
+    "buffer_size": 256
+  },
+  "MidiDriver": {
+    "input_port": "none"
+  }
+}

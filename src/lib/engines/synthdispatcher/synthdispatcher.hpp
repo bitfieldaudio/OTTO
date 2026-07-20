@@ -173,7 +173,9 @@ namespace otto {
     {
       deactivate_engine();
       if (auto active = json::get_or_null(json, "active_engine"); !active.is_null()) {
-        int idx = std::ranges::find_if(_factories, [&](SynthEngineFactory& x) { return x._metadata.name == active; }) -
+        int idx = std::ranges::find_if(_factories, [&](SynthEngineFactory& x) {
+                    return x._metadata.name == active.template get<std::string>();
+                  }) -
                   _factories.begin();
         if (idx == _factories.size()) {
           idx = 0;

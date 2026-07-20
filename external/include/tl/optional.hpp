@@ -2250,17 +2250,12 @@ public:
     return *this;
   }
 
-  /// Constructs the value in-place, destroying the current one if there is
-  /// one.
+  /// Rebinds this optional to `u`.
   ///
   /// \group emplace
-  template <class... Args> T &emplace(Args &&... args) noexcept {
-    static_assert(std::is_constructible<T, Args &&...>::value,
-                  "T must be constructible with Args");
-
-    *this = nullopt;
-    this->construct(std::forward<Args>(args)...);
-    return value();
+  template <class U> T &emplace(U &u) noexcept {
+    m_value = std::addressof(u);
+    return *m_value;
   }
 
   /// Swaps this optional with the other.

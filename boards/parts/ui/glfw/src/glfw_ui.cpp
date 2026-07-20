@@ -4,6 +4,13 @@
 #include <iostream>
 #include <thread>
 
+#if defined(__APPLE__)
+#define GL_SILENCE_DEPRECATION
+#include <OpenGL/gl3.h>
+#else
+#include <GL/gl.h>
+#endif
+
 #include <GrBackendSurface.h>
 #include <SkCanvas.h>
 #include <SkColorSpace.h>
@@ -45,6 +52,10 @@ namespace otto::glfw {
 
   Window::Window(int width, int height, const std::string& name)
   {
+#if defined(__APPLE__)
+    glfwInitHint(GLFW_COCOA_MENUBAR, GLFW_TRUE);
+    glfwInitHint(GLFW_COCOA_CHDIR_RESOURCES, GLFW_FALSE);
+#endif
     if (!glfwInit()) {
       LOGE("Failed to init GLFW.");
     }
@@ -57,6 +68,9 @@ namespace otto::glfw {
     glfwWindowHint(GLFW_STENCIL_BITS, 0);
     // glfwWindowHint(GLFW_ALPHA_BITS, 0);
     glfwWindowHint(GLFW_DEPTH_BITS, 0);
+#if defined(__APPLE__)
+    glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_TRUE);
+#endif
 
     _glfw_win = glfwCreateWindow(width, height, name.c_str(), NULL, NULL);
     if (!_glfw_win) {
@@ -77,6 +91,11 @@ namespace otto::glfw {
     });
 
     glfwSetKeyCallback(_glfw_win, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
+      // Cmd+Q / Cmd+W → close window (clean OTTO shutdown path)
+      if (action == GLFW_PRESS && (mods & GLFW_MOD_SUPER) && (key == GLFW_KEY_Q || key == GLFW_KEY_W)) {
+        glfwSetWindowShouldClose(window, GLFW_TRUE);
+        return;
+      }
       if (auto* win = get_for(window); win && win->key_callback) {
         win->key_callback(Action{action}, Modifiers{mods}, Key{key});
       }
@@ -203,16 +222,22 @@ namespace otto::glfw {
   void SkiaWindow::begin_frame()
   {
     make_current();
+    auto [fbx, fby] = framebuffer_size();
+    glViewport(0, 0, fbx, fby);
     canvas_->save();
     canvas_->clear(SK_ColorBLACK);
     auto [wx, wy] = window_size();
     auto [rx, ry] = init_size_;
+    float content_x = 1.f;
+    float content_y = 1.f;
+    glfwGetWindowContentScale(unwrap(), &content_x, &content_y);
     auto scale_x = float(wx) / rx;
     auto scale_y = float(wy) / ry;
     auto scale = std::min(std::min(scale_x, scale_y), float(max_scale_factor));
-    canvas().translate(0, ry * max_scale_factor);
+    // Logical UI scale, then multiply by Retina content scale into the backing store.
+    canvas().resetMatrix();
+    canvas().scale(content_x, content_y);
     canvas().scale(scale, scale);
-    canvas().translate(0, -ry);
   }
 
   void SkiaWindow::end_frame()
@@ -231,7 +256,6 @@ namespace otto::glfw {
     auto scale = std::min(std::min(scale_x, scale_y), float(max_scale_factor));
     px /= scale;
     py /= scale;
-    py -= float(wy) / scale - ry;
     return SkPoint{px, py};
   }
 } // namespace otto::glfw

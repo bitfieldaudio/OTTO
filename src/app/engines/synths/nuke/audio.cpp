@@ -68,7 +68,9 @@ namespace otto::engines::nuke {
       // Osc 2 frequency
       switch (mode) {
         case Mode::None:
-          [[fallthrough]] case Mode::Ringmod : osc2_freq_ratio = std::pow(2, neighborhoods(s.osc2_pitch, -3, 3));
+          [[fallthrough]];
+        case Mode::Ringmod:
+          osc2_freq_ratio = std::pow(2, neighborhoods(s.osc2_pitch, -3, 3));
           break;
         case Mode::Sync: osc2_freq_ratio = 1.f + s.osc2_pitch * 2.f; break;     // [1, 3]
         case Mode::AM: osc2_fixed_freq = powf(2.f, 10.f * s.osc2_pitch); break; // Frequency is fixed [2, 1024] Hz

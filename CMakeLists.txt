@@ -12,7 +12,9 @@ include(cmake/utils.cmake)
 
 otto_option(BUILD_DOCS "Build documentation" OFF)
 otto_option(BUILD_TESTS "Build tests" ON)
-otto_option(USE_LIBCXX "Link towards libc++ instead of libstdc++. This is the default on OSX" ${APPLE})
+# libc++ support is currently disabled upstream; keep Apple default OFF so
+# Homebrew GCC + libstdc++ can configure without a forced FATAL_ERROR.
+otto_option(USE_LIBCXX "Link towards libc++ instead of libstdc++" OFF)
 otto_option(ENABLE_ASAN "Enable the adress sanitizer on development builds" OFF)
 otto_option(ENABLE_UBSAN "Enable the undefined behaviour sanitizer on development builds" OFF)
 otto_option(ENABLE_TSAN "Enable the thread sanitizer on development builds" OFF)
@@ -66,9 +68,7 @@ list(REMOVE_ITEM OTTO_BOARDS parts)
 set_property(CACHE OTTO_BOARD PROPERTY STRINGS ${OTTO_BOARDS})
 
 if (OTTO_USE_LIBCXX)
-  message(FATAL_ERROR "libc++ support is currently disabled, until it supports more of c++17/20. "
-    "Use a recent version of libstdc++ instead, and set OTTO_USE_LIBCXX to false in cmake. ")
-  message("Using libc++ instead of libstdc++")
+  message(STATUS "Using libc++")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
 endif()
 

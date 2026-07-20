@@ -125,6 +125,10 @@ namespace otto {
 
     LogicThread logic_thread;
     Controller controller(rt, confman);
+#if defined(__APPLE__)
+    // Persist AudioDriver / MidiDriver choices across runs.
+    confman.ensure_file_path("./ottoconf.json");
+#endif
     Graphics graphics(rt, std::move(graphics_driver));
     Audio audio(drivers::IAudioDriver::make_default(confman));
     StateManager stateman(data_dir / "state.json");
@@ -169,7 +173,7 @@ namespace otto {
     nav_km.bind_nav_key(Key::master, master.screen);
 
     // Drivers
-    RtMidiDriver rt_midi_driver(audio.midi());
+    RtMidiDriver rt_midi_driver(audio.midi(), confman.make_conf<MidiDriverConfig>());
     LedManager ledman(controller.port_writer());
 
     // Start services
@@ -190,15 +194,32 @@ namespace otto {
 
     stateman.read_from_file();
 
+    // Playable default: land on the synth screen if nothing was restored.
+    if (nav_km.nav().current_screen().screen == nullptr) {
+      nav_km.nav().navigate_to(synth.main_screen);
+    }
+    LOGI("Tip: Hold Option (⌥) and tap Z–M / Q–P to play notes. ⌘Q to quit.");
+
+    // Seed ottoconf.json so audio/midi choices are remembered even if quit is forced.
+    if (confman.has_file_path()) {
+      confman.write_to_file();
+    }
+
     // Run
     LOGI("Init done!");
+#if defined(__APPLE__)
+    // GLFW/AppKit require window creation and event polling on the main thread.
+    graphics.run_until_stop();
+#else
     rt.wait_for_stop();
+#endif
     LOGI("Shutting down");
 
     stateman.write_to_file();
 
-
-    if (args.get<bool>("--write-config")) {
+    // Persist config (including any defaults materialized by make_conf) when a path is known,
+    // or when --write-config was passed.
+    if (args.get<bool>("--write-config") || confman.has_file_path()) {
       confman.write_to_file();
     }
     return 0;

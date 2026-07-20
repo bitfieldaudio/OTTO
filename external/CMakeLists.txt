@@ -20,11 +20,22 @@ if (APPLE)
 endif()
 
 # Download External Dependencies via CPM
+# Apple Clang's consteval rejects fmt 8's FMT_STRING; force FMT_CONSTEVAL off
+# and make spdlog use the same external fmt (not its bundled copy).
 CPMAddPackage("gh:fmtlib/fmt#8.0.1")
+if (TARGET fmt)
+  target_compile_definitions(fmt PUBLIC FMT_CONSTEVAL=)
+endif()
 CPMAddPackage("gh:catchorg/Catch2@3.2.1")
 CPMAddPackage("gh:Neargye/magic_enum@0.7.2")
 CPMAddPackage("gh:Naios/function2#4.1.0")
-CPMAddPackage("gh:gabime/spdlog@1.9.2") 
+CPMAddPackage(
+  NAME spdlog
+  GITHUB_REPOSITORY gabime/spdlog
+  VERSION 1.9.2
+  OPTIONS
+    "SPDLOG_FMT_EXTERNAL ON"
+)
 CPMAddPackage("gh:p-ranav/argparse@2.9") 
 CPMAddPackage("gh:topisani/choreograph@0.5.0")
 CPMAddPackage("gh:nlohmann/json@3.11.2")
@@ -120,7 +131,74 @@ else()
 
   if (skia_ADDED)
     #set(skia_LIB_LOCATION "${skia_BINARY_DIR}/out/Static/libskia.a")
-    set(skia_ARGS "\
+    if (APPLE)
+      # Old skia find_xcode_sysroot.py prints bytes under Python 3
+      # (b'/path\\n'), which breaks -isysroot. Pass the SDK path explicitly.
+      execute_process(
+        COMMAND xcrun --sdk macosx --show-sdk-path
+        OUTPUT_VARIABLE OTTO_MAC_SDK_PATH
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        RESULT_VARIABLE OTTO_MAC_SDK_RESULT
+      )
+      if (NOT OTTO_MAC_SDK_RESULT EQUAL 0 OR OTTO_MAC_SDK_PATH STREQUAL "")
+        message(FATAL_ERROR "Could not resolve macOS SDK path via xcrun")
+      endif()
+      set(skia_ARGS "\
+  is_debug=true \
+  is_official_build=false \
+  target_os=\"mac\" \
+  xcode_sysroot=\"${OTTO_MAC_SDK_PATH}\" \
+  paragraph_gms_enabled=false \
+  paragraph_tests_enabled=false \
+  skia_enable_android_utils=false \
+  skia_enable_api_available_macro=true \
+  skia_enable_direct3d_debug_layer=false \
+  skia_enable_discrete_gpu=true \
+  skia_enable_fontmgr_FontConfigInterface=false \
+  skia_enable_fontmgr_android=false \
+  skia_enable_fontmgr_custom_directory=true \
+  skia_enable_fontmgr_custom_embedded=true \
+  skia_enable_fontmgr_custom_empty=true \
+  skia_enable_fontmgr_fontconfig=false \
+  skia_enable_gpu=true \
+  skia_enable_gpu_debug_layers=true \
+  skia_enable_particles=false \
+  skia_enable_pdf=false \
+  skia_enable_skottie=false \
+  skia_enable_skparagraph=true \
+  skia_enable_skrive=false \
+  skia_enable_skshaper=false \
+  skia_enable_spirv_validation=false \
+  skia_enable_tools=false \
+  skia_enable_vulkan_debug_layers=false \
+  skia_use_dng_sdk=false \
+  skia_use_expat=false \
+  skia_use_fontconfig=false \
+  skia_use_freetype=true \
+  skia_use_gl=true \
+  skia_use_harfbuzz=false \
+  skia_use_icu=false \
+  skia_use_libgifcodec=false \
+  skia_use_libheif=false \
+  skia_use_libjpeg_turbo_decode=false \
+  skia_use_libjpeg_turbo_encode=false \
+  skia_use_libpng_decode=true \
+  skia_use_libpng_encode=false \
+  skia_use_libwebp_decode=false \
+  skia_use_libwebp_encode=false \
+  skia_use_lua=false \
+  skia_use_piex=false \
+  skia_use_sfntly=false \
+  skia_use_system_freetype2=false \
+  skia_use_x11=false \
+  skia_use_xps=false \
+  skia_use_zlib=true \
+  extra_cflags=[\"-Wno-unknown-warning-option\",\"-Wno-uninitialized\"] \
+  extra_cflags_cc=[\"-frtti\",\"-Wno-invalid-offsetof\"] \
+  extra_ldflags=[] \
+")
+    else()
+      set(skia_ARGS "\
   is_debug=true \
   paragraph_gms_enabled=false \
   paragraph_tests_enabled=false \
@@ -171,28 +249,75 @@ else()
   extra_cflags_cc=[\"-frtti\",\"-Wno-invalid-offsetof\"] \
   extra_ldflags=[] \
 ")
+    endif()
     if (OTTO_ENABLE_ASAN)
       # This makes sure rtti is not disabled for skia
       #string(APPEND skia_ARGS " sanitize=\"ASAN\" ")
     endif()
 
+    find_program(OTTO_PYTHON NAMES python3 python REQUIRED)
     message("Downloading skia third party dependencies (might take a while)...")
     execute_process(
-      COMMAND python tools/git-sync-deps
-      WORKING_DIRECTORY "${skia_SOURCE_DIR}"  
+      COMMAND ${OTTO_PYTHON} tools/git-sync-deps
+      WORKING_DIRECTORY "${skia_SOURCE_DIR}"
+      RESULT_VARIABLE skia_sync_result
     )
+    if (NOT skia_sync_result EQUAL 0)
+      message(FATAL_ERROR "skia tools/git-sync-deps failed")
+    endif()
+    if (APPLE)
+      # Make find_xcode_sysroot.py Python-3 safe if gn still invokes it.
+      file(WRITE "${skia_SOURCE_DIR}/gn/find_xcode_sysroot.py"
+"#!/usr/bin/env python3
+from __future__ import print_function
+import subprocess
+import sys
+(sdk,) = sys.argv[1:]
+out = subprocess.check_output(['xcrun', '--sdk', sdk, '--show-sdk-path'])
+if isinstance(out, bytes):
+  out = out.decode('utf-8')
+print(out.strip())
+")
+      # Old zlib/libpng treat TARGET_OS_MAC as classic Mac OS (no fdopen / fp.h).
+      file(READ "${skia_SOURCE_DIR}/third_party/externals/zlib/zutil.h" OTTO_ZUTIL_H)
+      string(REPLACE
+        "#if defined(MACOS) || defined(TARGET_OS_MAC)"
+        "#if defined(MACOS) || (defined(TARGET_OS_MAC) && !defined(__APPLE__))"
+        OTTO_ZUTIL_H "${OTTO_ZUTIL_H}")
+      file(WRITE "${skia_SOURCE_DIR}/third_party/externals/zlib/zutil.h" "${OTTO_ZUTIL_H}")
+      file(READ "${skia_SOURCE_DIR}/third_party/externals/libpng/pngpriv.h" OTTO_PNGPRIV_H)
+      string(REPLACE
+        "defined(THINK_C) || defined(__SC__) || defined(TARGET_OS_MAC)"
+        "defined(THINK_C) || defined(__SC__) || (defined(TARGET_OS_MAC) && !defined(__APPLE__))"
+        OTTO_PNGPRIV_H "${OTTO_PNGPRIV_H}")
+      file(WRITE "${skia_SOURCE_DIR}/third_party/externals/libpng/pngpriv.h" "${OTTO_PNGPRIV_H}")
+      file(READ "${skia_SOURCE_DIR}/third_party/externals/freetype/src/gzip/ftzconf.h" OTTO_FTZCONF_H)
+      string(REPLACE
+        "#if !defined(MACOS) && !defined(TARGET_OS_MAC)"
+        "#if !defined(MACOS) && !(defined(TARGET_OS_MAC) && !defined(__APPLE__))"
+        OTTO_FTZCONF_H "${OTTO_FTZCONF_H}")
+      file(WRITE "${skia_SOURCE_DIR}/third_party/externals/freetype/src/gzip/ftzconf.h" "${OTTO_FTZCONF_H}")
+    endif()
     message("Generating skia gn project...")
     # Add this when we can require cmake 3.19
     # COMMAND_ERROR_IS_FATAL ANY
     execute_process(
       COMMAND bin/gn gen "${skia_BINARY_DIR}/out/config" --ide=json --args=${skia_ARGS}
-      WORKING_DIRECTORY "${skia_SOURCE_DIR}"  
+      WORKING_DIRECTORY "${skia_SOURCE_DIR}"
+      RESULT_VARIABLE skia_gn_result
     )
+    if (NOT skia_gn_result EQUAL 0)
+      message(FATAL_ERROR "skia gn gen failed")
+    endif()
     message("Generating skia cmake project...")
     execute_process(
-      COMMAND python "${skia_SOURCE_DIR}/gn/gn_to_cmake.py" "${skia_BINARY_DIR}/out/config/project.json"
-      WORKING_DIRECTORY "${skia_SOURCE_DIR}"  
+      COMMAND ${OTTO_PYTHON} "${skia_SOURCE_DIR}/gn/gn_to_cmake.py" "${skia_BINARY_DIR}/out/config/project.json"
+      WORKING_DIRECTORY "${skia_SOURCE_DIR}"
+      RESULT_VARIABLE skia_cmake_result
     )
+    if (NOT skia_cmake_result EQUAL 0)
+      message(FATAL_ERROR "skia gn_to_cmake failed")
+    endif()
     set(CMAKE_CXX_STANDARD 17)
     add_subdirectory("${skia_BINARY_DIR}/out/config" "${skia_BINARY_DIR}/build" EXCLUDE_FROM_ALL)
     # Remove the include directories to make sure they are added as system includes

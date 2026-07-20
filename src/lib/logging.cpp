@@ -68,7 +68,11 @@ namespace otto::log {
 
   void set_thread_name(const std::string& name)
   {
+#if defined(__APPLE__)
+    pthread_setname_np(name.c_str());
+#else
     pthread_setname_np(pthread_self(), name.c_str());
+#endif
     auto names = thread_names.lock();
     names->insert_or_assign(spdlog::details::os::thread_id(), name);
   }

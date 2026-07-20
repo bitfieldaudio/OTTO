@@ -2,6 +2,9 @@
 
 #include <choreograph/Choreograph.h>
 
+#include <atomic>
+#include <thread>
+
 #include "lib/util/at_exit.hpp"
 #include "lib/util/smart_ptr.hpp"
 
@@ -24,6 +27,11 @@ namespace otto::services {
 
     IGraphicsDriver& driver() noexcept;
 
+#if defined(__APPLE__)
+    /// Run the GLFW/AppKit graphics loop on the calling (main) thread until stop.
+    void run_until_stop();
+#endif
+
   private:
     /// The function to run in the main loop on the graphics thread.
     /// Draws the frame, executes the required functions, and returns
@@ -34,7 +42,13 @@ namespace otto::services {
     util::smart_ptr<IGraphicsDriver> driver_;
     DrawFunc draw_func_ = nullptr;
     chrono::time_point last_frame_ = chrono::clock::now();
+#if defined(__APPLE__)
+    RuntimeController* runtime_ = nullptr;
+    std::atomic<bool> takeover_{false};
+    std::jthread pump_;
+#else
     std::jthread thread_;
+#endif
   };
 
 } // namespace otto::services
